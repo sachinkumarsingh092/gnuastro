@@ -52,6 +52,6 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
-$execname $img $cat --imgmode --zeroisnotblank --outpolygon --keepblankcenter \
+$execname $img $cat --imgmode --zeroisnotblank --outpolygon                   \
           --polygon=209,50:436.76,151:475.64,438.2:210.6,454.04:121.4,289.88  \
           --output=imgoutpolygon.fits

@@ -367,8 +367,8 @@ ImageCrop
 
 Invoking ImageCrop
 
-* astimgcrop options::          A list of all the options with explanation.
-* astimgcrop output::           The outputs of ImageCrop.
+* ImageCrop options::          A list of all the options with explanation.
+* ImageCrop output::           The outputs of ImageCrop.
 
 Arithmetic
 
@@ -2879,7 +2879,7 @@ of your projects also needs Gnulib, and you insist on running bootstrap
 like this, you will have two copies. In case you regularly backup your
 important files, Gnulib will also slow down the backup process. Therefore
 while the simple invocation above can be used with no problem, it is not
-recommended, see the next paragraph.
+recommended. To do better, see the next paragraph.
 
 The recommended way to get these two packages is thoroughly discussed in
 @ref{Bootstrapping dependencies} (in short: clone them in the separate
@@ -6937,104 +6937,133 @@ image, see @ref{Crop section syntax}.
 
 @node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
 @subsection ImageCrop modes
-In order to be as comprehensive as possible, ImageCrop has two major
-@emph{image} and @emph{WCS} modes as described below.
+In order to be comprehensive, intuitive, and easy to use, ImageCrop has two
+ways to define crop region: 1) From its center and (square) side length,
+for example to generate postage stamps of a given catalog. 2) The vertices
+of the crop region, this can be useful for larger crops over many targets,
+for example to crop out a uniformly deep, or contiguous, region of a large
+survey. Irrespective of how the crop region is defined, both Image/pixel,
+and World coordinate system (WCS) coordinates are acceptable and all
+coordinates are read as floating point numbers (not integers, except for
+the @option{--section} option, see below). The coordinate standards used
+are the main modes of ImageCrop. Here, the different ways to specify the
+crop region are discussed within each standard. For the full list options,
+please see @ref{Invoking astimgcrop}.
+
+When the crop is defined by its center, the respective (integer) central
+pixel position will be found internally according to the FITS standard. To
+have this pixel positioned in the center of the cropped region, the final
+cropped region must have (in Image mode), or will have (in WCS mode) an add
+number of pixels. Furthermore, when the crop is defined as by its center,
+ImageCrop allows you to only keep crops what don't have any blank pixels in
+the vicinity of their center (your primary target). This can be very
+convenient when your input catalog/coordinates originated from another
+survey/filter which is not fully covered by your input image, to learn more
+about this feature, please see the description of the
+@option{--checkcenter} option in @ref{Invoking astimgcrop}.
 
 @table @asis
-@item Image
-The image mode uses the pixel coordinates. Depending on your command
-line options, this mode consists of three sub-modes. In image mode,
-only one image may be input.
-@itemize
+@item Image coordinates
+In image mode, ImageCrop uses the pixel coordinates/positions (instead of
+world coordinates). In image mode, only one image may be input. The crop(s)
+can be defined in multiple ways as listed below.
 
-@item
-Catalog (multiple crops). Coordinates are read from a text file. The
-@option{--xcol} and @option{--ycol} columns in the catalog are
-interpreted as the center of a square crop box whose width is
-specified with the @option{--iwidth} option in pixels. Since the given
-pixel has to be on the center, the width has to be an odd number, so
-if you give an even number for the width, it will be added by one. If
-a catalog file name is provided (with @option{--imagemode} activated
-of course) this mode will be used.
+@table @asis
+@item Center of multiple crops (in a catalog)
+The center of (possibly multiple) crops are read from a text file. A
+catalog can also contain WCS coordinates, so @option{--imgmode} has to be
+called/activated. The @option{--xcol} and @option{--ycol} columns in the
+catalog are interpreted as the center of a square crop with a width of
+@option{--iwidth} pixels (an odd number). The columns can contain any
+floating point value. The value to @option{--output} option is seen as a
+directory which will host (the possibly multiple) separate crop files, see
+@ref{ImageCrop output} for more. For a tutorial using this feature, please
+see @ref{Hubble visually checks and classifies his catalog}.
 
-@item
-Center (one crop). The box center is given on the command-line with
-the @option{--xc} and @option{--yc} parameters. The image width is
-similar to above.
+@item Center of a single crop (on the command-line)
+The center of the crop is given on the command-line with the @option{--xc}
+and @option{--yc} options. The crop width is specified by the
+@option{--iwidth} option. The given coordinates can be any floating point
+and the width has to be an odd integer, see the explanations above.
 
-@item
-Section (one crop). You can specify the section of pixels along each
-axis in the image which you want to be cropped with the
-@option{--section} option. See @ref{Crop section syntax} for a full
-explanation on the syntax of specifying the desired region.
-@end itemize
+@item Vertices of a single crop
+In Image mode there are two options to define the vertices of a region to
+crop: @option{--section} and @option{--polygon}. The former is lower-level
+(doesn't accept floating point vertices, and only a rectangular region can
+be defined), it is also only available in Image mode. Please see @ref{Crop
+section syntax} for a full description of this method.
 
-The latter two cases will only have one crop box. In both cases,
-ImageCrop will go into the image mode, irrespective of calling
-@option{--wcsmode} or the default mode. In the first two cases, since
-you specify a central pixel, the crop box will be a square with an odd
-number of pixels on the side, so your desired pixel sits right in the
-center, see @ref{Blank pixels} on how to disable this for cases when
-the box exceeds the image size.
+The latter option (@option{--polygon}) is a higher-level method to define
+any convex polygon (with any number of vertices) with floating point
+values. Please see the description of this option in @ref{Invoking
+astimgcrop} for its syntax. It is available in both Image and WCS modes,
+hence, to read the vertices as pixel coordinates, @option{--imgmode} has to
+be called/activated.
+@end table
 
-@item WCS
-The Right ascension (RA) and Declination (Dec) of the objects in a
-catalog is used to define the central position of each postage
-stamp. In this mode, the width (@option{--wwidth}) is read in units of
-arc seconds and multiple images (tiles in a survey) can be input. If
-the objects are closer to the edge of the image than half the required
-width, other tiles (if they are present in the input files) are used
-to fill the empty space. The square output cropped box will have an
-odd number of pixels on the side.
+@item WCS coordinates
+Use the World Coordinate System (WCS) information to define the crop, not
+pixel coordinates. In this mode, the width (@option{--wwidth}) is read in
+units of arc-seconds and multiple images (tiles in a survey) can be
+input. When the cropped region (defined by center or vertices) overlaps
+with multiple of the input images/tiles, the overlapping regions will be
+taken from the respective input (they will be stitched in the crop).
 
-In this mode, the input images do not necessarily have to be the same
-size, each individual tile can even be smaller than the final crop. In
-any case, any part of any of the input images which overlaps with the
-desired region will be used in the crop. Note that if there is an over
-lap, the pixels from the last input image read are going to be
-used. The input images all just have to be aligned with the celestial
-coordinates, see the caution note below.
+In this mode, the input images do not necessarily have to be the same size,
+they just need to have the same orientation and pixel resolution. Currently
+only orientation along the celestial coordinates is accepted, if your input
+has a different orientation you can use ImageWarp's @option{--align} option
+to align the image before cropping it (see @ref{ImageWarp}).
 
-Similar to the image mode, there are two sub-modes:
+Each individual input image/tile can even be smaller than the final
+crop. In any case, any part of any of the input images which overlaps with
+the desired region will be used in the crop. Note that if there is an
+overlap in the input images/tiles, the pixels from the last input image
+read are going to be used for the overlap. ImageCrop will not change pixel
+values, so it assumes your overlapping tiles were cutout from the same
+original image. There are multiple ways to define your cropped region as
+listed below.
 
-@itemize
+@table @asis
 
-@item
-Catalog (multiple crops). Similar to catalog mode in image mode. The
-RA and Dec column should be specified in the catalog (@option{--racol}
-and @option{--deccol}).
+@item Center of multiple crops (in a catalog)
+Similar to catalog inputs in Image mode (above), but @option{--wcsmode} has
+to be activated. The central RA and Dec value for each crop will be read
+from the @option{--racol} and @option{--deccol} columns of the input
+catalog. The square cropped box will have an odd number of pixels.
 
-@item
-Center (one crop). You can specify the center of only one crop box (no
-matter how many input images there are) with the options @option{--ra}
-and @option{--dec}. If it exists in the input images, it will be
-cropped similar to the catalog mode. If automatic output is triggered
-(you don't specify a file name for @option{--output}) and several of
-the input images are used to stitch and crop the region around the
-central point, the name of the first input will be used in automatic
-output, see @ref{Automatic output}.
+@item Center of a single crop (on the command-line)
+You can specify the center of only one crop box with the @option{--ra} and
+@option{--dec} options. If it exists in the input images, it will be
+cropped similar to the catalog mode.
 
-@end itemize
+@item Vertices of a single crop
+The @option{--polygon} option is a high-level method to define any convex
+polygon (with any number of vertices). Please see the description of this
+option in @ref{Invoking astimgcrop} for its syntax. It is available in both
+Image and WCS modes, hence, to read the vertices as RA and Dec coordinates,
+@option{--wcsmode} has to be called/activated.
+@end table
 
 @cartouche
 @noindent
 @strong{CAUTION:} In WCS mode, the image has to be aligned with the
-celestial coordinates, such that the first FITS axis is parallel
-(opposite direction) to the Right Ascension (RA) while the second FITS
-axis is parallel to the declination. If these conditions aren't met
-for an image, ImageCrop will warn you and abort. You have to use other
-tools to transform the image to the correct directions.
+celestial coordinates, such that the first FITS axis is parallel (opposite
+direction) to the Right Ascension (RA) and the second FITS axis is parallel
+to the declination. If these conditions aren't met for an image, ImageCrop
+will warn you and abort. You can use ImageWarp's @option{--align} option to
+align the input image with these coordinates, see @ref{ImageWarp}.
 @end cartouche
 
 @end table
 
-In short, if you don't specify a catalog, you have to specify box
-coordinates manually on the command-line. When you do specify a
-catalog, ImageCrop has to be in one of the two major modes
-(@option{--imgmode} or @option{--wcsmode}). Note that the single crop
-box parameters specified in the sub-modes will not be written to or
-read from the configuration file, they have to be specified on each
-execution.
+As a summary, if you don't specify a catalog, you have to define the
+cropped region manually on the command-line. Other than the
+@option{--polygon} option, the other methods to define a single crop are
+uniqe to each mode, so the mode options (@option{--imgmode} or
+@option{--wcsmode}) will be ignored. When using a catalog, or
+@option{--polygon}, the modes have to be specified to correctly interpret
+the values.
 
 
 @node Crop section syntax, Blank pixels, ImageCrop modes, ImageCrop
@@ -7050,18 +7079,18 @@ sizes.
 
 @cindex Define section to crop
 To define a box, you need the coordinates of two points: the first
-pixel in the box at (@code{X1}, @code{Y1}) and the pixel which is
-immediately outside of the box (@code{X2, @code{Y2}}), four
-coordinates in total. The four coordinates can be specified with one
-string in this format: @command{X1:X2,Y1:Y2}. It is given to the
-@option{--section} option. Therefore, the pixels along the first axis
-that are @math{\geq}@command{X1} and <@command{X2} will be included in
+(@code{X1}, @code{Y1}) and the last pixel (@code{X2}, @code{Y2}) pixel
+positions in the image, or four integer numbers in total. The four
+coordinates can be specified with one string in this format:
+`@command{X1:X2,Y1:Y2}'. This string is given to the @option{--section}
+option. Therefore, the pixels along the first axis that are
+@mymath{\geq}@command{X1} and @mymath{\leq}@command{X2} will be included in
 the cropped image. The same goes for the second axis. Note that each
-different term will be read as an integer, not a float (there are no
-sub-pixels in ImageCrop, you can use ImageWarp to shift the matrix
-with any sub-pixel distance, then crop the warped image, see
-@ref{ImageWarp}). Also, following the FITS standard, pixel indexes
-along each axis start from unity(1) not zero(0).
+different term will be read as an integer, not a float. This is a low-level
+option, for a higher-level way to specify region (any polygon, not just a
+box), please see the @option{--polygon} option in @ref{ImageCrop
+options}. Also note that in the FITS standard, pixel indexes along each
+axis start from unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
@@ -7085,13 +7114,14 @@ replace it with the maximum length of the image in that dimension. So
 the input image with 3/4 of the image being covered by blank pixels,
 see @ref{Blank pixels}.
 
-If you feel more comfortable with space characters between the values,
-you can use as many space characters as you wish, just be careful to
-put your value in double quotes, for example
-@command{--section="5:200, 123:854"}. If you forget, anything after
-the first space will not be seen by @option{--section}, because the
-unquoted space character is one of the characters that separates
-options on the command-line.
+If you feel more comfortable with space characters between the values, you
+can use as many space characters as you wish, just be careful to put your
+value in double quotes, for example @command{--section="5:200,
+123:854"}. If you forget the quotes, anything after the first space will
+not be seen by @option{--section} and you will most probably get an error
+because the rest of your string will be read as a filename (which most
+probably doesn't exist). See @ref{Command-line} for a description of how
+the command-line works.
 
 
 @node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
@@ -7151,16 +7181,40 @@ $ astimgcrop -I catalog.txt image.fits
 $ astimgcrop -W catalog.txt /mnt/data/COSMOS/*_drz.fits
 $ astimgcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
 $ astimgcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
-$ astimgcrop --xc=568.342 --yc=2091.719 --iwidth=200 image.fits
+$ astimgcrop --xc=568.342 --yc=2091.719 --iwidth=201 image.fits
 @end example
 
 @noindent
 ImageCrop has one mandatory argument which is the input image name(s),
-shown above with @file{ASTRdata ...}. You can use shell expansions,
-for example @command{*} for this if you have lots of images in WCS
-mode. If the crop box centers are in a catalog, you also have to
-provide the catalog name as an argument. Alternatively, you have to
-provide the crop box parameters with command-line options.
+shown above with @file{ASTRdata ...}. You can use shell expansions, for
+example @command{*} for this if you have lots of images in WCS mode. If the
+crop box centers are in a catalog, you also have to provide the catalog
+name as an argument. Alternatively, you have to provide the crop box
+parameters with command-line options. See @ref{ImageCrop output} for how
+the output file name(s) can be specified. For the full list of general
+options to all Gnuastro programs (including ImageCrop), please see
+@ref{Common options}.
+
+Floating point numbers can be used to specify the crop region (except the
+@option{--section} option, see @ref{Crop section syntax}). In such cases,
+the floating point values will be used to find the desired integer pixel
+indices based on the FITS standard. Hence, ImageCrop ultimately doesn't do
+any sub-pixel cropping (in other words, it doesn't change pixel values). If
+you need such crops, you can use @ref{ImageWarp} to first warp the image to
+the a new pixel grid where your initial floating points can be seen as
+integers, then crop from that with ImageCrop. For example, let's say you
+want a crop from pixels 12.982 to 80.982 along the first dimension. You
+should first translate the image by @mymath{-0.482} (note that the edge of
+a pixel is at integer multiples of @mymath{0.5}). So you should run
+ImageWarp with @option{--translate=-0.482,0} and then crop the warped image
+with @option{--section=13:81}.
+
+There are two ways to define the cropped region: with its center or its
+vertices. See @ref{ImageCrop modes} for a full description. In the former
+case, ImageCrop can check if the central region of the cropped image is
+indeed filled with data or is blank (see @ref{Blank pixels}), and not
+produce any output when the center is blank, see the description under
+@option{--checkcenter} for more.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, ImageCrop will run in parallel unless you set
@@ -7172,11 +7226,11 @@ and classifies his catalog} for a tutorial on effectively using this
 feature.
 
 @menu
-* astimgcrop options::          A list of all the options with explanation.
-* astimgcrop output::           The outputs of ImageCrop.
+* ImageCrop options::          A list of all the options with explanation.
+* ImageCrop output::           The outputs of ImageCrop.
 @end menu
 
-@node astimgcrop options, astimgcrop output, Invoking astimgcrop, Invoking astimgcrop
+@node ImageCrop options, ImageCrop output, Invoking astimgcrop, Invoking astimgcrop
 @subsubsection ImageCrop options
 
 The options can be classified into the following contexts: Input,
@@ -7238,19 +7292,39 @@ Crop box parameters:
 
 @item -x FLT
 @itemx --xc=FLT
-The first FITS axis value of central position of the crop box in single
-image mode.
+X axis (first image axis, horizontal when viewed in SAO DS9) position of
+crop box center. Along with @option{--yc}, this only produces one crop in
+each run. The width of the square crop (in pixels) is the value to
+@option{--iwidth}.
 
 @item -y FLT
 @itemx --yc=FLT
-The second FITS axis value of the central position of the crop box in
-single image mode.
+Y axis (second image axis, vertical when viewed in SAO DS9) position of
+crop box center. See @option{--xc}.
 
-@item -s STR
-@itemx --section=STR
-Section of the input image which you want to be cropped. See @ref{Crop
-section syntax} for a complete explanation on the syntax required for this
-input.
+@item -r FLT
+@itemx --ra=FLT
+Right Ascension of crop box center. Along with @option{--dec}, this only
+produces one crop in each run. The width of the square crop (in arcseconds)
+is the value to @option{--wwidth}.
+
+@item -d FLT
+@itemx --dec=FLT
+Declination of crop box center. see @option{--ra}.
+
+@item -a INT
+@itemx --iwidth=INT
+Width of the cropped region in units of pixels when the crop is defined by
+its center in Image mode (see @ref{ImageCrop modes}). In order for the
+chosen central pixel to be in the center of the cropped image, this option
+only accepts an odd number (an error will be given if its even). If you
+want an even sided crop, you can run ImageCrop afterwards with
+@option{--section=":*-1,:*-1"} or @option{--section=2:,2:} (depending on
+which side you don't need), see @ref{Crop section syntax}.
+
+@item -w FLT
+@itemx --wwidth=FLT
+The width of the crop box in WCS mode in units of arc-seconds.
 
 @item -l STR
 @itemx --polygon=STR
@@ -7258,22 +7332,25 @@ String of crop polygon vertices. Note that currently only convex polygons
 should be used. In the future we will make it work for all kinds of
 polygons. Convex polygons are polygons that do not have an internal angle
 more than 180 degrees. This option can be used both in the image and WCS
-modes. The rectangular region that completely encompasses the polygon will
-be kept and all the pixels that are outside of it will be removed.
+modes, see @ref{ImageCrop modes}. The cropped image will be the size of the
+rectangular region that completely encompasses the polygon. By default all
+the pixels that are outside of the polygon will be set as blank values (see
+@ref{Blank pixels}). However, if @option{--outpolygon} is called all pixels
+interal to the vertices will be set to blank.
 
-The syntax for the polygon vertices is similar to and simpler than
-that for @option{--section}. In short, the dimensions of each
-coordinate are separated by a comma (@key{,}) and each vertice is
-separated by a colon (@key{:}). You can define as many vertices as you
-like. If you would like to use space characters between the dimensions
-and vertices to make them more human-readable, then you have to put
-the value to this option in double quotation marks.
+The syntax for the polygon vertices is similar to, and simpler than, that
+for @option{--section}. In short, the dimensions of each coordinate are
+separated by a comma (@key{,}) and each vertice is separated by a colon
+(@key{:}). You can define as many vertices as you like. If you would like
+to use space characters between the dimensions and vertices to make them
+more human-readable, then you have to put the value to this option in
+double quotation marks.
 
-For example let's assume you want to work on the deepest part of the
+For example, let's assume you want to work on the deepest part of the
 WFC3/IR images of Hubble Space Telescope eXtreme Deep Field
-(HST-XDF). @url{https://archive.stsci.edu/prepds/xdf/, According to
-the webpage}@footnote{@url{https://archive.stsci.edu/prepds/xdf/}} the
-deepest part is contained within the coordinates:
+(HST-XDF). @url{https://archive.stsci.edu/prepds/xdf/, According to the
+webpage}@footnote{@url{https://archive.stsci.edu/prepds/xdf/}} the deepest
+part is contained within the coordinates:
 
 @example
 [ (53.187414,-27.779152), (53.159507,-27.759633),
@@ -7281,14 +7358,14 @@ deepest part is contained within the coordinates:
 @end example
 
 They have provided mask images with only these pixels in the WFC3/IR
-images, but what if you also need to work on the same region in the
-full resolution ACS images? Also what if you want to use the CANDELS
-data for the shallow region? Running ImageCrop with @option{--polygon}
-will easily pull out this region of the image for you irrespective of
-the resolution (if you have set the operating mode to WCS mode in your
-nearest configuration file, there is no need for @option{--wcsmode},
-you may also provide many FITS image or tiles and ImageCrop will
-stitch them all):
+images, but what if you also need to work on the same region in the full
+resolution ACS images? Also what if you want to use the CANDELS data for
+the shallow region? Running ImageCrop with @option{--polygon} will easily
+pull out this region of the image for you irrespective of the
+resolution. If you have set the operating mode to WCS mode in your nearest
+configuration file (see @ref{Configuration files}), there is no need to
+call @option{--wcsmode} on the command line. You may also provide many FITS
+images/tiles and ImageCrop will stitch them to produce this cropped region:
 
 @example
 $ astimgcrop --wcsmode desired-filter-image(s).fits        \
@@ -7307,34 +7384,22 @@ large area if large surveys like COSMOS are used. So ImageCrop will
 abort and notify you. In such cases, it is best to crop out the larger
 region you want, then mask the smaller region with this option.
 
-@item -r FLT
-@itemx --ra=FLT
-The first FITS axis value of central position of the crop box in single
-image mode.
-
-@item -d FLT
-@itemx --dec=flt
-The second FITS axis value of the central position of the crop box in
-single image mode.
+@item -s STR
+@itemx --section=STR
+Section of the input image which you want to be cropped. See @ref{Crop
+section syntax} for a complete explanation on the syntax required for this
+input.
 
 @item -i INT
 @itemx --xcol=INT
-Column number of the first FITS axis position of the box center, starting
-from zero. In SAO ds9, the first FITS axis is the horizontal axis.
+Column number of the first FITS axis position of the box center in a
+catalog, starting from zero. In SAO ds9, the first FITS axis is the
+horizontal axis.
 
 @item -j INT
 @itemx --ycol=INT
 Column number of the second FITS axis position of the box center, starting
 from zero. In SAO ds9, the second FITS axis is the vertical axis.
-
-@item -a INT
-@itemx --iwidth=INT
-Width the square box to crop in image mode in units of pixels. In order for
-the chosen central pixel to be in the center of the cropped image, the
-final width has to be an odd number, therefore if the value to this option
-is an even number, the final crop width will be one pixel larger in each
-dimension. If you want an even sided crop box, use the @option{--section}
-option to specify the boundaries of the box, see @ref{Crop section syntax}.
 
 @item -f INT
 @itemx --racol=INT
@@ -7345,10 +7410,6 @@ zero.
 @itemx --deccol=INT
 Column number of declination in the input catalog, starting from zero.
 
-@item -w FLT
-@itemx --wwidth=FLT
-The width of the crop box in WCS mode in units of arc-seconds.
-
 @end table
 
 @noindent
@@ -7358,18 +7419,26 @@ Output options:
 @item -c INT
 @itemx --checkcenter=INT
 @cindex Check center of crop
-Box size of region in the center of the image to check in units of
-pixels. This is only used in WCS mode. Because surveys don't often have a
-clean square or rectangle shape, some of the pixels on the sides of the
-surveys don't have any data and are commonly filled with zero valued
-pixels.
+Box width (odd number of pixels) of region in the center of the image to
+check for blank values. If the value to this option is zero, no checking is
+done. This option is only relevant when the cropped region(s) are defined
+by their center (not by the vertices, see @ref{ImageCrop modes}). If any of
+the pixels in this central region of a crop (defined by its center) are
+blank, then it will not be created.
 
-If the RA and Dec of any of the targets specified in the catalog fall
-in such regions, that cropped image will be useless! Therefore with
-this option, you can specify a width of a small box (3 pixels is often
-good enough) around the central pixel of the cropped image. If all the
-pixels in this small box have the value of zero, no cropped image will
-be created and this object will be flagged in the final log file.
+Because survey regions don't often have a clean square or rectangle shape,
+some of the pixels on the sides of the survey FITS image don't commonly
+have any data and are blank (see @ref{Blank pixels}). So when the catalog
+was not generated from the input image, it often happens that the image
+does not have data over some of the points.
+
+When the given center of a crop falls in such regions and this option has a
+non-zero, odd value, no crop will be created. Therefore with this option,
+you can specify a width of a small box (3 pixels is often good enough)
+around the central pixel of the cropped image. You can check which crops
+were created and which weren't from the command-line (if @option{--quiet}
+was not called, see @ref{Operating mode options}), or in ImageCrop's log
+file (see @ref{ImageCrop output}).
 
 @item -p STR
 @itemx --suffix=STR
@@ -7416,34 +7485,45 @@ Operate in WCS mode. See explanations for @option{--imgmode}.
 
 
 
-@node astimgcrop output,  , astimgcrop options, Invoking astimgcrop
+@node ImageCrop output,  , ImageCrop options, Invoking astimgcrop
 @subsubsection ImageCrop output
-When a catalog is given, the value of @option{--output} (see
-@ref{Common options}) will be seen as the directory to store the
-output cropped images. In such cases, the outputs will consist of two
-parts: a variable part (the row number of each target starting from 1)
-along with a fixed string which you can set with the @option{--suffix}
-option. Note that in catalog mode, only one image can be input.
 
-When the crop box is specified on the command-line, the value to
-@option{--output} will be used as a file name. If no output is
-specified or if it is a directory, the output file name will follow
-the automatic output names of Gnuastro, see @ref{Automatic output}
-for the input image.
+The value given to @option{--output} option will depend on how many crops
+were created, see @ref{ImageCrop modes}:
 
-The header of each output cropped image will contain the names of the
-input image(s) it was cut from. If a name is longer than the 70
-character space that the FITS standard allows for header keyword
-values, the name will be cut into several keywords from the nearest
-slash (@key{/}). The keywords have the following format:
-@command{ICFn_m}. Where @command{n} is the number of the image used in
-this crop and @command{m} is the part of the name. Following the name
-is another keyword named @command{ICFnPIX} which shows the pixel range
-from that input image in the same syntax as @ref{Crop section syntax}.
+@itemize
+@item
+When a catalog is given, the value of the @option{--output} (see
+@ref{Common options}) will be read as the directory to store the output
+cropped images. Hence if it doesn't alread exist, ImageCrop will abort with
+an error of a ``No such file or directory'' error. The crop file names will
+consist of two parts: a variable part (the row number of each target
+starting from 1) along with a fixed string which you can set with the
+@option{--suffix} option.
+
+@item
+When only one crop is desired, the value to @option{--output} will be read
+as a file name. If no output is specified or if it is a directory, the
+output file name will follow the automatic output names of Gnuastro, see
+@ref{Automatic output}: The string given to @option{--suffix} will be
+replaced with the @file{.fits} suffix of the input.
+@end itemize
+
+The header of each output cropped image will contain the names of the input
+image(s) it was cut from. If a name is longer than the 70 character space
+that the FITS standard allows for header keyword values, the name will be
+cut into several keywords from the nearest slash (@key{/}). The keywords
+have the following format: @command{ICFn_m} (for ImageCrop File). Where
+@command{n} is the number of the image used in this crop and @command{m} is
+the part of the name (it can be broken into multiple keywords). Following
+the name is another keyword named @command{ICFnPIX} which shows the pixel
+range from that input image in the same syntax as @ref{Crop section
+syntax}. So this string can be directly given to the @option{--section}
+option later.
 
 Once done, a log file will be created in the current directory named
-@file{astimgcrop.log}. For each input row, this file will have three
-columns:
+@file{astimgcrop.log}. This file will have three columns and the same
+number of rows as the number of cropped images.
 
 @enumerate
 @item
@@ -7451,17 +7531,20 @@ The cropped image file name for that row.
 @item
 The number of input images that were used to create that image.
 @item
-A @code{0} if the central few pixels (value to the
-@option{--checkcenter} option) are blank and @code{1} otherwise.
+A @code{0} if the central few pixels (value to the @option{--checkcenter}
+option) are blank and @code{1} if they aren't. When the crop was not
+defined by its center (see @ref{ImageCrop modes}), or
+@option{--checkcenter} was given a value of 0 (see @ref{Invoking
+astimgcrop}), the center will not be checked and this column will be given
+a value of @code{-1}.
 @end enumerate
 
-There are also comments on the top explaining basic information about
-the run. If the log file cannot be created (for example you don't have
-write permission in the directory you are running ImageCrop in) or you
-have specifically asked for no log file (with the @option{--nolog}
-option), then a log file will not be created (unless
-@option{--individual} is called). The same columns will be printed in
-verbose mode on the command-line for each row.
+There are also comments on the top of the log file explaining basic
+information about the run and descriptions for the columns. If the log file
+cannot be created (for example you don't have write permission in the
+directory you are running ImageCrop in) or you have specifically asked for
+no log file (with the @option{--nolog} option), then a log file will not be
+created (unless @option{--individual} is called).
 
 
 
@@ -9389,7 +9472,7 @@ One line examples:
 
 @example
 $ astconvolve --kernel=psf.fits mockimg.fits
-$ astconvolve --kernel=sharperimage.fits --makekernel\
+$ astconvolve --kernel=sharperimage.fits --makekernel=10 \
               blurryimage.fits
 @end example
 
@@ -9490,22 +9573,23 @@ of the image), we also remove any pixel with a value less than
 
 @end enumerate
 
-@item -m=INT
+@item -m INT
 @itemx --makekernel=INT
-If this option is called, Convolve will do de-convolution (see
-@ref{Convolution theorem}). The image specified by the @option{--kernel}
-option is assumed to be the sharper (less blurry) image and the input image
-is assumed to be the more blurry image. The two images have to be the same
-size. Some notes to take into account for a good result:
+(@option{=INT}) If this option is called, Convolve will do de-convolution
+(see @ref{Convolution theorem}). The image specified by the
+@option{--kernel} option is assumed to be the sharper (less blurry) image
+and the input image is assumed to be the more blurry image. The value given
+to this option will be used as the maximum radius of the kernel. Any pixel
+in the final kernel that is larger than this distance from the center will
+be set to zero. The two images must have the same size.
 
-Noise has large frequencies which can make the result less reliable
-for the higher frequencies of the kernel. So all the frequencies which
-have a spectrum smaller than 0.005 in the frequency domain are set to
-zero and not divided. This will cause the wings of the final kernel to
-be flatter than they would ideally be which will make the convolved
-image result unreliable. The value given to this option will be used
-as the maximum radius of the kernel. Any pixel in the final kernel
-that is larger than this distance from the center will be set to zero.
+Noise has large frequencies which can make the result less reliable for the
+higher frequencies of the final result. So all the frequencies which have a
+spectrum smaller than the value given to the @option{minsharpspec} option
+in the sharper input image are set to zero and not divided. This will cause
+the wings of the final kernel to be flatter than they would ideally be
+which will make the convolved image result unreliable if it is too
+high. Some notes to take into account for a good result:
 @itemize
 
 @item
@@ -9525,8 +9609,13 @@ pixels is one) and then take their average to decrease this effect.
 The shifting might move the center of the star by one pixel in any
 direction, so crop the central pixel of the warped image to have a
 clean image for the de-convolution.
-
 @end itemize
+
+@item -c
+@itemx --minsharpspec
+(@option{=FLT}) The minimum frequency spectrum (or coefficient, or pixel
+value in the frequency domain image) to use in deconvolution, see the
+explanations under the @option{--makekernel} option for more information.
 @end table
 
 
@@ -9928,9 +10017,9 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
-$ astimgwarp --align rawimage.fits
-$ astimgwarp --scale 1.82 --translate 2.1 image.fits
 $ astimgwarp --rotate=37.92 --scale=0.8 image.fits
+$ astimgwarp --scale 1.82 --translate 2.1 image.fits
+$ astimgwarp --align rawimage.fits --output=aligned.fits
 $ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
 $ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
@@ -9939,8 +10028,11 @@ ImageWarp can accept two arguments, one (an image) is mandatory if any
 processing is to be done. An optional argument is a plain text file, which
 must contain the warp/transform matrix, see @ref{Warping basics}. When this
 text file is specified, then all options related to the matrix will be
-ignored (see below for the options). The general options to all Gnuastro
-programs (including ImageWarp) can be seen in @ref{Common options}.
+ignored (see below for the options). As in all Gnuastro programs, when an
+output is not explicitly set with the @option{--output} option, the output
+filename will be set automatically based on the operation, see
+@ref{Automatic output}. For the full list of general options to all
+Gnuastro programs (including ImageWarp), please see @ref{Common options}.
 
 To be the most accurate the input image will be converted to double
 precision floating points and all the processing will be done in this
@@ -18240,13 +18332,12 @@ features/capabilities) that are to be added to Gnuastro.
 @noindent
 All the trackers can be browsed by a (possibly anonymous) visitor, but to
 edit and comment on the Bugs and Tasks trackers, you have to be a
-registered Gnuastro developer. When posting an issue to a tracker, it is
-very important to choose the `Category' and `Item Group' options
-accurately. The first contains a list of all Gnuastro's programs along
-with `Installation', `New program' and `Webpage'. The ``Item Group''
-contains the nature of the issue, for example if it is a `Crash' in the
-software (a bug), or a problem in the documentation (also a bug) or a
-feature request or an enhancement.
+registered on Savannah. When posting an issue to a tracker, it is very
+important to choose the `Category' and `Item Group' options accurately. The
+first contains a list of all Gnuastro's programs along with `Installation',
+`New program' and `Webpage'. The ``Item Group'' contains the nature of the
+issue, for example if it is a `Crash' in the software (a bug), or a problem
+in the documentation (also a bug) or a feature request or an enhancement.
 
 The set of horizontal links on the top of the page (Starting with
 `Main' and `Homepage' and finishing with `News') are the easiest way
@@ -19325,7 +19416,7 @@ Workflow:
 You can send commit patches by email as fully explained in `Pro Git'. This
 is good for your first few contributions. Just note that raw patches
 (containing only the diff) do not have any meta-data (author name, date and
-etc). Therefore will not allow us to fully acknowledge your contributions
+etc). Therefore they will not allow us to fully acknowledge your contributions
 as an author in Gnuastro: in the @file{AUTHORS} file and at the start of
 the PDF book. These author lists are created automatically from the version
 controlled source.
@@ -19356,8 +19447,8 @@ else is already working on. In that case, you can get in touch with them
 and help the job go on faster, see @ref{Gnuastro project webpage}. This
 workflow is currently mostly borrowed from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
-and GitHub. But since Gnuastro is under heavy development currently, these
-might change and evolve to better suite our needs.
+and GitHub. But since Gnuastro is currently under heavy development, these
+might change and evolve to better suit our needs.
 
 
 

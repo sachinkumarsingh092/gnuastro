@@ -73,7 +73,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e m n t u v
+   e k m n t u v
    A B C E F G H J L M O Q R T U X Y Z
 
    Number keys used<=502
@@ -147,14 +147,6 @@ static struct argp_option options[] =
       0,
       0,
       "Remove parts of the crop box out of input image.",
-      2
-    },
-    {
-      "keepblankcenter",
-      'k',
-      0,
-      0,
-      "Keep crop if the central parts are not filled.",
       2
     },
     {
@@ -374,12 +366,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'b':
       p->noblank=1;
       break;
-    case 'k':
-      p->keepblankcenter=1;
-      break;
     case 'c':
-      gal_checkset_sizet_l_zero(arg, &p->checkcenter, "checkcenter",
-                                key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->checkcenter, "checkcenter",
+                                 key, SPACK, NULL, 0);
       p->up.checkcenterset=1;
       break;
     case 'p':

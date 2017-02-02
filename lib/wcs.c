@@ -31,8 +31,123 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <assert.h>
 
+#include <gsl/gsl_linalg.h>
+
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+
+
+
+/**************************************************************/
+/**********              Utilities                 ************/
+/**************************************************************/
+double *
+gal_wcs_array_from_wcsprm(struct wcsprm *wcs)
+{
+  double *out;
+  size_t i, j, size=wcs->naxis*wcs->naxis;
+
+  /* Allocate the necessary array. */
+  errno=0;
+  out=malloc(size*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
+          "`gal_wcs_array_from_wcsprm'", size*sizeof *out);
+
+  /* Fill in the array. */
+  if(wcs->altlin |= 1)          /* Has a PCi_j array. */
+    {
+      for(i=0;i<wcs->naxis;++i)
+        for(j=0;j<wcs->naxis;++j)
+          out[i*wcs->naxis+j] = wcs->cdelt[i] * wcs->pc[i*wcs->naxis+j];
+    }
+  else if(wcs->altlin |= 2)     /* Has CDi_j array */
+    {
+      for(i=0;i<size;++i)
+        out[i]=wcs->cd[i];
+    }
+  else
+    error(EXIT_FAILURE, 0, "currently, `gal_wcs_pixel_scale_deg' only "
+          "recognizes PCi_ja and CDi_ja keywords");
+
+  /* Return the result */
+  return out;
+}
+
+
+
+
+
+/* According to the FITS standard, in the `PCi_j' WCS formalism, the matrix
+   elements m_{ij} are encoded in the `PCi_j' keywords and the scale
+   factors are encoded in the `CDELTi' keywords. There is also another
+   formalism (the `CDi_j' formalism) which merges the two into one
+   matrix.
+
+   However, WCSLIB's internal operations are apparently done in the `PCi_j'
+   formalism. So its outputs are also all in that format by default. When
+   the input is a `CDi_j', WCSLIB will still read the image into the
+   `PCi_j' formalism and the `CDELTi's are set to 1. This function will
+   decompose the two matrices to give a reasonable `CDELTi' and `PCi_j' in
+   such cases. */
+void
+gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
+{
+  double *ps;
+  size_t i, j;
+
+  /* The correction is only needed when the matrix is internally stored
+     as PCi_j. */
+  if(wcs->altlin |= 1)
+    {
+      /* Get the pixel scale. */
+      ps=gal_wcs_pixel_scale_deg(wcs);
+
+      /* The PC matrix and the CDELT elements might both contain scale
+         elements (during processing the scalings might be added only to PC
+         elements for example). So to be safe, we first multiply them into
+         one matrix. */
+      for(i=0;i<wcs->naxis;++i)
+        for(j=0;j<wcs->naxis;++j)
+          wcs->pc[i*wcs->naxis+j] *= wcs->cdelt[i];
+
+      /* Set the CDELTs. */
+      for(i=0; i<wcs->naxis; ++i)
+        wcs->cdelt[i] = ps[i];
+
+      /* Correct the PCi_js */
+      for(i=0;i<wcs->naxis;++i)
+        for(j=0;j<wcs->naxis;++j)
+          wcs->pc[i*wcs->naxis+j] /= ps[i];
+
+      /* Clean up. */
+      free(ps);
+
+      /* According to the `wcslib/wcs.h' header: "In particular, wcsset()
+         resets wcsprm::cdelt to unity if CDi_ja is present (and no
+         PCi_ja).". So apparently, when the input is a `CDi_j', it might
+         expect the `CDELTi' elements to be 1.0. But we have changed that
+         here, so we will correct the `altlin' element of the WCS structure
+         to make sure that WCSLIB only looks into the `PCi_j' and `CDELTi'
+         and makes no assumptioins about `CDELTi'. */
+      wcs->altlin=1;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -57,7 +172,7 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
 {
   size_t i;
   double imgcrd[2], phi, theta;
-  int stat, status=0, ncoord=1, nelem=2;
+  int status=0, ncoord=1, nelem=2;
 
   for(i=0;i<number;++i)
     {
@@ -65,8 +180,8 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
         radec[i*stride]=radec[i*stride+1]=NAN;
       else
         {
-          status=wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
-                        &theta, radec+i*stride, &stat);
+          wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
+                 &theta, radec+i*stride, &status);
           if(status)
             error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
                   wcs_errmsg[status]);
@@ -176,18 +291,42 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 
 
 /* Return the pixel scale of the image in both dimentions in degrees. */
-void
-gal_wcs_pixel_scale_deg(struct wcsprm *wcs, double *dx, double *dy)
+double *
+gal_wcs_pixel_scale_deg(struct wcsprm *wcs)
 {
-  double radec[6], xy[]={0,0,1,0,0,1};
+  gsl_vector S;
+  gsl_matrix A, V;
+  size_t n=wcs->naxis;
+  double *a, *v, *pixscale;
 
-  /* Get the RA and Dec of the bottom left, bottom right and top left
-     sides of the first pixel in the image. */
-  gal_wcs_xy_array_to_radec(wcs, xy, radec, 3, 2);
+  /* Allocate space for the `v' and `pixscale' arrays. */
+  errno=0; v=malloc(n*n*sizeof *v);
+  if(v==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `v' in "
+          "`gal_wcs_pixel_scale_deg'", n*n*sizeof *v);
+  errno=0; pixscale=malloc(n*sizeof *pixscale);
+  if(pixscale==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `pixscale' in "
+          "`gal_wcs_pixel_scale_deg'", n*sizeof *pixscale);
 
-  /* Calculate the distances and convert back to degrees: */
-  *dx = gal_wcs_angular_distance_deg(radec[0], radec[1], radec[2], radec[3]);
-  *dy = gal_wcs_angular_distance_deg(radec[0], radec[1], radec[4], radec[5]);
+  /* Write the full matrix into an array, irrespective of what type it was
+     stored in the wcsprm structure (`PCi_j' style or `CDi_j' style). */
+  a=gal_wcs_array_from_wcsprm(wcs);
+
+  /* Fill in the necessary GSL vector and Matrix structures. */
+  S.size=n;     S.stride=1;                S.data=pixscale;
+  V.size1=n;    V.size2=n;    V.tda=n;     V.data=v;
+  A.size1=n;    A.size2=n;    A.tda=n;     A.data=a;
+
+  /* Run GSL's Singular Value Decomposition, using one-sided Jacobi
+     orthogonalization which computes the singular (scale) values to a
+     higher relative accuracy.*/
+  gsl_linalg_SV_decomp_jacobi(&A, &V, &S);
+
+  /* Clean up and return. */
+  free(a);
+  free(v);
+  return pixscale;
 }
 
 
@@ -202,11 +341,21 @@ gal_wcs_pixel_scale_deg(struct wcsprm *wcs, double *dx, double *dy)
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 {
-  double dx, dy;
+  double out;
+  double *pixscale;
 
-  /* Get the pixel scales along each axis in degrees. */
-  gal_wcs_pixel_scale_deg(wcs, &dx, &dy);
+  /* A small sanity check. Later, when higher dimensions are necessary, we
+     can find which ones correlate to RA and Dec and use them to find the
+     pixel area in arcsec^2. */
+  if(wcs->naxis!=2)
+    error(EXIT_FAILURE, 0, "`gal_wcs_pixel_area_arcsec2' can currently "
+          "calculate the area only when the image has 2 dimensions.");
 
-  /* Return the result */
-  return dx * dy * 3600.0f * 3600.0f;
+  /* Get the pixel scales along each axis in degrees, then multiply. */
+  pixscale=gal_wcs_pixel_scale_deg(wcs);
+
+  /* Clean up and return the result. */
+  out = pixscale[0] * pixscale[1] * 3600.0f * 3600.0f;
+  free(pixscale);
+  return out;
 }

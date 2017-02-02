@@ -50,9 +50,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 {
-  double twidth;
+  double twidth, *pixscale;
   struct wcsprm *wcs=img->wcs;
-  int status, ncoord=4, nelem=2;
+  int i, status[4]={0,0,0,0}, ncoord=4, nelem=2;
   double imgcrd[8], phi[4], theta[4], pixcrd[8];
 
 
@@ -88,7 +88,9 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   if(p->res==0.0f)
     {
       /* Set the resolution of the image. */
-      p->res=wcs->pc[3];
+      pixscale=gal_wcs_pixel_scale_deg(wcs);
+      p->res=pixscale[0];
+      free(pixscale);
 
       /* Set the widths such that iwidth and wwidth are exactly the same
          (within their different units ofcourse). Also make sure that the
@@ -109,12 +111,16 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
       p->iwidth[1]=p->iwidth[0];
     }
   else
-    if(p->res!=wcs->pc[3])
-      error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
-            "this image is %f arcseconds/pixel while the "
-            "previously checked input image(s) had a resolution "
-            "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
-            3600*p->res);
+    {
+      pixscale=gal_wcs_pixel_scale_deg(wcs);
+      if(p->res!=pixscale[0])
+        error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
+              "this image is %f arcseconds/pixel while the "
+              "previously checked input image(s) had a resolution "
+              "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
+              3600*p->res);
+      free(pixscale);
+    }
 
 
   /* Get the coordinates of the first pixel in the image. */
@@ -123,10 +129,13 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   pixcrd[4]=1;               pixcrd[5]=img->naxes[1];
   pixcrd[6]=img->naxes[0];   pixcrd[7]=img->naxes[1];
   wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta,
-         img->corners, &status);
-  if(status)
-    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
-          wcs_errmsg[status]);
+         img->corners, status);
+
+  /* Check if there was no error in the conversion. */
+  for(i=0;i<4;++i)
+    if(status[i])
+      error(EXIT_FAILURE, 0, "wcsp2s ERROR %d in row %d of pixcrd: %s",
+            i, status[i], wcs_errmsg[status[i]]);
 
 
   /* Fill in the size of the image in celestial degrees from the first
@@ -456,12 +465,13 @@ radecoverlap(struct cropparams *crp)
 {
   double *d, *fd;
   double *i, *s, *c;                /* for clear viewing. */
+  struct imgcropparams *p=crp->p;
 
   /* First check if the four sides of the crop box are in the image.*/
   fd=(d=crp->corners)+8;
-  s=crp->p->imgs[crp->imgindex].sized;
-  i=crp->p->imgs[crp->imgindex].corners;
-  c=crp->p->imgs[crp->imgindex].equatorcorr;
+  s=p->imgs[crp->imgindex].sized;
+  i=p->imgs[crp->imgindex].corners;
+  c=p->imgs[crp->imgindex].equatorcorr;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;
@@ -474,7 +484,7 @@ radecoverlap(struct cropparams *crp)
   s=crp->sized;
   i=crp->corners;
   c=crp->equatorcorr;
-  fd=(d=crp->p->imgs[crp->imgindex].corners)+8;
+  fd=(d=p->imgs[crp->imgindex].corners)+8;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;

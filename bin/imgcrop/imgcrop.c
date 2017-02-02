@@ -55,18 +55,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 reportcrop(struct imgcroplog *log)
 {
+  char *filestatus, *msg;
   size_t outnamelen=strlen(log->name);;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
+
+  /* Human readable values. */
+  filestatus = ( log->centerfilled==0
+                 ? "not created (blank center)" : "created");
 
   /* Define the output string based on the length of the output file. */
   if ( outnamelen > FILENAME_BUFFER_IN_VERB )
-    sprintf(msg, "...%s %zu %d",
+    asprintf(&msg, "...%s %s from %zu input%s.",
             &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
-            log->numimg, log->centerfilled);
+            filestatus, log->numimg, log->numimg > 1 ? "s" : "");
   else
-    sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %zu %d",
-            log->name, log->numimg, log->centerfilled);
+    asprintf(&msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %s from %zu "
+             "input%s.", log->name, filestatus, log->numimg,
+             log->numimg > 1 ? "s" : "");
+
+  /* Print the results. */
   gal_timing_report(NULL, msg, 2);
+  free(msg);
 }
 
 
@@ -120,7 +128,7 @@ imgmodecrop(void *inparam)
                                    "the opened file");
 
           /* Remove the output image if its center was not filled. */
-          if(log->centerfilled==0 && p->keepblankcenter==0)
+          if(log->centerfilled==0)
             {
               errno=0;
               if(unlink(log->name))
@@ -207,7 +215,7 @@ wcsmodecrop(void *inparam)
             gal_fits_io_error(status, "CFITSIO could not close the "
                                      "opened file");
 
-          if(log->centerfilled==0 && p->keepblankcenter==0)
+          if(log->centerfilled==0)
             {
               errno=0;
               if(unlink(log->name))
@@ -230,11 +238,9 @@ wcsmodecrop(void *inparam)
       if(p->cp.verb) reportcrop(log);
     }
 
-  /* Wait until all other threads finish. */
+  /* Wait until all other threads finish, then return. */
   if(p->cp.numthreads>1)
     pthread_barrier_wait(crp->b);
-
-
   return NULL;
 }
 
@@ -286,8 +292,8 @@ imgcrop(struct imgcropparams *p)
           "neither the imgmode is on or the wcsmode! Please contact us "
           "so we can fix it, thanks");
 
-  /* Allocate the arrays to keep the thread and parameters for each
-     thread. */
+  /* Allocate the array of structures to keep the thread and parameters for
+     each thread. */
   errno=0;
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
@@ -303,10 +309,9 @@ imgcrop(struct imgcropparams *p)
 
   /* Distribute the indexs into the threads (this is needed even if we
      only have one object where p->cs0 is not defined): */
-  if(p->up.catset)
-    gal_threads_dist_in_threads(p->cs0, nt, &indexs, &thrdcols);
-  else
-    gal_threads_dist_in_threads(1, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(p->up.catset ? p->cs0 : 1, nt,
+                              &indexs, &thrdcols);
+
 
   /* Run the job, if there is only one thread, don't go through the
      trouble of spinning off a thread! */
@@ -345,10 +350,13 @@ imgcrop(struct imgcropparams *p)
       pthread_barrier_destroy(&b);
     }
 
+
   /* Print the log file: */
-  if(p->cp.nolog==0)
+  if(!p->cp.nolog)
     printlog(p);
 
+
+  /* Clean up. */
   free(crp);
   free(indexs);
 }

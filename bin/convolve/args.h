@@ -55,7 +55,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   c d e g i j l n r t u w x y z
+   d e g i j l n r t u w x y z
    A B C E F G H I J O Q R T W X Y Z
 
    Free numbers: >=504
@@ -115,6 +115,15 @@ static struct argp_option options[] =
       "Do not normalize the kernel image.",
       1
     },
+    {
+      "minsharpspec",
+      'c',
+      "FLT",
+      0,
+      "Deconvolution: min spectrum of sharp img.",
+      1
+    },
+
 
 
 
@@ -273,7 +282,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Inputs: */
     case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
+                                     &p->up.masknameset);
       break;
     case 'H':
       gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
@@ -291,6 +301,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 501:
       p->kernelnorm=0;
       break;
+    case 'c':
+      gal_checkset_double_l_0_s_1(arg, &p->minsharpspec, "minsharpspec",
+                                 key, SPACK, NULL, 0);
+      p->up.minsharpspecset=1;
+      break;
 
 
     /* Output: */
@@ -298,21 +313,23 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
    /* Mesh grid: */
     case 's':
-      gal_checkset_sizet_l_zero(arg, &p->mp.meshsize, "meshsize", key, SPACK,
-                                NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.meshsize, "meshsize", key,
+                                SPACK, NULL, 0);
       p->up.meshsizeset=1;
       break;
     case 'a':
-      gal_checkset_sizet_l_zero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch1, "nch1", key, SPACK,
+                                NULL, 0);
       p->up.nch1set=1;
       break;
     case 'b':
-      gal_checkset_sizet_l_zero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch2, "nch2", key, SPACK,
+                                NULL, 0);
       p->up.nch2set=1;
       break;
     case 'L':
-      gal_checkset_float_l_0_s_1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key,
-                                 SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->mp.lastmeshfrac, "lastmeshfrac",
+                                 key, SPACK, NULL, 0);
       p->up.lastmeshfracset=1;
       break;
     case 503:

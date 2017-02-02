@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 
 #include <gnuastro/git.h>
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 
 #include "checkset.h"
@@ -1476,6 +1477,9 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
   /* If a WCS structure is present, write it in */
   if(data->wcs)
     {
+      /* Decompose the `PCi_j' matrix and `CDELTi' vector. */
+      gal_wcs_decompose_pc_cdelt(data->wcs);
+
       /* Convert the WCS information to text. */
       status=wcshdo(WCSHDO_safe, data->wcs, &nkeyrec, &wcsheader);
       if(status)

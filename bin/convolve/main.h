@@ -39,7 +39,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define MINGOODDIVSPEC       0.005
 #define CONVFLOATINGPOINTERR 1e-10
 #define COMPLEXTOREALSPEC    1  /* Spectrum of complex number.  */
 #define COMPLEXTOREALPHASE   2  /* Phase of the complex number. */
@@ -63,6 +62,7 @@ struct uiparams
   int            mhduset;
   int      kernelnameset;
   int            khduset;
+  int    minsharpspecset;
   int        meshsizeset;
   int            nch1set;
   int            nch2set;
@@ -90,6 +90,7 @@ struct convolveparams
   size_t             is1;   /* Input image size along C's second axis.  */
   size_t             ks0;   /* Kernel size along C's first axis.        */
   size_t             ks1;   /* Kernel size along C's second axis.       */
+  double    minsharpspec;   /* Deconvolution: min spectrum of sharp img.*/
   int         kernelflip;   /* ==1: Flip the kernel.                    */
   int         kernelnorm;   /* ==1: Normalize the kernel.               */
   int               nwcs;   /* Number of WCS headers.                   */

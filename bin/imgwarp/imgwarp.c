@@ -430,8 +430,9 @@ correctwcssaveoutput(struct imgwarpparams *p)
 {
   size_t i;
   void *array;
+  double *pixelscale;
+  double *m=p->matrix, diff;
   char keyword[9*FLEN_KEYWORD];
-  double *m=p->matrix, diff, dx, dy;
   struct gal_fits_key_ll *headers=NULL;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
@@ -484,9 +485,9 @@ correctwcssaveoutput(struct imgwarpparams *p)
      signs are usually different.*/
   if( p->wcs->pc[1]<ABSOLUTEFLTERROR ) p->wcs->pc[1]=0.0f;
   if( p->wcs->pc[2]<ABSOLUTEFLTERROR ) p->wcs->pc[2]=0.0f;
-  gal_wcs_pixel_scale_deg(p->wcs, &dx, &dy);
+  pixelscale=gal_wcs_pixel_scale_deg(p->wcs);
   diff=fabs(p->wcs->pc[0])-fabs(p->wcs->pc[3]);
-  if( fabs(diff/dx)<RELATIVEFLTERROR )
+  if( fabs(diff/pixelscale[0])<RELATIVEFLTERROR )
     p->wcs->pc[3] =  ( (p->wcs->pc[3] < 0.0f ? -1.0f : 1.0f)
                        * fabs(p->wcs->pc[0]) );
 
@@ -495,6 +496,8 @@ correctwcssaveoutput(struct imgwarpparams *p)
                          p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
                          headers, SPACK_STRING);
 
+  /* Clean up. */
+  free(pixelscale);
   if(array!=p->output)
     free(array);
 }

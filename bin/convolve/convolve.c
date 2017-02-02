@@ -118,9 +118,8 @@ complexarraymultiply(double *a, double *b, size_t size)
 
 
 
-/* Divide the elements of the first array by the elements of the
-   second array and put the result into the elements of the first
-   array.
+/* Divide the elements of the first array by the elements of the second
+   array and put the result into the elements of the first array.
 
    (a+ib)/(c+id)=[(a+ib)*(c-id)]/[(c+id)*(c-id)]
                 =(ac-iad+ibc+bd)/(c^2+d^2)
@@ -130,14 +129,14 @@ complexarraymultiply(double *a, double *b, size_t size)
    on the loop.
  */
 void
-complexarraydivide(double *a, double *b, size_t size)
+complexarraydivide(double *a, double *b, size_t size, double minsharpspec)
 {
   double r, *af;
 
   af=a+2*size;
   do
     {
-      if (sqrt(*b**b + *(b+1)**(b+1))>MINGOODDIVSPEC)
+      if (sqrt(*b**b + *(b+1)**(b+1))>minsharpspec)
         {
           r      = ( ( (*a * *b) + (*(a+1) * *(b+1)) )
                      / ( *b * *b + *(b+1) * *(b+1) ) );
@@ -145,6 +144,8 @@ complexarraydivide(double *a, double *b, size_t size)
                      / ( *b * *b + *(b+1) * *(b+1) ) );
           *a=r;
 
+          /* Just as a sanity check (the result should never be larger than
+             one. */
           if(sqrt(*a**a + *(a+1)**(a+1))>1.00001f)
             *a=*(a+1)=0.0f;
         }
@@ -679,7 +680,7 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) gettimeofday(&t1, NULL);
   if(p->makekernel)
     {
-      complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1);
+      complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1, p->minsharpspec);
       if(verb)
         gal_timing_report(&t1, "Divided in the frequency domain.", 1);
     }

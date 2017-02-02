@@ -51,6 +51,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define STRINGIFY(x) #x
 #define MACROSTR(x) STRINGIFY(x)
 #define FILENAME_BUFFER_IN_VERB 30
+#define CENTER_NOT_CHECKED      -1
 
 
 

@@ -541,9 +541,7 @@ read_matrix(struct imgwarpparams *p)
 void
 makealignmatrix(struct imgwarpparams *p, double *tmatrix)
 {
-  double A, dx, dy;
-  double amatrix[4];
-  double w[4]={0,0,0,0};
+  double A, *w, *ps, amatrix[4];
 
   /* Check if there is only two WCS axises: */
   if(p->wcs->naxis!=2)
@@ -551,30 +549,12 @@ makealignmatrix(struct imgwarpparams *p, double *tmatrix)
           "axises. For the `--align' option to operate it must be 2",
           p->up.inputname, p->cp.hdu, p->wcs->naxis);
 
-  /* Depending on the type of data, make the input matrix. Note that
-     wcs->altlin is actually bit flags, not integers, so we have to compare
-     with powers of two. */
-  if(p->wcs->altlin |= 1)
-    {
-      w[0]=p->wcs->cdelt[0]*p->wcs->pc[0];
-      w[1]=p->wcs->cdelt[0]*p->wcs->pc[1];
-      w[2]=p->wcs->cdelt[1]*p->wcs->pc[2];
-      w[3]=p->wcs->cdelt[1]*p->wcs->pc[3];
-    }
-  if(p->wcs->altlin |= 2)
-    {
-      w[0]=p->wcs->cd[0];
-      w[1]=p->wcs->cd[1];
-      w[2]=p->wcs->cd[2];
-      w[3]=p->wcs->cd[3];
-    }
-  else
-    error(EXIT_FAILURE, 0, "currently the `--align' option only recognizes "
-          "PCi_ja and CDi_ja keywords, not any others");
 
   /* Find the pixel scale along the two dimensions. Note that we will be
      using the scale along the image X axis for both values. */
-  gal_wcs_pixel_scale_deg(p->wcs, &dx, &dy);
+  w=gal_wcs_array_from_wcsprm(p->wcs);
+  ps=gal_wcs_pixel_scale_deg(p->wcs);
+
 
   /* Lets call the given WCS orientation `W', the rotation matrix we want
      to find as `X' and the final (aligned matrix) to have just one useful
@@ -626,28 +606,32 @@ makealignmatrix(struct imgwarpparams *p, double *tmatrix)
   else
     {
       A = (w[3]/w[1]) - (w[2]/w[0]);
-      amatrix[1] = dx / w[0] / A;
-      amatrix[3] = dx / w[1] / A;
+      amatrix[1] = ps[0] / w[0] / A;
+      amatrix[3] = ps[0] / w[1] / A;
       amatrix[0] = -1 * amatrix[1] * w[3] / w[1];
       amatrix[2] = -1 * amatrix[3] * w[2] / w[0];
     }
 
 
   /* For a check:
-  printf("dx: %e\n", dx);
+  printf("ps: %e\n", ps);
   printf("w:\n");
   printf("  %.8e    %.8e\n", w[0], w[1]);
   printf("  %.8e    %.8e\n", w[2], w[3]);
   printf("x:\n");
   printf("  %.8e    %.8e\n", amatrix[0], amatrix[1]);
   printf("  %.8e    %.8e\n", amatrix[2], amatrix[3]);
+  exit(0);
   */
-
 
   /* Put the matrix elements into the output array: */
   tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
   tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
   tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
+
+  /* Clean up. */
+  free(w);
+  free(ps);
 }
 
 
@@ -854,21 +838,69 @@ prepare_modular_matrix(struct imgwarpparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+/* When only one transformation is required, set the suffix for automatic
+   output to more meaningful string. */
+char *
+ui_set_suffix(struct optionwarpsll *owll)
+{
+  /* We only want the more meaningful suffix when the list is defined AND
+     when its only has one node (the `next' element is NULL). */
+  if(owll && owll->next==NULL)
+    switch(owll->type)
+      {
+      case ALIGN_WARP:
+        return "_aligned.fits";
+
+      case ROTATE_WARP:
+        return "_rotated.fits";
+
+      case SCALE_WARP:
+        return "_scaled.fits";
+
+      case FLIP_WARP:
+        return "_flipped.fits";
+
+      case SHEAR_WARP:
+        return "_sheared.fits";
+
+      case TRANSLATE_WARP:
+        return "_translated.fits";
+
+      case PROJECT_WARP:
+        return "_projected.fits";
+
+      default:
+        return "_warped.fits";
+      }
+  else
+    return "_warped.fits";
+}
+
+
+
+
+
 void
 sanitycheck(struct imgwarpparams *p)
 {
+  char *suffix;
   double *d, *df, *m=p->matrix;
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.inputname);
 
-  /* Set the output name: */
+  /* Set the output name. This needs to be done before
+     `prepare_modular_matrix' because that function will free the linked
+     list of modular warpings (`p->up.owll'). */
   if(p->cp.output)
     gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    gal_checkset_automatic_output(p->up.inputname, "_warped.fits",
-                                  p->cp.removedirinfo, p->cp.dontdelete,
-                                  &p->cp.output);
+    {
+      suffix=ui_set_suffix(p->up.owll);
+      gal_checkset_automatic_output(p->up.inputname, suffix,
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->cp.output);
+    }
 
   /* If an actual matrix is given, then it will be used and all modular
      warpings will be ignored. */
@@ -938,8 +970,8 @@ preparearrays(struct imgwarpparams *p)
 
   /* Read in the input image: */
   numnul=gal_fits_hdu_to_array(p->up.inputname, p->cp.hdu,
-                                     &p->inputbitpix, &array, &p->is0,
-                                     &p->is1);
+                               &p->inputbitpix, &array, &p->is0,
+                               &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
