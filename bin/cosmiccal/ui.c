@@ -120,9 +120,7 @@ ui_initialize_options(struct cosmiccalparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
-  size_t i;
   struct gal_options_common_params *cp=&p->cp;
-
 
   /* Set the necessary common parameters structure. */
   cp->poptions           = program_options;

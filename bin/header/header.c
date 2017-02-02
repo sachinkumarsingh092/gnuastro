@@ -88,14 +88,14 @@ writeupdatekeys(fitsfile *fptr, struct gal_fits_key_ll **keylist,
   tmp=*keylist;
   while(tmp!=NULL)
     {
-
       /* Write the information: */
       if(u1w2==1)
         {
           if(tmp->value)
             {
-              if( fits_update_key(fptr, tmp->datatype, tmp->keyname,
-                                  tmp->value, tmp->comment, &status) )
+              if( fits_update_key(fptr, gal_fits_type_to_datatype(tmp->type),
+                                  tmp->keyname, tmp->value, tmp->comment,
+                                  &status) )
                 gal_fits_io_error(status, NULL);
             }
           else
@@ -109,8 +109,9 @@ writeupdatekeys(fitsfile *fptr, struct gal_fits_key_ll **keylist,
         {
           if(tmp->value)
             {
-              if( fits_write_key(fptr, tmp->datatype, tmp->keyname,
-                                 tmp->value, tmp->comment, &status) )
+              if( fits_write_key(fptr, gal_fits_type_to_datatype(tmp->type),
+                                 tmp->keyname, tmp->value, tmp->comment,
+                                 &status) )
                 gal_fits_io_error(status, NULL);
             }
           else
@@ -134,8 +135,8 @@ writeupdatekeys(fitsfile *fptr, struct gal_fits_key_ll **keylist,
         gal_fits_io_error(status, NULL);
 
       /* Free the value pointer if desired: */
-      if(tmp->kfree) free(tmp->keyname);
       if(tmp->vfree) free(tmp->value);
+      if(tmp->kfree) free(tmp->keyname);
       if(tmp->cfree) free(tmp->comment);
 
       /* Keep the pointer to the next keyword and free the allocated
@@ -194,7 +195,7 @@ header(struct headerparams *p)
               if(status) r=haserror(p, 1, tstll->v, status);
             }
         }
-      if(p->up.rename)
+      if(p->rename)
         {
           ttstll=p->renameto;
           for(tstll=p->renamefrom; tstll!=NULL; tstll=tstll->next)
@@ -230,6 +231,5 @@ header(struct headerparams *p)
           if(status) r=haserror(p, 4, "DATE", status);
         }
     }
-
   return r;
 }

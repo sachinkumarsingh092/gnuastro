@@ -159,7 +159,7 @@ imgwarp/homographic.sh: convolve/spatial.sh.log
 mknoise/addnoise.sh: imgwarp/imgwarp_scale.sh.log
 mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
 mkprof/inputascanvas.sh: mknoise/addnoise.sh.log
-header/write.sh: convolve/spatial.sh.log
+header/write.sh: mkprof/mosaic1.sh.log
 header/print.sh: header/write.sh.log
 header/update.sh: header/write.sh.log
 header/delete.sh: header/write.sh.log

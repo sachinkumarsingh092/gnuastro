@@ -5,7 +5,7 @@ Header is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,160 +23,135 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <gnuastro/linkedlist.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
 
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata";
-
-
-
-
-
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" print the header information in any astronomical data file"
-  "header. It can also manipulate (add, remove or modify) any of the "
-  "existing keywords in a data header. \n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Available letters for short options:
-
-   b e f g i j k l m n p s v x y z
-   A B C E F G I J L M O R T U W X Y Z
-
-   Number keys used: Nothing!
-
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
-static struct argp_option options[] =
+/* Array of acceptable options. */
+struct argp_option program_options[] =
   {
     {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
-    {
       "asis",
-      'a',
+      ARGS_OPTION_KEY_ASIS,
       "STR",
       0,
       "Write the argument string as is into the header.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->asis,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "delete",
-      'd',
+      ARGS_OPTION_KEY_DELETE,
       "STR",
       0,
       "Delete a keyword from the header.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->delete,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "rename",
-      'r',
+      ARGS_OPTION_KEY_RENAME,
       "STR",
       0,
       "Rename keyword, keeping value and comments.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->rename,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "update",
-      'u',
+      ARGS_OPTION_KEY_UPDATE,
       "STR",
       0,
       "Update a keyword value or comments.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->updatestr,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "write",
-      'w',
+      ARGS_OPTION_KEY_WRITE,
       "STR",
       0,
       "Write a keyword (with value, comments and units).",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->writestr,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "history",
-      'H',
+      ARGS_OPTION_KEY_HISTORY,
       "STR",
       0,
       "Add HISTORY keyword, any length is ok.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->history,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "comment",
-      'c',
+      ARGS_OPTION_KEY_COMMENT,
       "STR",
       0,
       "Add COMMENT keyword, any length is ok.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->comment,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "date",
-      't',
+      ARGS_OPTION_KEY_DATE,
       0,
       0,
       "Set the DATE keyword to the current time.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->date,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-    {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
     {
       "quitonerror",
-      'Q',
+      ARGS_OPTION_KEY_QUITONERROR,
       0,
       0,
       "Quit if there is an error on any action.",
-      -1
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->quitonerror,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
+
 
 
     {0}
@@ -186,126 +161,21 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Define the child argp structure. */
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
+
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
-  /* Save the arguments structure: */
-  struct headerparams *p = state->input;
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-
-    /* Input: */
-
-
-
-    /* Output: */
-    case 'a':
-      gal_linkedlist_add_to_stll(&p->asis, arg);
-      break;
-    case 'd':
-      gal_linkedlist_add_to_stll(&p->delete, arg);
-      break;
-    case 'r':
-      gal_linkedlist_add_to_stll(&p->up.rename, arg);
-      break;
-    case 'u':
-      gal_linkedlist_add_to_stll(&p->up.update, arg);
-      break;
-    case 'w':
-      gal_linkedlist_add_to_stll(&p->up.write, arg);
-      break;
-    case 'c':
-      p->comment=arg;
-      break;
-    case 'H':
-      p->history=arg;
-      break;
-    case 't':
-      p->date=1;
-      break;
-
-    /* Operating modes: */
-    case 'Q':
-      p->quitonerror=1;
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-
-      /* See what type of input value it is and put it in. */
-      if( gal_fits_name_is_fits(arg) )
-        {
-          if(p->up.inputname)
-            argp_error(state, "only one input image should be given");
-          else
-            p->up.inputname=arg;
-        }
-      else
-        argp_error(state, "%s is not a valid file type", arg);
-      break;
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input FITS image(s) provided");
-        }
-      break;
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

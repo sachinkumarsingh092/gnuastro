@@ -46,24 +46,24 @@ struct cosmiccalparams
   struct gal_options_common_params cp;  /* Common parameters.           */
 
   /* Input: */
-  double             redshift;  /* Redshift of interest.                */
-  double                   H0;  /* Current expansion rate (km/sec/Mpc). */
-  double              olambda;  /* Current cosmological constant dens.  */
-  double              omatter;  /* Current matter density.              */
-  double           oradiation;  /* Current radiation density.           */
-  double           solidangle;  /* Solid angle for volume (in stradian).*/
+  double              redshift; /* Redshift of interest.                */
+  double                    H0; /* Current expansion rate (km/sec/Mpc). */
+  double               olambda; /* Current cosmological constant dens.  */
+  double               omatter; /* Current matter density.              */
+  double            oradiation; /* Current radiation density.           */
+  double            solidangle; /* Solid angle for volume (in stradian).*/
 
   /* Output: */
-  int              onlyvolume;  /* Only print the volume in Mpc^3.      */
-  int          onlyabsmagconv;  /* Only print conversion to abs. mag.   */
+  unsigned char     onlyvolume; /* Only print the volume in Mpc^3.      */
+  unsigned char onlyabsmagconv; /* Only print conversion to abs. mag.   */
 
   /* Internal: */
-  double                    K;  /* Curvature constant.                  */
-  double                    c;  /* Speed of light.                      */
-  double                  H0s;  /* Current expansion rate (1/sec).      */
-  double                ocurv;  /* Curvature density today.             */
+  double                     K; /* Curvature constant.                  */
+  double                     c; /* Speed of light.                      */
+  double                   H0s; /* Current expansion rate (1/sec).      */
+  double                 ocurv; /* Curvature density today.             */
 
-  time_t              rawtime;  /* Starting time of the program.        */
+  time_t               rawtime; /* Starting time of the program.        */
 };
 
 #endif

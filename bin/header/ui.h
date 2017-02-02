@@ -5,7 +5,7 @@ Header is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -24,9 +24,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 void
-setparams(int argc, char *argv[], struct headerparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[],
+                           struct headerparams *p);
 
 void
-freeandreport(struct headerparams *p);
+ui_free_and_report(struct headerparams *p);
 
 #endif

@@ -36,19 +36,19 @@ int
 main (int argc, char *argv[])
 {
   int r;
-  struct headerparams p={{0}, {0}, 0};
+  struct headerparams p={{0}, 0};
 
   /* Get the starting time. */
   time(&p.rawtime);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   r=header(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p);
+  ui_free_and_report(&p);
 
   /* Return successfully.*/
   return r;

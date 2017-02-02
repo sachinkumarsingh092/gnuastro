@@ -5,7 +5,7 @@ Header is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -22,153 +22,167 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <stdio.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <fitsio.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/linkedlist.h>
 
-#include <nproc.h>               /* From Gnulib.                   */
-#include <timing.h>              /* Includes time.h and sys/time.h */
+#include <options.h>
 #include <checkset.h>
-#include <commonargs.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
-
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct headerparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" print the header "
+  "information in any astronomical data file header. It can also "
+  "manipulate (add, remove or modify) any of the existing keywords in "
+  "a data header. \n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+
+/* Available letters for short options:
+
+   a b d e f g j k l m n p r s t u v w x y z
+   A B C E F G H J L M O Q R T U W X Y Z  */
+enum option_keys_enum
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  /*struct uiparams *up=&p->up;*/
-  struct gal_commonparams *cp=&p->cp;
-  char key='a';        /* Not used, just a place holder. */
-
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  /* With short-option version. */
+  ARGS_OPTION_KEY_ASIS        = 'a',
+  ARGS_OPTION_KEY_DELETE      = 'd',
+  ARGS_OPTION_KEY_RENAME      = 'r',
+  ARGS_OPTION_KEY_UPDATE      = 'u',
+  ARGS_OPTION_KEY_WRITE       = 'w',
+  ARGS_OPTION_KEY_COMMENT     = 'c',
+  ARGS_OPTION_KEY_HISTORY     = 'h',
+  ARGS_OPTION_KEY_DATE        = 't',
+  ARGS_OPTION_KEY_QUITONERROR = 'Q',
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
 
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct headerparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct headerparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
     {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
 
-
-
-
-      /* Inputs: */
-      if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
-
-
-
-      /* Outputs */
-
-
-
-
-      /* Operating modes: */
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      /* Only FITS files are acceptable. */
+      if( gal_fits_name_is_fits(arg) )
+        {
+          if(p->filename)
+            argp_error(state, "only one input file should be given");
+          else
+            p->filename=arg;
+        }
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
+        argp_error(state, "%s is not a recognized FITS file", arg);
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
     }
 
-  free(line);
-  fclose(fp);
-}
-
-
-
-
-
-void
-printvalues(FILE *fp, struct headerparams *p)
-{
-  /*struct uiparams *up=&p->up;*/
-  struct gal_commonparams *cp=&p->cp;
-
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input image:\n");
-  if(cp->hduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating mode:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-}
-
-
-
-
-
-
-/* Note that numthreads will be used automatically based on the
-   configure time. */
-void
-checkifset(struct headerparams *p)
-{
-  /*struct uiparams *up=&p->up;*/
-  struct gal_commonparams *cp=&p->cp;
-
-  int intro=0;
-  if(cp->hduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
+  return 0;
 }
 
 
@@ -193,14 +207,40 @@ checkifset(struct headerparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-void
-sanitycheck(struct headerparams *p)
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct headerparams *p)
 {
-  if(p->delete || p->up.update || p->up.write || p->asis || p->comment
-     || p->history || p->date || p->up.rename)
+  /* See if the user just wants to view the header or actually do
+     something. */
+  if(p->delete || p->updatestr || p->writestr || p->asis || p->comment
+     || p->history || p->date || p->rename)
     p->onlyview=0;
   else
     p->onlyview=1;
+}
+
+
+
+
+
+static void
+ui_check_options_and_arguments(struct headerparams *p)
+{
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
+  if(p->filename)
+    {
+      if( gal_fits_name_is_fits(p->filename) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "%s: no HDU specified. A FITS file can "
+              "contain, multiple HDUs. You can use the `--hdu' (`-h') "
+              "option and give it the HDU number (starting from zero), "
+              "extension name, or anything acceptable by CFITSIO",
+              p->filename);
+    }
+  else
+    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -221,16 +261,17 @@ sanitycheck(struct headerparams *p)
 
 
 
+
 /**************************************************************/
-/***************       Preparations         *******************/
+/*****************       Preparations      ********************/
 /**************************************************************/
-void
-setuprename(struct headerparams *p)
+static void
+ui_setup_rename(struct headerparams *p)
 {
   char *c;
   struct gal_linkedlist_stll *tmp;
 
-  for(tmp=p->up.rename; tmp!=NULL; tmp=tmp->next)
+  for(tmp=p->rename; tmp!=NULL; tmp=tmp->next)
     {
       /* `c' is created in case of an error, so the input value can be
          reported. */
@@ -240,8 +281,8 @@ setuprename(struct headerparams *p)
       strcpy(c, tmp->v);
 
       /* Tokenize the input. */
-      gal_linkedlist_add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
-      gal_linkedlist_add_to_stll(&p->renameto, strtok(NULL, ", "));
+      gal_linkedlist_add_to_stll(&p->renamefrom, strtok(tmp->v, ", "), 1);
+      gal_linkedlist_add_to_stll(&p->renameto, strtok(NULL, ", "), 1);
       if(p->renamefrom->v==NULL || p->renameto->v==NULL)
         error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
               "complete rename. There should be a space character "
@@ -266,16 +307,16 @@ setuprename(struct headerparams *p)
 
 
 
-void
-fillfitsheaderll(struct gal_linkedlist_stll *input,
-                 struct gal_fits_key_ll **output)
+static void
+ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
+                      struct gal_fits_key_ll **output)
 {
   long l, *lp;
   void *fvalue;
   double d, *dp;
-  struct gal_linkedlist_stll *tmp;
-  int i=0, datatype, vfree;
+  int i=0, type, vfree;
   char *c, *cf, *start, *tailptr;
+  struct gal_linkedlist_stll *tmp;
   char *original, *keyname, *value, *comment, *unit;
 
   for(tmp=input; tmp!=NULL; tmp=tmp->next)
@@ -342,13 +383,13 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
       printf("\n\n-%s-\n-%s-\n-%s-\n-%s-\n", keyname, value, comment, unit);
       */
 
-      /* Find the datatype of the value: */
+      /* Find the of the value: */
       errno=0;
       l=strtol(value, &tailptr, 10);
       if(*tailptr=='\0' && errno==0)
         {
           vfree=1;
-          datatype=TLONG;
+          type=GAL_DATA_TYPE_LONG;
           errno=0;
           fvalue=lp=malloc(sizeof *lp);
           if(lp==NULL)
@@ -363,7 +404,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
           if(*tailptr=='\0' && errno==0)
             {
               vfree=1;
-              datatype=TDOUBLE;
+              type=GAL_DATA_TYPE_DOUBLE;
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)
@@ -372,11 +413,11 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
               *dp=d;
             }
           else
-            { fvalue=value; datatype=TSTRING; vfree=0; }
+            { fvalue=value; type=GAL_DATA_TYPE_STRING; vfree=0; }
         }
 
 
-      gal_fits_add_to_key_ll(output, datatype, keyname, 0,
+      gal_fits_add_to_key_ll(output, type, keyname, 0,
                              fvalue, vfree, comment, 0, unit);
       free(original);
     }
@@ -386,40 +427,29 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
 
 
 
-void
-preparearrays(struct headerparams *p)
+static void
+ui_preparations(struct headerparams *p)
 {
-  size_t len;
   char *ffname;
   int status=0, iomode;
 
   /* Add hdu to filename: */
-  errno=0;
-  len=strlen(p->up.inputname)+strlen(p->cp.hdu)+4;
-  ffname=malloc(len*sizeof *ffname);
-  if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%zu characters", len);
-  sprintf(ffname, "%s[%s#]", p->up.inputname, p->cp.hdu);
+  asprintf(&ffname, "%s[%s#]", p->filename, p->cp.hdu);
 
   /* Open the FITS file: */
-  if(p->onlyview)
-    iomode=READONLY;
-  else
-    iomode=READWRITE;
+  iomode = p->onlyview ? READONLY : READWRITE;
   if( fits_open_file(&p->fptr, ffname, iomode, &status) )
     gal_fits_io_error(status, "reading file");
   free(ffname);
 
   /* Separate the comma-separated values:  */
-  if(p->up.rename)
-    setuprename(p);
-  if(p->up.update)
-    fillfitsheaderll(p->up.update, &p->update);
-  if(p->up.write)
-    fillfitsheaderll(p->up.write, &p->write);
-
+  if(p->rename)
+    ui_setup_rename(p);
+  if(p->updatestr)
+    ui_fill_fits_headerll(p->updatestr, &p->update);
+  if(p->writestr)
+    ui_fill_fits_headerll(p->writestr, &p->write);
 }
-
 
 
 
@@ -441,38 +471,56 @@ preparearrays(struct headerparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
 void
-setparams(int argc, char *argv[], struct headerparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct headerparams *p)
 {
-  struct gal_commonparams *cp=&p->cp;
+  struct gal_options_common_params *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  /* Read the arguments. */
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Do a sanity check. */
-  sanitycheck(p);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
-  /* Make the array of input images. */
-  preparearrays(p);
+
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
+
+
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
+  ui_check_options_and_arguments(p);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
 }
 
 
@@ -498,7 +546,7 @@ setparams(int argc, char *argv[], struct headerparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct headerparams *p)
+ui_free_and_report(struct headerparams *p)
 {
   int status=0;
 
