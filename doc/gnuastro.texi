@@ -665,7 +665,7 @@ $ cd TOPGNUASTRO
 $ tar xf gnuastro-latest.tar.gz    # This works on `.tar.lz' too.
 $ cd gnuastro-X.X                  # Replace X.X with version number.
 $ ./configure
-$ make
+$ make -j8                         # Replace 8 with no. CPU threads.
 $ make check
 $ sudo make install
 @end example
@@ -2341,9 +2341,9 @@ run the following commands after you have downloaded
 
 @example
 $ tar xf gsl-latest.tar.gz
-$ cd gsl-X.X                     # Replace X.X with version number
+$ cd gsl-X.X                     # Replace X.X with version number.
 $ ./configure
-$ make
+$ make -j8                       # Replace 8 with no. CPU threads.
 $ make check
 $ sudo make install
 @end example
@@ -2406,7 +2406,7 @@ you have downloaded
 $ tar xf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
-$ make
+$ make -j8                         # Replace 8 with no. CPU threads.
 $ make utils
 $ ./testprog > testprog.lis
 $ diff testprog.lis testprog.out    # Should have no output
@@ -2451,7 +2451,7 @@ downloaded @url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
 $ tar xf wcslib.tar.bz2
 $ cd wcslib-X.X                    # Replace X.X with version number
 $ ./configure --without-pgplot LIBS="-pthread -lm"
-$ make
+$ make -j8                         # Replace 8 with no. CPU threads.
 $ make check
 $ sudo make install
 @end example
