@@ -23,53 +23,47 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-
-
+/* Include necessary headers */
+#include <gnuastro/data.h>
 #include <gnuastro/mesh.h>
-#include <gnuastro/threads.h>
 
-#include <commonparams.h>
+#include <options.h>
 
-
-
-/* Progarm name macros: */
-#define SPACK           "astconvolve" /* Subpackage executable name. */
-#define SPACK_NAME      "Convolve" /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+/* Program names.  */
+#define PROGRAM_NAME "Convolve"      /* Program full name.       */
+#define PROGRAM_EXEC "astconvolve"   /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
+
+
+/* Macros */
 #define CONVFLOATINGPOINTERR 1e-10
-#define COMPLEXTOREALSPEC    1  /* Spectrum of complex number.  */
-#define COMPLEXTOREALPHASE   2  /* Phase of the complex number. */
-#define COMPLEXTOREALREAL    3  /* Only show the real part.     */
 
 
 
-/* User interface parameters structure */
-struct uiparams
+
+
+/* Enumerators */
+enum complex_to_real
 {
-  char        *inputname;   /* Name of input file.           */
-  char         *maskname;   /* Mask file name.               */
-  char             *mhdu;   /* HDU of mask image.            */
-  char       *kernelname;   /* Name of kernel file.          */
-  char             *khdu;   /* HDU of input Kernel.          */
-  char    *freqstepsname;   /* Name of frequency steps file. */
+  COMPLEX_TO_REAL_INVALID,           /* ==0 by C standard. */
 
-  int         spatialset;
-  int       frequencyset;
-  int        masknameset;
-  int            mhduset;
-  int      kernelnameset;
-  int            khduset;
-  int    minsharpspecset;
-  int        meshsizeset;
-  int            nch1set;
-  int            nch2set;
-  int    lastmeshfracset;
-  int fullconvolutionset;
-  int      makekernelset;
+  COMPLEX_TO_REAL_SPEC,
+  COMPLEX_TO_REAL_PHASE,
+  COMPLEX_TO_REAL_REAL,
 };
+
+
+enum domain_codes
+{
+  CONVOLVE_DOMAIN_INVALID,           /* ==0 by C standard. */
+
+  CONVOLVE_DOMAIN_SPATIAL,
+  CONVOLVE_DOMAIN_FREQUENCY,
+};
+
 
 
 
@@ -77,39 +71,38 @@ struct uiparams
 /* Processing parameters structure */
 struct convolveparams
 {
-  struct uiparams     up;   /* user interface structure.                */
-  struct gal_commonparams cp; /* gal_commonparams structure.            */
-  struct gal_mesh_params mp; /* gal_mesh_params structure.              */
+  /* From command-line */
+  struct gal_options_common_params cp; /* Common parameters.             */
+  struct gal_mesh_params  mp;  /* gal_mesh_params structure.             */
+  char             *filename;  /* Name of input file.                    */
+  char           *kernelname;  /* File name of kernel.                   */
+  char                 *khdu;  /* HDU of kernel.                         */
+  unsigned char nokernelflip;  /* Do not flip the kernel.                */
+  unsigned char nokernelnorm;  /* Do not normalize the kernel.           */
+  double        minsharpspec;  /* Deconvolution: min spect. of sharp img.*/
+  unsigned char checkfreqsteps; /* View the frequency domain steps.      */
+  unsigned char    checkmesh;  /* View the mesh structure.               */
+  char            *domainstr;  /* String value specifying domain.        */
+  unsigned char   makekernel;  /* ==1: Make a kernel to create input.    */
 
-  /* Inputs: */
-  int         makekernel;   /* ==1: Make a kernel to create input.      */
-  float           *input;   /* Input image array.                       */
-  float          *kernel;   /* Input Kernel array.                      */
-  int           anyblank;   /* If there are blank pixels in input.      */
-  size_t             is0;   /* Input image size along C's first axis.   */
-  size_t             is1;   /* Input image size along C's second axis.  */
-  size_t             ks0;   /* Kernel size along C's first axis.        */
-  size_t             ks1;   /* Kernel size along C's second axis.       */
-  double    minsharpspec;   /* Deconvolution: min spectrum of sharp img.*/
-  int         kernelflip;   /* ==1: Flip the kernel.                    */
-  int         kernelnorm;   /* ==1: Normalize the kernel.               */
-  int               nwcs;   /* Number of WCS headers.                   */
-  struct wcsprm     *wcs;   /* WCS structure.                           */
-
-  /* Outputs: */
-  char         *meshname;   /* Name of mesh structure output.           */
-
-  /* Operating modes: */
-  int            spatial;   /* Convolve using spatial domain.           */
-  int          frequency;   /* Convolve using frequency domain.         */
-  int      viewfreqsteps;   /* View the frequency domain steps.         */
-
-  /* internal: */
-  time_t         rawtime;   /* Starting time of the program.            */
-  double           *pimg;   /* Padded image array.                      */
-  double           *pker;   /* Padded kernel array.                     */
-  size_t             ps0;   /* Padded size along first C axis.          */
-  size_t             ps1;   /* Padded size along second C axis.         */
+  /* Internal */
+  int                 domain;  /* Frequency or spatial domain conv.      */
+  float               *input;  /* Input image array.                     */
+  float              *kernel;  /* Input Kernel array.                    */
+  time_t             rawtime;  /* Starting time of the program.          */
+  double               *pimg;  /* Padded image array.                    */
+  double               *pker;  /* Padded kernel array.                   */
+  size_t                 ps0;  /* Padded size along first C axis.        */
+  size_t                 ps1;  /* Padded size along second C axis.       */
+  size_t                 is0;  /* Input image size along C's first axis. */
+  size_t                 is1;  /* Input image size along C's second axis.*/
+  size_t                 ks0;  /* Kernel size along C's first axis.      */
+  size_t                 ks1;  /* Kernel size along C's second axis.     */
+  int                   nwcs;  /* Number of WCS headers.                 */
+  struct wcsprm         *wcs;  /* WCS structure.                         */
+  char                 *unit;  /* The unit string from the input.        */
+  char        *freqstepsname;  /* Name of file to check frequency steps. */
+  char             *meshname;  /* Name of file to check mesh tiles.      */
 };
 
 #endif

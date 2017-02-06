@@ -64,13 +64,13 @@ complextoreal(double *c, size_t size, int action, double **output)
   of=(o=out)+size;
   switch(action)
     {
-    case COMPLEXTOREALSPEC:
+    case COMPLEX_TO_REAL_SPEC:
       do { *o++ = sqrt( *c**c + *(c+1)**(c+1) ); c+=2; } while(o<of);
       break;
-    case COMPLEXTOREALPHASE:
+    case COMPLEX_TO_REAL_PHASE:
       do { *o++ = atan2( *(c+1), *c );           c+=2; } while(o<of);
       break;
-    case COMPLEXTOREALREAL:
+    case COMPLEX_TO_REAL_REAL:
       do { *o++ = *c;                            c+=2; } while(o<of);
       break;
     default:
@@ -370,7 +370,7 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
           "even number", PACKAGE_BUGREPORT);
 
   /* First convert the complex image to a real image: */
-  complextoreal(p->pimg, ps0*ps1, COMPLEXTOREALSPEC, &s);
+  complextoreal(p->pimg, ps0*ps1, COMPLEX_TO_REAL_SPEC, &s);
 
   /* Allocate the array to keep the new values */
   errno=0;
@@ -628,28 +628,37 @@ void
 frequencyconvolve(struct convolveparams *p)
 {
   double *tmp;
+  size_t dsize[2];
   struct timeval t1;
-  int verb=p->cp.verb;
+  gal_data_t *data=NULL;
   struct fftonthreadparams *fp;
-  char *operation = p->makekernel ? "Divided" : "Multiplied";
 
 
   /* Make the padded arrays. */
-  if(verb) gettimeofday(&t1, NULL);
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   makepaddedcomplex(p);
-  if(verb) gal_timing_report(&t1, "Input and Kernel images padded.", 1);
-  if(p->viewfreqsteps)
+  if(!p->cp.quiet)
+    gal_timing_report(&t1, "Input and Kernel images padded.", 1);
+  if(p->checkfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      gal_fits_array_to_file(p->up.freqstepsname, "Input padded",
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
-      complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      gal_fits_array_to_file(p->up.freqstepsname, "Kernel padded",
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
+      /* Prepare the data structure for viewing the steps, note that we
+         don't need the array that is initially made. */
+      dsize[0]=p->ps0; dsize[1]=p->ps1;
+      data=gal_data_alloc(NULL, GAL_DATA_TYPE_DOUBLE, 2, dsize, NULL, 0,
+                          p->cp.minmapsize, NULL, NULL, NULL);
+      free(data->array);
+
+      /* Save the padded input image. */
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
+      data->array=tmp; data->name="input padded";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      free(tmp); data->name=NULL;
+
+      /* Save the padded kernel image. */
+      complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
+      data->array=tmp; data->name="kernel padded";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      free(tmp); data->name=NULL;
     }
 
 
@@ -658,73 +667,73 @@ frequencyconvolve(struct convolveparams *p)
 
 
   /* Forward 2D FFT on each image. */
-  if(verb) gettimeofday(&t1, NULL);
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, 1);
-  if(verb)
+  if(!p->cp.quiet)
     gal_timing_report(&t1, "Images converted to frequency domain.", 1);
-  if(p->viewfreqsteps)
+  if(p->checkfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fits_array_to_file(p->up.freqstepsname, "Input transform",
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
-      complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fits_array_to_file(p->up.freqstepsname, "Kernel transform",
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
+      data->array=tmp; data->name="input transformed";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      free(tmp); data->name=NULL;
+
+      complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
+      data->array=tmp; data->name="kernel transformed";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      free(tmp); data->name=NULL;
     }
 
   /* Multiply or divide the two arrays and save them in the output.*/
-  if(verb) gettimeofday(&t1, NULL);
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   if(p->makekernel)
     {
       complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1, p->minsharpspec);
-      if(verb)
+      if(!p->cp.quiet)
         gal_timing_report(&t1, "Divided in the frequency domain.", 1);
     }
   else
     {
       complexarraymultiply(p->pimg, p->pker, p->ps0*p->ps1);
-      if(verb)
+      if(!p->cp.quiet)
         gal_timing_report(&t1, "Multiplied in the frequency domain.", 1);
     }
-  if(p->viewfreqsteps)
+  if(p->checkfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fits_array_to_file(p->up.freqstepsname, operation,
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
+      data->array=tmp; data->name=p->makekernel ? "Divided" : "Multiplied";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      free(tmp); data->name=NULL;
     }
 
   /* Forward (in practice inverse) 2D FFT on each image. */
-  if(verb) gettimeofday(&t1, NULL);
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, -1);
-  if(p->makekernel) correctdeconvolve(p, &tmp);
-  else complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-  if(verb)
+  if(p->makekernel)
+    correctdeconvolve(p, &tmp);
+  else
+    complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
+  if(!p->cp.quiet)
     gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
-  if(p->viewfreqsteps)
+  if(p->checkfreqsteps)
     {
-      gal_fits_array_to_file(p->up.freqstepsname, "Spatial",
-                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                             NULL, NULL, SPACK_STRING);
-      free(tmp);
+      data->array=tmp; data->name="padded output";
+      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      data->name=NULL;
     }
 
   /* Free the padded arrays (they are no longer needed) and put the
      converted array (that is real, not complex) in p->pimg. */
+  gal_data_free(data);
   free(p->pimg);
   free(p->pker);
   p->pimg=tmp;
 
   /* Crop out the center, numbers smaller than 10^{-17} are errors,
      remove them. */
-  if(verb) gettimeofday(&t1, NULL);
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   removepaddingcorrectroundoff(p);
-  if(verb) gal_timing_report(&t1, "Padded parts removed.", 1);
+  if(!p->cp.quiet) gal_timing_report(&t1, "Padded parts removed.", 1);
 
 
   /* Free all the allocated space. */
@@ -757,10 +766,12 @@ convolve(struct convolveparams *p)
 {
   float *convolved;
   long *meshindexs;
+  gal_data_t *data;
   struct gal_mesh_params *mp=&p->mp;
+  size_t ndim=2, dsize[]={p->is0, p->is1};
 
   /* Do the convolution. */
-  if(p->spatial)
+  if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure: */
       mp->img=p->input;      mp->s0=p->is0;      mp->s1=p->is1;
@@ -769,15 +780,23 @@ convolve(struct convolveparams *p)
       gal_mesh_make_mesh(mp);
       if(p->meshname)
         {
+          /* Allocate the `gal_data_t' with the input imag. */
           gal_mesh_check_mesh_id(mp, &meshindexs);
-          gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
-                                 p->mp.img, mp->s0, mp->s1,
-                                 p->anyblank, p->wcs, NULL,
-                                          SPACK_STRING);
-          gal_fits_array_to_file(p->meshname, "MeshIndexs", LONG_IMG,
-                                 meshindexs, mp->s0, mp->s1, 0, p->wcs,
-                                 NULL, SPACK_STRING);
+          data=gal_data_alloc(p->mp.img, GAL_DATA_TYPE_FLOAT, ndim, dsize,
+                              p->wcs, 0, p->cp.minmapsize, NULL, NULL, NULL);
+          data->name="Input";
+          gal_fits_write_img(data, p->meshname, NULL, PROGRAM_STRING);
+
+          /* Change the array, type, and name. */
+          data->array=meshindexs;
+          data->type=GAL_DATA_TYPE_LONG;
+          data->name="Mesh indexs";
+          gal_fits_write_img(data, p->meshname, NULL, PROGRAM_STRING);
+
+          /* Clean up. */
+          data->name=NULL;
           free(meshindexs);
+          gal_data_free(data);
         }
 
       /* Do the spatial convolution on the mesh: */
@@ -790,9 +809,15 @@ convolve(struct convolveparams *p)
   else
     frequencyconvolve(p);
 
-  /* Save the output (which is in p->input) array. Note that p->input
-     will be freed in ui.c. */
-  gal_fits_array_to_file(p->cp.output, "Convolved", FLOAT_IMG,
-                         p->input, p->is0, p->is1, p->anyblank, p->wcs,
-                         NULL, SPACK_STRING);
+  /* Save the output (which is in p->input) array and clean up. Note that
+     we will rely on `gal_data_free' to free some of the things that we
+     don't need any more. */
+  data=gal_data_alloc(p->input, GAL_DATA_TYPE_FLOAT, ndim, dsize,
+                      NULL, 0, p->cp.minmapsize, NULL, NULL, NULL);
+  data->wcs=p->wcs;
+  data->unit=p->unit;
+  data->name="Convolved";
+  gal_fits_write_img(data, p->cp.output, NULL, PROGRAM_STRING);
+  data->name=NULL;
+  gal_data_free(data);
 }

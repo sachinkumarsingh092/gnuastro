@@ -22,316 +22,194 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <time.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
-#include <stdlib.h>
-
-#include <nproc.h>               /* From Gnulib.                   */
+#include <string.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
-#include <gnuastro/statistics.h>
+#include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
-#include <timing.h>              /* Includes time.h and sys/time.h */
+#include <timing.h>
+#include <options.h>
 #include <checkset.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h.                  */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct convolveparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
+  "information, select columns, or convert tables. The inputs and outputs "
+  "can be plain text (with whitespace or comma as delimiters), FITS ascii, "
+  "or FITS binary tables. The output columns can either be selected by "
+  "number (counting from 1), name or using regular expressions. For regular "
+  "expressions, enclose the value to the `--column' (`-c') option in "
+  "slashes (`\\', as in `-c\\^mag\\'). To print the selected columns on the "
+  "command-line, don't specify an output file.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  int zeroorone, spatialset=0, frequencyset=0;
-  char key='a';        /* Not used, just a place holder. */
-
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  ARGS_GROUP_MESH_GRID = GAL_OPTIONS_GROUP_AFTER_COMMON,
+};
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
 
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
+
+/* Available letters for short options:
+
+   e f g i j l n r p t u v w x y z
+   A B E F G H I J M O Q R T W X Y Z  */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_KERNEL         = 'k',
+  ARGS_OPTION_KEY_KHDU           = 'U',
+  ARGS_OPTION_KEY_MINSHARPSPEC   = 'c',
+  ARGS_OPTION_KEY_CHECKFREQSTEPS = 'C',
+  ARGS_OPTION_KEY_MESHSIZE       = 'c',
+  ARGS_OPTION_KEY_NCH1           = 'a',
+  ARGS_OPTION_KEY_NCH2           = 'b',
+  ARGS_OPTION_KEY_LASTMESHFRAC   = 'L',
+  ARGS_OPTION_KEY_DOMAIN         = 'd',
+  ARGS_OPTION_KEY_MAKEKERNEL     = 'm',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+  ARGS_OPTION_KEY_NOKERNELFLIP = 1000,
+  ARGS_OPTION_KEY_NOKERNELNORM,
+  ARGS_OPTION_KEY_CHECKMESH,
+  ARGS_OPTION_KEY_FULLCONVOLUTION,
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct convolveparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+  cp->numthreads         = gal_threads_number();
+
+
+  /* Set the mandatory common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_HDU:
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+      }
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct convolveparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
     {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
 
-
-
-      /* Inputs: */
-      if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
-      else if (strcmp(name, "mask")==0)
-        gal_checkset_allocate_copy_set(value, &up->maskname,
-                                       &up->masknameset);
-      else if (strcmp(name, "mhdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
-      else if (strcmp(name, "kernel")==0)
-        gal_checkset_allocate_copy_set(value, &up->kernelname,
-                                       &up->kernelnameset);
-      else if (strcmp(name, "khdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->khdu, &up->khduset);
-      else if(strcmp(name, "minsharpspec")==0)
-        {
-          if(up->minsharpspecset) continue;
-          gal_checkset_double_l_0_s_1(value, &p->minsharpspec, "minsharpspec",
-                                     key, SPACK, filename, lineno);
-          up->minsharpspecset=1;
-        }
-
-
-      /* Outputs: */
-      else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output,
-                                       &cp->outputset);
-
-
-
-
-      /* Mesh grid: */
-      else if(strcmp(name, "meshsize")==0)
-        {
-          if(up->meshsizeset) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key,
-                                    SPACK, filename, lineno);
-          up->meshsizeset=1;
-        }
-      else if(strcmp(name, "nch1")==0)
-        {
-          if(up->nch1set) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
-                                    filename, lineno);
-          up->nch1set=1;
-        }
-      else if(strcmp(name, "nch2")==0)
-        {
-          if(up->nch2set) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
-                                    filename, lineno);
-          up->nch2set=1;
-        }
-      else if(strcmp(name, "lastmeshfrac")==0)
-        {
-          if(up->lastmeshfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name,
-                                     key, SPACK, filename, lineno);
-          up->lastmeshfracset=1;
-        }
-      else if(strcmp(name, "fullconvolution")==0)
-        {
-          if(up->fullconvolutionset) continue;
-          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name,
-                                       key, SPACK, filename, lineno);
-          up->fullconvolutionset=1;
-        }
-
-
-
-      /* Operating modes: */
-      else if(strcmp(name, "spatial")==0)
-        {
-          gal_checkset_int_zero_or_one(value, &zeroorone, name, key,
-                                       SPACK, filename, lineno);
-          if(zeroorone)
-            {
-              spatialset=1;
-              if(frequencyset)
-                error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                              "Spatial and frequency modes cannot be called "
-                              "together. It is ambiguous.");
-              if(up->spatialset==0)
-                {
-                  p->spatial=1;
-                  p->frequency=0;
-                  up->spatialset=up->frequencyset=1;
-                }
-            }
-        }
-      else if(strcmp(name, "frequency")==0)
-        {
-          gal_checkset_int_zero_or_one(value, &zeroorone, name, key,
-                                       SPACK, filename, lineno);
-          if(zeroorone)
-            {
-              frequencyset=1;
-              if(spatialset)
-                error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                              "Spatial and frequency modes cannot be "
-                              "called together. It is ambiguous.");
-              if(up->frequencyset==0)
-                {
-                  p->spatial=0;
-                  p->frequency=1;
-                  up->spatialset=up->frequencyset=1;
-                }
-            }
-        }
-      else if(strcmp(name, "makekernel")==0)
-        {
-          if(up->makekernelset) continue;
-          gal_checkset_int_el_zero(value, &p->makekernel, name, key,
-                                   SPACK, filename, lineno);
-          up->makekernelset=1;
-        }
-
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      if(p->filename)
+        argp_error(state, "only one argument (input file) should be given");
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
+        p->filename=arg;
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
     }
 
-  free(line);
-  fclose(fp);
+  return 0;
 }
 
-
-
-
-
-
-void
-printvalues(FILE *fp, struct convolveparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_mesh_params *mp=&p->mp;
-  struct gal_commonparams *cp=&p->cp;
-
-  fprintf(fp, "\n# Input:\n");
-  if(cp->hduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
-  if(up->masknameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
-  if(up->mhduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
-  if(up->kernelnameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("kernel", up->kernelname);
-  if(up->khduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("khdu", up->khdu);
-  if(up->minsharpspecset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "minsharpspec", p->minsharpspec);
-
-
-
-  fprintf(fp, "\n# Output:\n");
-  if(cp->outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
-
-
-  fprintf(fp, "\n# Mesh grid:\n");
-  if(up->meshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "meshsize", mp->meshsize);
-  if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch1", mp->nch1);
-  if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch2", mp->nch2);
-  if(up->lastmeshfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
-  if(up->fullconvolutionset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
-            mp->fullconvolution);
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating modes:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-  if(up->spatialset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "spatial", p->spatial);
-  if(up->frequencyset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "frequency", p->frequency);
-  if(up->makekernelset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "makekernel", p->makekernel);
-}
-
-
-
-
-
-void
-checkifset(struct convolveparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  int intro=0;
-
-
-  /* Input: */
-  if(cp->hduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-  if(up->kernelnameset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("kernel");
-  if(up->khduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
-  if(p->makekernel && up->minsharpspecset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("minsharpspec");
-
-
-  /* Mesh grid: */
-  if(up->meshsizeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("meshsize");
-  if(up->nch1set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
-  if(up->nch2set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
-  if(up->lastmeshfracset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
-  if(up->fullconvolutionset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
-
-
-  /* Operating mode: */
-  if(up->spatialset==0 && up->frequencyset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("spatial or frequency");
-  if(up->makekernelset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("makekernel");
-
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
-}
 
 
 
@@ -352,109 +230,137 @@ checkifset(struct convolveparams *p)
 
 
 /**************************************************************/
-/************         Prepare the arrays          *************/
+/***************       Sanity Check         *******************/
 /**************************************************************/
-void
-sanitycheck(struct convolveparams *p)
+static void
+ui_check_options_and_arguments(struct convolveparams *p)
 {
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
+  if(p->filename==NULL)
+    error(EXIT_FAILURE, 0, "no input file is specified");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Preparations         *******************/
+/**************************************************************/
+static void
+ui_read_domain(struct convolveparams *p)
+{
+  if( !strcmp("spatial", p->domainstr) )
+    p->domain=CONVOLVE_DOMAIN_SPATIAL;
+  else if( !strcmp("frequency", p->domainstr) )
+    p->domain=CONVOLVE_DOMAIN_FREQUENCY;
+  else
+    error(EXIT_FAILURE, 0, "domain value `%s' not recognized. Please use "
+          "either `spatial' or `frequency'", p->domainstr);
+}
+
+
+
+
+
+static void
+ui_read_kernel(struct convolveparams *p)
+{
+  double zero=0.0f;
+  gal_data_t *data;
+
+  /* Read the image into file. */
+  data=gal_fits_read_to_type(p->kernelname, p->khdu, GAL_DATA_TYPE_FLOAT,
+                             p->cp.minmapsize);
+
+  /* Put its values into the main program structure. */
+  p->ks0=data->dsize[0];
+  p->ks1=data->dsize[1];
+  p->kernel=data->array;
+
+  /* Convert all the NaN pixels to zero if the kernel contains blank
+     pixels. */
+  if(gal_data_has_blank(data))
+    gal_data_blank_to_value(data, &zero);
+
+  /* Clean up. Note that we need the array, so it must be set to NULL. */
+  data->array=NULL;
+  gal_data_free(data);
+}
+
+
+
+
+
+static void
+ui_preparations(struct convolveparams *p)
+{
+  double sum;
+  size_t i, size;
+  gal_data_t *data;
+  float *f, *ff, tmp;
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
 
-  /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.inputname);
 
-  /* Set maskname accordingly: */
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                                 &p->up.maskname, p->up.mhdu,
-                                 p->up.mhduset, "mask");
-
-  /* Check the output file name: */
-  if(p->cp.outputset)
-    {
-      if( gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete) == 0 )
-        error(EXIT_FAILURE, 0, "your output name (%s) is a directory",
-              p->cp.output);
-    }
-  else
-    {
-      gal_checkset_automatic_output(p->up.inputname, outsuffix,
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->cp.output);
-      p->cp.outputset=1;
-    }
-  if(p->frequency && p->viewfreqsteps)
-    gal_checkset_automatic_output(p->up.inputname, "_freqsteps.fits",
-                    p->cp.removedirinfo, p->cp.dontdelete,
-                    &p->up.freqstepsname);
-
-  /* Check output names: */
-  if(p->meshname)
-    {
-      p->meshname=NULL;           /* Was not allocated before!  */
-      gal_checkset_automatic_output(p->up.inputname, "_mesh.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->meshname);
-    }
-
-  /* makekernel can only operate in frequency mode: */
-  if(p->makekernel && p->spatial)
-    error(EXIT_FAILURE, 0, "`--makekernel' (`-m') can only be defined "
-          "in frequency domain operations, not spatial domain. You can "
-          "either explicitly call for frequency mode on the command line "
-          "or change your nearest configuration file so Convolve defaults "
-          "to the frequency domain. Please see the Gnuastro for more "
-          "information. On the command line, the manual can be seen with "
-          "the `info gnuastro' command");
-}
+  /* Read the domain */
+  ui_read_domain(p);
 
 
+  /* Set the output name if the user hasn't set it. */
+  if(p->cp.output==NULL)
+    p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
+                                               outsuffix);
+  if(p->checkfreqsteps)
+    p->freqstepsname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                   "_freqsteps.fits");
+  if(p->checkmesh)
+    p->meshname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                              "_mesh.fits");
 
 
+  /* Read the input image as a float array and its WCS info. */
+  data=gal_fits_read_to_type(p->filename, p->cp.hdu, GAL_DATA_TYPE_FLOAT,
+                             p->cp.minmapsize);
+  gal_fits_read_wcs(p->filename, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  p->unit=data->unit;
+  data->unit=NULL;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/************         Prepare the arrays          *************/
-/**************************************************************/
-void
-preparearrays(struct convolveparams *p)
-{
-  size_t i, size;
-  int bitpix, anyblank;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  float *f, *fp, tmp, *kernel, sum;
-
-  /* First read the input image: */
-  gal_fits_file_to_float(up->inputname, up->maskname, cp->hdu, up->mhdu,
-                              &p->input, &bitpix, &p->anyblank,
-                              &p->is0, &p->is1);
-  gal_fits_read_wcs(up->inputname, cp->hdu, 0, 0, &p->nwcs, &p->wcs);
-  if(p->frequency && p->anyblank)
+  /* See if there are any blank values. */
+  if(gal_data_has_blank(data) && p->domain==CONVOLVE_DOMAIN_FREQUENCY)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"
-            "There are blank (masked) pixels in %s (hdu: %s) and you "
-            "have asked for frequency domain convolution.%s All the "
-            "convolved pixels will become blank. Only spatial domain "
-            "convolution can account for blank (masked) pixels in the "
-            "input data.\n"
+            "There are blank pixels in `%s' (hdu: `%s') and you have asked "
+            "for frequency domain convolution. As a result, all the pixels "
+            "in `%s' will be blank. Only spatial domain convolution can "
+            "account for blank pixels in the input data. You can run %s "
+            "again with `--domain=spatial'\n"
             "----------------------------------------\n\n",
-            SPACK_NAME, up->inputname, cp->hdu, up->maskname ?
-            "" : " Even though you have not provided any mask image, "
-            "these are the blank pixels in the input image, see the `Blank "
-            "pixels' section of the Gnuastro manual for more information.");
+            PROGRAM_NAME, p->filename, p->cp.hdu, p->cp.output, PROGRAM_NAME);
+
+
+  /* Get all the information from `gal_data_t' then free it. */
+  p->is0=data->dsize[0];
+  p->is1=data->dsize[1];
+  p->input=data->array;
+  data->array=NULL;
+  gal_data_free(data);
 
 
   /* Read the file specified by --kernel. If makekernel is specified, then
@@ -463,76 +369,74 @@ preparearrays(struct convolveparams *p)
   if(p->makekernel)
     {
       /* Read in the kernel array: */
-      gal_fits_file_to_float(up->kernelname, NULL, up->khdu, NULL,
-                             &p->kernel, &bitpix, &anyblank,
-                             &p->ks0, &p->ks1);
+      ui_read_kernel(p);
+
+      /* Make sure the size of the kernel is the same as the input */
       if(p->ks0!=p->is0 || p->ks1!=p->is1)
         error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
-              "the input image and the image specified with the kernel "
-              "option should have the same size. The lower resolution "
-              "input image (%s) has %zux%zu pixels while the higher "
-              "resolution image (%s) specified with the kernel option has "
-              "%zux%zu pixels", up->inputname, p->is1, p->is0,
-              up->kernelname, p->ks1, p->ks0);
+              "the input image and the image specified with the `--kernel' "
+              "(`-k') option should have the same size. The lower resolution "
+              "input image (%s) has %zux%zu pixels while the sharper image "
+              "(%s) specified with the kernel option has %zux%zu pixels",
+              p->filename, p->is1, p->is0, p->kernelname, p->ks1, p->ks0);
 
       /* Divide both images by their sum so their lowest frequency
          becomes 1 (and their division would be meaningful!).*/
       size=p->is0*p->is1;
-      sum=gal_statistics_float_sum(p->input, size);
-      gal_array_fmultip_const(p->input, size, 1/sum);
-      sum=gal_statistics_float_sum(p->kernel, size);
-      gal_array_fmultip_const(p->kernel, size, 1/sum);
+      sum=0.0f; ff=(f=p->input)+size; do sum+=*f++; while(f<ff);
+      f=p->input; do *f++ /= sum; while(f<ff);
+      sum=0.0f; ff=(f=p->kernel)+size; do sum+=*f++; while(f<ff);
+      f=p->kernel; do *f++ /= sum; while(f<ff);
     }
 
   /* Read the kernel. If there is anything particular to Convolve, then
      don't use the standard kernel reading function in fits.c. Otherwise
      just use the same one that all programs use. The standard one is
      faster because it mixes the NaN conversion and also the normalization
-     into one loop.*/
+     into one loop. */
   else
     {
-      if(p->kernelnorm==0 || p->kernelflip==0)
+      if(p->nokernelnorm || p->nokernelflip)
         {
           /* Read in the kernel array: */
-          gal_fits_file_to_float(up->kernelname, NULL, up->khdu, NULL,
-                                      &p->kernel, &bitpix, &anyblank,
-                                      &p->ks0, &p->ks1);
+          ui_read_kernel(p);
           size=p->ks0*p->ks1;
-          kernel=p->kernel;
 
+          /* Check its size (must be odd). */
           if(p->ks0%2==0 || p->ks1%2==0)
             error(EXIT_FAILURE, 0, "the kernel image has to have an odd "
                   "number of pixels on both sides (there has to be on pixel "
                   "in the center). %s (hdu: %s) is %zu by %zu",
-                  p->up.kernelname, p->up.khdu, p->ks1, p->ks0);
-
-          /* Convert all the NaN pixels to zero if the kernel contains
-             blank pixels. */
-          if(anyblank)
-            { fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp); }
+                  p->kernelname, p->khdu, p->ks1, p->ks0);
 
           /* Normalize the kernel: */
-          if(p->kernelnorm)
+          if( !p->nokernelnorm )
             {
-              sum=gal_statistics_float_sum(kernel, size);
-              gal_array_fmultip_const(kernel, size, 1/sum);
+              sum=0.0f; ff=(f=p->kernel)+size; do sum+=*f++; while(f<ff);
+              f=p->kernel; do *f++ /= sum; while(f<ff);
             }
 
           /* Flip the kernel: */
-          if(p->spatial && p->kernelflip)
+          if( !p->nokernelflip )
             for(i=0;i<size/2;++i)
               {
-                tmp=kernel[i];
-                kernel[i]=kernel[size-i-1];
-                kernel[size-i-1]=tmp;
+                tmp = p->kernel[i];
+                p->kernel[i] = p->kernel[size-i-1];
+                p->kernel[size-i-1]=tmp;
               }
         }
       else
-        gal_fits_prep_float_kernel(up->kernelname, up->khdu, &p->kernel,
-                                        &p->ks0, &p->ks1);
+        {
+          data=gal_fits_read_float_kernel(p->kernelname, p->khdu,
+                                          p->cp.minmapsize);
+          p->ks0=data->dsize[0];
+          p->ks1=data->dsize[1];
+          p->kernel=data->array;
+          data->array=NULL;
+          gal_data_free(data);
+        }
     }
 }
-
 
 
 
@@ -555,54 +459,69 @@ preparearrays(struct convolveparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
-void
-setparams(int argc, char *argv[], struct convolveparams *p)
+static void
+ui_print_intro(struct convolveparams *p)
 {
-  struct gal_commonparams *cp=&p->cp;
+  printf("%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
+  printf("  - Using %zu CPU threads.\n", p->cp.numthreads);
+  printf("  - Input: %s (hdu: %s)\n", p->filename, p->cp.hdu);
+  printf("  - Kernel: %s (hdu: %s)\n", p->kernelname, p->khdu);
+}
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  /* Set non-zero options: */
-  p->kernelflip     = 1;
-  p->kernelnorm     = 1;
 
-  /* Read the arguments. */
+
+
+void
+ui_read_check_inputs_setup(int argc, char *argv[], struct convolveparams *p)
+{
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Do a sanity check, then remove the possibly existing log file
-     created by gal_txtarray_txt_to_array. */
-  sanitycheck(p);
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
 
-  /* Prepare the necessary arrays: */
-  preparearrays(p);
 
-  /* Everything is ready, notify the user of the program starting. */
-  if(cp->verb)
-    {
-      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %zu CPU threads.\n", p->cp.numthreads);
-      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
-      if(p->up.maskname)
-        printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
-      printf("  - Kernel: %s (hdu: %s)\n", p->up.kernelname, p->up.khdu);
-    }
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
+  ui_check_options_and_arguments(p);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
+
+
+  /* Everything is ready, print the intro if not in quiet mode. */
+  if(!p->cp.quiet)
+    ui_print_intro(p);
 }
 
 
@@ -628,22 +547,15 @@ setparams(int argc, char *argv[], struct convolveparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct convolveparams *p, struct timeval *t1)
+ui_free_report(struct convolveparams *p, struct timeval *t1)
 {
-  free(p->input);
+  /* Free the allocated arrays: */
+  free(p->khdu);
   free(p->kernel);
   free(p->cp.hdu);
-  free(p->up.khdu);
-  free(p->meshname);
   free(p->cp.output);
-  wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Free the mask image name. Note that p->up.inputname was not
-     allocated, but given to the program by the operating system. */
-  if(p->up.maskname && p->up.maskname!=p->up.inputname)
-    free(p->up.maskname);
 
   /* Print the final message. */
-  if(p->cp.verb)
-    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
+  if(!p->cp.quiet)
+    gal_timing_report(t1, PROGRAM_NAME" finished in: ", 0);
 }

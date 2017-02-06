@@ -49,4 +49,4 @@ if [ ! -f $execname ] || [ ! -f $img ] || [ ! -f $psf ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --kernel=$psf --spatial --output=convolve_spatial.fits
+$execname $img --kernel=$psf --domain=spatial --output=convolve_spatial.fits

@@ -36,20 +36,20 @@ int
 main(int argc, char *argv[])
 {
   struct timeval t1;
-  struct convolveparams p={{0}, {0}, {0}, 0};
+  struct convolveparams p={{0}, {0}, 0};
 
   /* Set the starting time.*/
   time(&p.rawtime);
   gettimeofday(&t1, NULL);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run Image Crop */
   convolve(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  ui_free_report(&p, &t1);
 
   /* Return successfully. */
   return EXIT_SUCCESS;

@@ -23,213 +23,230 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <commonargs.h>
-#include <fixedstringmacros.h>
-
-#include "ui.h"
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "InputFile";
 
 
 
 
 
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" will convolve an input image with a given spatial kernel "
-  "(image) in the spatial domain (no edge effects) or frequency domain. "
-  "The latter suffers from edge effects, but can be much faster.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Free letters for options:
-
-   d e g i j l n r t u w x y z
-   A B C E F G H I J O Q R T W X Y Z
-
-   Free numbers: >=504
-*/
-static struct argp_option options[] =
+/* Array of acceptable options. */
+struct argp_option program_options[] =
   {
-    {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
-    {
-      "mask",
-      'M',
-      "STR",
-      0,
-      "Mask image file name.",
-      1
-    },
-    {
-      "mhdu",
-      'H',
-      "STR",
-      0,
-      "Mask image header name.",
-      1
-    },
+    /* Inputs */
     {
       "kernel",
-      'k',
+      ARGS_OPTION_KEY_KERNEL,
       "STR",
       0,
-      "Name of kernel for convolution.",
-      1
+      "File name of kernel for convolution.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->kernelname,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "khdu",
-      'U',
+      ARGS_OPTION_KEY_KHDU,
       "STR",
       0,
-      "HDU of kernel file.",
-      1
+      "HDU containing the kernel.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->khdu,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "nokernelflip",
-      500,
+      ARGS_OPTION_KEY_NOKERNELFLIP,
       0,
       0,
       "Do not flip the kernel image.",
-      1
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->nokernelflip,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "nokernelnorm",
-      501,
+      ARGS_OPTION_KEY_NOKERNELNORM,
       0,
       0,
       "Do not normalize the kernel image.",
-      1
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->nokernelnorm,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "minsharpspec",
-      'c',
+      ARGS_OPTION_KEY_MINSHARPSPEC,
       "FLT",
       0,
       "Deconvolution: min spectrum of sharp img.",
-      1
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->minsharpspec,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-
-
+    /* Outputs */
     {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
-    {
-      "viewfreqsteps",
-      'v',
+      "checkfreqsteps",
+      ARGS_OPTION_KEY_CHECKFREQSTEPS,
       0,
       0,
       "View the steps in the frequency domain.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->checkfreqsteps,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
+
+
+    /* Mesh grid options. */
     {
       0, 0, 0, 0,
       "Mesh grid (only for spatial domain):",
-      3
+      ARGS_GROUP_MESH_GRID
     },
     {
       "meshsize",
-      's',
+      ARGS_OPTION_KEY_MESHSIZE,
       "INT",
       0,
       "Size of each mesh (tile) in the grid.",
-      3
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.meshsize,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "nch1",
-      'a',
+      ARGS_OPTION_KEY_NCH1,
       "INT",
       0,
       "Number of channels along first FITS axis.",
-      3
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.nch1,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "nch2",
-      'b',
+      ARGS_OPTION_KEY_NCH2,
       "INT",
       0,
       "Number of channels along second FITS axis.",
-      3
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.nch2,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "lastmeshfrac",
-      'L',
-      "INT",
+      ARGS_OPTION_KEY_LASTMESHFRAC,
+      "FLT",
       0,
       "Fraction of last mesh area to add new.",
-      3
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.lastmeshfrac,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "checkmesh",
-      503,
+      "lastmeshfrac",
+      ARGS_OPTION_KEY_LASTMESHFRAC,
+      "FLT",
       0,
-      0,
-      "Store mesh IDs in `_mesh.fits' file.",
-      3
+      "Fraction of last mesh area to add new.",
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.lastmeshfrac,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "fullconvolution",
-      502,
+      ARGS_OPTION_KEY_FULLCONVOLUTION,
       0,
       0,
-      "Ignore channels in imageconvolution.",
-      3
+      "Ignore channels in spatial convolution.",
+      ARGS_GROUP_MESH_GRID,
+      &p->mp.fullconvolution,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "checkmesh",
+      ARGS_OPTION_KEY_CHECKMESH,
+      0,
+      0,
+      "File created to view mesh structure",
+      ARGS_GROUP_MESH_GRID,
+      &p->checkmesh,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-
+    /* Operating mode. */
     {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
-    {
-      "spatial",
-      'p',
+      "domain",
+      ARGS_OPTION_KEY_DOMAIN,
+      "STR",
       0,
-      0,
-      "Spatial domain convolution.",
-      -1
-    },
-    {
-      "frequency",
-      'f',
-      0,
-      0,
-      "Frequency domain convolution.",
-      -1
+      "Convolution domain: `spatial', `frequency'.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->domainstr,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "makekernel",
-      'm',
-      "INT",
+      ARGS_OPTION_KEY_MAKEKERNEL,
+      0,
       0,
       "Make 2*INT kernel to create input image.",
-      -1
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->makekernel,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
+
 
     {0}
   };
@@ -238,190 +255,21 @@ static struct argp_option options[] =
 
 
 
+/* Define the child argp structure. */
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Save the arguments structure: */
-  struct convolveparams *p = state->input;
-
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-    /* Inputs: */
-    case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
-                                     &p->up.masknameset);
-      break;
-    case 'H':
-      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
-      break;
-    case 'k':
-      gal_checkset_allocate_copy_set(arg, &p->up.kernelname,
-                                     &p->up.kernelnameset);
-      break;
-    case 'U':
-      gal_checkset_allocate_copy_set(arg, &p->up.khdu, &p->up.khduset);
-      break;
-    case 500:
-      p->kernelflip=0;
-      break;
-    case 501:
-      p->kernelnorm=0;
-      break;
-    case 'c':
-      gal_checkset_double_l_0_s_1(arg, &p->minsharpspec, "minsharpspec",
-                                 key, SPACK, NULL, 0);
-      p->up.minsharpspecset=1;
-      break;
-
-
-    /* Output: */
-
-
-   /* Mesh grid: */
-    case 's':
-      gal_checkset_sizet_l_zero(arg, &p->mp.meshsize, "meshsize", key,
-                                SPACK, NULL, 0);
-      p->up.meshsizeset=1;
-      break;
-    case 'a':
-      gal_checkset_sizet_l_zero(arg, &p->mp.nch1, "nch1", key, SPACK,
-                                NULL, 0);
-      p->up.nch1set=1;
-      break;
-    case 'b':
-      gal_checkset_sizet_l_zero(arg, &p->mp.nch2, "nch2", key, SPACK,
-                                NULL, 0);
-      p->up.nch2set=1;
-      break;
-    case 'L':
-      gal_checkset_float_l_0_s_1(arg, &p->mp.lastmeshfrac, "lastmeshfrac",
-                                 key, SPACK, NULL, 0);
-      p->up.lastmeshfracset=1;
-      break;
-    case 503:
-      p->meshname="a";
-      break;
-    case 502:
-      p->mp.fullconvolution=1;
-      p->up.fullconvolutionset=1;
-      break;
-
-
-   /* Operating mode: */
-    case 'p':
-      if(p->up.frequencyset)
-        argp_error(state, "only one of spatial or frequency domain "
-                   "convolution modes may be chosen");
-      p->spatial=1;
-      p->frequency=0;
-      p->up.spatialset=p->up.frequencyset=1;
-      break;
-    case 'f':
-      if(p->up.spatialset)
-        argp_error(state, "only one of spatial or frequency domain "
-                   "convolution modes may be chosen");
-      p->spatial=0;
-      p->frequency=1;
-      p->up.spatialset=p->up.frequencyset=1;
-      break;
-    case 'v':
-      p->viewfreqsteps=1;
-      break;
-    case 'm':
-      gal_checkset_int_el_zero(arg, &p->makekernel, "makekernel", key,
-                               SPACK, NULL, 0);
-      p->up.makekernelset=1;
-      break;
-
-
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-      if(p->up.inputname)
-        argp_error(state, "only one input file (argument) is required");
-      p->up.inputname=arg;
-      break;
-
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input files provided");
-        }
-      break;
-
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

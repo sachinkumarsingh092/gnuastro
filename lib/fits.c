@@ -31,6 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <unistd.h>
 
+#include <gsl/gsl_version.h>
+
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
@@ -1034,13 +1036,17 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
   fits_update_key(fptr, TSTRING, "CFITSIO", cfitsioversion,
                   "CFITSIO version.", &status);
 
-  /* Write the WCSLIB version */
+  /* Write the WCSLIB version. */
 #ifdef GAL_CONFIG_HAVE_WCSLIB_VERSION
   wcslibversion_const=wcslib_version(wcslibvers);
   strcpy(wcslibversion, wcslibversion_const);
   fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
                   "WCSLIB version.", &status);
 #endif
+
+  /* Write the GSL version. */
+  fits_update_key(fptr, TSTRING, "GSL", GSL_VERSION,
+                  "GNU Scientific Library version.", &status);
 
   /* Write the Gnuastro version. */
   fits_update_key(fptr, TSTRING, "GNUASTRO", PACKAGE_VERSION,
@@ -1380,7 +1386,7 @@ gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
      number. If they are all an odd number, then the for each dimension,
      check will be incremented once. */
   for(i=0;i<kernel->ndim;++i)
-    check=kernel->dsize[i]%2;
+    check += kernel->dsize[i]%2;
   if(check!=kernel->ndim)
     error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
           "of pixels in all dimensions (there has to be one element/pixel "
@@ -1441,9 +1447,13 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
   else
     fits_create_file(&fptr, filename, &status);
 
-  /* Create the FITS file and put the image into it. */
+  /* Create the FITS file and remove the two initial lines of comments */
   fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
                   data->ndim, naxes, &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+
+  /* Write the image into the file. */
   fits_write_img(fptr, datatype, fpixel, data->size, data->array, &status);
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are

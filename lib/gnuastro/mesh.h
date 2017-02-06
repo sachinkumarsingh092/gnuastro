@@ -142,7 +142,7 @@ struct gal_mesh_params
   float          *kernel; /* Convolution kernel.                         */
   size_t             ks0; /* Size of kernel along first C axis.          */
   size_t             ks1; /* Size of kernel along second C axis.         */
-  int    fullconvolution; /* ==1: Convove over all channels.             */
+  unsigned char fullconvolution; /* ==1: Convove over all channels.      */
 
   /* Mesh types and information: */
   int     meshbasedcheck; /* ==1: use one pixel for each mesh in checks. */

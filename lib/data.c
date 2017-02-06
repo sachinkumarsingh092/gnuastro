@@ -383,11 +383,20 @@ gal_data_copy_wcs(gal_data_t *in, gal_data_t *out)
 {
   if(in->wcs)
     {
+      /* Allocate the output WCS structure. */
       errno=0;
       out->wcs=malloc(sizeof *out->wcs);
       if(out->wcs==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
               "gal_data_copy_wcs", sizeof *out->wcs);
+
+      /* Initialize the allocated WCS structure. The WCSLIB manual says "On
+         the first invokation, and only the first invokation, wcsprm::flag
+         must be set to -1 to initialize memory management"*/
+      out->wcs->flag=-1;
+      wcsini(1, out->ndim, out->wcs);
+
+      /* Copy the input WCS to the output WSC structure. */
       wcscopy(1, in->wcs, out->wcs);
     }
   else

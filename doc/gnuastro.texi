@@ -7395,25 +7395,43 @@ Section of the input image which you want to be cropped. See @ref{Crop
 section syntax} for a complete explanation on the syntax required for this
 input.
 
-@item -i INT
-@itemx --xcol=INT
-Column number of the first FITS axis position of the box center in a
-catalog, starting from zero. In SAO ds9, the first FITS axis is the
-horizontal axis.
+@item -i STR/INT
+@itemx --xcol=STR/INT
+Column selection for the first FITS axis position of the box center in a
+catalog. In SAO ds9, the first FITS axis is the horizontal axis. The value
+can be either the column number (starting from 1), or a match/search in the
+table meta-data, see @ref{Selecting table columns}.
 
-@item -j INT
-@itemx --ycol=INT
-Column number of the second FITS axis position of the box center, starting
-from zero. In SAO ds9, the second FITS axis is the vertical axis.
+@item -j STR/INT
+@itemx --ycol=STR/INT
+Column selection for the second FITS axis position of the box center. In
+SAO ds9, the second FITS axis is the vertical axis. The value can be either
+the column number (starting from 1), or a match/search in the table
+meta-data, see @ref{Selecting table columns}.
 
-@item -f INT
-@itemx --racol=INT
-Column number of Right Ascension (RA) in the input catalog, starting from
-zero.
+@item -f STR/INT
+@itemx --racol=STR/INT
+Column selection for Right Ascension (RA) in the input catalog. The value
+can be either the column number (starting from 1), or a match/search in the
+table meta-data, see @ref{Selecting table columns}.
 
-@item -g INT
-@itemx --deccol=INT
-Column number of declination in the input catalog, starting from zero.
+@item -g STR/INT
+@itemx --deccol=STR/INT
+Column selection of declination in the input catalog. The value can be
+either the column number (starting from 1), or a match/search in the table
+meta-data, see @ref{Selecting table columns}.
+
+@item -n STR/INT
+@item --namecol=STR/INT
+Column selection of crop file name. The value can be either the column
+number (starting from 1), or a match/search in the table meta-data, see
+@ref{Selecting table columns}. This option can be used both in Image and
+WCS modes, and not a mandatory. When a column is given to this option, the
+final crop base file name will be taken from the contents of this
+column. The directory will be determined by the @option{--output} option
+(current directory if not given) and the value to @option{--suffix} will be
+appended. When this column isn't given, the row number will be used
+instead.
 
 @end table
 
@@ -9504,24 +9522,20 @@ applied to the kernel.
 Do not normalize the kernel after reading it, such that the sum of its
 pixels is unity.
 
-@item -f
-@itemx --frequency
+@item -d STR
+@itemx --domain=STR
 @cindex Discrete Fourier transform
-Convolve using discrete Fourier transform in the frequency domain: The
-Fourier transform of both arrays is first calculated and
-multiplied. Then the inverse Fourier transform is applied to the
-product to give the final convolved image.
+The domain to use for the convolution. The acceptable values are
+`@code{spatial}' and `@code{frequency}', corresponding to the respective
+domain.
 
-For large images, this process will be more efficient than convolving
-in the spatial domain. However, the edges of the image will loose some
-flux, see @ref{Edges in the spatial domain}.
-
-@item -p
-@itemx --spatial
-Convolve in the spatial domain, see @ref{Convolution process}.
+For large images, the frequency domain process will be more efficient than
+convolving in the spatial domain. However, the edges of the image will
+loose some flux (see @ref{Edges in the spatial domain}) and the image must
+not contain any blank pixels, see @ref{Spatial vs. Frequency domain}.
 
 
-@item --viewfreqsteps
+@item --checkfreqsteps
 With this option a file with the initial name of the output file will
 be created that is suffixed with @file{_freqsteps.fits}, all the steps
 done to arrive at the final convolved image are saved as extensions in

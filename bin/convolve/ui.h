@@ -24,9 +24,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 void
-setparams(int argc, char *argv[], struct convolveparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[], struct convolveparams *p);
 
 void
-freeandreport(struct convolveparams *p, struct timeval *t1);
+ui_free_report(struct convolveparams *p, struct timeval *t1);
 
 #endif

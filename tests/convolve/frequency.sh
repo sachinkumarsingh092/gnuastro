@@ -49,4 +49,4 @@ if [ ! -f $execname ] || [ ! -f $img ] || [ ! -f $psf ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --kernel=$psf --frequency --output=convolve_frequency.fits
+$execname $img --kernel=$psf --domain=frequency --output=convolve_frequency.fits
