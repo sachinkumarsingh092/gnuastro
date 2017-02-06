@@ -48,7 +48,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* This function is called from ui.c. Its job is to check the WCS
    values of this  */
 void
-wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
+wcs_check_prepare(struct imgcropparams *p, struct inputimgs *img)
 {
   double twidth, *pixscale;
   struct wcsprm *wcs=img->wcs;
@@ -76,6 +76,8 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
           "increase in the declination. You have to flip the "
           "image along the first axis before running ImageCrop",
           img->name, p->cp.hdu);
+
+
   /* Since we are dealing with very accurate values, a multiplication
      by -1 might cause a floating point error. So we have to account
      for the floating point error. */
@@ -123,11 +125,12 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
     }
 
 
-  /* Get the coordinates of the first pixel in the image. */
+  /* Get the coordinates of the first pixel in the image. Note that `dsize'
+     is in C axises, while pixcrd is in FITS axises. */
   pixcrd[0]=1;               pixcrd[1]=1;
-  pixcrd[2]=img->naxes[0];   pixcrd[3]=1;
-  pixcrd[4]=1;               pixcrd[5]=img->naxes[1];
-  pixcrd[6]=img->naxes[0];   pixcrd[7]=img->naxes[1];
+  pixcrd[2]=img->dsize[1];   pixcrd[3]=1;
+  pixcrd[4]=1;               pixcrd[5]=img->dsize[0];
+  pixcrd[6]=img->dsize[1];   pixcrd[7]=img->dsize[0];
   wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta,
          img->corners, status);
 
@@ -139,9 +142,10 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 
 
   /* Fill in the size of the image in celestial degrees from the first
-     pixel in the image.*/
-  img->sized[0]=img->naxes[0]*p->res/cos(img->corners[1]*M_PI/180);
-  img->sized[1]=img->naxes[1]*p->res;
+     pixel in the image. Note that `dsize' is in C axises, while pixcrd is
+     in FITS axises. */
+  img->sized[0]=img->dsize[1]*p->res/cos(img->corners[1]*M_PI/180);
+  img->sized[1]=img->dsize[0]*p->res;
 
 
   /* In case the image crosses the equator, we will calculate these
@@ -208,7 +212,7 @@ setcsides(struct cropparams *crp)
   double maxra=-FLT_MAX, maxdec=-FLT_MAX;
 
   /* Set the four corners of the WCS region. */
-  if(p->up.polygonset)
+  if(p->polygon)
     {
       /* Find their minimum and maximum values. */
       for(i=0;i<p->nvertices;++i)
@@ -227,16 +231,17 @@ setcsides(struct cropparams *crp)
     }
   else
     {
-      if(p->up.raset)
+      if(p->catname)
+        {
+          r=crp->world[0]=p->c1[crp->out_ind];
+          d=crp->world[1]=p->c2[crp->out_ind];
+        }
+      else
         {
           r=crp->world[0]=p->ra;
           d=crp->world[1]=p->dec;
         }
-      else
-        {
-          r=crp->world[0]=p->cat[ crp->outindex * p->cs1 + p->racol ];
-          d=crp->world[1]=p->cat[ crp->outindex * p->cs1 + p->deccol ];
-        }
+
       h=p->wwidth/2;
       dr=d*M_PI/180;
       hr=h*M_PI/180;
@@ -285,24 +290,45 @@ setcsides(struct cropparams *crp)
 
 
 
-/* We have the polygon coordinates */
+/* We have the polygon vertices in WCS coordinates and need to change them
+   to one input image's pixel coordinates. */
 void
 fillcrpipolygon(struct cropparams *crp)
 {
+  size_t i;
+  double *x, *y, *ra, *dec;
   struct imgcropparams *p=crp->p;
 
-  /* Allocate the array to keep the image based polygon sides */
-  errno=0;
-  crp->ipolygon=malloc(2*p->nvertices*sizeof *crp->ipolygon);
-  if(crp->ipolygon==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for crpp->ipolygon in "
-          "onecrop (crop.c)",
-          2*p->nvertices*sizeof *crp->ipolygon);
+  /* Allocate the necessary arrays. */
+  x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
+  y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
+  ra=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
+  dec=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
+  crp->ipolygon=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*p->nvertices);
 
-  /* Fill in the crp->ipolygon array by converting the WCS polygon
-     vertices to this image's coordinates. */
-  gal_wcs_radec_array_to_xy(p->imgs[crp->imgindex].wcs, p->wpolygon,
-                            crp->ipolygon, p->nvertices, 2);
+  /* Fill in the RA and Dec columns. */
+  for(i=0;i<p->nvertices;++i)
+    {
+      ra[i]=p->wpolygon[i*2];
+      dec[i]=p->wpolygon[i*2+1];
+    }
+
+  /* Convert them to image coordinates. */
+  gal_wcs_world_to_img(p->imgs[crp->in_ind].wcs, ra, dec, &x, &y,
+                       p->nvertices);
+
+  /* Put them in the image polygon vertice array. */
+  for(i=0;i<p->nvertices;++i)
+    {
+      crp->ipolygon[i*2]   = x[i];
+      crp->ipolygon[i*2+1] = y[i];
+    }
+
+  /* Clean up. */
+  free(x);
+  free(y);
+  free(ra);
+  free(dec);
 }
 
 
@@ -469,9 +495,9 @@ radecoverlap(struct cropparams *crp)
 
   /* First check if the four sides of the crop box are in the image.*/
   fd=(d=crp->corners)+8;
-  s=p->imgs[crp->imgindex].sized;
-  i=p->imgs[crp->imgindex].corners;
-  c=p->imgs[crp->imgindex].equatorcorr;
+  s=p->imgs[crp->in_ind].sized;
+  i=p->imgs[crp->in_ind].corners;
+  c=p->imgs[crp->in_ind].equatorcorr;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;
@@ -484,7 +510,7 @@ radecoverlap(struct cropparams *crp)
   s=crp->sized;
   i=crp->corners;
   c=crp->equatorcorr;
-  fd=(d=p->imgs[crp->imgindex].corners)+8;
+  fd=(d=p->imgs[crp->in_ind].corners)+8;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;

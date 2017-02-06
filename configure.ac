@@ -131,6 +131,17 @@ AC_FUNC_MALLOC
 
 
 
+
+# Check the size of `size_t'.
+AC_CHECK_SIZEOF([size_t])
+AC_SUBST(SIZEOF_SIZE_T, [$ac_cv_sizeof_size_t])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_SIZE_T], [$ac_cv_sizeof_size_t],
+                   [On 32bit will be 4, on 64 bit, will be 8])
+
+
+
+
+
 # Search for necessary libraries. After each library is found,
 # AC_SEARCH_LIBS adds the -lLIBRARY flag to the LIBS variable which is then
 # given to all the Makefiles. Each new flag is added to the left of the old
@@ -282,7 +293,7 @@ binop_ushort=0
 binop_short=0
 binop_uint=0
 binop_int=0
-binop_ulong=0
+binop_ulong=1
 binop_long=1
 binop_longlong=0
 binop_float=1

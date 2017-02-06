@@ -5,7 +5,7 @@ ImageCrop is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,270 +23,368 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
-
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
-
-
-
-
-
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" will create cutouts, thumbnails, postage stamps or crops of "
-  "region(s) from input image(s) using image or celestial coordinates. "
-  "If muliple crops are desired, a catalog must be provided. When in WCS "
-  "mode, if the cut out covers more than one input image, all overlapping "
-  "input images will be stitched in the output.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Available letters for short options:
-
-   e k m n t u v
-   A B C E F G H J L M O Q R T U X Y Z
-
-   Number keys used<=502
-
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
-static struct argp_option options[] =
+/* Array of acceptable options. */
+struct argp_option program_options[] =
   {
-    {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
-    {
-      "imgmode",
-      'I',
-      0,
-      0,
-      "Use image coordinates (x and y).",
-      -1
-    },
-    {
-      "wcsmode",
-      'W',
-      0,
-      0,
-      "Use WCS coordinates (Ra and Dec).",
-      -1
-    },
-
-
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
+    /* Input. */
     {
       "hstartwcs",
-      501,
+      ARGS_OPTION_KEY_HSTARTWCS,
       "INT",
       0,
       "Header keyword number to start reading WCS.",
-      1
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->hstartwcs,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "hendwcs",
-      502,
+      ARGS_OPTION_KEY_HENDWCS,
       "INT",
       0,
       "Header keyword number to stop reading WCS.",
-      1
-    },
-
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
-    {
-      "noblank",
-      'b',
-      0,
-      0,
-      "Remove parts of the crop box out of input image.",
-      2
-    },
-    {
-      "checkcenter",
-      'c',
-      "INT",
-      0,
-      "Side of box (in pixels) to check.",
-      2
-    },
-    {
-      "suffix",
-      'p',
-      "STR",
-      0,
-      "Suffix (postfix) of cropped images.",
-      2
-    },
-
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Crop:",
-      3
-    },
-    {
-      "racol",
-      'f',
-      "INT",
-      0,
-      "Column of Right Ascension (RA) in catalog.",
-      3
-    },
-    {
-      "deccol",
-      'g',
-      "INT",
-      0,
-      "Column of Declination (Dec) in catalog.",
-      3
-    },
-    {
-      "ra",
-      'r',
-      "FLT",
-      0,
-      "Right ascension of one crop box center.",
-      3
-    },
-    {
-      "dec",
-      'd',
-      "FLT",
-      0,
-      "Declination of one crop box center.",
-      3
-    },
-    {
-      "xcol",
-      'i',
-      "INT",
-      0,
-      "Column of X (first FITS axis) value in catalog.",
-      3
-    },
-    {
-      "ycol",
-      'j',
-      "INT",
-      0,
-      "Column of Y (second FITS axis) in catalog.",
-      3
-    },
-    {
-      "xc",
-      'x',
-      "FLT",
-      0,
-      "First axis position for only one crop.",
-      3
-    },
-    {
-      "yc",
-      'y',
-      "FLT",
-      0,
-      "Second axis position for only one crop.",
-      3,
-    },
-    {
-      "iwidth",
-      'a',
-      "INT",
-      0,
-      "Image mode width (in pixels).",
-      3
-    },
-    {
-      "wwidth",
-      'w',
-      "FLT",
-      0,
-      "WCS mode width (in arc seconds).",
-      3
-    },
-    {
-      "section",
-      's',
-      "STR",
-      0,
-      "Image section string specifying crop range.",
-      3
-    },
-    {
-      "polygon",
-      'l',
-      "STR",
-      0,
-      "Polygon vertices of region to crop.",
-      3
-    },
-    {
-      "outpolygon",
-      500,
-      0,
-      0,
-      "Keep the polygon's outside, mask the inside.",
-      3
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->hendwcs,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "zeroisnotblank",
-      'z',
+      ARGS_OPTION_KEY_ZEROISNOTBLANK,
       0,
       0,
       "0.0 in float or double images are not blank.",
-      3
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->zeroisnotblank,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
+
+
+
+
+    /* Output. */
+    {
+      "noblank",
+      ARGS_OPTION_KEY_NOBLANK,
+      0,
+      0,
+      "Remove parts of the crop box out of input image.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->noblank,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "suffix",
+      ARGS_OPTION_KEY_SUFFIX,
+      "STR",
+      0,
+      "Suffix (postfix) of cropped images.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->suffix,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Crop by center (general settings)",
+      ARGS_GROUP_CENTER_GENERAL
+    },
+    {
+      "checkcenter",
+      ARGS_OPTION_KEY_CHECKCENTER,
+      "INT",
+      0,
+      "Width (in pixels) of box at center to check.",
+      ARGS_GROUP_CENTER_GENERAL,
+      &p->checkcenter,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_0_OR_ODD,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "iwidth",
+      ARGS_OPTION_KEY_IWIDTH,
+      "INT",
+      0,
+      "Width (pixels) when crop defined by X,Y.",
+      ARGS_GROUP_CENTER_GENERAL,
+      &p->iwidthin,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0_ODD,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "wwidth",
+      ARGS_OPTION_KEY_WWIDTH,
+      "FLT",
+      0,
+      "Width (arcseconds) for crops defined by RA,Dec.",
+      ARGS_GROUP_CENTER_GENERAL,
+      &p->wwidth,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Crop by center (single crop)",
+      ARGS_GROUP_CENTER_SINGLE
+    },
+    {
+      "ra",
+      ARGS_OPTION_KEY_RA,
+      "FLT",
+      0,
+      "Right ascension of one crop box center.",
+      ARGS_GROUP_CENTER_SINGLE,
+      &p->ra,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "dec",
+      ARGS_OPTION_KEY_DEC,
+      "FLT",
+      0,
+      "Declination of one crop box center.",
+      ARGS_GROUP_CENTER_SINGLE,
+      &p->dec,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "xc",
+      ARGS_OPTION_KEY_XC,
+      "FLT",
+      0,
+      "First axis position of one crop box center.",
+      ARGS_GROUP_CENTER_SINGLE,
+      &p->xc,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "yc",
+      ARGS_OPTION_KEY_YC,
+      "FLT",
+      0,
+      "Second axis position of one crop box center.",
+      ARGS_GROUP_CENTER_SINGLE,
+      &p->yc,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Crop by center (catalog)",
+      ARGS_GROUP_CENTER_CATALOG
+    },
+    {
+      "catalog",
+      ARGS_OPTION_KEY_CATALOG,
+      "STR",
+      0,
+      "Input catalog filename.",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->catname,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "cathdu",
+      ARGS_OPTION_KEY_CATHDU,
+      "STR/INT",
+      0,
+      "HDU of catalog, if it is a FITS table.",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->cathdu,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "namecol",
+      ARGS_OPTION_KEY_NAMECOL,
+      "STR/INT",
+      0,
+      "Column no./info of crop filename (no suffix).",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->namecol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "racol",
+      ARGS_OPTION_KEY_RACOL,
+      "STR/INT",
+      0,
+      "Column number/info of Right Ascension (RA).",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->racol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "deccol",
+      ARGS_OPTION_KEY_DECCOL,
+      "STR/INT",
+      0,
+      "Column number/info of Declination.",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->deccol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "xcol",
+      ARGS_OPTION_KEY_XCOL,
+      "STR/INT",
+      0,
+      "Column number/info of X (first FITS axis).",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->xcol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "ycol",
+      ARGS_OPTION_KEY_YCOL,
+      "STR/INT",
+      0,
+      "Column number/info of Y (second FITS axis).",
+      ARGS_GROUP_CENTER_CATALOG,
+      &p->ycol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Crop by region",
+      ARGS_GROUP_REGION
+    },
+    {
+      "section",
+      ARGS_OPTION_KEY_SECTION,
+      "STR",
+      0,
+      "Image section string specifying crop range.",
+      ARGS_GROUP_REGION,
+      &p->section,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "polygon",
+      ARGS_OPTION_KEY_POLYGON,
+      "STR",
+      0,
+      "Polygon vertices of region to crop, keep inside.",
+      ARGS_GROUP_REGION,
+      &p->polygon,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "outpolygon",
+      ARGS_OPTION_KEY_OUTPOLYGON,
+      0,
+      0,
+      "Keep the polygon's outside, mask the inside.",
+      ARGS_GROUP_REGION,
+      &p->outpolygon,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+
+    /* Operating mode */
+    {
+      "mode",
+      ARGS_OPTION_KEY_MODE,
+      "STR",
+      0,
+      "Coordinate mode `img' or `wcs'",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->modestr,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
 
 
@@ -297,222 +395,21 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Define the child argp structure. */
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
+
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
-  /* A temporary variable. */
-  size_t tmp;
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Save the arguments structure: */
-  struct imgcropparams *p = state->input;
-
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-    /* Operating modes: */
-    case 'I':
-      if(p->up.imgmodeset)
-        argp_error(state, "only one of Image or WCS modes can be chosen");
-      p->imgmode=1;
-      p->wcsmode=0;
-      p->up.imgmodeset=p->up.wcsmodeset=1;
-      break;
-    case 'W':
-      if(p->up.wcsmodeset)
-        argp_error(state, "only one of Image or WCS modes can be chosen");
-      p->imgmode=0;
-      p->wcsmode=1;
-      p->up.imgmodeset=p->up.wcsmodeset=1;
-      break;
-
-
-
-
-
-    /* Input */
-    case 501:
-      gal_checkset_sizet_el_zero(arg, &p->hstartwcs, "hstartwcs", key, SPACK,
-                                 NULL, 0);
-      p->up.hstartwcsset=1;
-      break;
-    case 502:
-      gal_checkset_sizet_el_zero(arg, &p->hendwcs, "hendwcs", key, SPACK,
-                                 NULL, 0);
-      p->up.hendwcsset=1;
-      break;
-
-
-
-
-
-    /* Output parameters: */
-    case 'b':
-      p->noblank=1;
-      break;
-    case 'c':
-      gal_checkset_sizet_el_zero(arg, &p->checkcenter, "checkcenter",
-                                 key, SPACK, NULL, 0);
-      p->up.checkcenterset=1;
-      break;
-    case 'p':
-      gal_checkset_allocate_copy_set(arg, &p->suffix, &p->up.suffixset);
-      break;
-
-
-
-
-
-    /* Crop: */
-    case 'f':
-      gal_checkset_sizet_el_zero(arg, &p->racol, "racol", key, SPACK,
-                                 NULL, 0);
-      p->up.racolset=1;
-      break;
-    case 'g':
-      gal_checkset_sizet_el_zero(arg, &p->deccol, "deccol", key, SPACK,
-                                 NULL, 0);
-      p->up.deccolset=1;
-      break;
-    case 'r':
-      gal_checkset_any_double(arg, &p->ra, "ra", key, SPACK, NULL, 0);
-      p->up.raset=1;
-      break;
-    case 'd':
-      gal_checkset_any_double(arg, &p->dec, "dec", key, SPACK, NULL, 0);
-      p->up.decset=1;
-      break;
-    case 'i':
-      gal_checkset_sizet_el_zero(arg, &p->xcol, "xcol", key, SPACK, NULL, 0);
-      p->up.xcolset=1;
-      break;
-    case 'j':
-      gal_checkset_sizet_el_zero(arg, &p->ycol, "ycol", key, SPACK, NULL, 0);
-      p->up.ycolset=1;
-      break;
-    case 'x':
-      gal_checkset_any_double(arg, &p->xc, "xc", key, SPACK, NULL, 0);
-      p->up.xcset=1;            /* Using FITS standard, not C. */
-      break;
-    case 'y':
-      gal_checkset_any_double(arg, &p->yc, "yc", key, SPACK, NULL, 0);
-      p->up.ycset=1;            /* Using FITS standard, not C. */
-      break;
-    case 'a':
-      gal_checkset_sizet_l_zero(arg, &tmp, "iwidth", key, SPACK, NULL, 0);
-      p->iwidth[0]=p->iwidth[1]=tmp;
-      p->up.iwidthset=1;
-      break;
-    case 'w':
-      gal_checkset_double_l_0(arg, &p->wwidth, "wwidth", key, SPACK,
-                              NULL, 0);
-      p->up.wwidthset=1;
-      break;
-    case 's':
-      p->section=arg;
-      p->up.sectionset=1;
-      break;
-    case 'l':
-      p->up.polygon=arg;
-      p->up.polygonset=1;
-      break;
-    case 500:
-      p->outpolygon=1;
-      break;
-    case 'z':
-      p->zeroisnotblank=1;
-      break;
-
-
-
-
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-
-      /* See what type of input value it is and put it in. */
-      if( gal_fits_name_is_fits(arg) )
-        {
-          gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
-          ++p->numimg;
-        }
-      else
-        {
-          if(p->up.catname)
-            argp_error(state, "only one catalog file can be given");
-          else
-            {
-              p->up.catname=arg;
-              p->up.catset=1;
-            }
-        }
-      break;
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.catname==NULL && !(p->up.xcset    || p->up.ycset
-                                      || p->up.raset || p->up.decset
-                                      || p->up.sectionset
-                                      || p->up.polygonset))
-            argp_error(state, "no catalog provided");
-          if(p->up.gal_linkedlist_stll==NULL)
-            argp_error(state, "no FITS image(s) provided");
-        }
-      break;
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

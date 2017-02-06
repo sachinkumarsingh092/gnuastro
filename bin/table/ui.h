@@ -27,6 +27,6 @@ void
 ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p);
 
 void
-freeandreport(struct tableparams *p);
+ui_free_report(struct tableparams *p);
 
 #endif

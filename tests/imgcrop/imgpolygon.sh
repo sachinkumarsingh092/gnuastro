@@ -48,5 +48,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img $cat --imgmode --zeroisnotblank --output=imgpolygon.fits      \
+$execname $img $cat --mode=img --zeroisnotblank --output=imgpolygon.fits      \
           --polygon=209,50:436.76,151:475.64,438.2:210.6,454.04:121.4,289.88

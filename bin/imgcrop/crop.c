@@ -71,7 +71,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Read the section string and set the starting and ending pixels
    based on that. */
 void
-sectionparser(struct imgcropparams *p, long *naxes,
+sectionparser(struct imgcropparams *p, size_t *dsize,
               long *fpixel, long *lpixel)
 {
   int add;
@@ -79,6 +79,7 @@ sectionparser(struct imgcropparams *p, long *naxes,
   size_t dim=0;
   char *tailptr;
   char forl='f', *pt=p->section;
+  long naxes[2]={dsize[1], dsize[0]};
 
   /* If control reached here, then the cropped region is not defined by its
      center. So it makes no sense to check if the center is blank. */
@@ -175,13 +176,13 @@ sectionparser(struct imgcropparams *p, long *naxes,
 
 
 void
-polygonparser(struct imgcropparams *p)
+crop_polygonparser(struct imgcropparams *p)
 {
   size_t dim=0;
   char *tailptr;
   double read[2], *array;
   struct gal_linkedlist_tdll *gal_linkedlist_tdll=NULL;
-  char *pt=p->up.polygon;
+  char *pt=p->polygon;
 
   /* If control reached here, then the cropped region is not defined by its
      center. So it makes no sense to check if the center is blank. */
@@ -195,13 +196,13 @@ polygonparser(struct imgcropparams *p)
         case ',':
           ++dim;
           if(dim==2)
-            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->up.polygon);
+            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->polygon);
           ++pt;
           break;
         case ':':
           if(dim==0)
             error(EXIT_FAILURE, 0, "not enough coordinates for at least "
-                  "one polygon vertex (in %s)", p->up.polygon);
+                  "one polygon vertex (in %s)", p->polygon);
           dim=0;
           ++pt;
           break;
@@ -256,8 +257,8 @@ polygonparser(struct imgcropparams *p)
   /* Convert the linked list to an array: */
   gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array,
                                    &p->nvertices);
-  if(p->imgmode) { p->ipolygon=array; p->wpolygon=NULL;  }
-  else           { p->ipolygon=NULL;  p->wpolygon=array; }
+  if(p->mode==IMGCROP_MODE_IMG) { p->ipolygon=array; p->wpolygon=NULL;  }
+  else                          { p->ipolygon=NULL;  p->wpolygon=array; }
 
   /* Put them in the proper order in WCS mode: */
 
@@ -313,11 +314,11 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   long *lb, *la=array;
   short *sb, *sa=array;
   float *fb, *fa=array;
+  int type=crp->p->type;
   LONGLONG *Lb, *La=array;
   unsigned char *bb, *ba=array;
   int outpolygon=crp->p->outpolygon;
   double *db, *ipolygon, point[2], *da=array;
-  int type=gal_fits_datatype_to_type(crp->p->datatype);
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
 
@@ -443,21 +444,21 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
 /******************          One crop.         *********************/
 /*******************************************************************/
 void
-changezerotonan(void *array, size_t size, int bitpix)
+changezerotonan(void *array, size_t size, int type)
 {
   float *fp, *ffp;
   double *dp, *fdp;
 
-  switch(bitpix)
+  switch(type)
     {
-    case FLOAT_IMG:
+    case GAL_DATA_TYPE_FLOAT:
       ffp=(fp=array)+size;
       do
         if(*fp==0.0f) *fp=NAN;
       while(++fp<ffp);
       break;
 
-    case DOUBLE_IMG:
+    case GAL_DATA_TYPE_DOUBLE:
       fdp=(dp=array)+size;
       do
         if(*dp==0.0f) *dp=NAN;
@@ -465,10 +466,8 @@ changezerotonan(void *array, size_t size, int bitpix)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "in changezerotonan, bitpix is not "
-            "recognized! This is out of the users control and is a bug, "
-            "please report it to us so we see how it was caused and fix "
-            "it");
+      error(EXIT_FAILURE, 0, "%d is not a recognized type in "
+            "`changezerotonan'", type);
     }
 }
 
@@ -481,34 +480,40 @@ changezerotonan(void *array, size_t size, int bitpix)
 void
 cropname(struct cropparams *crp)
 {
+  char **strarr;
   struct imgcropparams *p=crp->p;
-  struct gal_commonparams *cp=&p->cp;
-  struct imgcroplog *log=&crp->p->log[crp->outindex];
+  struct gal_options_common_params *cp=&p->cp;
 
   /* Set the output name and crop sides: */
-  if(p->up.catset)
+  if(p->catname)
     {
-      errno=0;
-      log->name=malloc(crp->outlen);
-      if(log->name==NULL)
-        error(EXIT_FAILURE, errno, "imgmode.c, %zu bytes on "
-              "imgcroponthreads", crp->outlen);
-      sprintf(log->name, "%s%zu%s", cp->output, crp->outindex+1,
-              p->suffix);
-      gal_checkset_check_remove_file(log->name, cp->dontdelete);
+      /* If a name column was set, use it, otherwise, use the ID of the
+         profile. */
+      if(p->name)
+        {
+          strarr=p->name;
+          asprintf(&crp->name, "%s%s%s", cp->output, strarr[crp->out_ind],
+                   p->suffix);
+        }
+      else
+        asprintf(&crp->name, "%s%zu%s", cp->output, crp->out_ind+1,
+                 p->suffix);
+
+      /* Make sure the file doesn't exist. */
+      gal_checkset_check_remove_file(crp->name, cp->dontdelete);
     }
   else
     {
       /* Set the output name. */
       if(p->outnameisfile)            /* An output file was specified. */
         {
-          log->name=cp->output;
-          gal_checkset_check_remove_file(log->name, cp->dontdelete);
+          crp->name=cp->output;
+          gal_checkset_check_remove_file(crp->name, cp->dontdelete);
         }
       else          /* The output was a directory, use automatic output. */
-        gal_checkset_automatic_output(p->imgs[crp->imgindex].name,
-                                      p->suffix, cp->removedirinfo,
-                                      cp->dontdelete, &log->name);
+        crp->name=gal_checkset_automatic_output(cp,
+                                                p->imgs[crp->in_ind].name,
+                                                p->suffix);
     }
 }
 
@@ -523,21 +528,22 @@ cropflpixel(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
   int ncoord=1, nelem=2, status[2]={0,0};
-  long *naxes=p->imgs[crp->imgindex].naxes;
+  size_t *dsize=p->imgs[crp->in_ind].dsize;
   double pixcrd[2], imgcrd[2], phi[1], theta[1];
   long *fpixel=crp->fpixel, *lpixel=crp->lpixel;
 
-  if(p->imgmode)
+  switch(p->mode)
     {
-      if(p->up.catset)
-        gal_box_border_from_center(p->cat[crp->outindex*p->cs1+p->xcol],
-                                   p->cat[crp->outindex*p->cs1+p->ycol],
+
+    case IMGCROP_MODE_IMG:
+      if(p->catname)
+        gal_box_border_from_center(p->c1[crp->out_ind], p->c2[crp->out_ind],
                                    p->iwidth, fpixel, lpixel);
-      else if(p->up.xcset)
+      else if(!isnan(p->xc))
         gal_box_border_from_center(p->xc, p->yc, p->iwidth, fpixel, lpixel);
-      else if(p->up.sectionset)
-        sectionparser(p, naxes, fpixel, lpixel);
-      else if(p->up.polygonset)
+      else if(p->section)
+        sectionparser(p, dsize, fpixel, lpixel);
+      else if(p->polygon)
         {
           if(p->outpolygon==0)
             imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
@@ -549,18 +555,19 @@ cropflpixel(struct cropparams *crp)
               "to see how it got to this impossible place! You should "
               "have been warned of this condition long before ImageCrop "
               "reaches this point");
-    }
-  else if(p->wcsmode) /* In wcsmode, crp->world is already filled.       */
-    {                 /* Note that p->iwidth was set based on p->wwidth. */
-      if(p->up.polygonset)
-        { /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
+      break;
+
+    case IMGCROP_MODE_WCS: /* In wcsmode, crp->world is already filled.   */
+      if(p->polygon)       /* Note: p->iwidth was set based on p->wwidth. */
+        {
+          /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
           fillcrpipolygon(crp);
           if(p->outpolygon==0)
             imgpolygonflpixel(crp->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else
         {
-          if(wcss2p(p->imgs[crp->imgindex].wcs, ncoord, nelem, crp->world,
+          if(wcss2p(p->imgs[crp->in_ind].wcs, ncoord, nelem, crp->world,
                     phi, theta, imgcrd, pixcrd, status) )
             if(status[0] || status[1])
               error(EXIT_FAILURE, 0, "wcss2p error %d: %s",
@@ -573,19 +580,21 @@ cropflpixel(struct cropparams *crp)
                    pixcrd[1], fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
           */
         }
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! in cropflpixel (crop.c), "
+            "neither imgmode or wcsmode are set. Please contact us so "
+            "we can see how it got to this impossible place");
     }
-  else
-    error(EXIT_FAILURE, 0, "a bug! in cropflpixel (crop.c), "
-          "neither imgmode or wcsmode are set. Please contact us so "
-          "we can see how it got to this impossible place");
 
   /* If the user only wants regions outside to the polygon, then set
      the fpixel and lpixel to cover the full input image. */
-  if(p->up.polygonset && p->outpolygon)
+  if(p->polygon && p->outpolygon)
     {
-      crp->lpixel[0]=naxes[0];
-      crp->lpixel[1]=naxes[1];
       crp->fpixel[0]=crp->fpixel[1]=1;
+      crp->lpixel[0]=dsize[1];
+      crp->lpixel[1]=dsize[0];
     }
 }
 
@@ -610,13 +619,13 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   size_t i;
   fitsfile *ofp;
   long naxes[2];
+  int type=crp->p->type;
   double crpix0, crpix1;
   int naxis=2, status=0;
-  int bitpix=crp->p->bitpix;
+  char *outname=crp->name;
   char *cp, *cpf, blankrec[80], titlerec[80];
   char startblank[]="                      / ";
-  char *outname=crp->p->log[crp->outindex].name;
-  struct inputimgs *img=&crp->p->imgs[crp->imgindex];
+  struct inputimgs *img=&crp->p->imgs[crp->in_ind];
 
 
   /* Set the last element of the blank array. */
@@ -627,7 +636,7 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
 
 
   /* Set the size of the output, in WCS mode, noblank==0. */
-  if(crp->p->noblank && crp->p->wcsmode==0)
+  if(crp->p->noblank && crp->p->mode==IMGCROP_MODE_IMG)
     {
       fpixel_c[0]=fpixel_c[1]=1;
       lpixel_c[0]=naxes[0]=lpixel_i[0]-fpixel_i[0]+1;
@@ -645,11 +654,11 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   if(fits_create_file(&crp->outfits, outname, &status))
     gal_fits_io_error(status, "creating file");
   ofp=crp->outfits;
-  if(fits_create_img(ofp, bitpix, naxis, naxes, &status))
+  if( fits_create_img(ofp, gal_fits_type_to_bitpix(type),
+                      naxis, naxes, &status) )
     gal_fits_io_error(status, "creating image");
-  if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
-     || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
-    if(fits_write_key(ofp, crp->p->datatype, "BLANK",
+  if( type!=GAL_DATA_TYPE_FLOAT && type!=GAL_DATA_TYPE_DOUBLE )
+    if(fits_write_key(ofp, gal_fits_type_to_datatype(crp->p->type), "BLANK",
                       crp->p->bitnul, "pixels with no data", &status) )
       gal_fits_io_error(status, "adding Blank");
   if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
@@ -701,17 +710,17 @@ void
 onecrop(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
-  struct inputimgs *img=&p->imgs[crp->imgindex];
+  struct inputimgs *img=&p->imgs[crp->in_ind];
 
   void *array;
   size_t cropsize;
+  int status=0, anynul=0;
   char basename[FLEN_KEYWORD];
-  long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
   struct gal_fits_key_ll *headers=NULL;
-  int status=0, anynul=0, bitpix=p->bitpix;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
+  long naxes[]={img->dsize[1], img->dsize[0]}, fpixel_i[2] , lpixel_i[2];
 
 
   /* Find the first and last pixel of this crop box from this input
@@ -723,7 +732,7 @@ onecrop(struct cropparams *crp)
 
 
   /* Find the overlap and apply it if there is any overlap. */
-  if( gal_box_overlap(img->naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
+  if( gal_box_overlap(naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
     {
       /* Make the output FITS image and initialize it with an array of
          NaN or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG,
@@ -735,11 +744,12 @@ onecrop(struct cropparams *crp)
 
       /* Read the desired part of the image, then write it into this
          array. */
-      cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=gal_data_alloc(gal_fits_datatype_to_type(p->datatype), cropsize);
       status=0;
-      if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
-                          p->bitnul, array, &anynul, &status))
+      cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
+      array=gal_data_malloc_array(p->type, cropsize);
+      if(fits_read_subset(ifp, gal_fits_type_to_datatype(p->type),
+                          fpixel_i, lpixel_i, inc, p->bitnul, array,
+                          &anynul, &status))
         gal_fits_io_error(status, NULL);
 
 
@@ -747,34 +757,34 @@ onecrop(struct cropparams *crp)
          value should actually be a NaN. Unless the user specificly
          asks for it, make the conversion.*/
       if(p->zeroisnotblank==0
-         && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
-        changezerotonan(array, cropsize, bitpix);
+         && (p->type==GAL_DATA_TYPE_FLOAT || p->type==GAL_DATA_TYPE_DOUBLE) )
+        changezerotonan(array, cropsize, p->type);
 
 
       /* If a polygon is given, remove all the pixels within or
          outside of it.*/
-      if(p->up.polygonset)
+      if(p->polygon)
         {
           /* In WCS mode, crp->ipolygon was allocated and filled in
              wcspolygonflpixel (wcsmode.c). */
-          if(p->imgmode) crp->ipolygon=p->ipolygon;
+          if(p->mode==IMGCROP_MODE_IMG) crp->ipolygon=p->ipolygon;
           polygonmask(crp, array, fpixel_i, lpixel_i[1]-fpixel_i[1]+1,
                       lpixel_i[0]-fpixel_i[0]+1);
-          if(p->wcsmode) free(crp->ipolygon);
+          if(p->mode==IMGCROP_MODE_WCS) free(crp->ipolygon);
         }
 
 
       /* Write the array into the image. */
       status=0;
-      if( fits_write_subset(ofp, p->datatype, fpixel_o, lpixel_o,
-                            array, &status) )
+      if( fits_write_subset(ofp, gal_fits_type_to_datatype(p->type),
+                            fpixel_o, lpixel_o, array, &status) )
         gal_fits_io_error(status, NULL);
 
 
       /* A section has been added to the cropped image from this input
          image, so increment crp->imgcount and save the information of
          this image. */
-      sprintf(basename, "ICF%zu", ++p->log[crp->outindex].numimg);
+      sprintf(basename, "ICF%zu", ++crp->numimg);
       gal_fits_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
@@ -789,7 +799,7 @@ onecrop(struct cropparams *crp)
       free(array);
     }
   else
-    if(p->up.polygonset && p->outpolygon==0 && p->wcsmode)
+    if(p->polygon && p->outpolygon==0 && p->mode==IMGCROP_MODE_WCS)
       free(crp->ipolygon);
 
 
@@ -823,18 +833,20 @@ iscenterfilled(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
 
-  size_t size;
   void *array;
+  size_t size, ndim, *dsize;
   fitsfile *ofp=crp->outfits;
+  int status=0, anynul=0, type;
   long checkcenter=p->checkcenter;
-  int status=0, anynul=0, tmp_bitpix;
   long naxes[2], fpixel[2], lpixel[2], inc[2]={1,1};
 
   /* If checkcenter is zero, then don't check. */
-  if(checkcenter==0) return CENTER_NOT_CHECKED;
+  if(checkcenter==0) return GAL_DATA_BLANK_UCHAR;
 
   /* Get the final size of the output image. */
-  gal_fits_img_bitpix_size(ofp, &tmp_bitpix, naxes);
+  gal_fits_img_info(ofp, &type, &ndim, &dsize);
+  naxes[0]=dsize[1];
+  naxes[1]=dsize[0];
 
   /* Get the size and range of the central region to check. The +1 is
      because in FITS, counting begins from 1, not zero. It might happen
@@ -855,9 +867,9 @@ iscenterfilled(struct cropparams *crp)
   */
 
   /* Allocate the array and read in the pixels. */
-  array=gal_data_alloc(gal_fits_bitpix_to_type(bitpix), size);
-  if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
-                       p->bitnul, array, &anynul, &status) )
+  array=gal_data_malloc_array(type, size);
+  if( fits_read_subset(ofp, gal_fits_type_to_datatype(type), fpixel, lpixel,
+                       inc, p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);
   free(array);
 
@@ -865,107 +877,4 @@ iscenterfilled(struct cropparams *crp)
      then `anynul' will be 1, if there aren't it will be 0. So the output
      of this function is just the inverse of that number. */
   return !anynul;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*******************************************************************/
-/******************          Log file          *********************/
-/*******************************************************************/
-void
-printlog(struct imgcropparams *p)
-{
-  size_t i;
-  FILE *logfile;
-  struct imgcroplog *log=p->log;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
-  size_t numfiles=0, numcentfilled=0, numstitched=0;
-
-  /* Only for a catalog are these statistics worth it! */
-  if(p->up.catset && p->cp.verb)
-    for(i=0;log[i].name;++i)
-      if(log[i].numimg)
-        {
-          if(log[i].centerfilled)
-            {
-              ++numfiles;
-              if(log[i].numimg>1)
-                ++numstitched;
-            }
-          if(log[i].centerfilled)
-            ++numcentfilled;
-        }
-
-  /* Check to see if the file exists and remove if if it is ok. */
-  gal_checkset_check_remove_file(LOGFILENAME, p->cp.dontdelete);
-
-  /* Make the file and print the top comments. If the file can't be
-     opened for write mode, there is no problem, this is a log file,
-     the user can set it on verbose mode and the same information will
-     be printed. */
-  errno=0;
-  logfile=fopen(LOGFILENAME, "w");
-  if(logfile)
-    {
-      /* First print the comments to the file. */
-      fprintf(logfile,
-              "# "SPACK_STRING" log file.\n"
-              "# "SPACK_NAME" was run on %s#\n",
-              ctime(&p->rawtime));
-      if(p->checkcenter)
-        fprintf(logfile,
-                "# The central %zu pixels were checked for blank values.\n"
-                "# NOTE: by default when the crops are defined by "
-                "their center,\n"
-                "# crops with a blank center are deleted.\n"
-                "# To keep such images, run again with `--checkcenter=0`.\n"
-                "#\n", p->checkcenter);
-      fprintf(logfile,
-              "# Column 1: Output file name.\n"
-              "# Column 2: Number of images used in this cropped image.\n"
-              "# Column 3: Are the central pixels filled? (1: yes, 0: no, "
-              "%d: not checked)\n", CENTER_NOT_CHECKED);
-
-      /* Then print each output's information. */
-      for(i=0;log[i].name;++i)
-        fprintf(logfile, "%s     %-8zu%-2d\n", log[i].name,
-                log[i].numimg, log[i].centerfilled);
-
-      /* Report Summary: */
-      if(p->cp.verb && p->up.catset)
-        {
-          sprintf(msg, "%zu images created.", numfiles);
-          gal_timing_report(NULL, msg, 1);
-          sprintf(msg, "%zu filled in the center.",
-                  numcentfilled);
-          gal_timing_report(NULL, msg, 1);
-          if(numstitched)
-            {
-              sprintf(msg, "%zu used more than one input.",
-                      numstitched);
-              gal_timing_report(NULL, msg, 1);
-            }
-        }
-
-      /* Close the file. */
-      errno=0;
-      if(fclose(logfile))
-        error(EXIT_FAILURE, errno, LOGFILENAME" could not be closed");
-    }
 }

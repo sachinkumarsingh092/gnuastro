@@ -469,7 +469,7 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
       BINARY_LT_IS_DOUBLE;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`data_arithmetic_binary'", l->type);
+            "`arithmetic_binary'", l->type);
     }
 
 

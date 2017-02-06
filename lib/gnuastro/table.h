@@ -138,6 +138,9 @@ int
 gal_table_string_to_searchin(char *string);
 
 void
+gal_table_too_many_columns(char *filename);
+
+void
 gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 
 void

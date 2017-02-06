@@ -354,6 +354,21 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
   r=gal_arithmetic_convert_to_compiled_type(ro, flags);
 
 
+  /* Sanity check: see if the compiled type is actually an integer. */
+  if( l->type>=GAL_DATA_TYPE_FLOAT || r->type>=GAL_DATA_TYPE_FLOAT )
+    error(EXIT_FAILURE, 0, "no larger integer compiled type. The `%s' "
+          "operator can only work on integer types. The left and right "
+          "operands had types `%s' and `%s'.\n\nYou can use the "
+          "`--enable-bin-op-XXXX' at configure time to compile a larger "
+          "type (note that unsigned types are considered to be larger than "
+          "signed ones). You can run the following command for more "
+          "information on these options (press the `SPACE' key to go down "
+          "and `q' to return to the command-line):\n\n"
+          "    $ info gnuastro \"Gnuastro configure options\"\n",
+          gal_arithmetic_operator_string(operator),
+          gal_data_type_as_string(lo->type, 1),
+          gal_data_type_as_string(ro->type, 1));
+
   /* Set the output type. */
   otype=gal_data_out_type(l, r);
 
@@ -401,7 +416,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
       BINOIN_LT_IS_LONGLONG;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`data_arithmetic_binary'", l->type);
+            "`arithmetic_onlyint_binary'", l->type);
     }
 
 

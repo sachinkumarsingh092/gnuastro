@@ -170,7 +170,7 @@ struct argp_option program_options[] =
       "No. of random points in Monte Carlo integration.",
       ARGS_GROUP_PROFILES,
       &p->numrandom,
-      GAL_DATA_TYPE_ULONG,
+      GAL_DATA_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET

@@ -49,7 +49,7 @@ main (int argc, char *argv[])
   table(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p);
+  ui_free_report(&p);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

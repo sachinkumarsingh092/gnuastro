@@ -1846,8 +1846,223 @@ gal_data_flag_blank(gal_data_t *data)
 
 
 /*************************************************************
- **************       Types and copying        ***************
+ **************            Copying             ***************
  *************************************************************/
+
+/* Only to be used in `data_copy_from_string'. */
+static void
+data_copy_to_string_not_parsed(char *string, void *to, int type)
+{
+  if( strcmp(string, GAL_DATA_BLANK_STRING) )
+    gal_data_set_blank(to, type);
+  else
+    error(EXIT_FAILURE, 0, "`%s' couldn't be parsed as `%s' type",
+          string, gal_data_type_as_string(type, 1));
+}
+
+
+
+
+
+/* The `from' array is an array of strings. We want to keep it as
+   numbers. Note that the case where both input and output structures are
+   string was */
+static void
+data_copy_from_string(gal_data_t *from, gal_data_t *to)
+{
+  size_t i;
+  void *ptr;
+  char **strarr=from->array, **outstrarr=to->array;
+
+  /* Sanity check. */
+  if(from->type!=GAL_DATA_TYPE_STRING)
+    error(EXIT_FAILURE, 0, "`from' in `data_copy_from_string' must have "
+          "a string type.");
+
+  /* Do the copying. */
+  for(i=0;i<from->size;++i)
+    {
+      /* Set the pointer. */
+      switch(to->type)
+        {
+        case GAL_DATA_TYPE_UCHAR:    ptr = (unsigned char *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_CHAR:     ptr = (char *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_USHORT:   ptr = (unsigned short *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_SHORT:    ptr = (short *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_UINT:     ptr = (unsigned int *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_INT:      ptr = (int *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_ULONG:    ptr = (unsigned long *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_LONG:     ptr = (long *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_LONGLONG: ptr = (LONGLONG *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_FLOAT:    ptr = (float *)(to->array) + i;
+          break;
+        case GAL_DATA_TYPE_DOUBLE:   ptr = (double *)(to->array) + i;
+          break;
+
+        case GAL_DATA_TYPE_BIT:
+        case GAL_DATA_TYPE_STRLL:
+        case GAL_DATA_TYPE_COMPLEX:
+        case GAL_DATA_TYPE_DCOMPLEX:
+          error(EXIT_FAILURE, 0, "`data_copy_from_string' currently doesn't "
+                "support copying to %s type",
+                gal_data_type_as_string(to->type, 1));
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "type %d not recognized for to->type in "
+                "`data_copy_from_string'", to->type);
+        }
+
+      /* Read/put the input into the output. */
+      if(to->type==GAL_DATA_TYPE_STRING)
+        gal_checkset_allocate_copy(strarr[i], &outstrarr[i]);
+      else
+        {
+          if( gal_data_string_to_type(&ptr, strarr[i], to->type) )
+            data_copy_to_string_not_parsed(strarr[i], ptr, to->type);
+        }
+    }
+}
+
+
+
+
+
+/* Convert any given type into a string by printing it into the elements of
+   the already allocated `to->array'. */
+static void
+data_copy_to_string(gal_data_t *from, gal_data_t *to)
+{
+  size_t i;
+  int isblank;
+  char **strarr=to->array, **instrarr=from->array;
+
+  unsigned char  *uc=from->array;
+  char            *c=from->array;
+  unsigned short *us=from->array;
+  short           *s=from->array;
+  unsigned int   *ui=from->array;
+  int            *ii=from->array;
+  unsigned long  *ul=from->array;
+  long            *l=from->array;
+  LONGLONG        *L=from->array;
+  float           *f=from->array;
+  double          *d=from->array;
+
+  /* Sanity check */
+  if(to->type!=GAL_DATA_TYPE_STRING)
+    error(EXIT_FAILURE, 0, "`to' in `data_copy_to_string' must have a "
+          "string type");
+
+  /* Do the copying */
+  switch(from->type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      for(i=0;i<from->size;++i)
+        {if(uc[i]!=GAL_DATA_BLANK_UCHAR) asprintf(&strarr[i], "%u", uc[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      for(i=0;i<from->size;++i)
+        {if(c[i]!=GAL_DATA_BLANK_CHAR) asprintf(&strarr[i], "%d", c[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      for(i=0;i<from->size;++i)
+        {if(us[i]!=GAL_DATA_BLANK_USHORT) asprintf(&strarr[i], "%u", us[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      for(i=0;i<from->size;++i)
+        {if(s[i]!=GAL_DATA_BLANK_SHORT) asprintf(&strarr[i], "%d", s[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      for(i=0;i<from->size;++i)
+        {if(ui[i]!=GAL_DATA_BLANK_UINT) asprintf(&strarr[i], "%u", ui[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      for(i=0;i<from->size;++i)
+        {if(ii[i]!=GAL_DATA_BLANK_INT) asprintf(&strarr[i], "%d", ii[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      for(i=0;i<from->size;++i)
+        {if(ul[i]!=GAL_DATA_BLANK_ULONG) asprintf(&strarr[i], "%lu", ul[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      for(i=0;i<from->size;++i)
+        {if(l[i]!=GAL_DATA_BLANK_LONG) asprintf(&strarr[i], "%ld", l[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      for(i=0;i<from->size;++i)
+        {if(L[i]!=GAL_DATA_BLANK_LONGLONG) asprintf(&strarr[i], "%lld", L[i]);
+         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      for(i=0;i<from->size;++i)
+        {
+          if(isnan(GAL_DATA_BLANK_FLOAT)) isblank = isnan(f[i]) ? 1 : 0;
+          else isblank = GAL_DATA_BLANK_FLOAT==f[i] ? 1 : 0;
+          if(isblank==0) asprintf(&strarr[i], "%f", f[i]);
+          else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);
+        }
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      for(i=0;i<from->size;++i)
+        {
+          if(isnan(GAL_DATA_BLANK_FLOAT)) isblank = isnan(d[i]) ? 1 : 0;
+          else isblank = GAL_DATA_BLANK_FLOAT==d[i] ? 1 : 0;
+          if(isblank==0) asprintf(&strarr[i], "%f", d[i]);
+          else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);
+        }
+      break;
+
+    case GAL_DATA_TYPE_STRING:
+      for(i=0;i<from->size;++i)
+        gal_checkset_allocate_copy(instrarr[i], &strarr[i]);
+      break;
+
+    case GAL_DATA_TYPE_BIT:
+    case GAL_DATA_TYPE_STRLL:
+    case GAL_DATA_TYPE_COMPLEX:
+    case GAL_DATA_TYPE_DCOMPLEX:
+      error(EXIT_FAILURE, 0, "`data_copy_to_string' currently doesn't "
+            "support copying to %s type",
+            gal_data_type_as_string(from->type, 1));
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type %d not recognized for `from->type' in "
+            "`data_copy_to_string'", from->type);
+    }
+}
+
+
+
+
 
 /* Copy to a new type for integers. */
 #define COPY_OTYPE_ITYPE_SET_INT(otype, itype) {                        \
@@ -1962,13 +2177,17 @@ gal_data_flag_blank(gal_data_t *data)
       COPY_OTYPE_ITYPE_SET_FLT(otype, double);                          \
       break;                                                            \
                                                                         \
+    case GAL_DATA_TYPE_STRING:                                          \
+      data_copy_from_string(in, out);                                   \
+      break;                                                            \
+                                                                        \
     case GAL_DATA_TYPE_BIT:                                             \
     case GAL_DATA_TYPE_STRLL:                                           \
     case GAL_DATA_TYPE_COMPLEX:                                         \
     case GAL_DATA_TYPE_DCOMPLEX:                                        \
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently "   \
-            "doesn't support copying from %s type",                     \
-            gal_data_type_as_string(in->type, 1));                      \
+            "doesn't support copying from %s type to a numeric (real) " \
+            "type", gal_data_type_as_string(in->type, 1));              \
       break;                                                            \
                                                                         \
     default:                                                            \
@@ -2043,6 +2262,10 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
       COPY_OTYPE_SET(double);
       break;
 
+    case GAL_DATA_TYPE_STRING:
+      data_copy_to_string(in, out);
+      break;
+
     case GAL_DATA_TYPE_BIT:
     case GAL_DATA_TYPE_STRLL:
     case GAL_DATA_TYPE_COMPLEX:
@@ -2050,11 +2273,6 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
             "support copying to %s type",
             gal_data_type_as_string(newtype, 1));
-      break;
-
-    case GAL_DATA_TYPE_STRING:
-      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' is only for "
-            "numeric data types, the desired new type is a string");
       break;
 
     default:
@@ -2130,6 +2348,99 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
     }
   else
     *os=s;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************              Write             ***************
+ *************************************************************/
+char *
+gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space)
+{
+  char *c, *str;
+  switch(type)
+    {
+    /* For a string we might need to make sure it has no white space
+       characters, if it does, it can be printed it within quotation
+       signs. */
+    case GAL_DATA_TYPE_STRING:
+      if(quote_if_str_has_space)
+        {
+          c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
+          if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
+          else         asprintf(&str, "\"%s\" ", *(char **)ptr);
+        }
+      else
+        asprintf(&str, "%s", *(char **)ptr);
+      break;
+
+    case GAL_DATA_TYPE_UCHAR:
+      asprintf(&str, "%u", *(unsigned char *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      asprintf(&str, "%d", *(char *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      asprintf(&str, "%u", *(unsigned short *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      asprintf(&str, "%d", *(short *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      asprintf(&str, "%u", *(unsigned int *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      asprintf(&str, "%d", *(int *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      asprintf(&str, "%lu", *(unsigned long *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      asprintf(&str, "%ld", *(long *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      asprintf(&str, "%lld", *(LONGLONG *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      asprintf(&str, "%.6f", *(float *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      asprintf(&str, "%.10f", *(double *)ptr);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_write_to_string'", type);
+    }
+  return str;
 }
 
 

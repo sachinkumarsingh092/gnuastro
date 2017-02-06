@@ -139,6 +139,29 @@ gal_table_string_to_searchin(char *string)
 
 
 
+/* Programs that read columns might match more than one column for a given
+   property, for example it might happen (due to bad table design) that
+   multiple columns have the same name, or the user uses regular
+   expressions badly. In such cases, the following error message will be
+   useful and commonly repeated by the programs, so we are putting it here
+   for easiness and a clean code. */
+void
+gal_table_too_many_columns(char *filename)
+{
+  error(EXIT_FAILURE, 0, "there was more than one match for at least one of "
+        "the input columns from `%s'. You can check the column information "
+        "with the following command, and correct the options ending with "
+        "`col' appropriately.\n\n"
+        "   $ asttable --information %s\n\n"
+        "The current values to all options can be checked by calling the "
+        "`--printparams' (or `-P') option. To learn more about how the "
+        "columns are selected, please try the following command:\n\n"
+        "   $ info gnuastro \"Selecting table columns\" ", filename,
+        filename);
+}
+
+
+
 
 
 
@@ -411,6 +434,7 @@ gal_table_read_blank(gal_data_t *col, char *blank)
       col->dsize[0]=col->ndim=col->size=1;
     }
 }
+
 
 
 

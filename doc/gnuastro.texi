@@ -6971,14 +6971,15 @@ can be defined in multiple ways as listed below.
 @table @asis
 @item Center of multiple crops (in a catalog)
 The center of (possibly multiple) crops are read from a text file. A
-catalog can also contain WCS coordinates, so @option{--imgmode} has to be
-called/activated. The @option{--xcol} and @option{--ycol} columns in the
-catalog are interpreted as the center of a square crop with a width of
-@option{--iwidth} pixels (an odd number). The columns can contain any
-floating point value. The value to @option{--output} option is seen as a
-directory which will host (the possibly multiple) separate crop files, see
-@ref{ImageCrop output} for more. For a tutorial using this feature, please
-see @ref{Hubble visually checks and classifies his catalog}.
+catalog can also contain WCS coordinates, so @option{--mode=img} is
+necessary to avoid ambiguity when all columns are specified. The
+@option{--xcol} and @option{--ycol} columns in the catalog are interpreted
+as the center of a square crop with a width of @option{--iwidth} pixels (an
+odd number). The columns can contain any floating point value. The value to
+@option{--output} option is seen as a directory which will host (the
+possibly multiple) separate crop files, see @ref{ImageCrop output} for
+more. For a tutorial using this feature, please see @ref{Hubble visually
+checks and classifies his catalog}.
 
 @item Center of a single crop (on the command-line)
 The center of the crop is given on the command-line with the @option{--xc}
@@ -6997,8 +6998,8 @@ The latter option (@option{--polygon}) is a higher-level method to define
 any convex polygon (with any number of vertices) with floating point
 values. Please see the description of this option in @ref{Invoking
 astimgcrop} for its syntax. It is available in both Image and WCS modes,
-hence, to read the vertices as pixel coordinates, @option{--imgmode} has to
-be called/activated.
+hence, to read the vertices as pixel coordinates, @option{--mode=img} has
+to be called.
 @end table
 
 @item WCS coordinates
@@ -7027,10 +7028,11 @@ listed below.
 @table @asis
 
 @item Center of multiple crops (in a catalog)
-Similar to catalog inputs in Image mode (above), but @option{--wcsmode} has
-to be activated. The central RA and Dec value for each crop will be read
-from the @option{--racol} and @option{--deccol} columns of the input
-catalog. The square cropped box will have an odd number of pixels.
+Similar to catalog inputs in Image mode (above), but @option{--mode=wcs}
+has to be activated to avoid ambiguity. The central RA and Dec value for
+each crop will be read from the @option{--racol} and @option{--deccol}
+columns of the input catalog. The square cropped box will have an odd
+number of pixels.
 
 @item Center of a single crop (on the command-line)
 You can specify the center of only one crop box with the @option{--ra} and
@@ -7042,7 +7044,7 @@ The @option{--polygon} option is a high-level method to define any convex
 polygon (with any number of vertices). Please see the description of this
 option in @ref{Invoking astimgcrop} for its syntax. It is available in both
 Image and WCS modes, hence, to read the vertices as RA and Dec coordinates,
-@option{--wcsmode} has to be called/activated.
+@option{--mode=wcs} has to be called/activated.
 @end table
 
 @cartouche
@@ -7060,22 +7062,25 @@ align the input image with these coordinates, see @ref{ImageWarp}.
 As a summary, if you don't specify a catalog, you have to define the
 cropped region manually on the command-line. Other than the
 @option{--polygon} option, the other methods to define a single crop are
-uniqe to each mode, so the mode options (@option{--imgmode} or
-@option{--wcsmode}) will be ignored. When using a catalog, or
-@option{--polygon}, the modes have to be specified to correctly interpret
-the values.
+uniqe to each mode, so the mode (@option{--mode}) will be ignored. When
+using a catalog to define the crop centers, if the columns to only one mode
+are given (for example only @option{--xcol} and @option{--ycol}, not the
+WCS columns) then the mode is irrelevant. However, when all image and WCS
+mode columns are given, @option{--mode} is mandatory (you can keep the
+columns in a configuration file and simply set the mode, see
+@ref{Configuration files} and @ref{Selecting table columns}). When using
+@option{--polygon} the mode is mandatory to interpret the values correctly.
 
 
 @node Crop section syntax, Blank pixels, ImageCrop modes, ImageCrop
 @subsection Crop section syntax
 
 @cindex Crop a given section of image
-When in image mode, one of the methods to crop only one rectangular
-section from the input image is to use the @option{--section}
-option. ImageCrop has a powerful syntax to read the box parameters
-from a string of characters. If you leave certain parts of the string
-to be empty, ImageCrop can fill them for you based on the input image
-sizes.
+When in image mode, one of the methods to crop only one rectangular section
+from the input image is to use the @option{--section} option. ImageCrop has
+a powerful syntax to read the box parameters from a string of
+characters. If you leave certain parts of the string to be empty, ImageCrop
+can fill them for you based on the input image sizes.
 
 @cindex Define section to crop
 To define a box, you need the coordinates of two points: the first
@@ -7364,12 +7369,12 @@ the shallow region? Running ImageCrop with @option{--polygon} will easily
 pull out this region of the image for you irrespective of the
 resolution. If you have set the operating mode to WCS mode in your nearest
 configuration file (see @ref{Configuration files}), there is no need to
-call @option{--wcsmode} on the command line. You may also provide many FITS
+call @option{--mode=wcs} on the command line. You may also provide many FITS
 images/tiles and ImageCrop will stitch them to produce this cropped region:
 
 @example
-$ astimgcrop --wcsmode desired-filter-image(s).fits        \
-  --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+$ astimgcrop --mode=wcs desired-filter-image(s).fits        \
+  --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
              53.134517,-27.787144 : 53.161906,-27.807208"
 @end example
 
@@ -7453,8 +7458,9 @@ the weight images as input and @option{--suffix=_w.fits}.
 @item -b
 @itemx --noblank
 Pixels outside of the input image that are in the crop box will not be
-used. By default they are filled with blank values (depending on
-type), see @ref{Blank pixels}.
+used. By default they are filled with blank values (depending on type), see
+@ref{Blank pixels}. This option only applies only in Image mode, see
+@ref{ImageCrop modes}.
 
 @item -z
 @itemx --zeroisnotblank
@@ -7469,15 +7475,11 @@ with this option, see @ref{Blank pixels}.
 Operating mode options:
 @table @option
 
-@item -I
-@itemx --imgmode
-Operate in Image mode as described above. This option is only useful
-when catalog is being provided. If coordinates are given on the
-command-line, the mode is automatically set based on them.
-
-@item -W
-@itemx --wcsmode
-Operate in WCS mode. See explanations for @option{--imgmode}.
+@item -M STR
+@itemx --mode=STR
+Operate in Image mode or WCS mode when the input coordinates can be both
+image or WCS. The value must either be @option{img} or @option{wcs}, see
+@ref{ImageCrop modes} for a full description.
 
 @end table
 

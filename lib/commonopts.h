@@ -85,7 +85,6 @@ struct argp_option gal_commonopts_options[] =
 
 
 
-
     {
       0, 0, 0, 0,
       "Output:",
@@ -174,7 +173,7 @@ struct argp_option gal_commonopts_options[] =
       "Number of CPU threads to use.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &cp->numthreads,
-      GAL_DATA_TYPE_ULONG,
+      GAL_DATA_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -187,7 +186,7 @@ struct argp_option gal_commonopts_options[] =
       "Minimum no. bytes to map arrays to hdd/ssd.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &cp->minmapsize,
-      GAL_DATA_TYPE_ULONG,
+      GAL_DATA_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -197,7 +196,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_LOG,
       0,
       0,
-      "No log file for programs which make one.",
+      "Information about output(s) in a log file.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &cp->log,
       GAL_OPTIONS_NO_ARG_TYPE,

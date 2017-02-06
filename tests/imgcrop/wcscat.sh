@@ -53,4 +53,5 @@ for fn in $img; do if [ ! -f $fn ]; then exit 77; fi; done
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 cat=$topsrc/tests/$prog/cat.txt
-$execname $cat $img --suffix=_wcscat.fits --zeroisnotblank --numthreads=1
+$execname $img --catalog=$cat --mode=wcs --suffix=_wcscat.fits        \
+          --zeroisnotblank --racol=4 --deccol=DEC_CENTER --numthreads=1

@@ -49,6 +49,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAL_CONFIG_BIN_OP_FLOAT         @HAVE_BIN_OP_FLOAT@
 #define GAL_CONFIG_BIN_OP_DOUBLE        @HAVE_BIN_OP_DOUBLE@
 
+#define GAL_CONFIG_SIZEOF_SIZE_T        @SIZEOF_SIZE_T@
 
 
 /* C++ Preparations */

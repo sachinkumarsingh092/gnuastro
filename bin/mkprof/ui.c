@@ -302,11 +302,6 @@ ui_read_check_only_options(struct mkprofparams *p)
           "a column for the position along the %s axis with the `%s' option",
           p->racol?"racol":"deccol", p->racol?"Dec":"RA",
           p->xcol?"deccol":"racol");
-
-  /* If a log file is to be created, make sure that one doesn't already
-     exist. */
-  if(p->cp.log)
-    gal_checkset_check_remove_file(LOGFILENAME, p->cp.dontdelete);
 }
 
 
@@ -455,9 +450,6 @@ ui_read_cols(struct mkprofparams *p)
      the same as those that were wanted (it might be more). */
   while(cols!=NULL)
     {
-      /* Increment the column counter. */
-      ++counter;
-
       /* Pop out the top node. */
       tmp=gal_data_pop_from_ll(&cols);
 
@@ -465,7 +457,7 @@ ui_read_cols(struct mkprofparams *p)
       /* Note that the input was a linked list, so the output order is the
          inverse of the input order. For the position, we will store the
          values into the `x' and `y' arrays even if they are RA/Dec. */
-      switch(counter)
+      switch(++counter)
         {
         case 9:
           colname="first axis position";
@@ -548,17 +540,7 @@ ui_read_cols(struct mkprofparams *p)
         /* If the index isn't recognized, then it is larger, showing that
            there was more than one match for the given criteria */
         default:
-          error(EXIT_FAILURE, 0, "there was more than one match for at "
-                "least one of the input columns from `%s'. You can check "
-                "the column information with the following command, and "
-                "correct the options ending with `col' appropriately.\n\n"
-                "   $ asttable --information %s\n\n"
-                "The current values to all options can be checked by calling "
-                "the `--printparams' (or `-P') option. To learn more about "
-                "how the columns are selected, please try the following "
-                "command:\n\n"
-                "   $ info gnuastro \"Selecting table columns\" ",
-                p->catname, p->catname);
+          gal_table_too_many_columns(p->catname);
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
@@ -577,7 +559,7 @@ ui_read_cols(struct mkprofparams *p)
              structure. Hence, we should set the structure's pointer to
              NULL so the important data isn't freed.*/
           corrtype->array=NULL;
-          free(corrtype);
+          gal_data_free(corrtype);
         }
     }
 }
@@ -1085,6 +1067,10 @@ ui_free_report(struct mkprofparams *p, struct timeval *t1)
 
   /* Free the random number generator: */
   gsl_rng_free(p->rng);
+
+  /* Free the log file information. */
+  if(p->cp.log)
+    gal_data_free_ll(p->log);
 
   /* Report the duration of the job */
   if(!p->cp.quiet)

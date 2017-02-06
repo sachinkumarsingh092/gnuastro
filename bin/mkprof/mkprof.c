@@ -367,44 +367,6 @@ mkprof_build(void *inparam)
 /**************************************************************/
 /************              The writer             *************/
 /**************************************************************/
-static void
-mkprof_write_log(struct mkprofparams *p)
-{
-  char *comments, gitdescribe[100], *gd;
-
-  /* This function is only relevant if a log file was desired. */
-  if(!p->cp.log) return;
-
-  /* Get the Git description in the running folder. */
-  gd=gal_git_describe();
-  if(gd) sprintf(gitdescribe, " from %s,", gd);
-  else   gitdescribe[0]='\0';
-
-  /* Make the comments. */
-  asprintf(&comments, "# %s\n# Created%s on %s# Zeropoint: %.4f",
-           PROGRAM_STRING, gitdescribe, ctime(&p->rawtime), p->zeropoint);
-
-  /* Write the log file to disk */
-  gal_table_write(p->log, comments, GAL_TABLE_FORMAT_TXT, LOGFILENAME,
-                  p->cp.dontdelete);
-  free(comments);
-
-  /* In verbose mode, print the information. */
-  if(!p->cp.quiet)
-    {
-      asprintf(&comments, "%s created.", LOGFILENAME);
-      gal_timing_report(NULL, comments, 1);
-      free(comments);
-    }
-
-  /* Clean up. */
-  gal_data_free_ll(p->log);
-}
-
-
-
-
-
 void
 mkprof_write(struct mkprofparams *p)
 {
@@ -607,6 +569,7 @@ mkprof(struct mkprofparams *p)
 {
   int err;
   pthread_t t;            /* Thread id not used, all are saved here. */
+  char *comments;
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct mkonthread *mkp;
@@ -677,7 +640,13 @@ mkprof(struct mkprofparams *p)
   mkprof_write(p);
 
   /* Write the log file. */
-  mkprof_write_log(p);
+  if(p->cp.log)
+    {
+      asprintf(&comments, "# Zeropoint: %.4f", p->zeropoint);
+      gal_options_print_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
+                            LOGFILENAME, &p->cp);
+      free(comments);
+    }
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy
      the attribute and barrier. */

@@ -117,6 +117,7 @@ gnuastro/config.h: Makefile config.h.in
 	       -e 's|@HAVE_BIN_OP_LONGLONG[@]|$(HAVE_BIN_OP_LONGLONG)|g'  \
 	       -e 's|@HAVE_BIN_OP_FLOAT[@]|$(HAVE_BIN_OP_FLOAT)|g'        \
 	       -e 's|@HAVE_BIN_OP_DOUBLE[@]|$(HAVE_BIN_OP_DOUBLE)|g'      \
+	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g'                \
                $(srcdir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@

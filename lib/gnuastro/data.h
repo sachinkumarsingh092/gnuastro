@@ -35,6 +35,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/linkedlist.h>
 
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   `GAL_CONFIG_SIZEOF_SIZE_T' that we need below) is kept in
+   `config.h'. When building a user's programs, this information is kept in
+   `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
+   start with the inclusion of `config.h' and that `gnuastro/config.h' is
+   only created at installation time (not present during the building of
+   Gnuastro).*/
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -85,7 +96,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Macros to identify the type of data. The macros in the comment
-   parenthesis is the equivalent macro in CFITSIO. */
+   parenthesis is the equivalent macro in CFITSIO.
+
+   IMPORTANT: the integer types must have a smaller value than the floating
+              point types.
+*/
 enum gal_data_types
 {
   GAL_DATA_TYPE_INVALID,   /* Invalid (=0 by C standard).    */
@@ -94,7 +109,6 @@ enum gal_data_types
   GAL_DATA_TYPE_UCHAR,     /* unsigned char    (TBYTE).       */
   GAL_DATA_TYPE_CHAR,      /* char             (TSBYTE).      */
   GAL_DATA_TYPE_LOGICAL,   /* char             (TLOGICAL).    */
-  GAL_DATA_TYPE_STRING,    /* string           (TSTRING).     */
   GAL_DATA_TYPE_USHORT,    /* unsigned short   (TUSHORT).     */
   GAL_DATA_TYPE_SHORT,     /* short            (TSHORT).      */
   GAL_DATA_TYPE_UINT,      /* unsigned int     (TUINT).       */
@@ -102,13 +116,26 @@ enum gal_data_types
   GAL_DATA_TYPE_ULONG,     /* unsigned long    (TLONG).       */
   GAL_DATA_TYPE_LONG,      /* long             (TLONG).       */
   GAL_DATA_TYPE_LONGLONG,  /* long long        (TLONGLONG).   */
+
   GAL_DATA_TYPE_FLOAT,     /* float            (TFLOAT).      */
   GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
   GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
   GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
 
+  GAL_DATA_TYPE_STRING,    /* string           (TSTRING).     */
+
   GAL_DATA_TYPE_STRLL,     /* String linked list.             */
 };
+
+/* `size_t' is 4 and 8 bytes on 32 and 64 bit systems respectively. In both
+   cases, the standard defines `size_t' to be unsigned. During
+   `./configure' the sizeof size_t was found and is stored in
+   `GAL_CONFIG_SIZEOF_SIZE_T'. */
+#if GAL_CONFIG_SIZEOF_SIZE_T == 4
+#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT
+#else
+#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_ULONG
+#endif
 
 
 
@@ -301,6 +328,13 @@ void
 gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
                       gal_data_t **of, gal_data_t **os,
                       int type, int freeinputs);
+
+
+/*************************************************************
+ **************              Write             ***************
+ *************************************************************/
+char *
+gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space);
 
 
 

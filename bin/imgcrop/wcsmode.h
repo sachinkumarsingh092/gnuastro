@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define WCSMODE_H
 
 void
-wcscheckprepare(struct imgcropparams *p, struct inputimgs *img);
+wcs_check_prepare(struct imgcropparams *p, struct inputimgs *img);
 
 void
 setcsides(struct cropparams *crp);

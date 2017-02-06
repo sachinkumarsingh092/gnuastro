@@ -1219,7 +1219,10 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
  *************************************************************/
 
 /* Note that the FITS standard defines any array as an `image',
-   irrespective of how many dimensions it has. */
+   irrespective of how many dimensions it has. This function will return
+   the Gnuastro-type and also the number of dimensions and size along each
+   dimension of the image. Note that `*dsize' will be allocated here, so it
+   must not point to any already allocated space. */
 void
 gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
 {

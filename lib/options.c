@@ -28,13 +28,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/git.h>
 #include <gnuastro/txt.h>
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
-
+#include <timing.h>
 #include <options.h>
 #include <checkset.h>
 
@@ -188,7 +189,7 @@ options_print_citation_exit(struct gal_options_common_params *cp)
   char *gnuastro_bibtex=
     "Gnuastro package/infrastructure\n"
     "-------------------------------\n"
-    "  @ARTICLE{noisechisel-gnuastro,\n"
+    "  @ARTICLE{2015ApJS..220....1A,\n"
     "     author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"
     "      title = \"{Noise-based Detection and Segmentation of Nebulous "
     "Objects}\",\n"
@@ -214,7 +215,9 @@ options_print_citation_exit(struct gal_options_common_params *cp)
   printf("\nThank you for using %s (%s) %s.\n\n", cp->program_name,
          PACKAGE_NAME, PACKAGE_VERSION);
   printf("Citations are vital for the continued work on Gnuastro.\n\n"
-         "Please cite these BibTeX record(s) in your paper(s).\n\n%s\n\n",
+         "Please cite these BibTeX record(s) in your paper(s).\n"
+         "(don't forget to also include the version as shown above)\n\n"
+         "%s\n\n",
          gnuastro_bibtex);
 
 
@@ -386,6 +389,20 @@ options_sanity_check(struct argp_option *option, char *arg,
       multicheckop=GAL_ARITHMETIC_OP_AND;
       break;
 
+    case GAL_OPTIONS_RANGE_0_OR_ODD:
+      message="greater than, or equal to, zero and odd";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=2;
+
+      operator1=GAL_ARITHMETIC_OP_EQ;
+      operator2=GAL_ARITHMETIC_OP_MODULO;
+      multicheckop=GAL_ARITHMETIC_OP_OR;
+      break;
+
     default:
       error(EXIT_FAILURE, 0, "range code %d not recognized in "
             "`gal_options_check_set'", option->range);
@@ -439,18 +456,22 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
     {
       /* Read the string argument into the value. */
       if( gal_data_string_to_type(&option->value, arg, option->type) )
-
         /* Fortunately `error_at_line' will behave like `error' when the
            filename is NULL (the option was read from a command-line). */
         error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s' (value to option `%s') couldn't be read into "
+                      "`%s' (value to option `--%s') couldn't be read into "
                       "the proper numerical type. Common causes for this "
                       "error are:\n"
-                      "  - It contains non-numerical characters\n"
+                      "  - It contains non-numerical characters.\n"
                       "  - It is negative, but the expected value is "
-                      "positive\n"
+                      "positive.\n"
                       "  - It is floating point, but the expected value "
-                      "is an integer\n", arg, option->name);
+                      "is an integer.\n"
+                      "  - The previous option required a value, but you "
+                      "forgot to give it one, so the next option's "
+                      "name(+value, if there are no spaces between them) "
+                      "is read as the value of the previous option.", arg,
+                      option->name);
     }
 
   /* Do a sanity check. */
@@ -1014,65 +1035,10 @@ option_is_printable(struct argp_option *option)
 static int
 options_print_any_type(void *ptr, int type, int width, FILE *fp)
 {
-  char *c, *str;
-  switch(type)
-    {
-    /* For a string we need to make sure it has no white space characters,
-       if it does, it should be printed it within quotation signs. */
-    case GAL_DATA_TYPE_STRING:
-      c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
-      if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
-      else         asprintf(&str, "\"%s\" ", *(char **)ptr);
-      break;
+  char *str;
 
-    case GAL_DATA_TYPE_UCHAR:
-      asprintf(&str, "%u", *(unsigned char *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_CHAR:
-      asprintf(&str, "%d", *(char *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_USHORT:
-      asprintf(&str, "%u", *(unsigned short *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_SHORT:
-      asprintf(&str, "%d", *(short *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_UINT:
-      asprintf(&str, "%u", *(unsigned int *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_INT:
-      asprintf(&str, "%d", *(int *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_ULONG:
-      asprintf(&str, "%lu", *(unsigned long *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_LONG:
-      asprintf(&str, "%ld", *(long *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      asprintf(&str, "%lld", *(LONGLONG *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
-      asprintf(&str, "%.6f", *(float *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      asprintf(&str, "%.10f", *(double *)ptr);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`options_print_any_type'", type);
-    }
+  /* Write the value into a string. */
+  str=gal_data_write_to_string(ptr, type, 1);
 
   /* If only the width was desired, don't actually print the string, just
      return its length. Otherwise, print it. */
@@ -1418,4 +1384,42 @@ gal_options_print_state(struct gal_options_common_params *cp)
           free(dirname);
           break;
         }
+}
+
+
+
+
+
+void
+gal_options_print_log(gal_data_t *logll, char *program_string,
+                      time_t *rawtime, char *comments, char *filename,
+                      struct gal_options_common_params *cp)
+{
+  char *finalcomment;
+  char *msg, gitdescribe[100], *gd;
+
+  /* Get the Git description in the running folder. */
+  gd=gal_git_describe();
+  if(gd) sprintf(gitdescribe, " from %s,", gd);
+  else   gitdescribe[0]='\0';
+
+  /* Write the top level comment. */
+  asprintf(&finalcomment, "# %s\n# Created%s on %s%s",
+           program_string, gitdescribe, ctime(rawtime),
+           comments ? comments : "#");
+
+  /* Write the log file to disk */
+  gal_table_write(logll, finalcomment, GAL_TABLE_FORMAT_TXT, filename,
+                  cp->dontdelete);
+
+  /* In verbose mode, print the information. */
+  if(!cp->quiet)
+    {
+      asprintf(&msg, "%s created.", filename);
+      gal_timing_report(NULL, msg, 1);
+      free(msg);
+    }
+
+  /* Clean up. */
+  free(finalcomment);
 }

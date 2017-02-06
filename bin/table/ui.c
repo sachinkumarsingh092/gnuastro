@@ -317,7 +317,7 @@ ui_preparations(struct tableparams *p)
          information. */
       if(p->information)
         {
-          freeandreport(p);
+          ui_free_report(p);
           exit(EXIT_SUCCESS);
         }
       else
@@ -444,7 +444,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct tableparams *p)
+ui_free_report(struct tableparams *p)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);

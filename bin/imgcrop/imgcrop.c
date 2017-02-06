@@ -53,28 +53,132 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    file should be used for checking the outputs, not the outputs printed on
    the screen. */
 void
-reportcrop(struct imgcroplog *log)
+imgcrop_verbose_info(struct cropparams *crp)
 {
   char *filestatus, *msg;
-  size_t outnamelen=strlen(log->name);;
+  size_t outnamelen=strlen(crp->name);;
 
   /* Human readable values. */
-  filestatus = ( log->centerfilled==0
-                 ? "not created (blank center)" : "created");
+  filestatus = ( crp->centerfilled==0
+                 ? ( crp->numimg == 0
+                     ? "no overlap"
+                     : "removed (blank center)" )
+                 : "created");
 
   /* Define the output string based on the length of the output file. */
   if ( outnamelen > FILENAME_BUFFER_IN_VERB )
-    asprintf(&msg, "...%s %s from %zu input%s.",
-            &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
-            filestatus, log->numimg, log->numimg > 1 ? "s" : "");
+    asprintf(&msg, "...%s %s: %zu input%s.",
+             &crp->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
+             filestatus, crp->numimg, crp->numimg==1 ?  "" :"s");
   else
-    asprintf(&msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %s from %zu "
-             "input%s.", log->name, filestatus, log->numimg,
-             log->numimg > 1 ? "s" : "");
+    asprintf(&msg, "%-*s %s: %zu input%s.", FILENAME_BUFFER_IN_VERB,
+             crp->name, filestatus, crp->numimg, crp->numimg==1 ? "" : "s");
 
   /* Print the results. */
   gal_timing_report(NULL, msg, 2);
   free(msg);
+}
+
+
+
+
+
+/* Print final statistics in verbose mode. */
+void
+imgcrop_verbose_final(struct imgcropparams *p)
+{
+  char *msg;
+  gal_data_t *tmp;
+  size_t i, counter=0, numcrops=0, numstitched=0, numcfilled=0;
+
+  /* This function is only useful in verbose (non-quiet) mode. */
+  if(p->cp.quiet) return;
+
+  /* The information is only available if the user asks for a log file. */
+  if(p->catname && p->log)
+    {
+      /* Get the basic counts. */
+      for(tmp=p->log; tmp!=NULL; tmp=tmp->next)
+        switch(++counter)
+          {
+          case 2:
+            for(i=0;i<p->numout;++i)
+              if( ((unsigned short *)(tmp->array))[i] > 1) ++numstitched;
+            break;
+          case 3:
+            /* When the center wasn't checked it has a value of -1, and
+               when it was checked and the center was filled, it has a
+               value of 1. So if `array[i]==0', we know that the file was
+               removed. */
+            for(i=0;i<p->numout;++i)
+              {
+                if( ((unsigned char *)(tmp->array))[i] )      ++numcrops;
+                if( ((unsigned char *)(tmp->array))[i] == 1 ) ++numcfilled;
+              }
+
+            break;
+          }
+
+      /* Print the basic information. */
+      asprintf(&msg, "%zu crops created.", numcrops);
+      gal_timing_report(NULL, msg, 1);
+      free(msg);
+
+      /* Only if the user wanted to check the center. */
+      if(p->checkcenter)
+        {
+          asprintf(&msg, "%zu filled in the center.",
+                   numcfilled);
+          gal_timing_report(NULL, msg, 1);
+          free(msg);
+        }
+
+      /* Only if there were stitched images. */
+      if(numstitched)
+        {
+          asprintf(&msg, "%zu crops used more than one input.",
+                  numstitched);
+          gal_timing_report(NULL, msg, 1);
+          free(msg);
+        }
+    }
+
+}
+
+
+
+
+
+void
+imgcrop_write_to_log(struct cropparams *crp)
+{
+  char **strarr;
+  gal_data_t *tmp;
+  size_t counter=0;
+
+  for(tmp=crp->p->log; tmp!=NULL; tmp=tmp->next)
+    {
+      switch(++counter)
+        {
+        case 1:
+          strarr=tmp->array;
+          gal_checkset_allocate_copy(crp->name, &strarr[crp->out_ind]);
+          break;
+
+        case 2:
+          ((unsigned short *)(tmp->array))[crp->out_ind]=crp->numimg;
+          break;
+
+        case 3:
+          ((unsigned char *)(tmp->array))[crp->out_ind]=crp->centerfilled;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to fix the "
+                "problem. For some reason `counter' has become %zu in "
+                "`imgcrop_write_to_log'", PACKAGE_BUGREPORT, counter);
+        }
+    }
 }
 
 
@@ -86,59 +190,59 @@ imgmodecrop(void *inparam)
 {
   struct cropparams *crp=(struct cropparams *)inparam;
   struct imgcropparams *p=crp->p;
-  struct gal_commonparams *cp=&p->cp;
 
   size_t i;
   int status;
   struct inputimgs *img;
-  struct imgcroplog *log;
 
   /* In image mode, we always only have one image. */
-  crp->imgindex=0;
+  crp->in_ind=0;
 
   /* The whole catalog is from one image, so you can get the
      information here:*/
-  img=&p->imgs[crp->imgindex];
-  gal_fits_read_hdu(img->name, cp->hdu, 0, &crp->infits);
+  img=&p->imgs[crp->in_ind];
+  crp->infits=gal_fits_read_hdu(img->name, p->cp.hdu, 0);
 
   /* Go over all the outputs that are assigned to this thread: */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set all the output parameters: */
-      crp->outindex=crp->indexs[i];
-      log=&p->log[crp->outindex];
+      crp->out_ind=crp->indexs[i];
       crp->outfits=NULL;
-      log->numimg=0;
+      crp->numimg=0;
       cropname(crp);
 
       /* Crop the image. */
       onecrop(crp);
 
       /* Check the final output: */
-      if(log->numimg)
+      if(crp->numimg)
         {
           /* Check if the center of the crop is filled or not. */
-          log->centerfilled=iscenterfilled(crp);
+          crp->centerfilled=iscenterfilled(crp);
 
           /* Add the final headers and close output FITS image: */
-          gal_fits_write_keys_version(crp->outfits, NULL, SPACK_STRING);
+          gal_fits_write_keys_version(crp->outfits, NULL, PROGRAM_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close "
                                    "the opened file");
 
           /* Remove the output image if its center was not filled. */
-          if(log->centerfilled==0)
+          if(crp->centerfilled==0)
             {
               errno=0;
-              if(unlink(log->name))
-                error(EXIT_FAILURE, errno, "%s", log->name);
+              if(unlink(crp->name))
+                error(EXIT_FAILURE, errno, "can't delet %s (center"
+                      "was blank)", crp->name);
             }
+
         }
-      else log->centerfilled=0;
+      else crp->centerfilled=0;
 
       /* Report the status on stdout if verbose mode is requested. */
-      if(cp->verb) reportcrop(log);
+      if(!p->cp.quiet) imgcrop_verbose_info(crp);
+      if(p->cp.log)    imgcrop_write_to_log(crp);
     }
 
   /* Close the input image. */
@@ -148,7 +252,7 @@ imgmodecrop(void *inparam)
                       "not close FITS file");
 
   /* Wait until all other threads finish. */
-  if(cp->numthreads>1)
+  if(p->cp.numthreads>1)
     pthread_barrier_wait(crp->b);
 
   return NULL;
@@ -165,18 +269,17 @@ wcsmodecrop(void *inparam)
   struct imgcropparams *p=crp->p;
 
   size_t i;
-  int status, tcatset=0;
-  struct imgcroplog *log;
+  int status;
+
 
   /* Go over all the output objects for this thread. */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set all the output parameters: */
-      crp->outindex=crp->indexs[i];
-      log=&p->log[crp->outindex];
+      crp->out_ind=crp->indexs[i];
       crp->outfits=NULL;
-      log->name=NULL;
-      log->numimg=0;
+      crp->name=NULL;
+      crp->numimg=0;
 
 
       /* Set the sides of the crop in RA and Dec */
@@ -185,57 +288,58 @@ wcsmodecrop(void *inparam)
 
       /* Go over all the images to see if this target is within their
          range or not. */
-      crp->imgindex=0;
+      crp->in_ind=0;
       do
         if(radecoverlap(crp))
           {
-            gal_fits_read_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
-                              0, &crp->infits);
+            /* Open the input FITS file. */
+            crp->infits=gal_fits_read_hdu(p->imgs[crp->in_ind].name,
+                                          p->cp.hdu, 0);
 
-            if(log->name==NULL) cropname(crp);
+            /* If a name isn't set yet, set it. */
+            if(crp->name==NULL) cropname(crp);
 
+            /* Do the crop. */
             onecrop(crp);
 
+            /* Close the file. */
             status=0;
             if( fits_close_file(crp->infits, &status) )
               gal_fits_io_error(status, "imgmode.c: imgcroponthreads "
                                      "could not close FITS file");
           }
-      while ( ++(crp->imgindex) < p->numimg );
+      while ( ++(crp->in_ind) < p->numin );
 
 
       /* Check the final output: */
-      if(log->numimg)
+      if(crp->numimg)
         {
-          log->centerfilled=iscenterfilled(crp);
+          crp->centerfilled=iscenterfilled(crp);
 
-          gal_fits_write_keys_version(crp->outfits, NULL, SPACK_STRING);
+          gal_fits_write_keys_version(crp->outfits, NULL, PROGRAM_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close the "
                                      "opened file");
 
-          if(log->centerfilled==0)
+          if(crp->centerfilled==0)
             {
               errno=0;
-              if(unlink(log->name))
-                error(EXIT_FAILURE, errno, "%s", log->name);
+              if(unlink(crp->name))
+                error(EXIT_FAILURE, errno, "%s", crp->name);
             }
         }
       else
         {
-          if(p->up.catset==0)    /* Trick cropname into making a catalog */
-            {                    /* So we have a name for log report.    */
-              tcatset=1;
-              p->up.catset=1;
-            }
           cropname(crp);
-          if(tcatset) p->up.catset=0;
-          log->centerfilled=0;
+          crp->centerfilled=0;
         }
 
+
+
       /* Report the status on stdout if verbose mode is requested. */
-      if(p->cp.verb) reportcrop(log);
+      if(!p->cp.quiet) imgcrop_verbose_info(crp);
+      if(p->cp.log)    imgcrop_write_to_log(crp);
     }
 
   /* Wait until all other threads finish, then return. */
@@ -274,6 +378,7 @@ void
 imgcrop(struct imgcropparams *p)
 {
   int err=0;
+  char *comments;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
@@ -282,15 +387,10 @@ imgcrop(struct imgcropparams *p)
   size_t nt=p->cp.numthreads, nb;
   void *(*modefunction)(void *)=NULL;
 
+
   /* Set the function to run: */
-  if(p->imgmode)
-    modefunction=&imgmodecrop;
-  else if(p->wcsmode)
-    modefunction=&wcsmodecrop;
-  else
-    error(EXIT_FAILURE, 0, "a bug! Somehow in imgcrop (imgcrop.c), "
-          "neither the imgmode is on or the wcsmode! Please contact us "
-          "so we can fix it, thanks");
+  modefunction = p->mode==IMGCROP_MODE_IMG ? &imgmodecrop : &wcsmodecrop;
+
 
   /* Allocate the array of structures to keep the thread and parameters for
      each thread. */
@@ -301,15 +401,9 @@ imgcrop(struct imgcropparams *p)
           "%zu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
 
 
-  /* Get the length of the output, no reasonable integer can have more
-     than 50 characters! Since this is fixed for all the threads and
-     images, we will just find it once here. */
-  crp[0].outlen=strlen(p->cp.output)+strlen(p->suffix)+50;
-
-
   /* Distribute the indexs into the threads (this is needed even if we
      only have one object where p->cs0 is not defined): */
-  gal_threads_dist_in_threads(p->up.catset ? p->cs0 : 1, nt,
+  gal_threads_dist_in_threads(p->catname ? p->numout : 1, nt,
                               &indexs, &thrdcols);
 
 
@@ -327,8 +421,8 @@ imgcrop(struct imgcropparams *p)
          (that spinns off the nt threads) is also a thread, so the
          number the barrier should be one more than the number of
          threads spinned off. */
-      if(p->cs0<nt) nb=p->cs0+1;
-      else          nb=nt+1;
+      if(p->numout<nt) nb=p->numout+1;
+      else             nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
@@ -337,7 +431,6 @@ imgcrop(struct imgcropparams *p)
           {
             crp[i].p=p;
             crp[i].b=&b;
-            crp[i].outlen=crp[0].outlen;
             crp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, modefunction, &crp[i]);
             if(err)
@@ -351,12 +444,21 @@ imgcrop(struct imgcropparams *p)
     }
 
 
-  /* Print the log file: */
-  if(!p->cp.nolog)
-    printlog(p);
+  /* Print the log file. */
+  if(p->cp.log)
+    {
+      if(p->checkcenter)
+        asprintf(&comments, "# Width of central check box: %zu\n#",
+                 p->checkcenter);
+      else
+        comments=NULL;
+      gal_options_print_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
+                            LOGFILENAME, &p->cp);
+      if(comments) free(comments);
+    }
 
-
-  /* Clean up. */
-  free(crp);
+  /* Print the final verbose info, save log, and clean up: */
+  imgcrop_verbose_final(p);
   free(indexs);
+  free(crp);
 }
