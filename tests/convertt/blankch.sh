@@ -53,4 +53,4 @@ fi
 
 # Actual test script
 # ==================
-$execname blank $img blank --output=blankch.jpg --noinvert
+$execname blank $img blank --output=blankch.jpg

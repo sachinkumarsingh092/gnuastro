@@ -6534,17 +6534,16 @@ might be better demonstrated with a limited flux range.
 @noindent
 Input:
 @table @option
-@item --hdu2
-If the second input file is a FITS file, the value to this option will
-be used to specify which HDU will be used. Note that for the first
-file, the (@option{--hdu} or @option{-h} in the common options is
-used)
-
-@item --hdu3
-The HDU of the third input FITS file.
-
-@item --hdu4
-The HDU of the fourth input FITS file.
+@item -h STR/INT
+@itemx --hdu=STR/INT
+In ConvertType, it is possible to call the HDU option multiple times for
+the different input FITS files (corresponding to different color channels)
+in the same order that they are called on the command-line. Except for the
+fact that multiple calls are possible, this option is identical to the
+common @option{--hdu} in @ref{Input output}. The number of calls to this
+option cannot be less than the number of input FITS files, but if there are
+more, the extra HDUs will be ignored, note that they will be read in the
+order described in @ref{Configuration file precedence}.
 @end table
 
 @noindent
@@ -6687,23 +6686,15 @@ than @option{--fluxlow}, then this option is redundant.
 @itemx --fhmaxbyte=INT
 See @option{--flminbyte}.
 
-@item -l
-@itemx --log
-Display the logarithm of the input data. This is done after the
-conversion and flux truncation steps, see above.
 
-@item -n
-@itemx --noinvert
-For 8-bit output types (JPEG and EPS for example) the final value that
-is stored is inverted so white becomes black and vice versa. The
-reason for this is that astronomical images usually have a very large
-area of blank sky in them. The result will be that a large are of the
-image will be black. Therefore, by default the 8-bit values are
-inverted so the images blend in better with the text in a document.
-
-Note that this behaviour is ideal for grayscale images, if you want a
-color image, the colors are going to be mixed up. For color images it
-is best to call this option so the image is not inverted.
+@item -i
+@itemx --invert
+For 8-bit output types (JPEG, EPS, and PDF for example) the final value
+that is stored is inverted so white becomes black and vice versa. The
+reason for this is that astronomical images usually have a very large area
+of blank sky in them. The result will be that a large are of the image will
+be black. Note that this behaviour is ideal for grayscale images, if you
+want a color image, the colors are going to be mixed up.
 
 @end table
 

@@ -53,4 +53,4 @@ fi
 
 # Actual test script
 # ==================
-$execname $img --output=pdf --log
+$execname $img --output=pdf --invert

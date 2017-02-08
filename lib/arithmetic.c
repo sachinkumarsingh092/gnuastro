@@ -97,17 +97,17 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
   /* 'value' will only be read from one of these based on the
      datatype. Which the caller assigned. If there is any problem, it is
      their responsability, not this function's.*/
-  unsigned char     *uc = data->array,   *ucf = data->array + data->size, *o;
-  char               *c = data->array,    *cf = data->array + data->size;
-  unsigned short    *us = data->array,   *usf = data->array + data->size;
-  short              *s = data->array,    *sf = data->array + data->size;
-  unsigned int      *ui = data->array,   *uif = data->array + data->size;
-  int               *in = data->array,   *inf = data->array + data->size;
-  unsigned long     *ul = data->array,   *ulf = data->array + data->size;
-  long               *l = data->array,    *lf = data->array + data->size;
-  LONGLONG           *L = data->array,    *Lf = data->array + data->size;
-  float              *f = data->array,    *ff = data->array + data->size;
-  double             *d = data->array,    *df = data->array + data->size;
+  unsigned char     *uc = data->array,   *ucf = uc + data->size, *o;
+  char               *c = data->array,    *cf = c  + data->size;
+  unsigned short    *us = data->array,   *usf = us + data->size;
+  short              *s = data->array,    *sf = s  + data->size;
+  unsigned int      *ui = data->array,   *uif = ui + data->size;
+  int               *in = data->array,   *inf = in + data->size;
+  unsigned long     *ul = data->array,   *ulf = ul + data->size;
+  long               *l = data->array,    *lf = l  + data->size;
+  LONGLONG           *L = data->array,    *Lf = L  + data->size;
+  float              *f = data->array,    *ff = f  + data->size;
+  double             *d = data->array,    *df = d  + data->size;
 
 
   /* Allocate the output array. */
@@ -164,17 +164,17 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
 {
   gal_data_t *out;
 
-  unsigned char  *ouc,  *uc = in->array,   *ucf = in->array + in->size;
-  char            *oc,   *c = in->array,    *cf = in->array + in->size;
-  unsigned short *ous,  *us = in->array,   *usf = in->array + in->size;
-  short           *os,   *s = in->array,    *sf = in->array + in->size;
-  unsigned int   *oui,  *ui = in->array,   *uif = in->array + in->size;
-  int             *oi,  *ii = in->array,   *iif = in->array + in->size;
-  unsigned long  *oul,  *ul = in->array,   *ulf = in->array + in->size;
-  long            *ol,   *l = in->array,    *lf = in->array + in->size;
-  LONGLONG        *oL,   *L = in->array,    *Lf = in->array + in->size;
-  float           *of,   *f = in->array,    *ff = in->array + in->size;
-  double          *od,   *d = in->array,    *df = in->array + in->size;
+  unsigned char  *ouc,  *uc = in->array,   *ucf = uc + in->size;
+  char            *oc,   *c = in->array,    *cf = c  + in->size;
+  unsigned short *ous,  *us = in->array,   *usf = us + in->size;
+  short           *os,   *s = in->array,    *sf = s  + in->size;
+  unsigned int   *oui,  *ui = in->array,   *uif = ui + in->size;
+  int             *oi,  *ii = in->array,   *iif = ii + in->size;
+  unsigned long  *oul,  *ul = in->array,   *ulf = ul + in->size;
+  long            *ol,   *l = in->array,    *lf = l  + in->size;
+  LONGLONG        *oL,   *L = in->array,    *Lf = L  + in->size;
+  float           *of,   *f = in->array,    *ff = f  + in->size;
+  double          *od,   *d = in->array,    *df = d  + in->size;
 
   /* Set the output array. */
   if(flags & GAL_ARITHMETIC_INPLACE)
@@ -714,9 +714,9 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
 /***********************************************************************/
 #define DO_WHERE_OPERATION(ITT, OT) {                                \
     ITT *it=iftrue->array;                                           \
-    OT *o=out->array, *of=out->array+out->size;                      \
+    OT *o=out->array, *of=o+out->size;                               \
     if(iftrue->size==1)                                              \
-      do   *o = *c++ ? *it : *o;         while(++o<of);              \
+      do { *o = *c++ ? *it : *o;       } while(++o<of);              \
     else                                                             \
       do { *o = *c++ ? *it : *o; ++it; } while(++o<of);              \
 }

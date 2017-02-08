@@ -269,6 +269,9 @@ gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
 gal_data_t *
 gal_data_pop_from_ll(struct gal_data_t **list);
 
+void
+gal_data_reverse_ll(gal_data_t **list);
+
 size_t
 gal_data_num_in_ll(struct gal_data_t *list);
 

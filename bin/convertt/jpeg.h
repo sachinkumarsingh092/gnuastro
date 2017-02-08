@@ -29,10 +29,10 @@ nameisjpeg(char *name);
 int
 nameisjpegsuffix(char *name);
 
-void
-preparejpeg(struct converttparams *p, char *filename);
+size_t
+jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize);
 
 void
-savejpeg(struct converttparams *p);
+jpeg_write(struct converttparams *p);
 
 #endif

@@ -623,6 +623,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
   /* Do the simple copying cases. For the display elements, set them all to
      impossible (negative) values so if not explicitly set by later steps,
      the default values are used if/when printing.*/
+  data->wcs=NULL;
   data->status=0;
   data->next=NULL;
   data->ndim=ndim;
@@ -961,9 +962,38 @@ gal_data_t *
 gal_data_pop_from_ll(gal_data_t **list)
 {
   struct gal_data_t *out;
+
+  /* Keep the top pointer. */
   out=*list;
+
+  /* Move the list pointer to the next node. */
   *list=out->next;
+
+  /* Set the next poitner of the out pointer to NULL so it isn't
+     interpretted as a list any more. */
+  out->next=NULL;
   return out;
+}
+
+
+
+
+
+void
+gal_data_reverse_ll(gal_data_t **list)
+{
+  gal_data_t *popped, *in=*list, *reversed=NULL;
+
+  /* Only do the job if the list is not NULL and has more than one node. */
+  if( in && in->next )
+    {
+      while(in!=NULL)
+        {
+          popped=gal_data_pop_from_ll(&in);
+          gal_data_add_existing_to_ll(&reversed, popped);
+        }
+      *list=reversed;
+    }
 }
 
 

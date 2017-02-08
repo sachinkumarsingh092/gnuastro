@@ -1447,11 +1447,18 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
   else
     fits_create_file(&fptr, filename, &status);
 
-  /* Create the FITS file and remove the two initial lines of comments */
+  /* Create the FITS file. */
   fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
                   data->ndim, naxes, &status);
+  gal_fits_io_error(status, NULL);
+
+  /* Remove the two comment lines put by CFITSIO. Note that in some cases,
+     it might not exist. When this happens, the status value will be
+     non-zero. We don't care about this error, so to be safe, we will just
+     reset the status variable after these calls. */
   fits_delete_key(fptr, "COMMENT", &status);
   fits_delete_key(fptr, "COMMENT", &status);
+  status=0;
 
   /* Write the image into the file. */
   fits_write_img(fptr, datatype, fpixel, data->size, data->array, &status);

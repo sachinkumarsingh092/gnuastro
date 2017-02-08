@@ -5,7 +5,7 @@ ConvertType is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,13 +23,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
-struct change *
-makechangestruct(char *arg);
+void
+ui_read_check_inputs_setup(int argc, char *argv[], struct converttparams *p);
 
 void
-setparams(int argc, char *argv[], struct converttparams *p);
-
-void
-freeandreport(struct converttparams *p);
+ui_free_report(struct converttparams *p);
 
 #endif

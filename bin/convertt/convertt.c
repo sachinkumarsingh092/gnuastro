@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
-#include <gnuastro/statistics.h>
+#include <gnuastro/arithmetic.h>
 
 #include <timing.h>
 
@@ -41,118 +41,107 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "eps.h"
 
 
+
+
+
+
+
+
+
+
 /**************************************************************/
 /**************      Modifying pixel values     ***************/
 /**************************************************************/
-void
-changevalue(struct converttparams *p)
+static void
+convertt_change(struct converttparams *p)
 {
-  struct change *tmp, *ttmp;
-  size_t numchange=0, i, j, size;
-  double *from, *to, **ch=p->ch, *d, *df, f, t;
+  gal_data_t *channel, *cond;
+  struct change *change, *tmp;
+  unsigned char flags = ( GAL_ARITHMETIC_NUMOK
+                          | GAL_ARITHMETIC_FREE
+                          | GAL_ARITHMETIC_INPLACE );
 
   /* In case there is no value to convert. */
   if(p->change==NULL) return;
 
-  /* Count the number of conversions, allocate the arrays for them
-     and put the conversion values in it. */
-  for(tmp=p->change;tmp!=NULL;tmp=tmp->next) ++numchange;
-  errno=0;
-  to=malloc(numchange*sizeof *to);
-  from=malloc(numchange*sizeof *from);
-  if(to==NULL || from==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `to` or `from` in convert",
-          numchange*sizeof *from);
-  i=1;
-  tmp=p->change;
-  while(tmp!=NULL)
-    {
-      to[numchange-i]=tmp->to;
-      from[numchange-i]=tmp->from;
-      ttmp=tmp->next;
-      free(tmp);
-      tmp=ttmp;
-      ++i;
-    }
+  /* Do the conversion on all channels for each change. */
+  for(change=p->change; change!=NULL; change=change->next)
+    for(channel=p->chll; channel!=NULL; channel=channel->next)
+      {
+        /* Make a condition array: all pixels with a value equal to
+           `change->from' will be set as 1 in this array. */
+        cond=gal_arithmetic(GAL_ARITHMETIC_OP_EQ, GAL_ARITHMETIC_NUMOK,
+                            channel, change->from);
 
-  /* Convert the pixel values in the given order: */
-  size=p->s0[0]*p->s1[0];
-  for(i=0;i<p->numch;++i)
-    {
-      if(p->isblank[i]) continue;
-      for(j=0;j<numchange;++j)
-        {
-          f=from[j]; t=to[j];
-          df=(d=ch[i])+size;
-          do *d = (*d==f) ? t : *d; while(++d<df);
-        }
-    }
+        /* Now, use the condition array to set the proper values. */
+        channel=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flags, channel,
+                               cond, change->to);
 
-  free(to);
-  free(from);
+        /* Clean up, since we set the free flag, all extra arrays have been
+           freed.*/
+        gal_data_free(cond);
+        gal_data_free(change->from);
+      }
+
+  /* Free the channels linked list. */
+  change=p->change;
+  while(change!=NULL) { tmp=change->next; free(change); change=tmp; }
+}
+
+
+
+
+static void
+convertt_trunc_function(int operator, gal_data_t *data, gal_data_t *value)
+{
+  gal_data_t *cond, *out;
+
+
+  /* Note that we need the fluxlow and fluxhigh values later. */
+  unsigned char flags = ( GAL_ARITHMETIC_NUMOK | GAL_ARITHMETIC_INPLACE );
+
+
+  /* Make a condition array: all pixels with a value equal to
+     `change->from' will be set as 1 in this array. */
+  cond=gal_arithmetic(operator, GAL_ARITHMETIC_NUMOK, data, value);
+
+
+  /* Now, use the condition array to set the proper values. */
+  out=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flags, data, cond, value);
+
+
+  /* A small sanity check. The process must be in-place so the original
+     data structure must not have changed. */
+  if(out!=data)
+    error(EXIT_FAILURE, 0, "a bug! please contact us at %s to solve the "
+          "problem. The `out' and `data' pointers in "
+          "`convertt_trunc_function' are not equal", PACKAGE_BUGREPORT);
+
+
+  /* Clean up. */
+  gal_data_free(cond);
 }
 
 
 
 
 
-void
-truncateflux(struct converttparams *p)
+static void
+convertt_truncate(struct converttparams *p)
 {
-  size_t i, size;
-  double *d, *df, **ch=p->ch;
-  double fluxlow=p->fluxlow, fluxhigh=p->fluxhigh;
+  gal_data_t *channel;
 
-  /* If the flux truncation values are equal, there is no truncation.*/
-  if(fluxlow==fluxhigh) return;
+  /* Return if no truncation is desired. */
+  if(p->fluxhigh==NULL && p->fluxlow==NULL)
+    return;
 
-  size=p->s0[0]*p->s1[0];
-  for(i=0;i<p->numch;++i)
+  /* Do the truncation for each channel. */
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
-      if(p->isblank[i]) continue;
-      df=(d=ch[i])+size;
-      do
-        {
-          if(*d<fluxlow) *d=fluxlow;
-          if(*d>fluxhigh) *d=fluxhigh;
-        }
-      while(++d<df);
-    }
-}
-
-
-
-
-
-/* Change the array to the logarithm of the array.
-
-   Note that the logarithm of a zero or negative value is not
-   defined. We assume here that the full range of flux is desired. So
-   if the minimum value in the array is zero or negative, all the
-   elements of the array are added to a constant such that the minimum
-   value is only slightly larger than zero. The "slight"ness is
-   defined in terms of the distance between the minimum and maximum
-   for each color channel.*/
-void
-takelog(struct converttparams *p)
-{
-  size_t i, size;
-  double **ch=p->ch;
-  double min, max, toadd, *d, *df;
-
-  size=p->s0[0]*p->s1[0];
-  for(i=0;i<p->numch;++i)
-    {
-      gal_statistics_d_min_max(ch[i], size, &min, &max);
-      if(p->isblank[i]) continue;
-      if(min<=0.0f)
-        {
-          toadd=-1.0*min+(max-min)/10000.0f;
-          df=(d=ch[i])+size;
-          do *d+=toadd; while(++d<df);
-        }
-      df=(d=ch[i])+size;
-      do *d=log10(*d); while(++d<df);
+      if(p->fluxlow)
+        convertt_trunc_function(GAL_ARITHMETIC_OP_LT, channel, p->fluxlow);
+      if(p->fluxhigh)
+        convertt_trunc_function(GAL_ARITHMETIC_OP_GT, channel, p->fluxhigh);
     }
 }
 
@@ -179,60 +168,26 @@ takelog(struct converttparams *p)
 /**************       Save text and FITS        ***************/
 /**************************************************************/
 void
-savetxt(struct converttparams *p)
+save_with_gnuastro_lib(struct converttparams *p)
 {
-  char comments[10000];
-  int iprec[]={0, 8}, fprec[]={6, 8};
-  int int_cols[]={-1}, accu_cols[]={-1};
-  int ispace[]={1, 10, 15}, fspace[]={1, 15, 15};
+  gal_data_t *channel;
 
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
+    switch(p->outformat)
+      {
+      case OUT_FORMAT_FITS:
+        gal_fits_write_img(channel, p->cp.output, NULL, PROGRAM_STRING);
+        break;
 
-  /* Find the input file name and  */
-  sprintf(comments, "# Pixel values of %s (%zu x %zu pixels).\n"
-          "# Created on %s# %s", p->names[0], p->s0[0], p->s1[0],
-          ctime(&p->rawtime), SPACK_STRING);
+      case OUT_FORMAT_TXT:
+        printf("\n... in save_with_gnuastro_lib ...\n");
+        exit(1);
+        break;
 
-  if(p->bitpixs[0]==BYTE_IMG || p->bitpixs[0]==SHORT_IMG
-     || p->bitpixs[0]==LONG_IMG || p->bitpixs[0]==LONGLONG_IMG )
-    gal_txtarray_array_to_txt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
-                              accu_cols, ispace, iprec, 'f', p->cp.output);
-  else
-    gal_txtarray_array_to_txt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
-                              accu_cols, fspace, fprec, 'g', p->cp.output);
-
-}
-
-
-
-
-
-void
-savefits(struct converttparams *p)
-{
-  void *array;
-  size_t i, size;
-  char hdu[1000];
-
-  size=p->s0[0]*p->s1[0];
-  for(i=0;i<p->numch;++i)
-    {
-      /* Make sure array is in the correct format. */
-      if(p->bitpixs[i]!=DOUBLE_IMG)
-        gal_fits_change_type(p->ch[i], DOUBLE_IMG, size, p->numnul[i],
-                                  &array, p->bitpixs[i]);
-      else
-        array=p->ch[i];
-
-      /* Write array to a FITS file.*/
-      sprintf(hdu, "Channel%zu", i+1);
-      gal_fits_array_to_file(p->cp.output, hdu, p->bitpixs[i], array,
-                             p->s0[i], p->s1[i], 0, NULL, NULL,
-                             SPACK_STRING);
-
-      /* If array was allocated separately, free it. */
-      if(p->bitpixs[i]!=DOUBLE_IMG)
-        free(array);
-    }
+      default:
+        error(EXIT_FAILURE, 0, "a bug! output format code `%d' not "
+              "recognized in `save_with_gnuastro_lib'", p->outformat);
+      }
 }
 
 
@@ -258,97 +213,122 @@ savefits(struct converttparams *p)
 /**************       convert to 8 bit          ***************/
 /**************************************************************/
 void
-doubleto8bit(struct converttparams *p)
+convertt_scale_to_uchar(struct converttparams *p)
 {
-  size_t i, size, numch=p->numch;
-  uint8_t *u, *fu, **ech=p->ech, maxbyte=p->maxbyte;
-  double *d, m, tmin, tmax, min=FLT_MAX, max=-FLT_MAX;
+  size_t size=p->chll->size;
+  unsigned char *u, *fu, maxbyte=p->maxbyte;
+  gal_data_t *channel, *prev, *copied, *mind, *maxd;
+  float *f, *ff, m, tmin, tmax, min=FLT_MAX, max=-FLT_MAX;
 
-  /* Allocate space for all the channels. */
-  size=p->s0[0]*p->s1[0];
-  for(i=0;i<numch;++i)
-    {
-      errno=0;
-      ech[i]=malloc(size*sizeof *ech[i]);
-      if(ech[i]==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for ech[%zu]",
-              size*sizeof *ech[i], i);
-    }
 
-  /* Find the minimum and maximum of all the color channels. */
-  for(i=0;i<numch;++i)
+  /* Convert everything to single precision floating point type and find
+     the minimum and maximum values of all the channels in the process. */
+  prev=NULL;
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
-      gal_statistics_d_min_max(p->ch[i], size, &tmin, &tmax);
-      if(i)
+      /* Only for channels that weren't originally blank. */
+      if(channel->status==0)
         {
+          /* If the type isn't float, then convert it to float. */
+          if(channel->type!=GAL_DATA_TYPE_FLOAT)
+            {
+              /* Change the type to float. */
+              copied=gal_data_copy_to_new_type(channel, GAL_DATA_TYPE_FLOAT);
+
+              /* Correct the pointers. */
+              copied->next=channel->next;
+              if(prev) prev->next=copied; else p->chll=copied;
+
+              /* Clean the old data structure and put in the new one */
+              gal_data_free(channel);
+              channel=copied;
+            }
+
+          /* Calculate the minimum and maximum. */
+          mind = gal_arithmetic(GAL_ARITHMETIC_OP_MINVAL, 0, channel);
+          maxd = gal_arithmetic(GAL_ARITHMETIC_OP_MAXVAL, 0, channel);
+          tmin = *((float *)(mind->array));
+          tmax = *((float *)(maxd->array));
+          gal_data_free(mind);
+          gal_data_free(maxd);
+
+          /* See the over-all minimum and maximum values. */
           if(tmin<min) min=tmin;
           if(tmax>max) max=tmax;
-          continue;
         }
-      min=tmin;
-      max=tmax;
+
+      /* Set the prev pointer. */
+      prev=channel;
     }
 
-  /* Change the minimum and maximum if desired, Note that this
-     is only non-redundant when fluxhigh and fluxlow are more
-     or less than the maximum and minimum values in the
-     image.*/
-  if(p->fluxlow!=p->fluxhigh)
-    {
-      if(p->flminbyte) min=p->fluxlow;
-      if(p->fhmaxbyte) max=p->fluxhigh;
-    }
-  m=(double)maxbyte/(max-min);
 
-  /* Write the values in the array: */
-  for(i=0;i<numch;++i)
+  /* Change the minimum and maximum if desired, Note that this is only
+     non-redundant when fluxhigh and fluxlow are more or less than the
+     maximum and minimum values in the image.*/
+  if(p->fluxlow || p->fluxhigh)
     {
-      if(p->isblank[i])
+      if(p->flminbyte)
         {
-          if(numch==3)          /* RGB  */
-            {fu=(u=ech[i])+size; do *u=0; while(++u<fu);}
-          else if(numch==4)     /* CMYK */
-            {fu=(u=ech[i])+size; do *u=UINT8_MAX; while(++u<fu);}
-          else error(EXIT_FAILURE, 0, "a bug! The number of channels in "
-                     "doubleto8bit is not 3 or 4 when there is a blank "
-                     "channel, this should not happen. Please contact us "
-                     "So we can fix it");
+          /* Convert the fluxlow value to float and put it in min. */
+          copied=gal_data_copy_to_new_type(p->fluxlow, GAL_DATA_TYPE_FLOAT);
+          min = *((float *)(copied->array));
+          gal_data_free(copied);
         }
-      else
+      if(p->fhmaxbyte)
         {
-          d=p->ch[i];
-          fu=(u=ech[i])+size;
+          /* Convert the fluxhigh value to float and put it in min. */
+          copied=gal_data_copy_to_new_type(p->fluxhigh, GAL_DATA_TYPE_FLOAT);
+          max = *((float *)(copied->array));
+          gal_data_free(copied);
+        }
+    }
+  m=(float)maxbyte/(max-min);
+
+
+
+  /* Convert all the non-blank channels to unsigned char. */
+  prev=NULL;
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
+    {
+      if(channel->status==0)
+        {
+          /* Convert the values into a range between `0' and `maxbyte'. */
+          ff=(f=channel->array)+size;
           if(p->invert)
             {
               do
-                {
-                  *u = isnan(*d) ? maxbyte : maxbyte-(*d-min)*m;
-                  ++d;
-                }
-              while(++u<fu);
+                *f = isnan(*f) ? maxbyte : maxbyte-(*f-min)*m;
+              while(++f<ff);
             }
           else
             {
               do
-                {
-                  *u = isnan(*d) ? 0 : (*d-min)*m;
-                  ++d;
-                }
-              while(++u<fu);
+                *f = isnan(*f) ? 0 : (*f-min)*m;
+              while(++f<ff);
             }
+
+          /* Change the type to unsigned char. */
+          copied=gal_data_copy_to_new_type(channel, GAL_DATA_TYPE_UCHAR);
+
+          /* Correct the pointers. */
+          copied->next=channel->next;
+          if(prev) prev->next=copied; else p->chll=copied;
+
+          /* Clean the old data structure and put in the new one */
+          gal_data_free(channel);
+          channel=copied;
         }
+      else
+        {
+          /* In CMYK, a blank channel should have a maximum value. */
+          if(p->numch==4)
+            {fu=(u=channel->array)+size; do *u=UINT8_MAX; while(++u<fu);}
+        }
+
+      /* Set the prev pointer. */
+      prev=channel;
+
     }
-  /* Check all channels (practical for a small input file).
-  {
-    size_t j;
-    for(j=0;j<size;++j)
-      {
-        for(i=0;i<numch;++i)
-          printf("%d:", (int)p->ech[i][j]);
-        printf("\b.\n");
-      }
-  }
-  */
 }
 
 
@@ -375,36 +355,32 @@ doubleto8bit(struct converttparams *p)
 void
 convertt(struct converttparams *p)
 {
-  size_t i;
-
   /* Make any of the desired changes to the data. */
   if(p->changeaftertrunc)
     {
-      truncateflux(p);
-      changevalue(p);
+      convertt_truncate(p);
+      convertt_change(p);
     }
   else
     {
-      changevalue(p);
-      truncateflux(p);
+      convertt_change(p);
+      convertt_truncate(p);
     }
-  if(p->log) takelog(p);
 
 
 
   /* Save the outputs: */
-  switch(p->outputtype)
+  switch(p->outformat)
     {
-    case TXTFORMAT:
-      savetxt(p);
+    case OUT_FORMAT_TXT:
+    case OUT_FORMAT_FITS:
+      save_with_gnuastro_lib(p);
       break;
-    case FITSFORMAT:
-      savefits(p);
-      break;
-    case JPEGFORMAT:
-      doubleto8bit(p);
+
+    case OUT_FORMAT_JPEG:
 #ifdef HAVE_LIBJPEG
-      savejpeg(p);
+      convertt_scale_to_uchar(p);
+      jpeg_write(p);
 #else
       error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "
             "when %s was configured libjpeg was not available. To write "
@@ -413,18 +389,16 @@ convertt(struct converttparams *p)
             PACKAGE_STRING);
 #endif
       break;
-    case EPSFORMAT: case PDFFORMAT:
-      doubleto8bit(p);
-      saveepsorpdf(p);
+
+    case OUT_FORMAT_EPS:
+    case OUT_FORMAT_PDF:
+      convertt_scale_to_uchar(p);
+      eps_write_eps_or_pdf(p);
       break;
+
     default:
       error(EXIT_FAILURE, 0, "a bug! The internal type of the output is "
             "not recognized. Please contact us so we can find the problem "
             "and fix it");
     }
-
-  /* Free the ech arrays. Note that if they have not been
-     allocated, they are NULL and free won't complain. */
-  for(i=0;i<p->numch;++i)
-    free(p->ech[i]);
 }

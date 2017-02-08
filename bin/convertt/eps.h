@@ -36,6 +36,6 @@ int
 nameispdfsuffix(char *name);
 
 void
-saveepsorpdf(struct converttparams *p);
+eps_write_eps_or_pdf(struct converttparams *p);
 
 #endif

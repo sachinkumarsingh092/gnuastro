@@ -122,18 +122,31 @@ nameispdfsuffix(char *name)
 /*************************************************************
  **************       Write an EPS image        **************
  *************************************************************/
-int
-onlytwovalues(struct converttparams *p)
+static int
+eps_is_binary(struct converttparams *p)
 {
-  uint8_t *i, *fi;
+  gal_data_t *channel;
+  unsigned char *i, *fi;
 
-  fi=(i=p->ech[0])+p->s0[0]*p->s1[0];
-  do
-    if(*i!=UINT8_MAX && *i!=0) break;
-  while(++i<fi);
+  /* Go through all the channels. */
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
+    {
+      /* Go through all the values and see they are 0 and break out of the
+         loop as soon as you get to a pixel that is not 0 or `maxbyte'. */
+      fi = (i=p->chll->array) + p->chll->size;
+      do
+        if(*i!=p->maxbyte && *i!=0) break;
+      while(++i<fi);
 
-  if(i==fi) return 1;
-  else      return 0;
+      /* If we didn't get to the end of the channel, then we have a
+         non-binary image. */
+      if(i!=fi)
+        return 0;
+    }
+
+  /* If we get to this point, then all the channels were binary, so return
+     success. */
+  return 1;
 }
 
 
@@ -144,13 +157,13 @@ onlytwovalues(struct converttparams *p)
    test in debugging problems with blackandwhite. To test it use a
    very small valued input to make the outputs reasonable. For example
    I am now testing it with an input text array of 12 elements (while
-   calling the --noinvert option):
+   calling the --invert option):
 
    1 0 1 0 0 0
    0 0 0 1 0 1
 */
 void
-showbits(uint8_t x)
+eps_show_bits(uint8_t x)
 {
   int i;
 
@@ -164,49 +177,57 @@ showbits(uint8_t x)
 
 
 
-/* Convert p->ech[0] into a 0 and 1 bit stream since it only has two
-   values. NOTE: each row has to have an integer number of bytes. */
+/* Convert the channels into into a 0 and 1 bit stream. This function is
+   only called when the image is binary (has only two values). NOTE: each
+   row has to have an integer number of bytes, so when the number of pixels
+   in a row is not a multiple of 8, we'll add one. */
 size_t
-blackandwhite(struct converttparams *p)
+eps_convert_to_bitstream(struct converttparams *p)
 {
-  size_t i, j, k;
-  uint8_t *bits, byte, curbit, *ech=p->ech[0];
-  size_t s0=p->s0[0], s1=p->s1[0], bytesinrow, bytesinimg;
+  gal_data_t *channel;
+  size_t i, j, k, bytesinrow, bytesinimg;
+  unsigned char *bits, byte, curbit, *in;
+  size_t s0=p->chll->dsize[0], s1=p->chll->dsize[1];
 
-  /* Find the size values: */
-  if(p->s1[0]%8) bytesinrow = s1/8 + 1;
-  else           bytesinrow = s1/8;
-  bytesinimg=bytesinrow*s0;
+  /* Find the size values and allocate the array. */
+  if( s1 % 8 ) bytesinrow = s1/8 + 1;
+  else         bytesinrow = s1/8;
+  bytesinimg = bytesinrow*s0;
 
-  /* Allocate the array. */
-  errno=0;
-  bits=calloc(bytesinimg, sizeof *bits);
-  if(bits==NULL)
-    error(EXIT_FAILURE, errno, "allocating %zu bytes in blackandwhite",
-          bytesinimg);
-
-  for(i=0;i<s0;++i)
+  /* Go over all the channels. */
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
-      for(j=0;j<bytesinrow;++j)
-        {                  /* i*s0+j is the byte, not bit position. */
-          byte=0;          /* Set the 8 bits to zero.               */
-          curbit=0x80;     /* Current bit position, starting at:    */
-          for(k=0;k<8;++k)
-            {
-              if( j*8+k < s1 )
+      /* Allocate the array. */
+      bits=gal_data_malloc_array(GAL_DATA_TYPE_UCHAR, bytesinimg);
+
+      /* Put the values in. */
+      in=channel->array;
+      for(i=0;i<s0;++i)
+        {
+          for(j=0;j<bytesinrow;++j)
+            {                  /* i*s0+j is the byte, not bit position. */
+              byte=0;          /* Set the 8 bits to zero.               */
+              curbit=0x80;     /* Current bit position, starting at:    */
+              for(k=0;k<8;++k)
                 {
-                  if(ech[i*s1+j*8+k])
-                    byte |= curbit;
-                  curbit >>= 1;
+                  if( j*8+k < s1 )
+                    {
+                      if(in[i*s1+j*8+k])
+                        byte |= curbit;
+                      curbit >>= 1;
+                    }
+                  else break;
                 }
-              else break;
+              /*eps_show_bits(byte);*/
+              bits[i*bytesinrow+j]=byte;
             }
-          /*showbits(byte);*/
-          bits[i*bytesinrow+j]=byte;
         }
+      free(channel->array);
+      channel->array=bits;
+      channel->type=GAL_DATA_TYPE_BIT;
     }
-  free(p->ech[0]);
-  p->ech[0]=bits;
+
+  /* Return the total number of bytes in the image. */
   return bytesinimg;
 }
 
@@ -215,23 +236,24 @@ blackandwhite(struct converttparams *p)
 
 
 void
-channelsinhex(struct converttparams *p, FILE *fp, size_t size)
+eps_write_hex(struct converttparams *p, FILE *fp, size_t size)
 {
-  uint8_t *ech;
-  size_t i, j, numelem=35;
+  unsigned char *in;
+  gal_data_t *channel;
+  size_t i, elem_for_newline=35;
 
-  for(i=0;i<p->numch;++i)
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
-      if(p->isblank[i])
+      if(channel->status)       /* A blank channel has status==1. */
         fprintf(fp, "{<00>} %% Channel %zu is blank\n", i);
       else
         {
-          ech=p->ech[i];
+          in=channel->array;
           fprintf(fp, "{<");
-          for(j=0;j<size;++j)
+          for(i=0;i<size;++i)
             {
-              fprintf(fp, "%02X", ech[j]);
-              if(j%numelem==0) fprintf(fp, "\n");
+              fprintf(fp, "%02X", in[i]);
+              if(i%elem_for_newline==0) fprintf(fp, "\n");
             }
           fprintf(fp, ">}\n");
         }
@@ -243,32 +265,33 @@ channelsinhex(struct converttparams *p, FILE *fp, size_t size)
 
 
 void
-channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
+eps_write_ascii85(struct converttparams *p, FILE *fp, size_t size)
 {
-  uint8_t *ech;
+  unsigned char *in;
+  gal_data_t *channel;
   uint32_t anint, base;
-  size_t i, j, k, numelem=15;   /* 15*5=75 */
+  size_t i, j, elem_for_newline=15;   /* 15*5=75 */
 
-  for(i=0;i<p->numch;++i)
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
-      if(p->isblank[i])
+      if(channel->status)
         fprintf(fp, "{<00>} %% Channel %zu is blank\n", i);
       else
         {
-          ech=p->ech[i];
+          in=channel->array;
           fprintf(fp, "{<~");
-          for(j=0;j<size;j+=4)
+          for(i=0;i<size;i+=4)
             {
               /* This is the last four bytes */
-              if(size-j<4)
+              if(size-i<4)
                 {
-                  anint=ech[j]*256*256*256;
-                  if(size-j>1)  anint+=ech[j+1]*256*256;
-                  if(size-j==3) anint+=ech[j+2]*256;
+                  anint=in[i]*256*256*256;
+                  if(size-i>1)  anint+=in[i+1]*256*256;
+                  if(size-i==3) anint+=in[i+2]*256;
                 }
               else
-                anint=( ech[j]*256*256*256 + ech[j+1]*256*256
-                        + ech[j+2]*256     + ech[j+3] );
+                anint=( in[i]*256*256*256 + in[i+1]*256*256
+                        + in[i+2]*256     + in[i+3]         );
 
               /* If all four bytes are zero, then just print `z'. */
               if(anint==0) fprintf(fp, "z");
@@ -276,12 +299,12 @@ channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
                 {
                   /* To check, just change the fprintf below to printf:
                      printf("\n\n");
-                     printf("%u %u %u %u\n", ech[j], ech[j+1],
-                            ech[j+2], ech[j+3]);
+                     printf("%u %u %u %u\n", in[i], in[i+1],
+                            in[i+2], in[i+3]);
                   */
                   base=85*85*85*85;
                   /* Do the ASCII85 encoding: */
-                  for(k=0;k<5;++k)
+                  for(j=0;j<5;++j)
                     {
                       fprintf(fp, "%c", anint/base+33);
                       anint%=base;
@@ -289,7 +312,7 @@ channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
                     }
                 }
               /* Go to the next line if on the right place: */
-              if(j%numelem==0) fprintf(fp, "\n");
+              if(i%elem_for_newline==0) fprintf(fp, "\n");
             }
           fprintf(fp, "~>}\n");
         }
@@ -300,40 +323,43 @@ channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
 
 
 
-void
-writeepsimage(struct converttparams *p, FILE *fp)
+static void
+eps_write_image(struct converttparams *p, FILE *fp)
 {
   int bpc=8;
-  size_t i, size;
+  size_t i, size, *dsize=p->chll->dsize;
 
   /* Set the number of bits per component. */
-  if( p->numch==1 && onlytwovalues(p) )
+  if( p->numch==1 && eps_is_binary(p) )
     {
       bpc=1;
-      size=blackandwhite(p);
+      size=eps_convert_to_bitstream(p);
     }
-  else size=p->s0[0]*p->s1[0];
+  else size=p->chll->size;
 
-  if(p->numch==1)      fprintf(fp, "/DeviceGray setcolorspace\n");
-  else if(p->numch==3) fprintf(fp, "/DeviceRGB setcolorspace\n");
-  else if(p->numch==4) fprintf(fp, "/DeviceCMYK setcolorspace\n");
-  else
-    error(EXIT_FAILURE, 0, "a bug! In saveepsorpdf the number of channels "
-          "is not 1, 3 or 4. Please contact us so we can find the issue "
-          "and fix it");
+  switch(p->numch)
+    {
+    case 1: fprintf(fp, "/DeviceGray setcolorspace\n"); break;
+    case 3: fprintf(fp, "/DeviceRGB setcolorspace\n");  break;
+    case 4: fprintf(fp, "/DeviceCMYK setcolorspace\n"); break;
+    default:
+      error(EXIT_FAILURE, 0, "a bug! In saveepsorpdf the number of channels "
+            "is not 1, 3 or 4. Please contact us so we can find the issue "
+            "and fix it");
+    }
   fprintf(fp, "<<\n");
   fprintf(fp, "  /ImageType 1\n");
-  fprintf(fp, "  /Width %zu\n", p->s1[0]);
-  fprintf(fp, "  /Height %zu\n", p->s0[0]);
-  fprintf(fp, "  /ImageMatrix [ %zu 0 0 %zu 0 0 ]\n", p->s1[0], p->s0[0]);
+  fprintf(fp, "  /Width %zu\n", dsize[1]);
+  fprintf(fp, "  /Height %zu\n", dsize[0]);
+  fprintf(fp, "  /ImageMatrix [ %zu 0 0 %zu 0 0 ]\n", dsize[1], dsize[0]);
   fprintf(fp, "  /MultipleDataSources true\n");
   fprintf(fp, "  /BitsPerComponent %d\n", bpc);
   fprintf(fp, "  /Decode[");
   for(i=0;i<p->numch;++i) {fprintf(fp, " 0 1");} fprintf(fp, " ]\n");
   fprintf(fp, "  /Interpolate false\n");
   fprintf(fp, "  /DataSource [\n");
-  if(p->hex) channelsinhex(p, fp, size);
-  else channelsinascii85(p, fp, size);
+  if(p->hex) eps_write_hex(p, fp, size);
+  else eps_write_ascii85(p, fp, size);
   fprintf(fp, "  ]\n");
   fprintf(fp, ">>\n");
   fprintf(fp, "image\n\n");
@@ -343,37 +369,34 @@ writeepsimage(struct converttparams *p, FILE *fp)
 
 
 void
-saveepsorpdf(struct converttparams *p)
+eps_write_eps_or_pdf(struct converttparams *p)
 {
   FILE *fp;
   float hbw;
-  size_t winpt, hinpt;
   char command[20000], *epsfilename=NULL;
-
-
-  /* EPS filename */
-  if(p->outputtype==EPSFORMAT)
-    {
-      epsfilename=p->cp.output;
-      gal_checkset_check_remove_file(epsfilename, p->cp.dontdelete);
-    }
-  else if (p->outputtype==PDFFORMAT)
-    {
-      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
-      gal_checkset_automatic_output(p->cp.output, ".ps", 0, p->cp.dontdelete,
-                                    &epsfilename);
-    }
-  else
-    error(EXIT_FAILURE, 0, "a bug! In `saveeps`, for outputtype is "
-          "neither eps or pdf! Please contact us so we fix it");
-
+  size_t winpt, hinpt, *dsize=p->chll->dsize;
 
 
   /* Find the bounding box  */
   winpt=p->widthincm*72.0f/2.54f;
-  hinpt=(float)(p->s0[0]*winpt)/(float)(p->s1[0]);
+  hinpt=(float)( dsize[0] * winpt )/(float)(dsize[1]);
   hbw=(float)p->borderwidth/2.0f;
 
+
+  /* EPS filename */
+  if(p->outformat==OUT_FORMAT_EPS)
+    {
+      epsfilename=p->cp.output;
+      gal_checkset_check_remove_file(epsfilename, p->cp.dontdelete);
+    }
+  else if (p->outformat==OUT_FORMAT_PDF)
+    {
+      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+      epsfilename=gal_checkset_automatic_output(&p->cp, p->cp.output, ".ps");
+    }
+  else
+    error(EXIT_FAILURE, 0, "a bug! In `saveeps`, for outformat is "
+          "neither eps or pdf! Please contact us so we fix it");
 
 
   /* Open the output file and write the top comments. */
@@ -384,13 +407,12 @@ saveepsorpdf(struct converttparams *p)
   fprintf(fp, "%%!PS-Adobe-3.0 EPSF-3.0\n");
   fprintf(fp, "%%%%BoundingBox: 0 0 %zu %zu\n", winpt+2*p->borderwidth,
           hinpt+2*p->borderwidth);
-  fprintf(fp, "%%%%Creator: %s\n", SPACK_STRING);
+  fprintf(fp, "%%%%Creator: %s\n", PROGRAM_STRING);
   fprintf(fp, "%%%%CreationDate: %s", ctime(&p->rawtime));
   fprintf(fp, "%%%%LanuageLevel: 3\n");
   fprintf(fp, "%%%%EndComments\n\n");
-  if(p->outputtype==EPSFORMAT)
+  if(p->outformat==OUT_FORMAT_EPS)
     fprintf(fp, "gsave\n\n");
-
 
 
   /* Commands to draw the border: */
@@ -413,12 +435,12 @@ saveepsorpdf(struct converttparams *p)
   fprintf(fp, "%% Draw the image:\n");
   fprintf(fp, "%d %d translate\n", p->borderwidth, p->borderwidth);
   fprintf(fp, "%zu %zu scale\n", winpt, hinpt);
-  writeepsimage(p, fp);
+  eps_write_image(p, fp);
 
 
 
   /* Ending of the EPS file: */
-  if(p->outputtype==EPSFORMAT)
+  if(p->outformat==OUT_FORMAT_EPS)
     fprintf(fp, "grestore\n");
   else
     fprintf(fp, "showpage\n");
@@ -427,7 +449,7 @@ saveepsorpdf(struct converttparams *p)
 
 
 
-  if(p->outputtype==PDFFORMAT)
+  if(p->outformat==OUT_FORMAT_PDF)
     {
       sprintf(command, "gs -q -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%zu"
               " -dDEVICEHEIGHTPOINTS=%zu -dPDFFitPage %s", p->cp.output,

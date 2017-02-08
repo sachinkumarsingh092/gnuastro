@@ -157,15 +157,15 @@ makejsample(JSAMPLE **a, size_t size)
 
 
 
-double **
+unsigned char **
 readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 {
-  double **all;
   FILE * infile;
   JSAMPROW jrow;
   JSAMPLE *jsamp;
   int rowstride, c;
   JSAMPARRAY jsarr;
+  unsigned char **all;
   struct my_error_mgr jerr;
   size_t i, j, size, nc, s0, s1;
   struct jpeg_decompress_struct cinfo;
@@ -240,35 +240,38 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 
 
 
-void
-preparejpeg(struct converttparams *p, char *filename)
+/* Read each color channel of a JPEG image as a separate array and put them
+   in a linked list of data-structures. */
+size_t
+jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
 {
-  double **allcolors;
+  char *name;
+  size_t ndim=2, dsize[2];
+  unsigned char **allcolors;
   size_t i, s0, s1, numcolors;
 
   /* Read the JPEG image into the all array. */
   allcolors=readjpg(filename, &s0, &s1, &numcolors);
 
-  /* Check if the number of colors that will be added with this JPEG
-     image does not exceed 4. */
-  if(p->numch+numcolors>4)
-    error(EXIT_FAILURE, 0, "the number of channels in %s added with the "
-          "previous inputs will exceed 4 (the maximum number of color "
-          "channels). Can't continue", filename);
-
-  /* Add each channel to the final set of channels. */
+  /* Add the arrays to the linked list. */
   for(i=0;i<numcolors;++i)
     {
-      p->s0[p->numch]=s0;
-      p->s1[p->numch]=s1;
-      p->ch[p->numch]=allcolors[i];
-      p->bitpixs[p->numch]=BYTE_IMG;
-      ++p->numch;
+      dsize[0]=s0;
+      dsize[1]=s1;
+      asprintf(&name, "JPEG_CH_%zu", i+1);
+      gal_data_add_to_ll(list, allcolors[i], GAL_DATA_TYPE_UCHAR, ndim,
+                         dsize, NULL, 0, minmapsize, name, NULL, NULL);
+      free(name);
     }
 
-  /* Free the array keeping the pointers to each channel. Note that
-     each channel was allocated separately so we can safely remove it.*/
+  /* Free the array keeping the pointers to each channel. Note that each
+     channel was allocated separately and goes out of this function with
+     the data structure, so we just have to free the outer array that kept
+     all the channels. */
   free(allcolors);
+
+  /* Return the number of color channels. */
+  return numcolors;
 }
 
 
@@ -293,14 +296,14 @@ preparejpeg(struct converttparams *p, char *filename)
 /*************************************************************
  **************       Write a JPEG image        **************
  *************************************************************/
-void
-writejpeg(JSAMPLE *jsr, struct converttparams *p)
+static void
+jpeg_write_array(JSAMPLE *jsr, struct converttparams *p)
 {
   JSAMPROW r[1];
   FILE * outfile;
   int row_stride=0, c;
   struct jpeg_error_mgr jerr;
-  size_t s0=p->s0[0], s1=p->s1[0];
+  size_t *dsize=p->chll->dsize;
   struct jpeg_compress_struct cinfo;
 
   /* Begin the JPEG writing, following libjpeg's example.c  */
@@ -312,22 +315,22 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
     error(EXIT_FAILURE, errno, "%s", p->cp.output);
   jpeg_stdio_dest(&cinfo, outfile);
 
-  cinfo.image_width  = s1;
-  cinfo.image_height = s0;
+  cinfo.image_width  = dsize[1];
+  cinfo.image_height = dsize[0];
   switch(p->numch)
     {
     case 1:
-      row_stride=s1;
+      row_stride=dsize[1];
       cinfo.input_components = 1;
       cinfo.in_color_space = JCS_GRAYSCALE;
       break;
     case 3:
-      row_stride=3*s1;
+      row_stride=3*dsize[1];
       cinfo.input_components = 3;
       cinfo.in_color_space = JCS_RGB;
       break;
     case 4:
-      row_stride=4*s1;
+      row_stride=4*dsize[1];
       cinfo.input_components = 4;
       cinfo.in_color_space = JCS_CMYK;
       break;
@@ -340,11 +343,11 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
   jpeg_set_defaults(&cinfo);
   jpeg_set_quality(&cinfo, p->quality, TRUE);
   cinfo.density_unit=1;
-  cinfo.Y_density=cinfo.X_density=s1/(p->widthincm/2.54);
+  cinfo.Y_density=cinfo.X_density=dsize[1]/(p->widthincm/2.54);
   jpeg_start_compress(&cinfo, TRUE);
 
   /* cinfo.next_scanline is 'unsigned int' */
-  c=s0-1; /* In FITS the first row is on the bottom!  */
+  c=dsize[0]-1; /* In JPEG the first row is on the bottom!  */
   while (cinfo.next_scanline < cinfo.image_height)
     {
       r[0] = & jsr[c-- * row_stride];
@@ -361,38 +364,46 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
 
 
 void
-savejpeg(struct converttparams *p)
+jpeg_write(struct converttparams *p)
 {
   JSAMPLE *jsr;
-  uint8_t **ech=p->ech;
-  size_t pixel, color, size, numch=p->numch;
+  gal_data_t *channel;
+  unsigned char *colors[4];
+  size_t i, pixel, color, numch=p->numch;
+
+  /* A small sanity check */
+  if(p->numch==2 || p->numch>4)
+    error(EXIT_FAILURE, 0, "in jpeg, only 1, 3, and 4 color channels are "
+          "acceptable, ");
 
   /* Make sure the JSAMPLE is 8bits, then allocate the necessary space
      based on the number of channels. */
   if(sizeof *jsr!=1)
     error(EXIT_FAILURE, 0, "JSAMPLE has to be 8bit");
-  size=p->numch*p->s0[0]*p->s1[0];
   errno=0;
-  jsr=malloc(size*sizeof *jsr);
+  jsr=malloc(numch * p->chll->size * sizeof *jsr);
   if(jsr==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for jsr", size*sizeof *jsr);
+    error(EXIT_FAILURE, errno, "%zu bytes for jsr",
+          numch * p->chll->size * sizeof *jsr );
+
+  /* Set the pointers to each color. */
+  i=0;
+  for(channel=p->chll; channel!=NULL; channel=channel->next)
+    colors[i++]=channel->array;
 
   /* Write the different colors into jsr. */
-  size=p->s0[0]*p->s1[0];
-  for(pixel=0;pixel<size;++pixel)
+  for(pixel=0; pixel<p->chll->size; ++pixel)
     for(color=0;color<numch;++color)
       {
-        jsr[pixel*numch+color]=ech[color][pixel];
+        jsr[pixel*numch+color] = colors[color][pixel];
         /*
         printf("color: %zu, pixel: %zu, jsr: %d\n", color, pixel,
                (int)jsr[pixel*numch+color]);
         */
       }
 
-
-  /* Write jsr to a JPEG image. */
-  writejpeg(jsr, p);
-
+  /* Write jsr to a JPEG image and clean up. */
+  jpeg_write_array(jsr, p);
   free(jsr);
 }
 #endif  /* HAVE_LIBJPEG */

@@ -35,19 +35,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main(int argc, char *argv[])
 {
-  struct converttparams p={{0}, {0}, 0};
+  struct converttparams p={{0}, 0};
 
   /* Set the starting time.*/
   time(&p.rawtime);
 
   /* Read the input parameters.*/
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run Convert. */
   convertt(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p);
+  ui_free_report(&p);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

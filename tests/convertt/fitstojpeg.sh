@@ -52,4 +52,4 @@ fi
 
 # Actual test script
 # ==================
-$execname $img --output=jpg
+$execname $img --invert --output=jpg
