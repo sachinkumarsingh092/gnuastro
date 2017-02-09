@@ -201,7 +201,7 @@ imgmodecrop(void *inparam)
   /* The whole catalog is from one image, so you can get the
      information here:*/
   img=&p->imgs[crp->in_ind];
-  crp->infits=gal_fits_read_hdu(img->name, p->cp.hdu, 0);
+  crp->infits=gal_fits_hdu_open(img->name, p->cp.hdu, 0);
 
   /* Go over all the outputs that are assigned to this thread: */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
@@ -222,7 +222,7 @@ imgmodecrop(void *inparam)
           crp->centerfilled=iscenterfilled(crp);
 
           /* Add the final headers and close output FITS image: */
-          gal_fits_write_keys_version(crp->outfits, NULL, PROGRAM_STRING);
+          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close "
@@ -293,7 +293,7 @@ wcsmodecrop(void *inparam)
         if(radecoverlap(crp))
           {
             /* Open the input FITS file. */
-            crp->infits=gal_fits_read_hdu(p->imgs[crp->in_ind].name,
+            crp->infits=gal_fits_hdu_open(p->imgs[crp->in_ind].name,
                                           p->cp.hdu, 0);
 
             /* If a name isn't set yet, set it. */
@@ -316,7 +316,7 @@ wcsmodecrop(void *inparam)
         {
           crp->centerfilled=iscenterfilled(crp);
 
-          gal_fits_write_keys_version(crp->outfits, NULL, PROGRAM_STRING);
+          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close the "

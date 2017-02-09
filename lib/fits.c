@@ -469,7 +469,7 @@ gal_fits_datatype_to_type(int datatype)
 /**********                  HDU                   ************/
 /**************************************************************/
 void
-gal_fits_num_hdus(char *filename, int *numhdu)
+gal_fits_hdu_num(char *filename, int *numhdu)
 {
   int status=0;
   fitsfile *fptr;
@@ -494,7 +494,7 @@ gal_fits_num_hdus(char *filename, int *numhdu)
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 fitsfile *
-gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1)
+gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1)
 {
   char *ffname;
   fitsfile *fptr;
@@ -631,7 +631,7 @@ gal_fits_hdu_type(char *filename, char *hdu)
    then the status value will be KEY_NO_EXIST (from CFITSIO).
  */
 void
-gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keysll,
+gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
                             int readcomment, int readunit)
 {
   void *valueptr;
@@ -718,8 +718,8 @@ gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keysll,
 /* Same as `gal_fits_read_keywords_fptr', but accepts the filename and HDU
    as input instead of an already opened CFITSIO `fitsfile' pointer. */
 void
-gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keysll,
-                       int readcomment, int readunit)
+gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
+                  int readcomment, int readunit)
 {
   size_t len;
   int status=0;
@@ -739,7 +739,7 @@ gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keysll,
     gal_fits_io_error(status, "reading this FITS file");
 
   /* Read the keywords. */
-  gal_fits_read_keywords_fptr(fptr, keysll, readcomment, readunit);
+  gal_fits_key_read_from_ptr(fptr, keysll, readcomment, readunit);
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
@@ -758,7 +758,7 @@ gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keysll,
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int type,
+gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, int type,
                        char *keyname, int kfree, void *value, int vfree,
                        char *comment, int cfree, char *unit)
 {
@@ -788,7 +788,7 @@ gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int type,
 
 
 void
-gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int type,
+gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, int type,
                            char *keyname, int kfree, void *value, int vfree,
                            char *comment, int cfree, char *unit)
 {
@@ -828,8 +828,8 @@ gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int type,
 
 
 void
-gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                               struct gal_fits_key_ll **list)
+gal_fits_key_write_filename(char *keynamebase, char *filename,
+                            struct gal_fits_key_ll **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -865,7 +865,7 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
          length was copied. */
       if(value[maxlength-1]=='\0')
         {
-          gal_fits_add_to_key_ll_end(list, TSTRING, keyname, 1,
+          gal_fits_key_add_to_ll_end(list, TSTRING, keyname, 1,
                                      value, 1, NULL, 0, NULL);
           break;
         }
@@ -887,7 +887,7 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
                   filename, maxlength);
 
           /* Convert the last useful character and save the file name.*/
-          gal_fits_add_to_key_ll_end(list, TSTRING, keyname, 1,
+          gal_fits_key_add_to_ll_end(list, TSTRING, keyname, 1,
                                      value, 1, NULL, 0, NULL);
           i+=j+1;
         }
@@ -898,10 +898,9 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
 
 
 
-/* Write the WCS and begin the part on this particular program's
-   key words. */
+/* Write the WCS header string into a FITS files*/
 void
-gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
+gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
 {
   size_t i;
   int h, status=0;
@@ -925,7 +924,7 @@ gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
 
   /* Write the keywords one by one: */
   for(h=0;h<nkeyrec-1;++h)
-    fits_write_record(fptr, &wcsheader[h*80], &status);
+    fits_write_record(fptr, &wcsstr[h*80], &status);
   gal_fits_io_error(status, NULL);
 }
 
@@ -937,7 +936,7 @@ gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
    file. Every keyword that is written is freed, that is why we need
    the pointer to the linked list (to correct it after we finish). */
 void
-gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist)
+gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist)
 {
   int status=0;
   struct gal_fits_key_ll *tmp, *ttmp;
@@ -981,8 +980,8 @@ gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist)
 
 
 void
-gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
-                            char *program_name)
+gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+                           char *program_name)
 {
   size_t i;
   int status=0;
@@ -1015,7 +1014,7 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
               program_name ? program_name : PACKAGE_NAME);
       for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
       fits_write_record(fptr, titlerec, &status);
-      gal_fits_update_keys(fptr, &headers);
+      gal_fits_key_write(fptr, &headers);
     }
 
 
@@ -1086,141 +1085,6 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 
 
 /*************************************************************
- ***********       Read WCS from FITS pointer      ***********
- *************************************************************/
-/* Read the WCS information from the header. Unfortunately, WCS lib is
-   not thread safe, so it needs a mutex. In case you are not using
-   multiple threads, just pass a NULL pointer as the mutex.
-
-   After you finish with this WCS, you should free the space with:
-
-   status = wcsvfree(&nwcs,&wcs);
-
-   If the WCS structure is not recognized, then this function will
-   return a NULL pointer for the wcsprm structure and a zero for
-   nwcs. It will also report the fact to the user in stderr.
-
-   ===================================
-   WARNING: wcspih IS NOT THREAD SAFE!
-   ===================================
-   Don't call this function within a thread or use a mutex.
-*/
-void
-gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
-                               size_t hstartwcs, size_t hendwcs)
-{
-  /* Declaratins: */
-  int nkeys=0, status=0;
-  char *fullheader, *to, *from;
-  int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
-  int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
-  int nreject  = 0;          /* Number of keywords rejected for syntax. */
-
-  /* CFITSIO function: */
-  if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
-    gal_fits_io_error(status, NULL);
-
-  /* Only consider the header keywords in the current range: */
-  if(hendwcs>hstartwcs)
-    {
-      /* Mark the last character in the desired region. */
-      fullheader[hendwcs*(FLEN_CARD-1)]='\0';
-      /*******************************************************/
-      /******************************************************
-      printf("%s\n", fullheader);
-      ******************************************************/
-      /*******************************************************/
-
-      /* Shift all the characters to the start of the string. */
-      if(hstartwcs)                /* hstartwcs!=0 */
-        {
-          to=fullheader;
-          from=&fullheader[hstartwcs*(FLEN_CARD-1)-1];
-          while(*from++!='\0') *to++=*from;
-        }
-
-      nkeys=hendwcs-hstartwcs;
-
-      /*******************************************************/
-      /******************************************************
-      printf("\n\n\n###############\n\n\n\n\n\n");
-      printf("%s\n", &fullheader[1*(FLEN_CARD-1)]);
-      exit(0);
-      ******************************************************/
-      /*******************************************************/
-    }
-
-  /* WCSlib function */
-  status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
-  if(status)
-    {
-      fprintf(stderr, "\n##################\n"
-              "WCSLIB Warning: wcspih ERROR %d: %s.\n"
-              "##################\n",
-              status, wcs_errmsg[status]);
-      *wcs=NULL; *nwcs=0;
-    }
-  if (fits_free_memory(fullheader, &status) )
-    gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
-                           "the memory used to keep all the headers");
-
-  /* Set the internal structure: */
-  status=wcsset(*wcs);
-  if(status)
-    {
-      fprintf(stderr, "\n##################\n"
-              "WCSLIB Warning: wcsset ERROR %d: %s.\n"
-              "##################\n",
-            status, wcs_errmsg[status]);
-      *wcs=NULL; *nwcs=0;
-    }
-
-  /* Initialize the wcsprm struct
-  if ((status = wcsset(*wcs)))
-    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
-          wcs_errmsg[status]);
-  */
-}
-
-
-
-
-
-void
-gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
-                  size_t hendwcs, int *nwcs, struct wcsprm **wcs)
-{
-  int status=0;
-  fitsfile *fptr;
-
-  /* Check HDU for realistic conditions: */
-  fptr=gal_fits_read_hdu(filename, hdu, 0);
-
-  /* Read the WCS information: */
-  gal_fits_read_wcs_from_pointer(fptr, nwcs, wcs, hstartwcs, hendwcs);
-
-  /* Close the FITS file: */
-  fits_close_file(fptr, &status);
-  gal_fits_io_error(status, NULL);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
  ***********            Array functions            ***********
  *************************************************************/
 
@@ -1256,14 +1120,9 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
 
 
 
-/* Read a FITS image into an array corresponding to fitstype and also
-   save the size of the array.
-
-   If the image has any null pixels, their number is returned by this
-   function. The value that is placed for those pixels is defined by
-   the macros in fitsarrayvv.h and depends on the type of the data.*/
+/* Read a FITS image HDU into a Gnuastro data structure. */
 gal_data_t *
-gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 {
   void *blank;
   int anyblank;
@@ -1276,7 +1135,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Check HDU for realistic conditions: */
-  fptr=gal_fits_read_hdu(filename, hdu, 0);
+  fptr=gal_fits_hdu_open(filename, hdu, 0);
 
 
   /* Get the info and allocate the data structure. */
@@ -1307,7 +1166,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
                         NULL, 0, -1, "EXTNAME", NULL, NULL);
   gal_data_add_to_ll(&keysll, NULL, GAL_DATA_TYPE_STRING, 1, &dsize_key,
                         NULL, 0, -1, "BUNIT", NULL, NULL);
-  gal_fits_read_keywords_fptr(fptr, keysll, 0, 0);
+  gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
   if(keysll->status==0)       {str=keysll->array;       unit=*str; }
   if(keysll->next->status==0) {str=keysll->next->array; name=*str; }
 
@@ -1345,13 +1204,13 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
    this input to be a special type. For such cases, this function can be
    used to convert the input file to the desired type. */
 gal_data_t *
-gal_fits_read_to_type(char *inputname, char *hdu, int type,
-                      size_t minmapsize)
+gal_fits_img_read_to_type(char *inputname, char *hdu, int type,
+                          size_t minmapsize)
 {
   gal_data_t *in, *converted;
 
   /* Read the specified input image HDU. */
-  in=gal_fits_read_img_hdu(inputname, hdu, minmapsize);
+  in=gal_fits_img_read(inputname, hdu, minmapsize);
 
   /* If the input had another type, convert it to float. */
   if(in->type!=type)
@@ -1370,7 +1229,7 @@ gal_fits_read_to_type(char *inputname, char *hdu, int type,
 
 
 gal_data_t *
-gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
+gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
 {
   size_t i;
   int check=0;
@@ -1379,8 +1238,8 @@ gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
   float *f, *fp, tmp;
 
   /* Read the image as a float */
-  kernel=gal_fits_read_to_type(filename, hdu, GAL_DATA_TYPE_FLOAT,
-                               minmapsize);
+  kernel=gal_fits_img_read_to_type(filename, hdu, GAL_DATA_TYPE_FLOAT,
+                                   minmapsize);
 
   /* Check if the size along each dimension of the kernel is an odd
      number. If they are all an odd number, then the for each dimension,
@@ -1426,12 +1285,12 @@ gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
    WCS information) into a FITS file, but will not close it. Instead it
    will pass along the FITS pointer for further modification. */
 fitsfile *
-gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
+gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
 {
   size_t i;
   void *blank;
+  char *wcsstr;
   fitsfile *fptr;
-  char *wcsheader;
   long fpixel=1, *naxes;
   int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(data->type);
 
@@ -1501,11 +1360,11 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
       gal_wcs_decompose_pc_cdelt(data->wcs);
 
       /* Convert the WCS information to text. */
-      status=wcshdo(WCSHDO_safe, data->wcs, &nkeyrec, &wcsheader);
+      status=wcshdo(WCSHDO_safe, data->wcs, &nkeyrec, &wcsstr);
       if(status)
         error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
               wcs_errmsg[status]);
-      gal_fits_add_wcs_to_header(fptr, wcsheader, nkeyrec);
+      gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
     }
 
   /* Report any errors if we had any */
@@ -1519,17 +1378,17 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
 
 
 void
-gal_fits_write_img(gal_data_t *data, char *filename,
+gal_fits_img_write(gal_data_t *data, char *filename,
                    struct gal_fits_key_ll *headers, char *program_string)
 {
   int status=0;
   fitsfile *fptr;
 
   /* Write the data array into a FITS file and keep it open: */
-  fptr=gal_fits_write_img_fitsptr(data, filename);
+  fptr=gal_fits_img_write_to_ptr(data, filename);
 
   /* Write all the headers and the version information. */
-  gal_fits_write_keys_version(fptr, headers, program_string);
+  gal_fits_key_write_version(fptr, headers, program_string);
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
@@ -1553,10 +1412,10 @@ gal_fits_write_img(gal_data_t *data, char *filename,
         writing FITS images in parallel, we can't write the header keywords
         in each thread.   */
 void
-gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
-                              char *wcsheader, int nkeyrec, double *crpix,
-                              struct gal_fits_key_ll *headers,
-                              char *program_string)
+gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
+                                char *wcsstr, int nkeyrec, double *crpix,
+                                struct gal_fits_key_ll *headers,
+                                char *program_string)
 {
   int status=0;
   fitsfile *fptr;
@@ -1567,10 +1426,10 @@ gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
           "accept inputs with no WCS.");
 
   /* Write the data array into a FITS file and keep it open. */
-  fptr=gal_fits_write_img_fitsptr(data, filename);
+  fptr=gal_fits_img_write_to_ptr(data, filename);
 
   /* Write the WCS headers into the FITS file. */
-  gal_fits_add_wcs_to_header(fptr, wcsheader, nkeyrec);
+  gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
 
   /* Update the CRPIX keywords. Note that we don't want to change the
      values in the WCS information of gal_data_t. Because, it often happens
@@ -1586,7 +1445,7 @@ gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
     }
 
   /* Write all the headers and the version information. */
-  gal_fits_write_keys_version(fptr, headers, program_string);
+  gal_fits_key_write_version(fptr, headers, program_string);
 
   /* Close the file and return. */
   fits_close_file(fptr, &status);
@@ -1618,7 +1477,7 @@ gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
 /* Get the size of a table HDU. CFITSIO doesn't use size_t, also we want to
    check status here.*/
 void
-gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
+gal_fits_tab_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
 {
   long lnrows;
   int incols, status=0;
@@ -1638,7 +1497,7 @@ gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
 
 
 int
-gal_fits_table_type(fitsfile *fptr)
+gal_fits_tab_type(fitsfile *fptr)
 {
   int status=0;
   char value[FLEN_VALUE];
@@ -1832,8 +1691,8 @@ fits_correct_bin_table_int_types(gal_data_t *allcols, int tfields,
 
 /* See the descriptions of `gal_table_info'. */
 gal_data_t *
-gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
-                    size_t *numrows, int *tabletype)
+gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
+                  size_t *numrows, int *tabletype)
 {
   long repeat;
   int tfields;        /* The maximum number of fields in FITS is 999 */
@@ -1846,9 +1705,9 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE], *val;
 
   /* Open the FITS file and get the basic information. */
-  fptr=gal_fits_read_hdu(filename, hdu, 1);
-  *tabletype=gal_fits_table_type(fptr);
-  gal_fits_table_size(fptr, numrows, numcols);
+  fptr=gal_fits_hdu_open(filename, hdu, 1);
+  *tabletype=gal_fits_tab_type(fptr);
+  gal_fits_tab_size(fptr, numrows, numcols);
 
   /* Read the total number of fields, then allocate space for the data
      structure array and store the information within it. */
@@ -2046,9 +1905,9 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
    low-level function, so the output data linked list is the inverse of the
    input indexs linked list. You can use */
 gal_data_t *
-gal_fits_table_read(char *filename, char *hdu, size_t numrows,
-                    gal_data_t *allcols, struct gal_linkedlist_sll *indexll,
-                    int minmapsize)
+gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
+                  gal_data_t *allcols, struct gal_linkedlist_sll *indexll,
+                  int minmapsize)
 {
   size_t i=0;
   void *blank;
@@ -2060,7 +1919,7 @@ gal_fits_table_read(char *filename, char *hdu, size_t numrows,
   struct gal_linkedlist_sll *ind;
 
   /* Open the FITS file */
-  fptr=gal_fits_read_hdu(filename, hdu, 1);
+  fptr=gal_fits_hdu_open(filename, hdu, 1);
 
   /* Pop each index and read/store the array. */
   for(ind=indexll; ind!=NULL; ind=ind->next)
@@ -2233,20 +2092,33 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
    have NULL values) must have it. */
 static void
 fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
-                        size_t colnum)
+                       size_t colnum, char *tform)
 {
   void *blank;
   int status=0;
-  char *keyname, *bcomment;
+  char *c, *keyname, *bcomment;
 
   /* Write the NULL value */
   switch(tabletype)
     {
     case GAL_TABLE_FORMAT_AFITS:
+
+      /* Print the keyword and value. */
       asprintf(&keyname, "TNULL%zu", colnum);
       blank=gal_data_blank_as_string(col->type, col->disp_width);
+
+      /* When in exponential form (`tform' starting with `E'), CFITSIO
+         writes a NaN value as `NAN', but when in floating point form
+         (`tform' starting with `F'), it writes it as `nan'. So in the
+         former case, we need to convert the string to upper case. */
+      if(tform[0]=='E' || tform[0]=='e')
+        for(c=blank; *c!='\0'; ++c) *c=toupper(*c);
+
+      /* Write in the header. */
       fits_write_key(fptr, TSTRING, keyname, blank,
                      "blank value for this column", &status);
+
+      /* Clean up. */
       free(keyname);
       free(blank);
       break;
@@ -2295,8 +2167,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
 /* Write the given columns (a linked list of `gal_data_t') into a FITS
    table.*/
 void
-gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
-                     char *filename, int dontdelete)
+gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
+                   char *filename, int dontdelete)
 {
   void *blank;
   fitsfile *fptr;
@@ -2347,14 +2219,14 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
     {
       /* Write the blank value into the header and return a pointer to
          it. Otherwise, */
-      fits_write_tnull_tcomm(fptr, col, tabletype, i+1);
+      fits_write_tnull_tcomm(fptr, col, tabletype, i+1, tform[i]);
 
       /* Set the blank pointer if its necessary, note that strings don't
          need a blank pointer in a FITS ASCII table.*/
       blank = ( gal_data_has_blank(col)
                 ? gal_data_alloc_blank(col->type) : NULL );
       if(tabletype==GAL_TABLE_FORMAT_AFITS && col->type==GAL_DATA_TYPE_STRING)
-        blank=NULL;
+        { if(blank) free(blank); blank=NULL; }
 
       /* Write the full column into the table. */
       fits_write_colnull(fptr, gal_fits_type_to_datatype(col->type),
@@ -2368,7 +2240,7 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
 
 
   /* Write all the headers and the version information. */
-  gal_fits_write_keys_version(fptr, NULL, NULL);
+  gal_fits_key_write_version(fptr, NULL, NULL);
 
 
   /* Clean up and close the FITS file. Note that each element in the

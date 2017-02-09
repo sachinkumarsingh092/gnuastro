@@ -364,7 +364,7 @@ reversepolish(struct imgarithparams *p)
       /* Put a copy of the WCS structure from the reference image, it
          will be freed while freeing d1. */
       d1->wcs=p->refdata.wcs;
-      gal_fits_write_img(d1, p->cp.output, NULL, PROGRAM_STRING);
+      gal_fits_img_write(d1, p->cp.output, NULL, PROGRAM_STRING);
       if(!p->cp.quiet)
         printf(" - Output written to %s\n", p->cp.output);
     }

@@ -59,7 +59,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TABLE_DEF_STR_WIDTH       6
 #define GAL_TABLE_DEF_INT_WIDTH       6
 #define GAL_TABLE_DEF_LINT_WIDTH      10
-#define GAL_TABLE_DEF_FLT_WIDTH       12
+#define GAL_TABLE_DEF_FLT_WIDTH       13
 #define GAL_TABLE_DEF_DBL_WIDTH       18
 
 #define GAL_TABLE_DEF_INT_PRECISION   0
@@ -161,8 +161,6 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 void
 gal_table_write(gal_data_t *cols, char *comments, int tableformat,
                 char *filename, int dontdelete);
-
-
 
 
 

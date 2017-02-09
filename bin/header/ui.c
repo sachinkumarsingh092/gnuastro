@@ -417,7 +417,7 @@ ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
         }
 
 
-      gal_fits_add_to_key_ll(output, type, keyname, 0,
+      gal_fits_key_add_to_ll(output, type, keyname, 0,
                              fvalue, vfree, comment, 0, unit);
       free(original);
     }

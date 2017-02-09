@@ -645,8 +645,9 @@ ui_prepare_canvas(struct mkprofparams *p)
                               p->cp.minmapsize, NULL, NULL, NULL);
       else
         {
-          p->out=gal_fits_read_to_type(p->backname, p->backhdu,
-                                       GAL_DATA_TYPE_FLOAT, p->cp.minmapsize);
+          p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
+                                           GAL_DATA_TYPE_FLOAT,
+                                           p->cp.minmapsize);
           p->naxes[0]=p->out->dsize[1];
           p->naxes[1]=p->out->dsize[0];
         }
@@ -657,8 +658,8 @@ ui_prepare_canvas(struct mkprofparams *p)
       p->shift[0]=p->shift[1]=0;
 
       /* Read the WCS structure of the background image. */
-      gal_fits_read_wcs(p->backname, p->backhdu, 0, 0, &p->out->nwcs,
-                        &p->out->wcs);
+      gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->out->nwcs,
+                   &p->out->wcs);
 
     }
   else

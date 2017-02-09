@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/txt.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/arithmetic.h>
@@ -37,8 +38,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "jpeg.h"
 #include "eps.h"
+#include "jpeg.h"
 
 
 
@@ -167,7 +168,7 @@ convertt_truncate(struct converttparams *p)
 /**************************************************************/
 /**************       Save text and FITS        ***************/
 /**************************************************************/
-void
+static void
 save_with_gnuastro_lib(struct converttparams *p)
 {
   gal_data_t *channel;
@@ -175,14 +176,16 @@ save_with_gnuastro_lib(struct converttparams *p)
   for(channel=p->chll; channel!=NULL; channel=channel->next)
     switch(p->outformat)
       {
+
       case OUT_FORMAT_FITS:
-        gal_fits_write_img(channel, p->cp.output, NULL, PROGRAM_STRING);
+        gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_STRING);
         break;
 
+
       case OUT_FORMAT_TXT:
-        printf("\n... in save_with_gnuastro_lib ...\n");
-        exit(1);
+        gal_txt_write(p->chll, NULL, p->cp.output, p->cp.dontdelete);
         break;
+
 
       default:
         error(EXIT_FAILURE, 0, "a bug! output format code `%d' not "
@@ -355,6 +358,7 @@ convertt_scale_to_uchar(struct converttparams *p)
 void
 convertt(struct converttparams *p)
 {
+
   /* Make any of the desired changes to the data. */
   if(p->changeaftertrunc)
     {

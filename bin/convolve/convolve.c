@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <gsl/gsl_errno.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/spatialconvolve.h>
@@ -651,13 +652,13 @@ frequencyconvolve(struct convolveparams *p)
       /* Save the padded input image. */
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
       data->array=tmp; data->name="input padded";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       free(tmp); data->name=NULL;
 
       /* Save the padded kernel image. */
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
       data->array=tmp; data->name="kernel padded";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       free(tmp); data->name=NULL;
     }
 
@@ -675,12 +676,12 @@ frequencyconvolve(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name="input transformed";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       free(tmp); data->name=NULL;
 
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name="kernel transformed";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       free(tmp); data->name=NULL;
     }
 
@@ -702,7 +703,7 @@ frequencyconvolve(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name=p->makekernel ? "Divided" : "Multiplied";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       free(tmp); data->name=NULL;
     }
 
@@ -718,7 +719,7 @@ frequencyconvolve(struct convolveparams *p)
   if(p->checkfreqsteps)
     {
       data->array=tmp; data->name="padded output";
-      gal_fits_write_img(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
       data->name=NULL;
     }
 
@@ -785,13 +786,13 @@ convolve(struct convolveparams *p)
           data=gal_data_alloc(p->mp.img, GAL_DATA_TYPE_FLOAT, ndim, dsize,
                               p->wcs, 0, p->cp.minmapsize, NULL, NULL, NULL);
           data->name="Input";
-          gal_fits_write_img(data, p->meshname, NULL, PROGRAM_STRING);
+          gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
 
           /* Change the array, type, and name. */
           data->array=meshindexs;
           data->type=GAL_DATA_TYPE_LONG;
           data->name="Mesh indexs";
-          gal_fits_write_img(data, p->meshname, NULL, PROGRAM_STRING);
+          gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
 
           /* Clean up. */
           data->name=NULL;
@@ -817,7 +818,7 @@ convolve(struct convolveparams *p)
   data->wcs=p->wcs;
   data->unit=p->unit;
   data->name="Convolved";
-  gal_fits_write_img(data, p->cp.output, NULL, PROGRAM_STRING);
+  gal_fits_img_write(data, p->cp.output, NULL, PROGRAM_STRING);
   data->name=NULL;
   gal_data_free(data);
 }

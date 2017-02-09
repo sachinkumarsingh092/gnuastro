@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
@@ -286,8 +287,8 @@ ui_read_kernel(struct convolveparams *p)
   gal_data_t *data;
 
   /* Read the image into file. */
-  data=gal_fits_read_to_type(p->kernelname, p->khdu, GAL_DATA_TYPE_FLOAT,
-                             p->cp.minmapsize);
+  data=gal_fits_img_read_to_type(p->kernelname, p->khdu, GAL_DATA_TYPE_FLOAT,
+                                 p->cp.minmapsize);
 
   /* Put its values into the main program structure. */
   p->ks0=data->dsize[0];
@@ -335,9 +336,9 @@ ui_preparations(struct convolveparams *p)
 
 
   /* Read the input image as a float array and its WCS info. */
-  data=gal_fits_read_to_type(p->filename, p->cp.hdu, GAL_DATA_TYPE_FLOAT,
-                             p->cp.minmapsize);
-  gal_fits_read_wcs(p->filename, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  data=gal_fits_img_read_to_type(p->filename, p->cp.hdu, GAL_DATA_TYPE_FLOAT,
+                                 p->cp.minmapsize);
+  gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
   p->unit=data->unit;
   data->unit=NULL;
 
@@ -427,8 +428,8 @@ ui_preparations(struct convolveparams *p)
         }
       else
         {
-          data=gal_fits_read_float_kernel(p->kernelname, p->khdu,
-                                          p->cp.minmapsize);
+          data=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                        p->cp.minmapsize);
           p->ks0=data->dsize[0];
           p->ks1=data->dsize[1];
           p->kernel=data->array;

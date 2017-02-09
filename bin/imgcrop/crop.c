@@ -785,14 +785,14 @@ onecrop(struct cropparams *crp)
          image, so increment crp->imgcount and save the information of
          this image. */
       sprintf(basename, "ICF%zu", ++crp->numimg);
-      gal_fits_file_name_in_keywords(basename, img->name, &headers);
+      gal_fits_key_write_filename(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
               fpixel_i[1], lpixel_i[1]);
-      gal_fits_add_to_key_ll_end(&headers, TSTRING, regionkey, 0, region, 0,
+      gal_fits_key_add_to_ll_end(&headers, TSTRING, regionkey, 0, region, 0,
                                  "Range of pixels used for this output.", 0,
                                  NULL);
-      gal_fits_update_keys(ofp, &headers);
+      gal_fits_key_write(ofp, &headers);
 
 
       /* Free the allocated array. */

@@ -25,6 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
+#include <fitsio.h>
 #include <wcslib/wcs.h>
 
 
@@ -47,19 +48,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 __BEGIN_C_DECLS  /* From C++ preparations */
 
 
+
+
+
+/*************************************************************
+ ***********               Read WCS                ***********
+ *************************************************************/
+void
+gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
+                          size_t hstartwcs, size_t hendwcs);
+
+void
+gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
+             size_t hendwcs, int *nwcs, struct wcsprm **wcs);
+
+
+
+
+
+/**************************************************************/
+/**********              Utilities                 ************/
+/**************************************************************/
 double *
 gal_wcs_array_from_wcsprm(struct wcsprm *wcs);
 
 void
 gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs);
-
-void
-gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
-                          size_t number, size_t width);
-
-void
-gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
-                     double **x, double **y, size_t size);
 
 double
 gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2);
@@ -69,6 +83,23 @@ gal_wcs_pixel_scale_deg(struct wcsprm *wcs);
 
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
+
+
+
+
+
+/**************************************************************/
+/**********              Conversion                ************/
+/**************************************************************/
+void
+gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
+                          size_t number, size_t width);
+
+void
+gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
+                     double **x, double **y, size_t size);
+
+
 
 
 

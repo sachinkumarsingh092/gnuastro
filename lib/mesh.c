@@ -477,14 +477,14 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
       data.array=mp->fgarray1;
       data.dsize[0]=mp->gs0*mp->nch2;
       data.dsize[1]=mp->gs1*mp->nch1;
-      gal_fits_write_img(&data, filename, NULL, spack_string);
+      gal_fits_img_write(&data, filename, NULL, spack_string);
       if(mp->ngarrays==2)
         {
           /* Note that gal_mesh_full_garray will correct both the meshs if
              there are two.*/
           data.name=extname2;
           data.array=mp->fgarray2;
-          gal_fits_write_img(&data, filename, NULL, spack_string);
+          gal_fits_img_write(&data, filename, NULL, spack_string);
         }
     }
   else
@@ -495,12 +495,12 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
       data.name=extname1;
       data.dsize[0]=mp->s0;
       data.dsize[1]=mp->s1;
-      gal_fits_write_img(&data, filename, NULL, spack_string);
+      gal_fits_img_write(&data, filename, NULL, spack_string);
       if(mp->ngarrays==2)
         {
           data.array=tmp2;
           data.name=extname2;
-          gal_fits_write_img(&data, filename, NULL, spack_string);
+          gal_fits_img_write(&data, filename, NULL, spack_string);
         }
       free(tmp1);
       free(tmp2);

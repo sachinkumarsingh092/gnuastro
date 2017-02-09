@@ -375,7 +375,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
         case GAL_TABLE_DISPLAY_FMT_GENERAL:
           fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         default:
-          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'f' : 'F'; break;
+          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         }
       width = ( col->disp_width<=0
                 ? ( col->type==GAL_DATA_TYPE_FLOAT
@@ -473,7 +473,7 @@ gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
 {
   /* Get the table format and size (number of columns and rows). */
   if(gal_fits_name_is_fits(filename))
-    return gal_fits_table_info(filename, hdu, numcols, numrows, tableformat);
+    return gal_fits_tab_info(filename, hdu, numcols, numrows, tableformat);
   else
     {
       *tableformat=GAL_TABLE_FORMAT_TXT;
@@ -791,8 +791,8 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 
     case GAL_TABLE_FORMAT_AFITS:
     case GAL_TABLE_FORMAT_BFITS:
-      out=gal_fits_table_read(filename, hdu, numrows, allcols, indexll,
-                              minmapsize);
+      out=gal_fits_tab_read(filename, hdu, numrows, allcols, indexll,
+                            minmapsize);
       break;
 
     default:
@@ -846,11 +846,11 @@ gal_table_write(gal_data_t *cols, char *comments, int tableformat,
   if(filename)
     {
       if(gal_fits_name_is_fits(filename))
-        gal_fits_table_write(cols, comments, tableformat, filename,
-                             dontdelete);
+        gal_fits_tab_write(cols, comments, tableformat, filename,
+                           dontdelete);
       else
-        gal_txt_table_write(cols, comments, filename, dontdelete);
+        gal_txt_write(cols, comments, filename, dontdelete);
     }
   else
-    gal_txt_table_write(cols, comments, filename, dontdelete);
+    gal_txt_write(cols, comments, filename, dontdelete);
 }

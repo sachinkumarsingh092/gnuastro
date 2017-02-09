@@ -38,6 +38,149 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+
+/*************************************************************
+ ***********               Read WCS                ***********
+ *************************************************************/
+/* Read the WCS information from the header. Unfortunately, WCS lib is
+   not thread safe, so it needs a mutex. In case you are not using
+   multiple threads, just pass a NULL pointer as the mutex.
+
+   After you finish with this WCS, you should free the space with:
+
+   status = wcsvfree(&nwcs,&wcs);
+
+   If the WCS structure is not recognized, then this function will
+   return a NULL pointer for the wcsprm structure and a zero for
+   nwcs. It will also report the fact to the user in stderr.
+
+   ===================================
+   WARNING: wcspih IS NOT THREAD SAFE!
+   ===================================
+   Don't call this function within a thread or use a mutex.
+*/
+void
+gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
+                          size_t hstartwcs, size_t hendwcs)
+{
+  /* Declaratins: */
+  int nkeys=0, status=0;
+  char *fullheader, *to, *from;
+  int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
+  int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
+  int nreject  = 0;          /* Number of keywords rejected for syntax. */
+
+  /* CFITSIO function: */
+  if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Only consider the header keywords in the current range: */
+  if(hendwcs>hstartwcs)
+    {
+      /* Mark the last character in the desired region. */
+      fullheader[hendwcs*(FLEN_CARD-1)]='\0';
+      /*******************************************************/
+      /******************************************************
+      printf("%s\n", fullheader);
+      ******************************************************/
+      /*******************************************************/
+
+      /* Shift all the characters to the start of the string. */
+      if(hstartwcs)                /* hstartwcs!=0 */
+        {
+          to=fullheader;
+          from=&fullheader[hstartwcs*(FLEN_CARD-1)-1];
+          while(*from++!='\0') *to++=*from;
+        }
+
+      nkeys=hendwcs-hstartwcs;
+
+      /*******************************************************/
+      /******************************************************
+      printf("\n\n\n###############\n\n\n\n\n\n");
+      printf("%s\n", &fullheader[1*(FLEN_CARD-1)]);
+      exit(0);
+      ******************************************************/
+      /*******************************************************/
+    }
+
+  /* WCSlib function */
+  status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
+  if(status)
+    {
+      fprintf(stderr, "\n##################\n"
+              "WCSLIB Warning: wcspih ERROR %d: %s.\n"
+              "##################\n",
+              status, wcs_errmsg[status]);
+      *wcs=NULL; *nwcs=0;
+    }
+  if (fits_free_memory(fullheader, &status) )
+    gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
+                           "the memory used to keep all the headers");
+
+  /* Set the internal structure: */
+  status=wcsset(*wcs);
+  if(status)
+    {
+      fprintf(stderr, "\n##################\n"
+              "WCSLIB Warning: wcsset ERROR %d: %s.\n"
+              "##################\n",
+            status, wcs_errmsg[status]);
+      *wcs=NULL; *nwcs=0;
+    }
+
+  /* Initialize the wcsprm struct
+  if ((status = wcsset(*wcs)))
+    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
+          wcs_errmsg[status]);
+  */
+}
+
+
+
+
+
+void
+gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
+             size_t hendwcs, int *nwcs, struct wcsprm **wcs)
+{
+  int status=0;
+  fitsfile *fptr;
+
+  /* Check HDU for realistic conditions: */
+  fptr=gal_fits_hdu_open(filename, hdu, 0);
+
+  /* Read the WCS information: */
+  gal_wcs_read_from_fitsptr(fptr, nwcs, wcs, hstartwcs, hendwcs);
+
+  /* Close the FITS file: */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**************************************************************/
 /**********              Utilities                 ************/
 /**************************************************************/
@@ -132,127 +275,6 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
          and makes no assumptioins about `CDELTi'. */
       wcs->altlin=1;
     }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/**********              XY to RADEC               ************/
-/**************************************************************/
-/* Use the X and Y columns in a larger array to fill the RA and Dec columns
-   in that same array. `xy' points to the first element in the X column and
-   `radec' points to the first element in the RA column. The columns for Y
-   and Dec have to be immediately after X and RA.
-
-   It appears that WCSLIB can only deal with static allocation. At least in
-   its tests it only uses static allocation. I tried dynamic allocation,
-   but it didn't work. So I can't use the vector functionalities of WCSLIB
-   and have to translate each point separately.
-*/
-void
-gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
-                          size_t number, size_t stride)
-{
-  size_t i;
-  double imgcrd[2], phi, theta;
-  int status=0, ncoord=1, nelem=2;
-
-  for(i=0;i<number;++i)
-    {
-      if(isnan(xy[i*stride]) || isnan(xy[i*stride+1]))
-        radec[i*stride]=radec[i*stride+1]=NAN;
-      else
-        {
-          wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
-                 &theta, radec+i*stride, &status);
-          if(status)
-            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
-                  wcs_errmsg[status]);
-
-          /* For a check:
-             printf("(%f, %f) --> (%f, %f)\n", xy[i*stride], xy[i*stride+1],
-                    radec[i*stride], radec[i*stride+1]);
-          */
-        }
-    }
-}
-
-
-
-
-
-/* Convert an array of world coordinates to image coordinates. Note that in
-   Gnuastro, each column is treated independently, so the inputs are
-   separate. If `*x==NULL', or `*y==NULL', then space will be allocated for
-   them, otherwise, it is assumed that space has already been
-   allocated. Note that they must be a 1 dimensional array (recall that in
-   Gnuastro columns are treated independently).*/
-void
-gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
-                     double **x, double **y, size_t size)
-{
-  size_t i;
-  int status, *stat, ncoord=size, nelem=2;
-  double *phi, *theta, *world, *pixcrd, *imgcrd;
-
-  /* Allocate all the necessary arrays. */
-  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT, size);
-  phi=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  theta=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  world=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
-  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
-  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
-
-  /* Put in the values. */
-  for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
-
-  /* Use WCSLIB's `wcss2p'. */
-  status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
-  if(status)
-    error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
-          wcs_errmsg[status]);
-
-  /* For a sanity check:
-  printf("\n\ngal_wcs_world_to_img sanity check:\n");
-  for(i=0;i<size;++i)
-    printf("world (%f, %f) --> pix (%f, %f), [stat: %d]\n",
-           world[i*2], world[i*2+1], pixcrd[i*2], pixcrd[i*2+1], stat[i]);
-  */
-
-  /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
-
-  /* Put the values into the output arrays. */
-  for(i=0;i<size;++i)
-    {
-      (*x)[i] = stat[i] ? NAN : pixcrd[i*2];
-      (*y)[i] = stat[i] ? NAN : pixcrd[i*2+1];
-    }
-
-  /* Clean up. */
-  free(phi);
-  free(stat);
-  free(theta);
-  free(world);
-  free(pixcrd);
 }
 
 
@@ -358,4 +380,124 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
   out = pixscale[0] * pixscale[1] * 3600.0f * 3600.0f;
   free(pixscale);
   return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********              Conversion                ************/
+/**************************************************************/
+/* Use the X and Y columns in a larger array to fill the RA and Dec columns
+   in that same array. `xy' points to the first element in the X column and
+   `radec' points to the first element in the RA column. The columns for Y
+   and Dec have to be immediately after X and RA.
+
+   It appears that WCSLIB can only deal with static allocation. At least in
+   its tests it only uses static allocation. I tried dynamic allocation,
+   but it didn't work. So I can't use the vector functionalities of WCSLIB
+   and have to translate each point separately.
+*/
+void
+gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
+                          size_t number, size_t stride)
+{
+  size_t i;
+  double imgcrd[2], phi, theta;
+  int status=0, ncoord=1, nelem=2;
+
+  for(i=0;i<number;++i)
+    {
+      if(isnan(xy[i*stride]) || isnan(xy[i*stride+1]))
+        radec[i*stride]=radec[i*stride+1]=NAN;
+      else
+        {
+          wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
+                 &theta, radec+i*stride, &status);
+          if(status)
+            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
+                  wcs_errmsg[status]);
+
+          /* For a check:
+             printf("(%f, %f) --> (%f, %f)\n", xy[i*stride], xy[i*stride+1],
+                    radec[i*stride], radec[i*stride+1]);
+          */
+        }
+    }
+}
+
+
+
+
+
+/* Convert an array of world coordinates to image coordinates. Note that in
+   Gnuastro, each column is treated independently, so the inputs are
+   separate. If `*x==NULL', or `*y==NULL', then space will be allocated for
+   them, otherwise, it is assumed that space has already been
+   allocated. Note that they must be a 1 dimensional array (recall that in
+   Gnuastro columns are treated independently).*/
+void
+gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
+                     double **x, double **y, size_t size)
+{
+  size_t i;
+  int status, *stat, ncoord=size, nelem=2;
+  double *phi, *theta, *world, *pixcrd, *imgcrd;
+
+  /* Allocate all the necessary arrays. */
+  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT, size);
+  phi=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  theta=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  world=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+
+  /* Put in the values. */
+  for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
+
+  /* Use WCSLIB's `wcss2p'. */
+  status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
+          wcs_errmsg[status]);
+
+  /* For a sanity check:
+  printf("\n\ngal_wcs_world_to_img sanity check:\n");
+  for(i=0;i<size;++i)
+    printf("world (%f, %f) --> pix (%f, %f), [stat: %d]\n",
+           world[i*2], world[i*2+1], pixcrd[i*2], pixcrd[i*2+1], stat[i]);
+  */
+
+  /* Allocate the output arrays if they were not already allocated. */
+  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
+
+  /* Put the values into the output arrays. */
+  for(i=0;i<size;++i)
+    {
+      (*x)[i] = stat[i] ? NAN : pixcrd[i*2];
+      (*y)[i] = stat[i] ? NAN : pixcrd[i*2+1];
+    }
+
+  /* Clean up. */
+  free(phi);
+  free(stat);
+  free(theta);
+  free(world);
+  free(pixcrd);
 }

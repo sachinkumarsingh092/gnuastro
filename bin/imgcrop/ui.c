@@ -706,10 +706,10 @@ ui_preparations(struct imgcropparams *p)
       status=0;
       img=&p->imgs[--input_counter];
       gal_linkedlist_pop_from_stll(&p->inputs, &img->name);
-      tmpfits=gal_fits_read_hdu(img->name, p->cp.hdu, 0);
+      tmpfits=gal_fits_hdu_open(img->name, p->cp.hdu, 0);
       gal_fits_img_info(tmpfits, &p->type, &img->ndim, &img->dsize);
-      gal_fits_read_wcs_from_pointer(tmpfits, &img->nwcs, &img->wcs,
-                                     p->hstartwcs, p->hendwcs);
+      gal_wcs_read_from_fitsptr(tmpfits, &img->nwcs, &img->wcs,
+                                p->hstartwcs, p->hendwcs);
       if(img->wcs)
         {
           gal_wcs_decompose_pc_cdelt(img->wcs);

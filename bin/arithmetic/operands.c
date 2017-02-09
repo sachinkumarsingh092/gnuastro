@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
 
@@ -120,11 +121,11 @@ pop_operand(struct imgarithparams *p, char *operator)
       /* In case this is the first image that is read, then read the WCS
          information.*/
       if(p->popcounter==0)
-        gal_fits_read_wcs(filename, hdu, 0, 0, &p->refdata.nwcs,
-                          &p->refdata.wcs);
+        gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs,
+                     &p->refdata.wcs);
 
       /* Read the input image as a double type array. */
-      data=gal_fits_read_img_hdu(filename, hdu, p->cp.minmapsize);
+      data=gal_fits_img_read(filename, hdu, p->cp.minmapsize);
 
       /* When the reference data structure's dimensionality is non-zero, it
          means that this is not the first image read. So, write its basic

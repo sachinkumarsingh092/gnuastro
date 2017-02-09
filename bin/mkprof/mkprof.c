@@ -139,7 +139,7 @@ saveindividual(struct mkonthread *mkp)
   /* Write the array to file (a separately built PSF doesn't need WCS
      coordinates). */
   if(ibq->ispsf && p->psfinimg==0)
-    gal_fits_write_img(data, filename, NULL, PROGRAM_STRING);
+    gal_fits_img_write(data, filename, NULL, PROGRAM_STRING);
   else
     {
       /* Save the correct CRPIX values: */
@@ -147,9 +147,9 @@ saveindividual(struct mkonthread *mkp)
       crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
 
       /* Write the image. */
-      gal_fits_write_img_wcs_string(data, filename, p->wcsheader,
-                                    p->wcsnkeyrec, crpix, NULL,
-                                    PROGRAM_STRING);
+      gal_fits_img_write_corr_wcs_str(data, filename, p->wcsheader,
+                                      p->wcsnkeyrec, crpix, NULL,
+                                      PROGRAM_STRING);
     }
   ibq->indivcreated=1;
 
@@ -522,7 +522,7 @@ mkprof_write(struct mkprofparams *p)
         }
 
       /* Write the final image into a FITS file. */
-      gal_fits_write_img(towrite, p->mergedimgname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(towrite, p->mergedimgname, NULL, PROGRAM_STRING);
 
       /* Clean up */
       gal_data_free(towrite);

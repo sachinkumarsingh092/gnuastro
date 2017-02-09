@@ -28,6 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/txt.h>
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
@@ -451,9 +453,8 @@ ui_make_channels_ll(struct converttparams *p)
                   "for each input FITS image (in the same order)");
 
           /* Read in the array and its WCS information. */
-          data=gal_fits_read_to_type(name->v, hdu, GAL_DATA_TYPE_DOUBLE,
-                                     p->cp.minmapsize);
-          gal_fits_read_wcs(name->v, hdu, 0, 0, &data->nwcs, &data->wcs);
+          data=gal_fits_img_read(name->v, hdu, p->cp.minmapsize);
+          gal_wcs_read(name->v, hdu, 0, 0, &data->nwcs, &data->wcs);
           gal_data_add_existing_to_ll(&p->chll, data);
 
           /* A FITS file only has one channel. */
@@ -507,20 +508,8 @@ ui_make_channels_ll(struct converttparams *p)
       /* Text: */
       else
         {
-          printf("\n\n... Work on txt inputs ...\n");
-          exit(1);
-          /*
-          gal_txtarray_txt_to_array(name->v, &p->ch[p->numch],
-                                    &p->s0[p->numch], &p->s1[p->numch]);
-          df = (d=p->ch[p->numch]) + p->s0[p->numch]*p->s1[p->numch];
-          do if(isnan(*d++)) break; while(d<df);
-          if(d==df)
-            gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
-          else
-            error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s",
-                  name->v, GAL_TXTARRAY_LOG);
-          p->bitpixs[p->numch]=DOUBLE_IMG;
-          */
+          data=gal_txt_image_read(name->v, p->cp.minmapsize);
+          gal_data_add_existing_to_ll(&p->chll, data);
           ++p->numch;
         }
     }
@@ -724,8 +713,8 @@ ui_set_output(struct converttparams *p)
          the output is just one of these two suffixes, then we will use
          automatic output to generate the full name, otherwise, we'll just
          take the user's given value as the filename. */
-      if( strcmp(cp->output, "txt") && strcmp(cp->output, ".txt")
-          && strcmp(cp->output, "dat") && strcmp(cp->output, ".dat") )
+      if( !strcmp(cp->output, "txt") || !strcmp(cp->output, ".txt")
+          || !strcmp(cp->output, "dat") || !strcmp(cp->output, ".dat") )
         ui_add_dot_use_automatic_output(p);
 
       /* If output type is not an image, there should only be one color
@@ -739,6 +728,9 @@ ui_set_output(struct converttparams *p)
               "channel to text by specifying the HDU",
               cp->output, p->numch);
     }
+
+  /* Check if the output already exists. */
+  gal_checkset_check_remove_file(cp->output, cp->dontdelete);
 }
 
 

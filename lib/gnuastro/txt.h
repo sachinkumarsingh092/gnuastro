@@ -64,13 +64,21 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TXT_MAX_FMT_LENGTH 20
 
 
+
+
+
 /* Status of a line: */
 enum gal_txt_line_status_enums
 {
+  GAL_TXT_LINESTAT_INVALID,
+
   GAL_TXT_LINESTAT_BLANK,
   GAL_TXT_LINESTAT_COMMENT,
   GAL_TXT_LINESTAT_DATAROW,
 };
+
+
+
 
 
 /* Functions */
@@ -82,13 +90,14 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows);
 
 gal_data_t *
 gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, int minmapsize);
+                   struct gal_linkedlist_sll *indexll, size_t minmapsize);
+
+gal_data_t *
+gal_txt_image_read(char *filename, size_t minmapsize);
 
 void
-gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
-                    int dontdelete);
-
-
+gal_txt_write(gal_data_t *cols, char *comment, char *filename,
+              int dontdelete);
 
 
 

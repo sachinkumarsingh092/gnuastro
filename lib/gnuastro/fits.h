@@ -139,10 +139,10 @@ gal_fits_datatype_to_type(int type);
 /**************************************************************/
 
 void
-gal_fits_num_hdus(char *filename, int *numhdu);
+gal_fits_hdu_num(char *filename, int *numhdu);
 
 fitsfile *
-gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1);
+gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1);
 
 int
 gal_fits_hdu_type(char *filename, char *hdu);
@@ -154,51 +154,36 @@ gal_fits_hdu_type(char *filename, char *hdu);
 /**********            Header keywords             ************/
 /**************************************************************/
 void
-gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keysll,
-                            int readcomment, int readunit);
+gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
+                           int readcomment, int readunit);
 
 void
-gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keysll,
+gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
                        int readcomment, int readunit);
 
 void
-gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
+gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, int datatype,
                        char *keyname, int kfree, void *value, int vfree,
                        char *comment, int cfree, char *unit);
 
 void
-gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int datatype,
+gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, int datatype,
                            char *keyname, int kfree, void *value, int vfree,
                            char *comment, int cfree, char *unit);
 
 void
-gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                               struct gal_fits_key_ll **list);
+gal_fits_key_write_filename(char *keynamebase, char *filename,
+                            struct gal_fits_key_ll **list);
 
 void
-gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec);
+gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec);
 
 void
-gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist);
+gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist);
 
 void
-gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
-                            char *program_string);
-
-
-
-
-
-/*************************************************************
- ***********       Read WCS from FITS pointer      ***********
- *************************************************************/
-void
-gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
-                               size_t hstartwcs, size_t hendwcs);
-
-void
-gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
-                  size_t hendwcs, int *nwcs, struct wcsprm **wcs);
+gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+                           char *program_string);
 
 
 
@@ -211,27 +196,27 @@ void
 gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize);
 
 gal_data_t *
-gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize);
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);
 
 gal_data_t *
-gal_fits_read_to_type(char *inputname, char *inhdu, int type,
-                      size_t minmapsize);
+gal_fits_img_read_to_type(char *inputname, char *inhdu, int type,
+                          size_t minmapsize);
 
 gal_data_t *
-gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize);
+gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize);
 
 fitsfile *
-gal_fits_write_img_fitsptr(gal_data_t *data, char *filename);
+gal_fits_img_write_to_ptr(gal_data_t *data, char *filename);
 
 void
-gal_fits_write_img(gal_data_t *data, char *filename,
+gal_fits_img_write(gal_data_t *data, char *filename,
                    struct gal_fits_key_ll *headers, char *program_string);
 
 void
-gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
-                              char *wcsheader, int nkeyrec, double *crpix,
-                              struct gal_fits_key_ll *headers,
-                              char *program_string);
+gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
+                                char *wcsheader, int nkeyrec, double *crpix,
+                                struct gal_fits_key_ll *headers,
+                                char *program_string);
 
 
 
@@ -241,22 +226,22 @@ gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
 /**********                  Table                 ************/
 /**************************************************************/
 void
-gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
+gal_fits_tab_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 
 int
-gal_fits_table_type(fitsfile *fptr);
+gal_fits_tab_type(fitsfile *fptr);
 
 gal_data_t *
-gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
+gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                     size_t *numrows, int *tabletype);
 
 gal_data_t *
-gal_fits_table_read(char *filename, char *hdu, size_t numrows,
+gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                     gal_data_t *colinfo, struct gal_linkedlist_sll *indexll,
                     int minmapsize);
 
 void
-gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
+gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
                      char *filename, int dontdelete);
 
 

@@ -47,6 +47,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /***************           Get table information          ***************/
 /************************************************************************/
+
+/* Format of table. Currently these constants are internal to this library,
+   we don't want to crowd the name space of the user by having them in the
+   header file. */
+enum txt_formats_code
+{
+    TXT_FORMAT_INVALID,
+
+    TXT_FORMAT_TABLE,
+    TXT_FORMAT_IMAGE,
+};
+
+
+
+
+
 /* Return one of the `txt_line_stat' constant values. */
 int
 gal_txt_line_stat(char *line)
@@ -102,7 +118,8 @@ txt_trim_space(char *str)
 
 
 
-/* Each column information comment should have a format like this:
+/* Each information comment should have a format like this (replace
+   `Column' with `Image' for 2D arrays):
 
       # Column N: NAME [UNITS, TYPE, BLANK] COMMENT
 
@@ -133,21 +150,22 @@ txt_trim_space(char *str)
   be before column 7.
 */
 static void
-txt_info_from_comment(char *line, gal_data_t **colsll)
+txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
 {
   char *tailptr;
   gal_data_t *tmp;
   int index, strw=0;
-  int type=GAL_DATA_TYPE_DOUBLE; /* Default type. */
+  size_t len=strlen(comm_start);
+  int type=GAL_DATA_TYPE_DOUBLE;                     /* Default type. */
   char *number=NULL, *name=NULL, *comment=NULL;
   char *inbrackets=NULL, *unit=NULL, *typestr=NULL, *blank=NULL;
 
-  /* Only read this comment if it follows the convention: */
-  if( !strncmp(line, "# Column ", 9) )
+  /* Only read this comment line if it follows the convention: */
+  if( !strncmp(line, comm_start, len) )
     {
-      /* Set the name, inbrackets, and comments string in the first pass
-         through the line. */
-      number=line+9;
+      /* Set `name', `inbrackets', and `comment' in the first pass through
+         the line. */
+      number=line+len;
       while(*line!='\0')
         {
           switch(*line)
@@ -177,6 +195,8 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
       index=strtol(number, &tailptr, 0);
       if(*tailptr!='\0' || index<=0) return;
 
+
+
       /* If there was no name (the line is just `# Column N:'), then ignore
          the line. Relying on the column count from the first line is more
          robust and less prone to human error, for example typing a number
@@ -185,7 +205,7 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
       if(name==NULL) return;
 
       /* If this is a repeated index, ignore it. */
-      for(tmp=*colsll; tmp!=NULL; tmp=tmp->next)
+      for(tmp=*datall; tmp!=NULL; tmp=tmp->next)
         if(tmp->status==index)
           return;
 
@@ -234,18 +254,18 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
          into the array by `gal_table_read_blank'. To keep the name, unit,
          and comment strings, trim the white space before and after each
          before using them here.  */
-      gal_data_add_to_ll(colsll, NULL, type, 0, NULL, NULL, 0, -1, name,
+      gal_data_add_to_ll(datall, NULL, type, 0, NULL, NULL, 0, -1, name,
                          txt_trim_space(unit), txt_trim_space(comment) );
 
       /* Put the number of this column into the status variable of the data
          structure. If the type is string, then also copy the width into
          the structure. */
-      (*colsll)->status=index;
-      (*colsll)->disp_width = type==GAL_DATA_TYPE_STRING ? strw : 0;
+      (*datall)->status=index;
+      (*datall)->disp_width = type==GAL_DATA_TYPE_STRING ? strw : 0;
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */
-      gal_table_read_blank(*colsll, txt_trim_space(blank));
+      gal_table_read_blank(*datall, txt_trim_space(blank));
     }
 }
 
@@ -253,14 +273,19 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
 
 
 
-/* The input ASCII table might not have had information in its comments, or
-   the information might not have been complete. So we need to go through
-   the first row of data also. */
-void
-txt_info_from_first_row(char *line, gal_data_t **colsll)
+/* In the case of a table, the input might not have had information in its
+   comments, or the information might not have been complete. So we need to
+   go through the first row of data also. In the case of the image, this is
+   necessary, because we need to find the second dimension value.
+
+   This function will return the number of tokens in the first row of the
+   given text file. If the file is a text table with string columns, the
+   contents of the string column will be counted as one token.*/
+static size_t
+txt_info_from_first_row(char *line, gal_data_t **datall, int format)
 {
-  size_t n=0, maxcnum=0;
   gal_data_t *col, *prev, *tmp;
+  size_t n=0, maxcnum=0, numtokens;
   char *token, *end=line+strlen(line);
 
   /* Remove the new line character from the end of the line. If the last
@@ -271,14 +296,21 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
 
   /* Get the maximum number of columns read from the comment
      information. */
-  for(col=*colsll; col!=NULL; col=col->next)
+  for(col=*datall; col!=NULL; col=col->next)
     maxcnum = maxcnum>col->status ? maxcnum : col->status;
 
   /* Go over the line check/fill the column information. */
   while(++n)
     {
-      /* Check if there is information for this column. */
-      for(col=*colsll; col!=NULL; col=col->next) if(col->status==n) break;
+      /* When we are dealing with a text table, check if there is
+         information for this column. For a text image, only the number of
+         tokens is important (as the second dimension of the image), so
+         just assume there no information. */
+      if(format==TXT_FORMAT_TABLE)
+        for(col=*datall; col!=NULL; col=col->next) {if(col->status==n) break;}
+      else
+        col=NULL;
+
 
       /* If there is information for this column, then check if it is a
          string, and if so, don't use `strtok_r' (because it might have
@@ -321,22 +353,44 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
           token=strtok_r(n==1?line:NULL, GAL_TXT_DELIMITERS, &line);
           if(token==NULL) break;
 
-          /* A token exists, so set this column to the default double type
-             with no information, then set its status value to the column
-             number. */
-          gal_data_add_to_ll(colsll, NULL, GAL_DATA_TYPE_DOUBLE, 0, NULL,
-                             NULL, 0, -1, NULL, NULL, NULL);
-          (*colsll)->status=n;
+          /* A token exists. For a table, define a new element in the
+             linked list and set the column to the default double type with
+             no information, then set its status value to the column
+             number. So, for a table, this should be done on every
+             column. But for an image, this should only be done once (when
+             `datall' has not been defined yet, for example in the column
+             information). */
+          if( *datall==NULL || format==TXT_FORMAT_TABLE )
+            {
+              gal_data_add_to_ll(datall, NULL, GAL_DATA_TYPE_DOUBLE, 0,
+                                 NULL, NULL, 0, -1, NULL, NULL, NULL);
+              (*datall)->status=n;
+            }
         }
     }
 
-  /* If the number of columns given by the comments is larger than the
-     actual number of lines, remove those that have larger numbers from the
-     linked list before things get complicated outside of this function. */
+
+  /* When looking at a text table, `n' is the number of columns (elements
+     in the linked list). But when looking at an image, it is the size of
+     the second dimension. To unify things from this step forwards, we will
+     thus keep the value of `n' until this point in another variable (that
+     will be returned finally), and for an image, change `n' to 1. This is
+     necsesary in case the user has for example given two column
+     information comments on an image plain text file.
+
+     Note that `n' counts from 1, so the total number of tokens is one less
+     than `n'.*/
+  numtokens=n-1;
+  if(format==TXT_FORMAT_IMAGE) n=1;
+
+  /* If the number of columns/images given by the comments is larger than
+     the actual number of lines, remove those that have larger numbers from
+     the linked list before things get complicated outside of this
+     function. */
   if(maxcnum>n)
     {
       prev=NULL;
-      col=*colsll;
+      col=*datall;
       while(col!=NULL)
         {
           if(col->status > n) /* Column has no data (was only in comments) */
@@ -354,7 +408,7 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
                   - When there actually was a previous element
                     (`prev!=NULL'), then we must correct it's next
                     pointer. Otherwise we will break up the chain.*/
-              if(prev) prev->next=col->next; else *colsll=col->next;
+              if(prev) prev->next=col->next; else *datall=col->next;
               tmp=col->next;
               gal_data_free(col);
               col=tmp;
@@ -366,6 +420,9 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
             }
         }
     }
+
+  /* Return the total number of columns/second-img-dimension. */
+  return numtokens;
 }
 
 
@@ -376,47 +433,68 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
    enforce minimum standard requirements on the user, things were allowed
    to be read very loosely, for example some columns can be not defined
    (and will thus be read as a double type), or they don't necessarily have
-   to be given in the same order as the table. So we just pushed each new
-   read/set column into a linked list. Now the job is done, and we want to
-   convert that linked list into an array of data structures for more
-   easier random access during the selection of the columns. */
+   to be given in the same order as the table (in which case, the first
+   non-commented line provides basic information like how many columns
+   there are). So we just pushed each new read/set column into a linked
+   list.
+
+   With this function, we convert that badly orderd linked list into a
+   clean and ordered array for much more easier random access during the
+   selection/reading of the data in the columns.
+
+   After this function, the list is freed. */
 static gal_data_t *
-txt_infoll_to_array(gal_data_t *colsll, size_t *numcols)
+txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
 {
-  size_t numc=0;
-  gal_data_t *col, *allcols;
+  size_t numc=0, ind;
+  gal_data_t *data, *dataarr;
 
   /* First find the total number of columns. */
-  for(col=colsll;col!=NULL;col=col->next)
-    numc = numc > col->status ? numc : col->status;
+  for(data=datall; data!=NULL; data=data->next) ++numc;
 
-  /* Now, allocate the array and put in the values. */
-  allcols=gal_data_calloc_dataarray(numc);
-
-  /* Put each column into its proper place in the array. After the copy,
-     all the (possibly) allocated spaces in the linked list are set to
-     NULL, because we didn't initialize the array of column information in
-     the allocation above and we don't want to re-allocate everything
-     (because freeing the linked list will free them also). */
-  for(col=colsll;col!=NULL;col=col->next)
+  /* Conversion to an arry is only necessary when there is more than one
+     element in the list. */
+  if(numc>1)
     {
-      /* Note that the status value counts from 1. */
-      allcols[col->status-1].name       = col->name;     col->name=NULL;
-      allcols[col->status-1].unit       = col->unit;     col->unit=NULL;
-      allcols[col->status-1].array      = col->array;    col->array=NULL;
-      allcols[col->status-1].dsize      = col->dsize;    col->dsize=NULL;
-      allcols[col->status-1].comment    = col->comment;  col->comment=NULL;
+      /* Now, allocate the array and put in the values. */
+      dataarr=gal_data_calloc_dataarray(numc);
 
-      allcols[col->status-1].type       = col->type;
-      allcols[col->status-1].ndim       = col->ndim;
-      allcols[col->status-1].size       = col->size;
-      allcols[col->status-1].disp_width = col->disp_width;
+      /* Put each dataset/column into its proper place in the array.  */
+      while(datall!=NULL)
+        {
+          /* Pop the top element. */
+          data=gal_data_pop_from_ll(&datall);
+
+          /* The `status' value is the number of the column (counting from
+             1, not 0). */
+          ind=data->status-1;
+
+          /* Put all the information from `data' into the respective part
+             of the array. About the pointers, instead of having to
+             allocate them again, we will just set them to NULL so
+             `gal_data_free' doesn't remove them.*/
+          dataarr[ind].name       = data->name;    data->name=NULL;
+          dataarr[ind].unit       = data->unit;    data->unit=NULL;
+          dataarr[ind].array      = data->array;   data->array=NULL;
+          dataarr[ind].dsize      = data->dsize;   data->dsize=NULL;
+          dataarr[ind].comment    = data->comment; data->comment=NULL;
+
+          dataarr[ind].type       = data->type;
+          dataarr[ind].ndim       = data->ndim;
+          dataarr[ind].size       = data->size;
+          dataarr[ind].disp_width = data->disp_width;
+
+          /* Clean up. */
+          gal_data_free(data);
+        }
     }
+  else
+    dataarr=datall;
 
   /* Return the array of all column information and put the number of
      columns into the given pointer. */
-  *numcols=numc;
-  return allcols;
+  *numdata=numc;
+  return dataarr;
 }
 
 
@@ -425,22 +503,34 @@ txt_infoll_to_array(gal_data_t *colsll, size_t *numcols)
 
 /* Return the information about a text file table. If there were no
    readable rows, it will return NULL.*/
-gal_data_t *
-gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
+static gal_data_t *
+txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
 {
   FILE *fp;
-  char *line;
+  size_t numtokens;
   int firstlinedone=0;
-  gal_data_t *colsll=NULL, *allcols;
+  gal_data_t *datall=NULL, *dataarr;
+  char *line, *format_err, *comm_start;
   size_t linelen=10; /* `linelen' will be increased by `getline'. */
+
+
+  /* Set the constant strings */
+  switch(format)
+    {
+    case TXT_FORMAT_TABLE: format_err="table"; comm_start="# Column "; break;
+    case TXT_FORMAT_IMAGE: format_err="image"; comm_start="# Image ";  break;
+    default:
+      error(EXIT_FAILURE, 0, "code %d not recognized in `txt_get_info'",
+            format);
+    }
 
 
   /* Open the file. */
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: could't open to read as a text table",
-          filename);
+    error(EXIT_FAILURE, errno, "%s: could't open to read as a plain text %s",
+          filename, format_err);
 
 
   /* Allocate the space necessary to keep each line as we parse it. Note
@@ -449,40 +539,42 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
   errno=0;
   line=malloc(linelen*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for line in `gal_txt_table_info'",
+    error(EXIT_FAILURE, errno, "%zu bytes for line in `txt_get_info'",
           linelen*sizeof *line);
 
 
   /* Read the comments of the line for possible information about the
-     lines, but also confirm the info by trying to read the first
+     lines, but also confirm/complete the info by parsing the first
      uncommented line. */
-  *numrows=0;
+  dsize[0]=0;
   while( getline(&line, &linelen, fp) != -1 )
     switch( gal_txt_line_stat(line) )
       {
-      case GAL_TXT_LINESTAT_COMMENT:
         /* Line is a comment, see if it has formatted information. */
-        txt_info_from_comment(line, &colsll);
+      case GAL_TXT_LINESTAT_COMMENT:
+        txt_info_from_comment(line, &datall, comm_start);
         break;
 
         /* Line is actual data, use it to fill in the gaps.  */
       case GAL_TXT_LINESTAT_DATAROW:
-        ++(*numrows);
+        ++dsize[0];
         if(firstlinedone==0)
           {
             firstlinedone=1;
-            txt_info_from_first_row(line, &colsll);
+            numtokens=txt_info_from_first_row(line, &datall, format);
+            if(format==TXT_FORMAT_IMAGE) dsize[1]=numtokens;
           }
         break;
 
-        /* We also have the case of GAL_TXT_LINESTAT_BLANK */
+        /* We also have the case of GAL_TXT_LINESTAT_BLANK.  */
       }
 
 
-  /* If there were rows in the file, then write the unorganized gathered
-     information (linked list) into an organized array for easy processing
-     by later steps.  */
-  allcols = *numrows ? txt_infoll_to_array(colsll, numcols) : NULL;
+  /* The final dataset linked list can have any order (depending on how the
+     user gave column information in tables for example). So here, we will
+     convert the list into a nicely sorted array, note that this function
+     frees list as part of the process. */
+  dataarr=txt_infoll_to_array(datall, numdata);
 
 
   /* Clean up. Note that even if there were no usable columns, there might
@@ -490,19 +582,41 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
      case. If the list is indeed empty, then `gal_data_free_ll' won't do
      anything. */
   free(line);
-  gal_data_free_ll(colsll);
 
 
   /* Close the file. */
   errno=0;
   if(fclose(fp))
-    error(EXIT_FAILURE, errno, "%s: couldn't close file after reading ASCII "
-          "table information", filename);
+    error(EXIT_FAILURE, errno, "%s: couldn't close file after reading plain "
+          "text %s information", filename, format_err);
 
 
   /* Return the array of column information. */
-  return allcols;
+  return dataarr;
 }
+
+
+
+
+
+/* Get the information of each column in a text file */
+gal_data_t *
+gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
+{
+  return txt_get_info(filename, TXT_FORMAT_TABLE, numcols, numrows);
+}
+
+
+
+
+
+/* Get the information of a 2D array in a text file. */
+gal_data_t *
+gal_txt_image_info(char *filename, size_t *numimg, size_t *dsize)
+{
+  return txt_get_info(filename, TXT_FORMAT_IMAGE, numimg, dsize);
+}
+
 
 
 
@@ -527,33 +641,137 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
 /***************             Read a txt table             ***************/
 /************************************************************************/
 static void
-txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
-                 gal_data_t *colinfo, gal_data_t *out, size_t rowind,
-                 size_t lineno, char *filename)
+txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
+               size_t i, char *filename, size_t lineno, size_t colnum)
 {
-  size_t n=0;
-  int notenoughcols=0;
-  gal_data_t *col;
-  char *tailptr, *end=line+strlen(line);
+  char *tailptr;
+  char         **str=data->array, **strb;
+  unsigned char  *uc=data->array,   *ucb;
+  char            *c=data->array,    *cb;
+  unsigned short *us=data->array,   *usb;
+  short           *s=data->array,    *sb;
+  unsigned int   *ui=data->array,   *uib;
+  int            *ii=data->array,    *ib;
+  unsigned long  *ul=data->array,   *ulb;
+  long            *l=data->array,    *lb;
+  LONGLONG        *L=data->array,    *Lb;
+  float           *f=data->array,    *fb;
+  double          *d=data->array,    *db;
 
-  char         **str, **strb;
-  unsigned char  *uc,   *ucb;
-  char            *c,    *cb;
-  unsigned short *us,   *usb;
-  short           *s,    *sb;
-  unsigned int   *ui,   *uib;
-  int             *i,    *ib;
-  unsigned long  *ul,   *ulb;
-  long            *l,    *lb;
-  LONGLONG        *L,    *Lb;
-  float           *f,    *fb;
-  double          *d,    *db;
+  /* Read the proper token into the column. */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_STRING:
+      gal_checkset_allocate_copy(txt_trim_space(token), &str[i]);
+      if( (strb=info->array) && !strcmp( *strb, str[i] ) )
+        {
+          free(str[i]);
+          gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &str[i]);
+        }
+      break;
+
+    case GAL_DATA_TYPE_UCHAR:
+      uc[i]=strtol(token, &tailptr, 0);
+      if( (ucb=info->array) && *ucb==uc[i] )
+        uc[i]=GAL_DATA_BLANK_UCHAR;
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      c[i]=strtol(token, &tailptr, 0);
+      if( (cb=info->array) && *cb==c[i] )
+        c[i]=GAL_DATA_BLANK_CHAR;
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      us[i]=strtol(token, &tailptr, 0);
+      if( (usb=info->array) && *usb==us[i] )
+        us[i]=GAL_DATA_BLANK_USHORT;
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      s[i]=strtol(token, &tailptr, 0);
+      if( (sb=info->array) && *sb==s[i] )
+        s[i]=GAL_DATA_BLANK_SHORT;
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      ui[i]=strtol(token, &tailptr, 0);
+      if( (uib=info->array) && *uib==ui[i] )
+        ui[i]=GAL_DATA_BLANK_UINT;
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      ii[i]=strtol(token, &tailptr, 0);
+      if( (ib=info->array) && *ib==ii[i] )
+        ii[i]=GAL_DATA_BLANK_INT;
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      ul[i]=strtoul(token, &tailptr, 0);
+      if( (ulb=info->array) && *ulb==ul[i] )
+        ul[i]=GAL_DATA_BLANK_ULONG;
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      l[i]=strtol(token, &tailptr, 0);
+      if( (lb=info->array) && *lb==l[i] )
+        l[i]=GAL_DATA_BLANK_LONG;
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      L[i]=strtoll(token, &tailptr, 0);
+      if( (Lb=info->array) && *Lb==L[i] )
+        L[i]=GAL_DATA_BLANK_LONGLONG;
+      break;
+
+      /* For the blank value of floating point types, we need to make
+         sure it isn't a NaN, because a NaN value will fail on any
+         condition check (even `=='). If it isn't NaN, then we can
+         compare the values. */
+    case GAL_DATA_TYPE_FLOAT:
+      f[i]=strtod(token, &tailptr);
+      if( (fb=info->array)
+          && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
+        f[i]=GAL_DATA_BLANK_FLOAT;
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      d[i]=strtod(token, &tailptr);
+      if( (db=info->array)
+          && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
+        d[i]=GAL_DATA_BLANK_DOUBLE;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`txt_fill_columns'", data->type);
+    }
+
+  /* If a number couldn't be read properly, then report an error. */
+  if(data->type!=GAL_DATA_TYPE_STRING && *tailptr!='\0')
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
+                  "(`%s') couldn't be read as a `%s' number",
+                  colnum, token, gal_data_type_as_string(data->type, 1) );
+}
+
+
+
+
+
+static void
+txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
+         gal_data_t *out, size_t rowind, char *filename, size_t lineno)
+{
+  size_t i, n=0;
+  gal_data_t *data;
+  int notenoughcols=0;
+  char *end=line+strlen(line);
 
   /* See explanations in `txt_info_from_row'. */
   *(end-1)='\0';
 
   /* Start parsing the line. Note that `n' and `maxcolnum' start from
-     one. So we need column `maxcolnum'.*/
+     one. */
   while(++n)
     {
       /* Break out of the parsing if we don't need the columns any
@@ -563,7 +781,7 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
 
       /* Set the pointer to the start of this token/column. See
          explanations in `txt_info_from_row'. */
-      if( colinfo[n-1].type == GAL_DATA_TYPE_STRING )
+      if( info[n-1].type == GAL_DATA_TYPE_STRING )
         {
           /* Remove any delimiters and stop at the first non-delimiter. If
              we have reached the end of the line then its an error, because
@@ -573,7 +791,7 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
 
           /* Everything is good, set the pointer and increment the line to
              the end of the allocated space for this string. */
-          line = (tokens[n]=line) + colinfo[n-1].disp_width;
+          line = (tokens[n]=line) + info[n-1].disp_width;
           if(line<end) *line++='\0';
         }
       else
@@ -600,120 +818,25 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
 
   /* Read the desired tokens into the columns that need them. Note that
      when a blank value is defined for the column, the column's array
-     pointer (`colinfo[col->status-1]') is not NULL and points to the blank
+     pointer (`info[col->status-1]') is not NULL and points to the blank
      value. For strings, this will actually be a string. */
-  for(col=out; col!=NULL; col=col->next)
+  switch(out->ndim)
     {
-      /* Read the proper token into the column. */
-      switch(col->type)
-        {
-        case GAL_DATA_TYPE_STRING:
-          str=col->array;
-          gal_checkset_allocate_copy(txt_trim_space(tokens[col->status]),
-                                     &str[rowind]);
-          if( (strb=colinfo[col->status-1].array)
-              && !strcmp( *strb, str[rowind] ) )
-            {
-              free(str[rowind]);
-              gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
-                                         &str[rowind]);
-            }
-          break;
+    case 1:
+      for(data=out; data!=NULL; data=data->next)
+        txt_read_token(data, &info[data->status-1], tokens[data->status],
+                       rowind, filename, lineno, data->status);
+      break;
 
-        case GAL_DATA_TYPE_UCHAR:
-          uc=col->array;
-          uc[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (ucb=colinfo[col->status-1].array) && *ucb==uc[rowind] )
-            uc[rowind]=GAL_DATA_BLANK_UCHAR;
-          break;
+    case 2:
+      for(i=0;i<out->dsize[1];++i)
+        txt_read_token(out, info, tokens[i+1], rowind * out->dsize[1] + i,
+                       filename, lineno, i+1);
+      break;
 
-        case GAL_DATA_TYPE_CHAR:
-          c=col->array;
-          c[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (cb=colinfo[col->status-1].array) && *cb==c[rowind] )
-            c[rowind]=GAL_DATA_BLANK_CHAR;
-          break;
-
-        case GAL_DATA_TYPE_USHORT:
-          us=col->array;
-          us[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (usb=colinfo[col->status-1].array) && *usb==us[rowind] )
-            us[rowind]=GAL_DATA_BLANK_USHORT;
-          break;
-
-        case GAL_DATA_TYPE_SHORT:
-          s=col->array;
-          s[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (sb=colinfo[col->status-1].array) && *sb==s[rowind] )
-            s[rowind]=GAL_DATA_BLANK_SHORT;
-          break;
-
-        case GAL_DATA_TYPE_UINT:
-          ui=col->array;
-          ui[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (uib=colinfo[col->status-1].array) && *uib==ui[rowind] )
-            ui[rowind]=GAL_DATA_BLANK_UINT;
-          break;
-
-        case GAL_DATA_TYPE_INT:
-          i=col->array;
-          i[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (ib=colinfo[col->status-1].array) && *ib==i[rowind] )
-            i[rowind]=GAL_DATA_BLANK_INT;
-          break;
-
-        case GAL_DATA_TYPE_ULONG:
-          ul=col->array;
-          ul[rowind]=strtoul(tokens[col->status], &tailptr, 0);
-          if( (ulb=colinfo[col->status-1].array) && *ulb==ul[rowind] )
-            ul[rowind]=GAL_DATA_BLANK_ULONG;
-          break;
-
-        case GAL_DATA_TYPE_LONG:
-          l=col->array;
-          l[rowind]=strtol(tokens[col->status], &tailptr, 0);
-          if( (lb=colinfo[col->status-1].array) && *lb==l[rowind] )
-            l[rowind]=GAL_DATA_BLANK_LONG;
-          break;
-
-        case GAL_DATA_TYPE_LONGLONG:
-          L=col->array;
-          L[rowind]=strtoll(tokens[col->status], &tailptr, 0);
-          if( (Lb=colinfo[col->status-1].array) && *Lb==L[rowind] )
-            L[rowind]=GAL_DATA_BLANK_LONGLONG;
-          break;
-
-        /* For the blank value of floating point types, we need to make
-           sure it isn't a NaN, because a NaN value will fail on any
-           condition check (even `=='). If it isn't NaN, then we can
-           compare the values. */
-        case GAL_DATA_TYPE_FLOAT:
-          f=col->array;
-          f[rowind]=strtod(tokens[col->status], &tailptr);
-          if( (fb=colinfo[col->status-1].array)
-              && ( (isnan(*fb) && isnan(f[rowind])) || *fb==f[rowind] ) )
-            f[rowind]=GAL_DATA_BLANK_FLOAT;
-          break;
-
-        case GAL_DATA_TYPE_DOUBLE:
-          d=col->array;
-          d[rowind]=strtod(tokens[col->status], &tailptr);
-          if( (db=colinfo[col->status-1].array)
-              && ( (isnan(*db) && isnan(d[rowind])) || *db==d[rowind] ) )
-            d[rowind]=GAL_DATA_BLANK_DOUBLE;
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`txt_fill_columns'", col->type);
-        }
-
-      /* If a number couldn't be read properly, then report an error. */
-      if(col->type!=GAL_DATA_TYPE_STRING && *tailptr!='\0')
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %d "
-                      "(`%s') couldn't be read as a `%s' number",
-                      col->status, tokens[col->status],
-                      gal_data_type_as_string(col->type, 1) );
+    default:
+      error(EXIT_FAILURE, 0, "`txt_fill' only works for 1 and 2 "
+            "dimensional datasets");
     }
 }
 
@@ -721,18 +844,17 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
 
 
 
-gal_data_t *
-gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, int minmapsize)
+static gal_data_t *
+gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
+             struct gal_linkedlist_sll *indexll, int minmapsize, int format)
 {
   FILE *fp;
   char *line;
-  size_t dsize;
   char **tokens;
   gal_data_t *out=NULL;
   struct gal_linkedlist_sll *ind;
-  size_t maxcolnum=0, rowind=0, lineno=0;
-  size_t linelen=10; /* `linelen' will be increased by `getline'. */
+  size_t maxcolnum=0, rowind=0, lineno=0, ndim;
+  size_t linelen=10;        /* `linelen' will be increased by `getline'. */
 
   /* Open the file. */
   errno=0;
@@ -740,7 +862,6 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "%s: could't open to read as a text table",
           filename);
-
 
   /* Allocate the space necessary to keep a copy of each line as we parse
      it. Note that `getline' is going to later `realloc' this space to fit
@@ -751,19 +872,44 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
     error(EXIT_FAILURE, errno, "%zu bytes for `line' in `gal_txt_table_read'",
           linelen*sizeof *line);
 
-
   /* Allocate all the desired columns for output. We will be reading the
      text file line by line, and writing in the necessary values of each
      row individually. */
-  for(ind=indexll; ind!=NULL; ind=ind->next)
+  switch(format)
     {
-      dsize=numrows;
-      maxcolnum = maxcolnum>ind->v+1 ? maxcolnum : ind->v+1;
-      gal_data_add_to_ll(&out, NULL, colinfo[ind->v].type, 1, &dsize, NULL,
-                         0, minmapsize, colinfo[ind->v].name,
-                         colinfo[ind->v].unit, colinfo[ind->v].comment);
-      out->disp_width=colinfo[ind->v].disp_width;
-      out->status=ind->v+1;
+
+    /* This is a table. */
+    case TXT_FORMAT_TABLE:
+      for(ind=indexll; ind!=NULL; ind=ind->next)
+        {
+          ndim=1;
+          maxcolnum = maxcolnum>ind->v+1 ? maxcolnum : ind->v+1;
+          gal_data_add_to_ll(&out, NULL, info[ind->v].type, ndim, dsize,
+                             NULL, 0, minmapsize, info[ind->v].name,
+                             info[ind->v].unit, info[ind->v].comment);
+          out->disp_width=info[ind->v].disp_width;
+          out->status=ind->v+1;
+        }
+      break;
+
+
+    /* This is an image. */
+    case TXT_FORMAT_IMAGE:
+      if(info->next)
+        error(EXIT_FAILURE, 0, "currently reading only one image (2d "
+              "array) from a text file is possible, the `info' input to "
+              "`gal_txt_read' has more than one element");
+      ndim=2;
+      maxcolnum=dsize[1];
+      out=gal_data_alloc(NULL, info->type, ndim, dsize, NULL, 0, minmapsize,
+                         info->name, info->unit, info->comment);
+      break;
+
+
+    /* Not recognized. */
+    default:
+      error(EXIT_FAILURE, 0, "format code %d not recognized in "
+            "`gal_txt_read'", format);
     }
 
   /* Allocate the space to keep the pointers to each token in the
@@ -777,16 +923,14 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
     error(EXIT_FAILURE, errno, "%zu bytes for `tokens' in "
           "`gal_txt_table_read'", (maxcolnum+1)*sizeof *tokens);
 
-
   /* Read the data columns. */
   while( getline(&line, &linelen, fp) != -1 )
     {
       ++lineno;
       if( gal_txt_line_stat(line) == GAL_TXT_LINESTAT_DATAROW )
-        txt_fill_columns(line, tokens, maxcolnum, colinfo, out, rowind++,
-                         lineno, filename);
+        txt_fill(line, tokens, maxcolnum, info, out, rowind++,
+                 filename, lineno);
     }
-
 
   /* Clean up and close the file. */
   errno=0;
@@ -804,6 +948,41 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
 
 
 
+gal_data_t *
+gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
+                   struct gal_linkedlist_sll *indexll, size_t minmapsize)
+{
+  return gal_txt_read(filename, &numrows, colinfo, indexll, minmapsize,
+                      TXT_FORMAT_TABLE);
+}
+
+
+
+
+
+gal_data_t *
+gal_txt_image_read(char *filename, size_t minmapsize)
+{
+  size_t numimg, dsize[2];
+  gal_data_t *img, *imginfo;
+  struct gal_linkedlist_sll *indexll=NULL;
+
+  /* Get the image information. */
+  imginfo=gal_txt_image_info(filename, &numimg, dsize);
+
+  /* Read the table. */
+  img=gal_txt_read(filename, dsize, imginfo, indexll, minmapsize,
+                   TXT_FORMAT_IMAGE);
+
+  /* Clean up and return. */
+  gal_data_free(imginfo);
+  return img;
+}
+
+
+
+
+
 
 
 
@@ -818,27 +997,33 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
 
 
 /************************************************************************/
-/***************          Write a txt table               ***************/
+/***************              Write to txt                ***************/
 /************************************************************************/
-/* Make an array of two strings for each column (in practice a two
-   dimensional array with 2 columns and a row for each input column). */
+/* Make an array of 3 strings for each column (in practice a two
+   dimensional array with 3 columns in a row for each input column). The
+   columns are:
+
+     Column 0: Printf format string.
+     Column 1: Gnuastro type string (in plain text format).
+     Column 2: Blank value string.
+*/
 #define FMTS_COLS 3
 static char **
-make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
-                     size_t *len)
+make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 {
-  size_t i=0;
   char **fmts;
-  gal_data_t *col;
+  gal_data_t *data;
+  size_t i=0, num=0;
   char fmt[2], lng[3];
 
 
   /* Allocate space for the output. */
+  for(data=datall;data!=NULL;data=data->next) ++num;
   errno=0;
-  fmts=malloc(FMTS_COLS*numcols*sizeof *fmts);
+  fmts=malloc(FMTS_COLS*num*sizeof *fmts);
   if(fmts==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for fmts in `gal_txt_write'",
-          FMTS_COLS*numcols*sizeof *fmts);
+    error(EXIT_FAILURE, errno, "%zu bytes for fmts in `make_fmts_for_printf'",
+          FMTS_COLS*num*sizeof *fmts);
 
 
   /* Initialize the length to 0. */
@@ -846,7 +1031,7 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
 
 
   /* Go over all the columns and make their formats. */
-  for(col=cols;col!=NULL;col=col->next)
+  for(data=datall;data!=NULL;data=data->next)
     {
       /* First allocate the necessary space to keep the string. */
       errno=0;
@@ -861,50 +1046,51 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
 
       /* If we have a blank value, get the blank value as a string and
          adjust the width */
-      if(gal_data_has_blank(col)==0)
+      if(gal_data_has_blank(data)==0)
         fmts[i*FMTS_COLS+2]=NULL;
       else
         {
           /* Set the blank value. */
-          if(col->type==GAL_DATA_TYPE_STRING)
+          if(data->type==GAL_DATA_TYPE_STRING)
             gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
                                        &fmts[i*FMTS_COLS+2]);
           else
-            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(col->type, 0);
+            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(data->type, 0);
         }
 
 
       /* Fill in the printing paramters. */
-      gal_table_col_print_info(col, GAL_TABLE_FORMAT_TXT, fmt, lng);
+      gal_table_col_print_info(data, GAL_TABLE_FORMAT_TXT, fmt, lng);
 
 
       /* Adjust the width if a blank string was defined. */
       if(fmts[i*FMTS_COLS+2])
-        col->disp_width = ( strlen(fmts[i*FMTS_COLS+2]) > col->disp_width
-                            ? strlen(fmts[i*FMTS_COLS+2])
-                            : col->disp_width );
+        data->disp_width = ( strlen(fmts[i*FMTS_COLS+2]) > data->disp_width
+                             ? strlen(fmts[i*FMTS_COLS+2])
+                             : data->disp_width );
 
 
       /* Print the result into the allocated string and add its length to
          the final length of the overall format statement. The space in the
          end of `fmts[i*2]' is to ensure that the columns don't merge, even
          if the printed string is larger than the expected width. */
-      if(col->disp_precision > 0)
+      if(data->disp_precision > 0)
         *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d.%d%s%s ",
-                            leftadjust ? "-" : "", col->disp_width,
-                            col->disp_precision, lng, fmt);
+                            leftadjust ? "-" : "", data->disp_width,
+                            data->disp_precision, lng, fmt);
       else
         *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d%s%s ",
-                            leftadjust ? "-" : "", col->disp_width, lng, fmt);
+                            leftadjust ? "-" : "", data->disp_width,
+                            lng, fmt);
 
 
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
-      if(col->type==GAL_DATA_TYPE_STRING)
+      if(data->type==GAL_DATA_TYPE_STRING)
         sprintf(fmts[i*FMTS_COLS+1], "%s%d",
-                gal_data_type_as_string(col->type, 0), col->disp_width);
+                gal_data_type_as_string(data->type, 0), data->disp_width);
       else
-        strcpy(fmts[i*FMTS_COLS+1], gal_data_type_as_string(col->type, 0));
+        strcpy(fmts[i*FMTS_COLS+1], gal_data_type_as_string(data->type, 0));
 
 
       /* Increment the column counter. */
@@ -919,196 +1105,255 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
 
 
 
-void
-gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
-                    int dontdelete)
+static void
+txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
+{
+  switch(type)
+    {
+      /* Numerical types. */
+    case GAL_DATA_TYPE_UCHAR:
+      fprintf(fp, fmt, ((unsigned char *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+    case GAL_DATA_TYPE_LOGICAL:
+      fprintf(fp, fmt, ((char *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      fprintf(fp, fmt, ((unsigned short *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      fprintf(fp, fmt, ((short *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      fprintf(fp, fmt, ((unsigned int *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      fprintf(fp, fmt, ((int *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      fprintf(fp, fmt, ((unsigned long *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      fprintf(fp, fmt, ((long *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      fprintf(fp, fmt, ((LONGLONG *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      fprintf(fp, fmt, ((float *)array)[ind]);
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      fprintf(fp, fmt, ((double *)array)[ind]);
+      break;
+
+      /* Special consideration for strings. */
+    case GAL_DATA_TYPE_STRING:
+      if( !strcmp( ((char **)array)[ind], GAL_DATA_BLANK_STRING ) )
+        fprintf(fp, fmt, GAL_DATA_BLANK_STRING);
+      else
+        fprintf(fp, fmt, ((char **)array)[ind]);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized for "
+            "col->type in `txt_print_value'", type);
+    }
+}
+
+
+
+
+
+static FILE *
+txt_open_file_write_info(gal_data_t *datall, char **fmts, char *comment,
+                         char *filename, int dontdelete)
 {
   FILE *fp;
-  char *nstr;
-  gal_data_t *col;
-  char **fmts, *tmp;
-  size_t i, j, numcols=0, fmtlen;
+  gal_data_t *data;
+  char *tmp, *nstr;
+  size_t i, j, num=0;
   int nlen, nw=0, uw=0, tw=0, bw=0;
+
+  /* Check the file and open it. */
+  gal_checkset_check_remove_file(filename, dontdelete);
+  errno=0;
+  fp=fopen(filename, "w");
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
+          "table", filename);
+
+
+  /* Write the comments if there were any. */
+  if(comment) fprintf(fp, "%s\n", comment);
+
+
+  /* Get the maximum width for each information field. */
+  for(data=datall;data!=NULL;data=data->next)
+    {
+      ++num;
+      if( data->name && strlen(data->name)>nw ) nw=strlen(data->name);
+      if( data->unit && strlen(data->unit)>uw ) uw=strlen(data->unit);
+    }
+  for(i=0;i<num;++i)
+    {
+      if( (tmp=fmts[ i*FMTS_COLS+1 ]) )            /* If it isn't NULL. */
+        tw = strlen(tmp) > tw ? strlen(tmp) : tw;
+      if( (tmp=fmts[ i*FMTS_COLS+2 ]) )            /* If it isn't NULL. */
+        bw = strlen(tmp) > bw ? strlen(tmp) : bw;
+    }
+
+
+  /* Write the column information if the output is a file. When the
+     output is directed to standard output (the command-line), it is
+     most probably intended for piping into another program (for
+     example AWK for further processing, or sort, or anything) so the
+     user already has the column information and is probably going to
+     change them, so they are just a nuisance.
+
+     When there are more than 9 columns, we don't want to have cases
+     like `# Column 1 :' (note the space between `1' and `:', this
+     space won't exist for the 2 digit colum numbers).
+
+     To do this, we are first allocating and printing a string long
+     enough to keep the final column's `N:'. Then, for each column, we
+     print only the number into the allocated space and put the `:' in
+     manually immediately after the number. Note that the initial
+     `asprintf' put a `\0' in the allocated space, so we can safely
+     over-write the one that `sprintf' puts with a `:' for the columns
+     that have the same number of digits as the final column. */
+  i=0;
+  asprintf(&nstr, "%zu:", num);
+  nlen=strlen(nstr);
+  for(data=datall; data!=NULL; data=data->next)
+    {
+      /* Print the number into the number string, then add the `:'
+         immediately after the number. */
+      sprintf(nstr, "%zu", i+1);
+      for(j=1;j<nlen;++j)
+        if(!isdigit(nstr[j])) nstr[j] = isdigit(nstr[j-1]) ? ':' : ' ';
+
+      /* Now print the full information. */
+      fprintf(fp, "# %s %s %-*s [%-*s,%-*s,%-*s] %s\n",
+              datall->ndim==1 ? "Column" : "Image", nstr,
+              nw, data->name ? data->name    : "",
+              uw, data->unit ? data->unit    : "",
+              tw, fmts[i*FMTS_COLS+1] ? fmts[i*FMTS_COLS+1] : "",
+              bw, fmts[i*FMTS_COLS+2] ? fmts[i*FMTS_COLS+2] : "",
+              data->comment ? data->comment : "");
+      ++i;
+    }
+
+
+  /* Clean up and return. */
+  free(nstr);
+  return fp;
+}
+
+
+
+
+
+void
+gal_txt_write(gal_data_t *datall, char *comment, char *filename,
+              int dontdelete)
+{
+  FILE *fp;
+  char **fmts;
+  gal_data_t *data, *next2d;
+  size_t i, j, num=0, fmtlen;
+
+
+  /* Currently only 1 and 2 dimension datasets are acceptable. */
+  if( datall->ndim!=1 && datall->ndim!=2 )
+    error(EXIT_FAILURE, 0, "currently `gal_txt_write' only supports 1 and "
+          "2 dimensional datasets. The input dataset has %zu dimensions",
+          datall->ndim);
+
+
+  /* For a 2D dataset, we currently don't accept a list, we can only print
+     one column. So keep the next pointer separately and restore it after
+     the job of this function is finished. */
+  if(datall->ndim==2)
+    {
+      next2d=datall->next;
+      datall->next=NULL;
+    }
 
 
   /* Find the number of columns, do a small sanity check, and get the
      maximum width of the name and unit string if they are present. */
-  for(col=cols;col!=NULL;col=col->next)
+  for(data=datall;data!=NULL;data=data->next)
     {
       /* Count. */
-      ++numcols;
+      ++num;
 
-      /* Make sure the columns are 1 dimensional. */
-      if(cols->ndim!=1)
-        error(EXIT_FAILURE, 0, "columns to print as an ASCII file must have "
-              "only one dimension. column %zu of the given set has %zu "
-              "dimensions", numcols, cols->ndim);
-
-      /* Make sure sizes match. */
-      if(cols->size!=col->size)
-        error(EXIT_FAILURE, 0, "to print a set of columns, as an ASCII "
-              "table, they must currently all have the same number of "
-              "elements/rows. The inputs to `gal_txt_write' have different "
-              "sizes: the first column has %zu, while column %zu as %zu "
-              "elements", cols->size, numcols, col->size);
-      if( col->name && strlen(col->name)>nw ) nw=strlen(col->name);
-      if( col->unit && strlen(col->unit)>uw ) uw=strlen(col->unit);
+      /* Check if the dimensionality and size is the same for all the
+         elements. */
+      if( datall!=data && gal_data_dsize_is_different(datall, data) )
+        error(EXIT_FAILURE, 0, "the input list of datasets to "
+              "`gal_txt_write' must have the same sizes (dimentionality "
+              "and length along each dimension).");
     }
 
 
   /* Prepare the necessary formats for each column, then allocate the space
      for the full list and concatenate all the separate inputs into it. */
-  fmts=make_fmts_for_printf(cols, numcols, 1, &fmtlen);
-  for(i=0;i<numcols;++i)
-    {
-      if( (tmp=fmts[ i*FMTS_COLS+1 ]) )
-        tw = strlen(tmp) > tw ? strlen(tmp) : tw;
-      if( (tmp=fmts[ i*FMTS_COLS+2 ]) )
-        bw = strlen(tmp) > bw ? strlen(tmp) : bw;
-    }
+  fmts=make_fmts_for_printf(datall, 1, &fmtlen);
 
 
   /* Set the output FILE pointer: if it isn't NULL, its an actual file,
      otherwise, its the standard output. */
-  if(filename)
+  fp = ( filename
+         ? txt_open_file_write_info(datall, fmts, comment, filename,
+                                    dontdelete)
+         : stdout );
+
+
+  /* Print the dataset */
+  switch(datall->ndim)
     {
-      gal_checkset_check_remove_file(filename, dontdelete);
-      errno=0;
-      fp=fopen(filename, "w");
-      if(fp==NULL)
-        error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
-              "table", filename);
-
-
-      /* Write the comments if there were any. */
-      if(comment) fprintf(fp, "%s\n", comment);
-
-
-      /* Write the column information if the output is a file. When the
-         output is directed to standard output (the command-line), it is
-         most probably intended for piping into another program (for
-         example AWK for further processing, or sort, or anything) so the
-         user already has the column information and is probably going to
-         change them, so they are just a nuisance.
-
-         When there are more than 9 columns, we don't want to have cases
-         like `# Column 1 :' (note the space between `1' and `:', this
-         space won't exist for the 2 digit colum numbers).
-
-         To do this, we are first allocating and printing a string long
-         enough to keep the final column's `N:'. Then, for each column, we
-         print only the number into the allocated space and put the `:' in
-         manually immediately after the number. Note that the initial
-         `asprintf' put a `\0' in the allocated space, so we can safely
-         over-write the one that `sprintf' puts with a `:' for the columns
-         that have the same number of digits as the final column. */
-      i=0;
-      asprintf(&nstr, "%zu:", numcols);
-      nlen=strlen(nstr);
-      for(col=cols; col!=NULL; col=col->next)
+    case 1:
+      for(i=0;i<datall->size;++i)                        /* Row.    */
         {
-          /* Print the number into the number string, then add the `:'
-             immediately after the number. */
-          sprintf(nstr, "%zu", i+1);
-          for(j=1;j<nlen;++j)
-            if(!isdigit(nstr[j])) nstr[j] = isdigit(nstr[j-1]) ? ':' : ' ';
-
-          /* Now print the full column information. */
-          fprintf(fp, "# Column %s %-*s [%-*s,%-*s,%-*s] %s\n",
-                  nstr,
-                  nw, col->name    ? col->name    : "",
-                  uw, col->unit    ? col->unit    : "",
-                  tw, fmts[i*FMTS_COLS+1] ? fmts[i*FMTS_COLS+1] : "",
-                  bw, fmts[i*FMTS_COLS+2] ? fmts[i*FMTS_COLS+2] : "",
-                  col->comment ? col->comment : "");
-          ++i;
+          j=0;
+          for(data=datall;data!=NULL;data=data->next)    /* Column. */
+            txt_print_value(fp, data->array, data->type, i,
+                            fmts[j++ * FMTS_COLS]);
+          fprintf(fp, "\n");
         }
+      break;
 
 
-      /* Clean up */
-      free(nstr);
-    }
-  else      /* Output wasn't a file, so set it to standard output */
-    fp=stdout;
-
-
-  /* Print the output */
-  for(i=0;i<cols->size;++i)                   /* Loop over each row.    */
-    {
-      j=0;
-      for(col=cols;col!=NULL;col=col->next)   /* Loop over each column. */
+    case 2:
+      for(i=0;i<datall->dsize[0];++i)
         {
-          switch(col->type)
-            {
-
-            /* Numerical types. */
-            case GAL_DATA_TYPE_UCHAR:
-              fprintf(fp, fmts[j*FMTS_COLS],
-                      ((unsigned char *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_CHAR:
-            case GAL_DATA_TYPE_LOGICAL:
-              fprintf(fp, fmts[j*FMTS_COLS], ((char *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_USHORT:
-              fprintf(fp, fmts[j*FMTS_COLS],
-                      ((unsigned short *)col->array)[i]);
-              break;
-            case GAL_DATA_TYPE_SHORT:
-              fprintf(fp, fmts[j*FMTS_COLS], ((short *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_UINT:
-              fprintf(fp, fmts[j*FMTS_COLS], ((unsigned int *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_INT:
-              fprintf(fp, fmts[j*FMTS_COLS], ((int *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_ULONG:
-              fprintf(fp, fmts[j*FMTS_COLS],
-                      ((unsigned long *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_LONG:
-              fprintf(fp, fmts[j*FMTS_COLS], ((long *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_LONGLONG:
-              fprintf(fp, fmts[j*FMTS_COLS], ((LONGLONG *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_FLOAT:
-              fprintf(fp, fmts[j*FMTS_COLS], ((float *)col->array)[i]);
-              break;
-
-            case GAL_DATA_TYPE_DOUBLE:
-              fprintf(fp, fmts[j*FMTS_COLS], ((double *)col->array)[i]);
-              break;
-
-            /* Special consideration for strings. */
-            case GAL_DATA_TYPE_STRING:
-              if( !strcmp( ((char **)col->array)[i], GAL_DATA_BLANK_STRING ) )
-                fprintf(fp, "%-*s ", col->disp_width, GAL_DATA_BLANK_STRING);
-              else
-                fprintf(fp, fmts[j*FMTS_COLS], ((char **)col->array)[i]);
-              break;
-
-            default:
-              error(EXIT_FAILURE, 0, "type code %d not recognized for "
-                    "col->type in `gal_txt_write'", col->type);
-            }
-          ++j;
+          for(j=0;j<datall->dsize[1];++j)
+            txt_print_value(fp, datall->array, datall->type,
+                            i*datall->dsize[1]+j, fmts[0]);
+          fprintf(fp, "\n");
         }
-      fprintf(fp, "\n");
+      break;
+
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! datall->ndim=%zu is not recognized "
+            "in `gal_txt_write'", datall->ndim);
     }
+
 
 
   /* Clean up. */
-  for(i=0;i<numcols;++i)
+  for(i=0;i<num;++i)
     {
       free(fmts[i*FMTS_COLS]);
       free(fmts[i*FMTS_COLS+1]);
@@ -1125,4 +1370,7 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
         error(EXIT_FAILURE, errno, "%s: couldn't close file after writing "
               "of text table", filename);
     }
+
+  /* Restore the next pointer for a 2D dataset. */
+  if(datall->ndim==2) datall->next=next2d;
 }
