@@ -173,24 +173,27 @@ save_with_gnuastro_lib(struct converttparams *p)
 {
   gal_data_t *channel;
 
-  for(channel=p->chll; channel!=NULL; channel=channel->next)
-    switch(p->outformat)
-      {
+  /* Determine the type. */
+  switch(p->outformat)
+    {
 
-      case OUT_FORMAT_FITS:
+    /* FITS: a FITS file can have many extensions (channels). */
+    case OUT_FORMAT_FITS:
+      for(channel=p->chll; channel!=NULL; channel=channel->next)
         gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_STRING);
-        break;
+      break;
+
+    /* Plain text: only one channel is acceptable. */
+    case OUT_FORMAT_TXT:
+      gal_txt_write(p->chll, NULL, p->cp.output, p->cp.dontdelete);
+      break;
 
 
-      case OUT_FORMAT_TXT:
-        gal_txt_write(p->chll, NULL, p->cp.output, p->cp.dontdelete);
-        break;
-
-
-      default:
-        error(EXIT_FAILURE, 0, "a bug! output format code `%d' not "
-              "recognized in `save_with_gnuastro_lib'", p->outformat);
-      }
+    /* Not recognized. */
+    default:
+      error(EXIT_FAILURE, 0, "a bug! output format code `%d' not "
+            "recognized in `save_with_gnuastro_lib'", p->outformat);
+    }
 }
 
 

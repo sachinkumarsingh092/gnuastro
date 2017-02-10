@@ -249,6 +249,11 @@ gal_checkset_check_remove_file(char *filename, int dontdelete)
 {
   FILE *tmpfile;
 
+  /* If the filename is `NULL' everything is ok (it doesn't exist)! In some
+     cases, a NULL filename is interpretted to mean standard output. */
+  if(filename==NULL)
+    return;
+
   /* We want to make sure that we can open and write to this file. But
      the user might have asked to not delete the file, so the
      contents should not be changed. Therefore we have to open it with

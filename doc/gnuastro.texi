@@ -342,7 +342,7 @@ Header
 
 ConvertType
 
-* Recognized file types::       Recognized file types
+* Recognized file formats::     Recognized file formats
 * Color::                       Some explanations on color.
 * Invoking astconvertt::        Options and arguments to ConvertType.
 
@@ -367,8 +367,8 @@ ImageCrop
 
 Invoking ImageCrop
 
-* ImageCrop options::          A list of all the options with explanation.
-* ImageCrop output::           The outputs of ImageCrop.
+* ImageCrop options::           A list of all the options with explanation.
+* ImageCrop output::            The outputs of ImageCrop.
 
 Arithmetic
 
@@ -6251,13 +6251,13 @@ files types will be given followed a short introduction to digital
 color.
 
 @menu
-* Recognized file types::       Recognized file types
+* Recognized file formats::     Recognized file formats
 * Color::                       Some explanations on color.
 * Invoking astconvertt::        Options and arguments to ConvertType.
 @end menu
 
-@node Recognized file types, Color, ConvertType, ConvertType
-@subsection Recognized file types
+@node Recognized file formats, Color, ConvertType, ConvertType
+@subsection Recognized file formats
 
 The various standards and the file name extensions recognized by
 ConvertType are listed below.
@@ -6378,28 +6378,49 @@ channel, that channel will not be used in the output.
 @item Plain text
 @cindex Plain text
 @cindex Suffixes, plain text
-Plain text files have the advantage that they can be viewed with any
-text editor or on the command-line. Most programs also support input
-as plain text files. In ConvertType, if the input arguments do not
-have any of the extensions listed above for other formats, the input
-is assumed to be a text file. Each plain text file is considered to
-contain one color channel. There is no standard output for plain text
-files.
+Plain text files have the advantage that they can be viewed with any text
+editor or on the command-line. Most programs also support input as plain
+text files. As input, each plain text file is considered to contain one
+color channel.
 
-@cindex Mis-spelling file suffix
-@cindex File suffix mis-spelling
-If any of the extension above is mis-spelled, this will result in the
-output becoming a plain text file with that (short) name. If this
-happens, ConvertType will warn you and write the output as a plain
-text file. If you don't want that warning, set your plain text output
-file names longer than 5 characters. When converting an image to plain
-text, consider the fact that if the image is large the number of
-columns in each line will become very large, possibly making it very
-hard to open in some text editors.
+In ConvertType, the recognized extensions for plain text files are
+@file{.txt} and @file{.dat}. As described in @ref{Invoking astconvertt}, if
+you just give these extensions, (and not a full filename) as output, then
+automatic output will be preformed to determine the final output name (see
+@ref{Automatic output}). Besides these, when the format of a file cannot be
+recognized from its name, ConvertType will fall back to plain text mode. So
+you can use any name (even without an extension) for a plain text input or
+output. Just note that when the suffix is not recognized, automatic output
+will not be preformed.
+
+The basic input/output on plain text images is very similar to how tables
+are read/written as discribed in @ref{Gnuastro text table format}. Simply
+put, the restrictions are very loose, and there is a convention to define a
+name, units, data type (see @ref{Data types}), and comments for the data in
+a commented line. The only difference is that as a table, a text file can
+contain many datasets (columns), but as a 2D image, it can only contain one
+dataset. As a result, only one information comment line is necessary for a
+2D image, and instead of the starting `@code{# Column N}' (@code{N} is the
+column number), the information line for a 2D image must start with
+`@code{# Image 1}'. When ConvertType is asked to output to plain text file,
+this information comment line is written before the image pixel values.
+
+When converting an image to plain text, consider the fact that if the image
+is large, the number of columns in each line will become very large,
+possibly making it very hard to open in some text editors.
+
+@item Standard output (command-line)
+This is very similar to the plain text output, but instead of creating a
+file to keep the printed values, they are printed on the command line. This
+can be very useful when you want to redirect the results directly to
+another program in one command with no intermediate file. The only
+difference is that only the pixel values are printed (with no information
+comment line). To print to the standard output, set the output name to
+`@file{stdout}'.
 
 @end table
 
-@node Color, Invoking astconvertt, Recognized file types, ConvertType
+@node Color, Invoking astconvertt, Recognized file formats, ConvertType
 @subsection Color
 
 @cindex RGB
@@ -6499,7 +6520,7 @@ complete) file name given to the @option{--output} option, which can
 either be given on the command-line or in any of the configuration
 files (see @ref{Configuration files}). Note that if the output suffix
 is not recognized, it will default to plain text format, see
-@ref{Recognized file types}.
+@ref{Recognized file formats}.
 
 The order of multiple input files is important. After reading the
 input file(s) the number of color channels in all the inputs will be
@@ -6512,17 +6533,13 @@ green and blue color channels and if there are four color channels
 they are respectively considered to be cyan, magenta, yellow and
 black.
 
-The value to @option{--output} (or @option{-o}) can be either a full
-file name or just the suffix of the desired output format. In the
-former case, that same name will be used for the output. In the latter
-case, the name of the output file will be set based on the automatic
-output guidelines, see @ref{Automatic output}. Note that the suffix
-name can optionally start a @file{.} (dot), so for example
-@option{--output=.jpg} and @option{--output=jpg} are equivalent. Be
-careful that if you want your output in plain text, you have to give
-the full file name. So if @option{-otxt} or @option{--output=.txt} are
-given, the output file will be named @file{txt} or @file{.txt} (the
-latter will be a hidden file!).
+The value to @option{--output} (or @option{-o}) can be either a full file
+name or just the suffix of the desired output format. In the former case,
+that same name will be used for the output. In the latter case, the name of
+the output file will be set based on the automatic output guidelines, see
+@ref{Automatic output}. Note that the suffix name can optionally start a
+@file{.} (dot), so for example @option{--output=.jpg} and
+@option{--output=jpg} are equivalent. See @ref{Recognized file formats}
 
 Besides the common set of options explained in @ref{Common options},
 the options to ConvertType can be classified into input, output and
@@ -7222,8 +7239,8 @@ and classifies his catalog} for a tutorial on effectively using this
 feature.
 
 @menu
-* ImageCrop options::          A list of all the options with explanation.
-* ImageCrop output::           The outputs of ImageCrop.
+* ImageCrop options::           A list of all the options with explanation.
+* ImageCrop output::            The outputs of ImageCrop.
 @end menu
 
 @node ImageCrop options, ImageCrop output, Invoking astimgcrop, Invoking astimgcrop
@@ -7654,7 +7671,7 @@ you can see, very complicated procedures can be created without the need
 for parenthesis or worrying about precedence. Even functions which take an
 arbitrary number of arguments can be defined in this notation. This is a
 very powerfull notation and is used in languages like Postscript
-@footnote{See the EPS and PDF part of @ref{Recognized file types} for a
+@footnote{See the EPS and PDF part of @ref{Recognized file formats} for a
 little more on the Postscript language.}  (the programming language in
 Postscript and compiled into PDF files) uses this notation.
 

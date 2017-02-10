@@ -708,25 +708,36 @@ ui_set_output(struct converttparams *p)
     {
       p->outformat=OUT_FORMAT_TXT;
 
-      /* Plain text files don't have any unique set of suffixes. So, here,
-         we will just adopt two of the most common ones: `txt' or `dat'. If
-         the output is just one of these two suffixes, then we will use
-         automatic output to generate the full name, otherwise, we'll just
-         take the user's given value as the filename. */
-      if( !strcmp(cp->output, "txt") || !strcmp(cp->output, ".txt")
-          || !strcmp(cp->output, "dat") || !strcmp(cp->output, ".dat") )
-        ui_add_dot_use_automatic_output(p);
+      /* If the given value is `stdout', then set p->cp.output to NULL, so
+         the result will be printed to the standard output. */
+      if( !strcmp(p->cp.output, "stdout") )
+        {
+          free(p->cp.output);
+          p->cp.output=NULL;
+        }
+      else
+        {
+          /* Plain text files don't have any unique set of suffixes. So,
+             here, we will just adopt two of the most common ones: `txt' or
+             `dat'. If the output is just one of these two suffixes, then
+             we will use automatic output to generate the full name,
+             otherwise, we'll just take the user's given value as the
+             filename. */
+          if( !strcmp(cp->output, "txt") || !strcmp(cp->output, ".txt")
+              || !strcmp(cp->output, "dat") || !strcmp(cp->output, ".dat") )
+            ui_add_dot_use_automatic_output(p);
 
-      /* If output type is not an image, there should only be one color
-         channel: */
-      if(p->numch>1)
-        error(EXIT_FAILURE, 0, "text output (`--output=%s`) can only be "
-              "completed with one input color channel. You have given "
-              "%zu. Note that some formats (for example JPEG) can have "
-              "more than one color channel in each file. You can first "
-              "convert the file to FITS, then convert the desired "
-              "channel to text by specifying the HDU",
-              cp->output, p->numch);
+          /* If output type is not an image, there should only be one color
+             channel: */
+          if(p->numch>1)
+            error(EXIT_FAILURE, 0, "text output (`--output=%s`) can only be "
+                  "completed with one input color channel. You have given "
+                  "%zu. Note that some formats (for example JPEG) can have "
+                  "more than one color channel in each file. You can first "
+                  "convert the file to FITS, then convert the desired "
+                  "channel to text by specifying the HDU",
+                  cp->output, p->numch);
+        }
     }
 
   /* Check if the output already exists. */
@@ -853,6 +864,7 @@ ui_free_report(struct converttparams *p)
   /* Free the allocated spaces */
   gal_data_free(p->fluxlow);
   gal_data_free(p->fluxhigh);
+  if(p->cp.output) free(p->cp.output);
   gal_linkedlist_free_stll(p->hdus, 1);
   gal_linkedlist_free_stll(p->inputnames, 0);
 }
