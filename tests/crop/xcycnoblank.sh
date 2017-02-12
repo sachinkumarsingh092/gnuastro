@@ -1,4 +1,4 @@
-# Convert a FITS image into an PDF file.
+# Crop a box based on --xc and --yc, with no blank pixels.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,8 +22,8 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=convertt
-img=crop_section.fits
+prog=crop
+img=mkprofcat1.fits
 execname=../bin/$prog/ast$prog
 
 
@@ -40,12 +40,7 @@ execname=../bin/$prog/ast$prog
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-#
-#   - Ghostscript was not present on the system.
-if [ ! -f $execname ] || [ ! -f $img ] || [ "x$hasghostscript" != "xyes" ]; then
-    exit 77;
-fi
-
+if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 
 
@@ -53,4 +48,9 @@ fi
 
 # Actual test script
 # ==================
-$execname $img --output=pdf --invert
+#
+# The number of threads is one so if CFITSIO does is not configured to
+# enable multithreaded access to files, the tests pass. It is the
+# users choice to enable this feature.
+$execname $img --xc=500 --yc=500 --noblank --output=crop_xcycnb.fits \
+          --numthreads=1

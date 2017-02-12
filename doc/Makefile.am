@@ -93,17 +93,11 @@ endif
 if COND_COSMICCAL
   MAYBE_COSMICCAL_MAN = man/astcosmiccal.1
 endif
+if COND_CROP
+  MAYBE_CROP_MAN = man/astcrop.1
+endif
 if COND_HEADER
   MAYBE_HEADER_MAN = man/astheader.1
-endif
-if COND_IMGCROP
-  MAYBE_IMGCROP_MAN = man/astimgcrop.1
-endif
-if COND_IMGSTAT
-  MAYBE_IMGSTAT_MAN = man/astimgstat.1
-endif
-if COND_IMGWARP
-  MAYBE_IMGWARP_MAN = man/astimgwarp.1
 endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG_MAN = man/astmkcatalog.1
@@ -117,20 +111,26 @@ endif
 if COND_NOISECHISEL
   MAYBE_NOISECHISEL_MAN = man/astnoisechisel.1
 endif
+if COND_STATISTICS
+  MAYBE_STATISTICS_MAN = man/aststatistics.1
+endif
 if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY_MAN = man/astsubtractsky.1
 endif
 if COND_TABLE
   MAYBE_TABLE_MAN = man/asttable.1
 endif
+if COND_WARP
+  MAYBE_WARP_MAN = man/astwarp.1
+endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE_MAN = man/astTEMPLATE.1
 #endif
 dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_CONVERTT_MAN)           \
-  $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) $(MAYBE_HEADER_MAN)      \
-  $(MAYBE_IMGCROP_MAN) $(MAYBE_IMGSTAT_MAN) $(MAYBE_IMGWARP_MAN)        \
-  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)       \
-  $(MAYBE_NOISECHISEL_MAN) $(MAYBE_SUBTRACTSKY_MAN) $(MAYBE_TABLE_MAN)
+  $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) $(MAYBE_CROP_MAN)        \
+  $(MAYBE_HEADER_MAN) $(MAYBE_IMGWARP_MAN) $(MAYBE_MKCATALOG_MAN)       \
+  $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN) $(MAYBE_NOISECHISEL_MAN)     \
+  $(MAYBE_STATISTICS_MAN) $(MAYBE_SUBTRACTSKY_MAN) $(MAYBE_TABLE_MAN)
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't
@@ -164,21 +164,13 @@ man/astcosmiccal.1: $(top_srcdir)/bin/cosmiccal/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "estimate cosmological values"                \
 	                  --libtool $(toputildir)/cosmiccal/astcosmiccal
 
+man/astcrop.1: $(top_srcdir)/bin/crop/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "crop regions of a dataset"                   \
+	                  --libtool $(toputildir)/crop/astcrop
+
 man/astheader.1: $(top_srcdir)/bin/header/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "view and manipulate FITS headers"            \
 	                  --libtool $(toputildir)/header/astheader
-
-man/astimgcrop.1: $(top_srcdir)/bin/imgcrop/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) -n "crop regions of an image"                    \
-	                  --libtool $(toputildir)/imgcrop/astimgcrop
-
-man/astimgstat.1: $(top_srcdir)/bin/imgstat/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) -n "get image statistics"                        \
-	                  --libtool $(toputildir)/imgstat/astimgstat
-
-man/astimgwarp.1: $(top_srcdir)/bin/imgwarp/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) -n "warp (transform) input image"                \
-	                  --libtool $(toputildir)/imgwarp/astimgwarp
 
 man/astmkcatalog.1: $(top_srcdir)/bin/mkcatalog/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "Make a catalog from labeled input images"    \
@@ -196,6 +188,10 @@ man/astnoisechisel.1: $(top_srcdir)/bin/noisechisel/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "detect signal in a noisy image"              \
 	                  --libtool $(toputildir)/noisechisel/astnoisechisel
 
+man/aststatistics.1: $(top_srcdir)/bin/statistics/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "calculate statistics of a dataset"           \
+	                  --libtool $(toputildir)/statistics/aststatistics
+
 man/astsubtractsky.1: $(top_srcdir)/bin/subtractsky/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "subtract the sky value in an image"          \
 	                  --libtool $(toputildir)/subtractsky/astsubtractsky
@@ -204,6 +200,10 @@ man/asttable.1: $(top_srcdir)/bin/table/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "read and write ASCII and FITS tables"        \
 	                  --libtool $(toputildir)/table/asttable
 
-#man/astTEMPLATE.1: $(top_srcdir)/bin/TABLE/args.h  $(ALLMANSDEP)
+#man/astTEMPLATE.1: $(top_srcdir)/bin/TEMPLATE/args.h  $(ALLMANSDEP)
 #	$(MAYBE_HELP2MAN) -n "put a short description here"                \
 	                  $(toputildir)/TEMPLATE/astTEMPLATE
+
+man/astwarp.1: $(top_srcdir)/bin/warp/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "warp (transform) input image"                \
+	                  --libtool $(toputildir)/warp/astwarp

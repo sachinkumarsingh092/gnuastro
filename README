@@ -50,17 +50,10 @@ context under categories/chapters.
     example the luminosity distance, distance modulus, comoving volume and
     many more.
 
+  - Crop (astcrop): Crop region(s) from an image and stitch several images
+    if necessary.  Inputs can be in pixel coordinates or world coordinates.
+
   - Header (astheader): Print and manipulate the header data of a FITS file.
-
-  - ImageCrop (astimgcrop): Crop region(s) from an image and stitch several
-    images if necessary.  Inputs can be in pixel coordinates or world
-    coordinates.
-
-  - ImageStatistics (astimgstat): Get pixel statistics and save histogram
-    and cumulative frequency plots.
-
-  - ImageWarp (astimgwarp): Warp image to new pixel grid. Any projective
-    transformation or Homography can be applied to the input images.
 
   - MakeCatalog (astmkcatalog): Make catalog of labeled image (output of
     NoiseChisel). The catalogs are highly customizable and adding new
@@ -79,6 +72,9 @@ context under categories/chapters.
     signal in noise (galaxies in the sky), using thresholds that are below
     the Sky value (see arXiv:1505.01664).
 
+  - Statistics (aststatistics): Get pixel statistics and save histogram and
+    cumulative frequency plots.
+
   - SubtractSky (astsubtractsky): Find and subtract sky value by comparing
     the mode and median on a mesh grid.
 
@@ -86,6 +82,9 @@ context under categories/chapters.
     tables, or print them on the command-line, or save them in a plain text
     file.  Output columns can also be determined by number or regular
     expression matching of column names.
+
+  - Warp (astwarp): Warp image to new pixel grid. Any projective
+    transformation or Homography can be applied to the input images.
 
 All the programs share the same basic command-line user interface and a set
 of common options for the comfort of both the users and

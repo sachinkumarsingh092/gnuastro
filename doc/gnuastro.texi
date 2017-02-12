@@ -59,20 +59,17 @@ License''.
 * CosmicCalculator: (gnuastro)CosmicCalculator. For cosmological params.
 * astcosmiccal: (gnuastro)Invoking astcosmiccal. Options to CosmicCalculator.
 
+* Crop: (gnuastro)Crop. Crop region(s) from image(s).
+* astcrop: (gnuastro)Invoking astcrop. Options to Crop.
+
 * Header: (gnuastro)Header. Print and manipulate data header info.
 * astheader: (gnuastro)Invoking astheader. Options to Header.
-
-* ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
-* astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
 * Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
 * astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
 
-* ImageStatistics: (gnuastro)ImageStatistics. Get image Statistics.
-* astimgstat: (gnuastro)Invoking astimgstat. Options to ImageStatistics.
-
-* ImageWarp: (gnuastro)ImageWarp. Warp an image to a new grid.
-* astimgwarp: (gnuastro)Invoking astimgwarp. Options to ImageWarp.
+* Statistics: (gnuastro)Statistics. Get image Statistics.
+* aststatistics: (gnuastro)Invoking aststatistics. Options to Statistics.
 
 * MakeCatalog: (gnuastro)MakeCatalog. Make a catalog from labeled image.
 * astmkcatalog: (gnuastro)Invoking astmkcatalog. Options to MakeCatalog.
@@ -91,6 +88,9 @@ License''.
 
 * Table: (gnuastro)Table. Read and write FITS binary or ASCII tables.
 * asttable: (gnuastro)Invoking asttable. Options to Table.
+
+* Warp: (gnuastro)Warp. Warp a dataset to a new grid.
+* astwarp: (gnuastro)Invoking astwarp. Options to Warp.
 
 @end direntry
 
@@ -353,23 +353,23 @@ Table
 
 Image manipulation
 
-* ImageCrop::                   Crop region(s) from FITS image(s).
+* Crop::                        Crop region(s) from a dataset.
 * Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
-* ImageWarp::                   Warp/Transform an image to a different grid.
+* Warp::                        Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
 
-ImageCrop
+Crop
 
-* ImageCrop modes::             Basic ImageCrop modes.
+* Crop modes::                  Basic modes to define crop region.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::         Calling ImageCrop on the command-line
+* Invoking astcrop::            Calling Crop on the command-line
 
-Invoking ImageCrop
+Invoking Crop
 
-* ImageCrop options::           A list of all the options with explanation.
-* ImageCrop output::            The outputs of ImageCrop.
+* Crop options::                A list of all the options with explanation.
+* Crop output::                 The outputs of Crop.
 
 Arithmetic
 
@@ -403,12 +403,12 @@ Frequency domain and Fourier operations
 * Fourier operations in two dimensions::  Extend to 2D images.
 * Edges in the frequency domain::  Interpretation of edge effects.
 
-ImageWarp
+Warp
 
 * Warping basics::              Basics of coordinate transformation.
 * Merging multiple warpings::   How to merge multiple matrices.
 * Resampling::                  Warping an image is re-sampling it.
-* Invoking astimgwarp::         Arguments and options for ImageWarp.
+* Invoking astwarp::            Arguments and options for Warp.
 
 SubtractSky
 
@@ -430,16 +430,16 @@ Tiling an image
 
 Image analysis
 
-* ImageStatistics::             Calculate main image statistics.
+* Statistics::                  Calculate dataset statistics.
 * NoiseChisel::                 Detect objects in an image.
 * MakeCatalog::                 Catalog from input and labeled images.
 
-ImageStatistics
+Statistics
 
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
 * Mirror distribution::         Used for finding the mode.
-* Invoking astimgstat::         Arguments and options to ImageStatistics.
+* Invoking aststatistics::      Arguments and options to Statistics.
 
 NoiseChisel
 
@@ -938,9 +938,9 @@ Gnuastro is a package of independent programs and a collection of
 libraries, here we are mainly concerned with the programs. Each program has
 an official name which consists of one or two words, describing what they
 do. The latter are printed with no space, for example NoiseChisel or
-ImageCrop. On the command-line, you can run them with their executable
-names which start with an @file{ast} and might be an abbreviation of the
-official name, for example @file{astnoisechisel} or @file{astimgcrop}, see
+Crop. On the command-line, you can run them with their executable names
+which start with an @file{ast} and might be an abbreviation of the official
+name, for example @file{astnoisechisel} or @file{astcrop}, see
 @ref{Executable names}.
 
 @pindex ProgramName
@@ -1303,9 +1303,9 @@ along with the description. For example in running a program, please send
 us the full command-line text and the output with the @option{-P} option,
 see @ref{Operating mode options}. If it is caused only for a certain input,
 also send us that input file. In case the input FITS is large, please use
-ImageCrop to only crop the problematic section and make it as small as
-possible so it can easily be uploaded and downloaded and not waste the
-archive's storage, see @ref{ImageCrop}.
+Crop to only crop the problematic section and make it as small as possible
+so it can easily be uploaded and downloaded and not waste the archive's
+storage, see @ref{Crop}.
 @end table
 
 @noindent
@@ -1633,7 +1633,7 @@ Hubble has multiple images in @file{/mnt/data/images}, some of his targets
 might be on the edges of an image and so several images need to be stitched
 to give a good view of them. Also his extra Galactic targets belong to
 various pointings in the sky, so they are not in one large
-image. Gnuastro's ImageCrop is just the program he wants. The catalog in
+image. Gnuastro's Crop is just the program he wants. The catalog in
 @file{extragalactic.txt} is a plain text file which stores the basic
 information of all his known 200 extra Galactic nebulae. In its second
 column it has each object's Right Ascension (the first column is a label he
@@ -1643,9 +1643,9 @@ starting from zero, so the RA and Dec columns have number 1 and 2
 respectively.
 
 @example
-$ astimgcrop --racol=1 --deccol=2 /mnt/data/images/*.fits     \
+$ astcrop --racol=1 --deccol=2 /mnt/data/images/*.fits     \
              /mnt/data/catalogs/extragalactic.txt
-ImageCrop started on Tue Jun  14 10:18:11 1932
+Crop started on Tue Jun  14 10:18:11 1932
   ---- ./4_crop.fits                  1 1
   ---- ./2_crop.fits                  1 1
   ---- ./1_crop.fits                  1 1
@@ -1655,7 +1655,7 @@ ImageCrop started on Tue Jun  14 10:18:11 1932
   - 200 images created.
   - 200 were filled in the center.
   - 0 used more than one input.
-ImageCrop finished in:  2.429401 (seconds)
+Crop finished in:  2.429401 (seconds)
 @end example
 
 
@@ -1663,14 +1663,14 @@ ImageCrop finished in:  2.429401 (seconds)
 @noindent
 Hubble already knows that thread allocation to the the CPU cores is
 asynchronous, so each time you run it the order of which job gets done
-first differs. When using ImageCrop the order of outputs is irrelevant
-since each crop is independent of the rest. This is why the crops are
-not necessarily created in the same input order. He is content with
-the default width of the outputs (which he inspected by running
-@code{$ astimgcrop -P}). If he wanted a different width for the
-cropped images, he could do that with the @option{--wwidth} option
-which accepts a value in arc-seconds.  When he lists the contents of
-the directory again he finds his 200 objects as separate FITS images.
+first differs. When using Crop the order of outputs is irrelevant since
+each crop is independent of the rest. This is why the crops are not
+necessarily created in the same input order. He is content with the default
+width of the outputs (which he inspected by running @code{$ astcrop
+-P}). If he wanted a different width for the cropped images, he could do
+that with the @option{--wwidth} option which accepts a value in
+arc-seconds.  When he lists the contents of the directory again he finds
+his 200 objects as separate FITS images.
 
 @example
 $ ls
@@ -1781,12 +1781,12 @@ $ ./classify.sh
 @end example
 
 @noindent
-In the end he can delete all the JPEG and FITS files along with
-ImageCrop's log file with the following short command. The only files
-remaining are the script and the result of the classification.
+In the end he can delete all the JPEG and FITS files along with Crop's log
+file with the following short command. The only files remaining are the
+script and the result of the classification.
 
 @example
-$ rm *.jpg *.fits astimgcrop.txt
+$ rm *.jpg *.fits astcrop.txt
 $ ls
 classified.txt   classify.sh
 @end example
@@ -2021,46 +2021,45 @@ and showed the effect of convolution to his student and explained to him
 how a PSF with a larger FWHM would make the points even wider. With the
 convolved image ready, they were ready to re-sample it to the original
 pixel scale Sufi had planned. Sufi explained the basic concepts of warping
-the image to his student and ran ImageWarp with the following command:
+the image to his student and ran Warp with the following command:
 
 @example
-$ astimgwarp cat_convolved.fits --scale=0.2
-ImageWarp started on Mon Apr  6 16:51:59 953
+$ astwarp cat_convolved.fits --scale=0.2
+Warp started on Mon Apr  6 16:51:59 953
  Using 8 CPU threads.
  Input image: cat_convolved.fits
  matrix:
         0.2000   0.0000   0.4000
         0.0000   0.2000   0.4000
         0.0000   0.0000   1.0000
-ImageWarp finished in:  0.481421 (seconds)
+Warp finished in:  0.481421 (seconds)
 $ ls
 0_cat.fits     cat_convolved.fits         cat.fits
 astmkprof.log  cat_convolved_warped.fits  cat.txt
 @end example
 
 @noindent
-@file{cat_convolved_warped.fits} now has the correct pixel
-scale. However, the image is still larger than what we had wanted, it
-is 526 (@mymath{500+13+13}) by 526 pixels. The student is slightly
-confused, so Sufi also resamples the PSF with ImageWarp and the same
-warping matrix and shows him that it is 27 (@mymath{2\times13+1}) by
-27 pixels. Sufi goes on to explain how frequency space convolution
-will dim the edges and that is why he added the @option{--prepforconv}
-option to MakeProfiles, see @ref{If convolving afterwards}. Now that
-convolution is done Sufi can remove those extra pixels using
-ImageCrop:
+@file{cat_convolved_warped.fits} now has the correct pixel scale. However,
+the image is still larger than what we had wanted, it is 526
+(@mymath{500+13+13}) by 526 pixels. The student is slightly confused, so
+Sufi also resamples the PSF with Warp and the same warping matrix and shows
+him that it is 27 (@mymath{2\times13+1}) by 27 pixels. Sufi goes on to
+explain how frequency space convolution will dim the edges and that is why
+he added the @option{--prepforconv} option to MakeProfiles, see @ref{If
+convolving afterwards}. Now that convolution is done Sufi can remove those
+extra pixels using Crop:
 
 @example
-$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13  \
+$ astcrop cat_convolved_warped.fits --section=13:*-13,13:*-13  \
              --zeroisnotblank
-ImageCrop started on Sat Oct  6 17:03:24 953
+Crop started on Sat Oct  6 17:03:24 953
   - Read metadata of 1 images.               in 0.000560 seconds
   ---- cat_convolved_warped_crop.fits 1 1
-ImageCrop finished in:  0.018917 (seconds)
+Crop finished in:  0.018917 (seconds)
 $ls
 0_cat.fits      astmkprof.log           cat_convolved_warped.fits
 0_warped.fits   cat_convolved.fits              cat.fits
-astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
+astcrop.log  cat_convolved_warped_crop.fits  cat.txt
 @end example
 
 @noindent
@@ -2084,7 +2083,7 @@ MakeNoise finished in:  0.033491 (seconds)
 $ls
 0_cat.fits      cat_convolved.fits              cat.txt
 0_warped.fits   cat_convolved_warped_crop.fits  out.fits
-astimgcrop.log  cat_convolved_warped.fits
+astcrop.log  cat_convolved_warped.fits
 astmkprof.log   cat.fits
 @end example
 
@@ -2119,8 +2118,8 @@ rm out.fits
 astmkprof --prepforconv --naxis1=500 --naxis2=500            \
           --zeropoint=18.0 "$base".txt
 astconvolve --kernel=0.fits "$base".fits
-astimgwarp "$base"_convolved.fits --scale=0.2
-astimgcrop "$base"_convolved_warped.fits                     \
+astwarp "$base"_convolved.fits --scale=0.2
+astcrop "$base"_convolved_warped.fits                        \
            --section=$edge:*-$edge,$edge:*-$edge
 astmknoise --zeropoint=18 --background=7 --output=out.fits   \
            "$base"_convolved_warped_crop.fits
@@ -3125,12 +3124,12 @@ program using the GNU build system (through the configure script).
 @vtable @option
 
 @item --enable-progname
-Only build and install @file{progname} along with any other program
-that is enabled in this fashion. @file{progname} is the name of the
-executable without the @file{ast}, for example @file{imgcrop} for
-ImageCrop (with the executable name of @file{astimgcrop}). If this
-option is called for any of the programs in Gnuastro, any program
-which is not explicitly enabled will not be built or installed.
+Only build and install @file{progname} along with any other program that is
+enabled in this fashion. @file{progname} is the name of the executable
+without the @file{ast}, for example @file{crop} for Crop (with the
+executable name of @file{astcrop}). If this option is called for any of the
+programs in Gnuastro, any program which is not explicitly enabled will not
+be built or installed.
 
 @item --disable-progname
 @itemx --enable-progname=no
@@ -3543,13 +3542,13 @@ or libraries.
 
 @cindex Executable names
 @cindex Names of executables
-At first sight, the names of the executables for each program might
-seem to be uncommonly long, for example @command{astnoisechisel} or
-@command{astimgcrop}. We could have chosen terse (and cryptic) names
-like most programs do. We chose this complete naming convention
-(something like the commands in @TeX{}) so you don't have to spend too
-much time remembering what the name of a specific program was. Such
-complete names also enable you to easily search for the programs.
+At first sight, the names of the executables for each program might seem to
+be uncommonly long, for example @command{astnoisechisel} or
+@command{astcrop}. We could have chosen terse (and cryptic) names like most
+programs do. We chose this complete naming convention (something like the
+commands in @TeX{}) so you don't have to spend too much time remembering
+what the name of a specific program was. Such complete names also enable
+you to easily search for the programs.
 
 @cindex Shell auto-complete
 @cindex Auto-complete in the shell
@@ -3585,19 +3584,19 @@ scripts, see @ref{Options}.
 
 @cindex Symbolic link
 The simplest solution is making a symbolic link to the actual
-executable. For example let's assume you want to type @file{ic} to run
-ImageCrop instead of @file{astimgcrop}. Assuming you installed
-Gnuastro executables in @file{/usr/local/bin} (default) you can do
-this simply by running the following command as root:
+executable. For example let's assume you want to type @file{ic} to run Crop
+instead of @file{astcrop}. Assuming you installed Gnuastro executables in
+@file{/usr/local/bin} (default) you can do this simply by running the
+following command as root:
 
 @example
-# ln -s /usr/local/bin/astimgcrop /usr/local/bin/ic
+# ln -s /usr/local/bin/astcrop /usr/local/bin/ic
 @end example
 
 @noindent
-In case you update Gnuastro and a new version of ImageCrop is
-installed, the default executable name is the same, so your custom
-symbolic link still works.
+In case you update Gnuastro and a new version of Crop is installed, the
+default executable name is the same, so your custom symbolic link still
+works.
 
 @vindex --program-prefix
 @vindex --program-suffix
@@ -4024,7 +4023,7 @@ tokens that are not preceded by any hyphens (@command{-}, see
 @ref{Arguments}). Here is one example:
 
 @example
-$ astimgcrop --ra=53.162551 --dec=-27.789676 -w10  hubble-udf.fits
+$ astcrop --ra=53.162551 --dec=-27.789676 -w10 hubble-udf.fits
 @end example
 
 In this example, the argument is @file{hubble-udf.fits}. Arguments are most
@@ -4032,10 +4031,10 @@ commonly the input file names containing your data. Options start with one
 or two hyphens, followed by an identifier for the option (the option's
 name) and its value (see @ref{Options}). Through options you tell the
 program how to interpret the data. In this example, we are running
-@ref{ImageCrop} to crop a region of width 10 arcseconds centered at the
-given RA and Dec from the input Hubble Ultra-Deep Field (UDF) FITS
-image. So options come with an identifier (the option name which is
-separate from their value).
+@ref{Crop} to crop a region of width 10 arcseconds centered at the given RA
+and Dec from the input Hubble Ultra-Deep Field (UDF) FITS image. So options
+come with an identifier (the option name which is separate from their
+value).
 
 @vindex --help
 @vindex --usage
@@ -4071,7 +4070,7 @@ is because the semicolon (@command{;}) is an `end of command' character in
 the shell. To solve this problem you can simply put double quotes around
 the whole string you want to pass to @option{--hdu} as seen below:
 @example
-$ astimgcrop --hdu="3; images(exposure > 100)" FITSimage.fits
+$ astcrop --hdu="3; images(exposure > 100)" FITSimage.fits
 @end example
 Alternatively you can put a `@command{\}' before every metacharacter in
 this string, but try doing that, and probably you will agree that the
@@ -4201,15 +4200,15 @@ the long option you either need white space or an @option{=} sign, for
 example @option{-h2}, @option{-h 2}, @option{--hdu 2} or
 @option{--hdu=2} are all equivalent.
 
-The short format of on/off options (those that don't need values) can
-be concatenated for example these two hypothetical sequences of
-options are equivalent: @option{-a -b -c4} and @option{-abc4}.  As an
-example, consider the following command to run ImageCrop:
+The short format of on/off options (those that don't need values) can be
+concatenated for example these two hypothetical sequences of options are
+equivalent: @option{-a -b -c4} and @option{-abc4}.  As an example, consider
+the following command to run Crop:
 @example
-$ astimgcrop -Dr3 --wwidth 3 catalog.txt --deccol=4 ASTRdata
+$ astcrop -Dr3 --wwidth 3 catalog.txt --deccol=4 ASTRdata
 @end example
 @noindent
-The @command{$} is the shell prompt, @command{astimgcrop} is the
+The @command{$} is the shell prompt, @command{astcrop} is the
 program name. There are two arguments (@command{catalog.txt} and
 @command{ASTRdata}) and four options, two of them given in short
 format (@option{-D}, @option{-r}) and two in long format
@@ -4918,14 +4917,14 @@ Spinning off threads is not necessarily the most efficient way to run an
 application. Creating a new thread isn't a cheap operation for the
 operating system. It is most useful when the input data are fixed and you
 want the same operation to be done on parts of it. For example one input
-image to ImageCrop and multiple crops from various parts of it. In this
-fashion, the image is loaded into memory once, all the crops are divided
-between the number of threads internally and each thread cuts out those
-parts which are assigned to it from the same image. On the other hand, if
-you have multiple images and you want to crop the same region(s) out of all
-of them, it is much more efficient to set @option{--numthreads=1} (so no
-threads spin off) and run ImageCrop multiple times simultaneously, see
-@ref{How to run simultaneous operations}.
+image to Crop and multiple crops from various parts of it. In this fashion,
+the image is loaded into memory once, all the crops are divided between the
+number of threads internally and each thread cuts out those parts which are
+assigned to it from the same image. On the other hand, if you have multiple
+images and you want to crop the same region(s) out of all of them, it is
+much more efficient to set @option{--numthreads=1} (so no threads spin off)
+and run Crop multiple times simultaneously, see @ref{How to run
+simultaneous operations}.
 
 @cindex Wall-clock time
 You can check the boost in speed by first running a program on one of the
@@ -5007,7 +5006,7 @@ the @file{./data} directory ending with @file{sci.fits} to the current
 directory. To do this, you can run:
 
 @example
-$ parallel astimgcrop --numthreads=1 --xc=500 --yc=600 ::: \
+$ parallel astcrop --numthreads=1 --xc=500 --yc=600 ::: \
   ./data/*sci.fits
 @end example
 
@@ -5279,7 +5278,7 @@ is much more common for tables to be inputs of programs. For example, to
 make a mock galaxy image, you need to feed in the properties of each galaxy
 into @ref{MakeProfiles} for it do the inverse of the process above and make
 a simulated image from a catalog, see @ref{Sufi simulates a detection}. In
-other cases, you can feed a table into @ref{ImageCrop} and it will crop out
+other cases, you can feed a table into @ref{Crop} and it will crop out
 regions centered on the positions within the table, see @ref{Hubble
 visually checks and classifies his catalog}. So to end this relatively long
 introduction, tables play a very important role in astronomy, or generally
@@ -5609,8 +5608,8 @@ $ asttable --information table-file
 @end example
 
 Gnuastro's programs need the columns for different purposes, for example in
-ImageCrop, you specify the column containing the Right Ascension of the
-crop centers with the @option{--racol} option and the column containing the
+Crop, you specify the column containing the Right Ascension of the crop
+centers with the @option{--racol} option and the column containing the
 Declination with @option{--deccol}. Thus, there is no unified common option
 name to select columns for all programs. However, when the program expects
 the column for a specific context (like the RA and Dec example above), the
@@ -5715,14 +5714,14 @@ subsections below each of these methods are reviewed.
 @cindex Usage pattern
 @cindex Mandatory arguments
 @cindex Optional and mandatory tokens
-If you give this option, the program will not run. It will only print
-a very concise message showing the options and arguments. Everything
-within square brackets (@option{[]}) is optional. For example here are
-the first and last two lines of ImageCrop's @option{--usage} is shown:
+If you give this option, the program will not run. It will only print a
+very concise message showing the options and arguments. Everything within
+square brackets (@option{[]}) is optional. For example here are the first
+and last two lines of Crop's @option{--usage} is shown:
 
 @example
-$ astimgcrop --usage
-Usage: astimgcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
+$ astcrop --usage
+Usage: astcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
             [-x INT] [-y INT] [-c INT] [-p STR] [-N INT] [--deccol=INT]
             ....
             [--setusrconf] [--usage] [--version] [--wcsmode]
@@ -5808,14 +5807,13 @@ $ astnoisechisel --help > filename.txt
 @cindex GNU Grep
 @cindex Searching text
 @cindex Command-line searching text
-In case you have a special keyword you are looking for in the help,
-you don't have to go through the full list. GNU Grep is made for this
-job. For example if you only want the list of options whose
-@option{--help} output contains the word ``axis'' in ImageCrop, you
-can run the following command:
+In case you have a special keyword you are looking for in the help, you
+don't have to go through the full list. GNU Grep is made for this job. For
+example if you only want the list of options whose @option{--help} output
+contains the word ``axis'' in Crop, you can run the following command:
 
 @example
-$ astimgcrop --help | grep axis
+$ astcrop --help | grep axis
 @end example
 
 @cindex @code{ARGP_HELP_FMT}
@@ -5921,7 +5919,7 @@ $ info gnuastro
 
 @noindent
 If you run Info with the particular program executable name, for
-example @file{astimgcrop} or @file{astnoisechisel}:
+example @file{astcrop} or @file{astnoisechisel}:
 
 @example
 $ info astprogramname
@@ -5929,9 +5927,9 @@ $ info astprogramname
 
 @noindent
 you will be taken to the section titled ``Invoking ProgramName'' which
-explains the inputs and outputs along with the command-line options
-for that program. Finally, if you run Info with the official program
-name, for example ImageCrop or NoiseChisel:
+explains the inputs and outputs along with the command-line options for
+that program. Finally, if you run Info with the official program name, for
+example Crop or NoiseChisel:
 
 @example
 $ info ProgramName
@@ -7017,27 +7015,27 @@ larger image or convolving the image with a given kernel or applying a
 transformation to it.
 
 @menu
-* ImageCrop::                   Crop region(s) from FITS image(s).
+* Crop::                        Crop region(s) from a dataset.
 * Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
-* ImageWarp::                   Warp/Transform an image to a different grid.
+* Warp::                        Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
-@node ImageCrop, Arithmetic, Image manipulation, Image manipulation
-@section ImageCrop
+@node Crop, Arithmetic, Image manipulation, Image manipulation
+@section Crop
 
 @cindex Section of an image
 @cindex Crop part of image
 @cindex Postage stamp images
 @cindex Large astronomical images
-@pindex @r{ImageCrop (}astimgcrop@r{)}
+@pindex @r{Crop (}astcrop@r{)}
 Astronomical images are often very large, filled with thousands of
-galaxies. It often happens that you only want a section of the image,
-or you have a catalog of sources and you want to visually analyze them
-in small postage stamps. ImageCrop is made to do all these
-things. When more than one crop is required, ImageCrop will divide the
-crops between multiple threads to significantly reduce the run time.
+galaxies. It often happens that you only want a section of the image, or
+you have a catalog of sources and you want to visually analyze them in
+small postage stamps. Crop is made to do all these things. When more than
+one crop is required, Crop will divide the crops between multiple threads
+to significantly reduce the run time.
 
 @cindex Mosaicing
 @cindex Image tiles
@@ -7057,57 +7055,57 @@ Even though the tile sizes are chosen to be large enough that too many
 galaxies/targets don't fall on the edges of the tiles, inevitably some
 do. So when you simply crop the image of such targets from one tile, you
 will miss a large area of the surrounding sky (which is essential in
-estimating the noise). Therefore in its WCS mode, ImageCrop will stitch
-parts of the tiles that are relevant for a target (with the given width)
-from all the input images that cover that region into the output. Of
-course, the tiles have to be present in the list of input files.
+estimating the noise). Therefore in its WCS mode, Crop will stitch parts of
+the tiles that are relevant for a target (with the given width) from all
+the input images that cover that region into the output. Of course, the
+tiles have to be present in the list of input files.
 
-Besides cropping postage stamps around certain coordinates, ImageCrop can
-also crop arbitrary polygons from an image (or a set of tiles by stitching
-the relevant parts of different tiles within the polygon), see
-@option{--polygon} in @ref{Invoking astimgcrop}. Alternatively, it can crop
+Besides cropping postage stamps around certain coordinates, Crop can also
+crop arbitrary polygons from an image (or a set of tiles by stitching the
+relevant parts of different tiles within the polygon), see
+@option{--polygon} in @ref{Invoking astcrop}. Alternatively, it can crop
 out rectangular regions through the @option{--section} option from one
 image, see @ref{Crop section syntax}.
 
 @menu
-* ImageCrop modes::             Basic ImageCrop modes.
+* Crop modes::                  Basic modes to define crop region.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::         Calling ImageCrop on the command-line
+* Invoking astcrop::            Calling Crop on the command-line
 @end menu
 
-@node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
-@subsection ImageCrop modes
-In order to be comprehensive, intuitive, and easy to use, ImageCrop has two
-ways to define crop region: 1) From its center and (square) side length,
-for example to generate postage stamps of a given catalog. 2) The vertices
-of the crop region, this can be useful for larger crops over many targets,
-for example to crop out a uniformly deep, or contiguous, region of a large
+@node Crop modes, Crop section syntax, Crop, Crop
+@subsection Crop modes
+In order to be comprehensive, intuitive, and easy to use, Crop has two ways
+to define crop region: 1) From its center and (square) side length, for
+example to generate postage stamps of a given catalog. 2) The vertices of
+the crop region, this can be useful for larger crops over many targets, for
+example to crop out a uniformly deep, or contiguous, region of a large
 survey. Irrespective of how the crop region is defined, both Image/pixel,
 and World coordinate system (WCS) coordinates are acceptable and all
 coordinates are read as floating point numbers (not integers, except for
 the @option{--section} option, see below). The coordinate standards used
-are the main modes of ImageCrop. Here, the different ways to specify the
-crop region are discussed within each standard. For the full list options,
-please see @ref{Invoking astimgcrop}.
+are the main modes of Crop. Here, the different ways to specify the crop
+region are discussed within each standard. For the full list options,
+please see @ref{Invoking astcrop}.
 
 When the crop is defined by its center, the respective (integer) central
 pixel position will be found internally according to the FITS standard. To
 have this pixel positioned in the center of the cropped region, the final
 cropped region must have (in Image mode), or will have (in WCS mode) an add
 number of pixels. Furthermore, when the crop is defined as by its center,
-ImageCrop allows you to only keep crops what don't have any blank pixels in
-the vicinity of their center (your primary target). This can be very
-convenient when your input catalog/coordinates originated from another
-survey/filter which is not fully covered by your input image, to learn more
-about this feature, please see the description of the
-@option{--checkcenter} option in @ref{Invoking astimgcrop}.
+Crop allows you to only keep crops what don't have any blank pixels in the
+vicinity of their center (your primary target). This can be very convenient
+when your input catalog/coordinates originated from another survey/filter
+which is not fully covered by your input image, to learn more about this
+feature, please see the description of the @option{--checkcenter} option in
+@ref{Invoking astcrop}.
 
 @table @asis
 @item Image coordinates
-In image mode, ImageCrop uses the pixel coordinates/positions (instead of
-world coordinates). In image mode, only one image may be input. The crop(s)
-can be defined in multiple ways as listed below.
+In image mode, Crop uses the pixel coordinates/positions (instead of world
+coordinates). In image mode, only one image may be input. The crop(s) can
+be defined in multiple ways as listed below.
 
 @table @asis
 @item Center of multiple crops (in a catalog)
@@ -7118,9 +7116,9 @@ necessary to avoid ambiguity when all columns are specified. The
 as the center of a square crop with a width of @option{--iwidth} pixels (an
 odd number). The columns can contain any floating point value. The value to
 @option{--output} option is seen as a directory which will host (the
-possibly multiple) separate crop files, see @ref{ImageCrop output} for
-more. For a tutorial using this feature, please see @ref{Hubble visually
-checks and classifies his catalog}.
+possibly multiple) separate crop files, see @ref{Crop output} for more. For
+a tutorial using this feature, please see @ref{Hubble visually checks and
+classifies his catalog}.
 
 @item Center of a single crop (on the command-line)
 The center of the crop is given on the command-line with the @option{--xc}
@@ -7137,10 +7135,9 @@ section syntax} for a full description of this method.
 
 The latter option (@option{--polygon}) is a higher-level method to define
 any convex polygon (with any number of vertices) with floating point
-values. Please see the description of this option in @ref{Invoking
-astimgcrop} for its syntax. It is available in both Image and WCS modes,
-hence, to read the vertices as pixel coordinates, @option{--mode=img} has
-to be called.
+values. Please see the description of this option in @ref{Invoking astcrop}
+for its syntax. It is available in both Image and WCS modes, hence, to read
+the vertices as pixel coordinates, @option{--mode=img} has to be called.
 @end table
 
 @item WCS coordinates
@@ -7154,14 +7151,14 @@ taken from the respective input (they will be stitched in the crop).
 In this mode, the input images do not necessarily have to be the same size,
 they just need to have the same orientation and pixel resolution. Currently
 only orientation along the celestial coordinates is accepted, if your input
-has a different orientation you can use ImageWarp's @option{--align} option
-to align the image before cropping it (see @ref{ImageWarp}).
+has a different orientation you can use Warp's @option{--align} option to
+align the image before cropping it (see @ref{Warp}).
 
 Each individual input image/tile can even be smaller than the final
 crop. In any case, any part of any of the input images which overlaps with
 the desired region will be used in the crop. Note that if there is an
 overlap in the input images/tiles, the pixels from the last input image
-read are going to be used for the overlap. ImageCrop will not change pixel
+read are going to be used for the overlap. Crop will not change pixel
 values, so it assumes your overlapping tiles were cutout from the same
 original image. There are multiple ways to define your cropped region as
 listed below.
@@ -7183,7 +7180,7 @@ cropped similar to the catalog mode.
 @item Vertices of a single crop
 The @option{--polygon} option is a high-level method to define any convex
 polygon (with any number of vertices). Please see the description of this
-option in @ref{Invoking astimgcrop} for its syntax. It is available in both
+option in @ref{Invoking astcrop} for its syntax. It is available in both
 Image and WCS modes, hence, to read the vertices as RA and Dec coordinates,
 @option{--mode=wcs} has to be called/activated.
 @end table
@@ -7193,9 +7190,9 @@ Image and WCS modes, hence, to read the vertices as RA and Dec coordinates,
 @strong{CAUTION:} In WCS mode, the image has to be aligned with the
 celestial coordinates, such that the first FITS axis is parallel (opposite
 direction) to the Right Ascension (RA) and the second FITS axis is parallel
-to the declination. If these conditions aren't met for an image, ImageCrop
-will warn you and abort. You can use ImageWarp's @option{--align} option to
-align the input image with these coordinates, see @ref{ImageWarp}.
+to the declination. If these conditions aren't met for an image, Crop will
+warn you and abort. You can use Warp's @option{--align} option to align the
+input image with these coordinates, see @ref{Warp}.
 @end cartouche
 
 @end table
@@ -7213,15 +7210,15 @@ columns in a configuration file and simply set the mode, see
 @option{--polygon} the mode is mandatory to interpret the values correctly.
 
 
-@node Crop section syntax, Blank pixels, ImageCrop modes, ImageCrop
+@node Crop section syntax, Blank pixels, Crop modes, Crop
 @subsection Crop section syntax
 
 @cindex Crop a given section of image
 When in image mode, one of the methods to crop only one rectangular section
-from the input image is to use the @option{--section} option. ImageCrop has
-a powerful syntax to read the box parameters from a string of
-characters. If you leave certain parts of the string to be empty, ImageCrop
-can fill them for you based on the input image sizes.
+from the input image is to use the @option{--section} option. Crop has a
+powerful syntax to read the box parameters from a string of characters. If
+you leave certain parts of the string to be empty, Crop can fill them for
+you based on the input image sizes.
 
 @cindex Define section to crop
 To define a box, you need the coordinates of two points: the first
@@ -7234,9 +7231,9 @@ option. Therefore, the pixels along the first axis that are
 the cropped image. The same goes for the second axis. Note that each
 different term will be read as an integer, not a float. This is a low-level
 option, for a higher-level way to specify region (any polygon, not just a
-box), please see the @option{--polygon} option in @ref{ImageCrop
-options}. Also note that in the FITS standard, pixel indexes along each
-axis start from unity(1) not zero(0).
+box), please see the @option{--polygon} option in @ref{Crop options}. Also
+note that in the FITS standard, pixel indexes along each axis start from
+unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
@@ -7249,16 +7246,15 @@ automatically used. So the same string is also equal to @command{2:,}
 or @command{2:} or even @command{2}. If you want such a case for the
 second axis, you should set it to: @command{,2}.
 
-If you specify a negative value, it will be seen as before the indexes
-of the image which are outside the image along the bottom or left
-sides when viewed in SAO ds9. In case you want to count from the top
-or right sides of the image, you can use an asterisk
-(@option{*}). When confronted with a @option{*}, ImageCrop will
-replace it with the maximum length of the image in that dimension. So
-@command{*-10:*+10,*-20:*+20} will mean that the crop box will be
-@math{20\times40} pixels in size and only include the top corner of
-the input image with 3/4 of the image being covered by blank pixels,
-see @ref{Blank pixels}.
+If you specify a negative value, it will be seen as before the indexes of
+the image which are outside the image along the bottom or left sides when
+viewed in SAO ds9. In case you want to count from the top or right sides of
+the image, you can use an asterisk (@option{*}). When confronted with a
+@option{*}, Crop will replace it with the maximum length of the image in
+that dimension. So @command{*-10:*+10,*-20:*+20} will mean that the crop
+box will be @math{20\times40} pixels in size and only include the top
+corner of the input image with 3/4 of the image being covered by blank
+pixels, see @ref{Blank pixels}.
 
 If you feel more comfortable with space characters between the values, you
 can use as many space characters as you wish, just be careful to put your
@@ -7270,16 +7266,16 @@ probably doesn't exist). See @ref{Command-line} for a description of how
 the command-line works.
 
 
-@node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
+@node Blank pixels, Invoking astcrop, Crop section syntax, Crop
 @subsection Blank pixels
 
 @cindex Blank pixel
-The cropped box can potentially include pixels that are beyond the
-image range. For example when a target in the input catalog was very
-near the edge of the input image. The parts of the cropped image that
-were not in the input image will be filled with the following two
-values depending on the data type of the image. In both cases, SAO ds9
-will not color code those pixels.
+The cropped box can potentially include pixels that are beyond the image
+range. For example when a target in the input catalog was very near the
+edge of the input image. The parts of the cropped image that were not in
+the input image will be filled with the following two values depending on
+the data type of the image. In both cases, SAO ds9 will not color code
+those pixels.
 @itemize
 @item
 If the data type of the image is a floating point type (float or
@@ -7306,16 +7302,15 @@ also regarded as blank regions. This can be turned off with the
 @option{--zeroisnotblank} option.
 
 
-@node Invoking astimgcrop,  , Blank pixels, ImageCrop
-@subsection Invoking ImageCrop
+@node Invoking astcrop,  , Blank pixels, Crop
+@subsection Invoking Crop
 
-ImageCrop will crop a region from an image. If in WCS mode, it will
-also stitch parts from separate images in the input files. The
-executable name is @file{astimgcrop} with the following general
-template
+Crop will crop a region from an image. If in WCS mode, it will also
+stitch parts from separate images in the input files. The executable name
+is @file{astcrop} with the following general template
 
 @example
-$ astimgcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
+$ astcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
 @end example
 
 
@@ -7323,47 +7318,46 @@ $ astimgcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
 One line examples:
 
 @example
-$ astimgcrop -I catalog.txt image.fits
-$ astimgcrop -W catalog.txt /mnt/data/COSMOS/*_drz.fits
-$ astimgcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
-$ astimgcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
-$ astimgcrop --xc=568.342 --yc=2091.719 --iwidth=201 image.fits
+$ astcrop -I catalog.txt image.fits
+$ astcrop -W catalog.txt /mnt/data/COSMOS/*_drz.fits
+$ astcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
+$ astcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
+$ astcrop --xc=568.342 --yc=2091.719 --iwidth=201 image.fits
 @end example
 
 @noindent
-ImageCrop has one mandatory argument which is the input image name(s),
-shown above with @file{ASTRdata ...}. You can use shell expansions, for
-example @command{*} for this if you have lots of images in WCS mode. If the
-crop box centers are in a catalog, you also have to provide the catalog
-name as an argument. Alternatively, you have to provide the crop box
-parameters with command-line options. See @ref{ImageCrop output} for how
-the output file name(s) can be specified. For the full list of general
-options to all Gnuastro programs (including ImageCrop), please see
-@ref{Common options}.
+Crop has one mandatory argument which is the input image name(s), shown
+above with @file{ASTRdata ...}. You can use shell expansions, for example
+@command{*} for this if you have lots of images in WCS mode. If the crop
+box centers are in a catalog, you also have to provide the catalog name as
+an argument. Alternatively, you have to provide the crop box parameters
+with command-line options. See @ref{Crop output} for how the output file
+name(s) can be specified. For the full list of general options to all
+Gnuastro programs (including Crop), please see @ref{Common options}.
 
 Floating point numbers can be used to specify the crop region (except the
 @option{--section} option, see @ref{Crop section syntax}). In such cases,
 the floating point values will be used to find the desired integer pixel
-indices based on the FITS standard. Hence, ImageCrop ultimately doesn't do
-any sub-pixel cropping (in other words, it doesn't change pixel values). If
-you need such crops, you can use @ref{ImageWarp} to first warp the image to
-the a new pixel grid where your initial floating points can be seen as
-integers, then crop from that with ImageCrop. For example, let's say you
-want a crop from pixels 12.982 to 80.982 along the first dimension. You
-should first translate the image by @mymath{-0.482} (note that the edge of
-a pixel is at integer multiples of @mymath{0.5}). So you should run
-ImageWarp with @option{--translate=-0.482,0} and then crop the warped image
-with @option{--section=13:81}.
+indices based on the FITS standard. Hence, Crop ultimately doesn't do any
+sub-pixel cropping (in other words, it doesn't change pixel values). If you
+need such crops, you can use @ref{Warp} to first warp the image to the a
+new pixel grid where your initial floating points can be seen as integers,
+then crop from that with Crop. For example, let's say you want a crop from
+pixels 12.982 to 80.982 along the first dimension. You should first
+translate the image by @mymath{-0.482} (note that the edge of a pixel is at
+integer multiples of @mymath{0.5}). So you should run Warp with
+@option{--translate=-0.482,0} and then crop the warped image with
+@option{--section=13:81}.
 
 There are two ways to define the cropped region: with its center or its
-vertices. See @ref{ImageCrop modes} for a full description. In the former
-case, ImageCrop can check if the central region of the cropped image is
-indeed filled with data or is blank (see @ref{Blank pixels}), and not
-produce any output when the center is blank, see the description under
-@option{--checkcenter} for more.
+vertices. See @ref{Crop modes} for a full description. In the former case,
+Crop can check if the central region of the cropped image is indeed filled
+with data or is blank (see @ref{Blank pixels}), and not produce any output
+when the center is blank, see the description under @option{--checkcenter}
+for more.
 
 @cindex Asynchronous thread allocation
-When in catalog mode, ImageCrop will run in parallel unless you set
+When in catalog mode, Crop will run in parallel unless you set
 @option{--numthreads=1}, see @ref{Threads in Gnuastro}. Note that when
 multiple threads are being used, in verbose mode, the outputs will not be
 in order. This is because the threads are asynchronous and thus not started
@@ -7372,12 +7366,12 @@ and classifies his catalog} for a tutorial on effectively using this
 feature.
 
 @menu
-* ImageCrop options::           A list of all the options with explanation.
-* ImageCrop output::            The outputs of ImageCrop.
+* Crop options::                A list of all the options with explanation.
+* Crop output::                 The outputs of Crop.
 @end menu
 
-@node ImageCrop options, ImageCrop output, Invoking astimgcrop, Invoking astimgcrop
-@subsubsection ImageCrop options
+@node Crop options, Crop output, Invoking astcrop, Invoking astcrop
+@subsubsection Crop options
 
 The options can be classified into the following contexts: Input,
 Output and operating mode options. Options that are common to all
@@ -7461,10 +7455,10 @@ Declination of crop box center. see @option{--ra}.
 @item -a INT
 @itemx --iwidth=INT
 Width of the cropped region in units of pixels when the crop is defined by
-its center in Image mode (see @ref{ImageCrop modes}). In order for the
-chosen central pixel to be in the center of the cropped image, this option
-only accepts an odd number (an error will be given if its even). If you
-want an even sided crop, you can run ImageCrop afterwards with
+its center in Image mode (see @ref{Crop modes}). In order for the chosen
+central pixel to be in the center of the cropped image, this option only
+accepts an odd number (an error will be given if its even). If you want an
+even sided crop, you can run Crop afterwards with
 @option{--section=":*-1,:*-1"} or @option{--section=2:,2:} (depending on
 which side you don't need), see @ref{Crop section syntax}.
 
@@ -7478,7 +7472,7 @@ String of crop polygon vertices. Note that currently only convex polygons
 should be used. In the future we will make it work for all kinds of
 polygons. Convex polygons are polygons that do not have an internal angle
 more than 180 degrees. This option can be used both in the image and WCS
-modes, see @ref{ImageCrop modes}. The cropped image will be the size of the
+modes, see @ref{Crop modes}. The cropped image will be the size of the
 rectangular region that completely encompasses the polygon. By default all
 the pixels that are outside of the polygon will be set as blank values (see
 @ref{Blank pixels}). However, if @option{--outpolygon} is called all pixels
@@ -7506,29 +7500,29 @@ part is contained within the coordinates:
 They have provided mask images with only these pixels in the WFC3/IR
 images, but what if you also need to work on the same region in the full
 resolution ACS images? Also what if you want to use the CANDELS data for
-the shallow region? Running ImageCrop with @option{--polygon} will easily
-pull out this region of the image for you irrespective of the
-resolution. If you have set the operating mode to WCS mode in your nearest
-configuration file (see @ref{Configuration files}), there is no need to
-call @option{--mode=wcs} on the command line. You may also provide many FITS
-images/tiles and ImageCrop will stitch them to produce this cropped region:
+the shallow region? Running Crop with @option{--polygon} will easily pull
+out this region of the image for you irrespective of the resolution. If you
+have set the operating mode to WCS mode in your nearest configuration file
+(see @ref{Configuration files}), there is no need to call
+@option{--mode=wcs} on the command line. You may also provide many FITS
+images/tiles and Crop will stitch them to produce this cropped region:
 
 @example
-$ astimgcrop --mode=wcs desired-filter-image(s).fits        \
-  --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
-             53.134517,-27.787144 : 53.161906,-27.807208"
+$ astcrop --mode=wcs desired-filter-image(s).fits            \
+   --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
+              53.134517,-27.787144 : 53.161906,-27.807208"
 @end example
 
 @item --outpolygon
-Keep all the regions outside the polygon and mask the inner ones with
-blank pixels (see @ref{Blank pixels}). This is practically the inverse
-of the default mode of treating polygons. Note that this option only
-works when you have only provided one input image. If multiple images
-are given (in WCS mode), then the full area covered by all the images
-has to be shown and the polygon excluded. This can lead to a very
-large area if large surveys like COSMOS are used. So ImageCrop will
-abort and notify you. In such cases, it is best to crop out the larger
-region you want, then mask the smaller region with this option.
+Keep all the regions outside the polygon and mask the inner ones with blank
+pixels (see @ref{Blank pixels}). This is practically the inverse of the
+default mode of treating polygons. Note that this option only works when
+you have only provided one input image. If multiple images are given (in
+WCS mode), then the full area covered by all the images has to be shown and
+the polygon excluded. This can lead to a very large area if large surveys
+like COSMOS are used. So Crop will abort and notify you. In such cases, it
+is best to crop out the larger region you want, then mask the smaller
+region with this option.
 
 @item -s STR
 @itemx --section=STR
@@ -7586,9 +7580,9 @@ Output options:
 Box width (odd number of pixels) of region in the center of the image to
 check for blank values. If the value to this option is zero, no checking is
 done. This option is only relevant when the cropped region(s) are defined
-by their center (not by the vertices, see @ref{ImageCrop modes}). If any of
-the pixels in this central region of a crop (defined by its center) are
-blank, then it will not be created.
+by their center (not by the vertices, see @ref{Crop modes}). If any of the
+pixels in this central region of a crop (defined by its center) are blank,
+then it will not be created.
 
 Because survey regions don't often have a clean square or rectangle shape,
 some of the pixels on the sides of the survey FITS image don't commonly
@@ -7601,8 +7595,8 @@ non-zero, odd value, no crop will be created. Therefore with this option,
 you can specify a width of a small box (3 pixels is often good enough)
 around the central pixel of the cropped image. You can check which crops
 were created and which weren't from the command-line (if @option{--quiet}
-was not called, see @ref{Operating mode options}), or in ImageCrop's log
-file (see @ref{ImageCrop output}).
+was not called, see @ref{Operating mode options}), or in Crop's log file
+(see @ref{Crop output}).
 
 @item -p STR
 @itemx --suffix=STR
@@ -7619,7 +7613,7 @@ the weight images as input and @option{--suffix=_w.fits}.
 Pixels outside of the input image that are in the crop box will not be
 used. By default they are filled with blank values (depending on type), see
 @ref{Blank pixels}. This option only applies only in Image mode, see
-@ref{ImageCrop modes}.
+@ref{Crop modes}.
 
 @item -z
 @itemx --zeroisnotblank
@@ -7638,7 +7632,7 @@ Operating mode options:
 @itemx --mode=STR
 Operate in Image mode or WCS mode when the input coordinates can be both
 image or WCS. The value must either be @option{img} or @option{wcs}, see
-@ref{ImageCrop modes} for a full description.
+@ref{Crop modes} for a full description.
 
 @end table
 
@@ -7646,18 +7640,18 @@ image or WCS. The value must either be @option{img} or @option{wcs}, see
 
 
 
-@node ImageCrop output,  , ImageCrop options, Invoking astimgcrop
-@subsubsection ImageCrop output
+@node Crop output,  , Crop options, Invoking astcrop
+@subsubsection Crop output
 
 The value given to @option{--output} option will depend on how many crops
-were created, see @ref{ImageCrop modes}:
+were created, see @ref{Crop modes}:
 
 @itemize
 @item
 When a catalog is given, the value of the @option{--output} (see
 @ref{Common options}) will be read as the directory to store the output
-cropped images. Hence if it doesn't alread exist, ImageCrop will abort with
-an error of a ``No such file or directory'' error. The crop file names will
+cropped images. Hence if it doesn't alread exist, Crop will abort with an
+error of a ``No such file or directory'' error. The crop file names will
 consist of two parts: a variable part (the row number of each target
 starting from 1) along with a fixed string which you can set with the
 @option{--suffix} option.
@@ -7674,7 +7668,7 @@ The header of each output cropped image will contain the names of the input
 image(s) it was cut from. If a name is longer than the 70 character space
 that the FITS standard allows for header keyword values, the name will be
 cut into several keywords from the nearest slash (@key{/}). The keywords
-have the following format: @command{ICFn_m} (for ImageCrop File). Where
+have the following format: @command{ICFn_m} (for Crop File). Where
 @command{n} is the number of the image used in this crop and @command{m} is
 the part of the name (it can be broken into multiple keywords). Following
 the name is another keyword named @command{ICFnPIX} which shows the pixel
@@ -7683,7 +7677,7 @@ syntax}. So this string can be directly given to the @option{--section}
 option later.
 
 Once done, a log file will be created in the current directory named
-@file{astimgcrop.log}. This file will have three columns and the same
+@file{astcrop.log}. This file will have three columns and the same
 number of rows as the number of cropped images.
 
 @enumerate
@@ -7694,17 +7688,16 @@ The number of input images that were used to create that image.
 @item
 A @code{0} if the central few pixels (value to the @option{--checkcenter}
 option) are blank and @code{1} if they aren't. When the crop was not
-defined by its center (see @ref{ImageCrop modes}), or
-@option{--checkcenter} was given a value of 0 (see @ref{Invoking
-astimgcrop}), the center will not be checked and this column will be given
-a value of @code{-1}.
+defined by its center (see @ref{Crop modes}), or @option{--checkcenter} was
+given a value of 0 (see @ref{Invoking astcrop}), the center will not be
+checked and this column will be given a value of @code{-1}.
 @end enumerate
 
 There are also comments on the top of the log file explaining basic
 information about the run and descriptions for the columns. If the log file
 cannot be created (for example you don't have write permission in the
-directory you are running ImageCrop in) or you have specifically asked for
-no log file (with the @option{--nolog} option), then a log file will not be
+directory you are running Crop in) or you have specifically asked for no
+log file (with the @option{--nolog} option), then a log file will not be
 created (unless @option{--individual} is called).
 
 
@@ -7727,15 +7720,15 @@ created (unless @option{--individual} is called).
 
 
 
-@node Arithmetic, Convolve, ImageCrop, Image manipulation
+@node Arithmetic, Convolve, Crop, Image manipulation
 @section Arithmetic
 
 It is commonly necessary to do operations on some or all of the elements of
 a dataset independently (pixels in an image). For example, in the reduction
 of raw data it is necessary to subtract the Sky value (@ref{Sky value})
 from each image image. Later (once the images as warped into a single grid
-using ImageWarp for example, see @ref{ImageWarp}), the images are co-added
-(the output pixel grid is the average of the pixels of the individual input
+using Warp for example, see @ref{Warp}), the images are co-added (the
+output pixel grid is the average of the pixels of the individual input
 images). Arithmetic is Gnuastro's program for such operations on your
 datasets directly from the command-line. It currently uses the reverse
 polish or postfix notation, see @ref{Reverse polish notation} and will work
@@ -8327,7 +8320,7 @@ $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
 
 
 
-@node Convolve, ImageWarp, Arithmetic, Image manipulation
+@node Convolve, Warp, Arithmetic, Image manipulation
 @section Convolve
 
 @cindex Convolution
@@ -8335,12 +8328,11 @@ $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
 @cindex Weighted average
 @cindex Average, weighted
 @cindex Kernel, convolution
-On an image, convolution can be thought of as a process to blur or
-remove the contrast in an image. If you are already familiar with the
-concept and just want to run Convolve, you can jump to
-@ref{Convolution kernel} and @ref{Invoking astconvolve} and skip the
-lengthy introduction on the basic definitions and concepts of
-convolution.
+On an image, convolution can be thought of as a process to blur or remove
+the contrast in an image. If you are already familiar with the concept and
+just want to run Convolve, you can jump to @ref{Convolution kernel} and
+@ref{Invoking astconvolve} and skip the lengthy introduction on the basic
+definitions and concepts of convolution.
 
 There are generally two methods to convolve an image. The first and
 more intuitive one is in the ``spatial domain'' or using the actual
@@ -9690,17 +9682,16 @@ high. Some notes to take into account for a good result:
 @itemize
 
 @item
-Choose a bright (unsaturated) star and use a region box (with
-ImageCrop for example, see @ref{ImageCrop}) that is sufficiently above
-the noise.
+Choose a bright (unsaturated) star and use a region box (with Crop for
+example, see @ref{Crop}) that is sufficiently above the noise.
 
 @item
-Use ImageWarp (see @ref{ImageWarp}) to warp the pixel grid so the
-star's center is exactly on the center of the central pixel in the
-cropped image. This will certainly slightly degrade the result,
-however, it is necessary. If there are multiple good stars, you can
-shift all of them, then normalize them (so the sum of each star's
-pixels is one) and then take their average to decrease this effect.
+Use Warp (see @ref{Warp}) to warp the pixel grid so the star's center is
+exactly on the center of the central pixel in the cropped image. This will
+certainly slightly degrade the result, however, it is necessary. If there
+are multiple good stars, you can shift all of them, then normalize them (so
+the sum of each star's pixels is one) and then take their average to
+decrease this effect.
 
 @item
 The shifting might move the center of the star by one pixel in any
@@ -9725,25 +9716,24 @@ explanations under the @option{--makekernel} option for more information.
 
 
 
-@node ImageWarp, SubtractSky, Convolve, Image manipulation
-@section ImageWarp
-Image warping is the process of mapping the pixels of one image onto
-a new pixel grid. This process is sometimes known as transformation,
-however following the discussion of Heckbert 1989@footnote{Paul
+@node Warp, SubtractSky, Convolve, Image manipulation
+@section Warp
+Image warping is the process of mapping the pixels of one image onto a new
+pixel grid. This process is sometimes known as transformation, however
+following the discussion of Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
-Warping}, Master's thesis at University of California, Berkely.} we
-will not be using that term because it can be confused with only pixel
-value or flux transformations. Here we specifically mean the pixel
-grid transformation which is better conveyed with `warp'.
+Warping}, Master's thesis at University of California, Berkely.} we will
+not be using that term because it can be confused with only pixel value or
+flux transformations. Here we specifically mean the pixel grid
+transformation which is better conveyed with `warp'.
 
 @cindex Gravitational lensing
-Image wrapping is a very important step in astronomy, both in
-observational data analysis and in simulating modeled images. In
-modeling, warping an image is necessary when we want to apply grid
-transformations to the initial models, for example in simulating
-gravitational lensing (Radial warpings are not yet included in
-ImageWarp). Observational reasons for warping an image are listed
-below:
+Image wrapping is a very important step in astronomy, both in observational
+data analysis and in simulating modeled images. In modeling, warping an
+image is necessary when we want to apply grid transformations to the
+initial models, for example in simulating gravitational lensing (Radial
+warpings are not yet included in Warp). Observational reasons for warping
+an image are listed below:
 
 @itemize
 
@@ -9786,11 +9776,11 @@ grid.
 @cindex Optical distortion
 @cindex Distortion, optical
 @item
-@strong{Optical distortion:} (Not yet included in ImageWarp) In wide
-field images, the optical distortion that occurs on the outer parts of
-the focal plane will make accurate comparison of the objects at
-various locations impossible. It is therefore necessary to warp the
-image and correct for those distortions prior to the analysis.
+@strong{Optical distortion:} (Not yet included in Warp) In wide field
+images, the optical distortion that occurs on the outer parts of the focal
+plane will make accurate comparison of the objects at various locations
+impossible. It is therefore necessary to warp the image and correct for
+those distortions prior to the analysis.
 
 @cindex ACS
 @cindex CCD
@@ -9811,10 +9801,10 @@ be projected onto the focal plane before further analysis.
 * Warping basics::              Basics of coordinate transformation.
 * Merging multiple warpings::   How to merge multiple matrices.
 * Resampling::                  Warping an image is re-sampling it.
-* Invoking astimgwarp::         Arguments and options for ImageWarp.
+* Invoking astwarp::            Arguments and options for Warp.
 @end menu
 
-@node Warping basics, Merging multiple warpings, ImageWarp, ImageWarp
+@node Warping basics, Merging multiple warpings, Warp, Warp
 @subsection Warping basics
 
 @cindex Scaling
@@ -9966,7 +9956,7 @@ Warping}, Master's thesis at University of California, Berkely. Note
 that since points are defined as row vectors there, the matrix is the
 transpose of the one discussed here.}.
 
-@node Merging multiple warpings, Resampling, Warping basics, ImageWarp
+@node Merging multiple warpings, Resampling, Warping basics, Warp
 @subsection Merging multiple warpings
 
 @cindex Commutative property
@@ -10001,7 +9991,7 @@ multiplication below:
 
 
 
-@node Resampling, Invoking astimgwarp, Merging multiple warpings, ImageWarp
+@node Resampling, Invoking astwarp, Merging multiple warpings, Warp
 @subsection Resampling
 
 @cindex Pixel
@@ -10016,18 +10006,17 @@ multiplication below:
 A digital image is composed of discrete `picture elements' or
 `pixels'. When a real image is created from a camera or detector, each
 pixel's area is used to store the number of photo-electrons that were
-created when incident photons collided with that pixel's surface
-area. This process is called the `sampling' of a continuous or analog
-data into digital data. When we change the pixel grid of an image or
-warp it as we defined in @ref{Warping basics}, we have to `guess' the
-flux value of each pixel on the new grid based on the old grid, or
-re-sample it. Because of the `guessing', any form of warping on the
-data is going to degrade the image and mix the original pixel values
-with each other. So if an analysis can be done on an un-warped data
-image, it is best to leave the image untouched and pursue the
-analysis. However as discussed in @ref{ImageWarp} this is not possible
-most of the times, so we have to accept the problem and re-sample the
-image.
+created when incident photons collided with that pixel's surface area. This
+process is called the `sampling' of a continuous or analog data into
+digital data. When we change the pixel grid of an image or warp it as we
+defined in @ref{Warping basics}, we have to `guess' the flux value of each
+pixel on the new grid based on the old grid, or re-sample it. Because of
+the `guessing', any form of warping on the data is going to degrade the
+image and mix the original pixel values with each other. So if an analysis
+can be done on an un-warped data image, it is best to leave the image
+untouched and pursue the analysis. However as discussed in @ref{Warp} this
+is not possible most of the times, so we have to accept the problem and
+re-sample the image.
 
 @cindex Point pixels
 @cindex Interpolation
@@ -10049,45 +10038,41 @@ more accurate interpolation in the output grid.
 
 @cindex Image edges
 @cindex Edges, image
-However, interpolation has several problems. The first one is that it
-will depend on the type of function you want to assume for the
+However, interpolation has several problems. The first one is that it will
+depend on the type of function you want to assume for the
 interpolation. For example you can choose a bi-linear or bi-cubic (the
 `bi's are for the 2 dimensional nature of the data) interpolation
 method. For the latter there are various ways to set the
-constants@footnote{see
-@url{http://entropymine.com/imageworsener/bicubic/} for a nice
-introduction.}. Such functional interpolation functions can fail
-seriously on the edges of an image. They will also need normalization
-so that the flux of the objects before and after the warpings are
-comparable. The most basic problem with such techniques is that they
-are based on a point while a detector pixel is an area. They add a
-level of subjectivity to the data (make more assumptions through the
-functions than the data can handle). For most applications this is
-fine, but in scientific applications where detection of the faintest
-possible galaxies or fainter parts of bright galaxies is our aim, we
-cannot afford this loss. Because of these reasons ImageWarp will not
-use such interpolation techniques.
+constants@footnote{see @url{http://entropymine.com/imageworsener/bicubic/}
+for a nice introduction.}. Such functional interpolation functions can fail
+seriously on the edges of an image. They will also need normalization so
+that the flux of the objects before and after the warpings are
+comparable. The most basic problem with such techniques is that they are
+based on a point while a detector pixel is an area. They add a level of
+subjectivity to the data (make more assumptions through the functions than
+the data can handle). For most applications this is fine, but in scientific
+applications where detection of the faintest possible galaxies or fainter
+parts of bright galaxies is our aim, we cannot afford this loss. Because of
+these reasons Warp will not use such interpolation techniques.
 
 @cindex Drizzle
 @cindex Pixel mixing
 @cindex Exact area resampling
-ImageWarp will do interpolation based on ``pixel mixing''@footnote{For
-a graphic demonstration see
-@url{http://entropymine.com/imageworsener/pixelmixing/}.}  or ``area
-resampling''. This is also what the Hubble Space Telescope pipeline
-calls
+Warp will do interpolation based on ``pixel mixing''@footnote{For a graphic
+demonstration see @url{http://entropymine.com/imageworsener/pixelmixing/}.}
+or ``area resampling''. This is also what the Hubble Space Telescope
+pipeline calls
 ``Drizzling''@footnote{@url{http://en.wikipedia.org/wiki/Drizzle_(image_processing)}}. This
-technique requires no functions, it is thus non-parametric. It is also
-the closest we can get (make least assumptions) to what actually
-happens on the detector pixels. The basic idea is that you
-reverse-transform each output pixel to find which pixels of the input
-image it covers and what fraction of the area of the input pixels are
-covered. To find the output pixel value, you simply sum the value of
-each input pixel weighted by the overlap fraction (between 0 to 1) of
-the output pixel and that input pixel. Through this process, pixels
-are treated as an area not as a point (which is how detectors create
-the image), also the brightness (see @ref{Flux Brightness and
-magnitude}) of an object will be left completely unchanged.
+technique requires no functions, it is thus non-parametric. It is also the
+closest we can get (make least assumptions) to what actually happens on the
+detector pixels. The basic idea is that you reverse-transform each output
+pixel to find which pixels of the input image it covers and what fraction
+of the area of the input pixels are covered. To find the output pixel
+value, you simply sum the value of each input pixel weighted by the overlap
+fraction (between 0 to 1) of the output pixel and that input pixel. Through
+this process, pixels are treated as an area not as a point (which is how
+detectors create the image), also the brightness (see @ref{Flux Brightness
+and magnitude}) of an object will be left completely unchanged.
 
 If there are very high spatial-frequency signals in the image (for
 example fringes) which vary on a scale smaller than your output image
@@ -10100,28 +10085,28 @@ change in the signal so this issue is less important for astronomical
 applications, see @ref{PSF}.
 
 
-@node Invoking astimgwarp,  , Resampling, ImageWarp
-@subsection Invoking ImageWarp
+@node Invoking astwarp,  , Resampling, Warp
+@subsection Invoking Warp
 
-The general template for invoking ImageWarp is:
+The general template for invoking Warp is:
 
 @example
-$ astimgwarp [OPTIONS...] [matrix.txt] InputImage
+$ astwarp [OPTIONS...] [matrix.txt] InputImage
 @end example
 
 @noindent
 One line examples:
 
 @example
-$ astimgwarp matrix.txt image.fits
-$ astimgwarp --rotate=37.92 --scale=0.8 image.fits
-$ astimgwarp --scale 1.82 --translate 2.1 image.fits
-$ astimgwarp --align rawimage.fits --output=aligned.fits
-$ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
-$ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
+$ astwarp matrix.txt image.fits
+$ astwarp --rotate=37.92 --scale=0.8 image.fits
+$ astwarp --scale 1.82 --translate 2.1 image.fits
+$ astwarp --align rawimage.fits --output=aligned.fits
+$ astwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
+$ astwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
 
-ImageWarp can accept two arguments, one (an image) is mandatory if any
+Warp can accept two arguments, one (an image) is mandatory if any
 processing is to be done. An optional argument is a plain text file, which
 must contain the warp/transform matrix, see @ref{Warping basics}. When this
 text file is specified, then all options related to the matrix will be
@@ -10129,7 +10114,7 @@ ignored (see below for the options). As in all Gnuastro programs, when an
 output is not explicitly set with the @option{--output} option, the output
 filename will be set automatically based on the operation, see
 @ref{Automatic output}. For the full list of general options to all
-Gnuastro programs (including ImageWarp), please see @ref{Common options}.
+Gnuastro programs (including Warp), please see @ref{Common options}.
 
 To be the most accurate the input image will be converted to double
 precision floating points and all the processing will be done in this
@@ -10154,21 +10139,21 @@ multiplication is not commutative, so the order of specifying the modular
 warpings on the command-line, and/or configuration files makes a difference
 (see @ref{Configuration file precedence}). Below, the modular warpings are
 first listed (see @ref{Warping basics} for the definition of each type of
-warping), then the other ImageWarp options.
+warping), then the other Warp options.
 
 @cindex FITS standard
 Based on the FITS standard, integer values are assigned to the center of a
 pixel and the coordinate [1.0, 1.0] is the center of the bottom left
 (first) image pixel. So the point [0.0, 0.0] is half a pixel away (in each
 axis) from the bottom left vertice of the first pixel. The resampling that
-is done in ImageWarp (see @ref{Resampling}) is dependent on this
-coordinate. So correction is done internally. With this resampling, the
-image must be warped relative to the bottom left vertice of the bottom left
-pixel and that point should lie at [0.0, 0.0]. So for a correct sampling,
-the warping center must first be translated by [0.5, 0.5], then the warp
-should be done and finally, a [-0.5, -0.5] translation should be
-specified. This correction is done internally in the following cases and
-can be disabled with the @option{--nofitscorrect} option.
+is done in Warp (see @ref{Resampling}) is dependent on this coordinate. So
+correction is done internally. With this resampling, the image must be
+warped relative to the bottom left vertice of the bottom left pixel and
+that point should lie at [0.0, 0.0]. So for a correct sampling, the warping
+center must first be translated by [0.5, 0.5], then the warp should be done
+and finally, a [-0.5, -0.5] translation should be specified. This
+correction is done internally in the following cases and can be disabled
+with the @option{--nofitscorrect} option.
 
 @itemize
 @item
@@ -10273,11 +10258,11 @@ the descriptions above.
 
 @item --hstartwcs=INT
 Specify the first header keyword number (line) that should be used to read
-the WCS information, see the full explanation in @ref{Invoking astimgcrop}.
+the WCS information, see the full explanation in @ref{Invoking astcrop}.
 
 @item --hendwcs=INT
 Specify the last header keyword number (line) that should be used to read
-the WCS information, see the full explanation in @ref{Invoking astimgcrop}.
+the WCS information, see the full explanation in @ref{Invoking astcrop}.
 
 @item -n
 @itemx --nowcscorrection
@@ -10289,11 +10274,10 @@ information of the input image is going to be corrected in the output
 image. WCSLIB will save the input WCS information in the @code{PC}
 matrix@footnote{Greisen E.W., Calabretta M.R. (2002) Representation of
 world coordinates in FITS. Astronomy and Astrophysics, 395, 1061-1075.}. To
-correct the WCS, ImageWarp multiplies the @code{PC} matrix with the inverse
-of the specified transformation matrix. Also the @code{CRPIX} point is
-going to be changed to its correct place in the output image
-coordinates. This behavior can be disabled with the
-@option{--nowcscorrection} option.
+correct the WCS, Warp multiplies the @code{PC} matrix with the inverse of
+the specified transformation matrix. Also the @code{CRPIX} point is going
+to be changed to its correct place in the output image coordinates. This
+behavior can be disabled with the @option{--nowcscorrection} option.
 
 @cindex Blank pixel
 @cindex Pixel, blank
@@ -10333,23 +10317,23 @@ useful in checking the results.
 
 
 
-@node SubtractSky,  , ImageWarp, Image manipulation
+@node SubtractSky,  , Warp, Image manipulation
 @section SubtractSky
 
 @cindex Atmosphere
 @cindex Flat field
 @cindex Stray light
 @cindex Bias subtraction
-Raw astronomical images (and even poorly processed images) don't
-usually have a uniform `sky' value over their surface prior to
-processing, see @ref{Sky value} for a complete definition of the sky
-value. However, a uniform sky value over the image is vital for
-further processing. For ground based images (particularly at longer
-wavelengths) this can be due to actual variations in the
-atmosphere. Another cause might be systematic biases in the instrument
-or prior processing. For example stray light in the telescope/camera
-or bad flat-fielding or bias subtraction. The latter is a major issue
-in space based images where the atmosphere is no longer a problem.
+Raw astronomical images (and even poorly processed images) don't usually
+have a uniform `sky' value over their surface prior to processing, see
+@ref{Sky value} for a complete definition of the sky value. However, a
+uniform sky value over the image is vital for further processing. For
+ground based images (particularly at longer wavelengths) this can be due to
+actual variations in the atmosphere. Another cause might be systematic
+biases in the instrument or prior processing. For example stray light in
+the telescope/camera or bad flat-fielding or bias subtraction. The latter
+is a major issue in space based images where the atmosphere is no longer a
+problem.
 
 @cindex Grid
 @cindex Mesh
@@ -10900,9 +10884,9 @@ mesh on each axis will have a different size to cover the full channel.
 @itemx --nch1=INT
 The number of channels along the first FITS axis (horizontal when viewed in
 SAO ds9). If the length of the image is not an exact multiple of this
-number, then the program will stop. You can use ImageCrop (@ref{ImageCrop})
-to trim off or add some pixels (blank pixels if added, see @ref{Blank
-pixels}) to the image if it is not an exact multiple.
+number, then the program will stop. You can use Crop (@ref{Crop}) to trim
+off or add some pixels (blank pixels if added, see @ref{Blank pixels}) to
+the image if it is not an exact multiple.
 
 @item -b INT
 @itemx --nch2=INT
@@ -11061,13 +11045,13 @@ information. For example calculating image statistics, or finding the
 sky value or detecting objects within an image.
 
 @menu
-* ImageStatistics::             Calculate main image statistics.
+* Statistics::                  Calculate dataset statistics.
 * NoiseChisel::                 Detect objects in an image.
 * MakeCatalog::                 Catalog from input and labeled images.
 @end menu
 
-@node ImageStatistics, NoiseChisel, Image analysis, Image analysis
-@section ImageStatistics
+@node Statistics, NoiseChisel, Image analysis, Image analysis
+@section Statistics
 
 The distribution of pixel values in an image can give us valuable
 information about the image, for example if it is a positively skewed
@@ -11082,23 +11066,23 @@ and we want to see how accurate it was, one method is to calculate the
 average of the undetected pixels and see how reasonable it is (if
 detection is done correctly, the average of undetected pixels should
 be approximately equal to the background value, see @ref{Sky
-value}). ImageStatistics is built for precisely such situations.
+value}). Statistics is built for precisely such situations.
 
 @menu
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
 * Mirror distribution::         Used for finding the mode.
-* Invoking astimgstat::         Arguments and options to ImageStatistics.
+* Invoking aststatistics::      Arguments and options to Statistics.
 @end menu
 
 
-@node Histogram and Cumulative Frequency Plot, Sigma clipping, ImageStatistics, ImageStatistics
+@node Histogram and Cumulative Frequency Plot, Sigma clipping, Statistics, Statistics
 @subsection Histogram and Cumulative Frequency Plot
 
-Histograms and the cumulative frequency plots are both used to study
-the distribution of data. The histogram is mainly easier to understand
-for the untrained eye, while the cumulative frequency plot is more
-accurate, but needs a good level of experience for interpretation.
+Histograms and the cumulative frequency plots are both used to study the
+distribution of data. The histogram is mainly easier to understand for the
+untrained eye, while the cumulative frequency plot is more accurate, but
+needs a good level of experience for interpretation.
 
 @cindex Histogram
 @cindex Intervals, histogram
@@ -11143,21 +11127,21 @@ and b is represented by [a, b). This is true for all the intervals
 except the last one. The last interval is closed or [a, b].
 
 
-@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Frequency Plot, ImageStatistics
+@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Frequency Plot, Statistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear
-Gaussian distribution, see @ref{Photon counting noise}. Now let's
-assume you add very bright objects (signal) on the image which have a
-very sharp boundary. By a sharp boundary, we mean that there is a
-clear cutoff at the place the objects finish. In other words, at their
-boundaries, the objects do not fade away into the noise. In such a
-case, when you plot the histogram (see @ref{Histogram and Cumulative
-Frequency Plot}) of the distribution, the pixels relating to those
-objects will be clearly separate from pixels that belong to parts of
-the image that did not have data. In the cumulative frequency plot,
-you would observe a long flat region were for a certain range of data
-(x axis), there is no increase in the index (y axis).
+Gaussian distribution, see @ref{Photon counting noise}. Now let's assume
+you add very bright objects (signal) on the image which have a very sharp
+boundary. By a sharp boundary, we mean that there is a clear cutoff at the
+place the objects finish. In other words, at their boundaries, the objects
+do not fade away into the noise. In such a case, when you plot the
+histogram (see @ref{Histogram and Cumulative Frequency Plot}) of the
+distribution, the pixels relating to those objects will be clearly separate
+from pixels that belong to parts of the image that did not have data. In
+the cumulative frequency plot, you would observe a long flat region were
+for a certain range of data (x axis), there is no increase in the index (y
+axis).
 
 @cindex Blurring
 @cindex Cosmic rays
@@ -11228,7 +11212,7 @@ removing their effect on the data. In astronomy, it is only useful for
 removing the effect of Cosmic rays.
 @end cartouche
 
-@node Mirror distribution, Invoking astimgstat, Sigma clipping, ImageStatistics
+@node Mirror distribution, Invoking aststatistics, Sigma clipping, Statistics
 @subsection Mirror distribution
 
 @cindex Mirror distribution
@@ -11237,17 +11221,17 @@ Akhlaghi and Ichikawa (2015). It is best visualized by mentally
 placing a mirror on the histogram of a distribution at any point
 within the distribution (which we call the mirror point).
 
-Through the @option{--mirrorquant} in ImageStatistics, you can check
-the mirror of a distribution when the mirror is placed on any given
-quantile. The mirror distribution is plotted along with the input
-distribution both as histograms and cumulative frequency plots, see
-@ref{Histogram and Cumulative Frequency Plot}. Unlike the rest of the
-histograms and cumulative frequency plots in ImageStatistics, the text
-files created with the @option{--mirrorquant} and @option{--checkmode}
-will contain 3 columns. The first is the horizontal axis similar to
-all other histograms and cumulative frequency plots. The second column
-shows the respective value for the actual data distribution and the
-third shows the value for the mirror distribution.
+Through the @option{--mirrorquant} in Statistics, you can check the mirror
+of a distribution when the mirror is placed on any given quantile. The
+mirror distribution is plotted along with the input distribution both as
+histograms and cumulative frequency plots, see @ref{Histogram and
+Cumulative Frequency Plot}. Unlike the rest of the histograms and
+cumulative frequency plots in Statistics, the text files created with the
+@option{--mirrorquant} and @option{--checkmode} will contain 3 columns. The
+first is the horizontal axis similar to all other histograms and cumulative
+frequency plots. The second column shows the respective value for the
+actual data distribution and the third shows the value for the mirror
+distribution.
 
 @cindex Python
 The value for each bin of both histogram is divided by the maximum of
@@ -11305,7 +11289,7 @@ executable file.
 $ ls
 input.fits mirrorplot.py
 $ chmod +x mirrorplot.py
-$ astimgstat input.fits --nohist --nocfp --mirrorquant=0.8
+$ aststatistics input.fits --nohist --nocfp --mirrorquant=0.8
 $ ls
 input.fits  input_mirrorcfp.txt  input_mirrorhist.txt  mirrorplot.py
 $ ./mirrorplot.py input
@@ -11323,60 +11307,57 @@ plots, the mirror value is going to have the value of zero and one of
 the bins is going to start at zero (if @option{--histrangeformirror}
 is called, the given ranges will also shift accordingly).
 
-@node Invoking astimgstat,  , Mirror distribution, ImageStatistics
-@subsection Invoking ImageStatistics
+@node Invoking aststatistics,  , Mirror distribution, Statistics
+@subsection Invoking Statistics
 
-ImageStatistics will print the major statistical measures of an
-image's pixel value distribution. The executable name is
-@file{astimgstat} with the following general template
+Statistics will print the major statistical measures of an image's pixel
+value distribution. The executable name is @file{aststatistics} with the
+following general template
 
 @example
-$ astimgstat [OPTION ...] InputImage.fits
+$ aststatistics [OPTION ...] InputImage.fits
 @end example
 
 @noindent
 One line examples:
 
 @example
-$ astimgstat input.fits
-$ astimgstat animage.fits --ignoremin --nohist
+$ aststatistics input.fits
+$ aststatistics animage.fits --ignoremin --nohist
 @end example
 
 @noindent
-If ImageStatistics is to do any data processing, an input image should
-be provided with the recognized extensions as input data, see
-@ref{Arguments}. See @ref{Common options} for the list of options that
-are shared by all programs. All the main statistical operations have
-their specific set of options. If a string is given to the
-@option{--output} option, it is used as the base name for the
-generated files. Without this option, the input image name is used as
-the name-base.
+If Statistics is to do any data processing, an input image should be
+provided with the recognized extensions as input data, see
+@ref{Arguments}. See @ref{Common options} for the list of options that are
+shared by all programs. All the main statistical operations have their
+specific set of options. If a string is given to the @option{--output}
+option, it is used as the base name for the generated files. Without this
+option, the input image name is used as the name-base.
 
 Some of the options are necessary and if they are not included in the
-configuration file, ImageStatistics will not run, see
-@ref{Configuration files}. However, for some others this is not so:
-@option{--histmin}, @option{--histmax}, @option{--histquant},
-@option{--cfpmin}, @option{--cfpmax}, @option{--cfpquant}. These are
-options to do with the range of values in the histogram and cumulative
-frequency plots. If no value is given for these options when
-ImageStatistics is about to start processing the data, then the full
-data range will be used. Such that the minimum image value will be set
-for the minimums and the maximum image value will be used for the
-maximum.
+configuration file, Statistics will not run, see @ref{Configuration
+files}. However, for some others this is not so: @option{--histmin},
+@option{--histmax}, @option{--histquant}, @option{--cfpmin},
+@option{--cfpmax}, @option{--cfpquant}. These are options to do with the
+range of values in the histogram and cumulative frequency plots. If no
+value is given for these options when Statistics is about to start
+processing the data, then the full data range will be used. Such that the
+minimum image value will be set for the minimums and the maximum image
+value will be used for the maximum.
 
 @cindex ASCII plot
 By default, in verbose mode @footnote{If the @option{-q} option is not
 called then all programs will operate in verbose mode, see @ref{Common
 options}.}, along with a short summary of the basic data statistics, a
-simple ASCII histogram will also be printed. This can be useful for a
-very quick and general view of the distribution. An example verbose
-output of ImageStatistics on one of the @command{$ make check} outputs
-can be seen below:
+simple ASCII histogram will also be printed. This can be useful for a very
+quick and general view of the distribution. An example verbose output of
+Statistics on one of the @command{$ make check} outputs can be seen below:
 
 @example
-$ astimgstat ./tests/convolve_spatial_warped_noised.fits        \
-             --histquant=0.05
-ImageStatistics started on AAA BBB CC DD:EE:FF GGGG
+$ aststatistics ./tests/convolve_spatial_warped_noised.fits        \
+                --histquant=0.05
+Statistics started on AAA BBB CC DD:EE:FF GGGG
   - Input read: ./tests/convolve_spatial_warped_noised.fits (hdu: 0)
    -- Number of points                             10000
    -- Minimum                                      -38.2066
@@ -11414,7 +11395,7 @@ ImageStatistics started on AAA BBB CC DD:EE:FF GGGG
       3: 4.433090, 7.458610, 18.510950, 9715
       4: 4.216213, 6.176818, 15.231371, 9575
       5: 4.088199, 5.679162, 14.183748, 9502
-ImageStatistics finished in:  0.006964 (seconds)
+Statistics finished in:  0.006964 (seconds)
 @end example
 
 @table @option
@@ -11461,14 +11442,14 @@ distribution} for a complete explanation. Outputs two files with suffixes
 @file{_mirrorhist.txt} and @file{_mirrorcfp.txt}.
 
 @item --checkmode
-The mode of the data is found by comparing the input data distribution
-with its mirror distribution. If this option is called, the mirror
-distribution's histogram and cumulative frequency plots will be saved
-in to plain text files ending with @file{_modehist.txt} and
-@file{_modecfp.txt}. See the explanation for @ref{Mirror distribution}
-for more details about these two files and how you can easily plot the
-outputs. This option only works when when ImageStatistics is in
-verbose mode. Since otherwise the mode is not calculated.
+The mode of the data is found by comparing the input data distribution with
+its mirror distribution. If this option is called, the mirror
+distribution's histogram and cumulative frequency plots will be saved in to
+plain text files ending with @file{_modehist.txt} and
+@file{_modecfp.txt}. See the explanation for @ref{Mirror distribution} for
+more details about these two files and how you can easily plot the
+outputs. This option only works when when Statistics is in verbose
+mode. Since otherwise the mode is not calculated.
 
 To draw the plots you can use the script in @ref{Mirror
 distribution}. Just change the appended suffixes in the two calls to
@@ -11608,7 +11589,7 @@ iteration stops after a certain number of runs.
 
 
 
-@node NoiseChisel, MakeCatalog, ImageStatistics, Image analysis
+@node NoiseChisel, MakeCatalog, Statistics, Image analysis
 @section NoiseChisel
 
 Once raw data have gone through the initial reduction process (through the
@@ -12278,13 +12259,13 @@ of one color will thus not lie exactly on another or even be in the
 same scale. However, it is imperative that the same pixels be used in
 measuring the colors of galaxies.
 
-Therefore NoiseChisel can be run on the reference image and ImageWarp
-(@ref{ImageWarp}) can be applied to the labeled images to find the
-pixels to use in the other image. Then MakeCatalog can generate the
-final catalog for both targets. It is currently customary to warp the
-images to the same pixel grid, however, this is very harmful for the
-data and creates correlated noise. It is much more accurate to do the
-transformations on the labeled image.
+Therefore NoiseChisel can be run on the reference image and Warp
+(@ref{Warp}) can be applied to the labeled images to find the pixels to use
+in the other image. Then MakeCatalog can generate the final catalog for
+both targets. It is currently customary to warp the images to the same
+pixel grid, however, this is very harmful for the data and creates
+correlated noise. It is much more accurate to do the transformations on the
+labeled image.
 
 @end itemize
 
@@ -13779,13 +13760,12 @@ also have to shift all the pixel positions of the profile centers on
 the that axis by @mymath{n} pixels to the positive.
 
 After convolution, you can crop the outer @mymath{n} pixels with the
-section crop box specification of ImageCrop:
-@option{--section=n:*-n,n:*-n} assuming your PSF is a square, see
-@ref{Crop section syntax}. This will also remove all discrete Fourier
-transform artifacts (blurred sides) from the final image. To
-facilitate this shift, MakeProfiles has the options @option{--xshift},
-@option{--yshift} and @option{--prepforconv}, see @ref{Invoking
-astmkprof}.
+section crop box specification of Crop: @option{--section=n:*-n,n:*-n}
+assuming your PSF is a square, see @ref{Crop section syntax}. This will
+also remove all discrete Fourier transform artifacts (blurred sides) from
+the final image. To facilitate this shift, MakeProfiles has the options
+@option{--xshift}, @option{--yshift} and @option{--prepforconv}, see
+@ref{Invoking astmkprof}.
 
 
 
@@ -14192,14 +14172,13 @@ peak has the given magnitude, not the total profile.
 
 @cartouche
 @strong{CAUTION:} If you want to use this option for comparing with
-observations, please note that MakeProfiles does not do
-convolution. Unless you have de-convolved your data, your images are
-convolved with the instrument and atmospheric PSF, see
-@ref{PSF}. Particularly in sharper profiles, the flux in the peak
-pixel is strongly decreased after convolution. Also note that in such
-cases, besides de-convolution, you will have to set
-@option{--oversample=1} otherwise after resampling your profile with
-ImageWarp (see @ref{ImageWarp}), the peak flux will be different.
+observations, please note that MakeProfiles does not do convolution. Unless
+you have de-convolved your data, your images are convolved with the
+instrument and atmospheric PSF, see @ref{PSF}. Particularly in sharper
+profiles, the flux in the peak pixel is strongly decreased after
+convolution. Also note that in such cases, besides de-convolution, you will
+have to set @option{--oversample=1} otherwise after resampling your profile
+with Warp (see @ref{Warp}), the peak flux will be different.
 @end cartouche
 
 @item -R
@@ -17312,10 +17291,10 @@ changed by this function.
 @subsection Polygons (@file{polygon.h})
 
 Polygons are commonly necessary in image processing. In Gnuastro, they are
-used in ImageCrop (see @ref{ImageCrop}) for cutting out non-rectangular
-regions of a image. ImageWarp (see @ref{ImageWarp}) uses them to warp the
-images into a new pixel grid. The polygon related Gnuastro library macros
-and functions are introduced here.
+used in Crop (see @ref{Crop}) for cutting out non-rectangular regions of a
+image. Warp (see @ref{Warp}) uses them to warp the images into a new pixel
+grid. The polygon related Gnuastro library macros and functions are
+introduced here.
 
 In all the functions here the vertices (and points) are defined as an
 array. So a polygon with 4 vertices will be identified with an array of 8
@@ -18844,7 +18823,7 @@ these jobs must be defined in other source files.
 All the major parameters which will be used in the program must be
 stored in a structure which is defined in @file{main.h}. The name of
 this structure is usually @code{prognameparams}, for example
-@code{imgcropparams}. So @code{#include "main.h"} will be a staple in
+@code{cropparams}. So @code{#include "main.h"} will be a staple in
 all the source codes of the program and most of the functions. Keeping
 all the major parameters of a program in this structure has the major
 benefit that most functions will only need one argument: a pointer to
@@ -18930,15 +18909,15 @@ processing begins which is more convenient for the user.
 
 @item progname.c
 @cindex Top processing source file
-The main processing functions in each program which keep the
-function(s) that @code{main()} will call are in a file named
-@file{progname.c}, for example @file{imgcrop.c} or
-@file{noisechisel.c}. The function within these files which
-@code{main()} calls is also named after the program, for example
+The main processing functions in each program which keep the function(s)
+that @code{main()} will call are in a file named @file{progname.c}, for
+example @file{crop.c} or @file{noisechisel.c}. The function within these
+files which @code{main()} calls is also named after the program, for
+example
 
 @example
 void
-imgcrop(struct imgcropparams *p)
+crop(struct cropparams *p)
 @end example
 
 @noindent
@@ -19211,15 +19190,15 @@ that you can install the program even if you don't have write access to the
 directory keeping the source files. See the ``Parallel build trees (a.k.a
 VPATH builds)'' in the Automake manual for a nice explanation.
 
-Because of this, any possible data that was not generated by other
-tests (and is thus in the build tree), for example the catalogs in
-ImageCrop tests, has a @command{$topsrc} prefix instead of
-@command{../} for the build three. This @command{$topsrc} variable
-points to the source tree where the script can find the source data
-(it is defined in @file{tests/Makefile.am}). The executables and
-other test products were built in the build tree (where they are being
-run), so they don't need to be prefixed with that variable. This is
-also true for images or files that were produced by other tests.
+Because of this, any possible data that was not generated by other tests
+(and is thus in the build tree), for example the catalogs in Crop tests,
+has a @command{$topsrc} prefix instead of @command{../} for the build
+three. This @command{$topsrc} variable points to the source tree where the
+script can find the source data (it is defined in
+@file{tests/Makefile.am}). The executables and other test products were
+built in the build tree (where they are being run), so they don't need to
+be prefixed with that variable. This is also true for images or files that
+were produced by other tests.
 
 
 @node Developer's checklist, Contributing to Gnuastro, Test scripts, Developing
@@ -19694,22 +19673,18 @@ to PSF-match two images.
 calculations, for example the luminosity distance, distance modulus,
 comoving volume and many more.
 
+@item Crop
+(@file{astcrop}, see @ref{Crop}) Crop region(s) from an image and stitch
+several images if necessary. Inputs can be in pixel coordinates or world
+coordinates.
+
 @item Header
 (@file{astheader}, see @ref{Header}) Print and manipulate the header data
 of a FITS file.
 
-@item ImageCrop
-(@file{astimgcrop}, see @ref{ImageCrop}) Crop region(s) from an image and
-stitch several images if necessary. Inputs can be in pixel coordinates or
-world coordinates.
-
-@item ImageStatistics
-(@file{astimgstat}, see @ref{ImageStatistics}) Get pixel statistics and
+@item Statistics
+(@file{aststatistics}, see @ref{Statistics}) Get pixel statistics and
 save histogram and cumulative frequency plots.
-
-@item ImageWarp
-(@file{astimgwarp}, see @ref{ImageWarp}) Warp image to new pixel grid. Any
-projective transformation or Homography can be applied to the input images.
 
 @item MakeCatalog
 (@file{astmkcatalog}, see @ref{MakeCatalog}) Make catalog of labeled image
@@ -19741,6 +19716,10 @@ comparing the mode and median on a mesh grid.
 (@file{asttable}, @ref{Table}) Convert FITS binary and ASCII tables into
 other such tables, print them on the command-line, save them in a plain
 text file, or get the FITS table information.
+
+@item Warp
+(@file{astwarp}, see @ref{Warp}) Warp image to new pixel grid. Any
+projective transformation or Homography can be applied to the input images.
 
 @end table
 

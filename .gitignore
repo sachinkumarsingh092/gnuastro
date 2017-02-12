@@ -69,6 +69,8 @@ libtool
 INSTALL
 AUTHORS
 snippet
+astcrop
+astwarp
 .version
 config.h
 stamp-h1
@@ -82,9 +84,7 @@ astmkprof
 astheader
 runtest.sh
 astmknoise
-astimgcrop
 astimgstat
-astimgwarp
 config.sub
 install-sh
 aclocal.m4

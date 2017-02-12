@@ -1,4 +1,4 @@
-# Convert a FITS image into an PDF file.
+# Crop from a catalog using x and y coordinates in WCS mode.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,10 +22,9 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=convertt
-img=crop_section.fits
+prog=crop
+img=mkprofcat*.fits
 execname=../bin/$prog/ast$prog
-
 
 
 
@@ -40,12 +39,8 @@ execname=../bin/$prog/ast$prog
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-#
-#   - Ghostscript was not present on the system.
-if [ ! -f $execname ] || [ ! -f $img ] || [ "x$hasghostscript" != "xyes" ]; then
-    exit 77;
-fi
-
+if [ ! -f $execname ]; then exit 77; fi
+for fn in $img; do if [ ! -f $fn ]; then exit 77; fi; done
 
 
 
@@ -53,4 +48,5 @@ fi
 
 # Actual test script
 # ==================
-$execname $img --output=pdf --invert
+$execname $img --mode=wcs --zeroisnotblank --output=wcspolygon.fits           \
+          --polygon=0.99980497,1.0001967:0.998378,1.0012267:0.9999766,1.0013217

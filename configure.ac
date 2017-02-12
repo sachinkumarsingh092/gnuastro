@@ -442,6 +442,12 @@ AC_MSG_RESULT($binoptprint)
 # have given by setting them to "yes" if they are not "no". These
 # options don't accept arguments.
 ayes=false
+AC_ARG_ENABLE([arithmetic],
+              [AS_HELP_STRING([--enable-arithmetic],
+                    [Install ImageArithmetic and other enabled packages.])],
+	      [AS_IF([test "x$enable_arithmetic" != xno],
+                     [enable_arithmetic=yes; ayes=true])],
+              [enable_arithmetic=notset])
 AC_ARG_ENABLE([convertt],
               [AS_HELP_STRING([--enable-convertt],
                     [Install ConvertType and other enabled packages.])],
@@ -460,36 +466,18 @@ AC_ARG_ENABLE([cosmiccal],
 	      [AS_IF([test "x$enable_cosmiccal" != xno],
                      [enable_cosmiccal=yes; ayes=true])],
               [enable_cosmiccal=notset])
+AC_ARG_ENABLE([crop],
+              [AS_HELP_STRING([--enable-crop],
+                    [Install Crop and other enabled packages.])],
+	      [AS_IF([test "x$enable_crop" != xno],
+                     [enable_crop=yes; ayes=true])],
+              [enable_crop=notset])
 AC_ARG_ENABLE([header],
               [AS_HELP_STRING([--enable-header],
                     [Install Header and other enabled packages.])],
 	      [AS_IF([test "x$enable_header" != xno],
                      [enable_header=yes; ayes=true])],
               [enable_header=notset])
-AC_ARG_ENABLE([arithmetic],
-              [AS_HELP_STRING([--enable-arithmetic],
-                    [Install ImageArithmetic and other enabled packages.])],
-	      [AS_IF([test "x$enable_arithmetic" != xno],
-                     [enable_arithmetic=yes; ayes=true])],
-              [enable_arithmetic=notset])
-AC_ARG_ENABLE([imgcrop],
-              [AS_HELP_STRING([--enable-imgcrop],
-                    [Install ImageCrop and other enabled packages.])],
-	      [AS_IF([test "x$enable_imgcrop" != xno],
-                     [enable_imgcrop=yes; ayes=true])],
-              [enable_imgcrop=notset])
-AC_ARG_ENABLE([imgstat],
-              [AS_HELP_STRING([--enable-imgstat],
-                    [Install ImageStatistics and other enabled packages.])],
-	      [AS_IF([test "x$enable_imgstat" != xno],
-                     [enable_imgstat=yes; ayes=true])],
-              [enable_imgstat=notset])
-AC_ARG_ENABLE([imgwarp],
-              [AS_HELP_STRING([--enable-imgwarp],
-                    [Install ImageWarp and other enabled packages.])],
-	      [AS_IF([test "x$enable_imgwarp" != xno],
-                     [enable_imgwarp=yes; ayes=true])],
-              [enable_imgwarp=notset])
 AC_ARG_ENABLE([mkcatalog],
               [AS_HELP_STRING([--enable-mkcatalog],
                     [Install MakeCatalog and other enabled packages.])],
@@ -514,6 +502,12 @@ AC_ARG_ENABLE([noisechisel],
 	      [AS_IF([test "x$enable_noisechisel" != xno],
                      [enable_noisechisel=yes; ayes=true])],
               [enable_noisechisel=notset])
+AC_ARG_ENABLE([statistics],
+              [AS_HELP_STRING([--enable-statistics],
+                    [Install Statistics and other enabled packages.])],
+	      [AS_IF([test "x$enable_statistics" != xno],
+                     [enable_statistics=yes; ayes=true])],
+              [enable_statistics=notset])
 AC_ARG_ENABLE([subtractsky],
               [AS_HELP_STRING([--enable-subtractsky],
                     [Install SubtractSky and other enabled packages.])],
@@ -532,6 +526,12 @@ AC_ARG_ENABLE([table],
 #	      [AS_IF([test "x$enable_TEMPLATE" != xno],
 #                     [enable_TEMPLATE=yes; ayes=true])],
 #              [enable_TEMPLATE=notset])
+AC_ARG_ENABLE([warp],
+              [AS_HELP_STRING([--enable-warp],
+                    [Install Warp and other enabled packages.])],
+	      [AS_IF([test "x$enable_warp" != xno],
+                     [enable_warp=yes; ayes=true])],
+              [enable_warp=notset])
 
 
 
@@ -550,35 +550,35 @@ AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=no])
+       AS_IF([test $enable_crop = notset], [enable_crop=no])
        AS_IF([test $enable_header = notset], [enable_header=no])
        AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=no])
-       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
-       AS_IF([test $enable_imgstat = notset], [enable_imgstat=no])
-       AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=no])
+       AS_IF([test $enable_statistics = notset], [enable_statistics=no])
        AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=no])
        AS_IF([test $enable_table = notset], [enable_table=no])
 #      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=no])
+       AS_IF([test $enable_warp = notset], [enable_warp=no])
        ],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=yes])
+       AS_IF([test $enable_crop = notset], [enable_crop=yes])
        AS_IF([test $enable_header = notset], [enable_header=yes])
        AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=yes])
-       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
-       AS_IF([test $enable_imgstat = notset], [enable_imgstat=yes])
-       AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=yes])
+       AS_IF([test $enable_statistics = notset], [enable_statistics=yes])
        AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=yes])
        AS_IF([test $enable_table = notset], [enable_table=yes])
 #      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=yes])
+       AS_IF([test $enable_warp = notset], [enable_warp=yes])
        ]
      )
 
@@ -591,17 +591,17 @@ AM_CONDITIONAL([COND_ARITHMETIC], [test $enable_arithmetic = yes])
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_COSMICCAL], [test $enable_cosmiccal = yes])
+AM_CONDITIONAL([COND_CROP], [test $enable_crop = yes])
 AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
-AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
-AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
-AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
+AM_CONDITIONAL([COND_STATISTICS], [test $enable_statistics = yes])
 AM_CONDITIONAL([COND_SUBTRACTSKY], [test $enable_subtractsky = yes])
 AM_CONDITIONAL([COND_TABLE], [test $enable_table = yes])
 #AM_CONDITIONAL([COND_TEMPLATE], [test $enable_TEMPLATE = yes])
+AM_CONDITIONAL([COND_WARP], [test $enable_warp = yes])
 
 
 
@@ -614,18 +614,18 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
+                 bin/crop/Makefile
+                 bin/warp/Makefile
                  bin/table/Makefile
                  bin/mkprof/Makefile
                  bin/header/Makefile
                  bin/mknoise/Makefile
-		 bin/imgcrop/Makefile
-           	 bin/imgstat/Makefile
-       		 bin/imgwarp/Makefile
                  bin/convertt/Makefile
                  bin/convolve/Makefile
                  bin/cosmiccal/Makefile
            	 bin/mkcatalog/Makefile
                  bin/arithmetic/Makefile
+           	 bin/statistics/Makefile
                  bin/noisechisel/Makefile
                  bin/subtractsky/Makefile
                  bootstrapped/lib/Makefile

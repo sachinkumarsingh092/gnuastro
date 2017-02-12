@@ -789,7 +789,7 @@ sanitycheck(struct noisechiselparams *p)
    export GSL_RNG_SEED=1
    astmkprof tmp.txt --oversample=1 --envseed --numrandom=10000 \
              --tolerance=0.01
-   astimgcrop 0.fits --section=2:*,2:* --zeroisnotblank --output=fwhm2.fits
+   astcrop 0.fits --section=2:*,2:* --zeroisnotblank --output=fwhm2.fits
    astconvertt fwhm2.fits --output=fwhm2.txt
    rm 0.fits tmp.fits *.log tmp.txt
 */

@@ -66,16 +66,16 @@ multithread_SOURCES = lib/multithread.c
 
 # The actual test scripts that are run:
 TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh  \
-  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh \
-  imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh                 \
-  imgcrop/section.sh imgcrop/radec.sh imgcrop/imgpolygon.sh                \
-  imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh convertt/fitstotxt.sh     \
-  convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh         \
-  convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh convertt/fitstopdf.sh  \
-  convolve/spatial.sh convolve/frequency.sh imgwarp/imgwarp_scale.sh       \
-  imgwarp/homographic.sh mknoise/addnoise.sh mkprof/ellipticalmasks.sh     \
-  mkprof/inputascanvas.sh header/write.sh header/print.sh header/update.sh \
-  header/delete.sh imgstat/basicstats.sh subtractsky/subtractsky.sh        \
+  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh crop/imgcat.sh    \
+  crop/wcscat.sh crop/xcyc.sh crop/xcycnoblank.sh crop/section.sh          \
+  crop/radec.sh crop/imgpolygon.sh crop/imgoutpolygon.sh                   \
+  crop/wcspolygon.sh convertt/fitstotxt.sh convertt/fitstojpeg.sh          \
+  convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh     \
+  convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh         \
+  convolve/frequency.sh warp/warp_scale.sh warp/homographic.sh             \
+  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh    \
+  header/write.sh header/print.sh header/update.sh header/delete.sh        \
+  statistics/basicstats.sh subtractsky/subtractsky.sh                      \
   noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh \
   arithmetic/snimage.sh arithmetic/onlynumbers.sh arithmetic/where.sh      \
   arithmetic/or.sh cosmiccal/simpletest.sh table/txt-to-fits-binary.sh     \
@@ -90,7 +90,7 @@ TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh  \
 EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                   \
   mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt                       \
   mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt         \
-  mkprof/radeccat.txt imgcrop/cat.txt table/table.txt
+  mkprof/radeccat.txt crop/cat.txt table/table.txt
 
 
 
@@ -133,17 +133,17 @@ table/txt-to-fits-binary.sh: prepconf.sh.log
 table/fits-binary-to-txt.sh: table/txt-to-fits-binary.sh.log
 table/txt-to-fits-ascii.sh: prepconf.sh.log
 table/fits-ascii-to-txt.sh: table/txt-to-fits-ascii.sh.log
-imgcrop/imgcat.sh: mkprof/mosaic1.sh.log
-imgcrop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
+crop/imgcat.sh: mkprof/mosaic1.sh.log
+crop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
                    mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-imgcrop/xcyc.sh: mkprof/mosaic1.sh.log
-imgcrop/xcycnoblank.sh: mkprof/mosaic1.sh.log
-imgcrop/section.sh: mkprof/mosaic1.sh.log
-imgcrop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
+crop/xcyc.sh: mkprof/mosaic1.sh.log
+crop/xcycnoblank.sh: mkprof/mosaic1.sh.log
+crop/section.sh: mkprof/mosaic1.sh.log
+crop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
                   mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-imgcrop/imgpolygon.sh: mkprof/mosaic1.sh.log
-imgcrop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
-imgcrop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
+crop/imgpolygon.sh: mkprof/mosaic1.sh.log
+crop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
+crop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
                        mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
 convertt/fitstotxt.sh: mkprof/mosaic1.sh.log
 convertt/fitstojpeg.sh: mkprof/mosaic1.sh.log
@@ -151,19 +151,19 @@ convertt/blankch.sh: mkprof/mosaic1.sh.log
 convertt/jpegtotxt.sh: convertt/fitstojpeg.sh.log
 convertt/fitstojpegcmyk.sh: mkprof/mosaic1.sh.log
 convertt/jpegtofits.sh: convertt/blankch.sh.log
-convertt/fitstopdf.sh: imgcrop/section.sh.log
+convertt/fitstopdf.sh: crop/section.sh.log
 convolve/spatial.sh: mkprof/mosaic1.sh.log
 convolve/frequency.sh: mkprof/mosaic1.sh.log
-imgwarp/imgwarp_scale.sh: convolve/spatial.sh.log
-imgwarp/homographic.sh: convolve/spatial.sh.log
-mknoise/addnoise.sh: imgwarp/imgwarp_scale.sh.log
+warp/imgwarp_scale.sh: convolve/spatial.sh.log
+warp/homographic.sh: convolve/spatial.sh.log
+mknoise/addnoise.sh: warp/warp_scale.sh.log
 mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
 mkprof/inputascanvas.sh: mknoise/addnoise.sh.log
 header/write.sh: mkprof/mosaic1.sh.log
 header/print.sh: header/write.sh.log
 header/update.sh: header/write.sh.log
 header/delete.sh: header/write.sh.log
-imgstat/basicstats.sh: mknoise/addnoise.sh.log
+statistics/basicstats.sh: mknoise/addnoise.sh.log
 subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
 noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
 mkcatalog/simple.sh: noisechisel/noisechisel.sh.log

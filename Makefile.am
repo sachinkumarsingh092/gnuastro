@@ -59,17 +59,11 @@ endif
 if COND_COSMICCAL
   MAYBE_COSMICCAL = bin/cosmiccal
 endif
+if COND_CROP
+  MAYBE_CROP = bin/crop
+endif
 if COND_HEADER
   MAYBE_HEADER = bin/header
-endif
-if COND_IMGCROP
-  MAYBE_IMGCROP = bin/imgcrop
-endif
-if COND_IMGSTAT
-  MAYBE_IMGSTAT = bin/imgstat
-endif
-if COND_IMGWARP
-  MAYBE_IMGWARP = bin/imgwarp
 endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG = bin/mkcatalog
@@ -83,6 +77,9 @@ endif
 if COND_NOISECHISEL
   MAYBE_NOISECHISEL = bin/noisechisel
 endif
+if COND_STATISTICS
+  MAYBE_STATISTICS = bin/statistics
+endif
 if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY = bin/subtractsky
 endif
@@ -92,6 +89,9 @@ endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE = bin/TEMPLATE
 #endif
+if COND_WARP
+  MAYBE_WARP = bin/warp
+endif
 if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = bootstrapped/tests
 endif
@@ -107,11 +107,11 @@ endif
 ## conditions above). When `MAYBE_TEMPLATE' is not defined, then Make will
 ## see it as a blank string and igonore it, so there is no problem with
 ## having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
-SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)    \
-  $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)   \
-  $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)    \
-  $(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL)                    \
-  $(MAYBE_SUBTRACTSKY) $(MAYBE_TABLE) $(MAYBE_TEMPLATE) doc tests
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC) \
+  $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_CROP)  \
+  $(MAYBE_HEADER) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)   \
+  $(MAYBE_NOISECHISEL) $(MAYBE_STATISTICS) $(MAYBE_SUBTRACTSKY)         \
+  $(MAYBE_TABLE) $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc tests
 
 
 

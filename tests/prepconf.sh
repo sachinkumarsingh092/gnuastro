@@ -74,8 +74,8 @@ EOF
 # Each utility's configuration file is read and appended with the
 # addedoptions.txt file to create the configuration file which will be used
 # by `make check'.
-for prog in arithmetic convertt convolve cosmiccal header imgcrop \
-            imgstat imgwarp mkcatalog mknoise mkprof noisechisel  \
+for prog in arithmetic convertt convolve cosmiccal crop header    \
+            warp mkcatalog mknoise mkprof noisechisel statistics  \
             subtractsky table
 do
 
