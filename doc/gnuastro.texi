@@ -5593,15 +5593,16 @@ convenient and, especially when the tables are large it can be very
 frustrating and prone to errors. Hence, table file formats (for example see
 @ref{Recognized table formats}) have ways to store additional information
 about the columns (meta-data). Some of the most common pieces of
-information about each column are its name, the units of data in the it,
-and a comment for longer/informal description of the column's data.
+information about each column are its @emph{name}, the @emph{units} of data
+in the it, and a @emph{comment} for longer/informal description of the
+column's data.
 
-To facilitate research with Gnuastro, besides the low-level column number,
-you can also select columns by matching, or searching, in these three
-fields. To view this meta-data for all the columns in the table, you can
-use @ref{Table} with the command below (replace @file{table-file} with the
-filename of your table, if its FITS, you might also need to specify the
-HDU/extension which contains the table):
+To facilitate research with Gnuastro, you can select columns by matching,
+or searching in these three fields, besides the low-level column number. To
+view the full list of information on the columns in the table, you can use
+the Table program (see @ref{Table}) with the command below (replace
+@file{table-file} with the filename of your table, if its FITS, you might
+also need to specify the HDU/extension which contains the table):
 
 @example
 $ asttable --information table-file
@@ -5614,27 +5615,31 @@ Declination with @option{--deccol}. Thus, there is no unified common option
 name to select columns for all programs. However, when the program expects
 the column for a specific context (like the RA and Dec example above), the
 option names end in the @option{col} suffix (for example @option{--racol}
-and @option{--deccol}). These options accept both integer and string
-arguments.
+and @option{--deccol}). These options accept values in integer (column
+number), or string (metadata match/search) format.
 
 If the value can be parsed as a positive integer, it will be seen as the
 low-level column number. Note that column counting starts from 1, so if you
 ask for column 0, the respective program will abort with an error. When the
 value can't be interpretted as an a integer number, it will be seen as a
 string of characters which will be used to match/search in the table's
-meta-data. The field which the value will be compared with can be selected
-through the @option{--searchin} option, see @ref{Input output}. The
-matching will be done following this convention:
+meta-data. The meta-data field which the value will be compared with can be
+selected through the @option{--searchin} option, see @ref{Input
+output}. @option{--searchin} can take three values: @code{name},
+@code{unit}, @code{comment}. The matching will be done following this
+convention:
 
 @itemize
 @item
 If the value is enclosed in two slashes (for example @command{-r/RA_/}, or
 @option{--racol=/RA_/}), then it is assumed to be a regular expression with
-the same convention as GNU AWK. GNU AWK has a
-@url{https://wwww.gnu.org/s/gawk/manual/html_node/Regexp.html,complete
+the same convention as GNU AWK. GNU AWK has a very well written
+@url{https://www.gnu.org/software/gawk/manual/html_node/Regexp.html,
 chapter} describing regular expressions, so we we will not continue
 discussing it here. Regular expressions are a very powerful tool in
-matching text and useful in many contexts.
+matching text and useful in many contexts. We thus strongly encourage
+reviewing this chapter for greatly improving the quality of your work in
+many cases, not just for searching column meta-data in Gnuastro.
 
 @item
 When the string isn't inclosed between `@key{/}'s, any column that exactly

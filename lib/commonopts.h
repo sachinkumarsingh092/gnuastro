@@ -62,11 +62,12 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Col. selection field: `name', `unit', `comment'.",
       GAL_OPTIONS_GROUP_INPUT,
-      &cp->searchinstr,
-      GAL_DATA_TYPE_STRING,
+      &cp->searchin,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_searchin
     },
     {
       "ignorecase",
@@ -106,12 +107,12 @@ struct argp_option gal_commonopts_options[] =
     {
       "type",
       GAL_OPTIONS_KEY_TYPE,
-      "STR",  /* Will be converted to `int' code by `gal_options_read_type'.*/
+      "STR",
       0,
-      "Numerical datatype of output",
+      "Data type of output: e.g., int16, float32, etc...",
       GAL_OPTIONS_GROUP_OUTPUT,
       &cp->type,
-      GAL_DATA_TYPE_INT32,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
@@ -124,11 +125,12 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Output table format: `fits-ascii', `fits-binary'.",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &cp->tableformatstr,
-      GAL_DATA_TYPE_STRING,
+      &cp->tableformat,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_tableformat
     },
     {
       "dontdelete",

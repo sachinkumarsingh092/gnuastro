@@ -153,31 +153,29 @@ struct gal_options_common_params
 {
   /* Input. */
   char                    *hdu; /* Image extension.                      */
-  unsigned char     ignorecase; /* Ignore case when matching col info.   */
-  char            *searchinstr; /* Column info to search (as a string).  */
+  uint8_t             searchin; /* Column meta-data to match/search.     */
+  uint8_t           ignorecase; /* Ignore case when matching col info.   */
 
   /* Output. */
   char                 *output; /* Directory containg output.            */
-  int                     type; /* Data type of output.                  */
-  unsigned char     dontdelete; /* ==1: Don't delete existing file.      */
-  unsigned char   keepinputdir; /* Keep input directory for auto output. */
-  char         *tableformatstr; /* Format of output table (as a string). */
+  uint8_t                 type; /* Data type of output.                  */
+  uint8_t           dontdelete; /* ==1: Don't delete existing file.      */
+  uint8_t         keepinputdir; /* Keep input directory for auto output. */
+  uint8_t          tableformat; /* Internal code for output table format.*/
 
   /* Operating modes. */
-  unsigned char          quiet; /* Only print errors.                    */
+  uint8_t                quiet; /* Only print errors.                    */
   size_t            numthreads; /* Number of threads to use.             */
   size_t            minmapsize; /* Minimum bytes necessary to use mmap.  */
-  unsigned char            log; /* Make a log file.                      */
+  uint8_t                  log; /* Make a log file.                      */
 
   /* Configuration files. */
-  unsigned char    printparams; /* To print the full list of parameters. */
-  unsigned char     setdirconf; /* To write the directory config file.   */
-  unsigned char     setusrconf; /* To write teh user config config file. */
-  unsigned char     lastconfig; /* This is the last configuration file.  */
+  uint8_t          printparams; /* To print the full list of parameters. */
+  uint8_t           setdirconf; /* To write the directory config file.   */
+  uint8_t           setusrconf; /* To write teh user config config file. */
+  uint8_t           lastconfig; /* This is the last configuration file.  */
 
-  /* For internal purposes. */
-  int                 searchin; /* Internal code for user's input.       */
-  int              tableformat; /* Internal code for output table format.*/
+  /* For internal (to option processing) purposes. */
   char           *program_name; /* Official name to be used in text.     */
   char           *program_exec; /* Program's executable name.            */
   char         *program_bibtex; /* BibTeX record for this program.       */
@@ -212,6 +210,14 @@ gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
 void
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno);
+
+void
+gal_options_read_searchin(struct argp_option *option, char *arg,
+                          char *filename, size_t lineno);
+
+void
+gal_options_read_tableformat(struct argp_option *option, char *arg,
+                             char *filename, size_t lineno);
 
 void
 gal_options_free(struct argp_option *options);

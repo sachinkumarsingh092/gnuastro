@@ -89,19 +89,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-    {
-      "type",
-      ARGS_OPTION_KEY_TYPE,
-      "STR",
-      0,
-      "uchar, short, long, longlong, float, double."
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->typestr,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
     {

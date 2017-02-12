@@ -130,7 +130,7 @@ enum option_keys_enum
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
 static void
-ui_initialize_options(struct tableparams *p,
+ui_initialize_options(struct imgwarpparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
@@ -167,7 +167,7 @@ ui_initialize_options(struct tableparams *p,
 error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
-  struct tableparams *p = state->input;
+  struct imgwarpparams *p = state->input;
 
   /* Pass `gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
@@ -230,7 +230,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
-ui_read_check_only_options(struct tableparams *p)
+ui_read_check_only_options(struct imgwarpparams *p)
 {
 
   /* Check if the format of the output table is valid, given the type of
@@ -244,7 +244,7 @@ ui_read_check_only_options(struct tableparams *p)
 
 
 static void
-ui_check_options_and_arguments(struct tableparams *p)
+ui_check_options_and_arguments(struct imgwarpparams *p)
 {
   /* Make sure an input file name was given and if it was a FITS file, that
      a HDU is also given. */
@@ -284,7 +284,7 @@ ui_check_options_and_arguments(struct tableparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
-ui_preparations(struct tableparams *p)
+ui_preparations(struct imgwarpparams *p)
 {
   char *numstr;
   int tableformat;
@@ -386,7 +386,7 @@ ui_preparations(struct tableparams *p)
 /**************************************************************/
 
 void
-ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct imgwarpparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
@@ -460,7 +460,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-ui_free_report(struct tableparams *p)
+ui_free_report(struct imgwarpparams *p)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);

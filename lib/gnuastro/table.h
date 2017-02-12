@@ -70,9 +70,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Formats of table storage for input or output, as strings and
    integers. */
-#define GAL_TABLE_STRING_FORMAT_TXT   "txt"
-#define GAL_TABLE_STRING_FORMAT_AFITS "fits-ascii"
-#define GAL_TABLE_STRING_FORMAT_BFITS "fits-binary"
 enum gal_table_types
 {
   GAL_TABLE_FORMAT_INVALID,       /* Invalid (=0 by C standard).       */
@@ -89,9 +86,6 @@ enum gal_table_types
 /* When the desired column is not a number, should the string match or
    regular expression search be in the name, units or comments of the
    columns? */
-#define GAL_TABLE_STRING_SEARCH_NAME    "name"
-#define GAL_TABLE_STRING_SEARCH_UNIT    "unit"
-#define GAL_TABLE_STRING_SEARCH_COMMENT "comment"
 enum gal_table_where_to_search
 {
   GAL_TABLE_SEARCH_INVALID,       /* Invalid (=0 by C standard).     */
@@ -128,14 +122,14 @@ enum gal_table_diplay_formats
 
 
 /* Functions */
-int
+uint8_t
 gal_table_string_to_format(char *string);
+
+uint8_t
+gal_table_string_to_searchin(char *string);
 
 void
 gal_table_check_fits_format(char *filename, int tableformat);
-
-int
-gal_table_string_to_searchin(char *string);
 
 void
 gal_table_too_many_columns(char *filename);

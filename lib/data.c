@@ -53,7 +53,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  *************************************************************/
 
 char *
-gal_data_type_as_string(int type, int long_name)
+gal_data_type_as_string(uint8_t type, int long_name)
 {
   switch(type)
     {
@@ -120,7 +120,7 @@ gal_data_type_as_string(int type, int long_name)
 
 
 
-int
+uint8_t
 gal_data_string_as_type(char *str)
 {
   if(      !strcmp(str, "b")     || !strcmp(str, "bit") )
@@ -185,7 +185,7 @@ gal_data_string_as_type(char *str)
    type in the space (that must already be allocated before the call to
    this function) pointed to by in.  */
 void
-gal_data_type_min(int type, void *in)
+gal_data_type_min(uint8_t type, void *in)
 {
   switch(type)
     {
@@ -210,7 +210,7 @@ gal_data_type_min(int type, void *in)
 
 
 void
-gal_data_type_max(int type, void *in)
+gal_data_type_max(uint8_t type, void *in)
 {
   switch(type)
     {
@@ -238,7 +238,7 @@ gal_data_type_max(int type, void *in)
    that work on both, it is convenient to simiplify the check with this
    function. */
 int
-gal_data_is_linked_list(int type)
+gal_data_is_linked_list(uint8_t type)
 {
   return type==GAL_DATA_TYPE_STRLL;
 }
@@ -288,7 +288,7 @@ gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second)
 
 
 size_t
-gal_data_sizeof(int type)
+gal_data_sizeof(uint8_t type)
 {
   /* Allocate space for the array to keep the image. */
   switch(type)
@@ -398,7 +398,7 @@ gal_data_copy_wcs(gal_data_t *in, gal_data_t *out)
    bytes each element needs will be determined internaly by this function
    using the datatype argument, so you don't have to worry about it. */
 void *
-gal_data_malloc_array(int type, size_t size)
+gal_data_malloc_array(uint8_t type, size_t size)
 {
   void *array;
 
@@ -416,7 +416,7 @@ gal_data_malloc_array(int type, size_t size)
 
 
 void *
-gal_data_calloc_array(int type, size_t size)
+gal_data_calloc_array(uint8_t type, size_t size)
 {
   void *array;
 
@@ -436,7 +436,7 @@ gal_data_calloc_array(int type, size_t size)
 /* Allocate space for one blank value of the given type and put the value
    in it. */
 void *
-gal_data_alloc_number(int type, void *number)
+gal_data_alloc_number(uint8_t type, void *number)
 {
   void *allocated;
 
@@ -591,7 +591,7 @@ gal_data_mmap(gal_data_t *data, int clear)
      structures (and not have to worry about which one to free later).
 */
 void
-gal_data_initialize(gal_data_t *data, void *array, int type,
+gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                     size_t ndim, size_t *dsize, struct wcsprm *wcs,
                     int clear, size_t minmapsize, char *name,
                     char *unit, char *comment)
@@ -683,7 +683,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
    force the array into the hdd/ssd (mmap it), then set minmapsize=-1
    (largest possible size_t value), in this way, no file will be larger. */
 gal_data_t *
-gal_data_alloc(void *array, int type, size_t ndim, size_t *dsize,
+gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment)
 {
@@ -919,7 +919,7 @@ gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode)
 
 
 void
-gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
+gal_data_add_to_ll(gal_data_t **list, void *array, uint8_t type, size_t ndim,
                    size_t *dsize, struct wcsprm *wcs, int clear,
                    size_t minmapsize, char *name, char *unit, char *comment)
 {
@@ -1058,7 +1058,7 @@ gal_data_free_ll(gal_data_t *list)
 
    Note that for strings, pointer should actually be `char **'. */
 void
-gal_data_set_blank(void *pointer, int type)
+gal_data_set_blank(void *pointer, uint8_t type)
 {
   switch(type)
     {
@@ -1119,7 +1119,7 @@ gal_data_set_blank(void *pointer, int type)
 /* Allocate some space for the given type and put the blank value into
    it. */
 void *
-gal_data_alloc_blank(int type)
+gal_data_alloc_blank(uint8_t type)
 {
   void *out;
 
@@ -1139,7 +1139,7 @@ gal_data_alloc_blank(int type)
 
 /* Print the blank value as a string. */
 char *
-gal_data_blank_as_string(int type, int width)
+gal_data_blank_as_string(uint8_t type, int width)
 {
   char *blank;
   switch(type)
@@ -1445,7 +1445,7 @@ gal_data_flag_blank(gal_data_t *data)
 
 /* Only to be used in `data_copy_from_string'. */
 static void
-data_copy_to_string_not_parsed(char *string, void *to, int type)
+data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
 {
   if( strcmp(string, GAL_DATA_BLANK_STRING) )
     gal_data_set_blank(to, type);
@@ -1755,7 +1755,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
 /* Copy a given data structure to a new one (possibly with a new type). */
 gal_data_t *
-gal_data_copy_to_new_type(gal_data_t *in, int newtype)
+gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 {
   gal_data_t *out;
 
@@ -1807,7 +1807,7 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
 
 
 gal_data_t *
-gal_data_copy_to_new_type_free(gal_data_t *in, int type)
+gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 {
   gal_data_t *out;
   out=gal_data_copy_to_new_type(in, type);
@@ -1845,7 +1845,7 @@ gal_data_out_type(gal_data_t *first, gal_data_t *second)
 void
 gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
                       gal_data_t **of, gal_data_t **os,
-                      int type, int freeinputs)
+                      uint8_t type, int freeinputs)
 {
   /* Change first dataset into the new type if necessary. */
   if( f->type != type )
@@ -1893,7 +1893,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
 #define WRITE_TO_STRING(CTYPE, FMT) asprintf(&str, FMT, *(CTYPE *)ptr);
 
 char *
-gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space)
+gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
 {
   char *c, *str;
   switch(type)
@@ -1961,7 +1961,7 @@ gal_data_string_to_number(char *string)
   int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
   void *ptr, *numarr;
   char *tailptr, *cp;
-  int type, forcedfloat=0;
+  uint8_t type, forcedfloat=0;
 
   /* Define initial spaces to keep the value. */
   uint8_t   u8;   int8_t   i8;      uint16_t u16;   int16_t i16;
@@ -2058,7 +2058,7 @@ gal_data_string_to_number(char *string)
    If parsing was successful, it will return a 0. If there was a problem,
    it will return 1.  */
 int
-gal_data_string_to_type(void **out, char *string, int type)
+gal_data_string_to_type(void **out, char *string, uint8_t type)
 {
   long l;
   double d;

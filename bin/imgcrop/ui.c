@@ -352,12 +352,10 @@ ui_read_check_only_options(struct imgcropparams *p)
       if(p->cp.searchin==GAL_TABLE_SEARCH_INVALID)
         error(EXIT_FAILURE, 0, "%s: no field specified to search for "
               "columns. Please use the `--searchin' option to specify "
-              "which column meta-data you would like to search in: `%s', "
-              "`%s' and `%s'. You may also select columns by their number, "
-              "which won't use this option, but for complentess its best "
-              "for this option to have a value", p->catname,
-              GAL_TABLE_STRING_SEARCH_NAME, GAL_TABLE_STRING_SEARCH_UNIT,
-              GAL_TABLE_STRING_SEARCH_COMMENT);
+              "which column meta-data you would like to search in: `name', "
+              "`unit' and `comment'. You may also select columns by their "
+              "number, which won't use this option, but for complentess its "
+              "best for this option to have a value", p->catname);
 
       /* If it is a FITS file, we need the HDU. */
       if( gal_fits_name_is_fits(p->catname) && p->cathdu==NULL )

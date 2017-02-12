@@ -449,7 +449,5 @@ ui_free_report(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  free(p->cp.searchinstr);
-  free(p->cp.tableformatstr);
   gal_data_free_ll(p->table);
 }

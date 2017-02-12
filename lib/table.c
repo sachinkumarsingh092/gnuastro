@@ -44,30 +44,54 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************               Table types                ***************/
 /************************************************************************/
 /* Return the type of desired table based on a standard string. */
-int
+uint8_t
 gal_table_string_to_format(char *string)
 {
-  if(string)
+  if(string)                    /* Its not NULL. */
     {
-      if( !strcmp(string, GAL_TABLE_STRING_FORMAT_TXT) )
+      if( !strcmp(string, "txt") )
         return GAL_TABLE_FORMAT_TXT;
 
-      else if( !strcmp(string, GAL_TABLE_STRING_FORMAT_AFITS) )
+      else if( !strcmp(string, "fits-ascii") )
         return GAL_TABLE_FORMAT_AFITS;
 
-      else if( !strcmp(string, GAL_TABLE_STRING_FORMAT_BFITS) )
+      else if( !strcmp(string, "fits-binary") )
         return GAL_TABLE_FORMAT_BFITS;
 
       else
-        error(EXIT_FAILURE, 0, "`%s' couldn't be interpretted as a valid "
-              "table format. The known formats are `%s', `%s', and `%s'",
-              string, GAL_TABLE_STRING_FORMAT_TXT,
-              GAL_TABLE_STRING_FORMAT_AFITS,
-              GAL_TABLE_STRING_FORMAT_BFITS);
+        return GAL_TABLE_FORMAT_INVALID;
     }
+  else
+    return GAL_TABLE_FORMAT_INVALID;
+}
 
-  /* If string was not NULL, this function won't reach here. */
-  return -1;
+
+
+
+
+/* In programs, the `searchin' variable is much more easier to format in as
+   a description than an integer (which is what `gal_table_read_cols'
+   needs). This function will check the string value and give the
+   corresponding integer value.*/
+uint8_t
+gal_table_string_to_searchin(char *string)
+{
+  if(string)                    /* Its not NULL. */
+    {
+      if(strcmp(string, "name")==0)
+        return GAL_TABLE_SEARCH_NAME;
+
+      else if(strcmp(string, "unit")==0)
+        return GAL_TABLE_SEARCH_UNIT;
+
+      else if(strcmp(string, "comment")==0)
+        return GAL_TABLE_SEARCH_COMMENT;
+
+      else
+        return GAL_TABLE_SEARCH_INVALID;
+    }
+  else
+    return GAL_TABLE_SEARCH_INVALID;
 }
 
 
@@ -89,52 +113,18 @@ gal_table_check_fits_format(char *filename, int tableformat)
         error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but the "
               "desired format of the FITS table has not been specified with "
               "the `--tableformat' option. For FITS tables, this option can "
-              "take two values: `%s', or `%s'", filename,
-              GAL_TABLE_STRING_FORMAT_AFITS, GAL_TABLE_STRING_FORMAT_BFITS);
+              "take two values: `fits-ascii', or `fits-binary'", filename);
 
       /* When `--tableformat' didn't have the correct value. */
       if( tableformat != GAL_TABLE_FORMAT_AFITS
           && tableformat != GAL_TABLE_FORMAT_BFITS )
         error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but "
               "is not a recognized FITS table format. For FITS tables, "
-              "`--tableformat' can take two values: `%s', or `%s'",
-              filename, GAL_TABLE_STRING_FORMAT_AFITS,
-              GAL_TABLE_STRING_FORMAT_BFITS);
+              "`--tableformat' can take two values: `fits-ascii', or "
+              "`fits-binary'", filename);
     }
 }
 
-
-
-
-
-/* In programs, the `searchin' variable is much more easier to format in as a
-   description than an integer (which is what `gal_table_read_cols'
-   needs). This function will check the string value and give the
-   corresponding integer value.*/
-int
-gal_table_string_to_searchin(char *string)
-{
-  if(strcmp(string, GAL_TABLE_STRING_SEARCH_NAME)==0)
-    return GAL_TABLE_SEARCH_NAME;
-
-  else if(strcmp(string, GAL_TABLE_STRING_SEARCH_UNIT)==0)
-    return GAL_TABLE_SEARCH_UNIT;
-
-  else if(strcmp(string, GAL_TABLE_STRING_SEARCH_COMMENT)==0)
-    return GAL_TABLE_SEARCH_COMMENT;
-
-  else
-    error(EXIT_FAILURE, 0, "`--searchin' only recognizes the values "
-          "`%s', `%s', and `%s', you have asked for `%s'",
-          GAL_TABLE_STRING_SEARCH_NAME, GAL_TABLE_STRING_SEARCH_UNIT,
-          GAL_TABLE_STRING_SEARCH_COMMENT, string);
-
-  /* Report an error control reaches here. */
-  error(EXIT_FAILURE, 0, "A bug! please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "`gal_table_string_to_searchin'", PACKAGE_BUGREPORT);
-  return -1;
-}
 
 
 

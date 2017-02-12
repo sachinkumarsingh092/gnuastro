@@ -178,16 +178,63 @@ void
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno)
 {
-  int type=gal_data_string_as_type(arg);
-  if(type==GAL_DATA_TYPE_INVALID)
+  /* If the option is already set, just return. */
+  if(option->set) return;
+
+  /* Read the value. */
+  if ( (*(uint8_t *)(option->value) = gal_data_string_as_type(arg) )
+       == GAL_DATA_TYPE_INVALID )
     error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                  "`%s' option) couldn't be recognized as a known type."
+                  "`%s' option) couldn't be recognized as a known type.\n\n"
                   "For the full list of known types, please run the "
-                  "following command:\n\n"
+                  "following command (press SPACE key to go down, and `q' "
+                  "to return to the command-line):\n\n"
                   "    $ info gnuastro \"Numeric data types\"\n",
                   arg, option->name);
-  else
-    *(int *)(option->value)=type;
+}
+
+
+
+
+
+void
+gal_options_read_searchin(struct argp_option *option, char *arg,
+                          char *filename, size_t lineno)
+{
+  /* If the option is already set, just return. */
+  if(option->set) return;
+
+  /* Read the value. */
+  if( ( *(uint8_t *)(option->value)=gal_table_string_to_searchin(arg) )
+      == GAL_TABLE_SEARCH_INVALID )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                  "`%s' option) couldn't be recognized as a known table "
+                  "search-in field (`name', `unit', or `comment').\n\n"
+                  "For more explanation, please run the following command "
+                  "(press SPACE key to go down, and `q' to return to the "
+                  "command-line):\n\n"
+                  "    $ info gnuastro \"Selecting table columns\"\n",
+                  arg, option->name);
+}
+
+
+
+
+
+void
+gal_options_read_tableformat(struct argp_option *option, char *arg,
+                             char *filename, size_t lineno)
+{
+  /* If the option is already set, then you don't have to do anything. */
+  if(option->set) return;
+
+  /* Read the value. */
+  if( (*(uint8_t *)(option->value) = gal_table_string_to_format(arg) )
+      ==GAL_TABLE_FORMAT_INVALID )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                  "`%s' option) couldn't be recognized as a known table "
+                  "format field (`txt', `fits-ascii', or `fits-binary').\n\n",
+                  arg, option->name);
 }
 
 
@@ -521,7 +568,6 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
       /* Do a sanity check. */
       options_sanity_check(option, arg, filename, lineno);
     }
-
 
   /* Flip the `set' flag to `GAL_OPTIONS_SET'. */
   option->set=GAL_OPTIONS_SET;
@@ -991,9 +1037,6 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
 void
 gal_options_read_config_set(struct gal_options_common_params *cp)
 {
-  size_t i;
-  struct argp_option *coptions=cp->coptions;
-
   /* Parse all the configuration files. */
   gal_options_parse_config_files(cp);
 
@@ -1002,21 +1045,6 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
      when printing those options, their order matters.*/
   options_reverse_lists_check_mandatory(cp, cp->poptions);
   options_reverse_lists_check_mandatory(cp, cp->coptions);
-
-  /* Some of the values that the user gives as strings should be stored
-     internally as integers. For the program-specific options, this is done
-     in the program's `ui.c', here, we do it for the common options. */
-  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
-    if(coptions[i].set)
-      switch(coptions[i].key)
-      {
-      case GAL_OPTIONS_KEY_SEARCHIN:
-        cp->searchin=gal_table_string_to_searchin(cp->searchinstr);
-        break;
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
-        cp->tableformat=gal_table_string_to_format(cp->tableformatstr);
-        break;
-      }
 
   /* Abort if any of the mandatory options are not set. */
   gal_options_abort_if_mandatory_missing(cp);

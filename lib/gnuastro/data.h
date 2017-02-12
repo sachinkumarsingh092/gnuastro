@@ -144,7 +144,7 @@ typedef struct gal_data_t
 {
   /* Basic information on array of data. */
   void             *array;  /* Array keeping data elements.                */
-  int                type;  /* Type of data (from `gal_data_alltypes').    */
+  uint8_t            type;  /* Type of data (from `gal_data_alltypes').    */
   size_t             ndim;  /* Number of dimensions in the array.          */
   size_t           *dsize;  /* Size of array along each dimension.         */
   size_t             size;  /* Total number of data-elements.              */
@@ -177,19 +177,19 @@ typedef struct gal_data_t
  **************        Type information        ***************
  *************************************************************/
 char *
-gal_data_type_as_string(int type, int long_name);
+gal_data_type_as_string(uint8_t type, int long_name);
 
-int
+uint8_t
 gal_data_string_as_type(char *str);
 
 void
-gal_data_type_min(int type, void *in);
+gal_data_type_min(uint8_t type, void *in);
 
 void
-gal_data_type_max(int type, void *in);
+gal_data_type_max(uint8_t type, void *in);
 
 int
-gal_data_is_linked_list(int type);
+gal_data_is_linked_list(uint8_t type);
 
 
 
@@ -203,25 +203,24 @@ int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
 
 size_t
-gal_data_sizeof(int type);
+gal_data_sizeof(uint8_t type);
 
 void *
-gal_data_malloc_array(int type, size_t size);
+gal_data_malloc_array(uint8_t type, size_t size);
 
 void *
-gal_data_calloc_array(int type, size_t size);
+gal_data_calloc_array(uint8_t type, size_t size);
 
 void *
-gal_data_alloc_number(int type, void *number);
+gal_data_alloc_number(uint8_t type, void *number);
 
 void
-gal_data_initialize(gal_data_t *data, void *array, int type,
-                    size_t ndim, size_t *dsize, struct wcsprm *wcs,
-                    int clear, size_t minmapsize, char *name,
-                    char *unit, char *comment);
+gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
+                    size_t *dsize, struct wcsprm *wcs, int clear,
+                    size_t minmapsize, char *name, char *unit, char *comment);
 
 gal_data_t *
-gal_data_alloc(void *array, int type, size_t ndim, size_t *dsize,
+gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment);
 
@@ -246,7 +245,7 @@ void
 gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode);
 
 void
-gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
+gal_data_add_to_ll(gal_data_t **list, void *array, uint8_t type, size_t ndim,
                    size_t *dsize, struct wcsprm *wcs, int clear,
                    size_t minmapsize, char *name, char *unit, char *comment);
 
@@ -272,13 +271,13 @@ gal_data_free_ll(gal_data_t *list);
  **************          Blank data            ***************
  *************************************************************/
 void
-gal_data_set_blank(void *pointer, int type);
+gal_data_set_blank(void *pointer, uint8_t type);
 
 void *
-gal_data_alloc_blank(int type);
+gal_data_alloc_blank(uint8_t type);
 
 char *
-gal_data_blank_as_string(int type, int width);
+gal_data_blank_as_string(uint8_t type, int width);
 
 void
 gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);
@@ -300,10 +299,10 @@ gal_data_flag_blank(gal_data_t *data);
  **************            Copying             ***************
  *************************************************************/
 gal_data_t *
-gal_data_copy_to_new_type(gal_data_t *in, int newtype);
+gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype);
 
 gal_data_t *
-gal_data_copy_to_new_type_free(gal_data_t *in, int type);
+gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type);
 
 gal_data_t *
 gal_data_copy(gal_data_t *in);
@@ -312,16 +311,15 @@ int
 gal_data_out_type(gal_data_t *first, gal_data_t *second);
 
 void
-gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
-                      gal_data_t **of, gal_data_t **os,
-                      int type, int freeinputs);
+gal_data_to_same_type(gal_data_t *f, gal_data_t *s, gal_data_t **of,
+                      gal_data_t **os, uint8_t type, int freeinputs);
 
 
 /*************************************************************
  **************              Write             ***************
  *************************************************************/
 char *
-gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space);
+gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space);
 
 
 
@@ -332,7 +330,7 @@ gal_data_t *
 gal_data_string_to_number(char *string);
 
 int
-gal_data_string_to_type(void **out, char *string, int type);
+gal_data_string_to_type(void **out, char *string, uint8_t type);
 
 
 
