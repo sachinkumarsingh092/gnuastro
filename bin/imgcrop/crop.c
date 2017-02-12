@@ -307,18 +307,25 @@ imgpolygonflpixel(double *ipolygon, size_t nvertices, long *fpixel,
 
 
 
+#define POLYGON_MASK(CTYPE) {                                           \
+    CTYPE *ba=array, *bb=gal_data_alloc_blank(type);                    \
+    for(i=0;i<size;++i)                                                 \
+      {                                                                 \
+        point[0]=i%s1+1; point[1]=i/s1+1;                               \
+        if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)     \
+          ba[i]=*bb;                                                    \
+      }                                                                 \
+    free(bb);                                                           \
+  }
+
+
 void
 polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
             size_t s0, size_t s1)
 {
-  long *lb, *la=array;
-  short *sb, *sa=array;
-  float *fb, *fa=array;
   int type=crp->p->type;
-  LONGLONG *Lb, *La=array;
-  unsigned char *bb, *ba=array;
+  double *ipolygon, point[2];
   int outpolygon=crp->p->outpolygon;
-  double *db, *ipolygon, point[2], *da=array;
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
 
@@ -350,66 +357,15 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
      polygon keep them if the user has asked for it.*/
   switch(type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      bb=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            ba[i]=*bb;
-        }
-      free(bb);
-      break;
-    case GAL_DATA_TYPE_SHORT:
-      sb=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            sa[i]=*sb;
-        }
-      free(sb);
-      break;
-    case GAL_DATA_TYPE_LONG:
-      lb=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            la[i]=*lb;
-        }
-      free(lb);
-      break;
-    case GAL_DATA_TYPE_LONGLONG:
-      Lb=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            La[i]=*Lb;
-        }
-      free(Lb);
-      break;
-    case GAL_DATA_TYPE_FLOAT:
-      fb=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            fa[i]=*fb;
-        }
-      free(fb);
-      break;
-    case GAL_DATA_TYPE_DOUBLE:
-      db=gal_data_alloc_blank(type);
-      for(i=0;i<size;++i)
-        {
-          point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
-            da[i]=*db;
-        }
-      free(db);
-      break;
+    case GAL_DATA_TYPE_UINT8:    POLYGON_MASK(uint8_t);  break;
+    case GAL_DATA_TYPE_INT8:     POLYGON_MASK(int8_t);   break;
+    case GAL_DATA_TYPE_UINT16:   POLYGON_MASK(uint16_t); break;
+    case GAL_DATA_TYPE_INT16:    POLYGON_MASK(int16_t);  break;
+    case GAL_DATA_TYPE_UINT32:   POLYGON_MASK(uint32_t); break;
+    case GAL_DATA_TYPE_INT32:    POLYGON_MASK(int32_t);  break;
+    case GAL_DATA_TYPE_INT64:    POLYGON_MASK(int64_t);  break;
+    case GAL_DATA_TYPE_FLOAT32:  POLYGON_MASK(float);    break;
+    case GAL_DATA_TYPE_FLOAT64:  POLYGON_MASK(double);   break;
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
             "can fix the problem. For some reason, an unrecognized "
@@ -451,14 +407,14 @@ changezerotonan(void *array, size_t size, int type)
 
   switch(type)
     {
-    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_FLOAT32:
       ffp=(fp=array)+size;
       do
         if(*fp==0.0f) *fp=NAN;
       while(++fp<ffp);
       break;
 
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT64:
       fdp=(dp=array)+size;
       do
         if(*dp==0.0f) *dp=NAN;
@@ -650,14 +606,23 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
 
 
   /* Create the FITS image extension and array and fill it with null
-     values. */
+     values. About the COMMENTs: when CFITSIO creates a FITS extension it
+     adds two comments linking to the FITS paper. Since we are mentioning
+     the version of CFITSIO and only use its ruitines to read/write from/to
+     FITS files, this is redundant. If `status!=0', then
+     `gal_fits_io_error' will abort, but in case CFITSIO doesn't write the
+     comments, status will become non-zero. So we are resetting it to zero
+     after these (because not being able to delete them isn't an error).*/
   if(fits_create_file(&crp->outfits, outname, &status))
     gal_fits_io_error(status, "creating file");
   ofp=crp->outfits;
-  if( fits_create_img(ofp, gal_fits_type_to_bitpix(type),
-                      naxis, naxes, &status) )
-    gal_fits_io_error(status, "creating image");
-  if( type!=GAL_DATA_TYPE_FLOAT && type!=GAL_DATA_TYPE_DOUBLE )
+  fits_create_img(ofp, gal_fits_type_to_bitpix(type),
+                  naxis, naxes, &status);
+  gal_fits_io_error(status, "creating image");
+  fits_delete_key(ofp, "COMMENT", &status);
+  fits_delete_key(ofp, "COMMENT", &status);
+  status=0;
+  if( type!=GAL_DATA_TYPE_FLOAT32 && type!=GAL_DATA_TYPE_FLOAT64 )
     if(fits_write_key(ofp, gal_fits_type_to_datatype(crp->p->type), "BLANK",
                       crp->p->bitnul, "pixels with no data", &status) )
       gal_fits_io_error(status, "adding Blank");
@@ -752,12 +717,12 @@ onecrop(struct cropparams *crp)
                           &anynul, &status))
         gal_fits_io_error(status, NULL);
 
-
       /* If we have a floating point or double image, pixels with zero
          value should actually be a NaN. Unless the user specificly
          asks for it, make the conversion.*/
       if(p->zeroisnotblank==0
-         && (p->type==GAL_DATA_TYPE_FLOAT || p->type==GAL_DATA_TYPE_DOUBLE) )
+         && (p->type==GAL_DATA_TYPE_FLOAT32
+             || p->type==GAL_DATA_TYPE_FLOAT64) )
         changezerotonan(array, cropsize, p->type);
 
 
@@ -789,11 +754,11 @@ onecrop(struct cropparams *crp)
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
               fpixel_i[1], lpixel_i[1]);
-      gal_fits_key_add_to_ll_end(&headers, TSTRING, regionkey, 0, region, 0,
+      gal_fits_key_add_to_ll_end(&headers, GAL_DATA_TYPE_STRING, regionkey,
+                                 0, region, 0,
                                  "Range of pixels used for this output.", 0,
                                  NULL);
       gal_fits_key_write(ofp, &headers);
-
 
       /* Free the allocated array. */
       free(array);
@@ -841,7 +806,7 @@ iscenterfilled(struct cropparams *crp)
   long naxes[2], fpixel[2], lpixel[2], inc[2]={1,1};
 
   /* If checkcenter is zero, then don't check. */
-  if(checkcenter==0) return GAL_DATA_BLANK_UCHAR;
+  if(checkcenter==0) return GAL_DATA_BLANK_UINT8;
 
   /* Get the final size of the output image. */
   gal_fits_img_info(ofp, &type, &ndim, &dsize);

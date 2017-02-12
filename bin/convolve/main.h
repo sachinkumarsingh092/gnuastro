@@ -30,8 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Program names.  */
-#define PROGRAM_NAME "Convolve"      /* Program full name.       */
-#define PROGRAM_EXEC "astconvolve"   /* Program executable name. */
+#define PROGRAM_NAME   "Convolve"      /* Program full name.       */
+#define PROGRAM_EXEC   "astconvolve"   /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -77,13 +77,13 @@ struct convolveparams
   char             *filename;  /* Name of input file.                    */
   char           *kernelname;  /* File name of kernel.                   */
   char                 *khdu;  /* HDU of kernel.                         */
-  unsigned char nokernelflip;  /* Do not flip the kernel.                */
-  unsigned char nokernelnorm;  /* Do not normalize the kernel.           */
+  uint8_t       nokernelflip;  /* Do not flip the kernel.                */
+  uint8_t       nokernelnorm;  /* Do not normalize the kernel.           */
   double        minsharpspec;  /* Deconvolution: min spect. of sharp img.*/
-  unsigned char checkfreqsteps; /* View the frequency domain steps.      */
-  unsigned char    checkmesh;  /* View the mesh structure.               */
+  uint8_t     checkfreqsteps;  /* View the frequency domain steps.       */
+  uint8_t          checkmesh;  /* View the mesh structure.               */
   char            *domainstr;  /* String value specifying domain.        */
-  unsigned char   makekernel;  /* ==1: Make a kernel to create input.    */
+  uint8_t         makekernel;  /* ==1: Make a kernel to create input.    */
 
   /* Internal */
   int                 domain;  /* Frequency or spatial domain conv.      */

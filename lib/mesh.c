@@ -462,7 +462,7 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
      is `size'.*/
   data.ndim=2;
   data.dsize=dsize;
-  data.type=GAL_DATA_TYPE_FLOAT;
+  data.type=GAL_DATA_TYPE_FLOAT32;
 
   if(mp->meshbasedcheck)
     {

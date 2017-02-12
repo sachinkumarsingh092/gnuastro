@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Progarm names.  */
-#define PROGRAM_NAME "ImageCrop"     /* Program full name.       */
-#define PROGRAM_EXEC "astimgcrop"    /* Program executable name. */
+#define PROGRAM_NAME   "ImageCrop"     /* Program full name.       */
+#define PROGRAM_EXEC   "astimgcrop"    /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -84,8 +84,8 @@ struct imgcropparams
   struct gal_linkedlist_stll  *inputs;  /* All input FITS files.          */
   size_t             hstartwcs;  /* Header keyword No. to start read WCS. */
   size_t               hendwcs;  /* Header keyword No. to end read WCS.   */
-  unsigned char zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */
-  unsigned char        noblank;  /* ==1: no blank (out of image) pixels.  */
+  uint8_t       zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */
+  uint8_t              noblank;  /* ==1: no blank (out of image) pixels.  */
   char                 *suffix;  /* Ending of output file name.           */
   size_t           checkcenter;  /* width of a box to check for zeros     */
   size_t              iwidthin;  /* Image mode width (in pixels).         */
@@ -103,7 +103,7 @@ struct imgcropparams
   char                   *ycol;  /* Catalog Y column                      */
   char                *section;  /* Section string.                       */
   char                *polygon;  /* Input string of polygon vertices.     */
-  unsigned char     outpolygon;  /* ==1: Keep the inner polygon region.   */
+  uint8_t           outpolygon;  /* ==1: Keep the inner polygon region.   */
   char                *modestr;  /* ==1: will use X and Y coordiates.     */
 
   /* Internal */

@@ -281,6 +281,7 @@ Common program behavior
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Automatic output::            About automatic output names.
+* Numeric data types::          Different types and how to specify them.
 * Tables in Gnuastro::          Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -373,7 +374,6 @@ Invoking ImageCrop
 Arithmetic
 
 * Reverse polish notation::     The current notation style for Arithmetic
-* Data types::                  How bits are read as numbers
 * Arithmetic operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic: options and output
 
@@ -3138,24 +3138,23 @@ Do not build or install the program named @file{progname}. This is
 very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
-@item --enable-bin-op-uchar
-@itemx --enable-bin-op-char
-@itemx --enable-bin-op-ushort
-@itemx --enable-bin-op-short
-@itemx --enable-bin-op-uint
-@itemx --enable-bin-op-int
-@itemx --enable-bin-op-ulong
-@itemx --enable-bin-op-long
-@itemx --enable-bin-op-longlong
-@itemx --enable-bin-op-float
-@itemx --enable-bin-op-double
+@item --enable-bin-op-uint8
+@itemx --enable-bin-op-int8
+@itemx --enable-bin-op-uint16
+@itemx --enable-bin-op-int16
+@itemx --enable-bin-op-uint32
+@itemx --enable-bin-op-int32
+@itemx --enable-bin-op-uint64
+@itemx --enable-bin-op-int64
+@itemx --enable-bin-op-float32
+@itemx --enable-bin-op-float64
 Enable the binary data-structure operators to work natively on the
 respective type of data (@option{u} stands for unsigned types, see
-@ref{Data types}). Some are compiled by default, to disable them (or
-disable any other type), either run @option{enable-bin-op-TYPE=no}, or run
-@option{--disable-bin-op-TYPE}. The final list of enabled/disabled types
-can be inspected in the outputs of @command{./configure} (close to the
-end).
+@ref{Numeric data types}). Some are compiled by default, to disable them
+(or disable any other type), either run @option{enable-bin-op-TYPE=no}, or
+run @option{--disable-bin-op-TYPE}. The final list of enabled/disabled
+types can be inspected in the outputs of @command{./configure} (close to
+the end).
 
 Binary operators, for example @code{+} or @code{>} (greater than), are some
 of the most common operators to the @ref{Arithmetic} program or the
@@ -3188,9 +3187,9 @@ libraries and optimizations (as in @ref{Building and debugging}) is the
 first step to take. If you commonly work with very specific data-types, you
 can enable them (and disable the default types that you don't need) with
 these configuration options. Since the outputs of comparison operators are
-@code{unsigned char} type and most astronomical datasets are in
-@code{float}, the recommended minimum enabled types are @code{unsigned
-char} and @code{float}.
+@code{unsigned char} (or @code{uint8_t}) type and most astronomical
+datasets are in single precision (32-bit) floating point (@code{float}),
+the recommended minimum enabled types are @code{uint8} and @code{float32}.
 
 GNU/Linux distribution package managers who compile once, for a large
 audience of users who just download the compiled programs and executables,
@@ -3975,6 +3974,7 @@ command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Automatic output::            About automatic output names.
+* Numeric data types::          Different types and how to specify them.
 * Tables in Gnuastro::          Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -4353,6 +4353,13 @@ take table columns as input.
 @itemx --output=STR
 The name of the output file or directory. With this option the automatic
 output names explained in @ref{Automatic output} are ignored.
+
+@item -T STR
+@itemx --type=STR
+The data type of the output depending on the program context. This option
+isn't applicable to some programs like @ref{Header} and will be ignored by
+them. The different acceptable values to this option are fully described in
+@ref{Numeric data types}.
 
 @item -D
 @itemx --dontdelete
@@ -5058,7 +5065,7 @@ your exciting science.} are very important.
 
 
 
-@node Automatic output, Tables in Gnuastro, Threads in Gnuastro, Common program behavior
+@node Automatic output, Numeric data types, Threads in Gnuastro, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -5112,8 +5119,140 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 
 
 
+@node Numeric data types, Tables in Gnuastro, Automatic output, Common program behavior
+@section Numeric data types
 
-@node Tables in Gnuastro, Getting help, Automatic output, Common program behavior
+@cindex Bit
+@cindex Type
+At the lowest level, the computer stores everything in terms of @code{1} or
+@code{0}. For example, each program in Gnuastro, or each astronomical image
+you take with the telescope is actually a string of millions of these zeros
+and ones. The space required to keep a zero or one is the smallest unit of
+storage, and is known as a @emph{bit}. Understanding and manipulating this
+string of bits is extremely hard for most people, therefore, we define
+packages of these bits along with a standard on how to interpret the bits
+in each package as @emph{type}s.
+
+The most basic standard for reading the bits is integer numbers. Since we
+use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
+integer types. These types can store an integer number (@mymath{..., -2,
+-1, 0, 1, 2, ...}), with an increasing number of bytes/bits (and thus
+larger limits). The range of integers each can represent is: @mymath{(-2^7,
+..., 2^7-1)}, @mymath{(-2^{15}, ..., 2^{15}-1}), and @mymath{(-2^{32}, ...,
+2^{31}-1)} respectively. One bit in the above types is dedicated to the
+number's sign (positive or negative). So, there is also an @code{unsigned}
+version where all the bits are counted in calculating the number. The
+@code{unsigned} types thus have larger positive limits, but no negative
+value with ranges @mymath{(0, ..., 2^8-1)}, @mymath{(0, ..., 2^{16}-1}),
+and @mymath{(0, ..., 2^{32}-1)} respectively. When the context of your work
+doesn't involve negative numbers (for example labeled images, where pixels
+can only have zero or positive integer values), it is best to use the
+@code{unsigned} types.
+
+Another standard of converting a given number of bits to numbers is the
+floating point standard, this standard can approximately store any real
+number with a given precision. There are two floating point types in
+CFITSIO: @code{float} and @code{double}, for single and double precision
+floating point numbers respectively. The former is sufficient for data with
+less than 8 significant decimal digits (most astronomical data), while the
+latter is good for less than 16 significant decimal digits. The
+representation of real numbers as bits is much more complex than integers,
+so we won't explain any further, if you are interested have a look in the
+@url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia article}.
+
+With the conversion operators in Gnuastro's Arithmetic, you can change the
+types of data to each other, which is necessary in some contexts. For
+example the program/library, that you intend to feed the data into, only
+accepts floating point values, but you have an integer image. Another
+example can be that you know that your data only has values that fit within
+@code{char} or @code{short} types, however it is currently formatted in the
+@code{long} type. Operations involving floating point or larger integer
+types are significantly slower than integer or smaller types
+respectively. In the latter case, it also requires much more (by 8 or 4
+times in the example above) storage space. So when you confront such
+situations and want to store/archive/transfter/process the data, it is best
+convert them to the most efficient type.
+
+The short and long names for the recognized numeric data types in Gnuastro
+are listed below. Both short and long names can be used when you want to
+speicy a type. For example, as a value to the common option @option{--type}
+(see @ref{Input output}), or in the information comment lines of
+@ref{Gnuastro text table format}. The ranges listed below are inclusive.
+
+@table @code
+@item u8
+@itemx uint8
+8-bit un-signed integers, range:@*
+@mymath{[0\rm{\ to\ }2^8-1]} or @mymath{[0\rm{\ to\ }255]}.
+
+@item i8
+@itemx int8
+8-bit signed integers, range:@*
+@mymath{[-2^7\rm{\ to\ }2^7-1]} or @mymath{[-127\rm{\ to\ }127]}.
+
+@item u16
+@itemx uint16
+16-bit un-signed integers, range:@*
+@mymath{[0\rm{\ to\ }2^{16}-1]} or @mymath{[0\rm{\ to\ }65535]}.
+
+@item i16
+@itemx int16
+16-bit signed integers, range:@* @mymath{[-2^{15}\rm{\ to\ }2^{15}-1]} or
+@mymath{[-32768\rm{\ to\ }32768]}.
+
+@item u32
+@itemx uint32
+32-bit un-signed integers, range:@* @mymath{[0\rm{\ to\ }2^{32}-1]} or
+@mymath{[0\rm{\ to\ }4294967295]}.
+
+@item i32
+@itemx int32
+32-bit signed integers, range:@* @mymath{[-2^{32}\rm{\ to\ }2^{32}-1]} or
+@mymath{[-2147483648\rm{\ to\ }2147483647]}.
+
+@item u64
+@itemx uint64
+64-bit un-signed integers, range@* @mymath{[0\rm{\ to\ }2^{64}-1]} or
+@mymath{[0\rm{\ to\ }18446744073709551615]}.
+
+@item i64
+@itemx int64
+64-bit signed integers, range:@* @mymath{[-2^{64}\rm{\ to\ }2^{64}-1]} or
+@mymath{[-9223372036854775808\rm{\ to\ }9223372036854775807]}.
+
+@item f32
+@itemx float32
+32-bit (single-precision) floating point types. The maximum (minimum is its
+negative) possible value is
+@mymath{3.402823\times10^{38}}. Single-precision floating points can
+accurately represent a floating point number @mymath{\sim7.2} significant
+decimals. Given the heavy noise in astronomical data, this is usually more
+than sufficient for storing results.
+
+@item f64
+@itemx float64
+64-bit (double-precision) floating point types. The maximum (minimum is its
+negative) possible value is @mymath{\sim10^{308}}. Double-precision
+floating points can accurately represent a floating point number
+@mymath{\sim15.9} significant decimals. This is usually good for processing
+(mixing) the data internally, for example a sum of single precision data
+(and later storing the result as @code{float32}).
+@end table
+
+@cartouche
+@noindent
+@strong{Some file formats don't recognize all types.} Some file formats
+don't recognize all the types, for example the FITS binary table standard
+does not define the @code{unsigned int} and @code{unsigned long} types. The
+FITS standard also only defines the following types for images:
+@code{unsigned char}, @code{short}, @code{int}, @code{long}, @code{float},
+and @code{double}. Although CFITSIO allows writing/reading to/from a wider
+range of types.
+@end cartouche
+
+
+
+@node Tables in Gnuastro, Getting help, Numeric data types, Common program behavior
 @section Tables in Gnuastro
 
 ``A table is a collection of related data held in a structured format
@@ -5204,15 +5343,15 @@ have a fixed width (number of characters).
 Numbers in a FITS ASCII table are printed into ASCII format, they are not
 in binary (that the CPU uses). Hence, they can take a larger space in
 memory, loose their precision, and take longer to read into memory. If you
-are dealing with integer type columns (see @ref{Data types}), another issue
-with FITS ASCII tables is that the type information for the column will be
-lost (there is only one integer type in FITS ASCII tables). One problem
-with the binary format on the other hand is that it isn't portable
-(different CPUs/compilers) have different standards for translating the
-zeros and ones. But since ASCII characters are defined on a byte and are
-well recognized, they are better for portability on those various
-systems. Gnuastro's plain text table format described below is much more
-portable and easier to read/write/interpret by humans manually.
+are dealing with integer type columns (see @ref{Numeric data types}),
+another issue with FITS ASCII tables is that the type information for the
+column will be lost (there is only one integer type in FITS ASCII
+tables). One problem with the binary format on the other hand is that it
+isn't portable (different CPUs/compilers) have different standards for
+translating the zeros and ones. But since ASCII characters are defined on a
+byte and are well recognized, they are better for portability on those
+various systems. Gnuastro's plain text table format described below is much
+more portable and easier to read/write/interpret by humans manually.
 
 Generally, as the name implies, this format is useful for when your table
 mainly contains ASCII columns (for example file names, or
@@ -5280,7 +5419,8 @@ of columns.
 The columns don't have to be exactly under each other and the rows can be
 arbitrarily long with different lengths. For example the following contents
 in a file would be interpretted as a table with 4 columns and 2 rows, with
-each element interpretted as a @code{double} type (see @ref{Data types}).
+each element interpretted as a @code{double} type (see @ref{Numeric data
+types}).
 
 @example
 1     2.234948   128   39.8923e8
@@ -5343,8 +5483,8 @@ interpretted as the column name (so it can contain anything except the
 line is defined as a comment. Within the brackets, anything before the
 first `@key{,}' is the units (physical units, for example km/s, or erg/s),
 anything before the second `@key{,}' is the short type identifier (see
-below, and @ref{Data types}). Finally (still within the brackets), any
-non-white characters after the second `@key{,}' are interpretted as the
+below, and @ref{Numeric data types}). Finally (still within the brackets),
+any non-white characters after the second `@key{,}' are interpretted as the
 blank value for that column (see @ref{Blank pixels}). Note that blank
 values will be stored in the same type as the column, not as a
 string@footnote{For floating point types, the @code{nan}, or @code{inf}
@@ -5388,32 +5528,14 @@ with nothing but the column number is redundant):
 # Column 3: mag_f160w [AB mag, f] Magnitude from the F160W filter
 @end example
 
-The data type of the column (see @ref{Data types}) should be specified with
-one of the following values:
+@noindent
+The data type of the column should be specified with one of the following
+values:
 
 @itemize
 @item
-`@code{uc}': for @code{unsigned char}.
-@item
-`@code{c}': for (signed) @code{char}.
-@item
-`@code{us}': for @code{unsigned short}.
-@item
-`@code{s}': for (signed) @code{short}.
-@item
-`@code{ui}': for @code{unsigned int} (see note below).
-@item
-`@code{i}': for (signed) @code{int}.
-@item
-`@code{ul}': for @code{unsigned long} (see note below).
-@item
-`@code{l}': for (signed) @code{long}.
-@item
-`@code{L}': for @code{long long}.
-@item
-`@code{f}': for @code{float}.
-@item
-`@code{d}': for @code{double}.
+For a numeric column, you can use any of the numeric types (and their
+recognized identifiers) described in @ref{Numeric data types}.
 @item
 `@code{strN}': for strings. The @code{N} value identifies the length of the
 string (how many characters it has). The start of the string on each row is
@@ -5917,6 +6039,10 @@ The version of WCSLIB used (see @ref{WCSLIB}). Note that older versions of
 WCSLIB do not report the version internally. So this is only available if
 you are using more recent WCSLIB versions.
 
+@item GSL
+The version of GNU Scientific Library that was used, see @ref{GNU
+Scientific Library}.
+
 @item GNUASTRO
 The version of Gnuastro used (see @ref{Version numbering}).
 @end table
@@ -5927,8 +6053,9 @@ Here is one example of the last few lines of an example output.
               / Versions and date
 DATE    = '...'                / file creation date
 COMMIT  = 'v0-8-g547f6eb'      / Commit description in running dir.
-CFITSIO = '3.39    '           / CFITSIO version.
-WCSLIB  = '5.15    '           / WCSLIB version.
+CFITSIO = '3.41    '           / CFITSIO version.
+WCSLIB  = '5.16    '           / WCSLIB version.
+GSL     = '2.3     '           / GNU Scientific Library version.
 GNUASTRO= '0.3'                / GNU Astronomy Utilities version.
 END
 @end example
@@ -6396,14 +6523,15 @@ will not be preformed.
 The basic input/output on plain text images is very similar to how tables
 are read/written as discribed in @ref{Gnuastro text table format}. Simply
 put, the restrictions are very loose, and there is a convention to define a
-name, units, data type (see @ref{Data types}), and comments for the data in
-a commented line. The only difference is that as a table, a text file can
-contain many datasets (columns), but as a 2D image, it can only contain one
-dataset. As a result, only one information comment line is necessary for a
-2D image, and instead of the starting `@code{# Column N}' (@code{N} is the
-column number), the information line for a 2D image must start with
-`@code{# Image 1}'. When ConvertType is asked to output to plain text file,
-this information comment line is written before the image pixel values.
+name, units, data type (see @ref{Numeric data types}), and comments for the
+data in a commented line. The only difference is that as a table, a text
+file can contain many datasets (columns), but as a 2D image, it can only
+contain one dataset. As a result, only one information comment line is
+necessary for a 2D image, and instead of the starting `@code{# Column N}'
+(@code{N} is the column number), the information line for a 2D image must
+start with `@code{# Image 1}'. When ConvertType is asked to output to plain
+text file, this information comment line is written before the image pixel
+values.
 
 When converting an image to plain text, consider the fact that if the image
 is large, the number of columns in each line will become very large,
@@ -6834,12 +6962,12 @@ tools like AWK or sort, similar to the examples above.
 Only print the column information in the specified table on the
 command-line and exit. Each columns information (number, name, units, data
 type, and comments) will be printed as a row on the command-line. Note that
-the FITS standard only requires the data type (see @ref{Data types}) and in
-plain text tables, no meta-data/information is mandatory. Gnuastro has its
-own convention in the comments of a plain text table to store and transfer
-this information as described in @ref{Gnuastro text table format}. Note
-that if columns have been requested with the @option{--column} option
-(below), this option will be ignored if given.
+the FITS standard only requires the data type (see @ref{Numeric data
+types}) and in plain text tables, no meta-data/information is
+mandatory. Gnuastro has its own convention in the comments of a plain text
+table to store and transfer this information as described in @ref{Gnuastro
+text table format}. Note that if columns have been requested with the
+@option{--column} option (below), this option will be ignored if given.
 
 @cindex AWK
 @cindex GNU AWK
@@ -7607,18 +7735,17 @@ images). Arithmetic is Gnuastro's program for such operations on your
 datasets directly from the command-line. It currently uses the reverse
 polish or postfix notation, see @ref{Reverse polish notation} and will work
 on the native data types of the input images/data to reduce CPU and RAM
-resources, see @ref{Data types}. For more information on how to run
+resources, see @ref{Numeric data types}. For more information on how to run
 Arithmetic, please see @ref{Invoking astarithmetic}.
 
 
 @menu
 * Reverse polish notation::     The current notation style for Arithmetic
-* Data types::                  How bits are read as numbers
 * Arithmetic operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic: options and output
 @end menu
 
-@node Reverse polish notation, Data types, Arithmetic, Arithmetic
+@node Reverse polish notation, Arithmetic operators, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
 @cindex Postfix notation
@@ -7679,65 +7806,7 @@ Postscript and compiled into PDF files) uses this notation.
 
 
 
-@node Data types, Arithmetic operators, Reverse polish notation, Arithmetic
-@subsection Data types
-
-@cindex Bit
-@cindex Type
-At the lowest level, the computer stores everything in terms of @code{1} or
-@code{0}. For example, each program in Gnuastro, or each astronomical image
-you take with the telescope is actually a string of millions of these zeros
-and ones. The space required to keep a zero or one is the smallest unit of
-storage, and is known as a @emph{bit}. Understanding and manipulating this
-string of bits is extremely hard for most people, therefore, we define
-packages of these bits along with a standard on how to interpret the bits
-in each package as @emph{type}s.
-
-The most basic standard for reading the bits is integer numbers. Since we
-use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
-integer types. These types can store an integer number (@mymath{..., -2,
--1, 0, 1, 2, ...}), with an increasing number of bytes/bits (and thus
-larger limits). The range of integers each can represent is: @mymath{(-2^7,
-..., 2^7-1)}, @mymath{(-2^{15}, ..., 2^{15}-1}), and @mymath{(-2^{32}, ...,
-2^{31}-1)} respectively. One bit in the above types is dedicated to the
-number's sign (positive or negative). So, there is also an @code{unsigned}
-version where all the bits are counted in calculating the number. The
-@code{unsigned} types thus have larger positive limits, but no negative
-value with ranges @mymath{(0, ..., 2^8-1)}, @mymath{(0, ..., 2^{16}-1}),
-and @mymath{(0, ..., 2^{32}-1)} respectively. When the context of your work
-doesn't involve negative numbers (for example labeled images, where pixels
-can only have zero or positive integer values), it is best to use the
-@code{unsigned} types.
-
-Another standard of converting a given number of bits to numbers is the
-floating point standard, this standard can approximately store any real
-number with a given precision. There are two floating point types in
-CFITSIO: @code{float} and @code{double}, for single and double precision
-floating point numbers respectively. The former is sufficient for data with
-less than 8 significant decimal digits (most astronomical data), while the
-latter is good for less than 16 significant decimal digits. The
-representation of real numbers as bits is much more complex than integers,
-so we won't explain any further, if you are interested have a look in the
-@url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia article}.
-
-With the conversion operators in Gnuastro's Arithmetic, you can change the
-types of data to each other, which is necessary in some contexts. For
-example the program/library, that you intend to feed the data into, only
-accepts floating point values, but you have an integer image. Another
-example can be that you know that your data only has values that fit within
-@code{char} or @code{short} types, however it is currently formatted in the
-@code{long} type. Operations involving floating point or larger integer
-types are significantly slower than integer or smaller types
-respectively. In the latter case, it also requires much more (by 8 or 4
-times in the example above) storage space. So when you confront such
-situations and want to store/archive/transfter/process the data, it is best
-convert them to the most efficient type.
-
-
-
-
-
-@node Arithmetic operators, Invoking astarithmetic, Data types, Arithmetic
+@node Arithmetic operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
 @subsection Arithmetic operators
 
 The recognized operators in Arithmetic are listed below. See @ref{Reverse
@@ -7747,7 +7816,7 @@ array (for example a FITS image) or a number, the output will be an array
 or number according to the inputs. For example a number multiplied by an
 array will produce an array. The conditional operators will return pixel,
 or numerical values of 0 (false) or 1 (true) and stored in an
-@code{unsigned char} data type (see @ref{Data types}).
+@code{unsigned char} data type (see @ref{Numeric data types}).
 
 @table @command
 
@@ -8009,44 +8078,43 @@ numbers can be written as bit strings on the command-line): @code{00101000
 bitnot} will give @code{11010111}. Note that the bitwise operators only
 work on integer type datasets/numbers.
 
-@item uchar
-Convert the type of the popped operand to @code{unsigned char}. See
-@ref{Data types} for a short review of the different data types.
+@item uint8
+Convert the type of the popped operand to 8-bit un-signed integer type (see
+@ref{Numeric data types}). The internal conversion of C will be used.
 
-@item char
-Convert the type of the popped operand to @code{char}. See @ref{Data types}
-for a short review of the different data types.
+@item int8
+Convert the type of the popped operand to 8-bit signed integer type (see
+@ref{Numeric data types}). The internal conversion of C will be used.
 
-@item ushort
-Convert the type of the popped operand to @code{unsigned short}. See
-@ref{Data types} for a short review of the different data types.
+@item uint16
+Convert the type of the popped operand to 16-bit un-signed integer type
+(see @ref{Numeric data types}). The internal conversion of C will be used.
 
-@item short
-Convert the type of the popped operand to @code{short}. See @ref{Data
-types} for a short review of the different data types.
+@item int16
+Convert the type of the popped operand to 16-bit signed integer (see
+@ref{Numeric data types}). The internal conversion of C will be used.
 
-@item ulong
-Convert the type of the popped operand to @code{unsigned long}. See
-@ref{Data types} for a short review of the different data types.
+@item uint32
+Convert the type of the popped operand to 32-bit un-signed integer type
+(see @ref{Numeric data types}). The internal conversion of C will be used.
 
-@item long
-Convert the type of the popped operand to @code{long}. See @ref{Data types}
-for a short review of the different data types.
+@item int32
+Convert the type of the popped operand to 32-bit signed integer type (see
+@ref{Numeric data types}). The internal conversion of C will be used.
 
-@item longlong
-Convert the type of the popped operand to @code{long long} (64-bit
-integer). See @ref{Data types} for a short review of the different data
-types.
+@item uint64
+Convert the type of the popped operand to 64-bit un-signed integer (see
+@ref{Numeric data types}). The internal conversion of C will be used.
 
-@item float
-Convert the type of the popped operand to @code{float} (single precision
-floating point). See @ref{Data types} for a short review of the different
-data types.
+@item float32
+Convert the type of the popped operand to 32-bit (single precision)
+floating point (see @ref{Numeric data types}). The internal conversion of C
+will be used.
 
-@item double
-Convert the type of the popped operand to @code{double} (double precision
-floating point). See @ref{Data types} for a short review of the different
-data types.
+@item float64
+Convert the type of the popped operand to 64-bit (double precision)
+floating point (see @ref{Numeric data types}). The internal conversion of C
+will be used.
 
 @end table
 
@@ -8151,9 +8219,9 @@ when you install Gnuastro.
 Arithmetic accepts two kinds of input: images and numbers. Images are
 considered to be any of the inputs that is a file name of a recognized type
 (see @ref{Arguments}) and has more than one element/pixel. Numbers on the
-command-line will be read into the smallest type (see @ref{Data types})
-that can store them, so @command{-2} will be read as a @code{char} type
-(which is signed on most systems and can thus keep negative values),
+command-line will be read into the smallest type (see @ref{Numeric data
+types}) that can store them, so @command{-2} will be read as a @code{char}
+type (which is signed on most systems and can thus keep negative values),
 @command{2500} will be read as an @code{unsigned short} (all positive
 numbers will be read as unsigned), while @code{3.1415926535897} will be
 read as a @code{double} and @code{3.14} will be read as a @code{float}. To
@@ -13947,7 +14015,8 @@ see below. When a background image is specified, it will be used to derive
 all the information about the output image. Hence, the following options
 will be ignored: @option{--naxis1}, @option{--naxis2}, @option{--crpix1},
 @option{--crpix2}, @option{--crval1}, @option{--crval2},
-@option{--resolution}, @option{--oversample}, and @option{--type}.
+@option{--resolution}, @option{--oversample}, and data type (see
+@option{--type} in @ref{Input output}).
 
 The profiles will be built on the image (profile pixel values will be
 summed with the background image pixel values). If you want to use all the
@@ -13989,20 +14058,6 @@ possible value to this option is ignored.
 The number of pixels in the output image along the second FITS axis
 (vertical when viewed in SAO ds9), see the explanation for
 @option{--naxis1}.
-
-@item -T STR
-@itemx --type=STR
-Data type of the output image pixels (specified by @code{BITPIX} in the
-FITS standard, see @ref{Data types}). It can have any one of the following
-values: @option{byte}, @option{short}, @option{long}, @option{longlong},
-@option{float}, @option{double}. Internally, the images are made in the
-float type, but upon writing of the single output (not individual
-profiles), the image will be converted to the type specified by this
-option.
-
-When a background image is given without the @option{--backascanvas}
-option, it is assumed that you want the output with the same data type as
-the background, therefore the value to this option is ignored.
 
 @item -s INT
 @itemx --oversample=INT

@@ -32,8 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Progarm name macros: */
-#define PROGRAM_NAME "MakeProfiles"      /* Program full name.       */
-#define PROGRAM_EXEC "astmkprof"         /* Program executable name. */
+#define PROGRAM_NAME   "MakeProfiles"      /* Program full name.       */
+#define PROGRAM_EXEC   "astmkprof"         /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -107,22 +107,22 @@ struct mkprofparams
   char             *catname;  /* Name of catalog of parameters.           */
   char             *backhdu;  /* HDU of background image.                 */
   long             naxes[2];  /* Size of the output image.                */
-  unsigned char inputascanvas;/* Input image's header for size and WCS.   */
-  unsigned char  oversample;  /* Oversampling scale.                      */
-  unsigned char    psfinimg;  /* ==1: Build PSF profiles in image.        */
-  unsigned char  individual;  /* ==1: Build all catalog separately.       */
-  unsigned char    nomerged;  /* ==1: Don't make a merged image of all.   */
+  uint8_t     inputascanvas;  /* Input image's header for size and WCS.   */
+  uint8_t        oversample;  /* Oversampling scale.                      */
+  uint8_t          psfinimg;  /* ==1: Build PSF profiles in image.        */
+  uint8_t        individual;  /* ==1: Build all catalog separately.       */
+  uint8_t          nomerged;  /* ==1: Don't make a merged image of all.   */
   char             *typestr;  /* Type of finally merged output image.     */
   size_t          numrandom;  /* Number of radom points for integration.  */
   float           tolerance;  /* Accuracy to stop integration.            */
-  unsigned char    tunitinp;  /* ==1: Truncation is in pixels, not radial.*/
+  uint8_t          tunitinp;  /* ==1: Truncation is in pixels, not radial.*/
   long             shift[2];  /* Shift along axeses position of profiles. */
-  unsigned char prepforconv;  /* Shift and expand by size of first psf.   */
+  uint8_t       prepforconv;  /* Shift and expand by size of first psf.   */
   float           zeropoint;  /* Magnitude of zero point flux.            */
   double        circumwidth;  /* Width of circumference (inward).         */
-  unsigned char     replace;  /* Replace overlaping profile pixel values. */
-  unsigned char   magatpeak;  /* Mag only for peak pixel, not all profile.*/
-  unsigned char     envseed;  /* Use GSL_RNG_SEED for random seed.        */
+  uint8_t           replace;  /* Replace overlaping profile pixel values. */
+  uint8_t         magatpeak;  /* Mag only for peak pixel, not all profile.*/
+  uint8_t           envseed;  /* Use GSL_RNG_SEED for random seed.        */
   char                *xcol;  /* X column of profile center.              */
   char                *ycol;  /* Y column of profile center.              */
   char               *racol;  /* RA column of profile center.             */
@@ -134,7 +134,7 @@ struct mkprofparams
   char                *qcol;  /* Axis ratio column of profile.            */
   char                *mcol;  /* Magnitude column.                        */
   char                *tcol;  /* Truncation of the profiles.              */
-  unsigned char mforflatpix;  /* mcol is flat pixel value (f is 4 or 5).  */
+  uint8_t       mforflatpix;  /* mcol is flat pixel value (f is 4 or 5).  */
   double           crpix[2];  /* CRPIX FITS header keywords.              */
   double           crval[2];  /* CRVAL FITS header keywords.              */
   double         resolution;  /* For CDELTi FITS header keywords.         */

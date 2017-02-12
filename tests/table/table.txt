@@ -9,18 +9,18 @@
 #  - Columns with missing information
 #  - Some blank values different from the internal blank values.
 
-# Column 10: DOUBLE      [no units, d, 255]  Column with double values
+# Column 10: DOUBLE      [no units, f64, 255]  Column with double values
 
-# Column 1:  UCHAR_DATA  [no units, uc, 5]  Column with unsigned char values
-# Column 2:  CHAR        [no-units, c] Column with char values
+# Column 1:  UINT8_DATA  [no units, u8, 5]  Column with unsigned char values
+# Column 2:  INT8        [no-units, i8] Column with char values
 # Column 3:  STRING data [, str21, no data]          Column with string values
-# Column 4:  USHORT data [,us] Column with unsigned short values
-# Column 5:  SHORT       [no units, s]  Column with short values
-# Column 7:  LONG        [no units, l]  Column with long values
-# Column 8: LONGLONG    [no units, L]  Column with LONGLONG values
-# Column 9: FLOAT       [no units, f,-99]  Column with float values
+# Column 4:  UINT16 data [,u16] Column with unsigned short values
+# Column 5:  INT16       [no units, i16]  Column with short values
+# Column 7:  INT32        [no units, i32]  Column with long values
+# Column 8: INT64  [no units, i64]  Another column of long values
+# Column 9: FLOAT32       [no units, f32,-99]  Column with float values
 
-# Column 6:  UINT [,ui]
+# Column 6:  UINT32 [,u32]
 
 
 # IMPORTANT NOTE FOR FITS ASCII tables: CFITSIO will give its error

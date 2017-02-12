@@ -67,6 +67,10 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Macros. */
+#define GAL_FITS_MAX_NDIM 999
+
+
 
 
 /* To create a linked list of headers. */
@@ -129,7 +133,7 @@ int
 gal_fits_type_to_datatype(int type);
 
 int
-gal_fits_datatype_to_type(int type);
+gal_fits_datatype_to_type(int datatype, int is_table_column);
 
 
 

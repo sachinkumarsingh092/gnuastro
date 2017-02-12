@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 gal_data_t *
-arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
+arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
                   gal_data_t *ro);
 
 

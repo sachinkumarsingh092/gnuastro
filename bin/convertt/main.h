@@ -70,18 +70,18 @@ struct converttparams
   struct gal_options_common_params cp;    /* Common parameters.        */
   struct gal_linkedlist_stll *inputnames; /* The names of input files. */
   struct gal_linkedlist_stll *hdus;       /* The names of input hdus.  */
-  unsigned char     quality;  /* Quality of JPEG image.                */
+  uint8_t           quality;  /* Quality of JPEG image.                */
   float           widthincm;  /* Width in centimeters.                 */
-  unsigned int  borderwidth;  /* Width of border in PostScript points. */
-  unsigned char         hex;  /* Use hexadecimal not ASCII85 encoding. */
+  uint32_t      borderwidth;  /* Width of border in PostScript points. */
+  uint8_t               hex;  /* Use hexadecimal not ASCII85 encoding. */
   char          *fluxlowstr;  /* Lower flux truncation value.          */
   char         *fluxhighstr;  /* Higher flux truncation value.         */
-  unsigned char     maxbyte;  /* Maximum byte value.                   */
-  unsigned char   flminbyte;  /* fluxlow is minimum byte.              */
-  unsigned char   fhmaxbyte;  /* fluxhigh is maximum byte.             */
+  uint8_t           maxbyte;  /* Maximum byte value.                   */
+  uint8_t         flminbyte;  /* fluxlow is minimum byte.              */
+  uint8_t         fhmaxbyte;  /* fluxhigh is maximum byte.             */
   char           *changestr;  /* String of change values.              */
-  unsigned char changeaftertrunc;  /* First convert, then truncate.    */
-  unsigned char      invert;  /* ==1: invert the output image.         */
+  uint8_t  changeaftertrunc;  /* First convert, then truncate.         */
+  uint8_t            invert;  /* ==1: invert the output image.         */
 
   /* Internal */
   struct change     *change;  /* The value conversion string.          */

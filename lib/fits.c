@@ -198,24 +198,15 @@ gal_fits_bitpix_to_type(int bitpix)
 {
   switch(bitpix)
     {
-    case BYTE_IMG:
-      return GAL_DATA_TYPE_UCHAR;
-    case SBYTE_IMG:
-      return GAL_DATA_TYPE_CHAR;
-    case USHORT_IMG:
-      return GAL_DATA_TYPE_USHORT;
-    case SHORT_IMG:
-      return GAL_DATA_TYPE_SHORT;
-    case ULONG_IMG:
-      return GAL_DATA_TYPE_ULONG;
-    case LONG_IMG:
-      return GAL_DATA_TYPE_LONG;
-    case LONGLONG_IMG:
-      return GAL_DATA_TYPE_LONGLONG;
-    case FLOAT_IMG:
-      return GAL_DATA_TYPE_FLOAT;
-    case DOUBLE_IMG:
-      return GAL_DATA_TYPE_DOUBLE;
+    case BYTE_IMG:                  return GAL_DATA_TYPE_UINT8;
+    case SBYTE_IMG:                 return GAL_DATA_TYPE_INT8;
+    case USHORT_IMG:                return GAL_DATA_TYPE_UINT16;
+    case SHORT_IMG:                 return GAL_DATA_TYPE_INT16;
+    case ULONG_IMG:                 return GAL_DATA_TYPE_UINT32;
+    case LONG_IMG:                  return GAL_DATA_TYPE_INT32;
+    case LONGLONG_IMG:              return GAL_DATA_TYPE_INT64;
+    case FLOAT_IMG:                 return GAL_DATA_TYPE_FLOAT32;
+    case DOUBLE_IMG:                return GAL_DATA_TYPE_FLOAT64;
     default:
       error(EXIT_FAILURE, 0, "bitpix value of %d not recognized in "
             "gal_fits_bitpix_to_type", bitpix);
@@ -232,24 +223,25 @@ gal_fits_type_to_bitpix(int type)
 {
   switch(type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      return BYTE_IMG;
-    case GAL_DATA_TYPE_CHAR:
-      return SBYTE_IMG;
-    case GAL_DATA_TYPE_USHORT:
-      return USHORT_IMG;
-    case GAL_DATA_TYPE_SHORT:
-      return SHORT_IMG;
-    case GAL_DATA_TYPE_ULONG:
-      return ULONG_IMG;
-    case GAL_DATA_TYPE_LONG:
-      return LONG_IMG;
-    case GAL_DATA_TYPE_LONGLONG:
-      return LONGLONG_IMG;
-    case GAL_DATA_TYPE_FLOAT:
-      return FLOAT_IMG;
-    case GAL_DATA_TYPE_DOUBLE:
-      return DOUBLE_IMG;
+    case GAL_DATA_TYPE_UINT8:       return BYTE_IMG;
+    case GAL_DATA_TYPE_INT8:        return SBYTE_IMG;
+    case GAL_DATA_TYPE_UINT16:      return USHORT_IMG;
+    case GAL_DATA_TYPE_INT16:       return SHORT_IMG;
+    case GAL_DATA_TYPE_UINT32:      return ULONG_IMG;
+    case GAL_DATA_TYPE_INT32:       return LONG_IMG;
+    case GAL_DATA_TYPE_INT64:       return LONGLONG_IMG;
+    case GAL_DATA_TYPE_FLOAT32:     return FLOAT_IMG;
+    case GAL_DATA_TYPE_FLOAT64:     return DOUBLE_IMG;
+
+    case GAL_DATA_TYPE_BIT:
+    case GAL_DATA_TYPE_STRLL:
+    case GAL_DATA_TYPE_STRING:
+    case GAL_DATA_TYPE_UINT64:
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "type %s not recognized for FITS image BITPIX",
+            gal_data_type_as_string(type, 1));
+
     default:
       error(EXIT_FAILURE, 0, "type value of %d not recognized in "
             "gal_fits_type_to_bitpix", type);
@@ -270,41 +262,28 @@ gal_fits_type_to_bin_tform(int type)
 {
   switch(type)
     {
-    case GAL_DATA_TYPE_STRING:
-      return 'A';
+    /* Recognized by CFITSIO. */
+    case GAL_DATA_TYPE_STRING:      return 'A';
+    case GAL_DATA_TYPE_BIT:         return 'X';
+    case GAL_DATA_TYPE_UINT8:       return 'B';
+    case GAL_DATA_TYPE_INT8:        return 'S';
+    case GAL_DATA_TYPE_UINT16:      return 'U';
+    case GAL_DATA_TYPE_INT16:       return 'I';
+    case GAL_DATA_TYPE_UINT32:      return 'V';
+    case GAL_DATA_TYPE_INT32:       return 'J';
+    case GAL_DATA_TYPE_INT64:       return 'K';
+    case GAL_DATA_TYPE_FLOAT32:     return 'E';
+    case GAL_DATA_TYPE_FLOAT64:     return 'D';
+    case GAL_DATA_TYPE_COMPLEX32:   return 'C';
+    case GAL_DATA_TYPE_COMPLEX64:   return 'M';
 
-    case GAL_DATA_TYPE_BIT:
-      return 'X';
-    case GAL_DATA_TYPE_UCHAR:
-      return 'B';
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      return 'S';
-    case GAL_DATA_TYPE_USHORT:
-      return 'U';
-    case GAL_DATA_TYPE_SHORT:
-      return 'I';
-    case GAL_DATA_TYPE_UINT:
-      return 'V';
-    case GAL_DATA_TYPE_INT:
-      error(EXIT_FAILURE, 0, "CFITSIO doesn't support integer table "
-            "columns");
+    /* Not recognized by CFITSIO. */
+    case GAL_DATA_TYPE_UINT64:
+      error(EXIT_FAILURE, 0, "type %s not recognized for FITS binary "
+            "table TFORM", gal_data_type_as_string(type, 1));
       break;
-    case GAL_DATA_TYPE_ULONG:
-      error(EXIT_FAILURE, 0, "CFITSIO doesn't support unsigned long table "
-            "columns");
-      break;
-    case GAL_DATA_TYPE_LONG:
-      return 'J';
-    case GAL_DATA_TYPE_LONGLONG:
-      return 'K';
-    case GAL_DATA_TYPE_FLOAT:
-      return 'E';
-    case GAL_DATA_TYPE_DOUBLE:
-      return 'D';
-    case GAL_DATA_TYPE_COMPLEX:
-      return 'C';
-    case GAL_DATA_TYPE_DCOMPLEX:
-      return 'M';
+
+    /* Wrong type code. */
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_fits_type_to_bin_tform'", type);
@@ -323,61 +302,76 @@ gal_fits_type_to_bin_tform(int type)
 int
 gal_fits_type_to_datatype(int type)
 {
+  int w=0;
+
   switch(type)
     {
-    case GAL_DATA_TYPE_BIT:
-      return TBIT;
+    /* Recognized CFITSIO types. */
+    case GAL_DATA_TYPE_BIT:              return TBIT;
+    case GAL_DATA_TYPE_UINT8:            return TBYTE;
+    case GAL_DATA_TYPE_INT8:             return TSBYTE;
+    case GAL_DATA_TYPE_FLOAT32:          return TFLOAT;
+    case GAL_DATA_TYPE_FLOAT64:          return TDOUBLE;
+    case GAL_DATA_TYPE_COMPLEX32:        return TCOMPLEX;
+    case GAL_DATA_TYPE_COMPLEX64:        return TDBLCOMPLEX;
+    case GAL_DATA_TYPE_STRING:           return TSTRING;
 
-    case GAL_DATA_TYPE_UCHAR:
-      return TBYTE;
+    /* Types that depend on the host system. The C standard says that the
+       `short', `int' and `long' types are ATLEAST 2, 2, 4 bytes, so be
+       safe, we will checking all of them for the 32-bit types.*/
+    case GAL_DATA_TYPE_UINT16:
+      w=2;
+      if     ( sizeof(short)    == w )   return TUSHORT;
+      else if( sizeof(int)      == w )   return TUINT;
+      break;
 
-    case GAL_DATA_TYPE_CHAR:
-      return TSBYTE;
+    case GAL_DATA_TYPE_INT16:
+      w=2;
+      if     ( sizeof(short)    == w )   return TSHORT;
+      else if( sizeof(int)      == w )   return TINT;
+      break;
 
-    case GAL_DATA_TYPE_STRING:
-      return TSTRING;
+    case GAL_DATA_TYPE_UINT32:
+      w=4;
+      if     ( sizeof(int)      == w )   return TUINT;
+      else if( sizeof(long)     == w )   return TULONG;
+      else if( sizeof(short)    == w )   return TUSHORT;
+      break;
 
-    case GAL_DATA_TYPE_USHORT:
-      return TUSHORT;
+    case GAL_DATA_TYPE_INT32:
+      w=4;
+      if     ( sizeof(int)      == w )   return TINT;
+      else if( sizeof(long)     == w )   return TLONG;
+      else if( sizeof(short)    == w )   return TSHORT;
+      break;
 
-    case GAL_DATA_TYPE_SHORT:
-      return TSHORT;
+    case GAL_DATA_TYPE_UINT64:
+      w=8;
+      if     ( sizeof(long)     == w )   return TULONG;
+      break;
 
-    case GAL_DATA_TYPE_UINT:
-      return TUINT;
+    case GAL_DATA_TYPE_INT64:
+      w=8;
+      if     ( sizeof(long)     == w )   return TLONG;
+      else if( sizeof(LONGLONG) == w )   return TLONGLONG;
+      break;
 
-    case GAL_DATA_TYPE_INT:
-      return TINT;
-
-    case GAL_DATA_TYPE_ULONG:
-      return TULONG;
-
-    case GAL_DATA_TYPE_LONG:
-      return TLONG;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      return TLONGLONG;
-
-    case GAL_DATA_TYPE_FLOAT:
-      return TFLOAT;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      return TDOUBLE;
-
-    case GAL_DATA_TYPE_COMPLEX:
-      return TCOMPLEX;
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      return TDBLCOMPLEX;
-
+    /* Wrong type. */
     default:
       error(EXIT_FAILURE, 0, "'%d' is not a recognized Gnuastro type. "
             "It was given to `gal_fits_type_to_datatype'.", type);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
-        "For some reason, control has reached to the end of the "
-        "gal_fits_type_to_datatype function in fits.c.");
+  /* If control reaches, here, there was a problem with the host types. */
+  if(w)
+    error(EXIT_FAILURE, 0, "this system doesn't have a %d byte integer "
+          "type, so type `%s' cannot be written to FITS", w,
+          gal_data_type_as_string(type, 1));
+  else
+    error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
+          "fix theh problem. Control must not have reached the end of "
+          "`gal_fits_type_to_datatype', for the given type `%s'",
+          PACKAGE_BUGREPORT, gal_data_type_as_string(type, 1));
   return -1;
 }
 
@@ -386,55 +380,93 @@ gal_fits_type_to_datatype(int type)
 
 
 int
-gal_fits_datatype_to_type(int datatype)
+gal_fits_datatype_to_type(int datatype, int is_table_column)
 {
+  int inttype;
+
   switch(datatype)
     {
-    case TBIT:
-      return GAL_DATA_TYPE_BIT;
+    case TBIT:            return GAL_DATA_TYPE_BIT;
+    case TBYTE:           return GAL_DATA_TYPE_UINT8;
+    case TSBYTE:          return GAL_DATA_TYPE_INT8;
+    case TFLOAT:          return GAL_DATA_TYPE_FLOAT32;
+    case TDOUBLE:         return GAL_DATA_TYPE_FLOAT64;
+    case TCOMPLEX:        return GAL_DATA_TYPE_COMPLEX32;
+    case TDBLCOMPLEX:     return GAL_DATA_TYPE_COMPLEX64;
+    case TSTRING:         return GAL_DATA_TYPE_STRING;
 
-    case TBYTE:
-      return GAL_DATA_TYPE_UCHAR;
-
-    case TSBYTE:
-      return GAL_DATA_TYPE_CHAR;
-
-    case TSTRING:
-      return GAL_DATA_TYPE_STRING;
-
+    /* Sizes that depend on the host system. */
     case TUSHORT:
-      return GAL_DATA_TYPE_USHORT;
+      switch( sizeof(short) )
+        {
+        case 2:           return GAL_DATA_TYPE_UINT16; break;
+        case 4:           return GAL_DATA_TYPE_UINT32; break;
+        case 8:           return GAL_DATA_TYPE_UINT64; break;
+        }
+      break;
 
     case TSHORT:
-      return GAL_DATA_TYPE_SHORT;
+      switch( sizeof(short) )
+        {
+        case 2:           return GAL_DATA_TYPE_INT16;  break;
+        case 4:           return GAL_DATA_TYPE_INT32;  break;
+        case 8:           return GAL_DATA_TYPE_INT64;  break;
+        }
+      break;
 
     case TUINT:
-      return GAL_DATA_TYPE_UINT;
+      switch( sizeof(int) )
+        {
+        case 2:           return GAL_DATA_TYPE_UINT16; break;
+        case 4:           return GAL_DATA_TYPE_UINT32; break;
+        case 8:           return GAL_DATA_TYPE_UINT64; break;
+        }
+      break;
 
     case TINT:
-      return GAL_DATA_TYPE_INT;
+      switch( sizeof(int) )
+        {
+        case 2:           return GAL_DATA_TYPE_INT16;  break;
+        case 4:           return GAL_DATA_TYPE_INT32;  break;
+        case 8:           return GAL_DATA_TYPE_INT64;  break;
+        }
+      break;
 
     case TULONG:
-      return GAL_DATA_TYPE_ULONG;
+      switch( sizeof(long) )
+        {
+        case 4:           return GAL_DATA_TYPE_UINT32; break;
+        case 8:           return GAL_DATA_TYPE_UINT64; break;
+        }
+      break;
 
-    case TLONG:
-      return GAL_DATA_TYPE_LONG;
+    case TLONG: /* ==TINT32BIT when in a table column. */
+      if(is_table_column) return GAL_DATA_TYPE_INT32;
+      else
+        switch( sizeof(long) )
+          {
+          case 4:         return GAL_DATA_TYPE_INT32;  break;
+          case 8:         return GAL_DATA_TYPE_INT64;  break;
+          }
+      break;
 
     case TLONGLONG:
-      return GAL_DATA_TYPE_LONGLONG;
+      return GAL_DATA_TYPE_INT64;
+      break;
 
-    case TFLOAT:
-      return GAL_DATA_TYPE_FLOAT;
+    /* The TLOGICAL depends on the context: for keywords, it is int32, for
+       table columns, it is int8. */
+    case TLOGICAL:
+      switch( sizeof(int) )
+        {
+        case 2: inttype=GAL_DATA_TYPE_INT16;  break;
+        case 4: inttype=GAL_DATA_TYPE_INT32;  break;
+        case 8: inttype=GAL_DATA_TYPE_INT64;  break;
+        }
+      return is_table_column ? GAL_DATA_TYPE_INT8 : inttype;
+      break;
 
-    case TDOUBLE:
-      return GAL_DATA_TYPE_DOUBLE;
-
-    case TCOMPLEX:
-      return GAL_DATA_TYPE_COMPLEX;
-
-    case TDBLCOMPLEX:
-      return GAL_DATA_TYPE_DCOMPLEX;
-
+    /* A bug! */
     default:
       error(EXIT_FAILURE, 0, "'%d' is not a recognized CFITSIO datatype. "
             "It was given to `gal_fits_datatype_to_type'.", datatype);
@@ -442,7 +474,7 @@ gal_fits_datatype_to_type(int datatype)
 
   error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
         "this. For some reason, control has reached to the end of the "
-        "gal_fits_datatype_to_type function in fits.c.", PACKAGE_BUGREPORT);
+        "`gal_fits_datatype_to_type' function in fits.c.", PACKAGE_BUGREPORT);
   return -1;
 }
 
@@ -865,7 +897,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
          length was copied. */
       if(value[maxlength-1]=='\0')
         {
-          gal_fits_key_add_to_ll_end(list, TSTRING, keyname, 1,
+          gal_fits_key_add_to_ll_end(list, GAL_DATA_TYPE_STRING, keyname, 1,
                                      value, 1, NULL, 0, NULL);
           break;
         }
@@ -972,6 +1004,7 @@ gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist)
       free(tmp);
       tmp=ttmp;
     }
+
   *keylist=NULL;
 }
 
@@ -1098,10 +1131,10 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
 {
   size_t i;
   int bitpix, status=0, naxis;
-  long naxes[GAL_DATA_MAXDIM];
+  long naxes[GAL_FITS_MAX_NDIM];
 
   /* Get the BITPIX, number of dimensions and size of each dimension. */
-  if( fits_get_img_param(fptr, GAL_DATA_MAXDIM, &bitpix, &naxis,
+  if( fits_get_img_param(fptr, GAL_FITS_MAX_NDIM, &bitpix, &naxis,
                          naxes, &status) )
     gal_fits_io_error(status, NULL);
   *ndim=naxis;
@@ -1111,7 +1144,7 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
 
   /* Allocate the array to keep the dimension size and fill it in, note
      that its order is the opposite of naxes. */
-  *dsize=gal_data_malloc_array(GAL_DATA_TYPE_LONG, *ndim);
+  *dsize=gal_data_malloc_array(GAL_DATA_TYPE_INT64, *ndim);
   for(i=0; i<*ndim; ++i)
     (*dsize)[i]=naxes[*ndim-1-i];
 }
@@ -1153,7 +1186,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Set the fpixel array (first pixel in all dimensions): */
-  fpixel=gal_data_malloc_array(GAL_DATA_TYPE_LONG, ndim);
+  fpixel=gal_data_malloc_array(GAL_DATA_TYPE_INT64, ndim);
   for(i=0;i<ndim;++i) fpixel[i]=1;
 
 
@@ -1238,7 +1271,7 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
   float *f, *fp, tmp;
 
   /* Read the image as a float */
-  kernel=gal_fits_img_read_to_type(filename, hdu, GAL_DATA_TYPE_FLOAT,
+  kernel=gal_fits_img_read_to_type(filename, hdu, GAL_DATA_TYPE_FLOAT32,
                                    minmapsize);
 
   /* Check if the size along each dimension of the kernel is an odd
@@ -1295,7 +1328,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
   int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(data->type);
 
   /* Fill the `naxes' array (in opposite order, and `long' type): */
-  naxes=gal_data_malloc_array(GAL_DATA_TYPE_LONG, data->ndim);
+  naxes=gal_data_malloc_array(GAL_DATA_TYPE_INT64, data->ndim);
   for(i=0;i<data->ndim;++i)
     naxes[data->ndim-1-i]=data->dsize[i];
 
@@ -1327,8 +1360,8 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
   if(gal_data_has_blank(data))
     switch(data->type)
       {
-      case GAL_DATA_TYPE_FLOAT:
-      case GAL_DATA_TYPE_DOUBLE:
+      case GAL_DATA_TYPE_FLOAT32:
+      case GAL_DATA_TYPE_FLOAT64:
         /* Do nothing! Since there are much fewer floating point types
            (that don't need any BLANK keyword), we are checking them.*/
         break;
@@ -1667,16 +1700,16 @@ fits_correct_bin_table_int_types(gal_data_t *allcols, int tfields,
       /* Correct the type based on the initial read type and the value to
          tzero. If tzero is any other value, then again, its not a type
          conversion, so just ignore it. */
-      if(allcols[i].type==GAL_DATA_TYPE_UCHAR && tzero[i]==SCHAR_MIN)
-        allcols[i].type = GAL_DATA_TYPE_CHAR;
+      if(allcols[i].type==GAL_DATA_TYPE_UINT8 && tzero[i]==INT8_MIN)
+        allcols[i].type = GAL_DATA_TYPE_INT8;
 
-      else if ( allcols[i].type==GAL_DATA_TYPE_SHORT
-                && tzero[i] == -(long long)SHRT_MIN )
-        allcols[i].type = GAL_DATA_TYPE_USHORT;
+      else if ( allcols[i].type==GAL_DATA_TYPE_INT16
+                && tzero[i] == -(long long)INT16_MIN )
+        allcols[i].type = GAL_DATA_TYPE_UINT16;
 
-      else if (allcols[i].type==GAL_DATA_TYPE_LONG
-               && tzero[i] ==  -(long long)INT_MIN)
-        allcols[i].type = GAL_DATA_TYPE_UINT;
+      else if (allcols[i].type==GAL_DATA_TYPE_INT32
+               && tzero[i] ==  -(long long)INT32_MIN)
+        allcols[i].type = GAL_DATA_TYPE_UINT32;
 
       /* For a check
       printf("Column %zu corrected type: %s\n", i+1,
@@ -1704,10 +1737,12 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   int status=0, datatype, *tscal;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE], *val;
 
+
   /* Open the FITS file and get the basic information. */
   fptr=gal_fits_hdu_open(filename, hdu, 1);
   *tabletype=gal_fits_tab_type(fptr);
   gal_fits_tab_size(fptr, numrows, numcols);
+
 
   /* Read the total number of fields, then allocate space for the data
      structure array and store the information within it. */
@@ -1775,7 +1810,11 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                 fits_binary_tform(val, &datatype, &repeat, NULL, &status);
 
               /* Write the type into the data structure. */
-              allcols[index].type=gal_fits_datatype_to_type(datatype);
+              allcols[index].type=gal_fits_datatype_to_type(datatype, 1);
+
+              printf("%zu: %s (%d)\n", index,
+                     gal_data_type_as_string(allcols[index].type, 1),
+                     datatype);
 
               /* If we are dealing with a string type, we need to know the
                  number of bytes in both cases for printing later. */
@@ -1914,8 +1953,8 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
   size_t dsize;
   char **strarr;
   fitsfile *fptr;
-  int status=0, anynul;
   gal_data_t *out=NULL;
+  int status=0, anynul=0;
   struct gal_linkedlist_sll *ind;
 
   /* Open the FITS file */
@@ -1940,11 +1979,11 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
           {
             strarr=out->array;
             errno=0;
-            strarr[i]=calloc(allcols[ind->v].disp_width, sizeof *strarr[i]);
+            strarr[i]=calloc(allcols[ind->v].disp_width+1, sizeof *strarr[i]);
             if(strarr[i]==NULL)
               error(EXIT_FAILURE, errno, "%zu bytes for strarr[%zu] in "
                     "`gal_fits_table_read'",
-                    allcols[ind->v].disp_width * sizeof *strarr[i], i);
+                    (allcols[ind->v].disp_width+1) * sizeof *strarr[i], i);
           }
 
       /* Allocate a blank value for the given type and read/store the
@@ -2033,20 +2072,19 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
             switch(col->type)
               {
               case GAL_DATA_TYPE_STRING:
-              case GAL_DATA_TYPE_UCHAR:
-              case GAL_DATA_TYPE_CHAR:
-              case GAL_DATA_TYPE_USHORT:
-              case GAL_DATA_TYPE_SHORT:
-              case GAL_DATA_TYPE_UINT:
-              case GAL_DATA_TYPE_INT:
-              case GAL_DATA_TYPE_ULONG:
-              case GAL_DATA_TYPE_LONG:
-              case GAL_DATA_TYPE_LONGLONG:
+              case GAL_DATA_TYPE_UINT8:
+              case GAL_DATA_TYPE_INT8:
+              case GAL_DATA_TYPE_UINT16:
+              case GAL_DATA_TYPE_INT16:
+              case GAL_DATA_TYPE_UINT32:
+              case GAL_DATA_TYPE_INT32:
+              case GAL_DATA_TYPE_UINT64:
+              case GAL_DATA_TYPE_INT64:
                 asprintf(&tform[i], "%c%d", fmt[0], col->disp_width);
                 break;
 
-              case GAL_DATA_TYPE_FLOAT:
-              case GAL_DATA_TYPE_DOUBLE:
+              case GAL_DATA_TYPE_FLOAT32:
+              case GAL_DATA_TYPE_FLOAT64:
                 asprintf(&tform[i], "%c%d.%d", fmt[0], col->disp_width,
                          col->disp_precision);
                 break;
@@ -2127,8 +2165,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
       /* FITS binary tables don't accept NULL values for floating point or
          string columns. For floating point is must be NaN and for strings
          it is a blank string. */
-      if( col->type!=GAL_DATA_TYPE_FLOAT
-          && col->type!=GAL_DATA_TYPE_DOUBLE
+      if( col->type!=GAL_DATA_TYPE_FLOAT32
+          && col->type!=GAL_DATA_TYPE_FLOAT64
           && col->type!=GAL_DATA_TYPE_STRING )
         {
           blank=gal_data_alloc_blank(col->type);

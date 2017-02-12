@@ -645,7 +645,7 @@ frequencyconvolve(struct convolveparams *p)
       /* Prepare the data structure for viewing the steps, note that we
          don't need the array that is initially made. */
       dsize[0]=p->ps0; dsize[1]=p->ps1;
-      data=gal_data_alloc(NULL, GAL_DATA_TYPE_DOUBLE, 2, dsize, NULL, 0,
+      data=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 2, dsize, NULL, 0,
                           p->cp.minmapsize, NULL, NULL, NULL);
       free(data->array);
 
@@ -783,14 +783,14 @@ convolve(struct convolveparams *p)
         {
           /* Allocate the `gal_data_t' with the input imag. */
           gal_mesh_check_mesh_id(mp, &meshindexs);
-          data=gal_data_alloc(p->mp.img, GAL_DATA_TYPE_FLOAT, ndim, dsize,
+          data=gal_data_alloc(p->mp.img, GAL_DATA_TYPE_FLOAT32, ndim, dsize,
                               p->wcs, 0, p->cp.minmapsize, NULL, NULL, NULL);
           data->name="Input";
           gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
 
           /* Change the array, type, and name. */
           data->array=meshindexs;
-          data->type=GAL_DATA_TYPE_LONG;
+          data->type=GAL_DATA_TYPE_INT64;
           data->name="Mesh indexs";
           gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
 
@@ -813,7 +813,7 @@ convolve(struct convolveparams *p)
   /* Save the output (which is in p->input) array and clean up. Note that
      we will rely on `gal_data_free' to free some of the things that we
      don't need any more. */
-  data=gal_data_alloc(p->input, GAL_DATA_TYPE_FLOAT, ndim, dsize,
+  data=gal_data_alloc(p->input, GAL_DATA_TYPE_FLOAT32, ndim, dsize,
                       NULL, 0, p->cp.minmapsize, NULL, NULL, NULL);
   data->wcs=p->wcs;
   data->unit=p->unit;

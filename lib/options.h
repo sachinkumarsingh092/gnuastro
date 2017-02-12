@@ -38,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Type for options that don't accept an argument/value. This macro is
    defined to help make the definition and processing of these options
    easier and less buggy. Please use this macro for such options. */
-#define GAL_OPTIONS_NO_ARG_TYPE GAL_DATA_TYPE_UCHAR
+#define GAL_OPTIONS_NO_ARG_TYPE GAL_DATA_TYPE_UINT8
 
 
 
@@ -73,13 +73,14 @@ enum options_standard_groups
    is also removed.
 
    a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H J L M O Q R T W X Y Z
+   A B C E F G H J L M O Q R W X Y Z
 */
 enum options_common_keys
 {
   /* With short-option version */
   GAL_OPTIONS_KEY_HDU          = 'h',
   GAL_OPTIONS_KEY_OUTPUT       = 'o',
+  GAL_OPTIONS_KEY_TYPE         = 'T',
   GAL_OPTIONS_KEY_DONTDELETE   = 'D',
   GAL_OPTIONS_KEY_KEEPINPUTDIR = 'K',
   GAL_OPTIONS_KEY_QUIET        = 'q',
@@ -157,6 +158,7 @@ struct gal_options_common_params
 
   /* Output. */
   char                 *output; /* Directory containg output.            */
+  int                     type; /* Data type of output.                  */
   unsigned char     dontdelete; /* ==1: Don't delete existing file.      */
   unsigned char   keepinputdir; /* Keep input directory for auto output. */
   char         *tableformatstr; /* Format of output table (as a string). */
@@ -206,6 +208,10 @@ gal_options_add_to_not_given(struct gal_options_common_params *cp,
 
 void
 gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
+
+void
+gal_options_read_type(struct argp_option *option, char *arg,
+                      char *filename, size_t lineno);
 
 void
 gal_options_free(struct argp_option *options);

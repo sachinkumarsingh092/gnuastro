@@ -104,6 +104,20 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "type",
+      GAL_OPTIONS_KEY_TYPE,
+      "STR",  /* Will be converted to `int' code by `gal_options_read_type'.*/
+      0,
+      "Numerical datatype of output",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &cp->type,
+      GAL_DATA_TYPE_INT32,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_type
+    },
+    {
       "tableformat",
       GAL_OPTIONS_KEY_TABLEFORMAT,
       "STR",

@@ -300,11 +300,11 @@ fillcrpipolygon(struct cropparams *crp)
   struct imgcropparams *p=crp->p;
 
   /* Allocate the necessary arrays. */
-  x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
-  y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
-  ra=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
-  dec=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, p->nvertices);
-  crp->ipolygon=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*p->nvertices);
+  x=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, p->nvertices);
+  y=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, p->nvertices);
+  ra=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, p->nvertices);
+  dec=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, p->nvertices);
+  crp->ipolygon=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*p->nvertices);
 
   /* Fill in the RA and Dec columns. */
   for(i=0;i<p->nvertices;++i)

@@ -24,6 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <errno.h>
 #include <error.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 #include <gnuastro/qsort.h>
@@ -50,17 +51,16 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
   /* Set the output type. */
   switch(operator)
     {
-    case GAL_ARITHMETIC_OP_TO_UCHAR:    type=GAL_DATA_TYPE_UCHAR;    break;
-    case GAL_ARITHMETIC_OP_TO_CHAR:     type=GAL_DATA_TYPE_UCHAR;    break;
-    case GAL_ARITHMETIC_OP_TO_USHORT:   type=GAL_DATA_TYPE_USHORT;   break;
-    case GAL_ARITHMETIC_OP_TO_SHORT:    type=GAL_DATA_TYPE_SHORT;    break;
-    case GAL_ARITHMETIC_OP_TO_UINT:     type=GAL_DATA_TYPE_UINT;     break;
-    case GAL_ARITHMETIC_OP_TO_INT:      type=GAL_DATA_TYPE_INT;      break;
-    case GAL_ARITHMETIC_OP_TO_ULONG:    type=GAL_DATA_TYPE_ULONG;    break;
-    case GAL_ARITHMETIC_OP_TO_LONG:     type=GAL_DATA_TYPE_LONG;     break;
-    case GAL_ARITHMETIC_OP_TO_LONGLONG: type=GAL_DATA_TYPE_LONGLONG; break;
-    case GAL_ARITHMETIC_OP_TO_FLOAT:    type=GAL_DATA_TYPE_FLOAT;    break;
-    case GAL_ARITHMETIC_OP_TO_DOUBLE:   type=GAL_DATA_TYPE_DOUBLE;   break;
+    case GAL_ARITHMETIC_OP_TO_UINT8:    type=GAL_DATA_TYPE_UINT8;    break;
+    case GAL_ARITHMETIC_OP_TO_INT8:     type=GAL_DATA_TYPE_INT8;     break;
+    case GAL_ARITHMETIC_OP_TO_UINT16:   type=GAL_DATA_TYPE_UINT16;   break;
+    case GAL_ARITHMETIC_OP_TO_INT16:    type=GAL_DATA_TYPE_INT16;    break;
+    case GAL_ARITHMETIC_OP_TO_UINT32:   type=GAL_DATA_TYPE_UINT32;   break;
+    case GAL_ARITHMETIC_OP_TO_INT32:    type=GAL_DATA_TYPE_INT32;    break;
+    case GAL_ARITHMETIC_OP_TO_UINT64:   type=GAL_DATA_TYPE_UINT64;   break;
+    case GAL_ARITHMETIC_OP_TO_INT64:    type=GAL_DATA_TYPE_INT64;    break;
+    case GAL_ARITHMETIC_OP_TO_FLOAT32:  type=GAL_DATA_TYPE_FLOAT32;  break;
+    case GAL_ARITHMETIC_OP_TO_FLOAT64:  type=GAL_DATA_TYPE_FLOAT64;  break;
     default:
       error(EXIT_FAILURE, 0, "operator value of %d not recognized in "
             "`arithmetic_change_type'", operator);
@@ -83,35 +83,19 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
 
 /* Return an array of value 1 for any zero valued element and zero for any
    non-zero valued element. */
-#define TYPE_CASE_FOR_NOT(TYPE, IN, IN_FINISH) {                        \
-    case TYPE:                                                          \
-      do *o++ = !*IN; while(++IN<IN_FINISH);                            \
-      break;                                                            \
+#define TYPE_CASE_FOR_NOT(CTYPE) {                                      \
+    CTYPE *a=data->array, *af=a+data->size;                             \
+    do *o++ = !(*a); while(++a<af);                                     \
   }
 
 static gal_data_t *
 arithmetic_not(gal_data_t *data, unsigned char flags)
 {
+  uint8_t *o;
   gal_data_t *out;
 
-  /* 'value' will only be read from one of these based on the
-     datatype. Which the caller assigned. If there is any problem, it is
-     their responsability, not this function's.*/
-  unsigned char     *uc = data->array,   *ucf = uc + data->size, *o;
-  char               *c = data->array,    *cf = c  + data->size;
-  unsigned short    *us = data->array,   *usf = us + data->size;
-  short              *s = data->array,    *sf = s  + data->size;
-  unsigned int      *ui = data->array,   *uif = ui + data->size;
-  int               *in = data->array,   *inf = in + data->size;
-  unsigned long     *ul = data->array,   *ulf = ul + data->size;
-  long               *l = data->array,    *lf = l  + data->size;
-  LONGLONG           *L = data->array,    *Lf = L  + data->size;
-  float              *f = data->array,    *ff = f  + data->size;
-  double             *d = data->array,    *df = d  + data->size;
-
-
   /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, data->ndim, data->dsize,
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
                      data->wcs, 0, data->minmapsize, data->name, data->unit,
                      data->comment);
   o=out->array;
@@ -120,19 +104,16 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
   /* Go over the pixels and set the output values. */
   switch(data->type)
     {
-
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_UCHAR,    uc,  ucf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_CHAR,     c,   cf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_LOGICAL,  c,   cf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_USHORT,   us,  usf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_SHORT,    s,   sf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_UINT,     ui,  uif)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_INT,      in,  inf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_ULONG,    ul,  ulf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_LONG,     l,   lf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_LONGLONG, L,   Lf)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_FLOAT,    f,   ff)
-    TYPE_CASE_FOR_NOT(GAL_DATA_TYPE_DOUBLE,   d,   df)
+    case GAL_DATA_TYPE_UINT8:   TYPE_CASE_FOR_NOT(uint8_t);   break;
+    case GAL_DATA_TYPE_INT8:    TYPE_CASE_FOR_NOT(int8_t);    break;
+    case GAL_DATA_TYPE_UINT16:  TYPE_CASE_FOR_NOT(uint16_t);  break;
+    case GAL_DATA_TYPE_INT16:   TYPE_CASE_FOR_NOT(int16_t);   break;
+    case GAL_DATA_TYPE_UINT32:  TYPE_CASE_FOR_NOT(uint32_t);  break;
+    case GAL_DATA_TYPE_INT32:   TYPE_CASE_FOR_NOT(int32_t);   break;
+    case GAL_DATA_TYPE_UINT64:  TYPE_CASE_FOR_NOT(uint64_t);  break;
+    case GAL_DATA_TYPE_INT64:   TYPE_CASE_FOR_NOT(int64_t);   break;
+    case GAL_DATA_TYPE_FLOAT32: TYPE_CASE_FOR_NOT(float);     break;
+    case GAL_DATA_TYPE_FLOAT64: TYPE_CASE_FOR_NOT(double);    break;
 
     case GAL_DATA_TYPE_BIT:
       error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
@@ -155,6 +136,13 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
 
 
 
+#define ARITHMETIC_ABS_SGN(CTYPE, U0_S1) {                        \
+    CTYPE *o=out->array, *a=in->array, *af=a+in->size;            \
+    if(U0_S1)          do *o++ = abs(*a); while(++a<af);          \
+    else if(out!=in) { do *o++ = *a; while(++a<af); }             \
+  }
+
+
 /* We don't want to use the standard function for unary functions in the
    case of the absolute operator. This is because there are multiple
    versions of this function in the C library for different types, which
@@ -163,18 +151,6 @@ static gal_data_t *
 arithmetic_abs(unsigned char flags, gal_data_t *in)
 {
   gal_data_t *out;
-
-  unsigned char  *ouc,  *uc = in->array,   *ucf = uc + in->size;
-  char            *oc,   *c = in->array,    *cf = c  + in->size;
-  unsigned short *ous,  *us = in->array,   *usf = us + in->size;
-  short           *os,   *s = in->array,    *sf = s  + in->size;
-  unsigned int   *oui,  *ui = in->array,   *uif = ui + in->size;
-  int             *oi,  *ii = in->array,   *iif = ii + in->size;
-  unsigned long  *oul,  *ul = in->array,   *ulf = ul + in->size;
-  long            *ol,   *l = in->array,    *lf = l  + in->size;
-  LONGLONG        *oL,   *L = in->array,    *Lf = L  + in->size;
-  float           *of,   *f = in->array,    *ff = f  + in->size;
-  double          *od,   *d = in->array,    *df = d  + in->size;
 
   /* Set the output array. */
   if(flags & GAL_ARITHMETIC_INPLACE)
@@ -189,39 +165,16 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
      output must be a separate array), just copy the values.*/
   switch(in->type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      if(out!=in) { ouc=out->array; do *ouc++ = *uc++; while(uc<ucf); }
-      break;
-    case GAL_DATA_TYPE_CHAR:
-      oc=out->array; do *oc++ = abs(*c++); while(c<cf);
-      break;
-    case GAL_DATA_TYPE_USHORT:
-      if(out!=in) { ous=out->array; do *ous++ = *us++; while(us<usf); }
-      break;
-    case GAL_DATA_TYPE_SHORT:
-      os=out->array; do *os++ = abs(*s++); while(s<sf);
-      break;
-    case GAL_DATA_TYPE_UINT:
-      if(out!=in) { oui=out->array; do *oui++ = *ui++; while(ui<uif); }
-      break;
-    case GAL_DATA_TYPE_INT:
-      oi=out->array; do *oi++ = abs(*ii++); while(ii<iif);
-      break;
-    case GAL_DATA_TYPE_ULONG:
-      if(out!=in) { oul=out->array; do *oul++ = *ul++; while(ul<ulf); }
-      break;
-    case GAL_DATA_TYPE_LONG:
-      ol=out->array; do *ol++ = labs(*l++); while(l<lf);
-      break;
-    case GAL_DATA_TYPE_LONGLONG:
-      oL=out->array; do *oL++ = llabs(*L++); while(L<Lf);
-      break;
-    case GAL_DATA_TYPE_FLOAT:
-      of=out->array; do *of++ = fabsf(*f++); while(f<ff);
-      break;
-    case GAL_DATA_TYPE_DOUBLE:
-      od=out->array; do *od++ = fabs(*d++); while(d<df);
-      break;
+    case GAL_DATA_TYPE_UINT8:   ARITHMETIC_ABS_SGN(uint8_t, 0);   break;
+    case GAL_DATA_TYPE_INT8:    ARITHMETIC_ABS_SGN(int8_t, 1);    break;
+    case GAL_DATA_TYPE_UINT16:  ARITHMETIC_ABS_SGN(uint16_t, 0);  break;
+    case GAL_DATA_TYPE_INT16:   ARITHMETIC_ABS_SGN(int16_t, 1);   break;
+    case GAL_DATA_TYPE_UINT32:  ARITHMETIC_ABS_SGN(uint32_t, 0);  break;
+    case GAL_DATA_TYPE_INT32:   ARITHMETIC_ABS_SGN(int32_t, 1);   break;
+    case GAL_DATA_TYPE_UINT64:  ARITHMETIC_ABS_SGN(uint64_t, 0);  break;
+    case GAL_DATA_TYPE_INT64:   ARITHMETIC_ABS_SGN(int64_t, 1);   break;
+    case GAL_DATA_TYPE_FLOAT32: ARITHMETIC_ABS_SGN(float, 1);     break;
+    case GAL_DATA_TYPE_FLOAT64: ARITHMETIC_ABS_SGN(double, 1);    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`arithmetic_abs'", in->type);
@@ -264,8 +217,8 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 {
   switch(in->type)
     {
-    case GAL_DATA_TYPE_FLOAT:
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_DATA_TYPE_FLOAT64:
       break;
     default:
       error(EXIT_FAILURE, 0, "the %s operator can only accept single or "
@@ -358,37 +311,34 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 #define UNIARY_FUNCTION_ON_ELEMENT(OP)                                  \
   switch(in->type)                                                      \
     {                                                                   \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned char, OP)                \
+    case GAL_DATA_TYPE_UINT8:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint8_t, OP)                      \
       break;                                                            \
-    case GAL_DATA_TYPE_CHAR:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char, OP)                         \
+    case GAL_DATA_TYPE_INT8:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int8_t, OP)                       \
       break;                                                            \
-    case GAL_DATA_TYPE_USHORT:                                          \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned short, OP)               \
+    case GAL_DATA_TYPE_UINT16:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint16_t, OP)                     \
       break;                                                            \
-    case GAL_DATA_TYPE_SHORT:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(short, OP)                        \
+    case GAL_DATA_TYPE_INT16:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int16_t, OP)                      \
       break;                                                            \
-    case GAL_DATA_TYPE_UINT:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned int, OP)                 \
+    case GAL_DATA_TYPE_UINT32:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint32_t, OP)                     \
       break;                                                            \
-    case GAL_DATA_TYPE_INT:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int, OP)                          \
+    case GAL_DATA_TYPE_INT32:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int32_t, OP)                      \
       break;                                                            \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned long, OP)                \
+    case GAL_DATA_TYPE_UINT64:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint64_t, OP)                     \
       break;                                                            \
-    case GAL_DATA_TYPE_LONG:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(long, OP)                         \
+    case GAL_DATA_TYPE_INT64:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int64_t, OP)                      \
       break;                                                            \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(LONGLONG, OP)                     \
-      break;                                                            \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       UNIFUNC_RUN_FUNCTION_ON_ELEMENT(float, OP)                        \
       break;                                                            \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       UNIFUNC_RUN_FUNCTION_ON_ELEMENT(double, OP)                       \
       break;                                                            \
     default:                                                            \
@@ -403,37 +353,34 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 #define UNIARY_FUNCTION_ON_ARRAY                                        \
   switch(in->type)                                                      \
     {                                                                   \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned char)                      \
+    case GAL_DATA_TYPE_UINT8:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint8_t)                            \
       break;                                                            \
-    case GAL_DATA_TYPE_CHAR:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(char)                               \
+    case GAL_DATA_TYPE_INT8:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int16_t)                            \
       break;                                                            \
-    case GAL_DATA_TYPE_USHORT:                                          \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned short)                     \
+    case GAL_DATA_TYPE_UINT16:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint16_t)                           \
       break;                                                            \
-    case GAL_DATA_TYPE_SHORT:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(short)                              \
+    case GAL_DATA_TYPE_INT16:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int16_t)                            \
         break;                                                          \
-    case GAL_DATA_TYPE_UINT:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned int)                       \
+    case GAL_DATA_TYPE_UINT32:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint32_t)                           \
         break;                                                          \
-    case GAL_DATA_TYPE_INT:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int)                                \
+    case GAL_DATA_TYPE_INT32:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int32_t)                            \
         break;                                                          \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned long)                      \
+    case GAL_DATA_TYPE_UINT64:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint64_t)                           \
         break;                                                          \
-    case GAL_DATA_TYPE_LONG:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(long)                               \
+    case GAL_DATA_TYPE_INT64:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int64_t)                            \
         break;                                                          \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(LONGLONG)                           \
-      break;                                                            \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       UNIFUNC_RUN_FUNCTION_ON_ARRAY(float)                              \
       break;                                                            \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       UNIFUNC_RUN_FUNCTION_ON_ARRAY(double)                             \
         break;                                                          \
     default:                                                            \
@@ -558,10 +505,10 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 #define BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(RT, LT, OP)                   \
   switch(o->type)                                                       \
     {                                                                   \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       BINFUNC_RUN_FUNCTION(float, RT, LT, OP);                          \
       break;                                                            \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       BINFUNC_RUN_FUNCTION(double, RT, LT, OP);                         \
       break;                                                            \
     default:                                                            \
@@ -577,10 +524,10 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 #define BINFUNC_F_OPERATOR_LEFT_SET(LT, OP)                             \
   switch(r->type)                                                       \
     {                                                                   \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(float, LT, OP);                 \
       break;                                                            \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(double, LT, OP);                \
       break;                                                            \
     default:                                                            \
@@ -595,10 +542,10 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 #define BINFUNC_F_OPERATOR_SET(OP)                                      \
   switch(l->type)                                                       \
     {                                                                   \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       BINFUNC_F_OPERATOR_LEFT_SET(float, OP);                           \
       break;                                                            \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       BINFUNC_F_OPERATOR_LEFT_SET(double, OP);                          \
       break;                                                            \
     default:                                                            \
@@ -728,37 +675,34 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
 #define WHERE_OUT_SET(OT)                                            \
   switch(iftrue->type)                                               \
     {                                                                \
-    case GAL_DATA_TYPE_UCHAR:                                        \
-      DO_WHERE_OPERATION(unsigned char, OT);                         \
+    case GAL_DATA_TYPE_UINT8:                                        \
+      DO_WHERE_OPERATION(uint8_t, OT);                               \
       break;                                                         \
-    case GAL_DATA_TYPE_CHAR:                                         \
-      DO_WHERE_OPERATION(char, OT);                                  \
+    case GAL_DATA_TYPE_INT8:                                         \
+      DO_WHERE_OPERATION(int8_t, OT);                                \
       break;                                                         \
-    case GAL_DATA_TYPE_USHORT:                                       \
-      DO_WHERE_OPERATION(unsigned short, OT);                        \
+    case GAL_DATA_TYPE_UINT16:                                       \
+      DO_WHERE_OPERATION(uint16_t, OT);                              \
       break;                                                         \
-    case GAL_DATA_TYPE_SHORT:                                        \
-      DO_WHERE_OPERATION(short, OT);                                 \
+    case GAL_DATA_TYPE_INT16:                                        \
+      DO_WHERE_OPERATION(int16_t, OT);                               \
       break;                                                         \
-    case GAL_DATA_TYPE_UINT:                                         \
-      DO_WHERE_OPERATION(unsigned int, OT);                          \
+    case GAL_DATA_TYPE_UINT32:                                       \
+      DO_WHERE_OPERATION(uint32_t, OT);                              \
       break;                                                         \
-    case GAL_DATA_TYPE_INT:                                          \
-      DO_WHERE_OPERATION(int, OT);                                   \
+    case GAL_DATA_TYPE_INT32:                                        \
+      DO_WHERE_OPERATION(int32_t, OT);                               \
       break;                                                         \
-    case GAL_DATA_TYPE_ULONG:                                        \
-      DO_WHERE_OPERATION(unsigned long, OT);                         \
+    case GAL_DATA_TYPE_UINT64:                                       \
+      DO_WHERE_OPERATION(uint64_t, OT);                              \
       break;                                                         \
-    case GAL_DATA_TYPE_LONG:                                         \
-      DO_WHERE_OPERATION(long, OT);                                  \
+    case GAL_DATA_TYPE_INT64:                                        \
+      DO_WHERE_OPERATION(int64_t, OT);                               \
       break;                                                         \
-    case GAL_DATA_TYPE_LONGLONG:                                     \
-      DO_WHERE_OPERATION(LONGLONG, OT);                              \
-      break;                                                         \
-    case GAL_DATA_TYPE_FLOAT:                                        \
+    case GAL_DATA_TYPE_FLOAT32:                                      \
       DO_WHERE_OPERATION(float, OT);                                 \
       break;                                                         \
-    case GAL_DATA_TYPE_DOUBLE:                                       \
+    case GAL_DATA_TYPE_FLOAT64:                                      \
       DO_WHERE_OPERATION(double, OT);                                \
       break;                                                         \
     default:                                                         \
@@ -777,7 +721,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
   unsigned char *c=cond->array;
 
   /* The condition operator has to be unsigned char. */
-  if(cond->type!=GAL_DATA_TYPE_UCHAR)
+  if(cond->type!=GAL_DATA_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "the condition operand to `arithmetic_where' "
           "must be an `unsigned char' type, but the given condition "
           "operator has a `%s' type", gal_data_type_as_string(cond->type, 1));
@@ -791,37 +735,34 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
   /* Do the operation. */
   switch(out->type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      WHERE_OUT_SET(unsigned char);
+    case GAL_DATA_TYPE_UINT8:
+      WHERE_OUT_SET(uint8_t);
       break;
-    case GAL_DATA_TYPE_CHAR:
-      WHERE_OUT_SET(char);
+    case GAL_DATA_TYPE_INT8:
+      WHERE_OUT_SET(uint8_t);
       break;
-    case GAL_DATA_TYPE_USHORT:
-      WHERE_OUT_SET(unsigned short);
+    case GAL_DATA_TYPE_UINT16:
+      WHERE_OUT_SET(uint16_t);
       break;
-    case GAL_DATA_TYPE_SHORT:
-      WHERE_OUT_SET(short);
+    case GAL_DATA_TYPE_INT16:
+      WHERE_OUT_SET(int16_t);
       break;
-    case GAL_DATA_TYPE_UINT:
-      WHERE_OUT_SET(unsigned int);
+    case GAL_DATA_TYPE_UINT32:
+      WHERE_OUT_SET(uint32_t);
       break;
-    case GAL_DATA_TYPE_INT:
-      WHERE_OUT_SET(int);
+    case GAL_DATA_TYPE_INT32:
+      WHERE_OUT_SET(int32_t);
       break;
-    case GAL_DATA_TYPE_ULONG:
-      WHERE_OUT_SET(unsigned long);
+    case GAL_DATA_TYPE_UINT64:
+      WHERE_OUT_SET(uint64_t);
       break;
-    case GAL_DATA_TYPE_LONG:
-      WHERE_OUT_SET(long);
+    case GAL_DATA_TYPE_INT64:
+      WHERE_OUT_SET(int64_t);
       break;
-    case GAL_DATA_TYPE_LONGLONG:
-      WHERE_OUT_SET(LONGLONG);
-      break;
-    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_FLOAT32:
       WHERE_OUT_SET(float);
       break;
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT64:
       WHERE_OUT_SET(double);
       break;
     default:
@@ -866,7 +807,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       {                                                                 \
         p=max;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {  /* Only for integer types, does *b==*b. */                 \
+          {   /* Only for integer types, does *b==*b. */                \
             if(hasblank[i] && *b==*b)                                   \
               { if( *a[i] != *b ) p = *a[i] < p ? *a[i] : p;            \
                 else              p = *a[i] < p ? *a[i] : p; }          \
@@ -888,7 +829,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       {                                                                 \
         p=min;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {  /* Only for integer types, does *b==*b. */                 \
+          {   /* Only for integer types, does *b==*b. */                \
             if(hasblank[i] && *b==*b)                                   \
               { if( *a[i] != *b ) p = *a[i] > p ? *a[i] : p;            \
                 else              p = *a[i] > p ? *a[i] : p; }          \
@@ -1116,28 +1057,36 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
   /* Start the operation. */
   switch(list->type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      MULTIOPERAND_TYPE_SET(unsigned char,  gal_qsort_uchar_increasing);
-    case GAL_DATA_TYPE_CHAR:
-      MULTIOPERAND_TYPE_SET(char,           gal_qsort_char_increasing);
-    case GAL_DATA_TYPE_USHORT:
-      MULTIOPERAND_TYPE_SET(unsigned short, gal_qsort_ushort_increasing);
-    case GAL_DATA_TYPE_SHORT:
-      MULTIOPERAND_TYPE_SET(short,          gal_qsort_short_increasing);
-    case GAL_DATA_TYPE_UINT:
-      MULTIOPERAND_TYPE_SET(unsigned int,   gal_qsort_uint_increasing);
-    case GAL_DATA_TYPE_INT:
-      MULTIOPERAND_TYPE_SET(int,            gal_qsort_int_increasing);
-    case GAL_DATA_TYPE_ULONG:
-      MULTIOPERAND_TYPE_SET(unsigned long,  gal_qsort_ulong_increasing);
-    case GAL_DATA_TYPE_LONG:
-      MULTIOPERAND_TYPE_SET(long,           gal_qsort_long_increasing);
-    case GAL_DATA_TYPE_LONGLONG:
-      MULTIOPERAND_TYPE_SET(LONGLONG,       gal_qsort_longlong_increasing);
-    case GAL_DATA_TYPE_FLOAT:
-      MULTIOPERAND_TYPE_SET(float,          gal_qsort_float_increasing);
-    case GAL_DATA_TYPE_DOUBLE:
-      MULTIOPERAND_TYPE_SET(double,         gal_qsort_double_increasing);
+    case GAL_DATA_TYPE_UINT8:
+      MULTIOPERAND_TYPE_SET(uint8_t,   gal_qsort_uchar_increasing);
+      break;
+    case GAL_DATA_TYPE_INT8:
+      MULTIOPERAND_TYPE_SET(int8_t,    gal_qsort_char_increasing);
+      break;
+    case GAL_DATA_TYPE_UINT16:
+      MULTIOPERAND_TYPE_SET(uint16_t,  gal_qsort_ushort_increasing);
+      break;
+    case GAL_DATA_TYPE_INT16:
+      MULTIOPERAND_TYPE_SET(int16_t,   gal_qsort_short_increasing);
+      break;
+    case GAL_DATA_TYPE_UINT32:
+      MULTIOPERAND_TYPE_SET(uint32_t,  gal_qsort_uint_increasing);
+      break;
+    case GAL_DATA_TYPE_INT32:
+      MULTIOPERAND_TYPE_SET(int32_t,   gal_qsort_int_increasing);
+      break;
+    case GAL_DATA_TYPE_UINT64:
+      MULTIOPERAND_TYPE_SET(uint64_t,  gal_qsort_ulong_increasing);
+      break;
+    case GAL_DATA_TYPE_INT64:
+      MULTIOPERAND_TYPE_SET(int64_t,   gal_qsort_long_increasing);
+      break;
+    case GAL_DATA_TYPE_FLOAT32:
+      MULTIOPERAND_TYPE_SET(float,     gal_qsort_float_increasing);
+      break;
+    case GAL_DATA_TYPE_FLOAT64:
+      MULTIOPERAND_TYPE_SET(double,    gal_qsort_double_increasing);
+      break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`arithmetic_multioperand'", list->type);
@@ -1195,7 +1144,7 @@ gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
       return gal_data_out_type(l, r);
 
     default:
-      return GAL_DATA_TYPE_UCHAR;
+      return GAL_DATA_TYPE_UINT8;
     }
   return -1;
 }
@@ -1209,123 +1158,106 @@ arithmetic_nearest_compiled_type(int intype)
 {
   switch(intype)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      if(GAL_CONFIG_BIN_OP_UCHAR) return GAL_DATA_TYPE_UCHAR;
+    case GAL_DATA_TYPE_UINT8:
+      if(GAL_CONFIG_BIN_OP_UINT8) return GAL_DATA_TYPE_UINT8;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_USHORT)   return GAL_DATA_TYPE_USHORT;
-          else if(GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
-          else if(GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_UINT16)   return GAL_DATA_TYPE_UINT16;
+          else if(GAL_CONFIG_BIN_OP_INT16)    return GAL_DATA_TYPE_INT16;
+          else if(GAL_CONFIG_BIN_OP_UINT32)   return GAL_DATA_TYPE_UINT32;
+          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_DATA_TYPE_INT32;
+          else if(GAL_CONFIG_BIN_OP_UINT64)   return GAL_DATA_TYPE_UINT64;
+          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_CHAR:
-      if(GAL_CONFIG_BIN_OP_CHAR) return GAL_DATA_TYPE_CHAR;
+    case GAL_DATA_TYPE_INT8:
+      if(GAL_CONFIG_BIN_OP_INT8) return GAL_DATA_TYPE_INT8;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_INT16)    return GAL_DATA_TYPE_INT16;
+          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_DATA_TYPE_INT32;
+          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_USHORT:
-      if(GAL_CONFIG_BIN_OP_USHORT) return GAL_DATA_TYPE_USHORT;
+    case GAL_DATA_TYPE_UINT16:
+      if(GAL_CONFIG_BIN_OP_UINT16) return GAL_DATA_TYPE_UINT16;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_UINT32)   return GAL_DATA_TYPE_UINT32;
+          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_DATA_TYPE_INT32;
+          else if(GAL_CONFIG_BIN_OP_UINT64)   return GAL_DATA_TYPE_UINT64;
+          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_SHORT:
-      if(GAL_CONFIG_BIN_OP_SHORT) return GAL_DATA_TYPE_SHORT;
+    case GAL_DATA_TYPE_INT16:
+      if(GAL_CONFIG_BIN_OP_INT16) return GAL_DATA_TYPE_INT16;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_INT32)    return GAL_DATA_TYPE_INT32;
+          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_UINT:
-      if(GAL_CONFIG_BIN_OP_UINT) return GAL_DATA_TYPE_UINT;
+    case GAL_DATA_TYPE_UINT32:
+      if(GAL_CONFIG_BIN_OP_UINT32) return GAL_DATA_TYPE_UINT32;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_UINT64)   return GAL_DATA_TYPE_UINT64;
+          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_INT:
-      if(GAL_CONFIG_BIN_OP_INT) return GAL_DATA_TYPE_INT;
+    case GAL_DATA_TYPE_INT32:
+      if(GAL_CONFIG_BIN_OP_INT32) return GAL_DATA_TYPE_INT32;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_INT64)     return GAL_DATA_TYPE_INT64;
+          else if(GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_ULONG:
-      if(GAL_CONFIG_BIN_OP_ULONG) return GAL_DATA_TYPE_ULONG;
+    case GAL_DATA_TYPE_UINT64:
+      if(GAL_CONFIG_BIN_OP_UINT64) return GAL_DATA_TYPE_UINT64;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_LONG:
-      if(GAL_CONFIG_BIN_OP_LONG) return GAL_DATA_TYPE_LONG;
+    case GAL_DATA_TYPE_INT64:
+      if(GAL_CONFIG_BIN_OP_INT64) return GAL_DATA_TYPE_INT64;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_DATA_TYPE_FLOAT32;
+          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_LONGLONG:
-      if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+    case GAL_DATA_TYPE_FLOAT32:
+      if(GAL_CONFIG_BIN_OP_FLOAT32) return GAL_DATA_TYPE_FLOAT32;
       else
         {
-          if     (GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+          if     (GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_DATA_TYPE_FLOAT64;
         }
       break;
 
-    case GAL_DATA_TYPE_FLOAT:
-      if(GAL_CONFIG_BIN_OP_FLOAT) return GAL_DATA_TYPE_FLOAT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if         (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+    case GAL_DATA_TYPE_FLOAT64:
+      if         (GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_DATA_TYPE_FLOAT64;
       break;
 
     default:
@@ -1401,17 +1333,16 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_AVERAGE:      return "average";
     case GAL_ARITHMETIC_OP_MEDIAN:       return "median";
 
-    case GAL_ARITHMETIC_OP_TO_UCHAR:     return "uchar";
-    case GAL_ARITHMETIC_OP_TO_CHAR:      return "char";
-    case GAL_ARITHMETIC_OP_TO_USHORT:    return "ushort";
-    case GAL_ARITHMETIC_OP_TO_SHORT:     return "short";
-    case GAL_ARITHMETIC_OP_TO_UINT:      return "uint";
-    case GAL_ARITHMETIC_OP_TO_INT:       return "int";
-    case GAL_ARITHMETIC_OP_TO_ULONG:     return "ulong";
-    case GAL_ARITHMETIC_OP_TO_LONG:      return "long";
-    case GAL_ARITHMETIC_OP_TO_LONGLONG:  return "longlong";
-    case GAL_ARITHMETIC_OP_TO_FLOAT:     return "float";
-    case GAL_ARITHMETIC_OP_TO_DOUBLE:    return "double";
+    case GAL_ARITHMETIC_OP_TO_UINT8:     return "uchar";
+    case GAL_ARITHMETIC_OP_TO_INT8:      return "char";
+    case GAL_ARITHMETIC_OP_TO_UINT16:    return "ushort";
+    case GAL_ARITHMETIC_OP_TO_INT16:     return "short";
+    case GAL_ARITHMETIC_OP_TO_UINT32:    return "uint";
+    case GAL_ARITHMETIC_OP_TO_INT32:     return "int";
+    case GAL_ARITHMETIC_OP_TO_UINT64:    return "ulong";
+    case GAL_ARITHMETIC_OP_TO_INT64:     return "long";
+    case GAL_ARITHMETIC_OP_TO_FLOAT32:   return "float32";
+    case GAL_ARITHMETIC_OP_TO_FLOAT64:   return "float64";
 
     default:
       error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
@@ -1586,17 +1517,16 @@ gal_arithmetic(int operator, unsigned char flags, ...)
 
 
     /* Conversion operators. */
-    case GAL_ARITHMETIC_OP_TO_UCHAR:
-    case GAL_ARITHMETIC_OP_TO_CHAR:
-    case GAL_ARITHMETIC_OP_TO_USHORT:
-    case GAL_ARITHMETIC_OP_TO_SHORT:
-    case GAL_ARITHMETIC_OP_TO_UINT:
-    case GAL_ARITHMETIC_OP_TO_INT:
-    case GAL_ARITHMETIC_OP_TO_ULONG:
-    case GAL_ARITHMETIC_OP_TO_LONG:
-    case GAL_ARITHMETIC_OP_TO_LONGLONG:
-    case GAL_ARITHMETIC_OP_TO_FLOAT:
-    case GAL_ARITHMETIC_OP_TO_DOUBLE:
+    case GAL_ARITHMETIC_OP_TO_UINT8:
+    case GAL_ARITHMETIC_OP_TO_INT8:
+    case GAL_ARITHMETIC_OP_TO_UINT16:
+    case GAL_ARITHMETIC_OP_TO_INT16:
+    case GAL_ARITHMETIC_OP_TO_UINT32:
+    case GAL_ARITHMETIC_OP_TO_INT32:
+    case GAL_ARITHMETIC_OP_TO_UINT64:
+    case GAL_ARITHMETIC_OP_TO_INT64:
+    case GAL_ARITHMETIC_OP_TO_FLOAT32:
+    case GAL_ARITHMETIC_OP_TO_FLOAT64:
       d1 = va_arg(va, gal_data_t *);
       out=arithmetic_change_type(d1, operator, flags);
       break;

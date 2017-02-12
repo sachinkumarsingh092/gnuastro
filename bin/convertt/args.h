@@ -39,7 +39,7 @@ struct argp_option program_options[] =
       "Quality of output JPEG image (1 to 100).",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->quality,
-      GAL_DATA_TYPE_UCHAR,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -52,7 +52,7 @@ struct argp_option program_options[] =
       "Width in units of centimeters.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->widthincm,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -65,7 +65,7 @@ struct argp_option program_options[] =
       "EPS/PDF border width in units of 1/72 inch.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->borderwidth,
-      GAL_DATA_TYPE_UINT,
+      GAL_DATA_TYPE_UINT32,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -127,7 +127,7 @@ struct argp_option program_options[] =
       "Maximum byte value for all color channels.",
       ARGS_GROUP_FLUX,
       &p->maxbyte,
-      GAL_DATA_TYPE_UCHAR,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Progarm names.  */
-#define PROGRAM_NAME "CosmicCalculator" /* Program full name.       */
-#define PROGRAM_EXEC "astcosmiccal"     /* Program executable name. */
+#define PROGRAM_NAME   "CosmicCalculator" /* Program full name.       */
+#define PROGRAM_EXEC   "astcosmiccal"     /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -54,8 +54,8 @@ struct cosmiccalparams
   double            solidangle; /* Solid angle for volume (in stradian).*/
 
   /* Output: */
-  unsigned char     onlyvolume; /* Only print the volume in Mpc^3.      */
-  unsigned char onlyabsmagconv; /* Only print conversion to abs. mag.   */
+  uint8_t           onlyvolume; /* Only print the volume in Mpc^3.      */
+  uint8_t       onlyabsmagconv; /* Only print conversion to abs. mag.   */
 
   /* Internal: */
   double                     K; /* Curvature constant.                  */

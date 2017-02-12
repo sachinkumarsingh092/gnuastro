@@ -107,7 +107,6 @@ enum option_keys_enum
   ARGS_OPTION_KEY_OVERSAMPLE      = 's',
   ARGS_OPTION_KEY_INDIVIDUAL      = 'i',
   ARGS_OPTION_KEY_NOMERGED        = 'm',
-  ARGS_OPTION_KEY_TYPE            = 'T',
   ARGS_OPTION_KEY_NUMRANDOM       = 'r',
   ARGS_OPTION_KEY_TOLERANCE       = 't',
   ARGS_OPTION_KEY_TUNITINP        = 'p',
@@ -180,7 +179,7 @@ ui_initialize_options(struct mkprofparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Default program parameters. */
-  p->type=GAL_DATA_TYPE_FLOAT;
+  p->type=GAL_DATA_TYPE_FLOAT32;
 
 
   /* Modify the common options for this program. */
@@ -384,7 +383,7 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
 {
   size_t i;
 
-  p->f=gal_data_malloc_array(GAL_DATA_TYPE_INT, p->num);
+  p->f=gal_data_malloc_array(GAL_DATA_TYPE_INT32, p->num);
   for(i=0;i<p->num;++i)
     {
       if( !strcmp("sersic", strarr[i]) )
@@ -461,13 +460,13 @@ ui_read_cols(struct mkprofparams *p)
         {
         case 9:
           colname="first axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
           p->x=corrtype->array;
           break;
 
         case 8:
           colname="second axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
           p->y=corrtype->array;
           break;
 
@@ -482,7 +481,8 @@ ui_read_cols(struct mkprofparams *p)
             {
               /* Read the user's profile codes. */
               colname="profile function code (`fcol')";
-              corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_INT);
+              corrtype=gal_data_copy_to_new_type_free(tmp,
+                                                      GAL_DATA_TYPE_INT32);
               p->f=corrtype->array;
 
               /* Check if they are in the correct range. */
@@ -503,37 +503,37 @@ ui_read_cols(struct mkprofparams *p)
 
         case 6:
           colname="radius (`rcol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->r=corrtype->array;
           break;
 
         case 5:
           colname="index (`ncol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->n=corrtype->array;
           break;
 
         case 4:
           colname="position angle (`pcol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->p=corrtype->array;
           break;
 
         case 3:
           colname="axis ratio (`qcol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->q=corrtype->array;
           break;
 
         case 2:
           colname="magnitude (`mcol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->m=corrtype->array;
           break;
 
         case 1:
           colname="truncation (`tcol')";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->t=corrtype->array;
           break;
 
@@ -641,12 +641,12 @@ ui_prepare_canvas(struct mkprofparams *p)
          no merged image is desired, we just need the WCS information of
          the background image. */
       if(p->nomerged)
-        p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, 0, dsize, NULL, 1,
-                              p->cp.minmapsize, NULL, NULL, NULL);
+        p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 0, dsize, NULL,
+                              1, p->cp.minmapsize, NULL, NULL, NULL);
       else
         {
           p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
-                                           GAL_DATA_TYPE_FLOAT,
+                                           GAL_DATA_TYPE_FLOAT32,
                                            p->cp.minmapsize);
           p->naxes[0]=p->out->dsize[1];
           p->naxes[1]=p->out->dsize[0];
@@ -737,7 +737,7 @@ ui_prepare_canvas(struct mkprofparams *p)
         }
 
       /* Make the output structure. */
-      p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, ndim, dsize, NULL, 1,
+      p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, ndim, dsize, NULL, 1,
                             p->cp.minmapsize, NULL, NULL, NULL);
     }
 
@@ -839,23 +839,23 @@ ui_make_log(struct mkprofparams *p)
   if(p->cp.log==0) return;
 
   /* Individual created. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UCHAR, 1, &p->num, NULL,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT8, 1, &p->num, NULL,
                      1, p->cp.minmapsize, "INDIV_CREATED", "bool",
                      "If an individual image was made (1) or not (0).");
 
   /* Fraction of monte-carlo. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT, 1, &p->num, NULL,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT32, 1, &p->num, NULL,
                      1, p->cp.minmapsize, "FRAC_MONTECARLO", "frac",
                      "Fraction of brightness in Monte-carlo integrated "
                      "pixels.");
 
   /* Number of monte-carlo. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_ULONG, 1, &p->num, NULL,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT64, 1, &p->num, NULL,
                      1, p->cp.minmapsize, "NUM_MONTECARLO", "count",
                      "Number of Monte Carlo integrated pixels.");
 
   /* Magnitude of profile overlap. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT, 1, &p->num, NULL,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT32, 1, &p->num, NULL,
                      1, p->cp.minmapsize, "MAG_OVERLAP", "mag",
                      "Magnitude of profile's overlap with merged image.");
 
@@ -865,7 +865,7 @@ ui_make_log(struct mkprofparams *p)
              p->catname, p->cp.hdu);
   else
     asprintf(&comment, "Row number of profile in %s.", p->catname);
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_ULONG, 1, &p->num, NULL,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT64, 1, &p->num, NULL,
                      1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
                      "Row number of profile in ");
   free(comment);

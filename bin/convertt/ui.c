@@ -106,7 +106,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_FHMAXBYTE           = 'b',
   ARGS_OPTION_KEY_CHANGE              = 'c',
   ARGS_OPTION_KEY_CHANGEAFTERTRUNC    = 'C',
-  ARGS_OPTION_KEY_INVERT            = 'i',
+  ARGS_OPTION_KEY_INVERT              = 'i',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
@@ -172,6 +172,7 @@ ui_initialize_options(struct converttparams *p,
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
         break;
 
+      case GAL_OPTIONS_KEY_TYPE:
       case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_IGNORECASE:
       case GAL_OPTIONS_KEY_TABLEFORMAT:
@@ -593,7 +594,7 @@ ui_prepare_input_channels(struct converttparams *p)
       if(tmp->ndim==0)
         {
           /* Make the blank data structure. */
-          blank=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, ndim, dsize,
+          blank=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, ndim, dsize,
                                wcs, 1, p->cp.minmapsize, "blank channel",
                                NULL, NULL);
 

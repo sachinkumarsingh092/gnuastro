@@ -5,7 +5,7 @@ ImageWarp is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -22,798 +22,187 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <stdio.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fitsio.h>
+#include <stdio.h>
 
-#include <nproc.h>               /* From Gnulib.                   */
-
-#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
-#include <timing.h>              /* Includes time.h and sys/time.h */
+#include <timing.h>
+#include <options.h>
 #include <checkset.h>
-#include <commonargs.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
-
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct imgwarpparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will warp/transform the "
+  "input image using an input coordinate matrix. Currently it accepts any "
+  "general projective mapping (which includes affine mappings as a "
+  "subset). \n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  char key='a';        /* Not used, just a place holder. */
-
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  ARGS_GROUP_WARPS = GAL_OPTIONS_GROUP_AFTER_COMMON,
+};
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
 
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
+
+
+/* Available letters for short options:
+
+   c g i j k l u v w x y
+   A B C E F G H I J L M O Q R T U W X Y Z  */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_KEEPINPUTWCS    = 'n',
+  ARGS_OPTION_KEY_MAXBLANKFRAC    = 'b',
+  ARGS_OPTION_KEY_TYPE            = 'T',
+  ARGS_OPTION_KEY_ALIGN           = 'a',
+  ARGS_OPTION_KEY_ROTATE          = 'r',
+  ARGS_OPTION_KEY_SCALE           = 's',
+  ARGS_OPTION_KEY_FLIP            = 'f',
+  ARGS_OPTION_KEY_SHEAR           = 'e',
+  ARGS_OPTION_KEY_TRANSLATE       = 't',
+  ARGS_OPTION_KEY_PROJECT         = 'p',
+  ARGS_OPTION_KEY_MATRIX          = 'm',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+  ARGS_OPTION_KEY_HSTARTWCS   = 1000,
+  ARGS_OPTION_KEY_HENDWCS,
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct tableparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+
+
+  /* Set the mandatory common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+      }
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct tableparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
     {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
 
-
-
-
-      /* Inputs: */
-      if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
-      else if(strcmp(name, "hstartwcs")==0)
-        {
-          if(up->hstartwcsset) continue;
-          gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key,
-                                     SPACK, filename, lineno);
-          up->hstartwcsset=1;
-        }
-      else if(strcmp(name, "hendwcs")==0)
-        {
-          if(up->hendwcsset) continue;
-          gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
-                                     filename, lineno);
-          up->hendwcsset=1;
-        }
-
-
-
-
-
-      /* Outputs */
-      else if(strcmp(name, "matrix")==0)
-        gal_checkset_allocate_copy_set(value, &up->matrixstring,
-                                       &up->matrixstringset);
-
-      else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
-
-      else if(strcmp(name, "maxblankfrac")==0)
-        {
-          if(up->maxblankfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->maxblankfrac, name, key,
-                                     SPACK, filename, lineno);
-          up->maxblankfracset=1;
-        }
-      else if(strcmp(name, "nofitscorrect")==0)
-        {
-          if(up->nofitscorrectset) continue;
-          gal_checkset_int_zero_or_one(value, &up->nofitscorrect, name,
-                                       key, SPACK, filename, lineno);
-          up->nofitscorrectset=1;
-        }
-
-
-
-
-
-      /* Modular warpings */
-      else if(strcmp(name, "align")==0)
-        add_to_optionwapsll(&p->up.owll, ALIGN_WARP, NULL);
-
-      else if(strcmp(name, "rotate")==0)
-        add_to_optionwapsll(&p->up.owll, ROTATE_WARP, value);
-
-      else if(strcmp(name, "scale")==0)
-        add_to_optionwapsll(&p->up.owll, SCALE_WARP, value);
-
-      else if(strcmp(name, "flip")==0)
-        add_to_optionwapsll(&p->up.owll, FLIP_WARP, value);
-
-      else if(strcmp(name, "shear")==0)
-        add_to_optionwapsll(&p->up.owll, SHEAR_WARP, value);
-
-      else if(strcmp(name, "translate")==0)
-        add_to_optionwapsll(&p->up.owll, TRANSLATE_WARP, value);
-
-      else if(strcmp(name, "project")==0)
-        add_to_optionwapsll(&p->up.owll, PROJECT_WARP, value);
-
-
-
-      /* Operating modes: */
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      if(p->filename)
+        argp_error(state, "only one argument (input file) should be given");
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
+        p->filename=arg;
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
     }
 
-  free(line);
-  fclose(fp);
-}
-
-
-
-
-
-void
-printvalues(FILE *fp, struct imgwarpparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input image:\n");
-  if(cp->hduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
-  if(up->hstartwcsset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "hstartwcs", p->hstartwcs);
-  if(up->hendwcsset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "hendwcs", p->hendwcs);
-
-  fprintf(fp, "\n# Output parameters:\n");
-  if(up->matrixstringset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
-
-  if(cp->outputset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
-
-  if(up->maxblankfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "maxblankfrac", p->maxblankfrac);
-
-
-
-  fprintf(fp, "\n# Modular transformations:\n");
-  if(up->nofitscorrectset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "nofitscorrect", up->nofitscorrect);
-
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating mode:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-}
-
-
-
-
-
-
-/* Note that numthreads will be used automatically based on the
-   configure time. */
-void
-checkifset(struct imgwarpparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  int intro=0;
-  if(cp->hduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-  if(up->maxblankfracset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("maxblankfrac");
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/**********      Modular matrix linked list       *************/
-/**************************************************************/
-void
-add_to_optionwapsll(struct optionwarpsll **list, int type, char *value)
-{
-  double v1=NAN, v2=NAN;
-  char *tailptr, *secondstr;
-  struct optionwarpsll *newnode;
-
-  /* Allocate the necessary space. */
-  errno=0;
-  newnode=malloc(sizeof *newnode);
-  if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for newnode in "
-          "add_to_optionwarpsll", sizeof *newnode);
-
-  /* Read the numbers when necessary. */
-  if(value)
-    {
-      /* Parse the first number */
-      v1=strtod(value, &tailptr);
-      if(tailptr==value)
-        error(EXIT_FAILURE, 0, "The start of the string `%s' could not be "
-              "read as a number", value);
-
-      /* If there is any white space characters, ignore them and make sure
-         that the first character is a coma (`,'). */
-      secondstr=tailptr;
-      while(isspace(*secondstr)) ++secondstr;
-      if(*secondstr==',')
-        {
-          /* If the type is rotate, then print an error since rotate only
-             needs one input, not two. */
-          if(type==ROTATE_WARP)
-            error(EXIT_FAILURE, 0, "The `--rotate' (`-r') option only needs "
-                  "one input number, not more. It was given `%s'", value);
-
-          /* Ignore the coma. */
-          ++secondstr;
-
-          /* Read the second number: */
-          v2=strtod(secondstr, &tailptr);
-          if(tailptr==secondstr)
-            error(EXIT_FAILURE, 0, "The second part (after the coma) of "
-                  "`%s' (`%s') could not be read as a number", value,
-                  secondstr);
-        }
-
-      /* If there was only one number given, secondstr will be '\0' when
-         control reaches here. */
-      else if(*secondstr!='\0')
-        error(EXIT_FAILURE, 0, "the character between the two numbers (`%s') "
-              "must be a coma (`,')\n", value);
-    }
-
-  /* Put in the values. Note that both v1 and v2 were initialized to NaN,
-     so if v2 is not given, it will be NaN and the later function can
-     decide what it wants to replace it with.*/
-  newnode->v1=v1;
-  newnode->v2=v2;
-  newnode->type=type;
-  newnode->next=*list;
-
-  /* Set list to point to the new node. */
-  *list=newnode;
-}
-
-
-
-
-
-/* Allocate space for a new node: */
-struct optionwarpsll *
-alloc_owll_node(void)
-{
-  struct optionwarpsll *newnode;
-
-  errno=0;
-  newnode=malloc(sizeof *newnode);
-  if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for newnode in "
-          "add_to_optionwarpsll", sizeof *newnode);
-
-  return newnode;
-}
-
-
-
-
-
-/* The input list of warpings are recorded in a last-in-first-out order. So
-   we reverse the order and also add the transformations necessary for the
-   FITS definition (where the center of the pixel has a value of 1, not its
-   corner. */
-void
-prepare_optionwapsll(struct imgwarpparams *p)
-{
-  struct optionwarpsll *tmp, *next, *newnode, *prepared=NULL;
-
-  /* Add the FITS correction for the first warp (before everything else).
-
-     IMPORTANT: This is the last transform that will be done, so we have to
-     translate the image by -0.5.*/
-  if(!p->up.nofitscorrect)
-    {
-      newnode = alloc_owll_node();
-      newnode->v1 = newnode->v2 = -0.5f;
-      newnode->type = TRANSLATE_WARP;
-      newnode->next = prepared;
-      prepared = newnode;
-    }
-
-  /* Put in the rest of the warpings */
-  tmp=p->up.owll;
-  while(tmp!=NULL)
-    {
-      /* Allocate space for the new element, and put the values in. */
-      newnode = alloc_owll_node();
-      newnode->v1 = tmp->v1;
-      newnode->v2 = tmp->v2;
-      newnode->type = tmp->type;
-      newnode->next = prepared;
-
-      /* Now that previous nodes have been linked to next, set the
-         reversed to the new node. */
-      prepared = newnode;
-
-      /* Now keep the next element and free the old allocated space. */
-      next = tmp->next;
-      free(tmp);
-      tmp = next;
-    }
-
-  /* Add the FITS correction for the last warp (after everything else).
-
-     IMPORTANT: This is the first transform that will be done, so we have
-     to translate the image by +0.5.*/
-  if(!p->up.nofitscorrect)
-    {
-      newnode = alloc_owll_node();
-      newnode->v1 = newnode->v2 = 0.5f;
-      newnode->type = TRANSLATE_WARP;
-      newnode->next = prepared;
-      prepared = newnode;
-    }
-
-  /* Put the pointer in the output */
-  p->up.owll=prepared;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/*************      Fill temporary matrix     *****************/
-/**************************************************************/
-void
-read_matrix(struct imgwarpparams *p)
-{
-  char *t, *tailptr;
-  size_t i, counter=0, m0, m1;
-  double *matrix=p->matrix, rmatrix[9], *fmatrix;
-
-  /* Read the matrix either as a file or from the command-line. */
-  if(p->up.matrixname)
-    {
-      gal_txtarray_txt_to_array(p->up.matrixname, &fmatrix, &m0, &m1);
-      counter=m0*m1;
-      for(i=0;i<(counter<9 ? counter : 9);++i)
-        rmatrix[i]=fmatrix[i];
-      free(fmatrix);
-    }
-  else
-    {
-      t=p->up.matrixstring;
-      while(*t!='\0')
-        {
-          switch(*t)
-            {
-            case ' ': case '\t': case ',':
-              ++t;
-              break;
-            default:
-              errno=0;
-              rmatrix[counter++]=strtod(t, &tailptr);
-              if(errno) error(EXIT_FAILURE, errno, "reading `%s`", t);
-              if(tailptr==t)
-                error(EXIT_FAILURE, 0, "the provided string `%s' for "
-                      "matrix could not be read as a number", t);
-              t=tailptr;
-              if(counter>9)       /* Note that it was incremented! */
-                error(EXIT_FAILURE, 0, "there are %zu elements in `%s', "
-                      "there should be 4 or 9", counter, p->up.matrixstring);
-              /*printf("%f, %s\n", p->matrix[counter-1], t);*/
-            }
-        }
-    }
-
-  /* If there was 4 elements (a 2 by 2 matrix), put them into a 3 by 3
-     matrix. */
-  if(counter==4)
-    {
-      /* Fill in the easy 3 by 3 matrix: */
-      matrix[0]=rmatrix[0];   matrix[1]=rmatrix[1];
-      matrix[3]=rmatrix[2];   matrix[4]=rmatrix[3];
-      matrix[6]=0.0f;         matrix[7]=0.0f;         matrix[8]=1.0f;
-
-      /* If we need to correct for the FITS standard, then correc the last
-         two elements. Recall that the coordinates of the center of the
-         first pixel in the FITS standard are 1. We want 0 to be the
-         coordinates of the bottom corner of the image.
-
-         1  0  0.5      a  b  0      a  b  0.5
-         0  1  0.5   *  c  d  0   =  c  d  0.5
-         0  0   1       0  0  1      0  0   1
-
-         and
-
-         a  b  0.5     1  0  -0.5     a  b  (a*-0.5)+(b*-0.5)+0.5
-         c  d  0.5  *  0  1  -0.5  =  c  d  (c*-0.5)+(d*-0.5)+0.5
-         0  0   1      0  0   1       0  0           1
-      */
-      if(p->up.nofitscorrect)
-        matrix[2] = matrix[5] = 0.0f;
-      else
-        {
-          matrix[2] = ((rmatrix[0] + rmatrix[1]) * -0.5f) + 0.5f;
-          matrix[5] = ((rmatrix[2] + rmatrix[3]) * -0.5f) + 0.5f;
-        }
-    }
-  else if (counter==9)
-    {
-      matrix[0]=rmatrix[0];   matrix[1]=rmatrix[1];   matrix[2]=rmatrix[2];
-      matrix[3]=rmatrix[3];   matrix[4]=rmatrix[4];   matrix[5]=rmatrix[5];
-      matrix[6]=rmatrix[6];   matrix[7]=rmatrix[7];   matrix[8]=rmatrix[8];
-    }
-  else
-    error(EXIT_FAILURE, 0, "there are %zu numbers in the string `%s'! "
-          "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
-          "matrix)", counter, p->up.matrixstring);
-}
-
-
-
-
-
-/* Set the matrix so the image is aligned with the axises. Note that
-   WCSLIB automatically fills the CRPI */
-void
-makealignmatrix(struct imgwarpparams *p, double *tmatrix)
-{
-  double A, *w, *ps, amatrix[4];
-
-  /* Check if there is only two WCS axises: */
-  if(p->wcs->naxis!=2)
-    error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) has %d "
-          "axises. For the `--align' option to operate it must be 2",
-          p->up.inputname, p->cp.hdu, p->wcs->naxis);
-
-
-  /* Find the pixel scale along the two dimensions. Note that we will be
-     using the scale along the image X axis for both values. */
-  w=gal_wcs_array_from_wcsprm(p->wcs);
-  ps=gal_wcs_pixel_scale_deg(p->wcs);
-
-
-  /* Lets call the given WCS orientation `W', the rotation matrix we want
-     to find as `X' and the final (aligned matrix) to have just one useful
-     value: `a' (which is the pixel scale):
-
-        x0  x1       w0  w1      -a  0
-        x2  x3   *   w2  w3   =   0  a
-
-     Let's open up the matrix multiplication, so we can find the `X'
-     elements as function of the `W' elements and `a'.
-
-        x0*w0 + x1*w2 = -a                                         (1)
-        x0*w1 + x1*w3 =  0                                         (2)
-        x2*w0 + x3*w2 =  0                                         (3)
-        x2*w1 + x3*w3 =  a                                         (4)
-
-     Let's bring the X with the smaller index in each equation to the left
-     side:
-
-        x0 = (-w2/w0)*x1 - a/w0                                    (5)
-        x0 = (-w3/w1)*x1                                           (6)
-        x2 = (-w2/w0)*x3                                           (7)
-        x2 = (-w3/w1)*x3 + a/w1                                    (8)
-
-    Using (5) and (6) we can find x0 and x1, by first eliminating x0:
-
-       (-w2/w0)*x1 - a/w0 = (-w3/w1)*x1 -> (w3/w1 - w2/w0) * x1 = a/w0
-
-    For easy reading/writing, let's define: A = (w3/w1 - w2/w0)
-
-       --> x1 = a / w0 / A
-       --> x0 = -1 * x1 * w3 / w1
-
-    Similar to the above, we can find x2 and x3 from (7) and (8):
-
-       (-w2/w0)*x3 = (-w3/w1)*x3 + a/w1 -> (w3/w1 - w2/w0) * x3 = a/w1
-
-       --> x3 = a / w1 / A
-       --> x2 = -1 * x3 * w2 / w0
-
-    Note that when the image is already aligned, a unity matrix should be
-    output.
-   */
-  if( w[1]==0.0f && w[2]==0.0f )
-    {
-      amatrix[0]=1.0f;   amatrix[1]=0.0f;
-      amatrix[2]=0.0f;   amatrix[3]=1.0f;
-    }
-  else
-    {
-      A = (w[3]/w[1]) - (w[2]/w[0]);
-      amatrix[1] = ps[0] / w[0] / A;
-      amatrix[3] = ps[0] / w[1] / A;
-      amatrix[0] = -1 * amatrix[1] * w[3] / w[1];
-      amatrix[2] = -1 * amatrix[3] * w[2] / w[0];
-    }
-
-
-  /* For a check:
-  printf("ps: %e\n", ps);
-  printf("w:\n");
-  printf("  %.8e    %.8e\n", w[0], w[1]);
-  printf("  %.8e    %.8e\n", w[2], w[3]);
-  printf("x:\n");
-  printf("  %.8e    %.8e\n", amatrix[0], amatrix[1]);
-  printf("  %.8e    %.8e\n", amatrix[2], amatrix[3]);
-  exit(0);
-  */
-
-  /* Put the matrix elements into the output array: */
-  tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
-  tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
-  tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
-
-  /* Clean up. */
-  free(w);
-  free(ps);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/***************       Prepare Matrix       *******************/
-/**************************************************************/
-/* This function is mainly for easy checking/debugging. */
-void
-printmatrix(double *matrix)
-{
-  printf("%-10.3f%-10.3f%-10.3f\n", matrix[0], matrix[1], matrix[2]);
-  printf("%-10.3f%-10.3f%-10.3f\n", matrix[3], matrix[4], matrix[5]);
-  printf("%-10.3f%-10.3f%-10.3f\n", matrix[6], matrix[7], matrix[8]);
-}
-
-
-
-
-
-void
-inplace_matrix_multiply(double *in, double *with)
-{
-  /* `tin' will keep the values of the input array because we want to
-     write the multiplication result in the input array. */
-  double tin[9]={in[0],in[1],in[2],in[3],in[4],in[5],in[6],in[7],in[8]};
-
-  /* For easy checking, here are the matrix/memory layouts:
-          tin[0] tin[1] tin[2]     with[0] with[1] with[2]
-          tin[3] tin[4] tin[5]  *  with[3] with[4] with[5]
-          tin[6] tin[7] tin[8]     with[6] with[7] with[8]   */
-  in[0] = tin[0]*with[0] + tin[1]*with[3] + tin[2]*with[6];
-  in[1] = tin[0]*with[1] + tin[1]*with[4] + tin[2]*with[7];
-  in[2] = tin[0]*with[2] + tin[1]*with[5] + tin[2]*with[8];
-
-  in[3] = tin[3]*with[0] + tin[4]*with[3] + tin[5]*with[6];
-  in[4] = tin[3]*with[1] + tin[4]*with[4] + tin[5]*with[7];
-  in[5] = tin[3]*with[2] + tin[4]*with[5] + tin[5]*with[8];
-
-  in[6] = tin[6]*with[0] + tin[7]*with[3] + tin[8]*with[6];
-  in[7] = tin[6]*with[1] + tin[7]*with[4] + tin[8]*with[7];
-  in[8] = tin[6]*with[2] + tin[7]*with[5] + tin[8]*with[8];
-}
-
-
-
-
-
-/* Fill in the warping matrix elements based on the options/arguments */
-void
-prepare_modular_matrix(struct imgwarpparams *p)
-{
-  int f1, f2;                   /* For flipping. */
-  double s, c, tmatrix[9];
-  struct uiparams *up=&p->up;
-  struct optionwarpsll *tmp, *next;
-
-
-  /* Allocate space for the matrix, then initialize it. */
-  p->matrix[0]=1.0f;     p->matrix[1]=0.0f;     p->matrix[2]=0.0f;
-  p->matrix[3]=0.0f;     p->matrix[4]=1.0f;     p->matrix[5]=0.0f;
-  p->matrix[6]=0.0f;     p->matrix[7]=0.0f;     p->matrix[8]=1.0f;
-
-
-  /* The linked list is last-in-first-out, so we need to reverse it to
-     easily apply the changes in the same order that was read in. */
-  prepare_optionwapsll(p);
-
-
-  /* Do all the operations */
-  tmp=up->owll;
-  while(tmp!=NULL)
-    {
-      /* Fill `tmatrix' depending on the type of the warp. */
-      switch(tmp->type)
-        {
-        case ALIGN_WARP:
-          makealignmatrix(p, tmatrix);
-          break;
-
-        case ROTATE_WARP:
-          s = sin( tmp->v1*M_PI/180 );
-          c = cos( tmp->v1*M_PI/180 );
-          tmatrix[0]=c;        tmatrix[1]=s;     tmatrix[2]=0.0f;
-          tmatrix[3]=-1.0f*s;  tmatrix[4]=c;     tmatrix[5]=0.0f;
-          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;  tmatrix[8]=1.0f;
-          break;
-
-        case SCALE_WARP:
-          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
-          tmatrix[0]=tmp->v1;  tmatrix[1]=0.0f;     tmatrix[2]=0.0f;
-          tmatrix[3]=0.0f;     tmatrix[4]=tmp->v2;  tmatrix[5]=0.0f;
-          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;     tmatrix[8]=1.0f;
-          break;
-
-        case FLIP_WARP:
-          /* For the flip, the values dont really matter! As long as the
-             value is non-zero, the flip in the respective axis will be
-             made. Note that the second axis is optional (can be NaN), but
-             the first axis is required.*/
-          f1 = tmp->v1==0.0f ? 0 : 1;
-          f2 = isnan(tmp->v2) ? 0 : ( tmp->v2==0.0f ? 0 : 1);
-          if( f1 && !f2  )
-            {
-              tmatrix[0]=1.0f;   tmatrix[1]=0.0f;
-              tmatrix[3]=0.0f;   tmatrix[4]=-1.0f;
-            }
-          else if ( !f1 && f2 )
-            {
-              tmatrix[0]=-1.0f;  tmatrix[1]=0.0f;
-              tmatrix[3]=0.0f;   tmatrix[4]=1.0f;
-            }
-          else
-            {
-              tmatrix[0]=-1.0f;  tmatrix[1]=0.0f;
-              tmatrix[3]=0.0f;   tmatrix[4]=-1.0f;
-            }
-                                                      tmatrix[2]=0.0f;
-                                                      tmatrix[5]=0.0f;
-          tmatrix[6]=0.0f;       tmatrix[7]=0.0f;     tmatrix[8]=1.0f;
-          break;
-
-        case SHEAR_WARP:
-          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
-          tmatrix[0]=1.0f;     tmatrix[1]=tmp->v1;    tmatrix[2]=0.0f;
-          tmatrix[3]=tmp->v2;  tmatrix[4]=1.0f;       tmatrix[5]=0.0f;
-          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
-          break;
-
-        case TRANSLATE_WARP:
-          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
-          tmatrix[0]=1.0f;     tmatrix[1]=0.0f;       tmatrix[2]=tmp->v1;
-          tmatrix[3]=0.0f;     tmatrix[4]=1.0f;       tmatrix[5]=tmp->v2;
-          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
-          break;
-
-        case PROJECT_WARP:
-          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
-          tmatrix[0]=1.0f;     tmatrix[1]=0.0f;       tmatrix[2]=0.0f;
-          tmatrix[3]=0.0f;     tmatrix[4]=1.0f;       tmatrix[5]=0.0f;
-          tmatrix[6]=tmp->v1;  tmatrix[7]=tmp->v2;    tmatrix[8]=1.0f;
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-                "address the problem. For some reason the value of tmp->type "
-                "in `prepare_modular_matrix' of ui.c is not recognized. "
-                "This is an internal, not a user issue. So please let us "
-                "know.", PACKAGE_BUGREPORT);
-        }
-
-      /* Multiply this matrix with the main matrix in-place. */
-      inplace_matrix_multiply(p->matrix, tmatrix);
-
-      /* Keep the next element and free the node's allocated space. */
-      next = tmp->next;
-      free(tmp);
-      tmp = next;
-
-      /* For a check:
-      printf("tmatrix:\n");
-      printmatrix(tmatrix);
-      printf("out:\n");
-      printmatrix(p->matrix);
-      */
-    }
+  return 0;
 }
 
 
@@ -838,103 +227,38 @@ prepare_modular_matrix(struct imgwarpparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* When only one transformation is required, set the suffix for automatic
-   output to more meaningful string. */
-char *
-ui_set_suffix(struct optionwarpsll *owll)
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct tableparams *p)
 {
-  /* We only want the more meaningful suffix when the list is defined AND
-     when its only has one node (the `next' element is NULL). */
-  if(owll && owll->next==NULL)
-    switch(owll->type)
-      {
-      case ALIGN_WARP:
-        return "_aligned.fits";
 
-      case ROTATE_WARP:
-        return "_rotated.fits";
+  /* Check if the format of the output table is valid, given the type of
+     the output. */
+  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
 
-      case SCALE_WARP:
-        return "_scaled.fits";
-
-      case FLIP_WARP:
-        return "_flipped.fits";
-
-      case SHEAR_WARP:
-        return "_sheared.fits";
-
-      case TRANSLATE_WARP:
-        return "_translated.fits";
-
-      case PROJECT_WARP:
-        return "_projected.fits";
-
-      default:
-        return "_warped.fits";
-      }
-  else
-    return "_warped.fits";
 }
 
 
 
 
 
-void
-sanitycheck(struct imgwarpparams *p)
+static void
+ui_check_options_and_arguments(struct tableparams *p)
 {
-  char *suffix;
-  double *d, *df, *m=p->matrix;
-
-  /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.inputname);
-
-  /* Set the output name. This needs to be done before
-     `prepare_modular_matrix' because that function will free the linked
-     list of modular warpings (`p->up.owll'). */
-  if(p->cp.output)
-    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
-  else
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
+  if(p->filename)
     {
-      suffix=ui_set_suffix(p->up.owll);
-      gal_checkset_automatic_output(p->up.inputname, suffix,
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->cp.output);
+      if( gal_fits_name_is_fits(p->filename) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
+              "file, a HDU must also be specified, you can use the `--hdu' "
+              "(`-h') option and give it the HDU number (starting from "
+              "zero), extension name, or anything acceptable by CFITSIO");
+
     }
-
-  /* If an actual matrix is given, then it will be used and all modular
-     warpings will be ignored. */
-  if(p->up.matrixstring || p->up.matrixname)
-    read_matrix(p);
-  else if (p->up.owll)
-    prepare_modular_matrix(p);
   else
-    error(EXIT_FAILURE, 0, "No input matrix specified.\n\nPlease either "
-          "use the modular warp options like `--rotate' or `--scale', "
-          "or directly specify the matrix on the command-line, or in the "
-          "configuration files.\n\nRun with `--help' for the full list of "
-          "modular warpings (among other options), or see the manual's "
-          "`Warping basics' section for more on the matrix.");
-
-
-  /* Check if there are any non-normal numbers in the matrix: */
-  df=(d=p->matrix)+9;
-  do
-    if(!isfinite(*d++))
-      {
-        printmatrix(p->matrix);
-        error(EXIT_FAILURE, 0, "%f is not a `normal' number in the "
-              "input matrix shown above", *(d-1));
-      }
-  while(d<df);
-
-  /* Check if the determinant is not zero: */
-  if( m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
-      - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0 )
-    error(EXIT_FAILURE, 0, "the determinant of the given matrix "
-          "is zero");
-
-  /* Check if the transformation is spatially invariant */
+    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -959,54 +283,84 @@ sanitycheck(struct imgwarpparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-/* It is important that the image names are stored in an array (for
-   WCS mode in particular). We do that here. */
 void
-preparearrays(struct imgwarpparams *p)
+ui_preparations(struct tableparams *p)
 {
-  void *array;
-  size_t numnul;
-  double *inv, *m=p->matrix;
+  char *numstr;
+  int tableformat;
+  gal_data_t *allcols;
+  size_t i, numcols, numrows;
+  struct gal_options_common_params *cp=&p->cp;
 
-  /* Read in the input image: */
-  numnul=gal_fits_hdu_to_array(p->up.inputname, p->cp.hdu,
-                               &p->inputbitpix, &array, &p->is0,
-                               &p->is1);
-  if(p->inputbitpix==DOUBLE_IMG)
-    p->input=array;
-  else
+  /* If there were no columns specified, we want the full set of
+     columns. */
+  if(p->columns==NULL)
     {
-      gal_fits_change_type(array, p->inputbitpix, p->is0*p->is1, numnul,
-                                (void **)&p->input, DOUBLE_IMG);
-      free(array);
+      /* Read the table information for the number of columns and rows. */
+      allcols=gal_table_info(p->filename, cp->hdu, &numcols,
+                             &numrows, &tableformat);
+
+      /* If there was no actual data in the file, then inform the user */
+      if(allcols==NULL)
+        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->filename);
+
+
+      /* If the user just wanted information, then print it. */
+      if(p->information)
+        {
+          /* Print the file information. */
+          printf("--------\n");
+          printf("%s", p->filename);
+          if(gal_fits_name_is_fits(p->filename))
+            printf(" (hdu: %s)\n", cp->hdu);
+          else
+            printf("\n");
+
+          /* Print each column's information. */
+          gal_table_print_info(allcols, numcols, numrows);
+        }
+
+
+      /* Free the information from all the columns. */
+      for(i=0;i<numcols;++i)
+        gal_data_free_contents(&allcols[i]);
+      free(allcols);
+
+
+      /* If the user just wanted information, then free the allocated
+         spaces and exit. Otherwise, add the number of columns to the list
+         if the user wanted to print the columns (didn't just want their
+         information. */
+      if(p->information)
+        {
+          ui_free_report(p);
+          exit(EXIT_SUCCESS);
+        }
+      else
+        for(i=1;i<=numcols;++i)
+          {
+            asprintf(&numstr, "%zu", i);
+            gal_linkedlist_add_to_stll(&p->columns, numstr, 0);
+          }
     }
 
-  /* Make the inverse matrix: */
-  errno=0;
-  p->inverse=inv=malloc(9*sizeof *inv);
-  if(inv==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for the inverse array",
-          9*sizeof *inv);
-  inv[0]=m[4]*m[8]-m[5]*m[7];
-  inv[1]=m[2]*m[7]-m[1]*m[8];
-  inv[2]=m[1]*m[5]-m[2]*m[4];
-  inv[3]=m[5]*m[6]-m[3]*m[8];
-  inv[4]=m[0]*m[8]-m[2]*m[6];
-  inv[5]=m[2]*m[3]-m[0]*m[5];
-  inv[6]=m[3]*m[7]-m[4]*m[6];
-  inv[7]=m[1]*m[6]-m[0]*m[7];
-  inv[8]=m[0]*m[4]-m[1]*m[3];
-  /* Just for a test:
-  {
-    size_t i;
-    printf("\nInput matrix:");
-    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", m[i]); }
-    printf("\n-----------\n");
-    printf("Inverse matrix:");
-    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", inv[i]); }
-    printf("\n\n");
-  }
-  */
+  /* Reverse the list of column search criteria that we are looking for
+     (since this is a last-in-first-out linked list, the order that
+     elements were added to the list is the reverse of the order that they
+     will be popped). */
+  gal_linkedlist_reverse_stll(&p->columns);
+  p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
+                          cp->ignorecase, cp->minmapsize);
+
+  /* If there was no actual data in the file, then inform the user and
+     abort. */
+  if(p->table==NULL)
+    error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
+          "non-blank lines)", p->filename);
+
+  /* Now that the data columns are ready, we can free the string linked
+     list. */
+  gal_linkedlist_free_stll(p->columns, 1);
 }
 
 
@@ -1030,63 +384,57 @@ preparearrays(struct imgwarpparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
 void
-setparams(int argc, char *argv[], struct imgwarpparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 {
-  struct gal_commonparams *cp=&p->cp;
+  struct gal_options_common_params *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  p->correctwcs     = 1;
-  p->up.owll        = NULL;
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
 
-  /* Read the arguments. */
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Read the input image WCS structure. We are doing this here because
-     some of the matrix operations might need it. */
-  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
-                    p->hendwcs, &p->nwcs, &p->wcs);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
-  /* Do a sanity check. */
-  sanitycheck(p);
-  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
-  /* Everything is ready, notify the user of the program starting. */
-  if(cp->verb)
-    {
-      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf(" Using %zu CPU thread%s\n", p->cp.numthreads,
-             p->cp.numthreads==1 ? "." : "s.");
-      printf(" Input image: %s\n", p->up.inputname);
-      printf(" matrix:"
-             "\n\t%.4f   %.4f   %.4f"
-             "\n\t%.4f   %.4f   %.4f"
-             "\n\t%.4f   %.4f   %.4f\n",
-             p->matrix[0], p->matrix[1], p->matrix[2],
-             p->matrix[3], p->matrix[4], p->matrix[5],
-             p->matrix[6], p->matrix[7], p->matrix[8]);
-    }
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
 
-  /* Make the array of input images. */
-  preparearrays(p);
+
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
+  ui_check_options_and_arguments(p);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
 }
 
 
@@ -1112,18 +460,12 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct imgwarpparams *p, struct timeval *t1)
+ui_free_report(struct tableparams *p)
 {
   /* Free the allocated arrays: */
-  free(p->input);
   free(p->cp.hdu);
-  free(p->inverse);
   free(p->cp.output);
-
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Print the final message. */
-  if(p->cp.verb)
-    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
+  free(p->cp.searchinstr);
+  free(p->cp.tableformatstr);
+  gal_data_free_ll(p->table);
 }

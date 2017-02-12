@@ -568,13 +568,13 @@ ui_read_cols(struct imgcropparams *p)
 
         case 2:
           colname="first axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
           p->c1=corrtype->array;
           break;
 
         case 1:
           colname="second axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
           p->c2=corrtype->array;
           break;
 
@@ -626,14 +626,14 @@ ui_make_log(struct imgcropparams *p)
 
   /* If central pixels are filled. */
   asprintf(&comment, "Are the central pixels filled? (1: yes, 0: no, "
-           "%u: not checked)", GAL_DATA_BLANK_UCHAR);
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UCHAR, 1, &p->numout,
+           "%u: not checked)", GAL_DATA_BLANK_UINT8);
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT8, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "CENTER_FILLED", "bool",
                      comment);
   free(comment);
 
   /* Number of images used. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_USHORT, 1, &p->numout,
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT16, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "NUM_INPUTS", "count",
                      "Number of input images used to make this crop.");
 

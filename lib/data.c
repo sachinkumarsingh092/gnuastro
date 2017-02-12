@@ -58,52 +58,46 @@ gal_data_type_as_string(int type, int long_name)
   switch(type)
     {
     case GAL_DATA_TYPE_BIT:
-      if(long_name) return "bit";             else return "b";
+      if(long_name) return "bit";                 else return "b";
 
-    case GAL_DATA_TYPE_UCHAR:
-      if(long_name) return "unsigned char";   else return "uc";
+    case GAL_DATA_TYPE_UINT8:
+      if(long_name) return "uint8";               else return "u8";
 
-      /* CFITSIO says "int for keywords, char for table columns". Here we
-         are only assuming table columns. So in practice this also applies
-         to TSBYTE.*/
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      if(long_name) return "char";            else return "c";
+    case GAL_DATA_TYPE_INT8:
+      if(long_name) return "int8";                else return "i8";
+
+    case GAL_DATA_TYPE_UINT16:
+      if(long_name) return "uint16";              else return "u16";
+
+    case GAL_DATA_TYPE_INT16:
+      if(long_name) return "int16";               else return "i16";
+
+    case GAL_DATA_TYPE_UINT32:
+      if(long_name) return "uint32";              else return "u32";
+
+    case GAL_DATA_TYPE_INT32:
+      if(long_name) return "int32";               else return "i32";
+
+    case GAL_DATA_TYPE_UINT64:
+      if(long_name) return "uint64";              else return "u64";
+
+    case GAL_DATA_TYPE_INT64:
+      if(long_name) return "int64";               else return "i64";
+
+    case GAL_DATA_TYPE_FLOAT32:
+      if(long_name) return "float32";             else return "f32";
+
+    case GAL_DATA_TYPE_FLOAT64:
+      if(long_name) return "float64";             else return "f64";
+
+    case GAL_DATA_TYPE_COMPLEX32:
+      if(long_name) return "complex32";           else return "c32";
+
+    case GAL_DATA_TYPE_COMPLEX64:
+      if(long_name) return "complex64";           else return "c64";
 
     case GAL_DATA_TYPE_STRING:
-      if(long_name) return "string";          else return "str";
-
-    case GAL_DATA_TYPE_USHORT:
-      if(long_name) return "unsigned short";  else return "us";
-
-    case GAL_DATA_TYPE_SHORT:
-      if(long_name) return "short";           else return "s";
-
-    case GAL_DATA_TYPE_UINT:
-      if(long_name) return "unsigned int";    else return "ui";
-
-    case GAL_DATA_TYPE_INT:
-      if(long_name) return "int";             else return "i";
-
-    case GAL_DATA_TYPE_ULONG:
-      if(long_name) return "unsigned long";   else return "ul";
-
-    case GAL_DATA_TYPE_LONG:
-      if(long_name) return "long";            else return "l";
-
-    case GAL_DATA_TYPE_LONGLONG:
-      if(long_name) return "LONGLONG";        else return "L";
-
-    case GAL_DATA_TYPE_FLOAT:
-      if(long_name) return "float";           else return "f";
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(long_name) return "double";          else return "d";
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(long_name) return "complex float";   else return "cf";
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(long_name) return "complex double";  else return "cd";
+      if(long_name) return "string";              else return "str";
 
     case GAL_DATA_TYPE_STRLL:
       if(long_name) return "string linked list";  else return "strll";
@@ -129,50 +123,47 @@ gal_data_type_as_string(int type, int long_name)
 int
 gal_data_string_as_type(char *str)
 {
-  if(      !strcmp(str, "b")   || !strcmp(str, "bit") )
+  if(      !strcmp(str, "b")     || !strcmp(str, "bit") )
     return GAL_DATA_TYPE_BIT;
 
-  else if( !strcmp(str, "uc")  || !strcmp(str, "unsigned char") )
-    return GAL_DATA_TYPE_UCHAR;
+  else if( !strcmp(str, "u8")    || !strcmp(str, "uint8") )
+    return GAL_DATA_TYPE_UINT8;
 
-  else if( !strcmp(str, "c")   || !strcmp(str, "char") )
-    return GAL_DATA_TYPE_CHAR;
+  else if( !strcmp(str, "i8")    || !strcmp(str, "int8") )
+    return GAL_DATA_TYPE_INT8;
 
-  else if( !strcmp(str, "str") || !strcmp(str, "string") )
+  else if( !strcmp(str, "u16")   || !strcmp(str, "uint16") )
+    return GAL_DATA_TYPE_UINT16;
+
+  else if( !strcmp(str, "i16")   || !strcmp(str, "int16") )
+    return GAL_DATA_TYPE_INT16;
+
+  else if( !strcmp(str, "u32")   || !strcmp(str, "uint32") )
+    return GAL_DATA_TYPE_UINT32;
+
+  else if( !strcmp(str, "i32")   || !strcmp(str, "int32") )
+    return GAL_DATA_TYPE_INT32;
+
+  else if( !strcmp(str, "u64")   || !strcmp(str, "uint64") )
+    return GAL_DATA_TYPE_UINT64;
+
+  else if( !strcmp(str, "i64")   || !strcmp(str, "int64") )
+    return GAL_DATA_TYPE_INT64;
+
+  else if( !strcmp(str, "f32")   || !strcmp(str, "float32") )
+    return GAL_DATA_TYPE_FLOAT32;
+
+  else if( !strcmp(str, "f64")   || !strcmp(str, "float64") )
+    return GAL_DATA_TYPE_FLOAT64;
+
+  else if( !strcmp(str, "c32")   || !strcmp(str, "complex32") )
+    return GAL_DATA_TYPE_COMPLEX32;
+
+  else if( !strcmp(str, "c64")   || !strcmp(str, "complex64") )
+    return GAL_DATA_TYPE_COMPLEX64;
+
+  else if( !strcmp(str, "str")   || !strcmp(str, "string") )
     return GAL_DATA_TYPE_STRING;
-
-  else if( !strcmp(str, "us")  || !strcmp(str, "unsigned short") )
-    return GAL_DATA_TYPE_USHORT;
-
-  else if( !strcmp(str, "s")   || !strcmp(str, "short") )
-    return GAL_DATA_TYPE_SHORT;
-
-  else if( !strcmp(str, "ui")  || !strcmp(str, "unsigned int") )
-    return GAL_DATA_TYPE_UINT;
-
-  else if( !strcmp(str, "i")   || !strcmp(str, "int") )
-    return GAL_DATA_TYPE_INT;
-
-  else if( !strcmp(str, "ul")  || !strcmp(str, "unsigned long") )
-    return GAL_DATA_TYPE_ULONG;
-
-  else if( !strcmp(str, "l")   || !strcmp(str, "long") )
-    return GAL_DATA_TYPE_LONG;
-
-  else if( !strcmp(str, "L")   || !strcmp(str, "LONGLONG") )
-    return GAL_DATA_TYPE_LONGLONG;
-
-  else if( !strcmp(str, "f")   || !strcmp(str, "float") )
-    return GAL_DATA_TYPE_FLOAT;
-
-  else if( !strcmp(str, "d")   || !strcmp(str, "double") )
-    return GAL_DATA_TYPE_DOUBLE;
-
-  else if( !strcmp(str, "cf")  || !strcmp(str, "complex float") )
-    return GAL_DATA_TYPE_COMPLEX;
-
-  else if( !strcmp(str, "cd")  || !strcmp(str, "complex double") )
-    return GAL_DATA_TYPE_DCOMPLEX;
 
   else
     return GAL_DATA_TYPE_INVALID;
@@ -198,17 +189,16 @@ gal_data_type_min(int type, void *in)
 {
   switch(type)
     {
-    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = 0;            break;
-    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MIN;     break;
-    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = 0;            break;
-    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MIN;     break;
-    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = 0;            break;
-    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MIN;      break;
-    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = 0;            break;
-    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MIN;     break;
-    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MIN; break;
-    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = -FLT_MAX;     break;
-    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = -DBL_MAX;     break;
+    case GAL_DATA_TYPE_UINT8:    *(uint8_t *)  in = 0;            break;
+    case GAL_DATA_TYPE_INT8:     *(int8_t *)   in = INT8_MIN;     break;
+    case GAL_DATA_TYPE_UINT16:   *(uint16_t *) in = 0;            break;
+    case GAL_DATA_TYPE_INT16:    *(int16_t *)  in = INT16_MIN;    break;
+    case GAL_DATA_TYPE_UINT32:   *(uint32_t *) in = 0;            break;
+    case GAL_DATA_TYPE_INT32:    *(int32_t *)  in = INT32_MIN;    break;
+    case GAL_DATA_TYPE_UINT64:   *(uint64_t *) in = 0;            break;
+    case GAL_DATA_TYPE_INT64:    *(int64_t *)  in = INT64_MIN;    break;
+    case GAL_DATA_TYPE_FLOAT32:  *(float *)    in = -FLT_MAX;     break;
+    case GAL_DATA_TYPE_FLOAT64:  *(double *)   in = -DBL_MAX;     break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_data_type_min'", type);
@@ -224,17 +214,16 @@ gal_data_type_max(int type, void *in)
 {
   switch(type)
     {
-    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = UCHAR_MAX;    break;
-    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MAX;     break;
-    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = USHRT_MAX;    break;
-    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MAX;     break;
-    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = UINT_MAX;     break;
-    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MAX;      break;
-    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = ULONG_MAX;    break;
-    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MAX;     break;
-    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MAX; break;
-    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = FLT_MAX;      break;
-    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = DBL_MAX;      break;
+    case GAL_DATA_TYPE_UINT8:    *(uint8_t *)  in = UINT8_MAX;    break;
+    case GAL_DATA_TYPE_INT8:     *(int8_t *)   in = INT8_MAX;     break;
+    case GAL_DATA_TYPE_UINT16:   *(uint16_t *) in = UINT16_MAX;   break;
+    case GAL_DATA_TYPE_INT16:    *(int16_t *)  in = INT16_MAX;    break;
+    case GAL_DATA_TYPE_UINT32:   *(uint32_t *) in = UINT32_MAX;   break;
+    case GAL_DATA_TYPE_INT32:    *(int32_t *)  in = INT32_MAX;    break;
+    case GAL_DATA_TYPE_UINT64:   *(uint64_t *) in = UINT64_MAX;   break;
+    case GAL_DATA_TYPE_INT64:    *(int64_t *)  in = INT64_MAX;    break;
+    case GAL_DATA_TYPE_FLOAT32:  *(float *)    in = FLT_MAX;      break;
+    case GAL_DATA_TYPE_FLOAT64:  *(double *)   in = DBL_MAX;      break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_data_type_min'", type);
@@ -312,55 +301,52 @@ gal_data_sizeof(int type)
          type cast, so we have put a space between size of and the
          parenthesis to highlight this. In C, `sizeof' is an operator, not
          a function.*/
-    case GAL_DATA_TYPE_UCHAR:
-      return sizeof (unsigned char);
+    case GAL_DATA_TYPE_UINT8:
+      return sizeof (uint8_t);
 
-    case GAL_DATA_TYPE_LOGICAL: case GAL_DATA_TYPE_CHAR:
-      return sizeof (char);
+    case GAL_DATA_TYPE_INT8:
+      return sizeof (int8_t);
 
-    case GAL_DATA_TYPE_STRING:
-      return sizeof (char *);
+    case GAL_DATA_TYPE_UINT16:
+      return sizeof (uint16_t);
 
-    case GAL_DATA_TYPE_USHORT:
-      return sizeof (unsigned short);
+    case GAL_DATA_TYPE_INT16:
+      return sizeof (int16_t);
 
-    case GAL_DATA_TYPE_SHORT:
-      return sizeof (short);
+    case GAL_DATA_TYPE_UINT32:
+      return sizeof (uint32_t);
 
-    case GAL_DATA_TYPE_UINT:
-      return sizeof (unsigned int);
+    case GAL_DATA_TYPE_INT32:
+      return sizeof (int32_t);
 
-    case GAL_DATA_TYPE_INT:
-      return sizeof (int);
+    case GAL_DATA_TYPE_UINT64:
+      return sizeof (uint64_t);
 
-    case GAL_DATA_TYPE_ULONG:
-      return sizeof (unsigned long);
+    case GAL_DATA_TYPE_INT64:
+      return sizeof (int64_t);
 
-    case GAL_DATA_TYPE_LONG:
-      return sizeof (long);
-
-    case GAL_DATA_TYPE_LONGLONG:
-      return sizeof (LONGLONG);
-
-    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_FLOAT32:
       if( sizeof (float) != 4 )
         error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
       return sizeof (float);
 
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT64:
       if( sizeof (double) != 8 )
         error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
       return sizeof (double);
 
-    case GAL_DATA_TYPE_COMPLEX:
+    case GAL_DATA_TYPE_COMPLEX32:
       if( sizeof (float) != 4 )
         error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
       return sizeof (gsl_complex_float);
 
-    case GAL_DATA_TYPE_DCOMPLEX:
+    case GAL_DATA_TYPE_COMPLEX64:
       if( sizeof (double) != 8 )
         error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
       return sizeof (gsl_complex);
+
+    case GAL_DATA_TYPE_STRING:
+      return sizeof (char *);
 
     default:
       error(EXIT_FAILURE, 0, "type value of %d not recognized in "
@@ -466,61 +452,54 @@ gal_data_alloc_number(int type, void *number)
             "values for `GAL_DATA_TYPE_BIT', please get in touch with "
             "us to see how we can implement it.");
 
-    case GAL_DATA_TYPE_UCHAR:
-      *(unsigned char *)allocated=*(unsigned char *)number;
+    case GAL_DATA_TYPE_UINT8:
+      *(uint8_t *)allocated=*(uint8_t *)number;
       break;
 
-      /* CFITSIO says "int for keywords, char for table columns". Here we
-         are only assuming table columns. So in practice this also applies
-         to TSBYTE.*/
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      *(char *)allocated=*(char *)number;
+    case GAL_DATA_TYPE_INT8:
+      *(int8_t *)allocated=*(int8_t *)number;
       break;
 
-    case GAL_DATA_TYPE_USHORT:
-      *(unsigned short *)allocated=*(unsigned short *)number;
+    case GAL_DATA_TYPE_UINT16:
+      *(uint16_t *)allocated=*(uint16_t *)number;
       break;
 
-    case GAL_DATA_TYPE_SHORT:
-      *(short *)allocated=*(short *)number;
+    case GAL_DATA_TYPE_INT16:
+      *(int16_t *)allocated=*(int16_t *)number;
       break;
 
-    case GAL_DATA_TYPE_UINT:
-      *(unsigned int *)allocated=*(unsigned int *)number;
+    case GAL_DATA_TYPE_UINT32:
+      *(uint32_t *)allocated=*(uint32_t *)number;
       break;
 
-    case GAL_DATA_TYPE_INT:
-      *(int *)allocated=*(int *)number;
+    case GAL_DATA_TYPE_INT32:
+      *(int32_t *)allocated=*(int32_t *)number;
       break;
 
-    case GAL_DATA_TYPE_ULONG:
-      *(unsigned long *)allocated=*(unsigned long *)number;
+    case GAL_DATA_TYPE_UINT64:
+      *(uint64_t *)allocated=*(uint64_t *)number;
       break;
 
-    case GAL_DATA_TYPE_LONG:
-      *(long *)allocated=*(long *)number;
+    case GAL_DATA_TYPE_INT64:
+      *(int64_t *)allocated=*(int64_t *)number;
       break;
 
-    case GAL_DATA_TYPE_LONGLONG:
-      *(LONGLONG *)allocated=*(LONGLONG *)number;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_FLOAT32:
       *(float *)allocated=*(float *)number;
       break;
 
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT64:
       *(double *)allocated=*(double *)number;
       break;
 
-    case GAL_DATA_TYPE_COMPLEX:
+    case GAL_DATA_TYPE_COMPLEX32:
       GSL_COMPLEX_P_REAL(((gsl_complex_float *)allocated)) =
         GSL_COMPLEX_P_REAL(((gsl_complex_float *)number));
       GSL_COMPLEX_P_IMAG(((gsl_complex_float *)allocated)) =
         GSL_COMPLEX_P_IMAG(((gsl_complex_float *)number));
       break;
 
-    case GAL_DATA_TYPE_DCOMPLEX:
+    case GAL_DATA_TYPE_COMPLEX64:
       GSL_COMPLEX_P_REAL(((gsl_complex *)allocated)) =
         GSL_COMPLEX_P_REAL(((gsl_complex *)number));
       GSL_COMPLEX_P_IMAG(((gsl_complex *)allocated)) =
@@ -1087,48 +1066,44 @@ gal_data_set_blank(void *pointer, int type)
       gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, pointer);
       break;
 
-    case GAL_DATA_TYPE_UCHAR:
-      *(unsigned char *)pointer  = GAL_DATA_BLANK_UCHAR;
+    case GAL_DATA_TYPE_UINT8:
+      *(uint8_t *)pointer       = GAL_DATA_BLANK_UINT8;
       break;
 
-    case GAL_DATA_TYPE_CHAR:
-      *(char *)pointer           = GAL_DATA_BLANK_CHAR;
+    case GAL_DATA_TYPE_INT8:
+      *(int8_t *)pointer        = GAL_DATA_BLANK_INT8;
       break;
 
-    case GAL_DATA_TYPE_USHORT:
-      *(unsigned short *)pointer = GAL_DATA_BLANK_USHORT;
+    case GAL_DATA_TYPE_UINT16:
+      *(uint16_t *)pointer      = GAL_DATA_BLANK_UINT16;
       break;
 
-    case GAL_DATA_TYPE_SHORT:
-      *(short *)pointer          = GAL_DATA_BLANK_SHORT;
+    case GAL_DATA_TYPE_INT16:
+      *(int16_t *)pointer       = GAL_DATA_BLANK_INT16;
       break;
 
-    case GAL_DATA_TYPE_UINT:
-      *(unsigned int *)pointer   = GAL_DATA_BLANK_UINT;
+    case GAL_DATA_TYPE_UINT32:
+      *(uint32_t *)pointer      = GAL_DATA_BLANK_UINT32;
       break;
 
-    case GAL_DATA_TYPE_INT:
-      *(int *)pointer            = GAL_DATA_BLANK_INT;
+    case GAL_DATA_TYPE_INT32:
+      *(int32_t *)pointer       = GAL_DATA_BLANK_INT32;
       break;
 
-    case GAL_DATA_TYPE_ULONG:
-      *(unsigned long *)pointer  = GAL_DATA_BLANK_ULONG;
+    case GAL_DATA_TYPE_UINT64:
+      *(uint64_t *)pointer      = GAL_DATA_BLANK_UINT64;
       break;
 
-    case GAL_DATA_TYPE_LONG:
-      *(long *)pointer           = GAL_DATA_BLANK_LONG;
+    case GAL_DATA_TYPE_INT64:
+      *(int64_t *)pointer       = GAL_DATA_BLANK_INT64;
       break;
 
-    case GAL_DATA_TYPE_LONGLONG:
-      *(LONGLONG *)pointer       = GAL_DATA_BLANK_LONGLONG;
+    case GAL_DATA_TYPE_FLOAT32:
+      *(float *)pointer         = GAL_DATA_BLANK_FLOAT32;
       break;
 
-    case GAL_DATA_TYPE_FLOAT:
-      *(float *)pointer          = GAL_DATA_BLANK_FLOAT;
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      *(double *)pointer         = GAL_DATA_BLANK_DOUBLE;
+    case GAL_DATA_TYPE_FLOAT64:
+      *(double *)pointer        = GAL_DATA_BLANK_FLOAT64;
       break;
 
     default:
@@ -1181,81 +1156,74 @@ gal_data_blank_as_string(int type, int width)
         asprintf(&blank, "%s", GAL_DATA_BLANK_STRING);
       break;
 
-    case GAL_DATA_TYPE_UCHAR:
+    case GAL_DATA_TYPE_UINT8:
       if(width)
-        asprintf(&blank, "%*u", width, (unsigned char)GAL_DATA_BLANK_UCHAR);
+        asprintf(&blank, "%*u", width, (uint8_t)GAL_DATA_BLANK_UINT8);
       else
-        asprintf(&blank, "%u",         (unsigned char)GAL_DATA_BLANK_UCHAR);
+        asprintf(&blank, "%u",         (uint8_t)GAL_DATA_BLANK_UINT8);
       break;
 
-    case GAL_DATA_TYPE_CHAR:
+    case GAL_DATA_TYPE_INT8:
       if(width)
-        asprintf(&blank, "%*d", width, (char)GAL_DATA_BLANK_CHAR);
+        asprintf(&blank, "%*d", width, (int8_t)GAL_DATA_BLANK_INT8);
       else
-        asprintf(&blank, "%d",         (char)GAL_DATA_BLANK_CHAR);
+        asprintf(&blank, "%d",         (int8_t)GAL_DATA_BLANK_INT8);
       break;
 
-    case GAL_DATA_TYPE_USHORT:
+    case GAL_DATA_TYPE_UINT16:
       if(width)
-        asprintf(&blank, "%*u", width, (unsigned short)GAL_DATA_BLANK_USHORT);
+        asprintf(&blank, "%*u", width, (uint16_t)GAL_DATA_BLANK_UINT16);
       else
-        asprintf(&blank, "%u",         (unsigned short)GAL_DATA_BLANK_USHORT);
+        asprintf(&blank, "%u",         (uint16_t)GAL_DATA_BLANK_UINT16);
       break;
 
-    case GAL_DATA_TYPE_SHORT:
+    case GAL_DATA_TYPE_INT16:
       if(width)
-        asprintf(&blank, "%*d", width, (short)GAL_DATA_BLANK_SHORT);
+        asprintf(&blank, "%*d", width, (int16_t)GAL_DATA_BLANK_INT16);
       else
-        asprintf(&blank, "%d",         (short)GAL_DATA_BLANK_SHORT);
+        asprintf(&blank, "%d",         (int16_t)GAL_DATA_BLANK_INT16);
       break;
 
-    case GAL_DATA_TYPE_UINT:
+    case GAL_DATA_TYPE_UINT32:
       if(width)
-        asprintf(&blank, "%*u", width, (unsigned int)GAL_DATA_BLANK_UINT);
+        asprintf(&blank, "%*u", width, (uint32_t)GAL_DATA_BLANK_UINT32);
       else
-        asprintf(&blank, "%u",         (unsigned int)GAL_DATA_BLANK_UINT);
+        asprintf(&blank, "%u",         (uint32_t)GAL_DATA_BLANK_UINT32);
       break;
 
-    case GAL_DATA_TYPE_INT:
+    case GAL_DATA_TYPE_INT32:
       if(width)
-        asprintf(&blank, "%*d", width, (int)GAL_DATA_BLANK_INT);
+        asprintf(&blank, "%*d", width, (int32_t)GAL_DATA_BLANK_INT32);
       else
-        asprintf(&blank, "%d",         (int)GAL_DATA_BLANK_INT);
+        asprintf(&blank, "%d",         (int32_t)GAL_DATA_BLANK_INT32);
       break;
 
-    case GAL_DATA_TYPE_ULONG:
+    case GAL_DATA_TYPE_UINT64:
       if(width)
-        asprintf(&blank, "%*lu", width, (unsigned long)GAL_DATA_BLANK_ULONG);
+        asprintf(&blank, "%*lu", width, (uint64_t)GAL_DATA_BLANK_UINT64);
       else
-        asprintf(&blank, "%lu",         (unsigned long)GAL_DATA_BLANK_ULONG);
+        asprintf(&blank, "%lu",         (uint64_t)GAL_DATA_BLANK_UINT64);
       break;
 
-    case GAL_DATA_TYPE_LONG:
+    case GAL_DATA_TYPE_INT64:
       if(width)
-        asprintf(&blank, "%*ld", width, (long)GAL_DATA_BLANK_LONG);
+        asprintf(&blank, "%*ld", width, (int64_t)GAL_DATA_BLANK_INT64);
       else
-        asprintf(&blank, "%ld",         (long)GAL_DATA_BLANK_LONG);
+        asprintf(&blank, "%ld",         (int64_t)GAL_DATA_BLANK_INT64);
       break;
 
-    case GAL_DATA_TYPE_LONGLONG:
+    case GAL_DATA_TYPE_FLOAT32:
       if(width)
-        asprintf(&blank, "%*lld", width, (LONGLONG)GAL_DATA_BLANK_LONGLONG);
+        asprintf(&blank, "%*f", width, (float)GAL_DATA_BLANK_FLOAT32);
       else
-        asprintf(&blank, "%lld",         (LONGLONG)GAL_DATA_BLANK_LONGLONG);
+        asprintf(&blank, "%f",         (float)GAL_DATA_BLANK_FLOAT32);
       break;
 
-    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_FLOAT64:
       if(width)
-        asprintf(&blank, "%*f", width, (float)GAL_DATA_BLANK_FLOAT);
+        asprintf(&blank, "%*f", width, (double)GAL_DATA_BLANK_FLOAT64);
       else
-        asprintf(&blank, "%f",         (float)GAL_DATA_BLANK_FLOAT);
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(width)
-        asprintf(&blank, "%*f", width, (double)GAL_DATA_BLANK_DOUBLE);
-      else
-        asprintf(&blank, "%f",         (double)GAL_DATA_BLANK_DOUBLE);
+        asprintf(&blank, "%f",         (double)GAL_DATA_BLANK_FLOAT64);
       break;
 
     default:
@@ -1269,326 +1237,28 @@ gal_data_blank_as_string(int type, int width)
 
 
 
-/* Any non-zero pixel in the `mask' array is set as blank in the `in'
-   array. */
-void
-gal_data_apply_mask(gal_data_t *in, gal_data_t *mask)
-{
-  int hasblank=0;
-  float *mpt, *m, *mf;
-  gal_data_t *converted;
 
-  unsigned char     *uc   = in->array, *ucf   = uc  + in->size;
-  char              *c    = in->array, *cf    = c   + in->size;
-  char              **str = in->array, **strf = str + in->size;
-  unsigned short    *us   = in->array, *usf   = us  + in->size;
-  short             *s    = in->array, *sf    = s   + in->size;
-  unsigned int      *ui   = in->array, *uif   = ui  + in->size;
-  int               *ii   = in->array, *iif   = ii  + in->size;
-  unsigned long     *ul   = in->array, *ulf   = ul  + in->size;
-  long              *l    = in->array, *lf    = l   + in->size;
-  LONGLONG          *L    = in->array, *Lf    = L   + in->size;
-  float             *f    = in->array, *ff    = f   + in->size;
-  double            *d    = in->array, *df    = d   + in->size;
-  gsl_complex_float *cx   = in->array, *cxf   = cx  + in->size;
-  gsl_complex       *dcx  = in->array, *dcxf  = dcx + in->size;
+/* For integers a simple equality is enough. */
+#define HAS_BLANK_INT(CTYPE, BLANK) {                                   \
+    CTYPE *a=data->array, *af=a+data->size;                             \
+    do if(*a++ == BLANK) return 1; while(a<af);                         \
+  }
 
-
-  /* Make sure the mask and input image have the same dimentionality: */
-  if(in->ndim!=mask->ndim)
-    error(EXIT_FAILURE, 0, "the `in' and `mask' data structures given "
-          "to `gal_data_apply_mask' do not have the same dimensionality: "
-          "%zu and %zu respectively", in->ndim, mask->ndim);
-
-
-  /* Make sure the mask and input image have the same size along each
-     dimension: */
-  if(gal_data_dsize_is_different(in, mask))
-    error(EXIT_FAILURE, 0, "the `in' and `mask' data structures given "
-          "to `gal_data_apply_mask' do not have the same size along each "
-          "dimension");
-
-
-  /* First convert the mask to floating point. Note that although the
-     standard definition of a mask is for it to be an integer, in some
-     situations, the users might want to specify a floating point image as
-     a mask. Such a mask might have values between 0 and 1 (for example
-     they have made a mock profiles and want to mask all pixels covered by
-     a profile). If we simply convert the mask image to an integer, all
-     pixels with values between zero and one will be set to 0. So we need
-     to internally convert the mask image to float to preserve this. */
-  if(mask->type==GAL_DATA_TYPE_FLOAT)
-    converted=mask;
-  else
-    converted=gal_data_copy_to_new_type(mask, GAL_DATA_TYPE_FLOAT);
-  mpt=converted->array;
-
-
-  /* Go over all the pixels and apply the mask. But first check if there
-     actually are any blank values, it might be the case that there isn't
-     any and in that case we can ignore the checks: */
-  mf=(m=mpt)+in->size; do if(*m++ != 0.0f) hasblank=1; while(m<mf);
-  if(hasblank)
-    {
-      switch(in->type)
-        {
-        case GAL_DATA_TYPE_BIT:
-          error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
-                "values for `GAL_DATA_TYPE_BIT', please get in touch with "
-                "us to see how we can implement it.");
-
-        case GAL_DATA_TYPE_UCHAR:
-          do *uc = *mpt++==0.0f ? *uc : GAL_DATA_BLANK_UCHAR; while(++uc<ucf);
-          break;
-
-          /* CFITSIO says "int for keywords, char for table columns". Here we
-             are only assuming table columns. So in practice this also applies
-             to TSBYTE.*/
-        case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-          do *c = *mpt++==0.0f ? *c : GAL_DATA_BLANK_CHAR; while(++c<cf);
-          break;
-
-        case GAL_DATA_TYPE_STRING:
-          do *str = *mpt++==0.0f ? *str : GAL_DATA_BLANK_STRING;
-          while(++str<strf);
-          break;
-
-        case GAL_DATA_TYPE_USHORT:
-          do *us = *mpt++==0.0f ? *us : GAL_DATA_BLANK_USHORT;
-          while(++us<usf);
-          break;
-
-        case GAL_DATA_TYPE_SHORT:
-          do *s = *mpt++==0.0f ? *s : GAL_DATA_BLANK_SHORT; while(++s<sf);
-          break;
-
-        case GAL_DATA_TYPE_UINT:
-          do *ui = *mpt++==0.0f ? *ui : GAL_DATA_BLANK_UINT; while(++ui<uif);
-          break;
-
-        case GAL_DATA_TYPE_INT:
-          do *ii = *mpt++==0.0f ? *ii : GAL_DATA_BLANK_INT; while(++ii<iif);
-          break;
-
-        case GAL_DATA_TYPE_ULONG:
-          do *ul = *mpt++==0.0f ? *ul : GAL_DATA_BLANK_ULONG; while(++ul<ulf);
-          break;
-
-        case GAL_DATA_TYPE_LONG:
-          do *l = *mpt++==0.0f ? *l : GAL_DATA_BLANK_LONG; while(++l<lf);
-          break;
-
-        case GAL_DATA_TYPE_LONGLONG:
-          do *L = *mpt++==0.0f ? *L : GAL_DATA_BLANK_LONGLONG; while(++L<Lf);
-          break;
-
-        case GAL_DATA_TYPE_FLOAT:
-          do *f = *mpt++==0.0f ? *f : GAL_DATA_BLANK_FLOAT; while(++f<ff);
-          break;
-
-        case GAL_DATA_TYPE_DOUBLE:
-          do *d = *mpt++==0.0f ? *d : GAL_DATA_BLANK_DOUBLE; while(++d<df);
-          break;
-
-        case GAL_DATA_TYPE_COMPLEX:
-          do
-            if(*mpt++ == 0.0f)
-              GSL_SET_COMPLEX(cx, GAL_DATA_BLANK_FLOAT, GAL_DATA_BLANK_FLOAT);
-          while(++cx<cxf);
-          break;
-
-        case GAL_DATA_TYPE_DCOMPLEX:
-          do
-            if(*mpt++==0.0f)
-              GSL_SET_COMPLEX(dcx, GAL_DATA_BLANK_DOUBLE,
-                              GAL_DATA_BLANK_DOUBLE);
-          while(++dcx<dcxf);
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-                "`gal_data_alloc_blank'", in->type);
-        }
-    }
-
-  /* Free the converted mask data if it was allocated: */
-  if(converted!=mask)
-    free(converted);
-}
-
-
-
-
-
-/* Change all blank values in `data' to the value pointed to by `value'. */
-void
-gal_data_blank_to_value(gal_data_t *data, void *value)
-{
-  /* 'value' will only be read from one of these based on the
-     datatype. Which the caller assigned. If there is any problem, it is
-     their responsability, not this function's.*/
-  void *A=data->array;
-  size_t S=data->size;
-  unsigned char     *uc = A,   *ucf = A+S,   ucv = *(unsigned char *) value;
-  char               *c = A,    *cf = A+S,    cv = *(char *) value;
-  char            **str = A, **strf = A+S, *strv = *(char **) value;
-  unsigned short    *us = A,   *usf = A+S,   usv = *(unsigned short *) value;
-  short              *s = A,    *sf = A+S,    sv = *(short *) value;
-  unsigned int      *ui = A,   *uif = A+S,   uiv = *(unsigned int *) value;
-  int               *in = A,   *inf = A+S,   inv = *(int *) value;
-  unsigned long     *ul = A,   *ulf = A+S,   ulv = *(unsigned long *) value;
-  long               *l = A,    *lf = A+S,    lv = *(int32_t *) value;
-  LONGLONG           *L = A,    *Lf = A+S,    Lv = *(int64_t *) value;
-  float              *f = A,    *ff = A+S,    fv = *(float *) value;
-  double             *d = A,    *df = A+S,    dv = *(double *) value;
-  gsl_complex_float *cx = A,   *cxf = A+S,   cxv = *(gsl_complex_float *) value;
-  gsl_complex      *dcx = A,  *dcxf = A+S,  dcxv = *(gsl_complex *) value;
-
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
-
-    case GAL_DATA_TYPE_UCHAR:
-      do if(*uc==GAL_DATA_BLANK_UCHAR) *uc=ucv; while(++uc<ucf);
-      break;
-
-
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      do if(*c==GAL_DATA_BLANK_CHAR) *c=cv; while(++c<cf);
-      break;
-
-
-    case GAL_DATA_TYPE_STRING:
-      do
-        if(!strcmp(*str, GAL_DATA_BLANK_STRING))
-          gal_checkset_allocate_copy(strv, str);
-      while(++str<strf);
-      break;
-
-
-    case GAL_DATA_TYPE_USHORT:
-      do if(*us==GAL_DATA_BLANK_USHORT) *us=usv; while(++us<usf);
-      break;
-
-
-    case GAL_DATA_TYPE_SHORT:
-      do if(*s==GAL_DATA_BLANK_SHORT) *s=sv; while(++s<sf);
-      break;
-
-
-    case GAL_DATA_TYPE_UINT:
-      do if(*ui==GAL_DATA_BLANK_UINT) *ui=uiv; while(++ui<uif);
-      break;
-
-
-    case GAL_DATA_TYPE_INT:
-      do if(*in==GAL_DATA_BLANK_INT) *in=inv; while(++in<inf);
-      break;
-
-
-    case GAL_DATA_TYPE_ULONG:
-      do if(*ul==GAL_DATA_BLANK_ULONG) *ul=ulv; while(++ul<ulf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONG:
-      do if(*l==GAL_DATA_BLANK_LONG) *l=lv; while(++l<lf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONGLONG:
-      do if(*L==GAL_DATA_BLANK_LONGLONG) *L=Lv; while(++L<Lf);
-      break;
-
-
-      /* Note that a NaN value is not equal to another NaN value, so we
-         can't use the easy check for cases were the blank value is
-         NaN. Also note that `isnan' is actually a macro, so it works for
-         both float and double types.*/
-    case GAL_DATA_TYPE_FLOAT:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-        do if(isnan(*f)) *f++=fv; while(f<ff);
-      else
-        do if(*f==GAL_DATA_BLANK_FLOAT) *f++=fv; while(f<ff);
-      break;
-
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-        do if(isnan(*d)) *d++=dv; while(d<df);
-      else
-        do if(*d==GAL_DATA_BLANK_FLOAT) *d++=dv; while(d<df);
-      break;
-
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(cx))
-               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
-              GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
-                              GSL_COMPLEX_P_IMAG(&cxv));
-          while(++cx<cxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT)
-            GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
-                            GSL_COMPLEX_P_IMAG(&cxv));
-        while(++cx<cxf);
-      break;
-
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(dcx))
-               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
-              GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
-                              GSL_COMPLEX_P_IMAG(&dcxv));
-          while(++dcx<dcxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT)
-            GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
-                            GSL_COMPLEX_P_IMAG(&dcxv));
-        while(++dcx<dcxf);
-      break;
-
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
-            "in `gal_data_blank_to_value'", data->type);
-    }
-}
-
-
-
+/* Note that a NaN value is not equal to another NaN value, so we can't use
+   the easy check for cases were the blank value is NaN. Also note that
+   `isnan' is actually a macro, so it works for both float and double
+   types.*/
+#define HAS_BLANK_FLT(CTYPE, BLANK, MULTIP) {                           \
+    CTYPE *a=data->array, *af=a+(MULTIP*data->size);                    \
+    if(isnan(BLANK)) do if(isnan(*a++)) return 1; while(a<af);          \
+    else             do if(*a++==BLANK) return 1; while(a<af);          \
+  }
 
 /* Return 1 if the dataset has a blank value and zero if it doesn't. */
 int
 gal_data_has_blank(gal_data_t *data)
 {
-  /* 'value' will only be read from one of these based on the
-     datatype. Which the caller assigned. If there is any problem, it is
-     their responsability, not this function's.*/
-  unsigned char     *uc = data->array,   *ucf = uc  + data->size;
-  char               *c = data->array,    *cf = c   + data->size;
-  char            **str = data->array, **strf = str + data->size;
-  unsigned short    *us = data->array,   *usf = us  + data->size;
-  short              *s = data->array,    *sf = s   + data->size;
-  unsigned int      *ui = data->array,   *uif = ui  + data->size;
-  int               *in = data->array,   *inf = in  + data->size;
-  unsigned long     *ul = data->array,   *ulf = ul  + data->size;
-  long               *l = data->array,    *lf = l   + data->size;
-  LONGLONG           *L = data->array,    *Lf = L   + data->size;
-  float              *f = data->array,    *ff = f   + data->size;
-  double             *d = data->array,    *df = d   + data->size;
-  gsl_complex_float *cx = data->array,   *cxf = cx  + data->size;
-  gsl_complex      *dcx = data->array,  *dcxf = dcx + data->size;
+  char **str=data->array, **strf=str+data->size;
 
   /* Go over the pixels and check: */
   switch(data->type)
@@ -1597,107 +1267,45 @@ gal_data_has_blank(gal_data_t *data)
       error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
             "datatype, please get in touch with us to implement it.");
 
-    case GAL_DATA_TYPE_UCHAR:
-      do if(*uc++==GAL_DATA_BLANK_UCHAR) return 1; while(uc<ucf);
-      break;
+    case GAL_DATA_TYPE_UINT8:
+      HAS_BLANK_INT(uint8_t, GAL_DATA_BLANK_UINT8);     break;
 
+    case GAL_DATA_TYPE_INT8:
+      HAS_BLANK_INT(int8_t, GAL_DATA_BLANK_INT8);       break;
 
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      do if(*c++==GAL_DATA_BLANK_CHAR) return 1; while(c<cf);
-      break;
+    case GAL_DATA_TYPE_UINT16:
+      HAS_BLANK_INT(uint16_t, GAL_DATA_BLANK_UINT16);   break;
 
+    case GAL_DATA_TYPE_INT16:
+      HAS_BLANK_INT(int16_t, GAL_DATA_BLANK_INT16);     break;
+
+    case GAL_DATA_TYPE_UINT32:
+      HAS_BLANK_INT(uint32_t, GAL_DATA_BLANK_UINT32);   break;
+
+    case GAL_DATA_TYPE_INT32:
+      HAS_BLANK_INT(int32_t, GAL_DATA_BLANK_INT32);     break;
+
+    case GAL_DATA_TYPE_UINT64:
+      HAS_BLANK_INT(uint64_t, GAL_DATA_BLANK_UINT64);   break;
+
+    case GAL_DATA_TYPE_INT64:
+      HAS_BLANK_INT(int64_t, GAL_DATA_BLANK_INT64);     break;
+
+    case GAL_DATA_TYPE_FLOAT32:
+      HAS_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32, 1);  break;
+
+    case GAL_DATA_TYPE_FLOAT64:
+      HAS_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64, 1); break;
+
+    case GAL_DATA_TYPE_COMPLEX32:
+      HAS_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32, 2);  break;
+
+    case GAL_DATA_TYPE_COMPLEX64:
+      HAS_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64, 2); break;
 
     case GAL_DATA_TYPE_STRING:
       do if(!strcmp(*str++,GAL_DATA_BLANK_STRING)) return 1; while(str<strf);
       break;
-
-
-    case GAL_DATA_TYPE_USHORT:
-      do if(*us++==GAL_DATA_BLANK_USHORT) return 1; while(us<usf);
-      break;
-
-
-    case GAL_DATA_TYPE_SHORT:
-      do if(*s++==GAL_DATA_BLANK_SHORT) return 1; while(s<sf);
-      break;
-
-
-    case GAL_DATA_TYPE_UINT:
-      do if(*ui++==GAL_DATA_BLANK_UINT) return 1; while(ui<uif);
-      break;
-
-
-    case GAL_DATA_TYPE_INT:
-      do if(*in++==GAL_DATA_BLANK_INT) return 1; while(in<inf);
-      break;
-
-
-    case GAL_DATA_TYPE_ULONG:
-      do if(*ul++==GAL_DATA_BLANK_ULONG) return 1; while(ul<ulf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONG:
-      do if(*l++==GAL_DATA_BLANK_LONG) return 1; while(l<lf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONGLONG:
-      do if(*L++==GAL_DATA_BLANK_LONGLONG) return 1; while(L<Lf);
-      break;
-
-
-      /* Note that a NaN value is not equal to another NaN value, so we
-         can't use the easy check for cases were the blank value is
-         NaN. Also note that `isnan' is actually a macro, so it works for
-         both float and double types.*/
-    case GAL_DATA_TYPE_FLOAT:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-        do if(isnan(*f++)) return 1; while(f<ff);
-      else
-        do if(*f++==GAL_DATA_BLANK_FLOAT) return 1; while(f<ff);
-      break;
-
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-        do if(isnan(*d++)) return 1; while(d<df);
-      else
-        do if(*d++==GAL_DATA_BLANK_FLOAT) return 1; while(d<df);
-      break;
-
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(cx))
-               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
-              return 1;
-          while(++cx<cxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT)
-            return 1;
-        while(++cx<cxf);
-      break;
-
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(dcx))
-               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
-              return 1;
-          while(++dcx<dcxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT)
-            return 1;
-        while(++dcx<dcxf);
-      break;
-
 
     default:
       error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
@@ -1714,41 +1322,46 @@ gal_data_has_blank(gal_data_t *data)
 
 
 
-/* Output a data-set of the the same size as the input, but with an
-   unsigned character type that has a value of 1 for data that are blank
-   and 0 for those that aren't. */
+/* For integers a simple equality is enough. */
+#define FLAG_BLANK_INT(CTYPE, BLANK) {                                  \
+    CTYPE *a=data->array; do *o = (*a==BLANK); while(++o<of);           \
+  }
+
+/* Note that a NaN value is not equal to another NaN value, so we can't use
+   the easy check for cases were the blank value is NaN. Also note that
+   `isnan' is actually a macro, so it works for both float and double
+   types.*/
+#define FLAG_BLANK_FLT(CTYPE, BLANK) {                                  \
+    CTYPE *a=data->array;                                               \
+    if(isnan(BLANK)) do *o = isnan(*a++);   while(++o<of);              \
+    else             do *o = (*a++==BLANK); while(++o<of);              \
+  }
+
+#define FLAG_BLANK_COMPLEX(CTYPE, BLANK) {                              \
+    CTYPE *a=data->array;                                               \
+    if(isnan(BLANK))                                                    \
+      do { *o=(isnan(*a) || isnan(*(a+1))); a+=2; } while(++o<of);      \
+    else                                                                \
+      do { *o=(*a==BLANK || *(a+1)==BLANK); a+=2; } while(++o<of);      \
+  }
+
+/* Output a data-set of the the same size as the input, but with an uint8_t
+   type that has a value of 1 for data that are blank and 0 for those that
+   aren't. */
 gal_data_t *
 gal_data_flag_blank(gal_data_t *data)
 {
+  uint8_t *o, *of;
   gal_data_t *out;
-
-  /* 'value' will only be read from one of these based on the
-     datatype. Which the caller assigned. If there is any problem, it is
-     their responsability, not this function's.*/
-  void *A=data->array;
-  size_t S=data->size;
-  unsigned char     *uc = A,   *ucf = A+S, *o;
-  char               *c = A,    *cf = A+S;
-  char            **str = A, **strf = A+S;
-  unsigned short    *us = A,   *usf = A+S;
-  short              *s = A,    *sf = A+S;
-  unsigned int      *ui = A,   *uif = A+S;
-  int               *in = A,   *inf = A+S;
-  unsigned long     *ul = A,   *ulf = A+S;
-  long               *l = A,    *lf = A+S;
-  LONGLONG           *L = A,    *Lf = A+S;
-  float              *f = A,    *ff = A+S;
-  double             *d = A,    *df = A+S;
-  gsl_complex_float *cx = A,   *cxf = A+S;
-  gsl_complex      *dcx = A,  *dcxf = A+S;
-
+  char **str=data->array, **strf=str+data->size;
 
   /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, data->ndim, data->dsize,
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
                      data->wcs, 0, data->minmapsize, data->name, data->unit,
                      data->comment);
-  o=out->array;
 
+  /* Set the pointers for easy looping. */
+  of=(o=out->array)+data->size;
 
   /* Go over the pixels and set the output values. */
   switch(data->type)
@@ -1757,103 +1370,45 @@ gal_data_flag_blank(gal_data_t *data)
       error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
             "datatype, please get in touch with us to implement it.");
 
-    case GAL_DATA_TYPE_UCHAR:
-      do *o++ = *uc==GAL_DATA_BLANK_UCHAR; while(++uc<ucf);
-      break;
+    case GAL_DATA_TYPE_UINT8:
+      FLAG_BLANK_INT(uint8_t, GAL_DATA_BLANK_UINT8);      break;
 
+    case GAL_DATA_TYPE_INT8:
+      FLAG_BLANK_INT(int8_t, GAL_DATA_BLANK_INT8);        break;
 
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      do *o++ = *c==GAL_DATA_BLANK_CHAR; while(++c<cf);
-      break;
+    case GAL_DATA_TYPE_UINT16:
+      FLAG_BLANK_INT(uint16_t, GAL_DATA_BLANK_UINT16);    break;
 
+    case GAL_DATA_TYPE_INT16:
+      FLAG_BLANK_INT(int16_t, GAL_DATA_BLANK_INT16);      break;
+
+    case GAL_DATA_TYPE_UINT32:
+      FLAG_BLANK_INT(uint32_t, GAL_DATA_BLANK_UINT32);    break;
+
+    case GAL_DATA_TYPE_INT32:
+      FLAG_BLANK_INT(int32_t, GAL_DATA_BLANK_INT32);      break;
+
+    case GAL_DATA_TYPE_UINT64:
+      FLAG_BLANK_INT(uint64_t, GAL_DATA_BLANK_UINT64);    break;
+
+    case GAL_DATA_TYPE_INT64:
+      FLAG_BLANK_INT(int64_t, GAL_DATA_BLANK_INT64);      break;
+
+    case GAL_DATA_TYPE_FLOAT32:
+      FLAG_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32);      break;
+
+    case GAL_DATA_TYPE_FLOAT64:
+      FLAG_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64);     break;
+
+    case GAL_DATA_TYPE_COMPLEX32:
+      FLAG_BLANK_COMPLEX(float, GAL_DATA_BLANK_FLOAT32);  break;
+
+    case GAL_DATA_TYPE_COMPLEX64:
+      FLAG_BLANK_COMPLEX(double, GAL_DATA_BLANK_FLOAT64); break;
 
     case GAL_DATA_TYPE_STRING:
       do *o++ = !strcmp(*str,GAL_DATA_BLANK_STRING); while(++str<strf);
       break;
-
-
-    case GAL_DATA_TYPE_USHORT:
-      do *o++ = *us==GAL_DATA_BLANK_USHORT; while(++us<usf);
-      break;
-
-
-    case GAL_DATA_TYPE_SHORT:
-      do *o++ = *s==GAL_DATA_BLANK_SHORT; while(++s<sf);
-      break;
-
-
-    case GAL_DATA_TYPE_UINT:
-      do *o++ = *ui==GAL_DATA_BLANK_UINT; while(++ui<uif);
-      break;
-
-
-    case GAL_DATA_TYPE_INT:
-      do *o++ = *in==GAL_DATA_BLANK_INT; while(++in<inf);
-      break;
-
-
-    case GAL_DATA_TYPE_ULONG:
-      do *o++ = *ul==GAL_DATA_BLANK_ULONG; while(++ul<ulf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONG:
-      do *o++ = *l==GAL_DATA_BLANK_LONG; while(++l<lf);
-      break;
-
-
-    case GAL_DATA_TYPE_LONGLONG:
-      do *o++ = *L==GAL_DATA_BLANK_LONGLONG; while(++L<Lf);
-      break;
-
-
-      /* Note that a NaN value is not equal to another NaN value, so we
-         can't use the easy check for cases were the blank value is
-         NaN. Also note that `isnan' is actually a macro, so it works for
-         both float and double types.*/
-    case GAL_DATA_TYPE_FLOAT:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-        do *o++ = isnan(*f); while(++f<ff);
-      else
-        do *o++ = *f==GAL_DATA_BLANK_FLOAT; while(++f<ff);
-      break;
-
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-        do *o++ = isnan(*d); while(++d<df);
-      else
-        do *o++ = *d==GAL_DATA_BLANK_DOUBLE; while(++d<df);
-      break;
-
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-          do
-            *o++ = ( isnan(GSL_COMPLEX_P_REAL(cx))
-                     && isnan(GSL_COMPLEX_P_IMAG(cx)) );
-          while(++cx<cxf);
-      else
-        do
-          *o++ = ( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
-                   && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT );
-        while(++cx<cxf);
-      break;
-
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-          do
-            *o++ = ( isnan(GSL_COMPLEX_P_REAL(dcx))
-                     && isnan(GSL_COMPLEX_P_IMAG(dcx)) );
-          while(++dcx<dcxf);
-      else
-        do
-          *o++ = ( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
-                   && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT );
-        while(++dcx<dcxf);
-      break;
-
 
     default:
       error(EXIT_FAILURE, 0, "type value (%d) not recognized "
@@ -1924,33 +1479,31 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
       /* Set the pointer. */
       switch(to->type)
         {
-        case GAL_DATA_TYPE_UCHAR:    ptr = (unsigned char *)(to->array) + i;
+        case GAL_DATA_TYPE_UINT8:    ptr = (uint8_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_CHAR:     ptr = (char *)(to->array) + i;
+        case GAL_DATA_TYPE_INT8:     ptr = (int8_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_USHORT:   ptr = (unsigned short *)(to->array) + i;
+        case GAL_DATA_TYPE_UINT16:   ptr = (uint16_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_SHORT:    ptr = (short *)(to->array) + i;
+        case GAL_DATA_TYPE_INT16:    ptr = (int16_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_UINT:     ptr = (unsigned int *)(to->array) + i;
+        case GAL_DATA_TYPE_UINT32:   ptr = (uint32_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_INT:      ptr = (int *)(to->array) + i;
+        case GAL_DATA_TYPE_INT32:    ptr = (int32_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_ULONG:    ptr = (unsigned long *)(to->array) + i;
+        case GAL_DATA_TYPE_UINT64:   ptr = (uint64_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_LONG:     ptr = (long *)(to->array) + i;
+        case GAL_DATA_TYPE_INT64:    ptr = (int64_t *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_LONGLONG: ptr = (LONGLONG *)(to->array) + i;
+        case GAL_DATA_TYPE_FLOAT32:  ptr = (float *)(to->array) + i;
           break;
-        case GAL_DATA_TYPE_FLOAT:    ptr = (float *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_DOUBLE:   ptr = (double *)(to->array) + i;
+        case GAL_DATA_TYPE_FLOAT64:  ptr = (double *)(to->array) + i;
           break;
 
         case GAL_DATA_TYPE_BIT:
         case GAL_DATA_TYPE_STRLL:
-        case GAL_DATA_TYPE_COMPLEX:
-        case GAL_DATA_TYPE_DCOMPLEX:
+        case GAL_DATA_TYPE_COMPLEX32:
+        case GAL_DATA_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, "`data_copy_from_string' currently doesn't "
                 "support copying to %s type",
                 gal_data_type_as_string(to->type, 1));
@@ -1976,6 +1529,28 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
 
 
 
+/* Macros for copying to a string. */
+#define COPY_TO_STR_INT(CTYPE, BLANK, FMT) {                            \
+    CTYPE *a=from->array;                                               \
+    for(i=0;i<from->size;++i)                                           \
+      {                                                                 \
+        if(a[i]!=BLANK) asprintf(&strarr[i], FMT, a[i]);                \
+        else                                                            \
+          gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]); \
+      }                                                                 \
+  }
+
+#define COPY_TO_STR_FLT(CTYPE, BLANK) {                                 \
+    CTYPE *a=from->array;                                               \
+    for(i=0;i<from->size;++i)                                           \
+      {                                                                 \
+        if(isnan(BLANK)) isblank = isnan(a[i]) ? 1 : 0;                 \
+        else             isblank = a[i]==BLANK ? 1 : 0;                 \
+        if(isblank==0) asprintf(&strarr[i], "%f", a[i]);                \
+        else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]); \
+      }                                                                 \
+  }
+
 /* Convert any given type into a string by printing it into the elements of
    the already allocated `to->array'. */
 static void
@@ -1985,18 +1560,6 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   int isblank;
   char **strarr=to->array, **instrarr=from->array;
 
-  unsigned char  *uc=from->array;
-  char            *c=from->array;
-  unsigned short *us=from->array;
-  short           *s=from->array;
-  unsigned int   *ui=from->array;
-  int            *ii=from->array;
-  unsigned long  *ul=from->array;
-  long            *l=from->array;
-  LONGLONG        *L=from->array;
-  float           *f=from->array;
-  double          *d=from->array;
-
   /* Sanity check */
   if(to->type!=GAL_DATA_TYPE_STRING)
     error(EXIT_FAILURE, 0, "`to' in `data_copy_to_string' must have a "
@@ -2005,79 +1568,35 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   /* Do the copying */
   switch(from->type)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      for(i=0;i<from->size;++i)
-        {if(uc[i]!=GAL_DATA_BLANK_UCHAR) asprintf(&strarr[i], "%u", uc[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_UINT8:
+      COPY_TO_STR_INT(uint8_t,  GAL_DATA_BLANK_UINT8, "%u");    break;
 
-    case GAL_DATA_TYPE_CHAR:
-      for(i=0;i<from->size;++i)
-        {if(c[i]!=GAL_DATA_BLANK_CHAR) asprintf(&strarr[i], "%d", c[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_INT8:
+      COPY_TO_STR_INT(int8_t,   GAL_DATA_BLANK_INT8, "%d");     break;
 
-    case GAL_DATA_TYPE_USHORT:
-      for(i=0;i<from->size;++i)
-        {if(us[i]!=GAL_DATA_BLANK_USHORT) asprintf(&strarr[i], "%u", us[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_UINT16:
+      COPY_TO_STR_INT(uint16_t, GAL_DATA_BLANK_UINT16, "%u");   break;
 
-    case GAL_DATA_TYPE_SHORT:
-      for(i=0;i<from->size;++i)
-        {if(s[i]!=GAL_DATA_BLANK_SHORT) asprintf(&strarr[i], "%d", s[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_INT16:
+      COPY_TO_STR_INT(int16_t,  GAL_DATA_BLANK_INT16, "%d");    break;
 
-    case GAL_DATA_TYPE_UINT:
-      for(i=0;i<from->size;++i)
-        {if(ui[i]!=GAL_DATA_BLANK_UINT) asprintf(&strarr[i], "%u", ui[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_UINT32:
+      COPY_TO_STR_INT(uint32_t, GAL_DATA_BLANK_UINT32, "%u");   break;
 
-    case GAL_DATA_TYPE_INT:
-      for(i=0;i<from->size;++i)
-        {if(ii[i]!=GAL_DATA_BLANK_INT) asprintf(&strarr[i], "%d", ii[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_INT32:
+      COPY_TO_STR_INT(int32_t,  GAL_DATA_BLANK_INT32, "%d");    break;
 
-    case GAL_DATA_TYPE_ULONG:
-      for(i=0;i<from->size;++i)
-        {if(ul[i]!=GAL_DATA_BLANK_ULONG) asprintf(&strarr[i], "%lu", ul[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_UINT64:
+      COPY_TO_STR_INT(uint64_t, GAL_DATA_BLANK_UINT64, "%lu");  break;
 
-    case GAL_DATA_TYPE_LONG:
-      for(i=0;i<from->size;++i)
-        {if(l[i]!=GAL_DATA_BLANK_LONG) asprintf(&strarr[i], "%ld", l[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_INT64:
+      COPY_TO_STR_INT(int64_t,  GAL_DATA_BLANK_INT64, "%ld");   break;
 
-    case GAL_DATA_TYPE_LONGLONG:
-      for(i=0;i<from->size;++i)
-        {if(L[i]!=GAL_DATA_BLANK_LONGLONG) asprintf(&strarr[i], "%lld", L[i]);
-         else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);}
-      break;
+    case GAL_DATA_TYPE_FLOAT32:
+      COPY_TO_STR_FLT(float, GAL_DATA_BLANK_FLOAT32);           break;
 
-    case GAL_DATA_TYPE_FLOAT:
-      for(i=0;i<from->size;++i)
-        {
-          if(isnan(GAL_DATA_BLANK_FLOAT)) isblank = isnan(f[i]) ? 1 : 0;
-          else isblank = GAL_DATA_BLANK_FLOAT==f[i] ? 1 : 0;
-          if(isblank==0) asprintf(&strarr[i], "%f", f[i]);
-          else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);
-        }
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      for(i=0;i<from->size;++i)
-        {
-          if(isnan(GAL_DATA_BLANK_FLOAT)) isblank = isnan(d[i]) ? 1 : 0;
-          else isblank = GAL_DATA_BLANK_FLOAT==d[i] ? 1 : 0;
-          if(isblank==0) asprintf(&strarr[i], "%f", d[i]);
-          else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]);
-        }
-      break;
+    case GAL_DATA_TYPE_FLOAT64:
+      COPY_TO_STR_FLT(double, GAL_DATA_BLANK_FLOAT32);          break;
 
     case GAL_DATA_TYPE_STRING:
       for(i=0;i<from->size;++i)
@@ -2086,8 +1605,8 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
     case GAL_DATA_TYPE_BIT:
     case GAL_DATA_TYPE_STRLL:
-    case GAL_DATA_TYPE_COMPLEX:
-    case GAL_DATA_TYPE_DCOMPLEX:
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "`data_copy_to_string' currently doesn't "
             "support copying to %s type",
             gal_data_type_as_string(from->type, 1));
@@ -2172,47 +1691,43 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 #define COPY_OTYPE_SET(otype)                                           \
   switch(in->type)                                                      \
     {                                                                   \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned char);                   \
+    case GAL_DATA_TYPE_UINT8:                                           \
+      COPY_OTYPE_ITYPE_SET_INT(otype, uint8_t);                         \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_CHAR:                                            \
-      COPY_OTYPE_ITYPE_SET_INT(otype, char);                            \
+    case GAL_DATA_TYPE_INT8:                                            \
+      COPY_OTYPE_ITYPE_SET_INT(otype, int8_t);                          \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_USHORT:                                          \
-      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned short);                  \
+    case GAL_DATA_TYPE_UINT16:                                          \
+      COPY_OTYPE_ITYPE_SET_INT(otype, uint16_t);                        \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_SHORT:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, short);                           \
+    case GAL_DATA_TYPE_INT16:                                           \
+      COPY_OTYPE_ITYPE_SET_INT(otype, int16_t);                         \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_UINT:                                            \
-      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned int);                    \
+    case GAL_DATA_TYPE_UINT32:                                          \
+      COPY_OTYPE_ITYPE_SET_INT(otype, uint32_t);                        \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_INT:                                             \
-      COPY_OTYPE_ITYPE_SET_INT(otype, int);                             \
+    case GAL_DATA_TYPE_INT32:                                           \
+      COPY_OTYPE_ITYPE_SET_INT(otype, int32_t);                         \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned long);                   \
+    case GAL_DATA_TYPE_UINT64:                                          \
+      COPY_OTYPE_ITYPE_SET_INT(otype, uint64_t);                        \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_LONG:                                            \
-      COPY_OTYPE_ITYPE_SET_INT(otype, long);                            \
+    case GAL_DATA_TYPE_INT64:                                           \
+      COPY_OTYPE_ITYPE_SET_INT(otype, int64_t);                         \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      COPY_OTYPE_ITYPE_SET_INT(otype, LONGLONG);                        \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_FLOAT:                                           \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
       COPY_OTYPE_ITYPE_SET_FLT(otype, float);                           \
       break;                                                            \
                                                                         \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
       COPY_OTYPE_ITYPE_SET_FLT(otype, double);                          \
       break;                                                            \
                                                                         \
@@ -2222,8 +1737,8 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
                                                                         \
     case GAL_DATA_TYPE_BIT:                                             \
     case GAL_DATA_TYPE_STRLL:                                           \
-    case GAL_DATA_TYPE_COMPLEX:                                         \
-    case GAL_DATA_TYPE_DCOMPLEX:                                        \
+    case GAL_DATA_TYPE_COMPLEX32:                                       \
+    case GAL_DATA_TYPE_COMPLEX64:                                       \
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently "   \
             "doesn't support copying from %s type to a numeric (real) " \
             "type", gal_data_type_as_string(in->type, 1));              \
@@ -2257,58 +1772,22 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
   /* Fill in the output array: */
   switch(newtype)
     {
-    case GAL_DATA_TYPE_UCHAR:
-      COPY_OTYPE_SET(unsigned char);
-      break;
-
-    case GAL_DATA_TYPE_CHAR:
-      COPY_OTYPE_SET(char);
-      break;
-
-    case GAL_DATA_TYPE_USHORT:
-      COPY_OTYPE_SET(unsigned short);
-      break;
-
-    case GAL_DATA_TYPE_SHORT:
-      COPY_OTYPE_SET(short);
-      break;
-
-    case GAL_DATA_TYPE_UINT:
-      COPY_OTYPE_SET(unsigned int);
-      break;
-
-    case GAL_DATA_TYPE_INT:
-      COPY_OTYPE_SET(int);
-      break;
-
-    case GAL_DATA_TYPE_ULONG:
-      COPY_OTYPE_SET(unsigned long);
-      break;
-
-    case GAL_DATA_TYPE_LONG:
-      COPY_OTYPE_SET(long);
-      break;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      COPY_OTYPE_SET(LONGLONG);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
-      COPY_OTYPE_SET(float);
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      COPY_OTYPE_SET(double);
-      break;
-
-    case GAL_DATA_TYPE_STRING:
-      data_copy_to_string(in, out);
-      break;
+    case GAL_DATA_TYPE_UINT8:   COPY_OTYPE_SET(uint8_t);         break;
+    case GAL_DATA_TYPE_INT8:    COPY_OTYPE_SET(int8_t);          break;
+    case GAL_DATA_TYPE_UINT16:  COPY_OTYPE_SET(uint16_t);        break;
+    case GAL_DATA_TYPE_INT16:   COPY_OTYPE_SET(int16_t);         break;
+    case GAL_DATA_TYPE_UINT32:  COPY_OTYPE_SET(uint32_t);        break;
+    case GAL_DATA_TYPE_INT32:   COPY_OTYPE_SET(int32_t);         break;
+    case GAL_DATA_TYPE_UINT64:  COPY_OTYPE_SET(uint64_t);        break;
+    case GAL_DATA_TYPE_INT64:   COPY_OTYPE_SET(int64_t);         break;
+    case GAL_DATA_TYPE_FLOAT32: COPY_OTYPE_SET(float);           break;
+    case GAL_DATA_TYPE_FLOAT64: COPY_OTYPE_SET(double);          break;
+    case GAL_DATA_TYPE_STRING:  data_copy_to_string(in, out);    break;
 
     case GAL_DATA_TYPE_BIT:
     case GAL_DATA_TYPE_STRLL:
-    case GAL_DATA_TYPE_COMPLEX:
-    case GAL_DATA_TYPE_DCOMPLEX:
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
             "support copying to %s type",
             gal_data_type_as_string(newtype, 1));
@@ -2411,6 +1890,8 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
 /*************************************************************
  **************              Write             ***************
  *************************************************************/
+#define WRITE_TO_STRING(CTYPE, FMT) asprintf(&str, FMT, *(CTYPE *)ptr);
+
 char *
 gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space)
 {
@@ -2431,49 +1912,16 @@ gal_data_write_to_string(void *ptr, int type, int quote_if_str_has_space)
         asprintf(&str, "%s", *(char **)ptr);
       break;
 
-    case GAL_DATA_TYPE_UCHAR:
-      asprintf(&str, "%u", *(unsigned char *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_CHAR:
-      asprintf(&str, "%d", *(char *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_USHORT:
-      asprintf(&str, "%u", *(unsigned short *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_SHORT:
-      asprintf(&str, "%d", *(short *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_UINT:
-      asprintf(&str, "%u", *(unsigned int *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_INT:
-      asprintf(&str, "%d", *(int *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_ULONG:
-      asprintf(&str, "%lu", *(unsigned long *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_LONG:
-      asprintf(&str, "%ld", *(long *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      asprintf(&str, "%lld", *(LONGLONG *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
-      asprintf(&str, "%.6f", *(float *)ptr);
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      asprintf(&str, "%.10f", *(double *)ptr);
-      break;
+    case GAL_DATA_TYPE_UINT8:   WRITE_TO_STRING(uint8_t,   "%u");  break;
+    case GAL_DATA_TYPE_INT8:    WRITE_TO_STRING(int8_t,    "%d");  break;
+    case GAL_DATA_TYPE_UINT16:  WRITE_TO_STRING(uint16_t,  "%u");  break;
+    case GAL_DATA_TYPE_INT16:   WRITE_TO_STRING(int16_t,   "%d");  break;
+    case GAL_DATA_TYPE_UINT32:  WRITE_TO_STRING(uint32_t,  "%u");  break;
+    case GAL_DATA_TYPE_INT32:   WRITE_TO_STRING(int32_t,   "%d");  break;
+    case GAL_DATA_TYPE_UINT64:  WRITE_TO_STRING(uint64_t, "%lu");  break;
+    case GAL_DATA_TYPE_INT64:   WRITE_TO_STRING(int64_t,  "%ld");  break;
+    case GAL_DATA_TYPE_FLOAT32: WRITE_TO_STRING(float,   "%.6f");  break;
+    case GAL_DATA_TYPE_FLOAT64: WRITE_TO_STRING(double, "%.10f");  break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
@@ -2515,20 +1963,12 @@ gal_data_string_to_number(char *string)
   char *tailptr, *cp;
   int type, forcedfloat=0;
 
-  /* Define the pointers. */
-  unsigned char     uc;
-  char               c;
-  unsigned short    us;
-  short              s;
-  unsigned int      ui;
-  int                i;
-  unsigned long     ul;
-  long               l;
-  LONGLONG           L;
-  float              f;
-  double             d;
+  /* Define initial spaces to keep the value. */
+  uint8_t   u8;   int8_t   i8;      uint16_t u16;   int16_t i16;
+  uint32_t u32;   int32_t i32;      uint64_t u64;   int64_t i64;
+  float      f;   double    d;
 
-  /* First see if the number is a double. */
+  /* First see if the number is a double (the most generic). */
   d=strtod(string, &tailptr);
   if(*tailptr=='f') { if(tailptr[1]=='\0') forcedfloat=1; else return NULL; }
   else if (*tailptr!='\0')  return NULL;
@@ -2541,19 +1981,17 @@ gal_data_string_to_number(char *string)
          types. */
       if( d < 0 )
         {
-          if     (d>CHAR_MIN)   {c=d; ptr=&c; type=GAL_DATA_TYPE_CHAR;}
-          else if(d>SHRT_MIN)   {s=d; ptr=&s; type=GAL_DATA_TYPE_SHORT;}
-          else if(d>INT_MIN)    {i=d; ptr=&i; type=GAL_DATA_TYPE_INT;}
-          else if(d>LONG_MIN)   {l=d; ptr=&l; type=GAL_DATA_TYPE_LONG;}
-          else                  {L=d; ptr=&L; type=GAL_DATA_TYPE_LONGLONG;}
+          if     (d>INT8_MIN)    {i8=d;  ptr=&i8;  type=GAL_DATA_TYPE_INT8;}
+          else if(d>INT16_MIN)   {i16=d; ptr=&i16; type=GAL_DATA_TYPE_INT16;}
+          else if(d>INT32_MIN)   {i32=d; ptr=&i32; type=GAL_DATA_TYPE_INT32;}
+          else                   {i64=d; ptr=&i64; type=GAL_DATA_TYPE_INT64;}
         }
       else
         {
-          if     (d<=UCHAR_MAX) {uc=d; ptr=&uc; type=GAL_DATA_TYPE_UCHAR;}
-          else if(d<=USHRT_MAX) {us=d; ptr=&us; type=GAL_DATA_TYPE_USHORT;}
-          else if(d<=UINT_MAX)  {ui=d; ptr=&ui; type=GAL_DATA_TYPE_UINT;}
-          else if(d<=ULONG_MAX) {ul=d; ptr=&ul; type=GAL_DATA_TYPE_ULONG;}
-          else                  {L=d;  ptr=&L;  type=GAL_DATA_TYPE_LONGLONG;}
+          if     (d<=UINT8_MAX)  {u8=d;  ptr=&u8;  type=GAL_DATA_TYPE_UINT8;}
+          else if(d<=UINT16_MAX) {u16=d; ptr=&u16; type=GAL_DATA_TYPE_UINT16;}
+          else if(d<=UINT32_MAX) {u32=d; ptr=&u32; type=GAL_DATA_TYPE_UINT32;}
+          else                   {u64=d; ptr=&u64; type=GAL_DATA_TYPE_UINT64;}
         }
     }
   else
@@ -2587,9 +2025,9 @@ gal_data_string_to_number(char *string)
       /* Calculate the number of decimal digits and decide if it the number
          should be a float or a double. */
       if( lnz-fnz < FLT_DIG || ( d<FLT_MAX && d>FLT_MIN ) )
-        { f=d; ptr=&f; type=GAL_DATA_TYPE_FLOAT; }
+        { f=d; ptr=&f; type=GAL_DATA_TYPE_FLOAT32; }
       else
-        {      ptr=&d; type=GAL_DATA_TYPE_DOUBLE; }
+        {      ptr=&d; type=GAL_DATA_TYPE_FLOAT64; }
     }
 
   /* Return the pointer to the data structure. */
@@ -2622,8 +2060,8 @@ gal_data_string_to_number(char *string)
 int
 gal_data_string_to_type(void **out, char *string, int type)
 {
+  long l;
   double d;
-  LONGLONG L;
   void *value;
   char *tailptr;
   int status=0, allocated=0;
@@ -2657,46 +2095,45 @@ gal_data_string_to_type(void **out, char *string, int type)
     /* Floating point: Read it as a double or long, then put it in the
        array. When the conversion can't be done (the string isn't a number
        for example), then just assume no blank value was given. */
-    case GAL_DATA_TYPE_FLOAT:
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_DATA_TYPE_FLOAT64:
       d=strtod(string, &tailptr);
       if(*tailptr!='\0')
         status=1;
       else
         {
-          if(type==GAL_DATA_TYPE_FLOAT) *(float *) value=d;
-          else                          *(double *) value=d;
+          if(type==GAL_DATA_TYPE_FLOAT32) *(float *) value=d;
+          else                            *(double *) value=d;
         }
       break;
 
     /* Integers. */
     default:
-      L=strtoll(string, &tailptr, 0);
+      l=strtol(string, &tailptr, 0);
       if(*tailptr!='\0')
         status=1;
       else
         switch(type)
           {
           /* The signed values can easily be put in. */
-          case GAL_DATA_TYPE_CHAR:             *(char *) value = L; break;
-          case GAL_DATA_TYPE_SHORT:           *(short *) value = L; break;
-          case GAL_DATA_TYPE_INT:               *(int *) value = L; break;
-          case GAL_DATA_TYPE_LONG:             *(long *) value = L; break;
-          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) value = L; break;
+          case GAL_DATA_TYPE_INT8:         *(int8_t *)    value = l; break;
+          case GAL_DATA_TYPE_INT16:        *(int16_t *)   value = l; break;
+          case GAL_DATA_TYPE_INT32:        *(int32_t *)   value = l; break;
+          case GAL_DATA_TYPE_INT64:        *(int64_t *)   value = l; break;
 
           /* For the unsigned types, the value has to be positive, so if
              the input was negative, then just return a status of one and
              don't store the value. */
           default:
-            if(L<0)
+            if(l<0)
               status=1;
             else
               switch(type)
                 {
-                case GAL_DATA_TYPE_UCHAR:  *(unsigned char *)  value=L; break;
-                case GAL_DATA_TYPE_USHORT: *(unsigned short *) value=L; break;
-                case GAL_DATA_TYPE_UINT:   *(unsigned int *)   value=L; break;
-                case GAL_DATA_TYPE_ULONG:  *(unsigned long *)  value=L; break;
+                case GAL_DATA_TYPE_UINT8:  *(uint8_t *)   value=l; break;
+                case GAL_DATA_TYPE_UINT16: *(uint16_t *)  value=l; break;
+                case GAL_DATA_TYPE_UINT32: *(uint32_t *)  value=l; break;
+                case GAL_DATA_TYPE_UINT64: *(uint64_t *)  value=l; break;
                 default:
                   error(EXIT_FAILURE, 0, "type code %d not recognized in "
                         "`gal_data_string_to_type'", type);

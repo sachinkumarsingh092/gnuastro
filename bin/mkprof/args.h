@@ -69,7 +69,7 @@ struct argp_option program_options[] =
       "Number of pixels along first FITS axis.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->naxes[0],
-      GAL_DATA_TYPE_LONG,
+      GAL_DATA_TYPE_UINT64,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -82,7 +82,7 @@ struct argp_option program_options[] =
       "Number of pixels along second FITS axis.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->naxes[1],
-      GAL_DATA_TYPE_LONG,
+      GAL_DATA_TYPE_INT64,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -95,7 +95,7 @@ struct argp_option program_options[] =
       "Scale of oversampling (>0 and odd).",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->oversample,
-      GAL_DATA_TYPE_UCHAR,
+      GAL_DATA_TYPE_UINT8,
       GAL_OPTIONS_RANGE_GT_0_ODD,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -139,19 +139,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-    {
-      "type",
-      ARGS_OPTION_KEY_TYPE,
-      "STR",
-      0,
-      "uchar, short, long, longlong, float, double.",
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->typestr,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
 
@@ -183,7 +170,7 @@ struct argp_option program_options[] =
       "Tolerance to switch to less accurate method.",
       ARGS_GROUP_PROFILES,
       &p->tolerance,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -209,7 +196,7 @@ struct argp_option program_options[] =
       "Shift profile centers and enlarge image, X axis.",
       ARGS_GROUP_PROFILES,
       &p->shift[0],
-      GAL_DATA_TYPE_LONG,
+      GAL_DATA_TYPE_INT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -222,7 +209,7 @@ struct argp_option program_options[] =
       "Shift profile centers and enlarge image, Y axis.",
       ARGS_GROUP_PROFILES,
       &p->shift[1],
-      GAL_DATA_TYPE_LONG,
+      GAL_DATA_TYPE_INT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -248,7 +235,7 @@ struct argp_option program_options[] =
       "Magnitude zero point.",
       ARGS_GROUP_PROFILES,
       &p->zeropoint,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -261,7 +248,7 @@ struct argp_option program_options[] =
       "Width of circumference (inward) profiles",
       ARGS_GROUP_PROFILES,
       &p->circumwidth,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -490,7 +477,7 @@ struct argp_option program_options[] =
       "Pixel coordinate of reference point (axis 1).",
       ARGS_GROUP_WCS,
       &p->crpix[0],
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -503,7 +490,7 @@ struct argp_option program_options[] =
       "Pixel coordinate of reference point (axis 2).",
       ARGS_GROUP_WCS,
       &p->crpix[1],
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -516,7 +503,7 @@ struct argp_option program_options[] =
       "Right ascension at reference point (degrees).",
       ARGS_GROUP_WCS,
       &p->crval[0],
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -529,7 +516,7 @@ struct argp_option program_options[] =
       "Declination at reference point (degrees).",
       ARGS_GROUP_WCS,
       &p->crval[1],
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -542,7 +529,7 @@ struct argp_option program_options[] =
       "Resolution of image (arcseconds/pixel).",
       ARGS_GROUP_WCS,
       &p->resolution,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

@@ -46,56 +46,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /**************************************************************/
-/**********          Check fixed strings           ************/
-/**************************************************************/
-/* Check if the value to the `--type' option is recognized, if so set the
-   integer value. */
-void
-gal_checkset_known_types(char *optarg, int *type, char *filename,
-                         size_t lineno)
-{
-  /* First check if the value is one of the accepted types. */
-  if     (strcmp(optarg, "uchar")==0)    *type = GAL_DATA_TYPE_UCHAR;
-  else if(strcmp(optarg, "short")==0)    *type = GAL_DATA_TYPE_SHORT;
-  else if(strcmp(optarg, "long")==0)     *type = GAL_DATA_TYPE_LONG;
-  else if(strcmp(optarg, "longlong")==0) *type = GAL_DATA_TYPE_LONGLONG;
-  else if(strcmp(optarg, "float")==0)    *type = GAL_DATA_TYPE_FLOAT;
-  else if(strcmp(optarg, "double")==0)   *type = GAL_DATA_TYPE_DOUBLE;
-  else
-    {
-      if(filename)
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "given value of "
-                      "the `type' option (`%s') is not recognized. It must "
-                      "be `uchar', `short', `long', `longlong', `float', or "
-                      "`double'. The FITS standard only defines these types "
-                      "for image arrays", optarg);
-      else
-        error(EXIT_FAILURE, 0, "given value of the `--type' (`-T') option "
-              "(`%s') is not recognized. It must be `byte', `short', `long' "
-              "`longlong', `float', or `double'. The FITS standard only "
-              "defines these types for image arrays", optarg);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
 /**********          My String functions:          ************/
 /**************************************************************/
 int

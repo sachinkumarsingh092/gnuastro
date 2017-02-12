@@ -112,17 +112,16 @@ enum gal_arithmetic_operators
   GAL_ARITHMETIC_OP_AVERAGE,      /* Average per pixel of multiple arrays. */
   GAL_ARITHMETIC_OP_MEDIAN,       /* Median per pixel of multiple arrays.  */
 
-  GAL_ARITHMETIC_OP_TO_UCHAR,     /* Convert to unsigned char.             */
-  GAL_ARITHMETIC_OP_TO_CHAR,      /* Convert to char.                      */
-  GAL_ARITHMETIC_OP_TO_USHORT,    /* Convert to unsigned short.            */
-  GAL_ARITHMETIC_OP_TO_SHORT,     /* Convert to short.                     */
-  GAL_ARITHMETIC_OP_TO_UINT,      /* Convert to unsigned int.              */
-  GAL_ARITHMETIC_OP_TO_INT,       /* Convert to int.                       */
-  GAL_ARITHMETIC_OP_TO_ULONG,     /* Convert to unsigned long.             */
-  GAL_ARITHMETIC_OP_TO_LONG,      /* Convert to long.                      */
-  GAL_ARITHMETIC_OP_TO_LONGLONG,  /* Convert to LONGLONG.                  */
-  GAL_ARITHMETIC_OP_TO_FLOAT,     /* Convert to float.                     */
-  GAL_ARITHMETIC_OP_TO_DOUBLE,    /* Convert to double.                    */
+  GAL_ARITHMETIC_OP_TO_UINT8,     /* Convert to unsigned char.             */
+  GAL_ARITHMETIC_OP_TO_INT8,      /* Convert to char.                      */
+  GAL_ARITHMETIC_OP_TO_UINT16,    /* Convert to unsigned short.            */
+  GAL_ARITHMETIC_OP_TO_INT16,     /* Convert to short.                     */
+  GAL_ARITHMETIC_OP_TO_UINT32,    /* Convert to unsigned int.              */
+  GAL_ARITHMETIC_OP_TO_INT32,     /* Convert to int.                       */
+  GAL_ARITHMETIC_OP_TO_UINT64,    /* Convert to unsigned long.             */
+  GAL_ARITHMETIC_OP_TO_INT64,     /* Convert to long.                      */
+  GAL_ARITHMETIC_OP_TO_FLOAT32,   /* Convert to float.                     */
+  GAL_ARITHMETIC_OP_TO_FLOAT64,   /* Convert to double.                    */
 };
 
 

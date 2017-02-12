@@ -1,7 +1,7 @@
 # Column 1: NAME       [name,str4]  Name of object.
-# Column 2: X_CENTER   [pixels,d]   Image X axis position.
-# Column 3: Y_CENTER   [pixels,d]   Image Y axis position.
-# Column 4: RA_CENTER  [deg,d]      Right Ascension.
-# Column 5: DEC_CENTER [deg,d]      Declination.
+# Column 2: X_CENTER   [pixels,f64] Image X axis position.
+# Column 3: Y_CENTER   [pixels,f64] Image Y axis position.
+# Column 4: RA_CENTER  [deg,f64]    Right Ascension.
+# Column 5: DEC_CENTER [deg,f64]    Declination.
 A0B1  500.00  500.00   0.99917157   1.0008283
 c2d3  251.00  251.00   0.99958658   1.0004150

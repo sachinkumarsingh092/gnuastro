@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <limits.h>
 #include <stdint.h>
 
-#include <fitsio.h>             /* Only for the LONGLONG type */
 #include <wcslib/wcs.h>
 #include <gsl/gsl_complex.h>
 
@@ -70,61 +69,46 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Macros: */
 
-/* The maximum dimensionality of datasets. */
-#define GAL_DATA_MAXDIM    999
-
 /* Blank values: Note that for the unsigned types or small types (like
    char), the maximum value is considered as a blank value, since the
    minimum value of an unsigned type is zero and zero is often meaningful
    in contexts were unsigned values are used. */
-#define GAL_DATA_BLANK_UCHAR      UCHAR_MAX
-#define GAL_DATA_BLANK_CHAR       SCHAR_MAX
-#define GAL_DATA_BLANK_LOGICAL    SCHAR_MAX
+#define GAL_DATA_BLANK_UINT8      UINT8_MAX
+#define GAL_DATA_BLANK_INT8       INT8_MIN
+#define GAL_DATA_BLANK_UINT16     UINT16_MAX
+#define GAL_DATA_BLANK_INT16      INT16_MIN
+#define GAL_DATA_BLANK_UINT32     UINT32_MAX
+#define GAL_DATA_BLANK_INT32      INT32_MIN
+#define GAL_DATA_BLANK_UINT64     UINT64_MAX
+#define GAL_DATA_BLANK_INT64      INT64_MIN
+#define GAL_DATA_BLANK_FLOAT32    NAN
+#define GAL_DATA_BLANK_FLOAT64    NAN
 #define GAL_DATA_BLANK_STRING     "n/a"
-#define GAL_DATA_BLANK_USHORT     USHRT_MAX
-#define GAL_DATA_BLANK_SHORT      INT16_MIN
-#define GAL_DATA_BLANK_UINT       UINT_MAX
-#define GAL_DATA_BLANK_INT        INT_MIN
-#define GAL_DATA_BLANK_ULONG      ULONG_MAX
-#define GAL_DATA_BLANK_LONG       INT32_MIN
-#define GAL_DATA_BLANK_LONGLONG   INT64_MIN
-#define GAL_DATA_BLANK_FLOAT      NAN
-#define GAL_DATA_BLANK_DOUBLE     NAN
 
 
 
 
 
-/* Macros to identify the type of data. The macros in the comment
-   parenthesis is the equivalent macro in CFITSIO.
-
-   IMPORTANT: the integer types must have a smaller value than the floating
-              point types.
-*/
+/* Macros to identify the type of data. */
 enum gal_data_types
 {
-  GAL_DATA_TYPE_INVALID,   /* Invalid (=0 by C standard).    */
+  GAL_DATA_TYPE_INVALID,     /* Invalid (=0 by C standard).             */
 
-  GAL_DATA_TYPE_BIT,       /* Bit              (TBIT).        */
-  GAL_DATA_TYPE_UCHAR,     /* unsigned char    (TBYTE).       */
-  GAL_DATA_TYPE_CHAR,      /* char             (TSBYTE).      */
-  GAL_DATA_TYPE_LOGICAL,   /* char             (TLOGICAL).    */
-  GAL_DATA_TYPE_USHORT,    /* unsigned short   (TUSHORT).     */
-  GAL_DATA_TYPE_SHORT,     /* short            (TSHORT).      */
-  GAL_DATA_TYPE_UINT,      /* unsigned int     (TUINT).       */
-  GAL_DATA_TYPE_INT,       /* int              (TINT).        */
-  GAL_DATA_TYPE_ULONG,     /* unsigned long    (TLONG).       */
-  GAL_DATA_TYPE_LONG,      /* long             (TLONG).       */
-  GAL_DATA_TYPE_LONGLONG,  /* long long        (TLONGLONG).   */
-
-  GAL_DATA_TYPE_FLOAT,     /* float            (TFLOAT).      */
-  GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
-  GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
-  GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
-
-  GAL_DATA_TYPE_STRING,    /* string           (TSTRING).     */
-
-  GAL_DATA_TYPE_STRLL,     /* String linked list.             */
+  GAL_DATA_TYPE_BIT,         /* 1 bit                                   */
+  GAL_DATA_TYPE_UINT8,       /* 8-bit  unsigned integer.                */
+  GAL_DATA_TYPE_INT8,        /* 8-bit  signed   integer.                */
+  GAL_DATA_TYPE_UINT16,      /* 16-bit unsigned integer.                */
+  GAL_DATA_TYPE_INT16,       /* 16-bit signed   integer.                */
+  GAL_DATA_TYPE_UINT32,      /* 32-bit unsigned integer.                */
+  GAL_DATA_TYPE_INT32,       /* 32-bit signed   integer.                */
+  GAL_DATA_TYPE_UINT64,      /* 64-bit unsigned integer.                */
+  GAL_DATA_TYPE_INT64,       /* 64-bit signed   integer.                */
+  GAL_DATA_TYPE_FLOAT32,     /* 32-bit single precision floating point. */
+  GAL_DATA_TYPE_FLOAT64,     /* 64-bit double precision floating point. */
+  GAL_DATA_TYPE_COMPLEX32,   /* Complex 32-bit floating point.          */
+  GAL_DATA_TYPE_COMPLEX64,   /* Complex 64-bit floating point.          */
+  GAL_DATA_TYPE_STRING,      /* String of characters.                   */
+  GAL_DATA_TYPE_STRLL,       /* Linked list of strings.                 */
 };
 
 /* `size_t' is 4 and 8 bytes on 32 and 64 bit systems respectively. In both
@@ -132,9 +116,9 @@ enum gal_data_types
    `./configure' the sizeof size_t was found and is stored in
    `GAL_CONFIG_SIZEOF_SIZE_T'. */
 #if GAL_CONFIG_SIZEOF_SIZE_T == 4
-#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT
+#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT32
 #else
-#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_ULONG
+#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT64
 #endif
 
 

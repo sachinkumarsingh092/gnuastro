@@ -259,7 +259,7 @@ jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
       dsize[0]=s0;
       dsize[1]=s1;
       asprintf(&name, "JPEG_CH_%zu", i+1);
-      gal_data_add_to_ll(list, allcolors[i], GAL_DATA_TYPE_UCHAR, ndim,
+      gal_data_add_to_ll(list, allcolors[i], GAL_DATA_TYPE_UINT8, ndim,
                          dsize, NULL, 0, minmapsize, name, NULL, NULL);
       free(name);
     }

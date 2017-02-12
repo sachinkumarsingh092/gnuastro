@@ -106,17 +106,16 @@ gnuastro/config.h: Makefile config.h.in
 	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g'                  \
 	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g'    \
 	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g'  \
-	       -e 's|@HAVE_BIN_OP_UCHAR[@]|$(HAVE_BIN_OP_UCHAR)|g'        \
-	       -e 's|@HAVE_BIN_OP_CHAR[@]|$(HAVE_BIN_OP_CHAR)|g'          \
-	       -e 's|@HAVE_BIN_OP_USHORT[@]|$(HAVE_BIN_OP_USHORT)|g'      \
-	       -e 's|@HAVE_BIN_OP_SHORT[@]|$(HAVE_BIN_OP_SHORT)|g'        \
-	       -e 's|@HAVE_BIN_OP_UINT[@]|$(HAVE_BIN_OP_UINT)|g'          \
-	       -e 's|@HAVE_BIN_OP_INT[@]|$(HAVE_BIN_OP_INT)|g'            \
-	       -e 's|@HAVE_BIN_OP_ULONG[@]|$(HAVE_BIN_OP_ULONG)|g'        \
-	       -e 's|@HAVE_BIN_OP_LONG[@]|$(HAVE_BIN_OP_LONG)|g'          \
-	       -e 's|@HAVE_BIN_OP_LONGLONG[@]|$(HAVE_BIN_OP_LONGLONG)|g'  \
-	       -e 's|@HAVE_BIN_OP_FLOAT[@]|$(HAVE_BIN_OP_FLOAT)|g'        \
-	       -e 's|@HAVE_BIN_OP_DOUBLE[@]|$(HAVE_BIN_OP_DOUBLE)|g'      \
+	       -e 's|@HAVE_BIN_OP_UINT8[@]|$(HAVE_BIN_OP_UINT8)|g'        \
+	       -e 's|@HAVE_BIN_OP_INT8[@]|$(HAVE_BIN_OP_INT8)|g'          \
+	       -e 's|@HAVE_BIN_OP_UINT16[@]|$(HAVE_BIN_OP_UINT16)|g'      \
+	       -e 's|@HAVE_BIN_OP_INT16[@]|$(HAVE_BIN_OP_INT16)|g'        \
+	       -e 's|@HAVE_BIN_OP_UINT32[@]|$(HAVE_BIN_OP_UINT32)|g'      \
+	       -e 's|@HAVE_BIN_OP_INT32[@]|$(HAVE_BIN_OP_INT32)|g'        \
+	       -e 's|@HAVE_BIN_OP_UINT64[@]|$(HAVE_BIN_OP_UINT64)|g'      \
+	       -e 's|@HAVE_BIN_OP_INT64[@]|$(HAVE_BIN_OP_INT64)|g'        \
+	       -e 's|@HAVE_BIN_OP_FLOAT32[@]|$(HAVE_BIN_OP_FLOAT32)|g'    \
+	       -e 's|@HAVE_BIN_OP_FLOAT64[@]|$(HAVE_BIN_OP_FLOAT64)|g'    \
 	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g'                \
                $(srcdir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp

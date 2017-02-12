@@ -145,7 +145,7 @@ struct argp_option program_options[] =
       "Width (arcseconds) for crops defined by RA,Dec.",
       ARGS_GROUP_CENTER_GENERAL,
       &p->wwidth,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -168,7 +168,7 @@ struct argp_option program_options[] =
       "Right ascension of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->ra,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -181,7 +181,7 @@ struct argp_option program_options[] =
       "Declination of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->dec,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -194,7 +194,7 @@ struct argp_option program_options[] =
       "First axis position of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->xc,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -207,7 +207,7 @@ struct argp_option program_options[] =
       "Second axis position of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->yc,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

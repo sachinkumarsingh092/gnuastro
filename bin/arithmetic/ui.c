@@ -74,10 +74,10 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
   "\n\nThe operators/functions recognized by "PROGRAM_NAME" are: +, -, *, "
   "/, abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average, "
   "median, lt, le, gt, ge, eq, ne, and, or, not, isblank, and the full set "
-  "of bitwise operators. Please run `info gnuastro \"Arithmetic "
-  "operators\"' for detailed information on each operator. Note that "
-  "multiplication should be quoted (like \"*\", or '*') to avoid shell "
-  "expansion.\n"
+  "of bitwise operators, and numeric type conversion operators to all known "
+  "types. Please run `info gnuastro \"Arithmetic operators\"' for detailed "
+  "information on each operator. Note that multiplication should be quoted "
+  "(like \"*\", or '*') to avoid shell expansion.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -131,6 +131,7 @@ ui_initialize_options(struct imgarithparams *p,
         cp->coptions[i].doc="Nth call, used for HDU of Nth input FITS.";
         break;
 
+      case GAL_OPTIONS_KEY_TYPE:
       case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_IGNORECASE:
       case GAL_OPTIONS_KEY_TABLEFORMAT:

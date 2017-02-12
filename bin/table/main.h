@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Progarm names.  */
-#define PROGRAM_NAME "Table"         /* Program full name.       */
-#define PROGRAM_EXEC "asttable"      /* Program executable name. */
+#define PROGRAM_NAME   "Table"         /* Program full name.       */
+#define PROGRAM_EXEC   "asttable"      /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -46,7 +46,7 @@ struct tableparams
   struct gal_options_common_params cp; /* Common parameters.            */
   char              *filename;  /* Input filename.                      */
   struct gal_linkedlist_stll *columns; /* List of given columns.        */
-  unsigned char   information;  /* ==1, only print FITS information.    */
+  uint8_t         information;  /* ==1, only print FITS information.    */
 
   /* Output: */
   gal_data_t           *table;  /* Linked list of output table columns. */

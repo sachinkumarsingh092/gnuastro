@@ -389,7 +389,7 @@ ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
       if(*tailptr=='\0' && errno==0)
         {
           vfree=1;
-          type=GAL_DATA_TYPE_LONG;
+          type=GAL_DATA_TYPE_INT64;
           errno=0;
           fvalue=lp=malloc(sizeof *lp);
           if(lp==NULL)
@@ -404,7 +404,7 @@ ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
           if(*tailptr=='\0' && errno==0)
             {
               vfree=1;
-              type=GAL_DATA_TYPE_DOUBLE;
+              type=GAL_DATA_TYPE_FLOAT64;
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)

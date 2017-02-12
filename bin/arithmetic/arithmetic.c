@@ -56,20 +56,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************************************************************/
 /*************          Internal functions         *************/
 /***************************************************************/
-size_t
+#define SET_NUM_OP(CTYPE) {                                \
+    CTYPE a=*(CTYPE *)(data->array); if(a>0) return a;    }
+
+static size_t
 set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
                        char *token_string)
 {
-  unsigned char  *uc;
-  char            *c;
-  unsigned short *us;
-  short           *s;
-  unsigned int   *ui;
-  int             *i;
-  unsigned long  *ul;
-  long            *l;
-  LONGLONG        *L;
-
   /* Check if its a number. */
   if(data->size>1)
     error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
@@ -82,37 +75,18 @@ set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
     /* For the integer types, if they are unsigned, then just pass their
        value, if they are signed, you have to make sure they are zero or
        positive. */
-    case GAL_DATA_TYPE_UCHAR:
-      uc=data->array; if(*uc>0) return *uc;
-      break;
-    case GAL_DATA_TYPE_CHAR:
-      c=data->array; if(*c>0) return *c;
-      break;
-    case GAL_DATA_TYPE_USHORT:
-      us=data->array; if(*us>0) return *us;
-      break;
-    case GAL_DATA_TYPE_SHORT:
-      s=data->array; if(*s>0) return *s;
-      break;
-    case GAL_DATA_TYPE_UINT:
-      ui=data->array; if(*ui>0) return *ui;
-      break;
-    case GAL_DATA_TYPE_INT:
-      i=data->array; if(*i>0) return *i;
-      break;
-    case GAL_DATA_TYPE_ULONG:
-      ul=data->array; if(*ul>0) return *ul;
-      break;
-    case GAL_DATA_TYPE_LONG:
-      l=data->array; if(*l>0) return *l;
-      break;
-    case GAL_DATA_TYPE_LONGLONG:
-      L=data->array; if(*L>0) return *L;
-      break;
+    case GAL_DATA_TYPE_UINT8:   SET_NUM_OP(uint8_t);     break;
+    case GAL_DATA_TYPE_INT8:    SET_NUM_OP(int8_t);      break;
+    case GAL_DATA_TYPE_UINT16:  SET_NUM_OP(uint16_t);    break;
+    case GAL_DATA_TYPE_INT16:   SET_NUM_OP(int16_t);     break;
+    case GAL_DATA_TYPE_UINT32:  SET_NUM_OP(uint32_t);    break;
+    case GAL_DATA_TYPE_INT32:   SET_NUM_OP(int32_t);     break;
+    case GAL_DATA_TYPE_UINT64:  SET_NUM_OP(uint64_t);    break;
+    case GAL_DATA_TYPE_INT64:   SET_NUM_OP(int64_t);     break;
 
     /* Floating point numbers are not acceptable in this context. */
-    case GAL_DATA_TYPE_FLOAT:
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_DATA_TYPE_FLOAT64:
       error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
             "operator must be an integer type", token_string);
 
@@ -264,24 +238,22 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_ARITHMETIC_OP_BITNOT;        nop=1;  }
 
           /* Type conversion. */
-          else if (!strcmp(token->v, "uchar"))
-            { op=GAL_ARITHMETIC_OP_TO_UCHAR;      nop=1;  }
-          else if (!strcmp(token->v, "char"))
-            { op=GAL_ARITHMETIC_OP_TO_CHAR;       nop=1;  }
-          else if (!strcmp(token->v, "ushort"))
-            { op=GAL_ARITHMETIC_OP_TO_USHORT;     nop=1;  }
-          else if (!strcmp(token->v, "short"))
-            { op=GAL_ARITHMETIC_OP_TO_SHORT;      nop=1;  }
-          else if (!strcmp(token->v, "ulong"))
-            { op=GAL_ARITHMETIC_OP_TO_ULONG;      nop=1;  }
-          else if (!strcmp(token->v, "long"))
-            { op=GAL_ARITHMETIC_OP_TO_LONG;       nop=1;  }
-          else if (!strcmp(token->v, "longlong"))
-            { op=GAL_ARITHMETIC_OP_TO_LONGLONG;   nop=1;  }
-          else if (!strcmp(token->v, "float"))
-            { op=GAL_ARITHMETIC_OP_TO_FLOAT;      nop=1;  }
-          else if (!strcmp(token->v, "double"))
-            { op=GAL_ARITHMETIC_OP_TO_DOUBLE;     nop=1;  }
+          else if (!strcmp(token->v, "uint8"))
+            { op=GAL_ARITHMETIC_OP_TO_UINT8;      nop=1;  }
+          else if (!strcmp(token->v, "int8"))
+            { op=GAL_ARITHMETIC_OP_TO_INT8;       nop=1;  }
+          else if (!strcmp(token->v, "uint16"))
+            { op=GAL_ARITHMETIC_OP_TO_UINT16;     nop=1;  }
+          else if (!strcmp(token->v, "int16"))
+            { op=GAL_ARITHMETIC_OP_TO_INT16;      nop=1;  }
+          else if (!strcmp(token->v, "uint64"))
+            { op=GAL_ARITHMETIC_OP_TO_UINT64;     nop=1;  }
+          else if (!strcmp(token->v, "int64"))
+            { op=GAL_ARITHMETIC_OP_TO_INT64;      nop=1;  }
+          else if (!strcmp(token->v, "float32"))
+            { op=GAL_ARITHMETIC_OP_TO_FLOAT32;    nop=1;  }
+          else if (!strcmp(token->v, "float64"))
+            { op=GAL_ARITHMETIC_OP_TO_FLOAT64;    nop=1;  }
 
           /* Finished checks with known operators */
           else
@@ -355,7 +327,7 @@ reversepolish(struct imgarithparams *p)
       /* To simplify the printing process, we will first change it to
          double, then use printf's `%g' to print it, so integers will be
          printed as an integer.  */
-      d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_DOUBLE);
+      d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_FLOAT32);
       printf("%g\n", *(double *)d2->array);
       gal_data_free(d2);
     }

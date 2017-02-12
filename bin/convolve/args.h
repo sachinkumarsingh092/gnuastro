@@ -92,7 +92,7 @@ struct argp_option program_options[] =
       "Deconvolution: min spectrum of sharp img.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->minsharpspec,
-      GAL_DATA_TYPE_DOUBLE,
+      GAL_DATA_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -172,7 +172,7 @@ struct argp_option program_options[] =
       "Fraction of last mesh area to add new.",
       ARGS_GROUP_MESH_GRID,
       &p->mp.lastmeshfrac,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -185,7 +185,7 @@ struct argp_option program_options[] =
       "Fraction of last mesh area to add new.",
       ARGS_GROUP_MESH_GRID,
       &p->mp.lastmeshfrac,
-      GAL_DATA_TYPE_FLOAT,
+      GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

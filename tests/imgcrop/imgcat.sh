@@ -53,5 +53,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 cat=$topsrc/tests/$prog/cat.txt
-$execname $img --catalog=$cat --mode=img --suffix=_imgcat.fits    \
+$execname $img --catalog=$cat --mode=img --suffix=_imgcat.fits --numthreads=1 \
           --zeroisnotblank --xcol=X_CENTER --ycol=Y_CENTER --namecol=NAME

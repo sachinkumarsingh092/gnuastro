@@ -302,10 +302,10 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_UCHAR:
-    case GAL_DATA_TYPE_USHORT:
-    case GAL_DATA_TYPE_UINT:
-    case GAL_DATA_TYPE_ULONG:
+    case GAL_DATA_TYPE_UINT8:
+    case GAL_DATA_TYPE_UINT16:
+    case GAL_DATA_TYPE_UINT32:
+    case GAL_DATA_TYPE_UINT64:
 
       /* For the FITS ASCII table, there is only one format for all
          integers.  */
@@ -321,7 +321,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
           }
 
       /* If we have a long type, then make changes. */
-      if(col->type==GAL_DATA_TYPE_ULONG)
+      if(col->type==GAL_DATA_TYPE_UINT64)
         {
           lng[0]='l';
           width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
@@ -336,10 +336,9 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_CHAR:
-    case GAL_DATA_TYPE_LOGICAL:
-    case GAL_DATA_TYPE_SHORT:
-    case GAL_DATA_TYPE_INT:
+    case GAL_DATA_TYPE_INT8:
+    case GAL_DATA_TYPE_INT16:
+    case GAL_DATA_TYPE_INT32:
       fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
       width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                 : col->disp_width );
@@ -350,11 +349,9 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_LONG:
-    case GAL_DATA_TYPE_LONGLONG:
+    case GAL_DATA_TYPE_INT64:
       lng[0] = 'l';
       fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
-      lng[1] = col->type==GAL_DATA_TYPE_LONGLONG ? 'l' : '\0';
       width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
               : col->disp_width );
       precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
@@ -364,8 +361,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
     /* We need a default value (because in most cases, it won't be set. */
-    case GAL_DATA_TYPE_FLOAT:
-    case GAL_DATA_TYPE_DOUBLE:
+    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_DATA_TYPE_FLOAT64:
       switch(col->disp_fmt)
         {
         case GAL_TABLE_DISPLAY_FMT_FLOAT:
@@ -378,7 +375,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
           fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         }
       width = ( col->disp_width<=0
-                ? ( col->type==GAL_DATA_TYPE_FLOAT
+                ? ( col->type==GAL_DATA_TYPE_FLOAT32
                     ? GAL_TABLE_DEF_FLT_WIDTH
                     : GAL_TABLE_DEF_DBL_WIDTH )
                 : col->disp_width );

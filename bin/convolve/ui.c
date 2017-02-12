@@ -283,12 +283,12 @@ ui_read_domain(struct convolveparams *p)
 static void
 ui_read_kernel(struct convolveparams *p)
 {
-  double zero=0.0f;
+  float *f, *ff;
   gal_data_t *data;
 
   /* Read the image into file. */
-  data=gal_fits_img_read_to_type(p->kernelname, p->khdu, GAL_DATA_TYPE_FLOAT,
-                                 p->cp.minmapsize);
+  data=gal_fits_img_read_to_type(p->kernelname, p->khdu,
+                                 GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
 
   /* Put its values into the main program structure. */
   p->ks0=data->dsize[0];
@@ -298,7 +298,10 @@ ui_read_kernel(struct convolveparams *p)
   /* Convert all the NaN pixels to zero if the kernel contains blank
      pixels. */
   if(gal_data_has_blank(data))
-    gal_data_blank_to_value(data, &zero);
+    {
+      ff=(f=data->array)+data->size;
+      do *f = isnan(*f) ? 0.0f : *f; while(++f<ff);
+    }
 
   /* Clean up. Note that we need the array, so it must be set to NULL. */
   data->array=NULL;
@@ -336,8 +339,8 @@ ui_preparations(struct convolveparams *p)
 
 
   /* Read the input image as a float array and its WCS info. */
-  data=gal_fits_img_read_to_type(p->filename, p->cp.hdu, GAL_DATA_TYPE_FLOAT,
-                                 p->cp.minmapsize);
+  data=gal_fits_img_read_to_type(p->filename, p->cp.hdu,
+                                 GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
   gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
   p->unit=data->unit;
   data->unit=NULL;

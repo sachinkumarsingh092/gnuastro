@@ -1,11 +1,11 @@
-# Column 1:  ID                [count, uc]  Object ID
-# Column 2:  X                 [pixel, d]   X axis position of profile center
-# Column 3:  Y                 [pixel, d]   Y axis position of profile center
-# Column 4:  Function          [name, str7] Profile's radial function
-# Column 5:  Width             [pixel, d]   For Sersic: effective radius, for Moffat, FWHM
-# Column 6:  Sersic index      [none, d]    Sersic index, or Moffat beta
-# Column 7:  Position angle    [deg, d]     Position angle of profile
-# Column 8:  Axis ratio        [frac, d]    Axis ratio of profile
-# Column 9:  Magnitude         [ABmag, d]   Magnitude of profile within truncation radius
-# Column 10: Truncation radius [dist, d]    Truncation radius to stop building profile
+# Column 1:  ID                [count, u8]   Object ID
+# Column 2:  X                 [pixel, f64]  X axis position of profile center
+# Column 3:  Y                 [pixel, f64]  Y axis position of profile center
+# Column 4:  Function          [name, str7]  Profile's radial function
+# Column 5:  Width             [pixel, f64]  For Sersic: effective radius, for Moffat, FWHM
+# Column 6:  Sersic index      [none, f64]   Sersic index, or Moffat beta
+# Column 7:  Position angle    [deg, f64]    Position angle of profile
+# Column 8:  Axis ratio        [frac, f64]   Axis ratio of profile
+# Column 9:  Magnitude         [ABmag, f64]  Magnitude of profile within truncation radius
+# Column 10: Truncation radius [dist, f64]   Truncation radius to stop building profile
 1     0.40    0.40     sersic     20.00     2.500      45.000     1.00       -18.0     5.000

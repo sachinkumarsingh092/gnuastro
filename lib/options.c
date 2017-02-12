@@ -47,6 +47,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+/**********************************************************************/
+/************                Declarations               ***************/
+/**********************************************************************/
+/* Declaration of `option_parse_file' that is defined below, since it is
+   also needed in `options_immediate', but it fits into context below
+   better. */
+static void
+options_parse_file(char *filename,  struct gal_options_common_params *cp,
+                   int enoent_abort);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**********************************************************************/
 /************             Option utilities              ***************/
 /**********************************************************************/
@@ -138,6 +168,26 @@ options_get_home()
     error(EXIT_FAILURE, 0, "the HOME environment variable "
           "is not defined");
   return home;
+}
+
+
+
+
+
+void
+gal_options_read_type(struct argp_option *option, char *arg,
+                      char *filename, size_t lineno)
+{
+  int type=gal_data_string_as_type(arg);
+  if(type==GAL_DATA_TYPE_INVALID)
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                  "`%s' option) couldn't be recognized as a known type."
+                  "For the full list of known types, please run the "
+                  "following command:\n\n"
+                  "    $ info gnuastro \"Numeric data types\"\n",
+                  arg, option->name);
+  else
+    *(int *)(option->value)=type;
 }
 
 
@@ -248,17 +298,6 @@ options_print_citation_exit(struct gal_options_common_params *cp)
 
 
 
-/* Declaration of `option_parse_file' that is defined below, since it is
-   also needed in `options_immediate', but it fits into context below
-   better. */
-static void
-options_parse_file(char *filename,  struct gal_options_common_params *cp,
-                   int enoent_abort);
-
-
-
-
-
 /* Some options need immediate attention/action before continuing to read
    the rest of the options. In these cases we need to (maybe) check and
    (possibly) abort immediately. */
@@ -327,7 +366,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GT_0:
       message="greater than zero";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GT;
@@ -337,7 +376,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GE_0:
       message="greater or equal to zero";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GE;
@@ -347,9 +386,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_0_OR_1:
       message="either 0 or 1";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
@@ -362,9 +401,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GE_0_LE_1:
       message="between zero and one";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
@@ -377,9 +416,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GT_0_ODD:
       message="greater than zero and odd";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
@@ -391,9 +430,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_0_OR_ODD:
       message="greater than, or equal to, zero and odd";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
@@ -450,32 +489,38 @@ static void
 gal_options_read_check(struct argp_option *option, char *arg, char *filename,
                        size_t lineno)
 {
-  if(option->type==GAL_DATA_TYPE_STRLL)
-    gal_linkedlist_add_to_stll(option->value, arg, 1);
+  /* If a function is defined to process the value, then use it. */
+  if(option->func)
+    option->func(option, arg, filename, lineno);
   else
     {
-      /* Read the string argument into the value. */
-      if( gal_data_string_to_type(&option->value, arg, option->type) )
-        /* Fortunately `error_at_line' will behave like `error' when the
-           filename is NULL (the option was read from a command-line). */
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s' (value to option `--%s') couldn't be read into "
-                      "the proper numerical type. Common causes for this "
-                      "error are:\n"
-                      "  - It contains non-numerical characters.\n"
-                      "  - It is negative, but the expected value is "
-                      "positive.\n"
-                      "  - It is floating point, but the expected value "
-                      "is an integer.\n"
-                      "  - The previous option required a value, but you "
-                      "forgot to give it one, so the next option's "
-                      "name(+value, if there are no spaces between them) "
-                      "is read as the value of the previous option.", arg,
-                      option->name);
-    }
+      if(option->type==GAL_DATA_TYPE_STRLL)
+        gal_linkedlist_add_to_stll(option->value, arg, 1);
+      else
+        {
+          /* Read the string argument into the value. */
+          if( gal_data_string_to_type(&option->value, arg, option->type) )
+            /* Fortunately `error_at_line' will behave like `error' when the
+               filename is NULL (the option was read from a command-line). */
+            error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                          "`%s' (value to option `--%s') couldn't be read "
+                          "into the proper numerical type. Common causes "
+                          "for this error are:\n"
+                          "  - It contains non-numerical characters.\n"
+                          "  - It is negative, but the expected value is "
+                          "positive.\n"
+                          "  - It is floating point, but the expected value "
+                          "is an integer.\n"
+                          "  - The previous option required a value, but you "
+                          "forgot to give it one, so the next option's "
+                          "name(+value, if there are no spaces between them) "
+                          "is read as the value of the previous option.", arg,
+                          option->name);
+        }
 
-  /* Do a sanity check. */
-  options_sanity_check(option, arg, filename, lineno);
+      /* Do a sanity check. */
+      options_sanity_check(option, arg, filename, lineno);
+    }
 
 
   /* Flip the `set' flag to `GAL_OPTIONS_SET'. */
@@ -869,7 +914,7 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
 
   /* A small sanity check because in multiple places, we have assumed the
      on/off options have a type of `unsigned char'. */
-  if(GAL_OPTIONS_NO_ARG_TYPE != GAL_DATA_TYPE_UCHAR)
+  if(GAL_OPTIONS_NO_ARG_TYPE != GAL_DATA_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix the "
           "problem. The `GAL_OPTIONS_NO_ARG_TYPE' must have the "
           "`unsigned char' type. But",

@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Progarm name macros: */
-#define PROGRAM_NAME "Header"        /* Program full name.       */
-#define PROGRAM_EXEC "astheader"     /* Program executable name. */
+#define PROGRAM_NAME  "Header"        /* Program full name.       */
+#define PROGRAM_EXEC  "astheader"     /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -49,7 +49,7 @@ struct headerparams
   struct wcsprm                  *wcs;  /* Pointer to WCS structures.      */
 
   /* Output: */
-  unsigned char                  date;  /* Set DATE to current time.       */
+  uint8_t                        date;  /* Set DATE to current time.       */
   char                       *comment;  /* COMMENT value.                  */
   char                       *history;  /* HISTORY value.                  */
   struct gal_linkedlist_stll    *asis;  /* Strings to write asis.          */
@@ -60,7 +60,7 @@ struct headerparams
   struct gal_fits_key_ll       *write;  /* Keywords to add.                */
 
   /* Operating mode: */
-  unsigned char           quitonerror;  /* Quit if an error occurs.        */
+  uint8_t                 quitonerror;  /* Quit if an error occurs.        */
 
   /* Internal: */
   int                        onlyview;

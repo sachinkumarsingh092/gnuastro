@@ -460,12 +460,12 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   double *phi, *theta, *world, *pixcrd, *imgcrd;
 
   /* Allocate all the necessary arrays. */
-  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT, size);
-  phi=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  theta=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  world=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
-  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
-  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT32, size);
+  phi=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, size);
+  theta=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, size);
+  world=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
+  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
+  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
 
   /* Put in the values. */
   for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
@@ -484,8 +484,8 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   */
 
   /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
-  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, size);
+  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, size);
 
   /* Put the values into the output arrays. */
   for(i=0;i<size;++i)
