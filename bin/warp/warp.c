@@ -117,19 +117,19 @@ warponthread(void *inparam)
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct warpparams *p=iwp->p;
 
-  long is0=p->is0, is1=p->is1;
-  double area, nanarea, *input=p->input, v=NAN;
   size_t *extinds=p->extinds, *ordinds=p->ordinds;
-  size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
-  double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
+  long is0=p->input->dsize[0], is1=p->input->dsize[1];
+  double area, filledarea, *input=p->input->array, v=NAN;
+  size_t i, j, ind, os1=p->output->dsize[1], numcrn, numinput;
   long x, y, xstart, xend, ystart, yend; /* Might be negative */
+  double ocrn[8], icrn_base[8], icrn[8], *output=p->output->array;
   double pcrn[8], *outfpixval=p->outfpixval, ccrn[GAL_POLYGON_MAX_CORNERS];
 
   for(i=0;(ind=iwp->indexs[i])!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Initialize the output pixel value: */
       numinput=0;
-      output[ind]=nanarea=0.0f;
+      output[ind]=filledarea=0.0f;
 
       /* Set the corners of this output pixel. The ind/os1 and ind%os1
          start from 0. Note that the outfpixval already contains the
@@ -205,11 +205,10 @@ warponthread(void *inparam)
                  output pixel covers a NaN pixel in the input grid,
                  then calculate the area of this NaN pixel to account
                  for it later. */
-              if( isnan(v) )
-                nanarea+=area;
-              else
+              if( !isnan(v) )
                 {
                   ++numinput;
+                  filledarea+=area;
                   output[ind]+=v*area;
                 }
 
@@ -241,29 +240,13 @@ warponthread(void *inparam)
             }
         }
 
-      /* Correct for the area covered by a NaN. The basic idea is
-         this: The full pixel (with area `A') would have a value of
-         `F'. But we have only measured the value `f' over the area
-         `a', so a simple linear extrapolation would give: F=fA/a. */
-      if(numinput && nanarea!=0.0f)
-        {
-          /* For a check:
-          printf("%zu: %f/%f --> %f\n", ind, nanarea, p->opixarea,
-                 nanarea/p->opixarea);
-          */
-
-          if(nanarea/p->opixarea<p->maxblankfrac)
-            output[ind]*=p->opixarea/(p->opixarea-nanarea);
-          else
-            numinput=0;
-        }
+      /* See if the pixel value should be set to NaN or not (because of not
+         enough coverage). */
+      if(numinput && filledarea/p->opixarea < p->coveredfrac-1e-5)
+        numinput=0;
 
       /* Write the final value to disk: */
-      if(numinput==0 && p->zerofornoinput==0)
-        {
-          output[ind]=NAN;
-          ++p->numnul;
-        }
+      if(numinput==0) output[ind]=NAN;
     }
 
 
@@ -309,22 +292,24 @@ warponthread(void *inparam)
    the image altough the scale might change.
 */
 void
-warppreparations(struct imgwarpparams *p)
+warppreparations(struct warpparams *p)
 {
+  double is0=p->input->dsize[0], is1=p->input->dsize[1];
+
   double output[8], forarea[8];
   double icrn[8]={0,0,0,0,0,0,0,0};
-  size_t i, *extinds=p->extinds, size;
+  size_t i, *extinds=p->extinds, dsize[2];
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
   double ocrn[8]={0.5f,0.5f,  1.5f,0.5f, 0.5f,1.5f,   1.5f, 1.5f};
-  double input[8]={0.5f,0.5f,             p->is1+0.5f, 0.5f,
-                   0.5f, p->is0+0.5f,     p->is1+0.5f, p->is0+0.5f};
+  double input[8]={ 0.5f, 0.5f,         is1+0.5f, 0.5f,
+                    0.5f, is0+0.5f,     is1+0.5f, is0+0.5f };
 
   /* Find the range of pixels of the input image. All the input
      positions are moved to the negative by half a pixel since the
      center of the pixel is an integer value.*/
   for(i=0;i<4;++i)
     {
-      mappoint(&input[i*2], p->matrix, &output[i*2]);
+      mappoint(&input[i*2], (double *)(p->matrix->array), &output[i*2]);
       if(output[i*2]<xmin)     xmin = output[i*2];
       if(output[i*2]>xmax)     xmax = output[i*2];
       if(output[i*2+1]<ymin)   ymin = output[i*2+1];
@@ -344,25 +329,23 @@ warppreparations(struct imgwarpparams *p)
      the maximums is that these points are the farthest extremes of
      the input image. If they are half a pixel value, they should
      point to the pixel before. */
-  p->onaxes[0]=nearestint_halflower(xmax)-nearestint_halfhigher(xmin)+1;
-  p->onaxes[1]=nearestint_halflower(ymax)-nearestint_halfhigher(ymin)+1;
+  dsize[1]=nearestint_halflower(xmax)-nearestint_halfhigher(xmin)+1;
+  dsize[0]=nearestint_halflower(ymax)-nearestint_halfhigher(ymin)+1;
   p->outfpixval[0]=nearestint_halfhigher(xmin);
   p->outfpixval[1]=nearestint_halfhigher(ymin);
   /* For a check:
   printf("Wrapped:\n");
-  printf("onaxes: (%zu, %zu)\n", p->onaxes[0], p->onaxes[1]);
-  printf("outfpixval=(%.4f, %.4f)\n", p->outfpixval[0], p->outfpixval[1]);
+  printf("dsize [C]: (%zu, %zu)\n", dsize[0], dsize[1]);
+  printf("outfpixval [FITS]: (%.4f, %.4f)\n", p->outfpixval[0],
+         p->outfpixval[1]);
   */
 
   /* We now know the size of the output and the starting and ending
      coordinates in the output image (bottom left corners of pixels)
      for the transformation. */
-  errno=0;
-  size=p->onaxes[0]*p->onaxes[1];
-  p->output=malloc(size*sizeof *p->output);
-  if(p->output==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for the output array",
-          size*sizeof *p->output);
+  p->output=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 2, dsize,
+                           p->input->wcs, 0, p->cp.minmapsize, "Warped",
+                           p->input->unit, NULL);
 
 
   /* Order the corners of the inverse-transformed pixel (from the
@@ -426,19 +409,19 @@ warppreparations(struct imgwarpparams *p)
    converted from homogeneous coordinates). Then Multiply the crpix
    array with the ACTUAL transformation matrix. */
 void
-correctwcssaveoutput(struct warpparams *p)
+correct_wcs_save_output(struct warpparams *p)
 {
   size_t i;
-  void *array;
-  double *pixelscale;
-  double *m=p->matrix, diff;
+  double *m=p->matrix->array, diff;
   char keyword[9*FLEN_KEYWORD];
+  struct wcsprm *wcs=p->output->wcs;
   struct gal_fits_key_ll *headers=NULL;
-  double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
+  double tpc[4], tcrpix[3], *pixelscale;
+  double *crpix=wcs->crpix, *pc=wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
 
-  if(p->correctwcs && p->wcs)
+  if(p->keepwcs==0 && wcs)
     {
       /* Correct the PC matrix: */
       tpc[0]=pc[0]*tinv[0]+pc[1]*tinv[2];
@@ -456,50 +439,35 @@ correctwcssaveoutput(struct warpparams *p)
       crpix[1]=tcrpix[1]/tcrpix[2]-p->outfpixval[1]+1;
     }
 
-
-  /* Convert the output to the input image format: */
-  if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
-    {
-      array=p->output;
-      p->inputbitpix=DOUBLE_IMG; /* Not converted and p->doubletype==1 */
-    }
-  else
-    gal_fits_change_type((void **)p->output, DOUBLE_IMG,
-                              p->onaxes[1]*p->onaxes[0],
-                              p->numnul, &array, p->inputbitpix);
-
   /* Add the appropriate headers: */
-  gal_fits_file_name_in_keywords("INF", p->up.inputname, &headers);
+  gal_fits_key_write_filename("INF", p->inputname, &headers);
   for(i=0;i<9;++i)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%zu_%zu", i/3+1, i%3+1);
-      gal_fits_add_to_key_ll_end(&headers, TDOUBLE,
+      gal_fits_key_add_to_ll_end(&headers, GAL_DATA_TYPE_FLOAT64,
                                  &keyword[i*FLEN_KEYWORD], 0,
-                                 &p->matrix[i], 0, "Warp matrix "
-                                 "element value.", 0, NULL);
+                                 &m[i], 0, "Warp matrix element value", 0,
+                                 NULL);
     }
 
   /* Due to floating point errors extremely small values of PC matrix can
      be set to zero and extremely small differences between PC1_1 and PC2_2
      can be ignored. The reason for all the `fabs' functions is because the
      signs are usually different.*/
-  if( p->wcs->pc[1]<ABSOLUTEFLTERROR ) p->wcs->pc[1]=0.0f;
-  if( p->wcs->pc[2]<ABSOLUTEFLTERROR ) p->wcs->pc[2]=0.0f;
-  pixelscale=gal_wcs_pixel_scale_deg(p->wcs);
-  diff=fabs(p->wcs->pc[0])-fabs(p->wcs->pc[3]);
+  if( wcs->pc[1]<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
+  if( wcs->pc[2]<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
+  pixelscale=gal_wcs_pixel_scale_deg(wcs);
+  diff=fabs(wcs->pc[0])-fabs(wcs->pc[3]);
   if( fabs(diff/pixelscale[0])<RELATIVEFLTERROR )
-    p->wcs->pc[3] =  ( (p->wcs->pc[3] < 0.0f ? -1.0f : 1.0f)
-                       * fabs(p->wcs->pc[0]) );
+    wcs->pc[3] =  ( (wcs->pc[3] < 0.0f ? -1.0f : 1.0f) * fabs(wcs->pc[0]) );
 
-  /* Save the output: */
-  gal_fits_array_to_file(p->cp.output, "Warped", p->inputbitpix, array,
-                         p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
-                         headers, SPACK_STRING);
+  /* Save the output into the proper type and write it. */
+  if(p->cp.type!=p->output->type)
+    p->output=gal_data_copy_to_new_type_free(p->output, p->cp.type);
+  gal_fits_img_write(p->output, p->cp.output, headers, PROGRAM_STRING);
 
   /* Clean up. */
   free(pixelscale);
-  if(array!=p->output)
-    free(array);
 }
 
 
@@ -525,18 +493,16 @@ correctwcssaveoutput(struct warpparams *p)
 /**************       Outside function        ******************/
 /***************************************************************/
 void
-warp(struct imgwarpparams *p)
+warp(struct warpparams *p)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct iwpparams *iwp;
+  size_t nt=p->cp.numthreads;
   size_t i, nb, *indexs, thrdcols;
-  size_t nt=p->cp.numthreads, size;
 
-  /* Set the number of output blank pixels to zero: */
-  p->numnul=0;
 
   /* Array keeping thread parameters for each thread. */
   errno=0;
@@ -551,8 +517,7 @@ warp(struct imgwarpparams *p)
 
 
   /* Distribute the output pixels into the threads: */
-  size=p->onaxes[0]*p->onaxes[1];
-  gal_threads_dist_in_threads(size, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(p->output->size, nt, &indexs, &thrdcols);
 
 
   /* Start the convolution. */
@@ -568,8 +533,8 @@ warp(struct imgwarpparams *p)
          (that spinns off the nt threads) is also a thread, so the
          number the barrier should be one more than the number of
          threads spinned off. */
-      if(size<nt) nb=size+1;
-      else nb=nt+1;
+      if(p->output->size<nt) nb=p->output->size+1;
+      else                   nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
@@ -590,11 +555,13 @@ warp(struct imgwarpparams *p)
       pthread_barrier_destroy(&b);
     }
 
-  /* Correct the WCS information and save the output. */
-  correctwcssaveoutput(p);
+
+  /* Save the output. */
+  correct_wcs_save_output(p);
+
 
   /* Free the allocated spaces: */
   free(iwp);
   free(indexs);
-  free(p->output);
+  gal_data_free(p->output);
 }

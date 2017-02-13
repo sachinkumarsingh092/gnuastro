@@ -79,7 +79,7 @@ struct gal_fits_key_ll
   int                    kfree;   /* ==1, free keyword name.   */
   int                    vfree;   /* ==1, free keyword value.  */
   int                    cfree;   /* ==1, free comment.        */
-  int                     type;   /* Keyword value type.       */
+  uint8_t                 type;   /* Keyword value type.       */
   char                *keyname;   /* Keyword Name.             */
   void                  *value;   /* Keyword value.            */
   char                *comment;   /* Keyword comment.          */
@@ -124,13 +124,13 @@ int
 gal_fits_bitpix_to_type(int bitpix);
 
 int
-gal_fits_type_to_bitpix(int type);
+gal_fits_type_to_bitpix(uint8_t type);
 
 char
-gal_fits_type_to_bin_tform(int type);
+gal_fits_type_to_bin_tform(uint8_t type);
 
 int
-gal_fits_type_to_datatype(int type);
+gal_fits_type_to_datatype(uint8_t type);
 
 int
 gal_fits_datatype_to_type(int datatype, int is_table_column);
@@ -166,12 +166,12 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
                        int readcomment, int readunit);
 
 void
-gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, int datatype,
+gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
                        char *keyname, int kfree, void *value, int vfree,
                        char *comment, int cfree, char *unit);
 
 void
-gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, int datatype,
+gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
                            char *keyname, int kfree, void *value, int vfree,
                            char *comment, int cfree, char *unit);
 
@@ -203,7 +203,7 @@ gal_data_t *
 gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);
 
 gal_data_t *
-gal_fits_img_read_to_type(char *inputname, char *inhdu, int type,
+gal_fits_img_read_to_type(char *inputname, char *inhdu, uint8_t type,
                           size_t minmapsize);
 
 gal_data_t *

@@ -125,8 +125,14 @@ enum gal_table_diplay_formats
 uint8_t
 gal_table_string_to_format(char *string);
 
+char *
+gal_table_format_as_string(uint8_t format);
+
 uint8_t
 gal_table_string_to_searchin(char *string);
+
+char *
+gal_table_searchin_as_string(uint8_t searchin);
 
 void
 gal_table_check_fits_format(char *filename, int tableformat);

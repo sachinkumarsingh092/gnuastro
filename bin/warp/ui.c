@@ -26,9 +26,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/linkedlist.h>
 
 #include <timing.h>
@@ -85,13 +88,13 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   c g i j k l u v w x y
-   A B C E F G H I J L M O Q R T U W X Y Z  */
+   b g i j l n u v w x y
+   A B E F G H I J L M O Q R T U W X Y Z  */
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_KEEPINPUTWCS    = 'n',
-  ARGS_OPTION_KEY_MAXBLANKFRAC    = 'b',
+  ARGS_OPTION_KEY_KEEPWCS         = 'k',
+  ARGS_OPTION_KEY_COVEREDFRAC     = 'C',
   ARGS_OPTION_KEY_TYPE            = 'T',
   ARGS_OPTION_KEY_ALIGN           = 'a',
   ARGS_OPTION_KEY_ROTATE          = 'r',
@@ -101,10 +104,11 @@ enum option_keys_enum
   ARGS_OPTION_KEY_TRANSLATE       = 't',
   ARGS_OPTION_KEY_PROJECT         = 'p',
   ARGS_OPTION_KEY_MATRIX          = 'm',
+  ARGS_OPTION_KEY_CENTERONCORNER  = 'c',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  ARGS_OPTION_KEY_HSTARTWCS   = 1000,
+  ARGS_OPTION_KEY_HSTARTWCS       = 1000,
   ARGS_OPTION_KEY_HENDWCS,
 };
 
@@ -139,11 +143,13 @@ ui_initialize_options(struct warpparams *p,
 
 
   /* Set the necessary common parameters structure. */
-  cp->poptions           = program_options;
+  cp->program_struct     = p;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
+  cp->poptions           = program_options;
+  cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
 
@@ -151,10 +157,13 @@ ui_initialize_options(struct warpparams *p,
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     switch(cp->coptions[i].key)
       {
-      case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_MINMAPSIZE:
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].flags=OPTION_HIDDEN;
         break;
       }
 }
@@ -190,10 +199,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      if(p->filename)
+      if(p->inputname)
         argp_error(state, "only one argument (input file) should be given");
       else
-        p->filename=arg;
+        p->inputname=arg;
       break;
 
 
@@ -223,39 +232,232 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
 
-
 /**************************************************************/
-/***************       Sanity Check         *******************/
+/**********      Modular matrix linked list       *************/
 /**************************************************************/
-/* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
-static void
-ui_read_check_only_options(struct warpparams *p)
+static void *
+ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
+                           char *filename, size_t lineno, void *params)
 {
+  size_t i, num=0;
+  gal_data_t *new;
+  char *tailptr, *c=arg;
+  double numerator=NAN, denominator=NAN, tmp;
+  struct gal_linkedlist_dll *list=NULL, *tdll;
+  struct warpparams *p=(struct warpparams *)params;
 
-  /* Check if the format of the output table is valid, given the type of
-     the output. */
-  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+  /* The nature of the arrays/numbers read here is very small, so since
+     `p->cp.minmapsize' might not have been read yet, we will set it to -1
+     (largest size_t number), so the values are kept in memory. */
+  size_t minmapsize=-1;
 
+  /* Parse the (possible) arguments. */
+  if(option->key==ARGS_OPTION_KEY_ALIGN)
+    {
+      /* For functions the standard checking isn't done, so first, we'll
+         make sure that if we are in a configuration file (where
+         `arg!=NULL'), the value is either 0 or 1. */
+      if( arg && strcmp(arg, "0") && strcmp(arg, "1") )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--align' "
+                      "option takes no arguments. In a configuration file "
+                      "it can only have the values `1' or `0', indicating "
+                      "if it should be used or not");
+
+      /* Align doesn't take any values, but if called in a configuration
+         file with a value of `0', we should ignore it. */
+      if(arg && *arg=='0') return NULL;
+
+      /* Allocate the data structure. */
+      new=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 0, &num, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+    }
+  else
+    {
+      /* Go through the input character by character. */
+      while(*c!='\0')
+        {
+        switch(*c)
+          {
+          /* Ignore space or tab. */
+          case ' ':
+          case '\t':
+            ++c;
+            break;
+
+
+          /* Comma marks the transition to the next number. */
+          case ',':
+            if(isnan(numerator))
+              error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
+                            "must be given before `,'. You have given: `%s'",
+                            arg);
+            gal_linkedlist_add_to_dll(&list, isnan(denominator)
+                                      ? numerator : numerator/denominator);
+            numerator=denominator=NAN;
+            ++num;
+            ++c;
+            break;
+
+
+          /* Divide two numbers. */
+          case '/':
+            if( isnan(numerator) || !isnan(denominator) )
+              error_at_line(EXIT_FAILURE, 0, filename, lineno, "`/' must "
+                            "only be between two numbers and used for "
+                            "division. But you have given `%s'. This "
+                            "was a value to the `%s' option", arg,
+                            option->name);
+            ++c;
+            break;
+
+
+          /* Read the number. */
+          default:
+
+            /* Parse the string. */
+            tmp=strtod(c, &tailptr);
+            if(tailptr==c)
+              error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first "
+                            "part of `%s' couldn't be read as a number. This "
+                            "was part of `%s' (value to the `%s' option)", c,
+                            arg, option->name);
+
+            /* See if the number should be put in the numerator or
+               denominator. */
+            if(isnan(numerator)) numerator=tmp;
+            else
+              {
+                if(isnan(denominator)) denominator=tmp;
+                else error_at_line(EXIT_FAILURE, 0, filename, lineno, "more "
+                                "than two numbers in each element.");
+              }
+
+            /* Set `c' to tailptr. */
+            c=tailptr;
+          }
+        }
+
+      /* If the last number, wasn't finished by a `,', add the read value
+         to the list */
+      if( !isnan(numerator) )
+        {
+          ++num;
+          gal_linkedlist_add_to_dll(&list, isnan(denominator)
+                                    ? numerator : numerator/denominator);
+        }
+
+      /* Allocate the new data structure and fill it up. */
+      i=num;
+      new=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &num, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      for(tdll=list;tdll!=NULL;tdll=tdll->next)
+        ((double *)new->array)[--i]=tdll->v;
+      gal_linkedlist_free_dll(list);
+    }
+
+  /* For a check.
+  printf("%s (%s): %zu number(s)\n", option->name, arg, num);
+  for(i=0;i<num;++i)
+    printf("\t%.15f\n", ((double *)new->array)[i]);
+  */
+
+  /* If this was a matrix, then put it in the matrix element of the main
+     data structure. Otherwise, add the list of given values to the modular
+     warpings list. */
+  if(option->key==ARGS_OPTION_KEY_MATRIX)
+    {
+      /* Some sanity checks. */
+      if(p->matrix)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "only one matrix "
+                      "may be given, you can use multiple modular warpings");
+      if(num!=4 && num!=9)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "only a 4 or 9 "
+                      "element `matrix' is currently acceptable. `%s' has "
+                      "%zu elements", arg, num);
+
+      /* Keep the matrix in the main structure. */
+      p->matrix=new;
+    }
+  else
+    {
+      /* No more than two numbers should be given for the modular
+         warpings. */
+      if(new->size>2)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "%zu numbers "
+                      "given to the `%s' option. Modular warpings can "
+                      "accept 2 numbers at the most currently (for 2D "
+                      "datasets)", new->size, option->name);
+
+      /* Some modular-warp specific sanity checks: rotate only needs one
+         number, and flip's values should only be 0 and 1. */
+      if(option->key==ARGS_OPTION_KEY_ROTATE)
+        {
+          if(new->size!=1)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `rotate' "
+                      "option only takes one value (the angle of rotation). "
+                      "You have given: `%s'", arg);
+        }
+      else if (option->key==ARGS_OPTION_KEY_FLIP)
+        {
+          for(i=0;i<new->size;++i)
+            {
+              tmp=((double *)(new->array))[i];
+              if(tmp!=0.0f && tmp!=1.0f)
+                error_at_line(EXIT_FAILURE, 0, filename, lineno, "`flip' "
+                              "only takes values of `1' and `0'. You have "
+                              "given `%s'", arg);
+            }
+        }
+
+      /* Keep the final value. */
+      new->status=option->key;
+      new->next=p->modularll;
+      p->modularll=new;
+    }
+  return NULL;
 }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Sanity Check         *******************/
+/**************************************************************/
 static void
 ui_check_options_and_arguments(struct warpparams *p)
 {
-  /* Make sure an input file name was given and if it was a FITS file, that
-     a HDU is also given. */
-  if(p->filename)
+  /* Read the input.*/
+  if(p->inputname)
     {
-      if( gal_fits_name_is_fits(p->filename) && p->cp.hdu==NULL )
-        error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
-              "file, a HDU must also be specified, you can use the `--hdu' "
+      /* Make sure a HDU is given. */
+      if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified, you can use the `--hdu' "
               "(`-h') option and give it the HDU number (starting from "
-              "zero), extension name, or anything acceptable by CFITSIO");
+              "zero), or extension name (generally, anything acceptable "
+              "by CFITSIO)");
 
+      /* Read the input image as double type and its WCS structure. */
+      p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
+                                         GAL_DATA_TYPE_FLOAT64,
+                                         p->cp.minmapsize);
+      gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
+                   p->hendwcs, &p->input->nwcs, &p->input->wcs);
     }
   else
     error(EXIT_FAILURE, 0, "no input file is specified");
@@ -281,86 +483,502 @@ ui_check_options_and_arguments(struct warpparams *p)
 
 
 /**************************************************************/
-/***************       Preparations         *******************/
+/***************     Matrix preparations     ******************/
 /**************************************************************/
-void
-ui_preparations(struct warpparams *p)
+static void
+ui_error_no_warps()
 {
-  char *numstr;
-  int tableformat;
-  gal_data_t *allcols;
-  size_t i, numcols, numrows;
-  struct gal_options_common_params *cp=&p->cp;
+  error(EXIT_FAILURE, 0, "no warping specified, you can either use the "
+        "`--matrix' option for any low-level warp, or specify multipole "
+        "modular warpings with options like `--rotate', `--scale' and etc. "
+        "You can see the full list with the `--help' option");
+}
 
-  /* If there were no columns specified, we want the full set of
-     columns. */
-  if(p->columns==NULL)
+
+
+
+
+/* This function is mainly for easy checking/debugging. */
+static void
+ui_matrix_print(double *matrix)
+{
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[0], matrix[1], matrix[2]);
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[3], matrix[4], matrix[5]);
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[6], matrix[7], matrix[8]);
+}
+
+
+
+
+
+static void
+ui_matrix_prepare_raw(struct warpparams *p)
+{
+  size_t *dsize;
+  double *in=p->matrix->array, *final;
+
+  /* If the matrix was 2D, then convert it to 3D. Note that we done a size
+     check when reading the matrix, so at this point, it either has 9
+     elements, or 4. */
+  if(p->matrix->size==4)
     {
-      /* Read the table information for the number of columns and rows. */
-      allcols=gal_table_info(p->filename, cp->hdu, &numcols,
-                             &numrows, &tableformat);
+      /* Allocate the final matrix. */
+      final=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 9);
 
-      /* If there was no actual data in the file, then inform the user */
-      if(allcols==NULL)
-        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->filename);
+      /* Fill in the final 3x3 matrix from the 2x2 matrix. */
+      final[0]=in[0];    final[1]=in[1];   final[2]=0.0f;
+      final[3]=in[2];    final[4]=in[3];   final[5]=0.0f;
+      final[6]=0.0f;     final[7]=0.0f;    final[8]=1.0f;
 
-
-      /* If the user just wanted information, then print it. */
-      if(p->information)
-        {
-          /* Print the file information. */
-          printf("--------\n");
-          printf("%s", p->filename);
-          if(gal_fits_name_is_fits(p->filename))
-            printf(" (hdu: %s)\n", cp->hdu);
-          else
-            printf("\n");
-
-          /* Print each column's information. */
-          gal_table_print_info(allcols, numcols, numrows);
-        }
-
-
-      /* Free the information from all the columns. */
-      for(i=0;i<numcols;++i)
-        gal_data_free_contents(&allcols[i]);
-      free(allcols);
-
-
-      /* If the user just wanted information, then free the allocated
-         spaces and exit. Otherwise, add the number of columns to the list
-         if the user wanted to print the columns (didn't just want their
-         information. */
-      if(p->information)
-        {
-          ui_free_report(p);
-          exit(EXIT_SUCCESS);
-        }
-      else
-        for(i=1;i<=numcols;++i)
-          {
-            asprintf(&numstr, "%zu", i);
-            gal_linkedlist_add_to_stll(&p->columns, numstr, 0);
-          }
+      /* Free the old matrix array and put in the new one. */
+      free(p->matrix->array);
+      p->matrix->size=9;
+      p->matrix->array=final;
     }
 
-  /* Reverse the list of column search criteria that we are looking for
-     (since this is a last-in-first-out linked list, the order that
-     elements were added to the list is the reverse of the order that they
-     will be popped). */
-  gal_linkedlist_reverse_stll(&p->columns);
-  p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
-                          cp->ignorecase, cp->minmapsize);
+  /* Correct the dimensional information, because the matrix was read as a
+     single dimensional list of numbers. */
+  free(p->matrix->dsize);
+  dsize=p->matrix->dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, 2);
+  dsize[0]=dsize[1]=3;
+  p->matrix->ndim=2;
+}
 
-  /* If there was no actual data in the file, then inform the user and
-     abort. */
-  if(p->table==NULL)
-    error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
-          "non-blank lines)", p->filename);
 
-  /* Now that the data columns are ready, we can free the string linked
-     list. */
-  gal_linkedlist_free_stll(p->columns, 1);
+
+
+
+/* Set the matrix so the image is aligned with the axises. Note that
+   WCSLIB automatically fills the CRPI */
+static void
+ui_matrix_make_align(struct warpparams *p, double *tmatrix)
+{
+  double A, *w, *ps, amatrix[4];
+
+  /* Make sure the input image had a WCS structure. */
+  if(p->input->wcs==NULL)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s): no WCS information present, "
+          "hence the `--align' option cannot be used", p->inputname,
+          p->cp.hdu);
+
+  /* Check if there is only two WCS axises: */
+  if(p->input->wcs->naxis!=2)
+    error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) has %d "
+          "axises. For the `--align' option to operate it must be 2",
+          p->inputname, p->cp.hdu, p->input->wcs->naxis);
+
+
+  /* Find the pixel scale along the two dimensions. Note that we will be
+     using the scale along the image X axis for both values. */
+  w=gal_wcs_array_from_wcsprm(p->input->wcs);
+  ps=gal_wcs_pixel_scale_deg(p->input->wcs);
+
+
+  /* Lets call the given WCS orientation `W', the rotation matrix we want
+     to find as `X' and the final (aligned matrix) to have just one useful
+     value: `a' (which is the pixel scale):
+
+        x0  x1       w0  w1      -a  0
+        x2  x3   *   w2  w3   =   0  a
+
+     Let's open up the matrix multiplication, so we can find the `X'
+     elements as function of the `W' elements and `a'.
+
+        x0*w0 + x1*w2 = -a                                         (1)
+        x0*w1 + x1*w3 =  0                                         (2)
+        x2*w0 + x3*w2 =  0                                         (3)
+        x2*w1 + x3*w3 =  a                                         (4)
+
+     Let's bring the X with the smaller index in each equation to the left
+     side:
+
+        x0 = (-w2/w0)*x1 - a/w0                                    (5)
+        x0 = (-w3/w1)*x1                                           (6)
+        x2 = (-w2/w0)*x3                                           (7)
+        x2 = (-w3/w1)*x3 + a/w1                                    (8)
+
+    Using (5) and (6) we can find x0 and x1, by first eliminating x0:
+
+       (-w2/w0)*x1 - a/w0 = (-w3/w1)*x1 -> (w3/w1 - w2/w0) * x1 = a/w0
+
+    For easy reading/writing, let's define: A = (w3/w1 - w2/w0)
+
+       --> x1 = a / w0 / A
+       --> x0 = -1 * x1 * w3 / w1
+
+    Similar to the above, we can find x2 and x3 from (7) and (8):
+
+       (-w2/w0)*x3 = (-w3/w1)*x3 + a/w1 -> (w3/w1 - w2/w0) * x3 = a/w1
+
+       --> x3 = a / w1 / A
+       --> x2 = -1 * x3 * w2 / w0
+
+    Note that when the image is already aligned, a unity matrix should be
+    output.
+   */
+  if( w[1]==0.0f && w[2]==0.0f )
+    {
+      amatrix[0]=1.0f;   amatrix[1]=0.0f;
+      amatrix[2]=0.0f;   amatrix[3]=1.0f;
+    }
+  else
+    {
+      A = (w[3]/w[1]) - (w[2]/w[0]);
+      amatrix[1] = ps[0] / w[0] / A;
+      amatrix[3] = ps[0] / w[1] / A;
+      amatrix[0] = -1 * amatrix[1] * w[3] / w[1];
+      amatrix[2] = -1 * amatrix[3] * w[2] / w[0];
+    }
+
+
+  /* For a check:
+  printf("ps: %e\n", ps);
+  printf("w:\n");
+  printf("  %.8e    %.8e\n", w[0], w[1]);
+  printf("  %.8e    %.8e\n", w[2], w[3]);
+  printf("x:\n");
+  printf("  %.8e    %.8e\n", amatrix[0], amatrix[1]);
+  printf("  %.8e    %.8e\n", amatrix[2], amatrix[3]);
+  exit(0);
+  */
+
+  /* Put the matrix elements into the output array: */
+  tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
+  tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
+  tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
+
+  /* Clean up. */
+  free(w);
+  free(ps);
+}
+
+
+
+
+
+static void
+ui_matrix_inplacw_multiply(double *in, double *with)
+{
+  /* `tin' will keep the values of the input array because we want to
+     write the multiplication result in the input array. */
+  double tin[9]={in[0],in[1],in[2],in[3],in[4],in[5],in[6],in[7],in[8]};
+
+  /* For easy checking, here are the matrix/memory layouts:
+          tin[0] tin[1] tin[2]     with[0] with[1] with[2]
+          tin[3] tin[4] tin[5]  *  with[3] with[4] with[5]
+          tin[6] tin[7] tin[8]     with[6] with[7] with[8]   */
+  in[0] = tin[0]*with[0] + tin[1]*with[3] + tin[2]*with[6];
+  in[1] = tin[0]*with[1] + tin[1]*with[4] + tin[2]*with[7];
+  in[2] = tin[0]*with[2] + tin[1]*with[5] + tin[2]*with[8];
+
+  in[3] = tin[3]*with[0] + tin[4]*with[3] + tin[5]*with[6];
+  in[4] = tin[3]*with[1] + tin[4]*with[4] + tin[5]*with[7];
+  in[5] = tin[3]*with[2] + tin[4]*with[5] + tin[5]*with[8];
+
+  in[6] = tin[6]*with[0] + tin[7]*with[3] + tin[8]*with[6];
+  in[7] = tin[6]*with[1] + tin[7]*with[4] + tin[8]*with[7];
+  in[8] = tin[6]*with[2] + tin[7]*with[5] + tin[8]*with[8];
+}
+
+
+
+
+
+
+static void
+ui_matrix_from_modular(struct warpparams *p)
+{
+  gal_data_t *pop;
+  size_t dsize[]={3,3};
+  double s, c, v1, v2, *final, module[9];
+
+  /* Reverse the list of modular warpings to be in the same order as the
+     user specified.*/
+  gal_data_reverse_ll(&p->modularll);
+
+  /* Allocate space for the final matrix. */
+  p->matrix=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 2, dsize, NULL, 0,
+                           p->cp.minmapsize, NULL, NULL, NULL);
+  final=p->matrix->array;
+
+  /* Fill in the final matrix to start with. */
+  final[0]=1.0f;     final[1]=0.0f;     final[2]=0.0f;
+  final[3]=0.0f;     final[4]=1.0f;     final[5]=0.0f;
+  final[6]=0.0f;     final[7]=0.0f;     final[8]=1.0f;
+
+  /* Apply all modular warps. */
+  while(p->modularll)
+    {
+      /* Pop the top element. */
+      pop=gal_data_pop_from_ll(&p->modularll);
+
+      /* Set the (possibly) two values given for this warp. */
+      v1 = pop->ndim   ? ((double *)(pop->array))[0] : 0.0f;
+      v2 = pop->size>1 ? ((double *)(pop->array))[1] : v1;
+
+      /* Depending on the type of the modular warp do it. Recall that the
+         code for the warp, was stored in the `status' element of the data
+         structure.*/
+      switch(pop->status)
+        {
+        case ARGS_OPTION_KEY_ALIGN:
+          ui_matrix_make_align(p, module);
+          break;
+
+        case ARGS_OPTION_KEY_ROTATE:
+          s = sin( v1 * M_PI / 180 );
+          c = cos( v1 * M_PI / 180 );
+          module[0]=c;          module[1]=s;      module[2]=0.0f;
+          module[3]=-1.0f*s;    module[4]=c;      module[5]=0.0f;
+          module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
+          break;
+
+        case ARGS_OPTION_KEY_SCALE:
+          module[0]=v1;         module[1]=0.0f;   module[2]=0.0f;
+          module[3]=0.0f;       module[4]=v2;     module[5]=0.0f;
+          module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
+          break;
+
+        case ARGS_OPTION_KEY_FLIP:
+          if      ( v1==1.0f && v2==0.0f )
+            {
+              module[0]=1.0f;   module[1]=0.0f;
+              module[3]=0.0f;   module[4]=-1.0f;
+            }
+          else if ( v1==0.0f && v2==1.0f )
+            {
+              module[0]=-1.0f;  module[1]=0.0f;
+              module[3]=0.0f;   module[4]=1.0f;
+            }
+          else if ( v1==1.0f && v2==1.0f )
+            {
+              module[0]=-1.0f;  module[1]=0.0f;
+              module[3]=0.0f;   module[4]=-1.0f;
+            }
+          else                  /* When both are zero, just in case! */
+            {
+              module[0]=1.0f;   module[1]=0.0f;
+              module[3]=0.0f;   module[4]=1.0f;
+            }
+                                                  module[2]=0.0f;
+                                                  module[5]=0.0f;
+          module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
+          break;
+
+        case ARGS_OPTION_KEY_SHEAR:
+          module[0]=1.0f;       module[1]=v1;     module[2]=0.0f;
+          module[3]=v2;         module[4]=1.0f;   module[5]=0.0f;
+          module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
+          break;
+
+        case ARGS_OPTION_KEY_TRANSLATE:
+          module[0]=1.0f;       module[1]=0.0f;     module[2]=v1;
+          module[3]=0.0f;       module[4]=1.0f;     module[5]=v2;
+          module[6]=0.0f;       module[7]=0.0f;     module[8]=1.0f;
+          break;
+
+        case ARGS_OPTION_KEY_PROJECT:
+          module[0]=1.0f;       module[1]=0.0f;     module[2]=0.0f;
+          module[3]=0.0f;       module[4]=1.0f;     module[5]=0.0f;
+          module[6]=v1;         module[7]=v2;       module[8]=1.0f;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! the code %d is not recognized as "
+                "a valid modular warp in `ui_matrix_from_modular', this is "
+                "not your fault, something in the programming has gone "
+                "wrong. Please contact us at %s so we can correct it",
+                pop->status, PACKAGE_BUGREPORT);
+        }
+
+      /* Multiply the main matrix with this modular matrix. */
+      ui_matrix_inplacw_multiply(p->matrix->array, module);
+
+      /* Clean up. */
+      gal_data_free(pop);
+    }
+}
+
+
+
+
+
+static void
+ui_matrix_center_on_corner(struct warpparams *p)
+{
+  double *b, *d, *df;
+  double before[9]={1,0,0.5,0,1,0.5,0,0,1};
+  double after[9]={1,0,-0.5,0,1,-0.5,0,0,1};
+
+  /* Shift the matrix by +0.5 so the coordinate center lies at the bottom
+     left corner of the first pixel. Note that the updated values are
+     written into the first argument of the function.*/
+  ui_matrix_inplacw_multiply(before, p->matrix->array);
+
+  /* Translate them back into the proper FITS center. */
+  ui_matrix_inplacw_multiply(before, after);
+
+  /* The final matrix is in `before', so put its values into the output
+     matrix. */
+  b = before;
+  df = (d=p->matrix->array) + p->matrix->size;
+  do *d=*b++; while(++d<df);
+}
+
+
+
+
+
+static void
+ui_matrix_finalize(struct warpparams *p)
+{
+  double *d, *df, *inv;
+
+  /* If a matrix string is not given, the use the modular warpings. */
+  if(p->matrix)
+    ui_matrix_prepare_raw(p);
+  else if (p->modularll)
+    ui_matrix_from_modular(p);
+  else
+    ui_error_no_warps();
+
+  /* If the user has asked for it, set the coordinate center on the corner
+     of the first pixel. */
+  if(p->centeroncorner) ui_matrix_center_on_corner(p);
+
+  /* Check if there are any non-normal numbers in the matrix: */
+  df=(d=p->matrix->array)+p->matrix->size;
+  do
+    if(!isfinite(*d++))
+      {
+        ui_matrix_print(p->matrix->array);
+        error(EXIT_FAILURE, 0, "%f is not a `normal' number in the "
+              "input matrix shown above", *(d-1));
+      }
+  while(d<df);
+
+  /* Check if the determinant is not zero: */
+  d=p->matrix->array;
+  if( d[0]*d[4]*d[8] + d[1]*d[5]*d[6] + d[2]*d[3]*d[7]
+      - d[2]*d[4]*d[6] - d[1]*d[3]*d[8] - d[0]*d[5]*d[7] == 0 )
+    error(EXIT_FAILURE, 0, "the determinant of the given matrix "
+          "is zero");
+
+  /* Check if the transformation is spatially invariant, in other words, if
+     it differs between differet regions of the output. If it doesn't we
+     can use this information for a more efficient processing. This is not
+     yet implemented. */
+
+   /* Make the inverse matrix: */
+  inv=p->inverse=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 9);
+  inv[0] = d[4]*d[8] - d[5]*d[7];
+  inv[1] = d[2]*d[7] - d[1]*d[8];
+  inv[2] = d[1]*d[5] - d[2]*d[4];
+  inv[3] = d[5]*d[6] - d[3]*d[8];
+  inv[4] = d[0]*d[8] - d[2]*d[6];
+  inv[5] = d[2]*d[3] - d[0]*d[5];
+  inv[6] = d[3]*d[7] - d[4]*d[6];
+  inv[7] = d[1]*d[6] - d[0]*d[7];
+  inv[8] = d[0]*d[4] - d[1]*d[3];
+  /* Just for a test:
+  {
+    size_t i;
+    printf("\nInput matrix:");
+    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", d[i]); }
+    printf("\n-----------\n");
+    printf("Inverse matrix:");
+    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", inv[i]); }
+    printf("\n\n");
+  }
+  */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************        General preparations      ****************/
+/**************************************************************/
+/* When only one transformation is required, set the suffix for automatic
+   output to more meaningful string. */
+char *
+ui_set_suffix(struct warpparams *p)
+{
+  /* A small independent sanity check: we either need a matrix or at least
+     one modular warping. */
+  if(p->matrix==NULL && p->modularll==NULL) ui_error_no_warps();
+
+  /* We only want the more meaningful suffix when the list is defined AND
+     when its only has one node (the `next' element is NULL). */
+  if(p->matrix==NULL && p->modularll->next==NULL)
+    switch(p->modularll->status)
+      {
+      case ARGS_OPTION_KEY_ALIGN:
+        return "_aligned.fits";
+
+      case ARGS_OPTION_KEY_ROTATE:
+        return "_rotated.fits";
+
+      case ARGS_OPTION_KEY_SCALE:
+        return "_scaled.fits";
+
+      case ARGS_OPTION_KEY_FLIP:
+        return "_flipped.fits";
+
+      case ARGS_OPTION_KEY_SHEAR:
+        return "_sheared.fits";
+
+      case ARGS_OPTION_KEY_TRANSLATE:
+        return "_translated.fits";
+
+      case ARGS_OPTION_KEY_PROJECT:
+        return "_projected.fits";
+
+      default:
+        error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
+              "fix the problem. The modular warp code %d is not recognized "
+              "in `ui_set_suffix'", PACKAGE_BUGREPORT, p->modularll->status);
+        return NULL;
+      }
+  else
+    return "_warped.fits";
+}
+
+
+
+
+
+static void
+ui_preparations(struct warpparams *p)
+{
+  /* Set the output name. This needs to be done before `ui_finalize_matrix'
+     because that function will free the linked list of modular warpings
+     which we will need to determine the suffix if no output name is
+     specified. */
+  if(p->cp.output)
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+  else
+    p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
+                                               ui_set_suffix(p));
+
+  /* Prepare the final warping matrix. */
+  ui_matrix_finalize(p);
 }
 
 
@@ -416,11 +1034,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
   gal_options_read_config_set(&p->cp);
 
 
-  /* Read the options into the program's structure, and check them and
-     their relations prior to printing. */
-  ui_read_check_only_options(p);
-
-
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
      output state. */
@@ -435,6 +1048,24 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
 
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
+
+
+  /* Everything is ready, notify the user of the program starting. */
+  if(!p->cp.quiet)
+    {
+      double *matrix=p->matrix->array;
+      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+      printf(" Using %zu CPU thread%s\n", p->cp.numthreads,
+             p->cp.numthreads==1 ? "." : "s.");
+      printf(" Input: %s (hdu: %s)\n", p->inputname, p->cp.hdu);
+      printf(" matrix:"
+             "\n\t%.4f   %.4f   %.4f"
+             "\n\t%.4f   %.4f   %.4f"
+             "\n\t%.4f   %.4f   %.4f\n",
+             matrix[0], matrix[1], matrix[2],
+             matrix[3], matrix[4], matrix[5],
+             matrix[6], matrix[7], matrix[8]);
+    }
 }
 
 
@@ -460,12 +1091,11 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-ui_free_report(struct warpparams *p)
+ui_free_report(struct warpparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  free(p->cp.searchinstr);
-  free(p->cp.tableformatstr);
-  gal_data_free_ll(p->table);
+  gal_data_free(p->input);
+  gal_data_free(p->matrix);
 }

@@ -219,7 +219,7 @@ gal_fits_bitpix_to_type(int bitpix)
 
 
 int
-gal_fits_type_to_bitpix(int type)
+gal_fits_type_to_bitpix(uint8_t type)
 {
   switch(type)
     {
@@ -258,7 +258,7 @@ gal_fits_type_to_bitpix(int type)
    of the column. So this function will do the conversion based on the
    CFITSIO manual.*/
 char
-gal_fits_type_to_bin_tform(int type)
+gal_fits_type_to_bin_tform(uint8_t type)
 {
   switch(type)
     {
@@ -300,7 +300,7 @@ gal_fits_type_to_bin_tform(int type)
 
 
 int
-gal_fits_type_to_datatype(int type)
+gal_fits_type_to_datatype(uint8_t type)
 {
   int w=0;
 
@@ -790,7 +790,7 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, int type,
+gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
                        char *keyname, int kfree, void *value, int vfree,
                        char *comment, int cfree, char *unit)
 {
@@ -820,7 +820,7 @@ gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, int type,
 
 
 void
-gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, int type,
+gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
                            char *keyname, int kfree, void *value, int vfree,
                            char *comment, int cfree, char *unit)
 {
@@ -1237,7 +1237,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
    this input to be a special type. For such cases, this function can be
    used to convert the input file to the desired type. */
 gal_data_t *
-gal_fits_img_read_to_type(char *inputname, char *hdu, int type,
+gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
                           size_t minmapsize)
 {
   gal_data_t *in, *converted;
@@ -1340,6 +1340,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
     fits_create_file(&fptr, filename, &status);
 
   /* Create the FITS file. */
+
   fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
                   data->ndim, naxes, &status);
   gal_fits_io_error(status, NULL);

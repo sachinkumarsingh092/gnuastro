@@ -37,46 +37,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-struct optionwarpsll
-{
-  int                   type;
-  double                  v1;
-  double                  v2;
-  struct optionwarpsll *next;
-};
-
-
-
-
-
+/* Main program structure. */
 struct warpparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.             */
-  struct optionwarpsll *owll;    /* List of 2D rotations.                */
   char         *inputname;  /* Name of input file.                       */
   size_t        hstartwcs;  /* Header keyword No. to start reading WCS.  */
   size_t          hendwcs;  /* Header keyword No. to end reading WCS.    */
-  unsigned char keepinputwcs;  /* Wrap the warped/transfomed pixels.     */
-  float      maxblankfrac;  /* Maximum fraction of blank pixel in out.   */
-  char           *typestr;  /* Type of output image.                     */
-  unsigned char     align;  /* Align the image with celestial coord.     */
-  char         *rotatestr;  /* String given for rotation.                */
-  char          *scalestr;  /* String given for scaling.                 */
-  char           *flipstr;  /* String given for flipping.                */
-  char          *shearstr;  /* String given for shearing.                */
-  char      *translatestr;  /* String given for translation.             */
-  char        *projectstr;  /* String given for projection.              */
-  char         *matrixstr;  /* String containing transform elements.     */
+  uint8_t         keepwcs;  /* Wrap the warped/transfomed pixels.        */
+  uint8_t  centeroncorner;  /* Shift center by 0.5 before and after.     */
+  double      coveredfrac;  /* Acceptable fraction of output covered.    */
 
   /* Internal parameters: */
-  gal_data_t       *input;  /* Name of input FITS file.                  */
-  int             outtype;  /* Output type.                              */
-  double        matrix[9];  /* Warp/Transformation matrix.               */
-  double          *output;  /* Warped image array.                       */
-  size_t        onaxes[2];  /* Output image size                         */
-  size_t        knaxes[2];  /* Output image size                         */
+  gal_data_t       *input;  /* Input data structure.                     */
+  gal_data_t      *output;  /* output data structure.                    */
+  gal_data_t      *matrix;  /* Warp/Transformation matrix.               */
+  gal_data_t   *modularll;  /* List of modular warpings.                 */
   double         *inverse;  /* Inverse of the input matrix.              */
   time_t          rawtime;  /* Starting time of the program.             */
   size_t       extinds[4];  /* Indexs of the minimum and maximum values. */

@@ -171,11 +171,12 @@ ui_initialize_options(struct mkprofparams *p,
   struct gal_options_common_params *cp=&p->cp;
 
   /* Set the necessary common parameters structure. */
-  cp->poptions           = program_options;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
+  cp->poptions           = program_options;
+  cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
   /* Default program parameters. */
@@ -202,12 +203,6 @@ ui_initialize_options(struct mkprofparams *p,
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
         break;
       }
-
-
-  /* Read the number of threads available to the user, this should be done
-     before reading command-line and configuration file options, since they
-     can change it.  */
-  cp->numthreads=gal_threads_number();
 }
 
 

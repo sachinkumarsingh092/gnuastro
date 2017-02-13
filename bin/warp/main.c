@@ -46,7 +46,7 @@ main (int argc, char *argv[])
   ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run Warp */
-  imgwarp(&p);
+  warp(&p);
 
   /* Free all non-freed allocations. */
   ui_free_report(&p, &t1);

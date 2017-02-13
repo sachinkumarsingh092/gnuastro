@@ -210,7 +210,7 @@ gal_wcs_array_from_wcsprm(struct wcsprm *wcs)
         out[i]=wcs->cd[i];
     }
   else
-    error(EXIT_FAILURE, 0, "currently, `gal_wcs_pixel_scale_deg' only "
+    error(EXIT_FAILURE, 0, "currently, `gal_wcs_array_from_wcsprm' only "
           "recognizes PCi_ja and CDi_ja keywords");
 
   /* Return the result */

@@ -30,7 +30,7 @@ bin_PROGRAMS = astwarp
 
 astwarp_LDADD = -lgnuastro
 
-astwarp_SOURCES = main.c ui.c imgwarp.c
+astwarp_SOURCES = main.c ui.c warp.c
 
 EXTRA_DIST = main.h authors-cite.h args.h ui.h warp.h
 

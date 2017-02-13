@@ -84,6 +84,32 @@ gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll,
 
 
 
+/******************* double: */
+struct gal_linkedlist_dll
+{
+    double v;
+    struct gal_linkedlist_dll *next;
+};
+void
+gal_linkedlist_add_to_dll(struct gal_linkedlist_dll **list, double value);
+
+void
+gal_linkedlist_pop_from_dll(struct gal_linkedlist_dll **list, double *value);
+
+size_t
+gal_linkedlist_num_in_dll(struct gal_linkedlist_dll *list);
+
+void
+gal_linkedlist_dll_to_array(struct gal_linkedlist_dll *list,
+                            double **d, size_t *num);
+
+void
+gal_linkedlist_free_dll(struct gal_linkedlist_dll *list);
+
+
+
+
+
 /******************* Two doubles (for coordinates) */
 struct gal_linkedlist_tdll
 {

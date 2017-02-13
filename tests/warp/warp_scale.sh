@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --matrix="0.2,0,0.4   0,0.2,0.4   0,0,1"
+$execname $img --scale=1/5 --centeroncorner

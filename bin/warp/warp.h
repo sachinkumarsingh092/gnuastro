@@ -45,6 +45,6 @@ struct iwpparams
 
 /* Extenal functions. */
 void
-warp(struct imgwarpparams *p);
+warp(struct warpparams *p);
 
 #endif

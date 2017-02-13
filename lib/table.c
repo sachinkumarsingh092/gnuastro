@@ -49,21 +49,33 @@ gal_table_string_to_format(char *string)
 {
   if(string)                    /* Its not NULL. */
     {
-      if( !strcmp(string, "txt") )
-        return GAL_TABLE_FORMAT_TXT;
-
-      else if( !strcmp(string, "fits-ascii") )
-        return GAL_TABLE_FORMAT_AFITS;
-
-      else if( !strcmp(string, "fits-binary") )
-        return GAL_TABLE_FORMAT_BFITS;
-
-      else
-        return GAL_TABLE_FORMAT_INVALID;
+      if(!strcmp(string, "txt"))              return GAL_TABLE_FORMAT_TXT;
+      else if(!strcmp(string,"fits-ascii"))   return GAL_TABLE_FORMAT_AFITS;
+      else if(!strcmp(string, "fits-binary")) return GAL_TABLE_FORMAT_BFITS;
+      else                                    return GAL_TABLE_FORMAT_INVALID;
     }
-  else
-    return GAL_TABLE_FORMAT_INVALID;
+  else                                        return GAL_TABLE_FORMAT_INVALID;
 }
+
+
+
+
+
+char *
+gal_table_format_as_string(uint8_t format)
+{
+  switch(format)
+    {
+    case GAL_TABLE_FORMAT_TXT:    return "txt";
+    case GAL_TABLE_FORMAT_AFITS:  return "fits-ascii";
+    case GAL_TABLE_FORMAT_BFITS:  return "fits-binary";
+    default:
+      error(EXIT_FAILURE, 0, "code %d not recognized as a valid format "
+            "in `gal_table_format_as_string'", format);
+      return NULL;
+    }
+}
+
 
 
 
@@ -78,20 +90,31 @@ gal_table_string_to_searchin(char *string)
 {
   if(string)                    /* Its not NULL. */
     {
-      if(strcmp(string, "name")==0)
-        return GAL_TABLE_SEARCH_NAME;
-
-      else if(strcmp(string, "unit")==0)
-        return GAL_TABLE_SEARCH_UNIT;
-
-      else if(strcmp(string, "comment")==0)
-        return GAL_TABLE_SEARCH_COMMENT;
-
-      else
-        return GAL_TABLE_SEARCH_INVALID;
+      if(!strcmp(string, "name"))          return GAL_TABLE_SEARCH_NAME;
+      else if(!strcmp(string, "unit"))     return GAL_TABLE_SEARCH_UNIT;
+      else if(!strcmp(string, "comment"))  return GAL_TABLE_SEARCH_COMMENT;
+      else                                 return GAL_TABLE_SEARCH_INVALID;
     }
-  else
-    return GAL_TABLE_SEARCH_INVALID;
+  else                                     return GAL_TABLE_SEARCH_INVALID;
+}
+
+
+
+
+
+char *
+gal_table_searchin_as_string(uint8_t searchin)
+{
+  switch(searchin)
+    {
+    case GAL_TABLE_SEARCH_NAME:    return "name";
+    case GAL_TABLE_SEARCH_UNIT:    return "unit";
+    case GAL_TABLE_SEARCH_COMMENT: return "comment";
+    default:
+      error(EXIT_FAILURE, 0, "code %d not recognized as a valid search "
+            "field in `gal_table_searchin_as_string'", searchin);
+      return NULL;
+    }
 }
 
 

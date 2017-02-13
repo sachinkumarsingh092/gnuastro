@@ -176,6 +176,7 @@ struct gal_options_common_params
   uint8_t           lastconfig; /* This is the last configuration file.  */
 
   /* For internal (to option processing) purposes. */
+  void         *program_struct; /* Host program's main variable struct.  */
   char           *program_name; /* Official name to be used in text.     */
   char           *program_exec; /* Program's executable name.            */
   char         *program_bibtex; /* BibTeX record for this program.       */
@@ -207,20 +208,23 @@ gal_options_add_to_not_given(struct gal_options_common_params *cp,
 void
 gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
 
-void
+
+
+
+/**********************************************************************/
+/************                Convert values             ***************/
+/**********************************************************************/
+void *
 gal_options_read_type(struct argp_option *option, char *arg,
-                      char *filename, size_t lineno);
+                      char *filename, size_t lineno, void *junk);
 
-void
+void *
 gal_options_read_searchin(struct argp_option *option, char *arg,
-                          char *filename, size_t lineno);
+                          char *filename, size_t lineno, void *junk);
 
-void
+void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
-                             char *filename, size_t lineno);
-
-void
-gal_options_free(struct argp_option *options);
+                             char *filename, size_t lineno, void *junk);
 
 
 

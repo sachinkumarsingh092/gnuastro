@@ -538,7 +538,6 @@ Gnuastro library
 
 FITS files (@file{fits.h})
 
-* CFITSIO datatype::            Addressing different types of data
 * FITS macros and data structures::  Gnuastro FITS related macros and structures.
 * FITS functions::              Functions to work on FITS data.
 
@@ -10091,159 +10090,159 @@ applications, see @ref{PSF}.
 The general template for invoking Warp is:
 
 @example
-$ astwarp [OPTIONS...] [matrix.txt] InputImage
+$ astwarp [OPTIONS...] InputImage
 @end example
 
 @noindent
 One line examples:
 
 @example
-$ astwarp matrix.txt image.fits
 $ astwarp --rotate=37.92 --scale=0.8 image.fits
-$ astwarp --scale 1.82 --translate 2.1 image.fits
+$ astwarp --scale 8/3 --translate 2.1 image.fits
 $ astwarp --align rawimage.fits --output=aligned.fits
-$ astwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
-$ astwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
+$ astwarp --matrix=1/5,0,4/10,0,1/5,4/10,0,0,1 image.fits
+$ astwarp --matrix="0.7071,-0.7071,  0.7071,0.7071" image.fits
 @end example
 
-Warp can accept two arguments, one (an image) is mandatory if any
-processing is to be done. An optional argument is a plain text file, which
-must contain the warp/transform matrix, see @ref{Warping basics}. When this
-text file is specified, then all options related to the matrix will be
-ignored (see below for the options). As in all Gnuastro programs, when an
-output is not explicitly set with the @option{--output} option, the output
-filename will be set automatically based on the operation, see
-@ref{Automatic output}. For the full list of general options to all
-Gnuastro programs (including Warp), please see @ref{Common options}.
+If any processing is to be done, Warp can accept one file as input. As in
+all Gnuastro programs, when an output is not explicitly set with the
+@option{--output} option, the output filename will be set automatically
+based on the operation, see @ref{Automatic output}. For the full list of
+general options to all Gnuastro programs (including Warp), please see
+@ref{Common options}.
 
-To be the most accurate the input image will be converted to double
-precision floating points and all the processing will be done in this
-format. By default, in the end, the output image will be converted
-back to the input image data type. Note that if the input type was not
-a floating point format, then the floating point output pixels are
-going to be rounded to the nearest integer (using the @code{round}
-function in the C programming language) which can lead to a loss of
-data. This behavior can be disabled with the @option{--doubletype}
-option. The input file and input warping matrix elements are stored in
-the output's header.
+To be the most accurate, the input image will be read as a 64-bit double
+precision floating point dataset and all internal processing is done in
+this format (including the raw output type). You can use the common
+@option{--type} option to write the output in any type you want, see
+@ref{Numeric data types}.
 
-When using options, warps can be specified in a modular form, with options
-to specify each transformation (for example @option{--rotate}, or
-@option{--scale}), or directly as a matrix (with @option{--matrix}). If
-specified together, the latter (direct matrix) will take precedence and all
-the modular warpings will be ignored. Any number of modular warpings can be
-specified on the command-line and configuration files. If more than one
-modular warping is given, all will be merged to create one warping
-matrix. As described in @ref{Merging multiple warpings}, matrix
-multiplication is not commutative, so the order of specifying the modular
-warpings on the command-line, and/or configuration files makes a difference
-(see @ref{Configuration file precedence}). Below, the modular warpings are
-first listed (see @ref{Warping basics} for the definition of each type of
-warping), then the other Warp options.
+Warps must be specified as command-line options, either as (possibly
+multiple) modular warpings (for example @option{--rotate}, or
+@option{--scale}), or directly as a single raw matrix (with
+@option{--matrix}). If specified together, the latter (direct matrix) will
+take precedence and all the modular warpings will be ignored. Any number of
+modular warpings can be specified on the command-line and configuration
+files. If more than one modular warping is given, all will be merged to
+create one warping matrix. As described in @ref{Merging multiple warpings},
+matrix multiplication is not commutative, so the order of specifying the
+modular warpings on the command-line, and/or configuration files makes a
+difference (see @ref{Configuration file precedence}). The full list of
+modular warpings and the other options particular to Warp are described
+below.
+
+The values to the warping options (modular warpings as well as
+@option{--matrix}), are a sequence of at least one number. Each number in
+this seqence is separated from the next by a comma (@key{,}). Each number
+can also be written as a single fraction (with a forward-slash @key{/}
+between the numerator and denomiator). Space and Tab characters are
+permitted between any two numbers, just don't forget to quote the whole
+value. Otherwise, the value will not be fully passed onto the option. See
+the examples above as a demonstration.
 
 @cindex FITS standard
 Based on the FITS standard, integer values are assigned to the center of a
-pixel and the coordinate [1.0, 1.0] is the center of the bottom left
-(first) image pixel. So the point [0.0, 0.0] is half a pixel away (in each
-axis) from the bottom left vertice of the first pixel. The resampling that
-is done in Warp (see @ref{Resampling}) is dependent on this coordinate. So
-correction is done internally. With this resampling, the image must be
-warped relative to the bottom left vertice of the bottom left pixel and
-that point should lie at [0.0, 0.0]. So for a correct sampling, the warping
-center must first be translated by [0.5, 0.5], then the warp should be done
-and finally, a [-0.5, -0.5] translation should be specified. This
-correction is done internally in the following cases and can be disabled
-with the @option{--nofitscorrect} option.
-
-@itemize
-@item
-A 2D matrix is given in a file (as an argument).
-@item
-A 2D matrix is specified with the @option{--matrix} option.
-@item
-When modular warpings are used.
-@end itemize
+pixel and the coordinate [1.0, 1.0] is the center of the first pixel
+(bottom left of the image when viewed in SAO DS9). So the coordinate center
+[0.0, 0.0] is half a pixel away (in each axis) from the bottom left vertice
+of the first pixel. The resampling that is done in Warp (see
+@ref{Resampling}) is done on the coordinate axises and thus directly
+depends on the coordinate center. In some situations this if fine, for
+example when rotating/aligning a real image, all the edge pixels will be
+similiarly affected. But in other situations (for example when scaling an
+over-sampled mock image to its intended resolution, this is not desired:
+you want the center of the coordinates to be on the corner of the pixel. In
+such cases, you can use the @option{--centeroncorner} option which will
+shift the center by @mymath{0.5} before the main warp, then shift it back
+by @mymath{-0.5} after the main warp, see below.
 
 
 @table @option
 
 @item -a
 @itemx --align
-Align the image and celestial (WCS) axes, such that the vertical image
-direction (when viewed in SAO ds9) corresponds to the declination and the
-horizontal axis is the inverse of the Right Ascension (RA). The inverse of
-the RA is chosen so the image can correspond to what you would actually see
-on the sky and is common in most survey images. Align is internally treated
-just like a rotation (@option{--rotation}), but uses the input image's WCS
-to find the rotation angle.
+Align the image and celestial (WCS) axes given in the input. After it, the
+vertical image direction (when viewed in SAO ds9) corresponds to the
+declination and the horizontal axis is the inverse of the Right Ascension
+(RA). The inverse of the RA is chosen so the image can correspond to what
+you would actually see on the sky and is common in most survey
+images.
+
+Align is internally treated just like a rotation (@option{--rotation}), but
+uses the input image's WCS to find the rotation angle. Thus, if you have
+rotated the image before calling @option{--align}, you might get unexpected
+results (because the rotation is defined on the original WCS).
 
 @item -r FLT
 @itemx --rotate=FLT
-Rotate the input image by the given angle in degrees. Note that commonly,
-the WCS structure of the image is set such that the RA is the inverse of
-the image horizontal axis which increases towards the right in the FITS
-standard and as viewed by SAO ds9. So the default center for rotation is on
-the right of the image. If you want to rotate about other points, you have
-to translate the warping center first (with @option{--translate}) then
-apply your rotation and then return the center back to the original
-position (with another call to @option{--translate},z see @ref{Merging
-multiple warpings}.
+Rotate the input image by the given angle in degrees: @mymath{\theta} in
+@ref{Warping basics}. Note that commonly, the WCS structure of the image is
+set such that the RA is the inverse of the image horizontal axis which
+increases towards the right in the FITS standard and as viewed by SAO
+ds9. So the default center for rotation is on the right of the image. If
+you want to rotate about other points, you have to translate the warping
+center first (with @option{--translate}) then apply your rotation and then
+return the center back to the original position (with another call to
+@option{--translate}, see @ref{Merging multiple warpings}.
 
 @item -s FLT[,FLT]
 @itemx --scale=FLT[,FLT]
-Scale the input image by the given factor. If only one value is given, then
-both image axes will be scaled with the given value. When two values are
-given, the first will be used to scale the first axis and the second will
+Scale the input image by the given factor(s): @mymath{M} and @mymath{N} in
+@ref{Warping basics}. If only one value is given, then both image axes will
+be scaled with the given value. When two values are given (separated by a
+comma), the first will be used to scale the first axis and the second will
 be used for the second axis. If you only need to scale one axis, use
-@option{1} for the axis you don't need to scale.
+@option{1} for the axis you don't need to scale. The value(s) can also be
+written (on the command-line or in configuration files) as a fraction.
 
 @item -f FLT[,FLT]
 @itemx --flip=FLT[,FLT]
-Flip the image around the first, second or both axes. The first value
-specifies a flip on the first axis and the second on the second axis. The
-values of the option only matter if they are non-zero. If any of the values
-are zero, that axis is not flipped. So if you want to flip by the second
-axis only, use @option{--flip=0,1} (which is equivalent to
-@option{--flip=0,20} since it only matters if it is non-zero).
+Flip the input image around the given axis(s). If only one value is given,
+then both image axes are flipped. When two values are given (separated by a
+comma), you can choose which axis to flip over. @option{--flip} only takes
+values @code{0} (for no flip), or @code{1} (for a flip). Hence, if you want
+to flip by the second axis only, use @option{--flip=0,1}.
 
 @item -e FLT[,FLT]
 @itemx --shear=FLT[,FLT]
-Apply a shear to the image along the image axes. If only one value is
-given, then both image axes will be sheared with the given value. When two
-values are given, the first will be used to shear the first axis and the
-second will be used for the second axis. If you only need to shear one
-axis, use @option{0} for the axis you don't need.
+Shear the input image by the given value(s): @mymath{A} and @mymath{B} in
+@ref{Warping basics}. If only one value is given, then both image axes will
+be sheared with the given value. When two values are given (separated by a
+comma), the first will be used to shear the first axis and the second will
+be used for the second axis. If you only need to shear along one axis, use
+@option{0} for the axis that must be untouched. The value(s) can also be
+written (on the command-line or in configuration files) as a fraction.
 
 @item -t FLT[,FLT]
 @itemx --translate=FLT[,FLT]
-Apply a translation to the image along the image axes. If only one value is
-given, then both image axes will be translated with the given value. When
-two values are given, the first will be used to translate along the first
-axis and the second will be used for the second axis. If you only need to
-translate one axis, use @option{0} for the axis you don't need.
+Translate (move the center of coordinates) the input image by the given
+value(s): @mymath{c} and @mymath{f} in @ref{Warping basics}. If only one
+value is given, then both image axes will be translated by the given
+value. When two values are given (separated by a comma), the first will be
+used to translate the first axis and the second will be used for the second
+axis. If you only need to translate along one axis, use @option{0} for the
+axis that must be untouched. The value(s) can also be written (on the
+command-line or in configuration files) as a fraction.
 
 @item -p FLT[,FLT]
 @itemx --project=FLT[,FLT]
-Apply a projection to the image along the image axes. If only one value is
-given, then the projection will be applied on both image axes with the
-given value. When two values are given, the first will be used for the
+Apply a projection to the input image by the given values(s): @mymath{g}
+and @mymath{h} in @ref{Warping basics}. If only one value is given, then
+projection will apply to both axises with the given value. When two values
+are given (separated by a comma), the first will be used to project the
 first axis and the second will be used for the second axis. If you only
-need projection along one axis, use @option{0} for the axis you don't need.
+need to project along one axis, use @option{0} for the axis that must be
+untouched. The value(s) can also be written (on the command-line or in
+configuration files) as a fraction.
 
 @item -m STR
 @itemx --matrix=STR
 The warp/transformation matrix. All the elements in this matrix must be
-separated by any number of space, tab or comma (@key{,}) characters. If you
-want to use the first two, then be sure to wrap the matrix within double
-quotation marks (@key{"}) so they are not confused with other arguments on
-the command-line, see @ref{Options}. This also applies to values in the
-configuration files, see @ref{Configuration file format}.
-
-The transformation matrix can be either 2 by 2 or 3 by 3 array. In the
-former case (if a 2 by 2 matrix is given), then it is converted to a 3 by 3
-matrix with two translation terms added to correct for the FITS definition
-of position (see @ref{Warping basics}, @ref{Merging multiple warpings}, and
-the explanations above for more).
+separated by comas(@key{,}) characters and as described above, you can also
+use fractions (a forward-slash between two numbers). The transformation
+matrix can be either a 2 by 2 (4 numbers), or a 3 by 3 (9 numbers)
+array. In the former case (if a 2 by 2 matrix is given), then it is put
+into a 3 by 3 matrix (see @ref{Warping basics}).
 
 @cindex NaN
 The determinant of the matrix has to be non-zero and it must not
@@ -10252,9 +10251,17 @@ elements of the matrix have to be written row by row. So for the
 general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
-@item --nofitscorrect
-Do not correct for the FITS definition of the pixel center as described in
-the descriptions above.
+The raw matrix takes precedence over all the modular warping options listed
+above, so if it is called with any number of modular warps, the latter are
+ignored.
+
+@item -c
+@itemx --centeroncorer
+Put the center of coordinates on the corner of the first (bottom-left when
+viewed in SAO DS9) pixel. This option is applied after the final warping
+matrix has been finalized: either through modular warpings or the raw
+matrix. See the explanation above for coordinates in the FITS standard to
+better understand this option and when it should be used.
 
 @item --hstartwcs=INT
 Specify the first header keyword number (line) that should be used to read
@@ -10264,51 +10271,28 @@ the WCS information, see the full explanation in @ref{Invoking astcrop}.
 Specify the last header keyword number (line) that should be used to read
 the WCS information, see the full explanation in @ref{Invoking astcrop}.
 
-@item -n
-@itemx --nowcscorrection
+@item -k
+@itemx --keepwcs
 @cindex WCSLIB
 @cindex World Coordinate System
 Do not correct the WCS information of the input image and save it untouched
 to the output image. By default the WCS (World Coordinate System)
-information of the input image is going to be corrected in the output
-image. WCSLIB will save the input WCS information in the @code{PC}
-matrix@footnote{Greisen E.W., Calabretta M.R. (2002) Representation of
-world coordinates in FITS. Astronomy and Astrophysics, 395, 1061-1075.}. To
-correct the WCS, Warp multiplies the @code{PC} matrix with the inverse of
-the specified transformation matrix. Also the @code{CRPIX} point is going
-to be changed to its correct place in the output image coordinates. This
-behavior can be disabled with the @option{--nowcscorrection} option.
+information of the input image is going to be corrected in the output image
+so the objects in the image are at the same WCS coordinates. But in some
+cases it might be useful to keep it unchanged (for example to correct
+alignments).
 
-@cindex Blank pixel
-@cindex Pixel, blank
-@item -z
-@itemx --zerofornoinput
-Set output pixels which do not correspond to any input to zero. By
-default they are set to blank pixel values, see @ref{Blank pixels}.
-
-@item -b FLT
-@itemx --maxblankfrac=FLT
-(@option{=FLT}) The maximum fractional area of blank pixels over the
-output pixel. If an output pixel is covered by blank pixels (see
-@ref{Blank pixels}) for a larger fraction than the value to this
-option, the output pixel will be set to a blank pixel its self.
-
-When the fraction is lower, the sum of non-blank pixel values over
-that pixel will be multiplied by the inverse of this fraction to
-correct for its flux and not cause discontinuities on the edges of
-blank regions. Note that even with this correction, discontinuities
-(very low non-blank values touching blank regions in the output image)
-might arise depending on the transformation and the blank pixels. So
-if there are blank pixels in the image, a good value to this option
-has to be found for that particular image and warp.
-
-@item -d
-@itemx --doubletype
-By default the output image is going to have the same type as the
-input image. If this option is called, the output will be in double
-precision floating point format irrespective of the input data
-type. When dealing with integer input formats, this option can be
-useful in checking the results.
+@item -C FLT
+@itemx --coveredfrac=FLT
+Depending on the warp, the output pixels that cover pixels on the edge of
+the input image, or blank pixels in the input image, are not going to be
+fully covered by input data. With this option, you can specify the
+acceptable covered fraction of such pixels (any value between 0 and 1). If
+you only want output pixels that are fully covered by the input image area
+(and are not blank), then you can set
+@option{--coveredfrac=1}. Alternatively, a value of @code{0} will keep
+output pixels that are even infinitesmially covered by the input(so the sum
+of the pixels in the input and output images will be the same).
 
 @end table
 
@@ -16169,79 +16153,19 @@ All the functions and macros introduced in this section are declared in
 @file{gnuastro/fits.h}.  When you include this header, you are also
 including CFITSIO's @file{fitsio.h} header. So you don't need to explicitly
 include @file{fitsio.h} anymore and can freely use any of its macros or
-functions in your code along with those discussed here. In @ref{CFITSIO
-datatype} we first have a look at the way data types are referenced in
-CFITSIO (and thus Gnuastro). @ref{FITS macros and data structures} defines
-the macros and data structures that can be used in functions for a unified
-format. This subsection finished with @ref{FITS functions}, which introduce
-the different Gnuastro functions available.
+functions in your code along with those discussed here. @ref{FITS macros
+and data structures} defines the macros and data structures that can be
+used in functions for a unified format. This subsection finished with
+@ref{FITS functions}, which introduce the different Gnuastro functions
+available.
 
 @menu
-* CFITSIO datatype::            Addressing different types of data
 * FITS macros and data structures::  Gnuastro FITS related macros and structures.
 * FITS functions::              Functions to work on FITS data.
 @end menu
 
-@node CFITSIO datatype, FITS macros and data structures, FITS files, FITS files
-@subsubsection CFITSIO @code{datatype}
 
-@cindex Data type
-@cindex Type of data
-@cindex FITS: data type
-Data can have multiple types: standards to convert a number of bits (which
-can only have values of 0 and 1) to different number formats (for example
-integer or floating point numbers). To store data, the FITS standard
-defines two major formats: images and tables. An image has a single type
-for all its data elements (a pixel in a 2D image). A table has a single
-type for every one of its columns. In both cases, the FITS header stores
-this information. All the FITS data types correspond to C types (for
-example @code{short}, @code{int}, @code{float}, or @code{long}).
-
-@cindex CFITSIO
-@cindex @code{BITPIX}
-In images, the @code{BITPIX} header keyword specifies the type of data in
-each pixel. Within CFITSIO, the different acceptable values of
-@code{BITPIX} are stored as macros ending with @code{_IMG}. For example
-@code{BYTE_IMG}, or @code{DOUBLE_IMG}. See Section 4.1, ``CFITSIO
-Definitions'', in the CFITSIO manual for the recognized CFITSIO types and
-their macros. However, the FITS standard also accepts tables: each column
-in a FITS table has a unique @code{TFORM} header keyword which specifies
-the type of data in that column. The variety of types in a FITS table can
-be much larger than an image and thus the standard for identifying them
-differs.
-
-To address these different formats of identifying the type in a uniform
-infra-structure, CFITSIO identifies a general collection of macros
-referring to types which can be internally used in all cases (images and
-tables). Thus in CFITSIO, the variable name @code{datatype} when we are
-referring to this general collection of types. The image types are a subset
-of the table column types, so each acceptable @code{datatype} corresponds
-to one of the table types. The macros for each recognized CFITSIO
-@code{datatype} start with @code{T}, for example @code{TBYTE},
-@code{TDOUBLE}. In CFITSIO (and thus here in Gnuastro), the @code{datatype}
-is most commonly used, so this variable only accepts one of the accepted
-@code{T} macros. When the @code{BITPIX} value is desired (as input or
-output), the variable is called @code{bitpix}.
-
-In Gnuastro, the functions @code{gal_fits_bitpix_to_datatype} and
-@code{gal_fits_tform_to_datatype} are provided to convert @code{bitpix} and
-@code{tform} values to @code{datatype}.
-
-@cartouche
-@noindent
-@cindex @file{stdint.h}
-@strong{CFITSIO integer types:} CFITSIO does not use the standard fixed
-integer size types of @file{stdint.h}! It uses the subjective @code{short},
-@code{int} and @code{long} variables which can differ in size from system
-to system. For example, the FITS standard defines @code{LONG_IMG} as a
-32bit signed integer type, but CFITSIO converts it to a local @code{long}
-which is 64 bits on a modern (64 bit) machine. To use CFITSIO, we had to
-adopt the same convention in Gnuastro. This issue can cause confusions, so
-be careful!
-@end cartouche
-
-
-@node FITS macros and data structures, FITS functions, CFITSIO datatype, FITS files
+@node FITS macros and data structures, FITS functions, FITS files, FITS files
 @subsubsection FITS macros and data structures
 
 To facilitate handling of fixed/standard values and store, or pass multiple
@@ -16268,8 +16192,7 @@ datatypes in CFITSIO (see @ref{Blank pixels} for a discussion on blank
 values). The values for the different types are mostly the lowest or
 highest possible value for that type (for unsigned types and 8-bit types,
 the maximum is used). So you can safely ignore the actual value and simply
-use these values to check. See explanation under the @ref{CFITSIO datatype}
-function for more on types of data in FITS.
+use these values to check.
 
 @cindex NaN
 @cindex isnan
@@ -16362,10 +16285,10 @@ struct gal_fits_key_ll
 @subsubsection FITS functions
 
 Gnuastro provides the following functions to deal with FITS data related
-operations. FITS data can have a variety of types, see @ref{CFITSIO
-datatype} for a discussion on this, in particular the integer variables
-named @code{datatype}, @code{bitpix}, and @code{tform}. See @ref{FITS
-macros and data structures} for the structure and macro definitions.
+operations. FITS data can have a variety of types, in particular the
+integer variables named @code{datatype}, @code{bitpix}, and
+@code{tform}. See @ref{FITS macros and data structures} for the structure
+and macro definitions.
 
 @deftypefun void gal_fits_io_error (int @code{status}, char @code{*message})
 Report the input or output error as a string and print it along with a
@@ -16411,18 +16334,15 @@ this function will return an error and abort.
 @deftypefun {void *} gal_fits_datatype_blank (int @code{datatype})
 Allocate the necessary space and put the blank value of type
 @code{datatype} in it. Finally, return the pointer to the allocated
-space. This pointer is commonly necessary when calling CFITSIO read
-functions as @code{nulval}. See @ref{CFITSIO datatype}.
+space.
 @end deftypefun
 
 @deftypefun {void *} gal_fits_datatype_alloc (size_t @code{size}, int @code{datatype})
-Allocate an array of @code{size} elements of type @code{datatype}. See
-@ref{CFITSIO datatype}.
+Allocate an array of @code{size} elements of type @code{datatype}.
 @end deftypefun
 
 @deftypefun size_t gal_fits_datatype_size (int @code{datatype})
-Return the size (in bytes) of the type specified by @code{datatype}, see
-@ref{CFITSIO datatype}.
+Return the size (in bytes) of the type specified by @code{datatype}.
 @end deftypefun
 
 @deftypefun void gal_fits_blank_to_value (void @code{*array}, int @code{datatype}, size_t @code{size}, void @code{*value})

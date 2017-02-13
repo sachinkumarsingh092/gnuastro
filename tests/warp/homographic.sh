@@ -49,4 +49,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 # Actual test script
 # ==================
 $execname $img --output=homographic.fits \
-          --matrix="0.707106781,-0.707106781,0,  0.707106781, 0.707106781,0,  0.001,0.002,1"
+          --matrix="0.707106781,-0.707106781,0,  0.707106781, 0.707106781,0,  0.001,0.002,1" --coveredfrac=0.5

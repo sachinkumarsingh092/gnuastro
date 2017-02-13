@@ -174,67 +174,112 @@ options_get_home()
 
 
 
-void
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/************                Convert values             ***************/
+/**********************************************************************/
+void *
 gal_options_read_type(struct argp_option *option, char *arg,
-                      char *filename, size_t lineno)
+                      char *filename, size_t lineno, void *junk)
 {
-  /* If the option is already set, just return. */
-  if(option->set) return;
+  if(lineno==-1)
+    return gal_data_type_as_string( *(uint8_t *)(option->value), 1);
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
 
-  /* Read the value. */
-  if ( (*(uint8_t *)(option->value) = gal_data_string_as_type(arg) )
-       == GAL_DATA_TYPE_INVALID )
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                  "`%s' option) couldn't be recognized as a known type.\n\n"
-                  "For the full list of known types, please run the "
-                  "following command (press SPACE key to go down, and `q' "
-                  "to return to the command-line):\n\n"
-                  "    $ info gnuastro \"Numeric data types\"\n",
-                  arg, option->name);
+      /* Read the value. */
+      if ( (*(uint8_t *)(option->value) = gal_data_string_as_type(arg) )
+           == GAL_DATA_TYPE_INVALID )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                      "`%s' option) couldn't be recognized as a known "
+                      "type.\n\nFor the full list of known types, please "
+                      "run the following command (press SPACE key to go "
+                      "down, and `q' to return to the command-line):\n\n"
+                      "    $ info gnuastro \"Numeric data types\"\n",
+                      arg, option->name);
+
+      /* For no un-used variable warning. This function doesn't need the
+         pointer.*/
+      return junk=NULL;
+    }
 }
 
 
 
 
 
-void
+void *
 gal_options_read_searchin(struct argp_option *option, char *arg,
-                          char *filename, size_t lineno)
+                          char *filename, size_t lineno, void *junk)
 {
-  /* If the option is already set, just return. */
-  if(option->set) return;
+  if(lineno==-1)
+    return gal_table_searchin_as_string( *(uint8_t *)(option->value));
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
 
-  /* Read the value. */
-  if( ( *(uint8_t *)(option->value)=gal_table_string_to_searchin(arg) )
-      == GAL_TABLE_SEARCH_INVALID )
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                  "`%s' option) couldn't be recognized as a known table "
-                  "search-in field (`name', `unit', or `comment').\n\n"
-                  "For more explanation, please run the following command "
-                  "(press SPACE key to go down, and `q' to return to the "
-                  "command-line):\n\n"
-                  "    $ info gnuastro \"Selecting table columns\"\n",
-                  arg, option->name);
+      /* Read the value. */
+      if( ( *(uint8_t *)(option->value)=gal_table_string_to_searchin(arg) )
+          == GAL_TABLE_SEARCH_INVALID )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                      "`%s' option) couldn't be recognized as a known table "
+                      "search-in field (`name', `unit', or `comment').\n\n"
+                      "For more explanation, please run the following "
+                      "command (press SPACE key to go down, and `q' to "
+                      "return to the command-line):\n\n"
+                      "    $ info gnuastro \"Selecting table columns\"\n",
+                      arg, option->name);
+
+      /* For no un-used variable warning. This function doesn't need the
+         pointer.*/
+      return junk=NULL;
+    }
 }
 
 
 
 
 
-void
+void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
-                             char *filename, size_t lineno)
+                             char *filename, size_t lineno, void *junk)
 {
-  /* If the option is already set, then you don't have to do anything. */
-  if(option->set) return;
+  if(lineno==-1)
+    return gal_table_format_as_string( *(uint8_t *)(option->value));
+  else
+    {
+      /* If the option is already set, then you don't have to do anything. */
+      if(option->set) return NULL;
 
-  /* Read the value. */
-  if( (*(uint8_t *)(option->value) = gal_table_string_to_format(arg) )
-      ==GAL_TABLE_FORMAT_INVALID )
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                  "`%s' option) couldn't be recognized as a known table "
-                  "format field (`txt', `fits-ascii', or `fits-binary').\n\n",
-                  arg, option->name);
+      /* Read the value. */
+      if( (*(uint8_t *)(option->value) = gal_table_string_to_format(arg) )
+          ==GAL_TABLE_FORMAT_INVALID )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                      "`%s' option) couldn't be recognized as a known table "
+                      "format field (`txt', `fits-ascii', or "
+                      "`fits-binary').\n\n", arg, option->name);
+
+      /* For no un-used variable warning. This function doesn't need the
+         pointer.*/
+      return junk=NULL;
+    }
 }
 
 
@@ -534,17 +579,28 @@ options_sanity_check(struct argp_option *option, char *arg,
 
 static void
 gal_options_read_check(struct argp_option *option, char *arg, char *filename,
-                       size_t lineno)
+                       size_t lineno, void *program_struct)
 {
   /* If a function is defined to process the value, then use it. */
   if(option->func)
-    option->func(option, arg, filename, lineno);
-  else
+    {
+      option->func(option, arg, filename, lineno, program_struct);
+      option->set=GAL_OPTIONS_SET;
+      return;
+    }
+
+
+  /* Check if an argument is actually given (only options given on the
+     command-line can have a NULL arg value). */
+  if(arg)
     {
       if(option->type==GAL_DATA_TYPE_STRLL)
         gal_linkedlist_add_to_stll(option->value, arg, 1);
       else
         {
+          /* If the option is already set, ignore the given value. */
+          if(option->set==GAL_OPTIONS_SET) return;
+
           /* Read the string argument into the value. */
           if( gal_data_string_to_type(&option->value, arg, option->type) )
             /* Fortunately `error_at_line' will behave like `error' when the
@@ -563,11 +619,30 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
                           "name(+value, if there are no spaces between them) "
                           "is read as the value of the previous option.", arg,
                           option->name);
-        }
 
-      /* Do a sanity check. */
-      options_sanity_check(option, arg, filename, lineno);
+          /* Do a sanity check on the value. */
+          options_sanity_check(option, arg, filename, lineno);
+        }
     }
+  else
+    {
+      /* If the option is already set, ignore the given value. */
+      if(option->set==GAL_OPTIONS_SET) return;
+
+      /* Make sure the option has the type set for options with no
+         argument. So, give it a value of 1. */
+      if(option->type==GAL_OPTIONS_NO_ARG_TYPE)
+        *(uint8_t *)(option->value)=1;
+      else
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
+              "correct it. Options with no arguments, must have "
+              "type `%s' to be read in `gal_options_read_from_key'. "
+              "However, the option with key `%d' has type %s",
+              PACKAGE_BUGREPORT,
+              gal_data_type_as_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
+              option->key, gal_data_type_as_string(option->type, 1));
+    }
+
 
   /* Flip the `set' flag to `GAL_OPTIONS_SET'. */
   option->set=GAL_OPTIONS_SET;
@@ -628,30 +703,9 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
           if(options[i].set && gal_data_is_linked_list(options[i].type)==0)
             options[i].set=GAL_OPTIONS_NOT_SET;
 
-          /* We have two types of options: those which need an argument and
-             those that don't. For those that don't `arg' will be
-             NULL. When it accepts an argument then read itinto the option
-             structure and do a sanity check.*/
-          if(arg)
-            gal_options_read_check(&options[i], arg, NULL, 0);
-          else
-            {
-              /* Make sure the option has the type set for options with no
-                 argument. So, give it a value of 1. */
-              if(options[i].type==GAL_OPTIONS_NO_ARG_TYPE)
-                {
-                  *(unsigned char *)(options[i].value)=1;
-                  options[i].set=GAL_OPTIONS_SET;
-                }
-              else
-                error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
-                      "correct it. Options with no arguments, must have "
-                      "type `%s' to be read in `gal_options_read_from_key'. "
-                      "However, the option with key `%d' has type %s",
-                      PACKAGE_BUGREPORT,
-                      gal_data_type_as_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
-                      key, gal_data_type_as_string(options[i].type, 1));
-            }
+          /* Parse the value. */
+          gal_options_read_check(&options[i], arg, NULL, 0,
+                                 cp->program_struct);
 
 
           /* We have found and set the value given to this option, so just
@@ -823,7 +877,8 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
           options_immediate(options[i].key, arg, cp);
 
           /* Read the value into the option and do a sanity check. */
-          gal_options_read_check(&options[i], arg, filename, lineno);
+          gal_options_read_check(&options[i], arg, filename, lineno,
+                                 cp->program_struct);
 
           /* We have found and set the value given to this option, so just
              return success (an error_t of 0 means success). */
@@ -1014,16 +1069,13 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
   for(i=0; !gal_options_is_last(&options[i]); ++i)
     {
       if(options[i].set)
-        {
-          if( gal_data_is_linked_list(options[i].type) )
-            switch(options[i].type)
-              {
-              case GAL_DATA_TYPE_STRLL:
-                gal_linkedlist_reverse_stll(
-                    (struct gal_linkedlist_stll **)(options[i].value) );
-                break;
-              }
-        }
+        switch(options[i].type)
+          {
+          case GAL_DATA_TYPE_STRLL:
+            gal_linkedlist_reverse_stll(
+                  (struct gal_linkedlist_stll **)(options[i].value) );
+            break;
+          }
       else if(options[i].mandatory==GAL_OPTIONS_MANDATORY)
         gal_options_add_to_not_given(cp, &options[i]);
     }
@@ -1079,8 +1131,14 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
 static int
 option_is_printable(struct argp_option *option)
 {
-  /* First check if option is hidden (not relevant to this program). */
-  if(option->flags & OPTION_HIDDEN)
+  /* Use non-key fields:
+
+       - If option is hidden (not relevant to this program).
+
+       - Options with an INVALID type are not to be printed (they are
+         probably processed to a higher level value with functions). */
+  if( (option->flags & OPTION_HIDDEN)
+      || option->type==GAL_DATA_TYPE_INVALID )
     return 0;
 
   /* Then check if it is a pre-program option. */
@@ -1106,12 +1164,15 @@ option_is_printable(struct argp_option *option)
    elements. If `width==0', then return the width necessary to print the
    value. */
 static int
-options_print_any_type(void *ptr, int type, int width, FILE *fp)
+options_print_any_type(struct argp_option *option, void *ptr, int type,
+                       int width, FILE *fp)
 {
   char *str;
 
   /* Write the value into a string. */
-  str=gal_data_write_to_string(ptr, type, 1);
+  str = ( option->func
+          ? option->func(option, NULL, NULL, (size_t)(-1), NULL)
+          : gal_data_write_to_string(ptr, type, 1) );
 
   /* If only the width was desired, don't actually print the string, just
      return its length. Otherwise, print it. */
@@ -1120,8 +1181,9 @@ options_print_any_type(void *ptr, int type, int width, FILE *fp)
   else
     width=strlen(str);
 
-  /* Free the allocated space and return. */
-  free(str);
+  /* Free the allocated space and return. When the value was taken from a
+     function, it is static, so it must not be freed. */
+  if(!option->func) free(str);
   return width;
 }
 
@@ -1138,6 +1200,10 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
   int vlen;
   struct gal_linkedlist_stll *tmp;
 
+  /* Invalid types are set for functions that don't save the raw user
+     input, but do higher-level analysis on them for storing. */
+  if(option->type==GAL_DATA_TYPE_INVALID) return;
+
   /* Get the length of the value and save its length length if its
      larger than the widest value. */
   if(gal_data_is_linked_list(option->type))
@@ -1152,7 +1218,8 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
           tmp!=NULL; tmp=tmp->next)
         {
           /* Get the length of this node: */
-          vlen=options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING, 0, NULL);
+          vlen=options_print_any_type(option, &tmp->v, GAL_DATA_TYPE_STRING,
+                                      0, NULL);
 
           /* If its larger than the maximum length, then put it in. */
           if( vlen > *max_vlen )
@@ -1161,7 +1228,8 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
     }
   else
     {
-      vlen=options_print_any_type(option->value, option->type, 0, NULL);
+      vlen=options_print_any_type(option, option->value, option->type,
+                                  0, NULL);
       if( vlen > *max_vlen )
         *max_vlen=vlen;
     }
@@ -1260,9 +1328,9 @@ options_print_all_in_group(struct argp_option *options, int groupint,
 
   /* Go over all the options. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if( options[i].group == groupint          /* Is in this group.        */
-        && options[i].set                     /* Has been given a value.  */
-        && option_is_printable(&options[i]) ) /* Is relevant for printing.*/
+    if( options[i].group == groupint           /* Is in this group.        */
+        && options[i].set                      /* Has been given a value.  */
+        && option_is_printable(&options[i]) )  /* Is relevant for printing.*/
       {
         /* Linked lists */
         if(gal_data_is_linked_list(options[i].type))
@@ -1270,8 +1338,8 @@ options_print_all_in_group(struct argp_option *options, int groupint,
               tmp!=NULL; tmp=tmp->next)
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
-              options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING,
-                                     valuewidth, fp);
+              options_print_any_type(&options[i], &tmp->v,
+                                     GAL_DATA_TYPE_STRING, valuewidth, fp);
               options_print_doc(fp, options[i].doc, namewidth+valuewidth);
             }
 
@@ -1279,8 +1347,8 @@ options_print_all_in_group(struct argp_option *options, int groupint,
         else
           {
             fprintf(fp, " %-*s ", namewidth, options[i].name);
-            options_print_any_type(options[i].value, options[i].type,
-                                   valuewidth, fp);
+            options_print_any_type(&options[i], options[i].value,
+                                   options[i].type, valuewidth, fp);
             options_print_doc(fp, options[i].doc, namewidth+valuewidth);
           }
       }
@@ -1408,7 +1476,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
 
 
 
-#define OPTIONS_UCHARVAL *(unsigned char *)(cp->coptions[i].value)
+#define OPTIONS_UINT8VAL *(uint8_t *)(cp->coptions[i].value)
 void
 gal_options_print_state(struct gal_options_common_params *cp)
 {
@@ -1426,7 +1494,7 @@ gal_options_print_state(struct gal_options_common_params *cp)
         case GAL_OPTIONS_KEY_PRINTPARAMS:
         case GAL_OPTIONS_KEY_SETDIRCONF:
         case GAL_OPTIONS_KEY_SETUSRCONF:
-          sum += OPTIONS_UCHARVAL;
+          sum += OPTIONS_UINT8VAL;
         }
   if(sum>1)
     error(EXIT_FAILURE, 0, "only one of the `printparams', `setdirconf' "
@@ -1437,7 +1505,7 @@ gal_options_print_state(struct gal_options_common_params *cp)
      non-NULL value is not enough. They can have a value of 1 or 0, and the
      respective file should only be created if we have a value of 1. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    if(cp->coptions[i].set && OPTIONS_UCHARVAL)
+    if(cp->coptions[i].set && OPTIONS_UINT8VAL)
       switch(cp->coptions[i].key)
         {
         case GAL_OPTIONS_KEY_PRINTPARAMS:

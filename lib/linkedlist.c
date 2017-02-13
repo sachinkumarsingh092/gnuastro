@@ -182,6 +182,116 @@ gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll, size_t num)
 
 
 /****************************************************************
+ *****************          Double           ********************
+ ****************************************************************/
+void
+gal_linkedlist_add_to_dll(struct gal_linkedlist_dll **list, double value)
+{
+  struct gal_linkedlist_dll *newnode;
+
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "linkedlist: New element in "
+          "gal_linkedlist_dll");
+
+  newnode->v=value;
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+
+void
+gal_linkedlist_pop_from_dll(struct gal_linkedlist_dll **list, double *value)
+{
+  struct gal_linkedlist_dll *tmp;
+  tmp=*list;
+  *value=tmp->v;
+  *list=tmp->next;
+  free(tmp);
+}
+
+
+
+
+
+size_t
+gal_linkedlist_num_in_dll(struct gal_linkedlist_dll *list)
+{
+  size_t num=0;
+  struct gal_linkedlist_dll *tmp;
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    ++num;
+  return num;
+}
+
+
+
+
+
+void
+gal_linkedlist_dll_to_array(struct gal_linkedlist_dll *list,
+                            double **d, size_t *num)
+{
+  double *td;
+  size_t i=0;
+  struct gal_linkedlist_dll *tmp;
+
+  /* Find the number of elements: */
+  *num=gal_linkedlist_num_in_dll(list);
+
+  /* Allocate the space: */
+  errno=0;
+  td=*d=malloc(*num*sizeof(double));
+  if(*d==NULL)
+    error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_dll "
+          "with %zu elements", *num);
+
+  /* Fill in the array: */
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    td[i++]=tmp->v;
+}
+
+
+
+
+
+void
+gal_linkedlist_free_dll(struct gal_linkedlist_dll *list)
+{
+  struct gal_linkedlist_dll *tmp, *ttmp;
+  tmp=list;
+  while(tmp!=NULL)
+    {
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
  *****************        Two doubles        ********************
  ****************************************************************/
 void
