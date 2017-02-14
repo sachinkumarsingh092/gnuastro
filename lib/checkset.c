@@ -91,7 +91,7 @@ gal_checkset_malloc_cat(char *inname, char *toappend)
 /* Copy the input string to the output (and also allocate the
    output. */
 void
-gal_checkset_allocate_copy(char *arg, char **copy)
+gal_checkset_allocate_copy(const char *arg, char **copy)
 {
   if(arg)
     {

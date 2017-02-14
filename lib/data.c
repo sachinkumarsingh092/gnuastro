@@ -1810,9 +1810,19 @@ gal_data_t *
 gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 {
   gal_data_t *out;
-  out=gal_data_copy_to_new_type(in, type);
-  gal_data_free(in);
-  return out;
+
+  /* In a general application, it might happen that the type is equal with
+     the type of the input. Since the job of this function is to free the
+     input data set, so and the user just wants one dataset after this
+     function finishes, we can safely just return the input. */
+  if(type==in->type)
+    return in;
+  else
+    {
+      out=gal_data_copy_to_new_type(in, type);
+      gal_data_free(in);
+      return out;
+    }
 }
 
 

@@ -74,7 +74,7 @@ char *
 gal_checkset_malloc_cat(char *inname, char *toappend);
 
 void
-gal_checkset_allocate_copy(char *arg, char **copy);
+gal_checkset_allocate_copy(const char *arg, char **copy);
 
 void
 gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);

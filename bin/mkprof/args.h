@@ -56,6 +56,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "clearcanvas",
+      ARGS_OPTION_KEY_CLEARCANVAS,
+      0,
+      0,
+      "All pixels in background image read as zero.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->clearcanvas,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
@@ -359,8 +372,8 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_FCOL,
       "STR/INT",
       0,
-      "Sersic (1), Moffat (2), Gaussian (3), Point (4), "
-      "Flat (5), Circumference (6).",
+      "sersic (1), moffat (2), gaussian (3), point (4), "
+      "flat (5), circumference (6).",
       ARGS_GROUP_CATALOG,
       &p->fcol,
       GAL_DATA_TYPE_STRING,
@@ -451,7 +464,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MFORFLATPIX,
       0,
       0,
-      "mcol is flat pixel value (when fcol is 4 or 5)",
+      "mcol is flat pixel value (when fcol is 5 or 6)",
       ARGS_GROUP_CATALOG,
       &p->mforflatpix,
       GAL_OPTIONS_NO_ARG_TYPE,

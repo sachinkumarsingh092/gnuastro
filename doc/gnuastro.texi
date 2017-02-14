@@ -13987,27 +13987,15 @@ will be ignored: @option{--naxis1}, @option{--naxis2}, @option{--crpix1},
 @option{--resolution}, @option{--oversample}, and data type (see
 @option{--type} in @ref{Input output}).
 
-The profiles will be built on the image (profile pixel values will be
-summed with the background image pixel values). If you want to use all the
-image information above, except for the pixel values (you want to have a
-blank canvas to build the profiles on, based on an input image), you can
-use @ref{Arithmetic} as below and feed the output into MakeProfiles with
-this option.
-
-@example
-$ astarithmetic img.fits 0 "*" --output=bz.fits
-@end example
-
-The command above will also preserve all the (possible) blank pixels in the
-image (see @ref{Blank pixels}). In case the input image has blank pixels
-and you want them to be zero too, you can do so with the following command
-(both Arithmetic operations can also be merged into one command, see
-@ref{Reverse polish notation}, recall that @option{-o} is the short version
-of @option{--output}, see @ref{Options}):
-
-@example
-$ astarithmetic bz.fits bz.fits isblank 0 where -oz.fits
-@end example
+The image will act like a canvas to build the profiles on: profile pixel
+values will be summed with the background image pixel values. With the
+@option{--replace} option you can disable this behavior and replace the
+profile pixels with the background pixels. If you want to use all the image
+information above, except for the pixel values (you want to have a blank
+canvas to build the profiles on, based on an input image), you can call
+@option{--clearcanvas}, to set all the input image's pixels to zero before
+starting to build the profiles over it (this is done in memory after
+reading the input, so nothing will happen to your input file).
 
 @item -B STR/INT
 @itemx --backhdu=STR/INT
@@ -14047,7 +14035,6 @@ convolution it will be the PSF.
 
 @item -i
 @itemx --individual
-
 @cindex Individual profiles
 @cindex Build individual profiles
 If this option is called, each profile is created in a separate FITS
@@ -14189,6 +14176,20 @@ profile. However, when using flat profiles with the
 `@option{--mforflatpix}' option, you should be careful not to give a
 @code{0.0} value as the flat profile's pixel value.
 
+@item -C
+@item --clearcanvas
+When an input image is specified (with the @option{--background} option,
+set all its pixels to 0.0 immediately after reading it into
+memory. Effectively, this will allow you to use all its properties
+(described under the @option{--background} option), without having to worry
+about the pixel values.
+
+@option{--clearcanvas} can come in handy in many situations, for example if
+you want to create a labeled image (segmentation map) for creating a
+catalog (see @ref{MakeCatalog}). In other cases, you might have modeled the
+objects in an image and want to create them on the same frame, but without
+the original pixel values.
+
 @item -w FLT
 @itemx --circumwidth=FLT
 The width of the circumference if the profile is to be an elliptical
@@ -14233,7 +14234,7 @@ Point source with `@code{point}' or `@code{4}'.
 @item
 Flat profile with `@code{flat}' or `@code{5}'.
 @item
-Circumference profile with `@code{circumference}' or `@code{6}'. A fixed
+Circumference profile with `@code{circum}' or `@code{6}'. A fixed
 value will be used for all pixels between the truncation radius
 (@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
 @option{--circumwidth}).
@@ -14625,10 +14626,11 @@ $ GSL_RNG_TYPE="taus" GSL_RNG_SEED=345 astmknoise input.fits
 @end example
 
 @noindent
-In this manner the values will only be used for this particular
-execution of MakeNoise. To define them for the full period of your
-terminal session or script length, you can use the shell's
-@command{export} command (for a script remove the @code{$} signs):
+In this manner the values will only be used for this particular execution
+of MakeNoise. Alternatively, you can define them for the full period of
+your terminal session or script length, using the shell's @command{export}
+command with the two separate commands below (for a script remove the
+@code{$} signs):
 
 @example
 $ export GSL_RNG_TYPE="taus"
@@ -14640,8 +14642,8 @@ $ export GSL_RNG_SEED=345
 @noindent
 The subsequent programs which use GSL's random number generators will hence
 forth use these values in this session of the terminal you are running or
-while executing this script. In case you want set fixed values for these
-variables every time you use the GSL random number generator, you can add
+while executing this script. In case you want to set fixed values for these
+parameters every time you use the GSL random number generator, you can add
 these two lines to your @file{.bashrc} startup script@footnote{Don't forget
 that if you are going to give your scripts (that use the GSL random number
 generator) to others you have to make sure you also tell them to set these

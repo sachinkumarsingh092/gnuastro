@@ -25,7 +25,7 @@
 prog=mkprof
 execname=../bin/$prog/ast$prog
 img=convolve_spatial_noised.fits
-cat=$topsrc/tests/$prog/inputascanvas.txt
+cat=$topsrc/tests/$prog/clearcanvas.txt
 
 
 
@@ -49,5 +49,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat $img --mforflatpix --inputascanvas  \
-          --type=long --output="inputascanvas.fits"
+$execname $cat --background=$img --mforflatpix --clearcanvas  \
+          --type=int32 --output="clearcanvas.fits"

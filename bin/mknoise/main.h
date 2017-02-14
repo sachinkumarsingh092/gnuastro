@@ -5,7 +5,7 @@ MakeNoise is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,68 +23,39 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <pthread.h>
+/* Include necessary headers */
+#include <gnuastro/data.h>
 #include <gsl/gsl_rng.h>
 
-#include <gnuastro/fits.h>
+#include <options.h>
 
-#include <commonparams.h>
-
-/* Progarm name macros: */
-#define SPACK           "astmknoise" /* Subpackage executable name. */
-#define SPACK_NAME      "MakeNoise"     /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+/* Progarm names.  */
+#define PROGRAM_NAME   "MakeNoise"     /* Program full name.       */
+#define PROGRAM_EXEC   "astmknoise"    /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
 
 
-
-struct uiparams
-{
-  char       *inputname;   /* Name of input file.                      */
-
-  int     backgroundset;
-  int      zeropointset;
-  int         stdaddset;
-  int       randseedset;
-  int        envseedset;
-};
-
-
-
-
-
+/* Main program parameters structure */
 struct mknoiseparams
 {
-  /* Other structures: */
-  struct uiparams         up; /* User interface parameters.            */
-  struct gal_commonparams cp; /* Common parameters.                    */
+  /* From command-line */
+  struct gal_options_common_params cp;   /* Common parameters.           */
+  char        *inputname;    /* Input filename.                          */
+  double          stdadd;    /* Standard deviation constants.            */
+  double       zeropoint;    /* Zeropoint magnitude of image.            */
+  double  background_mag;    /* Background in magnitudes.                */
+  uint8_t        envseed;    /* ==1, generate a random seed.             */
 
-  /* Input: */
-  int            envseed;  /* ==1, generate a random seed.             */
-  double          *input;  /* Input image data in double precision.    */
-  int        inputbitpix;  /* Input BITPIX header keyword value.       */
-  size_t             is0;  /* The number of rows in the input image.   */
-  size_t             is1;  /* The number of columns in the input image.*/
-  int           anyblank;  /* ==1: There are blank pixels in input.    */
-  int               nwcs;  /* Number of WCS structures.                */
-  struct wcsprm     *wcs;  /* Pointer to WCS structures.               */
-  double      background;  /* Mean of noise probability distribution.  */
-  double     mbackground;  /* Background in magnitudes.                */
-  double          stdadd;  /* Standard deviation constants.            */
-  double       zeropoint;  /* Zeropoint magnitude of image.            */
-
-  /* Random number generator */
-  gsl_rng           *rng;  /* Main instance of random number generator.*/
-
-  /* Output: */
-  int         doubletype;  /* Save the output in double type.          */
-
-  /* Internal: */
-  time_t          rawtime; /* Starting time of the program.            */
-  char rng_type[FLEN_VALUE];   /* The type of the Random number gen.  */
-  long           rng_seed; /* Seed of Random number generator.         */
+  /* Internal */
+  gal_data_t      *input;    /* Input image data in double precision.    */
+  double      background;    /* Background in units of brightness.       */
+  gsl_rng           *rng;    /* Main instance of random number generator.*/
+  char         *rng_type;    /* The type of the Random number gen.       */
+  int64_t       rng_seed;    /* Seed of Random number generator.         */
+  time_t         rawtime;    /* Starting time of the program.            */
 };
 
 #endif

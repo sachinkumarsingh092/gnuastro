@@ -22,203 +22,173 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <stdio.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fitsio.h>
+#include <stdio.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
-#include <nproc.h>               /* From Gnulib.                   */
-#include <timing.h>              /* Includes time.h and sys/time.h */
+#include <timing.h>
+#include <options.h>
 #include <checkset.h>
-#include <commonargs.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
-
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct mknoiseparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will add noise to all the "
+  "pixels in an input dataset. The noise parameters can be specified with "
+  "the command line options. \n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+
+/* Available letters for short options:
+
+   a c f g i j k l m n p r t u v w x y
+   A B C E F G H I J L M O Q R T U W X Y Z  */
+enum option_keys_enum
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  char key='a';        /* Not used, just a place holder. */
+  /* With short-option version. */
+  ARGS_OPTION_KEY_STDADD      = 's',
+  ARGS_OPTION_KEY_BACKGROUND  = 'b',
+  ARGS_OPTION_KEY_ZEROPOINT   = 'z',
+  ARGS_OPTION_KEY_ENVSEED     = 'e',
 
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
 
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct mknoiseparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->poptions           = program_options;
+  cp->coptions           = gal_commonopts_options;
+
+
+  /* Set the mandatory common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_TYPE:
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].flags=OPTION_HIDDEN;
+        break;
+      }
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct mknoiseparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
     {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
 
-
-
-
-      /* Inputs: */
-      if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
-
-      else if(strcmp(name, "background")==0)
-        {
-          if(up->backgroundset) continue;
-          gal_checkset_any_double(value, &p->mbackground, value, key,
-                                  SPACK, filename, lineno);
-          up->backgroundset=1;
-        }
-      else if(strcmp(name, "zeropoint")==0)
-        {
-          if(up->zeropointset) continue;
-          gal_checkset_any_double(value, &p->zeropoint, value, key,
-                                  SPACK, filename, lineno);
-          up->zeropointset=1;
-        }
-      else if(strcmp(name, "stdadd")==0)
-        {
-          if(up->stdaddset) continue;
-          gal_checkset_double_el_0(value, &p->stdadd, value, key, SPACK,
-                                   filename, lineno);
-          up->stdaddset=1;
-        }
-      else if(strcmp(name, "envseed")==0)
-        {
-          if(up->envseedset) continue;
-          gal_checkset_int_zero_or_one(value, &p->envseed, name, key,
-                                       SPACK, filename, lineno);
-          up->envseedset=1;
-        }
-
-
-
-      /* Outputs */
-      else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
-
-
-
-
-      /* Operating modes: */
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      if(p->inputname)
+        argp_error(state, "only one argument (input file) should be given");
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
+        p->inputname=arg;
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
     }
 
-  free(line);
-  fclose(fp);
-}
-
-
-
-
-
-void
-printvalues(FILE *fp, struct mknoiseparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input image:\n");
-  if(cp->hduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
-  if(up->backgroundset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->mbackground);
-  if(up->zeropointset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "zeropoint", p->zeropoint);
-  if(up->stdaddset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "stdadd", p->stdadd);
-  if(up->envseedset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "envseed", p->envseed);
-
-
-  fprintf(fp, "\n# Output parameters:\n");
-  if(cp->outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating mode:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-}
-
-
-
-
-
-
-/* Note that numthreads will be used automatically based on the
-   configure time. */
-void
-checkifset(struct mknoiseparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  int intro=0;
-  if(cp->hduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-
-  if(up->backgroundset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("background");
-  if(up->zeropointset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
-  if(up->stdaddset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("stdadd");
-
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
+  return 0;
 }
 
 
@@ -243,28 +213,38 @@ checkifset(struct mknoiseparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-void
-sanitycheck(struct mknoiseparams *p)
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct mknoiseparams *p)
 {
 
-  /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.inputname);
+  /* Check if the format of the output table is valid, given the type of
+     the output. */
+  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
 
-  /* Set the output name: */
-  if(p->cp.output)
-    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+}
+
+
+
+
+
+static void
+ui_check_options_and_arguments(struct mknoiseparams *p)
+{
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
+  if(p->inputname)
+    {
+      if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
+              "file, a HDU must also be specified, you can use the `--hdu' "
+              "(`-h') option and give it the HDU number (starting from "
+              "zero), extension name, or anything acceptable by CFITSIO");
+
+    }
   else
-    gal_checkset_automatic_output(p->up.inputname, "_noised.fits",
-                                  p->cp.removedirinfo, p->cp.dontdelete,
-                                  &p->cp.output);
-
-  /* Convert the background value from magnitudes to flux. Note that
-     magnitudes are actually calculated from the ratio of brightness,
-     not flux. But in the context of MakeNoise where everything is
-     done on pixels independently, brightness and flux are the same
-     (flux is multiplied by the area of one pixel (=1) to give
-     brightness).*/
-  p->background=pow(10, (p->zeropoint-p->mbackground)/2.5f);
+    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -290,32 +270,39 @@ sanitycheck(struct mknoiseparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
-preparearrays(struct mknoiseparams *p)
+ui_preparations(struct mknoiseparams *p)
 {
-  void *array;
+  /* Read the input image as a double type */
+  p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
+                                     GAL_DATA_TYPE_FLOAT64, p->cp.minmapsize);
 
-  /* Read in the input image: */
-  p->anyblank=gal_fits_hdu_to_array(p->up.inputname, p->cp.hdu,
-                                    &p->inputbitpix, &array,
-                                    &p->is0, &p->is1);
-  if(p->inputbitpix==DOUBLE_IMG)
-    p->input=array;
+  /* Read the WSC structure. */
+  gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,
+               &p->input->wcs);
+
+  /* Set the output name: */
+  if(p->cp.output)
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    {
-      gal_fits_change_type(array, p->inputbitpix, p->is0*p->is1,
-                                p->anyblank, (void **)&p->input,
-                                DOUBLE_IMG);
-      free(array);
-    }
-  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+    p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
+                                               "_noised.fits");
+
+  /* Convert the background value from magnitudes to flux. Note that
+     magnitudes are actually calculated from the ratio of brightness,
+     not flux. But in the context of MakeNoise where everything is
+     done on pixels independently, brightness and flux are the same
+     (flux is multiplied by the area of one pixel (=1) to give
+     brightness).*/
+  p->background=pow(10, (p->zeropoint-p->background_mag)/2.5f);
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
   p->rng=gsl_rng_alloc(gsl_rng_default);
-  if(p->envseed==0)
-    gsl_rng_set(p->rng, gal_timing_time_based_rng_seed());
-  p->rng_seed=gsl_rng_default_seed;
-  strcpy(p->rng_type, gsl_rng_name(p->rng));
+  p->rng_seed = ( p->envseed
+                  ? gsl_rng_default_seed
+                  : gal_timing_time_based_rng_seed() );
+  gsl_rng_set(p->rng, p->rng_seed);
+  gal_checkset_allocate_copy(gsl_rng_name(p->rng), &p->rng_type);
 }
 
 
@@ -339,53 +326,69 @@ preparearrays(struct mknoiseparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
 void
-setparams(int argc, char *argv[], struct mknoiseparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
 {
+  struct gal_options_common_params *cp=&p->cp;
   char message[GAL_TIMING_VERB_MSG_LENGTH_V];
-  struct gal_commonparams *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  /* Read the arguments. */
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Make the array of input images. */
-  preparearrays(p);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
-  /* Do a sanity check. */
-  sanitycheck(p);
+
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
+
+
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
+  ui_check_options_and_arguments(p);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
+
 
   /* Everything is ready, notify the user of the program starting. */
-  if(cp->verb)
+  if(!p->cp.quiet)
     {
-      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
       sprintf(message, "Random number generator type: %s",
               gsl_rng_name(p->rng));
       gal_timing_report(NULL, message, 1);
-      if(p->envseed)
-        {
-          sprintf(message, "Random number generator seed: %zu",
-                  gsl_rng_default_seed);
-          gal_timing_report(NULL, message, 1);
-        }
+      sprintf(message, "Random number generator seed: %ld", p->rng_seed);
+      gal_timing_report(NULL, message, 1);
     }
 }
 
@@ -412,21 +415,11 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct mknoiseparams *p, struct timeval *t1)
+ui_free_report(struct mknoiseparams *p)
 {
   /* Free the allocated arrays: */
-  free(p->input);
   free(p->cp.hdu);
+  free(p->rng_type);
   free(p->cp.output);
-
-  /* The world coordinate system: */
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Free the random number generator: */
-  gsl_rng_free(p->rng);
-
-  /* Print the final message. */
-  if(p->cp.verb)
-    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
+  gal_data_free(p->input);
 }

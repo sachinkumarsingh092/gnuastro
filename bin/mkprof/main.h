@@ -107,7 +107,7 @@ struct mkprofparams
   char             *catname;  /* Name of catalog of parameters.           */
   char             *backhdu;  /* HDU of background image.                 */
   long             naxes[2];  /* Size of the output image.                */
-  uint8_t     inputascanvas;  /* Input image's header for size and WCS.   */
+  uint8_t       clearcanvas;  /* Pixels in background image set to zero.  */
   uint8_t        oversample;  /* Oversampling scale.                      */
   uint8_t          psfinimg;  /* ==1: Build PSF profiles in image.        */
   uint8_t        individual;  /* ==1: Build all catalog separately.       */

@@ -23,13 +23,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include "timing.h"
 
 
 
-/* Used to generate random numbers. */
-unsigned long int
+/* Used to generate random numbers, since the type of `tv_sec' and
+   `tv_usec' is `long int' (from the GNU C Library manual), this function
+   will also return a signed 64-bit integer. */
+int64_t
 gal_timing_time_based_rng_seed()
 {
   struct timeval tv;

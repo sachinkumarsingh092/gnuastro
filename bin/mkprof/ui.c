@@ -103,7 +103,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_BACKHDU         = 'B',
   ARGS_OPTION_KEY_NAXIS1          = 'x',
   ARGS_OPTION_KEY_NAXIS2          = 'y',
-  ARGS_OPTION_KEY_INPUTASCANVAS   = 'C',
+  ARGS_OPTION_KEY_CLEARCANVAS     = 'C',
   ARGS_OPTION_KEY_OVERSAMPLE      = 's',
   ARGS_OPTION_KEY_INDIVIDUAL      = 'i',
   ARGS_OPTION_KEY_NOMERGED        = 'm',
@@ -236,7 +236,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      p->catname=arg;
+      if(p->catname)
+        argp_error(state, "only one argument (input catalog) may be given");
+      else
+        p->catname=arg;
       break;
 
 
@@ -396,7 +399,7 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
       else if ( !strcmp("flat", strarr[i]) )
         p->f[i]=PROFILE_FLAT;
 
-      else if ( !strcmp("circumference", strarr[i]) )
+      else if ( !strcmp("circum", strarr[i]) )
         p->f[i]=PROFILE_CIRCUMFERENCE;
 
       else if ( !strcmp(GAL_DATA_BLANK_STRING, strarr[i]) )
@@ -416,6 +419,7 @@ static void
 ui_read_cols(struct mkprofparams *p)
 {
   char *colname;
+  int checkblank;
   size_t counter=0, i;
   gal_data_t *cols, *tmp, *corrtype;
   char *ax1col=p->racol?p->racol:p->xcol;
@@ -447,6 +451,9 @@ ui_read_cols(struct mkprofparams *p)
       /* Pop out the top node. */
       tmp=gal_data_pop_from_ll(&cols);
 
+      /* By default check if the column has blank values, but it can be
+         turned off for some columns. */
+      checkblank=1;
 
       /* Note that the input was a linked list, so the output order is the
          inverse of the input order. For the position, we will store the
@@ -524,6 +531,7 @@ ui_read_cols(struct mkprofparams *p)
           colname="magnitude (`mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
           p->m=corrtype->array;
+          checkblank=0;          /* Magnitude can be NaN: to mask regions. */
           break;
 
         case 1:
@@ -544,7 +552,7 @@ ui_read_cols(struct mkprofparams *p)
       if(corrtype)
         {
           /* Make sure there are no blank values in this column. */
-          if( gal_data_has_blank(corrtype) )
+          if( checkblank && gal_data_has_blank(corrtype) )
             error(EXIT_FAILURE, 0, "%s column has blank values. "
                   "Input columns cannot contain blank values", colname);
 
@@ -619,6 +627,7 @@ static void
 ui_prepare_canvas(struct mkprofparams *p)
 {
   int status=0;
+  float *f, *ff;
   double truncr;
   long width[2]={1,1};
   size_t i, ndim, dsize[2];
@@ -640,11 +649,16 @@ ui_prepare_canvas(struct mkprofparams *p)
                               1, p->cp.minmapsize, NULL, NULL, NULL);
       else
         {
+          /* Read the image. */
           p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
                                            GAL_DATA_TYPE_FLOAT32,
                                            p->cp.minmapsize);
           p->naxes[0]=p->out->dsize[1];
           p->naxes[1]=p->out->dsize[0];
+
+          /* Set all pixels to zero if the user wanted a clear canvas. */
+          if(p->clearcanvas)
+            {ff=(f=p->out->array)+p->out->size; do *f++=0.0f; while(f<ff);}
         }
 
       /* When a background image is specified, oversample must be 1 and

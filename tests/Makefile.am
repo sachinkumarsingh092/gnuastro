@@ -73,7 +73,7 @@ TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh  \
   convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh     \
   convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh         \
   convolve/frequency.sh warp/warp_scale.sh warp/homographic.sh             \
-  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh    \
+  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/clearcanvas.sh      \
   header/write.sh header/print.sh header/update.sh header/delete.sh        \
   statistics/basicstats.sh subtractsky/subtractsky.sh                      \
   noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh \
@@ -87,10 +87,10 @@ TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh  \
 
 
 # Files to distribute along with the tests.
-EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                   \
-  mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt                       \
-  mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt         \
-  mkprof/radeccat.txt crop/cat.txt table/table.txt
+EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                 \
+  mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt mkprof/mkprofcat2.txt \
+  mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt         \
+  crop/cat.txt table/table.txt
 
 
 
@@ -154,11 +154,11 @@ convertt/jpegtofits.sh: convertt/blankch.sh.log
 convertt/fitstopdf.sh: crop/section.sh.log
 convolve/spatial.sh: mkprof/mosaic1.sh.log
 convolve/frequency.sh: mkprof/mosaic1.sh.log
-warp/imgwarp_scale.sh: convolve/spatial.sh.log
+warp/warp_scale.sh: convolve/spatial.sh.log
 warp/homographic.sh: convolve/spatial.sh.log
 mknoise/addnoise.sh: warp/warp_scale.sh.log
 mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
-mkprof/inputascanvas.sh: mknoise/addnoise.sh.log
+mkprof/clearcanvas.sh: mknoise/addnoise.sh.log
 header/write.sh: mkprof/mosaic1.sh.log
 header/print.sh: header/write.sh.log
 header/update.sh: header/write.sh.log
@@ -168,7 +168,7 @@ subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
 noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
 mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
 mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
-                           mkprof/inputascanvas.sh
+                           mkprof/clearcanvas.sh
 arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
 arithmetic/where.sh: noisechisel/noisechisel.sh.log
 arithmetic/or.sh: noisechisel/noisechisel.sh.log

@@ -30,7 +30,7 @@
 prog=mknoise
 img1=convolve_spatial.fits
 execname=../bin/$prog/ast$prog
-img2=convolve_spatial_warped.fits
+img2=convolve_spatial_scaled.fits
 
 
 

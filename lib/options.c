@@ -637,10 +637,10 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
         error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
               "correct it. Options with no arguments, must have "
               "type `%s' to be read in `gal_options_read_from_key'. "
-              "However, the option with key `%d' has type %s",
+              "However, the `%s' option has type %s",
               PACKAGE_BUGREPORT,
               gal_data_type_as_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
-              option->key, gal_data_type_as_string(option->type, 1));
+              option->name, gal_data_type_as_string(option->type, 1));
     }
 
 

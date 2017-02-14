@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=mkprof
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_warped_noised.fits
+img=convolve_spatial_scaled_noised.fits
 cat=$topsrc/tests/$prog/ellipticalmasks.txt
 
 
@@ -49,5 +49,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat $img --mforflatpix --replace --oversample=1 \
+$execname $cat --background=$img --mforflatpix --replace --oversample=1 \
           --output="ellipticalmasks.fits"

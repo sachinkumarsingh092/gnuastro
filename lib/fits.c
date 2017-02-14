@@ -788,7 +788,10 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
 /* Add on keyword to the list of header keywords that need to be added
    to a FITS file. In the end, the keywords will have to be freed, so
    it is important to know before hand if they were allocated or
-   not. If not, they don't need to be freed. */
+   not. If not, they don't need to be freed.
+
+   NOTE FOR STRINGS: the value should be the pointer to the string its-self
+   (char *), not a pointer to a pointer (char **). */
 void
 gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
                        char *keyname, int kfree, void *value, int vfree,
