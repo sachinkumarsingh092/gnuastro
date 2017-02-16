@@ -1209,7 +1209,7 @@ meshinterponthread(void *inparams)
 
       /* Find the median of the nearest neighbors and put it in: */
       qsort(nearest1, numnearest, sizeof *nearest1,
-            gal_qsort_float_increasing);
+            gal_qsort_float32_increasing);
       outgarray1[thisind] = ( numnearest%2 ?
                               nearest1[numnearest/2] : /* Odd.  */
                               (nearest1[numnearest/2]  /* Even. */
@@ -1217,7 +1217,7 @@ meshinterponthread(void *inparams)
       if(ngarrays==2)
         {
           qsort(nearest2, numnearest, sizeof *nearest2,
-                gal_qsort_float_increasing);
+                gal_qsort_float32_increasing);
           outgarray2[thisind] = ( numnearest%2 ?
                                   nearest2[numnearest/2] : /* Odd.  */
                                   (nearest2[numnearest/2]  /* Even. */

@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 
 #include "checkset.h"
 #include "fixedstringmacros.h"
@@ -1182,10 +1183,12 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
      no images). */
   if(ndim==0)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) has 0 dimensions! The most common "
-          "cause for this is a wrongly specified HDU: in some FITS images, "
-          "the first HDU doesn't have any data. So probably reading the "
-          "second HDU (with `--hdu=1' or `-h1') will solve the problem. Note "
-          "that currently HDU counting starts from 0." , filename, hdu);
+          "cause for this is a wrongly specified HDU. In some FITS images, "
+          "the first HDU doesn't have any data, the data is in subsequent "
+          "extensions. So probably reading the second HDU (with `--hdu=1' "
+          "or `-h1') will solve the problem (following CFITSIO's "
+          "convention, currently HDU counting starts from 0)." , filename,
+          hdu);
 
 
   /* Set the fpixel array (first pixel in all dimensions): */
@@ -1210,7 +1213,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
   /* Allocate the space for the array and for the blank values. */
   img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
-  blank=gal_data_alloc_blank(type);
+  blank=gal_blank_alloc_write(type);
   gal_data_free_ll(keysll);
   free(dsize);
 
@@ -1361,7 +1364,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
      dealing with integer types. */
-  if(gal_data_has_blank(data))
+  if(gal_blank_present(data))
     switch(data->type)
       {
       case GAL_DATA_TYPE_FLOAT32:
@@ -1371,7 +1374,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
         break;
 
       default:
-        blank=gal_data_alloc_blank(data->type);
+        blank=gal_blank_alloc_write(data->type);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
@@ -1816,10 +1819,6 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               /* Write the type into the data structure. */
               allcols[index].type=gal_fits_datatype_to_type(datatype, 1);
 
-              printf("%zu: %s (%d)\n", index,
-                     gal_data_type_as_string(allcols[index].type, 1),
-                     datatype);
-
               /* If we are dealing with a string type, we need to know the
                  number of bytes in both cases for printing later. */
               if( allcols[index].type==GAL_DATA_TYPE_STRING )
@@ -1992,7 +1991,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
       /* Allocate a blank value for the given type and read/store the
          column using CFITSIO. Afterwards, free the blank value. */
-      blank=gal_data_alloc_blank(out->type);
+      blank=gal_blank_alloc_write(out->type);
       fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
                     1, 1, out->size, blank, out->array, &anynul, &status);
       gal_fits_io_error(status, NULL);
@@ -2060,8 +2059,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
                expected width or not. Its initial width is set the output
                of the function above, but if the value is larger,
                `asprintf' (which is used) will make it wider. */
-            blank = ( gal_data_has_blank(col)
-                      ? gal_data_blank_as_string(col->type, col->disp_width)
+            blank = ( gal_blank_present(col)
+                      ? gal_blank_as_string(col->type, col->disp_width)
                       : NULL );
 
             /* Adjust the width. */
@@ -2147,7 +2146,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
 
       /* Print the keyword and value. */
       asprintf(&keyname, "TNULL%zu", colnum);
-      blank=gal_data_blank_as_string(col->type, col->disp_width);
+      blank=gal_blank_as_string(col->type, col->disp_width);
 
       /* When in exponential form (`tform' starting with `E'), CFITSIO
          writes a NaN value as `NAN', but when in floating point form
@@ -2173,7 +2172,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
           && col->type!=GAL_DATA_TYPE_FLOAT64
           && col->type!=GAL_DATA_TYPE_STRING )
         {
-          blank=gal_data_alloc_blank(col->type);
+          blank=gal_blank_alloc_write(col->type);
           asprintf(&keyname, "TNULL%zu", colnum);
           fits_write_key(fptr, gal_fits_type_to_datatype(col->type),
                          keyname, blank, "blank value for this column",
@@ -2265,8 +2264,8 @@ gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
 
       /* Set the blank pointer if its necessary, note that strings don't
          need a blank pointer in a FITS ASCII table.*/
-      blank = ( gal_data_has_blank(col)
-                ? gal_data_alloc_blank(col->type) : NULL );
+      blank = ( gal_blank_present(col)
+                ? gal_blank_alloc_write(col->type) : NULL );
       if(tabletype==GAL_TABLE_FORMAT_AFITS && col->type==GAL_DATA_TYPE_STRING)
         { if(blank) free(blank); blank=NULL; }
 

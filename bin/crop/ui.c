@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
@@ -584,7 +585,10 @@ ui_read_cols(struct cropparams *p)
 
       /* Print an error if there were too many columns. */
       if(toomanycols)
-        gal_table_too_many_columns(p->catname);
+        gal_table_error_col_selection(p->catname, p->cathdu, "too many "
+                                      "columns were selected by the given "
+                                      "values to the options ending in "
+                                      "`col'.");
 
       /* Sanity check and clean up.  Note that it might happen that the
          input structure is already freed. In that case, `corrtype' will be
@@ -592,7 +596,7 @@ ui_read_cols(struct cropparams *p)
       if(corrtype)
         {
           /* Make sure there are no blank values in this column. */
-          if( gal_data_has_blank(corrtype) )
+          if( gal_blank_present(corrtype) )
             error(EXIT_FAILURE, 0, "%s column has blank values. "
                   "Input columns cannot contain blank values", colname);
 
@@ -624,7 +628,7 @@ ui_make_log(struct cropparams *p)
 
   /* If central pixels are filled. */
   asprintf(&comment, "Are the central pixels filled? (1: yes, 0: no, "
-           "%u: not checked)", GAL_DATA_BLANK_UINT8);
+           "%u: not checked)", GAL_BLANK_UINT8);
   gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT8, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "CENTER_FILLED", "bool",
                      comment);
@@ -730,7 +734,7 @@ ui_preparations(struct cropparams *p)
       if(firsttype==0)
         {
           firsttype=p->type;
-          p->bitnul = gal_data_alloc_blank(p->type);
+          p->bitnul = gal_blank_alloc_write(p->type);
         }
       else
         {

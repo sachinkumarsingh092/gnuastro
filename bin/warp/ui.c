@@ -239,17 +239,11 @@ static void *
 ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
                            char *filename, size_t lineno, void *params)
 {
-  size_t i, num=0;
+  size_t i;
+  double tmp;
   gal_data_t *new;
-  char *tailptr, *c=arg;
-  double numerator=NAN, denominator=NAN, tmp;
-  struct gal_linkedlist_dll *list=NULL, *tdll;
   struct warpparams *p=(struct warpparams *)params;
 
-  /* The nature of the arrays/numbers read here is very small, so since
-     `p->cp.minmapsize' might not have been read yet, we will set it to -1
-     (largest size_t number), so the values are kept in memory. */
-  size_t minmapsize=-1;
 
   /* Parse the (possible) arguments. */
   if(option->key==ARGS_OPTION_KEY_ALIGN)
@@ -268,98 +262,11 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
       if(arg && *arg=='0') return NULL;
 
       /* Allocate the data structure. */
-      new=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 0, &num, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+      new=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 0, NULL, NULL, 0,
+                         -1, NULL, NULL, NULL);
     }
-  else
-    {
-      /* Go through the input character by character. */
-      while(*c!='\0')
-        {
-        switch(*c)
-          {
-          /* Ignore space or tab. */
-          case ' ':
-          case '\t':
-            ++c;
-            break;
+  else new=gal_options_parse_list_of_numbers(arg, filename, lineno);
 
-
-          /* Comma marks the transition to the next number. */
-          case ',':
-            if(isnan(numerator))
-              error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
-                            "must be given before `,'. You have given: `%s'",
-                            arg);
-            gal_linkedlist_add_to_dll(&list, isnan(denominator)
-                                      ? numerator : numerator/denominator);
-            numerator=denominator=NAN;
-            ++num;
-            ++c;
-            break;
-
-
-          /* Divide two numbers. */
-          case '/':
-            if( isnan(numerator) || !isnan(denominator) )
-              error_at_line(EXIT_FAILURE, 0, filename, lineno, "`/' must "
-                            "only be between two numbers and used for "
-                            "division. But you have given `%s'. This "
-                            "was a value to the `%s' option", arg,
-                            option->name);
-            ++c;
-            break;
-
-
-          /* Read the number. */
-          default:
-
-            /* Parse the string. */
-            tmp=strtod(c, &tailptr);
-            if(tailptr==c)
-              error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first "
-                            "part of `%s' couldn't be read as a number. This "
-                            "was part of `%s' (value to the `%s' option)", c,
-                            arg, option->name);
-
-            /* See if the number should be put in the numerator or
-               denominator. */
-            if(isnan(numerator)) numerator=tmp;
-            else
-              {
-                if(isnan(denominator)) denominator=tmp;
-                else error_at_line(EXIT_FAILURE, 0, filename, lineno, "more "
-                                "than two numbers in each element.");
-              }
-
-            /* Set `c' to tailptr. */
-            c=tailptr;
-          }
-        }
-
-      /* If the last number, wasn't finished by a `,', add the read value
-         to the list */
-      if( !isnan(numerator) )
-        {
-          ++num;
-          gal_linkedlist_add_to_dll(&list, isnan(denominator)
-                                    ? numerator : numerator/denominator);
-        }
-
-      /* Allocate the new data structure and fill it up. */
-      i=num;
-      new=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &num, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
-      for(tdll=list;tdll!=NULL;tdll=tdll->next)
-        ((double *)new->array)[--i]=tdll->v;
-      gal_linkedlist_free_dll(list);
-    }
-
-  /* For a check.
-  printf("%s (%s): %zu number(s)\n", option->name, arg, num);
-  for(i=0;i<num;++i)
-    printf("\t%.15f\n", ((double *)new->array)[i]);
-  */
 
   /* If this was a matrix, then put it in the matrix element of the main
      data structure. Otherwise, add the list of given values to the modular
@@ -370,10 +277,10 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
       if(p->matrix)
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "only one matrix "
                       "may be given, you can use multiple modular warpings");
-      if(num!=4 && num!=9)
+      if(new->size!=4 && new->size!=9)
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "only a 4 or 9 "
                       "element `matrix' is currently acceptable. `%s' has "
-                      "%zu elements", arg, num);
+                      "%zu elements", arg, new->size);
 
       /* Keep the matrix in the main structure. */
       p->matrix=new;

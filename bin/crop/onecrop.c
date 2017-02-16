@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/box.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/polygon.h>
 
 #include <timing.h>
@@ -307,7 +308,7 @@ imgpolygonflpixel(double *ipolygon, size_t nvertices, long *fpixel,
 
 
 #define POLYGON_MASK(CTYPE) {                                           \
-    CTYPE *ba=array, *bb=gal_data_alloc_blank(type);                    \
+    CTYPE *ba=array, *bb=gal_blank_alloc_write(type);                   \
     for(i=0;i<size;++i)                                                 \
       {                                                                 \
         point[0]=i%s1+1; point[1]=i/s1+1;                               \
@@ -805,7 +806,7 @@ iscenterfilled(struct onecropparams *crp)
   long naxes[2], fpixel[2], lpixel[2], inc[2]={1,1};
 
   /* If checkcenter is zero, then don't check. */
-  if(checkcenter==0) return GAL_DATA_BLANK_UINT8;
+  if(checkcenter==0) return GAL_BLANK_UINT8;
 
   /* Get the final size of the output image. */
   gal_fits_img_info(ofp, &type, &ndim, &dsize);

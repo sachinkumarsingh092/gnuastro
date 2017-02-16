@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -36,20 +36,20 @@ int
 main (int argc, char *argv[])
 {
   struct timeval t1;
-  struct statisticsparams p={{0}, {0}, 0};
+  struct statisticsparams p={{0}, 0};
 
   /* Set the starting time. */
   time(&p.rawtime);
   gettimeofday(&t1, NULL);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   statistics(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  ui_free_report(&p);
 
   /* Return successfully.*/
   return 0;

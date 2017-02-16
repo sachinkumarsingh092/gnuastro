@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
@@ -297,7 +298,7 @@ ui_read_kernel(struct convolveparams *p)
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
      pixels. */
-  if(gal_data_has_blank(data))
+  if(gal_blank_present(data))
     {
       ff=(f=data->array)+data->size;
       do *f = isnan(*f) ? 0.0f : *f; while(++f<ff);
@@ -347,7 +348,7 @@ ui_preparations(struct convolveparams *p)
 
 
   /* See if there are any blank values. */
-  if(gal_data_has_blank(data) && p->domain==CONVOLVE_DOMAIN_FREQUENCY)
+  if(gal_blank_present(data) && p->domain==CONVOLVE_DOMAIN_FREQUENCY)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"
             "There are blank pixels in `%s' (hdu: `%s') and you have asked "

@@ -27,8 +27,8 @@
 ## during the tests since the bootstrapped libraries are not installed.
 ##
 ## The SYSCONFIG_DIR is necessary in `options.c'
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib      \
-	      -DSYSCONFIG_DIR=\"$(sysconfdir)\"
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib  \
+              -DSYSCONFIG_DIR=\"$(sysconfdir)\"
 
 
 
@@ -47,10 +47,10 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
-  arithmetic-onlyint.c array.c box.c checkset.c data.c fits.c git.c     \
-  linkedlist.c mesh.c mode.c options.c polygon.c qsort.c                \
-  spatialconvolve.c statistics.c table.c threads.c timing.c txt.c wcs.c
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
+  arithmetic-onlyint.c blank.c box.c checkset.c data.c fits.c git.c        \
+  linkedlist.c mesh.c mode.c options.c polygon.c qsort.c spatialconvolve.c \
+  statistics.c table.c threads.c timing.c txt.c wcs.c
 
 
 
@@ -63,7 +63,7 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
 pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h       \
-  $(headersdir)/array.h $(headersdir)/box.h $(headersdir)/data.h        \
+  $(headersdir)/blank.h $(headersdir)/box.h $(headersdir)/data.h        \
   $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/linkedlist.h   \
   $(headersdir)/mesh.h $(headersdir)/polygon.h $(headersdir)/qsort.h    \
   $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \

@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/txt.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
 #include <checkset.h>
@@ -39,9 +40,56 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/************************************************************************/
+/***************              Error messages              ***************/
+/************************************************************************/
+void
+gal_table_error_col_selection(char *filename, char *hdu, char *errorstring)
+{
+  char *c, *name, *command;
+
+  /* Set the proper pointers. */
+  if(gal_fits_name_is_fits(filename))
+    {
+      asprintf(&name, "%s (hdu: %s)", filename, hdu);
+      c=hdu; while(*c!='\0') if(isspace(*c++)) break;
+      asprintf(&command, *c=='\0' ? "%s --hdu=%s" : "%s --hdu=\"%s\"",
+               filename, hdu);
+    }
+  else command=name=filename;
+
+  /* Abort with with the proper error. */
+  error(EXIT_FAILURE, 0, "%s: %s\n\nFor more information on selecting "
+        "columns in Gnuastro, please run the following command (press "
+        "`SPACE' to go down and `q' to return to the command-line):\n\n"
+        "    $ info gnuastro \"Selecting table columns\"\n\n"
+        "To define a better column selection criteria, you can see "
+        "the list of column meta-data in this table, with the following "
+        "command:\n\n"
+        "    $ asttable %s --info\n", name, errorstring, command);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /************************************************************************/
-/***************               Table types                ***************/
+/***************                 Formats                  ***************/
 /************************************************************************/
 /* Return the type of desired table based on a standard string. */
 uint8_t
@@ -152,30 +200,6 @@ gal_table_check_fits_format(char *filename, int tableformat)
 
 
 
-/* Programs that read columns might match more than one column for a given
-   property, for example it might happen (due to bad table design) that
-   multiple columns have the same name, or the user uses regular
-   expressions badly. In such cases, the following error message will be
-   useful and commonly repeated by the programs, so we are putting it here
-   for easiness and a clean code. */
-void
-gal_table_too_many_columns(char *filename)
-{
-  error(EXIT_FAILURE, 0, "there was more than one match for at least one of "
-        "the input columns from `%s'. You can check the column information "
-        "with the following command, and correct the options ending with "
-        "`col' appropriately.\n\n"
-        "   $ asttable --information %s\n\n"
-        "The current values to all options can be checked by calling the "
-        "`--printparams' (or `-P') option. To learn more about how the "
-        "columns are selected, please try the following command:\n\n"
-        "   $ info gnuastro \"Selecting table columns\" ", filename,
-        filename);
-}
-
-
-
-
 
 
 
@@ -235,10 +259,10 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
       unit    = allcols[i].unit;       /* readability. The compiler   */
       comment = allcols[i].comment;    /* optimizer will remove them. */
       printf("%-*zu%-*s%-*s%-*s%s\n", Nw, i+1,
-             nw, name ? name : GAL_DATA_BLANK_STRING ,
-             uw, unit ? unit : GAL_DATA_BLANK_STRING ,
+             nw, name ? name : GAL_BLANK_STRING ,
+             uw, unit ? unit : GAL_BLANK_STRING ,
              tw, gal_data_type_as_string(allcols[i].type, 1),
-             comment ? comment : GAL_DATA_BLANK_STRING);
+             comment ? comment : GAL_BLANK_STRING);
     }
 
   /* Print the number of rows. */
@@ -522,7 +546,7 @@ gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
 
 /* Function to print regular expression error. This is taken from the GNU C
    library manual, with small modifications to fit out style, */
-void
+static void
 regexerrorexit(int errcode, regex_t *compiled, char *input)
 {
   char *regexerrbuf;
@@ -580,24 +604,25 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
   long tlong;
   int regreturn;
   regex_t *regex;
-  size_t i, nummatch;
+  size_t i, nummatch, len;
   struct gal_linkedlist_stll *tmp;
-  char *str, *colts, *strcheck, *tailptr;
   struct gal_linkedlist_sll *indexll=NULL;
+  char *str, *strcheck, *tailptr, *errorstring;
 
   for(tmp=cols; tmp!=NULL; tmp=tmp->next)
     {
-      /* Counter for number of columns matched. */
+      /* Counter for number of columns matched, and length of name. */
       nummatch=0;
+      len=strlen(tmp->v);
 
       /* REGULAR EXPRESSION: When the first and last characters are `/'. */
-      if( tmp->v[0]=='/' && tmp->v[strlen(tmp->v)-1]=='/' )
+      if( tmp->v[0]=='/' && tmp->v[len-1]=='/' )
         {
           /* Remove the slashes, note that we don't want to change `tmp->v'
              (because it should be freed later). So first we set the last
              character to `\0', then define a new string from the first
              element. */
-          tmp->v[strlen(tmp->v)-1]='\0';
+          tmp->v[len-1]='\0';
           str = tmp->v + 1;
 
           /* Allocate the regex_t structure: */
@@ -642,6 +667,11 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
 
           /* Free the regex_t structure: */
           regfree(regex);
+
+          /* Put the `/' back into the input string. This is done because
+             after this function, the calling program might want to inform
+             the user of their exact input string. */
+          tmp->v[len-1]='/';
         }
 
 
@@ -714,24 +744,12 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
 
       /* If there was no match, then report an error. This can only happen
          for string matches, not column numbers, for numbers, the checks
-         are done before the reading.*/
+         are done (and program is aborted) before this step. */
       if(nummatch==0)
         {
-          colts = ( searchin==GAL_TABLE_SEARCH_NAME ? "names"
-                    : ( searchin==GAL_TABLE_SEARCH_UNIT ? "units"
-                        : "comments") );
-          error(EXIT_FAILURE, 0, "`%s' didn't match with any of the column "
-                "%s in `%s'%s%s%s. You can check the available column "
-                "information by running `asttable %s%s%s --information'. "
-                "%s", tmp->v, colts, filename,
-                gal_fits_name_is_fits(filename) ? " (hdu: " : "",
-                gal_fits_name_is_fits(filename) ? hdu : "",
-                gal_fits_name_is_fits(filename) ? ")" : "",
-                filename,
-                gal_fits_name_is_fits(filename) ? " --hdu" : "",
-                gal_fits_name_is_fits(filename) ? hdu : "",
-                ignorecase ? "" : "For a case-insensitive match, "
-                "run again with the `--ignorecase' option. " );
+          asprintf(&errorstring, "`%s' didn't match any of the column %ss.",
+                   tmp->v, gal_table_searchin_as_string(searchin));
+          gal_table_error_col_selection(filename, hdu, errorstring);
         }
     }
 

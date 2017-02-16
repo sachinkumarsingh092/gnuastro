@@ -522,7 +522,6 @@ Review of library fundamentals
 Gnuastro library
 
 * Configuration information::   General information about library config.
-* Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
 * Git wrappers::                Wrappers for functions in libgit2.
@@ -533,7 +532,6 @@ Gnuastro library
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
-* Text table into a C array::   Read an ASCII text table into a C array.
 * World Coordinate System::     Dealing with the world coordinate system.
 
 FITS files (@file{fits.h})
@@ -7878,15 +7876,34 @@ to @mymath{\log(4)}. The output type is determined from the input, see the
 explanation under @command{sqrt} for more.
 
 @item minvalue
-Minimum value in the top operand on the stack, so ``@command{a.fits
-minvalue}'' will push the the minimum pixel value in this image onto the
-stack. Therefore this operator is mainly intended for data (for example
-images), if the top operand is a number, this operator just returns it
-without any change. So note that when this operator acts on a single image,
-the output will no longer be an image, but a number.
+Minimum (non-blank) value in the top operand on the stack, so
+``@command{a.fits minvalue}'' will push the the minimum pixel value in this
+image onto the stack. Therefore this operator is mainly intended for data
+(for example images), if the top operand is a number, this operator just
+returns it without any change. So note that when this operator acts on a
+single image, the output will no longer be an image, but a number.
 
 @item maxvalue
-Maximum value of first operand, similar to @command{minvalue}.
+Maximum (non-blank) value of first operand, similar to @command{minvalue}.
+
+@item numvalue
+Number of non-blank elements in first operand, similar to
+@command{minvalue}.
+
+@item sumvalue
+Sum of non-blank elements in first operand, similar to @command{minvalue}.
+
+@item meanvalue
+Mean value of non-blank elements in first operand, similar to
+@command{minvalue}.
+
+@item stdvalue
+Standard deviation of non-blank elements in first operand, similar to
+@command{minvalue}.
+
+@item medianvalue
+Median of non-blank elements in first operand, similar to
+@command{minvalue}.
 
 @cindex NaN
 @item min
@@ -7925,13 +7942,21 @@ conversion will be used.
 Similar to @command{min}, but the pixels of the output will contain
 the maximum of the respective pixels in all operands in the stack.
 
+@item num
+Similar to @command{min}, but the pixels of the output will contain the
+number of the respective non-blank pixels in all input operands.
+
 @item sum
 Similar to @command{min}, but the pixels of the output will contain the sum
 of the respective pixels in all input operands.
 
-@item average
-Similar to @command{min}, but the pixels of the output will contain
-the average of the respective pixels in all operands in the stack.
+@item mean
+Similar to @command{min}, but the pixels of the output will contain the
+mean (average) of the respective pixels in all operands in the stack.
+
+@item std
+Similar to @command{min}, but the pixels of the output will contain the
+standard deviation of the respective pixels in all operands in the stack.
 
 @item median
 Similar to @command{min}, but the pixels of the output will contain
@@ -8005,20 +8030,22 @@ format is demonstrated in this simplified example:
 $ astarithmetic modify.fits cond.fits if-true.fits where
 @end example
 
-The third and second popped operands (@file{modify.fits} and
-@file{cond.fits} above, see @ref{Reverse polish notation}) have to be
-images or all three operands have to be numbers. In the former case (when
-the first two are images), the third popped operand can be an image or a
-number. The value of any pixel in @file{out.fits} that corresponds to a
-non-zero pixel of @file{cond.fits} will be changed to the value of the same
-pixel in @file{if-true.fits} (or a fixed number). Note than the
-@file{cond.fits} has to have @code{unsigned char} type.
+The value of any pixel in @file{out.fits} that corresponds to a non-zero
+pixel of @file{cond.fits} will be changed to the value of the same pixel in
+@file{if-true.fits} (or a fixed number). The third and second popped
+operands (@file{modify.fits} and @file{cond.fits} above, see @ref{Reverse
+polish notation}) have to have the same
+dimensions/size. @file{if-true.fits} can be either a number, or have the
+same dimension/size as the other two.
 
-Commonly you won't be dealing with an actual FITS file of a conditional
-image. You will probably define the condition in the same run based on some
-other reference image and use the conditional and logical operators above
-to make a true/false (or one/zero) image for you internally. For example
-the case below:
+That @file{cond.fits} has to have @code{uint8} (or @code{unsigned char} in
+standard C) type (see @ref{Numeric data types} and the type conversion
+operators below). However, ommonly this is no problem because in most cases
+you won't be dealing with an actual FITS file of a conditional image. You
+will probably define the condition in the same run based on some other
+reference image and use the conditional and logical operators above to make
+a true/false (or one/zero) image for you internally. For example the case
+below:
 
 @example
 $ astarithmetic in.fits reference.fits 100 gt new.fits where
@@ -8029,6 +8056,16 @@ In the example above, any of the @file{in.fits} pixels that has a value in
 corresponding pixel in @file{new.fits}. Finally, the input operands are
 read and used independently, so you can use the same file more than once as
 any of the operands.
+
+When the first popped operand (@file{if-true.fits}) is a single number, it
+can be a NaN value (or any blank value, depending on its type) like the
+example below (see @ref{Blank pixels}). In this example, all the pixels in
+@file{reference.fits} that have a value greater than 100, will become blank
+in the natural data type of @file{in.fits}.
+
+@example
+$ astarithmetic in.fits reference.fits 100 gt nan where
+@end example
 
 @item bitand
 Bitwise AND operator: only bits with values of 1 in both popped operands
@@ -15862,7 +15899,6 @@ problems. It will stabilize with the removal of this notice. Check the
 
 @menu
 * Configuration information::   General information about library config.
-* Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
 * Git wrappers::                Wrappers for functions in libgit2.
@@ -15873,11 +15909,10 @@ problems. It will stabilize with the removal of this notice. Check the
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
-* Text table into a C array::   Read an ASCII text table into a C array.
 * World Coordinate System::     Dealing with the world coordinate system.
 @end menu
 
-@node Configuration information, Array manipulation, Gnuastro library, Gnuastro library
+@node Configuration information, Bounding box, Gnuastro library, Gnuastro library
 @subsection Configuration information (@file{config.h})
 
 The @file{gnuastro/config.h} header contains information about the full
@@ -15925,186 +15960,10 @@ value of @code{0}. see @ref{Implementation of pthread_barrier} for more.
 @end deffn
 
 
-@node Array manipulation, Bounding box, Configuration information, Gnuastro library
-@subsection Array manipulation (@file{array.h})
-
-When working on arrays, certain operations are commonly necessary. It is
-very easy to write a loop for such operations, however such loops can
-unnecessarily make the code harder to write, read, and debug. So, it is
-much more cleaner if these operations are defined elsewhere. The
-declarations of these functions are available in @file{gnuastro/array.h}.
-
-In C, an array is a contiguous region of memory. So for most operations
-here, the dimentionality of the data is irrelevant, we just need the total
-size of the array. Please note that these functions are still very
-rudimentary, primarily intended for Gnuastro's internal operations. In
-future releases, these functions will be updated to be more suitable for a
-generic library.
-
-@deftypefun void gal_array_uchar_init_on_region (unsigned char @code{*in}, const unsigned char @code{v}, size_t @code{start}, size_t @code{s0}, size_t @code{s1}, size_t @code{is1})
-Initialize a region of the array @code{in} to the value @code{v}. The
-region is defined by the 1D index of the first pixel (@code{start}) and its
-C array (opposite of FITS array) width (@code{s0}) and height
-(@code{s1}). The full C array width is defined by @code{is1}.
-@end deftypefun
-
-@deftypefun void gal_array_long_init (long @code{*in}, size_t @code{size}, const long @code{v})
-Initialize the long type array @code{in} with @code{size} elements to the
-value @code{v}.
-@end deftypefun
-
-@deftypefun void gal_array_long_init_on_region (long @code{*in}, const long @code{v}, size_t @code{start}, size_t @code{s0}, size_t @code{s1}, size_t @code{is1})
-Similar to @code{gal_array_uchar_init_on_region} but for long type arrays.
-@end deftypefun
-
-@deftypefun void gal_array_uchar_copy (unsigned char @code{*in}, size_t @code{size}, unsigned char @code{**out})
-Allocate space for and copy the input array @code{in} with @code{size}
-elements into an output array (@code{out}).
-@end deftypefun
-
-@deftypefun void gal_array_float_copy (float @code{*in}, size_t @code{size}, float @code{**out})
-Similar to @code{gal_array_uchar_copy} but for the single precision
-floating point type.
-@end deftypefun
-
-@deftypefun void gal_array_float_copy_noalloc (float @code{*in}, size_t @code{size}, float @code{*out})
-Similar to @code{gal_array_float_copy} but the @code{out} array must
-already be allocated.
-@end deftypefun
-
-@deftypefun void gal_array_fset_const (float @code{*in}, size_t @code{size}, float @code{a})
-Set the input array @code{in} with @code{size} elements to the constant
-value @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_freplace_value (float @code{*in}, size_t @code{size}, float @code{from}, float @code{to})
-@cindex NaN
-Replace all elements with value @code{from} to value @code{to} in the
-@code{in} array with @code{size} elements. @code{from} can be a NaN value,
-in this case, C's @code{isnan} function is used, not @code{==}.
-@end deftypefun
-
-@deftypefun void gal_array_freplace_nonnans (float @code{*in}, size_t @code{size}, float @code{to})
-Replace any non-NaN value in the array @code{in} with @code{size} elements
-to the value @code{to}.
-@end deftypefun
-
-@deftypefun void gal_array_no_nans (float @code{*in}, size_t @code{*size})
-Move all the non-NaN elements in the array @code{in} to the start of the
-array so that the non-NaN elements are contiguous. This is useful for cases
-where you want to sort the data. Note that before this function,
-@code{size} must point to the initial size of the array. After this
-function returns, size will point to the new size of the array, with only
-non-Nan elements.
-@end deftypefun
-
-@deftypefun void gal_array_no_nans_double (double @code{*in}, size_t @code{*size})
-Similar to @code{gal_array_no_nans} but for double types.
-@end deftypefun
-
-@deftypefun void gal_array_uchar_replace (unsigned char @code{*in}, size_t @code{size}, unsigned char @code{from}, unsigned char @code{to})
-Replace all elements with value @code{from} to value @code{to} in the
-@code{in} array with @code{size} elements.
-@end deftypefun
-
-@deftypefun void gal_array_fmultip_const (float @code{*in}, size_t @code{size}, float @code{a})
-Multiply all elements in the float array @code{in} with size @code{size} by
-the constant @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_fsum_const (float @code{*in}, size_t @code{size}, float @code{a})
-Add all elements in the float array @code{in} with size @code{size} by the
-constant @code{a}.
-@end deftypefun
-
-@deftypefun {float *} gal_array_fsum_arrays (float @code{*in1}, float @code{*in2}, size_t @code{size})
-Add the two arrays @code{in1} and @code{in2} and keep the result in a newly
-allocated array. The returned value is a pointer to that array.
-@end deftypefun
-
-@deftypefun void gal_array_dmultip_const (double @code{*in}, size_t @code{size}, double @code{a})
-Multiply the double type array @code{in} with @code{size} elements with the
-constant @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_dmultip_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
-Multiply the two double type arrays @code{in1} with @code{in2} (both with
-@code{size} elements) with each other and store the output in the first
-array.
-@end deftypefun
-
-@deftypefun void gal_array_ddivide_const (double @code{*in}, size_t @code{size}, double @code{a})
-Divide the double type array @code{in} with @code{size} elements by the
-constant @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_dconst_divide (double @code{*in}, size_t @code{size}, double @code{a})
-Divide the constant @code{a} by the array @code{in} with @code{size} and
-store the result for each pixel in the array.
-@end deftypefun
-
-@deftypefun void gal_array_ddivide_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
-Divide each element of the two double array @code{in1} by the elements in
-@code{in2} (both with @code{size} elements) and store the output in the
-first array.
-@end deftypefun
-
-@deftypefun void gal_array_dsum_const (double @code{*in}, size_t @code{size}, double @code{a})
-Add the double type array @code{in} with @code{size} elements with the
-constant @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_dsum_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
-Add the two double type arrays @code{in1} with @code{in2} (both with
-@code{size} elements) with each other and store the output in the first
-array.
-@end deftypefun
-
-@deftypefun void gal_array_dsubtract_const (double @code{*in}, size_t @code{size}, double @code{a})
-Subtract the double type array @code{in} with @code{size} elements from the
-constant @code{a}.
-@end deftypefun
-
-@deftypefun void gal_array_dconst_subtract (double @code{*in}, size_t @code{size}, double @code{a})
-Subtract the constant @code{a} from the array @code{in} with @code{size}
-and store the result for each pixel in the array.
-@end deftypefun
-
-@deftypefun void gal_array_dsubtract_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
-Subtract each element of th the double type array @code{in2} from
-@code{in1} and put the result in the first array.
-@end deftypefun
-
-@deftypefun void gal_array_dpower_const (double @code{*in}, size_t @code{size}, double @code{a})
-Each element in the intput array is taken to the power of of @code{a} and
-stored in place.
-@end deftypefun
-
-@deftypefun void gal_array_dconst_power (double @code{*in}, size_t @code{size}, double @code{a})
-The constant @code{a} is taken to the power of each element in the intput
-array (@code{in}) and stored in place.
-@end deftypefun
-
-@deftypefun void gal_array_dpower_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
-Each element in the first input array is taken to the power of the same
-element in the second array.
-@end deftypefun
-
-@deftypefun void gal_array_dlog_array (double @code{*in1}, size_t @code{size})
-The natural logarithm of the input array is taken and stored in place.
-@end deftypefun
-
-@deftypefun void gal_array_dlog10_array (double @code{*in1}, size_t @code{size})
-The base-10 logarithm of the input array is taken and stored in place.
-@end deftypefun
-
-@deftypefun void gal_array_dabs_array (double @code{*in1}, size_t @code{size})
-Replace each element of the input array with its absolute value.
-@end deftypefun
 
 
 
-@node Bounding box, FITS files, Array manipulation, Gnuastro library
+@node Bounding box, FITS files, Configuration information, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporting a the bounding box of certain inputs are
@@ -17459,161 +17318,6 @@ The maximum number of times to try for @mymath{\sigma}-clipping (see
 @ref{Sigma clipping}).
 @end deffn
 
-@deftypefun void gal_statistics_long_non_blank_min (long @code{*in}, size_t @code{size}, long @code{*min}, long  @code{blank})
-Find the the minimum (non-blank) value in the @code{in} array (with
-@code{size} elements). The long type doesn't have a NaN value like the
-float types, see @ref{Blank pixels}. So as blank pixels, a value in the
-range of acceptable values (@code{blank} must be given so it is explicitly
-ignored. You can use @code{GAL_FITS_LONG_BLANK} in @file{gnuastro/fits.h}.
-@end deftypefun
-
-@deftypefun void gal_statistics_long_non_blank_max (long @code{*in}, size_t @code{size}, long @code{*max}, long @code{blank})
-Similar to @code{gal_statistics_long_non_blank_min}, but find the maximum.
-@end deftypefun
-
-@deftypefun void gal_statistics_float_min (float @code{*in}, size_t @code{size}, float @code{*min})
-Find the minimum value in the single precision floating point @code{in}
-array (with @code{size} elements) and store the value in @code{min}. Note
-that for all floating point types, any blank (NaN) value will be
-automatically ignored in this function.
-@end deftypefun
-
-@deftypefun void gal_statistics_float_max (float @code{*in}, size_t @code{size}, float @code{*max})
-Similar to @code{gal_statistics_float_min} but find the maximum.
-@end deftypefun
-
-@deftypefun void gal_statistics_double_min (double @code{*in}, size_t @code{size}, double @code{*min})
-Similar to @code{gal_statistics_float_min} but for double precision
-floating point types.
-@end deftypefun
-
-@deftypefun double gal_statistics_double_min_return (double @code{*in}, size_t @code{size})
-Similar to @code{gal_statistics_double_min} but minimum will be returned,
-not put in a pointer.
-@end deftypefun
-
-@deftypefun void gal_statistics_double_max (double @code{*in}, size_t @code{size}, double @code{*max})
-Similar to @code{gal_statistics_double_min}, but find maximum value.
-@end deftypefun
-
-@deftypefun double gal_statistics_double_max_return (double @code{*in}, size_t @code{size})
-Similar to @code{gal_statistics_double_max_return}, but return maximum.
-@end deftypefun
-
-@deftypefun void gal_statistics_float_max_masked (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, float @code{*max})
-Only find maximum where @code{mask} has a value of @code{0}.
-@end deftypefun
-
-@deftypefun void gal_statistics_float_second_max (float @code{*in}, size_t @code{size}, float @code{*secondmax})
-Find the second largest value in the array.
-@end deftypefun
-
-@deftypefun void gal_statistics_float_second_min (float @code{*in}, size_t @code{size}, float @code{*secondmin})
-Find the second smallest value in the array.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_min_max (float @code{*in}, size_t @code{size}, float @code{*min}, float @code{*max})
-Find the minimum and maximum simultaneously for single precision floating
-point types.
-@end deftypefun
-
-@deftypefun void gal_statistics_d_min_max (double @code{*in}, size_t @code{size}, double @code{*min}, double @code{*max})
-Similar to @code{gal_statistics_f_min_max}, but for double precision
-floating point types.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_max_with_index (float @code{*in}, size_t @code{size}, float @code{*max}, size_t @code{*index})
-Find the maximum value in the array along with its index for a single
-precision floating point array.
-@end deftypefun
-
-@deftypefun void gal_statistics_d_max_with_index (double @code{*in}, size_t @code{size}, double @code{*max}, size_t @code{*index})
-Similar to @code{gal_statistics_f_max_with_index}, but for a double
-precision floating point array.
-@end deftypefun
-
-@deftypefun void gal_statistics_d_min_with_index (double @code{*in}, size_t @code{size}, double @code{*min}, size_t @code{*index})
-@end deftypefun
-
-@deftypefun void gal_statistics_f_min_with_index (float @code{*in}, size_t @code{size}, float @code{*min}, size_t @code{*index})
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum (float @code{*in}, size_t @code{size})
-Return the sum of the single precision floating point arrays. Note that NaN
-values will be ignored.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_num (float @code{*in}, size_t @code{*size})
-Return the sum of elements in the floating point array along with the
-number of used (non-Nan) elements.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_squared (float @code{*in}, size_t @code{size})
-Return the sum of squares of non-NaN elements in the array.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_mask (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, size_t @code{*nsize})
-Given a mask (@code{mask}), return the sum of elements with a @code{mask}
-value of @code{0} (masked pixels are considered to have a non-zero value)
-and put the number of used elements in @code{nsize}.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_mask_l (float @code{*in}, long @code{*mask}, size_t @code{size}, size_t @code{*nsize})
-Similar to @code{gal_statistics_float_sum_mask}, but when the mask is a
-long type.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_squared_mask (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, size_t @code{*nsize})
-Return the sum of the squared elements in @code{in} that are not masked
-(corresponding element in @code{mask} is @code{0}.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_sum_squared_mask_l (float @code{*in}, long @code{*mask}, size_t @code{size}, size_t @code{*nsize})
-Similar to @code{gal_statistics_float_sum_squared_mask} but when the mask
-is a long type.
-@end deftypefun
-
-@deftypefun float gal_statistics_float_average (float @code{*in}, size_t @code{size})
-Return the average of the single precision floating point array @code{in}
-with @code{size} elements.
-@end deftypefun
-
-@deftypefun double gal_statistics_double_average (double @code{*in}, size_t @code{size})
-Return the average of the double precision floating point array @code{in}
-with @code{size} elements.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_ave (float @code{*in}, size_t @code{size}, float @code{*ave}, unsigned char @code{*mask})
-Return the average of the single precision floating point array @code{in}
-with @code{size} elements, do not use those elements where @code{mask} is
-non-zero.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_ave_l (float @code{*in}, size_t @code{size}, float @code{*ave}, long @code{*mask})
-Similar to @code{gal_statistics_f_ave}, but when the mask is of type long.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_ave_std (float @code{*in}, size_t @code{size}, float @code{*ave}, float @code{*std}, unsigned char @code{*mask})
-Find the average and standard deviation of the @code{in} array for pixels
-where @code{mask} has value of @code{0}.
-@end deftypefun
-
-@deftypefun void gal_statistics_f_ave_std_l (float @code{*in}, size_t @code{size}, float @code{*ave}, float @code{*std}, long @code{*mask})
-Similar to @code{gal_statistics_f_ave_std}, but when the mask has a type of
-long.
-@end deftypefun
-
-@deftypefun float gal_statistics_median (float @code{*array}, size_t @code{insize})
-Return the median value of a single precision floating point array
-@code{array} (which has @code{insize} elements).
-@end deftypefun
-
-@deftypefun double gal_statistics_median_double_in_place (double @code{*array}, size_t @code{insize})
-Return the median value of a double precision floating point array
-@code{array} (which has @code{insize} elements). After this function, the
-elements of @code{array} are also sorted.
-@end deftypefun
-
 @deftypefun void gal_statistics_set_bins (float @code{*sorted}, size_t @code{size}, size_t @code{numbins}, float @code{min}, float @code{max}, float @code{onebinvalue}, float @code{quant}, float @code{**obins})
 Given the input @code{sorted} array with @code{size} elements, a given
 number of @code{numbins}, an optional @code{min} and @code{max}, find the
@@ -17742,7 +17446,7 @@ ApJS 220, 1. arXiv:1505.01664).
 
 
 
-@node Multithreaded programming, Text table into a C array, Statistical operations, Gnuastro library
+@node Multithreaded programming, World Coordinate System, Statistical operations, Gnuastro library
 @subsection Multithreaded programming (@file{threads.h})
 
 @cindex Multithreaded programming
@@ -17918,68 +17622,8 @@ program in @file{tests/lib/multithread.c} for a demonstration.
 
 
 
-@node Text table into a C array, World Coordinate System, Multithreaded programming, Gnuastro library
-@subsection Text table into a C array (@file{txtarray.h})
 
-One of the most common formats to store and transfer normally sized data
-are ASCII files (which can be seen on a text editor). During your
-processing experiments (with the data, or what programmers call
-``developing'') you will also often want to see how your data is being
-processed and one of the easiest ways to check out your arrays is to write
-them out as an ASCII file and check them. The functions here are mainly
-focused on tables that contain numbers.
-
-@deffn Macro GAL_TXTARRAY_LOG
-When an element of the input table cannot be read as a number, the column
-and row number of the element are stored along with the element into one
-row of a log file. This macro contains the name of the log-file.
-@end deffn
-
-
-@deftypefun void gal_txtarray_txt_to_array (char @code{*filename}, double @code{**array}, size_t @code{*s0}, size_t @code{*s1})
-Store the ASCII text table in @file{filename} into the C array @code{array}
-which has @code{s0} rows and @code{s1} columns. Any blank lines or lines
-starting with @code{#} (comments) will be ignored. The column delimiters
-(separating one column from the previous and next) are `@code{ }' (space),
-`@code{,}', `TAB'.
-@end deftypefun
-
-@deftypefun void gal_txtarray_printf_format (int @code{numcols}, char @code{**fmt}, int @code{*int_cols}, int @code{*accu_cols}, int @code{*space}, int @code{*prec}, char @code{forg})
-Return the @code{printf} formatting string (@code{fmt}) for @code{numcols}
-columns. Three types of output columns are assumed: integers, normal
-accuracy floating points and extra-precision floating points. Normally most
-columns will not need too much accuracy when printing (for example only 3
-decimals might be enough). However usually a very limited number of columns
-will need more precision (like RA and Dec). So to store space (each
-character is a byte) and also make the table more readable, we allow these
-two types of floating points.
-
-@code{int_cols} and @code{accu_cols} are arrays containing the column
-numbers (starting from zero) that contain integers and extra-accuracy
-columns. The ending of the column indexes in @code{int_cols} and
-@code{accu_cols} is defined by a negative number. @code{space} is a three
-element array which will keep the number of characters that must be used
-for the integer, normal-accuracy and extra-accuracy columns. @code{prec} is
-a two element array which contains the number of decimals to print for the
-normal and extra accuracy columns. @code{forg} (read as `f-or-g') is the
-@code{printf} type for the floating point numbers: either @code{f} (as in
-@code{%f}, which will only print decimals) and @code{g} (as in @code{%g},
-for either printing decimals or exponentials). See
-@code{gal_txtarray_array_to_txt} for more.
-@end deftypefun
-
-@deftypefun void gal_txtarray_array_to_txt (double @code{*array}, size_t @code{s0}, size_t @code{s1}, char @code{*comments}, int @code{*int_cols}, int @code{*accu_cols}, int @code{*space}, int @code{*prec}, char @code{forg}, const char @code{*filename})
-Print the C array @code{array} (with @code{s0} rows and @code{s1} columns)
-as an ASCII text table in @code{filename}. The string pointed to by
-@code{comments} will be printed at the top of the table. See the
-explanation of @code{gal_txtarray_printf_format} for the other arguments.
-@end deftypefun
-
-
-
-
-
-@node World Coordinate System,  , Text table into a C array, Gnuastro library
+@node World Coordinate System,  , Multithreaded programming, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
 The FITS world coordinate system is a mechanism to give physical values to

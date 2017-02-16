@@ -561,9 +561,9 @@ oneprofile_make(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 
-  float sum;
+  float *f, *ff;
   long os=p->oversample;
-  double pixfrac, intpart;
+  double sum, pixfrac, intpart;
   size_t size, id=mkp->ibq->id;
 
 
@@ -607,7 +607,7 @@ oneprofile_make(struct mkonthread *mkp)
   if(mkp->correction)
     {
       /* First get the sum of all the pixels in the profile. */
-      sum=gal_statistics_float_sum(mkp->ibq->img, size);
+      sum=0.0f; ff=(f=mkp->ibq->img)+size; do sum+=*f++; while(f<ff);
 
       /* Correct the fraction of brightness that was calculated
          accurately (not using the pixel center). */
@@ -615,10 +615,14 @@ oneprofile_make(struct mkonthread *mkp)
 
       /* Correct all the profile pixels. */
       if(p->magatpeak)
-        gal_array_fmultip_const(mkp->ibq->img, size,
-                                mkp->brightness/mkp->peakflux);
+        {
+          ff=(f=mkp->ibq->img)+size;
+          do *f++ *= mkp->brightness/mkp->peakflux; while(f<ff);
+        }
       else
-        gal_array_fmultip_const(mkp->ibq->img, size,
-                                mkp->brightness/sum);
+        {
+          ff=(f=mkp->ibq->img)+size;
+          do *f++ *= mkp->brightness/sum; while(f<ff);
+        }
     }
 }

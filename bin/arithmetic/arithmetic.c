@@ -188,14 +188,28 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_ARITHMETIC_OP_MINVAL;        nop=1;  }
           else if (!strcmp(token->v, "maxvalue"))
             { op=GAL_ARITHMETIC_OP_MAXVAL;        nop=1;  }
+          else if (!strcmp(token->v, "numvalue"))
+            { op=GAL_ARITHMETIC_OP_NUMVAL;        nop=1;  }
+          else if (!strcmp(token->v, "sumvalue"))
+            { op=GAL_ARITHMETIC_OP_SUMVAL;        nop=1;  }
+          else if (!strcmp(token->v, "meanvalue"))
+            { op=GAL_ARITHMETIC_OP_MEANVAL;       nop=1;  }
+          else if (!strcmp(token->v, "stdvalue"))
+            { op=GAL_ARITHMETIC_OP_STDVAL;        nop=1;  }
+          else if (!strcmp(token->v, "medianvalue"))
+            { op=GAL_ARITHMETIC_OP_MEDIANVAL;     nop=1;  }
           else if (!strcmp(token->v, "min"))
             { op=GAL_ARITHMETIC_OP_MIN;           nop=-1; }
           else if (!strcmp(token->v, "max"))
             { op=GAL_ARITHMETIC_OP_MAX;           nop=-1; }
+          else if (!strcmp(token->v, "num"))
+            { op=GAL_ARITHMETIC_OP_NUM;           nop=-1; }
           else if (!strcmp(token->v, "sum"))
             { op=GAL_ARITHMETIC_OP_SUM;           nop=-1; }
-          else if (!strcmp(token->v, "average"))
-            { op=GAL_ARITHMETIC_OP_AVERAGE;       nop=-1; }
+          else if (!strcmp(token->v, "mean"))
+            { op=GAL_ARITHMETIC_OP_MEAN;          nop=-1; }
+          else if (!strcmp(token->v, "std"))
+            { op=GAL_ARITHMETIC_OP_STD;           nop=-1; }
           else if (!strcmp(token->v, "median"))
             { op=GAL_ARITHMETIC_OP_MEDIAN;        nop=-1; }
 

@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:

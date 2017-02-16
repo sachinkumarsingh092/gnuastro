@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -23,111 +23,50 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <commonparams.h>
+/* Include necessary headers */
+#include <gnuastro/data.h>
 
-/* Progarm name macros: */
-#define SPACK           "aststatistics"    /* Subpackage executable name. */
-#define SPACK_NAME      "Statistics"       /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+#include <options.h>
 
-
-
-#define PRINTFLT  "%.6f\n"
-#define PRINTINT  "%.0f\n"
-#define STRVAL    "   -- %-45s%s\n"
-#define FNAMEVAL  "   -- %-45s%f\n"
-#define SNAMEVAL  "   -- %-45s%zu\n"
-#define ASCIIHISTNUMBINS    60
-#define ASCIIHISTHEIGHT     10
-#define HISTSTRING     "Histogram"
-#define CFPSTRING      "Cumulative Frequency Plot"
-
-
-
-struct uiparams
-{
-  char             *inputname;  /* Name of input file.               */
-  char              *maskname;  /* Name of mask image.               */
-  char                  *mhdu;  /* Mask image HDU.                   */
-  int             masknameset;
-  int       masknameallocated;
-  int                 mhduset;
-  int           mirrordistset;
-  int          onebinvalueset;
-  int          histnumbinsset;
-  int              histminset;
-  int              histmaxset;
-  int            histquantset;
-  int               cfpnumset;
-  int               cfpminset;
-  int               cfpmaxset;
-  int             cfpquantset;
-  int       mirrorplotdistset;
-  int        sigclipmultipset;
-  int     sigcliptoleranceset;
-  int           sigclipnumset;
-
-};
+/* Progarm names.  */
+#define PROGRAM_NAME   "Statistics"    /* Program full name.       */
+#define PROGRAM_EXEC   "aststatistics" /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
 
 
+
+
+/* Main program parameters structure */
 struct statisticsparams
 {
-  /* Other structures: */
-  struct uiparams         up; /* User interface parameters.             */
-  struct gal_commonparams cp; /* Common parameters.                     */
+  /* From command-line */
+  struct gal_options_common_params cp; /* Common parameters.             */
+  struct gal_linkedlist_ill  *toprint; /* Values to print in one row.    */
+  char          *inputname;  /* Input filename.                          */
+  char             *column;  /* Column name or number if input is table. */
+  float       greaterequal;  /* Only use values >= this value.           */
+  float           lessthan;  /* Only use values <  this value.           */
+  float      quantilerange;  /* Quantile (Q) range: from Q to 1-Q.       */
 
-  /* Input: */
-  float               *img;  /* Input image array.                      */
-  float            *sorted;  /* Sorted input data.                      */
-  size_t              size;  /* Number of non-blank data elements.      */
-  int            ignoremin;  /* Ignore all data with minimum value.     */
-  float         mirrordist;  /* Distance to go out for mode check.      */
+  uint8_t        asciihist;  /* Print an ASCII histogram.                */
+  uint8_t        histogram;  /* Save histogram in output.                */
+  uint8_t       cumulative;  /* Save cumulative distibution in output.   */
+  char         *sigclipstr;  /* Multiple of sigma, and tolerance or num. */
+  float        mirrorquant;  /* Quantile of mirror distribution to save. */
+  size_t           numbins;  /* Number of bins in histogram or CFP.      */
+  uint8_t         lowerbin;  /* Save interval lower limit, not center.   */
+  uint8_t        normalize;  /* set the sum of all bins to 1.            */
+  float        onebinstart;  /* Shift bins to start at this value.       */
+  uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
 
-  /* Output: */
-  int            asciihist;  /* ==1: print an ASCII histogram.          */
-  float        onebinvalue;  /* Shift bins so one bin starts with this. */
-  int             lowerbin;  /* Interval lower limit as column 1.       */
-  float             mirror;  /* Mirror quantile.                        */
-  char         *mirrorhist;  /* Name of mirror histogram.               */
-  char          *mirrorcfp;  /* Name of mirror CFP.                     */
-  char          *mhistname;  /* Name of mode mirror histogram.          */
-  float     mirrorplotdist;  /* Dist. after mode to display on plot.    */
-  char           *mcfpname;  /* Name of mode mirror CFP.                */
-  int   histrangeformirror;  /* ==1: Use histogram range for mirror.    */
-
-  /* Histogram: */
-  char           *histname;  /* Histogram file name.                    */
-  int             normhist;  /* ==1: Normalize the histogram.           */
-  int           maxhistone;  /* Scale such that max bin is one.         */
-  size_t       histnumbins;  /* Number of bins in the histogram.        */
-  float            histmin;  /* Minimum value to use in histogram.      */
-  float            histmax;  /* Maximum value to use in histogram.      */
-  float          histquant;  /* Quantile range of histogram.            */
-
-  /* Cumulative frequency plot: */
-  char            *cfpname;  /* Cumultiave frequency plot file name.    */
-  int              normcfp;  /* ==1: Normalize the CFP.                 */
-  int      maxcfpeqmaxhist;  /* ==1: CFP max equal to historgram max.   */
-  int           cfpsimhist;  /* ==1: CFP range equal to hist range.     */
-  size_t            cfpnum;  /* The number of points to sample CFP.     */
-  float             cfpmin;  /* Minimum value for CFP.                  */
-  float             cfpmax;  /* Maximum value for CFP.                  */
-  float           cfpquant;  /* Quantile range of CFP.                  */
-
-  /* Sigma clipping: */
-  int              sigclip;  /* ==1: Do sigma clipping.                 */
-  float      sigclipmultip;  /* Multiple of STD in sigma clipping.      */
-  float   sigcliptolerance;  /* Tolerance level in sigma clipping.      */
-  size_t        sigclipnum;  /* Number of times to sigma clip.          */
-
-
-  /* Operating mode: */
-
-  /* Internal: */
-  time_t           rawtime;  /* Starting time of the program.           */
+  /* Internal */
+  gal_data_t        *input;  /* Input data structure.                    */
+  int               isfits;  /* Input is a FITS file.                    */
+  int             hdu_type;  /* Type of HDU (image or table).            */
+  time_t           rawtime;  /* Starting time of the program.            */
 };
 
 #endif

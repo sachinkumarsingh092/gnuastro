@@ -121,7 +121,18 @@ enum gal_table_diplay_formats
 
 
 
-/* Functions */
+/************************************************************************/
+/***************              Error messages              ***************/
+/************************************************************************/
+void
+gal_table_error_col_selection(char *filename, char *hdu, char *errorstring);
+
+
+
+
+/************************************************************************/
+/***************                 Formats                  ***************/
+/************************************************************************/
 uint8_t
 gal_table_string_to_format(char *string);
 
@@ -137,9 +148,11 @@ gal_table_searchin_as_string(uint8_t searchin);
 void
 gal_table_check_fits_format(char *filename, int tableformat);
 
-void
-gal_table_too_many_columns(char *filename);
 
+
+/************************************************************************/
+/***************          Printing information            ***************/
+/************************************************************************/
 void
 gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 
@@ -150,14 +163,30 @@ gal_table_col_print_info(gal_data_t *col, int tableformat,
 void
 gal_table_read_blank(gal_data_t *col, char *blank);
 
+
+
+
+/************************************************************************/
+/***************         Information about a table        ***************/
+/************************************************************************/
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols,
                size_t *numrows, int *tableformat);
 
+
+
+/************************************************************************/
+/***************               Read a table               ***************/
+/************************************************************************/
 gal_data_t *
 gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
                int searchin, int ignorecase, int minmapsize);
 
+
+
+/************************************************************************/
+/***************              Write a table               ***************/
+/************************************************************************/
 void
 gal_table_write(gal_data_t *cols, char *comments, int tableformat,
                 char *filename, int dontdelete);

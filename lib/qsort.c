@@ -23,6 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <fitsio.h>
 
@@ -49,116 +50,104 @@ gal_qsort_index_float_decreasing(const void * a, const void * b)
 
 
 int
-gal_qsort_uchar_decreasing(const void * a, const void * b)
+gal_qsort_uint8_decreasing(const void *a, const void *b)
 {
-  return ( *(unsigned char*)b - *(unsigned char*)a );
+  return ( *(uint8_t *)b - *(uint8_t *)a );
 }
 
 int
-gal_qsort_uchar_increasing(const void * a, const void * b)
+gal_qsort_uint8_increasing(const void *a, const void *b)
 {
-  return ( *(unsigned char*)a - *(unsigned char*)b );
+  return ( *(uint8_t *)a - *(uint8_t *)b );
 }
 
 int
-gal_qsort_char_decreasing(const void * a, const void * b)
+gal_qsort_int8_decreasing(const void *a, const void *b)
 {
-  return ( *(char*)b - *(char*)a );
+  return ( *(int8_t *)b - *(int8_t *)a );
 }
 
 int
-gal_qsort_char_increasing(const void * a, const void * b)
+gal_qsort_int8_increasing(const void *a, const void *b)
 {
-  return ( *(char*)a - *(char*)b );
+  return ( *(int8_t *)a - *(int8_t *)b );
 }
 
 int
-gal_qsort_ushort_decreasing(const void * a, const void * b)
+gal_qsort_uint16_decreasing(const void *a, const void *b)
 {
-  return ( *(unsigned short*)b - *(unsigned short*)a );
+  return ( *(uint16_t *)b - *(uint16_t *)a );
 }
 
 int
-gal_qsort_ushort_increasing(const void * a, const void * b)
+gal_qsort_uint16_increasing(const void *a, const void *b)
 {
-  return ( *(unsigned short*)a - *(unsigned short*)b );
+  return ( *(uint16_t *)a - *(uint16_t *)b );
 }
 
 int
-gal_qsort_short_decreasing(const void * a, const void * b)
+gal_qsort_in16_decreasing(const void *a, const void *b)
 {
-  return ( *(short*)b - *(short*)a );
+  return ( *(int16_t *)b - *(int16_t *)a );
 }
 
 int
-gal_qsort_short_increasing(const void * a, const void * b)
+gal_qsort_int16_increasing(const void *a, const void *b)
 {
-  return ( *(short*)a - *(short*)b );
+  return ( *(int16_t *)a - *(int16_t *)b );
 }
 
 int
-gal_qsort_uint_decreasing(const void * a, const void * b)
+gal_qsort_uint32_decreasing(const void *a, const void *b)
 {
-  return ( *(unsigned int*)b - *(unsigned int*)a );
+  return ( *(uint32_t *)b - *(uint32_t *)a );
 }
 
 int
-gal_qsort_uint_increasing(const void * a, const void * b)
+gal_qsort_uint32_increasing(const void *a, const void *b)
 {
-  return ( *(unsigned int*)a - *(unsigned int*)b );
+  return ( *(uint32_t *)a - *(uint32_t *)b );
 }
 
 int
-gal_qsort_int_decreasing(const void * a, const void * b)
+gal_qsort_int32_decreasing(const void *a, const void *b)
 {
-  return ( *(int*)b - *(int*)a );
+  return ( *(int32_t *)b - *(int32_t *)a );
 }
 
 int
-gal_qsort_int_increasing(const void * a, const void * b)
+gal_qsort_int32_increasing(const void *a, const void *b)
 {
-  return ( *(int*)a - *(int*)b );
+  return ( *(int32_t *)a - *(int32_t *)b );
 }
 
 int
-gal_qsort_ulong_decreasing(const void * a, const void * b)
+gal_qsort_uint64_decreasing(const void *a, const void *b)
 {
-  return ( *(unsigned long*)b - *(unsigned long*)a );
+  return ( *(uint64_t *)b - *(uint64_t *)a );
 }
 
 int
-gal_qsort_ulong_increasing(const void * a, const void * b)
+gal_qsort_uint64_increasing(const void *a, const void *b)
 {
-  return ( *(unsigned long*)a - *(unsigned long*)b );
+  return ( *(uint64_t *)a - *(uint64_t *)b );
 }
 
 
 int
-gal_qsort_long_decreasing(const void * a, const void * b)
+gal_qsort_int64_decreasing(const void *a, const void *b)
 {
-  return ( *(long*)b - *(long*)a );
+  return ( *(int64_t *)b - *(int64_t *)a );
 }
 
 int
-gal_qsort_long_increasing(const void * a, const void * b)
+gal_qsort_int64_increasing(const void *a, const void *b)
 {
-  return ( *(long*)a - *(long*)b );
+  return ( *(int64_t *)a - *(int64_t *)b );
 }
 
 int
-gal_qsort_longlong_decreasing(const void * a, const void * b)
-{
-  return ( *(LONGLONG*)b - *(LONGLONG*)a );
-}
-
-int
-gal_qsort_longlong_increasing(const void * a, const void * b)
-{
-  return ( *(LONGLONG*)a - *(LONGLONG*)b );
-}
-
-int
-gal_qsort_float_decreasing(const void * a, const void * b)
+gal_qsort_float32_decreasing(const void *a, const void *b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
@@ -166,7 +155,7 @@ gal_qsort_float_decreasing(const void * a, const void * b)
 }
 
 int
-gal_qsort_float_increasing(const void * a, const void * b)
+gal_qsort_float32_increasing(const void *a, const void *b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
@@ -174,7 +163,7 @@ gal_qsort_float_increasing(const void * a, const void * b)
 }
 
 int
-gal_qsort_double_decreasing(const void * a, const void * b)
+gal_qsort_float64_decreasing(const void *a, const void *b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;
@@ -182,7 +171,7 @@ gal_qsort_double_decreasing(const void * a, const void * b)
 }
 
 int
-gal_qsort_double_increasing(const void * a, const void * b)
+gal_qsort_float64_increasing(const void *a, const void *b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;

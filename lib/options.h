@@ -70,7 +70,7 @@ enum options_standard_groups
 /* Key values for the common options, the free alphabetical keys are listed
    below. You can use any of the free letters for an option in a
    program. Note that `-V', which is used by GNU and implemented by Argp,
-   is also removed.
+   is also removed from this list.
 
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H J L M O Q R W X Y Z
@@ -114,6 +114,7 @@ enum gal_options_range_values
   GAL_OPTIONS_RANGE_GE_0,
   GAL_OPTIONS_RANGE_0_OR_1,
   GAL_OPTIONS_RANGE_GE_0_LE_1,
+  GAL_OPTIONS_RANGE_GT_0_LT_1,
 
   GAL_OPTIONS_RANGE_GT_0_ODD,
   GAL_OPTIONS_RANGE_0_OR_ODD,
@@ -207,6 +208,10 @@ gal_options_add_to_not_given(struct gal_options_common_params *cp,
 
 void
 gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
+
+gal_data_t *
+gal_options_parse_list_of_numbers(char *string, char *filename,
+                                  size_t lineno);
 
 
 

@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -23,102 +23,65 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <gnuastro/linkedlist.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
 
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata";
-
-
-
-
-
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" will print the basic statistics of the input image pixel "
-  "flux distribution. All blank pixels or pixels specified by a mask "
-  "image will be ignored.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Available letters for short options:
-
-   c e f j k m s t v w y z
-   C E F G I J L O R T W X Y Z
-
-   Number keys used: <=511
-
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
-static struct argp_option options[] =
+/* Array of acceptable options. */
+struct argp_option program_options[] =
   {
     {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
-    {
-      "mask",
-      'M',
+      "column",
+      ARGS_OPTION_KEY_COLUMN,
       "STR",
       0,
-      "Mask image file name.",
-      1
+      "Column name or number if input is a table.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->column,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "mhdu",
-      'H',
-      "STR",
-      0,
-      "Mask image header name.",
-      1
-    },
-    {
-      "ignoremin",
-      'r',
-      0,
-      0,
-      "Ignore data with values equal to minimum.",
-      1
-    },
-    {
-      "mirrordist",
-      'd',
+      "greaterequal",
+      ARGS_OPTION_KEY_GREATEREQUAL,
       "FLT",
       0,
-      "Distance beyond mirror point. Multiple of std.",
-      1
+      "Only use values greater-equal than this.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->greaterequal,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "lessthan",
+      ARGS_OPTION_KEY_LESSTHAN,
+      "FLT",
+      0,
+      "Only use values less than this.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->lessthan,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "quantrange",
+      ARGS_OPTION_KEY_QUANTRANGE,
+      "FLT",
+      0,
+      "Quantile (Q) range: from Q to 1-Q.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->quantilerange,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -127,248 +90,270 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Output:",
-      2
+      "Values to print in one row",
+      ARGS_GROUP_IN_ONE_ROW
+    },
+    {
+      "number",
+      ARGS_OPTION_KEY_NUMBER,
+      0,
+      0,
+      "Print the number of data-points.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_DATA_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "minimum",
+      ARGS_OPTION_KEY_MINIMUM,
+      0,
+      0,
+      "Print the minimum.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "maximum",
+      ARGS_OPTION_KEY_MAXIMUM,
+      0,
+      0,
+      "Print the maximum.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "sum",
+      ARGS_OPTION_KEY_SUM,
+      0,
+      0,
+      "Print the sum of all elements.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "mean",
+      ARGS_OPTION_KEY_MEAN,
+      0,
+      0,
+      "Print the mean.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "std",
+      ARGS_OPTION_KEY_STD,
+      0,
+      0,
+      "Print the standad deviation.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "median",
+      ARGS_OPTION_KEY_MEDIAN,
+      0,
+      0,
+      "Print the median.",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "mode",
+      ARGS_OPTION_KEY_MODE,
+      0,
+      0,
+      "Print the mode (for large datasets).",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Particular calculation",
+      ARGS_GROUP_PARTICULAR_STAT
+    },
+    {
+      "asciihist",
+      ARGS_OPTION_KEY_ASCIIHIST,
+      0,
+      0,
+      "Print an ASCII histogram",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->asciihist,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "histogram",
+      ARGS_OPTION_KEY_HISTOGRAM,
+      0,
+      0,
+      "Save the histogram in output.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->histogram,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "cumulative",
+      ARGS_OPTION_KEY_CUMULATIVE,
+      0,
+      0,
+      "Save the cumulative frequency plot.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->cumulative,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sigmaclip",
+      ARGS_OPTION_KEY_SIGMACLIP,
+      "FLT,FLT",
+      0,
+      "Multiple of sigma and tolerance or number.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->sigclipstr,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "mirror",
+      ARGS_OPTION_KEY_MIRROR,
+      "FLT",
+      0,
+      "Quantile of mirror distribution to save.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->mirrorquant,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0_LT_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Histogram or Cumulative frequency plot settings",
+      ARGS_GROUP_HIST_CFP
+    },
+    {
+      "numbins",
+      ARGS_OPTION_KEY_NUMBINS,
+      "INT",
+      0,
+      "Number of bins in histogram or CFP.",
+      ARGS_GROUP_HIST_CFP,
+      &p->numbins,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "lowerbin",
-      'l',
+      ARGS_OPTION_KEY_LOWERBIN,
       0,
       0,
-      "Interval lower limit for column 1.",
-      2
+      "Save interval lower limit, not center",
+      ARGS_GROUP_HIST_CFP,
+      &p->lowerbin,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "onebinvalue",
-      'B',
+      "normalize",
+      ARGS_OPTION_KEY_NORMALIZE,
+      0,
+      0,
+      "Set sum of all bins to 1.",
+      ARGS_GROUP_HIST_CFP,
+      &p->normalize,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "onebinstart",
+      ARGS_OPTION_KEY_ONEBINSTART,
       "FLT",
       0,
       "Shift bins so one bin starts on this value.",
-      2
+      ARGS_GROUP_HIST_CFP,
+      &p->onebinstart,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "noasciihist",
-      'A',
-      0,
-      0,
-      "Do not show an ASCII histogram of the data.",
-      2
-    },
-    {
-      "checkmode",
-      509,
-      0,
-      0,
-      "Mode mirror plot. `_modehist.txt', `_modecfp.txt'",
-      2
-    },
-    {
-      "mirrorquant",
-      510,
-      "FLT",
-      0,
-      "Mirror quantile. `_mirhist.txt', `_mircfp.txt'.",
-      2
-    },
-    {
-      "histrangeformirror",
-      511,
-      0,
-      0,
-      "Use input histogram range for mirror plots.",
-      2
-    },
-    {
-      "mirrorplotdist",
-      503,
-      "FLT",
-      0,
-      "Distance beyond mode to display.",
-      2
-    },
-
-
-
-    {
-      0, 0, 0, 0,
-      "Histogram (suffix: `_hist.txt'):",
-      3
-    },
-    {
-      "nohist",
-      500,
-      0,
-      0,
-      "Do not calculate histogram.",
-      3
-    },
-    {
-      "normhist",
-      501,
-      0,
-      0,
-      "Normalize the  histogram (sum of all bins 1).",
-      3
-    },
-    {
-      "maxhistone",
-      502,
+      "maxbinone",
+      ARGS_OPTION_KEY_MAXBINONE,
       0,
       0,
       "Scale such that the maximum bin has value of one.",
-      3
-    },
-    {
-      "histnumbins",
-      'n',
-      "INT",
-      0,
-      "Number of bins in the histogram.",
-      3
-    },
-    {
-      "histmin",
-      'i',
-      "FLT",
-      0,
-      "The minimum value for the histogram.",
-      3
-    },
-    {
-      "histmax",
-      'x',
-      "FLT",
-      0,
-      "The maximum value for the histogram.",
-      3
-    },
-    {
-      "histquant",
-      'Q',
-      "FLT",
-      0,
-      "Quantile (Q) range. Histogram from Q to 1-Q.",
-      3
-    },
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Cumulative Frequency Plot (suffix: `_cfp.txt'):",
-      4
-    },
-    {
-      "nocfp",
-      504,
-      0,
-      0,
-      "No Cumulative Frequency Plot.",
-      4
-    },
-    {
-      "normcfp",
-      505,
-      0,
-      0,
-      "Normalize the CFP (sum of all bins 1).",
-      4
-    },
-    {
-      "maxcfpeqmaxhist",
-      506,
-      0,
-      0,
-      "Set maximum of CFP to maximum of histogram.",
-      4
-    },
-    {
-      "cfpsimhist",
-      507,
-      0,
-      0,
-      "Set CFP range and bins similar to histogram.",
-      4
-    },
-    {
-      "cfpnum",
-      'p',
-      "INT",
-      0,
-      "Number of data points to find CFP.",
-      4
-    },
-    {
-      "cfpmin",
-      'a',
-      "FLT",
-      0,
-      "Minimum value to use in the CFP.",
-      4
-    },
-    {
-      "cfpmax",
-      'b',
-      "FLT",
-      0,
-      "Maximum value to use in the CFP.",
-      4
-    },
-    {
-      "cfpquant",
-      'U',
-      "FLT",
-      0,
-      "Quantile of range: from U to 1-U.",
-      4
-    },
-
-
-
-    {
-      0, 0, 0, 0,
-      "Sigma clipping:",
-      5
-    },
-    {
-      "nosigclip",
-      508,
-      0,
-      0,
-      "Do not preform sigma clipping.",
-      5
-    },
-    {
-      "sigclipmultip",
-      'u',
-      "FLT",
-      0,
-      "Multiple of standard deviation in sigma-clipping.",
-      5
-    },
-    {
-      "sigcliptolerance",
-      't',
-      "FLT",
-      0,
-      "Difference in STD tolerance to halt iteration.",
-      5
-    },
-    {
-      "sigclipnum",
-      'g',
-      "INT",
-      0,
-      "Number of times to do sigma clipping.",
-      5
-    },
-
-
-    {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
+      ARGS_GROUP_HIST_CFP,
+      &p->maxbinone,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -379,219 +364,21 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Define the child argp structure. */
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
+
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
-  /* Save the arguments structure: */
-  struct statisticsparams *p = state->input;
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-    /* Input: */
-    case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
-      break;
-    case 'H':
-      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
-      break;
-    case 'r':
-      p->ignoremin=1;
-      break;
-    case 'd':
-      gal_checkset_float_l_0(arg, &p->mirrordist, "mirrordist", key, SPACK,
-                             NULL, 0);
-      p->up.mirrordistset=1;
-      break;
-
-    /* Output: */
-    case 'l':
-      p->lowerbin=1;
-      break;
-    case 'B':
-      gal_checkset_any_float(arg, &p->onebinvalue, "onebinvalue", key, SPACK,
-                             NULL, 0);
-      p->up.onebinvalueset=1;
-      break;
-    case 'A':
-      p->asciihist=0;
-      break;
-    case 509:
-      p->mhistname="a";
-      break;
-    case 510:
-      gal_checkset_float_l_0_s_1(arg, &p->mirror, "mirrorquant", key, SPACK,
-                                 NULL, 0);
-      break;
-    case 511:
-      p->histrangeformirror=1;
-      break;
-    case 503:
-      gal_checkset_float_l_0(arg, &p->mirrorplotdist, "mirrorplotdist", key,
-                             SPACK, NULL, 0);
-      p->up.mirrorplotdistset=1;
-      break;
-
-    /* Histogram */
-    case 500:
-      p->histname=NULL;
-      break;
-    case 501:
-      p->normhist=1;
-      break;
-    case 502:
-      p->maxhistone=1;
-      break;
-    case 'n':
-      gal_checkset_sizet_l_zero(arg, &p->histnumbins, "histnumbins", key, SPACK,
-                                NULL, 0);
-      p->up.histnumbinsset=1;
-      break;
-    case 'i':
-      gal_checkset_any_float(arg, &p->histmin, "histmin", key, SPACK, NULL, 0);
-      p->up.histminset=1;
-      break;
-    case 'x':
-      gal_checkset_any_float(arg, &p->histmax, "histmax", key, SPACK, NULL, 0);
-      p->up.histmaxset=1;
-      break;
-    case 'Q':
-      gal_checkset_float_l_0_s_1(arg, &p->histquant, "histquant", key, SPACK,
-                                 NULL, 0);
-      p->up.histquantset=1;
-      break;
-
-    /* Cumulative frequency plot: */
-    case 504:
-      p->cfpname=NULL;
-      break;
-    case 505:
-      p->normcfp=1;
-      break;
-    case 506:
-      p->maxcfpeqmaxhist=1;
-      break;
-    case 507:
-      p->cfpsimhist=1;
-      break;
-    case 'p':
-      gal_checkset_sizet_l_zero(arg, &p->cfpnum, "cfpnum", key, SPACK, NULL, 0);
-      p->up.cfpnumset=1;
-      break;
-    case 'a':
-      gal_checkset_any_float(arg, &p->cfpmin, "cfpmin", key, SPACK, NULL, 0);
-      p->up.cfpminset=1;
-      break;
-    case 'b':
-      gal_checkset_any_float(arg, &p->cfpmax, "cfpmax", key, SPACK, NULL, 0);
-      p->up.cfpmaxset=1;
-      break;
-    case 'U':
-      gal_checkset_float_l_0_s_1(arg, &p->cfpquant, "cfpquant", key, SPACK,
-                                 NULL, 0);
-      p->up.cfpquantset=1;
-      break;
-
-
-    /* Sigma clipping: */
-    case 508:
-      p->sigclip=0;
-      break;
-    case 'u':
-      gal_checkset_float_l_0(arg, &p->sigclipmultip, "sigclipmultip", key,
-                             SPACK, NULL, 0);
-      p->up.sigclipmultipset=1;
-      break;
-    case 't':
-      gal_checkset_float_l_0(arg, &p->sigcliptolerance, "sigcliptolerance", key,
-                             SPACK, NULL, 0);
-      p->up.sigcliptoleranceset=1;
-      break;
-    case 'g':
-      gal_checkset_sizet_l_zero(arg, &p->sigclipnum, "sigclipnum", key, SPACK,
-                                NULL, 0);
-      p->up.sigclipnumset=1;
-      break;
-
-    /* Operating modes: */
-
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-
-      /* See what type of input value it is and put it in. */
-      if( gal_fits_name_is_fits(arg) )
-        {
-          if(p->up.inputname)
-            argp_error(state, "only one input image should be given");
-          else
-            p->up.inputname=arg;
-        }
-      else
-        argp_error(state, "%s is not a valid file type", arg);
-      break;
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input FITS image(s) provided");
-        }
-      break;
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

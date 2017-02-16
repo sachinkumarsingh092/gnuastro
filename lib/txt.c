@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/txt.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
 #include <checkset.h>
@@ -665,56 +666,56 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
       if( (strb=info->array) && !strcmp( *strb, str[i] ) )
         {
           free(str[i]);
-          gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &str[i]);
+          gal_checkset_allocate_copy(GAL_BLANK_STRING, &str[i]);
         }
       break;
 
     case GAL_DATA_TYPE_UINT8:
       uc[i]=strtol(token, &tailptr, 0);
       if( (ucb=info->array) && *ucb==uc[i] )
-        uc[i]=GAL_DATA_BLANK_UINT8;
+        uc[i]=GAL_BLANK_UINT8;
       break;
 
     case GAL_DATA_TYPE_INT8:
       c[i]=strtol(token, &tailptr, 0);
       if( (cb=info->array) && *cb==c[i] )
-        c[i]=GAL_DATA_BLANK_INT8;
+        c[i]=GAL_BLANK_INT8;
       break;
 
     case GAL_DATA_TYPE_UINT16:
       us[i]=strtol(token, &tailptr, 0);
       if( (usb=info->array) && *usb==us[i] )
-        us[i]=GAL_DATA_BLANK_UINT16;
+        us[i]=GAL_BLANK_UINT16;
       break;
 
     case GAL_DATA_TYPE_INT16:
       s[i]=strtol(token, &tailptr, 0);
       if( (sb=info->array) && *sb==s[i] )
-        s[i]=GAL_DATA_BLANK_INT16;
+        s[i]=GAL_BLANK_INT16;
       break;
 
     case GAL_DATA_TYPE_UINT32:
       ui[i]=strtol(token, &tailptr, 0);
       if( (uib=info->array) && *uib==ui[i] )
-        ui[i]=GAL_DATA_BLANK_UINT32;
+        ui[i]=GAL_BLANK_UINT32;
       break;
 
     case GAL_DATA_TYPE_INT32:
       ii[i]=strtol(token, &tailptr, 0);
       if( (ib=info->array) && *ib==ii[i] )
-        ii[i]=GAL_DATA_BLANK_INT32;
+        ii[i]=GAL_BLANK_INT32;
       break;
 
     case GAL_DATA_TYPE_UINT64:
       ul[i]=strtoul(token, &tailptr, 0);
       if( (ulb=info->array) && *ulb==ul[i] )
-        ul[i]=GAL_DATA_BLANK_UINT64;
+        ul[i]=GAL_BLANK_UINT64;
       break;
 
     case GAL_DATA_TYPE_INT64:
       l[i]=strtol(token, &tailptr, 0);
       if( (lb=info->array) && *lb==l[i] )
-        l[i]=GAL_DATA_BLANK_INT64;
+        l[i]=GAL_BLANK_INT64;
       break;
 
       /* For the blank value of floating point types, we need to make
@@ -725,14 +726,14 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
       f[i]=strtod(token, &tailptr);
       if( (fb=info->array)
           && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
-        f[i]=GAL_DATA_BLANK_FLOAT64;
+        f[i]=GAL_BLANK_FLOAT64;
       break;
 
     case GAL_DATA_TYPE_FLOAT64:
       d[i]=strtod(token, &tailptr);
       if( (db=info->array)
           && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
-        d[i]=GAL_DATA_BLANK_FLOAT64;
+        d[i]=GAL_BLANK_FLOAT64;
       break;
 
     default:
@@ -1039,16 +1040,16 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 
       /* If we have a blank value, get the blank value as a string and
          adjust the width */
-      if(gal_data_has_blank(data)==0)
+      if(gal_blank_present(data)==0)
         fmts[i*FMTS_COLS+2]=NULL;
       else
         {
           /* Set the blank value. */
           if(data->type==GAL_DATA_TYPE_STRING)
-            gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
+            gal_checkset_allocate_copy(GAL_BLANK_STRING,
                                        &fmts[i*FMTS_COLS+2]);
           else
-            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(data->type, 0);
+            fmts[i*FMTS_COLS+2]=gal_blank_as_string(data->type, 0);
         }
 
 
@@ -1146,8 +1147,8 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
 
       /* Special consideration for strings. */
     case GAL_DATA_TYPE_STRING:
-      if( !strcmp( ((char **)array)[ind], GAL_DATA_BLANK_STRING ) )
-        fprintf(fp, fmt, GAL_DATA_BLANK_STRING);
+      if( !strcmp( ((char **)array)[ind], GAL_BLANK_STRING ) )
+        fprintf(fp, fmt, GAL_BLANK_STRING);
       else
         fprintf(fp, fmt, ((char **)array)[ind]);
       break;

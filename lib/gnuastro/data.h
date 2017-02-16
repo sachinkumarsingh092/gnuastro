@@ -67,28 +67,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Macros: */
-
-/* Blank values: Note that for the unsigned types or small types (like
-   char), the maximum value is considered as a blank value, since the
-   minimum value of an unsigned type is zero and zero is often meaningful
-   in contexts were unsigned values are used. */
-#define GAL_DATA_BLANK_UINT8      UINT8_MAX
-#define GAL_DATA_BLANK_INT8       INT8_MIN
-#define GAL_DATA_BLANK_UINT16     UINT16_MAX
-#define GAL_DATA_BLANK_INT16      INT16_MIN
-#define GAL_DATA_BLANK_UINT32     UINT32_MAX
-#define GAL_DATA_BLANK_INT32      INT32_MIN
-#define GAL_DATA_BLANK_UINT64     UINT64_MAX
-#define GAL_DATA_BLANK_INT64      INT64_MIN
-#define GAL_DATA_BLANK_FLOAT32    NAN
-#define GAL_DATA_BLANK_FLOAT64    NAN
-#define GAL_DATA_BLANK_STRING     "n/a"
-
-
-
-
-
 /* Macros to identify the type of data. */
 enum gal_data_types
 {
@@ -266,35 +244,6 @@ gal_data_free_ll(gal_data_t *list);
 
 
 
-
-/*************************************************************
- **************          Blank data            ***************
- *************************************************************/
-void
-gal_data_set_blank(void *pointer, uint8_t type);
-
-void *
-gal_data_alloc_blank(uint8_t type);
-
-char *
-gal_data_blank_as_string(uint8_t type, int width);
-
-void
-gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);
-
-void
-gal_data_blank_to_value(gal_data_t *data, void *value);
-
-int
-gal_data_has_blank(gal_data_t *data);
-
-gal_data_t *
-gal_data_flag_blank(gal_data_t *data);
-
-
-
-
-
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
@@ -313,6 +262,7 @@ gal_data_out_type(gal_data_t *first, gal_data_t *second);
 void
 gal_data_to_same_type(gal_data_t *f, gal_data_t *s, gal_data_t **of,
                       gal_data_t **os, uint8_t type, int freeinputs);
+
 
 
 /*************************************************************

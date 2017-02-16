@@ -56,8 +56,7 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 # Compilations that are to be done with `make check'.
 LDADD = -lgnuastro
-check_PROGRAMS = versioncpp arraymanip multithread
-arraymanip_SOURCES = lib/arraymanip.c
+check_PROGRAMS = versioncpp multithread
 versioncpp_SOURCES = lib/versioncpp.cpp
 multithread_SOURCES = lib/multithread.c
 

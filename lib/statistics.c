@@ -30,8 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <gnuastro/data.h>
 #include <gnuastro/qsort.h>
-#include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
 
 #include "mode.h"
@@ -41,767 +41,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
 /****************************************************************
- *****************    Mininum and Maximum    ********************
+ ********                      Sort                       *******
  ****************************************************************/
-/* Find the the minimum (non-blank) value in an array of type long. Note
-   that the long type doesn't have a NaN value like the floats above. So as
-   blank pixels, a value in the range of acceptable values is given. so we
-   have to explicitly ignore those values.*/
 void
-gal_statistics_long_non_blank_min(long *in, size_t size, long *min,
-                                  long blank)
+gal_statistics_sort()
 {
-  long tmin=INT32_MAX, *lpt;
-  lpt=in+size;
-  do
-    if(*in!=blank && *in<tmin)
-      tmin=*in;
-  while(++in<lpt);
-  *min=tmin;
+
 }
-
-
-
-
-
-/* Find the the minimum (non-blank) value in an array of type long. See the
-   explanation above `gal_statistics_long_min'. */
-void
-gal_statistics_long_non_blank_max(long *in, size_t size, long *max,
-                                  long blank)
-{
-  long tmax=INT32_MIN, *lpt;
-  lpt=in+size;
-  do
-    if(*in!=blank && *in>tmax)
-      tmax=*in;
-  while(++in<lpt);
-  *max=tmax;
-}
-
-
-
-
-
-void
-gal_statistics_float_min(float *in, size_t size, float *min)
-{
-  float tmin=FLT_MAX, *fpt;
-  fpt=in+size;
-  do   /* Works for NAN, since NAN is not smaller than any number. */
-    if(*in<tmin) tmin=*in;
-  while(++in<fpt);
-  *min=tmin;
-}
-
-
-
-
-
-void
-gal_statistics_float_max(float *in, size_t size, float *max)
-{
-  float tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
-  do /* Works for NAN, since NAN is not larger than any number. */
-    if(*in>tmax) tmax=*in;
-  while(++in<fpt);
-  *max=tmax;
-}
-
-
-
-
-
-void
-gal_statistics_double_min(double *in, size_t size, double *min)
-{
-  double tmin=FLT_MAX, *fpt;
-  fpt=in+size;
-  do   /* Works for NAN, since NAN is not smaller than any number. */
-    if(*in<tmin) tmin=*in;
-  while(++in<fpt);
-  *min=tmin;
-}
-
-
-
-
-
-double
-gal_statistics_double_min_return(double *in, size_t size)
-{
-  double tmin=FLT_MAX, *fpt;
-  fpt=in+size;
-  do   /* Works for NAN, since NAN is not smaller than any number. */
-    if(*in<tmin) tmin=*in;
-  while(++in<fpt);
-  return tmin;
-}
-
-
-
-
-
-void
-gal_statistics_double_max(double *in, size_t size, double *max)
-{
-  double tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
-  do   /* Works for NAN, since NAN is not larger than any number. */
-    if(*in>tmax) tmax=*in;
-  while(++in<fpt);
-  *max=tmax;
-}
-
-
-
-
-
-double
-gal_statistics_double_max_return(double *in, size_t size)
-{
-  double tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
-  do   /* Works for NAN, since NAN is not larger than any number. */
-    if(*in>tmax) tmax=*in;
-  while(++in<fpt);
-  return tmax;
-}
-
-
-
-
-void
-gal_statistics_float_max_masked(float *in, unsigned char *mask, size_t size,
-                                float *max)
-{
-  float tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
-  do
-    if(*mask++==0 && *in>tmax)
-      tmax=*in;
-  while(++in<fpt);
-  *max=tmax;
-}
-
-
-
-
-
-void
-gal_statistics_float_second_max(float *in, size_t size, float *secondmax)
-{
-  float smax=-FLT_MAX, max=-FLT_MAX, *fpt;
-  fpt=in+size;
-  do
-    { /* Works for NAN, since NAN is not larger than any number. */
-      if(*in>max)
-        {
-          smax=max;
-          max=*in;
-        }
-      else if(*in>smax) smax=*in;
-    }
-  while(++in<fpt);
-  *secondmax=smax;
-}
-
-
-
-
-
-void
-gal_statistics_float_second_min(float *in, size_t size, float *secondmin)
-{
-  float smin=FLT_MAX, min=FLT_MAX, *fpt;
-  fpt=in+size;
-  do
-    { /* Works for NAN, since NAN is not smaller than any number. */
-      if(*in<min)
-        {
-          smin=min;
-          min=*in;
-        }
-      else if(*in<smin) smin=*in;
-    }
-  while(++in<fpt);
-  *secondmin=smin;
-}
-
-
-
-
-
-void
-gal_statistics_f_min_max(float *in, size_t size, float *min, float *max)
-{
-  float tmin=FLT_MAX, tmax=-FLT_MAX, *f, *fpt;
-
-  fpt=(f=in)+size;
-  do
-    {   /* Works for NAN, because NaN values are not greater or
-           smaller than any number. */
-      if (*f>tmax) tmax=*f;
-      if (*f<tmin) tmin=*f;
-    }
-  while(++f<fpt);
-
-  /* If the whole data was a NaN, then tmin and tmax did not change
-     from their initial values. */
-  if(tmin==FLT_MAX || tmax==-FLT_MAX)
-    *min=*max=NAN;
-  else
-    {
-      *max=tmax;
-      *min=tmin;
-    }
-}
-
-
-
-
-
-void
-gal_statistics_d_min_max(double *in, size_t size, double *min, double *max)
-{
-  double tmin=FLT_MAX, tmax=-FLT_MAX, *d, *dpt;
-
-  dpt=(d=in)+size;
-  do
-    { /* Works for NAN */
-      if (*d>tmax) tmax=*d;
-      if (*d<tmin) tmin=*d;
-    }
-  while(++d<dpt);
-
-  /* If all the data was a NaN */
-  if(tmin==FLT_MAX || tmax==-FLT_MAX)
-    *min=*max=NAN;
-  else
-    {
-      *max=tmax;
-      *min=tmin;
-    }
-}
-
-
-
-
-void
-gal_statistics_d_max_with_index(double *in, size_t size, double *max,
-                                size_t *index)
-{
-  size_t tindex=0;
-  double *fpt, *pt=in, tmax=-FLT_MAX;
-
-  fpt=pt+size;
-  do  /*  Works for NAN, see comments above. */
-    if(*pt>tmax)
-      {
-        tmax=*pt;
-        tindex=pt-in;
-      }
-  while(++pt<fpt);
-  *index=tindex;
-  *max=tmax;
-}
-
-
-
-
-
-void
-gal_statistics_f_max_with_index(float *in, size_t size,
-                                float *max, size_t *index)
-{
-  size_t tindex=0;
-  float *pt=in, *fpt, tmax=-FLT_MAX;
-
-  fpt=pt+size;
-  do  /* Works for NAN, see comments above.x */
-    if(*pt>tmax)
-      {
-        tmax=*pt;
-        tindex=pt-in;
-      }
-  while(++pt<fpt);
-  *index=tindex;
-  *max=tmax;
-}
-
-
-
-
-
-void
-gal_statistics_d_min_with_index(double *in, size_t size,
-                                double *min, size_t *index)
-{
-  size_t tindex=0;
-  double *pt=in, *fpt, tmin=FLT_MAX;
-
-  fpt=pt+size;
-  do  /* Works for NAN, see comments above. */
-    if(*pt<tmin)
-      {
-        tmin=*pt;
-        tindex=pt-in;
-      }
-  while(++pt<fpt);
-  *index=tindex;
-  *min=tmin;
-}
-
-
-
-
-
-void
-gal_statistics_f_min_with_index(float *in, size_t size,
-                                float *min, size_t *index)
-{
-  size_t tindex=0;
-  float *pt=in, *fpt, tmin=FLT_MAX;
-
-  fpt=pt+size;
-  do /* Works for NAN, see comments above. */
-    if(*pt<tmin)
-      {
-        tmin=*pt;
-        tindex=pt-in;
-      }
-  while(++pt<fpt);
-  *index=tindex;
-  *min=tmin;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************
- *****************            Sum            ********************
- ****************************************************************/
-float
-gal_statistics_float_sum(float *in, size_t size)
-{
-  float *fpt;
-  double sum=0;
-  fpt=in+size;
-  do
-    if(!isnan(*in))
-      sum+=*in;
-  while(++in<fpt);
-  return sum;
-}
-
-
-
-
-
-float
-gal_statistics_float_sum_num(float *in, size_t *size)
-{
-  float *fpt;
-  double sum=0;
-  fpt=in+*size;
-  *size=0;
-  do
-    if(!isnan(*in))
-      {
-        sum+=*in;
-        ++(*size);
-      }
-  while(++in<fpt);
-  return sum;
-}
-
-
-
-
-
-static double
-doublesumnum(double *in, size_t *size)
-{
-  double *fpt;
-  double sum=0;
-
-  /* If size is initially zero, then return 0. */
-  if(*size==0) return 0.0f;
-
-  /* Go through all the array: */
-  fpt=in+*size;
-  *size=0;
-  do
-    if(!isnan(*in))
-      {
-        sum+=*in;
-        ++(*size);
-      }
-  while(++in<fpt);
-
-  /* If the size was not initially zero, but after going through the
-     whole array, it is still zero, then the whole array had NaN
-     values. */
-  return *size ? sum : NAN;
-}
-
-
-
-
-float
-gal_statistics_float_sum_squared(float *in, size_t size)
-{
-  float *fpt;
-  double sum=0;
-  fpt=in+size;
-  do
-    if(!isnan(*in))
-      sum+=*in * *in;
-  while(++in<fpt);
-  return sum;
-}
-
-
-
-
-
-/* Sum over all elements of the array that are not covered by a
-   mask. Any non-zero masked pixel is considered to be a masked
-   pixel. */
-float
-gal_statistics_float_sum_mask(float *in, unsigned char *mask,
-                              size_t size, size_t *nsize)
-{
-  double sum=0;
-  size_t counter=0;
-  unsigned char *pt=mask, *fpt;
-
-  fpt=pt+size;
-  do
-    if(*pt==0)
-      {
-        sum+=in[pt-mask];
-        ++counter;
-      }
-  while(++pt<fpt);
-
-  *nsize=counter;
-  return sum;
-}
-
-
-
-
-
-float
-gal_statistics_float_sum_mask_l(float *in, long *mask,
-                                size_t size, size_t *nsize)
-{
-  double sum=0;
-  size_t counter=0;
-  long *pt=mask, *fpt;
-
-  fpt=pt+size;
-  do
-    if(*pt==0)
-      {
-        sum+=in[pt-mask];
-        ++counter;
-      }
-  while(++pt<fpt);
-
-  *nsize=counter;
-  return sum;
-}
-
-
-
-
-
-float
-gal_statistics_float_sum_squared_mask(float *in, unsigned char *mask,
-                                      size_t size, size_t *nsize)
-{
-  double sum=0;
-  size_t counter=0;
-  unsigned char *pt=mask, *fpt;
-
-  fpt=pt+size;
-  do
-    if(*pt==0)
-      {
-        sum+=in[pt-mask] * in[pt-mask];
-        ++counter;
-      }
-  while(++pt<fpt);
-
-  *nsize=counter;
-  return sum;
-}
-
-
-
-
-
-
-float
-gal_statistics_float_sum_squared_mask_l(float *in, long *mask,
-                                        size_t size, size_t *nsize)
-{
-  double sum=0;
-  size_t counter=0;
-  long *pt=mask, *fpt;
-
-  fpt=pt+size;
-  do
-    if(*pt==0)
-      {
-        sum+=in[pt-mask] * in[pt-mask];
-        ++counter;
-      }
-  while(++pt<fpt);
-
-  *nsize=counter;
-  return sum;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************
- *****************      Average and          ********************
- ****************    Standard deviation      ********************
- ****************************************************************/
-float
-gal_statistics_float_average(float *in, size_t size)
-{
-  float sum;
-  sum=gal_statistics_float_sum_num(in, &size);
-  return sum/size;
-}
-
-
-
-
-
-double
-gal_statistics_double_average(double *in, size_t size)
-{
-  double sum;
-  sum=doublesumnum(in, &size);
-  return sum/size;
-}
-
-
-
-
-
-void
-gal_statistics_f_ave_l(float *in, size_t size, float *ave, long *mask)
-{
-  float sum;
-  size_t nsize;
-  if(mask==NULL)
-    sum=gal_statistics_float_sum(in, size);
-  else
-    {
-      sum=gal_statistics_float_sum_mask_l(in, mask, size, &nsize);
-      size=nsize;
-    }
-  *ave=sum/size;
-}
-
-
-
-
-
-/* Find the average and standard deviation of an array, assuming that
-   there is a mask array. Any mask array pixel that is not zero will
-   not be included in the average and standard deviations.  Here the
-   mask is assumed to be unsigned char.  */
-void
-gal_statistics_f_ave_std(float *in, size_t size, float *ave,
-                         float *std, unsigned char *mask)
-{
-  size_t nsize1, nsize2;
-  float sum, sum2;
-  if(mask)
-    {
-      sum=gal_statistics_float_sum_mask(in, mask, size, &nsize1);
-      sum2=gal_statistics_float_sum_squared_mask(in, mask, size, &nsize2);
-      if(nsize1!=nsize2)
-        error(EXIT_FAILURE, 0, "a bug in gal_statistics_f_ave_std "
-              "(lib/statistics.h).  Somehow the number of masked pixels is "
-              "measured differently.  Please contact us so we can find the "
-              "cause");
-      size=nsize1;
-    }
-  else
-    {
-      sum=gal_statistics_float_sum(in, size);
-      sum2=gal_statistics_float_sum_squared(in, size);
-    }
-  *ave=sum/size;
-  *std=sqrt( (sum2-sum*sum/size)/size );
-}
-
-
-
-
-
-/* Similar to gal_statistics_f_ave_std, but when the mask is assumed to be a
-   long array.  */
-void
-gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
-                           float *std, long *mask)
-{
-  size_t nsize1, nsize2;
-  float sum, sum2;
-  if(mask==NULL)
-    {
-      sum=gal_statistics_float_sum(in, size);
-      sum2=gal_statistics_float_sum_squared(in, size);
-    }
-  else
-    {
-      sum=gal_statistics_float_sum_mask_l(in, mask, size, &nsize1);
-      sum2=gal_statistics_float_sum_squared_mask_l(in, mask, size, &nsize2);
-      if(nsize1!=nsize2)
-        error(EXIT_FAILURE, 0, "a bug in favestl (lib/statistics.h). "
-              "Somehow the number of masked pixels is measured "
-              "differently. Please contact us so we can find the cause");
-      size=nsize1;
-    }
-  *ave=sum/size;
-  *std=sqrt( (sum2-sum*sum/size)/size );
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************
- *****************           Median            ******************
- ****************************************************************/
-float
-gal_statistics_median(float *array, size_t insize)
-{
-  float *copy, median;
-  size_t size=insize, medind;
-
-  /* Make a copy of the input, shift all its non-NaN elements to the
-     start of the array, then sort them and find the median. */
-  gal_array_float_copy(array, insize, &copy);
-  gal_array_no_nans(copy, &size);
-  medind=gal_statistics_index_from_quantile(size, 0.5);
-  qsort(copy, size, sizeof*copy, gal_qsort_float_increasing);
-  median=copy[medind];
-
-  /* Clean up */
-  free(copy);
-  return median;
-}
-
-
-
-
-
-double
-gal_statistics_median_double_in_place(double *array, size_t insize)
-{
-  size_t size=insize, medind;
-
-  /* Shift all its non-NaN elements to the start of the array, then
-     sort them and find the median. */
-  gal_array_no_nans_double(array, &size);
-
-  /* If all the elements are NaN (size==0), then return NaN,
-     otherwise, find the median. */
-  if(size)
-    {
-      qsort(array, size, sizeof*array, gal_qsort_double_increasing);
-      medind=gal_statistics_index_from_quantile(size, 0.5);
-
-      if(size%2)
-        return array[medind];
-      else
-        return (array[medind]+array[medind-1])/2;
-    }
-  else
-    return NAN;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1134,9 +381,12 @@ gal_statistics_index_from_quantile(size_t size, float quant)
 int
 gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
                                    float sigma_multiple, float accuracy,
-                                   float *outave, float *outmed, float *outstd,
-                                   int print)
+                                   float *outave, float *outmed,
+                                   float *outstd, int print)
 {
+  printf("\n ... in gal_statistics_sigma_clip_converge ... \n");
+  exit(1);
+#if 0
   size_t counter=0;
   float *start, *oldstart, *dpt;
   float ave=*outave, med=*outmed, std=*outstd;
@@ -1146,7 +396,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
     {
       gal_array_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
-            gal_qsort_float_increasing);
+            gal_qsort_float32_increasing);
     }
   else orderedarray=array;
 
@@ -1196,6 +446,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
       oldstd=std;
       ++counter;
     }
+#endif
   return 0;
 }
 
@@ -1212,6 +463,9 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
                                       float *outave, float *outmed,
                                       float *outstd, int print)
 {
+  printf("\n ... in gal_statistics_sigma_clip_certain_num ... \n");
+  exit(1);
+#if 0
   size_t counter=0;
   float ave=*outave, med=*outmed, std=*outstd;
   float *start, *oldstart, *dpt, *orderedarray;
@@ -1220,7 +474,7 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
     {
       gal_array_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
-            gal_qsort_float_increasing);
+            gal_qsort_float32_increasing);
     }
   else orderedarray=array;
 
@@ -1265,6 +519,7 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
   *outave=ave;
   *outmed=med;
   *outstd=std;
+#endif
   return 1;
 }
 
@@ -1294,6 +549,9 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
 void
 gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
 {
+  printf("\n ... in gal_statistics_remove_outliers_flat_cdf ... \n");
+  exit(1);
+#if 0
   int firstfound=0;
   size_t size=*outsize, i, maxind;
   float *slopes, minslope, maxslope;
@@ -1343,6 +601,7 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
   */
 
   free(slopes);
+#endif
 }
 
 
@@ -1373,6 +632,9 @@ gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
                                  char *histsname, char *cfpsname,
                                  float mirrorplotdist)
 {
+  printf("\n... in gal_statistics_mode_mirror_plots ...\n");
+  exit(1);
+#if 0
   FILE *fp;
   size_t i, msize;
   float *out, maxhist=-FLT_MAX, maxcfp, d;
@@ -1490,6 +752,7 @@ gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   free(bins);
   free(mirror);
   free(actual);
+#endif
 }
 
 

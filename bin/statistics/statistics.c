@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
 #include <timing.h>
@@ -44,6 +45,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 reportsimplestats(struct statisticsparams *p)
 {
+  printf("\n... in reportsimplestats ...\n");
+  exit(1);
+
+#if 0
+
   double sum;
   size_t modeindex;
   float modequant, symvalue;
@@ -84,6 +90,7 @@ reportsimplestats(struct statisticsparams *p)
                                      p->mcfpname, (p->histrangeformirror
                                                    ? 0.0f
                                                    : p->mirrorplotdist) );
+#endif
 }
 
 
@@ -91,31 +98,32 @@ reportsimplestats(struct statisticsparams *p)
 
 
 void
-printasciihist(struct statisticsparams *p)
+ascii_hist(struct statisticsparams *p)
 {
   size_t j;
-  float *bins;
-  float quant=-1.0f; /* histmin and histmax were already set before. */
+  size_t numbins=60, histheight=10;
+  float *bins, *sorted=p->input->array;
+  float quant=0.0f; /* histmin and histmax were already set before. */
   int i, binonzero=0, normhist=0, maxhistone=1;
 
   /* Find the histogram for the ASCII plot: */
-  gal_statistics_set_bins(p->sorted, p->size, ASCIIHISTNUMBINS, p->histmin,
-                          p->histmax, binonzero, quant, &bins);
-  gal_statistics_histogram(p->sorted, p->size, bins, ASCIIHISTNUMBINS,
+  gal_statistics_set_bins(sorted, p->input->size, numbins, 0, 0,
+                          binonzero, quant, &bins);
+  gal_statistics_histogram(sorted, p->input->size, bins, numbins,
                            normhist, maxhistone);
 
   /* It's maximum value is set to one. Multiply that by the desired
      height in pixels. */
-  for(j=0;j<ASCIIHISTNUMBINS;++j)
-    bins[j*2+1]*=ASCIIHISTHEIGHT;
+  for(j=0;j<numbins;++j)
+    bins[j*2+1]*=histheight;
 
   /* Plot the ASCII histogram: */
-  printf("   -- ASCII histogram in the range: %f  --  %f:\n",
-         p->histmin, p->histmax);
-  for(i=ASCIIHISTHEIGHT;i>=0;--i)
+  printf("\nRange of histogram: %g to %g\n\n", sorted[0],
+         sorted[p->input->size-1]);
+  for(i=histheight;i>=0;--i)
     {
       printf("    |");
-      for(j=0;j<ASCIIHISTNUMBINS;++j)
+      for(j=0;j<numbins;++j)
         {
           if(bins[j*2+1]>=((float)i-0.5f)
              && bins[j*2+1]>0.0f) printf("*");
@@ -124,7 +132,7 @@ printasciihist(struct statisticsparams *p)
       printf("\n");
     }
   printf("    |");
-  for(j=0;j<ASCIIHISTNUMBINS;++j) printf("-");
+  for(j=0;j<numbins;++j) printf("-");
   printf("\n\n");
 
   /* Clean up.*/
@@ -138,6 +146,10 @@ void
 printhistcfp(struct statisticsparams *p, float *bins, size_t numbins,
              char *filename, char *outputtype)
 {
+  printf("\n... in printhistcfp ...\n");
+  exit(1);
+
+#if 0
   float d;
   size_t i;
   FILE *out;
@@ -201,6 +213,7 @@ printhistcfp(struct statisticsparams *p, float *bins, size_t numbins,
     for(i=0;i<numbins;++i)
       fprintf(out, "%-20.6f"PRINTINT, bins[i*2]+d, bins[i*2+1]);
   fclose(out);
+#endif
 }
 
 
@@ -208,8 +221,13 @@ printhistcfp(struct statisticsparams *p, float *bins, size_t numbins,
 
 
 void
-imgstat(struct statisticsparams *p)
+statistics(struct statisticsparams *p)
 {
+
+  /* Print the ASCII histogram. */
+  if(p->asciihist) ascii_hist(p);
+
+#if 0
   int r;
   size_t i;
   float quant=-1.0f;                   /* The quantile was already   */
@@ -270,8 +288,8 @@ imgstat(struct statisticsparams *p)
   /* Make the mirror distribution if asked for: */
   if(isnan(p->mirror)==0)
     gal_statistics_mode_mirror_plots(p->sorted, p->size,
-                                     gal_statistics_index_from_quantile(p->size,
-                                                                        p->mirror),
+                 gal_statistics_index_from_quantile(p->size,
+                                                    p->mirror),
                                      p->histmin, p->histmax, p->histnumbins,
                                      p->mirrorhist, p->mirrorcfp,
                                      (p->histrangeformirror ? 0.0f
@@ -298,4 +316,5 @@ imgstat(struct statisticsparams *p)
 
   /* Free the allocated arrays: */
   if(p->histname || p->cfpname) free(bins);
+#endif
 }

@@ -130,11 +130,11 @@ cd $build_dir
 #
 # ####################################
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir --disable-shared CFLAGS="-g -O0"      \
-                      --enable-arithmetic --enable-convertt --enable-convolve\
-                      --enable-cosmiccal  --enable-crop     --enable-header  \
-                      --enable-mknoise    --enable-mkprof   --enable-table   \
-                      --enable-warp
+    $srcdir/configure --srcdir=$srcdir --disable-shared CFLAGS="-g -O0"        \
+                      --enable-arithmetic --enable-convertt   --enable-convolve\
+                      --enable-cosmiccal  --enable-crop       --enable-header  \
+                      --enable-mknoise    --enable-statistics --enable-mkprof  \
+                      --enable-table      --enable-warp
 fi
 
 

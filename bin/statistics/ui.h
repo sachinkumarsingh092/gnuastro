@@ -1,5 +1,5 @@
 /*********************************************************************
-Statistics - Get general statistics about the image.
+Statistics - Statistical analysis on input dataset.
 Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,13 +20,14 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef IMCROPUI_H
-#define IMCROPUI_H
+#ifndef UI_H
+#define UI_H
 
 void
-setparams(int argc, char *argv[], struct statisticsparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[],
+                           struct statisticsparams *p);
 
 void
-freeandreport(struct statisticsparams *p, struct timeval *t1);
+ui_free_report(struct statisticsparams *p);
 
 #endif

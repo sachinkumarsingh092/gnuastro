@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/mman.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
@@ -1051,391 +1052,6 @@ gal_data_free_ll(gal_data_t *list)
 
 
 
-/*************************************************************
- **************          Blank data            ***************
- *************************************************************/
-/* Write the blank value of the type into an already allocate space.
-
-   Note that for strings, pointer should actually be `char **'. */
-void
-gal_data_set_blank(void *pointer, uint8_t type)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_STRING:
-      gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, pointer);
-      break;
-
-    case GAL_DATA_TYPE_UINT8:
-      *(uint8_t *)pointer       = GAL_DATA_BLANK_UINT8;
-      break;
-
-    case GAL_DATA_TYPE_INT8:
-      *(int8_t *)pointer        = GAL_DATA_BLANK_INT8;
-      break;
-
-    case GAL_DATA_TYPE_UINT16:
-      *(uint16_t *)pointer      = GAL_DATA_BLANK_UINT16;
-      break;
-
-    case GAL_DATA_TYPE_INT16:
-      *(int16_t *)pointer       = GAL_DATA_BLANK_INT16;
-      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      *(uint32_t *)pointer      = GAL_DATA_BLANK_UINT32;
-      break;
-
-    case GAL_DATA_TYPE_INT32:
-      *(int32_t *)pointer       = GAL_DATA_BLANK_INT32;
-      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      *(uint64_t *)pointer      = GAL_DATA_BLANK_UINT64;
-      break;
-
-    case GAL_DATA_TYPE_INT64:
-      *(int64_t *)pointer       = GAL_DATA_BLANK_INT64;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      *(float *)pointer         = GAL_DATA_BLANK_FLOAT32;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      *(double *)pointer        = GAL_DATA_BLANK_FLOAT64;
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_set_blank'", type);
-    }
-}
-
-
-
-
-
-/* Allocate some space for the given type and put the blank value into
-   it. */
-void *
-gal_data_alloc_blank(uint8_t type)
-{
-  void *out;
-
-  /* Allocate the space to keep the blank value. */
-  out=gal_data_malloc_array(type, 1);
-
-  /* Put the blank value in the allcated space. */
-  gal_data_set_blank(out, type);
-
-  /* Return the allocated space. */
-  return out;
-}
-
-
-
-
-
-/* Print the blank value as a string. */
-char *
-gal_data_blank_as_string(uint8_t type, int width)
-{
-  char *blank;
-  switch(type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "bit types are not implemented in "
-            "`gal_data_blank_as_string' yet.");
-      break;
-
-    case GAL_DATA_TYPE_STRING:
-      if(width)
-        asprintf(&blank, "%*s", width, GAL_DATA_BLANK_STRING);
-      else
-        asprintf(&blank, "%s", GAL_DATA_BLANK_STRING);
-      break;
-
-    case GAL_DATA_TYPE_UINT8:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint8_t)GAL_DATA_BLANK_UINT8);
-      else
-        asprintf(&blank, "%u",         (uint8_t)GAL_DATA_BLANK_UINT8);
-      break;
-
-    case GAL_DATA_TYPE_INT8:
-      if(width)
-        asprintf(&blank, "%*d", width, (int8_t)GAL_DATA_BLANK_INT8);
-      else
-        asprintf(&blank, "%d",         (int8_t)GAL_DATA_BLANK_INT8);
-      break;
-
-    case GAL_DATA_TYPE_UINT16:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint16_t)GAL_DATA_BLANK_UINT16);
-      else
-        asprintf(&blank, "%u",         (uint16_t)GAL_DATA_BLANK_UINT16);
-      break;
-
-    case GAL_DATA_TYPE_INT16:
-      if(width)
-        asprintf(&blank, "%*d", width, (int16_t)GAL_DATA_BLANK_INT16);
-      else
-        asprintf(&blank, "%d",         (int16_t)GAL_DATA_BLANK_INT16);
-      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint32_t)GAL_DATA_BLANK_UINT32);
-      else
-        asprintf(&blank, "%u",         (uint32_t)GAL_DATA_BLANK_UINT32);
-      break;
-
-    case GAL_DATA_TYPE_INT32:
-      if(width)
-        asprintf(&blank, "%*d", width, (int32_t)GAL_DATA_BLANK_INT32);
-      else
-        asprintf(&blank, "%d",         (int32_t)GAL_DATA_BLANK_INT32);
-      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      if(width)
-        asprintf(&blank, "%*lu", width, (uint64_t)GAL_DATA_BLANK_UINT64);
-      else
-        asprintf(&blank, "%lu",         (uint64_t)GAL_DATA_BLANK_UINT64);
-      break;
-
-    case GAL_DATA_TYPE_INT64:
-      if(width)
-        asprintf(&blank, "%*ld", width, (int64_t)GAL_DATA_BLANK_INT64);
-      else
-        asprintf(&blank, "%ld",         (int64_t)GAL_DATA_BLANK_INT64);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      if(width)
-        asprintf(&blank, "%*f", width, (float)GAL_DATA_BLANK_FLOAT32);
-      else
-        asprintf(&blank, "%f",         (float)GAL_DATA_BLANK_FLOAT32);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      if(width)
-        asprintf(&blank, "%*f", width, (double)GAL_DATA_BLANK_FLOAT64);
-      else
-        asprintf(&blank, "%f",         (double)GAL_DATA_BLANK_FLOAT64);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_blank_as_string'", type);
-    }
-  return blank;
-}
-
-
-
-
-
-
-/* For integers a simple equality is enough. */
-#define HAS_BLANK_INT(CTYPE, BLANK) {                                   \
-    CTYPE *a=data->array, *af=a+data->size;                             \
-    do if(*a++ == BLANK) return 1; while(a<af);                         \
-  }
-
-/* Note that a NaN value is not equal to another NaN value, so we can't use
-   the easy check for cases were the blank value is NaN. Also note that
-   `isnan' is actually a macro, so it works for both float and double
-   types.*/
-#define HAS_BLANK_FLT(CTYPE, BLANK, MULTIP) {                           \
-    CTYPE *a=data->array, *af=a+(MULTIP*data->size);                    \
-    if(isnan(BLANK)) do if(isnan(*a++)) return 1; while(a<af);          \
-    else             do if(*a++==BLANK) return 1; while(a<af);          \
-  }
-
-/* Return 1 if the dataset has a blank value and zero if it doesn't. */
-int
-gal_data_has_blank(gal_data_t *data)
-{
-  char **str=data->array, **strf=str+data->size;
-
-  /* Go over the pixels and check: */
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
-
-    case GAL_DATA_TYPE_UINT8:
-      HAS_BLANK_INT(uint8_t, GAL_DATA_BLANK_UINT8);     break;
-
-    case GAL_DATA_TYPE_INT8:
-      HAS_BLANK_INT(int8_t, GAL_DATA_BLANK_INT8);       break;
-
-    case GAL_DATA_TYPE_UINT16:
-      HAS_BLANK_INT(uint16_t, GAL_DATA_BLANK_UINT16);   break;
-
-    case GAL_DATA_TYPE_INT16:
-      HAS_BLANK_INT(int16_t, GAL_DATA_BLANK_INT16);     break;
-
-    case GAL_DATA_TYPE_UINT32:
-      HAS_BLANK_INT(uint32_t, GAL_DATA_BLANK_UINT32);   break;
-
-    case GAL_DATA_TYPE_INT32:
-      HAS_BLANK_INT(int32_t, GAL_DATA_BLANK_INT32);     break;
-
-    case GAL_DATA_TYPE_UINT64:
-      HAS_BLANK_INT(uint64_t, GAL_DATA_BLANK_UINT64);   break;
-
-    case GAL_DATA_TYPE_INT64:
-      HAS_BLANK_INT(int64_t, GAL_DATA_BLANK_INT64);     break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      HAS_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32, 1);  break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      HAS_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64, 1); break;
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      HAS_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32, 2);  break;
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      HAS_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64, 2); break;
-
-    case GAL_DATA_TYPE_STRING:
-      do if(!strcmp(*str++,GAL_DATA_BLANK_STRING)) return 1; while(str<strf);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
-            "in `gal_data_blank_to_value'", data->type);
-    }
-
-  /* If there was a blank value, then the function would have returned with
-     a value of 1. So if it reaches here, then we can be sure that there
-     was no blank values, hence, return 0. */
-  return 0;
-}
-
-
-
-
-
-/* For integers a simple equality is enough. */
-#define FLAG_BLANK_INT(CTYPE, BLANK) {                                  \
-    CTYPE *a=data->array; do *o = (*a==BLANK); while(++o<of);           \
-  }
-
-/* Note that a NaN value is not equal to another NaN value, so we can't use
-   the easy check for cases were the blank value is NaN. Also note that
-   `isnan' is actually a macro, so it works for both float and double
-   types.*/
-#define FLAG_BLANK_FLT(CTYPE, BLANK) {                                  \
-    CTYPE *a=data->array;                                               \
-    if(isnan(BLANK)) do *o = isnan(*a++);   while(++o<of);              \
-    else             do *o = (*a++==BLANK); while(++o<of);              \
-  }
-
-#define FLAG_BLANK_COMPLEX(CTYPE, BLANK) {                              \
-    CTYPE *a=data->array;                                               \
-    if(isnan(BLANK))                                                    \
-      do { *o=(isnan(*a) || isnan(*(a+1))); a+=2; } while(++o<of);      \
-    else                                                                \
-      do { *o=(*a==BLANK || *(a+1)==BLANK); a+=2; } while(++o<of);      \
-  }
-
-/* Output a data-set of the the same size as the input, but with an uint8_t
-   type that has a value of 1 for data that are blank and 0 for those that
-   aren't. */
-gal_data_t *
-gal_data_flag_blank(gal_data_t *data)
-{
-  uint8_t *o, *of;
-  gal_data_t *out;
-  char **str=data->array, **strf=str+data->size;
-
-  /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize, data->name, data->unit,
-                     data->comment);
-
-  /* Set the pointers for easy looping. */
-  of=(o=out->array)+data->size;
-
-  /* Go over the pixels and set the output values. */
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
-
-    case GAL_DATA_TYPE_UINT8:
-      FLAG_BLANK_INT(uint8_t, GAL_DATA_BLANK_UINT8);      break;
-
-    case GAL_DATA_TYPE_INT8:
-      FLAG_BLANK_INT(int8_t, GAL_DATA_BLANK_INT8);        break;
-
-    case GAL_DATA_TYPE_UINT16:
-      FLAG_BLANK_INT(uint16_t, GAL_DATA_BLANK_UINT16);    break;
-
-    case GAL_DATA_TYPE_INT16:
-      FLAG_BLANK_INT(int16_t, GAL_DATA_BLANK_INT16);      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      FLAG_BLANK_INT(uint32_t, GAL_DATA_BLANK_UINT32);    break;
-
-    case GAL_DATA_TYPE_INT32:
-      FLAG_BLANK_INT(int32_t, GAL_DATA_BLANK_INT32);      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      FLAG_BLANK_INT(uint64_t, GAL_DATA_BLANK_UINT64);    break;
-
-    case GAL_DATA_TYPE_INT64:
-      FLAG_BLANK_INT(int64_t, GAL_DATA_BLANK_INT64);      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      FLAG_BLANK_FLT(float, GAL_DATA_BLANK_FLOAT32);      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      FLAG_BLANK_FLT(double, GAL_DATA_BLANK_FLOAT64);     break;
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      FLAG_BLANK_COMPLEX(float, GAL_DATA_BLANK_FLOAT32);  break;
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      FLAG_BLANK_COMPLEX(double, GAL_DATA_BLANK_FLOAT64); break;
-
-    case GAL_DATA_TYPE_STRING:
-      do *o++ = !strcmp(*str,GAL_DATA_BLANK_STRING); while(++str<strf);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `gal_data_flag_blank'", data->type);
-    }
-
-  /* Return */
-  return out;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1447,8 +1063,8 @@ gal_data_flag_blank(gal_data_t *data)
 static void
 data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
 {
-  if( strcmp(string, GAL_DATA_BLANK_STRING) )
-    gal_data_set_blank(to, type);
+  if( strcmp(string, GAL_BLANK_STRING) )
+    gal_blank_write(to, type);
   else
     error(EXIT_FAILURE, 0, "`%s' couldn't be parsed as `%s' type",
           string, gal_data_type_as_string(type, 1));
@@ -1536,7 +1152,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
       {                                                                 \
         if(a[i]!=BLANK) asprintf(&strarr[i], FMT, a[i]);                \
         else                                                            \
-          gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]); \
+          gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]); \
       }                                                                 \
   }
 
@@ -1547,7 +1163,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         if(isnan(BLANK)) isblank = isnan(a[i]) ? 1 : 0;                 \
         else             isblank = a[i]==BLANK ? 1 : 0;                 \
         if(isblank==0) asprintf(&strarr[i], "%f", a[i]);                \
-        else gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &strarr[i]); \
+        else gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]); \
       }                                                                 \
   }
 
@@ -1569,34 +1185,34 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   switch(from->type)
     {
     case GAL_DATA_TYPE_UINT8:
-      COPY_TO_STR_INT(uint8_t,  GAL_DATA_BLANK_UINT8, "%u");    break;
+      COPY_TO_STR_INT(uint8_t,  GAL_BLANK_UINT8, "%u");    break;
 
     case GAL_DATA_TYPE_INT8:
-      COPY_TO_STR_INT(int8_t,   GAL_DATA_BLANK_INT8, "%d");     break;
+      COPY_TO_STR_INT(int8_t,   GAL_BLANK_INT8, "%d");     break;
 
     case GAL_DATA_TYPE_UINT16:
-      COPY_TO_STR_INT(uint16_t, GAL_DATA_BLANK_UINT16, "%u");   break;
+      COPY_TO_STR_INT(uint16_t, GAL_BLANK_UINT16, "%u");   break;
 
     case GAL_DATA_TYPE_INT16:
-      COPY_TO_STR_INT(int16_t,  GAL_DATA_BLANK_INT16, "%d");    break;
+      COPY_TO_STR_INT(int16_t,  GAL_BLANK_INT16, "%d");    break;
 
     case GAL_DATA_TYPE_UINT32:
-      COPY_TO_STR_INT(uint32_t, GAL_DATA_BLANK_UINT32, "%u");   break;
+      COPY_TO_STR_INT(uint32_t, GAL_BLANK_UINT32, "%u");   break;
 
     case GAL_DATA_TYPE_INT32:
-      COPY_TO_STR_INT(int32_t,  GAL_DATA_BLANK_INT32, "%d");    break;
+      COPY_TO_STR_INT(int32_t,  GAL_BLANK_INT32, "%d");    break;
 
     case GAL_DATA_TYPE_UINT64:
-      COPY_TO_STR_INT(uint64_t, GAL_DATA_BLANK_UINT64, "%lu");  break;
+      COPY_TO_STR_INT(uint64_t, GAL_BLANK_UINT64, "%lu");  break;
 
     case GAL_DATA_TYPE_INT64:
-      COPY_TO_STR_INT(int64_t,  GAL_DATA_BLANK_INT64, "%ld");   break;
+      COPY_TO_STR_INT(int64_t,  GAL_BLANK_INT64, "%ld");   break;
 
     case GAL_DATA_TYPE_FLOAT32:
-      COPY_TO_STR_FLT(float, GAL_DATA_BLANK_FLOAT32);           break;
+      COPY_TO_STR_FLT(float, GAL_BLANK_FLOAT32);           break;
 
     case GAL_DATA_TYPE_FLOAT64:
-      COPY_TO_STR_FLT(double, GAL_DATA_BLANK_FLOAT32);          break;
+      COPY_TO_STR_FLT(double, GAL_BLANK_FLOAT32);          break;
 
     case GAL_DATA_TYPE_STRING:
       for(i=0;i<from->size;++i)
@@ -1629,11 +1245,11 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
                                                                         \
     /* Check if there are blank values in the input array and that */   \
     /* the types of the two structures are different. */                \
-    if( in->type!=newtype && gal_data_has_blank(in) )                   \
+    if( in->type!=newtype && gal_blank_present(in) )                    \
       {                                                                 \
         /* Set the blank values */                                      \
-        gal_data_set_blank(&iblank, in->type);                          \
-        gal_data_set_blank(&oblank, newtype);                           \
+        gal_blank_write(&iblank, in->type);                             \
+        gal_blank_write(&oblank, newtype);                              \
                                                                         \
         /* Copy the input to the output. */                             \
         do { *oa = *ia==iblank ? oblank : *ia; ia++; } while(++oa<of);  \
@@ -1656,11 +1272,11 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
                                                                         \
     /* Check if there are blank values in the input array and that */   \
     /* the types of the two structures are different. */                \
-    if( in->type!=newtype && gal_data_has_blank(in) )                   \
+    if( in->type!=newtype && gal_blank_present(in) )                    \
       {                                                                 \
         /* Set the blank values */                                      \
-        gal_data_set_blank(&iblank, in->type);                          \
-        gal_data_set_blank(&oblank, newtype);                           \
+        gal_blank_write(&iblank, in->type);                             \
+        gal_blank_write(&oblank, newtype);                              \
                                                                         \
         /* When the blank value isn't NaN, then we should use the */    \
         /* equal operator to check for blank values. */                 \
@@ -1930,8 +1546,8 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
     case GAL_DATA_TYPE_INT32:   WRITE_TO_STRING(int32_t,   "%d");  break;
     case GAL_DATA_TYPE_UINT64:  WRITE_TO_STRING(uint64_t, "%lu");  break;
     case GAL_DATA_TYPE_INT64:   WRITE_TO_STRING(int64_t,  "%ld");  break;
-    case GAL_DATA_TYPE_FLOAT32: WRITE_TO_STRING(float,   "%.6f");  break;
-    case GAL_DATA_TYPE_FLOAT64: WRITE_TO_STRING(double, "%.10f");  break;
+    case GAL_DATA_TYPE_FLOAT32: WRITE_TO_STRING(float,   "%.6g");  break;
+    case GAL_DATA_TYPE_FLOAT64: WRITE_TO_STRING(double, "%.10g");  break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "

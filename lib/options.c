@@ -174,6 +174,114 @@ options_get_home()
 
 
 
+/* The input to this function is a string of any number of numbers
+   separated by a comma (`,') and possibly containing fractions, for
+   example: `1,2/3, 4.95'. The output `gal_data_t' contains the array of
+   given values in `double' type. You can read the number from its `size'
+   element. */
+gal_data_t *
+gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
+{
+  size_t i, num=0;
+  gal_data_t *out;
+  char *c=string, *tailptr;
+  double numerator=NAN, denominator=NAN, tmp;
+  struct gal_linkedlist_dll *list=NULL, *tdll;
+
+
+  /* The nature of the arrays/numbers read here is very small, so since
+     `p->cp.minmapsize' might not have been read yet, we will set it to -1
+     (largest size_t number), so the values are kept in memory. */
+  size_t minmapsize=-1;
+
+
+  /* Go through the input character by character. */
+  while(*c!='\0')
+    {
+      switch(*c)
+        {
+
+        /* Ignore space or tab. */
+        case ' ':
+        case '\t':
+          ++c;
+          break;
+
+        /* Comma marks the transition to the next number. */
+        case ',':
+          if(isnan(numerator))
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
+                          "must be given before `,'. You have given: `%s'",
+                          string);
+          gal_linkedlist_add_to_dll(&list, isnan(denominator)
+                                    ? numerator : numerator/denominator);
+          numerator=denominator=NAN;
+          ++num;
+          ++c;
+          break;
+
+        /* Divide two numbers. */
+        case '/':
+          if( isnan(numerator) || !isnan(denominator) )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`/' must "
+                          "only be between two numbers and used for "
+                          "division. But you have given `%s'", string);
+          ++c;
+          break;
+
+        /* Read the number. */
+        default:
+
+          /* Parse the string. */
+          tmp=strtod(c, &tailptr);
+          if(tailptr==c)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first "
+                          "part of `%s' couldn't be read as a number. This "
+                          "was part of `%s'", c, string);
+
+          /* See if the number should be put in the numerator or
+             denominator. */
+          if(isnan(numerator)) numerator=tmp;
+          else
+            {
+              if(isnan(denominator)) denominator=tmp;
+              else error_at_line(EXIT_FAILURE, 0, filename, lineno, "more "
+                                 "than two numbers in each element.");
+            }
+
+          /* Set `c' to tailptr. */
+          c=tailptr;
+        }
+    }
+
+
+  /* If the last number wasn't finished by a `,', add the read value to the
+     list */
+  if( !isnan(numerator) )
+    {
+      ++num;
+      gal_linkedlist_add_to_dll(&list, isnan(denominator)
+                                ? numerator : numerator/denominator);
+    }
+
+
+  /* Allocate the output data structure and fill it up. */
+  i=num;
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &num, NULL, 0,
+                     minmapsize, NULL, NULL, NULL);
+  for(tdll=list;tdll!=NULL;tdll=tdll->next)
+    ((double *)out->array)[--i]=tdll->v;
+
+
+  /* Clean up and return. */
+  gal_linkedlist_free_dll(list);
+  return out;
+}
+
+
+
+
+
 
 
 
@@ -492,7 +600,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
 
     case GAL_OPTIONS_RANGE_GE_0_LE_1:
-      message="between zero and one";
+      message="between zero and one (inclusive)";
       ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
@@ -502,6 +610,21 @@ options_sanity_check(struct argp_option *option, char *arg,
 
       operator1=GAL_ARITHMETIC_OP_GE;
       operator2=GAL_ARITHMETIC_OP_LE;
+      multicheckop=GAL_ARITHMETIC_OP_AND;
+      break;
+
+
+    case GAL_OPTIONS_RANGE_GT_0_LT_1:
+      message="between zero and one (not inclusive)";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=1;
+
+      operator1=GAL_ARITHMETIC_OP_GT;
+      operator2=GAL_ARITHMETIC_OP_LT;
       multicheckop=GAL_ARITHMETIC_OP_AND;
       break;
 

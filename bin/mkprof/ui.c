@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/box.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
@@ -402,7 +403,7 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
       else if ( !strcmp("circum", strarr[i]) )
         p->f[i]=PROFILE_CIRCUMFERENCE;
 
-      else if ( !strcmp(GAL_DATA_BLANK_STRING, strarr[i]) )
+      else if ( !strcmp(GAL_BLANK_STRING, strarr[i]) )
         error(EXIT_FAILURE, 0, "profile function column has blank values. "
               "Input columns cannot contain blank values");
       else
@@ -543,7 +544,10 @@ ui_read_cols(struct mkprofparams *p)
         /* If the index isn't recognized, then it is larger, showing that
            there was more than one match for the given criteria */
         default:
-          gal_table_too_many_columns(p->catname);
+          gal_table_error_col_selection(p->catname, p->cp.hdu, "too many "
+                                        "columns were selected by the given "
+                                        "values to the options ending in "
+                                        "`col'.");
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
@@ -552,7 +556,7 @@ ui_read_cols(struct mkprofparams *p)
       if(corrtype)
         {
           /* Make sure there are no blank values in this column. */
-          if( checkblank && gal_data_has_blank(corrtype) )
+          if( checkblank && gal_blank_present(corrtype) )
             error(EXIT_FAILURE, 0, "%s column has blank values. "
                   "Input columns cannot contain blank values", colname);
 
