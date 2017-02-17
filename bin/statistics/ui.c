@@ -29,10 +29,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
-#include <gnuastro/table.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
+#include <gnuastro/statistics.h>
 
 #include <timing.h>
 #include <options.h>
@@ -115,6 +116,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_MINIMUM,
   ARGS_OPTION_KEY_MAXIMUM,
   ARGS_OPTION_KEY_SUM,
+  ARGS_OPTION_KEY_ASCIICFP,
   ARGS_OPTION_KEY_MIRROR,
   ARGS_OPTION_KEY_NUMBINS,
   ARGS_OPTION_KEY_LOWERBIN,
@@ -163,6 +165,7 @@ ui_initialize_options(struct statisticsparams *p,
   /* Program-specific initializers */
   p->lessthan            = NAN;
   p->onebinstart         = NAN;
+  p->mirrorquant         = NAN;
   p->greaterequal        = NAN;
   p->quantilerange       = NAN;
 
@@ -287,6 +290,7 @@ ui_read_check_only_options(struct statisticsparams *p)
      the output. */
   gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
 
+
   /* If less than and greater than are both given, make sure that the value
      to greater than is smaller than the value to less-than. */
   if( !isnan(p->lessthan) && !isnan(p->greaterequal)
@@ -295,12 +299,27 @@ ui_read_check_only_options(struct statisticsparams *p)
           "than the value to `--greaterequal' (%g)", p->lessthan,
           p->greaterequal);
 
+
   /* Less-than and greater-equal cannot be called together with
      quantrange. */
   if( ( !isnan(p->lessthan) || !isnan(p->greaterequal) )
       && !isnan(p->quantilerange) )
     error(EXIT_FAILURE, 0, "`--lessthan' and/or `--greaterequal' cannot "
           "be called together with `--quantrange'");
+
+
+  /* The quantile range only makes sense with value less than 0.5. */
+  if( !isnan(p->quantilerange) && p->quantilerange>=0.5)
+    error(EXIT_FAILURE, 0, "%g>=0.5! The quantile range must be less than "
+          "0.5. Recall the the quantile (Q) range is defined to be: Q to "
+          "1-Q", p->quantilerange);
+
+
+  /* When binned outputs are requested, make sure that `numbins' is set. */
+  if(p->histogram || p->cumulative)
+    error(EXIT_FAILURE, 0, "`--numbins' isn't set. When the histogram or "
+          "cumulative frequency plots are requested, the number of bins "
+          "(`--numbins') is necessary");
 }
 
 
@@ -382,13 +401,9 @@ ui_check_options_and_arguments(struct statisticsparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
-ui_print_one_number(gal_data_t *data, int operator)
+ui_print_one_number(gal_data_t *out)
 {
-  char *toprint;
-  gal_data_t *out;
-  int flags=GAL_ARITHMETIC_NUMOK;
-  out=gal_arithmetic(operator, flags, data);
-  toprint=gal_data_write_to_string(out->array, out->type, 0);
+  char *toprint=gal_data_write_to_string(out->array, out->type, 0);
   printf("%s ", toprint);
   gal_data_free(out);
   free(toprint);
@@ -411,19 +426,19 @@ ui_print_one_row(struct statisticsparams *p)
     switch(tmp->v)
       {
       case ARGS_OPTION_KEY_NUMBER:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_NUMVAL); break;
+        ui_print_one_number( gal_statistics_number(p->input) );      break;
       case ARGS_OPTION_KEY_MINIMUM:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_MINVAL); break;
+        ui_print_one_number( gal_statistics_minimum(p->input) );     break;
       case ARGS_OPTION_KEY_MAXIMUM:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_MAXVAL); break;
+        ui_print_one_number( gal_statistics_maximum(p->input) );     break;
       case ARGS_OPTION_KEY_SUM:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_SUMVAL); break;
+        ui_print_one_number( gal_statistics_sum(p->input) );         break;
       case ARGS_OPTION_KEY_MEAN:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_MEANVAL); break;
+        ui_print_one_number( gal_statistics_mean(p->input) );        break;
       case ARGS_OPTION_KEY_STD:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_STDVAL); break;
+        ui_print_one_number( gal_statistics_std(p->input) );         break;
       case ARGS_OPTION_KEY_MEDIAN:
-        ui_print_one_number(p->input, GAL_ARITHMETIC_OP_MEDIANVAL); break;
+        ui_print_one_number( gal_statistics_median(p->input) );      break;
       case ARGS_OPTION_KEY_MODE:
         error(EXIT_FAILURE, 0, "mode isn't implemented yet!");
         break;
@@ -504,8 +519,7 @@ ui_preparations(struct statisticsparams *p)
 {
   gal_data_t *tmp;
   char *errorstring;
-  float *f, *ff, *fo;
-  size_t num, numcolmatches=0;
+  size_t numcolmatches=0;
   struct gal_linkedlist_stll *column=NULL;
 
   /* Read the input: no matter if its an image or a table column. */
@@ -534,33 +548,14 @@ ui_preparations(struct statisticsparams *p)
   /* Set the out-of-range values in the input to blank. */
   ui_out_of_range_to_blank(p);
 
-  /* Print the one-row numbers if the user asked for them. */
+  /* Only keep the numbers we want. */
+  gal_blank_remove(p->input);
+
+  /* Print the one-row numbers if the user asked for them. We want this to
+     be done before converting the array to a float, since these operations
+     can be done on any type and if the user has just asked for these
+     operations, we don't want to waste their time for nothing. */
   if(p->toprint) ui_print_one_row(p);
-
-  /* For the main body of the program, we will assume the data is in
-     float32. */
-  p->input=gal_data_copy_to_new_type_free(p->input, GAL_DATA_TYPE_FLOAT32);
-
-  /* Put all the blank elements in the end for easier sorting */
-  ff=(fo=f=p->input->array)+p->input->size;
-  num=0; do if(!isnan(*f)) {*fo++=*f; ++num;} while(++f<ff);
-  f=((float *)(p->input->array))+num; do *f++=NAN; while(f<ff);
-
-  /* Sort the non-blank elements. */
-  qsort(p->input->array, num, sizeof(float), gal_qsort_float32_increasing);
-
-  /* For a check:
-  {
-    size_t i;
-    float *f=p->input->array;
-    for(i=0;i<p->input->size;++i) printf("%f\n", f[i]);
-  }
-  */
-
-  /* Remove the dimensionality of the array and correct its size to only be
-     the non-blank elements. */
-  p->input->ndim=1;
-  p->input->dsize[0]=p->input->size=num;
 }
 
 

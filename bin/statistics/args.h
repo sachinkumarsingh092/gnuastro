@@ -90,7 +90,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Values to print in one row",
+      "Values to print in one row (on command-line)",
       ARGS_GROUP_IN_ONE_ROW
     },
     {
@@ -220,9 +220,22 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_ASCIIHIST,
       0,
       0,
-      "Print an ASCII histogram",
+      "Print an ASCII histogram.",
       ARGS_GROUP_PARTICULAR_STAT,
       &p->asciihist,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "asciicfp",
+      ARGS_OPTION_KEY_ASCIICFP,
+      0,
+      0,
+      "Print an ASCII cumulative frequency plot.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->asciicfp,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,

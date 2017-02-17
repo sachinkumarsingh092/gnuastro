@@ -97,46 +97,67 @@ reportsimplestats(struct statisticsparams *p)
 
 
 
-void
-ascii_hist(struct statisticsparams *p)
+static void
+print_ascii_plot(gal_data_t *plot, gal_data_t *bins, int h1_c0)
 {
-  size_t j;
-  size_t numbins=60, histheight=10;
-  float *bins, *sorted=p->input->array;
-  float quant=0.0f; /* histmin and histmax were already set before. */
-  int i, binonzero=0, normhist=0, maxhistone=1;
+  int i, j;
+  size_t height=10;
+  float *p, *b, *f, *ff, halfbinwidth;
 
-  /* Find the histogram for the ASCII plot: */
-  gal_statistics_set_bins(sorted, p->input->size, numbins, 0, 0,
-                          binonzero, quant, &bins);
-  gal_statistics_histogram(sorted, p->input->size, bins, numbins,
-                           normhist, maxhistone);
+  /* Print the range so the user knows. */
+  b=bins->array;
+  halfbinwidth = (b[1]-b[0])/2;
+  printf("\n%s:\nX: (linear: %g -- %g)\nY: (linear)\n\n",
+         ( h1_c0 ? "Histogram" : "Cumulative frequency plot"),
+         b[0]-halfbinwidth, b[ bins->size - 1 ] + halfbinwidth);
 
-  /* It's maximum value is set to one. Multiply that by the desired
-     height in pixels. */
-  for(j=0;j<numbins;++j)
-    bins[j*2+1]*=histheight;
+  /* The maximum values are set to one. So, multiply all the pixels by the
+     desired height in character-height-units. */
+  ff=(f=plot->array)+plot->size; do *f++ *= height; while(f<ff);
 
-  /* Plot the ASCII histogram: */
-  printf("\nRange of histogram: %g to %g\n\n", sorted[0],
-         sorted[p->input->size-1]);
-  for(i=histheight;i>=0;--i)
+  /* Print the ASCII plot: */
+  p=plot->array;
+  for(i=height;i>=0;--i)
     {
       printf("    |");
-      for(j=0;j<numbins;++j)
+      for(j=0;j<bins->size;++j)
         {
-          if(bins[j*2+1]>=((float)i-0.5f)
-             && bins[j*2+1]>0.0f) printf("*");
+          if(p[j]>=((float)i-0.5f) && p[j]>0.0f) printf("*");
           else printf(" ");
         }
       printf("\n");
     }
   printf("    |");
-  for(j=0;j<numbins;++j) printf("-");
+  for(j=0;j<bins->size;++j) printf("-");
   printf("\n\n");
+}
+
+
+
+
+static void
+ascii_plots(struct statisticsparams *p)
+{
+  size_t numbins=70;
+  gal_data_t *bins, *hist, *cfp;
+
+  /* Make the bins and the respective plot. */
+  bins=gal_statistics_regular_bins(p->input, NULL, numbins, NAN);
+  hist=gal_statistics_histogram(p->input, bins, 0, 1);
+  if(p->asciicfp)
+    {
+      bins->next=hist;
+      cfp=gal_statistics_cfp(p->input, bins, 1);
+    }
+
+  /* Print the plots. */
+  if(p->asciihist)  print_ascii_plot(hist, bins, 1);
+  if(p->asciicfp)   print_ascii_plot(cfp, bins, 0);
 
   /* Clean up.*/
-  free(bins);
+  gal_data_free(bins);
+  gal_data_free(hist);
+  if(p->asciicfp) gal_data_free(cfp);
 }
 
 
@@ -224,8 +245,22 @@ void
 statistics(struct statisticsparams *p)
 {
 
-  /* Print the ASCII histogram. */
-  if(p->asciihist) ascii_hist(p);
+  /* If none of the processes here are requested, return. */
+  if( p->asciihist==0
+      && p->asciicfp==0
+      && p->histogram==0
+      && p->cumulative==0
+      && p->sigclipstr==NULL
+      && isnan(p->mirrorquant) )
+    return;
+
+  /* For the main body of the program, we will assume the data is in
+     float32. */
+  p->input=gal_data_copy_to_new_type_free(p->input, GAL_DATA_TYPE_FLOAT32);
+
+  /* Print the ASCII histogram if requested. */
+  if(p->asciihist || p->asciicfp) ascii_plots(p);
+
 
 #if 0
   int r;

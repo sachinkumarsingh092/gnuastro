@@ -400,3 +400,53 @@ gal_blank_flag(gal_data_t *data)
   /* Return */
   return out;
 }
+
+
+
+
+
+#define BLANK_REMOVE(IT) {                                              \
+    IT b, *a=data->array, *af=a+data->size, *o=data->array;             \
+    if( gal_blank_present(data) )                                       \
+      {                                                                 \
+        gal_blank_write(&b, data->type);                                \
+        if(b==b)          /* Can be checked with equal: isn't NaN */    \
+          do if(*a!=b)  { ++num; *o++=*a; } while(++a<af);              \
+        else /* Blank value is NaN, so equals will fail on blank elements*/ \
+          do if(*a==*a) { ++num; *o++=*a; } while(++a<af);              \
+      }                                                                 \
+    else num=data->size;                                                \
+  }
+
+
+/* Remove blank elements from a dataset, convert it to a 1D dataset and
+   adjust the size properly. In practice this function doesn't `realloc'
+   the input array, all it does is to shift the blank eleemnts to the end
+   and adjust the size elements of the `gal_data_t'. */
+void
+gal_blank_remove(gal_data_t *data)
+{
+  size_t num=0;
+
+  /* Shift all non-blank elements to the start of the array. */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_blank_remove'", data->type);
+    }
+
+  /* Adjust the size elements of the dataset. */
+  data->ndim=1;
+  data->dsize[0]=data->size=num;
+}

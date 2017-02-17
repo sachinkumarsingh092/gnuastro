@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
-
+#include <gnuastro/data.h>
 
 
 /* C++ Preparations */
@@ -51,139 +51,69 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE 50
 
 
+
+
+
+/* Enumerators */
+enum is_sorted_outputs
+{
+  GAL_STATISTICS_SORTED_NOT,             /* ==0 by C standard. */
+
+  GAL_STATISTICS_SORTED_INCREASING,
+  GAL_STATISTICS_SORTED_DECREASING,
+};
+
+
+enum bin_status
+{
+  GAL_STATISTICS_BINS_INVALID,           /* ==0 by C standard.  */
+
+  GAL_STATISTICS_BINS_REGULAR,
+  GAL_STATISTICS_BINS_IRREGULAR,
+};
+
+
 /****************************************************************
- *****************    Mininum and Maximum    ********************
+ ********               Simple statistics                 *******
+ ****        (wrappers for functions in `arithmetic.h')      ****
  ****************************************************************/
-void
-gal_statistics_long_non_blank_min(long *in, size_t size, long *min,
-                                  long blank);
+gal_data_t *
+gal_statistics_number(gal_data_t *data);
 
-void
-gal_statistics_long_non_blank_max(long *in, size_t size, long *max,
-                                  long blank);
+gal_data_t *
+gal_statistics_minimum(gal_data_t *data);
 
-void
-gal_statistics_float_min(float *in, size_t size, float *min);
+gal_data_t *
+gal_statistics_maximum(gal_data_t *data);
 
-void
-gal_statistics_float_max(float *in, size_t size, float *max);
+gal_data_t *
+gal_statistics_sum(gal_data_t *data);
 
-void
-gal_statistics_double_min(double *in, size_t size, double *min);
+gal_data_t *
+gal_statistics_mean(gal_data_t *data);
 
-double
-gal_statistics_double_min_return(double *in, size_t size);
+gal_data_t *
+gal_statistics_std(gal_data_t *data);
 
-void
-gal_statistics_double_max(double *in, size_t size, double *max);
-
-double
-gal_statistics_double_max_return(double *in, size_t size);
-
-void
-gal_statistics_float_max_masked(float *in, unsigned char *mask, size_t size,
-                                float *max);
-
-void
-gal_statistics_float_second_max(float *in, size_t size, float *secondmax);
-
-void
-gal_statistics_float_second_min(float *in, size_t size, float *secondmin);
-
-void
-gal_statistics_f_min_max(float *in, size_t size, float *min, float *max);
-
-void
-gal_statistics_d_min_max(double *in, size_t size, double *min, double *max);
-
-void
-gal_statistics_d_max_with_index(double *in, size_t size, double *max,
-                                size_t *index);
-
-void
-gal_statistics_f_max_with_index(float *in, size_t size, float *max,
-                                size_t *index);
-
-void
-gal_statistics_d_min_with_index(double *in, size_t size, double *min,
-                                size_t *index);
-
-void
-gal_statistics_f_min_with_index(float *in, size_t size, float *min,
-                                size_t *index);
+gal_data_t *
+gal_statistics_median(gal_data_t *data);
 
 
 
 
 
 /****************************************************************
- *****************            Sum            ********************
+ ********                      Sort                       *******
  ****************************************************************/
-float
-gal_statistics_float_sum(float *in, size_t size);
 
-float
-gal_statistics_float_sum_num(float *in, size_t *size);
-
-float
-gal_statistics_float_sum_squared(float *in, size_t size);
-
-float
-gal_statistics_float_sum_mask(float *in, unsigned char *mask, size_t size,
-                              size_t *nsize);
-
-float
-gal_statistics_float_sum_mask_l(float *in, long *mask, size_t size,
-                                size_t *nsize);
-
-float
-gal_statistics_float_sum_squared_mask(float *in, unsigned char *mask,
-                                      size_t size, size_t *nsize);
-
-float
-gal_statistics_float_sum_squared_mask_l(float *in, long *mask,
-                                        size_t size, size_t *nsize);
-
-
-
-
-
-/****************************************************************
- *****************      Average and          ********************
- ****************    Standard deviation      ********************
- ****************************************************************/
-float
-gal_statistics_float_average(float *in, size_t size);
-
-double
-gal_statistics_double_average(double *in, size_t size);
+int
+gal_statistics_is_sorted(gal_data_t *data);
 
 void
-gal_statistics_f_ave(float *in, size_t size, float *ave, unsigned char *mask);
+gal_statistics_sort_increasing(gal_data_t *data);
 
 void
-gal_statistics_f_ave_l(float *in, size_t size, float *ave, long *mask);
-
-void
-gal_statistics_f_ave_std(float *in, size_t size, float *ave,
-                         float *std, unsigned char *mask);
-
-void
-gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
-                           float *std, long *mask);
-
-
-
-
-
-/****************************************************************
- *****************           Median            ******************
- ****************************************************************/
-float
-gal_statistics_median(float *array, size_t insize);
-
-double
-gal_statistics_median_double_in_place(double *array, size_t insize);
+gal_statistics_sort_decreasing(gal_data_t *data);
 
 
 
@@ -192,22 +122,17 @@ gal_statistics_median_double_in_place(double *array, size_t insize);
 /****************************************************************
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
-void
-gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
-                        float min, float max, float onebinvalue,
-                        float quant, float **obins);
+gal_data_t *
+gal_statistics_regular_bins(gal_data_t *data, gal_data_t *range,
+                            size_t numbins, float onebinstart);
 
-void
-gal_statistics_histogram(float *sorted, size_t size, float *bins,
-                         size_t numbins, int normhist, int maxhistone);
+gal_data_t *
+gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
+                         int normalize, int maxhistone);
 
-void
-gal_statistics_cumulative_fp(float *sorted, size_t size, float *bins,
-                             size_t numbins, int normcfp);
+gal_data_t *
+gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize);
 
-void
-gal_statistics_save_hist(float *sorted, size_t size, size_t numbins,
-                         char *filename, char *comment);
 
 
 

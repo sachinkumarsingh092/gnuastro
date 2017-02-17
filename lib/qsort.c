@@ -86,7 +86,7 @@ gal_qsort_uint16_increasing(const void *a, const void *b)
 }
 
 int
-gal_qsort_in16_decreasing(const void *a, const void *b)
+gal_qsort_int16_decreasing(const void *a, const void *b)
 {
   return ( *(int16_t *)b - *(int16_t *)a );
 }

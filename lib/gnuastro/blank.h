@@ -82,6 +82,8 @@ gal_blank_present(gal_data_t *data);
 gal_data_t *
 gal_blank_flag(gal_data_t *data);
 
+void
+gal_blank_remove(gal_data_t *data);
 
 
 

@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
 
 #include <arithmetic-binary.h>
@@ -259,34 +260,36 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 /***************             Unary functions              **************/
 /***********************************************************************/
 
-/* Note that for floating point types *b!=*b (by definition of NaN). And in
+/* Note that for floating point types b!=b (by definition of NaN). And in
    such cases, even if there are blank values, the smaller and larger
    condition checked will fail, therefore the final result will be what we
    want (to ignore the blank values). */
 #define UNIFUNC_MINVALUE(IT) {                                          \
     IT *oa=o->array;                                                    \
-    int blankeq = (*b==*b && gal_blank_present(in)) ? 1 : 0;            \
+    int blankeq = (b==b && gal_blank_present(in)) ? 1 : 0;              \
     if(blankeq)                                                         \
-      do if(*ia!=*b) *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);      \
+      do if(*ia!=b) *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);       \
     else                                                                \
       do *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);                  \
   }
 
+
 #define UNIFUNC_MAXVALUE(IT) {                                          \
     IT *oa=o->array;                                                    \
-    int blankeq = (*b==*b && gal_blank_present(in)) ? 1 : 0;            \
+    int blankeq = (b==b && gal_blank_present(in)) ? 1 : 0;              \
     if(blankeq)                                                         \
-      do if(*ia!=*b) *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);      \
+      do if(*ia!=b) *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);       \
     else                                                                \
       do *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);                  \
   }
+
 
 #define UNIFUNC_NUMVALUE {                                              \
     uint64_t *oa=o->array, num=0;                                       \
     if( gal_blank_present(in) )                                         \
       {                                                                 \
-        if(*b==*b) /* Is integer type. */                               \
-          do if(*ia!=*b)       ++num;               while(++ia<iaf);    \
+        if(b==b) /* Is integer type. */                                 \
+          do if(*ia!=b)       ++num;               while(++ia<iaf);     \
         else       /* Is float type with NaN blank.   */                \
           do if(*ia==*ia)      ++num;               while(++ia<iaf);    \
       }                                                                 \
@@ -294,13 +297,14 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
     *oa=num;                                                            \
   }
 
+
 #define UNIFUNC_SUMVALUE {                                              \
     double sum=0.0f;                                                    \
     float *oa=o->array;                                                 \
     if( gal_blank_present(in) )                                         \
       {                                                                 \
-        if(*b==*b) /* Is integer type. */                               \
-          do if(*ia!=*b)              sum += *ia;   while(++ia<iaf);    \
+        if(b==b) /* Is integer type. */                                 \
+          do if(*ia!=b)              sum += *ia;   while(++ia<iaf);     \
         else       /* Is float type with NaN blank.   */                \
           do if(*ia==*ia)             sum += *ia;   while(++ia<iaf);    \
       }                                                                 \
@@ -309,14 +313,15 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
     *oa=sum;                                                            \
   }
 
+
 #define UNIFUNC_MEANVALUE {                                             \
     int64_t num=0;                                                      \
     double sum=0.0f;                                                    \
     float *oa=o->array;                                                 \
     if( gal_blank_present(in) )                                         \
       {                                                                 \
-        if(*b==*b) /* Is integer type. */                               \
-          do if(*ia!=*b)     { ++num; sum += *ia; } while(++ia<iaf);    \
+        if(b==b) /* Is integer type. */                                 \
+          do if(*ia!=b)     { ++num; sum += *ia; } while(++ia<iaf);     \
         else       /* Is float type with NaN blank.   */                \
           do if(*ia==*ia)    { ++num; sum += *ia; } while(++ia<iaf);    \
       }                                                                 \
@@ -328,14 +333,15 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
     *oa=sum/num;                                                        \
   }
 
+
 #define UNIFUNC_STDVALUE {                                              \
     int64_t n=0;                                                        \
     float *oa=o->array;                                                 \
     double s=0.0f, s2=0.0f;                                             \
     if( gal_blank_present(in) )                                         \
       {                                                                 \
-        if(*b==*b) /* Is integer type. */                               \
-          do if(*ia!=*b)                                                \
+        if(b==b) /* Is integer type. */                                 \
+          do if(*ia!=b)                                                 \
                { ++n; s += *ia; s2 += *ia * *ia; } while(++ia<iaf);     \
         else       /* Is float type with NaN blank.   */                \
           do if(*ia==*ia)                                               \
@@ -349,55 +355,61 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
     *oa=sqrt( (s2-s*s/n)/n );                                           \
   }
 
-#define UNIFUNC_MEDIANVALUE(IT, QSORT_F) {                              \
+
+#define UNIFUNC_MEDIANVALUE(IT) {                                       \
     size_t n=0;                                                         \
-    IT *a, *noblank, *oa=o->array;                                      \
+    gal_data_t *noblank, *sorted;                                       \
+    IT *u=NULL, *s, *a, *oa=o->array;                                   \
                                                                         \
-    /* Prepare space for a clean (having no blanks) dataset. If the */  \
-    /* input array is to be freed later, then just use its own space */ \
-    if( flags & GAL_ARITHMETIC_FREE ) a=noblank=in->array;              \
+    /* After this, there is no more blanks: only `noblank' is used.*/   \
+    if( gal_blank_present(in) )                                         \
+      {                                                                 \
+        if( flags & GAL_ARITHMETIC_FREE )                               \
+          {                                                             \
+            gal_blank_remove(in);                                       \
+            noblank=in;                                                 \
+          }                                                             \
+        else                                                            \
+          {                                                             \
+            u=a=gal_data_malloc_array(in->type, in->size);              \
+            if(b==b) do if (*ia!=b)   { *a++=*ia; ++n;} while(++ia<iaf); \
+            else     do if (*ia==*ia) { *a++=*ia; ++n;} while(++ia<iaf); \
+            noblank=gal_data_alloc(u, in->type, 1, &n, NULL, 0,         \
+                                   in->minmapsize, NULL, NULL, NULL);   \
+          }                                                             \
+      }                                                                 \
+    else noblank=in;                                                    \
+                                                                        \
+    /* After this, the array is sorted, only `sorted' is used. */       \
+    if( gal_statistics_is_sorted(noblank) ) sorted=noblank;             \
     else                                                                \
       {                                                                 \
-        errno=0;                                                        \
-        a=noblank=malloc(in->size*sizeof *noblank);                     \
-        if(noblank==NULL)                                               \
-          error(EXIT_FAILURE, 0, "%zu bytes in UNIFUNC_MEDIANVALUE",    \
-                in->size*sizeof *noblank);                              \
+        if( flags & GAL_ARITHMETIC_FREE ) sorted=noblank;               \
+        else                                                            \
+          {                                                             \
+            if(u) sorted=noblank;  /* New space is already allocated.*/ \
+            else  sorted=gal_data_copy(noblank);                        \
+          }                                                             \
+        gal_statistics_sort_increasing(sorted);                         \
       }                                                                 \
                                                                         \
-    /* Fill it in with the elements. */                                 \
-    if(gal_blank_present(in))                                           \
-      {                                                                 \
-        if(*b==*b) do if (*ia!=*b)  { *a++=*ia; ++n;} while(++ia<iaf);  \
-        else       do if (*ia==*ia) { *a++=*ia; ++n;} while(++ia<iaf);  \
-      }                                                                 \
-    else                                                                \
-      {                                                                 \
-        n=in->size;                                                     \
-        if( (flags & GAL_ARITHMETIC_FREE)==0 )                          \
-          do *a++=*ia; while(++ia<iaf);                                 \
-      }                                                                 \
+    /* Find the median. */                                              \
+    n=sorted->size;                                                     \
+    s=sorted->array;                                                    \
+    *oa = (sorted->size)%2 ? s[n/2] : (s[n/2] + s[n/2-1])/2 ;           \
                                                                         \
-    /* Sort the array and put the median value in the output. */        \
-    qsort(noblank, n, sizeof *noblank, QSORT_F);                        \
-    *oa = n%2 ? noblank[n/2] : (noblank[n/2] + noblank[n/2-1])/2 ;      \
-                                                                        \
-    /* Clean up. */                                                     \
-    if( (flags & GAL_ARITHMETIC_FREE)==0 ) free(noblank);               \
+    /* Clean up. If `sorted' doesn't equal `in', then it was */         \
+    /* allocated in this block and must be freed. */                    \
+    if( sorted!=in ) gal_data_free(sorted);                             \
   }
 
 
 
 
 
-#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(IT, OP){                        \
-    IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
-    do *oa++ = OP(*ia++); while(ia<iaf);                                \
-  }
-
-#define UNIFUNC_RUN_FUNCTION_ON_ARRAY(IT, QSORT_F){                     \
-    IT *ia=in->array, *iaf=ia + in->size;                               \
-    IT *b = gal_blank_alloc_write(in->type);                            \
+#define UNIFUNC_RUN_FUNCTION_ON_ARRAY(IT){                              \
+    IT b, *ia=in->array, *iaf=ia + in->size;                            \
+    gal_blank_write(&b, in->type);                                      \
     switch(operator)                                                    \
       {                                                                 \
       case GAL_ARITHMETIC_OP_MINVAL:                                    \
@@ -419,13 +431,21 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
         UNIFUNC_STDVALUE;                                               \
         break;                                                          \
       case GAL_ARITHMETIC_OP_MEDIANVAL:                                 \
-        UNIFUNC_MEDIANVALUE(IT, QSORT_F);                               \
+        UNIFUNC_MEDIANVALUE(IT);                                        \
         break;                                                          \
       default:                                                          \
         error(EXIT_FAILURE, 0, "the operator code %d is not "           \
               "recognized in UNIFUNC_RUN_FUNCTION_ON_ARRAY", operator); \
       }                                                                 \
-    free(b);                                                            \
+  }
+
+
+
+
+
+#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(IT, OP){                        \
+    IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
+    do *oa++ = OP(*ia++); while(ia<iaf);                                \
   }
 
 
@@ -474,42 +494,42 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 
 
 
-#define UNIARY_FUNCTION_ON_ARRAY                                          \
-  switch(in->type)                                                        \
-    {                                                                     \
-    case GAL_DATA_TYPE_UINT8:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint8_t, gal_qsort_uint8_increasing)  \
-      break;                                                              \
-    case GAL_DATA_TYPE_INT8:                                              \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int8_t, gal_qsort_int8_increasing)    \
-      break;                                                              \
-    case GAL_DATA_TYPE_UINT16:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint16_t, gal_qsort_uint16_increasing)\
-      break;                                                              \
-    case GAL_DATA_TYPE_INT16:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int16_t, gal_qsort_int16_increasing)  \
-        break;                                                            \
-    case GAL_DATA_TYPE_UINT32:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint32_t, gal_qsort_uint32_increasing)\
-        break;                                                            \
-    case GAL_DATA_TYPE_INT32:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int32_t, gal_qsort_int32_increasing)  \
-        break;                                                            \
-    case GAL_DATA_TYPE_UINT64:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(uint64_t, gal_qsort_uint64_increasing)\
-        break;                                                            \
-    case GAL_DATA_TYPE_INT64:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int64_t, gal_qsort_int64_increasing)  \
-        break;                                                            \
-    case GAL_DATA_TYPE_FLOAT32:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(float, gal_qsort_float32_increasing)  \
-      break;                                                              \
-    case GAL_DATA_TYPE_FLOAT64:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(double, gal_qsort_float64_increasing) \
-        break;                                                            \
-    default:                                                              \
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "            \
-            "`UNIFUNC_PER_ELEMENT'", in->type);                           \
+#define UNIARY_FUNCTION_ON_ARRAY                                        \
+  switch(in->type)                                                      \
+    {                                                                   \
+    case GAL_DATA_TYPE_UINT8:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( uint8_t  );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_INT8:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( int8_t   );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_UINT16:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( uint16_t );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_INT16:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( int16_t  );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_UINT32:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( uint32_t );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_INT32:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( int32_t );                         \
+      break;                                                            \
+    case GAL_DATA_TYPE_UINT64:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( uint64_t );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_INT64:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( int64_t  );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_FLOAT32:                                         \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( float    );                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_FLOAT64:                                         \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY( double   );                        \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
+            "`UNIARY_FUNCTION_ON_ARRAY'", in->type);                    \
     }
 
 
@@ -804,14 +824,13 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
    data. */
 #define DO_WHERE_OPERATION(ITT, OT) {                                \
     ITT *it=iftrue->array;                                           \
-    OT *b, *o=out->array, *of=o+out->size;                           \
+    OT b, *o=out->array, *of=o+out->size;                            \
     if(iftrue->size==1)                                              \
       {                                                              \
         if( gal_blank_present(iftrue) )                              \
           {                                                          \
-            b=gal_blank_alloc_write(out->type);                      \
-            do { *o = *c++ ? *b : *o;        } while(++o<of);        \
-            free(b);                                                 \
+            gal_blank_write(&b, out->type);                          \
+            do { *o = *c++ ? b : *o;        } while(++o<of);         \
           }                                                          \
         else                                                         \
           do   { *o = *c++ ? *it : *o;       } while(++o<of);        \
@@ -959,10 +978,10 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       {                                                                 \
         p=max;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {   /* Only for integer types, does *b==*b. */                \
-            if(hasblank[i] && *b==*b)                                   \
-              { if( *a[i] != *b ) p = *a[i] < p ? *a[i] : p;            \
-                else              p = *a[i] < p ? *a[i] : p; }          \
+          {   /* Only for integer types, does b==b. */                  \
+            if(hasblank[i] && b==b)                                     \
+              { if( *a[i] != b ) p = *a[i] < p ? *a[i] : p;             \
+                else             p = *a[i] < p ? *a[i] : p; }           \
             ++a[i];                                                     \
           }                                                             \
         *o++=p;                                                         \
@@ -981,10 +1000,10 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       {                                                                 \
         p=min;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {   /* Only for integer types, does *b==*b. */                \
-            if(hasblank[i] && *b==*b)                                   \
-              { if( *a[i] != *b ) p = *a[i] > p ? *a[i] : p;            \
-                else              p = *a[i] > p ? *a[i] : p; }          \
+          {   /* Only for integer types, does b==b. */                  \
+            if(hasblank[i] && b==b)                                     \
+              { if( *a[i] != b ) p = *a[i] > p ? *a[i] : p;             \
+                else             p = *a[i] > p ? *a[i] : p; }           \
             ++a[i];                                                     \
           }                                                             \
         *o++=p;                                                         \
@@ -1001,14 +1020,14 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
-        use=1;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
-              use = ( *b==*b                                            \
-                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+              use = ( b==b                                              \
+                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
                       : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+            else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
             if(use) ++n; else ++a[i];                                   \
@@ -1028,20 +1047,20 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
-        use=1;                                                          \
         sum=0.0f;                                                       \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
-              use = ( *b==*b                                            \
-                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+              use = ( b==b                                              \
+                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
                       : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+            else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
             if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
           }                                                             \
-        *o++ = n ? sum : *b;                                            \
+        *o++ = n ? sum : b;                                             \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -1056,20 +1075,20 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
-        use=1;                                                          \
         sum=0.0f;                                                       \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
-              use = ( *b==*b                                            \
-                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+              use = ( b==b                                              \
+                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
                       : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+            else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
             if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
           }                                                             \
-        *o++ = n ? sum/n : *b;                                          \
+        *o++ = n ? sum/n : b;                                           \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -1084,15 +1103,15 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
-        use=1;                                                          \
         sum=sum2=0.0f;                                                  \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
-              use = ( *b==*b                                            \
-                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+              use = ( b==b                                              \
+                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
                       : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+            else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
             if(use)                                                     \
@@ -1103,7 +1122,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
               }                                                         \
             else ++a[i];                                                \
           }                                                             \
-        *o++ = n ? sqrt( (sum2-sum*sum/n)/n ) : *b;                     \
+        *o++ = n ? sqrt( (sum2-sum*sum/n)/n ) : b;                      \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -1113,26 +1132,23 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
-    TYPE *pixs;                                                         \
     int n, use;                                                         \
+    TYPE *pixs=gal_data_malloc_array(list->type, dnum);                 \
                                                                         \
-    errno=0;                                                            \
-    pixs=malloc(dnum*sizeof *pixs);                                     \
-    if(pixs==NULL)                                                      \
-      error(EXIT_FAILURE, 0, "%zu bytes in MULTIOPERAND_MEDIAN",        \
-            dnum*sizeof *pixs);                                         \
-                                                                        \
-    do    /* Loop over each pixel */                                    \
+    /* Loop over each pixel */                                          \
+    do                                                                  \
       {                                                                 \
         n=0;                                                            \
-        use=1;                                                          \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+                                                                        \
+        /* Loop over each array. */                                     \
+        for(i=0;i<dnum;++i)                                             \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
-              use = ( *b==*b                                            \
-                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+              use = ( b==b                                              \
+                      ? ( *a[i]!=b     ? 1 : 0 )        /* Integer */   \
+                      : ( *a[i]==*a[i] ? 1 : 0 ) );     /* Float   */   \
+            else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
             if(use) pixs[n++]=*a[i]++; else ++a[i];                     \
@@ -1145,9 +1161,12 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             *o++ = n%2 ? pixs[n/2] : (pixs[n/2] + pixs[n/2-1])/2 ;      \
           }                                                             \
         else                                                            \
-          *o++=*b;                                                      \
+          *o++=b;                                                       \
       }                                                                 \
     while(o<of);                                                        \
+                                                                        \
+    /* Clean up. */                                                     \
+    free(pixs);                                                         \
   }
 
 
@@ -1155,8 +1174,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
-    TYPE *o=out->array, *of=out->array+out->size;                       \
-    TYPE **a, *b=gal_blank_alloc_write(list->type);                     \
+    TYPE b, **a, *o=out->array, *of=out->array+out->size;               \
                                                                         \
     /* Allocate space to keep the pointers to the arrays of each. */    \
     /* Input data structure. The operators will increment these */      \
@@ -1167,7 +1185,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       error(EXIT_FAILURE, 0, "%zu bytes for `arrays' in "               \
             "MULTIOPERAND_TYPE_SET", dnum*sizeof *a);                   \
                                                                         \
-    /* Fill in the array pointers. */                                   \
+    /* Fill in the array pointers and the blank value for this type. */ \
+    gal_blank_write(&b, list->type);                                    \
     for(tmp=list;tmp!=NULL;tmp=tmp->next)                               \
       a[i++]=tmp->array;                                                \
                                                                         \
@@ -1208,7 +1227,6 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
       }                                                                 \
                                                                         \
     /* Clean up. */                                                     \
-    free(b);                                                            \
     free(a);                                                            \
   }
 
@@ -1222,7 +1240,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 static gal_data_t *
 arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 {
-  int *hasblank;
+  uint8_t *hasblank;
   size_t i=0, dnum=1;
   gal_data_t *out, *tmp, *ttmp;
 
@@ -1261,15 +1279,9 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
                          list->wcs, 0, list->minmapsize, NULL, NULL, NULL);
 
 
-  /* hasblank is used to see if a blank value should be checked or not. */
-  errno=0;
-  hasblank=malloc(dnum*sizeof *hasblank);
-  if(hasblank==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for hasblank in "
-          "`arithmetic_multioperand", dnum*sizeof *hasblank);
-
-
-  /* Fill in the hasblank array. */
+  /* hasblank is used to see if a blank value should be checked for each
+     list element or not. */
+  hasblank=gal_data_malloc_array(GAL_DATA_TYPE_UINT8, dnum);
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     hasblank[i++]=gal_blank_present(tmp);
 

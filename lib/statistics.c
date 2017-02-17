@@ -32,9 +32,85 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
+#include <checkset.h>
+
 #include "mode.h"
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ ********               Simple statistics                 *******
+ ****        (wrappers for functions in `arithmetic.h')      ****
+ ****************************************************************/
+#define SIMP_FLAGS GAL_ARITHMETIC_NUMOK
+
+gal_data_t *
+gal_statistics_number(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_NUMVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_minimum(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_MINVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_maximum(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_MAXVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_sum(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_SUMVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_mean(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_MEANVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_std(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_STDVAL, SIMP_FLAGS, data);
+}
+
+gal_data_t *
+gal_statistics_median(gal_data_t *data)
+{
+  return gal_arithmetic(GAL_ARITHMETIC_OP_MEDIANVAL, SIMP_FLAGS, data);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -44,264 +120,508 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /****************************************************************
  ********                      Sort                       *******
  ****************************************************************/
-void
-gal_statistics_sort()
-{
+/* Check if the given dataset is sorted. Output values are:
 
+     - 0: Dataset is not sorted.
+     - 1: Dataset is sorted and increasing or equal.
+     - 2: dataset is sorted and decreasing.                  */
+
+#define IS_SORTED(IT) {                                                 \
+    IT *aa=data->array, *a=data->array, *af=a+data->size-1;             \
+    if(a[1]>=a[0]) do if( *(a+1) < *a ) break; while(++a<af);           \
+    else           do if( *(a+1) > *a ) break; while(++a<af);           \
+    return ( a==af                                                      \
+             ? ( aa[1]>=aa[0]                                           \
+                 ? GAL_STATISTICS_SORTED_INCREASING                     \
+                 : GAL_STATISTICS_SORTED_DECREASING )                   \
+             : GAL_STATISTICS_SORTED_NOT );                             \
+  }
+
+int
+gal_statistics_is_sorted(gal_data_t *data)
+{
+  /* A one-element dataset can be considered, sorted, so we'll just return
+     1 (for sorted and increasing). */
+  if(data->size==1) return GAL_STATISTICS_SORTED_INCREASING;
+
+  /* Do the check. */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     IS_SORTED( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      IS_SORTED( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    IS_SORTED( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     IS_SORTED( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    IS_SORTED( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     IS_SORTED( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    IS_SORTED( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     IS_SORTED( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   IS_SORTED( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   IS_SORTED( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_is_sorted'", data->type);
+    }
+
+  /* Control shouldn't reach this point. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix the "
+        "problem. For some reason, control has reached the end of "
+        "`gal_statistics_is_sorted'", PACKAGE_BUGREPORT);
+  return -1;
 }
+
+
+
+
+
+/* This function is ignorant to blank values, if you want to make sure
+   there is no blank values, you can call `gal_blank_remove' first. */
+#define STATISTICS_SORT(QSORT_F) {                                        \
+    qsort(data->array, data->size, gal_data_sizeof(data->type), QSORT_F); \
+  }
+void
+gal_statistics_sort_increasing(gal_data_t *data)
+{
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:
+      STATISTICS_SORT(gal_qsort_uint8_increasing);    break;
+    case GAL_DATA_TYPE_INT8:
+      STATISTICS_SORT(gal_qsort_int8_increasing);     break;
+    case GAL_DATA_TYPE_UINT16:
+      STATISTICS_SORT(gal_qsort_uint16_increasing);   break;
+    case GAL_DATA_TYPE_INT16:
+      STATISTICS_SORT(gal_qsort_int16_increasing);    break;
+    case GAL_DATA_TYPE_UINT32:
+      STATISTICS_SORT(gal_qsort_uint32_increasing);   break;
+    case GAL_DATA_TYPE_INT32:
+      STATISTICS_SORT(gal_qsort_int32_increasing);    break;
+    case GAL_DATA_TYPE_UINT64:
+      STATISTICS_SORT(gal_qsort_uint64_increasing);   break;
+    case GAL_DATA_TYPE_INT64:
+      STATISTICS_SORT(gal_qsort_int64_increasing);    break;
+    case GAL_DATA_TYPE_FLOAT32:
+      STATISTICS_SORT(gal_qsort_float32_increasing);  break;
+    case GAL_DATA_TYPE_FLOAT64:
+      STATISTICS_SORT(gal_qsort_float64_increasing);  break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_sort_increasing'", data->type);
+    }
+}
+
+
+
+
+
+/* See explanations above `gal_statistics_sort_increasing'. */
+void
+gal_statistics_sort_decreasing(gal_data_t *data)
+{
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:
+      STATISTICS_SORT(gal_qsort_uint8_decreasing);    break;
+    case GAL_DATA_TYPE_INT8:
+      STATISTICS_SORT(gal_qsort_int8_decreasing);     break;
+    case GAL_DATA_TYPE_UINT16:
+      STATISTICS_SORT(gal_qsort_uint16_decreasing);   break;
+    case GAL_DATA_TYPE_INT16:
+      STATISTICS_SORT(gal_qsort_int16_decreasing);    break;
+    case GAL_DATA_TYPE_UINT32:
+      STATISTICS_SORT(gal_qsort_uint32_decreasing);   break;
+    case GAL_DATA_TYPE_INT32:
+      STATISTICS_SORT(gal_qsort_int32_decreasing);    break;
+    case GAL_DATA_TYPE_UINT64:
+      STATISTICS_SORT(gal_qsort_uint64_decreasing);   break;
+    case GAL_DATA_TYPE_INT64:
+      STATISTICS_SORT(gal_qsort_int64_decreasing);    break;
+    case GAL_DATA_TYPE_FLOAT32:
+      STATISTICS_SORT(gal_qsort_float32_decreasing);  break;
+    case GAL_DATA_TYPE_FLOAT64:
+      STATISTICS_SORT(gal_qsort_float64_decreasing);  break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_sort_decreasing'", data->type);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 /****************************************************************
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
-/* Set the bin lower values for all the bins. If the minimum and
-   maximum are equal, then use the quantile.
+/* Generate an array of regularly spaced elements. For a 1D dataset, the
+   output will be 1D, for 2D, it will be 2D.
 
-   If the value of onebinvalue is NaN, then nothing will happen,
-   however, if it is not a NaN, all the bins will be shifted such that
-   the lower values of one of the bins is placed on this value (if it
-   is in the range of the data).
-*/
-void
-gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
-                        float min, float max, float onebinvalue,
-                        float quant, float **obins)
+   Input arguments:
+
+     * The `data' set you want to apply the bins to. This is only necessary
+       if the range argument is not complete, see below. If `range' has all
+       the necessary information, you can pass a NULL pointer for `data'.
+
+     * The `range' data structure keeps the desired range along each
+       dimension of the input data structure, it has to be in float32
+       type. Note that if
+
+         - If you want the full range of the dataset (in any dimensions,
+           then just set `range' to NULL and the range will be specified
+           from the minimum and maximum value of the dataset.
+
+         - If there is one element for each dimension in range, then it is
+           viewed as a quantile (Q), and the range will be: `Q to 1-Q'.
+
+         - If there are two elements for each dimension in range, then they
+           are assumed to be your desired minimum and maximum values. When
+           either of the two are NaN, the minimum and maximum will be
+           calculated for it.
+
+     * The number of bins: must be larger than 0.
+
+     * `onebinstart' A desired value for onebinstart. Note that with this
+        option, the bins won't start and end exactly on the given range
+        values, it will be slightly shifted to accommodate this
+        request.  */
+gal_data_t *
+gal_statistics_regular_bins(gal_data_t *data, gal_data_t *range,
+                            size_t numbins, float onebinstart)
 {
   size_t i;
-  float diff, *bins, binwidth;
+  gal_data_t *bins, *tmp;
+  float *b, *ra, min, max, hbw, diff, binwidth;
 
-  /* Allocate space for the array. The extra bin is only for internal
-     purposes (so the loops for the histogram and CFP can see the end
-     of the last bin). It will never be seen by the user. */
-  errno=0;
-  bins=*obins=calloc((numbins+1)*2, sizeof *bins);
-  if(bins==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for bins in gal_statistics_set_bins "
-          "(statistics.c)", (numbins+1)*2*sizeof *bins);
 
-  /* If the range is not defined, find it and set the bin width. */
-  if(min==max)
+  /* Some sanity checks. */
+  if(numbins==0)
+    error(EXIT_FAILURE, 0, "`numbins' in `gal_statistics_regular_bins' "
+          "cannot be given a value of 0");
+  if(range && range->type!=GAL_DATA_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
+          "on ranges of type float32");
+  if(data->ndim!=1)
+    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
+          "in 1D data");
+  if(data->type!=GAL_DATA_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
+          "on float32 type data");
+
+
+  /* Set the minimum and maximum values. */
+  if(range && range->size)
     {
-      if(quant!=0.0f)
-        {
-          min=sorted[ gal_statistics_index_from_quantile(size, quant)   ];
-          max=sorted[ gal_statistics_index_from_quantile(size, 1-quant) ];
-        }
+      ra=range->array;
+      if( (range->size)%2 )
+        error(EXIT_FAILURE, 0, "Quantile ranges are not implemented in "
+              "`gal_statistics_regular_bins' yet.");
       else
         {
-          min=sorted[0];
-          max=sorted[size-1];
+          if( isnan(ra[0]) )
+            {
+              tmp=gal_statistics_minimum(data);
+              min=*((float *)(tmp->array));
+              gal_data_free(tmp);
+            }
+          else min=ra[0];
+          if( isnan(ra[1]) )                       /* When the maximum    */
+            {                                      /* isn't set, we'll    */
+              tmp=gal_statistics_maximum(data);    /* Add a very small    */
+              max=*((float *)(tmp->array)) + 1e-5; /* value so all the    */
+              gal_data_free(tmp);                  /* points are counted. */
+            }
+          else max=ra[1];
         }
     }
-  binwidth=(max-min)/numbins;
+  else
+    {
+      tmp=gal_statistics_minimum(data);
+      min=*((float *)(tmp->array));
+      gal_data_free(tmp);
+      tmp=gal_statistics_maximum(data);
+      max=*((float *)(tmp->array));
+      gal_data_free(tmp);
+    }
 
-  /* Set all the bin smaller sides: */
-  for(i=0;i<numbins+1;++i)
-    bins[i*2]=min+i*binwidth;
+
+  /* Allocate the space for the bins. */
+  bins=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &numbins, NULL,
+                      0, data->minmapsize, "bin_center", data->unit,
+                      "Center value of each bin.");
+
+
+  /* Set central bin values. */
+  b=bins->array;
+  hbw = ( binwidth=(max-min)/numbins )/2;
+  for(i=0;i<numbins;++i) b[i] = min + i*binwidth + hbw;
+
 
   /* Go over all the bins and stop when the sign of the two sides
      of one bin are different. */
-  if(isnan(onebinvalue)==0)
+  if( !isnan(onebinstart) )
     {
-      for(i=0;i<numbins;++i)
-        if(bins[i*2]<onebinvalue && bins[(i+1)*2]>onebinvalue) break;
-      if(i!=numbins)
+      for(i=0;i<numbins-1;++i)
+        if( (b[i]-hbw) < onebinstart && (b[i+1]-hbw) > onebinstart) break;
+      if( i != numbins-1 )
         {
-          diff=onebinvalue-bins[i*2];
-          for(i=0;i<numbins+1;++i)
-            bins[i*2]+=diff;
+          diff=onebinstart-b[i];
+          for(i=0;i<numbins;++i)
+            b[i]+=diff;
         }
     }
 
   /* For a check
+  printf("min: %g\n", min);
+  printf("max: %g\n", max);
+  printf("binwidth: %g\n", binwidth);
   for(i=0;i<numbins;++i)
-    printf("%zu: %.4f\n", i+1, bins[i*2]);
+    printf("%zu: %.4f\n", i, b[i]);
   */
+
+  /* Set the status of the bins to regular and return. */
+  bins->status=GAL_STATISTICS_BINS_REGULAR;
+  return bins;
 }
 
 
 
 
 
-void
-gal_statistics_histogram(float *sorted, size_t size, float *bins,
-                         size_t numbins, int normhist, int maxhistone)
+/* Make a histogram of all the elements in the given dataset with bin
+   values that are defined in the `bins' structure (see
+   `gal_statistics_regular_bins'). */
+gal_data_t *
+gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
+                         int normalize, int maxhistone)
 {
-  float max=-FLT_MAX;
-  size_t histrow=0, i;
+  size_t i, *h;
+  double ref=NAN;
+  gal_data_t *hist;
+  float *f, *ff, min, max, binwidth;
 
-  if((long)numbins<=0)
-    error(EXIT_FAILURE, 0, "the number of bins in gal_statistics_histogram "
-          "(statistics.h) must be >0.  You have given asked for %ld",
-          (long)numbins);
 
-  /* Fill the histogram. */
-  for(i=0;i<size;++i)
+  /* Some basic sanity checks for now (until it is generalized). */
+  if(data->ndim!=1)
+    error(EXIT_FAILURE, 0, "gal_statistics_histogram currently on works "
+          "in 1D data");
+  if(data->type!=GAL_DATA_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "gal_statistics_histogram currently on works "
+          "on float32 type data");
+
+
+  /* Check if the bins are regular or not. For irregular bins, we can
+     either use the old implementation, or GSL's histogram
+     functionality. */
+  if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
+    error(EXIT_FAILURE, 0, "the input bins to `gal_statistics_histogram' "
+          "are not regular. Currently it is only implemented for regular "
+          "bins");
+
+
+  /* Check if normalize and maxhistone are not called together. */
+  if(normalize && maxhistone)
+    error(EXIT_FAILURE, 0, "only one of `normalize' and `maxhistone' may "
+          "be given to `gal_statistics_histogram'");
+
+  /* Allocate the histogram (note that we are clearning it. */
+  hist=gal_data_alloc(NULL, GAL_DATA_TYPE_SIZE_T, bins->ndim, bins->dsize,
+                      NULL, 1, data->minmapsize, "hist_number", "counts",
+                      "Number of data points within each bin.");
+
+
+  /* Set the minimum and maximum values: */
+  f=bins->array;
+  binwidth=f[1]-f[0];
+  max = f[bins->size - 1] + binwidth/2;
+  min = f[0]              - binwidth/2;
+
+
+  /* Go through all the elements and find out which bin they belong to. */
+  h=hist->array;
+  f=data->array;
+  for(i=0;i<data->size;++i)
+    if(f[i]>=min && f[i]<max)
+      {
+        ++h[ (size_t)((f[i]-min)/binwidth) ];
+        /*printf("%-10.3f%zu\n", f[i], (size_t)((f[i]-min)/binwidth) );*/
+      }
+
+
+  /* Find the reference to correct the histogram if necessary. */
+  if(normalize)
     {
-      /* For a check:
-      printf("%f:\n  histrow: %zu, numbins: %zu\n",
-             sorted[i], histrow, numbins);
-      */
-      /* Data has not reached bins yet: */
-      if(sorted[i]<bins[histrow*2]) continue;
+      /* Set the reference. */
+      ref=0.0f;
+      hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_FLOAT32);
+      ff=(f=hist->array)+hist->size; do ref += *f++;   while(f<ff);
 
-      /* Jump bins until sorted[i] is smaller than the larger value of
-         one bin. If we are on the last bin (where
-         histrow==numbins-1), then you don't have to increase histrow
-         any more, as soon as sorted[i] becomes larger than the lagest
-         bin, quit the search. The 1e-6f is to account for floating
-         point error. NOTE: the last interval is closed on both
-         sides.*/
-      if(histrow==numbins-1)
-        { if(sorted[i]>bins[numbins*2]+1e-6f) break; }
-      else
-        while(sorted[i]>=bins[(histrow+1)*2])
-          if(++histrow==numbins-1) break;
-
-      /* For a check:
-      printf("  histrow: %zu\n", histrow);
-      */
-      ++bins[histrow*2+1];
+      /* Correct the name, units and comments. */
+      free(hist->name); free(hist->unit); free(hist->comment);
+      gal_checkset_allocate_copy("hist_normalized", &hist->name);
+      gal_checkset_allocate_copy("frac", &hist->unit);
+      gal_checkset_allocate_copy("Normalized histogram value for this bin",
+                                 &hist->comment);
     }
-
-  /* In case a normalized histogram is desired: */
-  if(normhist)
-    for(i=0;i<numbins;++i)
-      bins[i*2+1]/=size;
-
-  /* In case the maximum value is to become one. */
   if(maxhistone)
     {
-      for(i=0;i<numbins;++i)
-        if(bins[i*2+1]>max)
-          max=bins[i*2+1];
-      for(i=0;i<numbins;++i)
-        bins[i*2+1]/=max;
+      /* Calculate the reference. */
+      ref=-FLT_MAX;
+      hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_FLOAT32);
+      ff=(f=hist->array)+hist->size;
+      do ref = *f>ref ? *f : ref; while(++f<ff);
+
+      /* Correct the name, units and comments. */
+      free(hist->name); free(hist->unit); free(hist->comment);
+      gal_checkset_allocate_copy("hist_maxone", &hist->name);
+      gal_checkset_allocate_copy("frac", &hist->unit);
+      gal_checkset_allocate_copy("Fractional histogram value for this bin "
+                                 "when maximum bin value is 1.0",
+                                 &hist->comment);
     }
 
-  /* In case you want to see the histogram:
-  for(i=0;i<numbins;++i)
-    printf("%zu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
-  */
+
+  /* Correct the histogram if necessary. */
+  if( !isnan(ref) )
+    { ff=(f=hist->array)+hist->size; do *f++ /= ref;   while(f<ff); }
+
+  /* Return the histogram. */
+  return hist;
 }
 
 
 
 
 
-void
-gal_statistics_cumulative_fp(float *sorted, size_t size, float *bins,
-                             size_t numbins, int normcfp)
+/* Make a cumulative frequency plot (CFP) of all the elements in the given
+   dataset with bin values that are defined in the `bins' structure (see
+   `gal_statistics_regular_bins').
+
+   The CFP is built from the histogram: in each bin, the value is the sum
+   of all previous bins in the histogram. Thus, if you have already
+   calculated the histogram before calling this function, you can pass it
+   onto this function as the data structure in `bins->next'. If
+   `bin->next!=NULL', then it is assumed to be the histogram. If it is
+   NULL, then the histogram will be calculated internally and freed after
+   the job is finished.
+
+   When a histogram is given and it is normalized, the CFP will also be
+   normalized (even if the normalized flag is not set here): note that a
+   normalized CFP's maximum value is 1.
+*/
+gal_data_t *
+gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 {
-  float prevind=0;
-  size_t cfprow=0, i, numinds=0;
+  double sum;
+  float *f, *ff, *hf;
+  gal_data_t *hist, *cfp;
+  size_t *s, *sf, *hs, sums;
 
 
-  /* Fill the Cumulative frequency plot. The steps are just like the
-     histogram above so we won't explain similar concepts here
-     again. */
-  for(i=0;i<size;++i)
+  /* Some basic sanity checks for now (until it is generalized). */
+  if(data->ndim!=1)
+    error(EXIT_FAILURE, 0, "gal_statistics_cfp currently on works "
+          "in 1D data");
+  if(data->type!=GAL_DATA_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "gal_statistics_cfp currently on works "
+          "on float32 type data");
+
+
+  /* Check if the bins are regular or not. For irregular bins, we can
+     either use the old implementation, or GSL's histogram
+     functionality. */
+  if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
+    error(EXIT_FAILURE, 0, "the input bins to `gal_statistics_cfp' "
+          "are not regular. Currently it is only implemented for regular "
+          "bins");
+
+
+  /* Prepare the histogram. */
+  hist = ( bins->next
+           ? bins->next
+           : gal_statistics_histogram(data, bins, 0, 0) );
+
+
+  /* If the histogram has float32 type it was given by the user and is
+     either normalized or its maximum was set to 1. We can only use it if
+     it was normalized. If its maximum is 1, then we must ignore it and
+     build the histogram again.*/
+  if(hist->type==GAL_DATA_TYPE_FLOAT32)
     {
-      if(sorted[i]<bins[cfprow*2]) continue;
+      sum=0.0f;
+      ff=(f=hist->array)+hist->size; do sum += *f++;   while(f<ff);
+      if(sum!=1.0f)
+        hist=gal_statistics_histogram(data, bins, 0, 0);
+    }
 
-      if(cfprow==numbins-1)
-        { if(sorted[i]>bins[numbins*2]+1e-6f) break; }
-      else
-        while(sorted[i]>=bins[(cfprow+1)*2])
-          {
-            /* We have not yet reached the last bin. But we have
-               reached the sorted[i] that is larger than the current
-               bin and we want to switch to the next bin. So we have
-               to finalize the current bin value.  bins[cfprow*2+1]
-               has kept the sum of all the indexs that lie within this
-               bin. Using numinds, we also kept a count of how many
-               indexs there was.
+  /* Allocate the cumulative frequency plot's necessary space. */
+  cfp=gal_data_alloc( NULL, hist->type, bins->ndim, bins->dsize,
+                      NULL, 1, data->minmapsize,
+                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                        ? "cfp_normalized" : "cfp_number" ),
+                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                        ? "frac" : "count" ),
+                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                        ? "Fraction of data elements from the start to this "
+                        "bin (inclusive)."
+                        : "Number of data elements from the start to this "
+                        "bin (inclusive).") );
 
-               In case there were no indexs in this bin, then we have
-               to pass on the previous value (since this bin did not
-               contribute any data). We set numinds=0 and start
-               working on the next bin. */
-            if(numinds>0)
-              prevind=bins[cfprow*2+1]/=numinds; /* Divide by num indexs */
-            else
-              bins[cfprow*2+1]=prevind;
-            numinds=0;
-            if(++cfprow==numbins-1) break;
-          }
 
-      /* We can't plot every index, also in every bin, there might be
-         a sharp gradient. So in order to make things smooth, the
-         value given to each bin will be the average of all the indexs
-         that like over that bin. Here we keep the sum and number of
-         indexs so in the end we can find the average. */
-      bins[cfprow*2+1]+=i;
-      ++numinds;
+  /* Fill in the cumulative frequency plot. */
+  switch(hist->type)
+    {
+    case GAL_DATA_TYPE_SIZE_T:
+      sums=0; hs=hist->array; sf=(s=cfp->array)+cfp->size;
+      do sums = (*s += *hs++ + sums); while(++s<sf);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT32:
+      sum=0.0f; hf=hist->array; ff=(f=cfp->array)+cfp->size;
+      do sum = (*f += *hf++ + sum);  while(++f<ff);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_cfp'", cfp->type);
     }
 
 
-  /* The last bin was not finalized. So we will do that here: */
-  bins[cfprow*2+1] = numinds>0 ? bins[cfprow*2+1]/numinds : prevind;
+  /* Normalize the CFP if the user asked for it and it wasn't normalized
+     until now. */
+  if(normalize && cfp->type==GAL_DATA_TYPE_SIZE_T)
+    {
+      /* Find the sum, then divide the plot by it. Note that the sum must
+         come from the histogram, not the CFP!*/
+      sums=0;
+      cfp=gal_data_copy_to_new_type_free(cfp, GAL_DATA_TYPE_FLOAT32);
+      sf=(s=hist->array)+hist->size; do sums += *s++;   while(s<sf);
+      ff=(f=cfp->array)+cfp->size;   do *f++ /= sums;   while(f<ff);
 
+      /* Correct the name, units and comments. */
+      free(cfp->name); free(cfp->unit); free(cfp->comment);
+      gal_checkset_allocate_copy("cfp_normalized", &cfp->name);
+      gal_checkset_allocate_copy("frac", &cfp->unit);
+      gal_checkset_allocate_copy("Fraction of data elements from the start "
+                                 "to this bin (inclusive).", &cfp->comment);
+    }
 
-  /* For a normalized CFP: */
-  if(normcfp)
-    for(i=0;i<numbins;++i)
-      bins[i*2+1]/=size;
-
-
-  /* In a CFP, all bins that are possibly left behind (there was no
-     data to fill them) should get the same value as the lastly filled
-     value. They should not be zero. Note that this has to be done
-     after the possible normalization. */
-  for(i=cfprow;i<numbins;++i)
-    bins[i*2+1]=bins[(cfprow-1)*2+1];
-
-
-  /* In case you want to see the CFP:
-  for(i=0;i<numbins;++i)
-    printf("%zu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
-  */
-}
-
-
-
-
-
-void
-gal_statistics_save_hist(float *sorted, size_t size, size_t numbins,
-                         char *filename, char *comment)
-{
-  FILE *fp;
-  size_t i;
-  float onebinvalue=NAN;
-  int normhist=0, maxhistone=0;
-  float d, *bins, min=0.0f, max=0.0f, quant=0.0f;
-
-  /* Set the bin sides: */
-  gal_statistics_set_bins(sorted, size, numbins, min, max,
-                          onebinvalue, quant, &bins);
-
-  /* Set the size of half a bin width:*/
-  d=(bins[2]-bins[0])/2;
-
-  /* Fill the histogram: */
-  gal_statistics_histogram(sorted, size, bins, numbins, normhist, maxhistone);
-
-  /* Open the file for writing and save the histogram: */
-  errno=0;
-  fp=fopen(filename, "w");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "couldn't open file %s", filename);
-  fprintf(fp, "%s\n", comment);
-  fprintf(fp, "# The input %zu points binned in %zu bins\n#\n",
-          size, numbins);
-  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
-  fprintf(fp, "# Column 1: Number of points in this bin.\n");
-  for(i=0;i<numbins;++i)
-    fprintf(fp, "%-15.6f%.0f\n", bins[i*2]+d, bins[i*2+1]);
-  fclose(fp);
-  free(bins);
+  /* If the histogram was allocated here, free it. */
+  if(hist!=bins->next) gal_data_free(hist);
+  return cfp;
 }
 
 

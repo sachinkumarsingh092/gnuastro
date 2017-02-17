@@ -52,6 +52,7 @@ struct statisticsparams
   float      quantilerange;  /* Quantile (Q) range: from Q to 1-Q.       */
 
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
+  uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
   uint8_t        histogram;  /* Save histogram in output.                */
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
   char         *sigclipstr;  /* Multiple of sigma, and tolerance or num. */
@@ -63,6 +64,8 @@ struct statisticsparams
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
 
   /* Internal */
+  uint8_t        needssort;  /* If sorting is needed.                    */
+  uint8_t        basicinfo;  /* Print the basic information.             */
   gal_data_t        *input;  /* Input data structure.                    */
   int               isfits;  /* Input is a FITS file.                    */
   int             hdu_type;  /* Type of HDU (image or table).            */
