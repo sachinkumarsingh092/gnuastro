@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=statistics
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_warped_noised.fits
+img=convolve_spatial_scaled_noised.fits
 
 
 
@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --checkmode --mirrorquant=0.5
+$execname $img -g9500 -l11000 --numasciibins=65

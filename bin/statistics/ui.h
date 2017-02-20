@@ -23,6 +23,52 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
+
+
+
+
+/* Available letters for short options:
+
+   a b c d e f i j k p r u v w x y z
+   B E F G J L R W X Y Z
+*/
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_COLUMN       = 'c',
+  ARGS_OPTION_KEY_GREATEREQUAL = 'g',
+  ARGS_OPTION_KEY_LESSTHAN     = 'l',
+  ARGS_OPTION_KEY_QRANGE       = 'Q',
+  ARGS_OPTION_KEY_MEAN         = 'm',
+  ARGS_OPTION_KEY_STD          = 't',
+  ARGS_OPTION_KEY_MEDIAN       = 'M',
+  ARGS_OPTION_KEY_MODE         = 'O',
+  ARGS_OPTION_KEY_ASCIIHIST    = 'A',
+  ARGS_OPTION_KEY_HISTOGRAM    = 'H',
+  ARGS_OPTION_KEY_CUMULATIVE   = 'C',
+  ARGS_OPTION_KEY_SIGMACLIP    = 's',
+  ARGS_OPTION_KEY_NORMALIZE    = 'n',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+  ARGS_OPTION_KEY_NUMBER       = 1000,
+  ARGS_OPTION_KEY_MINIMUM,
+  ARGS_OPTION_KEY_MAXIMUM,
+  ARGS_OPTION_KEY_SUM,
+  ARGS_OPTION_KEY_ASCIICFP,
+  ARGS_OPTION_KEY_NUMBINS,
+  ARGS_OPTION_KEY_NUMASCIIBINS,
+  ARGS_OPTION_KEY_ASCIIHEIGHT,
+  ARGS_OPTION_KEY_LOWERBIN,
+  ARGS_OPTION_KEY_ONEBINSTART,
+  ARGS_OPTION_KEY_MAXBINONE,
+};
+
+
+
+
+
+/* Functions */
 void
 ui_read_check_inputs_setup(int argc, char *argv[],
                            struct statisticsparams *p);

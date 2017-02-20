@@ -74,25 +74,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will add noise to all the "
 
 
 
-/* Available letters for short options:
-
-   a c f g i j k l m n p r t u v w x y
-   A B C E F G H I J L M O Q R T U W X Y Z  */
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_KEY_STDADD      = 's',
-  ARGS_OPTION_KEY_BACKGROUND  = 'b',
-  ARGS_OPTION_KEY_ZEROPOINT   = 'z',
-  ARGS_OPTION_KEY_ENVSEED     = 'e',
-
-  /* Only with long version (start with a value 1000, the rest will be set
-     automatically). */
-};
-
-
-
-
 
 
 

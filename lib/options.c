@@ -304,8 +304,15 @@ void *
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno, void *junk)
 {
+  char *str;
   if(lineno==-1)
-    return gal_data_type_as_string( *(uint8_t *)(option->value), 1);
+    {
+      /* Note that `gal_data_type_as_string' returns a static string. But
+         the output must be an allocated string so we can free it. */
+      gal_checkset_allocate_copy(
+           gal_data_type_as_string( *(uint8_t *)(option->value), 1), &str);
+      return str;
+    }
   else
     {
       /* If the option is already set, just return. */
@@ -336,8 +343,15 @@ void *
 gal_options_read_searchin(struct argp_option *option, char *arg,
                           char *filename, size_t lineno, void *junk)
 {
+  char *str;
   if(lineno==-1)
-    return gal_table_searchin_as_string( *(uint8_t *)(option->value));
+    {
+      /* Note that `gal_data_type_as_string' returns a static string. But
+         the output must be an allocated string so we can free it. */
+      gal_checkset_allocate_copy(
+        gal_table_searchin_as_string( *(uint8_t *)(option->value)), &str);
+      return str;
+    }
   else
     {
       /* If the option is already set, just return. */
@@ -369,8 +383,15 @@ void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
                              char *filename, size_t lineno, void *junk)
 {
+  char *str;
   if(lineno==-1)
-    return gal_table_format_as_string( *(uint8_t *)(option->value));
+    {
+      /* Note that `gal_data_type_as_string' returns a static string. But
+         the output must be an allocated string so we can free it. */
+      gal_checkset_allocate_copy(
+        gal_table_format_as_string( *(uint8_t *)(option->value)), &str);
+      return str;
+    }
   else
     {
       /* If the option is already set, then you don't have to do anything. */
@@ -1288,13 +1309,14 @@ option_is_printable(struct argp_option *option)
    value. */
 static int
 options_print_any_type(struct argp_option *option, void *ptr, int type,
-                       int width, FILE *fp)
+                       int width, FILE *fp,
+                       struct gal_options_common_params *cp)
 {
   char *str;
 
   /* Write the value into a string. */
   str = ( option->func
-          ? option->func(option, NULL, NULL, (size_t)(-1), NULL)
+          ? option->func(option, NULL, NULL, (size_t)(-1), cp->program_struct)
           : gal_data_write_to_string(ptr, type, 1) );
 
   /* If only the width was desired, don't actually print the string, just
@@ -1304,9 +1326,8 @@ options_print_any_type(struct argp_option *option, void *ptr, int type,
   else
     width=strlen(str);
 
-  /* Free the allocated space and return. When the value was taken from a
-     function, it is static, so it must not be freed. */
-  if(!option->func) free(str);
+  /* Free the allocated space and return. */
+  free(str);
   return width;
 }
 
@@ -1318,7 +1339,8 @@ options_print_any_type(struct argp_option *option, void *ptr, int type,
    lengths. */
 static void
 options_correct_max_lengths(struct argp_option *option, int *max_nlen,
-                            int *max_vlen)
+                            int *max_vlen,
+                            struct gal_options_common_params *cp)
 {
   int vlen;
   struct gal_linkedlist_stll *tmp;
@@ -1342,7 +1364,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
         {
           /* Get the length of this node: */
           vlen=options_print_any_type(option, &tmp->v, GAL_DATA_TYPE_STRING,
-                                      0, NULL);
+                                      0, NULL, cp);
 
           /* If its larger than the maximum length, then put it in. */
           if( vlen > *max_vlen )
@@ -1352,7 +1374,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
   else
     {
       vlen=options_print_any_type(option, option->value, option->type,
-                                  0, NULL);
+                                  0, NULL, cp);
       if( vlen > *max_vlen )
         *max_vlen=vlen;
     }
@@ -1371,14 +1393,16 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
    and their values. */
 static void
 options_set_lengths(struct argp_option *poptions,
-                    struct argp_option *coptions, int *namelen, int *valuelen)
+                    struct argp_option *coptions,
+                    int *namelen, int *valuelen,
+                    struct gal_options_common_params *cp)
 {
   int i, max_nlen=0, max_vlen=0;
 
   /* For program specific options. */
   for(i=0; !gal_options_is_last(&poptions[i]); ++i)
     if(poptions[i].name && poptions[i].set)
-      options_correct_max_lengths(&poptions[i], &max_nlen, &max_vlen);
+      options_correct_max_lengths(&poptions[i], &max_nlen, &max_vlen, cp);
 
   /* For common options. Note that the options that will not be printed are
      in this category, so we also need to check them. The detailed steps
@@ -1386,7 +1410,7 @@ options_set_lengths(struct argp_option *poptions,
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
     if( coptions[i].name && coptions[i].set
         && option_is_printable(&coptions[i]) )
-      options_correct_max_lengths(&coptions[i], &max_nlen, &max_vlen);
+      options_correct_max_lengths(&coptions[i], &max_nlen, &max_vlen, cp);
 
   /* Save the final values in the output pointers. */
   *namelen=max_nlen;
@@ -1409,7 +1433,7 @@ options_print_doc(FILE *fp, const char *doc, int nvwidth)
 
   /* The `+3' is because of the three extra spaces in this line: one before
      the variable name, one after it and one after the value. */
-  int i, prewidth=nvwidth+3, width=78-prewidth, cwidth;
+  int i, prewidth=nvwidth+3, width=77-prewidth, cwidth;
 
   /* We only want the formatting when writing to stdout. */
   if(len<width)
@@ -1443,7 +1467,8 @@ options_print_doc(FILE *fp, const char *doc, int nvwidth)
 
 static void
 options_print_all_in_group(struct argp_option *options, int groupint,
-                           int namelen, int valuelen, FILE *fp)
+                           int namelen, int valuelen, FILE *fp,
+                           struct gal_options_common_params *cp)
 {
   size_t i;
   struct gal_linkedlist_stll *tmp;
@@ -1462,7 +1487,8 @@ options_print_all_in_group(struct argp_option *options, int groupint,
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
               options_print_any_type(&options[i], &tmp->v,
-                                     GAL_DATA_TYPE_STRING, valuewidth, fp);
+                                     GAL_DATA_TYPE_STRING, valuewidth,
+                                     fp, cp);
               options_print_doc(fp, options[i].doc, namewidth+valuewidth);
             }
 
@@ -1471,7 +1497,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
           {
             fprintf(fp, " %-*s ", namewidth, options[i].name);
             options_print_any_type(&options[i], options[i].value,
-                                   options[i].type, valuewidth, fp);
+                                   options[i].type, valuewidth, fp, cp);
             options_print_doc(fp, options[i].doc, namewidth+valuewidth);
           }
       }
@@ -1560,7 +1586,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
   gal_linkedlist_reverse_ill(&group);
 
   /* Get the maximum width of names and values. */
-  options_set_lengths(poptions, coptions, &namelen, &valuelen);
+  options_set_lengths(poptions, coptions, &namelen, &valuelen, cp);
 
   /* Go over each topic and print every option that is in this group. */
   while(topic)
@@ -1571,13 +1597,16 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
 
       /* First print the topic, */
       fprintf(fp, "\n# %s\n", topicstr);
+      /*
       fprintf(fp, "# ");
       i=0; while(i++<strlen(topicstr)) fprintf(fp, "%c", '-');
       fprintf(fp, "\n");
-
+      */
       /* Then, print all the options that are in this group. */
-      options_print_all_in_group(coptions, groupint, namelen, valuelen, fp);
-      options_print_all_in_group(poptions, groupint, namelen, valuelen, fp);
+      options_print_all_in_group(coptions, groupint, namelen, valuelen,
+                                 fp, cp);
+      options_print_all_in_group(poptions, groupint, namelen, valuelen,
+                                 fp, cp);
     }
 
   /* Let the user know. */
@@ -1648,42 +1677,4 @@ gal_options_print_state(struct gal_options_common_params *cp)
           free(dirname);
           break;
         }
-}
-
-
-
-
-
-void
-gal_options_print_log(gal_data_t *logll, char *program_string,
-                      time_t *rawtime, char *comments, char *filename,
-                      struct gal_options_common_params *cp)
-{
-  char *finalcomment;
-  char *msg, gitdescribe[100], *gd;
-
-  /* Get the Git description in the running folder. */
-  gd=gal_git_describe();
-  if(gd) sprintf(gitdescribe, " from %s,", gd);
-  else   gitdescribe[0]='\0';
-
-  /* Write the top level comment. */
-  asprintf(&finalcomment, "# %s\n# Created%s on %s%s",
-           program_string, gitdescribe, ctime(rawtime),
-           comments ? comments : "#");
-
-  /* Write the log file to disk */
-  gal_table_write(logll, finalcomment, GAL_TABLE_FORMAT_TXT, filename,
-                  cp->dontdelete);
-
-  /* In verbose mode, print the information. */
-  if(!cp->quiet)
-    {
-      asprintf(&msg, "%s created.", filename);
-      gal_timing_report(NULL, msg, 1);
-      free(msg);
-    }
-
-  /* Clean up. */
-  free(finalcomment);
 }

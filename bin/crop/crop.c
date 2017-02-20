@@ -376,7 +376,7 @@ void
 crop(struct cropparams *p)
 {
   int err=0;
-  char *comments;
+  char *tmp;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
@@ -384,6 +384,7 @@ crop(struct cropparams *p)
   size_t i, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, nb;
   void *(*modefunction)(void *)=NULL;
+  struct gal_linkedlist_stll *comments=NULL;
 
 
   /* Set the function to run: */
@@ -446,13 +447,14 @@ crop(struct cropparams *p)
   if(p->cp.log)
     {
       if(p->checkcenter)
-        asprintf(&comments, "# Width of central check box: %zu\n#",
-                 p->checkcenter);
-      else
-        comments=NULL;
-      gal_options_print_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
-                            LOGFILENAME, &p->cp);
-      if(comments) free(comments);
+        {
+          asprintf(&tmp, "Width of central check box: %zu",
+                   p->checkcenter);
+          gal_linkedlist_add_to_stll(&comments, tmp, 0);
+        }
+      gal_table_write_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
+                          LOGFILENAME, p->cp.dontdelete, p->cp.quiet);
+      gal_linkedlist_free_stll(comments, 1);
     }
 
   /* Print the final verbose info, save log, and clean up: */

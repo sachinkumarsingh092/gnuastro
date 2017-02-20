@@ -96,8 +96,8 @@ gal_data_t *
 gal_txt_image_read(char *filename, size_t minmapsize);
 
 void
-gal_txt_write(gal_data_t *cols, char *comment, char *filename,
-              int dontdelete);
+gal_txt_write(gal_data_t *cols, struct gal_linkedlist_stll *comment,
+              char *filename, int dontdelete);
 
 
 

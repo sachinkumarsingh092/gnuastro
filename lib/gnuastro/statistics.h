@@ -75,28 +75,37 @@ enum bin_status
 
 /****************************************************************
  ********               Simple statistics                 *******
- ****        (wrappers for functions in `arithmetic.h')      ****
  ****************************************************************/
-gal_data_t *
-gal_statistics_number(gal_data_t *data);
 
 gal_data_t *
-gal_statistics_minimum(gal_data_t *data);
+gal_statistics_number(gal_data_t *input);
 
 gal_data_t *
-gal_statistics_maximum(gal_data_t *data);
+gal_statistics_minimum(gal_data_t *input);
 
 gal_data_t *
-gal_statistics_sum(gal_data_t *data);
+gal_statistics_maximum(gal_data_t *input);
 
 gal_data_t *
-gal_statistics_mean(gal_data_t *data);
+gal_statistics_sum(gal_data_t *input);
 
 gal_data_t *
-gal_statistics_std(gal_data_t *data);
+gal_statistics_mean(gal_data_t *input);
 
 gal_data_t *
-gal_statistics_median(gal_data_t *data);
+gal_statistics_std(gal_data_t *input);
+
+gal_data_t *
+gal_statistics_mean_std(gal_data_t *input);
+
+gal_data_t *
+gal_statistics_median(gal_data_t *input, int inplace);
+
+gal_data_t *
+gal_statistsics_quantile(gal_data_t *input, float quantile, int inplace);
+
+size_t
+gal_statistics_quantile_index(size_t size, float quant);
 
 
 
@@ -115,7 +124,8 @@ gal_statistics_sort_increasing(gal_data_t *data);
 void
 gal_statistics_sort_decreasing(gal_data_t *data);
 
-
+gal_data_t *
+gal_statistics_no_blank_sorted(gal_data_t *input, int inplace);
 
 
 
@@ -137,32 +147,12 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize);
 
 
 
-
-/****************************************************************
- *****************         Quantiles         ********************
- ****************************************************************/
-size_t
-gal_statistics_index_from_quantile(size_t size, float quant);
-
-
-
-
-
 /****************************************************************
  *****************        Sigma clip         ********************
  ****************************************************************/
-int
-gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
-                                   float sigma_multiple, float accuracy,
-                                   float *outave, float *outmed,
-                                   float *outstd, int print);
-
-int
-gal_statistics_sigma_clip_certain_num(float *array, int o1_n0,
-                                      size_t num_elem, float sigma_multiple,
-                                      size_t numtimes, float *outave,
-                                      float *outmed, float *outstd,
-                                      int print);
+gal_data_t *
+gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
+                          int quiet);
 
 
 

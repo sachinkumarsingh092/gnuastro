@@ -23,6 +23,39 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
+
+
+
+
+/* Available letters for short options:
+
+   d e f g j k l n p r s t v y z
+   A B E F G I J M O Q R T U W X Y Z      */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_QUALITY             = 'u',
+  ARGS_OPTION_KEY_WIDTHINCM           = 'w',
+  ARGS_OPTION_KEY_BORDERWIDTH         = 'b',
+  ARGS_OPTION_KEY_HEX                 = 'x',
+  ARGS_OPTION_KEY_FLUXLOW             = 'L',
+  ARGS_OPTION_KEY_FLUXHIGH            = 'H',
+  ARGS_OPTION_KEY_HIGH                = 'H',
+  ARGS_OPTION_KEY_MAXBYTE             = 'm',
+  ARGS_OPTION_KEY_FLMINBYTE           = 'a',
+  ARGS_OPTION_KEY_FHMAXBYTE           = 'b',
+  ARGS_OPTION_KEY_CHANGE              = 'c',
+  ARGS_OPTION_KEY_CHANGEAFTERTRUNC    = 'C',
+  ARGS_OPTION_KEY_INVERT              = 'i',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
+
+
+
+
+
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct converttparams *p);
 

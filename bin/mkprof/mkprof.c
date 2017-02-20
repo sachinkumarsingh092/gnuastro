@@ -568,14 +568,15 @@ void
 mkprof(struct mkprofparams *p)
 {
   int err;
+  char *tmp;
   pthread_t t;            /* Thread id not used, all are saved here. */
-  char *comments;
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct mkonthread *mkp;
   size_t i, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, nb;
   long onaxes[2], os=p->oversample;
+  struct gal_linkedlist_stll *comments=NULL;
 
 
   /* Allocate the arrays to keep the thread and parameters for each
@@ -642,10 +643,11 @@ mkprof(struct mkprofparams *p)
   /* Write the log file. */
   if(p->cp.log)
     {
-      asprintf(&comments, "# Zeropoint: %.4f", p->zeropoint);
-      gal_options_print_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
-                            LOGFILENAME, &p->cp);
-      free(comments);
+      asprintf(&tmp, "Zeropoint: %g", p->zeropoint);
+      gal_linkedlist_add_to_stll(&comments, tmp, 0);
+      gal_table_write_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
+                          LOGFILENAME, p->cp.dontdelete, p->cp.quiet);
+      gal_linkedlist_free_stll(comments, 1);
     }
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy

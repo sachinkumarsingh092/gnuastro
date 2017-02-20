@@ -1164,14 +1164,17 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
 
 
 static FILE *
-txt_open_file_write_info(gal_data_t *datall, char **fmts, char *comment,
+txt_open_file_write_info(gal_data_t *datall, char **fmts,
+                         struct gal_linkedlist_stll *comment,
                          char *filename, int dontdelete)
 {
   FILE *fp;
   gal_data_t *data;
   char *tmp, *nstr;
   size_t i, j, num=0;
+  struct gal_linkedlist_stll *strt;
   int nlen, nw=0, uw=0, tw=0, bw=0;
+
 
   /* Check the file and open it. */
   gal_checkset_check_remove_file(filename, dontdelete);
@@ -1183,7 +1186,8 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts, char *comment,
 
 
   /* Write the comments if there were any. */
-  if(comment) fprintf(fp, "%s\n", comment);
+  for(strt=comment; strt!=NULL; strt=strt->next)
+    fprintf(fp, "# %s\n", strt->v);
 
 
   /* Get the maximum width for each information field. */
@@ -1253,8 +1257,8 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts, char *comment,
 
 
 void
-gal_txt_write(gal_data_t *datall, char *comment, char *filename,
-              int dontdelete)
+gal_txt_write(gal_data_t *datall, struct gal_linkedlist_stll *comment,
+              char *filename, int dontdelete)
 {
   FILE *fp;
   char **fmts;

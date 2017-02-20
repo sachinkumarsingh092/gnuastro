@@ -192,8 +192,8 @@ sub-component to a title is present.
 * Installation::                Requirements and installation.
 * Common program behavior::     Common behavior in all programs.
 * Extensions and Tables::       Tools to operate on extensions and tables.
-* Image manipulation::          Tools for basic image manipulation.
-* Image analysis::              Analyze images.
+* Data manipulation::           Tools for basic image manipulation.
+* Data analysis::               Analyze images.
 * Modeling and fittings::       Make and fit models.
 * High-level calculations::     Physical calculations.
 * Libraries::                   Use Gnuastro in your own code.
@@ -351,7 +351,7 @@ Table
 
 * Invoking asttable::           Options and arguments to Table.
 
-Image manipulation
+Data manipulation
 
 * Crop::                        Crop region(s) from a dataset.
 * Arithmetic::                  Arithmetic on input data.
@@ -428,7 +428,7 @@ Tiling an image
 * Checking grid values::        Check the values on the grid.
 * Mesh grid options::           Common options related to the mesh grid.
 
-Image analysis
+Data analysis
 
 * Statistics::                  Calculate dataset statistics.
 * NoiseChisel::                 Detect objects in an image.
@@ -6073,7 +6073,7 @@ END
 
 
 
-@node Extensions and Tables, Image manipulation, Common program behavior, Top
+@node Extensions and Tables, Data manipulation, Common program behavior, Top
 @chapter Extensions and Tables
 
 @cindex File operations
@@ -7002,8 +7002,8 @@ it is possible to output one column more than once.
 
 
 
-@node Image manipulation, Image analysis, Extensions and Tables, Top
-@chapter Image manipulation
+@node Data manipulation, Data analysis, Extensions and Tables, Top
+@chapter Data manipulation
 
 Images are one of the major formats of data that is used in astronomy. The
 functions in this chapter explain the GNU Astronomy Utilities which are
@@ -7019,7 +7019,7 @@ transformation to it.
 * SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
-@node Crop, Arithmetic, Image manipulation, Image manipulation
+@node Crop, Arithmetic, Data manipulation, Data manipulation
 @section Crop
 
 @cindex Section of an image
@@ -7717,7 +7717,7 @@ created (unless @option{--individual} is called).
 
 
 
-@node Arithmetic, Convolve, Crop, Image manipulation
+@node Arithmetic, Convolve, Crop, Data manipulation
 @section Arithmetic
 
 It is commonly necessary to do operations on some or all of the elements of
@@ -7881,29 +7881,32 @@ Minimum (non-blank) value in the top operand on the stack, so
 image onto the stack. Therefore this operator is mainly intended for data
 (for example images), if the top operand is a number, this operator just
 returns it without any change. So note that when this operator acts on a
-single image, the output will no longer be an image, but a number.
+single image, the output will no longer be an image, but a number. The
+output of this operand is in the same type as the input.
 
 @item maxvalue
-Maximum (non-blank) value of first operand, similar to @command{minvalue}.
+Maximum (non-blank) value of first operand in the same type, similar to
+@command{minvalue}.
 
 @item numvalue
-Number of non-blank elements in first operand, similar to
-@command{minvalue}.
+Number of non-blank elements in first operand in the @code{uint64} type,
+similar to @command{minvalue}.
 
 @item sumvalue
-Sum of non-blank elements in first operand, similar to @command{minvalue}.
+Sum of non-blank elements in first operand in the @code{float32} type,
+similar to @command{minvalue}.
 
 @item meanvalue
-Mean value of non-blank elements in first operand, similar to
-@command{minvalue}.
+Mean value of non-blank elements in first operand in the @code{float32}
+type, similar to @command{minvalue}.
 
 @item stdvalue
-Standard deviation of non-blank elements in first operand, similar to
-@command{minvalue}.
+Standard deviation of non-blank elements in first operand in the
+@code{float32} type, similar to @command{minvalue}.
 
 @item medianvalue
-Median of non-blank elements in first operand, similar to
-@command{minvalue}.
+Median of non-blank elements in first operand with the same type, similar
+to @command{minvalue}.
 
 @cindex NaN
 @item min
@@ -8356,7 +8359,7 @@ $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
 
 
 
-@node Convolve, Warp, Arithmetic, Image manipulation
+@node Convolve, Warp, Arithmetic, Data manipulation
 @section Convolve
 
 @cindex Convolution
@@ -9752,7 +9755,7 @@ explanations under the @option{--makekernel} option for more information.
 
 
 
-@node Warp, SubtractSky, Convolve, Image manipulation
+@node Warp, SubtractSky, Convolve, Data manipulation
 @section Warp
 Image warping is the process of mapping the pixels of one image onto a new
 pixel grid. This process is sometimes known as transformation, however
@@ -10338,7 +10341,7 @@ of the pixels in the input and output images will be the same).
 
 
 
-@node SubtractSky,  , Warp, Image manipulation
+@node SubtractSky,  , Warp, Data manipulation
 @section SubtractSky
 
 @cindex Atmosphere
@@ -11057,13 +11060,15 @@ how the standard deviation on each mesh is finally found too.
 
 
 
-@node Image analysis, Modeling and fittings, Image manipulation, Top
-@chapter Image analysis
+@node Data analysis, Modeling and fittings, Data manipulation, Top
+@chapter Data analysis
 
-Astronomical images contain very valuable information, the tools in
-this section can help in extracting and quantifying that
-information. For example calculating image statistics, or finding the
-sky value or detecting objects within an image.
+Astronomical datasets (images or tables) contain very valuable information,
+the tools in this section can help in analysing, extracting, and
+quantifying that information. For example getting general or specific
+statistics of the dataset (with @ref{Statistics}), detecting signal within
+a noisy dataset (with @ref{NoiseChisel}), or creating a catalog from an
+input dataset (with @ref{MakeCatalog}).
 
 @menu
 * Statistics::                  Calculate dataset statistics.
@@ -11071,23 +11076,27 @@ sky value or detecting objects within an image.
 * MakeCatalog::                 Catalog from input and labeled images.
 @end menu
 
-@node Statistics, NoiseChisel, Image analysis, Image analysis
+@node Statistics, NoiseChisel, Data analysis, Data analysis
 @section Statistics
 
-The distribution of pixel values in an image can give us valuable
-information about the image, for example if it is a positively skewed
-distribution, we can see that there is significant data in the
-image. If the distribution is roughly symmetric, we can tell that
-there is no significant data in the image.
+The distribution of values in a dataset can provide valuable information
+about it. For example, in an image, if it is a positively skewed
+distribution, we can see that there is significant data in the image. If
+the distribution is roughly symmetric, we can tell that there is no
+significant data in the image. In a table, when we need to select a sample
+of objects, it is important to first get a general view of the whole
+sample.
 
-On the other hand, in some measurements that we do on the image, we
-might need to know the certain statistical parameters of the
-image. For example, if we have run a detection algorithm on an image,
+On the other hand, you might need to know certain statistical parameters of
+the dataset. For example, if we have run a detection algorithm on an image,
 and we want to see how accurate it was, one method is to calculate the
-average of the undetected pixels and see how reasonable it is (if
-detection is done correctly, the average of undetected pixels should
-be approximately equal to the background value, see @ref{Sky
-value}). Statistics is built for precisely such situations.
+average of the undetected pixels and see how reasonable it is (if detection
+is done correctly, the average of undetected pixels should be approximately
+equal to the background value, see @ref{Sky value}). In a table, you might
+have calcuated the magnitudes of a certain class of objects and want to get
+some general characteristics of the distribution immediately on the
+command-line (very fast!), to possibly change some parameters. The
+Statistics program is designed for such situations.
 
 @menu
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
@@ -11100,137 +11109,169 @@ value}). Statistics is built for precisely such situations.
 @node Histogram and Cumulative Frequency Plot, Sigma clipping, Statistics, Statistics
 @subsection Histogram and Cumulative Frequency Plot
 
-Histograms and the cumulative frequency plots are both used to study the
-distribution of data. The histogram is mainly easier to understand for the
-untrained eye, while the cumulative frequency plot is more accurate, but
-needs a good level of experience for interpretation.
-
 @cindex Histogram
+Histograms and the cumulative frequency plots are both used to visually
+study the distribution of a dataset. A histogram shows the number of data
+points which lie within pre-defined intervals (bins). So on the horizontal
+axis we have the bin centers and on the vertical, the number of points that
+are in that bin. You can use it to get a general view of the distribution:
+which values have been repeated the most? how close/far are the most
+significant bins?  Are there more values in the larger part of the range of
+the dataset, or in the lower part?  Similarly, many very important
+properties about the dataset can be deduced from a visual inspection of the
+histogram. In the Statistics program, the histogram can be either output to
+a table to plot with your favorite plotting program@footnote{We recommend
+@url{http://pgfplots.sourceforge.net/,PGFPlots} which generates your plots
+directly within @TeX{} (the same tool that generates your document).}, or
+it can be shown with ASCII characters on the command-line, which is very
+crude, but good enough for a fast and on-the-go analysis, see the example
+in @ref{Invoking aststatistics}.
+
 @cindex Intervals, histogram
 @cindex Bin width, histogram
 @cindex Normalizing histogram
-@cindex Probability distribution function
-A histogram shows the number of data points which lie within
-pre-defined intervals (bins). It is used to get a general view of the
-distribution and its shape. The width of the bins is one of the most
-important parameters for a histogram. In the limiting case that the
-bin-widths tend to zero (and assuming there is data for each bin),
-then the normalized histogram would show the probability distribution
-function of the distribution. Normalizing a histogram means to divide
-the number of data points in each bin by the total number of data.
+@cindex Probability density function
+The width of the bins is only necessary parameter for a histogram. In the
+limiting case that the bin-widths tend to zero (while assuming the number
+of points in the dataset tend to infinity), then the histogram will tend to
+the @url{https://en.wikipedia.org/wiki/Probability_density_function,
+probability density function} of the distribution. When the absolute number
+of points in each bin is not relevant to the study (only the shape of the
+histogram is important), you can @emph{normalize} a histogram so like the
+probability density function, the sum of all its bins will be one.
 
 @cindex Cumulative Frequency Plot
-In the cumulative frequency plot of a distribution, the x axis is the
-sorted data values and the y axis is the index of each data in the
-sorted distribution. Unlike a histogram, a cumulative frequency plot
-does not involve intervals or bins. This makes it less prone to any
-sort of bias or error that a given bin-width would have on the
-analysis. When a larger number of the data points have roughly the
-same value, then the cumulative frequency plot will become steep in
-that vicinity. This occurs because on the x axis (data values), there
-is little change while on the y axis the indexes constantly
-increase. Normalizing a cumulative frequency plot means to divide each
-index (y axis) by the total number of data points.
+In the cumulative frequency plot of a distribution, the horizontal axis is
+the sorted data values and the y axis is the index of each data in the
+sorted distribution. Unlike a histogram, a cumulative frequency plot does
+not involve intervals or bins. This makes it less prone to any sort of bias
+or error that a given bin-width would have on the analysis. When a larger
+number of the data points have roughly the same value, then the cumulative
+frequency plot will become steep in that vicinity. This occurs because on
+the horizontal axis, there is little change while on the vertical axis, the
+indexes constantly increase. Normalizing a cumulative frequency plot means
+to divide each index (y axis) by the total number of data points (or the
+last value).
 
 Unlike the histogram which has a limited number of bins, ideally the
 cumulative frequency plot should have one point for every data
-point. Even in small images (for example a @mymath{200\times200}) this
-will result in an unreasonably larger number of points to plot
-(40000)! So when the cumulative frequency plot of an image is stored
-in a text file, it is best to only store its value on a certain number
-of points (intervals) rather than the whole data. The number of points
-to use for the final plot can be specified with the @option{--cfpnum}
-option.
+element. Even in small datasets (for example a @mymath{200\times200} image)
+this will result in an unreasonably large number of points to plot (40000)!
+As a result, for practical reasons, it is common to only store its value on
+a certain number of points (intervals) in the input range rather than the
+whole dataset, so you should determine the number of bins you want when
+asking for a cumulative frequency plot. In Gnuastro (and thus the
+Statistics program), the number reported for each bin is the total number
+of datapoints until the larger interval value for that bin. You can see an
+example histogram and cumulative frequency plot of a single dataset under
+the @option{--asciihist} and @option{--asciicfp} options of @ref{Invoking
+aststatistics}.
 
-Note that the interval's lower value is considered to be part of each
-interval, but its larger value is not. Formally, an interval between a
-and b is represented by [a, b). This is true for all the intervals
-except the last one. The last interval is closed or [a, b].
+So as a summary, both the histogram and cumulative frequency plot in
+Statistics will work with bins. Within each bin/interval, the lower value
+is considered to be within then bin (it is inclusive), but its larger value
+is not (it is exclusive). Formally, an interval/bin between a and b is
+represented by [a, b). When the over-all range of the dataset is specified
+(with the @option{--greaterequal}, @option{--lessthan}, or
+@option{--qrange} options), the acceptable values of the dataset are also
+defined with a similar inclusive-exclusive manner. But when the range is
+determined from the actual dataset (none of these options is called), the
+last element in the dataset is included in the last bin's count.
 
 
 @node  Sigma clipping, Mirror distribution, Histogram and Cumulative Frequency Plot, Statistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear
-Gaussian distribution, see @ref{Photon counting noise}. Now let's assume
-you add very bright objects (signal) on the image which have a very sharp
-boundary. By a sharp boundary, we mean that there is a clear cutoff at the
-place the objects finish. In other words, at their boundaries, the objects
-do not fade away into the noise. In such a case, when you plot the
-histogram (see @ref{Histogram and Cumulative Frequency Plot}) of the
-distribution, the pixels relating to those objects will be clearly separate
-from pixels that belong to parts of the image that did not have data. In
-the cumulative frequency plot, you would observe a long flat region were
-for a certain range of data (x axis), there is no increase in the index (y
-axis).
+@url{https://en.wikipedia.org/wiki/Normal_distribution,Gaussian
+distribution}, or see @ref{Photon counting noise}. Now let's assume you add
+very bright objects (signal) on the image which have a very sharp
+boundary. By a sharp boundary, we mean that there is a clear cutoff (from
+the noise) at the pixels the objects finish. In other words, at their
+boundaries, the objects do not fade away into the noise. In such a case,
+when you plot the histogram (see @ref{Histogram and Cumulative Frequency
+Plot}) of the distribution, the pixels relating to those objects will be
+clearly separate from pixels that belong to parts of the image that did not
+have any signal (were just noise). In the cumulative frequency plot, after
+a steady rise (due to the noise), you would observe a long flat region were
+for a certain range of data (horizontal axis), there is no increase in the
+index (vertical axis).
 
 @cindex Blurring
 @cindex Cosmic rays
 @cindex Aperture blurring
 @cindex Atmosphere blurring
-In cases like the above, @mymath{\sigma}-clipping is a very useful
-tool to remove the effect (bias) of such forms of signal from the
-distribution. In astronomical applications, cosmic rays (when they
-collide at a near normal incidence angle) are a very good example of
-such signals. The tracks they leave behind in the image are perfectly
-immune to the blurring caused by the atmosphere and the aperture. They
-are also very energetic and so their borders are usually clearly
-separated from the surrounding noise. So @mymath{\sigma}-clipping is
-very useful in removing their effect on the data. See Figure 15 in
-Akhlaghi and Ichikawa (2015).
+Outliers like the example above can significantly bias the measurement of
+noise statistics. @mymath{\sigma}-clipping is defined as a way to avoid the
+effect of such outliers. In astronomical applications, cosmic rays (when
+they collide at a near normal incidence angle) are a very good example of
+such outliers. The tracks they leave behind in the image are perfectly
+immune to the blurring caused by the atmosphere and the aperture. They are
+also very energetic and so their borders are usually clearly separated from
+the surrounding noise. So @mymath{\sigma}-clipping is very useful in
+removing their effect on the data. See Figure 15 in Akhlaghi and Ichikawa,
+@url{https://arxiv.org/abs/1505.01664,2015}.
 
-@mymath{\sigma}-clipping is the very simple iteration below. In each
-iteration, the range of input data might decrease and so when the data
-in the image have the conditions above, they will be removed. The
-criteria to stop the iteration will be discussed below.
+@mymath{\sigma}-clipping is defined as the very simple iteration below. In
+each iteration, the range of input data might decrease and so when the
+outliers have the conditions above, the outliers will be removed through
+this iteration. The exit criteria will be discussed below.
 
 @enumerate
 @item
-Calculate the mean, standard deviation (@mymath{\sigma}) and median
-(@mymath{m}) of a distribution.
+Calculate the standard deviation (@mymath{\sigma}) and median (@mymath{m})
+of a distribution.
 @item
 Remove all points that are smaller or larger than
 @mymath{m\pm\alpha\sigma}.
+@item
+Go back to step 1, unless the selected exit criteria is reached.
 @end enumerate
 
 @noindent
-The reason the median is used as a reference and not the mean is that
-the mean is too significantly affected by the presence of signal,
-while the median is less affected, see @ref{Finding the sky value}. As
-you can tell from this algorithm, besides the condition above (that
-the signal have clear high signal to noise boundaries)
-@mymath{\sigma}-clipping is only useful when the signal does not cover
-more than half of the full data set. If they do, then the median will
-lie over the signal and sigma clipping might remove the pixels with no
-signal.
+The reason the median is used as a reference and not the mean is that the
+mean is too significantly affected by the presence of outliers, while the
+median is less affected, see @ref{Finding the sky value}. As you can tell
+from this algorithm, besides the condition above (that the signal have
+clear high signal to noise boundaries) @mymath{\sigma}-clipping is only
+useful when the signal does not cover more than half of the full data
+set. If they do, then the median will lie over the outliers and
+@mymath{\sigma}-clipping might remove the pixels with no signal.
 
-In the literature researchers use either one of two criteria to stop
-this iteration above:
+There are commonly two exit criteria to stop the @mymath{\sigma}-clipping
+iteration:
 
 @itemize
 @item
-When a certain number of iterations has taken place.
+When a certain number of iterations has taken place (second value to the
+@option{--sigclip} option is larger than 1).
 @item
 When the new measured standard deviation is within a certain tolerance
-level of the old one. The tolerance level is defined by:
+level of the old one (second value to the @option{--sigclip} option is less
+than 1). The tolerance level is defined by:
 
 @dispmath{\sigma_{old}-\sigma_{new} \over \sigma_{new}}
 
-The standard deviation is heavily influenced by the presence of
-outliers. Therefore the fact that it stops changing between two
-iterations is a sign that we have successfully removed outliers. Note
-that in each clipping, the dispersion in the distribution is either
-less or equal. So @mymath{\sigma_{old}\geq\sigma_{new}}.
+The standard deviation is used because it is heavily influenced by the
+presence of outliers. Therefore the fact that it stops changing between two
+iterations is a sign that we have successfully removed outliers. Note that
+in each clipping, the dispersion in the distribution is either less or
+equal. So @mymath{\sigma_{old}\geq\sigma_{new}}.
 @end itemize
 
 @cartouche
 @noindent
-Other objects in astronomical data analysis like galaxies and stars
-are blurred by the atmosphere and the telescope aperture. Galaxies in
-particular do not appear to have a clear high signal to noise cutoff
-at all. Therefore @mymath{\sigma}-clipping will not be useful in
-removing their effect on the data. In astronomy, it is only useful for
-removing the effect of Cosmic rays.
+When working on astronomical images, objects like galaxies and stars are
+blurred by the atmosphere and the telescope aperture, therefore their
+signal sinks into the noise very gradually. Galaxies in particular do not
+appear to have a clear high signal to noise cutoff at all. Therefore
+@mymath{\sigma}-clipping will not be useful in removing their effect on the
+data.
+
+To guage if @mymath{\sigma}-clipping will be useful for your dataset, look
+at the histogram (see @ref{Histogram and Cumulative Frequency Plot}). The
+ASCII histogram that is printed on the command-line with
+@option{--asciihist} is good enough in most cases.
 @end cartouche
 
 @node Mirror distribution, Invoking aststatistics, Sigma clipping, Statistics
@@ -11331,8 +11372,8 @@ is called, the given ranges will also shift accordingly).
 @node Invoking aststatistics,  , Mirror distribution, Statistics
 @subsection Invoking Statistics
 
-Statistics will print the major statistical measures of an image's pixel
-value distribution. The executable name is @file{aststatistics} with the
+Statistics will print statistical measures of an input dataset (table
+column or image). The executable name is @file{aststatistics} with the
 following general template
 
 @example
@@ -11343,278 +11384,347 @@ $ aststatistics [OPTION ...] InputImage.fits
 One line examples:
 
 @example
-$ aststatistics input.fits
-$ aststatistics animage.fits --ignoremin --nohist
+$ aststatistics image.fits
+$ aststatistics tab.fits -c/MAG/ --histogram
+$ aststatistics catalog.fits -h1 --column=MAG_F160W
+$ aststatistics tab.txt -cMAG_F160W --median --std
+$ aststatistics cat.fits -cMAG -g26 -l27 --sigmaclip=3,0.2
 @end example
 
 @noindent
-If Statistics is to do any data processing, an input image should be
-provided with the recognized extensions as input data, see
-@ref{Arguments}. See @ref{Common options} for the list of options that are
-shared by all programs. All the main statistical operations have their
-specific set of options. If a string is given to the @option{--output}
-option, it is used as the base name for the generated files. Without this
-option, the input image name is used as the name-base.
+An input image or table is necessary when processing is to be done. If a
+name is given to the @option{--output} option, it is used as the base name
+for the generated files (when applicable). Without @option{--output}, the
+input name will be used to generate an output name, see @ref{Automatic
+output}. The options described below are particular to Statistics, but for
+general operations, it shares a large collection of options with the other
+Gnuastro programs, see @ref{Common options}. Options can also be given in
+configuration files, for more, please see @ref{Configuration files}.
 
-Some of the options are necessary and if they are not included in the
-configuration file, Statistics will not run, see @ref{Configuration
-files}. However, for some others this is not so: @option{--histmin},
-@option{--histmax}, @option{--histquant}, @option{--cfpmin},
-@option{--cfpmax}, @option{--cfpquant}. These are options to do with the
-range of values in the histogram and cumulative frequency plots. If no
-value is given for these options when Statistics is about to start
-processing the data, then the full data range will be used. Such that the
-minimum image value will be set for the minimums and the maximum image
-value will be used for the maximum.
+The input dataset may have blank values (see @ref{Blank pixels}), in this
+case, all blank pixels are ignored during the calculation. Initially, the
+full dataset will be read, but it is possible to select a specific range of
+data elements to use in the analysis of each run. You can either directly
+specify a minimum and maximum value for the range of data elements to use
+(with @option{--greaterequal} or @option{--lessthan}), or specify the range
+using quantiles (with @option{--qrange}). If a range is specified all
+pixels outside of it are ignored before any processing.
 
 @cindex ASCII plot
-By default, in verbose mode @footnote{If the @option{-q} option is not
-called then all programs will operate in verbose mode, see @ref{Common
-options}.}, along with a short summary of the basic data statistics, a
-simple ASCII histogram will also be printed. This can be useful for a very
-quick and general view of the distribution. An example verbose output of
-Statistics on one of the @command{$ make check} outputs can be seen below:
+When no operation is requested, Statistics will print some general basic
+properties of the input dataset on the command-line like the example below
+(ran on one of the output images of @command{make check}). It includes the
+basic information about the input dataset: filename, FITS extension (if a
+FITS file), the column name (if it was a table) or number if it the column
+doesn't have a name, along with the range and units of the data (if they
+were present in the input). Following that, the basic statistics of the
+dataset like number of points, minimum, maximum, and etc are printed. The
+outputs are finalized with an ASCII histogram to give you a general feeling
+of how the data are distributed in the given range.
 
 @example
-$ aststatistics ./tests/convolve_spatial_warped_noised.fits        \
-                --histquant=0.05
-Statistics started on AAA BBB CC DD:EE:FF GGGG
-  - Input read: ./tests/convolve_spatial_warped_noised.fits (hdu: 0)
-   -- Number of points                             10000
-   -- Minimum                                      -38.2066
-   -- Maximum                                      1268.72
-   -- Sum                                          154927
-   -- Mean                                         15.4927
-   -- Standard deviation                           60.5407
-   -- Median                                       4.82691
-   -- Mode (quantile, value)                       0.4335, 2.90301
-   -- Mode symmetricity and its cutoff value       0.5909, 17.2507
-   -- ASCII histogram in the range: -13.912957  --  65.058487:
-    |           * *
-    |        ********
-    |        ********* **
-    |      **************
-    |    ******************
-    |   ********************
-    |  ***********************
-    |***************************
-    |******************************
-    |*****************************************
-    |************************************************************
-    |------------------------------------------------------------
-
- - Sigma clipping results (Median, Mean, STD, Number):
-   - 4.00 times sigma by convergence (tolerance: 0.2000):
-      1: 4.826907, 15.492665, 60.540707, 10000
-      2: 4.665353, 10.117773, 27.793823, 9881
-      3: 4.433090, 7.458610, 18.510950, 9715
-      4: 4.216213, 6.176818, 15.231371, 9575
-      5: 4.088199, 5.679162, 14.183748, 9502
-   - 4.00 sigma-clipping 5 times:
-      1: 4.826907, 15.492665, 60.540707, 10000
-      2: 4.665353, 10.117773, 27.793823, 9881
-      3: 4.433090, 7.458610, 18.510950, 9715
-      4: 4.216213, 6.176818, 15.231371, 9575
-      5: 4.088199, 5.679162, 14.183748, 9502
-Statistics finished in:  0.006964 (seconds)
+Statistics (GNU Astronomy Utilities) X.X
+-------
+Input: convolve_spatial_scaled_noised.fits (hdu: 0)
+Range: from (inclusive) 9500, upto (exclusive) 11000.
+Unit: Brightness
+-------
+  Number of elements:                      9074
+  Minimum:                                 9622.35
+  Maximum:                                 10999.8
+  Median:                                  10093.7
+  Mean:                                    10144
+  Standard deviation:                      221.81
+-------
+Histogram:
+ |                   **
+ |                 ******
+ |                 *******
+ |                *********
+ |              *************
+ |              **************
+ |            ******************
+ |            ********************
+ |          *************************** *
+ |        ***************************************** ***
+ |*  **************************************************************
+ |-----------------------------------------------------------------
 @end example
+
+The following set of options are for specifying the input/outputs of
+Statistics. Recall that besides these options that are only meaningful in
+Statistics, there are many other options that are common to all Gnuastro
+programs including Statistics, see @ref{Common options} for those.
 
 @table @option
 
-@item -r
-@itemx --ignoremin
-Ignore all data elements that have a value equal to the minimum value in
-the image. In practice this is like setting them as @ref{Blank pixels},
-their values will not be used.
+@item -c STR/INT
+@itemx --column=STR/INT
+The column selector when the input file is a table, plain text, FITS ASCII,
+and FITS binary tables are all acceptable. See @ref{Selecting table
+columns} for a full description of how to use this option. For more on how
+tables are read in Gnuastro, please see @ref{Tables in Gnuastro}.
 
-@item -l
-@itemx --lowerbin
-Set the first column of the histogram and cumulative frequency plots
-to the lower interval boundary. By default (without calling this
-option), the central interval value is used.
+@item -g FLT
+@itemx --greaterequal=FLT
+Limit the range of inputs into those with values greater and equal to what
+is given to this option. None of the values below this value will be used
+in any of the processing steps below.
+
+@item -l FLT
+@itemx --lessthan=FLT
+Limit the range of inputs into those with values less-than what is given to
+this option. None of the values greater or equal to this value will be used
+in any of the processing steps below.
+
+@item -Q FLT[,FLT]
+@itemx --qrange=FLT[,FLT]
+Specify the range of usable inputs using the quantile. This option can take
+one or two quantiles to specify the range. When only one number is input
+(let's call it @mymath{Q}), the range will be those values in the quantile
+range @mymath{Q} to @mymath{1-Q}. So when only one value is given, it must
+be less than 0.5. When two values are given, the first is used as the lower
+quantile range and the second is used as the larger quantile range.
+
+@cindex Quantile
+The quantile of a given element in a dataset is defined by the fraction of
+its index to the total number of values in the sorted input array. So the
+smallest and largest values in the dataset have a quantile of 0.0 and
+1.0. The quantile is a very useful non-parametric (making no assumptions
+about the input) relative measure to specify a range. It can best be
+understood in terms of the cumulative frequency plot, see @ref{Histogram
+and Cumulative Frequency Plot}. The quantile of each horizontal axis value
+in the cumulative frequency plot is the vertical axis value associate with
+it.
+
+@end table
+
+@cindex AWK
+@cindex GNU AWK
+When you only need a single valued statistical measurement, you can use the
+group of options below. They will print only the requested value as one
+field in a line/row, like the @option{--mean}, @option{--median}
+options. These options can be called any number of times and in any
+order. The outputs of all such options will be printed on one line
+following each other (with a space character between them). This feature
+makes these options very useful in scripts, or to redirect into programs
+like GNU AWK for further immediate higher-level processing, or when you
+don't want the clutter of all the information when no option is
+specified. These are some of the most basic measures, Gnuastro is still
+under heavy development, if you want another statistical parameter, please
+contact us and we will do out best to add it to this list.
+
+@table @option
+
+@item -n
+@itemx --number
+Print the number of all used elements.
+
+@item --minimum
+Print the minimum value of all used elements.
+
+@item --maximum
+Print the maximum value of all used elements.
+
+@item --sum
+Print the sum of all used elements.
+
+@item -m
+@itemx --mean
+Print the mean (average) of all used elements.
+
+@item -t
+@itemx --std
+Print the standard deviation of all used elements.
+
+@item -M
+@itemx --median
+Print the median of all used elements.
+
+@item -O
+@itemx --mode
+Print the mode of all used elements.
+
+@end table
+
+The list of options below are for those statistical operations that output
+more than one value. So while they can be called together in one run, their
+outputs will be distinct (each one's output will usually take in more than
+one line).
+
+@table @option
+
+@item -A
+@itemx --asciihist
+Print an ASCII histogram of the usable values within the input dataset
+along with some basic information like the example below (from the UVUDF
+catalog@footnote{@url{https://asd.gsfc.nasa.gov/UVUDF/uvudf_rafelski_2015.fits.gz}}). The
+width and height of the histogram (in units of character widths and heights
+on your command-line terminal) can be set with the @option{--numasciibins}
+(for the width) and @option{--asciiheight} options.
+
+For a full description of the histogram, please see @ref{Histogram and
+Cumulative Frequency Plot}. An ASCII plot is certainly very crude and
+cannot be used in any publication, but it is very useful for getting a
+general feeling of the input dataset very fast and easily on the
+command-line without having to take your hands off the keyboard (which is a
+major distraction!). If you want to try it out, you can write it all in one
+line and ignore the @key{\} and extra spaces.
+
+@example
+$ aststatistics uvudf_rafelski_2015.fits.gz --hdu=1         \
+                --column=MAG_F160W --lessthan=40            \
+                --asciihist --numasciibins=55
+ASCII Histogram:
+Number: 8593
+Y: (linear: 0 to 660)
+X: (linear: 17.7735 -- 31.4679, in 55 bins)
+ |                                         ****
+ |                                        *****
+ |                                       ******
+ |                                      ********
+ |                                      *********
+ |                                    ***********
+ |                                  **************
+ |                                *****************
+ |                           ***********************
+ |                    ********************************
+ |*** ***************************************************
+ |-------------------------------------------------------
+@end example
+
+@item --asciicfp
+Print the cumulative frequency plot of the usable elements in the input
+dataset. Please see descriptions under @option{--asciihist} for more, the
+example below is from the same input table as that example. To better
+understand the cumulative frequency plot, please see @ref{Histogram and
+Cumulative Frequency Plot}.
+
+@example
+$ aststatistics uvudf_rafelski_2015.fits.gz --hdu=1         \
+                --column=MAG_F160W --lessthan=40            \
+                --asciicfp --numasciibins=55
+ASCII Cumulative frequency plot:
+Y: (linear: 0 to 8593)
+X: (linear: 17.7735 -- 31.4679, in 55 bins)
+ |                                                *******
+ |                                             **********
+ |                                            ***********
+ |                                          *************
+ |                                         **************
+ |                                        ***************
+ |                                      *****************
+ |                                    *******************
+ |                                ***********************
+ |                         ******************************
+ |*******************************************************
+ |-------------------------------------------------------
+@end example
+
+@item -H
+@itemx --histogram
+Save the histogram of the usable values in the input dataset into a
+table. The first column is the value at the center of the bin and the
+second is the number of points in that bin. If the @option{--cumulative}
+option is also called with this option in a run, then the table will have
+three columns (the third is the cumulative frequency plot). Through the
+@option{--numbins} and @option{--lowerbin} you can modify the first column
+values and with @option{--normalize} and @option{--maxbinone} you can
+modify the second columns. See below for the description of each.
+
+By default (when no @option{--output} is specified) a plain text table will
+be created, see @ref{Gnuastro text table format}. If a FITS name is
+specified, you can use the common option @option{--tableformat} to have it
+as a FITS ASCII or FITS binary format, see @ref{Common options}. This table
+can then be fed into your favorite plotting tool and get a much more clean
+and nice histogram than what the raw command-line can offer you (with the
+@option{--asciihist} option).
+
+@item -C
+@itemx --cumulative
+Save the cumulative frequency plot of the usable values in the input
+dataset into a table, similar to @option{--histogram}.
+
+@item -s FLT,FLT
+@itemx --sigmaclip=FLT,FLT
+Do @mymath{\sigma}-clipping on the usable pixels of the input dataset. See
+@ref{Sigma clipping} for a full description on @mymath{\sigma}-clipping and
+also to better understand this option.
+
+This option takes two values which are separated by a comma (@key{,}). Each
+value can either be written as a single number or as a fraction of two
+numbers (for example @code{3,1/10}). The first value to this option is the
+multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
+section). The second value is the exit criteria. If it is less than 1, then
+it is interpretted as tolerance and if it is larger than one it is a
+specific number. Hence, in the latter case the value must be an integer.
+
+@end table
+
+The final set of options in Statistics describe the histogram and
+cumulative frequency plot settings (for the @option{--histogram},
+@option{--cumulative}, @option{--asciihist}, and @option{--asciicfp}
+options).
+
+@table @option
+
+@item --numbins
+The number of bins (rows) to use in the histogram and the cumulative
+frequency plot tables (outputs of @option{--histogram} and
+@option{--cumulative}).
+
+@item --numasciibins
+The number of bins (characters) to use in the ASCII plots when printing the
+histogram and the cumulative frequency plot (outputs of
+@option{--asciihist} and @option{--asciicfp}).
+
+@item --asciiheight
+The number of lines to use when printing the ASCII histogram and cumulative
+frequency plot on the command-line (outputs of @option{--asciihist} and
+@option{--asciicfp}).
+
+@item -n
+@itemx --normalize
+Normalize the histogram or cumulative frequency plot tables (outputs of
+@option{--histogram} and @option{--cumulative}). For a histogram, the sum
+of all bins will become one and for a cumulative frequency plot the last
+bin value will be one.
+
+@item --maxbinone
+Divide all the histogram values by the maximum bin value so it becomes one
+and the rest are similarly scaled. In some situations (for example if you
+want to plot the histogram and cumulative frequency plot in one plot) this
+can be very useful.
 
 @item --onebinvalue=FLT
 Make sure that one bin starts with the value to this option. In practice,
 this will shift the bins used to find the histogram and cumulative
 frequency plot such that one bin's lower interval becomes this value. For
-example when the histogram range includes negative values, but the data
-doesn't. If zero is somewhere between one bin, then the viewers of the
-plot(s) will think negative data is also present. By setting
-@option{--onebinvalue=0}, you can make sure that the viewers of the
-histogram will not be confused.
+example when the histogram range includes negative and positive values and
+zero has a special significance in your analysis, then zero will be
+somewhere in one bin and will mix counts of positive and negative. By
+setting @option{--onebinvalue=0}, you can make sure that the viewers of the
+histogram will not be confused without doing the math of setting a range
+and number of bins.
 
 @cindex NaN
 Note that by default, the first row of the histogram and cumulative
-frequency plot show the central values of each bin. So in the example
-above you will not see the 0.000. To see it, add the
-@option{--lowerbin} option to show the lower value of each bin. If you
-don't care about the bin positions within the specified range you can
-set the value to this option to a Not-a-Number (NaN) value on the
-command-line (@option{--onebinvalue=nan}) or in the configuration
-files with a @code{nan} following the option name. If the value is not
-within the specified bin range, it will be ignored.
+frequency plot show the central values of each bin. So in the example above
+you will not see the 0.000 in the first column, you will see two symmetric
+values. If the value is not within the usable input range, this option will
+be ignored.
 
-@item --noasciihist
-Do not show an ASCII plot on the command-line.
-
-@item --mirrorquant=FLT
-Quantile to put the mirror. A value between 0 and 1. See @ref{Mirror
-distribution} for a complete explanation. Outputs two files with suffixes
-@file{_mirrorhist.txt} and @file{_mirrorcfp.txt}.
-
-@item --checkmode
-The mode of the data is found by comparing the input data distribution with
-its mirror distribution. If this option is called, the mirror
-distribution's histogram and cumulative frequency plots will be saved in to
-plain text files ending with @file{_modehist.txt} and
-@file{_modecfp.txt}. See the explanation for @ref{Mirror distribution} for
-more details about these two files and how you can easily plot the
-outputs. This option only works when when Statistics is in verbose
-mode. Since otherwise the mode is not calculated.
-
-To draw the plots you can use the script in @ref{Mirror
-distribution}. Just change the appended suffixes in the two calls to
-@code{np.loadtxt} in the Python script.
-
-@item --histrangeformirror
-Use @option{--histmin} and @option{--histmax} for the range of the
-mirror distributions (which are produced with the
-@option{--mirrorquant} and @option{--checkmode} options).
-
-@end table
-
-@noindent
-@strong{Histogram:} The stored histogram is stored in a text file
-ending with @file{_hist.txt}.
-
-@table @option
-
-@item --nohist
-Do not calculate or save the histogram.
-
-@item --normhist
-Make a normalized histogram, see @ref{Histogram and Cumulative Frequency
-Plot}.
-
-@item --maxhistone
-Divide all histogram bins by the number in the bin with the most data
-points. This is very useful if you want to plot the histogram along
-with a normalized cumulative frequency plot in one plot. Note that if
-the histogram numbers are important in showing along with the
-cumulative frequency plot, you can use @option{--maxcfpeqmaxhist}, see
-below.
-
-@item -n INT
-@itemx --histnumbins=INT
-The number of bins in the histogram. Note that in practice, this is also
-equivalent to the number of rows in the output text file.
-
-@item -i FLT
-@itemx --histmin=FLT
-The minimum value to use in the histogram. If @option{--histquant} is
-given, then any value given @option{--histmin} or @option{--histmax} is
-ignored.
-
-@item -x FLT
-@itemx --histmax=FLT
-The maximum value to use in the histogram. Similar to @option{--histmin}.
-
-@item -Q FLT
-@itemx --histquant=FLT
-Set the range of the histogram based on the image quantile. So
-@option{--histquant=0.05} is given, all the data from the 0.05 quantile to
-0.95 quantile will be used in the histogram. This is useful when there is a
-small number of outliers in the image. Note that if this option is given,
-any (possible) value given to @option{--histmin} or @option{--histmax} are
-ignored.
-
-@end table
-
-@noindent
-@strong{Cumulative Frequency Plot:} The cumulative frequency plot will
-be stored in a text file ending with @file{_cfp.txt}. To be more
-realistic, the average of the indexs in each interval is used as the
-second column, see @ref{Histogram and Cumulative Frequency Plot}.
-
-@table @option
-
-@item --nocfp
-Do not calculate or store the cumulative frequency plot.
-
-@item --normcfp
-Normalize the cumulative frequency plot, see @ref{Histogram and Cumulative
-Frequency Plot}.
-
-@item --maxcfpeqmaxhist
-Set the maximum cumulative frequency plot value to the maximum value
-in the histogram (if it is to be created). This is a useful in
-plotting the histogram and cumulative frequency plots together when
-the histogram numbers are important.
-
-@item --cfpsimhist
-Set the range of the cumulative frequency plot and the number of
-points to store to the same range as the histogram. If the two are to
-be plotted together, this is very useful, since the first axis
-(column) of the two will become identical.
-
-@item -p INT
-@itemx --cfpnum=INT
-The number of points to store the cumulative frequency plot. They will be
-evenly distributed between the range of pixel values.
-
-@item -a FLT
-@itemx --cfpmin=FLT
-The minimum value to use for the cumulative pixel value range. If
-@option{--cfpquant} is given, then any value given @option{--cfpmin} or
-@option{--cfpmax} is ignored.
-
-@item -n FLT
-@itemx --cfpmax=FLT
-The maximum value to use for the cumulative pixel value range. Similar to
-@option{--cfpmin}.
-
-@item -U FLT
-@itemx --cfpquant=FLT
-Similar to @option{--histquant} but for the cumulative frequency plot.
-
-@end table
-
-@noindent
-@strong{@mymath{\sigma}-clipping:} The result of each iteration of
-@mymath{\sigma}-clipping will be printed in the terminal for both
-types of sigma clipping: A certain number of times and convergence of
-the standard deviation.
-
-@table @option
-
-@item --nosigclip
-If this option is called, no @mymath{\sigma}-clipping will take place.
-
-@item -u FLT
-@itemx --sigclipmultip=FLT
-The multiple of the standard deviation above which to clip. This value is
-demonstrated by @mymath{\alpha} in @ref{Sigma clipping}.
-
-@item -t FLT
-@itemx --sigcliptolerance=FLT
-If the fractional difference of the standard deviation becomes less than
-this value, then @mymath{\sigma}-clipping will halt, see @ref{Sigma
-clipping}.
-
-@item -g INT
-@itemx --sigclipnum=INT
-The number of iterations for the case where the @mymath{\sigma}-clipping
-iteration stops after a certain number of runs.
 
 @end table
 
 
 
-@node NoiseChisel, MakeCatalog, Statistics, Image analysis
+
+@node NoiseChisel, MakeCatalog, Statistics, Data analysis
 @section NoiseChisel
 
 Once raw data have gone through the initial reduction process (through the
-programs in @ref{Image manipulation}). We are ready to derive scientific
+programs in @ref{Data manipulation}). We are ready to derive scientific
 results out of them. Unfortunately in most cases, the scientifically
 interesting targets are deeply drowned in a sea of noise. NoiseChisel is
 Gnuastro's tool to detect signal in noise. In fact, NoiseChisel was the
@@ -12230,7 +12340,7 @@ pixel.
 
 
 
-@node MakeCatalog,  , NoiseChisel, Image analysis
+@node MakeCatalog,  , NoiseChisel, Data analysis
 @section MakeCatalog
 
 Detecting and segmenting signal over an image results in labeled
@@ -13302,7 +13412,7 @@ the actual columns.
 
 
 
-@node Modeling and fittings, High-level calculations, Image analysis, Top
+@node Modeling and fittings, High-level calculations, Data analysis, Top
 @chapter Modeling and fitting
 
 @cindex Fitting
@@ -14802,14 +14912,14 @@ were of integer types.
 @node High-level calculations, Libraries, Modeling and fittings, Top
 @chapter High-level calculations
 
-After the reduction of raw data (for example with the programs in
-@ref{Image manipulation}) you will have reduced images/data ready for
-processing/analyzing (for example with the programs in @ref{Image
-analysis}). But the processed/analyzed data (or catalogs) are still
-not enough to derive any scientific result. Even higher-level analysis
-is still needed to convert the observed magnitudes, sizes or volumes
-into physical quantities that we associate with each catalog entry or
-detected object which is the purpose of the tools in this section.
+After the reduction of raw data (for example with the programs in @ref{Data
+manipulation}) you will have reduced images/data ready for
+processing/analyzing (for example with the programs in @ref{Data
+analysis}). But the processed/analyzed data (or catalogs) are still not
+enough to derive any scientific result. Even higher-level analysis is still
+needed to convert the observed magnitudes, sizes or volumes into physical
+quantities that we associate with each catalog entry or detected object
+which is the purpose of the tools in this section.
 
 
 

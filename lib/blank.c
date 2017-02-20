@@ -36,58 +36,37 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Write the blank value of the type into an already allocate space.
-
-   Note that for strings, pointer should actually be `char **'. */
+/* Write the blank value of the type into an already allocate space. Note
+   that for STRINGS, pointer should actually be `char **'. */
 void
-gal_blank_write(void *pointer, uint8_t type)
+gal_blank_write(void *ptr, uint8_t type)
 {
   switch(type)
     {
+    /* Numeric types */
+    case GAL_DATA_TYPE_UINT8:   *(uint8_t  *)ptr = GAL_BLANK_UINT8;    break;
+    case GAL_DATA_TYPE_INT8:    *(int8_t   *)ptr = GAL_BLANK_INT8;     break;
+    case GAL_DATA_TYPE_UINT16:  *(uint16_t *)ptr = GAL_BLANK_UINT16;   break;
+    case GAL_DATA_TYPE_INT16:   *(int16_t  *)ptr = GAL_BLANK_INT16;    break;
+    case GAL_DATA_TYPE_UINT32:  *(uint32_t *)ptr = GAL_BLANK_UINT32;   break;
+    case GAL_DATA_TYPE_INT32:   *(int32_t  *)ptr = GAL_BLANK_INT32;    break;
+    case GAL_DATA_TYPE_UINT64:  *(uint64_t *)ptr = GAL_BLANK_UINT64;   break;
+    case GAL_DATA_TYPE_INT64:   *(int64_t  *)ptr = GAL_BLANK_INT64;    break;
+    case GAL_DATA_TYPE_FLOAT32: *(float    *)ptr = GAL_BLANK_FLOAT32;  break;
+    case GAL_DATA_TYPE_FLOAT64: *(double   *)ptr = GAL_BLANK_FLOAT64;  break;
+
+    /* String type. */
     case GAL_DATA_TYPE_STRING:
-      gal_checkset_allocate_copy(GAL_BLANK_STRING, pointer);
+      gal_checkset_allocate_copy(GAL_BLANK_STRING, ptr);
       break;
 
-    case GAL_DATA_TYPE_UINT8:
-      *(uint8_t *)pointer       = GAL_BLANK_UINT8;
-      break;
+    /* Complex types */
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "complex types are not yet supported in "
+            "`gal_blank_write'");
 
-    case GAL_DATA_TYPE_INT8:
-      *(int8_t *)pointer        = GAL_BLANK_INT8;
-      break;
-
-    case GAL_DATA_TYPE_UINT16:
-      *(uint16_t *)pointer      = GAL_BLANK_UINT16;
-      break;
-
-    case GAL_DATA_TYPE_INT16:
-      *(int16_t *)pointer       = GAL_BLANK_INT16;
-      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      *(uint32_t *)pointer      = GAL_BLANK_UINT32;
-      break;
-
-    case GAL_DATA_TYPE_INT32:
-      *(int32_t *)pointer       = GAL_BLANK_INT32;
-      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      *(uint64_t *)pointer      = GAL_BLANK_UINT64;
-      break;
-
-    case GAL_DATA_TYPE_INT64:
-      *(int64_t *)pointer       = GAL_BLANK_INT64;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      *(float *)pointer         = GAL_BLANK_FLOAT32;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      *(double *)pointer        = GAL_BLANK_FLOAT64;
-      break;
-
+    /* Unrecognized type. */
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_blank_write'", type);
@@ -113,6 +92,185 @@ gal_blank_alloc_write(uint8_t type)
 
   /* Return the allocated space. */
   return out;
+}
+
+
+
+
+
+/* Return 1 if the dataset has a blank value and zero if it doesn't. */
+#define HAS_BLANK(IT) {                                         \
+    IT b, *a=data->array, *af=a+data->size;                     \
+    gal_blank_write(&b, data->type);                            \
+    if(b==b) do if(*a==b)   return 1; while(++a<af);            \
+    else     do if(*a!=*a)  return 1; while(++a<af);            \
+  }
+int
+gal_blank_present(gal_data_t *data)
+{
+  char **str=data->array, **strf=str+data->size;
+
+  /* If there is nothing in the array (its size is zero), then return 0 (no
+     blank is present. */
+  if(data->size==0) return 0;
+
+  /* Go over the pixels and check: */
+  switch(data->type)
+    {
+    /* Numeric types */
+    case GAL_DATA_TYPE_UINT8:     HAS_BLANK( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      HAS_BLANK( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    HAS_BLANK( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     HAS_BLANK( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    HAS_BLANK( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     HAS_BLANK( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    HAS_BLANK( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     HAS_BLANK( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   HAS_BLANK( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   HAS_BLANK( double   );    break;
+
+    /* String. */
+    case GAL_DATA_TYPE_STRING:
+      do if(!strcmp(*str++,GAL_BLANK_STRING)) return 1; while(str<strf);
+      break;
+
+    /* Complex types */
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "complex types are not yet supported in "
+            "`gal_blank_write'");
+
+    /* Bit */
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "bit type datasets are not yet supported in "
+            "`gal_blank_present'");
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
+            "in `gal_blank_present'", data->type);
+    }
+
+  /* If there was a blank value, then the function would have returned with
+     a value of 1. So if it reaches here, then we can be sure that there
+     was no blank values, hence, return 0. */
+  return 0;
+}
+
+
+
+
+
+
+
+/* Create a dataset of the the same size as the input, but with an uint8_t
+   type that has a value of 1 for data that are blank and 0 for those that
+   aren't. */
+#define FLAG_BLANK(IT) {                                                \
+    IT b, *a=data->array;                                               \
+    gal_blank_write(&b, data->type);                                    \
+    if(b==b) /* Blank value can be checked with the equal comparison */ \
+      do { *o = *a==b;  ++a; } while(++o<of);                           \
+    else     /* Blank value will fail with the equal comparison */      \
+      do { *o = *a!=*a; ++a; } while(++o<of);                           \
+  }
+gal_data_t *
+gal_blank_flag(gal_data_t *data)
+{
+  uint8_t *o, *of;
+  gal_data_t *out;
+  char **str=data->array, **strf=str+data->size;
+
+  /* Allocate the output array. */
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
+                     data->wcs, 0, data->minmapsize, data->name, data->unit,
+                     data->comment);
+
+  /* Set the pointers for easy looping. */
+  of=(o=out->array)+data->size;
+
+  /* Go over the pixels and set the output values. */
+  switch(data->type)
+    {
+    /* Numeric types */
+    case GAL_DATA_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     FLAG_BLANK( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    FLAG_BLANK( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     FLAG_BLANK( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    FLAG_BLANK( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     FLAG_BLANK( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
+
+    /* String. */
+    case GAL_DATA_TYPE_STRING:
+      do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
+      break;
+
+    /* Currently unsupported types. */
+    case GAL_DATA_TYPE_BIT:
+    case GAL_DATA_TYPE_COMPLEX32:
+    case GAL_DATA_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "%s type not yet supported in `gal_blank_flag'",
+            gal_data_type_as_string(data->type, 1));
+
+    /* Bad input. */
+    default:
+      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
+            "in `gal_blank_flag'", data->type);
+    }
+
+  /* Return */
+  return out;
+}
+
+
+
+
+
+/* Remove blank elements from a dataset, convert it to a 1D dataset and
+   adjust the size properly. In practice this function doesn't `realloc'
+   the input array, all it does is to shift the blank eleemnts to the end
+   and adjust the size elements of the `gal_data_t'. */
+#define BLANK_REMOVE(IT) {                                              \
+    IT b, *a=data->array, *af=a+data->size, *o=data->array;             \
+    if( gal_blank_present(data) )                                       \
+      {                                                                 \
+        gal_blank_write(&b, data->type);                                \
+        if(b==b)       /* Blank value can be be checked with equal. */  \
+          do if(*a!=b)  { ++num; *o++=*a; } while(++a<af);              \
+        else           /* Blank value will fail on equal comparison. */ \
+          do if(*a==*a) { ++num; *o++=*a; } while(++a<af);              \
+      }                                                                 \
+    else num=data->size;                                                \
+  }
+void
+gal_blank_remove(gal_data_t *data)
+{
+  size_t num=0;
+
+  /* Shift all non-blank elements to the start of the array. */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_blank_remove'", data->type);
+    }
+
+  /* Adjust the size elements of the dataset. */
+  data->ndim=1;
+  data->dsize[0]=data->size=num;
 }
 
 
@@ -213,240 +371,4 @@ gal_blank_as_string(uint8_t type, int width)
             "`gal_blank_as_string'", type);
     }
   return blank;
-}
-
-
-
-
-
-
-/* For integers a simple equality is enough. */
-#define HAS_BLANK_INT(CTYPE, BLANK) {                                   \
-    CTYPE *a=data->array, *af=a+data->size;                             \
-    do if(*a++ == BLANK) return 1; while(a<af);                         \
-  }
-
-/* Note that a NaN value is not equal to another NaN value, so we can't use
-   the easy check for cases were the blank value is NaN. Also note that
-   `isnan' is actually a macro, so it works for both float and double
-   types.*/
-#define HAS_BLANK_FLT(CTYPE, BLANK, MULTIP) {                           \
-    CTYPE *a=data->array, *af=a+(MULTIP*data->size);                    \
-    if(isnan(BLANK)) do if(isnan(*a++)) return 1; while(a<af);          \
-    else             do if(*a++==BLANK) return 1; while(a<af);          \
-  }
-
-/* Return 1 if the dataset has a blank value and zero if it doesn't. */
-int
-gal_blank_present(gal_data_t *data)
-{
-  char **str=data->array, **strf=str+data->size;
-
-  /* Go over the pixels and check: */
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
-
-    case GAL_DATA_TYPE_UINT8:
-      HAS_BLANK_INT(uint8_t, GAL_BLANK_UINT8);     break;
-
-    case GAL_DATA_TYPE_INT8:
-      HAS_BLANK_INT(int8_t, GAL_BLANK_INT8);       break;
-
-    case GAL_DATA_TYPE_UINT16:
-      HAS_BLANK_INT(uint16_t, GAL_BLANK_UINT16);   break;
-
-    case GAL_DATA_TYPE_INT16:
-      HAS_BLANK_INT(int16_t, GAL_BLANK_INT16);     break;
-
-    case GAL_DATA_TYPE_UINT32:
-      HAS_BLANK_INT(uint32_t, GAL_BLANK_UINT32);   break;
-
-    case GAL_DATA_TYPE_INT32:
-      HAS_BLANK_INT(int32_t, GAL_BLANK_INT32);     break;
-
-    case GAL_DATA_TYPE_UINT64:
-      HAS_BLANK_INT(uint64_t, GAL_BLANK_UINT64);   break;
-
-    case GAL_DATA_TYPE_INT64:
-      HAS_BLANK_INT(int64_t, GAL_BLANK_INT64);     break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      HAS_BLANK_FLT(float, GAL_BLANK_FLOAT32, 1);  break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      HAS_BLANK_FLT(double, GAL_BLANK_FLOAT64, 1); break;
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      HAS_BLANK_FLT(float, GAL_BLANK_FLOAT32, 2);  break;
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      HAS_BLANK_FLT(double, GAL_BLANK_FLOAT64, 2); break;
-
-    case GAL_DATA_TYPE_STRING:
-      do if(!strcmp(*str++,GAL_BLANK_STRING)) return 1; while(str<strf);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
-            "in `gal_data_has_blank'", data->type);
-    }
-
-  /* If there was a blank value, then the function would have returned with
-     a value of 1. So if it reaches here, then we can be sure that there
-     was no blank values, hence, return 0. */
-  return 0;
-}
-
-
-
-
-
-/* For integers a simple equality is enough. */
-#define FLAG_BLANK_INT(CTYPE, BLANK) {                                  \
-    CTYPE *a=data->array; do *o = (*a==BLANK); while(++o<of);           \
-  }
-
-/* Note that a NaN value is not equal to another NaN value, so we can't use
-   the easy check for cases were the blank value is NaN. Also note that
-   `isnan' is actually a macro, so it works for both float and double
-   types.*/
-#define FLAG_BLANK_FLT(CTYPE, BLANK) {                                  \
-    CTYPE *a=data->array;                                               \
-    if(isnan(BLANK)) do *o = isnan(*a++);   while(++o<of);              \
-    else             do *o = (*a++==BLANK); while(++o<of);              \
-  }
-
-#define FLAG_BLANK_COMPLEX(CTYPE, BLANK) {                              \
-    CTYPE *a=data->array;                                               \
-    if(isnan(BLANK))                                                    \
-      do { *o=(isnan(*a) || isnan(*(a+1))); a+=2; } while(++o<of);      \
-    else                                                                \
-      do { *o=(*a==BLANK || *(a+1)==BLANK); a+=2; } while(++o<of);      \
-  }
-
-/* Output a data-set of the the same size as the input, but with an uint8_t
-   type that has a value of 1 for data that are blank and 0 for those that
-   aren't. */
-gal_data_t *
-gal_blank_flag(gal_data_t *data)
-{
-  uint8_t *o, *of;
-  gal_data_t *out;
-  char **str=data->array, **strf=str+data->size;
-
-  /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize, data->name, data->unit,
-                     data->comment);
-
-  /* Set the pointers for easy looping. */
-  of=(o=out->array)+data->size;
-
-  /* Go over the pixels and set the output values. */
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
-
-    case GAL_DATA_TYPE_UINT8:
-      FLAG_BLANK_INT(uint8_t, GAL_BLANK_UINT8);      break;
-
-    case GAL_DATA_TYPE_INT8:
-      FLAG_BLANK_INT(int8_t, GAL_BLANK_INT8);        break;
-
-    case GAL_DATA_TYPE_UINT16:
-      FLAG_BLANK_INT(uint16_t, GAL_BLANK_UINT16);    break;
-
-    case GAL_DATA_TYPE_INT16:
-      FLAG_BLANK_INT(int16_t, GAL_BLANK_INT16);      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      FLAG_BLANK_INT(uint32_t, GAL_BLANK_UINT32);    break;
-
-    case GAL_DATA_TYPE_INT32:
-      FLAG_BLANK_INT(int32_t, GAL_BLANK_INT32);      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      FLAG_BLANK_INT(uint64_t, GAL_BLANK_UINT64);    break;
-
-    case GAL_DATA_TYPE_INT64:
-      FLAG_BLANK_INT(int64_t, GAL_BLANK_INT64);      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      FLAG_BLANK_FLT(float, GAL_BLANK_FLOAT32);      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      FLAG_BLANK_FLT(double, GAL_BLANK_FLOAT64);     break;
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      FLAG_BLANK_COMPLEX(float, GAL_BLANK_FLOAT32);  break;
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      FLAG_BLANK_COMPLEX(double, GAL_BLANK_FLOAT64); break;
-
-    case GAL_DATA_TYPE_STRING:
-      do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `gal_blank_flag'", data->type);
-    }
-
-  /* Return */
-  return out;
-}
-
-
-
-
-
-#define BLANK_REMOVE(IT) {                                              \
-    IT b, *a=data->array, *af=a+data->size, *o=data->array;             \
-    if( gal_blank_present(data) )                                       \
-      {                                                                 \
-        gal_blank_write(&b, data->type);                                \
-        if(b==b)          /* Can be checked with equal: isn't NaN */    \
-          do if(*a!=b)  { ++num; *o++=*a; } while(++a<af);              \
-        else /* Blank value is NaN, so equals will fail on blank elements*/ \
-          do if(*a==*a) { ++num; *o++=*a; } while(++a<af);              \
-      }                                                                 \
-    else num=data->size;                                                \
-  }
-
-
-/* Remove blank elements from a dataset, convert it to a 1D dataset and
-   adjust the size properly. In practice this function doesn't `realloc'
-   the input array, all it does is to shift the blank eleemnts to the end
-   and adjust the size elements of the `gal_data_t'. */
-void
-gal_blank_remove(gal_data_t *data)
-{
-  size_t num=0;
-
-  /* Shift all non-blank elements to the start of the array. */
-  switch(data->type)
-    {
-    case GAL_DATA_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_blank_remove'", data->type);
-    }
-
-  /* Adjust the size elements of the dataset. */
-  data->ndim=1;
-  data->dsize[0]=data->size=num;
 }

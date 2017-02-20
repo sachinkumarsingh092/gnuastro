@@ -354,7 +354,7 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
   mf=a[mi];
   errdiff=errorstdm*sqrt(mi);
   topi = 2*mi>size-1 ? size-1 : 2*mi;
-  af=a[gal_statistics_index_from_quantile(2*mi+1,
+  af=a[gal_statistics_quantile_index(2*mi+1,
                           GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will

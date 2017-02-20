@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
@@ -50,50 +51,431 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /****************************************************************
  ********               Simple statistics                 *******
- ****        (wrappers for functions in `arithmetic.h')      ****
  ****************************************************************/
-#define SIMP_FLAGS GAL_ARITHMETIC_NUMOK
-
+/* Return the number of non-blank elements in an array as a single element,
+   uint64 type data structure. */
+#define STATS_NUM(IT) {                                                 \
+    IT b, *a=input->array, *af=a+input->size;                           \
+    gal_blank_write(&b, input->type);                                   \
+    if( gal_blank_present(input) )                                      \
+      {                                                                 \
+        if(b==b)   /* Blank can be found with the equal sign. */        \
+          do if(*a!=b)       ++(*num);            while(++a<af);        \
+        else       /* Blank is NaN (fails on equal).  */                \
+          do if(*a==*a)     ++(*num);            while(++a<af);         \
+      }                                                                 \
+    else *num=input->size;                                              \
+  }
 gal_data_t *
-gal_statistics_number(gal_data_t *data)
+gal_statistics_number(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_NUMVAL, SIMP_FLAGS, data);
+  uint64_t *num;
+  size_t dsize=1;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  num=out->array;
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_NUM( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_NUM( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_NUM( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_NUM( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_NUM( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_NUM( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_NUM( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_NUM( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_NUM( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_NUM( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_number'", input->type);
+    }
+  return out;
 }
 
+
+
+
+
+/* Return the minimum (non-blank) value of a dataset in the same type as
+   the dataset. Note that a NaN (blank in floating point) will fail on any
+   comparison. So when finding the minimum or maximum, when the blank value
+   is NaN, we can safely assume there is no blank value at all. */
+#define STATS_MIN(IT) {                                                 \
+    IT b, *o=out->array, *a=input->array, *af=a+input->size;            \
+    gal_blank_write(&b, input->type);                                   \
+    if( b==b && gal_blank_present(input) )                              \
+      do if(*a!=b) { *o = *a < *o ? *a : *o; ++n; } while(++a<af);      \
+    else                                                                \
+      do           { *o = *a < *o ? *a : *o; ++n; } while(++a<af);      \
+                                                                        \
+    /* If there were no usable elements, set the output to blank. */    \
+    if(n==0) *o=b;                                                      \
+  }
 gal_data_t *
-gal_statistics_minimum(gal_data_t *data)
+gal_statistics_minimum(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_MINVAL, SIMP_FLAGS, data);
+  size_t dsize=1, n=0;
+  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  gal_data_type_max(out->type, out->array);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_MIN( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_MIN( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_MIN( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_MIN( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_MIN( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_MIN( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_MIN( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_MIN( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_MIN( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_MIN( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_minimum'", input->type);
+    }
+  return out;
 }
 
+
+
+
+
+/* Return the maximum (non-blank) value of a dataset in the same type as
+   the dataset. See explanations of `gal_statistics_minimum'. */
+#define STATS_MAX(IT) {                                                 \
+    IT b, *o=out->array, *a=input->array, *af=a+input->size;            \
+    gal_blank_write(&b, input->type);                                   \
+    if( b==b && gal_blank_present(input) )                              \
+      do if(*a!=b) { *o = *a > *o ? *a : *o; ++n; } while(++a<af);      \
+    else                                                                \
+      do           { *o = *a > *o ? *a : *o; ++n; } while(++a<af);      \
+                                                                        \
+    /* If there were no usable elements, set the output to blank. */    \
+    if(n==0) *o=b;                                                      \
+  }
 gal_data_t *
-gal_statistics_maximum(gal_data_t *data)
+gal_statistics_maximum(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_MAXVAL, SIMP_FLAGS, data);
+  size_t dsize=1, n=0;
+  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  gal_data_type_min(out->type, out->array);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_MAX( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_MAX( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_MAX( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_MAX( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_MAX( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_MAX( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_MAX( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_MAX( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_MAX( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_MAX( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+  return out;
 }
 
+
+
+
+
+/* Return the sum of the input dataset as a single element dataset of type
+   float64. */
+#define STATS_SUM_NUM(IT) {                                             \
+    IT b, *a=input->array, *af=a+input->size;                           \
+    gal_blank_write(&b, input->type);                                   \
+    if( gal_blank_present(input) )                                      \
+      {                                                                 \
+        if(b==b)       /* Blank value can be checked with an equals. */ \
+          do if(*a!=b)       { ++n; sum += *a; }  while(++a<af);        \
+        else           /* Blank value will fail an equal comparison. */ \
+          do if(*a==*a)      { ++n; sum += *a; }  while(++a<af);        \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        do                          sum += *a;    while(++a<af);        \
+        n = input->size;                                                \
+      }                                                                 \
+  }
 gal_data_t *
-gal_statistics_sum(gal_data_t *data)
+gal_statistics_sum(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_SUMVAL, SIMP_FLAGS, data);
+  double sum=0.0f;
+  size_t dsize=1, n=0;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_SUM_NUM( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_SUM_NUM( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_SUM_NUM( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_SUM_NUM( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_SUM_NUM( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_SUM_NUM( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_SUM_NUM( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_SUM_NUM( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_SUM_NUM( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_SUM_NUM( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+  *((double *)(out->array)) = n ? sum : GAL_BLANK_FLOAT64;
+  return out;
 }
 
+
+
+
+
+/* Return the mean of the input dataset as a float64 type single-element
+   dataset. */
 gal_data_t *
-gal_statistics_mean(gal_data_t *data)
+gal_statistics_mean(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_MEANVAL, SIMP_FLAGS, data);
+  double sum=0.0f;
+  size_t dsize=1, n=0;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_SUM_NUM( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_SUM_NUM( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_SUM_NUM( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_SUM_NUM( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_SUM_NUM( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_SUM_NUM( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_SUM_NUM( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_SUM_NUM( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_SUM_NUM( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_SUM_NUM( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+  *((double *)(out->array)) = n ? sum/n : GAL_BLANK_FLOAT64;
+  return out;
 }
 
+
+
+
+
+/* Return the standard deviation of the input dataset as a single element
+   dataset of type float64. */
+#define STATS_NSS2(IT) {                                                \
+    IT b, *a=input->array, *af=a+input->size;                           \
+    gal_blank_write(&b, input->type);                                   \
+    if( gal_blank_present(input) )                                      \
+      {                                                                 \
+        if(b==b)       /* Blank value can be checked with an equals. */ \
+          do if(*a!=b) { ++n; s += *a; s2 += *a * *a; }  while(++a<af); \
+        else           /* Blank value will fail an equal comparison. */ \
+          do if(*a==*a){ ++n; s += *a; s2 += *a * *a; }  while(++a<af); \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        do             {      s += *a; s2 += *a * *a; }  while(++a<af); \
+        n = input->size;                                                \
+      }                                                                 \
+  }
 gal_data_t *
-gal_statistics_std(gal_data_t *data)
+gal_statistics_std(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_STDVAL, SIMP_FLAGS, data);
+  size_t dsize=1, n=0;
+  double s=0.0f, s2=0.0f;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_NSS2( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_NSS2( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_NSS2( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_NSS2( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_NSS2( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_NSS2( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_NSS2( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_NSS2( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_NSS2( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_NSS2( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+  *((double *)(out->array)) = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
+  return out;
 }
 
+
+
+
+
+/* Return the mean and standard deviation of a dataset in one run in type
+   float64. The output is a two element data structure, with the first
+   value being the mean and the second value the standard deviation. */
 gal_data_t *
-gal_statistics_median(gal_data_t *data)
+gal_statistics_mean_std(gal_data_t *input)
 {
-  return gal_arithmetic(GAL_ARITHMETIC_OP_MEDIANVAL, SIMP_FLAGS, data);
+  size_t dsize=2, n=0;
+  double s=0.0f, s2=0.0f;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_NSS2( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_NSS2( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_NSS2( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_NSS2( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_NSS2( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_NSS2( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_NSS2( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_NSS2( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_NSS2( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_NSS2( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+  ((double *)(out->array))[0] = n ? s/n                  : GAL_BLANK_FLOAT64;
+  ((double *)(out->array))[1] = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
+  return out;
+}
+
+
+
+
+
+/* The input is a sorted array with no blank values, we want the median
+   value to be put inside the already allocated space which is pointed to
+   by `median'. It is in the same type as the input. */
+#define MED_IN_SORTED(IT) {                                             \
+    IT *a=sorted->array;                                                \
+    *(IT *)median = n%2 ? a[n/2]  : (a[n/2]+a[n/2-1])/2;                \
+  }
+static void
+statistics_median_in_sorted_no_blank(gal_data_t *sorted, void *median)
+{
+  size_t n=sorted->size;
+
+  switch(sorted->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     MED_IN_SORTED( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      MED_IN_SORTED( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    MED_IN_SORTED( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     MED_IN_SORTED( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    MED_IN_SORTED( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     MED_IN_SORTED( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    MED_IN_SORTED( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     MED_IN_SORTED( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_median_in_sorted_no_blank'", sorted->type);
+    }
+}
+
+
+
+
+
+/* Return the median value of the dataset in the same type as the input as
+   a one element dataset. If the `inplace' flag is set, the input data
+   structure will be modified: it will have no blank values and will be
+   sorted (increasing). */
+gal_data_t *
+gal_statistics_median(gal_data_t *input, int inplace)
+{
+  size_t dsize=1;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+
+  /* Write the median. */
+  statistics_median_in_sorted_no_blank(nbs, out->array);
+
+  /* Clean up (if necessary), then return the output */
+  if(nbs!=input) gal_data_free(nbs);
+  return out;
+}
+
+
+
+
+
+/* Return a single element dataset of the same type as input keeping the
+   value that has the given quantile. */
+#define STATS_QUANT(IT) { IT *o=out->array, *a=nbs->array; *o = a[ind]; }
+gal_data_t *
+gal_statistsics_quantile(gal_data_t *input, float quantile, int inplace)
+{
+  size_t dsize=1, ind;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+
+  /* A small sanity check. */
+  if(quantile<0 || quantile>1)
+    error(EXIT_FAILURE, 0, "the `quantile' input to "
+          "`gal_statistics_quantile' must be between 0 and 1 (inclusive)");
+
+  /* Find the index of the quantile. */
+  ind=gal_statistics_quantile_index(nbs->size, quantile);
+
+  /* Set the value. */
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_QUANT( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      STATS_QUANT( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    STATS_QUANT( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     STATS_QUANT( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    STATS_QUANT( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     STATS_QUANT( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    STATS_QUANT( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     STATS_QUANT( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_QUANT( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_QUANT( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_maximum'", input->type);
+    }
+
+  /* Clean up and return. */
+  if(nbs!=input) gal_data_free(nbs);
+  return out;
+}
+
+
+
+
+
+size_t
+gal_statistics_quantile_index(size_t size, float quant)
+{
+  float floatindex;
+
+  if(quant>1.0f)
+    error(EXIT_FAILURE, 0, "the quantile in "
+          "gal_statistics_index_from_quantile should be smaller than 1.0");
+
+  /* Find the index of the quantile. */
+  floatindex=(float)size*quant;
+
+  /*
+  printf("quant: %f, size: %zu, findex: %f\n", quant, size, floatindex);
+  */
+  /* Note that in the conversion from float to size_t, the floor
+     integer value of the float will be used. */
+  if( floatindex - (int)floatindex > 0.5 )
+    return floatindex+1;
+  else
+    return floatindex;
 }
 
 
@@ -249,6 +631,57 @@ gal_statistics_sort_decreasing(gal_data_t *data)
 
 
 
+/* Return a dataset that has doesn't have blank values and is sorted. If
+   the `inplace' value is set to 1, then the input array will be modified,
+   otherwise, a new array will be allocated with the desired properties. So
+   if it is already sorted and has blank values, the `inplace' variable is
+   irrelevant.*/
+gal_data_t *
+gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
+{
+  gal_data_t *noblank, *sorted;
+
+  /* Make sure there is no blanks in the array that will be used. After
+     this step, we won't be dealing with `input' any more, but with
+     `noblank'.*/
+  if( gal_blank_present(input) )
+    {
+      if(inplace)                     /* If we can free the input, then */
+        {                             /* just remove the blank elements */
+          gal_blank_remove(input);    /* in place. */
+          noblank=input;
+        }
+      else
+        {
+          noblank=gal_data_copy(input);   /* We aren't allowed to touch */
+          gal_blank_remove(input);        /* the input, so make a copy. */
+        }
+    }
+  else noblank=input;
+
+  /* Make sure the array is sorted. After this step, we won't be dealing
+     with `noblank' any more but with `sorted'. */
+  if( gal_statistics_is_sorted(noblank) ) sorted=noblank;
+  else
+    {
+      if(inplace) sorted=noblank;
+      else
+        {
+          if(noblank!=input)    /* no-blank has already been allocated. */
+            sorted=noblank;
+          else
+            sorted=gal_data_copy(noblank);
+        }
+      gal_statistics_sort_increasing(sorted);
+    }
+
+  return sorted;
+}
+
+
+
+
+
 
 
 
@@ -297,69 +730,83 @@ gal_statistics_sort_decreasing(gal_data_t *data)
      * `onebinstart' A desired value for onebinstart. Note that with this
         option, the bins won't start and end exactly on the given range
         values, it will be slightly shifted to accommodate this
-        request.  */
+        request.
+
+  The output is a 1D array (column) of type double, it has to be double to
+  account for small differences on the bin edges.
+*/
 gal_data_t *
-gal_statistics_regular_bins(gal_data_t *data, gal_data_t *range,
+gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
                             size_t numbins, float onebinstart)
 {
   size_t i;
-  gal_data_t *bins, *tmp;
-  float *b, *ra, min, max, hbw, diff, binwidth;
+  gal_data_t *bins, *tmp, *range;
+  double *b, *ra, min, max, hbw, diff, binwidth;
 
 
   /* Some sanity checks. */
   if(numbins==0)
     error(EXIT_FAILURE, 0, "`numbins' in `gal_statistics_regular_bins' "
           "cannot be given a value of 0");
-  if(range && range->type!=GAL_DATA_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
-          "on ranges of type float32");
-  if(data->ndim!=1)
-    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
-          "in 1D data");
-  if(data->type!=GAL_DATA_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "gal_statistics_regular_bins currently on works "
-          "on float32 type data");
 
 
   /* Set the minimum and maximum values. */
-  if(range && range->size)
+  if(inrange && inrange->size)
     {
+      /* Make sure we are dealing with a double type range. */
+      if(inrange->type==GAL_DATA_TYPE_FLOAT64)
+        range=inrange;
+      else
+        range=gal_data_copy_to_new_type(inrange, GAL_DATA_TYPE_FLOAT64);
+
+      /* Set the minimum and maximum of the bins. */
       ra=range->array;
       if( (range->size)%2 )
         error(EXIT_FAILURE, 0, "Quantile ranges are not implemented in "
               "`gal_statistics_regular_bins' yet.");
       else
         {
+          /* If the minimum isn't set (is blank), find it. */
           if( isnan(ra[0]) )
             {
-              tmp=gal_statistics_minimum(data);
-              min=*((float *)(tmp->array));
+              tmp=gal_data_copy_to_new_type_free(gal_statistics_minimum(data),
+                                                 GAL_DATA_TYPE_FLOAT64);
+              min=*((double *)(tmp->array));
               gal_data_free(tmp);
             }
           else min=ra[0];
-          if( isnan(ra[1]) )                       /* When the maximum    */
-            {                                      /* isn't set, we'll    */
-              tmp=gal_statistics_maximum(data);    /* Add a very small    */
-              max=*((float *)(tmp->array)) + 1e-5; /* value so all the    */
-              gal_data_free(tmp);                  /* points are counted. */
+
+          /* For the maximum, when it isn't set, we'll add a very small
+             value, so all points are included. */
+          if( isnan(ra[1]) )
+            {
+              tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(data),
+                                                 GAL_DATA_TYPE_FLOAT64);
+              max=*((double *)(tmp->array))+1e-6;
+              gal_data_free(tmp);
             }
           else max=ra[1];
         }
+
+      /* Clean up: if `range' was allocated. */
+      if(range!=inrange) gal_data_free(range);
     }
+  /* No range was given, find the minimum and maximum. */
   else
     {
-      tmp=gal_statistics_minimum(data);
-      min=*((float *)(tmp->array));
+      tmp=gal_data_copy_to_new_type_free(gal_statistics_minimum(data),
+                                         GAL_DATA_TYPE_FLOAT64);
+      min=*((double *)(tmp->array));
       gal_data_free(tmp);
-      tmp=gal_statistics_maximum(data);
-      max=*((float *)(tmp->array));
+      tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(data),
+                                         GAL_DATA_TYPE_FLOAT64);
+      max=*((double *)(tmp->array)) + 1e-6;
       gal_data_free(tmp);
     }
 
 
   /* Allocate the space for the bins. */
-  bins=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &numbins, NULL,
+  bins=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &numbins, NULL,
                       0, data->minmapsize, "bin_center", data->unit,
                       "Center value of each bin.");
 
@@ -402,63 +849,85 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *range,
 
 
 /* Make a histogram of all the elements in the given dataset with bin
-   values that are defined in the `bins' structure (see
-   `gal_statistics_regular_bins'). */
+   values that are defined in the `inbins' structure (see
+   `gal_statistics_regular_bins'). `inbins' is not mandatory, if you pass a
+   NULL pointer, the bins structure will be built within this function
+   based on the `numbins' input. As a result, when you have already defined
+   the bins, `numbins' is not used. */
+
+#define HISTOGRAM_TYPESET(IT) {                                         \
+    IT *a=data->array, *af=a+data->size;                                \
+    do if( *a>=min && *a<max) ++h[ (size_t)( (*a-min)/binwidth ) ];     \
+    while(++a<af);                                                      \
+  }
+
 gal_data_t *
-gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
-                         int normalize, int maxhistone)
+gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
+                         int maxone)
 {
-  size_t i, *h;
-  double ref=NAN;
+  size_t *h;
+  float *f, *ff;
   gal_data_t *hist;
-  float *f, *ff, min, max, binwidth;
-
-
-  /* Some basic sanity checks for now (until it is generalized). */
-  if(data->ndim!=1)
-    error(EXIT_FAILURE, 0, "gal_statistics_histogram currently on works "
-          "in 1D data");
-  if(data->type!=GAL_DATA_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "gal_statistics_histogram currently on works "
-          "on float32 type data");
+  double *d, min, max, ref=NAN, binwidth;
 
 
   /* Check if the bins are regular or not. For irregular bins, we can
      either use the old implementation, or GSL's histogram
      functionality. */
+  if(bins==NULL)
+    error(EXIT_FAILURE, 0, "no `bins' in `gal_statistics_histogram");
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
     error(EXIT_FAILURE, 0, "the input bins to `gal_statistics_histogram' "
           "are not regular. Currently it is only implemented for regular "
           "bins");
 
 
-  /* Check if normalize and maxhistone are not called together. */
-  if(normalize && maxhistone)
-    error(EXIT_FAILURE, 0, "only one of `normalize' and `maxhistone' may "
+  /* Check if normalize and `maxone' are not called together. */
+  if(normalize && maxone)
+    error(EXIT_FAILURE, 0, "only one of `normalize' and `maxone' may "
           "be given to `gal_statistics_histogram'");
 
-  /* Allocate the histogram (note that we are clearning it. */
+
+  /* Allocate the histogram (note that we are clearning it so all values
+     are zero. */
   hist=gal_data_alloc(NULL, GAL_DATA_TYPE_SIZE_T, bins->ndim, bins->dsize,
                       NULL, 1, data->minmapsize, "hist_number", "counts",
                       "Number of data points within each bin.");
 
 
-  /* Set the minimum and maximum values: */
-  f=bins->array;
-  binwidth=f[1]-f[0];
-  max = f[bins->size - 1] + binwidth/2;
-  min = f[0]              - binwidth/2;
+  /* Set the minimum and maximum range of the histogram from the bins. */
+  d=bins->array;
+  binwidth=d[1]-d[0];
+  max = d[bins->size - 1] + binwidth/2;
+  min = d[0]              - binwidth/2;
 
 
   /* Go through all the elements and find out which bin they belong to. */
   h=hist->array;
-  f=data->array;
-  for(i=0;i<data->size;++i)
-    if(f[i]>=min && f[i]<max)
-      {
-        ++h[ (size_t)((f[i]-min)/binwidth) ];
-        /*printf("%-10.3f%zu\n", f[i], (size_t)((f[i]-min)/binwidth) );*/
-      }
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     HISTOGRAM_TYPESET(uint8_t);     break;
+    case GAL_DATA_TYPE_INT8:      HISTOGRAM_TYPESET(int8_t);      break;
+    case GAL_DATA_TYPE_UINT16:    HISTOGRAM_TYPESET(uint16_t);    break;
+    case GAL_DATA_TYPE_INT16:     HISTOGRAM_TYPESET(int16_t);     break;
+    case GAL_DATA_TYPE_UINT32:    HISTOGRAM_TYPESET(uint32_t);    break;
+    case GAL_DATA_TYPE_INT32:     HISTOGRAM_TYPESET(int32_t);     break;
+    case GAL_DATA_TYPE_UINT64:    HISTOGRAM_TYPESET(uint64_t);    break;
+    case GAL_DATA_TYPE_INT64:     HISTOGRAM_TYPESET(int64_t);     break;
+    case GAL_DATA_TYPE_FLOAT32:   HISTOGRAM_TYPESET(float);       break;
+    case GAL_DATA_TYPE_FLOAT64:   HISTOGRAM_TYPESET(double);      break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_histogram'", data->type);
+    }
+
+
+  /* For a check:
+  {
+    size_t i, *hh=hist->array;
+    for(i=0;i<hist->size;++i) printf("%-10.4f%zu\n", f[i], hh[i]);
+  }
+  */
 
 
   /* Find the reference to correct the histogram if necessary. */
@@ -476,7 +945,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
       gal_checkset_allocate_copy("Normalized histogram value for this bin",
                                  &hist->comment);
     }
-  if(maxhistone)
+  if(maxone)
     {
       /* Calculate the reference. */
       ref=-FLT_MAX;
@@ -497,6 +966,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
   /* Correct the histogram if necessary. */
   if( !isnan(ref) )
     { ff=(f=hist->array)+hist->size; do *f++ /= ref;   while(f<ff); }
+
 
   /* Return the histogram. */
   return hist;
@@ -531,15 +1001,6 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
   size_t *s, *sf, *hs, sums;
 
 
-  /* Some basic sanity checks for now (until it is generalized). */
-  if(data->ndim!=1)
-    error(EXIT_FAILURE, 0, "gal_statistics_cfp currently on works "
-          "in 1D data");
-  if(data->type!=GAL_DATA_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "gal_statistics_cfp currently on works "
-          "on float32 type data");
-
-
   /* Check if the bins are regular or not. For irregular bins, we can
      either use the old implementation, or GSL's histogram
      functionality. */
@@ -557,8 +1018,8 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
   /* If the histogram has float32 type it was given by the user and is
      either normalized or its maximum was set to 1. We can only use it if
-     it was normalized. If its maximum is 1, then we must ignore it and
-     build the histogram again.*/
+     it was normalized. If it isn't normalized, then we must ignore it and
+     build the histogram here.*/
   if(hist->type==GAL_DATA_TYPE_FLOAT32)
     {
       sum=0.0f;
@@ -566,6 +1027,7 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
       if(sum!=1.0f)
         hist=gal_statistics_histogram(data, bins, 0, 0);
     }
+
 
   /* Allocate the cumulative frequency plot's necessary space. */
   cfp=gal_data_alloc( NULL, hist->type, bins->ndim, bins->dsize,
@@ -644,204 +1106,216 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
 
 /****************************************************************
- *****************         Quantiles         ********************
- ****************************************************************/
-/* Find the index corresponding to a certain quantile, considering the
-   rounding that might be needed. */
-size_t
-gal_statistics_index_from_quantile(size_t size, float quant)
-{
-  float floatindex;
-
-  if(quant>1.0f)
-    error(EXIT_FAILURE, 0, "the quantile in gal_statistics_index_from_quantile "
-          "(statistics.c) Should be smaller");
-
-  /* Find the index of the quantile. */
-  floatindex=(float)size*quant;
-
-  /*
-  printf("quant: %f, size: %zu, findex: %f\n", quant, size, floatindex);
-  */
-  /* Note that in the conversion from float to size_t, the floor
-     integer value of the float will be used. */
-  if( floatindex - (int)floatindex > 0.5 )
-    return floatindex+1;
-  else
-    return floatindex;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************
  *****************       Sigma clip          ********************
  ****************************************************************/
-/* This function will repeatedly sigma clip the data and return the
-   median. It is assumed that the data have been ordered.
+/* Return a data structure with an array of four values: the final number
+   of points used, the median, average and standard deviation. The number
+   of clips is put into the `status' element of the data structure.
 
-   o1_n0: Ordered (1), not ordered (0).
+   Inputs:
+
+     - `multip': multiple of the standard deviation,
+
+     - `param' must be positive and determines the type of clipping:
+
+         - param<1.0: interpretted as a tolerance level to stop clipping.
+
+         - param>=1.0 and an integer: a specific number of times to do the
+           clippping.
+
+  The way this function works is very simple: first it will sort the input
+  (if it isn't sorted). Afterwards, it will recursively change the starting
+  point of the array and its size, calcluating the basic statistics in each
+  round to define the new starting point and size.
 */
-int
-gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
-                                   float sigma_multiple, float accuracy,
-                                   float *outave, float *outmed,
-                                   float *outstd, int print)
+
+#define SIGCLIP(IT) {                                                   \
+    IT *a  = sorted->array, *af = a  + sorted->size;                    \
+    IT *bf = sorted->array, *b  = bf + sorted->size - 1;                \
+                                                                        \
+    /* Remove all out-of-range elements from the start of the array. */ \
+    if(sortstatus==GAL_STATISTICS_SORTED_INCREASING)                    \
+      do if( *a > (*med - (multip * *std)) )                            \
+           { start=a; break; }                                          \
+      while(++a<af);                                                    \
+    else                                                                \
+      do if( *a < (*med + (multip * *std)) )                            \
+           { start=a; break; }                                          \
+      while(++a<af);                                                    \
+                                                                        \
+    /* Remove all out-of-range elements from the end of the array. */   \
+    if(sortstatus==GAL_STATISTICS_SORTED_INCREASING)                    \
+      do if( *b < (*med + (multip * *std)) )                            \
+           { size=b-a+1; break; }                                       \
+      while(--b>=bf);                                                   \
+    else                                                                \
+      do if( *b > (*med - (multip * *std)) )                            \
+           { size=b-a+1; break; }                                       \
+      while(--b>=bf);                                                   \
+  }
+
+gal_data_t *
+gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
+                          int quiet)
 {
-  printf("\n ... in gal_statistics_sigma_clip_converge ... \n");
-  exit(1);
-#if 0
-  size_t counter=0;
-  float *start, *oldstart, *dpt;
-  float ave=*outave, med=*outmed, std=*outstd;
-  float oldstd=0, oldmed=0, oldave=0, *orderedarray;
+  int sortstatus;
+  double *med, *mean, *std;
+  void *start, *sorted_array;
+  double oldmed, oldmean, oldstd;
+  size_t num=0, dsize=4, size, oldsize;
+  size_t maxnum = param>=1.0f ? param : 50;    /* for failing to converge */
+  uint8_t bytolerance = param>=1.0f ? 0 : 1;
+  gal_data_t *sorted, *median_i, *median_d, *out, *meanstd, *noblank;
 
-  if(o1_n0==0)
+  /* Some sanity checks. */
+  if( multip<=0 )
+    error(EXIT_FAILURE, 0, "`multip', must be greater than zero in "
+          "`gal_statistics_sigma_clip'. The given value was %g", multip);
+  if( param<=0 )
+    error(EXIT_FAILURE, 0, "`param', must be greater than zero in "
+          "`gal_statistics_sigma_clip'. The given value was %g", param);
+  if( param >= 1.0f && ceil(param) != param )
+    error(EXIT_FAILURE, 0, "when `param' is larger than 1.0, it is "
+          "interpretted as an absolute number of clips in "
+          "`gal_statistics_sigma_clip'. So it must be an integer. However, "
+          "your given value %g", param);
+
+
+  /* If there are blank elements, remove them (from a copied array). NOTE:
+     we don't want to change the input. */
+  if( gal_blank_present(input) )
     {
-      gal_array_float_copy(array, num_elem, &orderedarray);
-      qsort(orderedarray, num_elem, sizeof*orderedarray,
-            gal_qsort_float32_increasing);
+      noblank = gal_data_copy(input);
+      gal_blank_remove(noblank);
     }
-  else orderedarray=array;
+  else noblank=input;
 
-  start=orderedarray;
-  while(counter<GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE)
+
+  /* We want to have sorted (increasing) array. */
+  sortstatus=gal_statistics_is_sorted(noblank);
+  switch(sortstatus)
     {
-      oldstart=start;
+    case GAL_STATISTICS_SORTED_NOT:
+      /* Only copy (or allocate) space if it wasn't already allocated. */
+      sorted = (noblank==input) ? gal_data_copy(input) : noblank;
+      gal_statistics_sort_increasing(sorted);
+      sortstatus=GAL_STATISTICS_SORTED_INCREASING;
+      break;
 
-      med=*(start+num_elem/2);
-      gal_statistics_f_ave_std(start, num_elem, &ave, &std, NULL);
+    case GAL_STATISTICS_SORTED_DECREASING:
+    case GAL_STATISTICS_SORTED_INCREASING:
+      sorted=noblank;
+      break;
 
-      if(print)
-        printf("      %zu: %f  %f  %f  %zu\n",
-               counter+1, med, ave, std, num_elem);
+    default:
+      error(EXIT_FAILURE, 0, "sorted code %d not recognized in "
+            "`gal_statistics_sigma_clip'", gal_statistics_is_sorted(input));
+    }
 
-      /* It might happen that ave and std are NaN. If so, stop the
-         process here (the user has not given a mask and some pixels
-         have nan values!). */
-      if(isnan(ave) || isnan(std))
-        return 0;
 
-      /* Normally, oldstd should be larger than std, because the
-         possible outliers have been removed. If it is not, it means
-         that we have clipped too much! */
-      if(counter>0 && (oldstd-std)/std<accuracy)
+  /* Allocate the necessary spaces. */
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &dsize, NULL, 0,
+                     input->minmapsize, NULL, NULL, NULL);
+  median_i=gal_data_alloc(NULL, sorted->type, 1, &dsize, NULL, 0,
+                          input->minmapsize, NULL, NULL, NULL);
+
+
+  /* Print the comments. */
+  if(!quiet)
+    printf("%-8s %-10s %-15s %-15s %-15s\n",
+           "round", "number", "median", "mean", "STD");
+
+
+  /* Do the clipping, but first initialize the values that will be changed
+     during the clipping: the start of the array and the array's size. */
+  size=sorted->size;
+  sorted_array=start=sorted->array;
+  while(num<maxnum)
+    {
+      /* Find the median. */
+      statistics_median_in_sorted_no_blank(sorted, median_i->array);
+      median_d=gal_data_copy_to_new_type(median_i, GAL_DATA_TYPE_FLOAT64);
+
+      /* Find the average and Standard deviation, note that both `start'
+         and `size' will be different in the next round. */
+      sorted->array = start;
+      sorted->size = oldsize = size;
+      meanstd=gal_statistics_mean_std(sorted);
+
+      /* Put the three final values in usable (with a type) pointers. */
+      med = median_d->array;
+      mean = meanstd->array;
+      std  = &((double *)(meanstd->array))[1];
+
+      /* If the user wanted to view the steps, show it to them. */
+      if(!quiet)
+        printf("%-8zu %-10zu %-15g %-15g %-15g\n",
+               num+1, size, *med, *mean, *std);
+
+      /* If we are to work by tolerance, then check if we should jump out
+         of the loop. Normally, `oldstd' should be larger than std, because
+         the possible outliers have been removed. If it is not, it means
+         that we have clipped too much and must stop anyway, so we don't
+         need an absolute value on the difference! */
+      if( bytolerance && num>0 && ((oldstd - *std) / *std) < param )
+        break;
+
+      /* Clip all the elements outside of the desired range: since the
+         array is sorted, this means to just change the starting pointer
+         and size of the array. */
+      switch(sorted->type)
         {
-          *outstd=oldstd; *outave=oldave; *outmed=oldmed;
-          return 1;
+        case GAL_DATA_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
+        case GAL_DATA_TYPE_INT8:      SIGCLIP( int8_t   );   break;
+        case GAL_DATA_TYPE_UINT16:    SIGCLIP( uint16_t );   break;
+        case GAL_DATA_TYPE_INT16:     SIGCLIP( int16_t  );   break;
+        case GAL_DATA_TYPE_UINT32:    SIGCLIP( uint32_t );   break;
+        case GAL_DATA_TYPE_INT32:     SIGCLIP( int32_t  );   break;
+        case GAL_DATA_TYPE_UINT64:    SIGCLIP( uint64_t );   break;
+        case GAL_DATA_TYPE_INT64:     SIGCLIP( int64_t  );   break;
+        case GAL_DATA_TYPE_FLOAT32:   SIGCLIP( float    );   break;
+        case GAL_DATA_TYPE_FLOAT64:   SIGCLIP( double   );   break;
+        default:
+          error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                "`gal_statistics_sigma_clip'", sorted->type);
         }
 
-      for(dpt=start; dpt<start+num_elem; ++dpt)
-        if (*dpt>med-sigma_multiple*std)
-          {
-            start=dpt;
-            break;
-          }
+      /* Set the values from this round in the old elements, so the next
+         round can compare with, and return then if necessary. */
+      oldmed =  *med;
+      oldstd  = *std;
+      oldmean = *mean;
+      ++num;
 
-      for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
-        if (*dpt<med+sigma_multiple*std)
-          {
-            num_elem=dpt-start+1;
-            break;
-          }
-
-      oldave=ave;
-      oldmed=med;
-      oldstd=std;
-      ++counter;
+      /* Clean up: */
+      gal_data_free(meanstd);
+      gal_data_free(median_d);
     }
-#endif
-  return 0;
+
+  /* If we were in tolerance mode and `num' and `maxnum' are equal (the
+     loop didn't stop by tolerance), so the outputs should be NaN. */
+  out->status=num;
+  if( bytolerance && num==maxnum )
+    {
+      ((float *)(out->array))[0] = NAN;
+      ((float *)(out->array))[1] = NAN;
+      ((float *)(out->array))[2] = NAN;
+      ((float *)(out->array))[3] = NAN;
+    }
+  else
+    {
+      ((float *)(out->array))[0] = size;
+      ((float *)(out->array))[1] = oldmed;
+      ((float *)(out->array))[2] = oldmean;
+      ((float *)(out->array))[3] = oldstd;
+    }
+
+  /* Clean up and return. */
+  sorted->array=sorted_array;
+  if(sorted!=input) gal_data_free(sorted);
+  return out;
 }
 
-
-
-
-
-/* This function will do a certain number of sigma clips and return
-   the final average, median and std. o1_n0: 1: initially ordered. 2:
-   initially not ordered.*/
-int
-gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
-                                      float sigma_multiple, size_t numtimes,
-                                      float *outave, float *outmed,
-                                      float *outstd, int print)
-{
-  printf("\n ... in gal_statistics_sigma_clip_certain_num ... \n");
-  exit(1);
-#if 0
-  size_t counter=0;
-  float ave=*outave, med=*outmed, std=*outstd;
-  float *start, *oldstart, *dpt, *orderedarray;
-
-  if(o1_n0==0)
-    {
-      gal_array_float_copy(array, num_elem, &orderedarray);
-      qsort(orderedarray, num_elem, sizeof*orderedarray,
-            gal_qsort_float32_increasing);
-    }
-  else orderedarray=array;
-
-  start=orderedarray;
-  for(counter=0;counter<numtimes;++counter)
-    {
-      oldstart=start;
-
-      med=*(start+num_elem/2);
-      gal_statistics_f_ave_std(start, num_elem, &ave, &std, NULL);
-
-      if(print)
-        printf("      %zu: %f  %f  %f  %zu\n",
-               counter+1, med, ave, std, num_elem);
-
-      /* It might happen that ave and std are nan. If so, stop the
-         process here (the user has not given a mask and some pixels
-         have nan values!). */
-      if(isnan(ave) || isnan(std))
-        return 0;
-
-
-      for(dpt=start; dpt<start+num_elem; ++dpt)
-        if (*dpt>med-sigma_multiple*std)
-          {
-            start=dpt;
-            break;
-          }
-
-
-      for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
-        if (*dpt<med+sigma_multiple*std)
-          {
-            num_elem=dpt-start+1;
-            break;
-          }
-    }
-
-  if(o1_n0==0)
-    free(orderedarray);
-
-  *outave=ave;
-  *outmed=med;
-  *outstd=std;
-#endif
-  return 1;
-}
 
 
 
@@ -1089,7 +1563,7 @@ gal_statistics_mode_value_from_sym(float *sorted, size_t size,
 {
   float mf=sorted[modeindex];
   float af=
-    sorted[gal_statistics_index_from_quantile(2*modeindex+1,
+    sorted[gal_statistics_quantile_index(2*modeindex+1,
                            GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT)];
   return sym*(mf-af)+mf;
 }
@@ -1123,9 +1597,9 @@ gal_statistics_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
   if(mp.numcheck>1000)
     mp.interval=mp.numcheck/1000;
   else mp.interval=1;
-  mp.lowi  = gal_statistics_index_from_quantile(size,
+  mp.lowi  = gal_statistics_quantile_index(size,
                                  GAL_STATISTICS_MODE_LOW_QUANTILE);
-  mp.highi = gal_statistics_index_from_quantile(size,
+  mp.highi = gal_statistics_quantile_index(size,
                                  GAL_STATISTICS_MODE_HIGH_QUANTILE);
   mp.midi  = (((float)mp.highi
                + MODE_GOLDEN_RATIO*(float)mp.lowi)

@@ -65,9 +65,14 @@ static char
 args_doc[] = "ASTRdata";
 
 const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will print the basic "
-  "statistics of the input image pixel flux distribution. All blank pixels "
-  "or pixels specified by a mask image will be ignored.\n"
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do statistical "
+  "analysis on the input dataset (table column or image). All blank "
+  "pixels or pixels outside of the given range are ignored. You can "
+  "either directly ask for certain statistics in one line/row as shown "
+  "below with the same order as requested, or get tables of different "
+  "statistical measures like the histogram, cumulative frequency style "
+  "and etc. If no particular statistic is requested, some basic "
+  "information about the dataset is printed on the command-line.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -84,48 +89,6 @@ enum program_args_groups
   ARGS_GROUP_PARTICULAR_STAT,
   ARGS_GROUP_HIST_CFP,
 };
-
-
-
-
-/* Available letters for short options:
-
-   a b c d e f i j k p r u v w x y z
-   B E F G J L R W X Y Z
-*/
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_KEY_COLUMN       = 'c',
-  ARGS_OPTION_KEY_GREATEREQUAL = 'g',
-  ARGS_OPTION_KEY_LESSTHAN     = 'l',
-  ARGS_OPTION_KEY_QUANTRANGE   = 'Q',
-  ARGS_OPTION_KEY_MEAN         = 'm',
-  ARGS_OPTION_KEY_STD          = 't',
-  ARGS_OPTION_KEY_MEDIAN       = 'M',
-  ARGS_OPTION_KEY_MODE         = 'O',
-  ARGS_OPTION_KEY_ASCIIHIST    = 'A',
-  ARGS_OPTION_KEY_HISTOGRAM    = 'H',
-  ARGS_OPTION_KEY_CUMULATIVE   = 'C',
-  ARGS_OPTION_KEY_SIGMACLIP    = 's',
-  ARGS_OPTION_KEY_NORMALIZE    = 'n',
-
-  /* Only with long version (start with a value 1000, the rest will be set
-     automatically). */
-  ARGS_OPTION_KEY_NUMBER       = 1000,
-  ARGS_OPTION_KEY_MINIMUM,
-  ARGS_OPTION_KEY_MAXIMUM,
-  ARGS_OPTION_KEY_SUM,
-  ARGS_OPTION_KEY_ASCIICFP,
-  ARGS_OPTION_KEY_MIRROR,
-  ARGS_OPTION_KEY_NUMBINS,
-  ARGS_OPTION_KEY_LOWERBIN,
-  ARGS_OPTION_KEY_ONEBINSTART,
-  ARGS_OPTION_KEY_MAXBINONE,
-};
-
-
-
 
 
 
@@ -165,9 +128,11 @@ ui_initialize_options(struct statisticsparams *p,
   /* Program-specific initializers */
   p->lessthan            = NAN;
   p->onebinstart         = NAN;
-  p->mirrorquant         = NAN;
   p->greaterequal        = NAN;
-  p->quantilerange       = NAN;
+  p->quantmin            = NAN;
+  p->quantmax            = NAN;
+  p->sigclipparam        = NAN;
+  p->sigclipmultip       = NAN;
 
   /* Set the mandatory common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -242,6 +207,14 @@ ui_add_to_print_in_row(struct argp_option *option, char *arg,
 {
   struct statisticsparams *p=(struct statisticsparams *)params;
 
+  if(lineno==-1)
+    error(EXIT_FAILURE, 0, "currently the options to be printed in one row "
+          "(like `--number', `--mean', and etc) do not support printing "
+          "with the `--printparams' (`-P'), or writing into configuration "
+          "files due to lack of time when implementing these features. "
+          "Please get in touch with us at `%s', so we can implement it if "
+          "it is possible now, thank you", PACKAGE_BUGREPORT);
+
   /* If this option is given in a configuration file, then `arg' will not
      be NULL and we don't want to do anything if it is `0'. */
   if( arg && arg[1]!='\0' && *arg!='0' && *arg!='1' )
@@ -256,6 +229,135 @@ ui_add_to_print_in_row(struct argp_option *option, char *arg,
   /* Add this option to the print list. */
   gal_linkedlist_add_to_ill(&p->toprint, option->key);
 
+  return NULL;
+}
+
+
+
+
+
+static void *
+ui_parse_numbers(struct argp_option *option, char *arg,
+                 char *filename, size_t lineno, void *params)
+{
+  char *str;
+  gal_data_t *in;
+  struct statisticsparams *p=(struct statisticsparams *)params;
+
+  /* For the `--printparams' (`-P') option:*/
+  if(lineno==-1)
+    {
+      switch(option->key)
+        {
+        case ARGS_OPTION_KEY_SIGMACLIP:
+          asprintf(&str, "%g,%g", p->sigclipmultip, p->sigclipparam);
+          break;
+        case ARGS_OPTION_KEY_QRANGE:
+          if( isnan(p->quantmax) ) asprintf(&str, "%g", p->quantmin);
+          else     asprintf(&str, "%g,%g", p->quantmin, p->quantmax);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "a bug! option `%s' not recognized "
+                "in `ui_parse_numbers' (when called for printing). Please "
+                "contact us at %s to fix the problem", option->name,
+                PACKAGE_BUGREPORT);
+        }
+      return str;
+    }
+
+  /* Parse the inputs. */
+  in=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+  /* Checks depending on the option. */
+  switch(option->key)
+    {
+    case ARGS_OPTION_KEY_SIGMACLIP:
+      /* Check if there was only two numbers. */
+      if(in->size!=2)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                      "option takes two values (separated by a comma) for "
+                      "defining the sigma-clip. However, %zu numbers were "
+                      "read in the string `%s' (value to this option).\n\n"
+                      "The first number is the multiple of sigma, and the "
+                      "second is either the tolerance (if its is less than "
+                      "1.0), or a specific number of times to clip (if it "
+                      "is equal or larger than 1.0).", option->name, in->size,
+                      arg);
+
+      /* Read the values in. */
+      p->sigclipparam = ((double *)(in->array))[1];
+      p->sigclipmultip = ((double *)(in->array))[0];
+
+      /* Some sanity checks. */
+      if( p->sigclipmultip<=0 )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first value to "
+                      "the `--%s' option (multiple of sigma), must be "
+                      "greater than zero. From the string `%s' (value to "
+                      "this option), you have given a value of %g for the "
+                      "first value", option->name, arg, p->sigclipmultip);
+
+      /* If the second value must also be positive. */
+      if( p->sigclipparam<=0 )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the second value "
+                      "to the `--%s' option (tolerance to stop clipping or "
+                      "number of clips), must be greater than zero. From "
+                      "the string `%s' (value to this option), you have "
+                      "given a value of %g for the second value",
+                      option->name, arg, p->sigclipparam);
+
+      /* if the second value is larger or equal to 1.0, it must be an
+         integer. */
+      if( p->sigclipparam >= 1.0f && ceil(p->sigclipparam) != p->sigclipparam)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "when the second "
+                      "value to the `--%s' option is >=1, it is interpretted "
+                      "as an absolute number of clips. So it must be an "
+                      "integer. However, your second value is a floating "
+                      "point number: %g (parsed from `%s')", option->name,
+                      p->sigclipparam, arg);
+      break;
+
+    case ARGS_OPTION_KEY_QRANGE:
+      /* Check if there was only two numbers. */
+      if(in->size!=1 && in->size!=2)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                      "option takes one or two values values (separated by "
+                      "a comma) to define the range of used values with "
+                      "quantiles. However, %zu numbers were read in the "
+                      "string `%s' (value to this option).\n\n"
+                      "If there is only one number as input, it will be "
+                      "interpretted as the lower quantile (Q) range. The "
+                      "higher range will be set to the quantile (1-Q). "
+                      "When two numbers are given, they will be used as the "
+                      "lower and higher quantile range respectively",
+                      option->name, in->size, arg);
+
+      /* Read the values in. */
+      p->quantmin = ((double *)(in->array))[0];
+      if(in->size==2) p->quantmax = ((double *)(in->array))[1];
+
+      /* Make sure the values are between 0 and 1. */
+      if( (p->quantmin<0 || p->quantmin>1)
+          || ( !isnan(p->quantmax) && (p->quantmax<0 || p->quantmax>1) ) )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "values to the "
+                      "`--quantrange' option must be between 0 and 1 "
+                      "(inclusive). Your input was: `%s'", arg);
+      break;
+
+      /* When only one value is given, make sure it is less than 0.5. */
+      if( !isnan(p->quantmax) && p->quantmin>0.5 )
+        error(EXIT_FAILURE, 0, "%g>=0.5! When only one value is given to the "
+              "`--%s' option, the range is defined as Q and 1-Q. Thus, the "
+              "value must be less than 0.5", p->quantmin, option->name);
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! option `%s' not recognized "
+            "in `ui_parse_numbers' (when called for printing). Please "
+            "contact us at %s to fix the problem", option->name,
+            PACKAGE_BUGREPORT);
+    }
+
+
+  /* No return value necessary for this function. */
   return NULL;
 }
 
@@ -303,23 +405,30 @@ ui_read_check_only_options(struct statisticsparams *p)
   /* Less-than and greater-equal cannot be called together with
      quantrange. */
   if( ( !isnan(p->lessthan) || !isnan(p->greaterequal) )
-      && !isnan(p->quantilerange) )
+      && !isnan(p->quantmin) )
     error(EXIT_FAILURE, 0, "`--lessthan' and/or `--greaterequal' cannot "
           "be called together with `--quantrange'");
 
 
-  /* The quantile range only makes sense with value less than 0.5. */
-  if( !isnan(p->quantilerange) && p->quantilerange>=0.5)
-    error(EXIT_FAILURE, 0, "%g>=0.5! The quantile range must be less than "
-          "0.5. Recall the the quantile (Q) range is defined to be: Q to "
-          "1-Q", p->quantilerange);
-
-
   /* When binned outputs are requested, make sure that `numbins' is set. */
-  if(p->histogram || p->cumulative)
+  if( (p->histogram || p->cumulative) && p->numbins==0)
     error(EXIT_FAILURE, 0, "`--numbins' isn't set. When the histogram or "
           "cumulative frequency plots are requested, the number of bins "
           "(`--numbins') is necessary");
+
+
+  /* If an ascii plot is requested, check if the ascii number of bins and
+     height are given. */
+  if( (p->asciihist || p->asciicfp)
+      && (p->numasciibins==0 || p->asciiheight==0) )
+    error(EXIT_FAILURE, 0, "when an ascii plot is requested, "
+          "`--numasciibins' and `--asciiheight' are mandatory, but atleast "
+          "one of these has not been given");
+
+
+  /* Reverse the list of statistics to print in one row, so it has the same
+     order the user wanted. */
+  gal_linkedlist_reverse_ill(&p->toprint);
 }
 
 
@@ -401,62 +510,6 @@ ui_check_options_and_arguments(struct statisticsparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
-ui_print_one_number(gal_data_t *out)
-{
-  char *toprint=gal_data_write_to_string(out->array, out->type, 0);
-  printf("%s ", toprint);
-  gal_data_free(out);
-  free(toprint);
-}
-
-
-
-
-
-void
-ui_print_one_row(struct statisticsparams *p)
-{
-  struct gal_linkedlist_ill *tmp;
-
-  /* Reverse the list to have the same order the user wanted. */
-  gal_linkedlist_reverse_ill(&p->toprint);
-
-  /* Print the numbers. */
-  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
-    switch(tmp->v)
-      {
-      case ARGS_OPTION_KEY_NUMBER:
-        ui_print_one_number( gal_statistics_number(p->input) );      break;
-      case ARGS_OPTION_KEY_MINIMUM:
-        ui_print_one_number( gal_statistics_minimum(p->input) );     break;
-      case ARGS_OPTION_KEY_MAXIMUM:
-        ui_print_one_number( gal_statistics_maximum(p->input) );     break;
-      case ARGS_OPTION_KEY_SUM:
-        ui_print_one_number( gal_statistics_sum(p->input) );         break;
-      case ARGS_OPTION_KEY_MEAN:
-        ui_print_one_number( gal_statistics_mean(p->input) );        break;
-      case ARGS_OPTION_KEY_STD:
-        ui_print_one_number( gal_statistics_std(p->input) );         break;
-      case ARGS_OPTION_KEY_MEDIAN:
-        ui_print_one_number( gal_statistics_median(p->input) );      break;
-      case ARGS_OPTION_KEY_MODE:
-        error(EXIT_FAILURE, 0, "mode isn't implemented yet!");
-        break;
-      default:
-        error(EXIT_FAILURE, 0, "A bug! Operation code %d not recognized in "
-              "`ui_print_row'. Please contact us at %s so we can address "
-              "the problem", tmp->v, PACKAGE_BUGREPORT);
-      }
-
-  /* Print a new line. */
-  printf("\n");
-}
-
-
-
-
-
-static void
 ui_out_of_range_to_blank(struct statisticsparams *p)
 {
   size_t one=1;
@@ -465,6 +518,24 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   unsigned char flagsor = ( GAL_ARITHMETIC_FREE
                             | GAL_ARITHMETIC_INPLACE
                             | GAL_ARITHMETIC_NUMOK );
+
+  /* If the user has given a quantile range, then set the `greaterequal'
+     and `lessthan' values. */
+  if( !isnan(p->quantmin) )
+    {
+      /* If only one value was given, set the maximum quantile range. */
+      if( isnan(p->quantmax) ) p->quantmax = 1 - p->quantmin;
+
+      /* Set the greater-equal value. */
+      tmp=gal_statistsics_quantile(p->input, p->quantmin, 1);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
+      p->greaterequal=*((float *)(tmp->array));
+
+      /* Set the lower-than value. */
+      tmp=gal_statistsics_quantile(p->input, p->quantmax, 1);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
+      p->lessthan=*((float *)(tmp->array));
+    }
 
   /* Set the condition. Note that the `greaterequal' name is for the data
      we want. So we will set the condition based on those that are
@@ -506,8 +577,50 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
                      0, -1, NULL, NULL, NULL);
   *((float *)(tmp->array)) = NAN;
 
-  /* Set all the pixels that satisfy the condition to blank. */
+  /* Set all the pixels that satisfy the condition to blank. Note that a
+     blank value will be used in the proper type of the input in the
+     `where' operator.*/
   gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flagsor, p->input, cond, tmp);
+}
+
+
+
+
+
+/* Check if a sorted array is necessary and if so, then make a sorted
+   array. */
+static void
+ui_make_sorted_if_necessary(struct statisticsparams *p)
+{
+  int is_necessary=0;
+  struct gal_linkedlist_ill *tmp;
+
+  /* Check in the one-row outputs. */
+  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
+    switch(tmp->v)
+      {
+      case ARGS_OPTION_KEY_MEDIAN:
+      case ARGS_OPTION_KEY_MODE:
+        is_necessary=1;
+        break;
+      }
+
+  /* Check in the rest of the outputs. */
+  if( is_necessary==0 && !isnan(p->sigclipmultip) )
+    is_necessary=1;
+
+
+  /* Do the sorting, we will keep the sorted array in a separate space,
+     since the unsorted nature of the original dataset will help decrease
+     floating point errors. If the input is already sorted, we'll just
+     point it to the input.*/
+  if( gal_statistics_is_sorted(p->input) )
+    p->sorted=p->input;
+  else
+    {
+      p->sorted=gal_data_copy(p->input);
+      gal_statistics_sort_increasing(p->sorted);
+    }
 }
 
 
@@ -551,11 +664,14 @@ ui_preparations(struct statisticsparams *p)
   /* Only keep the numbers we want. */
   gal_blank_remove(p->input);
 
-  /* Print the one-row numbers if the user asked for them. We want this to
-     be done before converting the array to a float, since these operations
-     can be done on any type and if the user has just asked for these
-     operations, we don't want to waste their time for nothing. */
-  if(p->toprint) ui_print_one_row(p);
+  /* Make sure there is any data remaining: */
+  if(p->input->size==0)
+    error(EXIT_FAILURE, 0, "%s: no data, maybe the `--greaterequal' or "
+          "`--lessthan' options need to be adjusted",
+          gal_fits_name_save_as_string(p->inputname, p->cp.hdu) );
+
+  /* Make the sorted array if necessary. */
+  ui_make_sorted_if_necessary(p);
 }
 
 
@@ -660,4 +776,7 @@ ui_free_report(struct statisticsparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
+  if(p->sorted!=p->input)
+    gal_data_free(p->sorted);
+  gal_data_free(p->input);
 }

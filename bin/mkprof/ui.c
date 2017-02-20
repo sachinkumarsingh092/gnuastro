@@ -91,60 +91,6 @@ enum program_args_groups
 
 
 
-/* Keys for each option.
-
-   Available letters (-V which is used by GNU is also removed):
-
-   a d f g j l u v
-   A E G H I J L M O Q U W Z     */
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_KEY_BACKGROUND      = 'k',
-  ARGS_OPTION_KEY_BACKHDU         = 'B',
-  ARGS_OPTION_KEY_NAXIS1          = 'x',
-  ARGS_OPTION_KEY_NAXIS2          = 'y',
-  ARGS_OPTION_KEY_CLEARCANVAS     = 'C',
-  ARGS_OPTION_KEY_OVERSAMPLE      = 's',
-  ARGS_OPTION_KEY_INDIVIDUAL      = 'i',
-  ARGS_OPTION_KEY_NOMERGED        = 'm',
-  ARGS_OPTION_KEY_NUMRANDOM       = 'r',
-  ARGS_OPTION_KEY_TOLERANCE       = 't',
-  ARGS_OPTION_KEY_TUNITINP        = 'p',
-  ARGS_OPTION_KEY_XSHIFT          = 'X',
-  ARGS_OPTION_KEY_YSHIFT          = 'Y',
-  ARGS_OPTION_KEY_PREPFORCONV     = 'c',
-  ARGS_OPTION_KEY_ZEROPOINT       = 'z',
-  ARGS_OPTION_KEY_CIRCUMWIDTH     = 'w',
-  ARGS_OPTION_KEY_REPLACE         = 'R',
-  ARGS_OPTION_KEY_ENVSEED         = 'e',
-  ARGS_OPTION_KEY_MFORFLATPIX     = 'F',
-
-  /* Only with long version. */
-  ARGS_OPTION_KEY_PSFINIMG        = 1000,
-  ARGS_OPTION_KEY_MAGATPEAK,
-  ARGS_OPTION_KEY_XCOL,
-  ARGS_OPTION_KEY_YCOL,
-  ARGS_OPTION_KEY_RACOL,
-  ARGS_OPTION_KEY_DECCOL,
-  ARGS_OPTION_KEY_FCOL,
-  ARGS_OPTION_KEY_RCOL,
-  ARGS_OPTION_KEY_NCOL,
-  ARGS_OPTION_KEY_PCOL,
-  ARGS_OPTION_KEY_QCOL,
-  ARGS_OPTION_KEY_MCOL,
-  ARGS_OPTION_KEY_TCOL,
-  ARGS_OPTION_KEY_CRPIX1,
-  ARGS_OPTION_KEY_CRPIX2,
-  ARGS_OPTION_KEY_CRVAL1,
-  ARGS_OPTION_KEY_CRVAL2,
-  ARGS_OPTION_KEY_RESOLUTION,
-};
-
-
-
-
-
 
 
 
@@ -846,7 +792,7 @@ ui_finalize_coordinates(struct mkprofparams *p)
 static void
 ui_make_log(struct mkprofparams *p)
 {
-  char *comment;
+  char *name, *comment;
 
   /* Return if no long file is to be created. */
   if(p->cp.log==0) return;
@@ -873,15 +819,12 @@ ui_make_log(struct mkprofparams *p)
                      "Magnitude of profile's overlap with merged image.");
 
   /* Row number in input catalog. */
-  if(gal_fits_name_is_fits(p->catname))
-    asprintf(&comment, "Row number of profile in %s (hdu: %s).",
-             p->catname, p->cp.hdu);
-  else
-    asprintf(&comment, "Row number of profile in %s.", p->catname);
+  name=gal_fits_name_save_as_string(p->catname, p->cp.hdu);
+  asprintf(&comment, "Row number of profile in %s.", name);
   gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT64, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
-                     "Row number of profile in ");
+                     1, p->cp.minmapsize, "INPUT_ROW_NO", "count", comment);
   free(comment);
+  free(name);
 }
 
 

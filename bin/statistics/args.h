@@ -71,17 +71,18 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "quantrange",
-      ARGS_OPTION_KEY_QUANTRANGE,
-      "FLT",
+      "qrange",
+      ARGS_OPTION_KEY_QRANGE,
+      "FLT[,FLT]",
       0,
-      "Quantile (Q) range: from Q to 1-Q.",
+      "Quantile range: one (from Q to 1-Q) or two.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->quantilerange,
-      GAL_DATA_TYPE_FLOAT32,
+      NULL,
+      GAL_DATA_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_numbers
     },
 
 
@@ -90,7 +91,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Values to print in one row (on command-line)",
+      "Single value measurements (to print in one row)",
       ARGS_GROUP_IN_ONE_ROW
     },
     {
@@ -259,7 +260,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_CUMULATIVE,
       0,
       0,
-      "Save the cumulative frequency plot.",
+      "Save the cumulative frequency plot in output.",
       ARGS_GROUP_PARTICULAR_STAT,
       &p->cumulative,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -272,26 +273,14 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_SIGMACLIP,
       "FLT,FLT",
       0,
-      "Multiple of sigma and tolerance or number.",
+      "Multiple of sigma and tolerance/number.",
       ARGS_GROUP_PARTICULAR_STAT,
-      &p->sigclipstr,
+      NULL,
       GAL_DATA_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "mirror",
-      ARGS_OPTION_KEY_MIRROR,
-      "FLT",
-      0,
-      "Quantile of mirror distribution to save.",
-      ARGS_GROUP_PARTICULAR_STAT,
-      &p->mirrorquant,
-      GAL_DATA_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GT_0_LT_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_numbers
     },
 
 
@@ -317,14 +306,27 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "lowerbin",
-      ARGS_OPTION_KEY_LOWERBIN,
+      "numasciibins",
+      ARGS_OPTION_KEY_NUMASCIIBINS,
+      "INT",
       0,
-      0,
-      "Save interval lower limit, not center",
+      "Number of bins in ASCII histogram or CFP plots.",
       ARGS_GROUP_HIST_CFP,
-      &p->lowerbin,
-      GAL_OPTIONS_NO_ARG_TYPE,
+      &p->numasciibins,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "asciiheight",
+      ARGS_OPTION_KEY_ASCIIHEIGHT,
+      "INT",
+      0,
+      "Height of ASCII histogram or CFP plots.",
+      ARGS_GROUP_HIST_CFP,
+      &p->asciiheight,
+      GAL_DATA_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -343,19 +345,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "onebinstart",
-      ARGS_OPTION_KEY_ONEBINSTART,
-      "FLT",
-      0,
-      "Shift bins so one bin starts on this value.",
-      ARGS_GROUP_HIST_CFP,
-      &p->onebinstart,
-      GAL_DATA_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
       "maxbinone",
       ARGS_OPTION_KEY_MAXBINONE,
       0,
@@ -365,6 +354,19 @@ struct argp_option program_options[] =
       &p->maxbinone,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "onebinstart",
+      ARGS_OPTION_KEY_ONEBINSTART,
+      "FLT",
+      0,
+      "Shift bins so one bin starts on this value.",
+      ARGS_GROUP_HIST_CFP,
+      &p->onebinstart,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

@@ -30,67 +30,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
 #include <timing.h>
+#include <checkset.h>
 
 #include "main.h"
+
+#include "ui.h"
 #include "statistics.h"
 
 
-/* This function will report the simple immediate statistics of the
-   data. For the average and standard deviation, the unsorted data is
-   used so we don't suddenly encounter rounding errors. */
-void
-reportsimplestats(struct statisticsparams *p)
+
+
+
+/*******************************************************************/
+/**************           Print in one row           ***************/
+/*******************************************************************/
+static void
+ui_print_one_number(gal_data_t *out)
 {
-  printf("\n... in reportsimplestats ...\n");
-  exit(1);
-
-#if 0
-
-  double sum;
-  size_t modeindex;
-  float modequant, symvalue;
-  float ave, std, med, modesym;
-
-  sum=gal_statistics_float_sum(p->img, p->size);
-  gal_statistics_f_ave_std(p->img, p->size, &ave, &std, NULL);
-  med=p->sorted[gal_statistics_index_from_quantile(p->size, 0.5f)];
-
-  /* Very simple and basic: */
-  printf(SNAMEVAL FNAMEVAL FNAMEVAL, "Number of points", p->size,
-         "Minimum", p->sorted[0], "Maximum", p->sorted[p->size-1]);
-  printf(FNAMEVAL FNAMEVAL FNAMEVAL FNAMEVAL, "Sum", sum, "Mean", ave,
-         "Standard deviation", std, "Median", med);
-
-  /* The mode: */
-  gal_statistics_mode_index_in_sorted(p->sorted, p->size, p->mirrordist,
-                                      &modeindex, &modesym);
-  modequant=(float)(modeindex)/(float)(p->size);
-
-  /* Report the values: */
-  printf("   -- %-45s%.4f   %g\n", "Mode (quantile, value)",
-         modequant, p->sorted[modeindex]);
-  symvalue=gal_statistics_mode_value_from_sym(p->sorted, p->size,
-                                              modeindex, modesym);
-  printf("   -- %-45s%.4f   %g\n", "Mode symmetricity and its cutoff"
-         " value", modesym, symvalue);
-  if(modesym<GAL_STATISTICS_MODE_SYM_GOOD)
-    printf("      ## MODE SYMMETRICITY IS TOO LOW ##\n");
-
-  /* Save the mode histogram and cumulative frequency plot. Note
-     that if the histograms are to be built, then
-     mhistname!=NULL. */
-  if(p->mhistname)
-    gal_statistics_mode_mirror_plots(p->sorted, p->size, modeindex,
-                                     p->histmin, p->histmax,
-                                     p->histnumbins, p->mhistname,
-                                     p->mcfpname, (p->histrangeformirror
-                                                   ? 0.0f
-                                                   : p->mirrorplotdist) );
-#endif
+  char *toprint=gal_data_write_to_string(out->array, out->type, 0);
+  printf("%s ", toprint);
+  gal_data_free(out);
+  free(toprint);
 }
 
 
@@ -98,37 +63,103 @@ reportsimplestats(struct statisticsparams *p)
 
 
 static void
-print_ascii_plot(gal_data_t *plot, gal_data_t *bins, int h1_c0)
+ui_print_one_row(struct statisticsparams *p)
+{
+  struct gal_linkedlist_ill *tmp;
+
+  /* Print the numbers. */
+  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
+    switch(tmp->v)
+      {
+      case ARGS_OPTION_KEY_NUMBER:
+        ui_print_one_number( gal_statistics_number(p->input) );      break;
+      case ARGS_OPTION_KEY_MINIMUM:
+        ui_print_one_number( gal_statistics_minimum(p->input) );     break;
+      case ARGS_OPTION_KEY_MAXIMUM:
+        ui_print_one_number( gal_statistics_maximum(p->input) );     break;
+      case ARGS_OPTION_KEY_SUM:
+        ui_print_one_number( gal_statistics_sum(p->input) );         break;
+      case ARGS_OPTION_KEY_MEAN:
+        ui_print_one_number( gal_statistics_mean(p->input) );        break;
+      case ARGS_OPTION_KEY_STD:
+        ui_print_one_number( gal_statistics_std(p->input) );         break;
+      case ARGS_OPTION_KEY_MEDIAN:
+        ui_print_one_number( gal_statistics_median(p->sorted, 0) );  break;
+      case ARGS_OPTION_KEY_MODE:
+        error(EXIT_FAILURE, 0, "mode isn't implemented yet!");
+        break;
+      default:
+        error(EXIT_FAILURE, 0, "A bug! Operation code %d not recognized in "
+              "`ui_print_row'. Please contact us at %s so we can address "
+              "the problem", tmp->v, PACKAGE_BUGREPORT);
+      }
+
+  /* Print a new line. */
+  printf("\n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/**************             ASCII plots              ***************/
+/*******************************************************************/
+static void
+print_ascii_plot(struct statisticsparams *p, gal_data_t *plot,
+                 gal_data_t *bins, int h1_c0, int printinfo)
 {
   int i, j;
-  size_t height=10;
-  float *p, *b, *f, *ff, halfbinwidth;
+  size_t *s, *sf, max=0;
+  double *b, v, halfbinwidth, correction;
+
+  /* Find the maximum of the plot. */
+  sf=(s=plot->array)+plot->size; do max = *s>max ? *s : max; while(++s<sf);
 
   /* Print the range so the user knows. */
-  b=bins->array;
-  halfbinwidth = (b[1]-b[0])/2;
-  printf("\n%s:\nX: (linear: %g -- %g)\nY: (linear)\n\n",
-         ( h1_c0 ? "Histogram" : "Cumulative frequency plot"),
-         b[0]-halfbinwidth, b[ bins->size - 1 ] + halfbinwidth);
-
-  /* The maximum values are set to one. So, multiply all the pixels by the
-     desired height in character-height-units. */
-  ff=(f=plot->array)+plot->size; do *f++ *= height; while(f<ff);
+  if(printinfo)
+    {
+      b=bins->array;
+      halfbinwidth = (b[1]-b[0])/2;
+      printf("\nASCII %s:\n", ( h1_c0 ? "Histogram" :
+                                "Cumulative frequency plot") );
+      if(h1_c0) printf("Number: %zu\n", p->input->size);
+      printf("Y: (linear: 0 to %zu)\n", max);
+      printf("X: (linear: %g -- %g, in %zu bins)\n", b[0]-halfbinwidth,
+             b[ bins->size - 1 ] + halfbinwidth, bins->size);
+    }
 
   /* Print the ASCII plot: */
-  p=plot->array;
-  for(i=height;i>=0;--i)
+  s=plot->array;
+  correction = (double)(p->asciiheight) / (double)max;
+  for(i=p->asciiheight;i>=0;--i)
     {
-      printf("    |");
-      for(j=0;j<bins->size;++j)
+      printf(" |");
+      for(j=0;j<plot->size;++j)
         {
-          if(p[j]>=((float)i-0.5f) && p[j]>0.0f) printf("*");
+          v = (double)s[j] * correction;
+          if( v >= ((double)i-0.5f) && v > 0.0f ) printf("*");
           else printf(" ");
         }
       printf("\n");
     }
-  printf("    |");
-  for(j=0;j<bins->size;++j) printf("-");
+  printf(" |");
+  for(j=0;j<plot->size;++j) printf("-");
   printf("\n\n");
 }
 
@@ -138,21 +169,20 @@ print_ascii_plot(gal_data_t *plot, gal_data_t *bins, int h1_c0)
 static void
 ascii_plots(struct statisticsparams *p)
 {
-  size_t numbins=70;
   gal_data_t *bins, *hist, *cfp;
 
   /* Make the bins and the respective plot. */
-  bins=gal_statistics_regular_bins(p->input, NULL, numbins, NAN);
-  hist=gal_statistics_histogram(p->input, bins, 0, 1);
+  bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);
+  hist=gal_statistics_histogram(p->input, bins, 0, 0);
   if(p->asciicfp)
     {
       bins->next=hist;
-      cfp=gal_statistics_cfp(p->input, bins, 1);
+      cfp=gal_statistics_cfp(p->input, bins, 0);
     }
 
   /* Print the plots. */
-  if(p->asciihist)  print_ascii_plot(hist, bins, 1);
-  if(p->asciicfp)   print_ascii_plot(cfp, bins, 0);
+  if(p->asciihist)  print_ascii_plot(p, hist, bins, 1, 1);
+  if(p->asciicfp)   print_ascii_plot(p, cfp,  bins, 0, 1);
 
   /* Clean up.*/
   gal_data_free(bins);
@@ -163,193 +193,379 @@ ascii_plots(struct statisticsparams *p)
 
 
 
-void
-printhistcfp(struct statisticsparams *p, float *bins, size_t numbins,
-             char *filename, char *outputtype)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/*******    Histogram and cumulative frequency tables    ***********/
+/*******************************************************************/
+static void
+save_hist_and_or_cfp(struct statisticsparams *p)
 {
-  printf("\n... in printhistcfp ...\n");
-  exit(1);
+  gal_data_t *bins, *hist, *cfp=NULL;
+  struct gal_linkedlist_stll *comments=NULL;
+  char *tmp, *contents, *output, *suf, *fix, *suffix;
 
-#if 0
-  float d;
-  size_t i;
-  FILE *out;
-  time_t rawtime;
-  int int0float1=1;
 
-  /* Open the file: */
-  errno=0;
-  out=fopen(filename, "w");
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "couldn't open file %s", filename);
+  /* Set the bins and make the histogram, this is necessary for both the
+     histogram and CFP (recall that the CFP is built from the
+     histogram). */
+  bins=gal_statistics_regular_bins(p->input, NULL, p->numbins,
+                                   p->onebinstart);
+  hist=gal_statistics_histogram(p->input, bins, p->normalize, p->maxbinone);
 
-  /* Get the time to print on the report. */
-  time(&rawtime);
-  fprintf(out, "# %s \n# %s, created on %s", SPACK_STRING, outputtype,
-          ctime(&rawtime));
-  fprintf(out, "# Input (hdu): %s (%s)\n", p->up.inputname, p->cp.hdu);
-  if(p->up.masknameset)
-    fprintf(out, "# Mask (hdu): %s (%s)\n", p->up.maskname, p->up.mhdu);
 
-  if(p->lowerbin)
-    fprintf(out, "# Column 1: Flux of lower value of each bin\n");
+  /* Set the histogram as the next pointer of bins. This is again necessary
+     in both cases: when only a histogram is requested, it is used for the
+     plotting. When only a CFP is desired, it is used as input into
+     `gal_statistics_cfp'. */
+  bins->next=hist;
+
+
+  /* Make the cumulative frequency plot if the user wanted it. Make the
+     CFP, note that for the CFP, `maxbinone' and `normalize' are the same:
+     the last bin (largest value) must be one. So if any of them are given,
+     then set the last argument to 1.*/
+  if(p->cumulative)
+    cfp=gal_statistics_cfp(p->input, bins, p->normalize || p->maxbinone);
+
+
+  /* FITS tables don't accept `uint64_t', so to be consistent, we'll conver
+     the histogram and CFP to `uint32_t'.*/
+  if(hist->type==GAL_DATA_TYPE_UINT64)
+    hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_UINT32);
+  if(cfp && cfp->type==GAL_DATA_TYPE_UINT64)
+    cfp=gal_data_copy_to_new_type_free(cfp, GAL_DATA_TYPE_UINT32);
+
+
+  /* Finalize the next pointers. */
+  bins->next=hist;
+  hist->next=cfp;
+
+
+  /* Prepare the contents. */
+  if(p->histogram && p->cumulative)
+    { suf="_hist_cfp"; contents="Histogram and cumulative frequency plot"; }
+  else if(p->histogram)
+    { suf="_hist";     contents="Histogram"; }
   else
-    fprintf(out, "# Column 1: Flux in the middle of each bin\n");
+    { suf="_cfp";      contents="Cumulative frequency plot"; }
 
-  if(strcmp(outputtype, CFPSTRING)==0)
-    {
-      fprintf(out, "# Column 2: Average of the sorted index of all points "
-              "in this bin");
-      if(p->normcfp)
-          fprintf(out, " (normalized).\n");
-      else if (p->maxcfpeqmaxhist)
-        fprintf(out, " (Scaled to the histogram).\n");
-      else
-        {
-          fprintf(out, ".\n");
-          int0float1=0;
-        }
-    }
-  else if (strcmp(outputtype, HISTSTRING)==0)
-    {
-      if(p->normhist)
-        fprintf(out, "# Column 2: Fraction of points in this bin. \n");
-      else if(p->maxhistone)
-        fprintf(out, "# Column 2: Histogram if the maximum bin is "
-                "set to 1.\n");
-      else
-        {
-          fprintf(out, "# Column 2: Number of points in this bin. \n");
-          int0float1=0;
-        }
-    }
 
-  /* Put the data in the file: */
-  if(p->lowerbin==0) d=(bins[2]-bins[0])/2;
-  else               d=0.0f;
-  if(int0float1)
-    for(i=0;i<numbins;++i)
-      fprintf(out, "%-20.6f"PRINTFLT, bins[i*2]+d, bins[i*2+1]);
-  else
-    for(i=0;i<numbins;++i)
-      fprintf(out, "%-20.6f"PRINTINT, bins[i*2]+d, bins[i*2+1]);
-  fclose(out);
-#endif
+  /* Set the basename and output suffix. */
+  fix = ( p->cp.output
+          ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
+          : "txt" );
+  asprintf(&suffix, "%s.%s", suf, fix);
+
+
+  /* If another file is to be created or output name isn't set, we'll need
+     to use Automatic output. */
+  output = ( p->cp.output
+             ? p->cp.output
+             : gal_checkset_automatic_output(&p->cp, p->inputname, suffix) );
+
+
+  /* Write the comments, NOTE: we are writing the first two in reverse of
+     the order we want them. They will later be freed as part of the list's
+     freeing.*/
+  tmp=gal_fits_name_save_as_string(p->inputname, p->cp.hdu);
+  gal_linkedlist_add_to_stll(&comments, tmp, 0);
+
+  asprintf(&tmp, "%s created from:", contents);
+  gal_linkedlist_add_to_stll(&comments, tmp, 0);
+
+  if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
+    gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
+
+
+  /* Write the table. */
+  gal_table_write(bins, comments, p->cp.tableformat, output,
+                  p->cp.dontdelete);
+
+
+  /* Let the user know, if we aren't in quiet mode. */
+  if(!p->cp.quiet)
+    printf("%s created.\n", output);
+
+
+  /* Clean up. */
+  free(suffix);
+  if(output!=p->cp.output) free(output);
+  gal_linkedlist_free_stll(comments, 1);
 }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/**************           Basic information          ***************/
+/*******************************************************************/
+/* To keep things in `print_basics' clean, we'll define the input data
+   here, then only print the values there. */
+void
+print_input_info(struct statisticsparams *p)
+{
+  char *str, *name, *col=NULL;
+
+  /* Print the program name and version. */
+  printf("%s\n", PROGRAM_STRING);
+
+  /* Print the input information, if the input was a table, we also need to
+     give the column information. When the column has a name, it will be
+     printed, when it doesn't, we'll use the same string the user gave. */
+  printf("-------\n");
+  name=gal_fits_name_save_as_string(p->inputname, p->cp.hdu);
+  printf("Input: %s\n", name);
+
+  /* If a table was given, print the column. */
+  if(p->column) printf("Column: %s\n", p->column);
+
+  /* Range. */
+  str=NULL;
+  if( !isnan(p->greaterequal) && !isnan(p->lessthan) )
+    asprintf(&str, "from (inclusive) %g, upto (exclusive) %g",
+             p->greaterequal, p->lessthan);
+  else if( !isnan(p->greaterequal) )
+    asprintf(&str, "from (inclusive) %g", p->greaterequal);
+  else if( !isnan(p->lessthan) )
+    asprintf(&str, "upto (exclusive) %g", p->lessthan);
+  if(str)
+    {
+      printf("Range: %s.\n", str);
+      free(str);
+    }
+
+  /* Units. */
+  if(p->input->unit) printf("Unit: %s\n", p->input->unit);
+
+  /* Clean up. */
+  if(col) free(col);
+  free(name);
+  printf("-------\n");
+}
+
+
+
+
+
+/* This function will report the simple immediate statistics of the
+   data. For the average and standard deviation, the unsorted data is
+   used so we don't suddenly encounter rounding errors. */
+void
+print_basics(struct statisticsparams *p)
+{
+  char *str;
+  double mean, std;
+  int namewidth=40;
+  gal_data_t *tmp, *bins, *hist;
+
+  /* Define the input dataset. */
+  print_input_info(p);
+
+  /* Print the number: */
+  printf("  %-*s %zu\n", namewidth, "Number of elements:", p->input->size);
+
+  /* Minimum: */
+  tmp=gal_statistics_minimum(p->input);
+  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  printf("  %-*s %s\n", namewidth, "Minimum:", str);
+  gal_data_free(tmp);
+  free(str);
+
+  /* Maximum: */
+  tmp=gal_statistics_maximum(p->input);
+  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  printf("  %-*s %s\n", namewidth, "Maximum:", str);
+  gal_data_free(tmp);
+  free(str);
+
+  /* Find the mean and standard deviation, but don't print them, see
+     explanations under median. */
+  tmp=gal_statistics_mean_std(p->input);
+  mean = ((double *)(tmp->array))[0];
+  std  = ((double *)(tmp->array))[1];
+  gal_data_free(tmp);
+
+  /* Find and print the median: we want the median to be found in place to
+     save time/memory. But having a sorted array can decrease the floating
+     point accuracy of the standard deviation. So we'll do the median
+     calculation in the end.*/
+  tmp=gal_statistics_median(p->input, 1);
+  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  printf("  %-*s %s\n", namewidth, "Median:", str);
+  gal_data_free(tmp);
+  free(str);
+
+  /* Print the mean and standard deviation. */
+  printf("  %-*s %g\n", namewidth, "Mean:", mean);
+  printf("  %-*s %g\n", namewidth, "Standard deviation:", std);
+
+  /* Ascii histogram. Note that we don't want to force the user to have the
+     plotting parameters. */
+  printf("-------\nHistogram:\n");
+  p->asciiheight = p->asciiheight ? p->asciiheight : 10;
+  p->numasciibins = p->numasciibins ? p->numasciibins : 70;
+  bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);
+  hist=gal_statistics_histogram(p->input, bins, 0, 0);
+  print_ascii_plot(p, hist, bins, 1, 0);
+  gal_data_free(bins);
+  gal_data_free(hist);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/**************            Sigma clipping            ***************/
+/*******************************************************************/
+void
+print_sigma_clip(struct statisticsparams *p)
+{
+  float *a;
+  char *mode;
+  int namewidth=40;
+  gal_data_t *sigclip;
+
+  /* Set the mode for printing: */
+  if( p->sigclipparam>=1.0f )
+    asprintf(&mode, "for %g clips", p->sigclipparam);
+  else
+    asprintf(&mode, "until relative change in STD is less than %g",
+             p->sigclipparam);
+
+  /* Report the status */
+  if(!p->cp.quiet)
+    {
+      print_input_info(p);
+      printf("%g-sigma clipping steps %s:\n\n", p->sigclipmultip, mode);
+    }
+
+  /* Do the Sigma clipping: */
+  sigclip=gal_statistics_sigma_clip(p->sorted, p->sigclipmultip,
+                                    p->sigclipparam, p->cp.quiet);
+  a=sigclip->array;
+
+  /* Finish the introduction. */
+  if(!p->cp.quiet)
+    printf("-------\nSummary:\n");
+  else
+    printf("%g-sigma clipped %s:\n", p->sigclipmultip, mode);
+
+  /* Print the final results: */
+  printf("  %-*s %zu\n", namewidth, "Number of input elements:",
+         p->input->size);
+  if( p->sigclipparam < 1.0f )
+    printf("  %-*s %d\n", namewidth, "Number of clips:",     sigclip->status);
+  printf("  %-*s %g\n", namewidth, "Final number of elements:", a[0]);
+  printf("  %-*s %g\n", namewidth, "Median:",                a[1]);
+  printf("  %-*s %g\n", namewidth, "Mean:",                  a[2]);
+  printf("  %-*s %g\n", namewidth, "Standard deviation:",    a[3]);
+
+  /* Clean up. */
+  free(mode);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/**************             Main function            ***************/
+/*******************************************************************/
 void
 statistics(struct statisticsparams *p)
 {
+  int print_basic_info=1;
 
-  /* If none of the processes here are requested, return. */
-  if( p->asciihist==0
-      && p->asciicfp==0
-      && p->histogram==0
-      && p->cumulative==0
-      && p->sigclipstr==NULL
-      && isnan(p->mirrorquant) )
-    return;
-
-  /* For the main body of the program, we will assume the data is in
-     float32. */
-  p->input=gal_data_copy_to_new_type_free(p->input, GAL_DATA_TYPE_FLOAT32);
-
-  /* Print the ASCII histogram if requested. */
-  if(p->asciihist || p->asciicfp) ascii_plots(p);
-
-
-#if 0
-  int r;
-  size_t i;
-  float quant=-1.0f;                   /* The quantile was already   */
-  float ave, std, med;
-  float maxhist=-FLT_MAX, *bins=NULL;  /* taken into affect in ui.c. */
-
-
-  /* Report the simple statistics: */
-  if(p->cp.verb)
+  /* Print the one-row numbers if the user asked for them. */
+  if(p->toprint)
     {
-      reportsimplestats(p);
-      if(p->asciihist) printasciihist(p);
+      print_basic_info=0;
+      ui_print_one_row(p);
     }
 
-  /* Make the histogram: */
-  if(p->histname)
+  /* Print the ASCII plots if requested. */
+  if(p->asciihist || p->asciicfp)
     {
-      /* Make the actual data histogram and save it. */
-      gal_statistics_set_bins(p->sorted, p->size, p->histnumbins, p->histmin,
-                              p->histmax, p->onebinvalue, quant, &bins);
-      gal_statistics_histogram(p->sorted, p->size, bins, p->histnumbins,
-                               p->normhist, p->maxhistone);
-      printhistcfp(p, bins, p->histnumbins, p->histname, HISTSTRING);
-
-      /* Get the hisogram maximum value if it is needed for the
-         cumulative frequency plot. */
-      if(p->maxcfpeqmaxhist)
-        for(i=0;i<p->histnumbins;++i)
-          if(bins[i*2+1]>maxhist)
-            maxhist=bins[i*2+1];
+      ascii_plots(p);
+      print_basic_info=0;
     }
 
-  /* Make the cumulative distribution function: */
-  if(p->cfpname)
+  /* Save the histogram and CFP as tables if requested. */
+  if(p->histogram || p->cumulative)
     {
-      if(p->cfpsimhist)
-        {
-          p->cfpnum=p->histnumbins;
-          for(i=0;i<p->cfpnum;++i)
-            bins[i*2+1]=0.0f;
-        }
-      else
-        {
-          if(p->histname) free(bins);
-          gal_statistics_set_bins(p->sorted, p->size, p->cfpnum, p->cfpmin,
-                                  p->cfpmax, p->onebinvalue, quant, &bins);
-        }
-      gal_statistics_cumulative_fp(p->sorted, p->size, bins,
-                                   p->cfpnum, p->normcfp);
-
-      if(p->maxcfpeqmaxhist)
-        for(i=0;i<p->cfpnum;++i)
-          bins[i*2+1]*=(maxhist/p->size);
-
-      printhistcfp(p, bins, p->cfpnum, p->cfpname, CFPSTRING);
+      print_basic_info=0;
+      save_hist_and_or_cfp(p);
     }
 
-  /* Make the mirror distribution if asked for: */
-  if(isnan(p->mirror)==0)
-    gal_statistics_mode_mirror_plots(p->sorted, p->size,
-                 gal_statistics_index_from_quantile(p->size,
-                                                    p->mirror),
-                                     p->histmin, p->histmax, p->histnumbins,
-                                     p->mirrorhist, p->mirrorcfp,
-                                     (p->histrangeformirror ? 0.0f
-                                      : p->mirrorplotdist));
-
-  /* Print out the Sigma clippings: */
-  if(p->sigclip && p->cp.verb)
+  /* Print the sigma-clipped results. */
+  if( !isnan(p->sigclipmultip ) )
     {
-      printf(" - Sigma clipping results (Median, Mean, STD, Number):\n");
-      printf("   - %.2f times sigma by convergence (tolerance: %.4f):\n",
-             p->sigclipmultip, p->sigcliptolerance);
-      r=gal_statistics_sigma_clip_converge(p->sorted, 1, p->size,
-                                           p->sigclipmultip,
-                                           p->sigcliptolerance, &ave,
-                                           &med, &std, 1);
-      if(r==0)
-        printf("   #### Could not converge\n");
-      printf("   - %.2f sigma-clipping %zu times:\n",
-             p->sigclipmultip, p->sigclipnum);
-      gal_statistics_sigma_clip_certain_num(p->sorted, 1, p->size,
-                                            p->sigclipmultip, p->sigclipnum,
-                                            &ave, &med, &std, 1);
+      print_basic_info=0;
+      print_sigma_clip(p);
     }
 
-  /* Free the allocated arrays: */
-  if(p->histname || p->cfpname) free(bins);
-#endif
+  /* If nothing was requested print the simple statistics. */
+  if(print_basic_info)
+    print_basics(p);
+
 }

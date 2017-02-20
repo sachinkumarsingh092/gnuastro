@@ -134,42 +134,17 @@ gal_fits_suffix_is_fits(char *suffix)
 
 
 
-/* We have the name of the input file. But in most cases, the files
-   that should be used (for example a mask image) are other extensions
-   in the same file. So the user only has to give the HDU. The job of
-   this function is to determine which is the case and set othername
-   to the appropriate value. */
-void
-gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
-                          char **othername, char *ohdu, int ohduset,
-                          char *type)
+/* If the name is a FITS name, then put a `(hdu: ...)' after it and return
+   the string. If it isn't a FITS file, just print the name. Note that the
+   space is allocated. */
+char *
+gal_fits_name_save_as_string(char *filename, char *hdu)
 {
-  if(othernameset)
-    {
-      /* In some cases, for example a mask image, both the name and
-         HDU are optional. So just to be safe, we will check this all
-         the time. */
-      if(ohduset==0)
-        error(EXIT_FAILURE, 0, "a %s image was specified (%s). However, "
-              "no HDU is given for it. Please add a HDU. If you regularly "
-              "use the same HDU as %s, you may consider adding it to "
-              "the configuration file. For more information, please see "
-              "the `Configuration files' section of the %s manual by "
-              "running ` info gnuastro ' on the command-line", type,
-              *othername, type, PACKAGE_NAME);
-      if(strcmp(inputname, *othername)==0)
-        {
-          if(strcmp(ohdu, inhdu)==0)
-            error(EXIT_FAILURE, 0, "the specified %s name and "
-                  "input image name (%s) are the same while the input "
-                  "image hdu name and mask hdu are also identical (%s)",
-                  type, inputname, inhdu);
-        }
-    }
-    else if(ohduset && strcmp(ohdu, inhdu))
-      *othername=inputname;
-    else
-      *othername=NULL;
+  char *name;
+  if( gal_fits_name_is_fits(filename) )
+    asprintf(&name, "%s (hdu: %s)", filename, hdu);
+  else gal_checkset_allocate_copy(filename, &name);
+  return name;
 }
 
 
@@ -2208,8 +2183,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
 /* Write the given columns (a linked list of `gal_data_t') into a FITS
    table.*/
 void
-gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
-                   char *filename, int dontdelete)
+gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+                   int tabletype, char *filename, int dontdelete)
 {
   void *blank;
   fitsfile *fptr;
@@ -2217,6 +2192,7 @@ gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
   size_t i, numrows=-1;
   char **ttype, **tform, **tunit;
   int tbltype, numcols=0, status=0;
+  struct gal_linkedlist_stll *strt;
 
 
   /* Make sure all the input columns have the same number of elements */
@@ -2278,6 +2254,11 @@ gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
       if(blank) free(blank);
       ++i;
     }
+
+
+  /* Write the comments if there were any. */
+  for(strt=comments; strt!=NULL; strt=strt->next)
+    fits_write_comment(fptr, strt->v, &status);
 
 
   /* Write all the headers and the version information. */

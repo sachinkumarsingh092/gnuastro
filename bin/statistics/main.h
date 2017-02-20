@@ -49,24 +49,26 @@ struct statisticsparams
   char             *column;  /* Column name or number if input is table. */
   float       greaterequal;  /* Only use values >= this value.           */
   float           lessthan;  /* Only use values <  this value.           */
-  float      quantilerange;  /* Quantile (Q) range: from Q to 1-Q.       */
+  float           quantmin;  /* Quantile min or range: from Q to 1-Q.    */
+  float           quantmax;  /* Quantile maximum.                        */
 
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
   uint8_t        histogram;  /* Save histogram in output.                */
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
-  char         *sigclipstr;  /* Multiple of sigma, and tolerance or num. */
-  float        mirrorquant;  /* Quantile of mirror distribution to save. */
+  float      sigclipmultip;  /* Multiple of sigma in sigma clipping.     */
+  float       sigclipparam;  /* Tolerance to stop or number of clips.    */
   size_t           numbins;  /* Number of bins in histogram or CFP.      */
-  uint8_t         lowerbin;  /* Save interval lower limit, not center.   */
+  size_t      numasciibins;  /* Number of bins in ASCII plots.           */
+  size_t       asciiheight;  /* Height of ASCII histogram or CFP plots.  */
   uint8_t        normalize;  /* set the sum of all bins to 1.            */
   float        onebinstart;  /* Shift bins to start at this value.       */
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
 
   /* Internal */
   uint8_t        needssort;  /* If sorting is needed.                    */
-  uint8_t        basicinfo;  /* Print the basic information.             */
   gal_data_t        *input;  /* Input data structure.                    */
+  gal_data_t       *sorted;  /* Sorted input data structure.             */
   int               isfits;  /* Input is a FITS file.                    */
   int             hdu_type;  /* Type of HDU (image or table).            */
   time_t           rawtime;  /* Starting time of the program.            */

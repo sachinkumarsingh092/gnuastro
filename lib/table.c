@@ -29,10 +29,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/git.h>
 #include <gnuastro/txt.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
+#include <timing.h>
 #include <checkset.h>
 
 
@@ -699,16 +701,10 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
                  columns in the input catalog (note that the user is
                  counting from 1, not 0!) */
               if(tlong>numcols)
-                {
-                  if(gal_fits_name_is_fits(filename))
-                    error(EXIT_FAILURE, 0, "%s (hdu %s): has %zu columns, "
-                          "but you have asked for column number %zu",
-                          filename, hdu, numcols, tlong);
-                  else
-                    error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
-                          "have asked for column number %zu", filename,
-                          numcols, tlong);
-                }
+                error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
+                      "have asked for column number %zu",
+                      gal_fits_name_save_as_string(filename, hdu),
+                      numcols, tlong);
 
               /* Everything seems to be fine, put this column number in the
                  output column numbers linked list. Note that internally,
@@ -860,13 +856,48 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 /************************************************************************/
 /***************              Write a table               ***************/
 /************************************************************************/
+/* Write the basic information that is necessary by each program into the
+   comments field. Note that the `comments' has to be already sorted in the
+   proper order. */
+void
+gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
+                             char *program_string, time_t *rawtime)
+{
+  char gitdescribe[100], *tmp;
+
+  /* Get the Git description in the running folder. */
+  tmp=gal_git_describe();
+  if(tmp) sprintf(gitdescribe, " from %s,", tmp);
+  else    gitdescribe[0]='\0';
+  free(tmp);
+
+
+  /* Git version and time of program's starting, this will be the second
+     line. Note that ctime puts a `\n' at the end of its string, so we'll
+     have to remove that. Also, note that since we are allocating `msg', we
+     are setting the allocate flag of `gal_linkedlist_add_to_stll' to 0. */
+  asprintf(&tmp, "Created%s on %s", gitdescribe, ctime(rawtime));
+  tmp[ strlen(tmp)-1 ]='\0';
+  gal_linkedlist_add_to_stll(comments, tmp, 0);
+
+
+  /* Program name: this will be the top of the list (first line). We will
+     need to set the allocation flag for this one, because program_string
+     is usually statically allocated.*/
+  gal_linkedlist_add_to_stll(comments, program_string, 1);
+}
+
+
+
+
+
 /* The input is a linked list of data structures and some comments. The
    table will then be written into `filename' with a format that is
    specified by `tableformat'. If it already exists, and `dontdelete' has a
    value of 1, then it won't be deleted and an error will be printed. */
 void
-gal_table_write(gal_data_t *cols, char *comments, int tableformat,
-                char *filename, int dontdelete)
+gal_table_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+                int tableformat, char *filename, int dontdelete)
 {
   /* If a filename was given, then the tableformat is relevant and must be
      used. When the filename is empty, a text table must be printed on the
@@ -881,4 +912,31 @@ gal_table_write(gal_data_t *cols, char *comments, int tableformat,
     }
   else
     gal_txt_write(cols, comments, filename, dontdelete);
+}
+
+
+
+
+
+void
+gal_table_write_log(gal_data_t *logll, char *program_string,
+                    time_t *rawtime, struct gal_linkedlist_stll *comments,
+                    char *filename, int dontdelete, int quiet)
+{
+  char *msg;
+
+  /* Write all the comments into */
+  gal_table_comments_add_intro(&comments, program_string, rawtime);
+
+  /* Write the log file to disk */
+  gal_table_write(logll, comments, GAL_TABLE_FORMAT_TXT, filename,
+                  dontdelete);
+
+  /* In verbose mode, print the information. */
+  if(!quiet)
+    {
+      asprintf(&msg, "%s created.", filename);
+      gal_timing_report(NULL, msg, 1);
+      free(msg);
+    }
 }

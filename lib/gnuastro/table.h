@@ -188,8 +188,19 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 /***************              Write a table               ***************/
 /************************************************************************/
 void
-gal_table_write(gal_data_t *cols, char *comments, int tableformat,
-                char *filename, int dontdelete);
+gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
+                             char *program_string, time_t *rawtime);
+
+void
+gal_table_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+                int tableformat, char *filename, int dontdelete);
+
+void
+gal_table_write_log(gal_data_t *logll, char *program_string,
+                    time_t *rawtime, struct gal_linkedlist_stll *comments,
+                    char *filename, int dontdelete, int quiet);
+
+
 
 
 

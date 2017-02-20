@@ -78,23 +78,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
 
 
 
-/* Available letters for short options:
-
-   a b d e f g j k l m n p r s t u v w x y z
-   A B C E F G H J L M O Q R T U W X Y Z  */
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_KEY_COLUMN      = 'c',
-  ARGS_OPTION_KEY_INFORMATION = 'i',
-
-  /* Only with long version (start with a value 1000, the rest will be set
-     automatically). */
-};
-
-
-
-
 
 
 
@@ -270,7 +253,7 @@ ui_check_options_and_arguments(struct tableparams *p)
 void
 ui_preparations(struct tableparams *p)
 {
-  char *numstr;
+  char *tmp;
   int tableformat;
   gal_data_t *allcols;
   size_t i, numcols, numrows;
@@ -294,11 +277,9 @@ ui_preparations(struct tableparams *p)
         {
           /* Print the file information. */
           printf("--------\n");
-          printf("%s", p->filename);
-          if(gal_fits_name_is_fits(p->filename))
-            printf(" (hdu: %s)\n", cp->hdu);
-          else
-            printf("\n");
+          tmp=gal_fits_name_save_as_string(p->filename, p->cp.hdu);
+          printf("%s", tmp);
+          free(tmp);
 
           /* Print each column's information. */
           gal_table_print_info(allcols, numcols, numrows);
@@ -323,8 +304,8 @@ ui_preparations(struct tableparams *p)
       else
         for(i=1;i<=numcols;++i)
           {
-            asprintf(&numstr, "%zu", i);
-            gal_linkedlist_add_to_stll(&p->columns, numstr, 0);
+            asprintf(&tmp, "%zu", i);
+            gal_linkedlist_add_to_stll(&p->columns, tmp, 0);
           }
     }
 

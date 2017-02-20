@@ -1379,6 +1379,12 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
                      0, in->minmapsize, in->name, in->unit, in->comment);
 
+  /* Set the rest of the values. */
+  out->next=in->next;
+  out->status=in->status;
+  out->disp_width=in->disp_width;
+  out->disp_precision=in->disp_precision;
+
   /* For debugging.
   printf("in: %d (%s)\nout: %d (%s)\n\n", in->type,
          gal_data_type_as_string(in->type, 1), out->type,

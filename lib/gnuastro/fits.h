@@ -115,6 +115,9 @@ gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
                           char **othername, char *ohdu, int ohduset,
                           char *type);
 
+char *
+gal_fits_name_save_as_string(char *filename, char *hdu);
+
 
 
 /*************************************************************
@@ -245,8 +248,8 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                     int minmapsize);
 
 void
-gal_fits_tab_write(gal_data_t *cols, char *comments, int tabletype,
-                     char *filename, int dontdelete);
+gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+                   int tabletype, char *filename, int dontdelete);
 
 
 

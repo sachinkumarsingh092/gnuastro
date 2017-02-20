@@ -23,6 +23,49 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
+
+
+
+
+/* Available letters for short options:
+
+   e k m t u v
+   A B E F G H I J L O Q R T U W X Y Z  */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_CATALOG        = 'C',
+  ARGS_OPTION_KEY_NOBLANK        = 'b',
+  ARGS_OPTION_KEY_CHECKCENTER    = 'c',
+  ARGS_OPTION_KEY_SUFFIX         = 'p',
+  ARGS_OPTION_KEY_NAMECOL        = 'n',
+  ARGS_OPTION_KEY_RACOL          = 'f',
+  ARGS_OPTION_KEY_DECCOL         = 'g',
+  ARGS_OPTION_KEY_RA             = 'r',
+  ARGS_OPTION_KEY_DEC            = 'd',
+  ARGS_OPTION_KEY_XCOL           = 'i',
+  ARGS_OPTION_KEY_YCOL           = 'j',
+  ARGS_OPTION_KEY_XC             = 'x',
+  ARGS_OPTION_KEY_YC             = 'y',
+  ARGS_OPTION_KEY_IWIDTH         = 'a',
+  ARGS_OPTION_KEY_WWIDTH         = 'w',
+  ARGS_OPTION_KEY_SECTION        = 's',
+  ARGS_OPTION_KEY_POLYGON        = 'l',
+  ARGS_OPTION_KEY_ZEROISNOTBLANK = 'z',
+  ARGS_OPTION_KEY_MODE           = 'M',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+  ARGS_OPTION_KEY_CATHDU         = 1000,
+  ARGS_OPTION_KEY_HSTARTWCS,
+  ARGS_OPTION_KEY_HENDWCS,
+  ARGS_OPTION_KEY_OUTPOLYGON,
+};
+
+
+
+
+
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct cropparams *p);
 

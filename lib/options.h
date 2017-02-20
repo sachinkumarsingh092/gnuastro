@@ -261,9 +261,4 @@ gal_options_read_config_set(struct gal_options_common_params *cp);
 void
 gal_options_print_state(struct gal_options_common_params *cp);
 
-void
-gal_options_print_log(gal_data_t *logll, char *program_string,
-                      time_t *rawtime, char *comments, char *filename,
-                      struct gal_options_common_params *cp);
-
 #endif
