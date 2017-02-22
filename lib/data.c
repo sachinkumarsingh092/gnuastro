@@ -1504,6 +1504,34 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
 
 
 
+/* Copy/read the element at `index' of the array in `data' into the space
+   pointed to by `ptr'. */
+#define COPY_ELEM(IT) { IT *o=ptr, *a=input->array; *o = a[index]; }
+void
+gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr)
+{
+  /* Set the value. */
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     COPY_ELEM( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:      COPY_ELEM( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:    COPY_ELEM( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:     COPY_ELEM( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:    COPY_ELEM( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:     COPY_ELEM( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:    COPY_ELEM( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:     COPY_ELEM( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:   COPY_ELEM( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:   COPY_ELEM( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_copy_elem'", input->type);
+    }
+}
+
+
+
+
 
 
 

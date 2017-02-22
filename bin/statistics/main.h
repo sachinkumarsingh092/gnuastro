@@ -44,9 +44,11 @@ struct statisticsparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.             */
-  struct gal_linkedlist_ill  *toprint; /* Values to print in one row.    */
+  struct gal_linkedlist_ill  *toprint; /* Options to print in one row.   */
+  struct gal_linkedlist_dll  *tp_args; /* Arguments for printing.        */
   char          *inputname;  /* Input filename.                          */
   char             *column;  /* Column name or number if input is table. */
+  char             *refcol;  /* Reference column name or number.         */
   float       greaterequal;  /* Only use values >= this value.           */
   float           lessthan;  /* Only use values <  this value.           */
   float           quantmin;  /* Quantile min or range: from Q to 1-Q.    */
@@ -58,6 +60,8 @@ struct statisticsparams
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
   float      sigclipmultip;  /* Multiple of sigma in sigma clipping.     */
   float       sigclipparam;  /* Tolerance to stop or number of clips.    */
+  double            mirror;  /* Mirror value for hist and CFP.           */
+
   size_t           numbins;  /* Number of bins in histogram or CFP.      */
   size_t      numasciibins;  /* Number of bins in ASCII plots.           */
   size_t       asciiheight;  /* Height of ASCII histogram or CFP plots.  */
@@ -66,8 +70,10 @@ struct statisticsparams
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
 
   /* Internal */
+  int          numoutfiles;  /* Number of output files made in this run. */
   uint8_t        needssort;  /* If sorting is needed.                    */
   gal_data_t        *input;  /* Input data structure.                    */
+  gal_data_t    *reference;  /* Reference data structure.                */
   gal_data_t       *sorted;  /* Sorted input data structure.             */
   int               isfits;  /* Input is a FITS file.                    */
   int             hdu_type;  /* Type of HDU (image or table).            */

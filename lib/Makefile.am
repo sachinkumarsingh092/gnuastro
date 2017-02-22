@@ -47,9 +47,9 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
-  arithmetic-onlyint.c blank.c box.c checkset.c data.c fits.c git.c        \
-  linkedlist.c mesh.c mode.c options.c polygon.c qsort.c spatialconvolve.c \
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
+  arithmetic-onlyint.c blank.c box.c checkset.c data.c fits.c git.c     \
+  linkedlist.c mesh.c options.c polygon.c qsort.c spatialconvolve.c     \
   statistics.c table.c threads.c timing.c txt.c wcs.c
 
 
@@ -81,7 +81,7 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h       \
 # distribute them here.
 EXTRA_DIST = $(headersdir)/README gnuastro.pc.in arithmetic-binary.h    \
   arithmetic-onlyint.h arithmetic-other.h config.h.in checkset.h        \
-  fixedstringmacros.h mode.h neighbors.h options.h timing.h
+  fixedstringmacros.h neighbors.h options.h timing.h
 
 
 

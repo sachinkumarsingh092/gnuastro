@@ -260,6 +260,28 @@ gal_linkedlist_dll_to_array(struct gal_linkedlist_dll *list,
 
 
 void
+gal_linkedlist_reverse_dll(struct gal_linkedlist_dll **list)
+{
+  double thisvalue;
+  struct gal_linkedlist_dll *correctorder=NULL;
+
+  /* Only do the reversal if there is more than one element. */
+  if( *list && (*list)->next )
+    {
+      while(*list!=NULL)
+        {
+          gal_linkedlist_pop_from_dll(list, &thisvalue);
+          gal_linkedlist_add_to_dll(&correctorder, thisvalue);
+        }
+      *list=correctorder;
+    }
+}
+
+
+
+
+
+void
 gal_linkedlist_free_dll(struct gal_linkedlist_dll *list)
 {
   struct gal_linkedlist_dll *tmp, *ttmp;

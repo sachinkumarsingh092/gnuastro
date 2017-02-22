@@ -263,6 +263,9 @@ void
 gal_data_to_same_type(gal_data_t *f, gal_data_t *s, gal_data_t **of,
                       gal_data_t **os, uint8_t type, int freeinputs);
 
+void
+gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr);
+
 
 
 /*************************************************************

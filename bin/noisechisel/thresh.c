@@ -355,15 +355,6 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
   /* Sort the signal to noise ratios and remove their outliers */
   qsort(sntable, size, sizeof *sntable, gal_qsort_float_increasing);
 
-  /* The removal of outliers was useful when the S/N was calculated
-     separately on each mesh (thus there were very few
-     points). However, now that the S/N is calculated over the full
-     image, the number of pseudo-detections and clumps is so high that
-     these outliers will not play a significant role in the S/N
-     threshold (unless you set unreasonably high quantiles!). So This
-     is commented now. */
-  /*gal_statistics_remove_outliers_flat_cdf(sntable, &size);*/
-
 
   /* Store the SN value. */
   sn=sntable[gal_statistics_index_from_quantile(size, quant)];

@@ -38,8 +38,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <checkset.h>
 
-#include "mode.h"
-
 
 
 
@@ -396,7 +394,6 @@ gal_statistics_median(gal_data_t *input, int inplace)
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
-
   /* Write the median. */
   statistics_median_in_sorted_no_blank(nbs, out->array);
 
@@ -408,64 +405,20 @@ gal_statistics_median(gal_data_t *input, int inplace)
 
 
 
-
-/* Return a single element dataset of the same type as input keeping the
-   value that has the given quantile. */
-#define STATS_QUANT(IT) { IT *o=out->array, *a=nbs->array; *o = a[ind]; }
-gal_data_t *
-gal_statistsics_quantile(gal_data_t *input, float quantile, int inplace)
-{
-  size_t dsize=1, ind;
-  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
-  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
-
-  /* A small sanity check. */
-  if(quantile<0 || quantile>1)
-    error(EXIT_FAILURE, 0, "the `quantile' input to "
-          "`gal_statistics_quantile' must be between 0 and 1 (inclusive)");
-
-  /* Find the index of the quantile. */
-  ind=gal_statistics_quantile_index(nbs->size, quantile);
-
-  /* Set the value. */
-  switch(input->type)
-    {
-    case GAL_DATA_TYPE_UINT8:     STATS_QUANT( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      STATS_QUANT( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    STATS_QUANT( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     STATS_QUANT( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    STATS_QUANT( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     STATS_QUANT( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    STATS_QUANT( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     STATS_QUANT( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   STATS_QUANT( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   STATS_QUANT( double   );    break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_maximum'", input->type);
-    }
-
-  /* Clean up and return. */
-  if(nbs!=input) gal_data_free(nbs);
-  return out;
-}
-
-
-
-
-
+/* For a given size, return the index (starting from zero) that is at the
+   given quantile.  */
 size_t
-gal_statistics_quantile_index(size_t size, float quant)
+gal_statistics_quantile_index(size_t size, double quant)
 {
-  float floatindex;
+  double floatindex;
 
-  if(quant>1.0f)
-    error(EXIT_FAILURE, 0, "the quantile in "
-          "gal_statistics_index_from_quantile should be smaller than 1.0");
+  if(quant<0.0f || quant>1.0f)
+    error(EXIT_FAILURE, 0, "the quantile in `gal_statistics_quantile_index' "
+          "should be between 0.0 and 1.0 (inclusive). You have asked for "
+          "%g", quant);
 
   /* Find the index of the quantile. */
-  floatindex=(float)size*quant;
+  floatindex=(double)(size-1)*quant;
 
   /*
   printf("quant: %f, size: %zu, findex: %f\n", quant, size, floatindex);
@@ -480,6 +433,688 @@ gal_statistics_quantile_index(size_t size, float quant)
 
 
 
+
+
+/* Return a single element dataset of the same type as input keeping the
+   value that has the given quantile. */
+gal_data_t *
+gal_statistsics_quantile(gal_data_t *input, double quantile, int inplace)
+{
+  size_t dsize=1, index;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+  gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+
+  /* Find the index of the quantile. */
+  index=gal_statistics_quantile_index(nbs->size, quantile);
+
+  /* Read the value at this index into the output. */
+  gal_data_copy_element_same_type(nbs, index, out->array);
+
+  /* Clean up and return. */
+  if(nbs!=input) gal_data_free(nbs);
+  return out;
+}
+
+
+
+
+
+/* Return the index of the (first) point in the sorted dataset that has the
+   closest value to `value' (which has to be the same type as the `input'
+   dataset). */
+#define STATS_QFUNC(IT) {                                               \
+    IT *r, *a=nbs->array, *af=a+nbs->size, v=*((IT *)(value->array));   \
+                                                                        \
+    /* For a reference. Since we are comparing with the previous. */    \
+    /* element, we need to start with the second element.*/             \
+    r=a++;                                                              \
+                                                                        \
+    /* Increasing array: */                                             \
+    if( *a < *(a+1) )                                                   \
+      do if(*a>v) { if( v - *(a-1) < *a - v ) --a; break; } while(++a<af); \
+                                                                        \
+    /* Decreasing array. */                                             \
+    else                                                                \
+      do if(*a<v) { if( *(a-1) - v < v - *a ) --a; break; } while(++a<af); \
+                                                                        \
+    /* Set the difference. */                                           \
+    if(a<af) index=a-r;                                                 \
+  }
+size_t
+gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
+                                       int inplace)
+{
+  size_t index=-1;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+
+  /* A sanity check. */
+  if(input->type!=value->type)
+    error(EXIT_FAILURE, 0, "the types of the input dataset and value to "
+          "`gal_statistics_quantile_function' have to be the same");
+
+  /* Find the result: */
+  switch(input->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
+    case GAL_DATA_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
+    case GAL_DATA_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
+    case GAL_DATA_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
+    case GAL_DATA_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
+    case GAL_DATA_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
+    case GAL_DATA_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
+    case GAL_DATA_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_statistics_quantile_function'", input->type);
+    }
+
+  /* Clean up and return. */
+  if(nbs!=input) gal_data_free(nbs);
+  return index;
+}
+
+
+
+
+
+/* Return the quantile function of the given value as float64. */
+gal_data_t *
+gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
+                                 int inplace)
+{
+  double *d;
+  size_t dsize=1;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
+
+  /* Note that counting of the index starts from 0, so for the quantile we
+     should divided by (size - 1). */
+  d=out->array;
+  d[0] = ( ind==-1 ? NAN : ((double)ind) / ((double)(input->size - 1)) );
+  return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*****************              Mode           ***********************/
+/*********************************************************************/
+/* Main structure to keep mode parameters. */
+struct statistics_mode_params
+{
+  gal_data_t   *data;   /* Sorted input dataset with no blank values. */
+  size_t        lowi;   /* Lower quantile of interval.                */
+  size_t        midi;   /* Index of the mid-interval point.           */
+  size_t        midd;   /* Maximum CDF distance at the middle point.  */
+  size_t       highi;   /* Higher quantile of interval.               */
+  float    tolerance;   /* Tolerance level to terminate search.       */
+  size_t    numcheck;   /* Number of pixels after mode to check.      */
+  size_t    interval;   /* Interval to check pixels.                  */
+  float   mirrordist;   /* Distance after mirror to check ( x STD).   */
+};
+
+
+
+
+
+/* Macros for the mode finding algorithm. */
+#define MODE_MIN_Q        0.01f  /* Mode search lower interval quantile.  */
+#define MODE_MAX_Q        0.90f  /* Mode search higher interval quantile. */
+#define MODE_GOOD_LQ      0.02f  /* Least acceptable mode quantile.       */
+#define MODE_SYM_LOW_Q    0.01f  /* Lower quantile to get symmetricity.   */
+#define MODE_GOLDEN_RATIO 1.618034f /* Golden ratio: (1+sqrt(5))/2.       */
+#define MODE_TWO_TAKE_GR  0.38197f  /* 2 - Golden ratio.                  */
+#define MODE_MIRROR_ABOVE (size_t)(-1) /* Mirror is above the result.     */
+
+
+
+
+/*
+  Given a mirror point (`m'), return the maximum distance between the
+  mirror distribution and the original distribution.
+
+  The basic idea behind finding the mode is comparing the mirrored CDF
+  (where the mirror is a test for the mode) with the original CDF for a
+  given point. The job of this function is to return the maximum distance,
+  given a mirror point. It takes the index of the mirror that is to be
+  checked, it then finds the maximum difference between the mirrored CDF
+  about the given point and the input CDF.
+
+  `zf` keeps the value at the mirror (zero) point.  `i` is used to count
+  the pixels after the mirror in the mirror distribution. So `m+i` is the
+  index of the mirrored distribution and mf=zf+(zf-a[m-i])=2*zf-a[m-i] is
+  the mirrored flux at this point. Having found `mf', we find the `j` such
+  that a[m+j] has the nearest flux to `mf`.
+
+  The desired difference between the input CDF and the mirrored one
+  for each `i` is then simply: `j-i`.
+
+  Once `i` is incremented, `mf` will increase, so to find the new `j` we
+  don't need to begin looking from `j=0`. Remember that the array is
+  sorted, so the desired `j` is definitely larger than the previous
+  `j`. So, if we keep the previous `j` in `prevj` then, all we have to do
+  is to start incrementing `j` from `prevj`. This will really help in
+  speeding up the job :-D. Only for the first element, `prevj=0`. */
+#define MIRR_MAX_DIFF(IT) {                                             \
+    IT *a=p->data->array, zf=a[m], mf=2*zf-a[m-i];                      \
+                                                                        \
+    /* When a[m+j]>mf, we have reached the last pixel to check. Now, */ \
+    /* we just have to see which one of a[m+j-1] or a[m+j] is closer */ \
+    /* to `mf'. We then change `j` accordingly and break out of the  */ \
+    /* `j' loop. */                                                     \
+    for(j=prevj;j<size-m;++j)                                           \
+      if(a[m+j]>mf)                                                     \
+        {                                                               \
+          if( a[m+j]-mf < mf-a[m+j-1] )                                 \
+            break;                                                      \
+          else                                                          \
+            {                                                           \
+              j--;                                                      \
+              break;                                                    \
+            }                                                           \
+        }                                                               \
+  }
+
+static size_t
+mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
+{
+  /* The variables:
+   i:        Index on mirror distribution.
+   j:        Index on input distribution.
+   prevj:    Index of previously checked point in the actual array.
+   mf:       (in macro) Value that is approximately equal in both
+             distributions.                                          */
+  size_t i, j, absdiff, prevj=0, size=p->data->size;
+  size_t  maxdiff=0, errordiff=p->mirrordist*sqrt(m);
+
+  /*
+  printf("###############\n###############\n");
+  printf("### Mirror pixel: %zu\n", m);
+  printf("###############\n###############\n");
+  */
+  /* Go over the mirrored points. */
+  for(i=1; i<p->numcheck && i<=m && m+i<size ;i+=p->interval)
+    {
+      /* Find `j': the index of the closest point in the original
+         distribution that has a value similar to the mirror
+         distribution. */
+      switch(p->data->type)
+        {
+        case GAL_DATA_TYPE_UINT8:     MIRR_MAX_DIFF( uint8_t  );   break;
+        case GAL_DATA_TYPE_INT8:      MIRR_MAX_DIFF( int8_t   );   break;
+        case GAL_DATA_TYPE_UINT16:    MIRR_MAX_DIFF( uint16_t );   break;
+        case GAL_DATA_TYPE_INT16:     MIRR_MAX_DIFF( int16_t  );   break;
+        case GAL_DATA_TYPE_UINT32:    MIRR_MAX_DIFF( uint32_t );   break;
+        case GAL_DATA_TYPE_INT32:     MIRR_MAX_DIFF( int32_t  );   break;
+        case GAL_DATA_TYPE_UINT64:    MIRR_MAX_DIFF( uint64_t );   break;
+        case GAL_DATA_TYPE_INT64:     MIRR_MAX_DIFF( int64_t  );   break;
+        case GAL_DATA_TYPE_FLOAT32:   MIRR_MAX_DIFF( float    );   break;
+        case GAL_DATA_TYPE_FLOAT64:   MIRR_MAX_DIFF( double   );   break;
+        default:
+          error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                "`mode_mirror_max_diff'", p->data->type);
+        }
+
+      /*
+      printf("i:%-5zu j:%-5zu diff:%-5d maxdiff: %zu\n",
+             i, j, (int)j-(int)i, maxdiff);
+      */
+      /* The index of the actual CDF corresponding the the mirrored flux
+         has been found. We want the mirrored distribution to be within the
+         actual distribution, not beyond it, so the only acceptable results
+         are when i<j. But we also have noise, so we can't simply use that
+         as the criterion, small `j's with `i>j' are acceptable. So, only
+         when `i>j+errordiff' the result is not acceptable! */
+      if(i>j+errordiff)
+        {
+          maxdiff = MODE_MIRROR_ABOVE;
+          break;
+        }
+      absdiff  = i>j ? i-j : j-i;
+      if(absdiff>maxdiff) maxdiff=absdiff;
+
+      prevj=j;
+    }
+
+  /* Return the maximum difference  */
+  return maxdiff;
+}
+
+
+
+
+
+/* Find the mode through the Golden-section search. It is assumed that
+   `mode_mirror_max_index_diff' has one minimum (within the statistical
+   errors) in the function. To find that minimum, the golden section search
+   algorithm is going to used. Read the Wikipedia article for a very nice
+   introduction.
+
+   In summary we will constantly be finding middle points in the given
+   interval and thus decreasing the interval until a certain tolerance is
+   reached.
+
+   If the input interval is on points `a' and `b', then the middle point
+   (lets call it `c', where c>a and c<b) to test should be positioned such
+   that (b-c)/(c-a)=MODE_GOLDEN_RATIO. Once we open up this relation, we
+   can find c using:
+
+    c = ( b + MODE_GOLDEN_RATIO * a ) / ( 1 + MODE_GOLDEN_RATIO )
+
+   We need a fourth point to be placed between. With this configuration,
+   the probing point is located at: */
+static size_t
+mode_golden_section(struct statistics_mode_params *p)
+{
+  size_t di, dd;
+
+  /* Find the probing point in the larger interval. */
+  if(p->highi-p->midi > p->midi-p->lowi)
+    di = p->midi + MODE_TWO_TAKE_GR * (float)(p->highi-p->midi);
+  else
+    di = p->midi - MODE_TWO_TAKE_GR * (float)(p->midi-p->lowi);
+
+  /* Since these are all indexs (and positive) we don't need an absolute
+     value, highi is also always larger than lowi! In some cases, the first
+     (standard) condition might be satisfied, while highi-lowi<=2. In such
+     cases, also jump out! */
+  if( (p->highi - p->lowi) < p->tolerance*(p->midi+di)
+      || (p->highi - p->lowi) <= 3)
+    return (p->highi+p->lowi)/2;
+
+  /* Find the maximum difference for this mirror point. */
+  dd = mode_mirror_max_index_diff(p, di);
+
+  /*------------------------------------------------------------------
+  {
+  static int counter=1;
+  char outname[500], command[1000];
+  char histsname[500], cfpsname[500];
+  sprintf(outname, "%dcmp.pdf", counter);
+  sprintf(cfpsname, "%dcfps.txt", counter);
+  sprintf(histsname, "%dhists.txt", counter);
+  gal_mode_make_mirror_plots(p->sorted, p->size, di, histsname, cfpsname);
+  sprintf(command, "./plot.py %s %s %s", histsname, cfpsname, outname);
+  system(command);
+  }
+  -------------------------------------------------------------------*/
+
+  /*
+  printf("%-5zu\t%-5zu(%d)\t%-5zu ----> dq: %-5zu di: %d\n",
+         p->lowi, p->midi, (int)p->midd, p->highi,
+         di, (int)dd);
+  */
+
+  /* +++++++++++++ Start of addition to the golden section search.
+
+     The mirrored distribution's cumulative frequency plot has be lower
+     than the actual's cfp. If it isn't, `di` will be MODE_MIRROR_ABOVE. In
+     this case, the normal golden section minimization is not going to give
+     us what we want. So we have this modification. In such cases, we want
+     the search to go to the lower interval. */
+  if(dd==MODE_MIRROR_ABOVE)
+    {
+      if( p->midi < di )
+        {
+          p->highi=di;
+          return mode_golden_section(p);
+        }
+      else
+        {
+          p->highi=p->midi;
+          p->midi=di;
+          p->midd=dd;
+          return mode_golden_section(p);
+        }
+    }
+  /* End of addition to the golden section search. +++++++++++++*/
+
+  /* This is the standard golden section search: */
+  if(dd<p->midd)
+    {
+      if(p->highi-p->midi > p->midi-p->lowi)
+        {
+          p->lowi  = p->midi;
+          p->midi  = di;
+          p->midd  = dd;
+          return mode_golden_section(p);
+        }
+      else
+        {
+          p->highi = p->midi;
+          p->midi  = di;
+          p->midd  = dd;
+          return mode_golden_section(p);
+        }
+    }
+  else
+    {
+      if(p->highi-p->midi > p->midi-p->lowi)
+        {
+          p->highi = di;
+          return mode_golden_section(p);
+        }
+      else
+        {
+          p->lowi  = di;
+          return mode_golden_section(p);
+        }
+    }
+}
+
+
+
+
+
+/* Once the mode is found, we need to do a quality control. This quality
+   control is the measure of its symmetricity. Lets assume the mode index
+   is at `m', since an index is just a count, from the Poisson
+   distribution, the error in `m' is sqrt(m).
+
+   Now, let's take `b' to be the first point that the difference between
+   the cumulative distribution of the mirror and actual data deviate more
+   than sqrt(m). For a scale parameter, lets assume that the index of 5% of
+   `m` is `a`. We could have taken the distribution minimum, but the
+   scatter in the minimum can be too high!
+
+   Now, the "symmetricity" of the mode can be defined as: (b-m)/(m-a). For
+   a completly symmetric mode, this should be 1. Note that the search for
+   `b` only goes to the 95% of the distribution.  */
+#define MODE_SYM(IT) {                                                  \
+    IT *a=p->data->array, af, bf, mf, fi;                               \
+                                                                        \
+    /* Set the values at the mirror and at `a' (see above). */          \
+    mf=a[m];                                                            \
+    af=a[ gal_statistics_quantile_index(2*m+1, MODE_SYM_LOW_Q) ];       \
+                                                                        \
+    /* This loop is very similar to that of */                          \
+    /* `mode_mirror_max_index_diff'. It will find the index where the */\
+    /* difference between the two cumulative frequency plots exceeds */ \
+    /* that of the error in the mirror index.*/                         \
+    for(i=1; i<topi-m ;i+=1)                                            \
+      {                                                                 \
+        fi=2*mf-a[m-i];                                                 \
+                                                                        \
+        for(j=prevj;j<size-m;++j)                                       \
+          if(a[m+j]>fi)                                                 \
+            {                                                           \
+              if( a[m+j]-fi < fi-a[m+j-1] )                             \
+                break;                                                  \
+              else                                                      \
+                {                                                       \
+                  j--;                                                  \
+                  break;                                                \
+                }                                                       \
+            }                                                           \
+                                                                        \
+        if(i>j+errdiff || j>i+errdiff)                                  \
+          {                                                             \
+            bi=m+i;                                                     \
+            break;                                                      \
+          }                                                             \
+        prevj=j;                                                        \
+      }                                                                 \
+                                                                        \
+    /* bi==0 shows that no point with a larger difference could be */   \
+    /* found. So bi should be set to the end of the search region. */   \
+    if(bi==0) bi=topi;                                                  \
+                                                                        \
+    bf = *(IT *)b_val = a[bi];                                          \
+    /* printf("%f, %f, %f\n", af, mf, bf); */                           \
+                                                                        \
+    return (bf-mf)/(mf-af);                                             \
+  }
+static double
+mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
+{
+  size_t i, j, bi=0, topi, errdiff, prevj=0, size=p->data->size;
+
+  /* Set the basic constants. */
+  topi = 2*m>size-1 ? size-1 : 2*m;
+  errdiff = p->mirrordist * sqrt(m);
+
+  /* Do the process. */
+  switch(p->data->type)
+    {
+    case GAL_DATA_TYPE_UINT8:      MODE_SYM( uint8_t  );    break;
+    case GAL_DATA_TYPE_INT8:       MODE_SYM( int8_t   );    break;
+    case GAL_DATA_TYPE_UINT16:     MODE_SYM( uint16_t );    break;
+    case GAL_DATA_TYPE_INT16:      MODE_SYM( int16_t  );    break;
+    case GAL_DATA_TYPE_UINT32:     MODE_SYM( uint32_t );    break;
+    case GAL_DATA_TYPE_INT32:      MODE_SYM( int32_t  );    break;
+    case GAL_DATA_TYPE_UINT64:     MODE_SYM( uint64_t );    break;
+    case GAL_DATA_TYPE_INT64:      MODE_SYM( int64_t  );    break;
+    case GAL_DATA_TYPE_FLOAT32:    MODE_SYM( float    );    break;
+    case GAL_DATA_TYPE_FLOAT64:    MODE_SYM( double   );    break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`mode_symmetricity'", p->data->type);
+    }
+
+  /* Control shouldn't reach here! */
+  error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "`mode_symmetricity', this should not have happened",
+        PACKAGE_BUGREPORT);
+  return NAN;
+}
+
+
+
+
+
+/* Return the mode and related parameters in a float64 `gal_data_t' with
+   the following elements in its array, the array:
+
+      array[0]: mode
+      array[1]: mode quantile.
+      array[2]: symmetricity.
+      array[3]: value at the end of symmetricity.
+
+  The inputs are:
+
+    - `input' is the input dataset, it doesn't have to be sorted and can
+      have blank values.
+
+    - `mirrordist' is the maximum distance after the mirror point to check
+      as a multiple of sigma.
+
+    - `inplace' is either 0 or 1. If it is 1 and the input array has blank
+      values and is not sorted, then the removal of blank values and
+      sorting will occur in-place (input will be modified): all blank
+      elements in the input array will be removed and it will be sorted. */
+gal_data_t *
+gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
+{
+  double *oa;
+  size_t modeindex;
+  size_t dsize=4, mdsize=1;
+  struct statistics_mode_params p;
+  gal_data_t *mode=gal_data_alloc(NULL, input->type, 1, &mdsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  gal_data_t *b_val=gal_data_alloc(NULL, input->type, 1, &mdsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                 NULL, 1, -1, NULL, NULL, NULL);
+
+  /* Make sure the input doesn't have blank values and is sorted.  */
+  p.data=gal_statistics_no_blank_sorted(input, inplace);
+
+
+  /* Basic constants. */
+  p.tolerance    = 0.01;
+  p.mirrordist   = mirrordist;
+  p.numcheck     = p.data->size/2;
+
+
+  /* Fill in the interval: Checking every single element is over-kill, so
+     if the dataset is large enough, we'll set an interval to only check
+     elements at an interval (so only 1000 elements are checked). */
+  p.interval = p.numcheck>1000 ? p.numcheck/1000 : 1;
+
+
+  /* Set the lower and higher acceptable indexes for the mode based on
+     quantiles. */
+  p.lowi  = gal_statistics_quantile_index(p.data->size, MODE_MIN_Q);
+  p.highi = gal_statistics_quantile_index(p.data->size, MODE_MAX_Q);
+
+
+  /* Having set the low and higher interval values, we will set the first
+     middle point and also the maximum distance on that point. This is
+     necessary to start the iteration. */
+  p.midi = ( ( (float)p.highi + MODE_GOLDEN_RATIO * (float)p.lowi )
+             / ( 1 + MODE_GOLDEN_RATIO ) );
+  p.midd = mode_mirror_max_index_diff(&p, p.midi);
+
+
+  /* Do the golden-section search iteration, read the mode value from the
+     input array and save it as the first element of the output dataset's
+     array, then free the `mode' structure. */
+  oa=out->array;
+  modeindex = mode_golden_section(&p);
+  gal_data_copy_element_same_type(p.data, modeindex, mode->array);
+  mode=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
+  gal_data_copy_element_same_type(mode, 0, &oa[0]);
+
+
+  /* Put in the rest of the values of the output structure. */
+  oa[1] = ((double)modeindex) / ((double)(p.data->size-1));
+  oa[2] = mode_symmetricity(&p, modeindex, b_val->array);
+
+
+  /* Put the end of the symmetricity in. */
+  b_val=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
+  gal_data_copy_element_same_type(mode, 0, &oa[3]);
+
+
+  /* For a check:
+  printf("mode: %g\nquantile: %g\nsymmetricity: %g\nsym value: %g\n",
+         oa[0], oa[1], oa[2], oa[3]);
+  */
+
+  /* Clean up (if necessary), then return the output */
+  if(p.data!=input) gal_data_free(p.data);
+  gal_data_free(mode);
+  return out;
+}
+
+
+
+
+
+/* Make the mirror array. */
+#define STATS_MKMIRROR(IT) {                                            \
+    IT *a=noblank_sorted->array, *m=mirror->array;                      \
+    IT zf=a[index];                                                     \
+    *mirror_val=zf;                                                     \
+    for(i=0;i<=index;++i) m[i]       = a[i];                            \
+    for(i=1;i<=index;++i) m[index+i] = 2 * zf - m[index - i];           \
+  }
+static gal_data_t *
+statistics_make_mirror(gal_data_t *noblank_sorted, size_t index,
+                       double *mirror_val)
+{
+  size_t i, dsize = 2*index+1;
+  gal_data_t *mirror=gal_data_alloc(NULL, noblank_sorted->type, 1, &dsize,
+                                    NULL, 1, -1, NULL, NULL, NULL);
+
+  /* Make sure the index is less than or equal to the number of
+     elements. */
+  if( index >= noblank_sorted->size )
+    error(EXIT_FAILURE, 0, "the index value to `statistics_make_mirror' "
+          "must be less than or equal to the number of elements in the "
+          "input, but it isn't: index: %zu, size of input: %zu", index,
+          noblank_sorted->size);
+
+  /* Fill in the mirror array. */
+  switch(noblank_sorted->type)
+    {
+    case GAL_DATA_TYPE_UINT8:     STATS_MKMIRROR( uint8_t  );     break;
+    case GAL_DATA_TYPE_INT8:      STATS_MKMIRROR( int8_t   );     break;
+    case GAL_DATA_TYPE_UINT16:    STATS_MKMIRROR( uint16_t );     break;
+    case GAL_DATA_TYPE_INT16:     STATS_MKMIRROR( int16_t  );     break;
+    case GAL_DATA_TYPE_UINT32:    STATS_MKMIRROR( uint32_t );     break;
+    case GAL_DATA_TYPE_INT32:     STATS_MKMIRROR( int32_t  );     break;
+    case GAL_DATA_TYPE_UINT64:    STATS_MKMIRROR( uint64_t );     break;
+    case GAL_DATA_TYPE_INT64:     STATS_MKMIRROR( int64_t  );     break;
+    case GAL_DATA_TYPE_FLOAT32:   STATS_MKMIRROR( float    );     break;
+    case GAL_DATA_TYPE_FLOAT64:   STATS_MKMIRROR( double   );     break;
+    }
+
+  /* Return the mirrored distribution. */
+  return mirror;
+}
+
+
+
+
+
+/* Make a mirrored histogram and cumulative frequency plot with the mirror
+   distribution of the input with a value at `value'.
+
+   The output is a linked list of data structures: the first is the bins
+   with on bin at the mirror point, the second is the histogram with a
+   maximum of one and the third is the cumulative frequency plot. */
+gal_data_t *
+gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
+                                 size_t numbins, int inplace,
+                                 double *mirror_val)
+{
+  gal_data_t *mirror, *bins, *hist, *cfp;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+  size_t ind=gal_statistics_quantile_function_index(nbs, value, inplace);
+
+
+  /* If the given mirror was outside the range of the input, then index
+     will be 0 (below the range) or -1 (above the range), in that case, we
+     should return NULL. */
+  if(ind==-1 || ind==0)
+    return NULL;
+
+
+  /* Make the mirror array. */
+  mirror=statistics_make_mirror(nbs, ind, mirror_val);
+
+
+  /* Set the bins for histogram and cdf. */
+  bins=gal_statistics_regular_bins(mirror, NULL, numbins, *mirror_val);
+
+
+  /* Make the histogram: set it's maximum value to 1 for a nice comparison
+     with the CDF. */
+  hist=gal_statistics_histogram(mirror, bins, 0, 1);
+
+
+  /* Make the cumulative frequency plot. */
+  cfp=gal_statistics_cfp(mirror, bins, 1);
+
+
+  /* Set the pointers to make a table and return. */
+  bins->next=hist;
+  hist->next=cfp;
+  return bins;
+}
 
 
 
@@ -737,7 +1372,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 */
 gal_data_t *
 gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
-                            size_t numbins, float onebinstart)
+                            size_t numbins, double onebinstart)
 {
   size_t i;
   gal_data_t *bins, *tmp, *range;
@@ -825,18 +1460,19 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
         if( (b[i]-hbw) < onebinstart && (b[i+1]-hbw) > onebinstart) break;
       if( i != numbins-1 )
         {
-          diff=onebinstart-b[i];
+          diff = onebinstart - (b[i]-hbw);
           for(i=0;i<numbins;++i)
-            b[i]+=diff;
+            b[i] += diff;
         }
     }
 
-  /* For a check
+  /* For a check:
   printf("min: %g\n", min);
   printf("max: %g\n", max);
+  printf("onebinstart: %.10f\n", onebinstart);
   printf("binwidth: %g\n", binwidth);
   for(i=0;i<numbins;++i)
-    printf("%zu: %.4f\n", i, b[i]);
+    printf("%zu: %.4f\t(%f, %f)\n", i, b[i], b[i]-hbw, b[i]+hbw);
   */
 
   /* Set the status of the bins to regular and return. */
@@ -942,7 +1578,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
       free(hist->name); free(hist->unit); free(hist->comment);
       gal_checkset_allocate_copy("hist_normalized", &hist->name);
       gal_checkset_allocate_copy("frac", &hist->unit);
-      gal_checkset_allocate_copy("Normalized histogram value for this bin",
+      gal_checkset_allocate_copy("Normalized histogram value for this bin.",
                                  &hist->comment);
     }
   if(maxone)
@@ -958,7 +1594,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
       gal_checkset_allocate_copy("hist_maxone", &hist->name);
       gal_checkset_allocate_copy("frac", &hist->unit);
       gal_checkset_allocate_copy("Fractional histogram value for this bin "
-                                 "when maximum bin value is 1.0",
+                                 "when maximum bin value is 1.0.",
                                  &hist->comment);
     }
 
@@ -1106,7 +1742,7 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
 
 /****************************************************************
- *****************       Sigma clip          ********************
+ *****************         Outliers          ********************
  ****************************************************************/
 /* Return a data structure with an array of four values: the final number
    of points used, the median, average and standard deviation. The number
@@ -1163,9 +1799,9 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   void *start, *sorted_array;
   double oldmed, oldmean, oldstd;
   size_t num=0, dsize=4, size, oldsize;
-  size_t maxnum = param>=1.0f ? param : 50;    /* for failing to converge */
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
   gal_data_t *sorted, *median_i, *median_d, *out, *meanstd, *noblank;
+  size_t maxnum = param>=1.0f ? param : GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE;
 
   /* Some sanity checks. */
   if( multip<=0 )
@@ -1320,24 +1956,6 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************/
-/*************         Identify outliers         ****************/
-/****************************************************************/
 /* Using the cumulative distribution function this funciton will
    remove outliers from a dataset. */
 void
@@ -1396,219 +2014,4 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
 
   free(slopes);
 #endif
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/****************************************************************/
-/*************          Mode calculation         ****************/
-/****************************************************************/
-void
-gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
-                                 float min, float max, size_t numbins,
-                                 char *histsname, char *cfpsname,
-                                 float mirrorplotdist)
-{
-  printf("\n... in gal_statistics_mode_mirror_plots ...\n");
-  exit(1);
-#if 0
-  FILE *fp;
-  size_t i, msize;
-  float *out, maxhist=-FLT_MAX, maxcfp, d;
-  int normhist=0, maxhistone=0, normcfp=0;
-  float *bins, *mirror, *actual, mf, onebinvalue=0.0f;
-
-
-  /* Find the index of the mirror and make the mirror array: */
-  mf=sorted[mirrorindex];
-  gal_array_float_copy(sorted, size, &actual);
-  makemirrored(sorted, mirrorindex, &mirror, &msize);
-
-
-  /* Set the best range if asked for, such that the mirror is on the
-     1/3 of the image scale. */
-  if(mirrorplotdist!=0.0f)
-    {
-      min=actual[gal_statistics_index_from_quantile(size, 0.001f)];
-      max=mf+mirrorplotdist*(mf-min);
-    }
-
-
-  /* set the mirror pixel to have the value of zero.*/
-  min-=mf;
-  max-=mf;
-  gal_array_fsum_const(actual, size, -1.0f*mf);
-  gal_array_fsum_const(mirror, msize, -1.0f*mf);
-
-
-  /* Allocate space for the 3 column array keeping the histograms:*/
-  errno=0;
-  out=malloc(numbins*3*sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for out in "
-          "gal_mode_make_mirror_plots (mode.c)", numbins*3*sizeof *out);
-
-
-  /* Define the bin sides: */
-  gal_statistics_set_bins(actual, size, numbins, min,
-                          max, onebinvalue, 0, &bins);
-
-
-  /* Find the histogram of the actual data and put it in out. Note
-     that maxhistone=0, because here we want to use one value for both
-     histograms so they are comparable. */
-  gal_statistics_histogram(actual, size, bins, numbins,
-                           normhist, maxhistone);
-  for(i=0;i<numbins;++i)
-    if(bins[i*2+1]>maxhist) maxhist=bins[i*2+1];
-  for(i=0;i<numbins;++i)
-    { out[i*3]=bins[i*2]; out[i*3+1]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
-  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
-  d=(out[3]-out[0])/2;
-
-
-  /* Find the histogram of the mirrired distribution and put it in
-     out: */
-  gal_statistics_histogram(mirror, msize, bins, numbins, normhist,
-                           maxhistone);
-  for(i=0;i<numbins;++i)
-    { out[i*3+2]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
-  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
-
-
-  /* Print out the histogram: */
-  errno=0;
-  fp=fopen(histsname, "w");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "could not open file %s", histsname);
-  fprintf(fp, "# Histogram of actual and mirrored distributions.\n");
-  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
-  fprintf(fp, "# Column 1: Input data.\n");
-  fprintf(fp, "# Column 2: Mirror distribution.\n");
-  for(i=0;i<numbins;++i)
-    fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3]+d,
-            out[i*3+1], out[i*3+2]);
-  fclose(fp);
-
-
-
-
-  /* Find the cumulative frequency plots of the two distributions: */
-  gal_statistics_cumulative_fp(actual, size, bins, numbins, normcfp);
-  for(i=0;i<numbins;++i)
-    { out[i*3+1]=bins[i*2+1]; bins[i*2+1]=0.0f; }
-  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
-  gal_statistics_cumulative_fp(mirror, msize, bins, numbins, normcfp);
-  for(i=0;i<numbins;++i)
-    { out[i*3+2]=bins[i*2+1]; bins[i*2+1]=0.0f;}
-  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
-
-
-  /* Since the two cumultiave frequency plots have to be on scale, see
-     which one is larger and divided both CFPs by the size of the
-     larger one. Then print the CFPs. */
-  if(size>msize) maxcfp=size;
-  else maxcfp=msize;
-  errno=0;
-  fp=fopen(cfpsname, "w");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "could not open file %s", cfpsname);
-  fprintf(fp, "# Cumulative frequency plot (average index in bin) of\n"
-          "# Actual and mirrored distributions.\n");
-  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
-  fprintf(fp, "# Column 1: Actual data.\n");
-  fprintf(fp, "# Column 2: Mirror distribution.\n");
-  for(i=0;i<numbins;++i)
-    fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3],
-            out[i*3+1]/maxcfp, out[i*3+2]/maxcfp);
-  fclose(fp);
-
-
-  /* Clean up. */
-  free(out);
-  free(bins);
-  free(mirror);
-  free(actual);
-#endif
-}
-
-
-
-
-
-/* It happens that you have the symmetricity and you want the flux
-   value at that point, this function will do that job. In practice,
-   it just finds bf from the equation to calculate symmetricity in
-   modesymmetricity. */
-float
-gal_statistics_mode_value_from_sym(float *sorted, size_t size,
-                                   size_t modeindex, float sym)
-{
-  float mf=sorted[modeindex];
-  float af=
-    sorted[gal_statistics_quantile_index(2*modeindex+1,
-                           GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT)];
-  return sym*(mf-af)+mf;
-}
-
-
-
-
-
-/* Find the quantile of the mode of a sorted distribution. The return
-   value is either 0 (not accurate) or 1 (accurate). Accuracy is
-   defined based on the difference between the maximum and minimum
-   maxdiffs that were found during the golden section search.
-
-   A good mode will have:
-
-   modequant=(float)(modeindex)/(float)size;
-   modesym>GAL_MODE_SYM_GOOD && modequant>GAL_MODE_LOW_QUANT_GOOD
-*/
-void
-gal_statistics_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
-                                    size_t *modeindex, float *modesym)
-{
-  struct gal_statistics_mode_params mp;
-
-  /* Initialize the gal_mode_params structure: */
-  mp.size=size;
-  mp.sorted=sorted;
-  mp.tolerance=0.01;
-  mp.numcheck=size/2;
-  mp.errorstdm=errorstdm;
-  if(mp.numcheck>1000)
-    mp.interval=mp.numcheck/1000;
-  else mp.interval=1;
-  mp.lowi  = gal_statistics_quantile_index(size,
-                                 GAL_STATISTICS_MODE_LOW_QUANTILE);
-  mp.highi = gal_statistics_quantile_index(size,
-                                 GAL_STATISTICS_MODE_HIGH_QUANTILE);
-  mp.midi  = (((float)mp.highi
-               + MODE_GOLDEN_RATIO*(float)mp.lowi)
-              /(1+MODE_GOLDEN_RATIO));
-  mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
-                           mp.interval, mp.errorstdm);
-
-  /* Do the golden section search and find the resulting
-     symmetricity. */
-  *modeindex=modegoldenselection(&mp);
-  modesymmetricity(sorted, size, *modeindex, errorstdm, modesym);
 }

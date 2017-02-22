@@ -438,7 +438,6 @@ Statistics
 
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
-* Mirror distribution::         Used for finding the mode.
 * Invoking aststatistics::      Arguments and options to Statistics.
 
 NoiseChisel
@@ -11101,7 +11100,6 @@ Statistics program is designed for such situations.
 @menu
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
-* Mirror distribution::         Used for finding the mode.
 * Invoking aststatistics::      Arguments and options to Statistics.
 @end menu
 
@@ -11179,7 +11177,7 @@ determined from the actual dataset (none of these options is called), the
 last element in the dataset is included in the last bin's count.
 
 
-@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Frequency Plot, Statistics
+@node  Sigma clipping, Invoking aststatistics, Histogram and Cumulative Frequency Plot, Statistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear
@@ -11274,102 +11272,7 @@ ASCII histogram that is printed on the command-line with
 @option{--asciihist} is good enough in most cases.
 @end cartouche
 
-@node Mirror distribution, Invoking aststatistics, Sigma clipping, Statistics
-@subsection Mirror distribution
-
-@cindex Mirror distribution
-The mirror distribution of a data set was defined in Appendix C of
-Akhlaghi and Ichikawa (2015). It is best visualized by mentally
-placing a mirror on the histogram of a distribution at any point
-within the distribution (which we call the mirror point).
-
-Through the @option{--mirrorquant} in Statistics, you can check the mirror
-of a distribution when the mirror is placed on any given quantile. The
-mirror distribution is plotted along with the input distribution both as
-histograms and cumulative frequency plots, see @ref{Histogram and
-Cumulative Frequency Plot}. Unlike the rest of the histograms and
-cumulative frequency plots in Statistics, the text files created with the
-@option{--mirrorquant} and @option{--checkmode} will contain 3 columns. The
-first is the horizontal axis similar to all other histograms and cumulative
-frequency plots. The second column shows the respective value for the
-actual data distribution and the third shows the value for the mirror
-distribution.
-
-@cindex Python
-The value for each bin of both histogram is divided by the maximum of
-both. For the cumulative frequency plot, the value in each bin is
-divided by the maximum number of elements. So one of the cumulative
-frequency plots reaches the maximum vertical axis of 1. The outputs
-will have the @file{_mirrorhist.txt} and @file{_mirrorcfp.txt} suffixes
-respectively. You can use a simple Python script like the one below to
-display the histograms and cumulative frequency plots in one plot:
-
-@example
-#! /usr/bin/env python3
-
-# Import the necessary modules:
-import sys
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Load the two files:
-a=np.loadtxt(sys.argv[1]+"_mirrorhist.txt")
-b=np.loadtxt(sys.argv[1]+"_mirrorcfp.txt")
-
-# Calculate the bin width:
-w=a[1,0]-a[0,0]
-
-# Plot the two histograms and cumulative frequency plots:
-plt.bar(a[:,0], a[:,1], width=w, color="blue", linewidth=0, alpha=0.6)
-plt.bar(a[:,0], a[:,2], width=w, color="green", linewidth=0, alpha=0.4)
-plt.plot(b[:,0], b[:,1], linewidth=2, color="blue")
-plt.plot(b[:,0], b[:,2], linewidth=2, color="green")
-
-# Write the axis labels:
-plt.ylim([0,np.amax(a[:,1])])
-plt.xlim([np.amin(a[:,0]),np.amax(a[:,0])])
-
-# Save the output to any name from the command-line:
-plt.savefig(sys.argv[1]+"_plot.pdf")
-@end example
-
-@cindex PNG
-@cindex Matplotlib
-@noindent
-The output format can be anything that Python's Matplotlib recognizes
-(for example png or jpg are also acceptable). So, if your input data
-file name was @file{input.fits}, and you want to see how its mirror
-distribution would look like if the mirror was placed at the 0.8
-quantile (or the value which is above 80 percent of your data) you can
-run the following sequence of commands to see the combined cumulative
-frequency plot and histogram together in one PDF file. Let's assume you
-have put the Python script above into the file
-@file{mirrorplot.py}. The second command makes the Python script an
-executable file.
-
-@example
-$ ls
-input.fits mirrorplot.py
-$ chmod +x mirrorplot.py
-$ aststatistics input.fits --nohist --nocfp --mirrorquant=0.8
-$ ls
-input.fits  input_mirrorcfp.txt  input_mirrorhist.txt  mirrorplot.py
-$ ./mirrorplot.py input
-@end example
-
-By default, the range of the mirror distribution is set to the 0.01
-quantile of the image to 2 times the distance of the mode to that
-point. This is done so that the mode (which will have a value of zero
-in this plot) is positioned exactly on 1/3rd point of the x axis
-plot. The number of bins is the same value as the
-@option{--histnumbins} option. Alternatively, through the option
-@option{--histrangeformirror}, the histogram properties set with the
-@option{--histmin} and @option{--histmax} can be used. In these mirror
-plots, the mirror value is going to have the value of zero and one of
-the bins is going to start at zero (if @option{--histrangeformirror}
-is called, the given ranges will also shift accordingly).
-
-@node Invoking aststatistics,  , Mirror distribution, Statistics
+@node Invoking aststatistics,  , Sigma clipping, Statistics
 @subsection Invoking Statistics
 
 Statistics will print statistical measures of an input dataset (table
@@ -11387,8 +11290,8 @@ One line examples:
 $ aststatistics image.fits
 $ aststatistics tab.fits -c/MAG/ --histogram
 $ aststatistics catalog.fits -h1 --column=MAG_F160W
-$ aststatistics tab.txt -cMAG_F160W --median --std
 $ aststatistics cat.fits -cMAG -g26 -l27 --sigmaclip=3,0.2
+$ aststatistics tab.txt -rPHOTO_Z -g3 -cMAG_F160W --median
 @end example
 
 @noindent
@@ -11431,10 +11334,12 @@ Unit: Brightness
 -------
   Number of elements:                      9074
   Minimum:                                 9622.35
-  Maximum:                                 10999.8
+  Maximum:                                 10999.7
+  Mode:                                    10055.45996
+  Mode quantile:                           0.4001983908
   Median:                                  10093.7
-  Mean:                                    10144
-  Standard deviation:                      221.81
+  Mean:                                    10143.98257
+  Standard deviation:                      221.80834
 -------
 Histogram:
  |                   **
@@ -11460,10 +11365,20 @@ programs including Statistics, see @ref{Common options} for those.
 
 @item -c STR/INT
 @itemx --column=STR/INT
-The column selector when the input file is a table, plain text, FITS ASCII,
-and FITS binary tables are all acceptable. See @ref{Selecting table
-columns} for a full description of how to use this option. For more on how
-tables are read in Gnuastro, please see @ref{Tables in Gnuastro}.
+The input column selector when the input file is a table. See
+@ref{Selecting table columns} for a full description of how to use this
+option. For more on how tables are read in Gnuastro, please see @ref{Tables
+in Gnuastro}.
+
+@item -r STR/INT
+@itemx --refcol=STR/INT
+The reference column selector when the input file is a table. When a
+reference column is given, the range options below will be applied to this
+column and only elements in the input column that have a reference value in
+the correct range will be used. In practice this option allows you to
+select a subset of the input column based on values in another (the
+reference) column. All the statistical calculations will be done on the
+selected input column, not the reference column.
 
 @item -g FLT
 @itemx --greaterequal=FLT
@@ -11541,9 +11456,70 @@ Print the standard deviation of all used elements.
 @itemx --median
 Print the median of all used elements.
 
+@item -u FLT[,FLT[,...]]
+@itemx --quantile=FLT[,FLT[,...]]
+Print the values at the given quantiles of the input dataset. Any number of
+quantiles may be given and one number will be printed for each. Values can
+either be written as a single number or as fractions, but must be between
+zero and one (inclusive). Hence, in effect @command{--quantile=0.25
+--quantile=0.75} is equivalent to @option{--quantile=0.25,3/4}, or
+@option{-u1/4,3/4}.
+
+The returned value is one of the elements from the dataset. Taking
+@mymath{q} to be your desired quantile, and @mymath{N} to be the total
+number of used (non-blank and within the given range) elements, the
+returned value is at the following position in the sorted array:
+@mymath{round(q\times{}N}).
+
+@item --quantfunc=FLT[,FLT[,...]]
+Print the quantiles of the given values in the dataset. This option is the
+inverse of the @option{--quantile} and operates similarly except that the
+acceptable values are within the range of the dataset, not between 0 and
+1. Formally it is known as the ``Quantile function''.
+
+Since the dataset is not continuous this function will find the nearest
+element of the dataset and use its position to estimate the quantile
+function.
+
 @item -O
 @itemx --mode
-Print the mode of all used elements.
+Print the mode of all used elements. The mode is found through the mirror
+distribution which is fully described in Appendix C of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015}. See
+that section for a full description.
+
+This mode calculation algorithm is non-parametric, so when the dataset is
+not large enough (larger than about 1000 elements usually), or doesn't have
+a clear mode it can fail. In such cases, this option will return a value of
+@code{nan} (for the floating point NaN value).
+
+As described in that paper, the easiest way to assess the quality of this
+mode calculation method is to use it's symmetricity (see @option{--modesym}
+below). A better way would be to use the @option{--mirror} option to
+generate the histogram and cumulative frequency tables for any given mirror
+value (the mode in this case) as a table. If you generate plots like those
+shown in Figure 21 of that paper, then your mode is accurate.
+
+@item --modequant
+Print the quantile of the mode. You can get the actual mode value from the
+@option{--mode} described above. In many cases, the absolute value of the
+mode is irrelevant, but its position within the distribution is
+important. In such cases, this option will become handy.
+
+@item --modesym
+Print the symmetricity of the calculated mode. See the description of
+@option{--mode} for more. This mode algorithm finds the mode based on how
+symmetric it is, so if the symmetricity returned by this option is too low,
+the mode is not too accurate. See Appendix C of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} for a
+full description. In practice, symmetricity values larger than 0.2 are
+mostly good.
+
+@item --modesymvalue
+Print the value in the distribution where the mirror and input
+distributions are no longer symmetric, see @option{--mode} and Appendix C
+of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} for
+more.
 
 @end table
 
@@ -11658,6 +11634,31 @@ multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
 section). The second value is the exit criteria. If it is less than 1, then
 it is interpretted as tolerance and if it is larger than one it is a
 specific number. Hence, in the latter case the value must be an integer.
+
+@item --mirror=FLT
+Make a histogram and cumulative frequency plot of the mirror distribution
+for the given dataset when the mirror is located at the value to this
+option. The mirror distribution is fully described in Appendix C of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} and
+currently it is only used to calculate the mode (see @option{--mode}).
+
+Just note that the mirror distribtution is a discrete distribution like the
+input, so while you may give any number as the value to this option, the
+actual mirror value is the closest number in the input dataset to this
+value. If the two numbers are different, Statistics will warn you of the
+actual mirror value used.
+
+This option will make a table as output. Depending on your selected name
+for the output, it will be either a FITS table or a plain text table (which
+is the default). It contains three columns: the first is the center of the
+bins, the second is the histogram (with the largest value set to 1) and the
+third is the normalized cumulative frequency plot of the mirror
+distribution. The bins will be positioned such that the mode is on the
+starting interval of one of the bins to make it symmetric around the
+mirror. With this output file and the input histogram (that you can
+generate in another run of Statistics, using the @option{--onebinvalue}),
+it is possible to make plots like Figure 21 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015}.
 
 @end table
 

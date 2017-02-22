@@ -131,6 +131,7 @@ ui_initialize_options(struct statisticsparams *p,
   p->greaterequal        = NAN;
   p->quantmin            = NAN;
   p->quantmax            = NAN;
+  p->mirror              = NAN;
   p->sigclipparam        = NAN;
   p->sigclipmultip       = NAN;
 
@@ -205,8 +206,12 @@ static void *
 ui_add_to_print_in_row(struct argp_option *option, char *arg,
                        char *filename, size_t lineno, void *params)
 {
+  size_t i;
+  double *d;
+  gal_data_t *inputs=NULL;
   struct statisticsparams *p=(struct statisticsparams *)params;
 
+  /* In case of printing the option values. */
   if(lineno==-1)
     error(EXIT_FAILURE, 0, "currently the options to be printed in one row "
           "(like `--number', `--mean', and etc) do not support printing "
@@ -215,19 +220,62 @@ ui_add_to_print_in_row(struct argp_option *option, char *arg,
           "Please get in touch with us at `%s', so we can implement it if "
           "it is possible now, thank you", PACKAGE_BUGREPORT);
 
-  /* If this option is given in a configuration file, then `arg' will not
-     be NULL and we don't want to do anything if it is `0'. */
-  if( arg && arg[1]!='\0' && *arg!='0' && *arg!='1' )
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
-                  "option takes no arguments. In a configuration file "
-                  "it can only have the values `1' or `0', indicating "
-                  "if it should be used or not", option->name);
+  /* Some of these options take values and some don't. */
+  if(option->type==GAL_OPTIONS_NO_ARG_TYPE)
+    {
+      /* If this option is given in a configuration file, then `arg' will not
+         be NULL and we don't want to do anything if it is `0'. */
+      if(arg)
+        {
+          /* Make sure the value is only `0' or `1'. */
+          if( arg[1]!='\0' && *arg!='0' && *arg!='1' )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                          "option takes no arguments. In a configuration "
+                          "file it can only have the values `1' or `0', "
+                          "indicating if it should be used or not",
+                          option->name);
 
-  /* Only proceed if the (possibly given) argument is 1. */
-  if(arg && *arg=='0') return NULL;
+          /* Only proceed if the (possibly given) argument is 1. */
+          if(arg[0]=='0' && arg[1]=='\0') return NULL;
+        }
 
-  /* Add this option to the print list. */
-  gal_linkedlist_add_to_ill(&p->toprint, option->key);
+      /* Add this option to the print list. */
+      gal_linkedlist_add_to_ill(&p->toprint, option->key);
+    }
+  else
+    {
+      /* Read the string of numbers. */
+      inputs=gal_options_parse_list_of_numbers(arg, filename, lineno);
+      d=inputs->array;
+
+      /* Do the appropriate operations with the  */
+      switch(option->key)
+        {
+        case ARGS_OPTION_KEY_QUANTILE:
+        case ARGS_OPTION_KEY_QUANTFUNC:
+          /* For the quantile and the quantile function, its possible to
+             give any number of arguments, so add the operation index and
+             the argument once for each given number. */
+          for(i=0;i<inputs->size;++i)
+            {
+              if(option->key==ARGS_OPTION_KEY_QUANTILE && (d[i]<0 || d[i]>1) )
+                error_at_line(EXIT_FAILURE, 0, filename, lineno, "values "
+                              "to `--quantile' (`-u') must be between 0 "
+                              "and 1, you had asked for %g (read from `%s')",
+                              d[i], arg);
+              gal_linkedlist_add_to_dll(&p->tp_args, d[i]);
+              gal_linkedlist_add_to_ill(&p->toprint, option->key);
+            }
+          break;
+
+        default:
+          error_at_line(EXIT_FAILURE, 0, filename, lineno, "a bug! please "
+                        "contact us at %s so we can address the problem. "
+                        "the option given to `ui_add_to_print_in_row' is "
+                        "marked as requiring a value, but is not recognized",
+                        PACKAGE_BUGREPORT);
+        }
+    }
 
   return NULL;
 }
@@ -411,7 +459,7 @@ ui_read_check_only_options(struct statisticsparams *p)
 
 
   /* When binned outputs are requested, make sure that `numbins' is set. */
-  if( (p->histogram || p->cumulative) && p->numbins==0)
+  if( (p->histogram || p->cumulative || !isnan(p->mirror)) && p->numbins==0)
     error(EXIT_FAILURE, 0, "`--numbins' isn't set. When the histogram or "
           "cumulative frequency plots are requested, the number of bins "
           "(`--numbins') is necessary");
@@ -426,9 +474,10 @@ ui_read_check_only_options(struct statisticsparams *p)
           "one of these has not been given");
 
 
-  /* Reverse the list of statistics to print in one row, so it has the same
-     order the user wanted. */
+  /* Reverse the list of statistics to print in one row and also the
+     arguments, so it has the same order the user wanted. */
   gal_linkedlist_reverse_ill(&p->toprint);
+  gal_linkedlist_reverse_dll(&p->tp_args);
 }
 
 
@@ -514,10 +563,15 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 {
   size_t one=1;
   unsigned char flags=GAL_ARITHMETIC_NUMOK;
-  gal_data_t *tmp, *cond_g=NULL, *cond_l=NULL, *cond;
   unsigned char flagsor = ( GAL_ARITHMETIC_FREE
                             | GAL_ARITHMETIC_INPLACE
                             | GAL_ARITHMETIC_NUMOK );
+  gal_data_t *tmp, *cond_g=NULL, *cond_l=NULL, *cond, *blank, *ref;
+
+
+  /* Set the dataset that should be used for the condition. */
+  ref = p->reference ? p->reference : p->input;
+
 
   /* If the user has given a quantile range, then set the `greaterequal'
      and `lessthan' values. */
@@ -527,15 +581,16 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       if( isnan(p->quantmax) ) p->quantmax = 1 - p->quantmin;
 
       /* Set the greater-equal value. */
-      tmp=gal_statistsics_quantile(p->input, p->quantmin, 1);
+      tmp=gal_statistsics_quantile(ref, p->quantmin, 1);
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
       p->greaterequal=*((float *)(tmp->array));
 
       /* Set the lower-than value. */
-      tmp=gal_statistsics_quantile(p->input, p->quantmax, 1);
+      tmp=gal_statistsics_quantile(ref, p->quantmax, 1);
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
       p->lessthan=*((float *)(tmp->array));
     }
+
 
   /* Set the condition. Note that the `greaterequal' name is for the data
      we want. So we will set the condition based on those that are
@@ -545,9 +600,10 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       tmp=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->greaterequal;
-      cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, flags, p->input, tmp);
+      cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, flags, ref, tmp);
       gal_data_free(tmp);
     }
+
 
   /* Same reasoning as above for `p->greaterthan'. */
   if(!isnan(p->lessthan))
@@ -555,9 +611,10 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       tmp=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->lessthan;
-      cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, flags, p->input, tmp);
+      cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, flags, ref, tmp);
       gal_data_free(tmp);
     }
+
 
   /* Now, set the final condition. If both values were specified, then use
      the GAL_ARITHMETIC_OP_OR to merge them into one. */
@@ -572,15 +629,18 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       break;
     }
 
-  /* Allocate a blank value to mask all input pixels. */
-  tmp=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL,
+
+  /* Allocate a blank value to mask all pixels that don't satisfy the
+     condition. */
+  blank=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL,
                      0, -1, NULL, NULL, NULL);
-  *((float *)(tmp->array)) = NAN;
+  *((float *)(blank->array)) = NAN;
+
 
   /* Set all the pixels that satisfy the condition to blank. Note that a
      blank value will be used in the proper type of the input in the
      `where' operator.*/
-  gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flagsor, p->input, cond, tmp);
+  gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flagsor, p->input, cond, blank);
 }
 
 
@@ -599,28 +659,101 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
   for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
-      case ARGS_OPTION_KEY_MEDIAN:
       case ARGS_OPTION_KEY_MODE:
+      case ARGS_OPTION_KEY_MEDIAN:
+      case ARGS_OPTION_KEY_QUANTILE:
+      case ARGS_OPTION_KEY_QUANTFUNC:
         is_necessary=1;
         break;
       }
 
   /* Check in the rest of the outputs. */
-  if( is_necessary==0 && !isnan(p->sigclipmultip) )
+  if( is_necessary==0
+      && ( !isnan(p->sigclipmultip) || !isnan(p->mirror) ) )
     is_necessary=1;
-
 
   /* Do the sorting, we will keep the sorted array in a separate space,
      since the unsorted nature of the original dataset will help decrease
      floating point errors. If the input is already sorted, we'll just
      point it to the input.*/
-  if( gal_statistics_is_sorted(p->input) )
-    p->sorted=p->input;
-  else
+  if(is_necessary)
     {
-      p->sorted=gal_data_copy(p->input);
-      gal_statistics_sort_increasing(p->sorted);
+      if( gal_statistics_is_sorted(p->input) )
+        p->sorted=p->input;
+      else
+        {
+          p->sorted=gal_data_copy(p->input);
+          gal_statistics_sort_increasing(p->sorted);
+        }
     }
+}
+
+
+
+
+
+void
+ui_read_columns(struct statisticsparams *p)
+{
+  int toomanycols=0;
+  size_t size, counter=0;
+  gal_data_t *cols, *tmp;
+  struct gal_linkedlist_stll *column=NULL;
+
+  /* Define the columns that we want, note that they should be added to the
+     list in reverse. */
+  if(p->refcol)
+    gal_linkedlist_add_to_stll(&column, p->refcol, 0);
+  gal_linkedlist_add_to_stll(&column, p->column, 0);
+
+  /* Read the desired column(s). */
+  cols=gal_table_read(p->inputname, p->cp.hdu, column, p->cp.searchin,
+                      p->cp.ignorecase, p->cp.minmapsize);
+
+  /* Put the columns into the proper gal_data_t. */
+  size=cols->size;
+  while(cols!=NULL)
+    {
+      /* Pop out the top column. */
+      tmp=gal_data_pop_from_ll(&cols);
+
+      /* Make sure it has the proper size. */
+      if(tmp->size!=size)
+        error(EXIT_FAILURE, 0, " read column number %zu has a %zu elements, "
+              "while previous column(s) had %zu", counter, tmp->size, size);
+
+      /* Make sure it is a usable datatype. */
+      switch(tmp->type)
+        {
+        case GAL_DATA_TYPE_BIT:
+        case GAL_DATA_TYPE_STRLL:
+        case GAL_DATA_TYPE_STRING:
+        case GAL_DATA_TYPE_COMPLEX32:
+        case GAL_DATA_TYPE_COMPLEX64:
+          error(EXIT_FAILURE, 0, " read column number %zu has a %s type, "
+                "which is not currently supported by %s", counter,
+                gal_data_type_as_string(tmp->type, 1), PROGRAM_NAME);
+        }
+
+      /* Put the column into the proper pointer. */
+      switch(++counter)
+        {
+        case 1: p->input=tmp;                                         break;
+        case 2: if(p->refcol) p->reference=tmp; else toomanycols=1;   break;
+        default: toomanycols=1;
+        }
+
+      /* Print an error if there are too many columns: */
+      if(toomanycols)
+        gal_table_error_col_selection(p->inputname, p->cp.hdu, "too many "
+                                      "columns were selected by the given "
+                                      "values to the `--column' and/or "
+                                      "`--refcol' options. Only one "
+                                      "is acceptable for each.");
+    }
+
+  /* Clean up. */
+  gal_linkedlist_free_stll(column, 0);
 }
 
 
@@ -630,33 +763,10 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
 void
 ui_preparations(struct statisticsparams *p)
 {
-  gal_data_t *tmp;
-  char *errorstring;
-  size_t numcolmatches=0;
-  struct gal_linkedlist_stll *column=NULL;
-
-  /* Read the input: no matter if its an image or a table column. */
+  /* Read the input. */
   if(p->isfits && p->hdu_type==IMAGE_HDU)
     p->input=gal_fits_img_read(p->inputname, p->cp.hdu, p->cp.minmapsize);
-  else
-    {
-      /* Read the input column. */
-      gal_linkedlist_add_to_stll(&column, p->column, 0);
-      p->input=gal_table_read(p->inputname, p->cp.hdu, column, p->cp.searchin,
-                              p->cp.ignorecase, p->cp.minmapsize);
-      if(p->input->next)
-        {
-          for(tmp=p->input;tmp!=NULL;tmp=tmp->next) ++numcolmatches;
-          asprintf(&errorstring, "%zu columns were selected with `%s' "
-                   "(value to `--column' option). In this context, "
-                   "Statistics can only work on one data-set (column in a "
-                   "table).", numcolmatches, p->column);
-          gal_table_error_col_selection(p->inputname, p->cp.hdu, errorstring);
-        }
-
-      /* Clean up. */
-      gal_linkedlist_free_stll(column, 0);
-    }
+  else ui_read_columns(p);
 
   /* Set the out-of-range values in the input to blank. */
   ui_out_of_range_to_blank(p);
@@ -672,6 +782,10 @@ ui_preparations(struct statisticsparams *p)
 
   /* Make the sorted array if necessary. */
   ui_make_sorted_if_necessary(p);
+
+  /* Set the number of output files. */
+  if( !isnan(p->mirror) )             ++p->numoutfiles;
+  if( p->histogram || p->cumulative ) ++p->numoutfiles;
 }
 
 
@@ -779,4 +893,7 @@ ui_free_report(struct statisticsparams *p)
   if(p->sorted!=p->input)
     gal_data_free(p->sorted);
   gal_data_free(p->input);
+  gal_data_free(p->reference);
+  gal_linkedlist_free_ill(p->toprint);
+  gal_linkedlist_free_dll(p->tp_args);
 }

@@ -45,6 +45,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "refcol",
+      ARGS_OPTION_KEY_REFCOL,
+      "STR",
+      0,
+      "Reference column name or number.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->refcol,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "greaterequal",
       ARGS_OPTION_KEY_GREATEREQUAL,
       "FLT",
@@ -99,10 +112,10 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_NUMBER,
       0,
       0,
-      "Print the number of data-points.",
+      "Number (non-blank).",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
-      GAL_DATA_TYPE_INVALID,
+      GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
@@ -113,7 +126,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MINIMUM,
       0,
       0,
-      "Print the minimum.",
+      "Minimum.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -127,7 +140,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MAXIMUM,
       0,
       0,
-      "Print the maximum.",
+      "Maximum.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -141,7 +154,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_SUM,
       0,
       0,
-      "Print the sum of all elements.",
+      "Sum.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -155,7 +168,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MEAN,
       0,
       0,
-      "Print the mean.",
+      "Mean.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -169,7 +182,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_STD,
       0,
       0,
-      "Print the standad deviation.",
+      "Standad deviation.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -183,7 +196,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MEDIAN,
       0,
       0,
-      "Print the median.",
+      "Median.",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -193,11 +206,39 @@ struct argp_option program_options[] =
       ui_add_to_print_in_row
     },
     {
+      "quantile",
+      ARGS_OPTION_KEY_QUANTILE,
+      "FLT[,...]",
+      0,
+      "Quantile (multiple values acceptable).",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "quantfunc",
+      ARGS_OPTION_KEY_QUANTFUNC,
+      "FLT[,...]",
+      0,
+      "Quantile function (multiple values acceptable).",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
       "mode",
       ARGS_OPTION_KEY_MODE,
       0,
       0,
-      "Print the mode (for large datasets).",
+      "Mode (Appendix D of arXiv:1505.011664).",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -206,7 +247,48 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_add_to_print_in_row
     },
-
+    {
+      "modequant",
+      ARGS_OPTION_KEY_MODEQUANT,
+      0,
+      0,
+      "Mode quantile (see --mode)",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "modesym",
+      ARGS_OPTION_KEY_MODESYM,
+      0,
+      0,
+      "Mode symmetricity (see --mode).",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
+    {
+      "modesymvalue",
+      ARGS_OPTION_KEY_MODESYMVALUE,
+      0,
+      0,
+      "Value at mode symmetricity (see --mode).",
+      ARGS_GROUP_IN_ONE_ROW,
+      &p->toprint,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_print_in_row
+    },
 
 
 
@@ -282,6 +364,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_parse_numbers
     },
+    {
+      "mirror",
+      ARGS_OPTION_KEY_MIRROR,
+      "FLT",
+      0,
+      "Save the histogram and CFP of the mirror dist.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->mirror,
+      GAL_DATA_TYPE_FLOAT64,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
@@ -289,7 +384,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Histogram or Cumulative frequency plot settings",
+      "Settings",
       ARGS_GROUP_HIST_CFP
     },
     {

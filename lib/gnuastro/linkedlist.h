@@ -104,6 +104,9 @@ gal_linkedlist_dll_to_array(struct gal_linkedlist_dll *list,
                             double **d, size_t *num);
 
 void
+gal_linkedlist_reverse_dll(struct gal_linkedlist_dll **list);
+
+void
 gal_linkedlist_free_dll(struct gal_linkedlist_dll *list);
 
 

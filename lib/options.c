@@ -270,7 +270,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &num, NULL, 0,
                      minmapsize, NULL, NULL, NULL);
   for(tdll=list;tdll!=NULL;tdll=tdll->next)
-    ((double *)out->array)[--i]=tdll->v;
+    ((double *)(out->array))[--i]=tdll->v;
 
 
   /* Clean up and return. */

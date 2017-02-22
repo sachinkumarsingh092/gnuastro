@@ -47,8 +47,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Maximum number of tests for sigma-clipping convergence */
-#define GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE 50
+/* Maximum number of tests for sigma-clipping convergence. */
+#define GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE 50
+
+/* Least acceptable mode symmetricity.*/
+#define GAL_STATISTICS_MODE_GOOD_SYM         0.2f
 
 
 
@@ -102,10 +105,34 @@ gal_data_t *
 gal_statistics_median(gal_data_t *input, int inplace);
 
 gal_data_t *
-gal_statistsics_quantile(gal_data_t *input, float quantile, int inplace);
+gal_statistsics_quantile(gal_data_t *input, double quantile, int inplace);
 
 size_t
-gal_statistics_quantile_index(size_t size, float quant);
+gal_statistics_quantile_index(size_t size, double quant);
+
+size_t
+gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
+                                       int inplace);
+
+gal_data_t *
+gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
+                                 int inplace);
+
+
+
+
+
+/****************************************************************
+ ********                     Mode                        *******
+ ****************************************************************/
+
+gal_data_t *
+gal_statistics_mode(gal_data_t *input, float errorstd, int inplace);
+
+gal_data_t *
+gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
+                                 size_t numbins, int inplace,
+                                 double *mirror_val);
 
 
 
@@ -129,12 +156,14 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace);
 
 
 
+
+
 /****************************************************************
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
 gal_data_t *
 gal_statistics_regular_bins(gal_data_t *data, gal_data_t *range,
-                            size_t numbins, float onebinstart);
+                            size_t numbins, double onebinstart);
 
 gal_data_t *
 gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
@@ -165,48 +194,6 @@ void
 gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize);
 
 
-
-
-
-/****************************************************************/
-/*************               Mode                ****************/
-/****************************************************************/
-#define GAL_STATISTICS_MODE_LOW_QUANTILE  0.01f
-#define GAL_STATISTICS_MODE_HIGH_QUANTILE 0.51f
-
-#define GAL_STATISTICS_MODE_SYM_GOOD        0.2f
-#define GAL_STATISTICS_MODE_LOW_QUANT_GOOD  0.02f
-
-#define GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT 0.01f
-
-struct gal_statistics_mode_params
-{
-  float     *sorted;   /* Sorted array to be used.                */
-  size_t       size;   /* Number of elements in the sorted array. */
-  size_t       lowi;   /* Lower quantile of interval.             */
-  size_t       midi;   /* Middle quantile of interval.            */
-  size_t       midd;   /* Middle index of inteval.                */
-  size_t      highi;   /* Higher quantile of interval.            */
-  float   tolerance;   /* Tolerance level to terminate search.    */
-  size_t   numcheck;   /* Number of pixels after mode to check.   */
-  size_t   interval;   /* Interval to check pixels.               */
-  float   errorstdm;   /* Multiple of standard deviation.         */
-};
-
-void
-gal_statistics_mode_mirror_plots(float *sorted, size_t size,
-                                 size_t mirrorindex, float min, float max,
-                                 size_t numbins, char *histsname,
-                                 char *cfpsname, float mirrorplotdist);
-
-float
-gal_statistics_mode_value_from_sym(float *sorted, size_t size,
-                                   size_t modeindex, float sym);
-
-void
-gal_statistics_mode_index_in_sorted(float *sorted, size_t size,
-                                    float errorstdm, size_t *modeindex,
-                                    float *modesym);
 
 
 __END_C_DECLS    /* From C++ preparations */

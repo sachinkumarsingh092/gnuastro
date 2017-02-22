@@ -395,7 +395,7 @@ ui_read_cols(struct mkprofparams *p)
      the same as those that were wanted (it might be more). */
   while(cols!=NULL)
     {
-      /* Pop out the top node. */
+      /* Pop out the top column. */
       tmp=gal_data_pop_from_ll(&cols);
 
       /* By default check if the column has blank values, but it can be
