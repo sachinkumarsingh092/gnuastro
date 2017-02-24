@@ -238,7 +238,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MODE,
       0,
       0,
-      "Mode (Appendix D of arXiv:1505.011664).",
+      "Mode (Appendix C of arXiv:1505.011664).",
       ARGS_GROUP_IN_ONE_ROW,
       &p->toprint,
       GAL_OPTIONS_NO_ARG_TYPE,
