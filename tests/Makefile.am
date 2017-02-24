@@ -22,13 +22,147 @@
 
 
 
-# Translate conditions that came from `./configure' into variables that can
-# be used here.
+## Translate conditions that came from `./configure' into variables that can
+## be used here. This includes the programs and teh dependencies of the
+## checks.
+##
+## Dependency structure
+## ====================
+##
+## The tests depend on each other. One way to fix this is to call them in
+## the order that their dependence is satisfied. But that is prone to
+## errors and a lot of problem. The user also not want to build all the
+## programs. Also, Make allows us to work with multiple threads (with
+## `-jN') and in that case, it is vital to define the dependencies.
+##
+## The output of all the tests that should be used (is recognized by
+## Automake and will not mess the system) is the name of the test file
+## appended by a `.log'. It contains the output of the program on standard
+## output and error. THIS IS IMPORTANT: So even if the program fails, the
+## .log file is created. The check if the input for a test exists or not
+## should be checked in the test that depends on it, it can't be done here
+## in the Makefile.
 if COND_HASGHOSTSCRIPT
   MAYBE_HASGHOSTSCRIPT = "yes"
 endif
 if COND_HASLIBJPEG
   MAYBE_HASLIBJPEG = "yes"
+endif
+if COND_ARITHMETIC
+  MAYBE_ARITHMETIC_TESTS = arithmetic/snimage.sh arithmetic/onlynumbers.sh \
+  arithmetic/where.sh arithmetic/or.sh
+
+  arithmetic/onlynumbers.sh: prepconf.sh.log
+  arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
+  arithmetic/where.sh: noisechisel/noisechisel.sh.log
+  arithmetic/or.sh: noisechisel/noisechisel.sh.log
+endif
+if COND_CONVERTT
+  MAYBE_CONVERTT_TESTS = convertt/fitstotxt.sh convertt/fitstojpeg.sh	\
+  convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh	\
+  convertt/jpegtofits.sh convertt/fitstopdf.sh
+
+  convertt/fitstotxt.sh: mkprof/mosaic1.sh.log
+  convertt/fitstojpeg.sh: mkprof/mosaic1.sh.log
+  convertt/blankch.sh: mkprof/mosaic1.sh.log
+  convertt/jpegtotxt.sh: convertt/fitstojpeg.sh.log
+  convertt/fitstojpegcmyk.sh: mkprof/mosaic1.sh.log
+  convertt/jpegtofits.sh: convertt/blankch.sh.log
+  convertt/fitstopdf.sh: crop/section.sh.log
+endif
+if COND_CONVOLVE
+  MAYBE_CONVOLVE_TESTS = convolve/spatial.sh convolve/frequency.sh
+
+  convolve/spatial.sh: mkprof/mosaic1.sh.log
+  convolve/frequency.sh: mkprof/mosaic1.sh.log
+endif
+if COND_COSMICCAL
+  MAYBE_COSMICCAL_TESTS = cosmiccal/simpletest.sh
+
+  cosmiccal/simpletest.sh: prepconf.sh.log
+endif
+if COND_CROP
+  MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/xcyc.sh		\
+  crop/xcycnoblank.sh crop/section.sh crop/radec.sh crop/imgpolygon.sh	\
+  crop/imgoutpolygon.sh crop/wcspolygon.sh
+
+  crop/imgcat.sh: mkprof/mosaic1.sh.log
+  crop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
+                  mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+  crop/xcyc.sh: mkprof/mosaic1.sh.log
+  crop/xcycnoblank.sh: mkprof/mosaic1.sh.log
+  crop/section.sh: mkprof/mosaic1.sh.log
+  crop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
+                 mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+  crop/imgpolygon.sh: mkprof/mosaic1.sh.log
+  crop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
+  crop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
+                      mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+endif
+if COND_FITS
+  MAYBE_FITS_TESTS = fits/write.sh fits/print.sh fits/update.sh	\
+  fits/delete.sh
+
+  fits/write.sh: mkprof/mosaic1.sh.log
+  fits/print.sh: fits/write.sh.log
+  fits/update.sh: fits/write.sh.log
+  fits/delete.sh: fits/write.sh.log
+endif
+if COND_MKCATALOG
+  MAYBE_MKCATALOG_TESTS = mkcatalog/simple.sh mkcatalog/aperturephot.sh
+
+  mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
+  mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
+                             mkprof/clearcanvas.sh
+endif
+if COND_MKNOISE
+  MAYBE_MKNOISE_TESTS = mknoise/addnoise.sh
+
+  mknoise/addnoise.sh: warp/warp_scale.sh.log
+endif
+if COND_MKPROF
+  MAYBE_MKPROF_TESTS = mkprof/mosaic1.sh mkprof/mosaic2.sh	\
+  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh	\
+  mkprof/ellipticalmasks.sh mkprof/clearcanvas.sh
+
+  mkprof/mosaic1.sh: prepconf.sh.log
+  mkprof/mosaic2.sh: prepconf.sh.log
+  mkprof/mosaic3.sh: prepconf.sh.log
+  mkprof/mosaic4.sh: prepconf.sh.log
+  mkprof/radeccat.sh: prepconf.sh.log
+  mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
+  mkprof/clearcanvas.sh: mknoise/addnoise.sh.log
+endif
+if COND_NOISECHISEL
+  MAYBE_NOISECHISEL_TESTS = noisechisel/noisechisel.sh
+
+  noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
+endif
+if COND_STATISTICS
+  MAYBE_STATISTICS_TESTS = statistics/basicstats.sh
+
+  statistics/basicstats.sh: mknoise/addnoise.sh.log
+endif
+if COND_SUBTRACTSKY
+  MAYBE_SUBTRACTSKY_TESTS = subtractsky/subtractsky.sh
+
+  subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
+endif
+if COND_TABLE
+  MAYBE_TABLE_TESTS = table/txt-to-fits-binary.sh		\
+  table/fits-binary-to-txt.sh table/txt-to-fits-ascii.sh	\
+  table/fits-ascii-to-txt.sh
+
+  table/txt-to-fits-binary.sh: prepconf.sh.log
+  table/fits-binary-to-txt.sh: table/txt-to-fits-binary.sh.log
+  table/txt-to-fits-ascii.sh: prepconf.sh.log
+  table/fits-ascii-to-txt.sh: table/txt-to-fits-ascii.sh.log
+endif
+if COND_WARP
+  MAYBE_WARP_TESTS = warp/warp_scale.sh warp/homographic.sh
+
+  warp/warp_scale.sh: convolve/spatial.sh.log
+  warp/homographic.sh: convolve/spatial.sh.log
 endif
 
 
@@ -64,22 +198,12 @@ multithread_SOURCES = lib/multithread.c
 
 
 # The actual test scripts that are run:
-TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh  \
-  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh crop/imgcat.sh    \
-  crop/wcscat.sh crop/xcyc.sh crop/xcycnoblank.sh crop/section.sh          \
-  crop/radec.sh crop/imgpolygon.sh crop/imgoutpolygon.sh                   \
-  crop/wcspolygon.sh convertt/fitstotxt.sh convertt/fitstojpeg.sh          \
-  convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh     \
-  convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh         \
-  convolve/frequency.sh warp/warp_scale.sh warp/homographic.sh             \
-  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/clearcanvas.sh      \
-  header/write.sh header/print.sh header/update.sh header/delete.sh        \
-  statistics/basicstats.sh subtractsky/subtractsky.sh                      \
-  noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh \
-  arithmetic/snimage.sh arithmetic/onlynumbers.sh arithmetic/where.sh      \
-  arithmetic/or.sh cosmiccal/simpletest.sh table/txt-to-fits-binary.sh     \
-  table/fits-binary-to-txt.sh table/txt-to-fits-ascii.sh                   \
-  table/fits-ascii-to-txt.sh
+TESTS = prepconf.sh $(check_PROGRAMS) $(MAYBE_ARITHMETIC_TESTS)		   \
+  $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
+  $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS)	   \
+  $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)  \
+  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)			   \
+  $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
 
 
 
@@ -107,69 +231,3 @@ CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps
 # that was built by the `prepconf.sh' scripot. See "Extending Automake
 # rules", and the "What Gets Cleaned" sections of the Automake manual.
 clean-local:; rm -rf .gnuastro
-
-
-
-
-
-## Dependency structure
-## ====================
-##
-## When run with `-jN' option, the tests can be run in parallel, so we need
-## to define their dependencies on each other here. The output of all the
-## tests that should be used (is recognized by Automake and will not mess
-## the system) is the name of the test file appended by a `.log'. It
-## contains the output of the program on standard output and error. THIS IS
-## IMPORTANT: So even if the program fails, the .log file is created. The
-## check if the input for a test exists or not should be checked in the
-## test that depends on it, it can't be done here in the Makefile.
-mkprof/mosaic1.sh: prepconf.sh.log
-mkprof/mosaic2.sh: prepconf.sh.log
-mkprof/mosaic3.sh: prepconf.sh.log
-mkprof/mosaic4.sh: prepconf.sh.log
-mkprof/radeccat.sh: prepconf.sh.log
-table/txt-to-fits-binary.sh: prepconf.sh.log
-table/fits-binary-to-txt.sh: table/txt-to-fits-binary.sh.log
-table/txt-to-fits-ascii.sh: prepconf.sh.log
-table/fits-ascii-to-txt.sh: table/txt-to-fits-ascii.sh.log
-crop/imgcat.sh: mkprof/mosaic1.sh.log
-crop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
-                   mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-crop/xcyc.sh: mkprof/mosaic1.sh.log
-crop/xcycnoblank.sh: mkprof/mosaic1.sh.log
-crop/section.sh: mkprof/mosaic1.sh.log
-crop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
-                  mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-crop/imgpolygon.sh: mkprof/mosaic1.sh.log
-crop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
-crop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
-                       mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-convertt/fitstotxt.sh: mkprof/mosaic1.sh.log
-convertt/fitstojpeg.sh: mkprof/mosaic1.sh.log
-convertt/blankch.sh: mkprof/mosaic1.sh.log
-convertt/jpegtotxt.sh: convertt/fitstojpeg.sh.log
-convertt/fitstojpegcmyk.sh: mkprof/mosaic1.sh.log
-convertt/jpegtofits.sh: convertt/blankch.sh.log
-convertt/fitstopdf.sh: crop/section.sh.log
-convolve/spatial.sh: mkprof/mosaic1.sh.log
-convolve/frequency.sh: mkprof/mosaic1.sh.log
-warp/warp_scale.sh: convolve/spatial.sh.log
-warp/homographic.sh: convolve/spatial.sh.log
-mknoise/addnoise.sh: warp/warp_scale.sh.log
-mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
-mkprof/clearcanvas.sh: mknoise/addnoise.sh.log
-header/write.sh: mkprof/mosaic1.sh.log
-header/print.sh: header/write.sh.log
-header/update.sh: header/write.sh.log
-header/delete.sh: header/write.sh.log
-statistics/basicstats.sh: mknoise/addnoise.sh.log
-subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
-noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
-mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
-mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
-                           mkprof/clearcanvas.sh
-arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
-arithmetic/where.sh: noisechisel/noisechisel.sh.log
-arithmetic/or.sh: noisechisel/noisechisel.sh.log
-arithmetic/onlynumbers.sh: prepconf.sh.log
-cosmiccal/simpletest.sh: prepconf.sh.log

@@ -1,4 +1,4 @@
-# Print the full header information
+# Delete header information.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,8 +22,8 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=header
-img=headertest.fits
+prog=fits
+img=fitstest.fits
 execname=../bin/$prog/ast$prog
 
 
@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img
+$execname $img --delete=ABSJUNK --delete=ABSJNK2

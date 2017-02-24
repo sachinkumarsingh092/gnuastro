@@ -1,11 +1,11 @@
 /*********************************************************************
-Header - View and manipulate a data file header
-Header is part of GNU Astronomy Utilities (Gnuastro) package.
+Fits - View and manipulate FITS extensions and/or headers.
+Fits is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,36 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
+#ifndef AUTHORS_CITE_H
+#define AUTHORS_CITE_H
 
-#include <stdio.h>
-#include <stdlib.h>
+/* When any specific citation is necessary, please add its BibTeX (from ADS
+   hopefully) to this variable along with a title decribing what this
+   paper/book does for the progarm in a short line. In the following line
+   put a row of `-' with the same length and then put the BibTeX.
 
-#include <timing.h>    /* Includes time.h and sys/time.h */
+   See the `gnuastro_bibtex' variable in `lib/options' (from the top
+   Gnuastro source code directory) as an example.*/
 
-#include "main.h"
+#define PROGRAM_BIBTEX "";
 
-#include "ui.h"                 /* needs main.h.                  */
-#include "header.h"             /* needs main.h.                  */
+#define PROGRAM_AUTHORS "Mohammad Akhlaghi";
 
-int
-main (int argc, char *argv[])
-{
-  int r;
-  struct headerparams p={{0}, 0};
-
-  /* Get the starting time. */
-  time(&p.rawtime);
-
-  /* Read the input parameters. */
-  ui_read_check_inputs_setup(argc, argv, &p);
-
-  /* Run MakeProfiles */
-  r=header(&p);
-
-  /* Free all non-freed allocations. */
-  ui_free_and_report(&p);
-
-  /* Return successfully.*/
-  return r;
-}
+#endif

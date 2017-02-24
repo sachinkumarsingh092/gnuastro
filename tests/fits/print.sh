@@ -1,4 +1,4 @@
-# Write a junk header to a FITS file
+# Print the full header information
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,8 +22,8 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=header
-img=mkprofcat1.fits
+prog=fits
+img=fitstest.fits
 execname=../bin/$prog/ast$prog
 
 
@@ -48,6 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-cp $img headertest.fits
-$execname headertest.fits --write=ABSJUNK,10.92,"A Header Test.",m/s --date \
-          --write=ABSJNK2,2343fdsa,"Another absolute junk test!"
+$execname $img

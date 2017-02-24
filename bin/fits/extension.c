@@ -1,6 +1,6 @@
 /*********************************************************************
-Header - View and manipulate a data file header
-Header is part of GNU Astronomy Utilities (Gnuastro) package.
+Fits - View and manipulate FITS extensions and/or headers.
+Fits is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,19 +20,4 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef AUTHORS_CITE_H
-#define AUTHORS_CITE_H
-
-/* When any specific citation is necessary, please add its BibTeX (from ADS
-   hopefully) to this variable along with a title decribing what this
-   paper/book does for the progarm in a short line. In the following line
-   put a row of `-' with the same length and then put the BibTeX.
-
-   See the `gnuastro_bibtex' variable in `lib/options' (from the top
-   Gnuastro source code directory) as an example.*/
-
-#define PROGRAM_BIBTEX "";
-
-#define PROGRAM_AUTHORS "Mohammad Akhlaghi";
-
-#endif
+#include <config.h>

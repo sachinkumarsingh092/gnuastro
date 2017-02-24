@@ -1,6 +1,6 @@
 /*********************************************************************
-Header - View and manipulate a data file header
-Header is part of GNU Astronomy Utilities (Gnuastro) package.
+Fits - View and manipulate FITS extensions and/or headers.
+Fits is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <options.h>
 
 /* Progarm name macros: */
-#define PROGRAM_NAME  "Header"        /* Program full name.       */
-#define PROGRAM_EXEC  "astheader"     /* Program executable name. */
+#define PROGRAM_NAME  "Fits"        /* Program full name.       */
+#define PROGRAM_EXEC  "astfits"     /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
@@ -38,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-struct headerparams
+struct fitsparams
 {
   /* Common parameters */
   struct gal_options_common_params  cp;  /* Common parameters.        */

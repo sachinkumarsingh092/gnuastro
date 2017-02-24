@@ -1,6 +1,6 @@
 /*********************************************************************
-Header - View and manipulate a data file header
-Header is part of GNU Astronomy Utilities (Gnuastro) package.
+Fits - View and manipulate FITS extensions and/or headers.
+Fits is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -60,10 +60,8 @@ static char
 args_doc[] = "ASTRdata";
 
 const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" print the header "
-  "information in any astronomical data file header. It can also "
-  "manipulate (add, remove or modify) any of the existing keywords in "
-  "a data header. \n"
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" view and manipulate (add, "
+  "delete, or modify) FITS extensions and header keywords. \n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -92,7 +90,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" print the header "
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
 static void
-ui_initialize_options(struct headerparams *p,
+ui_initialize_options(struct fitsparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
@@ -116,7 +114,7 @@ ui_initialize_options(struct headerparams *p,
 error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
-  struct headerparams *p = state->input;
+  struct fitsparams *p = state->input;
 
   /* Pass `gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
@@ -185,7 +183,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
-ui_read_check_only_options(struct headerparams *p)
+ui_read_check_only_options(struct fitsparams *p)
 {
   /* See if the user just wants to view the header or actually do
      something. */
@@ -201,7 +199,7 @@ ui_read_check_only_options(struct headerparams *p)
 
 
 static void
-ui_check_options_and_arguments(struct headerparams *p)
+ui_check_options_and_arguments(struct fitsparams *p)
 {
   /* Make sure an input file name was given and if it was a FITS file, that
      a HDU is also given. */
@@ -241,7 +239,7 @@ ui_check_options_and_arguments(struct headerparams *p)
 /*****************       Preparations      ********************/
 /**************************************************************/
 static void
-ui_setup_rename(struct headerparams *p)
+ui_setup_rename(struct fitsparams *p)
 {
   char *c;
   struct gal_linkedlist_stll *tmp;
@@ -403,7 +401,7 @@ ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
 
 
 static void
-ui_preparations(struct headerparams *p)
+ui_preparations(struct fitsparams *p)
 {
   char *ffname;
   int status=0, iomode;
@@ -448,7 +446,7 @@ ui_preparations(struct headerparams *p)
 /**************************************************************/
 
 void
-ui_read_check_inputs_setup(int argc, char *argv[], struct headerparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
@@ -521,7 +519,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct headerparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-ui_free_and_report(struct headerparams *p)
+ui_free_and_report(struct fitsparams *p)
 {
   int status=0;
 

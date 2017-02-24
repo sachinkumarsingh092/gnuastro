@@ -22,8 +22,8 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=header
-img=headertest.fits
+prog=fits
+img=fitstest.fits
 execname=../bin/$prog/ast$prog
 
 

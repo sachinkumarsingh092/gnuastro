@@ -26,15 +26,15 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
 ## Program definition (name, linking, sources and headers)
-bin_PROGRAMS = astheader
+bin_PROGRAMS = astfits
 
-astheader_LDADD = -lgnuastro
+astfits_LDADD = -lgnuastro
 
-astheader_SOURCES = main.c ui.c header.c
+astfits_SOURCES = main.c ui.c extension.c fits.c header.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h header.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h extension.c fits.c header.h
 
 
 ## The configuration file (distribute and install).
 ## NOTE: the man page is created in doc/Makefile.am
-dist_sysconf_DATA = astheader.conf
+dist_sysconf_DATA = astfits.conf
