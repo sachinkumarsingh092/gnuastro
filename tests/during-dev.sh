@@ -140,10 +140,14 @@ if make -C "$builddir"; then
     # the last line in the configuration file doesn't actualy end with a
     # new line (in which case the appended string will be added to the end
     # of the last line).
-    cp "$srcdir/bin/$utilname/ast$utilname.conf" .gnuastro/
-    echo ""               >> .gnuastro/ast$utilname.conf
-    echo " lastconfig 1"  >> .gnuastro/ast$utilname.conf
+    cp "$srcdir/lib/gnuastro.conf" "$srcdir/bin/$utilname/ast$utilname.conf" \
+       .gnuastro/
+    echo ""               >> .gnuastro/gnuastro.conf
+    echo " lastconfig 1"  >> .gnuastro/gnuastro.conf
 
     # Run the built utility with the given arguments and options.
     "$utility" $arguments $options
+
+    # Clean up.
+    rm -rf .gnuastro
 fi

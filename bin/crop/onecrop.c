@@ -605,23 +605,35 @@ firstcropmakearray(struct onecropparams *crp, long *fpixel_i,
     }
 
 
-  /* Create the FITS image extension and array and fill it with null
-     values. About the COMMENTs: when CFITSIO creates a FITS extension it
-     adds two comments linking to the FITS paper. Since we are mentioning
-     the version of CFITSIO and only use its ruitines to read/write from/to
-     FITS files, this is redundant. If `status!=0', then
-     `gal_fits_io_error' will abort, but in case CFITSIO doesn't write the
-     comments, status will become non-zero. So we are resetting it to zero
-     after these (because not being able to delete them isn't an error).*/
-  if(fits_create_file(&crp->outfits, outname, &status))
+  /* Create the FITS file with a blank first extension, then close it, so
+     with the next `fits_open_file', we build the image in the second
+     extension. This way, atleast for Gnuastro's outputs, we can
+     consistently use `-h1' (something like how you count columns, or
+     generally everything from 1). */
+  if(fits_create_file(&ofp, outname, &status))
     gal_fits_io_error(status, "creating file");
-  ofp=crp->outfits;
-  fits_create_img(ofp, gal_fits_type_to_bitpix(type),
+  fits_create_img(ofp, SHORT_IMG, 0, naxes, &status);
+  fits_close_file(ofp, &status);
+
+  /* Create the output crop image. */
+  fits_open_file(&crp->outfits, outname, READWRITE, &status);
+  fits_create_img(crp->outfits, gal_fits_type_to_bitpix(type),
                   naxis, naxes, &status);
   gal_fits_io_error(status, "creating image");
+  ofp=crp->outfits;
+
+  /* When CFITSIO creates a FITS extension it adds two comments linking to
+     the FITS paper. Since we are mentioning the version of CFITSIO and
+     only use its ruitines to read/write from/to FITS files, this is
+     redundant. If `status!=0', then `gal_fits_io_error' will abort, but in
+     case CFITSIO doesn't write the comments, status will become
+     non-zero. So we are resetting it to zero after these (because not
+     being able to delete them isn't an error). */
   fits_delete_key(ofp, "COMMENT", &status);
   fits_delete_key(ofp, "COMMENT", &status);
   status=0;
+
+  /* Write the blank value if necessary. */
   if( type!=GAL_DATA_TYPE_FLOAT32 && type!=GAL_DATA_TYPE_FLOAT64 )
     if(fits_write_key(ofp, gal_fits_type_to_datatype(crp->p->type), "BLANK",
                       crp->p->bitnul, "pixels with no data", &status) )

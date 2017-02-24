@@ -1165,23 +1165,18 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
           "`unsigned char' type. But",
           PACKAGE_BUGREPORT);
 
-  /* Common options configuration file. */
-  asprintf(&filename, ".%s/%s.conf", PACKAGE, PACKAGE);
-  options_parse_file(filename, cp, 0);
-  free(filename);
-
   /* The program's current directory configuration file. */
   asprintf(&filename, ".%s/%s.conf", PACKAGE, cp->program_exec);
   options_parse_file(filename, cp, 0);
   free(filename);
 
-  /* Read the home environment variable. */
-  home=options_get_home();
-
-  /* Common options user-wide configuration file. */
-  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, PACKAGE);
+  /* Common options configuration file. */
+  asprintf(&filename, ".%s/%s.conf", PACKAGE, PACKAGE);
   options_parse_file(filename, cp, 0);
   free(filename);
+
+  /* Read the home environment variable. */
+  home=options_get_home();
 
   /* The program's user-wide configuration file. */
   asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR,
@@ -1189,13 +1184,18 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
   options_parse_file(filename, cp, 0);
   free(filename);
 
-  /* Common options system-wide configuration file. */
-  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, PACKAGE);
+  /* Common options user-wide configuration file. */
+  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, PACKAGE);
   options_parse_file(filename, cp, 0);
   free(filename);
 
   /* The program's system-wide configuration file. */
   asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, cp->program_exec);
+  options_parse_file(filename, cp, 0);
+  free(filename);
+
+  /* Common options system-wide configuration file. */
+  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, PACKAGE);
   options_parse_file(filename, cp, 0);
   free(filename);
 }

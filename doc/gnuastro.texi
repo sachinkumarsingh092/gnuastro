@@ -4759,28 +4759,28 @@ configuration file).
 Command-line options, for a particular run of ProgramName.
 
 @item
-@file{.gnuastro/gnuastro.conf} is parsed by all Gnuastro programs in the
-current directory.
-
-@item
 @file{.gnuastro/astprogname.conf} is parsed by ProgramName in the current
 directory.
 
 @item
-@file{$HOME/.local/etc/gnuastro.conf} is parsed by all Gnuastro programs in
-the user's home directory (see @ref{Current directory and User wide}).
+@file{.gnuastro/gnuastro.conf} is parsed by all Gnuastro programs in the
+current directory.
 
 @item
 @file{$HOME/.local/etc/astprogname.conf} is parsed by ProgramName in the
 user's home directory (see @ref{Current directory and User wide}).
 
 @item
-@file{prefix/etc/gnuastro.conf} is parsed by all Gnuastro programs in the
+@file{$HOME/.local/etc/gnuastro.conf} is parsed by all Gnuastro programs in
+the user's home directory (see @ref{Current directory and User wide}).
+
+@item
+@file{prefix/etc/astprogname.conf} is parsed by ProgramName in the
 system-wide installation directory (see @ref{System wide} for
 @file{prefix}).
 
 @item
-@file{prefix/etc/astprogname.conf} is parsed by ProgramName in the
+@file{prefix/etc/gnuastro.conf} is parsed by all Gnuastro programs in the
 system-wide installation directory (see @ref{System wide} for
 @file{prefix}).
 

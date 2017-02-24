@@ -124,6 +124,7 @@ ui_initialize_options(struct converttparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Program specific non-zero values. */
+  p->quality             = UINT8_MAX;
   p->maxbyte             = UINT8_MAX;
 
   /* Edit the common options. */
@@ -225,15 +226,6 @@ static void
 ui_read_check_only_options(struct converttparams *p)
 {
   gal_data_t *cond;
-
-
-  /* Check if quality is smaller and equal to 100 (we already checked if it
-     was greater than zero before. */
-  if(p->quality>100)
-    error(EXIT_FAILURE, 0, "`%u' is larger than 100. The value to the "
-          "`--quality' (`-u') option must be between 1 and 100 (inclusive)",
-          p->quality);
-
 
   /* Read the truncation values into a data structure and see if flux low
      is indeed smaller than fluxhigh. */
@@ -656,14 +648,19 @@ ui_set_output(struct converttparams *p)
             "Please install it and configure, make and install %s "
             "again", PACKAGE_STRING, PACKAGE_STRING);
 #else
+      /* Small sanity checks. */
+      if(p->quality == UINT8_MAX)
+        error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary for "
+              "jpeg outputs, but it has not been given");
+      if(p->quality > 100)
+        error(EXIT_FAILURE, 0, "`%u' is larger than 100. The value to the "
+              "`--quality' (`-u') option must be between 1 and 100 (inclusive)",
+              p->quality);
+
+      /* Preparations. */
       p->outformat=OUT_FORMAT_JPEG;
       if( nameisjpegsuffix(cp->output) )
         ui_add_dot_use_automatic_output(p);
-      if(p->quality==0)
-        error(EXIT_FAILURE, 0, "no quality specified for %s, please use the "
-              "`--quality' (`-q') option with a value between 1 (low "
-              "quality) and 100 (high quality) to specify a level",
-              p->cp.output);
 #endif
     }
   else if(nameiseps(cp->output))

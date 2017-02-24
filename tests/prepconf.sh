@@ -35,13 +35,11 @@ fi
 
 
 
-# Add options for `make check'
-# ----------------------------
+# Common options for all programs
+# -------------------------------
 #
-# It might be necessary to add specific options to all the programs during
-# `make check'. Therefore we have defined the file `addedoptions.txt' to
-# keep these extra options and append them to the configuration file in the
-# source directory of the utility.
+# Copy the common options while adding the following optios only for make
+# check.
 #
 #   - The onlydirconf option is added so the utilities don't go looking
 #     into the user's home and system wide directories (which might contain
@@ -63,7 +61,8 @@ cat > addedoptions.txt <<EOF
  lastconfig            1
  log                   0
 EOF
-
+cat $topsrc/lib/gnuastro.conf addedoptions.txt > .gnuastro/gnuastro.conf
+rm addedoptions.txt
 
 
 
@@ -75,23 +74,8 @@ EOF
 # addedoptions.txt file to create the configuration file which will be used
 # by `make check'.
 for prog in arithmetic convertt convolve cosmiccal crop fits      \
-            warp mkcatalog mknoise mkprof noisechisel statistics  \
-            subtractsky table
+            mkcatalog mknoise mkprof noisechisel statistics       \
+            subtractsky table warp
 do
-
-    # Copy the configuration file from the utility source and add the
-    # options added here.
-    cat $topsrc/bin/$prog/ast$prog.conf addedoptions.txt          \
-        > .gnuastro/ast$prog.conf
-
+    cp $topsrc/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
 done
-
-
-
-
-
-# Clean up
-# --------
-#
-# Delete the `addedoptions.txt' file that was generated here.
-rm addedoptions.txt

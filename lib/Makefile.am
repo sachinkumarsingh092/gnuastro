@@ -87,6 +87,13 @@ EXTRA_DIST = $(headersdir)/README gnuastro.pc.in arithmetic-binary.h    \
 
 
 
+# Common options to all Gnuastro programs.
+dist_sysconf_DATA = gnuastro.conf
+
+
+
+
+
 # Definitions for Gnuastro's the pkg-config file (inspired from GSL's
 # Makefile.am)
 pkgconfig_DATA = gnuastro.pc
