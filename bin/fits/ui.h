@@ -29,22 +29,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   b e f g i j k l m n p s v x y z
+   b e f g j k l m n s v x y z
    A B C E F G J L M O R W X Y Z
 
 */
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_ASIS        = 'a',
-  ARGS_OPTION_KEY_DELETE      = 'd',
-  ARGS_OPTION_KEY_RENAME      = 'r',
-  ARGS_OPTION_KEY_UPDATE      = 'u',
-  ARGS_OPTION_KEY_WRITE       = 'w',
-  ARGS_OPTION_KEY_COMMENT     = 'c',
-  ARGS_OPTION_KEY_HISTORY     = 'H',
-  ARGS_OPTION_KEY_DATE        = 't',
-  ARGS_OPTION_KEY_QUITONERROR = 'Q',
+  ARGS_OPTION_KEY_PRINTALL     = 'p',
+  ARGS_OPTION_KEY_ASIS         = 'a',
+  ARGS_OPTION_KEY_DELETE       = 'd',
+  ARGS_OPTION_KEY_RENAME       = 'r',
+  ARGS_OPTION_KEY_UPDATE       = 'u',
+  ARGS_OPTION_KEY_WRITE        = 'w',
+  ARGS_OPTION_KEY_COMMENT      = 'c',
+  ARGS_OPTION_KEY_HISTORY      = 'H',
+  ARGS_OPTION_KEY_DATE         = 't',
+  ARGS_OPTION_KEY_QUITONERROR  = 'Q',
 
 
   /* Only with long version (start with a value 1000, the rest will be set

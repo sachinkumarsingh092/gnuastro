@@ -499,12 +499,69 @@ gal_fits_hdu_num(char *filename, int *numhdu)
 
 
 
+/* Open a given HDU and return the FITS pointer. `iomode' determines how
+   the FITS file will be opened: only to read or to read and write. You
+   should use the macros given by the CFITSIO header:
+
+     READONLY:   read-only.
+     READWRITE:  read and write.         */
+fitsfile *
+gal_fits_hdu_open(char *filename, char *hdu, int iomode)
+{
+  int status=0;
+  char *ffname;
+  fitsfile *fptr;
+
+  /* Add hdu to filename: */
+  asprintf(&ffname, "%s[%s#]", filename, hdu);
+
+  /* Open the FITS file: */
+  if( fits_open_file(&fptr, ffname, iomode, &status) )
+    gal_fits_io_error(status, "reading this FITS file");
+
+  /* Return the pointer. */
+  return fptr;
+}
+
+
+
+
+
+/* Given the filename and HDU, this function will return the CFITSIO code
+   for the type of data it contains (table, or image). The CFITSIO codes
+   are:
+
+       IMAGE_HDU:    An image HDU.
+       ASCII_TBL:    An ASCII table HDU.
+       BINARY_TBL:   BINARY TABLE HDU.       */
+int
+gal_fits_hdu_type(char *filename, char *hdu)
+{
+  fitsfile *fptr;
+  int hdutype, status=0;
+
+  /* Open the HDU. */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
+
+  /* Check the type of the given HDU: */
+  if (fits_get_hdu_type(fptr, &hdutype, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Clean up and return.. */
+  if( fits_close_file(fptr, &status) )
+    gal_fits_io_error(status, NULL);
+  return hdutype;
+}
+
+
+
+
+
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 fitsfile *
-gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1)
+gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1)
 {
-  char *ffname;
   fitsfile *fptr;
   int status=0, hdutype;
 
@@ -512,12 +569,8 @@ gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1)
   if(hdu==NULL)
     error(EXIT_FAILURE, 0, "no HDU specified for %s", filename);
 
-  /* Add hdu to filename: */
-  asprintf(&ffname, "%s[%s#]", filename, hdu);
-
-  /* Open the FITS file: */
-  if( fits_open_file(&fptr, ffname, READONLY, &status) )
-    gal_fits_io_error(status, "reading this FITS file");
+  /* Open the HDU. */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
 
   /* Check the type of the given HDU: */
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
@@ -540,45 +593,9 @@ gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1)
     }
 
   /* Clean up and return. */
-  free(ffname);
   return fptr;
 }
 
-
-
-
-
-/* Given the filename and HDU, this function will return the CFITSIO code
-   for the type of data it contains (table, or image). The CFITSIO codes
-   are:
-
-       IMAGE_HDU:    An image HDU.
-       ASCII_TBL:    An ASCII table HDU.
-       BINARY_TBL:   BINARY TABLE HDU.       */
-int
-gal_fits_hdu_type(char *filename, char *hdu)
-{
-  char *ffname;
-  fitsfile *fptr;
-  int hdutype, status=0;
-
-  /* Add hdu to filename: */
-  asprintf(&ffname, "%s[%s#]", filename, hdu);
-
-  /* Open the FITS file: */
-  if( fits_open_file(&fptr, ffname, READONLY, &status) )
-    gal_fits_io_error(status, "reading this FITS file");
-
-  /* Check the type of the given HDU: */
-  if (fits_get_hdu_type(fptr, &hdutype, &status) )
-    gal_fits_io_error(status, NULL);
-
-  /* Clean up and return.. */
-  free(ffname);
-  if( fits_close_file(fptr, &status) )
-    gal_fits_io_error(status, NULL);
-  return hdutype;
-}
 
 
 
@@ -717,6 +734,38 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         if(tmp->comment && tmp->comment[0]=='\0')
           {free(tmp->comment); tmp->comment=NULL;}
       }
+}
+
+
+
+
+
+/* CFITSIO doesn't remove the two single quotes around the string value, so
+   the strings it reads are like: 'value ', or 'some_very_long_value'. To
+   use the value, it is commonly necessary to remove the single quotes (and
+   possible extra spaces). This function fill modify the string in its own
+   allocated space. You can use this to later free the original string (if
+   it was allocated). */
+char *
+gal_fits_key_clean_str_value(char *string)
+{
+  size_t i;
+  char *out=string+1;
+
+  /* Start from the second last character (the last is a single quote) and
+     go down until you hit a non-space character. This will also work when
+     there is no space characters between the last character of the value
+     and ending single-quote: it will be set to '\0' after this loop. */
+  for(i=strlen(out)-2;i>0;--i)
+    if(out[i]!=' ')
+      break;
+
+  /* If the string is empty, it will stop at the first character that is a
+     single quote. So no need to check further. */
+  out[i+1]='\0';
+
+  /* Return the new string. */
+  return out;
 }
 
 
@@ -1147,7 +1196,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Check HDU for realistic conditions: */
-  fptr=gal_fits_hdu_open(filename, hdu, 0);
+  fptr=gal_fits_hdu_open_type(filename, hdu, 0);
 
 
   /* Get the info and allocate the data structure. */
@@ -1177,9 +1226,9 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
      free the linked list after `gal_data_alloc' has read/copied the
      values.*/
   gal_data_add_to_ll(&keysll, NULL, GAL_DATA_TYPE_STRING, 1, &dsize_key,
-                        NULL, 0, -1, "EXTNAME", NULL, NULL);
+                     NULL, 0, -1, "EXTNAME", NULL, NULL);
   gal_data_add_to_ll(&keysll, NULL, GAL_DATA_TYPE_STRING, 1, &dsize_key,
-                        NULL, 0, -1, "BUNIT", NULL, NULL);
+                     NULL, 0, -1, "BUNIT", NULL, NULL);
   gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
   if(keysll->status==0)       {str=keysll->array;       unit=*str; }
   if(keysll->next->status==0) {str=keysll->next->array; name=*str; }
@@ -1554,27 +1603,6 @@ gal_fits_tab_type(fitsfile *fptr)
 
 
 
-static void
-remove_trailing_space(char *str)
-{
-  size_t i;
-
-  /* Start from the second last character (the last is a single quote) and
-     go down until you hit a non-space character. This will also work when
-     there is no space characters between the last character of the value
-     and ending single-quote: it will be set to '\0' after this loop. */
-  for(i=strlen(str)-2;i>0;--i)
-    if(str[i]!=' ')
-      break;
-
-  /* If the string is empty, it will stop at the first character that is a
-     single quote. So no need to check further. */
-  str[i+1]='\0';
-}
-
-
-
-
 
 /* The general format of the TDISPn keywords in FITS is like this: `Tw.p',
    where `T' specifies the general format, `w' is the width to be given to
@@ -1728,7 +1756,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
 
   /* Open the FITS file and get the basic information. */
-  fptr=gal_fits_hdu_open(filename, hdu, 1);
+  fptr=gal_fits_hdu_open_type(filename, hdu, 1);
   *tabletype=gal_fits_tab_type(fptr);
   gal_fits_tab_size(fptr, numrows, numcols);
 
@@ -1766,12 +1794,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
          single quotes around the value string, one before and one
          after. The latter single-quote will be automatically be removed
          with the `remove_trailign_space' function.*/
-      if(value[0]=='\'')
-        {
-          val=value+1;
-          remove_trailing_space(val);
-        }
-      else val=value;
+      val = value[0]=='\'' ? gal_fits_key_clean_str_value(value) : value;
 
       /* COLUMN DATA TYPE. According the the FITS standard, the value of
          TFORM is most generally in this format: `rTa'. `T' is actually a
@@ -1899,11 +1922,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            {
-              remove_trailing_space(value);
-              set_display_format(&value[1], &allcols[index], filename, hdu,
-                                 keyname);
-            }
+            set_display_format(val, &allcols[index], filename, hdu,
+                               keyname);
         }
 
       /* Column zero. */
@@ -1943,7 +1963,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
   struct gal_linkedlist_sll *ind;
 
   /* Open the FITS file */
-  fptr=gal_fits_hdu_open(filename, hdu, 1);
+  fptr=gal_fits_hdu_open_type(filename, hdu, 1);
 
   /* Pop each index and read/store the array. */
   for(ind=indexll; ind!=NULL; ind=ind->next)

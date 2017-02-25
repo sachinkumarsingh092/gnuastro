@@ -62,8 +62,8 @@ License''.
 * Crop: (gnuastro)Crop. Crop region(s) from image(s).
 * astcrop: (gnuastro)Invoking astcrop. Options to Crop.
 
-* Header: (gnuastro)Header. Print and manipulate data header info.
-* astheader: (gnuastro)Invoking astheader. Options to Header.
+* Fits: (gnuastro)Fits. View and manipulate FITS extensions and keywords.
+* astfits: (gnuastro)Invoking astfits. Options to Fits.
 
 * Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
 * astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
@@ -333,13 +333,13 @@ Getting help
 
 Extensions and Tables
 
-* Header::                      Print and manipulate data file header.
+* Fits::                        View and manipulate extensions and keywords.
 * ConvertType::                 Convert data to various formats.
 * Table::                       Read and Write FITS tables to plain text.
 
-Header
+Fits
 
-* Invoking astheader::          Arguments and options to Header.
+* Invoking astfits::            Arguments and options to Header.
 
 ConvertType
 
@@ -4352,7 +4352,7 @@ output names explained in @ref{Automatic output} are ignored.
 @item -T STR
 @itemx --type=STR
 The data type of the output depending on the program context. This option
-isn't applicable to some programs like @ref{Header} and will be ignored by
+isn't applicable to some programs like @ref{Fits} and will be ignored by
 them. The different acceptable values to this option are fully described in
 @ref{Numeric data types}.
 
@@ -5353,7 +5353,7 @@ mainly contains ASCII columns (for example file names, or
 descriptions). They can be useful when you need to include columns with
 structured ASCII information along with other extensions in one FITS
 file. In such cases, you can also consider header keywords (see
-@ref{Header}).
+@ref{Fits}).
 
 @cindex Binary table, FITS
 @item FITS binary tables
@@ -6080,11 +6080,13 @@ END
 @cindex General file operations
 This chapter documents those Gnuastro programs that don't directly operate
 on the contents of the data file, they just print information, or convert
-from different data types. Before working on a FITS file, it is commonly
-the case that you are not sure how many extensions it has within it and
-also what each extension is (image, table or blank). In such cases, Header
-(see @ref{Header}) can be handy by printing the full header of a FITS file
-to the terminal for easy inspection.
+from different data types, there is no further processing. Before working
+on a FITS file, it is commonly the case that you are not sure how many
+extensions it has within it and also what each extension is (image, table
+or blank). In such cases, Fits (see @ref{Fits}) can be handy by printing
+the information for all the extensions in a FITS file, or all the keywords
+in an extension of a FITS file to the terminal for easy inspection. You can
+also add/remove extensions/keywords with it.
 
 In other cases you want to use the data in a FITS file in other programs
 (for example in reports) that don't recognize the FITS format, for example
@@ -6098,7 +6100,7 @@ readable output on the terminal, or to save them in another plain text or
 FITS table.
 
 @menu
-* Header::                      Print and manipulate data file header.
+* Fits::                        View and manipulate extensions and keywords.
 * ConvertType::                 Convert data to various formats.
 * Table::                       Read and Write FITS tables to plain text.
 @end menu
@@ -6107,8 +6109,8 @@ FITS table.
 
 
 
-@node Header, ConvertType, Extensions and Tables, Extensions and Tables
-@section Header
+@node Fits, ConvertType, Extensions and Tables, Extensions and Tables
+@section Fits
 
 The FITS standard requires each extension of a FITS file to have a
 header, giving basic information about what is in that extension. Each
@@ -6120,15 +6122,15 @@ the World Coordinate System that is used to translate pixel
 coordinates to sky or spectrum coordinates on the image or table.
 
 @menu
-* Invoking astheader::          Arguments and options to Header.
+* Invoking astfits::            Arguments and options to Header.
 @end menu
 
-@node Invoking astheader,  , Header, Header
-@subsection Invoking Header
+@node Invoking astfits,  , Fits, Fits
+@subsection Invoking Fits
 
-Header can print or manipulate the header information in an extension
-of an astronomical data file. The executable name is @file{astheader}
-with the following general template
+Fits can print or manipulate the header information in an extension of an
+astronomical data file. The executable name is @file{astheader} with the
+following general template
 
 @example
 $ astheader [OPTION...] ASTRdata
@@ -6146,13 +6148,12 @@ $ astheader --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
 @cindex HDU
-If no keyword modification options are given, the full header of the
-given HDU will be printed on the command-line. If any of the keywords
-are to be modified, the headers of the input file will be changed. If
-you want to keep the original FITS file, it is easiest to create a
-copy first and then run Header on that. In the FITS standard, keywords
-are always uppercase. So case does not matter in the input or output
-keyword names you specify.
+If no keyword modification options are given, the full header of the given
+HDU will be printed on the command-line. If any of the keywords are to be
+modified, the headers of the input file will be changed. If you want to
+keep the original FITS file, it is easiest to create a copy first and then
+run Fits on that. In the FITS standard, keywords are always uppercase. So
+case does not matter in the input or output keyword names you specify.
 
 Most of the options can accept multiple instances in one command. For
 example you can add multiple keywords to delete by calling delete
@@ -6196,30 +6197,31 @@ operations are going to take effect then the update operations.
 @option{--comment}
 @item
 @option{--date}
+@item
+@option{--printall}
 @end enumerate
 @noindent
 All possible syntax errors will be reported before the keywords are
-actually written. FITS errors during any of these actions will be
-reported, but Header won't stop until all the operations are
-complete. If @option{quitonerror} is called, then Header will
-immediately stop upon the first error.
+actually written. FITS errors during any of these actions will be reported,
+but Fits won't stop until all the operations are complete. If
+@option{quitonerror} is called, then Fits will immediately stop upon the
+first error.
 @end cartouche
 
 @cindex GNU Grep
-If only a certain set of header keywords are desired, it is easiest to
-pipe the output of Header to GNU Grep. Grep is a very powerful and
-advanced tool to search strings which is precisely made for such
-situations. For example if you only want to check the size of an image
-FITS HDU, you can run:
+If only a certain set of header keywords are desired, it is easiest to pipe
+the output of Fits to GNU Grep. Grep is a very powerful and advanced tool
+to search strings which is precisely made for such situations. For example
+if you only want to check the size of an image FITS HDU, you can run:
 
 @example
 $ astheader input.fits | grep NAXIS
 @end example
 
 @noindent
-The options particular to Header can be seen below. See @ref{Common
-options} for a list of the options that are common to all Gnuastro
-programs, they are not repeated here.
+The options particular to Fits can be seen below. See @ref{Common options}
+for a list of the options that are common to all Gnuastro programs, they
+are not repeated here.
 @table @option
 
 @item -a STR
@@ -6255,7 +6257,7 @@ Delete one instance of the @option{STR} keyword from the FITS
 header. Multiple instances of @option{--delete} can be given (possibly even
 for the same keyword). All keywords given will be removed from the headers
 in the opposite order (last given keyword will be deleted first). If the
-keyword doesn't exist, Header will give a warning and return with a
+keyword doesn't exist, Fits will give a warning and return with a
 non-zero value, but will not stop.
 
 @item -r STR
@@ -6293,7 +6295,7 @@ written. Commit hashes are very important in keeping the history of a file
 during your research and such values might arise without you noticing them
 in your reproduction pipeline. One solution is to use @command{git
 describe} instead of the short hash alone. A less recommended solution is
-to add a space after the commit hash and Header will write the value as
+to add a space after the commit hash and Fits will write the value as
 `@command{87095e5 }' in the header. If you later compare the strings on the
 shell, the space character will be ignored by the shell in the latter
 solution and there will be no problem.}. Other than the @code{KEYWORD}, all
@@ -6328,10 +6330,15 @@ Add a @code{COMMENT} keyword to the header. Similar to the explanation for
 Put the current date and time in the header. If the @code{DATE}
 keyword already exists in the header, it will be updated.
 
+@item -p
+@itemx --printall
+Print all the keywords in the specified FITS extension (HDU) on the
+command-line.
+
 @item -Q
 @itemx --quitonerror
 Quit if any of the operations above are not successful. By default if
-an error occurs, Header will warn the user of the faulty keyword and
+an error occurs, Fits will warn the user of the faulty keyword and
 continue with the rest of actions.
 
 @end table
@@ -6349,7 +6356,7 @@ continue with the rest of actions.
 
 
 
-@node ConvertType, Table, Header, Extensions and Tables
+@node ConvertType, Table, Fits, Extensions and Tables
 @section ConvertType
 
 @cindex Data format conversion
@@ -12782,7 +12789,7 @@ all clump related options will be ignored.
 @cindex Photometry, aperture
 @cindex Aperture photometry
 For example, if you only need an object catalog from NoiseChisel's output,
-you can use Header (see @ref{Header}) to modify or remove the
+you can use Fits (see @ref{Fits}) to modify or remove the
 @code{WCLUMPS} keyword in the objects HDU, then run MakeCatalog on
 it. Another example can be aperture photometry: let's assume you have made
 your labeled image (defining the apertures) with MakeProfiles. Clumps are
@@ -19355,9 +19362,9 @@ comoving volume and many more.
 several images if necessary. Inputs can be in pixel coordinates or world
 coordinates.
 
-@item Header
-(@file{astheader}, see @ref{Header}) Print and manipulate the header data
-of a FITS file.
+@item Fits
+(@file{astfits}, see @ref{Fits}) View and manipulate FITS file extensions
+and header keywords.
 
 @item Statistics
 (@file{aststatistics}, see @ref{Statistics}) Get pixel statistics and

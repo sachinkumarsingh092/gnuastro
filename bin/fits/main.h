@@ -36,39 +36,40 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+enum fits_mode
+  {
+    FITS_MODE_INVALID,          /* ==0, by C standard. */
+
+    FITS_MODE_HDU,
+    FITS_MODE_KEY,
+  };
 
 
+
+
+
+/* Main program's structure */
 struct fitsparams
 {
-  /* Common parameters */
-  struct gal_options_common_params  cp;  /* Common parameters.        */
-
-  /* Input: */
-  int                            nwcs;  /* Number of WCS structures.       */
-  fitsfile                      *fptr;  /* FITS file pointer.              */
-  struct wcsprm                  *wcs;  /* Pointer to WCS structures.      */
-
-  /* Output: */
+  /* From the environment. */
+  struct gal_options_common_params cp;  /* Common parameters.              */
+  char                      *filename;  /* Name of input file.             */
+  uint8_t                    printall;  /* Print all the header keywords.  */
   uint8_t                        date;  /* Set DATE to current time.       */
   char                       *comment;  /* COMMENT value.                  */
   char                       *history;  /* HISTORY value.                  */
   struct gal_linkedlist_stll    *asis;  /* Strings to write asis.          */
   struct gal_linkedlist_stll  *delete;  /* Keywords to remove.             */
-  struct gal_linkedlist_stll *renamefrom; /* Initial value of the keyword. */
-  struct gal_linkedlist_stll *renameto; /* The final value of the keyword. */
-  struct gal_fits_key_ll      *update;  /* Keywords to update. */
-  struct gal_fits_key_ll       *write;  /* Keywords to add.                */
-
-  /* Operating mode: */
+  struct gal_linkedlist_stll  *rename;  /* Rename a keyword.               */
+  struct gal_linkedlist_stll  *update;  /* For keywords to update.         */
+  struct gal_linkedlist_stll   *write;  /* Full arg. for keywords to add.  */
   uint8_t                 quitonerror;  /* Quit if an error occurs.        */
 
   /* Internal: */
-  int                        onlyview;
+  int                            mode;
+  struct gal_fits_key_ll  *write_keys;  /* Keys to write in the header.    */
+  struct gal_fits_key_ll *update_keys;  /* Keys to update in the header.   */
   time_t                      rawtime;  /* Starting time of the program.   */
-  char                      *filename;  /* Name of input file.             */
-  struct gal_linkedlist_stll  *rename;  /* Rename a keyword.               */
-  struct gal_linkedlist_stll *updatestr;/* For keywords to update.         */
-  struct gal_linkedlist_stll *writestr; /* Full arg. for keywords to add.  */
 };
 
 #endif

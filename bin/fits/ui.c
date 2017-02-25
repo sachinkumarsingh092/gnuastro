@@ -71,6 +71,14 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" view and manipulate (add, "
 
 
 
+/* Option groups particular to this program. */
+enum program_args_groups
+{
+  ARGS_GROUP_EXTENSION = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  ARGS_GROUP_KEYWORD,
+};
+
+
 
 
 
@@ -94,8 +102,8 @@ ui_initialize_options(struct fitsparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
+  size_t i;
   struct gal_options_common_params *cp=&p->cp;
-
 
   /* Set the necessary common parameters structure. */
   cp->poptions           = program_options;
@@ -104,6 +112,24 @@ ui_initialize_options(struct fitsparams *p,
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
+
+  /* For clarity and non-zero initializations. */
+  p->mode=FITS_MODE_INVALID;
+
+  /* Don't show the unused options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_IGNORECASE:
+      case GAL_OPTIONS_KEY_OUTPUT:
+      case GAL_OPTIONS_KEY_TYPE:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+      case GAL_OPTIONS_KEY_DONTDELETE:
+      case GAL_OPTIONS_KEY_KEEPINPUTDIR:
+        cp->coptions[i].flags=OPTION_HIDDEN;
+      }
+
 }
 
 
@@ -185,13 +211,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct fitsparams *p)
 {
-  /* See if the user just wants to view the header or actually do
-     something. */
-  if(p->delete || p->updatestr || p->writestr || p->asis || p->comment
-     || p->history || p->date || p->rename)
-    p->onlyview=0;
-  else
-    p->onlyview=1;
+  /* If any of the keyword manipulation options are requested, then set the
+     mode flag to keyword-mode. */
+  if( p->date || p->comment || p->history || p->asis || p->delete
+      || p->rename || p->rename || p->update || p->write )
+    p->mode=FITS_MODE_KEY;
+
+  /* If any of the extension keywords are given, then set the mode.
+    error(EXIT_FAILURE, 0, "extension and keyword manipulation options "
+          "cannot be called together");
+  */
+
+  /* If no mode-specifying options are given, then go into extension
+     mode. */
+  if(p->mode==FITS_MODE_INVALID)
+    p->mode=FITS_MODE_HDU;
 }
 
 
@@ -203,16 +237,7 @@ ui_check_options_and_arguments(struct fitsparams *p)
 {
   /* Make sure an input file name was given and if it was a FITS file, that
      a HDU is also given. */
-  if(p->filename)
-    {
-      if( gal_fits_name_is_fits(p->filename) && p->cp.hdu==NULL )
-        error(EXIT_FAILURE, 0, "%s: no HDU specified. A FITS file can "
-              "contain, multiple HDUs. You can use the `--hdu' (`-h') "
-              "option and give it the HDU number (starting from zero), "
-              "extension name, or anything acceptable by CFITSIO",
-              p->filename);
-    }
-  else
+  if(p->filename==NULL)
     error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
@@ -238,51 +263,12 @@ ui_check_options_and_arguments(struct fitsparams *p)
 /**************************************************************/
 /*****************       Preparations      ********************/
 /**************************************************************/
-static void
-ui_setup_rename(struct fitsparams *p)
-{
-  char *c;
-  struct gal_linkedlist_stll *tmp;
-
-  for(tmp=p->rename; tmp!=NULL; tmp=tmp->next)
-    {
-      /* `c' is created in case of an error, so the input value can be
-         reported. */
-      errno=0;
-      c=malloc(strlen(tmp->v) + 1);
-      if(c==NULL) error(EXIT_FAILURE, errno, "space for c in setuprename");
-      strcpy(c, tmp->v);
-
-      /* Tokenize the input. */
-      gal_linkedlist_add_to_stll(&p->renamefrom, strtok(tmp->v, ", "), 1);
-      gal_linkedlist_add_to_stll(&p->renameto, strtok(NULL, ", "), 1);
-      if(p->renamefrom->v==NULL || p->renameto->v==NULL)
-        error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
-              "complete rename. There should be a space character "
-              "or a comma (,) between the two keyword names. If you have "
-              "used the space character, be sure to enclose the value to "
-              "the `--rename' option in double quotation marks", c);
-      free(c);
-    }
-  /*
-  {
-    struct gal_linkedlist_stll *tmp2=p->renameto;
-    for(tmp=p->renamefrom; tmp!=NULL; tmp=tmp->next)
-      {
-        printf("%s to %s\n", tmp->v, tmp2->v);
-        tmp2=tmp2->next;
-      }
-  }
-  */
-}
-
-
-
-
-
+/* The `--update' and `--write' options take multiple values for each
+   keyword, so here, we tokenize them and put them into a `gal_fits_key_ll'
+   list. */
 static void
 ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
-                      struct gal_fits_key_ll **output)
+                          struct gal_fits_key_ll **output)
 {
   long l, *lp;
   void *fvalue;
@@ -403,25 +389,11 @@ ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
 static void
 ui_preparations(struct fitsparams *p)
 {
-  char *ffname;
-  int status=0, iomode;
-
-  /* Add hdu to filename: */
-  asprintf(&ffname, "%s[%s#]", p->filename, p->cp.hdu);
-
-  /* Open the FITS file: */
-  iomode = p->onlyview ? READONLY : READWRITE;
-  if( fits_open_file(&p->fptr, ffname, iomode, &status) )
-    gal_fits_io_error(status, "reading file");
-  free(ffname);
-
-  /* Separate the comma-separated values:  */
-  if(p->rename)
-    ui_setup_rename(p);
-  if(p->updatestr)
-    ui_fill_fits_headerll(p->updatestr, &p->update);
-  if(p->writestr)
-    ui_fill_fits_headerll(p->writestr, &p->write);
+  /* Fill in the key linked lists. We want to do this here so if there is
+     any error in parsing the user's input, the error is reported before
+     any change is made in the input file. */
+  if(p->write)  ui_fill_fits_headerll(p->write, &p->write_keys);
+  if(p->update) ui_fill_fits_headerll(p->update, &p->update_keys);
 }
 
 
@@ -464,6 +436,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
 
   /* Initialize the options and necessary information.  */
   ui_initialize_options(p, program_options, gal_commonopts_options);
+
 
   /* Read the command-line options and arguments. */
   errno=0;
@@ -521,16 +494,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
 void
 ui_free_and_report(struct fitsparams *p)
 {
-  int status=0;
-
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-
-  /* Close the FITS file: */
-  if(fits_close_file(p->fptr, &status))
-    gal_fits_io_error(status, NULL);
-
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
 }

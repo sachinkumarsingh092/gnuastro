@@ -148,11 +148,14 @@ gal_fits_datatype_to_type(int datatype, int is_table_column);
 void
 gal_fits_hdu_num(char *filename, int *numhdu);
 
-fitsfile *
-gal_fits_hdu_open(char *filename, char *hdu, unsigned char img0_tab1);
-
 int
 gal_fits_hdu_type(char *filename, char *hdu);
+
+fitsfile *
+gal_fits_hdu_open(char *filename, char *hdu, int iomode);
+
+fitsfile *
+gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1);
 
 
 
@@ -191,6 +194,9 @@ gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist);
 void
 gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
                            char *program_string);
+
+char *
+gal_fits_key_clean_str_value(char *string);
 
 
 
