@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-
+#include "fits.h"
 
 
 
@@ -48,53 +48,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /******************           Preparations          ********************/
 /***********************************************************************/
 static void
-header_open(struct fitsparams *p, fitsfile **fptr, int iomode)
+keywords_open(struct fitsparams *p, fitsfile **fptr, int iomode)
 {
   if(*fptr==NULL)
     *fptr=gal_fits_hdu_open(p->filename, p->cp.hdu, iomode);
-}
-
-
-
-
-
-int
-haserror(struct fitsparams *p, int actionid, char *string, int status)
-{
-  char action[20];
-  int r=EXIT_SUCCESS;
-
-  switch(actionid)
-    {
-    case 1:
-      strcpy(action, "deleted");
-      break;
-    case 2:
-      strcpy(action, "renamed");
-      break;
-    case 3:
-      strcpy(action, "updated");
-      break;
-    case 4:
-      strcpy(action, "written");
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can fix "
-            "this problem. In `header.c'. The value of actionid in "
-            "`haserror' must not be %d", PACKAGE_BUGREPORT, actionid);
-    }
-
-  if(p->quitonerror)
-    {
-      fits_report_error(stderr, status);
-      error(EXIT_FAILURE, 0, "not deleted: %s\n", string);
-    }
-  else
-    {
-      fprintf(stderr, "Not deleted: %s\n", string);
-      r=EXIT_FAILURE;
-    }
-  return r;
 }
 
 
@@ -120,13 +77,13 @@ haserror(struct fitsparams *p, int actionid, char *string, int status)
 /******************        File manipulation        ********************/
 /***********************************************************************/
 static void
-header_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
+keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
 {
   int status=0;
   char *copy, *str, *from, *to;
 
   /* Set the FITS file pointer. */
-  header_open(p, fptr, READWRITE);
+  keywords_open(p, fptr, READWRITE);
 
   /* Tokenize the */
   while(p->rename!=NULL)
@@ -152,7 +109,7 @@ header_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
 
       /* Rename the keyword */
       fits_modify_name(*fptr, from, to, &status);
-      if(status) *r=haserror(p, 2, from, status);
+      if(status) *r=fits_has_error(p, FITS_ACTION_RENAME, from, status);
 
       /* Clean up the user's input string. Note that `strtok' just changes
          characters within the allocated string, no extra allocation is
@@ -167,14 +124,14 @@ header_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
 
 
 static void
-header_write_update(struct fitsparams *p, fitsfile **fptr,
+keywords_write_update(struct fitsparams *p, fitsfile **fptr,
                     struct gal_fits_key_ll *keyll, int u1w2)
 {
   int status=0;
   struct gal_fits_key_ll *tmp;
 
   /* Open the FITS file if it hasn't been opened yet. */
-  header_open(p, fptr, READWRITE);
+  keywords_open(p, fptr, READWRITE);
 
   /* Go through each key and write it in the FITS file. */
   while(keyll!=NULL)
@@ -246,14 +203,14 @@ header_write_update(struct fitsparams *p, fitsfile **fptr,
 
 
 static void
-header_print_all_keys(struct fitsparams *p, fitsfile **fptr)
+keywords_print_all_keys(struct fitsparams *p, fitsfile **fptr)
 {
-  size_t i;
+  size_t i=0;
   int nkeys, status=0;
   char *fullheader, *c, *cf;
 
   /* Open the FITS file. */
-  header_open(p, fptr, READONLY);
+  keywords_open(p, fptr, READONLY);
 
   /* Conver the header into a contiguous string. */
   if( fits_hdr2str(*fptr, 0, NULL, 0, &fullheader, &nkeys, &status) )
@@ -302,46 +259,40 @@ header_print_all_keys(struct fitsparams *p, fitsfile **fptr)
 /******************           Main function         ********************/
 /***********************************************************************/
 int
-header(struct fitsparams *p)
+keywords(struct fitsparams *p)
 {
   int status=0;
   int r=EXIT_SUCCESS;
   fitsfile *fptr=NULL;
   struct gal_linkedlist_stll *tstll;
 
-  /* Open the requested extension. */
-  if(!p->cp.hdu)
-    error(EXIT_FAILURE, 0, "to modify keywords in a header data unit (HDU) "
-          "the extension in the FITS file is necessary, but none has been "
-          "specified, please use the `--hdu' (or `-h') option to specify "
-          "one");
-
 
   /* Delete the requested keywords. */
   if(p->delete)
     {
-      header_open(p, &fptr, READWRITE);
+      keywords_open(p, &fptr, READWRITE);
       for(tstll=p->delete; tstll!=NULL; tstll=tstll->next)
         {
           fits_delete_key(fptr, tstll->v, &status);
-          if(status) r=haserror(p, 1, tstll->v, status);
+          if(status)
+            r=fits_has_error(p, FITS_ACTION_DELETE, tstll->v, status);
         }
     }
 
 
   /* Rename the requested keywords. */
   if(p->rename)
-    header_rename_keys(p, &fptr, &r);
+    keywords_rename_keys(p, &fptr, &r);
 
 
   /* Update the requested keywords. */
   if(p->update)
-    header_write_update(p, &fptr, p->update_keys, 1);
+    keywords_write_update(p, &fptr, p->update_keys, 1);
 
 
   /* Write the requested keywords. */
   if(p->write)
-    header_write_update(p, &fptr, p->write_keys, 2);
+    keywords_write_update(p, &fptr, p->write_keys, 2);
 
 
   /* Put in any full line of keywords as-is. */
@@ -349,7 +300,7 @@ header(struct fitsparams *p)
     for(tstll=p->asis; tstll!=NULL; tstll=tstll->next)
       {
         fits_write_record(fptr, tstll->v, &status);
-        if(status) r=haserror(p, 1, tstll->v, status);
+        if(status) r=fits_has_error(p, FITS_ACTION_WRITE, tstll->v, status);
       }
 
 
@@ -357,7 +308,7 @@ header(struct fitsparams *p)
   if(p->history)
     {
       fits_write_history(fptr, p->history, &status);
-      if(status) r=haserror(p, 4, "HISTORY", status);
+      if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "HISTORY", status);
     }
 
 
@@ -365,7 +316,7 @@ header(struct fitsparams *p)
   if(p->comment)
     {
       fits_write_comment(fptr, p->comment, &status);
-      if(status) r=haserror(p, 4, "COMMENT", status);
+      if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "COMMENT", status);
     }
 
 
@@ -373,14 +324,14 @@ header(struct fitsparams *p)
   if(p->date)
     {
       fits_write_date(fptr, &status);
-      if(status) r=haserror(p, 4, "DATE", status);
+      if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "DATE", status);
     }
 
 
   /* If nothing was requested, then print all the keywords in this
      extension. */
-  if(p->printall)
-    header_print_all_keys(p, &fptr);
+  if(p->printallkeys)
+    keywords_print_all_keys(p, &fptr);
 
 
   /* Close the FITS file */

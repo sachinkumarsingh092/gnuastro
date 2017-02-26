@@ -476,6 +476,44 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
 /**************************************************************/
 /**********                  HDU                   ************/
 /**************************************************************/
+fitsfile *
+gal_fits_open_to_write(char *filename)
+{
+  int status=0;
+  long naxes=0;
+  fitsfile *fptr;
+
+  /* When the file exists just open it. Otherwise, create the file. But we
+     want to leave the first extension as a blank extension and put the
+     image in the next extension to be consistent between tables and
+     images. */
+  if(access(filename,F_OK) == -1 )
+    {
+      /* Create the file. */
+      if( fits_create_file(&fptr, filename, &status) )
+        gal_fits_io_error(status, NULL);
+
+      /* Create blank extension. */
+      if( fits_create_img(fptr, BYTE_IMG, 0, &naxes, &status) )
+        gal_fits_io_error(status, NULL);
+
+      /* Close the blank extension. */
+      if( fits_close_file(fptr, &status) )
+        gal_fits_io_error(status, NULL);
+    }
+
+  /* Open the file, ready for later steps. */
+  if( fits_open_file(&fptr,filename, READWRITE, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Return the pointer. */
+  return fptr;
+}
+
+
+
+
+
 void
 gal_fits_hdu_num(char *filename, int *numhdu)
 {
@@ -1362,20 +1400,12 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
                                  ? GAL_DATA_TYPE_INT64
                                  : GAL_DATA_TYPE_INT32 ), data->ndim);
 
-  /* When the file exists, add this image as an extension. Otherwise,
-     create the file. But we want to leave the first extension as a blank
-     extension and put the image in the next extension. */
-  if(access(filename,F_OK) == -1 )
-    {
-      fits_create_file(&fptr, filename, &status);
-      fits_create_img(fptr, SHORT_IMG, 0, naxes, &status);
-      fits_close_file(fptr, &status);
-    }
+  /* Open the file for writing */
+  fptr=gal_fits_open_to_write(filename);
 
   /* Fill the `naxes' array (in opposite order, and `long' type): */
   for(i=0;i<data->ndim;++i)
     naxes[data->ndim-1-i]=data->dsize[i];
-  fits_open_file(&fptr,filename, READWRITE, &status);
 
   /* Create the FITS file. */
   fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
@@ -2234,7 +2264,7 @@ gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
 
 
   /* Remove the output if it already exists. */
-  gal_checkset_check_remove_file(filename, dontdelete);
+  gal_checkset_check_remove_file(filename, 0, dontdelete);
 
 
   /* Create the FITS file */

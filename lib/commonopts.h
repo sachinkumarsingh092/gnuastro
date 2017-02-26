@@ -96,7 +96,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_OUTPUT,
       "STR",
       0,
-      "Output file or directory name.",
+      "Output name.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &cp->output,
       GAL_DATA_TYPE_STRING,

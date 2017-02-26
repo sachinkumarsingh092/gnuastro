@@ -1531,7 +1531,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
       asprintf(&filename, "%s/%s.conf", dirname, cp->program_exec);
 
       /* Remove the file if it already exists. */
-      gal_checkset_check_remove_file(filename, 0);
+      gal_checkset_check_remove_file(filename, 0, 0);
 
       /* Open the file for writing */
       errno=0;

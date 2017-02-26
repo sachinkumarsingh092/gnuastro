@@ -144,6 +144,8 @@ gal_fits_datatype_to_type(int datatype, int is_table_column);
 /**************************************************************/
 /**********                  HDU                   ************/
 /**************************************************************/
+fitsfile *
+gal_fits_open_to_write(char *filename);
 
 void
 gal_fits_hdu_num(char *filename, int *numhdu);

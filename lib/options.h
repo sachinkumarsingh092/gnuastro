@@ -177,6 +177,7 @@ struct gal_options_common_params
   uint8_t           lastconfig; /* This is the last configuration file.  */
 
   /* For internal (to option processing) purposes. */
+  uint8_t                 keep; /* Output file can exist.                */
   void         *program_struct; /* Host program's main variable struct.  */
   char           *program_name; /* Official name to be used in text.     */
   char           *program_exec; /* Program's executable name.            */

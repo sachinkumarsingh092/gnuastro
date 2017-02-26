@@ -54,7 +54,10 @@ struct fitsparams
   /* From the environment. */
   struct gal_options_common_params cp;  /* Common parameters.              */
   char                      *filename;  /* Name of input file.             */
-  uint8_t                    printall;  /* Print all the header keywords.  */
+  struct gal_linkedlist_stll  *remove;  /* Remove extensions from a file.  */
+  struct gal_linkedlist_stll    *copy;  /* Copy extensions to output.      */
+  struct gal_linkedlist_stll     *cut;  /* Copy ext. to output and remove. */
+  uint8_t                printallkeys;  /* Print all the header keywords.  */
   uint8_t                        date;  /* Set DATE to current time.       */
   char                       *comment;  /* COMMENT value.                  */
   char                       *history;  /* HISTORY value.                  */
@@ -66,7 +69,7 @@ struct fitsparams
   uint8_t                 quitonerror;  /* Quit if an error occurs.        */
 
   /* Internal: */
-  int                            mode;
+  int                            mode;  /* Operating on HDUs or keywords.  */
   struct gal_fits_key_ll  *write_keys;  /* Keys to write in the header.    */
   struct gal_fits_key_ll *update_keys;  /* Keys to update in the header.   */
   time_t                      rawtime;  /* Starting time of the program.   */

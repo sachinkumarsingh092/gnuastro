@@ -191,7 +191,7 @@ sub-component to a title is present.
 * Tutorials::                   Tutorials or Cookbooks.
 * Installation::                Requirements and installation.
 * Common program behavior::     Common behavior in all programs.
-* Extensions and Tables::       Tools to operate on extensions and tables.
+* Data containers::             Tools to operate on extensions and tables.
 * Data manipulation::           Tools for basic image manipulation.
 * Data analysis::               Analyze images.
 * Modeling and fittings::       Make and fit models.
@@ -293,8 +293,8 @@ Command-line
 
 Arguments and options
 
-* Arguments::
-* Options::
+* Arguments::                   For specifying the main input files/operations.
+* Options::                     For configuring the behavior of the program.
 
 Common options
 
@@ -331,7 +331,7 @@ Getting help
 * Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 
-Extensions and Tables
+Data containers
 
 * Fits::                        View and manipulate extensions and keywords.
 * ConvertType::                 Convert data to various formats.
@@ -340,6 +340,11 @@ Extensions and Tables
 Fits
 
 * Invoking astfits::            Arguments and options to Header.
+
+Invoking Fits
+
+* HDU manipulation::            Manipulate HDUs within a FITS file.
+* Keyword manipulation::        Manipulate metadata keywords in a HDU
 
 ConvertType
 
@@ -3946,7 +3951,7 @@ If your problem was not listed above, please file a bug report
 
 
 
-@node Common program behavior, Extensions and Tables, Installation, Top
+@node Common program behavior, Data containers, Installation, Top
 @chapter Common program behavior
 
 All the programs in Gnuastro share a set of common behavior mainly to do
@@ -4076,8 +4081,8 @@ double quotes are much more easier, elegant and readable.
 
 
 @menu
-* Arguments::
-* Options::
+* Arguments::                   For specifying the main input files/operations.
+* Options::                     For configuring the behavior of the program.
 @end menu
 
 @node Arguments, Options, Arguments and options, Arguments and options
@@ -6072,32 +6077,45 @@ END
 
 
 
-@node Extensions and Tables, Data manipulation, Common program behavior, Top
-@chapter Extensions and Tables
+@node Data containers, Data manipulation, Common program behavior, Top
+@chapter Data containers
 
 @cindex File operations
 @cindex Operations on files
 @cindex General file operations
-This chapter documents those Gnuastro programs that don't directly operate
-on the contents of the data file, they just print information, or convert
-from different data types, there is no further processing. Before working
-on a FITS file, it is commonly the case that you are not sure how many
-extensions it has within it and also what each extension is (image, table
-or blank). In such cases, Fits (see @ref{Fits}) can be handy by printing
-the information for all the extensions in a FITS file, or all the keywords
-in an extension of a FITS file to the terminal for easy inspection. You can
-also add/remove extensions/keywords with it.
+The most low-level and basic property of a dataset is how it is stored. To
+process, archive and transmit the data you need a container to store it
+first. From the start of the computer age, different formats have been
+difined to store data, optimized for pariticular applications, one
+format/container can never be useful for all applications. In astronomy,
+FITS is the most common format of data storage and transmission. It has
+many useful features, for example multiple data containers (also known as
+extensions or header data units, HDUs) within one file. Each HDU can store
+independent data and its corresponding meta-data. Therefore, Gnuastro has
+one program (see @ref{Fits}) specifically designed to manipulate FITS HDUs
+and the meta-data (header keywords) in each HDU.
 
-In other cases you want to use the data in a FITS file in other programs
-(for example in reports) that don't recognize the FITS format, for example
-converting a FITS image into a Jpeg, or PDF format image. ConvertType (see
-@ref{ConvertType}) was built for such situations. Finally, the FITS format
-is not just for images, it can also store tables. Binary tables in
-particular can be very useful in storing very large catalogs or tables
-compared to a plain text file. Table (see @ref{Table}) can be used to
-choose certain table columns in a FITS table and see them as a human
-readable output on the terminal, or to save them in another plain text or
-FITS table.
+Your astronomical research does not just involve data analysis (where the
+FITS format is very useful). For example you want to demonstrate your raw
+and processed FITS images or spectra as figures within slides, reports, or
+papers. The FITS format is not defined for such applications. Thus,
+Gnuastro also comes with the ConvertType program (see @ref{ConvertType})
+which can be used to convert a FITS image to and from (where possible)
+other formats like plain text and JPEG which allow two way conversion,
+along with EPS and PDF (which can only be created from FITS, not the other
+way round).
+
+Finally, the FITS format is not just for images, it can also store
+tables. Binary tables in particular can be very useful in storing very
+large catalogs or tables compared to a plain text file. However, unlike
+images (where all elements/pixels have one data type), tables contain
+multiple columns and each column can have different properties (numerical
+types, or even character based columns, like names). In practice, each
+column can be viewed a separate data-container that is grouped with others
+in the table. To allow easy manipulation/viewing of table columns, Gnuastro
+has the Table program (see @ref{Table}). It can be used to choose certain
+table columns in a FITS table and see them as a human readable output on
+the command-line, or to save them into another plain text or FITS table.
 
 @menu
 * Fits::                        View and manipulate extensions and keywords.
@@ -6109,17 +6127,85 @@ FITS table.
 
 
 
-@node Fits, ConvertType, Extensions and Tables, Extensions and Tables
+@node Fits, ConvertType, Data containers, Data containers
 @section Fits
 
-The FITS standard requires each extension of a FITS file to have a
-header, giving basic information about what is in that extension. Each
-line in the header is for one keyword, specifying its name, value and
-a short comment string. Besides the basic information, the headers
-also contain vital information about the data, how they were
-processed, the instrument specifications that took the image and also
-the World Coordinate System that is used to translate pixel
-coordinates to sky or spectrum coordinates on the image or table.
+The ``Flexible Image Transport System'', or FITS, is by far the most common
+data container format in astronomy. Although the full name of the standard
+invokes the idea that it is only for images, it also contains very complete
+and robust features for tables. It started off in the 1970s and was
+formally published as a standard in 1981, it was adopted by the
+International Astronomical Union (IAU) in 1982 and an IAU working group to
+maintain its future was defined in 1988. The FITS 2.0 and 3.0 standards
+were approved in 2000 and 2008 respectively, and the 4.0 draft has also
+been released recently, please see the
+@url{https://fits.gsfc.nasa.gov/fits_standard.html, FITS standard document
+webpage} for the full text of all versions. Also see the
+@url{https://doi.org/10.1051/0004-6361/201015362, FITS 3.0 standard paper}
+for a nice introduction and history along with the full standard.
+
+@cindex Meta-data
+Other formats, for example a JPEG image, only have one image/dataset per
+file, however one great advantage of the FITS standard is that it allows
+you to keep multiple datasets (images or tables along with their meta-data)
+in one file. Each data + metadata is known as an extension, or more
+formally a header data unit or HDU, in the FITS standard. In theory the
+HDUs can be completely independent: you can have multiple images of
+different dimensions/sizes or tables as separate extensions in one
+file. However, while the standard doesn't impose any constraints on the
+relation between the datasets, it is strongly encouraged to group data that
+are contextually related with each other in one file. For example an image
+and the table/catalog of objects and their measured properties in that
+image. Another example can be multiple images of one patch of sky in
+different colors (filters).
+
+The extensions can be completely independent, to keep some information
+(meta-data) about the group of extensions in the FITS file, the community
+has adopted the following convension: put no data in the first extension,
+so it is just meta-data). Meta-data regarding the whole file (grouping of
+extensions) can then be put there. All of Gnuastro's programs also follow
+this convention: the main dataset (image or table) is in the second
+extension. See the example list of extension properties in @ref{Invoking
+astfits}.
+
+While your data (image or table) may contain information about some
+galaxies for example, the meta-data contain information about the data, for
+example which region of the sky it corresponds to, the units of the data,
+what telescope, camera, and filter the data were taken with and which
+software the data were prepared with, or at which date. Hence without the
+meta-data, the raw dataset is practically just a collection of numbers and
+really hard to understand. It is thus strongly encouraged to supplement
+your data (at any level of processing) with as much meta-data about your
+processing/science as possible.
+
+The meta-data of a FITS file is in ASCII format, which can be easily viewed
+or edited with a text editor or on the command-line. Each meta-data element
+(known as a keyword generally) is composed of a name, value, units and
+comments (the last two are optional), for example these are three FITS
+meta-data keywords for specifying the world coordinate system (WCS, or its
+location in the sky) of a dataset:
+
+@example
+LATPOLE =           -27.805089 / [deg] Native latitude of celestial pole
+RADESYS = 'FK5'                / Equatorial coordinate system
+EQUINOX =               2000.0 / [yr] Equinox of equatorial coordinates
+@end example
+
+However, there are some limitations which discourage viewing/editing the
+keywords with text editors. For example there is a fixed length of 80
+characters for each keyword (its name, value, units and comments) and there
+are no new-line characters, so on a text editor all the keywords are seen
+in one line. Also, the meta-data keywords are immediately followed by the
+data which are commonly in binary format and will show up as strange
+looking characters on a text editor, and significantly slowing down the
+processor.
+
+Gnuastro's Fits program was designed to allow easy manipulation of FITS
+extensions and meta-data keywords on the command-line while conforming
+fully with the FITS standard. For example you can copy, remove, or cut
+(copy and remove) HDUs (extensions containing data and metadata) from one
+FITS file to another. It also has features to print all the keywords in a
+HDU, or modify the keywords, add new kewords or delete some others.
 
 @menu
 * Invoking astfits::            Arguments and options to Header.
@@ -6128,12 +6214,12 @@ coordinates to sky or spectrum coordinates on the image or table.
 @node Invoking astfits,  , Fits, Fits
 @subsection Invoking Fits
 
-Fits can print or manipulate the header information in an extension of an
-astronomical data file. The executable name is @file{astheader} with the
-following general template
+Fits can print or manipulate the FITS file HDUs (extensions), or print an
+manipulate the meta-data keywords in a given HDU. The executable name is
+@file{astfits} with the following general template
 
 @example
-$ astheader [OPTION...] ASTRdata
+$ astfits [OPTION...] ASTRdata
 @end example
 
 
@@ -6141,45 +6227,140 @@ $ astheader [OPTION...] ASTRdata
 One line examples:
 
 @example
-$ astheader image.fits
-$ astheader --update=OLDKEY,153.034,"Old keyword comment"
-$ astheader --remove=COMMENT --comment="Anything you like ;-)."
-$ astheader --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
+$ astfits image.fits
+$ astfits image.fits --printall
+$ astfits image.fits --printall | grep NAXIS
+$ astfits input.fits --copy=hdu-name --output=out.fits
+$ astfits --update=OLDKEY,153.034,"Old keyword comment"
+$ astfits --delete=COMMENT --comment="Anything you like ;-)."
+$ astfits --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
 @cindex HDU
-If no keyword modification options are given, the full header of the given
-HDU will be printed on the command-line. If any of the keywords are to be
-modified, the headers of the input file will be changed. If you want to
-keep the original FITS file, it is easiest to create a copy first and then
+When no paritcular HDU or keyword options are given, Fits will print a list
+of information about the extension(s) in the file. This information
+includes the HDU number, name, along with the type, and size the data it
+contains (dimension and size along each dimension). You can use this to get
+a general idea of the contents of the FITS file and what HDU to use for
+further processing, either with the Fits program or any other Gnuastro
+program.
+
+Here is one example of information about a FITS file with four exensions:
+the first extension has no data, it is just meta-data (commonly used to
+keep meta-data about the whole file, or grouping of extensions, see
+@ref{Fits}). The second extension is an image with name @code{IMAGE} and
+single precision floating point type (@code{float32}, see @ref{Numeric data
+types}), it has 4287 pixels along its first (horizontal) axis and 4286
+pixels along its second (vertical) axis. The third extension is also an
+image with name @code{MASK}. It is in 2-byte integer format (@code{int16})
+which is commonly used to keep information about pixels (for example to
+identify which ones were saturated, or which ones had cosmic rays and so
+on), note how it has the same size as the @code{IMAGE} extension. The third
+extension is a binary table called @code{CATALOG} which has 12371 rows and
+5 columns (it probably contains information about the sources in the
+image).
+
+@example
+GNU Astronomy Utilities X.X
+Run on Day Month DD HH:MM:SS YYYY
+-----
+HDU (extension) information: `image.fits'.
+ Column 1: Index (counting from 0).
+ Column 2: Name (`EXTNAME' in FITS standard).
+ Column 3: Image data type or `table' format (ASCII or binary).
+ Column 4: Size of data in HDU.
+-----
+0      n/a             uint8           0
+1      IMAGE           float32         4287x4286
+2      MASK            int16           4287x4286
+3      CATALOG         table_binary    12371x5
+@end example
+
+The operating mode and input/output options to Fits are similar to the
+other programs and fully described in @ref{Common options}. The options
+particular to Fits can be divided into two groups: 1) those related to
+modifying HDUs or extensions (see @ref{HDU manipulation}), and 2) those
+related to viewing/modifying meta-data keywords (see @ref{Keyword
+manipulation}). These two classes of options cannot be called together in
+one run: you can either work on the extensions or meta-data keywords in any
+instance of Fits.
+
+@menu
+* HDU manipulation::            Manipulate HDUs within a FITS file.
+* Keyword manipulation::        Manipulate metadata keywords in a HDU
+@end menu
+
+
+
+
+
+@node HDU manipulation, Keyword manipulation, Invoking astfits, Invoking astfits
+@subsubsection HDU manipulation
+Each header data unit, or HDU (also known as an extension), in a FITS file
+is an independent dataset (data + meta-data). Multiple HDUs can be stored
+in one FITS file, see @ref{Fits}. The HDU modifying options to the Fits
+program are listed below.
+
+These options may be called multiple times in one run. If so, the
+extensions will be copied from the input FITS file to the output FITS file
+in the given order (on the command-line and also in configuration files,
+see @ref{Configuration file precedence}). If the separate classes are
+called together in one run of Fits, then first @option{--copy} is run (on
+all specified HDUs), followed @option{--cut} (again on all specified HDUs),
+and then @option{--remove} (on all specified HDUs).
+
+The @option{--copy} and @option{--cut} options need an output FITS file
+(specified with the @option{--output} option). If the output file exists,
+then the specified HDU will be copied following the last extension of the
+output file (its existing in it HDUs will be untouched). Thus after Fits
+finishes, the copied HDU will be the last HDU of the output file. If no
+output file name is given, then automatic output will be used to store the
+HDUs given to this option (see @ref{Automatic output}).
+
+@table @option
+
+@item -C STR
+@itemx --copy=STR
+Copy the specified extension into the output file, see explanations above.
+
+@item -k STR
+@itemx --cut=STR
+Cut (copy to output, remove from input) the specified extension into the
+output file, see explanations above.
+
+@item -R STR
+@itemx --remove=STR
+Remove the specified HDU from the input file.
+
+@end table
+
+
+@node Keyword manipulation,  , HDU manipulation, Invoking astfits
+@subsubsection Keyword manipulation
+The meta-data in each header data unit, or HDU (also known as extension,
+see @ref{Fits}) is stored as ``keyword''s. Each keyword consists of a name,
+value, unit, and comments. The Fits program (see @ref{Fits}) options
+related to viewing and manipulating keywords in a FITS HDU are described
+below.
+
+To see the full list of keywords in a FITS HDU, you can use the
+@option{--printallkeys} option. If any of the keywords are to be modified,
+the headers of the input file will be changed. If you want to keep the
+original FITS file or HDU, it is easiest to create a copy first and then
 run Fits on that. In the FITS standard, keywords are always uppercase. So
 case does not matter in the input or output keyword names you specify.
 
 Most of the options can accept multiple instances in one command. For
-example you can add multiple keywords to delete by calling delete
-multiple times, since repeated keywords are allowed, you can even
-delete the same keyword multiple times. The action of such options
+example you can add multiple keywords to delete by calling
+@option{--delete} multiple times, since repeated keywords are allowed, you
+can even delete the same keyword multiple times. The action of such options
 will start from the top most keyword.
 
-@cartouche
-@noindent
-@strong{FITS STANDARD KEYWORDS:} Some header keywords are necessary
-for later operations on a FITS file, for example BITPIX or NAXIS, see
-the FITS standard for their full list. If you modify (for example
-remove or rename) such keywords, the FITS file extension might not be
-usable any more. Also be careful for the world coordinate system
-keywords, if you modify or change their values, any future world
-coordinate system (like RA and Dec) measurements on the image will
-also change.
-@end cartouche
-
-@cartouche
-@noindent
-@strong{PRECEDENCE:} The order of operations are as follows. Note that
-while the order within each class of actions is preserved, the order
-of individual actions is not. So irrespective of what order you called
-@option{--delete} and @option{--update}. First all the delete
-operations are going to take effect then the update operations.
+The precedence of operations are described below. Note that while the order
+within each class of actions is preserved, the order of individual actions
+is not. So irrespective of what order you called @option{--delete} and
+@option{--update}. First, all the delete operations are going to take
+effect then the update operations.
 @enumerate
 @item
 @option{--delete}
@@ -6198,30 +6379,41 @@ operations are going to take effect then the update operations.
 @item
 @option{--date}
 @item
-@option{--printall}
+@option{--printallkeys}
 @end enumerate
 @noindent
 All possible syntax errors will be reported before the keywords are
 actually written. FITS errors during any of these actions will be reported,
 but Fits won't stop until all the operations are complete. If
-@option{quitonerror} is called, then Fits will immediately stop upon the
+@option{--quitonerror} is called, then Fits will immediately stop upon the
 first error.
-@end cartouche
 
 @cindex GNU Grep
-If only a certain set of header keywords are desired, it is easiest to pipe
-the output of Fits to GNU Grep. Grep is a very powerful and advanced tool
-to search strings which is precisely made for such situations. For example
-if you only want to check the size of an image FITS HDU, you can run:
+If you want to inspect only a certain set of header keywords, it is easiest
+to pipe the output of the Fits program to GNU Grep. Grep is a very powerful
+and advanced tool to search strings which is precisely made for such
+situations. For example if you only want to check the size of an image FITS
+HDU, you can run:
 
 @example
-$ astheader input.fits | grep NAXIS
+$ astfits input.fits | grep NAXIS
 @end example
 
+@cartouche
 @noindent
-The options particular to Fits can be seen below. See @ref{Common options}
-for a list of the options that are common to all Gnuastro programs, they
-are not repeated here.
+@strong{FITS STANDARD KEYWORDS:} Some header keywords are necessary
+for later operations on a FITS file, for example BITPIX or NAXIS, see
+the FITS standard for their full list. If you modify (for example
+remove or rename) such keywords, the FITS file extension might not be
+usable any more. Also be careful for the world coordinate system
+keywords, if you modify or change their values, any future world
+coordinate system (like RA and Dec) measurements on the image will
+also change.
+@end cartouche
+
+
+@noindent
+The keyword related options to the Fits program are fully described below.
 @table @option
 
 @item -a STR
@@ -6233,32 +6425,32 @@ define the keyword from scratch, it is best to use the @option{--write}
 option (see below) and let CFITSIO worry about the standards. The best way
 to use this option is when you want to add a keyword from one FITS file to
 another unchanged and untouched. Below is an example of such a case that
-can be very useful sometimes:
+can be very useful sometimes (on the command-line or in scripts):
 
 @example
-$ key=$(astheader firstimage.fits | grep KEYWORD)
-$ astheader --asis="$key" secondimage.fits
+$ key=$(astfits firstimage.fits | grep KEYWORD)
+$ astfits --asis="$key" secondimage.fits
 @end example
 
 @cindex GNU Bash
 In particular note the double quotation signs (@key{"}) around the
-reference to the @command{key} shell variable (@command{$key}), since
-FITS keywords usually have lots of space characters, if this variable
-is not enclosed within double quotation marks, the shell will only
-give the first word in the full keyword to this option, which will
-definitely be a non-standard FITS keyword and will make it hard to
-work on the file afterwords. See the ``Quoting'' section of the GNU
-Bash manual for more information if your keyword has the special
+reference to the @command{key} shell variable (@command{$key}), since FITS
+keywords usually have lots of space characters, if this variable is not
+quoted, the shell will only give the first word in the full keyword to this
+option, which will definitely be a non-standard FITS keyword and will make
+it hard to work on the file afterwords. See the ``Quoting'' section of the
+GNU Bash manual for more information if your keyword has the special
 characters @key{$}, @key{`}, or @key{\}.
 
 @item -d STR
 @itemx --delete=STR
 Delete one instance of the @option{STR} keyword from the FITS
 header. Multiple instances of @option{--delete} can be given (possibly even
-for the same keyword). All keywords given will be removed from the headers
-in the opposite order (last given keyword will be deleted first). If the
-keyword doesn't exist, Fits will give a warning and return with a
-non-zero value, but will not stop.
+for the same keyword, when its repeated in the meta-data). All keywords
+given will be removed from the headers in the same given order. If the
+keyword doesn't exist, Fits will give a warning and return with a non-zero
+value, but will not stop. To stop as soon as an error occurs, run with
+@option{--quitonerror}.
 
 @item -r STR
 @itemx --rename=STR
@@ -6268,7 +6460,9 @@ space character. Note that if you use a space character, you have to put
 the value to this option within double quotation marks (@key{"}) so the
 space character is not interpreted as an option separator. Multiple
 instances of @option{--rename} can be given in one command. The keywords
-will be renamed in the specified order.
+will be renamed in the specified order. If the keyword doesn't exist, Fits
+will give a warning and return with a non-zero value, but will not stop. To
+stop as soon as an error occurs, run with @option{--quitonerror}.
 
 @item -u STR
 @itemx --update=STR
@@ -6284,6 +6478,10 @@ example:
 @example
 --update=KEYWORD,value,"comments for this keyword",unit
 @end example
+
+If there is a writing error, Fits will give a warning and return with a
+non-zero value, but will not stop. To stop as soon as an error occurs, run
+with @option{--quitonerror}.
 
 @noindent
 The value can be any numerical or string value@footnote{Some tricky
@@ -6318,17 +6516,25 @@ comments and units for the keyword, see the @option{--update} option above.
 Add a @code{HISTORY} keyword to the header. The string given to this
 keyword will be separated into multiple keyword cards if it is longer than
 70 characters. With each run only one value for the @option{--history}
-option will be read. If there are multiple, it is the last one.
+option will be read. If there are multiple, it is the last one. If there is
+an error, Fits will give a warning and return with a non-zero value, but
+will not stop. To stop as soon as an error occurs, run with
+@option{--quitonerror}.
 
 @item -c STR
 @itemx --comment STR
 Add a @code{COMMENT} keyword to the header. Similar to the explanation for
-@option{--history} above.
+@option{--history} above. If there is a writing error, Fits will give a
+warning and return with a non-zero value, but will not stop. To stop as
+soon as an error occurs, run with @option{--quitonerror}.
 
 @item -t
 @itemx --date
-Put the current date and time in the header. If the @code{DATE}
-keyword already exists in the header, it will be updated.
+Put the current date and time in the header. If the @code{DATE} keyword
+already exists in the header, it will be updated. If there is a writing
+error, Fits will give a warning and return with a non-zero value, but will
+not stop. To stop as soon as an error occurs, run with
+@option{--quitonerror}.
 
 @item -p
 @itemx --printall
@@ -6356,7 +6562,7 @@ continue with the rest of actions.
 
 
 
-@node ConvertType, Table, Fits, Extensions and Tables
+@node ConvertType, Table, Fits, Data containers
 @section ConvertType
 
 @cindex Data format conversion
@@ -6849,7 +7055,7 @@ want a color image, the colors are going to be mixed up.
 
 @end table
 
-@node Table,  , ConvertType, Extensions and Tables
+@node Table,  , ConvertType, Data containers
 @section Table
 
 Tables are the products of processing astronomical images and spectra. For
@@ -7008,7 +7214,7 @@ it is possible to output one column more than once.
 
 
 
-@node Data manipulation, Data analysis, Extensions and Tables, Top
+@node Data manipulation, Data analysis, Data containers, Top
 @chapter Data manipulation
 
 Images are one of the major formats of data that is used in astronomy. The

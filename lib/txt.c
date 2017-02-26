@@ -1177,7 +1177,7 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
 
   /* Check the file and open it. */
-  gal_checkset_check_remove_file(filename, dontdelete);
+  gal_checkset_check_remove_file(filename, 0, dontdelete);
   errno=0;
   fp=fopen(filename, "w");
   if(fp==NULL)

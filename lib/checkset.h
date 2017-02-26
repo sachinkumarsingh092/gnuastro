@@ -92,7 +92,7 @@ int
 gal_checkset_check_file_report(char *filename);
 
 void
-gal_checkset_check_remove_file(char *filename, int dontdelete);
+gal_checkset_check_remove_file(char *filename, int keep, int dontdelete);
 
 int
 gal_checkset_dir_0_file_1(char *name, int dontdelete);

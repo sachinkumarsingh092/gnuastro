@@ -106,6 +106,7 @@ ui_initialize_options(struct fitsparams *p,
   struct gal_options_common_params *cp=&p->cp;
 
   /* Set the necessary common parameters structure. */
+  cp->keep               = 1;
   cp->poptions           = program_options;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
@@ -114,7 +115,7 @@ ui_initialize_options(struct fitsparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* For clarity and non-zero initializations. */
-  p->mode=FITS_MODE_INVALID;
+  p->mode                = FITS_MODE_INVALID;
 
   /* Don't show the unused options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -122,12 +123,18 @@ ui_initialize_options(struct fitsparams *p,
       {
       case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_IGNORECASE:
-      case GAL_OPTIONS_KEY_OUTPUT:
       case GAL_OPTIONS_KEY_TYPE:
       case GAL_OPTIONS_KEY_TABLEFORMAT:
       case GAL_OPTIONS_KEY_DONTDELETE:
-      case GAL_OPTIONS_KEY_KEEPINPUTDIR:
+      case GAL_OPTIONS_KEY_LOG:
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+      case GAL_OPTIONS_KEY_NUMTHREADS:
         cp->coptions[i].flags=OPTION_HIDDEN;
+        break;
+
+      case GAL_OPTIONS_KEY_OUTPUT:
+        cp->coptions[i].doc="Output file name (only for writing HDUs).";
+        break;
       }
 
 }
@@ -214,16 +221,39 @@ ui_read_check_only_options(struct fitsparams *p)
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
-      || p->rename || p->rename || p->update || p->write )
-    p->mode=FITS_MODE_KEY;
+      || p->rename || p->rename || p->update || p->write || p->printallkeys )
+    {
+      /* Set the mode. */
+      p->mode=FITS_MODE_KEY;
 
-  /* If any of the extension keywords are given, then set the mode.
-    error(EXIT_FAILURE, 0, "extension and keyword manipulation options "
-          "cannot be called together");
-  */
+      /* Check if a HDU is given. */
+      if(p->cp.hdu==NULL)
+        error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for keywrod "
+              "related options but none was defined. Please use the "
+              "`--hdu' (or `-h') option to select one");
+    }
 
-  /* If no mode-specifying options are given, then go into extension
-     mode. */
+  /* Same for the extension-related options */
+  if( p->remove || p->copy || p->cut )
+    {
+      /* A small sanity check. */
+      if(p->mode!=FITS_MODE_INVALID)
+        error(EXIT_FAILURE, 0, "extension and keyword manipulation options "
+              "cannot be called together");
+
+      /* Set the mode and turn on the `needshdu' flag. */
+      p->mode=FITS_MODE_HDU;
+
+      /* Make sure the output name is set. */
+      if(p->cp.output)
+        gal_checkset_check_remove_file(p->filename, 1, p->cp.dontdelete);
+      else
+        p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                   "_ext.fits");
+    }
+
+  /* If no options are given, go into HDU mode, which will print the HDU
+     information when nothing is asked. */
   if(p->mode==FITS_MODE_INVALID)
     p->mode=FITS_MODE_HDU;
 }
@@ -495,6 +525,5 @@ void
 ui_free_and_report(struct fitsparams *p)
 {
   /* Free the allocated arrays: */
-  free(p->cp.hdu);
   free(p->cp.output);
 }

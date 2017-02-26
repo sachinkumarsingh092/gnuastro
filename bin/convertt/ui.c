@@ -712,7 +712,7 @@ ui_set_output(struct converttparams *p)
     }
 
   /* Check if the output already exists. */
-  gal_checkset_check_remove_file(cp->output, cp->dontdelete);
+  gal_checkset_check_remove_file(cp->output, 0, cp->dontdelete);
 }
 
 

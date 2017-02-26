@@ -130,7 +130,7 @@ saveindividual(struct mkonthread *mkp)
 
   /* Write the name and remove a similarly named file. */
   asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
-  gal_checkset_check_remove_file(filename, p->cp.dontdelete);
+  gal_checkset_check_remove_file(filename, 0, p->cp.dontdelete);
 
   /* Put the array into a data structure */
   data=gal_data_alloc(ibq->img, GAL_DATA_TYPE_FLOAT32, 2, dsize, NULL, 0,

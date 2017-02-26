@@ -193,9 +193,14 @@ gal_checkset_check_file_report(char *filename)
 
 
 
-/* Check if a file exists. If so, remove it. */
+/* Check if a file exists and can be opened. If the `keep' value is
+   non-zero, then the file will remain untouched, otherwise, it will be
+   deleted (since most programs need to make a clean output). When the file
+   is to be deleted and `dontdelete' has a non-zero value, then the file
+   won't be deleted, but the program will abort with an error, informing
+   the user that the output can't be made. */
 void
-gal_checkset_check_remove_file(char *filename, int dontdelete)
+gal_checkset_check_remove_file(char *filename, int keep, int dontdelete)
 {
   FILE *tmpfile;
 
@@ -216,15 +221,21 @@ gal_checkset_check_remove_file(char *filename, int dontdelete)
       errno=0;
       if(fclose(tmpfile))
         error(EXIT_FAILURE, errno, "%s", filename);
-      if(dontdelete)
-        error(EXIT_FAILURE, 0, "%s already exists and you have "
-              "asked to not remove it with the `--dontdelete` "
-              "(`-D`) option", filename);
 
-      /* Delete the file: */
-      errno=0;
-      if(unlink(filename))
-        error(EXIT_FAILURE, errno, "%s", filename);
+      /* See if the file should be deleted. */
+      if(keep==0)
+        {
+          /* Make sure it is ok to delete the file. */
+          if(dontdelete)
+            error(EXIT_FAILURE, 0, "%s already exists and you have "
+                  "asked to not remove it with the `--dontdelete` "
+                  "(`-D`) option", filename);
+
+          /* Delete the file: */
+          errno=0;
+          if(unlink(filename))
+            error(EXIT_FAILURE, errno, "%s", filename);
+        }
     }
   /* If the file doesn't exist, there is no problem, we wanted to
      remove it any way! Any other kind of error should not be
@@ -282,7 +293,7 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
     return 0;
   else if (S_ISREG(nameinfo.st_mode))  /* It is a file, GOOD. */
     {
-      gal_checkset_check_remove_file(name, dontdelete);
+      gal_checkset_check_remove_file(name, 0, dontdelete);
       return 1;
     }
   else                                 /* Not a file or a dir, ABORT */
@@ -369,7 +380,7 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
     }
 
   /* Remove the created filename if it already exits. */
-  gal_checkset_check_remove_file(out, cp->dontdelete);
+  gal_checkset_check_remove_file(out, cp->keep, cp->dontdelete);
 
   /* Return the resulting filename. */
   return out;

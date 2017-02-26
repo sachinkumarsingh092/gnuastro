@@ -24,6 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
@@ -33,7 +34,46 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "header.h"
+#include "fits.h"
+#include "keywords.h"
+
+
+
+int
+fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
+{
+  char *action;
+  int r=EXIT_SUCCESS;
+
+  switch(actioncode)
+    {
+    case FITS_ACTION_DELETE:        action="deleted";      break;
+    case FITS_ACTION_RENAME:        action="renamed";      break;
+    case FITS_ACTION_UPDATE:        action="updated";      break;
+    case FITS_ACTION_WRITE:         action="written";      break;
+    case FITS_ACTION_COPY:          action="copied";       break;
+    case FITS_ACTION_REMOVE:        action="renoved";      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can fix "
+            "this problem. In `header.c'. The value of actionid in "
+            "`haserror' must not be %d", PACKAGE_BUGREPORT, actioncode);
+    }
+
+  if(p->quitonerror)
+    {
+      fits_report_error(stderr, status);
+      error(EXIT_FAILURE, 0, "not %s: %s\n", action, string);
+    }
+  else
+    {
+      fprintf(stderr, "Not %s: %s\n", action, string);
+      r=EXIT_FAILURE;
+    }
+  return r;
+}
+
+
 
 
 
@@ -192,8 +232,76 @@ fits_print_extension_info(struct fitsparams *p)
       printf("-----\n");
     }
   gal_table_write(cols, NULL, GAL_TABLE_FORMAT_TXT, NULL, 0);
-  if(!p->cp.quiet) printf("-----\n");
   gal_data_free_ll(cols);
+}
+
+
+
+
+
+static void
+fits_hdu_remove(struct fitsparams *p, int *r)
+{
+  char *hdu;
+  fitsfile *fptr;
+  int status=0, hdutype;
+
+  while(p->remove)
+    {
+      /* Pop-out the top element. */
+      gal_linkedlist_pop_from_stll(&p->remove, &hdu);
+
+      /* Open the FITS file at the specified HDU. */
+      fptr=gal_fits_hdu_open(p->filename, hdu, READWRITE);
+
+      /* Delete the extension. */
+      if( fits_delete_hdu(fptr, &hdutype, &status) )
+        *r=fits_has_error(p, FITS_ACTION_REMOVE, hdu, status);
+
+      /* Close the file. */
+      fits_close_file(fptr, &status);
+    }
+}
+
+
+
+
+
+static void
+fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
+{
+  char *hdu;
+  fitsfile *in, *out;
+  int status=0, hdutype;
+  struct gal_linkedlist_stll *list = cut1_copy0 ? p->cut : p->copy;
+
+  /* Open the output file. */
+  out=gal_fits_open_to_write(p->cp.output);
+
+  /* Copy all the given extensions. */
+  while(list)
+    {
+      /* Pop-out the top element. */
+      gal_linkedlist_pop_from_stll(&list, &hdu);
+
+      /* Open the FITS file at the specified HDU. */
+      in=gal_fits_hdu_open(p->filename, hdu, READWRITE);
+
+      /* Copy to the extension. */
+      if( fits_copy_hdu(in, out, 0, &status) )
+        *r=fits_has_error(p, FITS_ACTION_COPY, hdu, status);
+
+      /* If this is a `cut' operation, then remove the extension. */
+      if(cut1_copy0)
+        if( fits_delete_hdu(in, &hdutype, &status) )
+          *r=fits_has_error(p, FITS_ACTION_REMOVE, hdu, status);
+
+      /* Close the input file. */
+      fits_close_file(in, &status);
+    }
+
+  /* Close the output file. */
+  fits_close_file(out, &status);
 }
 
 
@@ -203,10 +311,44 @@ fits_print_extension_info(struct fitsparams *p)
 int
 fits(struct fitsparams *p)
 {
-  int r=EXIT_SUCCESS;
-  if(p->mode==FITS_MODE_KEY)
-    r=header(p);
-  else
-    fits_print_extension_info(p);
+  int r=EXIT_SUCCESS, printhduinfo=1;;
+
+  switch(p->mode)
+    {
+    /* Keywords, we have a separate set of functions in `keywords.c'. */
+    case FITS_MODE_KEY:
+      r=keywords(p);
+      break;
+
+    /* HDU, functions defined here. */
+    case FITS_MODE_HDU:
+      if(p->copy)
+        {
+          fits_hdu_copy(p, 0, &r);
+          printhduinfo=0;
+        }
+      if(p->cut)
+        {
+          fits_hdu_copy(p, 1, &r);
+          printhduinfo=0;
+        }
+      if(p->remove)
+        {
+          fits_hdu_remove(p, &r);
+          printhduinfo=0;
+        }
+
+      if(printhduinfo)
+        fits_print_extension_info(p);
+      break;
+
+    /* Not recognized. */
+    default:
+      error(EXIT_FAILURE, 0, "a bug! please contact us at %s to address "
+            "the problem. The code %d is not recognized for p->mode in the "
+            "`fits' function of the Fits program", PACKAGE_BUGREPORT,
+            p->mode);
+    }
+
   return r;
 }

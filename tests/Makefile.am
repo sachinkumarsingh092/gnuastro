@@ -101,12 +101,13 @@ if COND_CROP
 endif
 if COND_FITS
   MAYBE_FITS_TESTS = fits/write.sh fits/print.sh fits/update.sh	\
-  fits/delete.sh
+  fits/delete.sh fits/copyhdu.sh
 
   fits/write.sh: mkprof/mosaic1.sh.log
   fits/print.sh: fits/write.sh.log
   fits/update.sh: fits/write.sh.log
   fits/delete.sh: fits/write.sh.log
+  fits/copyhdu.sh: fits/write.sh.log mkprof/mosaic2.sh.log
 endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG_TESTS = mkcatalog/simple.sh mkcatalog/aperturephot.sh

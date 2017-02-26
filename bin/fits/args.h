@@ -34,7 +34,54 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Header keywords:",
+      "HDUs (extensions):",
+      ARGS_GROUP_EXTENSION
+    },
+    {
+      "remove",
+      ARGS_OPTION_KEY_REMOVE,
+      "STR",
+      0,
+      "Remove extension from input file.",
+      ARGS_GROUP_EXTENSION,
+      &p->remove,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "copy",
+      ARGS_OPTION_KEY_COPY,
+      "STR",
+      0,
+      "Copy extension to output file.",
+      ARGS_GROUP_EXTENSION,
+      &p->copy,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "cut",
+      ARGS_OPTION_KEY_CUT,
+      "STR",
+      0,
+      "Copy extension to output and remove from input.",
+      ARGS_GROUP_EXTENSION,
+      &p->cut,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+    {
+      0, 0, 0, 0,
+      "Keywords (in one HDU):",
       ARGS_GROUP_KEYWORD
     },
     {
@@ -142,13 +189,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "printall",
-      ARGS_OPTION_KEY_PRINTALL,
+      "printallkeys",
+      ARGS_OPTION_KEY_PRINTALLKEYS,
       0,
       0,
-      "Print all keywords in the desired HDU.",
-      GAL_OPTIONS_GROUP_OPERATING_MODE,
-      &p->printall,
+      "Print all keywords in the selected HDU.",
+      ARGS_GROUP_KEYWORD,
+      &p->printallkeys,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
