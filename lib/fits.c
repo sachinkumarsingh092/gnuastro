@@ -1500,6 +1500,28 @@ gal_fits_img_write(gal_data_t *data, char *filename,
 
 
 
+void
+gal_fits_img_write_to_type(gal_data_t *data, char *filename,
+                           struct gal_fits_key_ll *headers,
+                           char *program_string, int type)
+{
+  /* If the input dataset is not the correct type, then convert it,
+     otherwise, use the input data structure. */
+  gal_data_t *towrite = (data->type==type
+                         ? data
+                         : gal_data_copy_to_new_type(data, type));
+
+  /* Write the converted dataset into an image. */
+  gal_fits_img_write(towrite, filename, headers, program_string);
+
+  /* Free the dataset if it was allocated. */
+  if(towrite!=data) gal_data_free(towrite);
+}
+
+
+
+
+
 /* This function is mainly useful when you want to make FITS files in
    parallel (from one main WCS structure, with just differing CRPIX) for
    two reasons:
@@ -1794,7 +1816,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   /* Read the total number of fields, then allocate space for the data
      structure array and store the information within it. */
   fits_read_key(fptr, TINT, "TFIELDS", &tfields, NULL, &status);
-  allcols=gal_data_calloc_dataarray(tfields);
+  allcols=gal_data_array_calloc(tfields);
 
 
   /* See comments of `fits_correct_bin_table_int_types'. Here we are

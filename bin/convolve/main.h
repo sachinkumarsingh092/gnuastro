@@ -25,7 +25,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Include necessary headers */
 #include <gnuastro/data.h>
-#include <gnuastro/mesh.h>
 
 #include <options.h>
 
@@ -72,37 +71,33 @@ enum domain_codes
 struct convolveparams
 {
   /* From command-line */
-  struct gal_options_common_params cp; /* Common parameters.             */
-  struct gal_mesh_params  mp;  /* gal_mesh_params structure.             */
-  char             *filename;  /* Name of input file.                    */
-  char           *kernelname;  /* File name of kernel.                   */
-  char                 *khdu;  /* HDU of kernel.                         */
-  uint8_t       nokernelflip;  /* Do not flip the kernel.                */
-  uint8_t       nokernelnorm;  /* Do not normalize the kernel.           */
-  double        minsharpspec;  /* Deconvolution: min spect. of sharp img.*/
-  uint8_t     checkfreqsteps;  /* View the frequency domain steps.       */
-  uint8_t          checkmesh;  /* View the mesh structure.               */
-  char            *domainstr;  /* String value specifying domain.        */
-  uint8_t         makekernel;  /* ==1: Make a kernel to create input.    */
+  struct gal_options_common_params cp; /* Common parameters.              */
+  char             *filename;  /* Name of input file.                     */
+  char           *kernelname;  /* File name of kernel.                    */
+  char                 *khdu;  /* HDU of kernel.                          */
+  uint8_t       nokernelflip;  /* Do not flip the kernel.                 */
+  uint8_t       nokernelnorm;  /* Do not normalize the kernel.            */
+  double        minsharpspec;  /* Deconvolution: min spect. of sharp img. */
+  uint8_t     checkfreqsteps;  /* View the frequency domain steps.        */
+  size_t               *tile;  /* Size of tiles along each dim. (C order).*/
+  size_t        *numchannels;  /* No. of tiles along each dim. (C order). */
+  uint8_t         convoverch;  /* Convolve over channel borders.          */
+  uint8_t         checktiles;  /* Tile IDs in an img, the size of input.  */
+  char            *domainstr;  /* String value specifying domain.         */
+  size_t          makekernel;  /* Make a kernel to create input.          */
 
   /* Internal */
-  int                 domain;  /* Frequency or spatial domain conv.      */
-  float               *input;  /* Input image array.                     */
-  float              *kernel;  /* Input Kernel array.                    */
-  time_t             rawtime;  /* Starting time of the program.          */
-  double               *pimg;  /* Padded image array.                    */
-  double               *pker;  /* Padded kernel array.                   */
-  size_t                 ps0;  /* Padded size along first C axis.        */
-  size_t                 ps1;  /* Padded size along second C axis.       */
-  size_t                 is0;  /* Input image size along C's first axis. */
-  size_t                 is1;  /* Input image size along C's second axis.*/
-  size_t                 ks0;  /* Kernel size along C's first axis.      */
-  size_t                 ks1;  /* Kernel size along C's second axis.     */
-  int                   nwcs;  /* Number of WCS headers.                 */
-  struct wcsprm         *wcs;  /* WCS structure.                         */
-  char                 *unit;  /* The unit string from the input.        */
-  char        *freqstepsname;  /* Name of file to check frequency steps. */
-  char             *meshname;  /* Name of file to check mesh tiles.      */
+  size_t            *channel;  /* Size of channels along each dimension.  */
+  int                 domain;  /* Frequency or spatial domain conv.       */
+  gal_data_t          *input;  /* Input image array.                      */
+  gal_data_t         *kernel;  /* Input Kernel array.                     */
+  double               *pimg;  /* Padded image array.                     */
+  double               *pker;  /* Padded kernel array.                    */
+  size_t                 ps0;  /* Padded size along first C axis.         */
+  size_t                 ps1;  /* Padded size along second C axis.        */
+  char        *freqstepsname;  /* Name of file to check frequency steps.  */
+  char            *tilesname;  /* Name of file to check tiles.            */
+  time_t             rawtime;  /* Starting time of the program.           */
 };
 
 #endif

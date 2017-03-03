@@ -458,7 +458,7 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
   if(numc>1)
     {
       /* Now, allocate the array and put in the values. */
-      dataarr=gal_data_calloc_dataarray(numc);
+      dataarr=gal_data_array_calloc(numc);
 
       /* Put each dataset/column into its proper place in the array.  */
       while(datall!=NULL)

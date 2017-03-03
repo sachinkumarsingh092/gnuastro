@@ -232,6 +232,10 @@ void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
                              char *filename, size_t lineno, void *junk);
 
+void *
+gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
+                                char *filename, size_t lineno, void *params);
+
 
 
 
@@ -244,6 +248,7 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
 
 error_t
 gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
+
 
 
 

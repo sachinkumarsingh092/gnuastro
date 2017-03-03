@@ -65,7 +65,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_ARITHMETIC_FREE     2
 #define GAL_ARITHMETIC_NUMOK    4
 
-
+#define GAL_ARITHMETIC_FLAGS_ALL ( GAL_ARITHMETIC_INPLACE        \
+                                   | GAL_ARITHMETIC_FREE         \
+                                   | GAL_ARITHMETIC_NUMOK )
 
 
 /* Identifiers for each operator. */

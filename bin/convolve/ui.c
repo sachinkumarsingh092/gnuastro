@@ -30,8 +30,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
+#include <gnuastro/threads.h>
+#include <gnuastro/arithmetic.h>
+#include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
 #include <timing.h>
@@ -118,22 +122,30 @@ ui_initialize_options(struct convolveparams *p,
 
 
   /* Set the necessary common parameters structure. */
-  cp->poptions           = program_options;
+  cp->program_struct     = p;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
-  cp->coptions           = gal_commonopts_options;
+  cp->poptions           = program_options;
   cp->numthreads         = gal_threads_number();
-
+  cp->coptions           = gal_commonopts_options;
 
   /* Set the mandatory common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     switch(cp->coptions[i].key)
       {
       case GAL_OPTIONS_KEY_HDU:
+      case GAL_OPTIONS_KEY_TYPE:
       case GAL_OPTIONS_KEY_MINMAPSIZE:
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+
+      case GAL_OPTIONS_KEY_LOG:
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_IGNORECASE:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].flags=OPTION_HIDDEN;
         break;
       }
 }
@@ -207,6 +219,41 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 static void
+ui_read_check_only_options(struct convolveparams *p)
+{
+  /* Read the domain from a string into an integer. */
+  if( !strcmp("spatial", p->domainstr) )
+    p->domain=CONVOLVE_DOMAIN_SPATIAL;
+  else if( !strcmp("frequency", p->domainstr) )
+    p->domain=CONVOLVE_DOMAIN_FREQUENCY;
+  else
+    error(EXIT_FAILURE, 0, "domain value `%s' not recognized. Please use "
+          "either `spatial' or `frequency'", p->domainstr);
+
+  /* If we are in the spatial domain, make sure that the necessary
+     parameters are set. */
+  if( p->domain==CONVOLVE_DOMAIN_SPATIAL )
+    if( p->tile==NULL || p->numchannels==NULL )
+      {
+        if( p->tile==NULL && p->numchannels==NULL )
+          error(EXIT_FAILURE, 0, "in spatial convolution, `--numchannels' "
+                "and `--tile' are mandatory");
+        else
+          error(EXIT_FAILURE, 0, "in spatial convolution, `--%s' is "
+                "mandatory: you should use it to set the %s",
+                p->tile ? "numchannels" : "tile",
+                ( p->tile
+                  ? "number of channels along each dimension of the input"
+                  : "size of tiles to cover the input along each "
+                  "dimension" ) );
+      }
+}
+
+
+
+
+
+static void
 ui_check_options_and_arguments(struct convolveparams *p)
 {
   /* Make sure an input file name was given and if it was a FITS file, that
@@ -237,48 +284,25 @@ ui_check_options_and_arguments(struct convolveparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-static void
-ui_read_domain(struct convolveparams *p)
-{
-  if( !strcmp("spatial", p->domainstr) )
-    p->domain=CONVOLVE_DOMAIN_SPATIAL;
-  else if( !strcmp("frequency", p->domainstr) )
-    p->domain=CONVOLVE_DOMAIN_FREQUENCY;
-  else
-    error(EXIT_FAILURE, 0, "domain value `%s' not recognized. Please use "
-          "either `spatial' or `frequency'", p->domainstr);
-}
-
-
-
-
-
+/* Read the kernel. VERY IMPORTANT: We can't use the `fits_img_read_kernel'
+   because the Convolve program also does de-convolution. */
 static void
 ui_read_kernel(struct convolveparams *p)
 {
   float *f, *ff;
-  gal_data_t *data;
 
   /* Read the image into file. */
-  data=gal_fits_img_read_to_type(p->kernelname, p->khdu,
-                                 GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
-
-  /* Put its values into the main program structure. */
-  p->ks0=data->dsize[0];
-  p->ks1=data->dsize[1];
-  p->kernel=data->array;
+  p->kernel = gal_fits_img_read_to_type(p->kernelname, p->khdu,
+                                        GAL_DATA_TYPE_FLOAT32,
+                                        p->cp.minmapsize);
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
      pixels. */
-  if(gal_blank_present(data))
+  if(gal_blank_present(p->kernel))
     {
-      ff=(f=data->array)+data->size;
+      ff = (f=p->kernel->array) + p->kernel->size;
       do *f = isnan(*f) ? 0.0f : *f; while(++f<ff);
     }
-
-  /* Clean up. Note that we need the array, so it must be set to NULL. */
-  data->array=NULL;
-  gal_data_free(data);
 }
 
 
@@ -288,15 +312,10 @@ ui_read_kernel(struct convolveparams *p)
 static void
 ui_preparations(struct convolveparams *p)
 {
-  double sum;
   size_t i, size;
-  gal_data_t *data;
-  float *f, *ff, tmp;
+  gal_data_t *sum;
+  float *kernel, tmp;
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
-
-
-  /* Read the domain */
-  ui_read_domain(p);
 
 
   /* Set the output name if the user hasn't set it. */
@@ -306,38 +325,37 @@ ui_preparations(struct convolveparams *p)
   if(p->checkfreqsteps)
     p->freqstepsname=gal_checkset_automatic_output(&p->cp, p->filename,
                                                    "_freqsteps.fits");
-  if(p->checkmesh)
-    p->meshname=gal_checkset_automatic_output(&p->cp, p->filename,
-                                              "_mesh.fits");
+  if(p->checktiles)
+    p->tilesname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                               "_tiled.fits");
 
 
-  /* Read the input image as a float array and its WCS info. */
-  data=gal_fits_img_read_to_type(p->filename, p->cp.hdu,
-                                 GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
-  gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
-  p->unit=data->unit;
-  data->unit=NULL;
+  /* Read the input image as a float64 array and its WCS info. */
+  p->input=gal_fits_img_read_to_type(p->filename, p->cp.hdu,
+                                     GAL_DATA_TYPE_FLOAT64, p->cp.minmapsize);
+  gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->input->nwcs, &p->input->wcs);
 
 
   /* See if there are any blank values. */
-  if(gal_blank_present(data) && p->domain==CONVOLVE_DOMAIN_FREQUENCY)
-    fprintf(stderr, "\n----------------------------------------\n"
-            "######## %s WARNING ########\n"
-            "There are blank pixels in `%s' (hdu: `%s') and you have asked "
-            "for frequency domain convolution. As a result, all the pixels "
-            "in `%s' will be blank. Only spatial domain convolution can "
-            "account for blank pixels in the input data. You can run %s "
-            "again with `--domain=spatial'\n"
-            "----------------------------------------\n\n",
-            PROGRAM_NAME, p->filename, p->cp.hdu, p->cp.output, PROGRAM_NAME);
+  if(p->domain==CONVOLVE_DOMAIN_FREQUENCY)
+    {
+      if( gal_blank_present(p->input) )
+        fprintf(stderr, "\n----------------------------------------\n"
+                "######## %s WARNING ########\n"
+                "There are blank pixels in `%s' (hdu: `%s') and you have "
+                "asked for frequency domain convolution. As a result, all "
+                "the pixels in the output (`%s') will be blank. Only "
+                "spatial domain convolution can account for blank pixels "
+                "in the input data. You can run %s again with "
+                "`--domain=spatial'\n"
+                "----------------------------------------\n\n",
+                PROGRAM_NAME, p->filename, p->cp.hdu, p->cp.output,
+                PROGRAM_NAME);
+    }
+  else
+    p->channel=gal_tile_all_sanity_check(p->filename, p->cp.hdu, p->input,
+                                         p->tile, p->numchannels);
 
-
-  /* Get all the information from `gal_data_t' then free it. */
-  p->is0=data->dsize[0];
-  p->is1=data->dsize[1];
-  p->input=data->array;
-  data->array=NULL;
-  gal_data_free(data);
 
 
   /* Read the file specified by --kernel. If makekernel is specified, then
@@ -345,25 +363,29 @@ ui_preparations(struct convolveparams *p)
      argument) is the blurry image. */
   if(p->makekernel)
     {
-      /* Read in the kernel array: */
+      /* Read in the kernel array. */
       ui_read_kernel(p);
 
       /* Make sure the size of the kernel is the same as the input */
-      if(p->ks0!=p->is0 || p->ks1!=p->is1)
+      if( p->input->dsize[0]!=p->kernel->dsize[0]
+          || p->input->dsize[1]!=p->kernel->dsize[1] )
         error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
               "the input image and the image specified with the `--kernel' "
               "(`-k') option should have the same size. The lower resolution "
               "input image (%s) has %zux%zu pixels while the sharper image "
               "(%s) specified with the kernel option has %zux%zu pixels",
-              p->filename, p->is1, p->is0, p->kernelname, p->ks1, p->ks0);
+              p->filename, p->input->dsize[1], p->input->dsize[0],
+              p->kernelname, p->kernel->dsize[1], p->kernel->dsize[0]);
 
-      /* Divide both images by their sum so their lowest frequency
-         becomes 1 (and their division would be meaningful!).*/
-      size=p->is0*p->is1;
-      sum=0.0f; ff=(f=p->input)+size; do sum+=*f++; while(f<ff);
-      f=p->input; do *f++ /= sum; while(f<ff);
-      sum=0.0f; ff=(f=p->kernel)+size; do sum+=*f++; while(f<ff);
-      f=p->kernel; do *f++ /= sum; while(f<ff);
+      /* Divide both images by their sum so their lowest frequency becomes
+         1 and their division (in the frequency domain) would be
+         meaningful. */
+      sum=gal_statistics_sum(p->input);
+      p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+                                GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
+      sum=gal_statistics_sum(p->kernel);
+      p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+                                GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
     }
 
   /* Read the kernel. If there is anything particular to Convolve, then
@@ -377,41 +399,40 @@ ui_preparations(struct convolveparams *p)
         {
           /* Read in the kernel array: */
           ui_read_kernel(p);
-          size=p->ks0*p->ks1;
 
           /* Check its size (must be odd). */
-          if(p->ks0%2==0 || p->ks1%2==0)
+          if(p->kernel->dsize[0]%2==0 || p->kernel->dsize[1]%2==0)
             error(EXIT_FAILURE, 0, "the kernel image has to have an odd "
                   "number of pixels on both sides (there has to be on pixel "
                   "in the center). %s (hdu: %s) is %zu by %zu",
-                  p->kernelname, p->khdu, p->ks1, p->ks0);
+                  p->kernelname, p->khdu, p->kernel->dsize[1],
+                  p->kernel->dsize[0]);
 
           /* Normalize the kernel: */
           if( !p->nokernelnorm )
             {
-              sum=0.0f; ff=(f=p->kernel)+size; do sum+=*f++; while(f<ff);
-              f=p->kernel; do *f++ /= sum; while(f<ff);
+              sum=gal_statistics_sum(p->kernel);
+              p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+                                         GAL_ARITHMETIC_FLAGS_ALL,
+                                         p->kernel, sum);
             }
 
           /* Flip the kernel: */
           if( !p->nokernelflip )
-            for(i=0;i<size/2;++i)
-              {
-                tmp = p->kernel[i];
-                p->kernel[i] = p->kernel[size-i-1];
-                p->kernel[size-i-1]=tmp;
-              }
+            {
+              size=p->kernel->size;
+              kernel=p->kernel->array;
+              for(i=0;i<p->kernel->size/2;++i)
+                {
+                  tmp                     = kernel[ i            ];
+                  kernel[ i             ] = kernel[ size - i - 1 ];
+                  kernel[ size -  i - 1 ] = tmp;
+                }
+            }
         }
       else
-        {
-          data=gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                        p->cp.minmapsize);
-          p->ks0=data->dsize[0];
-          p->ks1=data->dsize[1];
-          p->kernel=data->array;
-          data->array=NULL;
-          gal_data_free(data);
-        }
+        p->kernel = gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                             p->cp.minmapsize);
     }
 }
 
@@ -480,6 +501,10 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct convolveparams *p)
   gal_options_read_config_set(&p->cp);
 
 
+  /* Do a sanity check only on options. */
+  ui_read_check_only_options(p);
+
+
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
      output state. */
@@ -528,9 +553,10 @@ ui_free_report(struct convolveparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->khdu);
-  free(p->kernel);
   free(p->cp.hdu);
   free(p->cp.output);
+  gal_data_free(p->input);
+  gal_data_free(p->kernel);
 
   /* Print the final message. */
   if(!p->cp.quiet)

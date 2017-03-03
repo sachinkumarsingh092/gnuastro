@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_errno.h>
 
 #include <gnuastro/wcs.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/spatialconvolve.h>
@@ -188,20 +189,24 @@ void
 makepaddedcomplex(struct convolveparams *p)
 {
   size_t i, ps0, ps1;
-  double *o, *op, *pimg, *pker;
-  float *f, *fp, *input=p->input, *kernel=p->kernel;
-  size_t is0=p->is0, is1=p->is1, ks0=p->ks0, ks1=p->ks1;
+  float *f, *ff, *kernel=p->kernel->array;
+  size_t is0=p->input->dsize[0],  is1=p->input->dsize[1];
+  size_t ks0=p->kernel->dsize[0], ks1=p->kernel->dsize[1];
+  double *o, *op, *d, *df, *pimg, *pker, *input=p->input->array;
+
 
   /* Find the sizes of the padded image, note that since the kernel
      sizes are always odd, the extra padding on the input image is
      always going to be an even number (clearly divisable). */
-  ps0=p->ps0 = p->makekernel ? p->is0 : p->is0+p->ks0-1;
-  ps1=p->ps1 = p->makekernel ? p->is1 : p->is1+p->ks1-1;
+  ps0=p->ps0 = p->makekernel ? is0 : is0 + ks0 - 1;
+  ps1=p->ps1 = p->makekernel ? is1 : is1 + ks1 - 1;
+
 
   /* The Discrete Fourier transforms operate faster on even-sized
      arrays. So if the padded sides are not even, make them so: */
   if(ps0%2) ps0=p->ps0=ps0+1;
   if(ps1%2) ps1=p->ps1=ps1+1;
+
 
   /* Allocate the space for the padded input image and fill it. */
   errno=0;
@@ -214,8 +219,8 @@ makepaddedcomplex(struct convolveparams *p)
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
       if(i<is0)
         {
-          fp=(f=input+i*is1)+is1;
-          do {*o++=*f; *o++=0.0f;} while(++f<fp);
+          df=(d=input+i*is1)+is1;
+          do {*o++=*d; *o++=0.0f;} while(++d<df);
         }
       do *o++=0.0f; while(o<op);
     }
@@ -232,8 +237,8 @@ makepaddedcomplex(struct convolveparams *p)
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
       if(i<ks0)
         {
-          fp=(f=kernel+i*ks1)+ks1;
-          do {*o++=*f; *o++=0.0f;} while(++f<fp);
+          ff=(f=kernel+i*ks1)+ks1;
+          do {*o++=*f; *o++=0.0f;} while(++f<ff);
         }
       do *o++=0.0f; while(o<op);
     }
@@ -243,19 +248,19 @@ makepaddedcomplex(struct convolveparams *p)
 
 
 
-/*  Remove the padding from the final convolved image and also correct
-    for roundoff errors. Notice that we are putting the pixels in the
-    input image of float type.
+/*  Remove the padding from the final convolved image and also correct for
+    roundoff errors.
 
-    NOTE: The padding to the input image (on the first axis for
-          example) was p->ks0-1. Since p->ks0 is always odd, the
-          padding will alwys be even.  */
+    NOTE: The padding to the input image (on the first axis for example)
+          was `p->kernel->dsize[0]-1'. Since `p->kernel->dsize[0]' is
+          always odd, the padding will always be even.  */
 void
 removepaddingcorrectroundoff(struct convolveparams *p)
 {
   size_t ps1=p->ps1;
-  float *o, *input=p->input;
-  size_t i, hi0, hi1, is0, is1;
+  size_t i, hi0, hi1;
+  size_t *isize=p->input->dsize;
+  double *o, *input=p->input->array;
   double *d, *df, *start, *pimg=p->pimg;
 
   /* Set all the necessary parameters to crop the desired region. hi0
@@ -265,26 +270,24 @@ removepaddingcorrectroundoff(struct convolveparams *p)
      region that contains non-zero rows and columns.*/
   if(p->makekernel)
     {
-      hi0 = 2*p->makekernel-1<p->is0 ? p->ps0/2-p->makekernel : 0;
-      hi1 = 2*p->makekernel-1<p->is1 ? p->ps1/2-p->makekernel : 0;
-      p->is0 = 2*p->makekernel-1<p->is0 ? 2*p->makekernel-1 : p->is0;
-      p->is1 = 2*p->makekernel-1<p->is1 ? 2*p->makekernel-1 : p->is1;
+      hi0      = 2*p->makekernel-1 < isize[0] ? p->ps0/2-p->makekernel : 0;
+      hi1      = 2*p->makekernel-1 < isize[1] ? p->ps1/2-p->makekernel : 0;
+      isize[0] = 2*p->makekernel-1 < isize[0] ? 2*p->makekernel-1 : isize[0];
+      isize[1] = 2*p->makekernel-1 < isize[1] ? 2*p->makekernel-1 : isize[1];
     }
   else
     {
-      hi0=(p->ks0-1)/2;
-      hi1=(p->ks1-1)/2;
+      hi0 = ( p->kernel->dsize[0] - 1 )/2;
+      hi1 = ( p->kernel->dsize[1] - 1 )/2;
     }
-  is0=p->is0;
-  is1=p->is1;
 
   /* To start with, `start' points to the first pixel in the final
      image: */
   start=&pimg[hi0*ps1+hi1];
-  for(i=0;i<is0;++i)
+  for(i=0;i<isize[0];++i)
     {
-      o=&input[i*is1];
-      df=(d=start+i*ps1)+is1;
+      o = &input[ i * isize[1] ];
+      df = ( d = start + i * ps1 ) + isize[1];
       do
         *o++ = ( *d<-CONVFLOATINGPOINTERR || *d>CONVFLOATINGPOINTERR )
           ? *d
@@ -765,60 +768,34 @@ frequencyconvolve(struct convolveparams *p)
 void
 convolve(struct convolveparams *p)
 {
-  float *convolved;
-  long *meshindexs;
-  gal_data_t *data;
-  struct gal_mesh_params *mp=&p->mp;
-  size_t ndim=2, dsize[]={p->is0, p->is1};
+  size_t ntiles, nch;
+  gal_data_t *tiles, *channels=NULL;
 
   /* Do the convolution. */
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
-      /* Prepare the mesh structure: */
-      mp->img=p->input;      mp->s0=p->is0;      mp->s1=p->is1;
-      mp->kernel=p->kernel;  mp->ks0=p->ks0;     mp->ks1=p->ks1;
-      mp->numthreads=p->cp.numthreads;
-      gal_mesh_make_mesh(mp);
-      if(p->meshname)
-        {
-          /* Allocate the `gal_data_t' with the input imag. */
-          gal_mesh_check_mesh_id(mp, &meshindexs);
-          data=gal_data_alloc(p->mp.img, GAL_DATA_TYPE_FLOAT32, ndim, dsize,
-                              p->wcs, 0, p->cp.minmapsize, NULL, NULL, NULL);
-          data->name="Input";
-          gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
+      /* Prepare the mesh structure. */
+      gal_tile_all_position_two_layers(p->input, p->channel, p->tile,
+                                       &channels, &tiles, &ntiles, &nch);
 
-          /* Change the array, type, and name. */
-          data->array=meshindexs;
-          data->type=GAL_DATA_TYPE_INT64;
-          data->name="Mesh indexs";
-          gal_fits_img_write(data, p->meshname, NULL, PROGRAM_STRING);
+      /* Save it to the output if requested. */
+      if(p->tilesname)
+        error(EXIT_FAILURE, 0, "saving mesh structure to a file is not "
+              "yet implemented");
 
-          /* Clean up. */
-          data->name=NULL;
-          free(meshindexs);
-          gal_data_free(data);
-        }
+      /* Do the spatial convolution. */
 
-      /* Do the spatial convolution on the mesh: */
-      gal_mesh_spatial_convolve_on_mesh(mp, &convolved);
 
       /* Replace the input image array with the convolved array: */
-      free(p->input);
-      p->input=convolved;
+
+      /* Clean up */
+      gal_data_array_free(tiles, ntiles, 0);
+      gal_data_array_free(channels, nch, 0);
     }
   else
     frequencyconvolve(p);
 
-  /* Save the output (which is in p->input) array and clean up. Note that
-     we will rely on `gal_data_free' to free some of the things that we
-     don't need any more. */
-  data=gal_data_alloc(p->input, GAL_DATA_TYPE_FLOAT32, ndim, dsize,
-                      NULL, 0, p->cp.minmapsize, NULL, NULL, NULL);
-  data->wcs=p->wcs;
-  data->unit=p->unit;
-  data->name="Convolved";
-  gal_fits_img_write(data, p->cp.output, NULL, PROGRAM_STRING);
-  data->name=NULL;
-  gal_data_free(data);
+  /* Save the output (which is in p->input) array. */
+  gal_fits_img_write_to_type(p->input, p->cp.output, NULL, PROGRAM_STRING,
+                             p->cp.type);
 }

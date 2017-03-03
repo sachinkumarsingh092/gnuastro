@@ -5020,21 +5020,31 @@ should remove it.
 
 @item Make
 @cindex Make
-@cindex GNU Make
 Make is a program for building ``targets'' (e.g., files) using ``recipes''
 (a set of operations) when their known ``prerequisites'' (other files) have
 been updated. It elegantly allows you to define dependency structures for
 building your final output and updating it efficiently when the inputs
-change. It is most commonly used to build programs, but it is also very
-useful for scientific research, for example see
+change. It is the most common infra-structure to build software
+today.
+
+Scientific research methodology is very similar to software developement:
+you start by testing a hypothesis on a small sample of objects/targets with
+a simple set of steps. As you are able to get promising results, you
+improve the method and use it on a larger, more general, sample. In the
+process, you will confront many issues that have to be corrected (bugs in
+software development jargon). Make a wonderful tool to manage this style of
+development. It has been used to make reproducible papers, for example see
 @url{https://gitlab.com/makhlaghi/NoiseChisel-paper, the reproduction
 pipeline} of the paper introducing @ref{NoiseChisel} (one of Gnuastro's
-programs). GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
-the most common implementation which (like nearly all GNU programs comes
-with a wonderful
-manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). It is
-very basic and short (the most important parts are in the first roughly 100
-pages).
+programs).
+
+@cindex GNU Make
+GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is the most
+common implementation which (similar to nearly all GNU programs, comes with
+a wonderful
+manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). Make is
+very basic and simple, and thus the manual is short (the most important
+parts are in the first roughly 100 pages) and easy to read/understand.
 
 Make comes with a @option{--jobs} (@option{-j}) option which allows you to
 specify the maximum number of jobs that can be done simultaneously. For
@@ -5049,15 +5059,16 @@ With this command, Make will process your @file{Makefile} and create all
 the targets (can be thousands of FITS images for example) simultaneously on
 8 threads, while fully respecting their dependencies (only building a
 file/target when its prerequisites are successfully built). Make is thus
-strongly recommended for managing scientific research where reproducibility
-and speed@footnote{Besides its multi-threaded capabilities, Make will only
-re-build those targets that depend on a change you have made, not the whole
-work. For example, if you have set the prerequisites properly, you can
-easily test the changing of a parameter on your paper's results without
-having to re-do everything (which is much faster). This allows you to be
-much more productive in easily checking various ideas/assumptions of the
-different stages of your research and thus produce a more robust result for
-your exciting science.} are very important.
+strongly recommended for managing scientific research where robustness,
+archivability, reproducibility and speed@footnote{Besides its
+multi-threaded capabilities, Make will only re-build those targets that
+depend on a change you have made, not the whole work. For example, if you
+have set the prerequisites properly, you can easily test the changing of a
+parameter on your paper's results without having to re-do everything (which
+is much faster). This allows you to be much more productive in easily
+checking various ideas/assumptions of the different stages of your research
+and thus produce a more robust result for your exciting science.} are very
+important.
 
 @end table
 
@@ -16130,6 +16141,8 @@ and replace @code{PREFIX} with Gnuastro's installation directory (see
 
 @example
 # Compile and correctly link Gnuastro related programs
+# example:
+#    $ gnuastro-gcc myprog "-lfirst -lsecond"
 function gnuastro-gcc @{
   libtool --mode=link gcc $1.c $2 PREFIX/lib/libgnuastro.la -o $1
 @}
@@ -16145,7 +16158,7 @@ you want to compile a C program that uses Gnuastro library (for example
 contains the source file:
 
 @example
-gnuastro-gcc myprog
+$ gnuastro-gcc myprog
 @end example
 
 @noindent
@@ -16153,7 +16166,7 @@ If your program needs to link with libraries other than those needed by
 Gnuastro, you can specify them as a second argument (within double quotes):
 
 @example
-gnuastro-gcc myprog "-lfirst -lsecond"
+$ gnuastro-gcc myprog "-lfirst -lsecond"
 @end example
 
 @noindent
@@ -16163,7 +16176,7 @@ example below. If your program can take arguments, then you can also
 include them afterwards.
 
 @example
-gnuastro-gcc myprog && ./myprog
+$ gnuastro-gcc myprog && ./myprog
 @end example
 
 

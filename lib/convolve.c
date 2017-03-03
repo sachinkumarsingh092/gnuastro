@@ -1,11 +1,11 @@
 /*********************************************************************
-Convolve - Convolve input data with a given kernel.
-Convolve is part of GNU Astronomy Utilities (Gnuastro) package.
+convolve -- Convolve a dataset with a given kernel.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,34 +23,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
-#include <timing.h>             /* Includes time.h and sys/time.h */
-
-#include "main.h"
-
-#include "convolve.h"
-#include "ui.h"                 /* Needs convolveparams in main.h */
-
-int
-main(int argc, char *argv[])
-{
-  struct timeval t1;
-  struct convolveparams p={{0}, 0};
-
-  /* Set the starting time.*/
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Read the input parameters. */
-  ui_read_check_inputs_setup(argc, argv, &p);
-
-  /* Run Image Crop */
-  convolve(&p);
-
-  /* Free all non-freed allocations. */
-  ui_free_report(&p, &t1);
-
-  /* Return successfully. */
-  return EXIT_SUCCESS;
-}
+#include <gnuastro/tile.h>

@@ -222,7 +222,7 @@ fits_print_extension_info(struct fitsparams *p)
   /* Print the resutls. */
   if(!p->cp.quiet)
     {
-      printf("%s\nRun on %s-----\n", PACKAGE_STRING, ctime(&p->rawtime));
+      printf("%s\nRun on %s-----\n", PROGRAM_STRING, ctime(&p->rawtime));
       printf("HDU (extension) information: `%s'.\n", p->filename);
       printf(" Column 1: Index (counting from 0).\n");
       printf(" Column 2: Name (`EXTNAME' in FITS standard).\n");

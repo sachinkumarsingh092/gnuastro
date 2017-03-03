@@ -47,10 +47,10 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
-  arithmetic-onlyint.c blank.c box.c checkset.c data.c fits.c git.c     \
-  linkedlist.c mesh.c options.c polygon.c qsort.c spatialconvolve.c     \
-  statistics.c table.c threads.c timing.c txt.c wcs.c
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                \
+  arithmetic-onlyint.c blank.c box.c checkset.c convolve.c data.c fits.c \
+  git.c linkedlist.c options.c polygon.c qsort.c multidim.c statistics.c \
+  table.c threads.c tile.c timing.c txt.c wcs.c
 
 
 
@@ -62,13 +62,13 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h       \
-  $(headersdir)/blank.h $(headersdir)/box.h $(headersdir)/data.h        \
-  $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/linkedlist.h   \
-  $(headersdir)/mesh.h $(headersdir)/polygon.h $(headersdir)/qsort.h    \
-  $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \
-  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/wcs.h     \
-  $(headersdir)/txt.h
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h	   \
+  $(headersdir)/blank.h $(headersdir)/box.h $(headersdir)/convolve.h	   \
+  $(headersdir)/data.h $(headersdir)/fits.h $(headersdir)/git.h		   \
+  $(headersdir)/linkedlist.h $(headersdir)/multidim.h			   \
+  $(headersdir)/polygon.h $(headersdir)/qsort.h $(headersdir)/statistics.h \
+  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tile.h	   \
+  $(headersdir)/wcs.h $(headersdir)/txt.h
 
 
 

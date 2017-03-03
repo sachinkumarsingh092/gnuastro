@@ -608,6 +608,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
   data->next=NULL;
   data->ndim=ndim;
   data->type=type;
+  data->block=NULL;
   data->mmapname=NULL;
   data->minmapsize=minmapsize;
   gal_checkset_allocate_copy(name, &data->name);
@@ -702,46 +703,6 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                       name, unit, comment);
 
   /* Return the final structure. */
-  return out;
-}
-
-
-
-
-
-/* Allocate an array of data structures and initialize all the values. */
-gal_data_t *
-gal_data_calloc_dataarray(size_t size)
-{
-  size_t i;
-  gal_data_t *out;
-
-  /* Allocate the array to keep the structures. */
-  errno=0;
-  out=malloc(size*sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
-          "`gal_data_calloc_dataarray'", size*sizeof *out);
-
-
-  /* Set the pointers to NULL if they didn't exist and the non-pointers to
-     impossible integers (so the caller knows the array is only
-     allocated. `minmapsize' should be set when allocating the array and
-     should be set when you run `gal_data_initialize'. */
-  for(i=0;i<size;++i)
-    {
-      out[i].array      = NULL;
-      out[i].type       = GAL_DATA_TYPE_INVALID;
-      out[i].ndim       = 0;
-      out[i].dsize      = NULL;
-      out[i].nwcs       = 0;
-      out[i].wcs        = NULL;
-      out[i].mmapname   = NULL;
-      out[i].name = out[i].unit = out[i].comment = NULL;
-      out[i].disp_fmt = out[i].disp_width = out[i].disp_precision = -1;
-    }
-
-  /* Return the array pointer. */
   return out;
 }
 
@@ -864,6 +825,92 @@ gal_data_free(gal_data_t *data)
       gal_data_free_contents(data);
       free(data);
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*************        Array of data structures      ******************/
+/*********************************************************************/
+/* Allocate an array of data structures and initialize all the values. */
+gal_data_t *
+gal_data_array_calloc(size_t size)
+{
+  size_t i;
+  gal_data_t *out;
+
+  /* Allocate the array to keep the structures. */
+  errno=0;
+  out=malloc(size*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
+          "`gal_data_calloc_dataarray'", size*sizeof *out);
+
+
+  /* Set the pointers to NULL if they didn't exist and the non-pointers to
+     impossible integers (so the caller knows the array is only
+     allocated. `minmapsize' should be set when allocating the array and
+     should be set when you run `gal_data_initialize'. */
+  for(i=0;i<size;++i)
+    {
+      out[i].array      = NULL;
+      out[i].type       = GAL_DATA_TYPE_INVALID;
+      out[i].ndim       = 0;
+      out[i].dsize      = NULL;
+      out[i].nwcs       = 0;
+      out[i].wcs        = NULL;
+      out[i].mmapname   = NULL;
+      out[i].name = out[i].unit = out[i].comment = NULL;
+      out[i].disp_fmt = out[i].disp_width = out[i].disp_precision = -1;
+    }
+
+  /* Return the array pointer. */
+  return out;
+}
+
+
+
+
+
+/* When you have an array of data structures. */
+void
+gal_data_array_free(gal_data_t *data, size_t size, int free_array)
+{
+  size_t i;
+
+  /* If its NULL, don't do anything. */
+  if(data==NULL) return;
+
+  /* First free all the contents. */
+  for(i=0;i<size;++i)
+    {
+      /* See if the array should be freed or not. */
+      if(free_array==0)
+        data[i].array=NULL;
+
+      /* Now clear the contents of the dataset. */
+      gal_data_free_contents(&data[i]);
+    }
+
+  /* Now you can free the whole array. */
+  free(data);
 }
 
 

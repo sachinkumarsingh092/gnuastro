@@ -298,7 +298,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
 
 /**********************************************************************/
-/************                Convert values             ***************/
+/************     Parser functions for common options    ***************/
 /**********************************************************************/
 void *
 gal_options_read_type(struct argp_option *option, char *arg,
@@ -408,6 +408,92 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
       /* For no un-used variable warning. This function doesn't need the
          pointer.*/
       return junk=NULL;
+    }
+}
+
+
+
+
+
+/* Parse the given string into a series of size values (integers, stored as
+   an array of size_t). The ouput array will be stored in the `value'
+   element of the option. The last element of the array is `-1' to allow
+   finding the number of elements within it later (similar to a string
+   which terminates with a '\0' element). */
+#define PARSE_SIZES_STATICSTR_LEN 2000
+void *
+gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
+                                char *filename, size_t lineno, void *params)
+{
+  int i;
+  double *v;
+  gal_data_t *values;
+  size_t nc, num, *array;
+  char *str, sstr[PARSE_SIZES_STATICSTR_LEN];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Find the number of elements within the array. */
+      array = *(size_t **)(option->value);
+      for(i=0; array[i]!=-1; ++i);
+      num=i;
+
+      /* Write all the dimensions into the static string. */
+      nc=0;
+      for(i=num-1;i>=0;--i)
+        {
+          if( nc > PARSE_SIZES_STATICSTR_LEN-100 )
+            error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string of "
+                  "`gal_options_parse_sizes' has become too close to %d",
+                  PACKAGE_BUGREPORT, PARSE_SIZES_STATICSTR_LEN);
+          nc += sprintf(sstr+nc, "%zu,", array[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+
+  /* We want to read the user's string. */
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
+
+      /* Read the values. */
+      values=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+      /* Check if the values are an integer. */
+      v=values->array;
+      for(i=0;i<values->size;++i)
+        {
+          if(v[i]<0)
+            error(EXIT_FAILURE, 0, "the given value in `%s' (%g) is not 0 "
+                  "or positive. The values to the `--%s' option must be "
+                  "positive", arg, v[i], option->name);
+
+          if(ceil(v[i]) != v[i])
+            error(EXIT_FAILURE, 0, "the given value in `%s' (%g) is not an "
+                  "integer. The values to the `--%s' option must be "
+                  "integers", arg, v[i], option->name);
+        }
+
+      /* Write the values into an allocated size_t array and finish it with
+         a `-1' so the total number can be found later.*/
+      num=values->size;
+      array=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, num+1);
+      for(i=0;i<num;++i) array[num-1-i]=v[i];
+      array[num] = (size_t)(-1);
+
+      /* Put the array of size_t into the option, clean up and return.*/
+      *(size_t **)(option->value) = array;
+      gal_data_free(values);
+      return NULL;
     }
 }
 

@@ -327,32 +327,29 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 {
   char *output;
   int use_auto_output=0;
-  char *fix, *suffix, *tmp;
+  char *fix, *suffix=NULL, *tmp;
   struct gal_linkedlist_stll *comments=NULL;
 
 
-  /* See if we should use automatic output. */
-  if(p->cp.output)
-    {
-      if(p->numoutfiles>1) use_auto_output=1;
-    }
-  else use_auto_output=1;
+  /* Automatic output should be used when no output name was specified or
+     we have more than one output file. */
+  use_auto_output = p->cp.output ? (p->numoutfiles>1 ? 1 : 0) : 1;
 
 
-  /* Set the type suffix */
+  /* Set the `fix' and `suffix' strings. Note that `fix' is necessary in
+     every case, even when no automatic output is to be used. Since it is
+     used to determine the format of the output. */
+  fix = ( p->cp.output
+          ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
+          : "txt" );
   if(use_auto_output)
-    {
-      fix = ( p->cp.output
-              ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
-              : "txt" );
-      asprintf(&suffix, "%s.%s", suf, fix);
-    }
+    asprintf(&suffix, "%s.%s", suf, fix);
 
 
   /* Make the output name. */
-  output= ( use_auto_output
-            ? gal_checkset_automatic_output(&p->cp, p->inputname, suffix)
-            : p->cp.output );
+  output = ( use_auto_output
+             ? gal_checkset_automatic_output(&p->cp, p->inputname, suffix)
+             : p->cp.output );
 
 
   /* Write the comments, NOTE: we are writing the first two in reverse of
@@ -379,7 +376,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
 
   /* Clean up. */
-  free(suffix);
+  if(suffix) free(suffix);
   if(output!=p->cp.output) free(output);
   gal_linkedlist_free_stll(comments, 1);
 }
@@ -621,13 +618,17 @@ print_basics(struct statisticsparams *p)
   printf("  %-*s %.10g\n", namewidth, "Standard deviation:", std);
 
   /* Ascii histogram. Note that we don't want to force the user to have the
-     plotting parameters. */
-  printf("-------\nHistogram:\n");
+     plotting parameters. Also, when a reference column is defined, the
+     range shown in the basic information section applies to that, not the
+     range of the histogram. In that case, we want to print the histogram
+     information. */
+  printf("-------");
   p->asciiheight = p->asciiheight ? p->asciiheight : 10;
   p->numasciibins = p->numasciibins ? p->numasciibins : 70;
   bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);
   hist=gal_statistics_histogram(p->input, bins, 0, 0);
-  print_ascii_plot(p, hist, bins, 1, 0);
+  if(p->refcol==NULL) printf("\nHistogram:\n");
+  print_ascii_plot(p, hist, bins, 1, p->refcol ? 1 : 0);
   gal_data_free(bins);
   gal_data_free(hist);
 }

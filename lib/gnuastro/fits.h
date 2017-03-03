@@ -228,6 +228,11 @@ gal_fits_img_write(gal_data_t *data, char *filename,
                    struct gal_fits_key_ll *headers, char *program_string);
 
 void
+gal_fits_img_write_to_type(gal_data_t *data, char *filename,
+                           struct gal_fits_key_ll *headers,
+                           char *program_string, int type);
+
+void
 gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
                                 char *wcsheader, int nkeyrec, double *crpix,
                                 struct gal_fits_key_ll *headers,

@@ -278,7 +278,7 @@ ui_preparations(struct tableparams *p)
           /* Print the file information. */
           printf("--------\n");
           tmp=gal_fits_name_save_as_string(p->filename, p->cp.hdu);
-          printf("%s", tmp);
+          printf("%s\n", tmp);
           free(tmp);
 
           /* Print each column's information. */

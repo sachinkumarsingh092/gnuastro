@@ -29,19 +29,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   e f g i j l n r p t u v w x y z
-   A B E F G H I J M O Q R T W X Y Z  */
+   a b e f g i j l n p r s v w x y z
+   A B E F G J L M O Q R W X Y Z
+*/
 enum option_keys_enum
 {
   /* With short-option version. */
   ARGS_OPTION_KEY_KERNEL         = 'k',
-  ARGS_OPTION_KEY_KHDU           = 'U',
-  ARGS_OPTION_KEY_MINSHARPSPEC   = 'c',
+  ARGS_OPTION_KEY_KHDU           = 'u',
+  ARGS_OPTION_KEY_MINSHARPSPEC   = 'H',
   ARGS_OPTION_KEY_CHECKFREQSTEPS = 'C',
-  ARGS_OPTION_KEY_MESHSIZE       = 'c',
-  ARGS_OPTION_KEY_NCH1           = 'a',
-  ARGS_OPTION_KEY_NCH2           = 'b',
-  ARGS_OPTION_KEY_LASTMESHFRAC   = 'L',
+  ARGS_OPTION_KEY_TILE           = 't',
+  ARGS_OPTION_KEY_NUMCHANNELS    = 'c',
   ARGS_OPTION_KEY_DOMAIN         = 'd',
   ARGS_OPTION_KEY_MAKEKERNEL     = 'm',
 
@@ -49,8 +48,8 @@ enum option_keys_enum
      automatically). */
   ARGS_OPTION_KEY_NOKERNELFLIP = 1000,
   ARGS_OPTION_KEY_NOKERNELNORM,
-  ARGS_OPTION_KEY_CHECKMESH,
-  ARGS_OPTION_KEY_FULLCONVOLUTION,
+  ARGS_OPTION_KEY_CHECKTILES,
+  ARGS_OPTION_KEY_CONVOVERCH,
 };
 
 
