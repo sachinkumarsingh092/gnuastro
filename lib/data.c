@@ -364,6 +364,42 @@ gal_data_sizeof(uint8_t type)
 
 
 
+/* Increment a give pointer depending on the given type.
+
+   When working with the `array' elements of `gal_data_t', we are actually
+   dealing with `void *' pointers. Pointer arithmetic doesn't apply to
+   `void *', because the system doesn't know how much space each element
+   has to increment the pointer respectively.
+
+   So, here, we will use the type information to find the increment. This
+   is mainly useful when dealing with the `block' pointer of a tile over a
+   larger image. This function reads the address as a `char *' type (note
+   that `char' is guaranteed to have a size of 1 (byte)). It then
+   increments the `char *' by `increment*sizeof(type)' */
+void *
+gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type)
+{
+  char *p=(char *)pointer;
+  return p + increment * gal_data_sizeof(type);
+}
+
+
+
+
+
+/* Find the distance between two void pointers with a given type. See the
+   explanations before `gal_data_ptr_increment'. */
+size_t
+gal_data_ptr_dist(void *earlier, void *later, uint8_t type)
+{
+  char *e=(char *)earlier, *l=(char *)later;
+  return (l-e)/gal_data_sizeof(type);
+}
+
+
+
+
+
 /* Copy the WCS structure from the input to the output structure. */
 void
 gal_data_copy_wcs(gal_data_t *in, gal_data_t *out)

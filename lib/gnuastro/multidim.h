@@ -55,6 +55,9 @@ gal_multidim_total_size(size_t ndim, size_t *dsize);
 /************************************************************************/
 /********************          Coordinates         **********************/
 /************************************************************************/
+void
+gal_multidim_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim);
+
 size_t
 gal_multidim_coord_to_index(size_t ndim, size_t *dsize, size_t *coord);
 

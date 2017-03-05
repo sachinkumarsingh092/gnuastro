@@ -66,6 +66,17 @@ gal_multidim_total_size(size_t ndim, size_t *dsize)
 /************************************************************************/
 /********************          Coordinates         **********************/
 /************************************************************************/
+void
+gal_multidim_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim)
+{
+  size_t *end=c1+ndim;
+  do *out++ = *c1++ + *c2++; while(c1<end);
+}
+
+
+
+
+
 /* Return the index of an element from its coordinates. The index is the
    position in the contiguous array (assuming it is a 1D arrray). */
 size_t

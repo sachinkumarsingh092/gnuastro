@@ -81,6 +81,7 @@ struct convolveparams
   uint8_t     checkfreqsteps;  /* View the frequency domain steps.        */
   size_t               *tile;  /* Size of tiles along each dim. (C order).*/
   size_t        *numchannels;  /* No. of tiles along each dim. (C order). */
+  float        remainderfrac;  /* Frac. of remainers in each dim to cut.  */
   uint8_t         convoverch;  /* Convolve over channel borders.          */
   uint8_t         checktiles;  /* Tile IDs in an img, the size of input.  */
   char            *domainstr;  /* String value specifying domain.         */

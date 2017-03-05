@@ -503,7 +503,7 @@ gal_fits_open_to_write(char *filename)
     }
 
   /* Open the file, ready for later steps. */
-  if( fits_open_file(&fptr,filename, READWRITE, &status) )
+  if( fits_open_file(&fptr, filename, READWRITE, &status) )
     gal_fits_io_error(status, NULL);
 
   /* Return the pointer. */

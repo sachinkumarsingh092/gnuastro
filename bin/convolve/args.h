@@ -154,6 +154,19 @@ struct argp_option program_options[] =
       gal_options_parse_sizes_reverse
     },
     {
+      "remainderfrac",
+      ARGS_OPTION_KEY_REMAINDERFRAC,
+      "FLT",
+      0,
+      "Fraction of remainers in each dim to chop.",
+      ARGS_GROUP_MESH_GRID,
+      &p->remainderfrac,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0_LT_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+    },
+    {
       "convoverch",
       ARGS_OPTION_KEY_CONVOVERCH,
       0,

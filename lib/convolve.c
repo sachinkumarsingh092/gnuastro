@@ -28,3 +28,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/tile.h>
+
+
+
+/* Do spatial convolution on each mesh. */
+static void *
+gal_convolve_spatial_on_thread(void *inparm)
+{
+  return NULL;
+}
+
+
+
+
+
+/* Convolve a dataset with a given kernel in the spatial domain. Since
+   spatial convolution can be very series of tiles arranged as an array. */
+void
+gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel)
+{
+
+}

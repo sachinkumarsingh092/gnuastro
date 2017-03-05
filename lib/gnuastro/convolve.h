@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_TILE_H__
-#define __GAL_TILE_H__
+#ifndef __GAL_CONVOLVE_H__
+#define __GAL_CONVOLVE_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
@@ -44,7 +44,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-
+void
+gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel);
 
 
 

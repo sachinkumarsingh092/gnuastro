@@ -322,12 +322,19 @@ ui_preparations(struct convolveparams *p)
   if(p->cp.output==NULL)
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
                                                outsuffix);
+  gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
   if(p->checkfreqsteps)
-    p->freqstepsname=gal_checkset_automatic_output(&p->cp, p->filename,
-                                                   "_freqsteps.fits");
+    {
+      p->freqstepsname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                     "_freqsteps.fits");
+      gal_checkset_check_remove_file(p->freqstepsname, 0, p->cp.dontdelete);
+    }
   if(p->checktiles)
-    p->tilesname=gal_checkset_automatic_output(&p->cp, p->filename,
-                                               "_tiled.fits");
+    {
+      p->tilesname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                 "_tiled.fits");
+      gal_checkset_check_remove_file(p->tilesname, 0, p->cp.dontdelete);
+    }
 
 
   /* Read the input image as a float64 array and its WCS info. */

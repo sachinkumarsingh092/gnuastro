@@ -26,11 +26,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
+#include <gnuastro/blank.h>
+#include <gnuastro/convolve.h>
 #include <gnuastro/multidim.h>
 
-
+#include "checkset.h"
 
 
 
@@ -56,23 +60,242 @@ gal_tile_block(gal_data_t *input)
 /* Calculate the starting coordinates of a tile in the allocated block of
    memory. */
 void
-gal_tile_block_tile_start_coord(gal_data_t *tile, size_t *start_coord)
+gal_tile_block_start_coord(gal_data_t *tile, size_t *start_coord)
 {
-  size_t *s, *sf, ind;
+  size_t ind, ndim=tile->ndim;
   gal_data_t *block=gal_tile_block(tile);
 
-  /* If the input tile is actually the same as the block, then the
-     reference is all zeros. */
+  /* If the input tile is actually the same as the block, then the start is
+     at 0 (in all dimensions). */
   if(block==tile)
+    memset(start_coord, 0, ndim*gal_data_sizeof(GAL_DATA_TYPE_SIZE_T));
+  else
     {
-      sf = (s=start_coord) + tile->ndim;
-      do *s++=0; while(s<sf);
-      return;
+      /* Calculate the coordinates of the first pixel of the tile. */
+      ind = gal_data_ptr_dist(block->array, tile->array, block->type);
+      gal_multidim_index_to_coord(ind, ndim, block->dsize, start_coord);
+    }
+}
+
+
+
+
+/* Given a tile  */
+void *
+gal_tile_block_start_end(gal_data_t *tile, gal_data_t *work,
+                         size_t *start_end)
+{
+  size_t ndim=tile->ndim, *s, *sf;
+  gal_data_t *block=gal_tile_block(tile);
+  size_t *start_coord = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  size_t *end_coord   = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+
+
+  /* The starting index can be found from the distance of the `tile->array'
+     pointer and `block->array' pointer. IMPORTANT: with the type of the
+     block array.  */
+  start_end[0]=gal_data_ptr_dist(block->array, tile->array, block->type);
+
+
+  /* To find the end index, we need to know the coordinates of the starting
+     point in the allocated block.  */
+  gal_multidim_index_to_coord(start_end[0], ndim, block->dsize, start_coord);
+
+
+  /* Adding the coordinates of the starting point with the tile's
+     dimensions, we will get the ending point's coordinates. */
+  gal_multidim_add_coords(start_coord, tile->dsize, end_coord, ndim);
+
+
+  /* `end_coord' is one unit ahead of the last element in the tile in every
+     dimension. To have less potential for bugs, we will remove that extra
+     value, so we get the coordinates of the last pixel in the tile
+     (inclusive). We will finally, increment that value by one to get to
+     the pixel immediately outside of the tile.*/
+  sf=(s=end_coord)+ndim; do *s-=1; while(++s<sf);
+
+
+  /* Convert the (inclusive) ending point's coordinates into an index. */
+  start_end[1]=gal_multidim_coord_to_index(ndim, block->dsize, end_coord);
+
+
+  /* Increment the (inclusive) ending point's index by one to be
+     immediately outside the tile. */
+  ++start_end[1];
+
+
+  /* For a check:
+  printf("\ntile_dsize: %zu, %zu, %zu\n", tile->dsize[0], tile->dsize[1],
+         tile->dsize[2]);
+  printf("start_coord: %zu, %zu, %zu\n", start_coord[0], start_coord[1],
+         start_coord[2]);
+  printf("end_coord: %zu, %zu, %zu\n", end_coord[0], end_coord[1],
+         end_coord[2]);
+  printf("start_index: %zu\n", start_end[0]);
+  printf("end_index: %zu\n", start_end[1]);
+  exit(1);
+  */
+
+
+  /* Clean up and return the pointer in the work array that the tile starts
+     from. */
+  free(end_coord);
+  free(start_coord);
+  return gal_data_ptr_increment(work->array, start_end[0], work->type);
+}
+
+
+
+
+
+/* Return the increment necessary to start at the next series of contiguous
+   memory (fastest dimension) associated with a tile. See
+   `gal_tile_block_check_tiles' as one example application of this
+   function.
+
+   1D and 2D cases are simple and need no extra explanation, but the case
+   for higher dimensions can be alittle more complicated, So we will go
+   over some examples. The notations below are:
+
+       `n'     number of dimensions (same in tile and block).
+       `t[]'   size of the tile in each dimension.
+       `b[]'   size of the allocated block in each dimension.
+
+   It is just important to see the output of this function as an increment
+   from the the last patch of contiguous memory associated with the
+   tile. So when the increment number is `t[n-1]' (the first 2D slice of
+   the tile has been parsed), simply incrementing by `b[n-2] * b[n-1]' will
+   take us to the last row of
+
+        num_increment              increment
+        -------------              ---------
+             0               b[n-1]: fastest dimension of the block.
+             1               Similar to previous
+             .                         .
+             .                         .
+           t[n-2]            (b[n-2] * b[n-1]) - ( (t[n-2]-1) * b[n-1] )
+           t[n-2] + 1        b[n-1]
+             .                         .
+             .                         .
+          2 * t[n-2]         b[n-2] * b[n-1]
+           t[n-2]+1          b[n-1]
+             .                         .
+             .                         .
+      t[n-3] * t[n-2]        b[n-3] * b[n-2] * b[n-1]
+
+ */
+size_t
+gal_tile_block_increment(gal_data_t *block, size_t *tsize,
+                         size_t num_increment)
+{
+  size_t n=block->ndim;
+  size_t *b=block->dsize, *t=tsize;
+
+  if(n>3)
+    error(EXIT_FAILURE, 0, "`gal_tile_block-increment' is currently only "
+          "implemented for at most 3 dimensions");
+
+  switch(n)
+    {
+    case 0:
+      error(EXIT_FAILURE, 0, "zero dimensional input is not acceptable in "
+            "`gal_tile_block_parse'");
+
+    /* 1D: the increment is just the tile size. */
+    case 1:
+      return t[0];
+      break;
+
+    /* 2D: the increment is the block's number of fastest axis pixels. */
+    case 2:
+      return b[1];
+      break;
+
+    /* Higher dimensions. */
+    default:
+      if(num_increment % t[n-2]) return b[n-1];
+      else return (b[n-2] * b[n-1]) - ( (t[n-2]-1) * b[n-1] );
+      break;
+    }
+}
+
+
+
+
+
+/* Make a copy of the memory block in integer type and fill it with the ID
+   of each tile, the non-filled areas have blank values. Finally, save the
+   final array into a FITS file, specified with `filename'. This is done
+   mainly for inspecting the positioning of tiles. We are using a signed
+   32-bit type because this is the standard FITS standard type for
+   integers. */
+void
+gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
+                           char *program_name)
+{
+  size_t num_increment;
+  gal_data_t *tofill, *tile;
+  gal_data_t *block=gal_tile_block(tiles);
+  int32_t *p, *pf, tile_index=0, *start=NULL;
+  size_t ndim=tiles->ndim, increment, start_end[2];
+
+  /***************************************************************/
+  /*************            For a check           ****************
+  float c=0;
+  block->wcs=NULL;
+  ndim=block->ndim=tiles->ndim=3;
+  block->dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  block->dsize[0]=5; block->dsize[1]=5; block->dsize[2]=5;
+
+  tiles->dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  tiles->dsize[0]=2; tiles->dsize[1]=3; tiles->dsize[2]=3;
+  tiles->array=gal_data_ptr_increment(block->array, 36, block->type);
+  tiles->next=NULL;
+  **************************************************************/
+
+  /* Allocate the output array. */
+  tofill=gal_data_alloc(NULL, GAL_DATA_TYPE_INT32, ndim, block->dsize,
+                        block->wcs, 0, block->minmapsize, "TILE_CHECK",
+                        "counts", "indexs of all tiles");
+
+  /* Initialize the allocated space with blank characters for this type. */
+  pf=(p=tofill->array)+tofill->size; do *p++=GAL_BLANK_INT32; while(p<pf);
+
+  /* Fill in the labels of each tile. */
+  for(tile=tiles; tile!=NULL; tile=tile->next)
+    {
+      /* Set the starting and ending indexs of this tile over the allocated
+         block. */
+      start=gal_tile_block_start_end(tile, tofill, start_end);
+
+      /* Go over the full area of this tile. The loop will stop as soon as
+         the incrementation will go over the last index of the tile. Note
+         that num_increment has to start from 1 because having a remainder
+         of zero is meaningful in the calculation of the increment. */
+      increment=0;
+      num_increment=1;
+      while( start_end[0] + increment < start_end[1] )
+        {
+          /* Parse the elements in the fastest-dimension (the contiguous
+             patch of memory associated with this tile). */
+          pf = ( p = start + increment ) + tile->dsize[ndim-1];
+          do *p++=tile_index; while(p<pf);
+
+          /* Increase the increment from the start of the tile for the next
+             contiguous patch. */
+          increment += gal_tile_block_increment(block, tile->dsize,
+                                                num_increment++);
+        }
+
+      /* Increment the index for the next tile. */
+      ++tile_index;
     }
 
-  /* Calculate the coordinates of the first pixel of the tile. */
-  ind = tile->array - block->array;
-  gal_multidim_index_to_coord(ind, tile->ndim, block->dsize, start_coord);
+  /* Save the indexs into a file. */
+  gal_fits_img_write(tofill, filename, NULL, program_name);
+
+  /* Clean up. */
+  gal_data_free(tofill);
 }
 
 
@@ -306,8 +529,8 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
            dimension (we don't want to go out of the paren't range).
 */
 size_t
-gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
-                      size_t multiple)
+gal_tile_all_position(gal_data_t *input, size_t *regular,
+                      float remainderfrac, gal_data_t **out, size_t multiple)
 {
   size_t i, d, tind, numtiles, *start=NULL;
   gal_data_t *tiles, *block=gal_tile_block(input);
@@ -320,7 +543,8 @@ gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
 
   /* Set the first tile size and total number of tiles along each
      dimension, then allocate the array of tiles. */
-  gal_tile_all_regular_first(input, regular, 0.3, first, last, tsize);
+  gal_tile_all_regular_first(input, regular, remainderfrac,
+                             first, last, tsize);
   numtiles=gal_multidim_total_size(input->ndim, tsize);
 
 
@@ -335,7 +559,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
   if(input->block)
     {
       start=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-      gal_tile_block_tile_start_coord(input, start);
+      gal_tile_block_start_coord(input, start);
     }
 
 
@@ -372,7 +596,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
       /* Now that we have the index of this tile's starting point compared
          to the allocated block, put it in to the tile's `array'
          pointer. */
-      tiles[i].array=block->array+tind;
+      tiles[i].array=gal_data_ptr_increment(block->array, tind, block->type);
 
       /* Set the sizes of the tile. */
       tiles[i].ndim=input->ndim;
@@ -393,8 +617,11 @@ gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
             tiles[i].dsize[d]=regular[d];
         }
 
-      /* Set the block structure for this tile to the `input'. */
-      tiles[i].block=input;
+      /* Set the block structure for this tile to the `input', and set the
+         next pointer as the next tile. Note that only when we are dealing
+         with the last tile should the `next' pointer be set to NULL.*/
+      tiles[i].block = input;
+      tiles[i].next = i==numtiles-1 ? NULL : &tiles[i+1];
 
       /* For a check:
       printf("%zu:\n\tStart index: %zu\n\tsize: %zu x %zu\n", i, tind,
@@ -432,9 +659,8 @@ gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
            gradients over each channel and thus over the whole image.  */
 void
 gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
-                                 size_t *tile_size, gal_data_t **channels,
-                                 gal_data_t **tiles, size_t *numchannels,
-                                 size_t *numtiles)
+                                 size_t *tile_size, float remainderfrac,
+                                 gal_data_t **channels, gal_data_t **tiles)
 {
   gal_data_t *ch, *t;
   size_t i, nch, ntiles_in_ch;
@@ -450,7 +676,8 @@ gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
   else
     /* Note that the actual allocated input array will be the direct
        `block' of each channel. */
-    nch=gal_tile_all_position(input, channel_size, channels, 1);
+    nch=gal_tile_all_position(input, channel_size, remainderfrac,
+                              channels, 1);
 
 
   /* Now, tile each channel. While tiling the first channel, we are also
@@ -458,14 +685,17 @@ gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
      pointers. */
   *tiles=NULL;
   ch=*channels;
-  ntiles_in_ch = gal_tile_all_position(ch, tile_size, tiles, nch);
+  ntiles_in_ch = gal_tile_all_position(ch, tile_size, remainderfrac,
+                                       tiles, nch);
   for(i=1;i<nch;++i)
     {
+      /* Set the first tile in this channel. Then use it it fill the `next'
+         pointer of the previous channel's tiles. Note that
+         `gal_tile_all_position' set this `next' element to NULL. */
       t = *tiles + i*ntiles_in_ch;
-      gal_tile_all_position(&ch[i], tile_size, &t, 1);
-    }
+      (*tiles)[ i * ntiles_in_ch - 1 ].next = t;
 
-  /* Return the total number of channels and tiles */
-  *numchannels = nch;
-  *numtiles    = nch * ntiles_in_ch;
+      /* Fill in the information for all the tiles in this channel. */
+      gal_tile_all_position(&ch[i], tile_size, remainderfrac, &t, 1);
+    }
 }

@@ -46,14 +46,31 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+
+
+
 /***********************************************************************/
 /**************             About block           **********************/
 /***********************************************************************/
-size_t *
-gal_tile_block_size(gal_data_t *input);
+gal_data_t *
+gal_tile_block(gal_data_t *input);
 
 void
-gal_tile_block_tile_start_coord(gal_data_t *tile, size_t *start_coord);
+gal_tile_block_start_coord(gal_data_t *tile, size_t *start_coord);
+
+void *
+gal_tile_block_start_end(gal_data_t *tile, gal_data_t *work,
+                         size_t *start_end);
+
+size_t
+gal_tile_block_increment(gal_data_t *block, size_t *tsize,
+                         size_t num_increment);
+
+void
+gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
+                           char *program_name);
+
+
 
 
 /***********************************************************************/
@@ -64,14 +81,13 @@ gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
                           size_t *tile, size_t *numchannels);
 
 size_t
-gal_tile_all_position(gal_data_t *input, size_t *regular, gal_data_t **out,
-                      size_t multiple);
+gal_tile_all_position(gal_data_t *input, size_t *regular,
+                      float remainderfrac, gal_data_t **out, size_t multiple);
 
 void
 gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
-                                 size_t *tile_size, gal_data_t **channels,
-                                 gal_data_t **tiles, size_t *numchannels,
-                                 size_t *numtiles);
+                                 size_t *tile_size, float remainderfrac,
+                                 gal_data_t **channels, gal_data_t **tiles);
 
 
 

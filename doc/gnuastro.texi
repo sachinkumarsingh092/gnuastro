@@ -6095,7 +6095,7 @@ END
 @cindex Operations on files
 @cindex General file operations
 The most low-level and basic property of a dataset is how it is stored. To
-process, archive and transmit the data you need a container to store it
+process, archive and transmit the data, you need a container to store it
 first. From the start of the computer age, different formats have been
 difined to store data, optimized for pariticular applications, one
 format/container can never be useful for all applications. In astronomy,
@@ -6112,21 +6112,23 @@ and processed FITS images or spectra as figures within slides, reports, or
 papers. The FITS format is not defined for such applications. Thus,
 Gnuastro also comes with the ConvertType program (see @ref{ConvertType})
 which can be used to convert a FITS image to and from (where possible)
-other formats like plain text and JPEG which allow two way conversion,
+other formats like plain text and JPEG (which allow two way conversion),
 along with EPS and PDF (which can only be created from FITS, not the other
 way round).
 
 Finally, the FITS format is not just for images, it can also store
-tables. Binary tables in particular can be very useful in storing very
-large catalogs or tables compared to a plain text file. However, unlike
-images (where all elements/pixels have one data type), tables contain
-multiple columns and each column can have different properties (numerical
-types, or even character based columns, like names). In practice, each
-column can be viewed a separate data-container that is grouped with others
-in the table. To allow easy manipulation/viewing of table columns, Gnuastro
-has the Table program (see @ref{Table}). It can be used to choose certain
-table columns in a FITS table and see them as a human readable output on
-the command-line, or to save them into another plain text or FITS table.
+tables. Binary tables in particular can be very useful in storing catalogs
+that have more than a few tens of columns and rows. However, unlike images
+(where all elements/pixels have one data type), tables contain multiple
+columns and each column can have different properties: independent data
+types (see @ref{Numeric data types}) and meta-data. In practice, each
+column can be viewed as a separate container that is grouped with others in
+the table. The only shared property of the colums in a FITS table is thus
+the number of elements they contain. To allow easy inspection/manipulation
+of table columns, Gnuastro has the Table program (see @ref{Table}). It can
+be used to select certain table columns in a FITS table and see them as a
+human readable output on the command-line, or to save them into another
+plain text or FITS table.
 
 @menu
 * Fits::                        View and manipulate extensions and keywords.

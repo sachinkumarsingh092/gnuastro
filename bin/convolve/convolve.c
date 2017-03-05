@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/convolve.h>
 #include <gnuastro/spatialconvolve.h>
 
 #include <timing.h>
@@ -768,29 +769,25 @@ frequencyconvolve(struct convolveparams *p)
 void
 convolve(struct convolveparams *p)
 {
-  size_t ntiles, nch;
-  gal_data_t *tiles, *channels=NULL;
+  gal_data_t *tiles, *channels=NULL; /* `channels' has to be initialized. */
 
   /* Do the convolution. */
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
       gal_tile_all_position_two_layers(p->input, p->channel, p->tile,
-                                       &channels, &tiles, &ntiles, &nch);
+                                       p->remainderfrac, &channels, &tiles);
 
-      /* Save it to the output if requested. */
+      /* Save the tile IDs if they are requested. */
       if(p->tilesname)
-        error(EXIT_FAILURE, 0, "saving mesh structure to a file is not "
-              "yet implemented");
+        gal_tile_block_check_tiles(tiles, p->tilesname, PROGRAM_NAME);
 
       /* Do the spatial convolution. */
-
-
-      /* Replace the input image array with the convolved array: */
+      gal_convolve_spatial(tiles, p->kernel);
 
       /* Clean up */
-      gal_data_array_free(tiles, ntiles, 0);
-      gal_data_array_free(channels, nch, 0);
+      gal_data_array_free(tiles, gal_data_num_in_ll(tiles), 0);
+      gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
     }
   else
     frequencyconvolve(p);
