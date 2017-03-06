@@ -339,7 +339,7 @@ ui_preparations(struct convolveparams *p)
 
   /* Read the input image as a float64 array and its WCS info. */
   p->input=gal_fits_img_read_to_type(p->filename, p->cp.hdu,
-                                     GAL_DATA_TYPE_FLOAT64, p->cp.minmapsize);
+                                     GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
   gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->input->nwcs, &p->input->wcs);
 
 

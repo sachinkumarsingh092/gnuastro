@@ -48,23 +48,30 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/***********************************************************************/
+/**************              Single tile              ******************/
+/***********************************************************************/
+void
+gal_tile_start_coord(gal_data_t *tile, size_t *start_coord);
+
+void
+gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block);
+
+void *
+gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
+                                 size_t *start_end_inc);
+
+
 
 /***********************************************************************/
-/**************             About block           **********************/
+/**************           Allocated block         **********************/
 /***********************************************************************/
 gal_data_t *
 gal_tile_block(gal_data_t *input);
 
-void
-gal_tile_block_start_coord(gal_data_t *tile, size_t *start_coord);
-
-void *
-gal_tile_block_start_end(gal_data_t *tile, gal_data_t *work,
-                         size_t *start_end);
-
 size_t
 gal_tile_block_increment(gal_data_t *block, size_t *tsize,
-                         size_t num_increment);
+                         size_t num_increment, size_t *coord);
 
 void
 gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
@@ -88,6 +95,24 @@ void
 gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
                                  size_t *tile_size, float remainderfrac,
                                  gal_data_t **channels, gal_data_t **tiles);
+
+
+
+
+/*********************************************************************/
+/********************         On threads          ********************/
+/*********************************************************************/
+struct gal_tile_thread_param
+{
+  size_t            id; /* Id of this thread.                            */
+  void         *params; /* Input structure for higher-level settings.    */
+  size_t       *indexs; /* Indexes of actions to be done in this thread. */
+  pthread_barrier_t *b; /* Pointer the barrier for all threads.          */
+};
+
+void
+gal_tile_function_on_threads(gal_data_t *tiles, void *(*meshfunc)(void *),
+                             size_t numthreads, void *caller_params);
 
 
 

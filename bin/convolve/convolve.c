@@ -190,10 +190,10 @@ void
 makepaddedcomplex(struct convolveparams *p)
 {
   size_t i, ps0, ps1;
-  float *f, *ff, *kernel=p->kernel->array;
+  double *o, *op, *pimg, *pker;
   size_t is0=p->input->dsize[0],  is1=p->input->dsize[1];
   size_t ks0=p->kernel->dsize[0], ks1=p->kernel->dsize[1];
-  double *o, *op, *d, *df, *pimg, *pker, *input=p->input->array;
+  float *f, *ff, *input=p->input->array, *kernel=p->kernel->array;
 
 
   /* Find the sizes of the padded image, note that since the kernel
@@ -220,8 +220,8 @@ makepaddedcomplex(struct convolveparams *p)
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
       if(i<is0)
         {
-          df=(d=input+i*is1)+is1;
-          do {*o++=*d; *o++=0.0f;} while(++d<df);
+          ff=(f=input+i*is1)+is1;
+          do {*o++=*f; *o++=0.0f;} while(++f<ff);
         }
       do *o++=0.0f; while(o<op);
     }
@@ -769,6 +769,7 @@ frequencyconvolve(struct convolveparams *p)
 void
 convolve(struct convolveparams *p)
 {
+  gal_data_t *out;
   gal_data_t *tiles, *channels=NULL; /* `channels' has to be initialized. */
 
   /* Do the convolution. */
@@ -782,12 +783,18 @@ convolve(struct convolveparams *p)
       if(p->tilesname)
         gal_tile_block_check_tiles(tiles, p->tilesname, PROGRAM_NAME);
 
+
       /* Do the spatial convolution. */
-      gal_convolve_spatial(tiles, p->kernel);
+      out=gal_convolve_spatial(tiles, p->kernel, p->cp.numthreads,
+                               p->convoverch);
 
       /* Clean up */
+      gal_data_free(p->input);
       gal_data_array_free(tiles, gal_data_num_in_ll(tiles), 0);
       gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
+
+      /* Put the convolved dataset into the `input' to save as output. */
+      p->input=out;
     }
   else
     frequencyconvolve(p);

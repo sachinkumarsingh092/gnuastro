@@ -44,8 +44,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-void
-gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel);
+gal_data_t *
+gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
+                     size_t numthreads, int convoverch);
 
 
 
