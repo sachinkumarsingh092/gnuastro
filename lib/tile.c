@@ -89,21 +89,36 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
 void
 gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
 {
-  size_t start_ind, ndim=tile->ndim;
+  size_t *s, *sf, *h;
   gal_data_t *block=gal_tile_block(tile);
   gal_data_t *host=rel_block ? block : tile->block;
+  size_t *hcoord, start_ind, ndim=tile->ndim, *end=start_end+ndim;
 
   /* Get the starting index. Note that for the type we need the allocated
      block dataset and can't rely on the tiles. */
-  start_ind=gal_data_ptr_dist(host->array, tile->array, block->type);
+  start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
 
-  /* Get the coordinates of the starting point. */
-  gal_multidim_index_to_coord(start_ind, tile->ndim, host->dsize,
-                              start_end);
+  /* Get the coordinates of the starting point relative to the allocated
+     block. */
+  gal_multidim_index_to_coord(start_ind, ndim, block->dsize, start_end);
+
+  /* When the host is different from the block, the tile's starting
+     position needs to be corrected. */
+  if(host!=block)
+    {
+      /* Get the host's starting coordinates. */
+      start_ind=gal_data_ptr_dist(block->array, host->array, block->type);
+
+      /* Temporarily put the host's coordinates in the place held for the
+         ending coordinates. */
+      hcoord=end;
+      gal_multidim_index_to_coord(start_ind, ndim, block->dsize, hcoord);
+      sf=(s=start_end)+ndim; h=hcoord; do *s++ -= *h++; while(s<sf);
+    }
 
   /* Add the dimensions of the tile to the starting coordinate. Note that
      the ending coordinates are stored immediately after the start.*/
-  gal_multidim_add_coords(start_end, tile->dsize, start_end+ndim, ndim);
+  gal_multidim_add_coords(start_end, tile->dsize, end, ndim);
 }
 
 
@@ -264,13 +279,13 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
     /* 1D: the increment is just the tile size. */
     case 1:
       increment=t[0];
-      coord[0]+=increment;
+      if(coord) coord[0]+=increment;
       break;
 
     /* 2D: the increment is the block's number of fastest axis pixels. */
     case 2:
       increment=b[1];
-      ++coord[0];
+      if(coord) ++coord[0];
       break;
 
     /* Higher dimensions. */
@@ -278,13 +293,13 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
       if(num_increment % t[n-2])
         {
           increment=b[n-1];
-          ++coord[n-2];
+          if(coord) ++coord[n-2];
         }
       else
         {
           increment=(b[n-2] * b[n-1]) - ( (t[n-2]-1) * b[n-1] );
           ++coord[n-3];
-          coord[n-2]=coord[n-1]=0;
+          if(coord) coord[n-2]=coord[n-1]=0;
         }
       break;
     }
@@ -422,7 +437,8 @@ gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
      the dataset's dimensions). */
   if(i!=input->ndim)
     error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
-          "value(s) given for the tile size", filename, hdu, input->ndim, i);
+          "value(s) given for the tile size (`--tilesize' option).",
+          filename, hdu, input->ndim, i);
 
 
   /* Check the channel's dimensions. */

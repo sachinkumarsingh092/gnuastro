@@ -261,7 +261,7 @@ removepaddingcorrectroundoff(struct convolveparams *p)
   size_t ps1=p->ps1;
   size_t i, hi0, hi1;
   size_t *isize=p->input->dsize;
-  double *o, *input=p->input->array;
+  float *o, *input=p->input->array;
   double *d, *df, *start, *pimg=p->pimg;
 
   /* Set all the necessary parameters to crop the desired region. hi0
@@ -776,13 +776,12 @@ convolve(struct convolveparams *p)
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
-      gal_tile_all_position_two_layers(p->input, p->channel, p->tile,
+      gal_tile_all_position_two_layers(p->input, p->channelsize, p->tilesize,
                                        p->remainderfrac, &channels, &tiles);
 
       /* Save the tile IDs if they are requested. */
       if(p->tilesname)
         gal_tile_block_check_tiles(tiles, p->tilesname, PROGRAM_NAME);
-
 
       /* Do the spatial convolution. */
       out=gal_convolve_spatial(tiles, p->kernel, p->cp.numthreads,

@@ -79,7 +79,7 @@ struct convolveparams
   uint8_t       nokernelnorm;  /* Do not normalize the kernel.            */
   double        minsharpspec;  /* Deconvolution: min spect. of sharp img. */
   uint8_t     checkfreqsteps;  /* View the frequency domain steps.        */
-  size_t               *tile;  /* Size of tiles along each dim. (C order).*/
+  size_t           *tilesize;  /* Size of tiles along each dim. (C order).*/
   size_t        *numchannels;  /* No. of tiles along each dim. (C order). */
   float        remainderfrac;  /* Frac. of remainers in each dim to cut.  */
   uint8_t         convoverch;  /* Convolve over channel borders.          */
@@ -88,7 +88,7 @@ struct convolveparams
   size_t          makekernel;  /* Make a kernel to create input.          */
 
   /* Internal */
-  size_t            *channel;  /* Size of channels along each dimension.  */
+  size_t        *channelsize;  /* Size of channels along each dimension.  */
   int                 domain;  /* Frequency or spatial domain conv.       */
   gal_data_t          *input;  /* Input image array.                      */
   gal_data_t         *kernel;  /* Input Kernel array.                     */

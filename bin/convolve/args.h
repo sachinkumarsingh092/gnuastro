@@ -122,17 +122,17 @@ struct argp_option program_options[] =
     /* Tile grid options. */
     {
       0, 0, 0, 0,
-      "Tile grid (only for spatial domain):",
+      "Tessellation (only for spatial domain):",
       ARGS_GROUP_MESH_GRID
     },
     {
-      "tile",
-      ARGS_OPTION_KEY_TILE,
+      "tilesize",
+      ARGS_OPTION_KEY_TILESIZE,
       "INT[,INT]",
       0,
-      "Size of tiles along each dim. (FITS order).",
+      "Size of regular tiles on each dim. (FITS order).",
       ARGS_GROUP_MESH_GRID,
-      &p->tile,
+      &p->tilesize,
       GAL_DATA_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -158,7 +158,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_REMAINDERFRAC,
       "FLT",
       0,
-      "Fraction of remainers in each dim to chop.",
+      "Fraction of remainder to split last tile.",
       ARGS_GROUP_MESH_GRID,
       &p->remainderfrac,
       GAL_DATA_TYPE_FLOAT32,

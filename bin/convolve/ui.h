@@ -39,7 +39,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_KHDU           = 'u',
   ARGS_OPTION_KEY_MINSHARPSPEC   = 'H',
   ARGS_OPTION_KEY_CHECKFREQSTEPS = 'C',
-  ARGS_OPTION_KEY_TILE           = 't',
+  ARGS_OPTION_KEY_TILESIZE       = 't',
   ARGS_OPTION_KEY_NUMCHANNELS    = 'c',
   ARGS_OPTION_KEY_REMAINDERFRAC  = 'r',
   ARGS_OPTION_KEY_DOMAIN         = 'd',

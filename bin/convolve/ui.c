@@ -233,16 +233,16 @@ ui_read_check_only_options(struct convolveparams *p)
   /* If we are in the spatial domain, make sure that the necessary
      parameters are set. */
   if( p->domain==CONVOLVE_DOMAIN_SPATIAL )
-    if( p->tile==NULL || p->numchannels==NULL )
+    if( p->tilesize==NULL || p->numchannels==NULL )
       {
-        if( p->tile==NULL && p->numchannels==NULL )
+        if( p->tilesize==NULL && p->numchannels==NULL )
           error(EXIT_FAILURE, 0, "in spatial convolution, `--numchannels' "
-                "and `--tile' are mandatory");
+                "and `--tilesize' are mandatory");
         else
           error(EXIT_FAILURE, 0, "in spatial convolution, `--%s' is "
                 "mandatory: you should use it to set the %s",
-                p->tile ? "numchannels" : "tile",
-                ( p->tile
+                p->tilesize ? "numchannels" : "tilesize",
+                ( p->tilesize
                   ? "number of channels along each dimension of the input"
                   : "size of tiles to cover the input along each "
                   "dimension" ) );
@@ -360,8 +360,8 @@ ui_preparations(struct convolveparams *p)
                 PROGRAM_NAME);
     }
   else
-    p->channel=gal_tile_all_sanity_check(p->filename, p->cp.hdu, p->input,
-                                         p->tile, p->numchannels);
+    p->channelsize=gal_tile_all_sanity_check(p->filename, p->cp.hdu, p->input,
+                                             p->tilesize, p->numchannels);
 
 
 

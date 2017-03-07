@@ -10793,26 +10793,57 @@ are ultimately poor approximations.
 @cindex Tile
 @cindex Gradient
 @cindex Mesh grid
-Some of the programs in Gnuastro will need to divide the pixels in an
-image into individual tiles or a mesh grid to be able to deal with
-gradients. In this section we will explain the concept in detail and
-how the user can check the grid. In the case of SubtractSky, if the
-image is completely uniform then one sky value will suffice for the
-whole image. See @ref{Sky value} for the definition of the sky value.
-Unfortunately though, as discussed in @ref{SubtractSky}, in most
-images taken with ground or space-based telescopes the sky value is
-not uniform. So we have to break the image up into small tiles on a
-mesh grid, assume the sky value is constant over them and find the sky
-value on those tiles.
+@cindex Tile grid
+@cindex Tessellation
+Some of the programs in Gnuastro will need to divide the pixels in an image
+into a grid of individual, non-overlapping tiles. In the arts and
+mathematics, this process is formally known as
+@url{https://en.wikipedia.org/wiki/Tessellation, tessellation}. Defining a
+tessellation over a dataset (image) is necessary in many contexts. Their
+most common application is to account for local variations over the dataset
+(for example background sky gradients, which are more common as we go to
+longer/redder wavelengths/filters).
 
-Meshes are considered to be a square with a side of
-@option{--meshsize} pixels. The best mesh size is directly related to
-the gradient on the image. In practice we assume that the gradient is
-not significant over each mesh. So if there is a strong gradient (for
-example in long wavelength ground based images) or the image is of a
-crowded area where there isn't too much blank area, you have to choose
-a smaller mesh size. A larger mesh will give more pixels and so the
-scatter in the results will be less.
+In this section we will explain the concept in detail and how you can check
+the grid. In the case of SubtractSky, if the image is completely uniform
+then one sky value will suffice for the whole image. See @ref{Sky value}
+for the definition of the sky value.  Unfortunately though, as discussed in
+@ref{SubtractSky}, in most images taken with ground or space-based
+telescopes the sky value is not uniform. So we have to break the image up
+into small tiles on a grid, assume the Sky value is constant over them and
+find the sky value on those tiles.
+
+The size of the regular tiles (in units of data-elements, or pixels in an
+image) can be defined with the @option{--tilesize} option. It takes
+multiple numbers (separated by a comma) which will be the length along the
+respective dimension (in Fortran/FITS order). For example
+@option{--tilesize=30,40} can be used for an image (a 2D dataset). The
+regular tile size along the first FITS axis (horizontal when viewed in SAO
+ds9) will be 30 pixels and along the second it will be 40 pixels. Ideally,
+@option{--tilesize} should be selected such that all tiles in the image
+have exactly the same size (in other words, that the dataset length in each
+dimension is divisible by the tile size in that dimension).
+
+However, this is not always possible: the dataset can be any size and every
+pixel in it is valuable. In such cases, Gnuastro will look at the
+significance of the remainder length, if it is not significant (for example
+one or two pixels), then it will just increase the size of the first tile
+in the respective dimension and allow the rest of the tiles to have the
+required size. When the remainder is significant (for example one pixel
+less than the size along that dimension), the remainder will be added to
+one regular tile's size and the large tile will be cut in half and put in
+the two ends of the grid/tessellation. In this way, all the tiles in the
+central regions of the dataset will have the regular tile sizes and the
+tiles on the edge will be slightly smaller. You can set the significance
+fraction with the @option{--remainderfrac} option.
+
+The best tile size is directly related to the spatial properties of the
+gradient on the image. In practice we assume that the gradient is not
+present over each tile. So if there is a strong gradient (for example in
+long wavelength ground based images) or the image is of a crowded area
+where there isn't too much blank area, you have to choose a smaller tile
+size. A larger mesh will give more pixels and so the scatter in the results
+will be less.
 
 @cindex CCD
 @cindex Amplifier
@@ -10820,69 +10851,45 @@ scatter in the results will be less.
 @cindex Subaru Telescope
 @cindex Hyper Suprime-Cam
 @cindex Hubble Space Telescope
-For raw image processing, a simple mesh grid is not sufficient. Raw
-images are the unprocessed outputs of the camera detectors. Large
+For raw image processing, a single tesselation/grid is not sufficient. Raw
+images are the unprocessed outputs of the camera detectors. Modern
 detectors usually have multiple readout channels each with its own
 amplifier. For example the Hubble Space Telescope Advanced Camera for
-Surveys (ACS) has four amplifiers over its full detector area dividing
-the square field of view to four smaller squares. Ground based image
-detectors are not exempt, for example each CCD of Subaru Telescope's
-Hyper Suprime-Cam camera (which has 104 CCDs) has four amplifiers, but
-they have the same height of the CCD and divide the width by four
-parts.
+Surveys (ACS) has four amplifiers over its full detector area dividing the
+square field of view to four smaller squares. Ground based image detectors
+are not exempt, for example each CCD of Subaru Telescope's Hyper
+Suprime-Cam camera (which has 104 CCDs) has four amplifiers, but they have
+the same height of the CCD and divide the width by four parts.
 
 @cindex Channel
-The bias current on each amplifier is different, and normally bias
-subtraction is not accurately done. So even after subtracting the measured
-bias current, you can usually still identify the boundaries of different
+The bias current on each amplifier is different, and initial bias
+subtraction is not perfect. So even after subtracting the measured bias
+current, you can usually still identify the boundaries of different
 amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015) for an
 example. This results in the final reduced data to have non-uniform
 amplifier-shaped regions with higher or lower background flux values. Such
 systematic biases will then propagate to all subsequent measurements we do
 on the data (for example photometry and subsequent stellar mass and star
-formation rate measurements in the case of galaxies). Therefore an accurate
-sky subtraction routine should also be able to account for such biases.
+formation rate measurements in the case of galaxies).
 
-To get an accurate result, the mesh boundaries should be located
-exactly on the amplifier boundaries. Otherwise, some meshes will
-contain pixels that have been read from two or four different
-amplifiers. These meshes are going to give very biased results and the
-amplifier boundary will still be present after sky subtraction.  So we
-define `channel's. A channel is an independent mesh grid that covers
-one amplifier to ensure that the meshes do not pass the amplifier
-boundary. They can also be used in subsequent steps as the area used
-to identify nearby neighbors to interpolate and smooth the final grid,
-see @ref{Grid interpolation and smoothing}. The number of channels
-along each axis can be specified by the user at run time through the
-command-line @option{--nch1} and @option{--nch2} options or in the
-configuration files, see @ref{Configuration files}. The area of each
-channel will then be tiled by meshes of the given size and subsequent
-processing will be done on those meshes. If the image is processed or
-the detector only has one amplifier, you can set the number of
-channels in both axes to 1.
+Therefore an accurate analysis requires a lower-level tesselation: with
+larger tiles, each large tile covering one amplifier channel. For clarity
+we'll call these larger tiles ``channels''. The number of channels along
+each dimension is defined through the @option{--numchannels}. Each channel
+will then be covered by its own individual smaller tessellation (with tile
+sizes determined by the @option{--tilesize} option). This will allow two
+adjacent pixels from different channels to never be considered together in
+the higher-level analysis. If the image is processed or the detector only
+has one amplifier, you can set the number of channels in both axes to 1.
 
-Unlike the channel size, that has to be an exact multiple of the image
-size, the mesh size can be any number. If it is not an exact multiple of
-the image side, the last mesh (rightest, for the first FITS dimension, and
-highest for the second when viewed in SAO ds9) will have a different size
-than the rest. If the remainder of the image size divided by mesh size is
-larger than a certain fraction (value to @option{--lastmeshfrac}) of the
-mesh size along each axis, a new (smaller) mesh will be put there instead
-of a larger mesh. This is done to avoid the last mesh becoming too large
-compared to the other meshes in the grid. Generally, it is best practice to
-choose the mesh size such that the last mesh is only a few (negligible)
-pixels wider or thinner than the rest.
-
-The final mesh grid can be seen on the image with the
-@option{--checkmesh} option that is available to all programs which
-use the mesh grid for localized operations. When this option is
-called, a multi-extension FITS file with a @file{_mesh.fits} suffix
-will be created along with the outputs, see @ref{Automatic
-output}. The first extension will be the input image. For each mesh
-grid the image produces, there will be a subsequent extension. Each
-pixel in the grid extensions is labeled to the mesh that it is part
-of. You can flip through the extensions to check the mesh sizes and
-locations compared to the input image.
+The final tesselation can be seen on the image with the
+@option{--checktiles} option that is available to all programs which use
+tessellation for localized operations. When this option is called, a FITS
+file with a @file{_mesh.fits} suffix will be created along with the
+outputs, see @ref{Automatic output}. Each pixel in this image has the ID of
+the tile that covers it. If the number of channels in any dimension are
+larger than unity, you will notice that the tile IDs are defined such that
+the first channels is covered first, then the second and so on.
 
 @menu
 * Quantifying signal in a mesh::  Good meshs for gradients.
@@ -11124,7 +11131,7 @@ the `Invoking ProgramName' section within the list of options.
 @table @option
 
 @item -s INT
-@itemx --meshsize=INT
+@itemx --tilesize=INT
 The size of each mesh, see @ref{Tiling an image}. If the width of all
 channels are not an exact multiple of the specified size, then the last
 mesh on each axis will have a different size to cover the full channel.
