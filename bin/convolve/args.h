@@ -100,6 +100,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     /* Outputs */
     {
       "checkfreqsteps",
@@ -116,82 +118,6 @@ struct argp_option program_options[] =
     },
 
 
-
-
-
-    /* Tile grid options. */
-    {
-      0, 0, 0, 0,
-      "Tessellation (only for spatial domain):",
-      ARGS_GROUP_MESH_GRID
-    },
-    {
-      "tilesize",
-      ARGS_OPTION_KEY_TILESIZE,
-      "INT[,INT]",
-      0,
-      "Size of regular tiles on each dim. (FITS order).",
-      ARGS_GROUP_MESH_GRID,
-      &p->tilesize,
-      GAL_DATA_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      gal_options_parse_sizes_reverse
-    },
-    {
-      "numchannels",
-      ARGS_OPTION_KEY_NUMCHANNELS,
-      "INT[,..]",
-      0,
-      "No. of channels along each dim. (FITS order).",
-      ARGS_GROUP_MESH_GRID,
-      &p->numchannels,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      gal_options_parse_sizes_reverse
-    },
-    {
-      "remainderfrac",
-      ARGS_OPTION_KEY_REMAINDERFRAC,
-      "FLT",
-      0,
-      "Fraction of remainder to split last tile.",
-      ARGS_GROUP_MESH_GRID,
-      &p->remainderfrac,
-      GAL_DATA_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GT_0_LT_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-    },
-    {
-      "convoverch",
-      ARGS_OPTION_KEY_CONVOVERCH,
-      0,
-      0,
-      "Convolve over channel borders.",
-      ARGS_GROUP_MESH_GRID,
-      &p->convoverch,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "checktiles",
-      ARGS_OPTION_KEY_CHECKTILES,
-      0,
-      0,
-      "Tile IDs in an image, the size of input.",
-      ARGS_GROUP_MESH_GRID,
-      &p->checktiles,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
 

@@ -117,26 +117,37 @@ ui_initialize_options(struct fitsparams *p,
   /* For clarity and non-zero initializations. */
   p->mode                = FITS_MODE_INVALID;
 
-  /* Don't show the unused options. */
+  /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    switch(cp->coptions[i].key)
-      {
-      case GAL_OPTIONS_KEY_SEARCHIN:
-      case GAL_OPTIONS_KEY_IGNORECASE:
-      case GAL_OPTIONS_KEY_TYPE:
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
-      case GAL_OPTIONS_KEY_DONTDELETE:
-      case GAL_OPTIONS_KEY_LOG:
-      case GAL_OPTIONS_KEY_MINMAPSIZE:
-      case GAL_OPTIONS_KEY_NUMTHREADS:
-        cp->coptions[i].flags=OPTION_HIDDEN;
-        break;
+    {
+      /* Select individually. */
+      switch(cp->coptions[i].key)
+        {
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_DONTDELETE:
+        case GAL_OPTIONS_KEY_LOG:
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
+        case GAL_OPTIONS_KEY_NUMTHREADS:
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
 
-      case GAL_OPTIONS_KEY_OUTPUT:
-        cp->coptions[i].doc="Output file name (only for writing HDUs).";
-        break;
-      }
+        case GAL_OPTIONS_KEY_OUTPUT:
+          cp->coptions[i].doc="Output file name (only for writing HDUs).";
+          break;
+        }
 
+      /* Select by group. */
+      switch(cp->coptions[i].group)
+        {
+        case GAL_OPTIONS_GROUP_TESSELLATION:
+          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+    }
 }
 
 

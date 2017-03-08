@@ -58,6 +58,7 @@ enum options_standard_groups
 {
   GAL_OPTIONS_GROUP_OPERATING_MODE = -1,
   GAL_OPTIONS_GROUP_INPUT=1,
+  GAL_OPTIONS_GROUP_TESSELLATION,
   GAL_OPTIONS_GROUP_OUTPUT,
 
   GAL_OPTIONS_GROUP_AFTER_COMMON,
@@ -73,22 +74,25 @@ enum options_standard_groups
    is also removed from this list.
 
    a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H J L M O Q R W X Y Z
+   A B C E G H J L O Q R W X Y
 */
 enum options_common_keys
 {
   /* With short-option version */
-  GAL_OPTIONS_KEY_HDU          = 'h',
-  GAL_OPTIONS_KEY_OUTPUT       = 'o',
-  GAL_OPTIONS_KEY_TYPE         = 'T',
-  GAL_OPTIONS_KEY_DONTDELETE   = 'D',
-  GAL_OPTIONS_KEY_KEEPINPUTDIR = 'K',
-  GAL_OPTIONS_KEY_QUIET        = 'q',
-  GAL_OPTIONS_KEY_NUMTHREADS   = 'N',
-  GAL_OPTIONS_KEY_PRINTPARAMS  = 'P',
-  GAL_OPTIONS_KEY_SETDIRCONF   = 'S',
-  GAL_OPTIONS_KEY_SETUSRCONF   = 'U',
-  GAL_OPTIONS_KEY_IGNORECASE   = 'I',
+  GAL_OPTIONS_KEY_HDU           = 'h',
+  GAL_OPTIONS_KEY_OUTPUT        = 'o',
+  GAL_OPTIONS_KEY_TYPE          = 'T',
+  GAL_OPTIONS_KEY_DONTDELETE    = 'D',
+  GAL_OPTIONS_KEY_KEEPINPUTDIR  = 'K',
+  GAL_OPTIONS_KEY_QUIET         = 'q',
+  GAL_OPTIONS_KEY_NUMTHREADS    = 'N',
+  GAL_OPTIONS_KEY_PRINTPARAMS   = 'P',
+  GAL_OPTIONS_KEY_SETDIRCONF    = 'S',
+  GAL_OPTIONS_KEY_SETUSRCONF    = 'U',
+  GAL_OPTIONS_KEY_IGNORECASE    = 'I',
+  GAL_OPTIONS_KEY_TILESIZE      = 'Z',
+  GAL_OPTIONS_KEY_NUMCHANNELS   = 'M',
+  GAL_OPTIONS_KEY_REMAINDERFRAC = 'F',
 
   /* Only long option (integers for keywords). */
   GAL_OPTIONS_KEY_MINMAPSIZE   = 500,
@@ -99,6 +103,8 @@ enum options_common_keys
   GAL_OPTIONS_KEY_LASTCONFIG,
   GAL_OPTIONS_KEY_TABLEFORMAT,
   GAL_OPTIONS_KEY_ONLYVERSION,
+  GAL_OPTIONS_KEY_WORKOVERCH,
+  GAL_OPTIONS_KEY_CHECKTILES,
 };
 
 
@@ -153,41 +159,49 @@ enum gal_options_set_values
 struct gal_options_common_params
 {
   /* Input. */
-  char                    *hdu; /* Image extension.                      */
-  uint8_t             searchin; /* Column meta-data to match/search.     */
-  uint8_t           ignorecase; /* Ignore case when matching col info.   */
+  char                    *hdu; /* Image extension.                       */
+  uint8_t             searchin; /* Column meta-data to match/search.      */
+  uint8_t           ignorecase; /* Ignore case when matching col info.    */
+
+  /* Tessellation. */
+  size_t             *tilesize; /* Tile size along each dim. (C order).   */
+  size_t          *numchannels; /* Channel no. along each dim. (C order). */
+  float          remainderfrac; /* Frac. of remainers in each dim to cut. */
+  uint8_t           workoverch; /* Convolve over channel borders.         */
+  uint8_t           checktiles; /* Tile IDs in an img, the size of input. */
 
   /* Output. */
-  char                 *output; /* Directory containg output.            */
-  uint8_t                 type; /* Data type of output.                  */
-  uint8_t           dontdelete; /* ==1: Don't delete existing file.      */
-  uint8_t         keepinputdir; /* Keep input directory for auto output. */
-  uint8_t          tableformat; /* Internal code for output table format.*/
+  char                 *output; /* Directory containg output.             */
+  uint8_t                 type; /* Data type of output.                   */
+  uint8_t           dontdelete; /* ==1: Don't delete existing file.       */
+  uint8_t         keepinputdir; /* Keep input directory for auto output.  */
+  uint8_t          tableformat; /* Internal code for output table format. */
 
   /* Operating modes. */
-  uint8_t                quiet; /* Only print errors.                    */
-  size_t            numthreads; /* Number of threads to use.             */
-  size_t            minmapsize; /* Minimum bytes necessary to use mmap.  */
-  uint8_t                  log; /* Make a log file.                      */
+  uint8_t                quiet; /* Only print errors.                     */
+  size_t            numthreads; /* Number of threads to use.              */
+  size_t            minmapsize; /* Minimum bytes necessary to use mmap.   */
+  uint8_t                  log; /* Make a log file.                       */
 
   /* Configuration files. */
-  uint8_t          printparams; /* To print the full list of parameters. */
-  uint8_t           setdirconf; /* To write the directory config file.   */
-  uint8_t           setusrconf; /* To write teh user config config file. */
-  uint8_t           lastconfig; /* This is the last configuration file.  */
+  uint8_t          printparams; /* To print the full list of parameters.  */
+  uint8_t           setdirconf; /* To write the directory config file.    */
+  uint8_t           setusrconf; /* To write teh user config config file.  */
+  uint8_t           lastconfig; /* This is the last configuration file.   */
 
   /* For internal (to option processing) purposes. */
-  uint8_t                 keep; /* Output file can exist.                */
-  void         *program_struct; /* Host program's main variable struct.  */
-  char           *program_name; /* Official name to be used in text.     */
-  char           *program_exec; /* Program's executable name.            */
-  char         *program_bibtex; /* BibTeX record for this program.       */
-  char        *program_authors; /* List of the program authors.          */
-  struct argp_option *coptions; /* Common options to all programs.       */
-  struct argp_option *poptions; /* Program specific options.             */
-  struct gal_linkedlist_ill   *mand_common; /* Common mandatory options. */
-  struct gal_linkedlist_stll  *novalue_doc; /* Mandatory opts, no value  */
-  struct gal_linkedlist_stll *novalue_name; /* Mandatory opts, no value  */
+  uint8_t                 keep; /* Output file can exist.                 */
+  size_t          *channelsize; /* Size of channels along each dimension. */
+  void         *program_struct; /* Host program's main variable struct.   */
+  char           *program_name; /* Official name to be used in text.      */
+  char           *program_exec; /* Program's executable name.             */
+  char         *program_bibtex; /* BibTeX record for this program.        */
+  char        *program_authors; /* List of the program authors.           */
+  struct argp_option *coptions; /* Common options to all programs.        */
+  struct argp_option *poptions; /* Program specific options.              */
+  struct gal_linkedlist_ill   *mand_common; /* Common mandatory options.  */
+  struct gal_linkedlist_stll  *novalue_doc; /* Mandatory opts, no value   */
+  struct gal_linkedlist_stll *novalue_name; /* Mandatory opts, no value   */
 };
 
 
@@ -218,8 +232,16 @@ gal_options_parse_list_of_numbers(char *string, char *filename,
 
 
 /**********************************************************************/
-/************                Convert values             ***************/
+/************     Parser functions for common options   ***************/
 /**********************************************************************/
+void *
+gal_options_check_version(struct argp_option *option, char *arg,
+                          char *filename, size_t lineno, void *junk);
+
+void *
+gal_options_print_citation(struct argp_option *option, char *arg,
+                           char *filename, size_t lineno, void *pa);
+
 void *
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno, void *junk);
@@ -255,6 +277,10 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /**********************************************************************/
 /************            Configuration files            ***************/
 /**********************************************************************/
+void *
+gal_options_call_parse_config_file(struct argp_option *option, char *arg,
+                                   char *filename, size_t lineno, void *cp);
+
 void
 gal_options_read_config_set(struct gal_options_common_params *cp);
 

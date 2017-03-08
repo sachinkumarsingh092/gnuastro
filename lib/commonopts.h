@@ -86,6 +86,83 @@ struct argp_option gal_commonopts_options[] =
 
 
 
+    /* Tile grid options. */
+    {
+      0, 0, 0, 0,
+      "Tessellation (tile grid):",
+      GAL_OPTIONS_GROUP_TESSELLATION
+    },
+    {
+      "tilesize",
+      GAL_OPTIONS_KEY_TILESIZE,
+      "INT[,INT]",
+      0,
+      "Size of regular tiles on each dim. (FITS order).",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->tilesize,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_sizes_reverse
+    },
+    {
+      "numchannels",
+      GAL_OPTIONS_KEY_NUMCHANNELS,
+      "INT[,..]",
+      0,
+      "No. of channels along each dim. (FITS order).",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->numchannels,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_sizes_reverse
+    },
+    {
+      "remainderfrac",
+      GAL_OPTIONS_KEY_REMAINDERFRAC,
+      "FLT",
+      0,
+      "Fraction of remainder to split last tile.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->remainderfrac,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0_LT_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+    },
+    {
+      "workoverch",
+      GAL_OPTIONS_KEY_WORKOVERCH,
+      0,
+      0,
+      "Convolve over channel borders.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->workoverch,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "checktiles",
+      GAL_OPTIONS_KEY_CHECKTILES,
+      0,
+      0,
+      "Tile IDs in an image, the size of input.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->checktiles,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
     {
       0, 0, 0, 0,
       "Output:",
@@ -235,7 +312,8 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_print_citation
     },
     {
       "printparams",
@@ -255,13 +333,14 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_CONFIG,
       "STR",
       0,
-      "Read file STR before continuing.",
+      "Read configuration file STR immediately.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       NULL,
       GAL_DATA_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_call_parse_config_file
     },
     {
       "setdirconf",
@@ -313,7 +392,8 @@ struct argp_option gal_commonopts_options[] =
       GAL_DATA_TYPE_STRING,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_check_version
     },
 
 

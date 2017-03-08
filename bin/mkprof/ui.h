@@ -31,8 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
    Available letters (-V which is used by GNU is also removed):
 
-   a d f g j l u v
-   A E G H I J L M O Q U W Z     */
+   a b d g j l n u v
+   A E G H J L O Q W
+*/
 enum option_keys_enum
 {
   /* With short-option version. */
@@ -54,7 +55,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_CIRCUMWIDTH     = 'w',
   ARGS_OPTION_KEY_REPLACE         = 'R',
   ARGS_OPTION_KEY_ENVSEED         = 'e',
-  ARGS_OPTION_KEY_MFORFLATPIX     = 'F',
+  ARGS_OPTION_KEY_MFORFLATPIX     = 'f',
 
   /* Only with long version. */
   ARGS_OPTION_KEY_PSFINIMG        = 1000,

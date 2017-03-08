@@ -279,11 +279,12 @@ Common program behavior
 
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
-* Threads in Gnuastro::         How threads are managed in Gnuastro.
-* Automatic output::            About automatic output names.
+* Multi-threaded operations::   How threads are managed in Gnuastro.
 * Numeric data types::          Different types and how to specify them.
-* Tables in Gnuastro::          Recognized table formats.
+* Tables::                      Recognized table formats.
+* Tessellation::                Tile the dataset into non-overlapping bins.
 * Getting help::                Getting more information on the go.
+* Automatic output::            About automatic output names.
 * Output headers::              Common headers to all FITS outputs.
 
 Command-line
@@ -298,7 +299,8 @@ Arguments and options
 
 Common options
 
-* Input output::                Common input/output options.
+* Input output options::        Common input/output options.
+* Processing options::          Options for common processing steps.
 * Operating mode options::      Common operating mode options.
 
 Configuration files
@@ -308,12 +310,12 @@ Configuration files
 * Current directory and User wide::  Local and user configuration files.
 * System wide::                 System wide configuration files.
 
-Threads in Gnuastro
+Multi-threaded operations
 
 * A note on threads::           Caution and suggestion on using threads.
 * How to run simultaneous operations::  How to run things simultaneously.
 
-Tables in Gnuastro
+Tables
 
 * Recognized table formats::    Table formats that are recognized in Gnuastro.
 * Gnuastro text table format::  Gnuastro's convention plain text tables.
@@ -2372,7 +2374,7 @@ option by the distribution. This option allows CFITSIO to open a file in
 multiple threads, it can thus provide great speed improvements. If CFITSIO
 was not configured with this option, any program which needs this
 capability will warn you and abort when you ask for multiple threads (see
-@ref{Threads in Gnuastro}).
+@ref{Multi-threaded operations}).
 
 To install CFITSIO from source, we strongly recommend that you have a look
 through Chapter 2 (Creating the CFITSIO library) of the CFITSIO manual and
@@ -3972,11 +3974,12 @@ command-line.
 @menu
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
-* Threads in Gnuastro::         How threads are managed in Gnuastro.
-* Automatic output::            About automatic output names.
+* Multi-threaded operations::   How threads are managed in Gnuastro.
 * Numeric data types::          Different types and how to specify them.
-* Tables in Gnuastro::          Recognized table formats.
+* Tables::                      Recognized table formats.
+* Tessellation::                Tile the dataset into non-overlapping bins.
 * Getting help::                Getting more information on the go.
+* Automatic output::            About automatic output names.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
 
@@ -4099,7 +4102,7 @@ format, that filename extension is used to separate the kinds of
 arguments. The list below shows the data formats that are recognized in
 Gnuastro's programs based on their file name endings. Any argument that
 doesn't end with the specified extensions below is considered to be a text
-file (usually catalogs, see @ref{Tables in Gnuastro}). In some cases, a program
+file (usually catalogs, see @ref{Tables}). In some cases, a program
 can accept specific formats, for example @ref{ConvertType} also accepts
 @file{.jpg} images.
 
@@ -4294,17 +4297,19 @@ starts from 0 for a special option, it will be explicitly mentioned.
 To facilitate the job of the users and developers, all the programs in
 Gnuastro share some basic command-line options for the options that are
 common to many of the programs. The full list is classified as @ref{Input
-output}, and @ref{Operating mode options}. In some programs, some of the options
-are irrelevant, but still recognized (you won't get an unrecognized option
-error, but the value isn't used). Unless otherwise mentioned, these options
-are identical between all programs.
+output options}, @ref{Processing options}, and @ref{Operating mode
+options}. In some programs, some of the options are irrelevant, but still
+recognized (you won't get an unrecognized option error, but the value isn't
+used). Unless otherwise mentioned, these options are identical between all
+programs.
 
 @menu
-* Input output::                Common input/output options.
+* Input output options::        Common input/output options.
+* Processing options::          Options for common processing steps.
 * Operating mode options::      Common operating mode options.
 @end menu
 
-@node Input output, Operating mode options, Common options, Common options
+@node Input output options, Processing options, Common options, Common options
 @subsubsection Input/Output options
 
 These options are to do with the input and outputs of the various
@@ -4405,7 +4410,61 @@ A FITS binary table (see @ref{Recognized table formats}).
 
 @end vtable
 
-@node Operating mode options,  , Input output, Common options
+
+@node Processing options, Operating mode options, Input output options, Common options
+@subsubsection Processing options
+
+Some processing steps are common to several programs, so to help in using
+those steps in the different programs, they are defined as common options
+to all programs. Note that this class of common options is thus necessarily
+less common between all the programs than those described in @ref{Input
+output options}, or @ref{Operating mode options} options.
+
+@table @option
+
+@item -Z INT[,INT[,...]]
+@itemx --tilesize=[,INT[,...]]
+The size of regular tiles for tessellation, see @ref{Tessellation}. For
+each dimension an integer length (in units of data-elements or pixels) is
+necessary. If the input dimensionality is different from the number of
+values given to this option, the program will stop with an error. Values
+must be separated by commas (@key{,}) and can also be fractions (for
+example @code{4/2}). If they are fractions, the result must be an integer,
+otherwise an error will be printed.
+
+@item -M INT[,INT[,...]]
+@itemx --numchannels=INT[,INT[,...]]
+The number of channels for larger input tessellation, see
+@ref{Tessellation}. The number and types of acceptable values are similar
+to @option{--tilesize}. The only difference is that instead of length, the
+integers values given to this option represent the @emph{number} of
+channels, not their size.
+
+@item -F FLT
+@itemx --remainderfrac=FLT
+The fraction of remainder size along all dimensions to add to the first
+tile. See @ref{Tessellation} for a complete description. This option is
+only relevant if @option{--tilesize} is not exactly divisible by the input
+dataset's size in a dimension. If the remainder size is larger than this
+fraction (compared to @option{--tilesize}), then the remainder size will be
+added with one regular tile size and divided between two tiles at the start
+and end of the given dimension.
+
+@item --workoverch
+Ignore the channel borders for the high-level job of the given
+application. As a result, while the channel borders are respected in
+defining the small tiles (such that no tile will cross a channel border),
+the higher-level program operation will ignore them, see
+@ref{Tessellation}.
+
+@item --checktiles
+Make a FITS file with the same dimensions as the input but each pixel is
+replaced with the ID of the tile that it is associated with. Note that the
+tile IDs start from 0. See @ref{Tessellation} for more on Tiling an image
+in Gnuastro.
+@end table
+
+@node Operating mode options,  , Processing options, Common options
 @subsubsection Operating mode options
 
 Another group of options that are common to all the programs in Gnuastro
@@ -4619,7 +4678,7 @@ ignored.
 @item -N INT
 @itemx --numthreads=INT
 Use @option{INT} CPU threads when running a Gnuastro program (see
-@ref{Threads in Gnuastro}). Note that multi-threaded programming is only
+@ref{Multi-threaded operations}). Note that multi-threaded programming is only
 relevant to some programs. In others, this option will be ignored. If this
 option is not specified on the command-line or any configuration file, the
 number of threads will be determined by the programs at configuration time.
@@ -4631,7 +4690,7 @@ number of threads will be determined by the programs at configuration time.
 
 
 
-@node Configuration files, Threads in Gnuastro, Command-line, Common program behavior
+@node Configuration files, Multi-threaded operations, Command-line, Common program behavior
 @section Configuration files
 
 @cindex @file{etc}
@@ -4661,7 +4720,7 @@ necessary parameters are not given through any of these methods, the
 program will print a missing option error and abort. The only exception to
 this is @option{--numthreads}, whose default value is determined at
 run-time using the number of threads available to your system, see
-@ref{Threads in Gnuastro}. Of course, you can still provide a default value
+@ref{Multi-threaded operations}. Of course, you can still provide a default value
 for the number of threads at any of the levels below, but if you don't, the
 program will not abort. Also note that through automatic output name
 generation, the value to the @option{--output} option is also not mandatory
@@ -4752,13 +4811,6 @@ options@footnote{As an example, the @option{--setdirconf} and
 @option{--setusrconf} options will also write the common options they have
 read in their produced @file{astprogname.conf}.}.
 
-Note that through the @option{--config} and @option{--lastconfig} options
-you can define other files to parse for option values, or stop the reading
-of subsequent configuration files in the list below (see @ref{Operating
-mode options}). Recall that the file given to @option{--config} is parsed
-immediately when this option is confronted (on the command-line or in a
-configuration file).
-
 @enumerate
 @item
 Command-line options, for a particular run of ProgramName.
@@ -4790,7 +4842,27 @@ system-wide installation directory (see @ref{System wide} for
 @file{prefix}).
 
 @end enumerate
+
+@cartouche
 @noindent
+@strong{Manipulating the order:} You can manipulate this order or add new
+files with the following two options which are fully described in
+@ref{Operating mode options}:
+@table @option
+@item --config
+Allows you to define any file to be parsed as a configuration file on the
+command-line or within the any other configuration file. Recall that the
+file given to @option{--config} is parsed immediately when this option is
+confronted (on the command-line or in a configuration file).
+
+@item --lastconfig
+Allows you to stop the parsing of subsequent configuration files. Note that
+if this option is given in a configuration file, it will be fully read, so
+its position in the configuration doesn't matter (unlike
+@option{--config}).
+@end table
+@end cartouche
+
 
 One example of benefiting from these configuration files can be this: raw
 telescope images usually have their main image extension in the second FITS
@@ -4807,7 +4879,7 @@ behavior in this single file, all Gnuastro programs in the respective
 directory, user, or system-wide steps will behave similarly. For example to
 keep the input's directory when no specific output is given (see
 @ref{Automatic output}), or to not delete an existing file if it has the
-same name as a given output (see @ref{Input output}).
+same name as a given output (see @ref{Input output options}).
 
 
 @node Current directory and User wide, System wide, Configuration file precedence, Configuration files
@@ -4870,8 +4942,8 @@ source by your self as in @ref{Quick start}.
 
 
 
-@node Threads in Gnuastro, Automatic output, Configuration files, Common program behavior
-@section Threads in Gnuastro
+@node Multi-threaded operations, Numeric data types, Configuration files, Common program behavior
+@section Multi-threaded operations
 
 @pindex nproc
 @cindex pthread
@@ -4908,7 +4980,7 @@ on the command-line or in the configuration files.
 * How to run simultaneous operations::  How to run things simultaneously.
 @end menu
 
-@node A note on threads, How to run simultaneous operations, Threads in Gnuastro, Threads in Gnuastro
+@node A note on threads, How to run simultaneous operations, Multi-threaded operations, Multi-threaded operations
 @subsection A note on threads
 
 @cindex Using multiple threads
@@ -4971,7 +5043,7 @@ explained in @ref{How to run simultaneous operations}.
 
 
 
-@node How to run simultaneous operations,  , A note on threads, Threads in Gnuastro
+@node How to run simultaneous operations,  , A note on threads, Multi-threaded operations
 @subsection How to run simultaneous operations
 
 There are two@footnote{A third way would be to open multiple terminal
@@ -5076,61 +5148,7 @@ important.
 
 
 
-@node Automatic output, Numeric data types, Threads in Gnuastro, Common program behavior
-@section Automatic output
-
-@cindex Automatic output file names
-@cindex Output file names, automatic
-@cindex Setting output file names automatically
-All the programs in Gnuastro are designed such that specifying an
-output file or directory (based on the program context) is optional.
-The outputs of most programs are automatically found based on the
-input and what the program does. For example when you are converting a
-FITS image named @file{FITSimage.fits} to a JPEG image, the JPEG image
-will be saved in @file{FITSimage.jpg}.
-
-@vindex --keepinputdir
-Another very important part of the automatic output generation is that
-all the directory information of the input file name is stripped off
-of it. This feature can be disabled with the @option{--keepinputdir}
-option, see @ref{Common options}. It is the default because
-astronomical data are usually very large and organized specially with
-special file names. In some cases, the user might not have write
-permissions in those directories. In fact, even if the data is stored
-on your own computer, it is advised to only grant write permissions to
-the super user or root. This way, you won't accidentally delete or
-modify your valuable data!
-
-Let's assume that we are working on a report and want to process the
-FITS images from two projects (ABC and DEF), which are stored in the
-sub-directories named @file{ABCproject/} and @file{DEFproject/} of our
-top data directory (@file{/mnt/data}). The following shell commands
-show how one image from the former is first converted to a JPEG image
-through ConvertType and then the objects from an image in the latter
-project are detected using NoiseChisel. The text after the @command{#}
-sign are comments (not typed!).
-
-@example
-$ pwd                                               # Current location
-/home/usrname/research/report
-$ ls                                         # List directory contents
-ABC01.jpg
-$ ls /mnt/data/ABCproject                                  # Archive 1
-ABC01.fits ABC02.fits ABC03.fits
-$ ls /mnt/data/DEFproject                                  # Archive 2
-DEF01.fits DEF02.fits DEF03.fits
-$ astconvertt /mnt/data/ABCproject/ABC02.fits --output=jpg    # Prog 1
-$ ls
-ABC01.jpg ABC02.jpg
-$ astnoisechisel /mnt/data/DEFproject/DEF01.fits              # Prog 2
-$ ls
-ABC01.jpg ABC02.jpg DEF01_labeled.fits
-@end example
-
-
-
-
-@node Numeric data types, Tables in Gnuastro, Automatic output, Common program behavior
+@node Numeric data types, Tables, Multi-threaded operations, Common program behavior
 @section Numeric data types
 
 @cindex Bit
@@ -5187,7 +5205,7 @@ convert them to the most efficient type.
 The short and long names for the recognized numeric data types in Gnuastro
 are listed below. Both short and long names can be used when you want to
 speicy a type. For example, as a value to the common option @option{--type}
-(see @ref{Input output}), or in the information comment lines of
+(see @ref{Input output options}), or in the information comment lines of
 @ref{Gnuastro text table format}. The ranges listed below are inclusive.
 
 @table @code
@@ -5263,8 +5281,8 @@ range of types.
 
 
 
-@node Tables in Gnuastro, Getting help, Numeric data types, Common program behavior
-@section Tables in Gnuastro
+@node Tables, Tessellation, Numeric data types, Common program behavior
+@section Tables
 
 ``A table is a collection of related data held in a structured format
 within a database. It consists of columns, and rows.'' (from
@@ -5319,7 +5337,7 @@ table. They are thoroughly discussed in @ref{Selecting table columns}.
 * Selecting table columns::     Identify/select certain columns from a table
 @end menu
 
-@node Recognized table formats, Gnuastro text table format, Tables in Gnuastro, Tables in Gnuastro
+@node Recognized table formats, Gnuastro text table format, Tables, Tables
 @subsection Recognized table formats
 
 The list of table formats that Gnuastro can currently read from and write
@@ -5415,7 +5433,7 @@ also contain non-numerical columns.
 * Gnuastro text table format::  Reading plain text tables
 @end menu
 
-@node Gnuastro text table format, Selecting table columns, Recognized table formats, Tables in Gnuastro
+@node Gnuastro text table format, Selecting table columns, Recognized table formats, Tables
 @subsection Gnuastro text table format
 
 Plain text files are most generic, portable, and easiest way to (manually)
@@ -5595,7 +5613,7 @@ reading/converting into a file, or with the @file{gnuastro/table.h} library
 functions when reading into memory).
 
 
-@node Selecting table columns,  , Gnuastro text table format, Tables in Gnuastro
+@node Selecting table columns,  , Gnuastro text table format, Tables
 @subsection Selecting table columns
 
 At the lowest level, the only defining aspect of a column in a table is its
@@ -5635,8 +5653,8 @@ ask for column 0, the respective program will abort with an error. When the
 value can't be interpretted as an a integer number, it will be seen as a
 string of characters which will be used to match/search in the table's
 meta-data. The meta-data field which the value will be compared with can be
-selected through the @option{--searchin} option, see @ref{Input
-output}. @option{--searchin} can take three values: @code{name},
+selected through the @option{--searchin} option, see @ref{Input output
+options}. @option{--searchin} can take three values: @code{name},
 @code{unit}, @code{comment}. The matching will be done following this
 convention:
 
@@ -5658,7 +5676,7 @@ matches the given value in the given field will be selected.
 @end itemize
 
 Note that in both cases, you can ignore the case of alphabetic characters
-with the @option{--ignorecase} option, see @ref{Input output}. Also, in
+with the @option{--ignorecase} option, see @ref{Input output options}. Also, in
 both cases, multiple columns may be selected with one call to this
 function. In this case, the order of the selected columns (with one call)
 will be the same order as they appear in the table.
@@ -5666,7 +5684,104 @@ will be the same order as they appear in the table.
 
 
 
-@node Getting help, Output headers, Tables in Gnuastro, Common program behavior
+
+@node Tessellation, Getting help, Tables, Common program behavior
+@section Tessellation
+
+It is sometimes necessary to classify the elements in a dataset (for
+example pixels in an image) into a grid of individual, non-overlapping
+tiles. For example when background sky gradients are present in an image,
+you can define a tile grid over the image. When the tile sizes are set
+properly, the background's variation over each tile will be negligble,
+allowing you to measure (and subtract) it. In other cases (for example
+spatial domain convolution in Gnuastro, see @ref{Convolve}), it might
+simply be for speed of processing, since each tile can be processed
+independently on a separate CPU thread. In the arts and mathematics, this
+process is formally known as
+@url{https://en.wikipedia.org/wiki/Tessellation, tessellation}.
+
+The size of the regular tiles (in units of data-elements, or pixels in an
+image) can be defined with the @option{--tilesize} option. It takes
+multiple numbers (separated by a comma) which will be the length along the
+respective dimension (in Fortran/FITS order). For example
+@option{--tilesize=30,40} can be used for an image (a 2D dataset). The
+regular tile size along the first FITS axis (horizontal when viewed in SAO
+ds9) will be 30 pixels and along the second it will be 40 pixels. Ideally,
+@option{--tilesize} should be selected such that all tiles in the image
+have exactly the same size. In other words, that the dataset length in each
+dimension is divisible by the tile size in that dimension.
+
+However, this is not always possible: the dataset can be any size and every
+pixel in it is valuable. In such cases, Gnuastro will look at the
+significance of the remainder length, if it is not significant (for example
+one or two pixels), then it will just increase the size of the first tile
+in the respective dimension and allow the rest of the tiles to have the
+required size. When the remainder is significant (for example one pixel
+less than the size along that dimension), the remainder will be added to
+one regular tile's size and the large tile will be cut in half and put in
+the two ends of the grid/tessellation. In this way, all the tiles in the
+central regions of the dataset will have the regular tile sizes and the
+tiles on the edge will be slightly smaller. You can set the significance
+fraction with the @option{--remainderfrac} option.
+
+The best tile size is directly related to the spatial properties of the
+gradient on the image. In practice we assume that the gradient is not
+present over each tile. So if there is a strong gradient (for example in
+long wavelength ground based images) or the image is of a crowded area
+where there isn't too much blank area, you have to choose a smaller tile
+size. A larger mesh will give more pixels and so the scatter in the results
+will be less.
+
+@cindex CCD
+@cindex Amplifier
+@cindex Bias current
+@cindex Subaru Telescope
+@cindex Hyper Suprime-Cam
+@cindex Hubble Space Telescope
+For raw image processing, a single tesselation/grid is not sufficient. Raw
+images are the unprocessed outputs of the camera detectors. Modern
+detectors usually have multiple readout channels each with its own
+amplifier. For example the Hubble Space Telescope Advanced Camera for
+Surveys (ACS) has four amplifiers over its full detector area dividing the
+square field of view to four smaller squares. Ground based image detectors
+are not exempt, for example each CCD of Subaru Telescope's Hyper
+Suprime-Cam camera (which has 104 CCDs) has four amplifiers, but they have
+the same height of the CCD and divide the width by four parts.
+
+@cindex Channel
+The bias current on each amplifier is different, and initial bias
+subtraction is not perfect. So even after subtracting the measured bias
+current, you can usually still identify the boundaries of different
+amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015) for an
+example. This results in the final reduced data to have non-uniform
+amplifier-shaped regions with higher or lower background flux values. Such
+systematic biases will then propagate to all subsequent measurements we do
+on the data (for example photometry and subsequent stellar mass and star
+formation rate measurements in the case of galaxies).
+
+Therefore an accurate analysis requires a lower-level tesselation: with
+larger tiles, each large tile covering one amplifier channel. For clarity
+we'll call these larger tiles ``channels''. The number of channels along
+each dimension is defined through the @option{--numchannels}. Each channel
+will then be covered by its own individual smaller tessellation (with tile
+sizes determined by the @option{--tilesize} option). This will allow two
+adjacent pixels from different channels to never be considered together in
+the higher-level analysis. If the image is processed or the detector only
+has one amplifier, you can set the number of channels in both axes to 1.
+
+The final tesselation can be seen on the image with the
+@option{--checktiles} option that is available to all programs which use
+tessellation for localized operations. When this option is called, a FITS
+file with a @file{_mesh.fits} suffix will be created along with the
+outputs, see @ref{Automatic output}. Each pixel in this image has the ID of
+the tile that covers it. If the number of channels in any dimension are
+larger than unity, you will notice that the tile IDs are defined such that
+the first channels is covered first, then the second and so on.
+
+
+
+
+@node Getting help, Automatic output, Tessellation, Common program behavior
 @section Getting help
 
 @cindex Help
@@ -5979,8 +6094,62 @@ list. We have other mailing lists and tools for those purposes, see
 
 
 
+@node Automatic output, Output headers, Getting help, Common program behavior
+@section Automatic output
 
-@node Output headers,  , Getting help, Common program behavior
+@cindex Automatic output file names
+@cindex Output file names, automatic
+@cindex Setting output file names automatically
+All the programs in Gnuastro are designed such that specifying an
+output file or directory (based on the program context) is optional.
+The outputs of most programs are automatically found based on the
+input and what the program does. For example when you are converting a
+FITS image named @file{FITSimage.fits} to a JPEG image, the JPEG image
+will be saved in @file{FITSimage.jpg}.
+
+@vindex --keepinputdir
+Another very important part of the automatic output generation is that
+all the directory information of the input file name is stripped off
+of it. This feature can be disabled with the @option{--keepinputdir}
+option, see @ref{Common options}. It is the default because
+astronomical data are usually very large and organized specially with
+special file names. In some cases, the user might not have write
+permissions in those directories. In fact, even if the data is stored
+on your own computer, it is advised to only grant write permissions to
+the super user or root. This way, you won't accidentally delete or
+modify your valuable data!
+
+Let's assume that we are working on a report and want to process the
+FITS images from two projects (ABC and DEF), which are stored in the
+sub-directories named @file{ABCproject/} and @file{DEFproject/} of our
+top data directory (@file{/mnt/data}). The following shell commands
+show how one image from the former is first converted to a JPEG image
+through ConvertType and then the objects from an image in the latter
+project are detected using NoiseChisel. The text after the @command{#}
+sign are comments (not typed!).
+
+@example
+$ pwd                                               # Current location
+/home/usrname/research/report
+$ ls                                         # List directory contents
+ABC01.jpg
+$ ls /mnt/data/ABCproject                                  # Archive 1
+ABC01.fits ABC02.fits ABC03.fits
+$ ls /mnt/data/DEFproject                                  # Archive 2
+DEF01.fits DEF02.fits DEF03.fits
+$ astconvertt /mnt/data/ABCproject/ABC02.fits --output=jpg    # Prog 1
+$ ls
+ABC01.jpg ABC02.jpg
+$ astnoisechisel /mnt/data/DEFproject/DEF01.fits              # Prog 2
+$ ls
+ABC01.jpg ABC02.jpg DEF01_labeled.fits
+@end example
+
+
+
+
+
+@node Output headers,  , Automatic output, Common program behavior
 @section Output headers
 
 @cindex Output FITS headers
@@ -6100,11 +6269,11 @@ first. From the start of the computer age, different formats have been
 difined to store data, optimized for pariticular applications, one
 format/container can never be useful for all applications. In astronomy,
 FITS is the most common format of data storage and transmission. It has
-many useful features, for example multiple data containers (also known as
+many useful features, for example multiple sub-containers (also known as
 extensions or header data units, HDUs) within one file. Each HDU can store
-independent data and its corresponding meta-data. Therefore, Gnuastro has
-one program (see @ref{Fits}) specifically designed to manipulate FITS HDUs
-and the meta-data (header keywords) in each HDU.
+independent dataset and its corresponding meta-data. Therefore, Gnuastro
+has one program (see @ref{Fits}) specifically designed to manipulate FITS
+HDUs and the meta-data (header keywords) in each HDU.
 
 Your astronomical research does not just involve data analysis (where the
 FITS format is very useful). For example you want to demonstrate your raw
@@ -6117,18 +6286,18 @@ along with EPS and PDF (which can only be created from FITS, not the other
 way round).
 
 Finally, the FITS format is not just for images, it can also store
-tables. Binary tables in particular can be very useful in storing catalogs
-that have more than a few tens of columns and rows. However, unlike images
-(where all elements/pixels have one data type), tables contain multiple
-columns and each column can have different properties: independent data
-types (see @ref{Numeric data types}) and meta-data. In practice, each
-column can be viewed as a separate container that is grouped with others in
-the table. The only shared property of the colums in a FITS table is thus
-the number of elements they contain. To allow easy inspection/manipulation
-of table columns, Gnuastro has the Table program (see @ref{Table}). It can
-be used to select certain table columns in a FITS table and see them as a
-human readable output on the command-line, or to save them into another
-plain text or FITS table.
+tables. Binary tables in particular can be very efficient in storing
+catalogs that have more than a few tens of columns and rows. However,
+unlike images (where all elements/pixels have one data type), tables
+contain multiple columns and each column can have different properties:
+independent data types (see @ref{Numeric data types}) and meta-data. In
+practice, each column can be viewed as a separate container that is grouped
+with others in the table. The only shared property of the colums in a table
+is thus the number of elements they contain. To allow easy
+inspection/manipulation of table columns, Gnuastro has the Table program
+(see @ref{Table}). It can be used to select certain table columns in a FITS
+table and see them as a human readable output on the command-line, or to
+save them into another plain text or FITS table.
 
 @menu
 * Fits::                        View and manipulate extensions and keywords.
@@ -6910,10 +7079,10 @@ In ConvertType, it is possible to call the HDU option multiple times for
 the different input FITS files (corresponding to different color channels)
 in the same order that they are called on the command-line. Except for the
 fact that multiple calls are possible, this option is identical to the
-common @option{--hdu} in @ref{Input output}. The number of calls to this
-option cannot be less than the number of input FITS files, but if there are
-more, the extra HDUs will be ignored, note that they will be read in the
-order described in @ref{Configuration file precedence}.
+common @option{--hdu} in @ref{Input output options}. The number of calls to
+this option cannot be less than the number of input FITS files, but if
+there are more, the extra HDUs will be ignored, note that they will be read
+in the order described in @ref{Configuration file precedence}.
 @end table
 
 @noindent
@@ -7043,7 +7212,7 @@ therefore be @mymath{2^8-1=255}. With this option you can change (decrease)
 the maximum value. By doing so you will decrease the dynamic range. It can
 be useful if you plan to use those values for other purposes.
 
-@item -i INT
+@item -A INT
 @itemx --flminbyte=INT
 If the lowest pixel value in the input channels is larger than the value to
 @option{--fluxlow}, then that input value will be redundant. In some
@@ -7052,7 +7221,7 @@ correspond to that flux even if the data do not reach that value. With this
 option you can do this. Note that if the minimum pixel value is smaller
 than @option{--fluxlow}, then this option is redundant.
 
-@item -a INT
+@item -B INT
 @itemx --fhmaxbyte=INT
 See @option{--flminbyte}.
 
@@ -7093,7 +7262,7 @@ are stored in the human readable ASCII format, but within the FITS file
 structure. These are mainly useful for keeping ASCII data along with images
 and possibly binary data as multiple (conceptually related) extensions
 within a FITS file. The acceptable table formats are fully described in
-@ref{Tables in Gnuastro}.
+@ref{Tables}.
 
 @cindex AWK
 @cindex GNU AWK
@@ -7130,7 +7299,7 @@ some simple examples.
 
 Table will read/write, select, convert, or show the information of the
 columns in FITS ASCII table, FITS binary table and plain text table files,
-see @ref{Tables in Gnuastro}. Output columns can also be determined by number or
+see @ref{Tables}. Output columns can also be determined by number or
 regular expression matching of column names, units, or comments. The
 executable name is @file{asttable} with the following general template
 
@@ -7580,7 +7749,7 @@ for more.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, Crop will run in parallel unless you set
-@option{--numthreads=1}, see @ref{Threads in Gnuastro}. Note that when
+@option{--numthreads=1}, see @ref{Multi-threaded operations}. Note that when
 multiple threads are being used, in verbose mode, the outputs will not be
 in order. This is because the threads are asynchronous and thus not started
 in order. This has no effect on the output, see @ref{Hubble visually checks
@@ -7850,7 +8019,7 @@ with this option, see @ref{Blank pixels}.
 Operating mode options:
 @table @option
 
-@item -M STR
+@item -O STR
 @itemx --mode=STR
 Operate in Image mode or WCS mode when the input coordinates can be both
 image or WCS. The value must either be @option{img} or @option{wcs}, see
@@ -8452,8 +8621,8 @@ explained below:
 
 @item -h INT/STR
 @itemx --hdu INT/STR
-The header data unit of the input FITS images, see @ref{Input
-output}. Unlike most options in Gnuastro (which will ultimately only have
+The header data unit of the input FITS images, see @ref{Input output
+options}. Unlike most options in Gnuastro (which will ultimately only have
 one value for this option), Arithmetic allows @option{--hdu} to be called
 multiple times and the value of each invocation will be stored separately
 (for the unlimited number of input images you would like to use). Recall
@@ -10795,101 +10964,7 @@ are ultimately poor approximations.
 @cindex Mesh grid
 @cindex Tile grid
 @cindex Tessellation
-Some of the programs in Gnuastro will need to divide the pixels in an image
-into a grid of individual, non-overlapping tiles. In the arts and
-mathematics, this process is formally known as
-@url{https://en.wikipedia.org/wiki/Tessellation, tessellation}. Defining a
-tessellation over a dataset (image) is necessary in many contexts. Their
-most common application is to account for local variations over the dataset
-(for example background sky gradients, which are more common as we go to
-longer/redder wavelengths/filters).
 
-In this section we will explain the concept in detail and how you can check
-the grid. In the case of SubtractSky, if the image is completely uniform
-then one sky value will suffice for the whole image. See @ref{Sky value}
-for the definition of the sky value.  Unfortunately though, as discussed in
-@ref{SubtractSky}, in most images taken with ground or space-based
-telescopes the sky value is not uniform. So we have to break the image up
-into small tiles on a grid, assume the Sky value is constant over them and
-find the sky value on those tiles.
-
-The size of the regular tiles (in units of data-elements, or pixels in an
-image) can be defined with the @option{--tilesize} option. It takes
-multiple numbers (separated by a comma) which will be the length along the
-respective dimension (in Fortran/FITS order). For example
-@option{--tilesize=30,40} can be used for an image (a 2D dataset). The
-regular tile size along the first FITS axis (horizontal when viewed in SAO
-ds9) will be 30 pixels and along the second it will be 40 pixels. Ideally,
-@option{--tilesize} should be selected such that all tiles in the image
-have exactly the same size (in other words, that the dataset length in each
-dimension is divisible by the tile size in that dimension).
-
-However, this is not always possible: the dataset can be any size and every
-pixel in it is valuable. In such cases, Gnuastro will look at the
-significance of the remainder length, if it is not significant (for example
-one or two pixels), then it will just increase the size of the first tile
-in the respective dimension and allow the rest of the tiles to have the
-required size. When the remainder is significant (for example one pixel
-less than the size along that dimension), the remainder will be added to
-one regular tile's size and the large tile will be cut in half and put in
-the two ends of the grid/tessellation. In this way, all the tiles in the
-central regions of the dataset will have the regular tile sizes and the
-tiles on the edge will be slightly smaller. You can set the significance
-fraction with the @option{--remainderfrac} option.
-
-The best tile size is directly related to the spatial properties of the
-gradient on the image. In practice we assume that the gradient is not
-present over each tile. So if there is a strong gradient (for example in
-long wavelength ground based images) or the image is of a crowded area
-where there isn't too much blank area, you have to choose a smaller tile
-size. A larger mesh will give more pixels and so the scatter in the results
-will be less.
-
-@cindex CCD
-@cindex Amplifier
-@cindex Bias current
-@cindex Subaru Telescope
-@cindex Hyper Suprime-Cam
-@cindex Hubble Space Telescope
-For raw image processing, a single tesselation/grid is not sufficient. Raw
-images are the unprocessed outputs of the camera detectors. Modern
-detectors usually have multiple readout channels each with its own
-amplifier. For example the Hubble Space Telescope Advanced Camera for
-Surveys (ACS) has four amplifiers over its full detector area dividing the
-square field of view to four smaller squares. Ground based image detectors
-are not exempt, for example each CCD of Subaru Telescope's Hyper
-Suprime-Cam camera (which has 104 CCDs) has four amplifiers, but they have
-the same height of the CCD and divide the width by four parts.
-
-@cindex Channel
-The bias current on each amplifier is different, and initial bias
-subtraction is not perfect. So even after subtracting the measured bias
-current, you can usually still identify the boundaries of different
-amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015) for an
-example. This results in the final reduced data to have non-uniform
-amplifier-shaped regions with higher or lower background flux values. Such
-systematic biases will then propagate to all subsequent measurements we do
-on the data (for example photometry and subsequent stellar mass and star
-formation rate measurements in the case of galaxies).
-
-Therefore an accurate analysis requires a lower-level tesselation: with
-larger tiles, each large tile covering one amplifier channel. For clarity
-we'll call these larger tiles ``channels''. The number of channels along
-each dimension is defined through the @option{--numchannels}. Each channel
-will then be covered by its own individual smaller tessellation (with tile
-sizes determined by the @option{--tilesize} option). This will allow two
-adjacent pixels from different channels to never be considered together in
-the higher-level analysis. If the image is processed or the detector only
-has one amplifier, you can set the number of channels in both axes to 1.
-
-The final tesselation can be seen on the image with the
-@option{--checktiles} option that is available to all programs which use
-tessellation for localized operations. When this option is called, a FITS
-file with a @file{_mesh.fits} suffix will be created along with the
-outputs, see @ref{Automatic output}. Each pixel in this image has the ID of
-the tile that covers it. If the number of channels in any dimension are
-larger than unity, you will notice that the tile IDs are defined such that
-the first channels is covered first, then the second and so on.
 
 @menu
 * Quantifying signal in a mesh::  Good meshs for gradients.
@@ -11600,8 +11675,8 @@ programs including Statistics, see @ref{Common options} for those.
 @itemx --column=STR/INT
 The input column selector when the input file is a table. See
 @ref{Selecting table columns} for a full description of how to use this
-option. For more on how tables are read in Gnuastro, please see @ref{Tables
-in Gnuastro}.
+option. For more on how tables are read in Gnuastro, please see
+@ref{Tables}.
 
 @item -r STR/INT
 @itemx --refcol=STR/INT
@@ -11685,7 +11760,7 @@ Print the mean (average) of all used elements.
 @itemx --std
 Print the standard deviation of all used elements.
 
-@item -M
+@item -E
 @itemx --median
 Print the median of all used elements.
 
@@ -14277,7 +14352,7 @@ $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @noindent
 If mock images are to be made, a catalog (which stores the parameters for
 each mock profile) is mandatory. The catalog can be in the FITS ASCII, FITS
-binary format, or plain text formats (see @ref{Tables in Gnuastro}). The
+binary format, or plain text formats (see @ref{Tables}). The
 columns related to each paramter can be determined both by number, or by
 match/search criteria using the column names, units, or comments. with the
 options ending in @option{col}, see below. Without any file given to the
@@ -14366,7 +14441,7 @@ all the information about the output image. Hence, the following options
 will be ignored: @option{--naxis1}, @option{--naxis2}, @option{--crpix1},
 @option{--crpix2}, @option{--crval1}, @option{--crval2},
 @option{--resolution}, @option{--oversample}, and data type (see
-@option{--type} in @ref{Input output}).
+@option{--type} in @ref{Input output options}).
 
 The image will act like a canvas to build the profiles on: profile pixel
 values will be summed with the background image pixel values. With the
@@ -14666,7 +14741,7 @@ radial parameter of the profile (the value in the @option{--rcol} of the
 catalog). If @option{--tunitinp} is given, this value is interpreted in
 units of pixels (prior to oversampling) irrespective of the profile.
 
-@item -F
+@item -f
 @itemx --mforflatpix
 When making fixed value profiles (flat and circumference, see
 `@option{--fcol}'), don't use the value in the column specified by
@@ -16570,8 +16645,8 @@ pointed to by @code{numhdu}.
 
 @deftypefun void gal_fits_read_hdu (char @code{*filename}, char @code{*hdu}, unsigned char @code{img0_tab1}, fitsfile @code{**outfptr})
 Open the HDU @code{hdu} (a string) of the @file{filename} FITS file into
-the @code{outfptr}. See @option{--hdu} option in @ref{Input output} for the
-accepted HDU formats.
+the @code{outfptr}. See @option{--hdu} option in @ref{Input output options}
+for the accepted HDU formats.
 @end deftypefun
 
 @deftypefun void gal_fits_read_keywords (char @code{*filename}, char @code{*hdu}, struct gal_fits_key @code{*keys}, size_t @code{num})
@@ -16678,7 +16753,7 @@ Read the FITS image (in the @code{hdu} extension of @code{filename}). The
 image array will be stored in @code{array} and the number of pixels in the
 first and second C axis will be stored in @code{s0} and @code{s1}. The type
 of the array will be kept in @code{bitpix}. See @option{--hdu} in
-@ref{Input output} for the acceptable formats of @code{hdu}.
+@ref{Input output options} for the acceptable formats of @code{hdu}.
 @end deftypefun
 
 @deftypefun void gal_fits_array_to_file (char @code{*filename}, char @code{*extname}, int @code{bitpix}, void @code{*array}, size_t @code{s0}, size_t @code{s1}, int @code{anyblank}, struct wcsprm @code{*wcs}, struct gal_fits_key_ll @code{*headers}, char @code{*spack_string})

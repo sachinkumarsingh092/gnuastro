@@ -122,11 +122,12 @@ ui_initialize_options(struct cropparams *p,
 
 
   /* Set the necessary common parameters structure. */
-  cp->poptions           = program_options;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
+  cp->poptions           = program_options;
+  cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
 
@@ -136,33 +137,36 @@ ui_initialize_options(struct cropparams *p,
   cp->searchin    = GAL_TABLE_SEARCH_INVALID;
 
 
-  /* Set the mandatory common options. */
+  /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    switch(cp->coptions[i].key)
-      {
-      case GAL_OPTIONS_KEY_HDU:
-        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-        cp->coptions[i].doc="Extension name or number of (all) input(s).";
-        break;
+    {
+      /* Select individually */
+      switch(cp->coptions[i].key)
+        {
+        case GAL_OPTIONS_KEY_HDU:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          cp->coptions[i].doc="Extension name or number of (all) input(s).";
+          break;
 
-      case GAL_OPTIONS_KEY_MINMAPSIZE:
-        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-        break;
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          break;
 
-      case GAL_OPTIONS_KEY_SEARCHIN:
-        cp->coptions[i].group=ARGS_GROUP_CENTER_CATALOG;
-        break;
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_IGNORECASE:
+          cp->coptions[i].group=ARGS_GROUP_CENTER_CATALOG;
+          break;
+        }
 
-      case GAL_OPTIONS_KEY_IGNORECASE:
-        cp->coptions[i].group=ARGS_GROUP_CENTER_CATALOG;
-        break;
-      }
-
-
-  /* Read the number of threads available to the user, this should be done
-     before reading command-line and configuration file options, since they
-     can change it.  */
-  cp->numthreads=gal_threads_number();
+      /* Select by group. */
+      switch(cp->coptions[i].group)
+        {
+        case GAL_OPTIONS_GROUP_TESSELLATION:
+          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+    }
 }
 
 

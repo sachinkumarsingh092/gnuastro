@@ -127,32 +127,44 @@ ui_initialize_options(struct converttparams *p,
   p->quality             = UINT8_MAX;
   p->maxbyte             = UINT8_MAX;
 
-  /* Edit the common options. */
+  /* Modify the common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    switch(cp->coptions[i].key)
-      {
-      case GAL_OPTIONS_KEY_HDU:
-        cp->coptions[i].value=&p->hdus;
-        cp->coptions[i].type=GAL_DATA_TYPE_STRLL;
-        cp->coptions[i].doc="FITS input HDU, multiple calls possible.";
-        break;
+    {
+      /* Select individually */
+      switch(cp->coptions[i].key)
+        {
+        case GAL_OPTIONS_KEY_HDU:
+          cp->coptions[i].value=&p->hdus;
+          cp->coptions[i].type=GAL_DATA_TYPE_STRLL;
+          cp->coptions[i].doc="FITS input HDU, multiple calls possible.";
+          break;
 
-      case GAL_OPTIONS_KEY_OUTPUT:
-        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-        cp->coptions[i].doc="Output filename or suffix.";
-        break;
+        case GAL_OPTIONS_KEY_OUTPUT:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          cp->coptions[i].doc="Output filename or suffix.";
+          break;
 
-      case GAL_OPTIONS_KEY_MINMAPSIZE:
-        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-        break;
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          break;
 
-      case GAL_OPTIONS_KEY_TYPE:
-      case GAL_OPTIONS_KEY_SEARCHIN:
-      case GAL_OPTIONS_KEY_IGNORECASE:
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
-        cp->coptions[i].flags=OPTION_HIDDEN;
-        break;
-      }
+        case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+
+      /* Select by group. */
+      switch(cp->coptions[i].group)
+        {
+        case GAL_OPTIONS_GROUP_TESSELLATION:
+          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+    }
 }
 
 

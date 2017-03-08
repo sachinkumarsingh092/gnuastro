@@ -776,8 +776,9 @@ convolve(struct convolveparams *p)
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
-      gal_tile_all_position_two_layers(p->input, p->channelsize, p->tilesize,
-                                       p->remainderfrac, &channels, &tiles);
+      gal_tile_all_position_two_layers(p->input, p->cp.channelsize,
+                                       p->cp.tilesize, p->cp.remainderfrac,
+                                       &channels, &tiles);
 
       /* Save the tile IDs if they are requested. */
       if(p->tilesname)
@@ -785,7 +786,7 @@ convolve(struct convolveparams *p)
 
       /* Do the spatial convolution. */
       out=gal_convolve_spatial(tiles, p->kernel, p->cp.numthreads,
-                               p->convoverch);
+                               p->cp.workoverch);
 
       /* Clean up */
       gal_data_free(p->input);

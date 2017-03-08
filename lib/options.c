@@ -48,25 +48,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/**********************************************************************/
-/************                Declarations               ***************/
-/**********************************************************************/
-/* Declaration of `option_parse_file' that is defined below, since it is
-   also needed in `options_immediate', but it fits into context below
-   better. */
-static void
-options_parse_file(char *filename,  struct gal_options_common_params *cp,
-                   int enoent_abort);
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -298,8 +279,120 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
 
 /**********************************************************************/
-/************     Parser functions for common options    ***************/
+/************     Parser functions for common options   ***************/
 /**********************************************************************/
+void *
+gal_options_check_version(struct argp_option *option, char *arg,
+                          char *filename, size_t lineno, void *junk)
+{
+  /* Check if the given value is different from this version. */
+  if( strcmp(arg, PACKAGE_VERSION) )
+    {
+      /* Print an error message and abort.  */
+      error_at_line(EXIT_FAILURE, 0, filename, lineno, "version mis-match: "
+                    "you are running GNU Astronomy Utilities (Gnuastro) "
+                    "version `%s'. However, the `onlyversion' option is set "
+                    "to version `%s'.\n\n"
+                    "This was probably done for reproducibility. Therefore, "
+                    "manually removing, or changing, the option value might "
+                    "produce errors or unexpected results. It is thus "
+                    "strongly advised to build Gnuastro %s and re-run this "
+                    "command/script.\n\n"
+                    "You can download previously released tar-balls from the "
+                    "following URLs respectively:\n\n"
+                    "    Stable (version format: X.Y):      "
+                    "http://ftpmirror.gnu.org/gnuastro\n"
+                    "    Alpha  (version format: X.Y.A-B):  "
+                    "http://alpha.gnu.org/gnu/gnuastro\n\n"
+                    "Alternatively, you can clone Gnuastro, checkout the "
+                    "respective commit (from the version number), then "
+                    "bootstrap and build it. Please run the following "
+                    "command for more information:\n\n"
+                    "    $ info gnuastro \"Version controlled source\"\n",
+                    PACKAGE_VERSION, arg, arg);
+
+      /* Just to avoid compiler warnings for unused variables. The program
+         will never reach this point! */
+      arg=filename=NULL; lineno=0; option=NULL; junk=NULL;
+    }
+  return NULL;
+}
+
+
+
+
+
+void *
+gal_options_print_citation(struct argp_option *option, char *arg,
+                           char *filename, size_t lineno, void *pa)
+{
+  struct gal_options_common_params *cp=(struct gal_options_common_params *)pa;
+  char *gnuastro_bibtex=
+    "Gnuastro package/infrastructure\n"
+    "-------------------------------\n"
+    "  @ARTICLE{2015ApJS..220....1A,\n"
+    "     author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"
+    "      title = \"{Noise-based Detection and Segmentation of Nebulous "
+    "Objects}\",\n"
+    "    journal = {\\apjs},\n"
+    "  archivePrefix = \"arXiv\",\n"
+    "     eprint = {1505.01664},\n"
+    "   primaryClass = \"astro-ph.IM\",\n"
+    "   keywords = {galaxies: irregular, galaxies: photometry, "
+    "galaxies: structure, methods: data analysis, "
+    "techniques: image processing, techniques: photometric},\n"
+    "       year = 2015,\n"
+    "      month = sep,\n"
+    "     volume = 220,\n"
+    "        eid = {1},\n"
+    "      pages = {1},\n"
+    "        doi = {10.1088/0067-0049/220/1/1},\n"
+    "     adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"
+    "    adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"
+    "  }";
+
+
+  /* Print the statements. */
+  printf("\nThank you for using %s (%s) %s.\n\n", cp->program_name,
+         PACKAGE_NAME, PACKAGE_VERSION);
+  printf("Citations are vital for the continued work on Gnuastro.\n\n"
+         "Please cite these BibTeX record(s) in your paper(s).\n"
+         "(don't forget to also include the version as shown above)\n\n"
+         "%s\n\n",
+         gnuastro_bibtex);
+
+
+  /* Only print the citation for the program if one exists. */
+  if(cp->program_bibtex[0]!='\0') printf("%s\n\n", cp->program_bibtex);
+
+
+  /* Print a thank you message. */
+  printf("                                               ,\n"
+         "                                              {|'--.\n"
+         "                                             {{\\    \\\n"
+         "      Many thanks from all                   |/`'--./=.\n"
+         "      Gnuastro developers!                   `\\.---' `\\\\\n"
+         "                                                  |\\  ||\n"
+         "                                                  | |//\n"
+         "                                                   \\//_/|\n"
+         "                                                   //\\__/\n"
+         "                                                  //\n"
+         "                   (http://www.chris.com/ascii/) |/\n");
+
+
+
+  /* Exit the program. */
+  exit(EXIT_SUCCESS);
+
+  /* Just to avoid compiler warnings for unused variables. The program
+     will never reach this point! */
+  arg=filename=NULL; lineno=0; option=NULL;
+}
+
+
+
+
+
 void *
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno, void *junk)
@@ -423,7 +516,7 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
 #define PARSE_SIZES_STATICSTR_LEN 2000
 void *
 gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
-                                char *filename, size_t lineno, void *params)
+                                char *filename, size_t lineno, void *junk)
 {
   int i;
   double *v;
@@ -520,122 +613,6 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
 /**********************************************************************/
 /************              Option actions               ***************/
 /**********************************************************************/
-
-static void
-options_check_version(char *version_string)
-{
-  if( strcmp(version_string, PACKAGE_VERSION) )
-    error(EXIT_FAILURE, 0, "version mis-match: you are running GNU "
-          "Astronomy Utilities version %s, but this program was configured "
-          "to run with version %s (value to the `onlyversion' option, "
-          "either in a configuration file or on the command-line). This was "
-          "probably done for reproducibility. Therefore, removing, or "
-          "changing, the option value might produce errors or unexpected "
-          "results. It is hence strongly advised to build GNU Astronomy "
-          "Utilities version %s and re-run this command/script",
-          PACKAGE_VERSION, version_string, version_string);
-}
-
-
-
-
-
-static void
-options_print_citation_exit(struct gal_options_common_params *cp)
-{
-  char *gnuastro_bibtex=
-    "Gnuastro package/infrastructure\n"
-    "-------------------------------\n"
-    "  @ARTICLE{2015ApJS..220....1A,\n"
-    "     author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"
-    "      title = \"{Noise-based Detection and Segmentation of Nebulous "
-    "Objects}\",\n"
-    "    journal = {\\apjs},\n"
-    "  archivePrefix = \"arXiv\",\n"
-    "     eprint = {1505.01664},\n"
-    "   primaryClass = \"astro-ph.IM\",\n"
-    "   keywords = {galaxies: irregular, galaxies: photometry, "
-    "galaxies: structure, methods: data analysis, "
-    "techniques: image processing, techniques: photometric},\n"
-    "       year = 2015,\n"
-    "      month = sep,\n"
-    "     volume = 220,\n"
-    "        eid = {1},\n"
-    "      pages = {1},\n"
-    "        doi = {10.1088/0067-0049/220/1/1},\n"
-    "     adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"
-    "    adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"
-    "  }";
-
-
-  /* Print the statements. */
-  printf("\nThank you for using %s (%s) %s.\n\n", cp->program_name,
-         PACKAGE_NAME, PACKAGE_VERSION);
-  printf("Citations are vital for the continued work on Gnuastro.\n\n"
-         "Please cite these BibTeX record(s) in your paper(s).\n"
-         "(don't forget to also include the version as shown above)\n\n"
-         "%s\n\n",
-         gnuastro_bibtex);
-
-
-  /* Only print the citation for the program if one exists. */
-  if(cp->program_bibtex[0]!='\0') printf("%s\n\n", cp->program_bibtex);
-
-
-  /* Print a thank you message. */
-  printf("                                               ,\n"
-         "                                              {|'--.\n"
-         "                                             {{\\    \\\n"
-         "      Many thanks from all                   |/`'--./=.\n"
-         "      Gnuastro developers!                   `\\.---' `\\\\\n"
-         "                                                  |\\  ||\n"
-         "                                                  | |//\n"
-         "                                                   \\//_/|\n"
-         "                                                   //\\__/\n"
-         "                                                  //\n"
-         "                   (http://www.chris.com/ascii/) |/\n");
-
-
-
-  /* Exit the program. */
-  exit(EXIT_SUCCESS);
-}
-
-
-
-
-
-/* Some options need immediate attention/action before continuing to read
-   the rest of the options. In these cases we need to (maybe) check and
-   (possibly) abort immediately. */
-void
-options_immediate(int key, char *arg, struct gal_options_common_params *cp)
-{
-  switch(key)
-    {
-    /* We don't want later options that were set for the given version to
-       cause errors if this option was given. */
-    case GAL_OPTIONS_KEY_ONLYVERSION:
-      options_check_version(arg);
-      break;
-
-    /* This option is completely independent of anything and doesn't need
-       out attention later. */
-    case GAL_OPTIONS_KEY_CITE:
-      options_print_citation_exit(cp);
-      break;
-
-    /* Read the given configuration file. */
-    case GAL_OPTIONS_KEY_CONFIG:
-      options_parse_file(arg, cp, 1);
-      break;
-    }
-}
-
-
-
-
-
 /* The option value has been read and put into the `value' field of the
    `argp_option' structure. This function will use the `range' field to
    define a check and abort with an error if the value is not in the given
@@ -809,12 +786,29 @@ options_sanity_check(struct argp_option *option, char *arg,
 
 static void
 gal_options_read_check(struct argp_option *option, char *arg, char *filename,
-                       size_t lineno, void *program_struct)
+                       size_t lineno, struct gal_options_common_params *cp)
 {
-  /* If a function is defined to process the value, then use it. */
+  void *topass;
+
+  /* If a function is defined, leave everything to the function. */
   if(option->func)
     {
-      option->func(option, arg, filename, lineno, program_struct);
+      /* For the functions that are defined here (for all programs) and
+         need the last pointer, we must pass the `cp' pointer. For the
+         rest, we must pass the `cp->program_struct'. */
+      switch(option->key)
+        {
+        case GAL_OPTIONS_KEY_CITE:
+        case GAL_OPTIONS_KEY_CONFIG:
+          topass=cp;
+          break;
+        default:
+          topass=cp->program_struct;
+        }
+
+      /* Call the function to parse the value, flag the option as set and
+         return. */
+      option->func(option, arg, filename, lineno, topass);
       option->set=GAL_OPTIONS_SET;
       return;
     }
@@ -916,9 +910,6 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
       /* Check if the key corresponds to this option. */
       if( options[i].key==key )
         {
-          /* For options that need immediate attention. */
-          options_immediate(key, arg, cp);
-
           /* When options are read from keys (by this function), they are
              read from the command-line. On the commandline, the last
              invokation of the option is important. Especially in contexts
@@ -934,9 +925,7 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
             options[i].set=GAL_OPTIONS_NOT_SET;
 
           /* Parse the value. */
-          gal_options_read_check(&options[i], arg, NULL, 0,
-                                 cp->program_struct);
-
+          gal_options_read_check(&options[i], arg, NULL, 0, cp);
 
           /* We have found and set the value given to this option, so just
              return success (an error_t of 0 means success). */
@@ -1098,17 +1087,23 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
       /* Check if the key corresponds to this option. */
       if( options[i].name && !strcmp(options[i].name, name) )
         {
-          /* If the option already has a value and it isn't a linked list,
-             or it is not relevant to this program, then ignore it. */
-          if( options[i].set && !gal_data_is_linked_list(options[i].type ) )
+          /* Ignore this option and its value. This can happen in several
+             situations:
+
+               - Not all common options are used by all programs. When a
+                 program doesn't use an option, it will be given an
+                 `OPTION_HIDDEN' flag. There is no point in reading the
+                 values of such options.
+
+               - When the option already has a value AND it ISN'T a linked
+                 list. */
+          if( options[i].flags==OPTION_HIDDEN
+              || ( options[i].set
+                   && !gal_data_is_linked_list(options[i].type ) ) )
             return 0;
 
-          /* For options that need immediate attention. */
-          options_immediate(options[i].key, arg, cp);
-
           /* Read the value into the option and do a sanity check. */
-          gal_options_read_check(&options[i], arg, filename, lineno,
-                                 cp->program_struct);
+          gal_options_read_check(&options[i], arg, filename, lineno, cp);
 
           /* We have found and set the value given to this option, so just
              return success (an error_t of 0 means success). */
@@ -1116,7 +1111,9 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
         }
       else
         {
-          /* The last option has all its values set to zero. */
+          /* The last option has all its values set to zero. If we get to
+             this point then the given name was not recognized and this
+             function will return a 1. */
           if(gal_options_is_last(&options[i]))
             return 1;
         }
@@ -1219,6 +1216,23 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
 
   /* Clean up and return. */
   free(line);
+}
+
+
+
+
+/* This function will be used when the `--config' option is called. */
+void *
+gal_options_call_parse_config_file(struct argp_option *option, char *arg,
+                                   char *filename, size_t lineno, void *cp)
+{
+  /* Call the confguration file parser. */
+  options_parse_file(arg, cp, 1);
+
+  /* Just to avoid compiler warnings, then return, note that all pointers
+     are just copies. */
+  option=NULL; filename=NULL; lineno=0;
+  return NULL;
 }
 
 

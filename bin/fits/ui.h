@@ -29,10 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   b e f g j l m n s v x y z
-   A B E F G J L M O W X Y Z
-
-*/
+   b e f g i j l m n s v x y z
+   A B E G J L O W X Y
+ */
 enum option_keys_enum
 {
   /* With short-option version. */

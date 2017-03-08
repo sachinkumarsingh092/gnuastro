@@ -97,6 +97,7 @@ ui_initialize_options(struct cosmiccalparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
+  size_t i;
   struct gal_options_common_params *cp=&p->cp;
 
   /* Set the necessary common parameters structure. */
@@ -108,7 +109,20 @@ ui_initialize_options(struct cosmiccalparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Speed of light: */
-  p->c=GSL_CONST_MKSA_SPEED_OF_LIGHT;
+  p->c                   = GSL_CONST_MKSA_SPEED_OF_LIGHT;
+
+  /* Modify the common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    {
+      /* Select by group. */
+      switch(cp->coptions[i].group)
+        {
+        case GAL_OPTIONS_GROUP_TESSELLATION:
+          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+    }
 }
 
 

@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Available letters for short options:
 
    a b e f g i j l n p s v w x y z
-   A B E F G J L M O Q R W X Y Z
+   A B E G J L O Q R W X Y
 */
 enum option_keys_enum
 {

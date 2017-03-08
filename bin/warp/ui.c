@@ -126,17 +126,29 @@ ui_initialize_options(struct warpparams *p,
 
   /* Set the mandatory common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    switch(cp->coptions[i].key)
-      {
-      case GAL_OPTIONS_KEY_MINMAPSIZE:
-        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-        break;
+    {
+      /* Select individually. */
+      switch(cp->coptions[i].key)
+        {
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          break;
 
-      case GAL_OPTIONS_KEY_SEARCHIN:
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
-        cp->coptions[i].flags=OPTION_HIDDEN;
-        break;
-      }
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+
+      /* Select by group. */
+      switch(cp->coptions[i].group)
+        {
+        case GAL_OPTIONS_GROUP_TESSELLATION:
+          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+    }
 }
 
 

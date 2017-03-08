@@ -221,6 +221,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct convolveparams *p)
 {
+  struct gal_options_common_params *cp=&p->cp;
+
   /* Read the domain from a string into an integer. */
   if( !strcmp("spatial", p->domainstr) )
     p->domain=CONVOLVE_DOMAIN_SPATIAL;
@@ -233,16 +235,16 @@ ui_read_check_only_options(struct convolveparams *p)
   /* If we are in the spatial domain, make sure that the necessary
      parameters are set. */
   if( p->domain==CONVOLVE_DOMAIN_SPATIAL )
-    if( p->tilesize==NULL || p->numchannels==NULL )
+    if( cp->tilesize==NULL || cp->numchannels==NULL )
       {
-        if( p->tilesize==NULL && p->numchannels==NULL )
+        if( cp->tilesize==NULL && cp->numchannels==NULL )
           error(EXIT_FAILURE, 0, "in spatial convolution, `--numchannels' "
                 "and `--tilesize' are mandatory");
         else
           error(EXIT_FAILURE, 0, "in spatial convolution, `--%s' is "
                 "mandatory: you should use it to set the %s",
-                p->tilesize ? "numchannels" : "tilesize",
-                ( p->tilesize
+                cp->tilesize ? "numchannels" : "tilesize",
+                ( cp->tilesize
                   ? "number of channels along each dimension of the input"
                   : "size of tiles to cover the input along each "
                   "dimension" ) );
@@ -315,8 +317,8 @@ ui_preparations(struct convolveparams *p)
   size_t i, size;
   gal_data_t *sum;
   float *kernel, tmp;
+  struct gal_options_common_params *cp=&p->cp;
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
-
 
   /* Set the output name if the user hasn't set it. */
   if(p->cp.output==NULL)
@@ -329,7 +331,7 @@ ui_preparations(struct convolveparams *p)
                                                      "_freqsteps.fits");
       gal_checkset_check_remove_file(p->freqstepsname, 0, p->cp.dontdelete);
     }
-  if(p->checktiles)
+  if(cp->checktiles)
     {
       p->tilesname=gal_checkset_automatic_output(&p->cp, p->filename,
                                                  "_tiled.fits");
@@ -360,8 +362,9 @@ ui_preparations(struct convolveparams *p)
                 PROGRAM_NAME);
     }
   else
-    p->channelsize=gal_tile_all_sanity_check(p->filename, p->cp.hdu, p->input,
-                                             p->tilesize, p->numchannels);
+    cp->channelsize=gal_tile_all_sanity_check(p->filename, p->cp.hdu,
+                                              p->input, cp->tilesize,
+                                              cp->numchannels);
 
 
 
