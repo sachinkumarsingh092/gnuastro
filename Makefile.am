@@ -158,9 +158,9 @@ all-local:
 	 echo "Gnuastro $(VERSION), was successfully built.";                        \
 	 echo "Please check the build on your system by running:";                   \
 	 echo;                                                                       \
-	 echo "    make check";                                                      \
+	 echo "    make check -j8";                                                  \
 	 echo;                                                                       \
-	 echo "(Check faster on N threads with 'make check -jN'.)";                  \
+	 echo "(You can change the 8 to the number of CPU threads available.)";      \
 	 echo "(The following \"Leaving directory\" notices can be ignored.)";       \
 	 echo "==================================================================="; \
 	 echo "==================================================================="; \
