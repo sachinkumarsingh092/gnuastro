@@ -315,7 +315,7 @@ ui_make_change_struct(char *arg)
   char *p=arg;
   gal_data_t *data;
   size_t len=0, counter=0;
-  struct change *out, *last=NULL, *ch;
+  struct change *out=NULL, *last=NULL, *ch;
 
   /* First set all the delimiters to `\0' and count the number of
      characters in the full string. */
@@ -506,7 +506,7 @@ static void
 ui_prepare_input_channels(struct converttparams *p)
 {
   struct wcsprm *wcs=NULL;
-  size_t i, ndim, *dsize=NULL;
+  size_t i, ndim=0, *dsize=NULL;
   gal_data_t *tmp, *blank, *prev;
 
   /* Fill in the channels linked list. */

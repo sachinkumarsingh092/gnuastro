@@ -116,6 +116,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "noedgecorrection",
+      ARGS_OPTION_KEY_NOEDGECORRECTION,
+      0,
+      0,
+      "Do not correct the edges in the spatial domain",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->noedgecorrection,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

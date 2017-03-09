@@ -89,7 +89,7 @@ statistics_print_one_row(struct statisticsparams *p)
   double arg, *d;
   float mirrdist=1.5;
   struct gal_linkedlist_ill *tmp;
-  gal_data_t *out, *tmpv, *num=NULL, *min=NULL, *max=NULL;
+  gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
 
 
@@ -278,7 +278,7 @@ print_ascii_plot(struct statisticsparams *p, gal_data_t *plot,
 static void
 ascii_plots(struct statisticsparams *p)
 {
-  gal_data_t *bins, *hist, *cfp;
+  gal_data_t *bins, *hist, *cfp=NULL;
 
   /* Make the bins and the respective plot. */
   bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);

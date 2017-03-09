@@ -81,6 +81,7 @@ struct convolveparams
   uint8_t     checkfreqsteps;  /* View the frequency domain steps.        */
   char            *domainstr;  /* String value specifying domain.         */
   size_t          makekernel;  /* Make a kernel to create input.          */
+  uint8_t   noedgecorrection;  /* Do not correct spatial edge effects.    */
 
   /* Internal */
   int                 domain;  /* Frequency or spatial domain conv.       */

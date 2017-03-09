@@ -8894,18 +8894,18 @@ only disperses them.
 @node Edges in the spatial domain,  , Convolution process, Spatial domain convolution
 @subsubsection Edges in the spatial domain
 
-In purely `linear' spatial filtering (convolution), there are problems
-on the edges of the input image. Here we will explain the problem in
-the spatial domain, see @ref{Edges in the frequency domain}. The
-problem originates from the fact that on the edges, in
-practice@footnote{Because we assumed the overlapping pixels outside
-the input image have a value of zero.}, the sum of the weights we use
-on the actual image pixels is not unity. For example, as discussed
-above, a profile in the center of an image will have the same
-brightness before and after convolution. However, for a profile on the
-edge of the image, the brightness (sum of its pixel fluxes within the
-image, see @ref{Flux Brightness and magnitude}) will not be equal,
-some of the flux is going to be `eaten' by the edges.
+In purely `linear' spatial filtering (convolution), there are problems on
+the edges of the input image. Here we will explain the problem in the
+spatial domain. For a discussion of this problem from the frequency domain
+perspective, see @ref{Edges in the frequency domain}. The problem
+originates from the fact that on the edges, in practice@footnote{Because we
+assumed the overlapping pixels outside the input image have a value of
+zero.}, the sum of the weights we use on the actual image pixels is not
+unity. For example, as discussed above, a profile in the center of an image
+will have the same brightness before and after convolution. However, for
+partially imaged profile on the edge of the image, the brightness (sum of
+its pixel fluxes within the image, see @ref{Flux Brightness and magnitude})
+will not be equal, some of the flux is going to be `eaten' by the edges.
 
 If you ran @command{$ make check} on the source files of Gnuastro, you can
 see the this effect by comparing the @file{convolve_frequency.fits} with
@@ -8914,22 +8914,24 @@ spatial domain, by default, no assumption will be made about pixels outside
 of the image or any blank pixels in the image. The problem explained above
 will also occur on the sides of blank regions (see @ref{Blank pixels}). The
 solution to this edge effect problem is only possible in the spatial
-domain. We have to discard the assumption that the sum of the kernel pixels
-is unity during the convolution process@footnote{ofcourse the sum of the
-kernel pixels still have to be unity.}. So taking @mymath{W} as the sum of
-the kernel pixels that used non-blank and in-image pixels, the equation in
+domain. For pixels near the edge, we have to abandon the assumption that
+the sum of the kernel pixels is unity during the convolution
+process@footnote{ofcourse the sum of the kernel pixels still have to be
+unity in general.}. So taking @mymath{W} as the sum of the kernel pixels
+that overlapped with non-blank and in-image pixels, the equation in
 @ref{Convolution process} will become:
 
 @dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
 
 @noindent
-In this manner, objects which are near the sides of the image or blank
-pixels will also have the same brightness (within the image) before
-and after convolution. This correction is applied by default in
-Convolve when convolving in the spatial domain. To disable it, you can
-use the @option{--noedgecorrection} option. In the frequency domain,
-there is no way to avoid this loss of flux near the edges of the
-image, see @ref{Edges in the frequency domain}.
+In this manner, objects which are near the edges of the image or blank
+pixels will also have the same brightness (within the image) before and
+after convolution. This correction is applied by default in Convolve when
+convolving in the spatial domain. To disable it, you can use the
+@option{--noedgecorrection} option. In the frequency domain, there is no
+way to avoid this loss of flux near the edges of the image, see @ref{Edges
+in the frequency domain} for an interpretation from the frequency domain
+perspective.
 
 Note that the edge effect discussed here is different from the one in
 @ref{If convolving afterwards}. In making mock images we want to
@@ -9971,23 +9973,14 @@ keep its value in at least one of the configuration files (see
 @ref{Configuration files}). By default, the system configuration file has a
 value.
 
-@item --fullconvolution
-Ignore the (possible) channels in the mesh grid when doing spatial
-convolution, see @ref{Tiling an image}. When applied over a mesh grid,
-spatial convolution will be done independently on each channel. This
-is necessary when the noise properties of each channel are different
-and so the pixels should not be mixed. With this option, all channel
-information is going to be ignored. Currently this option is not
-deployed for the frequency space convolutions.
-
 @end table
 
 
 @node Invoking astconvolve,  , Convolution kernel, Convolve
 @subsection Invoking Convolve
 
-Convolve an input image with a known kernel. The general template for
-Convolve is:
+Convolve an input image with a known kernel or make the kernel necessary to
+match two PSFs. The general template for Convolve is:
 
 @example
 $ astconvolve [OPTION...] ASTRdata
@@ -9998,20 +9991,18 @@ One line examples:
 
 @example
 $ astconvolve --kernel=psf.fits mockimg.fits
+$ astconvolve observedimg.fits --domain=spatial
 $ astconvolve --kernel=sharperimage.fits --makekernel=10 \
               blurryimage.fits
 @end example
 
-The only argument accepted by Convolve is an input image file. Some of
-the options are the same between Convolve and some other Gnuastro
+The only argument accepted by Convolve is an input image file. Some of the
+options are the same between Convolve and some other Gnuastro
 programs. Therefore, to avoid repetition, they will not be repeated
-here. For the full list of options shared by all Gnuastro programs,
-please see @ref{Common options}. @ref{Mesh grid options} lists all the
-options related to specifying a mesh grid which is currently only used
-in spatial convolution. Note that here, no interpolation or smoothing
-is defined, only channels and the mesh size are
-important. @ref{Convolution kernel} lists the the convolution kernel
-options.
+here. For the full list of options shared by all Gnuastro programs, please
+see @ref{Common options}. In particular, in the spatial domain convolve
+uses Gnuastro's tessellation, see @ref{Tessellation} and the common options
+related to that in @ref{Processing options}.
 
 Here we will only explain the options particular to Convolve. Run Convolve
 with @option{--help} in order to see the full list of options Convolve
@@ -10092,8 +10083,11 @@ convolved profile(s) did not convert, the values are now
 errors. Therefore in the final step (when cropping the central parts
 of the image), we also remove any pixel with a value less than
 @mymath{10^{-17}}.
-
 @end enumerate
+
+@item --noedgecorrection
+Do not correct the edge effect in spatial domain convolution. For a full
+discussion, please see @ref{Edges in the spatial domain}.
 
 @item -m INT
 @itemx --makekernel=INT
@@ -11187,57 +11181,7 @@ program with this option.
 @node Mesh grid options,  , Checking grid values, Tiling an image
 @subsubsection Mesh grid options
 
-The mesh grid structure defined here (see @ref{Tiling an image}) is
-used by more than one program. Therefore in order to avoid repetition,
-all the options to do with the mesh grid (and are shared by all the
-programs using it) are listed here.
-
-Some programs might define multiple meshs over the image (for example
-in NoiseChisel, there is a large and a small mesh for different
-operations, see @ref{NoiseChisel}), in such cases, the options for
-each mesh are designated by an appropriate prefix. For example in
-NoiseChisel the small and large mesh sizes are specified through the
-@option{--smeshsize} and @option{--lmeshsize} respectively. Both these
-options are similar to the @option{--meshsize} option explained below,
-but for their respective grid. Note that the short option name might
-also differ. If such options exist in a program, they are listed in
-the `Invoking ProgramName' section within the list of options.
-
 @table @option
-
-@item -s INT
-@itemx --tilesize=INT
-The size of each mesh, see @ref{Tiling an image}. If the width of all
-channels are not an exact multiple of the specified size, then the last
-mesh on each axis will have a different size to cover the full channel.
-
-@item -a INT
-@itemx --nch1=INT
-The number of channels along the first FITS axis (horizontal when viewed in
-SAO ds9). If the length of the image is not an exact multiple of this
-number, then the program will stop. You can use Crop (@ref{Crop}) to trim
-off or add some pixels (blank pixels if added, see @ref{Blank pixels}) to
-the image if it is not an exact multiple.
-
-@item -b INT
-@itemx --nch2=INT
-The number of channels along the second FITS axis, (vertical when viewed in
-SAO ds9). Similar to @option{--nch1}.
-
-@item -L FLT
-@itemx --lastmeshfrac=FLT
-Fraction of extra area on the last (rightest on the first FITS axis and
-highest/top on the second) mesh, to define a new (smaller) one. See
-@ref{Tiling an image}.
-
-@item --checkmesh
-An image with suffix @file{_mesh.fits} will be created for you to
-check the mesh grid, see @ref{Tiling an image}. The input image will
-be the first extension, followed by an extension, where each pixel is
-labeled (number starting from zero) by the ID of the mesh it belongs
-to. If the program uses multiple mesh grids, the output will have more
-than two extensions. By flipping through the extensions, you can check
-the positioning and size of the meshs.
 
 @item -d FLT
 @itemx --mirrordist=FLT

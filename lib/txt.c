@@ -1262,8 +1262,8 @@ gal_txt_write(gal_data_t *datall, struct gal_linkedlist_stll *comment,
 {
   FILE *fp;
   char **fmts;
-  gal_data_t *data, *next2d;
   size_t i, j, num=0, fmtlen;
+  gal_data_t *data, *next2d=NULL;
 
 
   /* Currently only 1 and 2 dimension datasets are acceptable. */

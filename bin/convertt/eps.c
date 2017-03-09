@@ -240,7 +240,7 @@ eps_write_hex(struct converttparams *p, FILE *fp, size_t size)
 {
   unsigned char *in;
   gal_data_t *channel;
-  size_t i, elem_for_newline=35;
+  size_t i=0, j, elem_for_newline=35;
 
   for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
@@ -250,13 +250,14 @@ eps_write_hex(struct converttparams *p, FILE *fp, size_t size)
         {
           in=channel->array;
           fprintf(fp, "{<");
-          for(i=0;i<size;++i)
+          for(j=0;j<size;++j)
             {
-              fprintf(fp, "%02X", in[i]);
-              if(i%elem_for_newline==0) fprintf(fp, "\n");
+              fprintf(fp, "%02X", in[j]);
+              if(j%elem_for_newline==0) fprintf(fp, "\n");
             }
           fprintf(fp, ">}\n");
         }
+      ++i;
     }
 }
 
@@ -270,7 +271,7 @@ eps_write_ascii85(struct converttparams *p, FILE *fp, size_t size)
   unsigned char *in;
   gal_data_t *channel;
   uint32_t anint, base;
-  size_t i, j, elem_for_newline=15;   /* 15*5=75 */
+  size_t i=0, j, k, elem_for_newline=15;   /* 15*5=75 */
 
   for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
@@ -280,18 +281,18 @@ eps_write_ascii85(struct converttparams *p, FILE *fp, size_t size)
         {
           in=channel->array;
           fprintf(fp, "{<~");
-          for(i=0;i<size;i+=4)
+          for(j=0;j<size;j+=4)
             {
               /* This is the last four bytes */
-              if(size-i<4)
+              if(size-j<4)
                 {
-                  anint=in[i]*256*256*256;
-                  if(size-i>1)  anint+=in[i+1]*256*256;
-                  if(size-i==3) anint+=in[i+2]*256;
+                  anint=in[j]*256*256*256;
+                  if(size-j>1)  anint+=in[j+1]*256*256;
+                  if(size-j==3) anint+=in[j+2]*256;
                 }
               else
-                anint=( in[i]*256*256*256 + in[i+1]*256*256
-                        + in[i+2]*256     + in[i+3]         );
+                anint=( in[j]*256*256*256 + in[j+1]*256*256
+                        + in[j+2]*256     + in[j+3]         );
 
               /* If all four bytes are zero, then just print `z'. */
               if(anint==0) fprintf(fp, "z");
@@ -304,7 +305,7 @@ eps_write_ascii85(struct converttparams *p, FILE *fp, size_t size)
                   */
                   base=85*85*85*85;
                   /* Do the ASCII85 encoding: */
-                  for(j=0;j<5;++j)
+                  for(k=0;k<5;++k)
                     {
                       fprintf(fp, "%c", anint/base+33);
                       anint%=base;
@@ -312,10 +313,11 @@ eps_write_ascii85(struct converttparams *p, FILE *fp, size_t size)
                     }
                 }
               /* Go to the next line if on the right place: */
-              if(i%elem_for_newline==0) fprintf(fp, "\n");
+              if(j%elem_for_newline==0) fprintf(fp, "\n");
             }
           fprintf(fp, "~>}\n");
         }
+      ++i;
     }
 }
 

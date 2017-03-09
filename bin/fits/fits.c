@@ -42,7 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
 {
-  char *action;
+  char *action=NULL;
   int r=EXIT_SUCCESS;
 
   switch(actioncode)
@@ -87,7 +87,7 @@ fits_print_extension_info(struct fitsparams *p)
   char **tstra, **estra, **sstra;
   size_t i, numext, *dsize, ndim;
   int j, nc, numhdu, hdutype, status=0, type;
-  char *msg, *tstr, *estr, sstr[1000], extname[FLEN_VALUE];
+  char *msg, *tstr=NULL, *estr=NULL, sstr[1000], extname[FLEN_VALUE];
 
 
   /* Open the FITS file and read the first extension type, upon moving to

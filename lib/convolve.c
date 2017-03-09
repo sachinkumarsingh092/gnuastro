@@ -92,6 +92,7 @@ struct spatial_params
   gal_data_t  *tiles;
   gal_data_t *kernel;
   int     convoverch;
+  int edgecorrection;
 };
 
 
@@ -327,7 +328,8 @@ convolve_spatial_tile(struct spatial_params *cprm, size_t tile_ind,
               k_start=kernel->array; k_start+=k_start_inc;
 
               /* Go over the kernel-overlap region. */
-              ksum=sum=0.0f; k_inc=0; o_inc=0; o_ninc=1; kv=k_start;
+              ksum = cprm->edgecorrection ? 0.0f : 1.0f;
+              sum=0.0f; k_inc=0; o_inc=0; o_ninc=1; kv=k_start;
               while( o_st_en[0] + o_inc <= o_st_en[1] )
                 {
                   /* Go over the contiguous region. When there is full
@@ -340,7 +342,10 @@ convolve_spatial_tile(struct spatial_params *cprm, size_t tile_ind,
                   do
                     {
                       if( !isnan(*iv) )
-                        { ksum += *kv; sum += *iv * *kv; }
+                        {
+                          sum += *iv * *kv;
+                          if(cprm->edgecorrection) ksum += *kv;
+                        }
                       ++kv;
                     }
                   while(++iv<ivf);
@@ -356,7 +361,9 @@ convolve_spatial_tile(struct spatial_params *cprm, size_t tile_ind,
                 }
 
               /* Set the output value. */
-              out[ in_v - in ] = ksum==0.0f ? NAN : sum/ksum;
+              out[ in_v - in ] = ( ksum==0.0f
+                                   ? NAN
+                                   : sum/ksum );
             }
 
           /* Increment the last coordinate. */
@@ -416,7 +423,7 @@ convolve_spatial_on_thread(void *inparam)
    spatial convolution can be very series of tiles arranged as an array. */
 gal_data_t *
 gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
-                     size_t numthreads, int convoverch)
+                     size_t numthreads, int edgecorrection, int convoverch)
 {
   struct spatial_params params;
   gal_data_t *out, *block=gal_tile_block(tiles);
@@ -440,6 +447,7 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
   params.tiles=tiles;
   params.kernel=kernel;
   params.convoverch=convoverch;
+  params.edgecorrection=edgecorrection;
 
   /* Do the spatial convolution on threads. */
   gal_tile_function_on_threads(tiles, convolve_spatial_on_thread,

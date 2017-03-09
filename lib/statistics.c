@@ -1376,7 +1376,7 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
 {
   size_t i;
   gal_data_t *bins, *tmp, *range;
-  double *b, *ra, min, max, hbw, diff, binwidth;
+  double *b, *ra, min=NAN, max=NAN, hbw, diff, binwidth;
 
 
   /* Some sanity checks. */
@@ -1797,10 +1797,10 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   int sortstatus;
   double *med, *mean, *std;
   void *start, *sorted_array;
-  double oldmed, oldmean, oldstd;
   size_t num=0, dsize=4, size, oldsize;
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
-  gal_data_t *sorted, *median_i, *median_d, *out, *meanstd, *noblank;
+  double oldmed=NAN, oldmean=NAN, oldstd=NAN;
+  gal_data_t *sorted=NULL, *median_i, *median_d, *out, *meanstd, *noblank;
   size_t maxnum = param>=1.0f ? param : GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE;
 
   /* Some sanity checks. */

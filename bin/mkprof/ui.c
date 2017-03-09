@@ -374,10 +374,10 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
 static void
 ui_read_cols(struct mkprofparams *p)
 {
-  char *colname;
   int checkblank;
+  char *colname=NULL;
   size_t counter=0, i;
-  gal_data_t *cols, *tmp, *corrtype;
+  gal_data_t *cols, *tmp, *corrtype=NULL;
   char *ax1col=p->racol?p->racol:p->xcol;
   char *ax2col=p->deccol?p->deccol:p->ycol;
   struct gal_linkedlist_stll *colstrs=NULL;

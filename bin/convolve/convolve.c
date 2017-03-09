@@ -784,9 +784,12 @@ convolve(struct convolveparams *p)
       if(p->tilesname)
         gal_tile_block_check_tiles(tiles, p->tilesname, PROGRAM_NAME);
 
-      /* Do the spatial convolution. */
+      /* Do the spatial convolution. One of the main reason someone would
+         want to do spatial domain convolution with this Convolve program
+         is edge correction. So by default we assume it and will only
+         ignore it if the user asks.*/
       out=gal_convolve_spatial(tiles, p->kernel, p->cp.numthreads,
-                               p->cp.workoverch);
+                               !p->noedgecorrection, p->cp.workoverch);
 
       /* Clean up */
       gal_data_free(p->input);
