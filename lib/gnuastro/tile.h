@@ -73,9 +73,8 @@ size_t
 gal_tile_block_increment(gal_data_t *block, size_t *tsize,
                          size_t num_increment, size_t *coord);
 
-void
-gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
-                           char *program_name);
+gal_data_t *
+gal_tile_block_check_tiles(gal_data_t *tiles);
 
 
 
@@ -87,11 +86,11 @@ size_t *
 gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
                           size_t *tile, size_t *numchannels);
 
-size_t
+size_t *
 gal_tile_all_position(gal_data_t *input, size_t *regular,
                       float remainderfrac, gal_data_t **out, size_t multiple);
 
-void
+size_t *
 gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
                                  size_t *tile_size, float remainderfrac,
                                  gal_data_t **channels, gal_data_t **tiles);

@@ -224,8 +224,8 @@ fits_print_extension_info(struct fitsparams *p)
     {
       printf("%s\nRun on %s-----\n", PROGRAM_STRING, ctime(&p->rawtime));
       printf("HDU (extension) information: `%s'.\n", p->filename);
-      printf(" Column 1: Index (counting from 0).\n");
-      printf(" Column 2: Name (`EXTNAME' in FITS standard).\n");
+      printf(" Column 1: Index (counting from 0, usable with `--hdu').\n");
+      printf(" Column 2: Name (`EXTNAME' in FITS standard, usable with `--hdu').\n");
       printf(" Column 3: Image data type or `table' format (ASCII or "
              "binary).\n");
       printf(" Column 4: Size of data in HDU.\n");

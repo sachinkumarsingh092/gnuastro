@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   a b d e f i j k p v w x y z
+   a b e f i j k p v w x y z
    B G J L R W X Y
 */
 enum option_keys_enum
@@ -41,7 +41,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_LESSTHAN     = 'l',
   ARGS_OPTION_KEY_QRANGE       = 'Q',
   ARGS_OPTION_KEY_MEAN         = 'm',
-  ARGS_OPTION_KEY_STD          = 't',
+  ARGS_OPTION_KEY_STD          = 'd',
   ARGS_OPTION_KEY_MEDIAN       = 'E',
   ARGS_OPTION_KEY_MODE         = 'O',
   ARGS_OPTION_KEY_QUANTILE     = 'u',
@@ -50,6 +50,7 @@ enum option_keys_enum
   ARGS_OPTION_KEY_CUMULATIVE   = 'C',
   ARGS_OPTION_KEY_SIGMACLIP    = 's',
   ARGS_OPTION_KEY_NORMALIZE    = 'n',
+  ARGS_OPTION_KEY_ONTILE       = 't',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

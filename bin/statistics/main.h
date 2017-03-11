@@ -37,6 +37,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Input formats. */
+enum statistics_input_format
+  {
+    INPUT_FORMAT_INVALID,
+
+    INPUT_FORMAT_TABLE,
+    INPUT_FORMAT_IMAGE,
+  };
+
+
+
 
 
 /* Main program parameters structure */
@@ -44,7 +55,7 @@ struct statisticsparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.             */
-  struct gal_linkedlist_ill  *toprint; /* Options to print in one row.   */
+  struct gal_linkedlist_ill  *singlevalue; /* Single value calculations. */
   struct gal_linkedlist_dll  *tp_args; /* Arguments for printing.        */
   char          *inputname;  /* Input filename.                          */
   char             *column;  /* Column name or number if input is table. */
@@ -53,6 +64,7 @@ struct statisticsparams
   float           lessthan;  /* Only use values <  this value.           */
   float           quantmin;  /* Quantile min or range: from Q to 1-Q.    */
   float           quantmax;  /* Quantile maximum.                        */
+  uint8_t           ontile;  /* Do single value calculations on tiles.   */
 
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
@@ -70,11 +82,12 @@ struct statisticsparams
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
 
   /* Internal */
+  uint8_t      inputformat;  /* Format of input dataset.                 */
   int          numoutfiles;  /* Number of output files made in this run. */
   uint8_t        needssort;  /* If sorting is needed.                    */
   gal_data_t        *input;  /* Input data structure.                    */
-  gal_data_t    *reference;  /* Reference data structure.                */
   gal_data_t       *sorted;  /* Sorted input data structure.             */
+  gal_data_t    *reference;  /* Reference data structure.                */
   int               isfits;  /* Input is a FITS file.                    */
   int             hdu_type;  /* Type of HDU (image or table).            */
   time_t           rawtime;  /* Starting time of the program.            */

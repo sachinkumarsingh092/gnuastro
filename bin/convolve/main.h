@@ -89,10 +89,10 @@ struct convolveparams
   gal_data_t         *kernel;  /* Input Kernel array.                     */
   double               *pimg;  /* Padded image array.                     */
   double               *pker;  /* Padded kernel array.                    */
+  double               *rpad;  /* Real final image before removing pad'd. */
   size_t                 ps0;  /* Padded size along first C axis.         */
   size_t                 ps1;  /* Padded size along second C axis.        */
   char        *freqstepsname;  /* Name of file to check frequency steps.  */
-  char            *tilesname;  /* Name of file to check tiles.            */
   time_t             rawtime;  /* Starting time of the program.           */
 };
 

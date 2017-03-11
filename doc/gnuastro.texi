@@ -6396,9 +6396,9 @@ HDU, or modify the keywords, add new kewords or delete some others.
 @node Invoking astfits,  , Fits, Fits
 @subsection Invoking Fits
 
-Fits can print or manipulate the FITS file HDUs (extensions), or print an
-manipulate the meta-data keywords in a given HDU. The executable name is
-@file{astfits} with the following general template
+Fits can print or manipulate the FITS file HDUs (extensions), meta-data
+keywords in a given HDU. The executable name is @file{astfits} with the
+following general template
 
 @example
 $ astfits [OPTION...] ASTRdata
@@ -6410,8 +6410,8 @@ One line examples:
 
 @example
 $ astfits image.fits
-$ astfits image.fits --printall
-$ astfits image.fits --printall | grep NAXIS
+$ astfits image.fits --printallkeys
+$ astfits image.fits --printallkeys | grep NAXIS
 $ astfits input.fits --copy=hdu-name --output=out.fits
 $ astfits --update=OLDKEY,153.034,"Old keyword comment"
 $ astfits --delete=COMMENT --comment="Anything you like ;-)."
@@ -6419,17 +6419,18 @@ $ astfits --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
 @cindex HDU
-When no paritcular HDU or keyword options are given, Fits will print a list
-of information about the extension(s) in the file. This information
-includes the HDU number, name, along with the type, and size the data it
-contains (dimension and size along each dimension). You can use this to get
-a general idea of the contents of the FITS file and what HDU to use for
-further processing, either with the Fits program or any other Gnuastro
-program.
+When no action is requested (and only a file name is given), Fits will
+print a list of information about the extension(s) in the file. This
+information includes the HDU number, HDU name (@code{EXTNAME} keyword),
+type of data (see @ref{Numeric data types}, and the number of data elements
+it contains (size along each dimension for images and table rows and
+columns). You can use this to get a general idea of the contents of the
+FITS file and what HDU to use for further processing, either with the Fits
+program or any other Gnuastro program.
 
 Here is one example of information about a FITS file with four exensions:
-the first extension has no data, it is just meta-data (commonly used to
-keep meta-data about the whole file, or grouping of extensions, see
+the first extension has no data, it is a purely meta-data HDU (commonly
+used to keep meta-data about the whole file, or grouping of extensions, see
 @ref{Fits}). The second extension is an image with name @code{IMAGE} and
 single precision floating point type (@code{float32}, see @ref{Numeric data
 types}), it has 4287 pixels along its first (horizontal) axis and 4286

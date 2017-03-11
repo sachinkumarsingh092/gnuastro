@@ -31,6 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/tile.h>
+#include <gnuastro/multidim.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
@@ -96,7 +98,7 @@ statistics_print_one_row(struct statisticsparams *p)
   /* The user can ask for any of the operators more than once, also some
      operators might return more than one usable value (like mode). So we
      will calculate the desired values once, and then print them. */
-  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
+  for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
       /* Calculate respective values. Checking with `if(num==NULL)' gives
@@ -140,7 +142,7 @@ statistics_print_one_row(struct statisticsparams *p)
 
 
   /* Print every requested number. */
-  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
+  for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     {
       /* By default don't free anything. */
       mustfree=0;
@@ -207,6 +209,102 @@ statistics_print_one_row(struct statisticsparams *p)
   if(modearr) gal_data_free(modearr);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/**************         Single value on tile         ***************/
+/*******************************************************************/
+void
+statistics_on_tile(struct statisticsparams *p)
+{
+  uint8_t type;
+  size_t i, numtiles=0, ntiles, *tsize;
+  struct gal_linkedlist_ill *operation;
+  gal_data_t *channels, *tiles, *check, *tile, *values;
+
+  /* Make the tile structure. */
+  tsize=gal_tile_all_position_two_layers(p->input, p->cp.channelsize,
+                                         p->cp.tilesize, p->cp.remainderfrac,
+                                         &channels, &tiles);
+
+  /* Number of tiles. */
+  ntiles=gal_multidim_total_size(p->input->ndim, tsize);
+
+  /* Save the tile IDs if they are requested. */
+  if(p->cp.tilecheckname)
+    {
+      check=gal_tile_block_check_tiles(tiles);
+      if(p->inputformat==INPUT_FORMAT_IMAGE)
+        gal_fits_img_write(check, p->cp.tilecheckname, NULL, PROGRAM_NAME);
+      else
+        gal_table_write(check, NULL, p->cp.tableformat, p->cp.tilecheckname,
+                        p->cp.dontdelete);
+      gal_data_free(check);
+    }
+
+  /* Do the operation on each tile. */
+  for(operation=p->singlevalue; operation!=NULL; operation=operation->next)
+    {
+      /* Set the type of the output array. */
+      switch(operation->v)
+        {
+        case ARGS_OPTION_KEY_NUMBER:
+          type=GAL_DATA_TYPE_INT32; break;
+
+        case ARGS_OPTION_KEY_MINIMUM:
+        case ARGS_OPTION_KEY_MAXIMUM:
+        case ARGS_OPTION_KEY_SUM:
+        case ARGS_OPTION_KEY_MEDIAN:
+        case ARGS_OPTION_KEY_MODE:
+        case ARGS_OPTION_KEY_QUANTFUNC:
+          type=p->input->type; break;
+
+        case ARGS_OPTION_KEY_MEAN:
+        case ARGS_OPTION_KEY_STD:
+        case ARGS_OPTION_KEY_MODEQUANT:
+        case ARGS_OPTION_KEY_MODESYM:
+        case ARGS_OPTION_KEY_MODESYMVALUE:
+        case ARGS_OPTION_KEY_QUANTILE:
+          type=GAL_DATA_TYPE_FLOAT64; break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! %d is not a recognized operation "
+                "code in `statistics_on_tile'", operation->v);
+        }
+
+      /* Allocate the space necessary to keep the value for each tile. */
+      values=gal_data_alloc(NULL, type, p->input->ndim, tsize, NULL, 0,
+                            p->input->minmapsize, NULL, NULL, NULL);
+
+      for(tile=tiles; tile!=NULL; tile=tile->next);
+    }
+
+
+  /* Clean up. */
+  free(tsize);
+  gal_data_array_free(tiles, ntiles, 0);
+  gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
+
+  printf("\n... In statistics_on_tile ...\n");
+  exit(0);
+}
 
 
 
@@ -728,10 +826,11 @@ statistics(struct statisticsparams *p)
   int print_basic_info=1;
 
   /* Print the one-row numbers if the user asked for them. */
-  if(p->toprint)
+  if(p->singlevalue)
     {
       print_basic_info=0;
-      statistics_print_one_row(p);
+      if(p->ontile) statistics_on_tile(p);
+      else          statistics_print_one_row(p);
     }
 
   /* Print the ASCII plots if requested. */

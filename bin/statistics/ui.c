@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
@@ -85,7 +86,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do statistical "
 /* Option groups particular to this program. */
 enum program_args_groups
 {
-  ARGS_GROUP_IN_ONE_ROW = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  ARGS_GROUP_SINGLE_VALUE = GAL_OPTIONS_GROUP_AFTER_COMMON,
   ARGS_GROUP_PARTICULAR_STAT,
   ARGS_GROUP_HIST_CFP,
 };
@@ -203,8 +204,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
 static void *
-ui_add_to_print_in_row(struct argp_option *option, char *arg,
-                       char *filename, size_t lineno, void *params)
+ui_add_to_single_value(struct argp_option *option, char *arg,
+                      char *filename, size_t lineno, void *params)
 {
   size_t i;
   double *d;
@@ -240,7 +241,7 @@ ui_add_to_print_in_row(struct argp_option *option, char *arg,
         }
 
       /* Add this option to the print list. */
-      gal_linkedlist_add_to_ill(&p->toprint, option->key);
+      gal_linkedlist_add_to_ill(&p->singlevalue, option->key);
     }
   else
     {
@@ -264,7 +265,7 @@ ui_add_to_print_in_row(struct argp_option *option, char *arg,
                               "and 1, you had asked for %g (read from `%s')",
                               d[i], arg);
               gal_linkedlist_add_to_dll(&p->tp_args, d[i]);
-              gal_linkedlist_add_to_ill(&p->toprint, option->key);
+              gal_linkedlist_add_to_ill(&p->singlevalue, option->key);
             }
           break;
 
@@ -441,6 +442,22 @@ ui_read_check_only_options(struct statisticsparams *p)
   gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
 
 
+  /* If in tile-mode, we must have at least one single valued option. */
+  if(p->ontile && p->singlevalue==NULL)
+    error(EXIT_FAILURE, 0, "at least one of the single-value measurements "
+          "(for example `--median') must be requested with the `--ontile' "
+          "option: there is no value to put in each tile");
+
+  /* The tile mode cannot be called with any other modes. */
+  if(p->ontile && (p->asciihist || p->asciicfp || p->histogram
+                   || p->cumulative || !isnan(p->sigclipmultip)
+                   || !isnan(p->mirror) ) )
+    error(EXIT_FAILURE, 0, "`--ontile' cannot be called with any of the "
+          "`particular' calculation options, for example `--histogram'. "
+          "This is because these options deal with the whole dataset, "
+          "but in tessellation mode, the input dataset is broken up into "
+          "individual tiles");
+
   /* If less than and greater than are both given, make sure that the value
      to greater than is smaller than the value to less-than. */
   if( !isnan(p->lessthan) && !isnan(p->greaterequal)
@@ -476,7 +493,7 @@ ui_read_check_only_options(struct statisticsparams *p)
 
   /* Reverse the list of statistics to print in one row and also the
      arguments, so it has the same order the user wanted. */
-  gal_linkedlist_reverse_ill(&p->toprint);
+  gal_linkedlist_reverse_ill(&p->singlevalue);
   gal_linkedlist_reverse_dll(&p->tp_args);
 }
 
@@ -656,7 +673,7 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
   struct gal_linkedlist_ill *tmp;
 
   /* Check in the one-row outputs. */
-  for(tmp=p->toprint; tmp!=NULL; tmp=tmp->next)
+  for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
       case ARGS_OPTION_KEY_MODE:
@@ -763,29 +780,61 @@ ui_read_columns(struct statisticsparams *p)
 void
 ui_preparations(struct statisticsparams *p)
 {
+  struct gal_options_common_params *cp=&p->cp;
+
   /* Read the input. */
   if(p->isfits && p->hdu_type==IMAGE_HDU)
-    p->input=gal_fits_img_read(p->inputname, p->cp.hdu, p->cp.minmapsize);
-  else ui_read_columns(p);
+    {
+      p->inputformat=INPUT_FORMAT_IMAGE;
+      p->input=gal_fits_img_read(p->inputname, cp->hdu, cp->minmapsize);
+    }
+  else
+    {
+      ui_read_columns(p);
+      p->inputformat=INPUT_FORMAT_TABLE;
+    }
+
+  /* Tile and channel sanity checks. */
+  if(p->ontile)
+    {
+      /* Check the tiles. */
+      cp->channelsize=gal_tile_all_sanity_check(p->inputname, p->cp.hdu,
+                                                p->input, cp->tilesize,
+                                                cp->numchannels);
+
+      /* Set the tile file name if the user wants to check the tiles. */
+      if(cp->checktiles)
+        {
+          cp->tilecheckname=gal_checkset_automatic_output(&p->cp,
+                                                          p->inputname,
+                                                          "_tiled.fits");
+          gal_checkset_check_remove_file(cp->tilecheckname, 0,
+                                         cp->dontdelete);
+        }
+    }
 
   /* Set the out-of-range values in the input to blank. */
   ui_out_of_range_to_blank(p);
 
-  /* Only keep the numbers we want. */
-  gal_blank_remove(p->input);
+  /* If we are not to work on tiles: */
+  if(!p->ontile)
+    {
+      /* Only keep the numbers we want. */
+      gal_blank_remove(p->input);
 
-  /* Make sure there is any data remaining: */
-  if(p->input->size==0)
-    error(EXIT_FAILURE, 0, "%s: no data, maybe the `--greaterequal' or "
-          "`--lessthan' options need to be adjusted",
-          gal_fits_name_save_as_string(p->inputname, p->cp.hdu) );
+      /* Make sure there is any data remaining: */
+      if(p->input->size==0)
+        error(EXIT_FAILURE, 0, "%s: no data, maybe the `--greaterequal' or "
+              "`--lessthan' options need to be adjusted",
+              gal_fits_name_save_as_string(p->inputname, cp->hdu) );
 
-  /* Make the sorted array if necessary. */
-  ui_make_sorted_if_necessary(p);
+      /* Make the sorted array if necessary. */
+      ui_make_sorted_if_necessary(p);
 
-  /* Set the number of output files. */
-  if( !isnan(p->mirror) )             ++p->numoutfiles;
-  if( p->histogram || p->cumulative ) ++p->numoutfiles;
+      /* Set the number of output files. */
+      if( !isnan(p->mirror) )             ++p->numoutfiles;
+      if( p->histogram || p->cumulative ) ++p->numoutfiles;
+    }
 }
 
 
@@ -894,6 +943,6 @@ ui_free_report(struct statisticsparams *p)
     gal_data_free(p->sorted);
   gal_data_free(p->input);
   gal_data_free(p->reference);
-  gal_linkedlist_free_ill(p->toprint);
   gal_linkedlist_free_dll(p->tp_args);
+  gal_linkedlist_free_ill(p->singlevalue);
 }

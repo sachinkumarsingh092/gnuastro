@@ -333,9 +333,10 @@ ui_preparations(struct convolveparams *p)
     }
   if(cp->checktiles)
     {
-      p->tilesname=gal_checkset_automatic_output(&p->cp, p->filename,
-                                                 "_tiled.fits");
-      gal_checkset_check_remove_file(p->tilesname, 0, p->cp.dontdelete);
+      p->cp.tilecheckname=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                        "_tiled.fits");
+      gal_checkset_check_remove_file(p->cp.tilecheckname, 0,
+                                     p->cp.dontdelete);
     }
 
 
@@ -391,9 +392,11 @@ ui_preparations(struct convolveparams *p)
          1 and their division (in the frequency domain) would be
          meaningful. */
       sum=gal_statistics_sum(p->input);
+      sum=gal_data_copy_to_new_type_free(sum, GAL_DATA_TYPE_FLOAT32);
       p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
                                 GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
       sum=gal_statistics_sum(p->kernel);
+      sum=gal_data_copy_to_new_type_free(sum, GAL_DATA_TYPE_FLOAT32);
       p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
                                 GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
     }

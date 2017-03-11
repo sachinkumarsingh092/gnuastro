@@ -58,12 +58,10 @@ complextoreal(double *c, size_t size, int action, double **output)
 {
   double *out, *o, *of;
 
-  errno=0;
-  *output=out=malloc(size*sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for out in complextoreal",
-          size*sizeof *out);
+  /* Allocate the space for the real array. */
+  *output=out=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, size);
 
+  /* Fill the real array with the derived value from the complex array. */
   of=(o=out)+size;
   switch(action)
     {
@@ -187,7 +185,7 @@ complexarraydivide(double *a, double *b, size_t size, double minsharpspec)
 /*************      Padding and initializing      *****************/
 /******************************************************************/
 void
-makepaddedcomplex(struct convolveparams *p)
+frequency_make_padded_complex(struct convolveparams *p)
 {
   size_t i, ps0, ps1;
   double *o, *op, *pimg, *pker;
@@ -210,11 +208,7 @@ makepaddedcomplex(struct convolveparams *p)
 
 
   /* Allocate the space for the padded input image and fill it. */
-  errno=0;
-  pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
-  if(pimg==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for pimg",
-          2*ps0*ps1*sizeof *pimg);
+  pimg=p->pimg=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*ps0*ps1);
   for(i=0;i<ps0;++i)
     {
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
@@ -228,11 +222,7 @@ makepaddedcomplex(struct convolveparams *p)
 
 
   /* Allocate the space for the padded Kernel and fill it. */
-  errno=0;
-  pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
-  if(pker==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for pker",
-          2*ps0*ps1*sizeof *pker);
+  pker=p->pker=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*ps0*ps1);
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
@@ -259,22 +249,22 @@ void
 removepaddingcorrectroundoff(struct convolveparams *p)
 {
   size_t ps1=p->ps1;
-  size_t i, hi0, hi1;
   size_t *isize=p->input->dsize;
   float *o, *input=p->input->array;
-  double *d, *df, *start, *pimg=p->pimg;
+  double *d, *df, *start, *rpad=p->rpad;
+  size_t i, hi0, hi1, mkwidth=2*p->makekernel-1;
 
-  /* Set all the necessary parameters to crop the desired region. hi0
-     and hi1 are the coordinates of the first pixel in the output
-     image. In the case of deconvolution, if the maximum radius is
-     larger smaller than the input image, we will also only be using
-     region that contains non-zero rows and columns.*/
+  /* Set all the necessary parameters to crop the desired region. hi0 and
+     hi1 are the coordinates of the first pixel in the output image. In the
+     case of deconvolution, if the maximum radius is larger than the input
+     image, we will also only be using region that contains non-zero rows
+     and columns.*/
   if(p->makekernel)
     {
-      hi0      = 2*p->makekernel-1 < isize[0] ? p->ps0/2-p->makekernel : 0;
-      hi1      = 2*p->makekernel-1 < isize[1] ? p->ps1/2-p->makekernel : 0;
-      isize[0] = 2*p->makekernel-1 < isize[0] ? 2*p->makekernel-1 : isize[0];
-      isize[1] = 2*p->makekernel-1 < isize[1] ? 2*p->makekernel-1 : isize[1];
+      hi0      = mkwidth < isize[0] ? p->ps0/2-p->makekernel : 0;
+      hi1      = mkwidth < isize[1] ? p->ps1/2-p->makekernel : 0;
+      isize[0] = mkwidth < isize[0] ? 2*p->makekernel-1 : isize[0];
+      isize[1] = mkwidth < isize[1] ? 2*p->makekernel-1 : isize[1];
     }
   else
     {
@@ -284,10 +274,11 @@ removepaddingcorrectroundoff(struct convolveparams *p)
 
   /* To start with, `start' points to the first pixel in the final
      image: */
-  start=&pimg[hi0*ps1+hi1];
+  start=&rpad[hi0*ps1+hi1];
   for(i=0;i<isize[0];++i)
     {
       o = &input[ i * isize[1] ];
+
       df = ( d = start + i * ps1 ) + isize[1];
       do
         *o++ = ( *d<-CONVFLOATINGPOINTERR || *d>CONVFLOATINGPOINTERR )
@@ -630,7 +621,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
 
 
 void
-frequencyconvolve(struct convolveparams *p)
+convolve_frequency(struct convolveparams *p)
 {
   double *tmp;
   size_t dsize[2];
@@ -641,7 +632,7 @@ frequencyconvolve(struct convolveparams *p)
 
   /* Make the padded arrays. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  makepaddedcomplex(p);
+  frequency_make_padded_complex(p);
   if(!p->cp.quiet)
     gal_timing_report(&t1, "Input and Kernel images padded.", 1);
   if(p->checkfreqsteps)
@@ -715,16 +706,16 @@ frequencyconvolve(struct convolveparams *p)
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, -1);
   if(p->makekernel)
-    correctdeconvolve(p, &tmp);
+    correctdeconvolve(p, &p->rpad);
   else
-    complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
+    complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &p->rpad);
   if(!p->cp.quiet)
     gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
   if(p->checkfreqsteps)
     {
-      data->array=tmp; data->name="padded output";
+      data->array=p->rpad; data->name="padded output";
       gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
-      data->name=NULL;
+      data->name=NULL; data->array=NULL;
     }
 
   /* Free the padded arrays (they are no longer needed) and put the
@@ -732,7 +723,6 @@ frequencyconvolve(struct convolveparams *p)
   gal_data_free(data);
   free(p->pimg);
   free(p->pker);
-  p->pimg=tmp;
 
   /* Crop out the center, numbers smaller than 10^{-17} are errors,
      remove them. */
@@ -769,29 +759,37 @@ frequencyconvolve(struct convolveparams *p)
 void
 convolve(struct convolveparams *p)
 {
-  gal_data_t *out;
-  gal_data_t *tiles, *channels=NULL; /* `channels' has to be initialized. */
+  size_t *tsize;
+  gal_data_t *out, *check;
+  gal_data_t *tiles, *channels;
+  struct gal_options_common_params *cp=&p->cp;
+
 
   /* Do the convolution. */
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
-      gal_tile_all_position_two_layers(p->input, p->cp.channelsize,
-                                       p->cp.tilesize, p->cp.remainderfrac,
-                                       &channels, &tiles);
+      tsize=gal_tile_all_position_two_layers(p->input, cp->channelsize,
+                                             cp->tilesize, cp->remainderfrac,
+                                             &channels, &tiles);
 
       /* Save the tile IDs if they are requested. */
-      if(p->tilesname)
-        gal_tile_block_check_tiles(tiles, p->tilesname, PROGRAM_NAME);
+      if(cp->tilecheckname)
+        {
+          check=gal_tile_block_check_tiles(tiles);
+          gal_fits_img_write(check, cp->tilecheckname, NULL, PROGRAM_NAME);
+          gal_data_free(check);
+        }
 
       /* Do the spatial convolution. One of the main reason someone would
          want to do spatial domain convolution with this Convolve program
          is edge correction. So by default we assume it and will only
          ignore it if the user asks.*/
-      out=gal_convolve_spatial(tiles, p->kernel, p->cp.numthreads,
-                               !p->noedgecorrection, p->cp.workoverch);
+      out=gal_convolve_spatial(tiles, p->kernel, cp->numthreads,
+                               !p->noedgecorrection, cp->workoverch);
 
       /* Clean up */
+      free(tsize);
       gal_data_free(p->input);
       gal_data_array_free(tiles, gal_data_num_in_ll(tiles), 0);
       gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
@@ -800,9 +798,9 @@ convolve(struct convolveparams *p)
       p->input=out;
     }
   else
-    frequencyconvolve(p);
+    convolve_frequency(p);
 
   /* Save the output (which is in p->input) array. */
-  gal_fits_img_write_to_type(p->input, p->cp.output, NULL, PROGRAM_STRING,
-                             p->cp.type);
+  gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_STRING,
+                             cp->type);
 }

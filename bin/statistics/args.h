@@ -104,8 +104,8 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Single value measurements (to print in one row)",
-      ARGS_GROUP_IN_ONE_ROW
+      "Single value measurements",
+      ARGS_GROUP_SINGLE_VALUE
     },
     {
       "number",
@@ -113,13 +113,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Number (non-blank).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "minimum",
@@ -127,13 +127,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Minimum.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "maximum",
@@ -141,13 +141,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Maximum.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "sum",
@@ -155,13 +155,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Sum.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "mean",
@@ -169,13 +169,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Mean.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "std",
@@ -183,13 +183,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Standad deviation.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "median",
@@ -197,13 +197,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Median.",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "quantile",
@@ -211,13 +211,13 @@ struct argp_option program_options[] =
       "FLT[,...]",
       0,
       "Quantile (multiple values acceptable).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "quantfunc",
@@ -225,13 +225,13 @@ struct argp_option program_options[] =
       "FLT[,...]",
       0,
       "Quantile function (multiple values acceptable).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "mode",
@@ -239,13 +239,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Mode (Appendix C of arXiv:1505.011664).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "modequant",
@@ -253,13 +253,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Mode quantile (see --mode)",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "modesym",
@@ -267,13 +267,13 @@ struct argp_option program_options[] =
       0,
       0,
       "Mode symmetricity (see --mode).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
     },
     {
       "modesymvalue",
@@ -281,13 +281,26 @@ struct argp_option program_options[] =
       0,
       0,
       "Value at mode symmetricity (see --mode).",
-      ARGS_GROUP_IN_ONE_ROW,
-      &p->toprint,
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_add_to_print_in_row
+      ui_add_to_single_value
+    },
+    {
+      "ontile",
+      ARGS_OPTION_KEY_ONTILE,
+      0,
+      0,
+      "Do the measurements on separate tiles, not all.",
+      ARGS_GROUP_SINGLE_VALUE,
+      &p->ontile,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 

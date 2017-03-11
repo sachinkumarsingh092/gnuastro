@@ -318,9 +318,8 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
    mainly for inspecting the positioning of tiles. We are using a signed
    32-bit type because this is the standard FITS standard type for
    integers. */
-void
-gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
-                           char *program_name)
+gal_data_t *
+gal_tile_block_check_tiles(gal_data_t *tiles)
 {
   size_t num_increment;
   gal_data_t *tofill, *tile;
@@ -381,12 +380,9 @@ gal_tile_block_check_tiles(gal_data_t *tiles, char *filename,
       ++tile_index;
     }
 
-  /* Save the indexs into a file. */
-  gal_fits_img_write(tofill, filename, NULL, program_name);
-
   /* Clean up. */
   free(coord);
-  gal_data_free(tofill);
+  return tofill;
 }
 
 
@@ -531,7 +527,7 @@ gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
 static void
 gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
                            float significance, size_t *first, size_t *last,
-                           size_t *number)
+                           size_t *tsize)
 {
   size_t i, remainder, *dsize=parent->dsize;;
 
@@ -547,20 +543,20 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
           if( remainder > significance * regular[i] )
             {
               first[i]  = ( remainder + regular[i] )/2;
-              number[i] = dsize[i]/regular[i] + 1 ;
-              last[i]   = dsize[i] - ( first[i] + regular[i]*(number[i]-2) );
+              tsize[i] = dsize[i]/regular[i] + 1 ;
+              last[i]   = dsize[i] - ( first[i] + regular[i]*(tsize[i]-2) );
             }
           else
             {
               first[i]  = remainder + regular[i];
-              number[i] = dsize[i]/regular[i];
+              tsize[i]  = dsize[i]/regular[i];
               last[i]   = regular[i];
             }
         }
       else
         {
           first[i]  = last[i] = regular[i];
-          number[i] = dsize[i]/regular[i];
+          tsize[i] = dsize[i]/regular[i];
         }
     }
 }
@@ -586,6 +582,10 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
         dimensions. So it must have the same number of elements as the
         dimensions of `input'.
 
+     `remainderfrac' is the significant fraction of the remainder space if
+        the width of the input isn't an exact multiple of the tile size
+        along a dimension, see `gal_tile_all_regular_first'.
+
      `out' is the pointer to the array of data structures that is to keep
         the tile parameters. If `*out==NULL', then the necessary space will
         be allocated. If it is not NULL, then all the tile information will
@@ -602,9 +602,9 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
    Output
    ------
 
-     The returned output is an array of `gal_data_t' with `numtiles'
-     elements, note that you have to pass the pointer to `numtiles' as one
-     of the arguments.
+     The returned output is an array of numbers (the same size as the input
+        data structure's dimensions) keeping the number of tiles along each
+        dimension.
 
 
    Implementation
@@ -620,7 +620,7 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
         2. parent-size (or `psize') which is the size of the parent in each
            dimension (we don't want to go out of the paren't range).
 */
-size_t
+size_t *
 gal_tile_all_position(gal_data_t *input, size_t *regular,
                       float remainderfrac, gal_data_t **out, size_t multiple)
 {
@@ -725,12 +725,11 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
 
   /* Clean up and return. */
   free(last);
-  free(tsize);
   free(first);
   free(coord);
   free(tcoord);
   if(start) free(start);
-  return numtiles;
+  return tsize;
 }
 
 
@@ -749,27 +748,20 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
       Tiles: A combined tesselation of each channel with smaller
            tiles. These tiles can be used to calculate things like
            gradients over each channel and thus over the whole image.  */
-void
+size_t *
 gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
                                  size_t *tile_size, float remainderfrac,
                                  gal_data_t **channels, gal_data_t **tiles)
 {
   gal_data_t *ch, *t;
-  size_t i, nch, ntiles_in_ch;
+  size_t i, nch=1, ntiles_in_ch;
+  size_t *chsize, *tsize, *ttsize;
 
-  /* First allocate the channels. Note that the channels tesselation might
-     have already been set. */
-  if(*channels)
-    {
-      nch=1;
-      for(i=0;i<input->ndim;++i)
-        nch *= input->dsize[i]/channel_size[i];
-    }
-  else
-    /* Note that the actual allocated input array will be the direct
-       `block' of each channel. */
-    nch=gal_tile_all_position(input, channel_size, remainderfrac,
-                              channels, 1);
+  /* First allocate the channels tessellation. */
+  *channels=NULL;
+  chsize=gal_tile_all_position(input, channel_size, remainderfrac,
+                               channels, 1);
+  for(i=0;i<input->ndim;++i) nch *= chsize[i];
 
 
   /* Now, tile each channel. While tiling the first channel, we are also
@@ -777,8 +769,9 @@ gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
      pointers. */
   *tiles=NULL;
   ch=*channels;
-  ntiles_in_ch = gal_tile_all_position(ch, tile_size, remainderfrac,
-                                       tiles, nch);
+  tsize = gal_tile_all_position(ch, tile_size, remainderfrac,
+                                tiles, nch);
+  ntiles_in_ch=gal_multidim_total_size(input->ndim, tsize);
   for(i=1;i<nch;++i)
     {
       /* Set the first tile in this channel. Then use it it fill the `next'
@@ -788,8 +781,17 @@ gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
       (*tiles)[ i * ntiles_in_ch - 1 ].next = t;
 
       /* Fill in the information for all the tiles in this channel. */
-      gal_tile_all_position(&ch[i], tile_size, remainderfrac, &t, 1);
+      ttsize=gal_tile_all_position(&ch[i], tile_size, remainderfrac, &t, 1);
+      free(ttsize);
     }
+
+  /* Multiply the number of tiles along each dimension OF ONE CHANNEL by
+     the number of channels in each dimension for the output. */
+  for(i=0;i<input->ndim;++i)
+    tsize[i] *= chsize[i];
+
+  /* Return the total number of tiles along each dimension. */
+  return tsize;
 }
 
 

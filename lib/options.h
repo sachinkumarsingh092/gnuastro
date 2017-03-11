@@ -192,6 +192,7 @@ struct gal_options_common_params
   /* For internal (to option processing) purposes. */
   uint8_t                 keep; /* Output file can exist.                 */
   size_t          *channelsize; /* Size of channels along each dimension. */
+  char          *tilecheckname; /* Name of file to check tiles.           */
   void         *program_struct; /* Host program's main variable struct.   */
   char           *program_name; /* Official name to be used in text.      */
   char           *program_exec; /* Program's executable name.             */
