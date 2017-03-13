@@ -127,7 +127,7 @@ gal_blank_present(gal_data_t *input)
   char **str, **strf;
   size_t increment=0, num_increment=1;
   gal_data_t *block=gal_tile_block(input);
-  size_t start_end_inc[2]={0,block->size};
+  size_t start_end_inc[2]={0,block->size-1}; /* -1: this is INCLUSIVE. */
 
   /* If there is nothing in the array (its size is zero), then return 0 (no
      blank is present. */

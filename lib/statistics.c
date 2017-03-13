@@ -1293,7 +1293,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
   if(input->block)
     {
       /* Copy the input into a contiguous patch of memory. */
-      contig=gal_tile_to_contiguous(input);
+      contig=gal_data_copy(input);
 
       /* When the data was a tile, we have already copied the array into a
          separate allocated space. So to avoid any further copying, we will

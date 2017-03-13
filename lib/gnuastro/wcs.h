@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <fitsio.h>
 #include <wcslib/wcs.h>
 
+#include <gnuastro/data.h>
 
 
 /* C++ Preparations */
@@ -69,8 +70,14 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 /**************************************************************/
 /**********              Utilities                 ************/
 /**************************************************************/
+struct wcsprm *
+gal_wcs_copy(struct wcsprm *in, size_t ndim);
+
+void
+gal_wcs_on_tile(gal_data_t *tile);
+
 double *
-gal_wcs_array_from_wcsprm(struct wcsprm *wcs);
+gal_wcs_warp_matrix(struct wcsprm *wcs);
 
 void
 gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs);

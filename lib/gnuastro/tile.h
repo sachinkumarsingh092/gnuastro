@@ -59,9 +59,6 @@ void *
 gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
                                  size_t *start_end_inc);
 
-gal_data_t *
-gal_tile_to_contiguous(gal_data_t *input);
-
 
 
 /***********************************************************************/
@@ -157,12 +154,13 @@ gal_tile_function_on_threads(gal_data_t *tiles, void *(*meshfunc)(void *),
    See `lib/statistics.c' for some example applications of this function.
 */
 #define GAL_TILE_PARSE_OPERATE(IT, OT, OP, IN, OUT, PARSE_OUT) {        \
+    size_t increment=0, num_increment=1;                                \
     OT *ost, *o = OUT ? OUT->array : NULL;                              \
     gal_data_t *iblock=gal_tile_block(IN);                              \
     IT b, *st, *i=IN->array, *f=i+IN->size;                             \
     gal_data_t *oblock = OUT ? gal_tile_block(OUT) : NULL;              \
-    size_t increment=0, num_increment=1, s_e_ind[2]={0,iblock->size};   \
     int hasblank=gal_blank_present(IN), parse_out=(OUT && PARSE_OUT);   \
+    size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* Write the blank value for the input type into `b'). Note that */ \
     /* a tile doesn't necessarily have to have a type. */               \
@@ -187,7 +185,7 @@ gal_tile_function_on_threads(gal_data_t *tiles, void *(*meshfunc)(void *),
     /* Go over contiguous patches of memory. */                         \
     while( s_e_ind[0] + increment <= s_e_ind[1] )                       \
       {                                                                 \
-        /* If we are on a tile, reset `a' and  `af'. Also, if there */  \
+        /* If we are on a tile, reset `i' and `f'. Also, if there   */  \
         /* is more than one element in `OUT', then set that. Note   */  \
         /* that it is upto the caller to increment `o' in `OP'.     */  \
         if(IN!=iblock)                                                  \

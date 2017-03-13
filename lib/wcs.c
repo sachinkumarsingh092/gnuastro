@@ -34,7 +34,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_linalg.h>
 
 #include <gnuastro/wcs.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/multidim.h>
 
 
 
@@ -184,8 +186,95 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 /**************************************************************/
 /**********              Utilities                 ************/
 /**************************************************************/
+/* Copy a given WSC structure into another one. */
+struct wcsprm *
+gal_wcs_copy(struct wcsprm *in, size_t ndim)
+{
+  struct wcsprm *out;
+
+  /* If the input WCS is NULL, return a NULL WCS. */
+  if(in)
+    {
+      /* Allocate the output WCS structure. */
+      errno=0;
+      out=malloc(sizeof *out);
+      if(out==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for out in `gal_wcs_copy'",
+              sizeof *out);
+
+      /* Initialize the allocated WCS structure. The WCSLIB manual says "On
+         the first invokation, and only the first invokation, wcsprm::flag
+         must be set to -1 to initialize memory management"*/
+      out->flag=-1;
+      wcsini(1, ndim, out);
+
+      /* Copy the input WCS to the output WSC structure. */
+      wcscopy(1, in, out);
+    }
+  else
+    out=NULL;
+
+  /* Return the final output. */
+  return out;
+}
+
+
+
+
+
+/* Using the block data structure of the tile, add a WCS structure for
+   it. In many cases, tiles are created for internal processing, so there
+   is no need to keep their WCS. Hence for preformance reasons, when
+   creating the tiles they don't have any WCS structure. When needed, this
+   function can be used to add a WCS structure to the tile by copying the
+   WCS structure of its block and correcting its starting points. If the
+   tile already has a WCS structure, this function won't do anything.*/
+void
+gal_wcs_on_tile(gal_data_t *tile)
+{
+  size_t i, start_ind, ndim=tile->ndim;
+  gal_data_t *block=gal_tile_block(tile);
+  size_t *coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+
+  /* If the tile already has a WCS structure, don't do anything. */
+  if(tile->wcs) return;
+  else
+    {
+      /* Copy the block's WCS into the tile. */
+      tile->wcs=gal_wcs_copy(block->wcs, block->ndim);
+
+      /* Find the coordinates of the tile's starting index. */
+      start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
+      gal_multidim_index_to_coord(start_ind, ndim, block->dsize, coord);
+
+      /* Correct the copied WCS structure. Note that crpix is indexed in
+         the FITS/Fortran order while coord is ordered in C, it also starts
+         counting from 1, not zero. */
+      for(i=0;i<ndim;++i)
+        tile->wcs->crpix[i] -= coord[ndim-1-i];
+      /*
+      printf("start_ind: %zu\n", start_ind);
+      printf("coord: %zu, %zu\n", coord[1]+1, coord[0]+1);
+      printf("CRPIX: %f, %f\n", tile->wcs->crpix[0], tile->wcs->crpix[1]);
+      */
+    }
+
+  /* Clean up. */
+  free(coord);
+}
+
+
+
+
+
+/* Return the Warping matrix of the given WCS structure. This will be the
+   final matrix irrespective of the type of storage in the WCS
+   structure. Recall that the FITS standard has several methods to store
+   the matrix, which is up to this function to account for and return the
+   final matrix. The output is an allocated DxD matrix where `D' is the
+   number of dimensions. */
 double *
-gal_wcs_array_from_wcsprm(struct wcsprm *wcs)
+gal_wcs_warp_matrix(struct wcsprm *wcs)
 {
   double *out;
   size_t i, j, size=wcs->naxis*wcs->naxis;
@@ -333,7 +422,7 @@ gal_wcs_pixel_scale_deg(struct wcsprm *wcs)
 
   /* Write the full matrix into an array, irrespective of what type it was
      stored in the wcsprm structure (`PCi_j' style or `CDi_j' style). */
-  a=gal_wcs_array_from_wcsprm(wcs);
+  a=gal_wcs_warp_matrix(wcs);
 
   /* Fill in the necessary GSL vector and Matrix structures. */
   S.size=n;     S.stride=1;                S.data=pixscale;

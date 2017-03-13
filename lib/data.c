@@ -33,7 +33,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <dirent.h>
 #include <sys/mman.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/data.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
@@ -248,6 +250,18 @@ gal_data_is_linked_list(uint8_t type)
 
 
 
+int
+gal_data_out_type(gal_data_t *first, gal_data_t *second)
+{
+  int ftype=gal_tile_block(first)->type;
+  int stype=gal_tile_block(second)->type;
+  return ftype > stype ? ftype : stype;
+}
+
+
+
+
+
 
 
 
@@ -394,36 +408,6 @@ gal_data_ptr_dist(void *earlier, void *later, uint8_t type)
 {
   char *e=(char *)earlier, *l=(char *)later;
   return (l-e)/gal_data_sizeof(type);
-}
-
-
-
-
-
-/* Copy the WCS structure from the input to the output structure. */
-void
-gal_data_copy_wcs(gal_data_t *in, gal_data_t *out)
-{
-  if(in->wcs)
-    {
-      /* Allocate the output WCS structure. */
-      errno=0;
-      out->wcs=malloc(sizeof *out->wcs);
-      if(out->wcs==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
-              "gal_data_copy_wcs", sizeof *out->wcs);
-
-      /* Initialize the allocated WCS structure. The WCSLIB manual says "On
-         the first invokation, and only the first invokation, wcsprm::flag
-         must be set to -1 to initialize memory management"*/
-      out->wcs->flag=-1;
-      wcsini(1, out->ndim, out->wcs);
-
-      /* Copy the input WCS to the output WSC structure. */
-      wcscopy(1, in->wcs, out->wcs);
-    }
-  else
-    out->wcs=NULL;
 }
 
 
@@ -634,12 +618,10 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                     char *unit, char *comment)
 {
   size_t i;
-  gal_data_t in;
 
   /* Do the simple copying cases. For the display elements, set them all to
      impossible (negative) values so if not explicitly set by later steps,
      the default values are used if/when printing.*/
-  data->wcs=NULL;
   data->status=0;
   data->next=NULL;
   data->ndim=ndim;
@@ -653,10 +635,8 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
   data->disp_fmt=data->disp_width=data->disp_precision=-1;
 
 
-  /* Copy the WCS structure. Note that the `in' data structure was just
-     defined to keep this pointer to call `gal_data_copy_wcs'. */
-  in.wcs=wcs;
-  gal_data_copy_wcs(&in, data);
+  /* Copy the WCS structure. */
+  data->wcs=gal_wcs_copy(wcs, ndim);
 
 
   /* Allocate space for the dsize array, only if the data are to have any
@@ -1171,6 +1151,10 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
   if(from->type!=GAL_DATA_TYPE_STRING)
     error(EXIT_FAILURE, 0, "`from' in `data_copy_from_string' must have "
           "a string type.");
+  if(from->block)
+    error(EXIT_FAILURE, 0, "'data_copyt_from_string' doesn't currently "
+          "support tile inputs. Please contact us at %s so we can implement "
+          "this feature", PACKAGE_BUGREPORT);
 
   /* Do the copying. */
   for(i=0;i<from->size;++i)
@@ -1263,6 +1247,10 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   if(to->type!=GAL_DATA_TYPE_STRING)
     error(EXIT_FAILURE, 0, "`to' in `data_copy_to_string' must have a "
           "string type");
+  if(from->block)
+    error(EXIT_FAILURE, 0, "'data_copyt_to_string' doesn't currently "
+          "support tile inputs. Please contact us at %s so we can implement "
+          "this feature", PACKAGE_BUGREPORT);
 
   /* Do the copying */
   switch(from->type)
@@ -1321,64 +1309,57 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
 
 
-/* Copy to a new type for integers. */
-#define COPY_OTYPE_ITYPE_SET_INT(otype, itype) {                        \
-    itype *ia=in->array, iblank;                                        \
-    otype *oa=out->array, *of=oa+out->size, oblank;                     \
+#define COPY_OT_IT_SET(OT, IT) {                                        \
+    OT ob, *o=out->array;                                               \
+    size_t increment=0, num_increment=1;                                \
+    IT ib, *ist, *i=in->array, *f=i+in->size;                           \
+    size_t mclen, contig_len=in->dsize[in->ndim-1];                     \
+    size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
-    /* Check if there are blank values in the input array and that */   \
-    /* the types of the two structures are different. */                \
-    if( in->type!=newtype && gal_blank_present(in) )                    \
+    /* If we are on a tile, the default values need to change. */       \
+    if(in!=iblock)                                                      \
+      ist=gal_tile_start_end_ind_inclusive(in, iblock, s_e_ind);        \
+                                                                        \
+    /* Constant preparations before the loop. */                        \
+    if(iblock->type==out->type)                                         \
+      mclen = in==iblock ? iblock->size : contig_len;                   \
+    else                                                                \
       {                                                                 \
-        /* Set the blank values */                                      \
-        gal_blank_write(&iblank, in->type);                             \
-        gal_blank_write(&oblank, newtype);                              \
-                                                                        \
-        /* Copy the input to the output. */                             \
-        do { *oa = *ia==iblank ? oblank : *ia; ia++; } while(++oa<of);  \
+        gal_blank_write(&ob, out->type);                                \
+        gal_blank_write(&ib, iblock->type);                             \
       }                                                                 \
                                                                         \
-    /* There were no blank elements in the input, or the input and */   \
-    /* output have the same type. */                                    \
-    else                                                                \
-      do *oa=*ia++; while(++oa<of);                                     \
-  }
-
-
-
-
-
-/* Copy to a new type for floating point values. */
-#define COPY_OTYPE_ITYPE_SET_FLT(otype, itype) {                        \
-    itype *ia=in->array, iblank;                                        \
-    otype *oa=out->array, *of=oa+out->size, oblank;                     \
-                                                                        \
-    /* Check if there are blank values in the input array and that */   \
-    /* the types of the two structures are different. */                \
-    if( in->type!=newtype && gal_blank_present(in) )                    \
+    /* Parse over the input and copy it. */                             \
+    while( s_e_ind[0] + increment <= s_e_ind[1] )                       \
       {                                                                 \
-        /* Set the blank values */                                      \
-        gal_blank_write(&iblank, in->type);                             \
-        gal_blank_write(&oblank, newtype);                              \
+        /* If we are on a tile, reset `i' and  `f' for each round. */   \
+        if(in!=iblock)                                                  \
+          f = ( i = ist + increment ) + contig_len;                     \
                                                                         \
-        /* When the blank value isn't NaN, then we should use the */    \
-        /* equal operator to check for blank values. */                 \
-        if( isnan(iblank) )                                             \
+        /* When the types are the same just use memcopy, otherwise, */  \
+        /* We'll have to read each number (and use internal         */  \
+        /* conversion). */                                              \
+        if(iblock->type==out->type)                                     \
           {                                                             \
-            do { *oa = isnan(*ia) ? oblank : *ia; ia++; }               \
-            while(++oa<of);                                             \
+            memcpy(o, i, mclen*gal_data_sizeof(iblock->type));          \
+            o += mclen;                                                 \
           }                                                             \
         else                                                            \
           {                                                             \
-            do { *oa = *ia==iblank ? oblank : *ia; ia++; }              \
-            while(++oa<of);                                             \
+            /* If the blank is a NaN value (only for floating point  */ \
+            /* types), it will fail any comparison, so we'll exploit */ \
+            /* this property in such cases. For other cases, a       */ \
+            /* `*i==ib' is enough.                                   */ \
+            if(ib==ib) do *o++ = *i==ib ? ob : *i; while(++i<f);        \
+            else       do *o++ = *i!=*i ? ob : *i; while(++i<f);        \
           }                                                             \
-      }                                                                 \
                                                                         \
-    /* There were no blank elements in the input, or the input and */   \
-    /* output have the same type. */                                    \
-    else                                                                \
-      do *oa=*ia++; while(++oa<of);                                     \
+        /* Update the increment from the start of the input. */         \
+        increment += ( in==iblock ? iblock->size                        \
+                       : gal_tile_block_increment(iblock, in->dsize,    \
+                                                  num_increment++,      \
+                                                  NULL) );              \
+      }                                                                 \
   }
 
 
@@ -1387,47 +1368,47 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
 /* gal_data_copy_to_new_type: Output type is set, now choose the input
    type. */
-#define COPY_OTYPE_SET(otype)                                           \
-  switch(in->type)                                                      \
+#define COPY_OT_SET(OT)                                                 \
+  switch(iblock->type)                                                  \
     {                                                                   \
     case GAL_DATA_TYPE_UINT8:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, uint8_t);                         \
+      COPY_OT_IT_SET(OT, uint8_t);                                      \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_INT8:                                            \
-      COPY_OTYPE_ITYPE_SET_INT(otype, int8_t);                          \
+      COPY_OT_IT_SET(OT, int8_t);                                       \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_UINT16:                                          \
-      COPY_OTYPE_ITYPE_SET_INT(otype, uint16_t);                        \
+      COPY_OT_IT_SET(OT, uint16_t);                                     \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_INT16:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, int16_t);                         \
+      COPY_OT_IT_SET(OT, int16_t);                                      \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_UINT32:                                          \
-      COPY_OTYPE_ITYPE_SET_INT(otype, uint32_t);                        \
+      COPY_OT_IT_SET(OT, uint32_t);                                     \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_INT32:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, int32_t);                         \
+      COPY_OT_IT_SET(OT, int32_t);                                      \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_UINT64:                                          \
-      COPY_OTYPE_ITYPE_SET_INT(otype, uint64_t);                        \
+      COPY_OT_IT_SET(OT, uint64_t);                                     \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_INT64:                                           \
-      COPY_OTYPE_ITYPE_SET_INT(otype, int64_t);                         \
+      COPY_OT_IT_SET(OT, int64_t);                                      \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_FLOAT32:                                         \
-      COPY_OTYPE_ITYPE_SET_FLT(otype, float);                           \
+      COPY_OT_IT_SET(OT, float);                                        \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_FLOAT64:                                         \
-      COPY_OTYPE_ITYPE_SET_FLT(otype, double);                          \
+      COPY_OT_IT_SET(OT, double);                                       \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_STRING:                                          \
@@ -1445,18 +1426,21 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type code %d not recognized for "         \
-            "`in->type' in COPY_OTYPE_SET", in->type);                  \
+            "`in->type' in COPY_OT_SET", in->type);                     \
     }
 
 
 
 
 
-/* Copy a given data structure to a new one (possibly with a new type). */
+/* Copy a given data structure to a new one with any type (for the
+   output). The input can be a tile, in which case the output will be a
+   contiguous patch of memory that has all the values within the input tile
+   in the requested type. */
 gal_data_t *
 gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 {
-  gal_data_t *out;
+  gal_data_t *out, *iblock=gal_tile_block(in);
 
   /* Allocate space for the output type */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
@@ -1475,18 +1459,18 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
   */
 
   /* Fill in the output array: */
-  switch(newtype)
+  switch(out->type)
     {
-    case GAL_DATA_TYPE_UINT8:   COPY_OTYPE_SET(uint8_t);         break;
-    case GAL_DATA_TYPE_INT8:    COPY_OTYPE_SET(int8_t);          break;
-    case GAL_DATA_TYPE_UINT16:  COPY_OTYPE_SET(uint16_t);        break;
-    case GAL_DATA_TYPE_INT16:   COPY_OTYPE_SET(int16_t);         break;
-    case GAL_DATA_TYPE_UINT32:  COPY_OTYPE_SET(uint32_t);        break;
-    case GAL_DATA_TYPE_INT32:   COPY_OTYPE_SET(int32_t);         break;
-    case GAL_DATA_TYPE_UINT64:  COPY_OTYPE_SET(uint64_t);        break;
-    case GAL_DATA_TYPE_INT64:   COPY_OTYPE_SET(int64_t);         break;
-    case GAL_DATA_TYPE_FLOAT32: COPY_OTYPE_SET(float);           break;
-    case GAL_DATA_TYPE_FLOAT64: COPY_OTYPE_SET(double);          break;
+    case GAL_DATA_TYPE_UINT8:   COPY_OT_SET( uint8_t  );      break;
+    case GAL_DATA_TYPE_INT8:    COPY_OT_SET( int8_t   );      break;
+    case GAL_DATA_TYPE_UINT16:  COPY_OT_SET( uint16_t );      break;
+    case GAL_DATA_TYPE_INT16:   COPY_OT_SET( int16_t  );      break;
+    case GAL_DATA_TYPE_UINT32:  COPY_OT_SET( uint32_t );      break;
+    case GAL_DATA_TYPE_INT32:   COPY_OT_SET( int32_t  );      break;
+    case GAL_DATA_TYPE_UINT64:  COPY_OT_SET( uint64_t );      break;
+    case GAL_DATA_TYPE_INT64:   COPY_OT_SET( int64_t  );      break;
+    case GAL_DATA_TYPE_FLOAT32: COPY_OT_SET( float    );      break;
+    case GAL_DATA_TYPE_FLOAT64: COPY_OT_SET( double   );      break;
     case GAL_DATA_TYPE_STRING:  data_copy_to_string(in, out);    break;
 
     case GAL_DATA_TYPE_BIT:
@@ -1495,12 +1479,12 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
     case GAL_DATA_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
             "support copying to %s type",
-            gal_data_type_as_string(newtype, 1));
+            gal_data_type_as_string(out->type, 1));
       break;
 
     default:
       error(EXIT_FAILURE, 0, "type %d not recognized for "
-            "for newtype in gal_data_copy_to_new_type", newtype);
+            "for `out->type' in gal_data_copy_to_new_type", out->type);
     }
 
   /* Return the created array */
@@ -1511,21 +1495,31 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 
 
 
+/* Copy the input data structure into a new type  */
 gal_data_t *
 gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 {
-  gal_data_t *out;
+  gal_data_t *out, *iblock=gal_tile_block(in);
 
   /* In a general application, it might happen that the type is equal with
-     the type of the input. Since the job of this function is to free the
-     input data set, so and the user just wants one dataset after this
-     function finishes, we can safely just return the input. */
-  if(type==in->type)
+     the type of the input and the input isn't a tile. Since the job of
+     this function is to free the input dataset, and the user just wants
+     one dataset after this function finishes, we can safely just return
+     the input. */
+  if(type==iblock->type && in==iblock)
     return in;
   else
     {
       out=gal_data_copy_to_new_type(in, type);
-      gal_data_free(in);
+      if(iblock==in)
+        gal_data_free(in);
+      else
+        fprintf(stderr, "#####\nWarning from "
+                "`gal_data_copy_to_new_type_free'\n#####\n The input "
+                "dataset is a tile, not a contiguous (fully allocated) "
+                "patch of memory. So it has not been freed. Please use "
+                "`gal_data_copy_to_new_type' to avoid this warning.\n"
+                "#####");
       return out;
     }
 }
@@ -1534,53 +1528,14 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 
 
 
+/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
+   as the input. Recall that if the input is a tile (a part of the input,
+   which is not-contiguous if it has more than one dimension), then the
+   output will have only the elements that cover the tile.*/
 gal_data_t *
 gal_data_copy(gal_data_t *in)
 {
-  return gal_data_copy_to_new_type(in, in->type);
-}
-
-
-
-
-
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second)
-{
-  return first->type > second->type ? first->type : second->type;
-}
-
-
-
-
-
-/* The two input `f' and `s' datasets can be any type. But `of' and `os'
-   will have type `type', if freeinputs is non-zero, then the input arrays
-   will be freed if they needed to be changed to a new type. */
-void
-gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
-                      gal_data_t **of, gal_data_t **os,
-                      uint8_t type, int freeinputs)
-{
-  /* Change first dataset into the new type if necessary. */
-  if( f->type != type )
-    {
-      *of=gal_data_copy_to_new_type(f, type);
-      if(freeinputs)
-        gal_data_free(f);
-    }
-  else
-    *of=f;
-
-  /* Change second dataset into the new type if necessary. */
-  if( s->type != type )
-    {
-      *os=gal_data_copy_to_new_type(s, type);
-      if(freeinputs)
-        gal_data_free(s);
-    }
-  else
-    *os=s;
+  return gal_data_copy_to_new_type(in, gal_tile_block(in)->type);
 }
 
 

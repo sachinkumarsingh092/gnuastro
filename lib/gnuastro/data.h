@@ -248,14 +248,14 @@ gal_data_type_max(uint8_t type, void *in);
 int
 gal_data_is_linked_list(uint8_t type);
 
+int
+gal_data_out_type(gal_data_t *first, gal_data_t *second);
+
 
 
 /*********************************************************************/
 /*************         Size and allocation         *******************/
 /*********************************************************************/
-void
-gal_data_copy_wcs(gal_data_t *in, gal_data_t *out);
-
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
 
@@ -348,13 +348,6 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type);
 
 gal_data_t *
 gal_data_copy(gal_data_t *in);
-
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second);
-
-void
-gal_data_to_same_type(gal_data_t *f, gal_data_t *s, gal_data_t **of,
-                      gal_data_t **os, uint8_t type, int freeinputs);
 
 void
 gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr);

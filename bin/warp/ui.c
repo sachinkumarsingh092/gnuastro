@@ -460,7 +460,7 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
 
   /* Find the pixel scale along the two dimensions. Note that we will be
      using the scale along the image X axis for both values. */
-  w=gal_wcs_array_from_wcsprm(p->input->wcs);
+  w=gal_wcs_warp_matrix(p->input->wcs);
   ps=gal_wcs_pixel_scale_deg(p->input->wcs);
 
 

@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/qsort.h>
@@ -806,6 +807,9 @@ ui_preparations(struct statisticsparams *p)
     {
       p->inputformat=INPUT_FORMAT_IMAGE;
       p->input=gal_fits_img_read(p->inputname, cp->hdu, cp->minmapsize);
+      if(p->ontile)
+        gal_wcs_read(p->inputname, cp->hdu, 0, 0, &p->input->nwcs,
+                     &p->input->wcs);
     }
   else
     {

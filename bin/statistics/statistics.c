@@ -783,7 +783,7 @@ print_basics(struct statisticsparams *p)
      to be found in place to save time/memory. But having a sorted array
      can decrease the floating point accuracy of the standard deviation. So
      we'll do the median calculation in the end.*/
-  tmp=gal_statistics_mode(p->input, mirrdist, 0);
+  tmp=gal_statistics_mode(p->input, mirrdist, 1);
   d=tmp->array;
   if(d[2]>GAL_STATISTICS_MODE_GOOD_SYM)
     {        /* Same format as `gal_data_write_to_string' */
@@ -793,7 +793,7 @@ print_basics(struct statisticsparams *p)
   gal_data_free(tmp);
 
   /* Find and print the median:  */
-  tmp=gal_statistics_median(p->input, 1);
+  tmp=gal_statistics_median(p->input, 0);
   str=gal_data_write_to_string(tmp->array, tmp->type, 0);
   printf("  %-*s %s\n", namewidth, "Median:", str);
   gal_data_free(tmp);
