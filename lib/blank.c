@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 
 #include <checkset.h>
@@ -99,23 +100,41 @@ gal_blank_alloc_write(uint8_t type)
 
 
 /* Return 1 if the dataset has a blank value and zero if it doesn't. */
-#define HAS_BLANK(IT) {                                         \
-    IT b, *a=data->array, *af=a+data->size;                     \
-    gal_blank_write(&b, data->type);                            \
-    if(b==b) do if(*a==b)   return 1; while(++a<af);            \
-    else     do if(*a!=*a)  return 1; while(++a<af);            \
+#define HAS_BLANK(IT) {                                                 \
+    IT b, *a=input->array, *af=a+input->size, *start;                   \
+    gal_blank_write(&b, block->type);                                   \
+                                                                        \
+    /* If this is a tile, not a full block. */                          \
+    if(input!=block)                                                    \
+      start=gal_tile_start_end_ind_inclusive(input, block, start_end_inc); \
+                                                                        \
+    /* Go over all the elements. */                                     \
+    while( start_end_inc[0] + increment <= start_end_inc[1] )           \
+      {                                                                 \
+        if(input!=block)                                                \
+          af = ( a = start + increment ) + input->dsize[input->ndim-1]; \
+        if(b==b) do if(*a==b)  return 1; while(++a<af);                 \
+        else     do if(*a!=*a) return 1; while(++a<af);                 \
+        if(input!=block)                                                \
+          increment += gal_tile_block_increment(block, input->dsize,    \
+                                                num_increment++, NULL); \
+        else break;                                                     \
+      }                                                                 \
   }
 int
-gal_blank_present(gal_data_t *data)
+gal_blank_present(gal_data_t *input)
 {
-  char **str=data->array, **strf=str+data->size;
+  char **str, **strf;
+  size_t increment=0, num_increment=1;
+  gal_data_t *block=gal_tile_block(input);
+  size_t start_end_inc[2]={0,block->size};
 
   /* If there is nothing in the array (its size is zero), then return 0 (no
      blank is present. */
-  if(data->size==0) return 0;
+  if(input->size==0) return 0;
 
   /* Go over the pixels and check: */
-  switch(data->type)
+  switch(block->type)
     {
     /* Numeric types */
     case GAL_DATA_TYPE_UINT8:     HAS_BLANK( uint8_t  );    break;
@@ -131,6 +150,10 @@ gal_blank_present(gal_data_t *data)
 
     /* String. */
     case GAL_DATA_TYPE_STRING:
+      if(input!=block)
+        error(EXIT_FAILURE, 0, "tile mode is currently not supported for "
+              "strings");
+      strf = (str=input->array) + input->size;
       do if(!strcmp(*str++,GAL_BLANK_STRING)) return 1; while(str<strf);
       break;
 
@@ -147,7 +170,7 @@ gal_blank_present(gal_data_t *data)
 
     default:
       error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
-            "in `gal_blank_present'", data->type);
+            "in `gal_blank_present'", block->type);
     }
 
   /* If there was a blank value, then the function would have returned with

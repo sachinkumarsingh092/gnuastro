@@ -80,6 +80,7 @@ struct statisticsparams
   uint8_t        normalize;  /* set the sum of all bins to 1.            */
   float        onebinstart;  /* Shift bins to start at this value.       */
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
+  float         mirrordist;  /* Maximum distance after mirror for mode.  */
 
   /* Internal */
   uint8_t      inputformat;  /* Format of input dataset.                 */

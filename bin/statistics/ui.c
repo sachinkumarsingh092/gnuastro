@@ -133,6 +133,7 @@ ui_initialize_options(struct statisticsparams *p,
   p->quantmin            = NAN;
   p->quantmax            = NAN;
   p->mirror              = NAN;
+  p->mirrordist          = NAN;
   p->sigclipparam        = NAN;
   p->sigclipmultip       = NAN;
 
@@ -437,6 +438,8 @@ ui_parse_numbers(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct statisticsparams *p)
 {
+  struct gal_linkedlist_ill *tmp;
+
   /* Check if the format of the output table is valid, given the type of
      the output. */
   gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
@@ -457,6 +460,22 @@ ui_read_check_only_options(struct statisticsparams *p)
           "This is because these options deal with the whole dataset, "
           "but in tessellation mode, the input dataset is broken up into "
           "individual tiles");
+
+  /* If any of the mode measurements are requested, then `mirrordist' is
+     mandatory. */
+  for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
+    switch(tmp->v)
+      {
+      case ARGS_OPTION_KEY_MODE:
+      case ARGS_OPTION_KEY_MODESYM:
+      case ARGS_OPTION_KEY_MODEQUANT:
+      case ARGS_OPTION_KEY_MODESYMVALUE:
+        if( isnan(p->mirrordist) )
+          error(EXIT_FAILURE, 0, "`--mirrordist' is required for the "
+                "mode-related single measurements (`--mode', `--modequant', "
+                "`--modesym', and `--modesymvalue')");
+      }
+
 
   /* If less than and greater than are both given, make sure that the value
      to greater than is smaller than the value to less-than. */
@@ -598,12 +617,12 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       if( isnan(p->quantmax) ) p->quantmax = 1 - p->quantmin;
 
       /* Set the greater-equal value. */
-      tmp=gal_statistsics_quantile(ref, p->quantmin, 1);
+      tmp=gal_statistics_quantile(ref, p->quantmin, 1);
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
       p->greaterequal=*((float *)(tmp->array));
 
       /* Set the lower-than value. */
-      tmp=gal_statistsics_quantile(ref, p->quantmax, 1);
+      tmp=gal_statistics_quantile(ref, p->quantmax, 1);
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
       p->lessthan=*((float *)(tmp->array));
     }

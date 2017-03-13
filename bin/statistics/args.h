@@ -478,6 +478,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "mirrordist",
+      ARGS_OPTION_KEY_MIRRORDIST,
+      "FLT",
+      0,
+      "Maximum dist. (in multip. of error) to find mode.",
+      ARGS_GROUP_HIST_CFP,
+      &p->mirrordist,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
     {0}

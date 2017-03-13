@@ -71,7 +71,7 @@ statistics_read_check_args(struct statisticsparams *p)
   double d;
   if(p->tp_args==NULL)
     error(EXIT_FAILURE, 0, "a bug! Not enough arguments for the "
-          "requested options to print in one row. Please contact "
+          "requested single measurement options. Please contact "
           "us at %s so we can address the problem",
           PACKAGE_BUGREPORT);
   gal_linkedlist_pop_from_dll(&p->tp_args, &d);
@@ -89,7 +89,6 @@ statistics_print_one_row(struct statisticsparams *p)
   char *toprint;
   size_t dsize=1;
   double arg, *d;
-  float mirrdist=1.5;
   struct gal_linkedlist_ill *tmp;
   gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
@@ -123,7 +122,7 @@ statistics_print_one_row(struct statisticsparams *p)
       case ARGS_OPTION_KEY_MODESYM:
       case ARGS_OPTION_KEY_MODESYMVALUE:
         modearr = ( modearr ? modearr
-                    : gal_statistics_mode(p->sorted, mirrdist, 0) );
+                    : gal_statistics_mode(p->sorted, p->mirrordist, 0) );
         d=modearr->array;
         if(d[2]<GAL_STATISTICS_MODE_GOOD_SYM) d[0]=d[1]=NAN;
         break;
@@ -172,7 +171,7 @@ statistics_print_one_row(struct statisticsparams *p)
         /* Not previously calculated. */
         case ARGS_OPTION_KEY_QUANTILE:
           arg = statistics_read_check_args(p);
-          out = gal_statistsics_quantile(p->sorted, arg, 0);
+          out = gal_statistics_quantile(p->sorted, arg, 0);
           break;
 
         case ARGS_OPTION_KEY_QUANTFUNC:
@@ -234,10 +233,17 @@ statistics_print_one_row(struct statisticsparams *p)
 void
 statistics_on_tile(struct statisticsparams *p)
 {
+  double arg;
   uint8_t type;
-  size_t i, numtiles=0, ntiles, *tsize;
+  gal_data_t *tmp, *tmpv, *ttmp;
   struct gal_linkedlist_ill *operation;
+  size_t ntiles, *tsize, tind, dsize=1, mind;
   gal_data_t *channels, *tiles, *check, *tile, *values;
+
+  /* Set the output name. */
+  if(p->cp.output==NULL)
+    p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
+                                               "_ontile.fits");
 
   /* Make the tile structure. */
   tsize=gal_tile_all_position_two_layers(p->input, p->cp.channelsize,
@@ -270,18 +276,18 @@ statistics_on_tile(struct statisticsparams *p)
 
         case ARGS_OPTION_KEY_MINIMUM:
         case ARGS_OPTION_KEY_MAXIMUM:
-        case ARGS_OPTION_KEY_SUM:
         case ARGS_OPTION_KEY_MEDIAN:
         case ARGS_OPTION_KEY_MODE:
         case ARGS_OPTION_KEY_QUANTFUNC:
           type=p->input->type; break;
 
+        case ARGS_OPTION_KEY_SUM:
         case ARGS_OPTION_KEY_MEAN:
         case ARGS_OPTION_KEY_STD:
+        case ARGS_OPTION_KEY_QUANTILE:
         case ARGS_OPTION_KEY_MODEQUANT:
         case ARGS_OPTION_KEY_MODESYM:
         case ARGS_OPTION_KEY_MODESYMVALUE:
-        case ARGS_OPTION_KEY_QUANTILE:
           type=GAL_DATA_TYPE_FLOAT64; break;
 
         default:
@@ -293,7 +299,93 @@ statistics_on_tile(struct statisticsparams *p)
       values=gal_data_alloc(NULL, type, p->input->ndim, tsize, NULL, 0,
                             p->input->minmapsize, NULL, NULL, NULL);
 
-      for(tile=tiles; tile!=NULL; tile=tile->next);
+      /* Read the argument for those operations that need it. This is done
+         here, because below, the functions are repeated on each tile. */
+      switch(operation->v)
+        {
+        case ARGS_OPTION_KEY_QUANTILE:
+          arg = statistics_read_check_args(p);
+          break;
+        case ARGS_OPTION_KEY_QUANTFUNC:
+          arg = statistics_read_check_args(p);
+          tmpv = gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+                                NULL, 1, -1, NULL, NULL, NULL);
+          *((double *)(tmpv->array)) = arg;
+          tmpv = gal_data_copy_to_new_type_free(tmpv, p->input->type);
+        }
+
+      /* Do the operation on each tile. */
+      tind=0;
+      for(tile=tiles; tile!=NULL; tile=tile->next)
+        {
+          /* Do the proper operation. */
+          switch(operation->v)
+            {
+            case ARGS_OPTION_KEY_NUMBER:
+              tmp=gal_statistics_number(tile);                      break;
+
+            case ARGS_OPTION_KEY_MINIMUM:
+              tmp=gal_statistics_minimum(tile);                     break;
+
+            case ARGS_OPTION_KEY_MAXIMUM:
+              tmp=gal_statistics_maximum(tile);                     break;
+
+            case ARGS_OPTION_KEY_MEDIAN:
+              tmp=gal_statistics_median(tile, 1);                   break;
+
+            case ARGS_OPTION_KEY_QUANTFUNC:
+              tmp=gal_statistics_quantile_function(tile, tmpv, 1);  break;
+
+            case ARGS_OPTION_KEY_SUM:
+              tmp=gal_statistics_sum(tile);                         break;
+
+            case ARGS_OPTION_KEY_MEAN:
+              tmp=gal_statistics_mean(tile);                        break;
+
+            case ARGS_OPTION_KEY_STD:
+              tmp=gal_statistics_std(tile);                         break;
+
+            case ARGS_OPTION_KEY_QUANTILE:
+              tmp=gal_statistics_quantile(tile, arg, 1);            break;
+
+            case ARGS_OPTION_KEY_MODE:
+            case ARGS_OPTION_KEY_MODESYM:
+            case ARGS_OPTION_KEY_MODEQUANT:
+            case ARGS_OPTION_KEY_MODESYMVALUE:
+              switch(operation->v)
+                {
+                case ARGS_OPTION_KEY_MODE:         mind=0;  break;
+                case ARGS_OPTION_KEY_MODESYM:      mind=2;  break;
+                case ARGS_OPTION_KEY_MODEQUANT:    mind=1;  break;
+                case ARGS_OPTION_KEY_MODESYMVALUE: mind=3;  break;
+                }
+              tmp=gal_statistics_mode(tile, p->mirrordist, 1);
+              ttmp=statistics_pull_out_element(tmp, mind);
+              gal_data_free(tmp);
+              tmp=ttmp;
+              break;
+
+            default:
+              error(EXIT_FAILURE, 0, "a bug! please contact us at %s to "
+                    "fix the problem. THe operation code %d is not "
+                    "recognized in `statistics_on_tile'", PACKAGE_BUGREPORT,
+                    operation->v);
+            }
+
+          /* Put the output value into the `values' array and clean up. */
+          tmp=gal_data_copy_to_new_type_free(tmp, type);
+          memcpy(gal_data_ptr_increment(values->array, tind++,
+                                        values->type),
+                 tmp->array, gal_data_sizeof(type));
+          gal_data_free(tmp);
+        }
+
+      /* Save the values. */
+      gal_fits_img_write(values, p->cp.output, NULL, PROGRAM_STRING);
+      gal_data_free(values);
+
+      /* Clean up. */
+      if(operation->v==ARGS_OPTION_KEY_QUANTFUNC) gal_data_free(tmpv);
     }
 
 
@@ -301,9 +393,6 @@ statistics_on_tile(struct statisticsparams *p)
   free(tsize);
   gal_data_array_free(tiles, ntiles, 0);
   gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
-
-  printf("\n... In statistics_on_tile ...\n");
-  exit(0);
 }
 
 

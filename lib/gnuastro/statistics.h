@@ -105,7 +105,7 @@ gal_data_t *
 gal_statistics_median(gal_data_t *input, int inplace);
 
 gal_data_t *
-gal_statistsics_quantile(gal_data_t *input, double quantile, int inplace);
+gal_statistics_quantile(gal_data_t *input, double quantile, int inplace);
 
 size_t
 gal_statistics_quantile_index(size_t size, double quant);

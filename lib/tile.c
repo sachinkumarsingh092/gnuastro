@@ -189,6 +189,59 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 
 
 
+/* Return a contiguous patch of memory with the same contents as the
+   tile. If the input is not actually a tile, this function will return the
+   actual input untouched. */
+#define TO_CONTIGUOUS(IT) {                                             \
+    IT *i, *o=out->array, *f, *st;                                      \
+    st=gal_tile_start_end_ind_inclusive(input, block, s_e_ind);         \
+    while( s_e_ind[0] + increment <= s_e_ind[1] )                       \
+      {                                                                 \
+        f = ( i = st + increment ) + input->dsize[input->ndim-1];       \
+        do *o++=*i++; while(i<f);                                       \
+        increment += gal_tile_block_increment(block, input->dsize,      \
+                                              num_increment++, NULL);   \
+      }                                                                 \
+  }
+gal_data_t *
+gal_tile_to_contiguous(gal_data_t *input)
+{
+  gal_data_t *out, *block=gal_tile_block(input);
+  size_t s_e_ind[2], increment=0, num_increment=1;
+
+  /* Check if this is actually a tile. */
+  if(input->block)
+    {
+      /* Allocate the contiguous block of memory. */
+      out=gal_data_alloc(NULL, block->type, input->ndim, input->dsize,
+                         NULL, 0, input->minmapsize, NULL, input->unit,
+                         NULL);
+
+      /* Copy the tile's contents to the contiguous patch of memory. */
+      switch(block->type)
+        {
+        case GAL_DATA_TYPE_UINT8:     TO_CONTIGUOUS( uint8_t  );     break;
+        case GAL_DATA_TYPE_INT8:      TO_CONTIGUOUS( int8_t   );     break;
+        case GAL_DATA_TYPE_UINT16:    TO_CONTIGUOUS( uint16_t );     break;
+        case GAL_DATA_TYPE_INT16:     TO_CONTIGUOUS( int16_t  );     break;
+        case GAL_DATA_TYPE_UINT32:    TO_CONTIGUOUS( uint32_t );     break;
+        case GAL_DATA_TYPE_INT32:     TO_CONTIGUOUS( int32_t  );     break;
+        case GAL_DATA_TYPE_UINT64:    TO_CONTIGUOUS( uint64_t );     break;
+        case GAL_DATA_TYPE_INT64:     TO_CONTIGUOUS( int64_t  );     break;
+        case GAL_DATA_TYPE_FLOAT32:   TO_CONTIGUOUS( float    );     break;
+        case GAL_DATA_TYPE_FLOAT64:   TO_CONTIGUOUS( double   );     break;
+        }
+    }
+  else out=input;
+
+  /* Return. */
+  return out;
+}
+
+
+
+
+
 
 
 
@@ -691,6 +744,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
       tiles[i].array=gal_data_ptr_increment(block->array, tind, block->type);
 
       /* Set the sizes of the tile. */
+      tiles[i].size=1;
       tiles[i].ndim=input->ndim;
       tiles[i].dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T,input->ndim);
       for(d=0;d<input->ndim;++d)
@@ -707,6 +761,9 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
             }
           else
             tiles[i].dsize[d]=regular[d];
+
+          /* Set the size value. */
+          tiles[i].size *= tiles[i].dsize[d];
         }
 
       /* Set the block structure for this tile to the `input', and set the
