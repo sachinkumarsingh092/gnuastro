@@ -311,6 +311,71 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
 
 
 
+/* Write a constant value for each tile into each pixel covered by the
+   input tiles in an array the size of the block and return it.
+
+   Arguments
+   ---------
+
+     `tilevalues': This must be an array that has the same number of
+        elements as that in `tilesll' and in the same order that `tilesll'
+        elements are parsed (from first to last). As a result the
+        dimensionality of this array is irrelevant. Note that unlike
+        `tiles', `tilevalues' must be an array.
+
+     `tiles': This will be parsed as a linked list (using the `next'
+        element). Internally, it might be stored as an array, but this
+        function doesn't care! The position of the tile over its block will
+        be determined according to the `block' element and the pointer of
+        its `array' as fully described in `gnuastro/data.h'. This function
+        will not pop/free the list, it will only parse it from start to
+        end.
+
+     `initialize': Initialize the allocated space with blank values before
+        writing in the constant values. This can be useful when the tiles
+        don't cover the full allocated block. */
+gal_data_t *
+gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
+                                 int initialize)
+{
+  void *in;
+  int type=tilevalues->type;
+  size_t tile_ind, nt=0, nv=tilevalues->size;
+  gal_data_t *tofill, *tile, *block=gal_tile_block(tilesll);
+
+  /* A small sanity check. */
+  for(tile=tilesll; tile!=NULL; tile=tile->next) ++nt;
+  if(nt!=nv)
+    error(EXIT_FAILURE, 0, "the number of elements in `tilevalues' (%zu) "
+          "and `tilesll' (%zu) must be the same in "
+          "`gal_tile_block_write_const_value'", nv, nt);
+
+  /* Allocate the output array. */
+  tofill=gal_data_alloc(NULL, type, block->ndim, block->dsize, block->wcs,
+                        0, block->minmapsize, tilevalues->name,
+                        tilevalues->unit, tilevalues->comment);
+
+  /* If requested, initialize `tofill'. */
+  if(initialize) gal_blank_initialize(tofill);
+
+  /* Go over the tiles and write the values in. Note Recall that `tofill'
+     has the same type as `tilevalues'. So we are using memcopy. */
+  tile_ind=0;
+  for(tile=tilesll; tile!=NULL; tile=tile->next)
+    {
+      /* Set the pointer to use as input. */
+      in=gal_data_ptr_increment(tilevalues->array, tile_ind++, type);;
+      GAL_TILE_PARSE_OPERATE({memcpy(o, in, gal_data_sizeof(type));},
+                             tile, tofill, 1, 0);
+    }
+
+  return tofill;
+}
+
+
+
+
+
 /* Make a copy of the memory block in integer type and fill it with the ID
    of each tile, the non-filled areas have blank values. Finally, save the
    final array into a FITS file, specified with `filename'. This is done
@@ -318,70 +383,25 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
    32-bit type because this is the standard FITS standard type for
    integers. */
 gal_data_t *
-gal_tile_block_check_tiles(gal_data_t *tiles)
+gal_tile_block_check_tiles(gal_data_t *tilesll)
 {
-  size_t num_increment;
-  gal_data_t *tofill, *tile;
-  gal_data_t *block=gal_tile_block(tiles);
-  int32_t *p, *pf, tile_index=0, *start=NULL;
-  size_t ndim=tiles->ndim, increment, start_end_inc[2];
-  size_t *coord=gal_data_calloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  int32_t *arr;
+  size_t i, dsize=gal_data_num_in_ll(tilesll);
+  gal_data_t *ids, *out, *block=gal_tile_block(tilesll);
 
-  /***************************************************************/
-  /*************            For a check           ****************
-  float c=0;
-  block->wcs=NULL;
-  ndim=block->ndim=tiles->ndim=3;
-  block->dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  block->dsize[0]=5; block->dsize[1]=5; block->dsize[2]=5;
+  /* Allocate the array to keep the IDs of each tile. */
+  ids=gal_data_alloc(NULL, GAL_DATA_TYPE_INT32, 1, &dsize,
+                     NULL, 0, block->minmapsize, NULL, NULL, NULL);
 
-  tiles->dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  tiles->dsize[0]=2; tiles->dsize[1]=3; tiles->dsize[2]=3;
-  tiles->array=gal_data_ptr_increment(block->array, 36, block->type);
-  tiles->next=NULL;
-  **************************************************************/
+  /* Put the IDs into the array. */
+  arr=ids->array; for(i=0;i<dsize;++i) arr[i]=i;
 
-  /* Allocate the output array. */
-  tofill=gal_data_alloc(NULL, GAL_DATA_TYPE_INT32, ndim, block->dsize,
-                        block->wcs, 0, block->minmapsize, "TILE_CHECK",
-                        "counts", "indexs of all tiles");
+  /* Make the output. */
+  out=gal_tile_block_write_const_value(ids, tilesll, 1);
 
-  /* Initialize the allocated space with blank characters for this type. */
-  pf=(p=tofill->array)+tofill->size; do *p++=GAL_BLANK_INT32; while(p<pf);
-
-  /* Fill in the labels of each tile. */
-  for(tile=tiles; tile!=NULL; tile=tile->next)
-    {
-      /* Set the starting and ending indexs of this tile over the allocated
-         block. */
-      start=gal_tile_start_end_ind_inclusive(tile, tofill, start_end_inc);
-
-      /* Go over the full area of this tile. The loop will stop as soon as
-         the incrementation will go over the last index of the tile. Note
-         that num_increment has to start from 1 because having a remainder
-         of zero is meaningful in the calculation of the increment. */
-      increment=0;
-      num_increment=1;
-      while( start_end_inc[0] + increment <= start_end_inc[1] )
-        {
-          /* Parse the elements in the fastest-dimension (the contiguous
-             patch of memory associated with this tile). */
-          pf = ( p = start + increment ) + tile->dsize[ndim-1];
-          do *p++=tile_index; while(p<pf);
-
-          /* Increase the increment from the start of the tile for the next
-             contiguous patch. */
-          increment += gal_tile_block_increment(block, tile->dsize,
-                                                num_increment++, coord);
-        }
-
-      /* Increment the index for the next tile. */
-      ++tile_index;
-    }
-
-  /* Clean up. */
-  free(coord);
-  return tofill;
+  /* Clean up and return. */
+  gal_data_free(ids);
+  return out;
 }
 
 
@@ -757,7 +777,7 @@ gal_tile_full_two_layers(gal_data_t *input,
                          struct gal_tile_two_layer_params *tl)
 {
   gal_data_t *t;
-  size_t i, *junk;
+  size_t i, *junk, ndim=tl->ndim=input->ndim;
 
   /* Initialize. Note that `numchannels might have already been
      allocated. */
@@ -767,7 +787,7 @@ gal_tile_full_two_layers(gal_data_t *input,
   /* Initialize necessary values and do the channels tessellation. */
   tl->numchannels = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
                                 &tl->channels, 1);
-  tl->totchannels = gal_multidim_total_size(input->ndim, tl->numchannels);
+  tl->totchannels = gal_multidim_total_size(ndim, tl->numchannels);
 
 
   /* Tile each channel. While tiling the first channel, we are also going
@@ -776,7 +796,7 @@ gal_tile_full_two_layers(gal_data_t *input,
   tl->numtilesinch = gal_tile_full(tl->channels, tl->tilesize,
                                    tl->remainderfrac, &tl->tiles,
                                    tl->totchannels);
-  tl->tottilesinch = gal_multidim_total_size(input->ndim, tl->numtilesinch);
+  tl->tottilesinch = gal_multidim_total_size(ndim, tl->numtilesinch);
   for(i=1; i<tl->totchannels; ++i)
     {
       /* Set the first tile in this channel. Then use it it fill the `next'
@@ -795,10 +815,155 @@ gal_tile_full_two_layers(gal_data_t *input,
   /* Multiply the number of tiles along each dimension OF ONE CHANNEL by
      the number of channels in each dimension to get the dimensionality of
      the full tile structure. */
-  tl->numtiles = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  for(i=0;i<input->ndim;++i)
+  tl->numtiles = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  for(i=0;i<ndim;++i)
     tl->numtiles[i] = tl->numtilesinch[i] * tl->numchannels[i];
-  tl->tottiles = gal_multidim_total_size(input->ndim, tl->numtiles);
+  tl->tottiles = gal_multidim_total_size(ndim, tl->numtiles);
+}
+
+
+
+
+
+/* If necessary (see below), make a new Re-ordered array that has one
+   pixel/element for each tile, such that it is ready for displaying. When
+   it isn't necessary, this function will just return the input data
+   structure. So you should free the output only if it is different from
+   the input.
+
+   When there is only one channel OR one dimension, you can just save the
+   array and everything will be fine. However, when there is more than one
+   channel AND more than one dimension this won't work and the values will
+   not be in the places corresponding to the original dataset. This happens
+   because the tiles (and thus the value you assign to each tile) in each
+   channel are taken to be a contiguous patch of memory. But when you look
+   at the whole tessellation, you want the tiles to be ordered based on
+   their position in the final dataset/image.
+
+   The example below may help clarify: assume you have a 6x6 tessellation
+   with two channels in the horizontal and one in the vertical. On the left
+   you can see how the tiles (and their values) are allocated in memory. On
+   the right is how they will be displayed if you just save it as a FITS
+   file with no modification (this will not correspond to your input
+   dataset).
+
+              Allocation map                  When displayed
+              --------------                  --------------
+              15 16 17 33 34 35               30 31 32 33 34 35
+              12 13 14 30 31 32               24 25 26 27 28 29
+              09 10 11 27 28 29               18 19 20 21 22 23
+              06 07 08 24 25 26               12 13 14 15 16 17
+              03 04 05 21 22 23               06 07 08 09 10 11
+              00 01 02 18 19 20               00 01 02 03 04 05       */
+gal_data_t *
+gal_tile_full_values_for_disp(gal_data_t *tilevalues,
+                              struct gal_tile_two_layer_params *tl)
+{
+  void *start;
+  gal_data_t *out, *fake;
+  size_t o_inc, num_increment, start_ind;
+  size_t i, ch_ind, contig, i_inc=0, ndim=tl->ndim;
+  size_t *chstart=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  size_t *s_e_inc=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+
+  /* Make sure that the input and tessellation correspond to each
+     other. This is important, because the user might mistakenly give the
+     input dataset as input, not the dataset that has one value per tile.*/
+  if(tilevalues->ndim!=tl->ndim)
+    error(EXIT_FAILURE, 0, "the input (`tilevalues') and tessellation "
+          "(`tl') in `gal_tile_full_values_for_disp' have %zu and %zu "
+          "dimensions respectively! They must have the same number of "
+          "dimensions", tilevalues->ndim, tl->ndim);
+  for(i=0; i<ndim; ++i)
+    if(tilevalues->dsize[i]!=tl->numtiles[i])
+      error(EXIT_FAILURE, 0, "the total number of tiles (in all channels) "
+            "of dimension %zu does not correspond between the input "
+            "(`tilevalues': %zu) and tessellation (`tl': %zu)", ndim-i,
+            tilevalues->dsize[i], tl->numtiles[i]);
+
+  /* If there is only one dimension or one channel, then just return the
+     input `tilevalues'. */
+  if(tilevalues->ndim==1 || tl->totchannels==1)
+    return tilevalues;
+
+  /* Allocate the output. */
+  out=gal_data_alloc(NULL, tilevalues->type, tilevalues->ndim,
+                     tilevalues->dsize, tilevalues->wcs, 0,
+                     tilevalues->minmapsize, tilevalues->name,
+                     tilevalues->unit, tilevalues->comment);
+
+  /* Allocate a fake tile (with a size equal to the number of tiles in one
+     channel) for easy parsing with standard techniques. */
+  fake=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, tilevalues->ndim,
+                      tl->numtilesinch, NULL, 0, tilevalues->minmapsize,
+                      NULL, NULL, NULL);
+
+  /* Initialize the fake array: we will set it's `block' to the output.*/
+  fake->block=out;
+  free(fake->array);
+  fake->type=GAL_DATA_TYPE_INVALID;
+
+  /* Put the values into the proper place. */
+  contig=tl->numtilesinch[ndim-1];
+  for(ch_ind=0; ch_ind<tl->totchannels; ++ch_ind)
+    {
+      /* Set the starting pointer of this channel for the `fake' tile that
+         represents it. */
+      gal_multidim_index_to_coord(ch_ind, ndim, tl->numchannels, chstart);
+      for(i=0;i<ndim;++i) chstart[i]*=tl->numtilesinch[i];
+      start_ind=gal_multidim_coord_to_index(ndim, tl->numtiles, chstart);
+      fake->array=gal_data_ptr_increment(out->array, start_ind, out->type);
+
+      /* Find the starting and ending tile indexs (inclusive in the output)
+         of this channel. */
+      start=gal_tile_start_end_ind_inclusive(fake, out, s_e_inc);
+
+      /* Start parsing the channel and putting it in the output. */
+      o_inc=0;
+      num_increment=1;
+      while(s_e_inc[0] + o_inc <= s_e_inc[1])
+        {
+          /* Copy the contiguous region from the `tilevalues' array to the
+             output array. Note that since they have the same type, we can
+             just use `memcpy' and don't actually have to parse it.*/
+          memcpy(gal_data_ptr_increment(start,             o_inc, out->type),
+                 gal_data_ptr_increment(tilevalues->array, i_inc, out->type),
+                 gal_data_sizeof(out->type)*contig);
+
+          /* Set the incrementation for the next contiguous patch. */
+          o_inc += gal_tile_block_increment(out, fake->dsize,
+                                            num_increment++, NULL);
+          i_inc += contig;
+        }
+    }
+
+  /* Clean up and return. */
+  fake->array=NULL;
+  gal_data_free(fake);
+  free(chstart);
+  free(s_e_inc);
+  return out;
+}
+
+
+
+
+
+void
+gal_tile_full_values_write(gal_data_t *tilevalues,
+                           struct gal_tile_two_layer_params *tl,
+                           char *filename, char *program_string)
+{
+  gal_data_t *disp;
+
+  /* Make the dataset to be displayed. */
+  disp = ( tl->oneelempertile
+           ? gal_tile_full_values_for_disp(tilevalues, tl)
+           : gal_tile_block_write_const_value(tilevalues, tl->tiles, 0) );
+
+  /* Write the array as a file and then clean up. */
+  gal_fits_img_write(disp, filename, NULL, program_string);
+  gal_data_free(disp);
 }
 
 

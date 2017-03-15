@@ -4414,11 +4414,12 @@ A FITS binary table (see @ref{Recognized table formats}).
 @node Processing options, Operating mode options, Input output options, Common options
 @subsubsection Processing options
 
-Some processing steps are common to several programs, so to help in using
-those steps in the different programs, they are defined as common options
-to all programs. Note that this class of common options is thus necessarily
-less common between all the programs than those described in @ref{Input
-output options}, or @ref{Operating mode options} options.
+Some processing steps are common to several programs, so they are defined
+as common options to all programs. Note that this class of common options
+is thus necessarily less common between all the programs than those
+described in @ref{Input output options}, or @ref{Operating mode options}
+options. Also, if they are irrelevant for a program, these options will not
+display in the @option{--help} output of the program.
 
 @table @option
 
@@ -4462,6 +4463,34 @@ Make a FITS file with the same dimensions as the input but each pixel is
 replaced with the ID of the tile that it is associated with. Note that the
 tile IDs start from 0. See @ref{Tessellation} for more on Tiling an image
 in Gnuastro.
+
+@item --oneelempertile
+When showing the tile values (for example with @option{--checktiles}, or
+when the program's output is tessellated) only use one element for each
+tile. This can be useful when only the relative values given to each tile
+compared to the rest are important or need to be checked. Since the tiles
+usually have a large number of pixels within them the output will be much
+smaller, and so easier to read, write, store, or send.
+
+Note that when the full input size in any dimension is not exactly
+divisible by the given @option{--tilesize} in that dimension, the edge
+tile(s) will have different sizes (in units of the input's size), see
+@option{--remainderfrac}. But with this option, all displayed values are
+going to have the (same) size of one data-element. Hence, in such cases,
+the image proportions are going to be slightly different with this
+option.
+
+If your input image is not exaclty divisible by the tile size and you want
+one value per tile for some higher-level processing, all is not lost
+though. You can see how many pixels were within each tile (for example to
+weight the values or discard some for later processing) with Gnuastro's
+Statistics (see @ref{Statistics}) as shown below. The output FITS file is
+going to have two extensions, one with the median calculated on each tile
+and one with the number of elements that each tile covers.
+
+@example
+$ aststatistics --median --number --ontile input.fits
+@end example
 @end table
 
 @node Operating mode options,  , Processing options, Common options

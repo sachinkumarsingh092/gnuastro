@@ -379,7 +379,7 @@ statistics_on_tile(struct statisticsparams *p)
         }
 
       /* Save the values. */
-      gal_fits_img_write(values, cp->output, NULL, PROGRAM_STRING);
+      gal_tile_full_values_write(values, tl, cp->output, PROGRAM_STRING);
       gal_data_free(values);
 
       /* Clean up. */
