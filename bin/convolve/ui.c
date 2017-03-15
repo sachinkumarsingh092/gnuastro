@@ -235,16 +235,16 @@ ui_read_check_only_options(struct convolveparams *p)
   /* If we are in the spatial domain, make sure that the necessary
      parameters are set. */
   if( p->domain==CONVOLVE_DOMAIN_SPATIAL )
-    if( cp->tilesize==NULL || cp->numchannels==NULL )
+    if( cp->tl.tilesize==NULL || cp->tl.numchannels==NULL )
       {
-        if( cp->tilesize==NULL && cp->numchannels==NULL )
+        if( cp->tl.tilesize==NULL && cp->tl.numchannels==NULL )
           error(EXIT_FAILURE, 0, "in spatial convolution, `--numchannels' "
                 "and `--tilesize' are mandatory");
         else
           error(EXIT_FAILURE, 0, "in spatial convolution, `--%s' is "
                 "mandatory: you should use it to set the %s",
-                cp->tilesize ? "numchannels" : "tilesize",
-                ( cp->tilesize
+                cp->tl.tilesize ? "numchannels" : "tilesize",
+                ( cp->tl.tilesize
                   ? "number of channels along each dimension of the input"
                   : "size of tiles to cover the input along each "
                   "dimension" ) );
@@ -321,29 +321,28 @@ ui_preparations(struct convolveparams *p)
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
 
   /* Set the output name if the user hasn't set it. */
-  if(p->cp.output==NULL)
-    p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
-                                               outsuffix);
-  gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
+  if(cp->output==NULL)
+    cp->output=gal_checkset_automatic_output(cp, p->filename, outsuffix);
+  gal_checkset_check_remove_file(cp->output, 0, cp->dontdelete);
   if(p->checkfreqsteps)
     {
-      p->freqstepsname=gal_checkset_automatic_output(&p->cp, p->filename,
+      p->freqstepsname=gal_checkset_automatic_output(cp, p->filename,
                                                      "_freqsteps.fits");
-      gal_checkset_check_remove_file(p->freqstepsname, 0, p->cp.dontdelete);
+      gal_checkset_check_remove_file(p->freqstepsname, 0, cp->dontdelete);
     }
-  if(cp->checktiles)
+  if(cp->tl.checktiles)
     {
-      p->cp.tilecheckname=gal_checkset_automatic_output(&p->cp, p->filename,
-                                                        "_tiled.fits");
-      gal_checkset_check_remove_file(p->cp.tilecheckname, 0,
-                                     p->cp.dontdelete);
+      cp->tl.tilecheckname=gal_checkset_automatic_output(cp, p->filename,
+                                                         "_tiled.fits");
+      gal_checkset_check_remove_file(cp->tl.tilecheckname, 0,
+                                     cp->dontdelete);
     }
 
 
   /* Read the input image as a float64 array and its WCS info. */
-  p->input=gal_fits_img_read_to_type(p->filename, p->cp.hdu,
-                                     GAL_DATA_TYPE_FLOAT32, p->cp.minmapsize);
-  gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &p->input->nwcs, &p->input->wcs);
+  p->input=gal_fits_img_read_to_type(p->filename, cp->hdu,
+                                     GAL_DATA_TYPE_FLOAT32, cp->minmapsize);
+  gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs, &p->input->wcs);
 
 
   /* See if there are any blank values. */
@@ -359,13 +358,11 @@ ui_preparations(struct convolveparams *p)
                 "in the input data. You can run %s again with "
                 "`--domain=spatial'\n"
                 "----------------------------------------\n\n",
-                PROGRAM_NAME, p->filename, p->cp.hdu, p->cp.output,
+                PROGRAM_NAME, p->filename, cp->hdu, cp->output,
                 PROGRAM_NAME);
     }
   else
-    cp->channelsize=gal_tile_all_sanity_check(p->filename, p->cp.hdu,
-                                              p->input, cp->tilesize,
-                                              cp->numchannels);
+    gal_tile_full_sanity_check(p->filename, cp->hdu, p->input, &cp->tl);
 
 
 
@@ -445,7 +442,7 @@ ui_preparations(struct convolveparams *p)
         }
       else
         p->kernel = gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                             p->cp.minmapsize);
+                                             cp->minmapsize);
     }
 }
 

@@ -821,17 +821,15 @@ ui_preparations(struct statisticsparams *p)
   if(p->ontile)
     {
       /* Check the tiles. */
-      cp->channelsize=gal_tile_all_sanity_check(p->inputname, p->cp.hdu,
-                                                p->input, cp->tilesize,
-                                                cp->numchannels);
+      gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, &cp->tl);
 
       /* Set the tile file name if the user wants to check the tiles. */
-      if(cp->checktiles)
+      if(cp->tl.checktiles)
         {
-          cp->tilecheckname=gal_checkset_automatic_output(&p->cp,
-                                                          p->inputname,
-                                                          "_tiled.fits");
-          gal_checkset_check_remove_file(cp->tilecheckname, 0,
+          cp->tl.tilecheckname=gal_checkset_automatic_output(&p->cp,
+                                                             p->inputname,
+                                                             "_tiled.fits");
+          gal_checkset_check_remove_file(cp->tl.tilecheckname, 0,
                                          cp->dontdelete);
         }
     }

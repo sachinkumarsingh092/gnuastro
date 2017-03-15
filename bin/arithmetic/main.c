@@ -36,7 +36,7 @@ int
 main (int argc, char *argv[])
 {
   struct timeval t1;
-  struct imgarithparams p={{0}, 0};
+  struct imgarithparams p={{{0},0},0};
 
   /* Set the starting time. */
   time(&p.rawtime);

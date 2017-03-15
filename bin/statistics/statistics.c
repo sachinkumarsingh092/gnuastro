@@ -235,33 +235,31 @@ statistics_on_tile(struct statisticsparams *p)
 {
   double arg;
   uint8_t type;
+  size_t tind, dsize=1, mind;
   gal_data_t *tmp, *tmpv, *ttmp;
+  gal_data_t *check, *tile, *values;
   struct gal_linkedlist_ill *operation;
-  size_t ntiles, *tsize, tind, dsize=1, mind;
-  gal_data_t *channels, *tiles, *check, *tile, *values;
+  struct gal_options_common_params *cp=&p->cp;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* Set the output name. */
-  if(p->cp.output==NULL)
-    p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                               "_ontile.fits");
+  if(cp->output==NULL)
+    cp->output=gal_checkset_automatic_output(cp, p->inputname,
+                                             "_ontile.fits");
 
   /* Make the tile structure. */
-  tsize=gal_tile_all_position_two_layers(p->input, p->cp.channelsize,
-                                         p->cp.tilesize, p->cp.remainderfrac,
-                                         &channels, &tiles);
+  gal_tile_full_two_layers(p->input, tl);
 
-  /* Number of tiles. */
-  ntiles=gal_multidim_total_size(p->input->ndim, tsize);
 
   /* Save the tile IDs if they are requested. */
-  if(p->cp.tilecheckname)
+  if(tl->tilecheckname)
     {
-      check=gal_tile_block_check_tiles(tiles);
+      check=gal_tile_block_check_tiles(tl->tiles);
       if(p->inputformat==INPUT_FORMAT_IMAGE)
-        gal_fits_img_write(check, p->cp.tilecheckname, NULL, PROGRAM_NAME);
+        gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
       else
-        gal_table_write(check, NULL, p->cp.tableformat, p->cp.tilecheckname,
-                        p->cp.dontdelete);
+        gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
+                        cp->dontdelete);
       gal_data_free(check);
     }
 
@@ -296,8 +294,8 @@ statistics_on_tile(struct statisticsparams *p)
         }
 
       /* Allocate the space necessary to keep the value for each tile. */
-      values=gal_data_alloc(NULL, type, p->input->ndim, tsize, NULL, 0,
-                            p->input->minmapsize, NULL, NULL, NULL);
+      values=gal_data_alloc(NULL, type, p->input->ndim, tl->numtiles, NULL,
+                            0, p->input->minmapsize, NULL, NULL, NULL);
 
       /* Read the argument for those operations that need it. This is done
          here, because below, the functions are repeated on each tile. */
@@ -316,7 +314,7 @@ statistics_on_tile(struct statisticsparams *p)
 
       /* Do the operation on each tile. */
       tind=0;
-      for(tile=tiles; tile!=NULL; tile=tile->next)
+      for(tile=tl->tiles; tile!=NULL; tile=tile->next)
         {
           /* Do the proper operation. */
           switch(operation->v)
@@ -381,18 +379,15 @@ statistics_on_tile(struct statisticsparams *p)
         }
 
       /* Save the values. */
-      gal_fits_img_write(values, p->cp.output, NULL, PROGRAM_STRING);
+      gal_fits_img_write(values, cp->output, NULL, PROGRAM_STRING);
       gal_data_free(values);
 
       /* Clean up. */
       if(operation->v==ARGS_OPTION_KEY_QUANTFUNC) gal_data_free(tmpv);
     }
 
-
   /* Clean up. */
-  free(tsize);
-  gal_data_array_free(tiles, ntiles, 0);
-  gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
+  gal_tile_full_free_contents(tl);
 }
 
 

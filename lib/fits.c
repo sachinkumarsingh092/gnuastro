@@ -557,7 +557,8 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
   if( fits_open_file(&fptr, ffname, iomode, &status) )
     gal_fits_io_error(status, "reading this FITS file");
 
-  /* Return the pointer. */
+  /* Clean up and the pointer. */
+  free(ffname);
   return fptr;
 }
 

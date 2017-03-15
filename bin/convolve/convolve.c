@@ -759,9 +759,7 @@ convolve_frequency(struct convolveparams *p)
 void
 convolve(struct convolveparams *p)
 {
-  size_t *tsize;
   gal_data_t *out, *check;
-  gal_data_t *tiles, *channels;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -769,15 +767,13 @@ convolve(struct convolveparams *p)
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
-      tsize=gal_tile_all_position_two_layers(p->input, cp->channelsize,
-                                             cp->tilesize, cp->remainderfrac,
-                                             &channels, &tiles);
+      gal_tile_full_two_layers(p->input, &cp->tl);
 
       /* Save the tile IDs if they are requested. */
-      if(cp->tilecheckname)
+      if(cp->tl.tilecheckname)
         {
-          check=gal_tile_block_check_tiles(tiles);
-          gal_fits_img_write(check, cp->tilecheckname, NULL, PROGRAM_NAME);
+          check=gal_tile_block_check_tiles(cp->tl.tiles);
+          gal_fits_img_write(check, cp->tl.tilecheckname, NULL, PROGRAM_NAME);
           gal_data_free(check);
         }
 
@@ -785,16 +781,13 @@ convolve(struct convolveparams *p)
          want to do spatial domain convolution with this Convolve program
          is edge correction. So by default we assume it and will only
          ignore it if the user asks.*/
-      out=gal_convolve_spatial(tiles, p->kernel, cp->numthreads,
-                               !p->noedgecorrection, cp->workoverch);
+      out=gal_convolve_spatial(cp->tl.tiles, p->kernel, cp->numthreads,
+                               !p->noedgecorrection, cp->tl.workoverch);
 
-      /* Clean up */
-      free(tsize);
+      /* Clean up: free the actual input and replace it's pointer with the
+         convolved dataset to save as output. */
+      gal_tile_full_free_contents(&cp->tl);
       gal_data_free(p->input);
-      gal_data_array_free(tiles, gal_data_num_in_ll(tiles), 0);
-      gal_data_array_free(channels, gal_data_num_in_ll(channels), 0);
-
-      /* Put the convolved dataset into the `input' to save as output. */
       p->input=out;
     }
   else

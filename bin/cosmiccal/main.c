@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char *argv[])
 {
-  struct cosmiccalparams p={{0}, 0};
+  struct cosmiccalparams p={{{0},0},0};
 
   /* Get the starting time. */
   time(&p.rawtime);

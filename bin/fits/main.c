@@ -36,7 +36,7 @@ int
 main (int argc, char *argv[])
 {
   int r;
-  struct fitsparams p={{0}, 0};
+  struct fitsparams p={{{0},0},0};
 
   /* Get the starting time. */
   time(&p.rawtime);

@@ -79,9 +79,8 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
 
    `rel_block' (or relative-to-block) is only relevant when the tile has an
    intermediate tile between it and the allocated space (like a channel,
-   see `gal_tile_all_position_two_layers'). If it doesn't (`tile->block'
-   points the allocated dataset), then the value to `rel_block' is
-   irrelevant.
+   see `gal_tile_full_two_layers'). If it doesn't (`tile->block' points the
+   allocated dataset), then the value to `rel_block' is irrelevant.
 
    However, when `tile->block' is its self a larger block and `rel_block'
    is set to 0, then the starting and ending positions will be based on the
@@ -406,90 +405,6 @@ gal_tile_block_check_tiles(gal_data_t *tiles)
 /***********************************************************************/
 /**************           Tile full dataset         ********************/
 /***********************************************************************/
-/* This option is mainly used by Gnuastro's programs to see if the user's
-   given values for the tile size (`tile') and number of channels
-   (`channels') corresponds to the input dataset. */
-size_t *
-gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
-                          size_t *tile, size_t *numchannels)
-{
-  double d;
-  size_t i, *out;
-
-  /* Check the tile's dimensions. */
-  for(i=0;tile[i]!=-1;++i)
-    {
-      /* Not equal to zero. */
-      if(tile[i]==0)
-        error(EXIT_FAILURE, 0, "the tile size must be larger than zero");
-
-      /* If the tile size is larger than the dataset size in this
-         dimension, then change the tile size to the dataset size. */
-      if(tile[i]>input->dsize[i]) tile[i]=input->dsize[i];
-    }
-
-
-  /* Make sure the number of tile sizes (tile dimensions) are the same as
-     the dataset's dimensions). */
-  if(i!=input->ndim)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
-          "value(s) given for the tile size (`--tilesize' option).",
-          filename, hdu, input->ndim, i);
-
-
-  /* Check the channel's dimensions. */
-  for(i=0;numchannels[i]!=-1;++i)
-    if(tile[i]==0)
-      error(EXIT_FAILURE, 0, "the number of channels must be larger than "
-            "zero");
-  if(i!=input->ndim)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
-          "value(s) given for the number of channels", filename, hdu,
-          input->ndim, i);
-
-
-  /* Allocate space for the channel sizes. */
-  out=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-
-
-  /* Check if the channels are exactly divisible by the input's size along
-     each dimension and set the correct size. */
-  for(i=0;i<input->ndim;++i)
-    {
-      /* Check if the number of channels is not more than the size of the
-         image. Note that the reported dimension must be in FITS format.*/
-      if(input->dsize[i]<numchannels[i])
-        error(EXIT_FAILURE, 0, "the number of channels in dimension %zu "
-              "(%zu) is more than the size of the `%s' (hdu: %s) in that "
-              "dimension", input->ndim-i, numchannels[i], filename, hdu);
-
-      /* Also check the tile size. */
-      if(input->dsize[i]<tile[i])
-        error(EXIT_FAILURE, 0, "the tile size in dimension %zu (%zu) is "
-              "more than the size of the `%s' (hdu: %su) in that dimension",
-              input->ndim-i, tile[i], filename, hdu);
-
-      /* First check. */
-      d=(double)input->dsize[i]/(double)numchannels[i];
-      if(ceil(d)!=d)
-        error(EXIT_FAILURE, 0, "%zu (number of channels along dimension "
-              "%zu) is not exactly divisible by %zu (the length of `%s' "
-              "(hdu: %s) that dimension). The channels cover the input "
-              "dataset, hence, they must be identical", numchannels[i],
-              input->ndim-i, input->dsize[i], filename, hdu);
-
-      /* Put the channel size into the output. */
-      out[i]=d;
-    }
-
-  /* Return the output array (size of channel along each dimension). */
-  return out;
-}
-
-
-
-
-
 /* The user's specified tile size might not be an exact multiple of the
    parent's size. This function is useful in such cases. It will give the
    starting tile's size along each dimension. The line below can be the
@@ -525,9 +440,9 @@ gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
    parse all the tiles. We just have to make sure we don't go over the full
    input's length. */
 static void
-gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
-                           float significance, size_t *first, size_t *last,
-                           size_t *tsize)
+gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
+                            float significance, size_t *first, size_t *last,
+                            size_t *tsize)
 {
   size_t i, remainder, *dsize=parent->dsize;;
 
@@ -584,7 +499,7 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
 
      `remainderfrac' is the significant fraction of the remainder space if
         the width of the input isn't an exact multiple of the tile size
-        along a dimension, see `gal_tile_all_regular_first'.
+        along a dimension, see `gal_tile_full_regular_first'.
 
      `out' is the pointer to the array of data structures that is to keep
         the tile parameters. If `*out==NULL', then the necessary space will
@@ -596,8 +511,7 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
         you have several more identically sized `inputs', and you want all
         their tiles to be allocated (and thus indexed) together, even
         though they have different `block' datasets (that then link to one
-        allocated space).  See the `gal_tile_all_position_channel_tile'
-        below.
+        allocated space).  See the `gal_tile_full_two_layers' below.
 
    Output
    ------
@@ -621,8 +535,8 @@ gal_tile_all_regular_first(gal_data_t *parent, size_t *regular,
            dimension (we don't want to go out of the paren't range).
 */
 size_t *
-gal_tile_all_position(gal_data_t *input, size_t *regular,
-                      float remainderfrac, gal_data_t **out, size_t multiple)
+gal_tile_full(gal_data_t *input, size_t *regular,
+              float remainderfrac, gal_data_t **out, size_t multiple)
 {
   size_t i, d, tind, numtiles, *start=NULL;
   gal_data_t *tiles, *block=gal_tile_block(input);
@@ -635,7 +549,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
 
   /* Set the first tile size and total number of tiles along each
      dimension, then allocate the array of tiles. */
-  gal_tile_all_regular_first(input, regular, remainderfrac,
+  gal_tile_full_regular_first(input, regular, remainderfrac,
                              first, last, tsize);
   numtiles=gal_multidim_total_size(input->ndim, tsize);
 
@@ -668,7 +582,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
       for(d=0;d<input->ndim;++d)
         {
           /* Convert the tile coordinates to pixel coordinates within
-             `input'. See the comments above `gal_tile_all_regular_first':
+             `input'. See the comments above `gal_tile_full_regular_first':
              The first tile in every dimension can be different from the
              regular tile size. */
           coord[d] = tcoord[d] ? first[d] + (tcoord[d]-1)*regular[d] : 0;
@@ -693,6 +607,7 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
       /* Set the sizes of the tile. */
       tiles[i].size=1;
       tiles[i].ndim=input->ndim;
+      tiles[i].minmapsize=input->minmapsize;
       tiles[i].dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T,input->ndim);
       for(d=0;d<input->ndim;++d)
         {
@@ -740,6 +655,91 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
 
 
 
+/* Make sure that the input parameters (in `tl', short for two-layer) fit
+   with the input dataset. The filename and HDU are only required for error
+   messages. Also, allocate and fill the `channelsize' array. */
+void
+gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
+                           struct gal_tile_two_layer_params *tl)
+{
+  double d;
+  size_t i, ndim=input->ndim;
+
+  /* Check the tile's dimensions. */
+  for(i=0;tl->tilesize[i]!=-1;++i)
+    {
+      /* Not equal to zero. */
+      if(tl->tilesize[i]==0)
+        error(EXIT_FAILURE, 0, "`--tilesize' must be larger than zero, "
+              "the given value for dimension %zu was zero", ndim-i);
+
+      /* If the tile size is larger than the dataset size in this
+         dimension, then quietly change the tile size to the dataset size
+         along that dimension. */
+      if( tl->tilesize[i] > input->dsize[i] )
+        tl->tilesize[i] = input->dsize[i];
+    }
+
+
+  /* Make sure the number of tile sizes (tile dimensions) are the same as
+     the dataset's dimensions). */
+  if(i!=ndim)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
+          "value(s) given for the tile size (`--tilesize' option).",
+          filename, hdu, ndim, i);
+
+
+  /* Check the channel's dimensions. */
+  for(i=0; tl->numchannels[i]!=-1; ++i)
+    if(tl->numchannels[i]==0)
+      error(EXIT_FAILURE, 0, "the number of channels in all dimensions must "
+            "be larger than zero. The number for dimension %zu was zero",
+            ndim);
+  if(i!=ndim)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
+          "value(s) given for the number of channels", filename, hdu, ndim,
+          i);
+
+
+  /* Allocate space for the channel sizes. */
+  tl->channelsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+
+
+  /* Check if the channels are exactly divisible by the input's size along
+     each dimension and set the correct size. */
+  for(i=0;i<ndim;++i)
+    {
+      /* Check if the number of channels is not more than the size of the
+         image. Note that the reported dimension must be in FITS format.*/
+      if( input->dsize[i] < tl->numchannels[i] )
+        error(EXIT_FAILURE, 0, "the number of channels in dimension %zu "
+              "(%zu) is more than the size of the `%s' (hdu: %s) in that "
+              "dimension", ndim-i, tl->numchannels[i], filename, hdu);
+
+      /* Also check the tile size. */
+      if( input->dsize[i] < tl->tilesize[i] )
+        error(EXIT_FAILURE, 0, "the tile size in dimension %zu (%zu) is "
+              "more than the size of the `%s' (hdu: %su) in that dimension",
+              ndim-i, tl->tilesize[i], filename, hdu);
+
+      /* First check. */
+      d=(double)input->dsize[i]/(double)(tl->numchannels[i]);
+      if(ceil(d)!=d)
+        error(EXIT_FAILURE, 0, "%zu (number of channels along dimension "
+              "%zu) is not exactly divisible by %zu (the length of `%s' "
+              "(hdu: %s) that dimension). The channels cover the input "
+              "dataset, hence, they must be identical", tl->numchannels[i],
+              ndim-i, input->dsize[i], filename, hdu);
+
+      /* Put the channel size into the output. */
+      tl->channelsize[i]=d;
+    }
+}
+
+
+
+
+
 /* A dataset can be tiled with two layers that are related:
 
       Channels: A tesselation of larger tile sizes that all have the same
@@ -751,53 +751,76 @@ gal_tile_all_position(gal_data_t *input, size_t *regular,
 
       Tiles: A combined tesselation of each channel with smaller
            tiles. These tiles can be used to calculate things like
-           gradients over each channel and thus over the whole image.  */
-size_t *
-gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
-                                 size_t *tile_size, float remainderfrac,
-                                 gal_data_t **channels, gal_data_t **tiles)
+           gradients over each channel and thus over the whole image. */
+void
+gal_tile_full_two_layers(gal_data_t *input,
+                         struct gal_tile_two_layer_params *tl)
 {
-  gal_data_t *ch, *t;
-  size_t i, nch=1, ntiles_in_ch;
-  size_t *chsize, *tsize, *ttsize;
+  gal_data_t *t;
+  size_t i, *junk;
 
-  /* First allocate the channels tessellation. */
-  *channels=NULL;
-  chsize=gal_tile_all_position(input, channel_size, remainderfrac,
-                               channels, 1);
-  for(i=0;i<input->ndim;++i) nch *= chsize[i];
+  /* Initialize. Note that `numchannels might have already been
+     allocated. */
+  tl->channels=tl->tiles=NULL;
+  if(tl->numchannels) free(tl->numchannels);
+
+  /* Initialize necessary values and do the channels tessellation. */
+  tl->numchannels = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
+                                &tl->channels, 1);
+  tl->totchannels = gal_multidim_total_size(input->ndim, tl->numchannels);
 
 
-  /* Now, tile each channel. While tiling the first channel, we are also
-     going to allocate the space for the other channels. Then pass those
-     pointers. */
-  *tiles=NULL;
-  ch=*channels;
-  tsize = gal_tile_all_position(ch, tile_size, remainderfrac,
-                                tiles, nch);
-  ntiles_in_ch=gal_multidim_total_size(input->ndim, tsize);
-  for(i=1;i<nch;++i)
+  /* Tile each channel. While tiling the first channel, we are also going
+     to allocate the space for the other channels. Then pass those pointers
+     when we want to fill in each tile of the other channels. */
+  tl->numtilesinch = gal_tile_full(tl->channels, tl->tilesize,
+                                   tl->remainderfrac, &tl->tiles,
+                                   tl->totchannels);
+  tl->tottilesinch = gal_multidim_total_size(input->ndim, tl->numtilesinch);
+  for(i=1; i<tl->totchannels; ++i)
     {
       /* Set the first tile in this channel. Then use it it fill the `next'
-         pointer of the previous channel's tiles. Note that
-         `gal_tile_all_position' set this `next' element to NULL. */
-      t = *tiles + i*ntiles_in_ch;
-      (*tiles)[ i * ntiles_in_ch - 1 ].next = t;
+         pointer of the previous channel's tiles. Note that `gal_tile_full'
+         set this `next' element to NULL. */
+      t = tl->tiles + i * tl->tottilesinch;
+      tl->tiles[ i * tl->tottilesinch - 1 ].next = t;
 
-      /* Fill in the information for all the tiles in this channel. */
-      ttsize=gal_tile_all_position(&ch[i], tile_size, remainderfrac, &t, 1);
-      free(ttsize);
+      /* Fill in the information for all the tiles in this channel. Note
+         that we already have the returned value, so it isn't important.*/
+      junk=gal_tile_full(&tl->channels[i], tl->tilesize, tl->remainderfrac,
+                         &t, 1);
+      free(junk);
     }
 
   /* Multiply the number of tiles along each dimension OF ONE CHANNEL by
-     the number of channels in each dimension for the output. */
+     the number of channels in each dimension to get the dimensionality of
+     the full tile structure. */
+  tl->numtiles = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
   for(i=0;i<input->ndim;++i)
-    tsize[i] *= chsize[i];
-
-  /* Return the total number of tiles along each dimension. */
-  return tsize;
+    tl->numtiles[i] = tl->numtilesinch[i] * tl->numchannels[i];
+  tl->tottiles = gal_multidim_total_size(input->ndim, tl->numtiles);
 }
 
+
+
+
+
+/* Clean up the allocated spaces in the parameters. */
+void
+gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
+{
+  /* Free the simply allocated spaces. */
+  if(tl->tilesize)      free(tl->tilesize);
+  if(tl->numchannels)   free(tl->numchannels);
+  if(tl->channelsize)   free(tl->channelsize);
+  if(tl->numtiles)      free(tl->numtiles);
+  if(tl->numtilesinch)  free(tl->numtilesinch);
+  if(tl->tilecheckname) free(tl->tilecheckname);
+
+  /* Free the arrays of `gal_data_c' for each tile and channel. */
+  if(tl->tiles)    gal_data_array_free(tl->tiles,    tl->tottiles,    0);
+  if(tl->channels) gal_data_array_free(tl->channels, tl->totchannels, 0);
+}
 
 
 

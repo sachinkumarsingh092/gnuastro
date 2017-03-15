@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <argp.h>
 
 #include <gnuastro/data.h>
-
+#include <gnuastro/tile.h>
 
 
 
@@ -158,17 +158,13 @@ enum gal_options_set_values
    programs. */
 struct gal_options_common_params
 {
+  /* Tessellation. */
+  struct gal_tile_two_layer_params tl; /* Two layer tessellation params.  */
+
   /* Input. */
   char                    *hdu; /* Image extension.                       */
   uint8_t             searchin; /* Column meta-data to match/search.      */
   uint8_t           ignorecase; /* Ignore case when matching col info.    */
-
-  /* Tessellation. */
-  size_t             *tilesize; /* Tile size along each dim. (C order).   */
-  size_t          *numchannels; /* Channel no. along each dim. (C order). */
-  float          remainderfrac; /* Frac. of remainers in each dim to cut. */
-  uint8_t           workoverch; /* Convolve over channel borders.         */
-  uint8_t           checktiles; /* Tile IDs in an img, the size of input. */
 
   /* Output. */
   char                 *output; /* Directory containg output.             */
@@ -191,8 +187,6 @@ struct gal_options_common_params
 
   /* For internal (to option processing) purposes. */
   uint8_t                 keep; /* Output file can exist.                 */
-  size_t          *channelsize; /* Size of channels along each dimension. */
-  char          *tilecheckname; /* Name of file to check tiles.           */
   void         *program_struct; /* Host program's main variable struct.   */
   char           *program_name; /* Official name to be used in text.      */
   char           *program_exec; /* Program's executable name.             */

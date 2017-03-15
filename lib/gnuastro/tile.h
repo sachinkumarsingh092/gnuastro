@@ -61,6 +61,8 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 
 
 
+
+
 /***********************************************************************/
 /**************           Allocated block         **********************/
 /***********************************************************************/
@@ -77,22 +79,48 @@ gal_tile_block_check_tiles(gal_data_t *tiles);
 
 
 
+
 /***********************************************************************/
 /**************           Tile full dataset         ********************/
 /***********************************************************************/
-size_t *
-gal_tile_all_sanity_check(char *filename, char *hdu, gal_data_t *input,
-                          size_t *tile, size_t *numchannels);
+
+struct gal_tile_two_layer_params
+{
+  /* Inputs */
+  size_t             *tilesize; /* Tile size along each dim. (C order).   */
+  size_t          *numchannels; /* Channel no. along each dim. (C order). */
+  float          remainderfrac; /* Frac. of remainers in each dim to cut. */
+  uint8_t           workoverch; /* Convolve over channel borders.         */
+  uint8_t           checktiles; /* Tile IDs in an img, the size of input. */
+
+  /* Internal parameters. */
+  size_t              tottiles; /* Total number of tiles in all dim.      */
+  size_t          tottilesinch; /* Number of tiles in one channel.        */
+  size_t           totchannels; /* Total number of channels in all dim.   */
+  size_t          *channelsize; /* Size of channels along each dimension. */
+  size_t             *numtiles; /* Tile no. in each dim. over-all.        */
+  size_t         *numtilesinch; /* Tile no. in each dim. on one channel.  */
+  char          *tilecheckname; /* Name of file to check tiles.           */
+
+  /* Actual tile and channel data structures. */
+  gal_data_t            *tiles; /* Tiles array (also linked with `next'). */
+  gal_data_t         *channels; /* Channels array (linked with `next').   */
+};
 
 size_t *
-gal_tile_all_position(gal_data_t *input, size_t *regular,
-                      float remainderfrac, gal_data_t **out, size_t multiple);
+gal_tile_full(gal_data_t *input, size_t *regular,
+              float remainderfrac, gal_data_t **out, size_t multiple);
 
-size_t *
-gal_tile_all_position_two_layers(gal_data_t *input, size_t *channel_size,
-                                 size_t *tile_size, float remainderfrac,
-                                 gal_data_t **channels, gal_data_t **tiles);
+void
+gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
+                           struct gal_tile_two_layer_params *tl);
 
+void
+gal_tile_full_two_layers(gal_data_t *input,
+                         struct gal_tile_two_layer_params *tl);
+
+void
+gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 
 
 

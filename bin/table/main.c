@@ -37,7 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char *argv[])
 {
-  struct tableparams p={{0}, 0};
+  struct tableparams p={{{0},0},0};
 
   /* Set they starting time. */
   time(&p.rawtime);
