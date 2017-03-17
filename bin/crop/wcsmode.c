@@ -56,15 +56,18 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
   double imgcrd[8], phi[4], theta[4], pixcrd[8];
 
 
-  /* Check if the image is aligned correctly and fits the
-     resolution of other images. */
-  if(wcs->pc[1]!=0.0f || wcs->pc[2]!=0.0f)
+  /* Check if the image is aligned with the WCS coordinates. Note that
+     because of small floating point errors, some programs might still keep
+     very small values in the off-diagonal matrix elements. */
+  if( fabs(wcs->pc[1]/wcs->pc[3])>1e-6 || fabs(wcs->pc[2]/wcs->pc[3])>1e-6 )
     error(EXIT_FAILURE, 0, "%s: HDU %s: is not aligned to the "
           "celestial coordinates. The first FITS axis should be "
           "along the Right Ascension and the second FITS axis "
-          "should be along the declination. You should rotate "
-          "(interpolate) the images with other software",
-          img->name, p->cp.hdu);
+          "should be along the declination.\n\n"
+          "Gnuastro's Warp program can align it with the following "
+          "command:\n\n"
+          "    $ astwarp %s --hdu=%s --align\n",
+          img->name, p->cp.hdu, img->name, p->cp.hdu);
   if(wcs->pc[0]>0)
     error(EXIT_FAILURE, 0, "%s: HDU %s: An increase in the first "
           "FITS axis pixel coordinates should be a decrese in the "
@@ -78,19 +81,20 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
           img->name, p->cp.hdu);
 
 
-  /* Since we are dealing with very accurate values, a multiplication
-     by -1 might cause a floating point error. So we have to account
-     for the floating point error. */
-  if(-1.0f*wcs->pc[0]<wcs->pc[3]-1e-15 || -1.0f*wcs->pc[0]>wcs->pc[3]+1e-15)
+  /* Check the image resolution (if the pixels are actually a square), then
+     compare the resolution with the other input images. Due to floating
+     point errors, some very small differences might exist in the pixel
+     scale, so break out with an error only if the pixel scales are more
+     different than 1e-6. */
+  pixscale=gal_wcs_pixel_scale_deg(wcs);
+  if( fabs(pixscale[0]-pixscale[1])/pixscale[0] > 1e-6 )
     error(EXIT_FAILURE, 0, "%s: HDU %s: The pixel scale along "
           "the two image axises is not the same. The first axis "
-          "is %f arcseconds/pixel, while the second is %f",
-          img->name, p->cp.hdu, 3600*-1.0f*wcs->pc[0],
-          3600*wcs->pc[3]);
+          "is %.15g deg/pixel, while the second is %.15g",
+          img->name, p->cp.hdu, pixscale[1], pixscale[0]);
   if(p->res==0.0f)
     {
       /* Set the resolution of the image. */
-      pixscale=gal_wcs_pixel_scale_deg(wcs);
       p->res=pixscale[0];
       free(pixscale);
 
@@ -114,7 +118,6 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
     }
   else
     {
-      pixscale=gal_wcs_pixel_scale_deg(wcs);
       if(p->res!=pixscale[0])
         error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
               "this image is %f arcseconds/pixel while the "

@@ -7853,14 +7853,14 @@ Crop box parameters:
 
 @item -x FLT
 @itemx --xc=FLT
-X axis (first image axis, horizontal when viewed in SAO DS9) position of
+X axis (first image axis, horizontal when viewed in SAO ds9) position of
 crop box center. Along with @option{--yc}, this only produces one crop in
 each run. The width of the square crop (in pixels) is the value to
 @option{--iwidth}.
 
 @item -y FLT
 @itemx --yc=FLT
-Y axis (second image axis, vertical when viewed in SAO DS9) position of
+Y axis (second image axis, vertical when viewed in SAO ds9) position of
 crop box center. See @option{--xc}.
 
 @item -r FLT
@@ -7929,9 +7929,40 @@ have set the operating mode to WCS mode in your nearest configuration file
 images/tiles and Crop will stitch them to produce this cropped region:
 
 @example
-$ astcrop --mode=wcs desired-filter-image(s).fits            \
-   --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
+$ astcrop --mode=wcs desired-filter-image(s).fits           \
+   --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
               53.134517,-27.787144 : 53.161906,-27.807208"
+@end example
+@cindex SAO ds9
+In other cases, you have an image and want to define the polygon yourself
+(it isn't already published like the example above). As the number of
+vertices increases, checking the vertice coordinates on a FITS viewer (for
+example SAO ds9) and typing them in one by one can be very tedious and
+prone to typo errors.
+
+You can take the following steps to avoid the frustration and possible
+typos: Open the image with ds9 and activate its ``region'' mode with
+@clicksequence{Edit@click{}Region}. Then define the region as a polygon
+with @clicksequence{Region@click{}Shape@click{}Polygon}. Click on the
+approximate center of the region you want and a small square will
+appear. By clicking on the vertices of the square you can shrink or expand
+it, clicking and dragging anywhere on the edges will enable you to define a
+new vertice. After the region has been nicely defined, save it as a file
+with @clicksequence{Region@click{}Save Regions}. You can then select the
+name and address of the output file, keep the format as @command{REG} and
+press ``OK''. In the next window, keep format as ``ds9'' and ``Coordinate
+System'' as ``fk5''. A plain text file (let's call it @file{ds9.reg}) is
+now created.
+
+You can now convert this plain text file to Crop's polygon format with this
+command (when typing on the command-line, ignore the ``@key{\}'' at the end
+of the first and second lines along with the extra spaces, these are only
+for nice printing):
+
+@example
+$ v=$(awk 'NR==4' ds9.reg | sed -e's/polygon(//'        \
+           -e's/\([^,]*,[^,]*\),/\1:/g' -e's/)//' )
+$ astcrop --mode=wcs image.fits --polygon=$v
 @end example
 
 @item --outpolygon
@@ -10601,7 +10632,7 @@ the examples above as a demonstration.
 @cindex FITS standard
 Based on the FITS standard, integer values are assigned to the center of a
 pixel and the coordinate [1.0, 1.0] is the center of the first pixel
-(bottom left of the image when viewed in SAO DS9). So the coordinate center
+(bottom left of the image when viewed in SAO ds9). So the coordinate center
 [0.0, 0.0] is half a pixel away (in each axis) from the bottom left vertice
 of the first pixel. The resampling that is done in Warp (see
 @ref{Resampling}) is done on the coordinate axises and thus directly
@@ -10716,7 +10747,7 @@ ignored.
 @item -c
 @itemx --centeroncorer
 Put the center of coordinates on the corner of the first (bottom-left when
-viewed in SAO DS9) pixel. This option is applied after the final warping
+viewed in SAO ds9) pixel. This option is applied after the final warping
 matrix has been finalized: either through modular warpings or the raw
 matrix. See the explanation above for coordinates in the FITS standard to
 better understand this option and when it should be used.

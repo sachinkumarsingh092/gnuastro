@@ -308,6 +308,10 @@ wcsmodecrop(void *inparam)
           }
       while ( ++(crp->in_ind) < p->numin );
 
+      /* Correct in_ind. The loop above went until `in_ind' is one more
+         than the index for the last input image (that is how it exited the
+         loop). But `crp->in_ind' is needed later, so correct it here. */
+      --crp->in_ind;
 
       /* Check the final output: */
       if(crp->numimg)
