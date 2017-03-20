@@ -233,6 +233,9 @@ typedef struct gal_data_t
 /*************************************************************
  **************        Type information        ***************
  *************************************************************/
+void
+gal_data_bit_print_stream(void *in, size_t size);
+
 char *
 gal_data_type_as_string(uint8_t type, int long_name);
 

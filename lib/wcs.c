@@ -36,7 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/multidim.h>
+#include <gnuastro/dimension.h>
 
 
 
@@ -245,7 +245,7 @@ gal_wcs_on_tile(gal_data_t *tile)
 
       /* Find the coordinates of the tile's starting index. */
       start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
-      gal_multidim_index_to_coord(start_ind, ndim, block->dsize, coord);
+      gal_dimension_index_to_coord(start_ind, ndim, block->dsize, coord);
 
       /* Correct the copied WCS structure. Note that crpix is indexed in
          the FITS/Fortran order while coord is ordered in C, it also starts

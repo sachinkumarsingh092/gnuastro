@@ -107,6 +107,7 @@ struct gal_tile_two_layer_params
   size_t             *numtiles; /* Tile no. in each dim. over-all.        */
   size_t         *numtilesinch; /* Tile no. in each dim. on one channel.  */
   char          *tilecheckname; /* Name of file to check tiles.           */
+  size_t          *permutation; /* Tile pos. in memory --> pos. overall.  */
 
   /* Actual tile and channel data structures. */
   gal_data_t            *tiles; /* Tiles array (also linked with `next'). */
@@ -128,14 +129,17 @@ gal_tile_full_two_layers(gal_data_t *input,
 void
 gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 
-gal_data_t *
-gal_tile_full_values_for_disp(gal_data_t *tilevalues,
-                              struct gal_tile_two_layer_params *tl);
+void
+gal_tile_full_permutation(struct gal_tile_two_layer_params *tl);
 
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
                            char *filename, char *program_string);
+
+void
+gal_tile_full_interpolate(gal_data_t *tilevalues,
+                          struct gal_tile_two_layer_params *tl);
 
 
 

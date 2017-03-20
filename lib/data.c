@@ -280,6 +280,27 @@ gal_data_out_type(gal_data_t *first, gal_data_t *second)
 /*********************************************************************/
 /*************          Size and allocation        *******************/
 /*********************************************************************/
+/* Print the contents of any place in memory that `in' points to for `size'
+   bytes. This solution was inspired from:
+
+   http://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format */
+void
+gal_data_bit_print_stream(void *in, size_t size)
+{
+  size_t i;
+  char *byte=in;
+  for(i=0;i<size;++i)
+    printf("%c%c%c%c%c%c%c%c ",
+           (byte[i] & 0x80 ? '1' : '0'), (byte[i] & 0x40 ? '1' : '0'),
+           (byte[i] & 0x20 ? '1' : '0'), (byte[i] & 0x10 ? '1' : '0'),
+           (byte[i] & 0x08 ? '1' : '0'), (byte[i] & 0x04 ? '1' : '0'),
+           (byte[i] & 0x02 ? '1' : '0'), (byte[i] & 0x01 ? '1' : '0') );
+}
+
+
+
+
+
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second)
 {

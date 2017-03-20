@@ -30,8 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/multidim.h>
 #include <gnuastro/convolve.h>
+#include <gnuastro/dimension.h>
 
 
 
@@ -213,8 +213,8 @@ convolve_spatial_overlap(int on_edge, size_t *parse_coords, size_t *hsize,
   /* Set the increment to start working on the kernel. */
   *k_start_inc = ( full_overlap
                    ? 0
-                   : gal_multidim_coord_to_index(ndim, kernel->dsize,
-                                                 kernel_start) );
+                   : gal_dimension_coord_to_index(ndim, kernel->dsize,
+                                                  kernel_start) );
 
   /* Add the host's starting location (necessary when convolution over the
      host/channel is treated independently). Until now we worked as if the
@@ -222,11 +222,11 @@ convolve_spatial_overlap(int on_edge, size_t *parse_coords, size_t *hsize,
      from now on we will be working over the allocated block to look at
      pixel values, so we need to convert the location to the proper place
      within the allocated array. */
-  gal_multidim_add_coords(overlap_start, host_start, overlap_start, ndim);
+  gal_dimension_add_coords(overlap_start, host_start, overlap_start, ndim);
 
   /* Set the increment to start working on the overlap region and use that
      to set the starting pointer of the overlap region. */
-  overlap_inc=gal_multidim_coord_to_index(ndim, block->dsize, overlap_start);
+  overlap_inc=gal_dimension_coord_to_index(ndim, block->dsize, overlap_start);
   overlap->array=gal_data_ptr_increment(block->array, overlap_inc,
                                         block->type);
   return full_overlap;

@@ -32,9 +32,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/multidim.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
+#include <gnuastro/interpolate.h>
+#include <gnuastro/permutation.h>
 
 #include <timing.h>
 #include <checkset.h>
@@ -230,7 +233,29 @@ statistics_print_one_row(struct statisticsparams *p)
 /*******************************************************************/
 /**************         Single value on tile         ***************/
 /*******************************************************************/
-void
+static void
+statistics_interpolate_and_write(struct statisticsparams *p,
+                                 gal_data_t *values)
+{
+  char *output=p->cp.output;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
+
+  /* Do the interpolation (if necessary). */
+  if(p->interpolate && gal_blank_present(values))
+    gal_tile_full_interpolate(values, tl);
+
+  /* Write the values. */
+  gal_tile_full_values_write(values, tl, output, PROGRAM_STRING);
+
+  /* Clean up. */
+  gal_data_free(values);
+}
+
+
+
+
+
+static void
 statistics_on_tile(struct statisticsparams *p)
 {
   double arg;
@@ -378,9 +403,9 @@ statistics_on_tile(struct statisticsparams *p)
           gal_data_free(tmp);
         }
 
-      /* Save the values. */
-      gal_tile_full_values_write(values, tl, cp->output, PROGRAM_STRING);
-      gal_data_free(values);
+      /* Do the interpolation (if necessary) and write the array into the
+         output. */
+      statistics_interpolate_and_write(p, values);
 
       /* Clean up. */
       if(operation->v==ARGS_OPTION_KEY_QUANTFUNC) gal_data_free(tmpv);

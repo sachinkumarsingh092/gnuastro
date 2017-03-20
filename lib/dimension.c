@@ -1,5 +1,5 @@
 /*********************************************************************
-multidim -- Functions for multi-dimensional operations.
+dimension -- Functions for multi-dimensional operations.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -22,12 +22,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
 
-#include <gnuastro/multidim.h>
+#include <gnuastro/dimension.h>
 
 
 
@@ -37,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /********************             Info             **********************/
 /************************************************************************/
 size_t
-gal_multidim_total_size(size_t ndim, size_t *dsize)
+gal_dimension_total_size(size_t ndim, size_t *dsize)
 {
   size_t i, num=1;
   for(i=0;i<ndim;++i) num *= dsize[i];
@@ -45,6 +46,43 @@ gal_multidim_total_size(size_t ndim, size_t *dsize)
 }
 
 
+
+
+
+/* Calculate the values necessary to increment/decrement along each
+   dimension of a dataset with size `dsize'. */
+size_t *
+gal_dimension_increment(size_t ndim, size_t *dsize)
+{
+  int i;
+  size_t *out=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+
+  /* Along the fastest dimension, it is 1. */
+  out[ndim-1]=1;
+
+  /* For the rest of the dimensions, it is  */
+  if(ndim>1)
+    for(i=ndim-2;i>=0;--i)
+      out[i]=dsize[i+1]*out[i+1];
+
+  /* Return the allocated array. */
+  return out;
+}
+
+
+
+
+
+size_t
+gal_dimension_num_neighbors(size_t ndim)
+{
+  if(ndim)
+    return pow(3, ndim)-1;
+  else
+    error(EXIT_FAILURE, 0, "ndim cannot be zero in "
+          "`gal_dimension_num_neighbors'");
+  return 0;
+}
 
 
 
@@ -67,7 +105,7 @@ gal_multidim_total_size(size_t ndim, size_t *dsize)
 /********************          Coordinates         **********************/
 /************************************************************************/
 void
-gal_multidim_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim)
+gal_dimension_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim)
 {
   size_t *end=c1+ndim;
   do *out++ = *c1++ + *c2++; while(c1<end);
@@ -80,14 +118,14 @@ gal_multidim_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim)
 /* Return the index of an element from its coordinates. The index is the
    position in the contiguous array (assuming it is a 1D arrray). */
 size_t
-gal_multidim_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
+gal_dimension_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
 {
   size_t i, d, ind=0, in_all_faster_dim;
 
   switch(ndim)
     {
     case 0:
-      error(EXIT_FAILURE, 0, "`gal_multidim_coord_to_index' doesn't accept "
+      error(EXIT_FAILURE, 0, "`gal_dimension_coord_to_index' doesn't accept "
             "0 dimensional arrays");
 
     case 1:
@@ -129,16 +167,16 @@ gal_multidim_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
    this is that this function will often be called with a loop and a single
    allocated space would be enough for the whole loop. */
 void
-gal_multidim_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
-                            size_t *coord)
+gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
+                             size_t *coord)
 {
-  size_t d, i, in_all_faster_dim;
+  size_t d, *dinc;
 
   switch(ndim)
     {
     case 0:
       error(EXIT_FAILURE, 0, "a 0-dimensional dataset is not defined in "
-            "`gal_multidim_ind_to_coord'");
+            "`gal_dimension_ind_to_coord'");
 
     /* One dimensional dataset. */
     case 1:
@@ -153,29 +191,24 @@ gal_multidim_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
 
     /* Higher dimensional datasets. */
     default:
-      /* We start with the slowest dimension (first in the C standard). */
+      /* Set the incrementation values for each dimension. */
+      dinc=gal_dimension_increment(ndim, dsize);
+
+      /* We start with the slowest dimension (first in the C standard) and
+         continue until (but not including) the fastest dimension. This is
+         because except for the fastest (coniguous) dimension, the other
+         coordinates can be found by division. */
       for(d=0;d<ndim;++d)
         {
-          /* First, find the number of elements in all dimensions faster
-             than this one. */
-          in_all_faster_dim=1;
-          for(i=d+1;i<ndim;++i)
-            in_all_faster_dim *= dsize[i];
+          /* Set the coordinate value for this dimension. */
+          coord[d] = ind / dinc[d];
 
-          /* If we are on the fastest dimension (last in the C standard,
-             just before the loop finishes), then no division must be
-             done. */
-          if(d==ndim-1)
-            coord[d]=ind;
-          else
-            {
-              /* Set the coordinate value for this dimension. */
-              coord[d] = ind / in_all_faster_dim;
-
-              /* Replace the index with its remainder with the number of
-                 elements in all faster dimensions. */
-              ind  %= in_all_faster_dim;
-            }
+          /* Replace the index with its remainder with the number of
+             elements in all faster dimensions. */
+          ind  %= dinc[d];
         }
+
+      /* Clean up. */
+      free(dinc);
     }
 }

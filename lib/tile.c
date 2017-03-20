@@ -33,7 +33,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/convolve.h>
-#include <gnuastro/multidim.h>
+#include <gnuastro/dimension.h>
+#include <gnuastro/interpolate.h>
+#include <gnuastro/permutation.h>
 
 #include "checkset.h"
 
@@ -64,7 +66,7 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
     {
       /* Calculate the coordinates of the first pixel of the tile. */
       ind = gal_data_ptr_dist(block->array, tile->array, block->type);
-      gal_multidim_index_to_coord(ind, ndim, block->dsize, start_coord);
+      gal_dimension_index_to_coord(ind, ndim, block->dsize, start_coord);
     }
 }
 
@@ -99,7 +101,7 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
 
   /* Get the coordinates of the starting point relative to the allocated
      block. */
-  gal_multidim_index_to_coord(start_ind, ndim, block->dsize, start_end);
+  gal_dimension_index_to_coord(start_ind, ndim, block->dsize, start_end);
 
   /* When the host is different from the block, the tile's starting
      position needs to be corrected. */
@@ -111,13 +113,13 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
       /* Temporarily put the host's coordinates in the place held for the
          ending coordinates. */
       hcoord=end;
-      gal_multidim_index_to_coord(start_ind, ndim, block->dsize, hcoord);
+      gal_dimension_index_to_coord(start_ind, ndim, block->dsize, hcoord);
       sf=(s=start_end)+ndim; h=hcoord; do *s++ -= *h++; while(s<sf);
     }
 
   /* Add the dimensions of the tile to the starting coordinate. Note that
      the ending coordinates are stored immediately after the start.*/
-  gal_multidim_add_coords(start_end, tile->dsize, end, ndim);
+  gal_dimension_add_coords(start_end, tile->dsize, end, ndim);
 }
 
 
@@ -146,7 +148,7 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 
   /* To find the end index, we need to know the coordinates of the starting
      point in the allocated block.  */
-  gal_multidim_index_to_coord(start_end_inc[0], ndim, block->dsize,
+  gal_dimension_index_to_coord(start_end_inc[0], ndim, block->dsize,
                               start_coord);
 
 
@@ -161,7 +163,8 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 
 
   /* Convert the (inclusive) ending point's coordinates into an index. */
-  start_end_inc[1]=gal_multidim_coord_to_index(ndim, block->dsize, end_coord);
+  start_end_inc[1]=gal_dimension_coord_to_index(ndim, block->dsize,
+                                                end_coord);
 
 
   /* For a check:
@@ -571,7 +574,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
      dimension, then allocate the array of tiles. */
   gal_tile_full_regular_first(input, regular, remainderfrac,
                              first, last, tsize);
-  numtiles=gal_multidim_total_size(input->ndim, tsize);
+  numtiles=gal_dimension_total_size(input->ndim, tsize);
 
 
   /* Allocate the necessary space for all the tiles (if necessary). */
@@ -594,7 +597,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
     {
       /* Specify the coordinates of the tile between the other tiles. Note
          that we are dealing with tiles here, not pixels. */
-      gal_multidim_index_to_coord(i, input->ndim, tsize, tcoord);
+      gal_dimension_index_to_coord(i, input->ndim, tsize, tcoord);
 
       /* The coordinates are currently in units of tiles, not
          pixels. Convert them to the coordinates of the first pixel in each
@@ -617,7 +620,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
 
       /* Convert the coordinates (that are now in element/pixel units on
          the allocated block of memory) into an index. */
-      tind=gal_multidim_coord_to_index(block->ndim, block->dsize, coord);
+      tind=gal_dimension_coord_to_index(block->ndim, block->dsize, coord);
 
       /* Now that we have the index of this tile's starting point compared
          to the allocated block, put it in to the tile's `array'
@@ -787,7 +790,7 @@ gal_tile_full_two_layers(gal_data_t *input,
   /* Initialize necessary values and do the channels tessellation. */
   tl->numchannels = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
                                 &tl->channels, 1);
-  tl->totchannels = gal_multidim_total_size(ndim, tl->numchannels);
+  tl->totchannels = gal_dimension_total_size(ndim, tl->numchannels);
 
 
   /* Tile each channel. While tiling the first channel, we are also going
@@ -796,7 +799,7 @@ gal_tile_full_two_layers(gal_data_t *input,
   tl->numtilesinch = gal_tile_full(tl->channels, tl->tilesize,
                                    tl->remainderfrac, &tl->tiles,
                                    tl->totchannels);
-  tl->tottilesinch = gal_multidim_total_size(ndim, tl->numtilesinch);
+  tl->tottilesinch = gal_dimension_total_size(ndim, tl->numtilesinch);
   for(i=1; i<tl->totchannels; ++i)
     {
       /* Set the first tile in this channel. Then use it it fill the `next'
@@ -818,137 +821,124 @@ gal_tile_full_two_layers(gal_data_t *input,
   tl->numtiles = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
   for(i=0;i<ndim;++i)
     tl->numtiles[i] = tl->numtilesinch[i] * tl->numchannels[i];
-  tl->tottiles = gal_multidim_total_size(ndim, tl->numtiles);
+  tl->tottiles = gal_dimension_total_size(ndim, tl->numtiles);
 }
 
 
 
 
 
-/* If necessary (see below), make a new Re-ordered array that has one
-   pixel/element for each tile, such that it is ready for displaying. When
-   it isn't necessary, this function will just return the input data
-   structure. So you should free the output only if it is different from
-   the input.
+/* Usage
+   -----
 
-   When there is only one channel OR one dimension, you can just save the
-   array and everything will be fine. However, when there is more than one
-   channel AND more than one dimension this won't work and the values will
-   not be in the places corresponding to the original dataset. This happens
-   because the tiles (and thus the value you assign to each tile) in each
-   channel are taken to be a contiguous patch of memory. But when you look
-   at the whole tessellation, you want the tiles to be ordered based on
-   their position in the final dataset/image.
+   Make a permutation to allow the conversion of tile location in memory to
+   its location in the full input dataset and put it in the input's
+   `permutation' element. If a permutation has already been defined for the
+   tessellation, this function will not do anythin. If permutation won't be
+   necessary, then this function will just return (the permutation must
+   have been initialized to NULL).
+
+
+   Theory
+   ------
+
+   When there is only one channel OR one dimension, the tiles are allocated
+   in memory in the same order that they represent the input data. However,
+   to make channel-independent processing possible in a generic way, the
+   tiles of each channel are allocated contiguously. So, when there is more
+   than one channel AND more than one dimension, the index of the tile does
+   not correspond to its position in the grid covering the input dataset.
 
    The example below may help clarify: assume you have a 6x6 tessellation
    with two channels in the horizontal and one in the vertical. On the left
-   you can see how the tiles (and their values) are allocated in memory. On
-   the right is how they will be displayed if you just save it as a FITS
-   file with no modification (this will not correspond to your input
-   dataset).
+   you can see how the tile IDs correspond to the input dataset. NOTE how
+   `03' is on the second row, not on the first after `02'. On the right,
+   you can see how the tiles are stored in memory (and shown if you simply
+   write the array into a FITS file for example).
 
-              Allocation map                  When displayed
-              --------------                  --------------
+           Corresponding to input                 In memory
+           ----------------------               --------------
               15 16 17 33 34 35               30 31 32 33 34 35
               12 13 14 30 31 32               24 25 26 27 28 29
               09 10 11 27 28 29               18 19 20 21 22 23
-              06 07 08 24 25 26               12 13 14 15 16 17
+              06 07 08 24 25 26     <--       12 13 14 15 16 17
               03 04 05 21 22 23               06 07 08 09 10 11
-              00 01 02 18 19 20               00 01 02 03 04 05       */
-gal_data_t *
-gal_tile_full_values_for_disp(gal_data_t *tilevalues,
-                              struct gal_tile_two_layer_params *tl)
+              00 01 02 18 19 20               00 01 02 03 04 05
+
+   As a result, if your values are stored in same order as the tiles, and
+   you want them in over-all memory (for example to save as a FITS file),
+   you need to permute the values:
+
+      gal_permutation_apply(values, tl->permutation);
+
+   If you have values over-all and you want them in tile-order, you can
+   apply the inverse permutation:
+
+      gal_permutation_apply_inverse(values, tl->permutation);
+
+   Recall that this is the definition of permutation in this context:
+
+       permute:    IN_ALL[ i       ]   =   IN_MEMORY[ perm[i] ]
+       inverse:    IN_ALL[ perm[i] ]   =   IN_MEMORY[ i       ]         */
+void
+gal_tile_full_permutation(struct gal_tile_two_layer_params *tl)
 {
-  void *start;
-  gal_data_t *out, *fake;
-  size_t o_inc, num_increment, start_ind;
-  size_t i, ch_ind, contig, i_inc=0, ndim=tl->ndim;
-  size_t *chstart=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  size_t *s_e_inc=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  size_t *ch_coord, *tinch_coord;
+  size_t i, p=0, t, ch, ind_in_all, ndim=tl->ndim;
 
-  /* Make sure that the input and tessellation correspond to each
-     other. This is important, because the user might mistakenly give the
-     input dataset as input, not the dataset that has one value per tile.*/
-  if(tilevalues->ndim!=tl->ndim)
-    error(EXIT_FAILURE, 0, "the input (`tilevalues') and tessellation "
-          "(`tl') in `gal_tile_full_values_for_disp' have %zu and %zu "
-          "dimensions respectively! They must have the same number of "
-          "dimensions", tilevalues->ndim, tl->ndim);
-  for(i=0; i<ndim; ++i)
-    if(tilevalues->dsize[i]!=tl->numtiles[i])
-      error(EXIT_FAILURE, 0, "the total number of tiles (in all channels) "
-            "of dimension %zu does not correspond between the input "
-            "(`tilevalues': %zu) and tessellation (`tl': %zu)", ndim-i,
-            tilevalues->dsize[i], tl->numtiles[i]);
+  /* If the permutation has already been defined for this tessellation,
+     then there is no need to do it again here. */
+  if(tl->permutation) return;
 
-  /* If there is only one dimension or one channel, then just return the
-     input `tilevalues'. */
-  if(tilevalues->ndim==1 || tl->totchannels==1)
-    return tilevalues;
+  /* If there is only one channel or one dimension, return NULL. The
+     permutation functions know that the input and output indexs are the
+     same when the permutation is NULL. */
+  if( ndim==1 || tl->totchannels==1) return;
 
-  /* Allocate the output. */
-  out=gal_data_alloc(NULL, tilevalues->type, tilevalues->ndim,
-                     tilevalues->dsize, tilevalues->wcs, 0,
-                     tilevalues->minmapsize, tilevalues->name,
-                     tilevalues->unit, tilevalues->comment);
+  /* Allocate the space for the permutation and coordinates. */
+  ch_coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  tinch_coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  tl->permutation=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, tl->tottiles);
 
-  /* Allocate a fake tile (with a size equal to the number of tiles in one
-     channel) for easy parsing with standard techniques. */
-  fake=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, tilevalues->ndim,
-                      tl->numtilesinch, NULL, 0, tilevalues->minmapsize,
-                      NULL, NULL, NULL);
-
-  /* Initialize the fake array: we will set it's `block' to the output.*/
-  fake->block=out;
-  free(fake->array);
-  fake->type=GAL_DATA_TYPE_INVALID;
-
-  /* Put the values into the proper place. */
-  contig=tl->numtilesinch[ndim-1];
-  for(ch_ind=0; ch_ind<tl->totchannels; ++ch_ind)
+  /* Fill in the permutation, we use the fact that the tiles are filled
+     from the first channel to the last. */
+  for(ch=0;ch<tl->totchannels;++ch)
     {
-      /* Set the starting pointer of this channel for the `fake' tile that
-         represents it. */
-      gal_multidim_index_to_coord(ch_ind, ndim, tl->numchannels, chstart);
-      for(i=0;i<ndim;++i) chstart[i]*=tl->numtilesinch[i];
-      start_ind=gal_multidim_coord_to_index(ndim, tl->numtiles, chstart);
-      fake->array=gal_data_ptr_increment(out->array, start_ind, out->type);
+      /* Get the coordinates of this channel's first tile. */
+      gal_dimension_index_to_coord(ch, ndim, tl->numchannels, ch_coord);
+      for(i=0;i<ndim;++i) ch_coord[i] *= tl->numtilesinch[i];
 
-      /* Find the starting and ending tile indexs (inclusive in the output)
-         of this channel. */
-      start=gal_tile_start_end_ind_inclusive(fake, out, s_e_inc);
-
-      /* Start parsing the channel and putting it in the output. */
-      o_inc=0;
-      num_increment=1;
-      while(s_e_inc[0] + o_inc <= s_e_inc[1])
+      /* Go over all the tiles in this channel. */
+      for(t=0;t<tl->tottilesinch;++t)
         {
-          /* Copy the contiguous region from the `tilevalues' array to the
-             output array. Note that since they have the same type, we can
-             just use `memcpy' and don't actually have to parse it.*/
-          memcpy(gal_data_ptr_increment(start,             o_inc, out->type),
-                 gal_data_ptr_increment(tilevalues->array, i_inc, out->type),
-                 gal_data_sizeof(out->type)*contig);
+          /* Convert its index to coordinates and add them to the channel's
+             starting coordinates. */
+          gal_dimension_index_to_coord(t, ndim, tl->numtilesinch,
+                                       tinch_coord);
+          for(i=0;i<ndim;++i) tinch_coord[i] += ch_coord[i];
 
-          /* Set the incrementation for the next contiguous patch. */
-          o_inc += gal_tile_block_increment(out, fake->dsize,
-                                            num_increment++, NULL);
-          i_inc += contig;
+          /* Convert the coordinates into an index. */
+          ind_in_all = gal_dimension_coord_to_index(ndim, tl->numtiles,
+                                                    tinch_coord);
+          tl->permutation[ind_in_all] = p++;
         }
     }
 
   /* Clean up and return. */
-  fake->array=NULL;
-  gal_data_free(fake);
-  free(chstart);
-  free(s_e_inc);
-  return out;
+  free(tinch_coord);
+  free(ch_coord);
 }
 
 
 
 
 
+/* Write one value for each tile into a file.
+
+   IMPORTANT: it is assumed that the values are in the same order as the
+   tiles.
+
+                      tile[i]  -->   tilevalues[i]                       */
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
@@ -956,14 +946,86 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
 {
   gal_data_t *disp;
 
-  /* Make the dataset to be displayed. */
-  disp = ( tl->oneelempertile
-           ? gal_tile_full_values_for_disp(tilevalues, tl)
-           : gal_tile_block_write_const_value(tilevalues, tl->tiles, 0) );
 
-  /* Write the array as a file and then clean up. */
+  /* Make the dataset to be displayed. */
+  if(tl->oneelempertile)
+    {
+      if(tl->ndim>1 && tl->totchannels>1)
+        {
+          disp = gal_data_copy(tilevalues);
+          gal_permutation_apply(disp, tl->permutation);
+        }
+      else disp = tilevalues;
+    }
+  else
+    disp=gal_tile_block_write_const_value(tilevalues, tl->tiles, 0);
+
+
+  /* Write the array as a file and then clean up (if necessary). */
   gal_fits_img_write(disp, filename, NULL, program_string);
-  gal_data_free(disp);
+  if(disp!=tilevalues) gal_data_free(disp);
+}
+
+
+
+
+
+/* Interpolate the blank tile values while respecting the channels (if
+   requested). The output maybe a newly allocated array (if there are
+   channels), or the same array as input with interpolated values.
+
+   IMPORTANT: it is assumed that the values are in the same order as the
+   tiles.
+
+                      tile[i]  -->   tilevalues[i]                    */
+void
+gal_tile_full_interpolate(gal_data_t *tilevalues,
+                          struct gal_tile_two_layer_params *tl)
+{
+  size_t i;
+  void *chvstart;
+  gal_data_t *tointerp;
+
+  /* Ignore channels (if requested). */
+  if(tl->workoverch)
+    {
+      /* Prepare the permutation (if necessary/not already defined). */
+      gal_tile_full_permutation(tl);
+
+      /* Re-order values to ignore channels (if necessary). */
+      gal_permutation_apply(tilevalues, tl->permutation);
+
+      /* Interpolate the values. */
+      gal_interpolate(tilevalues);
+
+      /* Re-order values back to their original order. */
+      gal_permutation_apply_inverse(tilevalues, tl->permutation);
+    }
+  else
+    {
+      /* Interpolate each channel individually. */
+      for(i=0;i<tl->totchannels;++i)
+        {
+          /* Set the starting pointer for this channel IN THE VALUES
+             array. */
+          chvstart=gal_data_ptr_increment(tilevalues->array,
+                                          i*tl->tottilesinch,
+                                          tilevalues->type);
+
+          /* Make a cover-data-strcuture for the values in this
+             channel. */
+          tointerp=gal_data_alloc(chvstart, tilevalues->type,
+                                  tilevalues->ndim, tl->numtilesinch,
+                                  NULL, 0, 0, NULL, NULL, NULL);
+
+          /* Interpolate over the tiles in this channel. */
+          gal_interpolate(tointerp);
+
+          /* Clean up. */
+          tointerp->array=NULL;
+          gal_data_free(tointerp);
+        }
+    }
 }
 
 
@@ -981,6 +1043,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
   if(tl->numtiles)      free(tl->numtiles);
   if(tl->numtilesinch)  free(tl->numtilesinch);
   if(tl->tilecheckname) free(tl->tilecheckname);
+  if(tl->permutation)   free(tl->permutation);
 
   /* Free the arrays of `gal_data_c' for each tile and channel. */
   if(tl->tiles)    gal_data_array_free(tl->tiles,    tl->tottiles,    0);
