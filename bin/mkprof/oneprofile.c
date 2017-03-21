@@ -35,11 +35,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
+#include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
 #include <timing.h>
-#include <neighbors.h>
 
 #include "main.h"
 
@@ -225,17 +225,18 @@ integ2d(struct mkonthread *mkp)
 static void
 makepixbypix(struct mkonthread *mkp)
 {
-  float circ_r;
-  struct gal_linkedlist_sll *Q=NULL;
-  unsigned char *byt;
-  float *img=mkp->ibq->img;
+  size_t ndim=2, dsize[2]={mkp->width[1], mkp->width[0]};
+
+  uint8_t *byt;
   int use_rand_points=1, ispeak=1;
   struct builtqueue *ibq=mkp->ibq;
-  size_t is1=mkp->width[0], is0=mkp->width[1];
-  size_t p, ngb[4], *ind=&p, numngb, *n, *nf, x, y;
+  float circ_r, *img=mkp->ibq->img;
+  struct gal_linkedlist_sll *Q=NULL;
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
   double tolerance=mkp->p->tolerance, pixfrac, junk;
   double (*profile)(struct mkonthread *)=mkp->profile;
   double xc=mkp->xc, yc=mkp->yc, os=mkp->p->oversample;
+  size_t p, x, y, is1=mkp->width[0], is0=mkp->width[1];
   double truncr=mkp->truncr, approx, hp=0.5f/mkp->p->oversample;
 
   /* lQ: Largest. sQ: Smallest in queue */
@@ -254,12 +255,7 @@ makepixbypix(struct mkonthread *mkp)
     { img[p]=1; return; }
 
   /* Allocate the byt array to not repeat completed pixels. */
-  errno=0;
-  byt=calloc(is0*is1, sizeof *byt);
-  if(byt==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for map of object in row %zu of "
-          "data in %s", is0*is1*sizeof *byt, ibq->id,
-          mkp->p->catname);
+  byt = gal_data_malloc_array(GAL_DATA_TYPE_UINT8, is0*is1);
 
   /* Start the queue: */
   byt[p]=1;
@@ -281,8 +277,7 @@ makepixbypix(struct mkonthread *mkp)
              over sampled image. But all the profile parameters are in the
              non-oversampled image. So we divide the distance by os
              (p->oversample in double type) */
-          gal_linkedlist_pop_from_tosll_start(&lQ, &sQ,
-                                              ind, &circ_r); /* ind=&p */
+          gal_linkedlist_pop_from_tosll_start(&lQ, &sQ, &p, &circ_r);
           mkp->x=(p/is1-xc)/os;
           mkp->y=(p%is1-yc)/os;
           r_el(mkp);
@@ -311,25 +306,17 @@ makepixbypix(struct mkonthread *mkp)
           ++ibq->numaccu;
           ibq->accufrac+=img[p];
 
-          /*
-            printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
-            fabs(img[p]-approx)/img[p]);
-            gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0,
-                                   is1, NULL, SPACK_STRING);
-          */
-
-          /* Go over the neighbours and add them to queue of elements
-             to check. */
-          GAL_NEIGHBORS_FILL_4_ALLIMG;
-          nf=(n=ngb)+numngb;
-          do
-            if(byt[*n]==0)
-              {
-                byt[*n]=1;
-                gal_linkedlist_add_to_tosll_end( &lQ, &sQ, *n,
-                                                 r_circle(*n, mkp) );
-              }
-          while(++n<nf);
+          /* Go over the neighbors and add them to queue of elements to
+             check if they haven't been done already. */
+          GAL_DIMENSION_NEIGHBOR_OP(p, ndim, dsize, 1, dinc,
+            {
+              if(byt[nind]==0)
+                {
+                  byt[nind]=1;
+                  gal_linkedlist_add_to_tosll_end( &lQ, &sQ, nind,
+                                                   r_circle(nind, mkp) );
+                }
+            } );
 
           if(use_rand_points==0) break;
         }
@@ -344,7 +331,7 @@ makepixbypix(struct mkonthread *mkp)
   /* Order doesn't matter any more, add all the pixels you find. */
   while(Q)
     {
-      gal_linkedlist_pop_from_sll(&Q, ind);        /* ind=&p */
+      gal_linkedlist_pop_from_sll(&Q, &p);
       mkp->x=(p/is1-xc)/os;
       mkp->y=(p%is1-yc)/os;
       r_el(mkp);
@@ -363,23 +350,21 @@ makepixbypix(struct mkonthread *mkp)
       /* Save the peak flux if this is the first pixel: */
       if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
 
-      /*
-      gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0, is1,
-                              NULL, SPACK_STRING);
-      */
       /* Go over the neighbours and add them to queue of elements
          to check. */
-      GAL_NEIGHBORS_FILL_4_ALLIMG;
-      nf=(n=ngb)+numngb;
-      do
-        if(byt[*n]==0)
-          {
-            byt[*n]=1;
-            gal_linkedlist_add_to_sll(&Q, *n);
-          }
-      while(++n<nf);
+      GAL_DIMENSION_NEIGHBOR_OP(p, ndim, dsize, 1, dinc,
+        {
+          if(byt[nind]==0)
+            {
+              byt[nind]=1;
+              gal_linkedlist_add_to_sll(&Q, nind);
+            }
+        } );
     }
+
+  /* Clean up. */
   free(byt);
+  free(dinc);
 }
 
 

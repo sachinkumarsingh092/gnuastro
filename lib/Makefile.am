@@ -83,7 +83,7 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
 # distribute them here.
 EXTRA_DIST = $(headersdir)/README gnuastro.pc.in arithmetic-binary.h    \
   arithmetic-onlyint.h arithmetic-other.h config.h.in checkset.h        \
-  fixedstringmacros.h neighbors.h options.h timing.h
+  fixedstringmacros.h options.h timing.h
 
 
 

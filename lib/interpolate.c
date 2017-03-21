@@ -52,7 +52,7 @@ gal_interpolate(gal_data_t *input)
     if(flagarr[F])
       {
         printf("to be filled: %zu\n", F);
-        gal_dimension_neighbor_op(F, input->ndim, input->dsize, 2,
+        GAL_DIMENSION_NEIGHBOR_OP(F, input->ndim, input->dsize, 2,
                                   dinc, {printf("\tneighbor: %zu\n", nind);});
       }
 

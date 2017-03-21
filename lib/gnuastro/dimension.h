@@ -142,7 +142,9 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
                 each dimension. You can make this array with the following
                 function:
 
-                  dinc=gal_dimension_increment(ndim, dsize);
+                  size_t *dinc=gal_dimension_increment(ndim, dsize);
+
+                Don't forget to free it afterwards.
 
         `operation': Any C operation. `nind' is a `size_t' type variable
                 that is defined by this macro and will have the index of
@@ -167,7 +169,7 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
    The bit information is in two two-byte spaces, so in theory, this works
    for 16 dimensions.
 */
-#define gal_dimension_neighbor_op(index, ndim, dsize, connectivity,     \
+#define GAL_DIMENSION_NEIGHBOR_OP(index, ndim, dsize, connectivity,     \
                                   dinc, operation) {                    \
     uint32_t bitstr=0;                                                  \
     size_t nind, ind=index;                                             \
