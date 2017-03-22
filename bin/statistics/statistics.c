@@ -237,12 +237,21 @@ static void
 statistics_interpolate_and_write(struct statisticsparams *p,
                                  gal_data_t *values)
 {
+  gal_data_t *interpd;
   char *output=p->cp.output;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
+
   /* Do the interpolation (if necessary). */
-  if(p->interpolate && gal_blank_present(values))
-    gal_tile_full_interpolate(values, tl);
+  if( p->interpolate
+      && !(p->interponlyblank && gal_blank_present(values)==0) )
+    {
+      interpd=gal_interpolate_close_neighbors(values, tl, p->interpnumngb,
+                                              p->cp.numthreads,
+                                              p->interponlyblank);
+      gal_data_free(values);
+      values=interpd;
+    }
 
   /* Write the values. */
   gal_tile_full_values_write(values, tl, output, PROGRAM_STRING);

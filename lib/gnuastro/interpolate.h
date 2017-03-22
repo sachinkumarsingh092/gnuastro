@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
+#include <gnuastro/tile.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -42,8 +43,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Actual header contants (the above were for the Pre-processor). */
 __BEGIN_C_DECLS  /* From C++ preparations */
 
-void
-gal_interpolate(gal_data_t *input);
+
+
+
+
+gal_data_t *
+gal_interpolate_close_neighbors(gal_data_t *input,
+                                struct gal_tile_two_layer_params *tl,
+                                size_t numneighbors, size_t numthreads,
+                                int onlyblank);
+
+
+
+
 
 __END_C_DECLS    /* From C++ preparations */
 

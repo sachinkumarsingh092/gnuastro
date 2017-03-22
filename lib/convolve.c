@@ -388,7 +388,7 @@ convolve_spatial_tile(struct spatial_params *cprm, size_t tile_ind,
 static void *
 convolve_spatial_on_thread(void *inparam)
 {
-  struct gal_tile_thread_param *tprm=(struct gal_tile_thread_param *)inparam;
+  struct gal_threads_params *tprm=(struct gal_threads_params *)inparam;
   struct spatial_params *cprm=(struct spatial_params *)(tprm->params);
 
   size_t i;
@@ -450,8 +450,8 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
   params.edgecorrection=edgecorrection;
 
   /* Do the spatial convolution on threads. */
-  gal_tile_function_on_threads(tiles, convolve_spatial_on_thread,
-                               numthreads, &params);
+  gal_threads_spin_off(convolve_spatial_on_thread, &params,
+                       gal_data_num_in_ll(tiles), numthreads);
 
   /* Clean up and return the output array. */
   return out;

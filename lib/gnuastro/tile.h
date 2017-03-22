@@ -137,28 +137,6 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
                            char *filename, char *program_string);
 
-void
-gal_tile_full_interpolate(gal_data_t *tilevalues,
-                          struct gal_tile_two_layer_params *tl);
-
-
-
-
-
-/*********************************************************************/
-/********************         On threads          ********************/
-/*********************************************************************/
-struct gal_tile_thread_param
-{
-  size_t            id; /* Id of this thread.                            */
-  void         *params; /* Input structure for higher-level settings.    */
-  size_t       *indexs; /* Indexes of actions to be done in this thread. */
-  pthread_barrier_t *b; /* Pointer the barrier for all threads.          */
-};
-
-void
-gal_tile_function_on_threads(gal_data_t *tiles, void *(*meshfunc)(void *),
-                             size_t numthreads, void *caller_params);
 
 
 

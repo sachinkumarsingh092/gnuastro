@@ -66,6 +66,8 @@ struct statisticsparams
   float           quantmax;  /* Quantile maximum.                        */
   uint8_t           ontile;  /* Do single value calculations on tiles.   */
   uint8_t      interpolate;  /* Use interpolation to fill blank tiles.   */
+  uint8_t  interponlyblank;  /* Only interpolate over blank values.      */
+  size_t      interpnumngb;  /* Number of neighbors for interpolation.   */
 
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/

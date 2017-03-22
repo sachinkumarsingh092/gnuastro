@@ -114,6 +114,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "interponlyblank",
+      ARGS_OPTION_KEY_INTERPONLYBLANK,
+      0,
+      0,
+      "Only interpolate over the blank values.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &p->interponlyblank,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "interpnumngb",
+      ARGS_OPTION_KEY_INTERPNUMNGB,
+      0,
+      0,
+      "Number of neighbors to use for interpolation.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &p->interpnumngb,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

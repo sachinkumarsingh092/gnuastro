@@ -236,3 +236,171 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
   err=pthread_barrier_init(b, NULL, limit);
   if(err) error(EXIT_FAILURE, 0, "thread barrier not initialized");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*******************************************************************/
+/************     Run a function on multiple threads  **************/
+/*******************************************************************/
+/* Run a given function on the given tiles. The function has to be
+   link-able with your final executable and has to have only one `void *'
+   argument and return a `void *' value. To have access to
+   variables/parameters in the function, you have to define a structure and
+   pass its pointer as `caller_params'.
+
+   Here is one simple example. At least two functions and one structure are
+   necessary to use this function.
+
+     --------- Parameters to keep values you need ---------
+     struct my_params
+     {
+       int    value1;
+       double value2;
+       float  *array;
+     }
+
+
+     ---------    Function to run on each thread  ---------
+     void *
+     run_on_thread(void *in_prm)
+     {
+       size_t i;
+       struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+       struct my_params *prm=(struct my_params *)(tprm->params);
+
+       for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+       {
+
+           THE INDEX OF THE TARGET IS NOW AVAILABLE AS
+           `tprm->indexs[i]'. YOU CAN USE IT IN WHAT EVER MANNER YOU LIKE
+           ALONG WITH THE SET OF VARIABLES/ARRAYS in `prm'.
+
+       }
+
+       if(tprm->b) pthread_barrier_wait(tprm->b);
+       return NULL;
+     }
+
+
+     ---------         High-level function        ---------
+     int
+     higher_level_function(float *array, size_t num_in_array, int value1)
+     {
+        double value2;
+        struct my_params;
+        size_t numthreads;
+
+        my_params.value1=value1;
+        my_params.value2=value2;
+        my_params.arary=array;
+
+        gal_threads_spin_off(run_on_thread, &my_params, num_in_array,
+                             numthreads);
+
+        return 1;
+     }
+
+  For real world applications of this function, you can also inspect the
+  Gnuastro source. There are also many cases in Gnuastro where we benefit
+  from this function. Please run the following command from the top source
+  directory of Gnuastro to see where:
+
+      $ grep -r gal_threads_spin_off ./
+*/
+void
+gal_threads_spin_off(void *(*function)(void *), void *caller_params,
+                     size_t numactions, size_t numthreads)
+{
+  int err;
+  pthread_t t;          /* All thread ids saved in this, not used. */
+  pthread_attr_t attr;
+  pthread_barrier_t b;
+  struct gal_threads_params *prm;
+  size_t i, *indexs, thrdcols, numbarriers;
+
+  /* If there are no actions, then just return. */
+  if(numactions==0) return;
+
+  /* Sanity check. */
+  if(numthreads==0)
+    error(EXIT_FAILURE, 0, "the number of threads (`numthreads') in "
+          "`gal_threads_spin_off' cannot be zero");
+
+  /* Allocate the array of parameters structure structures. */
+  errno=0;
+  prm=malloc(numthreads*sizeof *prm);
+  if(prm==NULL)
+    {
+      fprintf(stderr, "%zu bytes could not be allocated for prm.",
+              numthreads*sizeof *prm);
+      exit(EXIT_FAILURE);
+    }
+
+  /* Distribute the actions into the threads: */
+  gal_threads_dist_in_threads(numactions, numthreads, &indexs, &thrdcols);
+
+  /* Do the job: when only one thread is necessary, there is no need to
+     spin off one thread, just call the function directly (spinning off
+     threads is expensive). This is for the generic thread spinner
+     function, not this simple function where `numthreads' is a
+     constant. */
+  if(numthreads==1)
+    {
+      prm[0].id=0;
+      prm[0].b=NULL;
+      prm[0].indexs=indexs;
+      prm[0].params=caller_params;
+      function(&prm[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that this running thread
+         (that spinns off the nt threads) is also a thread, so the
+         number the barriers should be one more than the number of
+         threads spinned off. */
+      numbarriers = (numactions<numthreads ? numactions : numthreads) + 1;
+      gal_threads_attr_barrier_init(&attr, &b, numbarriers);
+
+      /* Spin off the threads: */
+      for(i=0;i<numthreads;++i)
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
+            prm[i].id=i;
+            prm[i].b=&b;
+            prm[i].params=caller_params;
+            prm[i].indexs=&indexs[i*thrdcols];
+            err=pthread_create(&t, &attr, function, &prm[i]);
+            if(err)
+              {
+                fprintf(stderr, "can't create thread %zu", i);
+                exit(EXIT_FAILURE);
+              }
+          }
+
+      /* Wait for all threads to finish and free the spaces. */
+      pthread_barrier_wait(&b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&b);
+    }
+
+  /* Clean up. */
+  free(prm);
+  free(indexs);
+}

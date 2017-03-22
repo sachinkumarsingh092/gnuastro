@@ -212,3 +212,33 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
       free(dinc);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/********************           Distances          **********************/
+/************************************************************************/
+size_t
+gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim)
+{
+  size_t i, out=0;
+  for(i=0;i<ndim;++i) out += labs(a[i]-b[i]);
+  return out;
+}

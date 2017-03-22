@@ -114,6 +114,23 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
 
 
 
+
+/*******************************************************************/
+/************     Run a function on multiple threads  **************/
+/*******************************************************************/
+struct gal_threads_params
+{
+  size_t            id; /* Id of this thread.                            */
+  void         *params; /* Input structure for higher-level settings.    */
+  size_t       *indexs; /* Indexes of actions to be done in this thread. */
+  pthread_barrier_t *b; /* Pointer the barrier for all threads.          */
+};
+
+void
+gal_threads_spin_off(void *(*function)(void *), void *caller_params,
+                     size_t numactions, size_t numthreads);
+
+
 __END_C_DECLS    /* From C++ preparations */
 
 #endif           /* __GAL_THREADS_H__ */
