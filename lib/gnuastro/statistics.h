@@ -181,7 +181,7 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize);
  ****************************************************************/
 gal_data_t *
 gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
-                          int quiet);
+                          int inplace, int quiet);
 
 
 

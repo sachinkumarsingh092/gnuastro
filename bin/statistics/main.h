@@ -66,16 +66,14 @@ struct statisticsparams
   float           quantmax;  /* Quantile maximum.                        */
   uint8_t           ontile;  /* Do single value calculations on tiles.   */
   uint8_t      interpolate;  /* Use interpolation to fill blank tiles.   */
-  uint8_t  interponlyblank;  /* Only interpolate over blank values.      */
-  size_t      interpnumngb;  /* Number of neighbors for interpolation.   */
 
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
   uint8_t        histogram;  /* Save histogram in output.                */
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
-  float      sigclipmultip;  /* Multiple of sigma in sigma clipping.     */
-  float       sigclipparam;  /* Tolerance to stop or number of clips.    */
   double            mirror;  /* Mirror value for hist and CFP.           */
+  uint8_t              sky;  /* Find the Sky value over the image.       */
+  uint8_t        sigmaclip;  /* So sigma-clipping over all dataset.      */
 
   size_t           numbins;  /* Number of bins in histogram or CFP.      */
   size_t      numasciibins;  /* Number of bins in ASCII plots.           */
@@ -84,6 +82,14 @@ struct statisticsparams
   float        onebinstart;  /* Shift bins to start at this value.       */
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
   float         mirrordist;  /* Maximum distance after mirror for mode.  */
+
+  char         *kernelname;  /* File name of kernel to convolve input.   */
+  char               *khdu;  /* Kernel HDU.                              */
+  float        modmedqdiff;  /* Mode and median quantile difference.     */
+  size_t       smoothwidth;  /* Width of flat kernel to smooth interpd.  */
+  uint8_t         checksky;  /* Save the steps for deriving the Sky.     */
+  double    sclipparams[2];  /* Muliple and parameter of sigma clipping. */
+
 
   /* Internal */
   uint8_t      inputformat;  /* Format of input dataset.                 */
@@ -94,6 +100,11 @@ struct statisticsparams
   gal_data_t    *reference;  /* Reference data structure.                */
   int               isfits;  /* Input is a FITS file.                    */
   int             hdu_type;  /* Type of HDU (image or table).            */
+  gal_data_t       *kernel;  /* Kernel for convolution of input for Sky. */
+  gal_data_t    *convolved;  /* Convolved input.                         */
+  gal_data_t        *sky_t;  /* Sky on each tile.                        */
+  gal_data_t        *std_t;  /* Sky standard deviation on each tile.     */
+  char       *checkskyname;  /* Name of file for Sky calculation steps.  */
   time_t           rawtime;  /* Starting time of the program.            */
 };
 

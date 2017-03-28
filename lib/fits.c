@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 
 #include "checkset.h"
@@ -1387,30 +1388,34 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
    WCS information) into a FITS file, but will not close it. Instead it
    will pass along the FITS pointer for further modification. */
 fitsfile *
-gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
+gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
 {
-  size_t i;
   void *blank;
   char *wcsstr;
   fitsfile *fptr;
   long fpixel=1, *naxes;
-  int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(data->type);
+  size_t i, ndim=input->ndim;
+  gal_data_t *towrite, *block=gal_tile_block(input);
+  int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(block->type);
+
+  /* If the input is a tile (isn't a contiguous region of memory), then
+     copy it into a contiguous region. */
+  towrite = input==block ? input : gal_data_copy(input);
 
   /* Allocate the naxis area. */
   naxes=gal_data_malloc_array( ( sizeof(long)==8
                                  ? GAL_DATA_TYPE_INT64
-                                 : GAL_DATA_TYPE_INT32 ), data->ndim);
+                                 : GAL_DATA_TYPE_INT32 ), ndim);
 
   /* Open the file for writing */
   fptr=gal_fits_open_to_write(filename);
 
   /* Fill the `naxes' array (in opposite order, and `long' type): */
-  for(i=0;i<data->ndim;++i)
-    naxes[data->ndim-1-i]=data->dsize[i];
+  for(i=0;i<ndim;++i) naxes[ndim-1-i]=towrite->dsize[i];
 
   /* Create the FITS file. */
-  fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
-                  data->ndim, naxes, &status);
+  fits_create_img(fptr, gal_fits_type_to_bitpix(towrite->type),
+                  ndim, naxes, &status);
   gal_fits_io_error(status, NULL);
 
   /* Remove the two comment lines put by CFITSIO. Note that in some cases,
@@ -1422,12 +1427,13 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
   status=0;
 
   /* Write the image into the file. */
-  fits_write_img(fptr, datatype, fpixel, data->size, data->array, &status);
+  fits_write_img(fptr, datatype, fpixel, towrite->size, towrite->array,
+                 &status);
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
      dealing with integer types. */
-  if(gal_blank_present(data))
-    switch(data->type)
+  if(gal_blank_present(towrite))
+    switch(towrite->type)
       {
       case GAL_DATA_TYPE_FLOAT32:
       case GAL_DATA_TYPE_FLOAT64:
@@ -1436,7 +1442,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
         break;
 
       default:
-        blank=gal_blank_alloc_write(data->type);
+        blank=gal_blank_alloc_write(towrite->type);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
@@ -1444,25 +1450,25 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
       }
 
   /* Write the extension name to the header. */
-  if(data->name)
-    fits_write_key(fptr, TSTRING, "EXTNAME", data->name, "", &status);
+  if(towrite->name)
+    fits_write_key(fptr, TSTRING, "EXTNAME", towrite->name, "", &status);
 
   /* Write the units to the header. */
-  if(data->unit)
-    fits_write_key(fptr, TSTRING, "BUNIT", data->unit, "", &status);
+  if(towrite->unit)
+    fits_write_key(fptr, TSTRING, "BUNIT", towrite->unit, "", &status);
 
   /* Write comments if they exist. */
-  if(data->comment)
-    fits_write_comment(fptr, data->comment, &status);
+  if(towrite->comment)
+    fits_write_comment(fptr, towrite->comment, &status);
 
   /* If a WCS structure is present, write it in */
-  if(data->wcs)
+  if(towrite->wcs)
     {
       /* Decompose the `PCi_j' matrix and `CDELTi' vector. */
-      gal_wcs_decompose_pc_cdelt(data->wcs);
+      gal_wcs_decompose_pc_cdelt(towrite->wcs);
 
       /* Convert the WCS information to text. */
-      status=wcshdo(WCSHDO_safe, data->wcs, &nkeyrec, &wcsstr);
+      status=wcshdo(WCSHDO_safe, towrite->wcs, &nkeyrec, &wcsstr);
       if(status)
         error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
               wcs_errmsg[status]);
@@ -1472,6 +1478,7 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename)
   /* Report any errors if we had any */
   free(naxes);
   gal_fits_io_error(status, NULL);
+  if(towrite!=input) gal_data_free(towrite);
   return fptr;
 }
 

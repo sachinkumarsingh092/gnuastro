@@ -233,6 +233,31 @@ void
 gal_linkedlist_free_ill(struct gal_linkedlist_ill *list);
 
 
+
+
+/******************* void * */
+struct gal_linkedlist_vll
+{
+    void* v;
+    struct gal_linkedlist_vll *next;
+};
+
+void
+gal_linkedlist_add_to_vll(struct gal_linkedlist_vll **list, void *value);
+
+void
+gal_linkedlist_pop_from_vll(struct gal_linkedlist_vll **list, void **value);
+
+void
+gal_linkedlist_reverse_vll(struct gal_linkedlist_vll **list);
+
+void
+gal_linkedlist_free_vll(struct gal_linkedlist_vll *list, int freevalue);
+
+
+
+
+
 /******************* Ordered size_t: */
 struct gal_linkedlist_osll
 {

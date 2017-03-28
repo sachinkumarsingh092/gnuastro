@@ -86,7 +86,7 @@ struct argp_option gal_commonopts_options[] =
 
 
 
-    /* Tile grid options. */
+    /* Tile grid (tessellation) options. */
     {
       0, 0, 0, 0,
       "Tessellation (tile grid):",
@@ -169,6 +169,32 @@ struct argp_option gal_commonopts_options[] =
       &cp->tl.oneelempertile,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "interponlyblank",
+      GAL_OPTIONS_KEY_INTERPONLYBLANK,
+      0,
+      0,
+      "Only interpolate over the blank tiles.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->interponlyblank,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "interpnumngb",
+      GAL_OPTIONS_KEY_INTERPNUMNGB,
+      "INT",
+      0,
+      "Number of neighbors to use for interpolation.",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->interpnumngb,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

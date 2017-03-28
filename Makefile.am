@@ -80,9 +80,6 @@ endif
 if COND_STATISTICS
   MAYBE_STATISTICS = bin/statistics
 endif
-if COND_SUBTRACTSKY
-  MAYBE_SUBTRACTSKY = bin/subtractsky
-endif
 if COND_TABLE
   MAYBE_TABLE = bin/table
 endif
@@ -110,8 +107,8 @@ endif
 SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC) \
   $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_CROP)  \
   $(MAYBE_FITS) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)     \
-  $(MAYBE_NOISECHISEL) $(MAYBE_STATISTICS) $(MAYBE_SUBTRACTSKY)         \
-  $(MAYBE_TABLE) $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc tests
+  $(MAYBE_NOISECHISEL) $(MAYBE_STATISTICS) $(MAYBE_TABLE)               \
+  $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc tests
 
 
 
@@ -124,6 +121,12 @@ ACLOCAL_AMFLAGS = -I bootstrapped/m4
 ## Files that are installed (and distributed)
 ## =========================================
 dist_doc_DATA = README
+
+
+
+# Installed system configuration files
+# ====================================
+dist_sysconf_DATA = bin/gnuastro.conf
 
 
 

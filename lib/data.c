@@ -1142,6 +1142,29 @@ gal_data_free_ll(gal_data_t *list)
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
+/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
+   as the input. Recall that if the input is a tile (a part of the input,
+   which is not-contiguous if it has more than one dimension), then the
+   output will have only the elements that cover the tile.*/
+gal_data_t *
+gal_data_copy(gal_data_t *in)
+{
+  return gal_data_copy_to_new_type(in, gal_tile_block(in)->type);
+}
+
+
+
+
+/* Copy the input dataset into the already allocated space of out. */
+void
+gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
+{
+  gal_data_copy_to_new_type_to_allocated(in, out, out->type);
+}
+
+
+
+
 
 /* Only to be used in `data_copy_from_string'. */
 static void
@@ -1334,7 +1357,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     OT ob, *o=out->array;                                               \
     size_t increment=0, num_increment=1;                                \
     IT ib, *ist, *i=in->array, *f=i+in->size;                           \
-    size_t mclen, contig_len=in->dsize[in->ndim-1];                     \
+    size_t mclen=0, contig_len=in->dsize[in->ndim-1];                   \
     size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* If we are on a tile, the default values need to change. */       \
@@ -1461,7 +1484,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 gal_data_t *
 gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 {
-  gal_data_t *out, *iblock=gal_tile_block(in);
+  gal_data_t *out;
 
   /* Allocate space for the output type */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
@@ -1480,6 +1503,36 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
   */
 
   /* Fill in the output array: */
+  gal_data_copy_to_new_type_to_allocated(in, out, newtype);
+
+  /* Return the created array */
+  return out;
+}
+
+
+
+
+
+/* Copy an array into the already allocated space in `out'. */
+void
+gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
+                                       uint8_t newtype)
+{
+  gal_data_t *iblock=gal_tile_block(in);
+
+  /* Two small sanity checks to avoid segmentation faults. */
+  if(out->size<in->size)
+    error(EXIT_FAILURE, 0, "the output dataset must be equal or larger than "
+          "the input in `gal_data_copy_to_new_type_allocated', the sizes "
+          "are %zu and %zu respectively", out->size, in->size);
+  if(out->type!=newtype)
+    error(EXIT_FAILURE, 0, "the output dataset must have the same type as "
+          "the requested type in `gal_data_copy_to_new_type_allocated', "
+          "the types are %s and %s respectively",
+          gal_data_type_as_string(out->type, 1),
+          gal_data_type_as_string(newtype, 1));
+
+  /* Do the copying. */
   switch(out->type)
     {
     case GAL_DATA_TYPE_UINT8:   COPY_OT_SET( uint8_t  );      break;
@@ -1492,7 +1545,7 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
     case GAL_DATA_TYPE_INT64:   COPY_OT_SET( int64_t  );      break;
     case GAL_DATA_TYPE_FLOAT32: COPY_OT_SET( float    );      break;
     case GAL_DATA_TYPE_FLOAT64: COPY_OT_SET( double   );      break;
-    case GAL_DATA_TYPE_STRING:  data_copy_to_string(in, out);    break;
+    case GAL_DATA_TYPE_STRING:  data_copy_to_string(in, out); break;
 
     case GAL_DATA_TYPE_BIT:
     case GAL_DATA_TYPE_STRLL:
@@ -1507,9 +1560,6 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
       error(EXIT_FAILURE, 0, "type %d not recognized for "
             "for `out->type' in gal_data_copy_to_new_type", out->type);
     }
-
-  /* Return the created array */
-  return out;
 }
 
 
@@ -1543,20 +1593,6 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
                 "#####");
       return out;
     }
-}
-
-
-
-
-
-/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
-   as the input. Recall that if the input is a tile (a part of the input,
-   which is not-contiguous if it has more than one dimension), then the
-   output will have only the elements that cover the tile.*/
-gal_data_t *
-gal_data_copy(gal_data_t *in)
-{
-  return gal_data_copy_to_new_type(in, gal_tile_block(in)->type);
 }
 
 

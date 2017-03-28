@@ -140,14 +140,10 @@ if COND_NOISECHISEL
   noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
 endif
 if COND_STATISTICS
-  MAYBE_STATISTICS_TESTS = statistics/basicstats.sh
+  MAYBE_STATISTICS_TESTS = statistics/basicstats.sh statistics/estimate_sky.sh
 
-  statistics/basicstats.sh: mknoise/addnoise.sh.log
-endif
-if COND_SUBTRACTSKY
-  MAYBE_SUBTRACTSKY_TESTS = subtractsky/subtractsky.sh
-
-  subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
+  statistics/basicstats.sh:   mknoise/addnoise.sh.log
+  statistics/estimate_sky.sh: mknoise/addnoise.sh.log
 endif
 if COND_TABLE
   MAYBE_TABLE_TESTS = table/txt-to-fits-binary.sh		\

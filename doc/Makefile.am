@@ -114,9 +114,6 @@ endif
 if COND_STATISTICS
   MAYBE_STATISTICS_MAN = man/aststatistics.1
 endif
-if COND_SUBTRACTSKY
-  MAYBE_SUBTRACTSKY_MAN = man/astsubtractsky.1
-endif
 if COND_TABLE
   MAYBE_TABLE_MAN = man/asttable.1
 endif
@@ -130,7 +127,7 @@ dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_CONVERTT_MAN)		\
   $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) $(MAYBE_CROP_MAN)	\
   $(MAYBE_FITS_MAN) $(MAYBE_WARP_MAN) $(MAYBE_MKCATALOG_MAN)		\
   $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN) $(MAYBE_NOISECHISEL_MAN)	\
-  $(MAYBE_STATISTICS_MAN) $(MAYBE_SUBTRACTSKY_MAN) $(MAYBE_TABLE_MAN)
+  $(MAYBE_STATISTICS_MAN) $(MAYBE_TABLE_MAN)
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't
@@ -191,10 +188,6 @@ man/astnoisechisel.1: $(top_srcdir)/bin/noisechisel/args.h  $(ALLMANSDEP)
 man/aststatistics.1: $(top_srcdir)/bin/statistics/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "calculate statistics of a dataset"           \
 	                  --libtool $(toputildir)/statistics/aststatistics
-
-man/astsubtractsky.1: $(top_srcdir)/bin/subtractsky/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) -n "subtract the sky value in an image"          \
-	                  --libtool $(toputildir)/subtractsky/astsubtractsky
 
 man/asttable.1: $(top_srcdir)/bin/table/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "read and write ASCII and FITS tables"        \

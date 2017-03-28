@@ -61,7 +61,7 @@ cat > addedoptions.txt <<EOF
  lastconfig            1
  log                   0
 EOF
-cat $topsrc/lib/gnuastro.conf addedoptions.txt > .gnuastro/gnuastro.conf
+cat $topsrc/bin/gnuastro.conf addedoptions.txt > .gnuastro/gnuastro.conf
 rm addedoptions.txt
 
 
@@ -75,7 +75,7 @@ rm addedoptions.txt
 # by `make check'.
 for prog in arithmetic convertt convolve cosmiccal crop fits      \
             mkcatalog mknoise mkprof noisechisel statistics       \
-            subtractsky table warp
+            table warp
 do
     cp $topsrc/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
 done

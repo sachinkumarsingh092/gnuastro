@@ -45,6 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"
+#include "sky.h"
 #include "statistics.h"
 
 
@@ -235,29 +236,25 @@ statistics_print_one_row(struct statisticsparams *p)
 /*******************************************************************/
 static void
 statistics_interpolate_and_write(struct statisticsparams *p,
-                                 gal_data_t *values)
+                                 gal_data_t *values, char *output)
 {
   gal_data_t *interpd;
-  char *output=p->cp.output;
-  struct gal_tile_two_layer_params *tl=&p->cp.tl;
-
+  struct gal_options_common_params *cp=&p->cp;
 
   /* Do the interpolation (if necessary). */
   if( p->interpolate
-      && !(p->interponlyblank && gal_blank_present(values)==0) )
+      && !(p->cp.interponlyblank && gal_blank_present(values)==0) )
     {
-      interpd=gal_interpolate_close_neighbors(values, tl, p->interpnumngb,
-                                              p->cp.numthreads,
-                                              p->interponlyblank);
+      interpd=gal_interpolate_close_neighbors(values, &cp->tl,
+                                              cp->interpnumngb,
+                                              cp->numthreads,
+                                              cp->interponlyblank, 0);
       gal_data_free(values);
       values=interpd;
     }
 
   /* Write the values. */
-  gal_tile_full_values_write(values, tl, output, PROGRAM_STRING);
-
-  /* Clean up. */
-  gal_data_free(values);
+  gal_tile_full_values_write(values, &cp->tl, output, PROGRAM_STRING);
 }
 
 
@@ -267,35 +264,18 @@ statistics_interpolate_and_write(struct statisticsparams *p,
 static void
 statistics_on_tile(struct statisticsparams *p)
 {
-  double arg;
-  uint8_t type;
-  size_t tind, dsize=1, mind;
-  gal_data_t *tmp, *tmpv, *ttmp;
-  gal_data_t *check, *tile, *values;
+  double arg=0;
+  gal_data_t *tile, *values;
+  size_t tind, dsize=1, mind=-1;
+  uint8_t type=GAL_DATA_TYPE_INVALID;
   struct gal_linkedlist_ill *operation;
+  gal_data_t *tmp=NULL, *tmpv=NULL, *ttmp;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
-
-  /* Set the output name. */
-  if(cp->output==NULL)
-    cp->output=gal_checkset_automatic_output(cp, p->inputname,
+  char *output=gal_checkset_automatic_output(cp, cp->output
+                                             ? cp->output
+                                             : p->inputname,
                                              "_ontile.fits");
-
-  /* Make the tile structure. */
-  gal_tile_full_two_layers(p->input, tl);
-
-
-  /* Save the tile IDs if they are requested. */
-  if(tl->tilecheckname)
-    {
-      check=gal_tile_block_check_tiles(tl->tiles);
-      if(p->inputformat==INPUT_FORMAT_IMAGE)
-        gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
-      else
-        gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
-                        cp->dontdelete);
-      gal_data_free(check);
-    }
 
   /* Do the operation on each tile. */
   for(operation=p->singlevalue; operation!=NULL; operation=operation->next)
@@ -406,22 +386,22 @@ statistics_on_tile(struct statisticsparams *p)
 
           /* Put the output value into the `values' array and clean up. */
           tmp=gal_data_copy_to_new_type_free(tmp, type);
-          memcpy(gal_data_ptr_increment(values->array, tind++,
-                                        values->type),
+          memcpy(gal_data_ptr_increment(values->array, tind++, values->type),
                  tmp->array, gal_data_sizeof(type));
           gal_data_free(tmp);
         }
 
       /* Do the interpolation (if necessary) and write the array into the
          output. */
-      statistics_interpolate_and_write(p, values);
+      statistics_interpolate_and_write(p, values, output);
 
       /* Clean up. */
+      gal_data_free(values);
       if(operation->v==ARGS_OPTION_KEY_QUANTFUNC) gal_data_free(tmpv);
     }
 
   /* Clean up. */
-  gal_tile_full_free_contents(tl);
+  free(output);
 }
 
 
@@ -880,36 +860,36 @@ print_sigma_clip(struct statisticsparams *p)
   gal_data_t *sigclip;
 
   /* Set the mode for printing: */
-  if( p->sigclipparam>=1.0f )
-    asprintf(&mode, "for %g clips", p->sigclipparam);
+  if( p->sclipparams[1]>=1.0f )
+    asprintf(&mode, "for %g clips", p->sclipparams[1]);
   else
     asprintf(&mode, "until relative change in STD is less than %g",
-             p->sigclipparam);
+             p->sclipparams[1]);
 
   /* Report the status */
   if(!p->cp.quiet)
     {
       print_input_info(p);
-      printf("%g-sigma clipping steps %s:\n\n", p->sigclipmultip, mode);
+      printf("%g-sigma clipping steps %s:\n\n", p->sclipparams[0], mode);
     }
 
   /* Do the Sigma clipping: */
-  sigclip=gal_statistics_sigma_clip(p->sorted, p->sigclipmultip,
-                                    p->sigclipparam, p->cp.quiet);
+  sigclip=gal_statistics_sigma_clip(p->sorted, p->sclipparams[0],
+                                    p->sclipparams[1], 0, p->cp.quiet);
   a=sigclip->array;
 
   /* Finish the introduction. */
   if(!p->cp.quiet)
     printf("-------\nSummary:\n");
   else
-    printf("%g-sigma clipped %s:\n", p->sigclipmultip, mode);
+    printf("%g-sigma clipped %s:\n", p->sclipparams[0], mode);
 
   /* Print the final results: */
   printf("  %-*s %zu\n", namewidth, "Number of input elements:",
          p->input->size);
-  if( p->sigclipparam < 1.0f )
+  if( p->sclipparams[1] < 1.0f )
     printf("  %-*s %d\n", namewidth, "Number of clips:",     sigclip->status);
-  printf("  %-*s %g\n", namewidth, "Final number of elements:", a[0]);
+  printf("  %-*s %.0f\n", namewidth, "Final number of elements:", a[0]);
   printf("  %-*s %g\n", namewidth, "Median:",                a[1]);
   printf("  %-*s %g\n", namewidth, "Mean:",                  a[2]);
   printf("  %-*s %g\n", namewidth, "Standard deviation:",    a[3]);
@@ -951,6 +931,13 @@ statistics(struct statisticsparams *p)
       else          statistics_print_one_row(p);
     }
 
+  /* Find the Sky value if called. */
+  if(p->sky)
+    {
+      sky(p);
+      print_basic_info=0;
+    }
+
   /* Print the ASCII plots if requested. */
   if(p->asciihist || p->asciicfp)
     {
@@ -966,7 +953,7 @@ statistics(struct statisticsparams *p)
     }
 
   /* Print the sigma-clipped results. */
-  if( !isnan(p->sigclipmultip) )
+  if( p->sigmaclip )
     {
       print_basic_info=0;
       print_sigma_clip(p);

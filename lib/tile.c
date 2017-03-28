@@ -411,6 +411,21 @@ gal_tile_block_check_tiles(gal_data_t *tilesll)
 
 
 
+/* Return the pointer corresponding to the tile in another data
+   structure (can have another type). */
+void *
+gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
+{
+  gal_data_t *block=gal_tile_block(tile);
+  return gal_data_ptr_increment(other->array,
+                                gal_data_ptr_dist(block->array,
+                                                  tile->array, block->type),
+                                other->type);
+}
+
+
+
+
 
 
 
@@ -564,10 +579,10 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   size_t i, d, tind, numtiles, *start=NULL;
   gal_data_t *tiles, *block=gal_tile_block(input);
   size_t *last   = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  size_t *tsize  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
   size_t *first  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
   size_t *coord  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
   size_t *tcoord = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
+  size_t *tsize  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim+1);
 
 
   /* Set the first tile size and total number of tiles along each
@@ -671,7 +686,8 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   free(coord);
   free(tcoord);
   if(start) free(start);
-  return tsize;
+  tsize[input->ndim]=-1; /* So it can be used for another tessellation, */
+  return tsize;          /* see `gal_tile_full_sanity_check'.           */
 }
 
 
@@ -717,7 +733,7 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
     if(tl->numchannels[i]==0)
       error(EXIT_FAILURE, 0, "the number of channels in all dimensions must "
             "be larger than zero. The number for dimension %zu was zero",
-            ndim);
+            i+1);
   if(i!=ndim)
     error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
           "value(s) given for the number of channels", filename, hdu, ndim,
@@ -782,16 +798,19 @@ gal_tile_full_two_layers(gal_data_t *input,
   gal_data_t *t;
   size_t i, *junk, ndim=tl->ndim=input->ndim;
 
-  /* Initialize. Note that `numchannels might have already been
-     allocated. */
+  /* Initialize.  */
   tl->channels=tl->tiles=NULL;
-  if(tl->numchannels) free(tl->numchannels);
 
   /* Initialize necessary values and do the channels tessellation. */
-  tl->numchannels = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
-                                &tl->channels, 1);
+  junk = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
+                       &tl->channels, 1);
   tl->totchannels = gal_dimension_total_size(ndim, tl->numchannels);
-
+  for(i=0;i<ndim;++i)
+    if(junk[i]!=tl->numchannels[i])
+      error(EXIT_FAILURE, 0, "the input and output number of channels in "
+            "`gal_tile_full_two_layers' don't match in dimension %zu, with "
+            "values of %zu and %zu respectively.", ndim-i,
+            tl->numchannels[i], junk[i]);
 
   /* Tile each channel. While tiling the first channel, we are also going
      to allocate the space for the other channels. Then pass those pointers
@@ -946,12 +965,20 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
 {
   gal_data_t *disp;
 
-
   /* Make the dataset to be displayed. */
   if(tl->oneelempertile)
     {
       if(tl->ndim>1 && tl->totchannels>1)
         {
+          /* A small sanity check. */
+          if(tl->permutation==NULL)
+            error(EXIT_FAILURE, 0, "no permutation defined for the input "
+                  "tessellation to `gal_tile_full_values_write'");
+
+          /* Writing tile values to disk is not done for checking, not for
+             efficiency. So to be safe (allow the caller to work on
+             multiple threads), we will copy the tile values, then permute
+             those. */
           disp = gal_data_copy(tilevalues);
           gal_permutation_apply(disp, tl->permutation);
         }
@@ -964,6 +991,74 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
   /* Write the array as a file and then clean up (if necessary). */
   gal_fits_img_write(disp, filename, NULL, program_string);
   if(disp!=tilevalues) gal_data_free(disp);
+}
+
+
+
+
+
+/* Smooth the given values with a flat kernel of the given width. */
+gal_data_t *
+gal_tile_full_values_smooth(gal_data_t *tilevalues,
+                            struct gal_tile_two_layer_params *tl,
+                            size_t width, size_t numthreads)
+{
+  size_t *kdsize, knum, i;
+  gal_data_t *kernel, *smoothed;
+  struct gal_tile_two_layer_params ttl={0};
+  int permute=tl->ndim>1 && tl->totchannels>1;
+
+
+  /* Check if the width is odd. */
+  if(width%2==0)
+    error(EXIT_FAILURE, 0, "%zu not acceptable as width to "
+          "`gal_tile_full_values_smooth'. It has to be an odd number", width);
+
+
+  /* Prepare the kernel size along every dimension. */
+  kdsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, tl->ndim);
+  for(i=0;i<tl->ndim;++i) kdsize[i]=width;
+
+
+  /* Make the kernel. */
+  kernel=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, tilevalues->ndim,
+                        kdsize, NULL, 0, -1, NULL, NULL, NULL);
+  knum=gal_dimension_total_size(tl->ndim, kernel->dsize);
+  for(i=0;i<knum;++i) ((float *)(kernel->array))[i]=1/((double)knum);
+
+  /* Permute (if necessary). */
+  if(permute)
+    {
+      gal_tile_full_permutation(tl);
+      gal_permutation_apply(tilevalues, tl->permutation);
+    }
+
+  /* Do the smoothing. */
+  if(tl->workoverch)
+    smoothed=gal_convolve_spatial(tilevalues, kernel, numthreads, 1, 1);
+  else
+    {
+      /* Create the tile structure. */
+      ttl.tilesize=tl->numtilesinch;
+      ttl.numchannels=tl->numchannels;
+      gal_tile_full_sanity_check("IMPOSSIBLE", "IMP_HDU", tilevalues, &ttl);
+      gal_tile_full_two_layers(tilevalues, &ttl);
+
+      /* Do the convolution separately on each channel. */
+      smoothed=gal_convolve_spatial(ttl.tiles, kernel, numthreads, 1, 0);
+
+      /* Clean up. */
+      ttl.tilesize=ttl.numchannels=NULL;
+      gal_tile_full_free_contents(&ttl);
+    }
+
+  /* Reverse the permutation. */
+  if(permute) gal_permutation_apply_inverse(smoothed, tl->permutation);
+
+  /* Clean up and return; */
+  free(kdsize);
+  gal_data_free(kernel);
+  return smoothed;
 }
 
 

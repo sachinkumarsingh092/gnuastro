@@ -37,7 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/interpolate.h>
 #include <gnuastro/permutation.h>
 
-
+#include <checkset.h>
 
 
 
@@ -58,12 +58,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct interpolate_params
 {
   gal_data_t                    *input;
+  size_t                           num;
   gal_data_t                      *out;
   gal_data_t                   *blanks;
   size_t                  numneighbors;
   uint8_t                *thread_flags;
-  void                       *ngb_vals;
   int                        onlyblank;
+  struct gal_linkedlist_vll  *ngb_vals;
   struct gal_tile_two_layer_params *tl;
 };
 
@@ -79,25 +80,24 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct interpolate_params *prm=(struct interpolate_params *)(tprm->params);
   struct gal_tile_two_layer_params *tl=prm->tl;
-  int correct_index=(tl && tl->totchannels>1 && tl->workoverch==0);
+  int correct_index=(tl && tl->totchannels>1 && !tl->workoverch);
   gal_data_t *input=prm->input;
 
   /* Rest of variables. */
+  void *nv;
   float pdist;
-  gal_data_t *nearest, *single;
-  size_t ngb_counter, dist, *dinc;
+  uint8_t *b, *bf, *bb;
+  struct gal_linkedlist_vll *tvll;
   struct gal_linkedlist_tosll *lQ, *sQ;
-  uint8_t *b, *bf, *bb, type=input->type;
-  void *values=input->array, *out=prm->out->array;
-  size_t pind, twidth=gal_data_sizeof(input->type);
-  size_t i, index, fullind, chstart, ndim=input->ndim;
+  size_t ngb_counter, dist, pind, *dinc;
+  size_t i, index, fullind, chstart=0, ndim=input->ndim;
+  gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
   size_t size = (correct_index ? tl->tottilesinch : input->size);
   size_t *icoord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
   size_t *ncoord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
   uint8_t *fullflag=&prm->thread_flags[tprm->id*input->size], *flag=fullflag;
-  void *nv=gal_data_ptr_increment(prm->ngb_vals, tprm->id*prm->numneighbors,
-                                  input->type);
+
 
   /* Initializations. */
   bb=prm->blanks->array;
@@ -106,10 +106,18 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   do *b = *bb++ ? INTERPOLATE_FLAGS_BLANK : 0; while(++b<bf);
 
 
-  /* Put the nearest neighbor values into a structure for easy processing
-     later. */
-  nearest=gal_data_alloc(nv, input->type, 1, &prm->numneighbors, NULL, 0,
-                         0, NULL, NULL, NULL);
+  /* Put the allocated space to keep the neighbor values into a structure
+     for easy processing. */
+  tin=input;
+  for(tvll=prm->ngb_vals; tvll!=NULL; tvll=tvll->next)
+    {
+      nv=gal_data_ptr_increment(tvll->v, tprm->id*prm->numneighbors,
+                                input->type);
+      gal_data_add_to_ll(&nearest, nv, tin->type, 1, &prm->numneighbors,
+                         NULL, 0, -1, NULL, NULL, NULL);
+      tin=tin->next;
+    }
+  gal_data_reverse_ll(&nearest);
 
 
   /* Go over all the points given to this thread. */
@@ -125,12 +133,14 @@ interpolate_close_neighbors_on_thread(void *in_prm)
          next element. */
       if(prm->onlyblank && !(fullflag[fullind] & INTERPOLATE_FLAGS_BLANK) )
         {
-          /* It should be `input->array', not `values'! Because when
-             channels are treated separately, `values' is going to
-             change. */
-          memcpy(gal_data_ptr_increment(out,          fullind, type),
-                 gal_data_ptr_increment(input->array, fullind, type),
-                 twidth);
+          tin=input;
+          for(tout=prm->out; tout!=NULL; tout=tout->next)
+            {
+              memcpy(gal_data_ptr_increment(tout->array, fullind, tin->type),
+                     gal_data_ptr_increment(tin->array,  fullind, tin->type),
+                     gal_data_sizeof(tin->type));
+              tin=tin->next;
+            }
           continue;
         }
 
@@ -150,14 +160,15 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           /* Index of the first tile in this channel. */
           chstart = (fullind / tl->tottilesinch) * tl->tottilesinch;
 
-          /* Correct the values and flag pointers so we can only work in
-             this channel. */
-          values = gal_data_ptr_increment(input->array, chstart, type);
+          /* Set the channel's starting pointer for the flags. */
           flag = gal_data_ptr_increment(fullflag, chstart,
                                         GAL_DATA_TYPE_UINT8);
         }
       else
-        index=fullind;
+        {
+          chstart=0;
+          index=fullind;
+        }
 
 
       /* Reset all checked bits in the flags array to 0. */
@@ -180,14 +191,21 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           /* Pop-out (p) an index from the queue: */
           gal_linkedlist_pop_from_tosll_start(&lQ, &sQ, &pind, &pdist);
 
-          /* If this isn't a blank value (recall that `index' was the first
-             element added to the list which might be blank). */
+          /* If this isn't a blank value then add its values to the list of
+             neighbor values. Note that we didn't check whether the values
+             were blank or not when adding this pixel to the queue. */
           if( !(flag[pind] & INTERPOLATE_FLAGS_BLANK) )
             {
-              /* Copy the value into the `nv' array. */
-              memcpy(gal_data_ptr_increment(nv, ngb_counter, type),
-                     gal_data_ptr_increment(values, pind, type),
-                     twidth);
+              tin=input;
+              for(tnear=nearest; tnear!=NULL; tnear=tnear->next)
+                {
+                  memcpy(gal_data_ptr_increment(tnear->array, ngb_counter,
+                                                tin->type),
+                         gal_data_ptr_increment(tin->array, chstart+pind,
+                                                tin->type),
+                         gal_data_sizeof(tin->type));
+                  tin=tin->next;
+                }
 
               /* If we have filled all the elements, break out. */
               if(++ngb_counter>=prm->numneighbors) break;
@@ -227,21 +245,30 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                   "interpolation", ngb_counter, prm->numneighbors);
         }
 
-      /* Calculate the median of the values and write it in. */
-      single=gal_statistics_median(nearest, 1);
-      memcpy(gal_data_ptr_increment(out, fullind, type), single->array,
-             twidth);
+      /* Calculate the median of the values and write it in the output. */
+      tout=prm->out;
+      for(tnear=nearest; tnear!=NULL; tnear=tnear->next)
+        {
+          /* Find the median and copy it. */
+          median=gal_statistics_median(tnear, 1);
+          memcpy(gal_data_ptr_increment(tout->array, fullind, tout->type),
+                 median->array, gal_data_sizeof(tout->type));
 
-      /* Clean up. */
-      gal_data_free(single);
+          /* Clean up and go to next array. */
+          gal_data_free(median);
+          tout=tout->next;
+        }
     }
 
 
-  /* Clean up, wait for all the other threads to finish and return. */
+  /* Clean up. */
+  for(tnear=nearest; tnear!=NULL; tnear=tnear->next) tnear->array=NULL;
+  gal_data_free_ll(nearest);
   free(icoord);
   free(ncoord);
-  nearest->array=NULL;
-  gal_data_free(nearest);
+
+
+  /* Wait for all the other threads to finish and return. */
   if(tprm->b) pthread_barrier_wait(tprm->b);
   return NULL;
 }
@@ -257,27 +284,26 @@ gal_data_t *
 gal_interpolate_close_neighbors(gal_data_t *input,
                                 struct gal_tile_two_layer_params *tl,
                                 size_t numneighbors, size_t numthreads,
-                                int onlyblank)
+                                int onlyblank, int aslinkedlist)
 {
+  char *name;
+  gal_data_t *tin, *tout;
   struct interpolate_params prm;
+  size_t ngbvnum=numthreads*numneighbors;
   int permute=(tl && tl->totchannels>1 && tl->workoverch);
 
 
   /* Initialize the constant parameters. */
-  prm.tl=tl;
-  prm.input=input;
-  prm.onlyblank=onlyblank;
-  prm.numneighbors=numneighbors;
+  prm.tl           = tl;
+  prm.ngb_vals     = NULL;
+  prm.input        = input;
+  prm.onlyblank    = onlyblank;
+  prm.numneighbors = numneighbors;
+  prm.num          = aslinkedlist ? gal_data_num_in_ll(input) : 1;
 
 
   /* Flag the blank values. */
   prm.blanks=gal_blank_flag(input);
-
-
-  /* Allocate space for the output. */
-  prm.out=gal_data_alloc(NULL, input->type, input->ndim, input->dsize,
-                         input->wcs, 0, input->minmapsize, "INTERPOLATED",
-                         input->unit, NULL);
 
 
   /* If the input is from a tile structure and the user has asked to ignore
@@ -290,17 +316,58 @@ gal_interpolate_close_neighbors(gal_data_t *input,
       /* Re-order values to ignore channels (if necessary). */
       gal_permutation_apply(input, tl->permutation);
       gal_permutation_apply(prm.blanks, tl->permutation);
+
+      /* If this is a linked list, then permute remaining nodes. */
+      if(aslinkedlist)
+        for(tin=input->next; tin!=NULL; tin=tin->next)
+          gal_permutation_apply(tin, tl->permutation);
     }
+
+
+  /* Allocate space for the (first) output. */
+  name = input->name ? gal_checkset_malloc_cat("INTRP_", input->name) : NULL;
+  prm.out=gal_data_alloc(NULL, input->type, input->ndim, input->dsize,
+                         input->wcs, 0, input->minmapsize, name, input->unit,
+                         NULL);
+  free(name);
+  gal_linkedlist_add_to_vll(&prm.ngb_vals,
+                            gal_data_malloc_array(input->type, ngbvnum));
+
+
+  /* If we are given a list of datasets, make the necessary
+     allocations. The reason we are doing this after a check of
+     `aslinkedlist' is that the `input' might have a `next' element, but
+     the caller might not have called `aslinkedlist'. */
+  prm.out->next=NULL;
+  if(aslinkedlist)
+    for(tin=input->next; tin!=NULL; tin=tin->next)
+      {
+        /* A small sanity check. */
+        if( gal_data_dsize_is_different(input, tin) )
+          error(EXIT_FAILURE, 0, "The other datasets in the list must "
+                "have the same dimension and size in "
+                "`gal_interpolate_close_neighbors'");
+
+        /* Allocate the output array for this node. */
+        name = ( tin->name
+                 ? gal_checkset_malloc_cat("INTRP_", tin->name) : NULL );
+        gal_data_add_to_ll(&prm.out, NULL, tin->type, tin->ndim, tin->dsize,
+                           tin->wcs, 0, tin->minmapsize, name, tin->unit,
+                           NULL);
+        if(name) free(name);
+
+        /* Allocate the space for the neighbor values of this input. */
+        gal_linkedlist_add_to_vll(&prm.ngb_vals,
+                                  gal_data_malloc_array(tin->type, ngbvnum));
+      }
+  gal_data_reverse_ll(&prm.out);
+  gal_linkedlist_reverse_vll(&prm.ngb_vals);
 
 
   /* Allocate space for all the flag values of all the threads here (memory
      in each thread is limited) and this is cleaner. */
   prm.thread_flags=gal_data_malloc_array(GAL_DATA_TYPE_UINT8,
                                          numthreads*input->size);
-
-
-  /* Allocate space for the list of neighbor values in each thread. */
-  prm.ngb_vals=gal_data_malloc_array(input->type, numthreads*numneighbors);
 
 
   /* Spin off the threads. */
@@ -314,7 +381,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   if(permute)
     {
       gal_permutation_apply_inverse(input, tl->permutation);
-      gal_permutation_apply_inverse(prm.out, tl->permutation);
+      for(tout=prm.out; tout!=NULL; tout=tout->next)
+        gal_permutation_apply_inverse(tout, tl->permutation);
     }
 
 

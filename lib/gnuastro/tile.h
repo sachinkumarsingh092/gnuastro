@@ -80,7 +80,8 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
 gal_data_t *
 gal_tile_block_check_tiles(gal_data_t *tiles);
 
-
+void *
+gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other);
 
 
 
@@ -127,9 +128,6 @@ gal_tile_full_two_layers(gal_data_t *input,
                          struct gal_tile_two_layer_params *tl);
 
 void
-gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
-
-void
 gal_tile_full_permutation(struct gal_tile_two_layer_params *tl);
 
 void
@@ -137,6 +135,13 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
                            char *filename, char *program_string);
 
+gal_data_t *
+gal_tile_full_values_smooth(gal_data_t *tilevalues,
+                            struct gal_tile_two_layer_params *tl,
+                            size_t width, size_t numthreads);
+
+void
+gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 
 
 
@@ -148,7 +153,7 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
 #define GAL_TILE_PO_OISET(IT, OT, OP, IN, OUT, PARSE_OUT, CHECK_BLANK) { \
     gal_data_t *out_w=OUT; /* Since `OUT' may be NULL. */               \
     OT *ost, *o = out_w ? out_w->array : NULL;                          \
-    IT b, *st, *i=IN->array, *f=i+IN->size;                             \
+    IT b=0, *st=NULL, *i=IN->array, *f=i+IN->size;                      \
                                                                         \
     /* Write the blank value for the input type into `b'). Note that */ \
     /* a tile doesn't necessarily have to have a type. */               \

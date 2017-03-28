@@ -51,7 +51,7 @@ gal_data_t *
 gal_interpolate_close_neighbors(gal_data_t *input,
                                 struct gal_tile_two_layer_params *tl,
                                 size_t numneighbors, size_t numthreads,
-                                int onlyblank);
+                                int onlyblank, int aslinkedlist);
 
 
 

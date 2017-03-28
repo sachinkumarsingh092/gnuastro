@@ -1,6 +1,6 @@
 /*********************************************************************
-SubtractSky - Find and subtract the sky value from an image.
-SubtractSky is part of GNU Astronomy Utilities (Gnuastro) package.
+Statistics - Statistical analysis on input dataset.
+Statistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,37 +20,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
+#ifndef SKY_H
+#define SKY_H
 
-#include <stdio.h>
-#include <stdlib.h>
+void
+sky(struct statisticsparams *p);
 
-#include <timing.h>             /* Includes time.h and sys/time.h */
-
-#include "main.h"
-
-#include "ui.h"                 /* needs main.h.                  */
-#include "subtractsky.h"        /* needs main.h.                  */
-
-int
-main (int argc, char *argv[])
-{
-  struct timeval t1;
-  struct subtractskyparams p={{{0},0},0};
-
-  /* Set the starting time. */
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Read the input parameters. */
-  setparams(argc, argv, &p);
-
-  /* Run MakeProfiles */
-  subtractsky(&p);
-
-  /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
-
-  /* Return successfully.*/
-  return EXIT_SUCCESS;
-}
+#endif

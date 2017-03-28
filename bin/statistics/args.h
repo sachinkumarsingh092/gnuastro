@@ -95,7 +95,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
+      ui_read_quantile_range
     },
 
 
@@ -111,32 +111,6 @@ struct argp_option program_options[] =
       &p->interpolate,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "interponlyblank",
-      ARGS_OPTION_KEY_INTERPONLYBLANK,
-      0,
-      0,
-      "Only interpolate over the blank values.",
-      GAL_OPTIONS_GROUP_TESSELLATION,
-      &p->interponlyblank,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "interpnumngb",
-      ARGS_OPTION_KEY_INTERPNUMNGB,
-      0,
-      0,
-      "Number of neighbors to use for interpolation.",
-      GAL_OPTIONS_GROUP_TESSELLATION,
-      &p->interpnumngb,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
@@ -280,7 +254,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_MODE,
       0,
       0,
-      "Mode (Appendix C of arXiv:1505.011664).",
+      "Mode (Appendix C of arXiv:1505.01664).",
       ARGS_GROUP_SINGLE_VALUE,
       &p->singlevalue,
       GAL_OPTIONS_NO_ARG_TYPE,
@@ -330,19 +304,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
       ui_add_to_single_value
-    },
-    {
-      "ontile",
-      ARGS_OPTION_KEY_ONTILE,
-      0,
-      0,
-      "Do the measurements on separate tiles, not all.",
-      ARGS_GROUP_SINGLE_VALUE,
-      &p->ontile,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -406,20 +367,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "sigmaclip",
-      ARGS_OPTION_KEY_SIGMACLIP,
-      "FLT,FLT",
-      0,
-      "Multiple of sigma and tolerance/number.",
-      ARGS_GROUP_PARTICULAR_STAT,
-      NULL,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
-    },
-    {
       "mirror",
       ARGS_OPTION_KEY_MIRROR,
       "FLT",
@@ -432,6 +379,45 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "ontile",
+      ARGS_OPTION_KEY_ONTILE,
+      0,
+      0,
+      "Single values on separate tiles, not full input.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->ontile,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sky",
+      ARGS_OPTION_KEY_SKY,
+      0,
+      0,
+      "Find the Sky and its STD over the tessellation.",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->sky,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sigmaclip",
+      ARGS_OPTION_KEY_SIGMACLIP,
+      0,
+      0,
+      "Overall sigma-clipping (see `--sclipparams')",
+      ARGS_GROUP_PARTICULAR_STAT,
+      &p->sigmaclip,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
@@ -439,7 +425,108 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Settings",
+      "Sky and Sky STD settings",
+      ARGS_GROUP_SKY
+    },
+    {
+      "kernel",
+      ARGS_OPTION_KEY_KERNEL,
+      "STR",
+      0,
+      "File name of kernel to convolve input.",
+      ARGS_GROUP_SKY,
+      &p->kernelname,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "khdu",
+      ARGS_OPTION_KEY_KHDU,
+      "STR",
+      0,
+      "HDU/extension name or number of kernel.",
+      ARGS_GROUP_SKY,
+      &p->khdu,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "mirrordist",
+      ARGS_OPTION_KEY_MIRRORDIST,
+      "FLT",
+      0,
+      "Max. distance (error multip.) to find mode.",
+      ARGS_GROUP_SKY,
+      &p->mirrordist,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "modmedqdiff",
+      ARGS_OPTION_KEY_MODMEDQDIFF,
+      "FLT",
+      0,
+      "Max. mode and median quantile diff. per tile.",
+      ARGS_GROUP_SKY,
+      &p->modmedqdiff,
+      GAL_DATA_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sclipparams",
+      ARGS_OPTION_KEY_SCLIPPARAMS,
+      "FLT,FLT",
+      0,
+      "Multiple of sigma and tolerance/number.",
+      ARGS_GROUP_SKY,
+      p->sclipparams,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_sigma_clip
+    },
+    {
+      "smoothwidth",
+      ARGS_OPTION_KEY_SMOOTHWIDTH,
+      "INT",
+      0,
+      "Sky: flat kernel width to smooth interpolated.",
+      ARGS_GROUP_SKY,
+      &p->smoothwidth,
+      GAL_DATA_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_0_OR_ODD,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "checksky",
+      ARGS_OPTION_KEY_CHECKSKY,
+      0,
+      0,
+      "Store steps in `_sky_steps.fits' file.",
+      ARGS_GROUP_SKY,
+      &p->checksky,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Histogram and CFP settings",
       ARGS_GROUP_HIST_CFP
     },
     {
@@ -447,7 +534,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_NUMBINS,
       "INT",
       0,
-      "Number of bins in histogram or CFP.",
+      "No. of bins in histogram or CFP tables.",
       ARGS_GROUP_HIST_CFP,
       &p->numbins,
       GAL_DATA_TYPE_SIZE_T,
@@ -460,7 +547,7 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_NUMASCIIBINS,
       "INT",
       0,
-      "Number of bins in ASCII histogram or CFP plots.",
+      "No. of bins in ASCII histogram or CFP plots.",
       ARGS_GROUP_HIST_CFP,
       &p->numasciibins,
       GAL_DATA_TYPE_SIZE_T,
@@ -515,19 +602,6 @@ struct argp_option program_options[] =
       "Shift bins so one bin starts on this value.",
       ARGS_GROUP_HIST_CFP,
       &p->onebinstart,
-      GAL_DATA_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "mirrordist",
-      ARGS_OPTION_KEY_MIRRORDIST,
-      "FLT",
-      0,
-      "Maximum dist. (in multip. of error) to find mode.",
-      ARGS_GROUP_HIST_CFP,
-      &p->mirrordist,
       GAL_DATA_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,

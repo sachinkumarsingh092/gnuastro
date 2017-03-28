@@ -594,6 +594,81 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
 
 
 
+/* Two numbers must be provided as an argument. This function will read
+   them as the sigma-clipping multiple and parameter and store the two in a
+   2-element array. `option->value' must point to an already allocated
+   2-element array of double type. */
+void *
+gal_options_read_sigma_clip(struct argp_option *option, char *arg,
+                            char *filename, size_t lineno, void *junk)
+{
+  char *str;
+  gal_data_t *in;
+  double *sigmaclip=option->value;
+
+  /* Caller wants to print the option values. */
+  if(lineno==-1)
+    {
+      asprintf(&str, "%g,%g", sigmaclip[0], sigmaclip[1]);
+      return str;
+    }
+
+  /* Caller wants to read the values into memory, so parse the inputs. */
+  in=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+  /* Check if there was only two numbers. */
+  if(in->size!=2)
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                  "option takes two values (separated by a comma) for "
+                  "defining the sigma-clip. However, %zu numbers were "
+                  "read in the string `%s' (value to this option).\n\n"
+                  "The first number is the multiple of sigma, and the "
+                  "second is either the tolerance (if its is less than "
+                  "1.0), or a specific number of times to clip (if it "
+                  "is equal or larger than 1.0).", option->name, in->size,
+                  arg);
+
+  /* Copy the sigma clip parameters into the space the caller has given (as
+     the `value' element of `option'). */
+  memcpy(option->value, in->array, 2*sizeof *sigmaclip);
+
+  /* Multiple of sigma must be positive. */
+  if( sigmaclip[0] <= 0 )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first value to "
+                  "the `--%s' option (multiple of sigma), must be "
+                  "greater than zero. From the string `%s' (value to "
+                  "this option), you have given a value of %g for the "
+                  "first value", option->name, arg, sigmaclip[0]);
+
+  /* Second value must also be positive. */
+  if( sigmaclip[1] <= 0 )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the second value "
+                  "to the `--%s' option (tolerance to stop clipping or "
+                  "number of clips), must be greater than zero. From "
+                  "the string `%s' (value to this option), you have "
+                  "given a value of %g for the second value",
+                  option->name, arg, sigmaclip[1]);
+
+  /* if the second value is larger or equal to 1.0, it must be an
+     integer. */
+  if( sigmaclip[1] >= 1.0f && ceil(sigmaclip[1]) != sigmaclip[1])
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "when the second "
+                  "value to the `--%s' option is >=1, it is interpretted "
+                  "as an absolute number of clips. So it must be an "
+                  "integer. However, your second value is a floating "
+                  "point number: %g (parsed from `%s')", option->name,
+                  sigmaclip[1], arg);
+
+  /* Clean up and return. */
+  gal_data_free(in);
+  return NULL;
+}
+
+
+
+
+
+
 
 
 

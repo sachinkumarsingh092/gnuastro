@@ -508,12 +508,6 @@ AC_ARG_ENABLE([statistics],
 	      [AS_IF([test "x$enable_statistics" != xno],
                      [enable_statistics=yes; ayes=true])],
               [enable_statistics=notset])
-AC_ARG_ENABLE([subtractsky],
-              [AS_HELP_STRING([--enable-subtractsky],
-                    [Install SubtractSky and other enabled programs.])],
-	      [AS_IF([test "x$enable_subtractsky" != xno],
-                     [enable_subtractsky=yes; ayes=true])],
-              [enable_subtractsky=notset])
 AC_ARG_ENABLE([table],
               [AS_HELP_STRING([--enable-table],
                     [Install Table and other enabled programs.])],
@@ -558,7 +552,6 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=no])
        AS_IF([test $enable_statistics = notset], [enable_statistics=no])
-       AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=no])
        AS_IF([test $enable_table = notset], [enable_table=no])
 #      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=no])
        AS_IF([test $enable_warp = notset], [enable_warp=no])
@@ -575,7 +568,6 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=yes])
        AS_IF([test $enable_statistics = notset], [enable_statistics=yes])
-       AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=yes])
        AS_IF([test $enable_table = notset], [enable_table=yes])
 #      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=yes])
        AS_IF([test $enable_warp = notset], [enable_warp=yes])
@@ -598,7 +590,6 @@ AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
 AM_CONDITIONAL([COND_STATISTICS], [test $enable_statistics = yes])
-AM_CONDITIONAL([COND_SUBTRACTSKY], [test $enable_subtractsky = yes])
 AM_CONDITIONAL([COND_TABLE], [test $enable_table = yes])
 #AM_CONDITIONAL([COND_TEMPLATE], [test $enable_TEMPLATE = yes])
 AM_CONDITIONAL([COND_WARP], [test $enable_warp = yes])
@@ -627,7 +618,6 @@ AC_CONFIG_FILES([Makefile
                  bin/arithmetic/Makefile
            	 bin/statistics/Makefile
                  bin/noisechisel/Makefile
-                 bin/subtractsky/Makefile
                  bootstrapped/lib/Makefile
                  bootstrapped/tests/Makefile
                  ])

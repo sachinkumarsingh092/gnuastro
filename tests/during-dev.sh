@@ -85,8 +85,6 @@ options=
 
 
 
-
-
 # RUN THE PROCEDURES
 # ==================
 
@@ -140,7 +138,7 @@ if make -C "$builddir"; then
     # the last line in the configuration file doesn't actualy end with a
     # new line (in which case the appended string will be added to the end
     # of the last line).
-    cp "$srcdir/lib/gnuastro.conf" "$srcdir/bin/$utilname/ast$utilname.conf" \
+    cp "$srcdir/bin/gnuastro.conf" "$srcdir/bin/$utilname/ast$utilname.conf" \
        .gnuastro/
     echo ""               >> .gnuastro/gnuastro.conf
     echo " lastconfig 1"  >> .gnuastro/gnuastro.conf

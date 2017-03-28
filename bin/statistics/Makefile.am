@@ -30,9 +30,9 @@ bin_PROGRAMS = aststatistics
 
 aststatistics_LDADD = -lgnuastro
 
-aststatistics_SOURCES = main.c ui.c statistics.c
+aststatistics_SOURCES = main.c ui.c sky.c statistics.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h statistics.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h sky.h statistics.h
 
 
 

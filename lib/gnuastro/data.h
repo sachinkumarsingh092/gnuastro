@@ -344,13 +344,20 @@ gal_data_free_ll(gal_data_t *list);
  **************            Copying             ***************
  *************************************************************/
 gal_data_t *
+gal_data_copy(gal_data_t *in);
+
+void
+gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out);
+
+gal_data_t *
 gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype);
+
+void
+gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
+                                       uint8_t newtype);
 
 gal_data_t *
 gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type);
-
-gal_data_t *
-gal_data_copy(gal_data_t *in);
 
 void
 gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr);

@@ -1,4 +1,4 @@
-# Add noise to a large image then subtract the sky.
+# Estimate the Sky value on input image.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,7 +22,7 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=subtractsky
+prog=statistics
 execname=../bin/$prog/ast$prog
 img=convolve_spatial_noised.fits
 
@@ -48,4 +48,9 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --checksky --numnearest=4
+#
+# Note that to keep things simple we are not convolving the image, so the
+# result will not be too accurate! Here we just want to see if the full
+# tessellation, estimation, interpolation and smoothing go nicely without
+# any errors.
+$execname $img --sky --checksky

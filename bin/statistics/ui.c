@@ -90,6 +90,7 @@ enum program_args_groups
 {
   ARGS_GROUP_SINGLE_VALUE = GAL_OPTIONS_GROUP_AFTER_COMMON,
   ARGS_GROUP_PARTICULAR_STAT,
+  ARGS_GROUP_SKY,
   ARGS_GROUP_HIST_CFP,
 };
 
@@ -128,6 +129,7 @@ ui_initialize_options(struct statisticsparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
   cp->numthreads         = gal_threads_number();
+  cp->tl.remainderfrac   = NAN;
 
   /* Program-specific initializers */
   p->lessthan            = NAN;
@@ -137,8 +139,9 @@ ui_initialize_options(struct statisticsparams *p,
   p->quantmax            = NAN;
   p->mirror              = NAN;
   p->mirrordist          = NAN;
-  p->sigclipparam        = NAN;
-  p->sigclipmultip       = NAN;
+  p->modmedqdiff         = NAN;
+  p->sclipparams[0]      = NAN;
+  p->sclipparams[1]      = NAN;
 
   /* Set the mandatory common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -290,8 +293,8 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
 
 
 static void *
-ui_parse_numbers(struct argp_option *option, char *arg,
-                 char *filename, size_t lineno, void *params)
+ui_read_quantile_range(struct argp_option *option, char *arg,
+                       char *filename, size_t lineno, void *params)
 {
   char *str;
   gal_data_t *in;
@@ -300,117 +303,47 @@ ui_parse_numbers(struct argp_option *option, char *arg,
   /* For the `--printparams' (`-P') option:*/
   if(lineno==-1)
     {
-      switch(option->key)
-        {
-        case ARGS_OPTION_KEY_SIGMACLIP:
-          asprintf(&str, "%g,%g", p->sigclipmultip, p->sigclipparam);
-          break;
-        case ARGS_OPTION_KEY_QRANGE:
-          if( isnan(p->quantmax) ) asprintf(&str, "%g", p->quantmin);
-          else     asprintf(&str, "%g,%g", p->quantmin, p->quantmax);
-          break;
-        default:
-          error(EXIT_FAILURE, 0, "a bug! option `%s' not recognized "
-                "in `ui_parse_numbers' (when called for printing). Please "
-                "contact us at %s to fix the problem", option->name,
-                PACKAGE_BUGREPORT);
-        }
+      if( isnan(p->quantmax) ) asprintf(&str, "%g", p->quantmin);
+      else     asprintf(&str, "%g,%g", p->quantmin, p->quantmax);
       return str;
     }
 
   /* Parse the inputs. */
   in=gal_options_parse_list_of_numbers(arg, filename, lineno);
 
-  /* Checks depending on the option. */
-  switch(option->key)
-    {
-    case ARGS_OPTION_KEY_SIGMACLIP:
-      /* Check if there was only two numbers. */
-      if(in->size!=2)
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
-                      "option takes two values (separated by a comma) for "
-                      "defining the sigma-clip. However, %zu numbers were "
-                      "read in the string `%s' (value to this option).\n\n"
-                      "The first number is the multiple of sigma, and the "
-                      "second is either the tolerance (if its is less than "
-                      "1.0), or a specific number of times to clip (if it "
-                      "is equal or larger than 1.0).", option->name, in->size,
-                      arg);
+  /* Check if there was only two numbers. */
+  if(in->size!=1 && in->size!=2)
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                  "option takes one or two values values (separated by "
+                  "a comma) to define the range of used values with "
+                  "quantiles. However, %zu numbers were read in the "
+                  "string `%s' (value to this option).\n\n"
+                  "If there is only one number as input, it will be "
+                  "interpretted as the lower quantile (Q) range. The "
+                  "higher range will be set to the quantile (1-Q). "
+                  "When two numbers are given, they will be used as the "
+                  "lower and higher quantile range respectively",
+                  option->name, in->size, arg);
 
-      /* Read the values in. */
-      p->sigclipparam = ((double *)(in->array))[1];
-      p->sigclipmultip = ((double *)(in->array))[0];
+  /* Read the values in. */
+  p->quantmin = ((double *)(in->array))[0];
+  if(in->size==2) p->quantmax = ((double *)(in->array))[1];
 
-      /* Some sanity checks. */
-      if( p->sigclipmultip<=0 )
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first value to "
-                      "the `--%s' option (multiple of sigma), must be "
-                      "greater than zero. From the string `%s' (value to "
-                      "this option), you have given a value of %g for the "
-                      "first value", option->name, arg, p->sigclipmultip);
+  /* Make sure the values are between 0 and 1. */
+  if( (p->quantmin<0 || p->quantmin>1)
+      || ( !isnan(p->quantmax) && (p->quantmax<0 || p->quantmax>1) ) )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "values to the "
+                  "`--quantrange' option must be between 0 and 1 "
+                  "(inclusive). Your input was: `%s'", arg);
 
-      /* If the second value must also be positive. */
-      if( p->sigclipparam<=0 )
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the second value "
-                      "to the `--%s' option (tolerance to stop clipping or "
-                      "number of clips), must be greater than zero. From "
-                      "the string `%s' (value to this option), you have "
-                      "given a value of %g for the second value",
-                      option->name, arg, p->sigclipparam);
+  /* When only one value is given, make sure it is less than 0.5. */
+  if( !isnan(p->quantmax) && p->quantmin>0.5 )
+    error(EXIT_FAILURE, 0, "%g>=0.5! When only one value is given to the "
+          "`--%s' option, the range is defined as Q and 1-Q. Thus, the "
+          "value must be less than 0.5", p->quantmin, option->name);
 
-      /* if the second value is larger or equal to 1.0, it must be an
-         integer. */
-      if( p->sigclipparam >= 1.0f && ceil(p->sigclipparam) != p->sigclipparam)
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "when the second "
-                      "value to the `--%s' option is >=1, it is interpretted "
-                      "as an absolute number of clips. So it must be an "
-                      "integer. However, your second value is a floating "
-                      "point number: %g (parsed from `%s')", option->name,
-                      p->sigclipparam, arg);
-      break;
-
-    case ARGS_OPTION_KEY_QRANGE:
-      /* Check if there was only two numbers. */
-      if(in->size!=1 && in->size!=2)
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
-                      "option takes one or two values values (separated by "
-                      "a comma) to define the range of used values with "
-                      "quantiles. However, %zu numbers were read in the "
-                      "string `%s' (value to this option).\n\n"
-                      "If there is only one number as input, it will be "
-                      "interpretted as the lower quantile (Q) range. The "
-                      "higher range will be set to the quantile (1-Q). "
-                      "When two numbers are given, they will be used as the "
-                      "lower and higher quantile range respectively",
-                      option->name, in->size, arg);
-
-      /* Read the values in. */
-      p->quantmin = ((double *)(in->array))[0];
-      if(in->size==2) p->quantmax = ((double *)(in->array))[1];
-
-      /* Make sure the values are between 0 and 1. */
-      if( (p->quantmin<0 || p->quantmin>1)
-          || ( !isnan(p->quantmax) && (p->quantmax<0 || p->quantmax>1) ) )
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "values to the "
-                      "`--quantrange' option must be between 0 and 1 "
-                      "(inclusive). Your input was: `%s'", arg);
-      break;
-
-      /* When only one value is given, make sure it is less than 0.5. */
-      if( !isnan(p->quantmax) && p->quantmin>0.5 )
-        error(EXIT_FAILURE, 0, "%g>=0.5! When only one value is given to the "
-              "`--%s' option, the range is defined as Q and 1-Q. Thus, the "
-              "value must be less than 0.5", p->quantmin, option->name);
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! option `%s' not recognized "
-            "in `ui_parse_numbers' (when called for printing). Please "
-            "contact us at %s to fix the problem", option->name,
-            PACKAGE_BUGREPORT);
-    }
-
-
-  /* No return value necessary for this function. */
+  /* Clean up and return. */
+  gal_data_free(in);
   return NULL;
 }
 
@@ -442,6 +375,7 @@ static void
 ui_read_check_only_options(struct statisticsparams *p)
 {
   struct gal_linkedlist_ill *tmp;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* Check if the format of the output table is valid, given the type of
      the output. */
@@ -454,15 +388,61 @@ ui_read_check_only_options(struct statisticsparams *p)
           "(for example `--median') must be requested with the `--ontile' "
           "option: there is no value to put in each tile");
 
-  /* The tile mode cannot be called with any other modes. */
-  if(p->ontile && (p->asciihist || p->asciicfp || p->histogram
-                   || p->cumulative || !isnan(p->sigclipmultip)
-                   || !isnan(p->mirror) ) )
-    error(EXIT_FAILURE, 0, "`--ontile' cannot be called with any of the "
-          "`particular' calculation options, for example `--histogram'. "
-          "This is because these options deal with the whole dataset, "
-          "but in tessellation mode, the input dataset is broken up into "
-          "individual tiles");
+  /* Tessellation related options. */
+  if( p->ontile || p->sky )
+    {
+      /* The tile or sky mode cannot be called with any other modes. */
+      if(p->asciihist || p->asciicfp || p->histogram || p->cumulative
+         || p->sigmaclip || !isnan(p->mirror) )
+        error(EXIT_FAILURE, 0, "`--ontile' or `--sky' cannot be called with "
+              "any of the `particular' calculation options, for example "
+              "`--histogram'. This is because the latter work over the whole "
+              "dataset and element positions are changed, but in the former "
+              "positions are significant");
+
+      /* Make sure the tessellation defining options are given. */
+      if( tl->tilesize==NULL || tl->numchannels==NULL
+          || isnan(tl->remainderfrac) )
+         error(EXIT_FAILURE, 0, "`--tilesize', `--numchannels', and "
+               "`--remainderfrac' are mandatory options when dealing with "
+               "a tessellation (in `--ontile' or `--sky' mode). Atleast "
+               "one of these options wasn't given a value.");
+    }
+
+
+  /* In Sky mode, several options are mandatory. */
+  if( p->sky )
+    {
+      /* Mandatory options. */
+      if ( isnan(p->modmedqdiff) || isnan(p->sclipparams[0])
+           || p->cp.interpnumngb==0 || isnan(p->mirrordist) )
+        error(EXIT_FAILURE, 0, "`--modmedqdiff', `--sclipparams', "
+              "`--mirrordist', and `--interpnumngb' are mandatory with "
+              "`--sky'");
+
+      /* If mode and median distance is a reasonable value. */
+      if(p->modmedqdiff>0.5)
+        error(EXIT_FAILURE, 0, "%f not acceptable for `--modmedqdiff'. It "
+              "cannot take values larger than 0.5 (quantile of median)",
+              p->modmedqdiff);
+
+      /* If a kernel name has been given, we need the HDU. */
+      if(p->kernelname && gal_fits_name_is_fits(p->kernelname)
+         && p->khdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified for the kernel image. When "
+              "A HDU is necessary for FITS files. You can use the `--khdu' "
+              "(`-u') option and give it the HDU number (starting from "
+              "zero), extension name, or anything acceptable by CFITSIO");
+    }
+
+
+  /* Sigma-clipping needs `sclipparams'. */
+  if(p->sigmaclip && isnan(p->sclipparams[0]))
+    error(EXIT_FAILURE, 0, "`--sclipparams' is necessary with `--sigmaclip'. "
+          "`--sclipparams' takes two values (separated by a comma) for "
+          "defining the sigma-clip: the multiple of sigma, and tolerance "
+          "(<1) or number of clips (>1).");
+
 
   /* If any of the mode measurements are requested, then `mirrordist' is
      mandatory. */
@@ -707,8 +687,7 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
       }
 
   /* Check in the rest of the outputs. */
-  if( is_necessary==0
-      && ( !isnan(p->sigclipmultip) || !isnan(p->mirror) ) )
+  if( is_necessary==0 && ( p->sigmaclip || !isnan(p->mirror) ) )
     is_necessary=1;
 
   /* Do the sorting, we will keep the sorted array in a separate space,
@@ -802,7 +781,9 @@ ui_read_columns(struct statisticsparams *p)
 void
 ui_preparations(struct statisticsparams *p)
 {
+  gal_data_t *check;
   struct gal_options_common_params *cp=&p->cp;
+  struct gal_tile_two_layer_params *tl=&cp->tl;
 
   /* Read the input. */
   if(p->isfits && p->hdu_type==IMAGE_HDU)
@@ -819,33 +800,49 @@ ui_preparations(struct statisticsparams *p)
       p->inputformat=INPUT_FORMAT_TABLE;
     }
 
-  /* Tile and channel sanity checks. */
-  if(p->ontile)
-    {
-      /* Check the tiles. */
-      gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, &cp->tl);
+  /* Read the convolution kernel if necessary. */
+  if(p->sky && p->kernelname)
+    p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                       cp->minmapsize);
 
-      /* Set the tile file name if the user wants to check the tiles. */
-      if(cp->tl.checktiles)
+  /* Tile and channel sanity checks and preparations. */
+  if(p->ontile || p->sky)
+    {
+      /* Check the tiles and make the tile structure. */
+      gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
+      gal_tile_full_two_layers(p->input, tl);
+      gal_tile_full_permutation(tl);
+
+      /* Make the tile check image if requested. */
+      if(tl->checktiles)
         {
-          cp->tl.tilecheckname=gal_checkset_automatic_output(&p->cp,
-                                                             p->inputname,
-                                                             "_tiled.fits");
-          gal_checkset_check_remove_file(cp->tl.tilecheckname, 0,
-                                         cp->dontdelete);
+          tl->tilecheckname=gal_checkset_automatic_output(cp, p->inputname,
+                                                          "_tiled.fits");
+          check=gal_tile_block_check_tiles(tl->tiles);
+          if(p->inputformat==INPUT_FORMAT_IMAGE)
+            gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
+          else
+            gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
+                            cp->dontdelete);
+          gal_data_free(check);
         }
+
+      /* Set the steps image name. */
+      if(p->sky && p->checksky)
+        p->checkskyname=gal_checkset_automatic_output(cp, p->inputname,
+                                                      "_sky_steps.fits");
     }
 
   /* Set the out-of-range values in the input to blank. */
   ui_out_of_range_to_blank(p);
 
-  /* If we are not to work on tiles: */
-  if(!p->ontile)
+  /* If we are not to work on tiles, then re-order and change the input. */
+  if(p->ontile==0 && p->sky==0)
     {
-      /* Only keep the numbers we want. */
+      /* Only keep the elements we want. */
       gal_blank_remove(p->input);
 
-      /* Make sure there is any data remaining: */
+      /* Make sure there is data remaining: */
       if(p->input->size==0)
         error(EXIT_FAILURE, 0, "%s: no data, maybe the `--greaterequal' or "
               "`--lessthan' options need to be adjusted",
@@ -967,5 +964,6 @@ ui_free_report(struct statisticsparams *p)
   gal_data_free(p->input);
   gal_data_free(p->reference);
   gal_linkedlist_free_dll(p->tp_args);
+  gal_tile_full_free_contents(&p->cp.tl);
   gal_linkedlist_free_ill(p->singlevalue);
 }

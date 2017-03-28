@@ -22,12 +22,15 @@
 
 
 
-## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
-## for internally compiled utilities and libraries. It must not be included
-## during the tests since the bootstrapped libraries are not installed.
+## Necessary flags.
 ##
-## The SYSCONFIG_DIR is necessary in `options.c'
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib  \
+##   $(top_srcdir)/bootstrapped/lib: only necessary for the libraries since
+##       the Gnulib functions will be statically linked to the Gnuastro
+##       library so linking to Gnuastro is enough to access them also.
+##
+##   SYSCONFIG_DIR: only necessary in `options.c' to get the system
+##       installation directory.
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib            \
               -DSYSCONFIG_DIR=\"$(sysconfdir)\"
 
 
@@ -84,13 +87,6 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
 EXTRA_DIST = $(headersdir)/README gnuastro.pc.in arithmetic-binary.h    \
   arithmetic-onlyint.h arithmetic-other.h config.h.in checkset.h        \
   fixedstringmacros.h options.h timing.h
-
-
-
-
-
-# Common options to all Gnuastro programs.
-dist_sysconf_DATA = gnuastro.conf
 
 
 

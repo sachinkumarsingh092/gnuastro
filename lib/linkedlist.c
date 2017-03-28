@@ -820,6 +820,96 @@ gal_linkedlist_free_ill(struct gal_linkedlist_ill *list)
 
 
 /****************************************************************
+ *****************          void *           ********************
+ ****************************************************************/
+void
+gal_linkedlist_add_to_vll(struct gal_linkedlist_vll **list, void *value)
+{
+  struct gal_linkedlist_vll *newnode;
+
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno,
+          "linkedlist: New element in gal_linkedlist_ill");
+
+  newnode->v=value;
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+
+void
+gal_linkedlist_pop_from_vll(struct gal_linkedlist_vll **list, void **value)
+{
+  struct gal_linkedlist_vll *tmp;
+  tmp=*list;
+  *value=tmp->v;
+  *list=tmp->next;
+  free(tmp);
+}
+
+
+
+
+
+void
+gal_linkedlist_reverse_vll(struct gal_linkedlist_vll **list)
+{
+  void *thisptr;
+  struct gal_linkedlist_vll *correctorder=NULL;
+
+  if( *list && (*list)->next )
+    {
+      while(*list!=NULL)
+        {
+          gal_linkedlist_pop_from_vll(list, &thisptr);
+          gal_linkedlist_add_to_vll(&correctorder, thisptr);
+        }
+      *list=correctorder;
+    }
+}
+
+
+
+
+
+void
+gal_linkedlist_free_vll(struct gal_linkedlist_vll *list, int freevalue)
+{
+  struct gal_linkedlist_vll *tmp=list, *ttmp;
+  while(tmp!=NULL)
+    {
+      if(freevalue) free(tmp->v);
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
  ******************        Ordered SLL       ********************
  *****************           size_t          ********************
  ****************************************************************/

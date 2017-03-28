@@ -522,9 +522,11 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
 
   /*
   printf("###############\n###############\n");
-  printf("### Mirror pixel: %zu\n", m);
+  printf("### Mirror pixel: %zu (mirrordist: %f, sqrt(m): %f)\n", m,
+         p->mirrordist, sqrt(m));
   printf("###############\n###############\n");
   */
+
   /* Go over the mirrored points. */
   for(i=1; i<p->numcheck && i<=m && m+i<size ;i+=p->interval)
     {
@@ -552,6 +554,7 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
       printf("i:%-5zu j:%-5zu diff:%-5d maxdiff: %zu\n",
              i, j, (int)j-(int)i, maxdiff);
       */
+
       /* The index of the actual CDF corresponding the the mirrored flux
          has been found. We want the mirrored distribution to be within the
          actual distribution, not beyond it, so the only acceptable results
@@ -633,7 +636,8 @@ mode_golden_section(struct statistics_mode_params *p)
   -------------------------------------------------------------------*/
 
   /*
-  printf("%-5zu\t%-5zu(%d)\t%-5zu ----> dq: %-5zu di: %d\n",
+  printf("lowi:%-5zu\tmidi:%-5zu(midd: %d)\thighi:%-5zu ----> "
+         "dq: %-5zu di: %d\n",
          p->lowi, p->midi, (int)p->midd, p->highi,
          di, (int)dd);
   */
@@ -831,6 +835,13 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
+
+  /* A small sanity check. */
+  if(mirrordist<=0)
+    error(EXIT_FAILURE, 0, "%f not acceptable as a value to `mirrordist'. "
+          "Only positive values can be given to it", mirrordist);
+
+
   /* Make sure the input doesn't have blank values and is sorted.  */
   p.data=gal_statistics_no_blank_sorted(input, inplace);
 
@@ -876,9 +887,14 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   oa[2] = mode_symmetricity(&p, modeindex, b_val->array);
 
 
-  /* Put the end of the symmetricity in. */
-  b_val=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
-  gal_data_copy_element_same_type(mode, 0, &oa[3]);
+  /* If the symmetricity is good, put it in the output, otherwise set all
+     output values to NaN. */
+  if(oa[2]>GAL_STATISTICS_MODE_GOOD_SYM)
+    {
+      b_val=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
+      gal_data_copy_element_same_type(b_val, 0, &oa[3]);
+    }
+  else oa[0]=oa[1]=oa[2]=oa[3]=NAN;
 
 
   /* For a check:
@@ -1152,7 +1168,9 @@ gal_statistics_sort_decreasing(gal_data_t *data)
 gal_data_t *
 gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 {
+  int sortstatus;
   gal_data_t *contig, *noblank, *sorted;
+
 
   /* If this is a tile, then first we have to copy it into a contiguous
      piece of memory. After this step, we will only be dealing with
@@ -1168,6 +1186,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       inplace=1;
     }
   else contig=input;
+
 
   /* Make sure there is no blanks in the array that will be used. After
      this step, we won't be dealing with `input' any more, but with
@@ -1187,9 +1206,15 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
     }
   else noblank=contig;
 
+
   /* Make sure the array is sorted. After this step, we won't be dealing
      with `noblank' any more but with `sorted'. */
-  if( gal_statistics_is_sorted(noblank) ) sorted=noblank;
+  sortstatus=gal_statistics_is_sorted(noblank);
+  if( sortstatus )
+    {
+      sorted=noblank;
+      sorted->status=sortstatus;
+    }
   else
     {
       if(inplace) sorted=noblank;
@@ -1201,8 +1226,11 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
             sorted=gal_data_copy(noblank);
         }
       gal_statistics_sort_increasing(sorted);
+      sorted->status=GAL_STATISTICS_SORTED_INCREASING;
     }
 
+
+  /* Return final array. */
   return sorted;
 }
 
@@ -1637,9 +1665,10 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 /****************************************************************
  *****************         Outliers          ********************
  ****************************************************************/
-/* Return a data structure with an array of four values: the final number
-   of points used, the median, average and standard deviation. The number
-   of clips is put into the `status' element of the data structure.
+/* Return a float32 type data structure with an array of four values: the
+   final number of points used, the median, average and standard
+   deviation. The number of clips is put into the `status' element of the
+   data structure.
 
    Inputs:
 
@@ -1657,10 +1686,9 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
   point of the array and its size, calcluating the basic statistics in each
   round to define the new starting point and size.
 */
-
 #define SIGCLIP(IT) {                                                   \
-    IT *a  = sorted->array, *af = a  + sorted->size;                    \
-    IT *bf = sorted->array, *b  = bf + sorted->size - 1;                \
+    IT *a  = nbs->array, *af = a  + nbs->size;                          \
+    IT *bf = nbs->array, *b  = bf + nbs->size - 1;                      \
                                                                         \
     /* Remove all out-of-range elements from the start of the array. */ \
     if(sortstatus==GAL_STATISTICS_SORTED_INCREASING)                    \
@@ -1685,16 +1713,18 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
 gal_data_t *
 gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
-                          int quiet)
+                          int inplace, int quiet)
 {
-  int sortstatus;
+  void *start, *nbs_array;
   double *med, *mean, *std;
-  void *start, *sorted_array;
-  size_t num=0, dsize=4, size, oldsize;
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
   double oldmed=NAN, oldmean=NAN, oldstd=NAN;
-  gal_data_t *sorted=NULL, *median_i, *median_d, *out, *meanstd, *noblank;
+  size_t num=0, one=1, four=4, size, oldsize;
+  gal_data_t *median_i, *median_d, *out, *meanstd;
+  int sortstatus, type=gal_tile_block(input)->type;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   size_t maxnum = param>=1.0f ? param : GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE;
+
 
   /* Some sanity checks. */
   if( multip<=0 )
@@ -1710,43 +1740,11 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
           "your given value %g", param);
 
 
-  /* If there are blank elements, remove them (from a copied array). NOTE:
-     we don't want to change the input. */
-  if( gal_blank_present(input) )
-    {
-      noblank = gal_data_copy(input);
-      gal_blank_remove(noblank);
-    }
-  else noblank=input;
-
-
-  /* We want to have sorted (increasing) array. */
-  sortstatus=gal_statistics_is_sorted(noblank);
-  switch(sortstatus)
-    {
-    case GAL_STATISTICS_SORTED_NOT:
-      /* Only copy (or allocate) space if it wasn't already allocated. */
-      sorted = (noblank==input) ? gal_data_copy(input) : noblank;
-      gal_statistics_sort_increasing(sorted);
-      sortstatus=GAL_STATISTICS_SORTED_INCREASING;
-      break;
-
-    case GAL_STATISTICS_SORTED_DECREASING:
-    case GAL_STATISTICS_SORTED_INCREASING:
-      sorted=noblank;
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "sorted code %d not recognized in "
-            "`gal_statistics_sigma_clip'", gal_statistics_is_sorted(input));
-    }
-
-
   /* Allocate the necessary spaces. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &dsize, NULL, 0,
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &four, NULL, 0,
                      input->minmapsize, NULL, NULL, NULL);
-  median_i=gal_data_alloc(NULL, sorted->type, 1, &dsize, NULL, 0,
-                          input->minmapsize, NULL, NULL, NULL);
+  median_i=gal_data_alloc(NULL, type, 1, &one, NULL, 0, input->minmapsize,
+                          NULL, NULL, NULL);
 
 
   /* Print the comments. */
@@ -1757,19 +1755,20 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
   /* Do the clipping, but first initialize the values that will be changed
      during the clipping: the start of the array and the array's size. */
-  size=sorted->size;
-  sorted_array=start=sorted->array;
+  size=nbs->size;
+  sortstatus=nbs->status;
+  nbs_array=start=nbs->array;
   while(num<maxnum)
     {
       /* Find the median. */
-      statistics_median_in_sorted_no_blank(sorted, median_i->array);
+      statistics_median_in_sorted_no_blank(nbs, median_i->array);
       median_d=gal_data_copy_to_new_type(median_i, GAL_DATA_TYPE_FLOAT64);
 
       /* Find the average and Standard deviation, note that both `start'
          and `size' will be different in the next round. */
-      sorted->array = start;
-      sorted->size = oldsize = size;
-      meanstd=gal_statistics_mean_std(sorted);
+      nbs->array = start;
+      nbs->size = oldsize = size;
+      meanstd=gal_statistics_mean_std(nbs);
 
       /* Put the three final values in usable (with a type) pointers. */
       med = median_d->array;
@@ -1792,7 +1791,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       /* Clip all the elements outside of the desired range: since the
          array is sorted, this means to just change the starting pointer
          and size of the array. */
-      switch(sorted->type)
+      switch(type)
         {
         case GAL_DATA_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
         case GAL_DATA_TYPE_INT8:      SIGCLIP( int8_t   );   break;
@@ -1806,7 +1805,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
         case GAL_DATA_TYPE_FLOAT64:   SIGCLIP( double   );   break;
         default:
           error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`gal_statistics_sigma_clip'", sorted->type);
+                "`gal_statistics_sigma_clip'", type);
         }
 
       /* Set the values from this round in the old elements, so the next
@@ -1840,8 +1839,8 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
     }
 
   /* Clean up and return. */
-  sorted->array=sorted_array;
-  if(sorted!=input) gal_data_free(sorted);
+  nbs->array=nbs_array;
+  if(nbs!=input) gal_data_free(nbs);
   return out;
 }
 

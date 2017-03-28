@@ -364,7 +364,6 @@ Data manipulation
 * Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * Warp::                        Warp/Transform an image to a different grid.
-* SubtractSky::                 Find the sky and subtract it from image.
 
 Crop
 
@@ -417,24 +416,6 @@ Warp
 * Resampling::                  Warping an image is re-sampling it.
 * Invoking astwarp::            Arguments and options for Warp.
 
-SubtractSky
-
-* Sky value::                   Definition of the sky value.
-* Tiling an image::             Defining a mesh grid on the image.
-* Invoking astsubtractsky::     Options and arguments to SubtractSky.
-
-Sky value
-
-* Finding the sky value::       How SubtractSky finds the sky value.
-* Sky value misconceptions::    Sky value misconceptions and wrong approaches.
-
-Tiling an image
-
-* Quantifying signal in a mesh::  Good meshs for gradients.
-* Grid interpolation and smoothing::  Filling the blank grid elements.
-* Checking grid values::        Check the values on the grid.
-* Mesh grid options::           Common options related to the mesh grid.
-
 Data analysis
 
 * Statistics::                  Calculate dataset statistics.
@@ -445,7 +426,14 @@ Statistics
 
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
+* Sky value::
 * Invoking aststatistics::      Arguments and options to Statistics.
+
+Sky value
+
+* Sky value definition::        Definition of the Sky/reference value.
+* Sky value misconceptions::    Wrong methods to estimate the Sky value.
+* Quantifying signal in a tile::  Method to estimate the presence of signal.
 
 NoiseChisel
 
@@ -2214,16 +2202,40 @@ night's measurements on the ecliptic.
 @node Installation, Common program behavior, Tutorials, Top
 @chapter Installation
 
+@c This link is put here because the `Quick start' section of the first
+@c chapter is not the most eye-catching part of the manual and some users
+@c were seen to follow this ``Installation'' chapter title in search of the
+@c tarball and fast instructions.
 @cindex Installation
-To successfully install and thus use Gnuastro, first please make sure you
-have the dependencies installed (see @ref{Dependencies}). Only the first
-group are required when you are building Gnuastro using a tarball (see
-@ref{Release tarball}), they are very basic and low-level tools used in
-most astronomical software, so you might already have them installed, if
-not they are very easy to install as described for each. @ref{Downloading
-the source} discusses the two methods you can obtain the source code: as a
-tarball (a significant snapshot in Gnuastro's history), or the full
-history.
+The latest released version of Gnuastro source code is always available at
+the following URL:
+
+@url{http://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz}
+
+@noindent
+@ref{Quick start} discribes the commands necessary to configure, build, and
+install Gnuastro on your system. This chapter will be useful in cases where
+the simple procedure above is not sufficient, for example your system lacks
+a mandatory/optional dependency (in other words, you can't pass the
+@command{$ ./configure} step), or you want greater customization, or you
+want to build and install Gnuastro from other random points in its history,
+or you want a higher level of control on the installation. Thus if you were
+happy with downloading the tarball and following @ref{Quick start}, then
+you can safely ignore this chapter and come back to it in the future if you
+need more customization.
+
+@ref{Dependencies} describes the mandatory, optional and bootstrapping
+dependencies of Gnuastro. Only the first group are required/mandatory when
+you are building Gnuastro using a tarball (see @ref{Release tarball}), they
+are very basic and low-level tools used in most astronomical software, so
+you might already have them installed, if not they are very easy to install
+as described for each. @ref{Downloading the source} discusses the two
+methods you can obtain the source code: as a tarball (a significant
+snapshot in Gnuastro's history), or the full
+history@footnote{@ref{Bootstrapping dependencies} are required if you clone
+the full history.}. The latter allows you to build Gnuastro at any random
+point in its history (for example to get bug fixes or new features that are
+not released as a tarball yet).
 
 The building and installation of Gnuastro is heavily customizable, to learn
 more about them, see @ref{Build and install}. This section is essentially a
@@ -4486,11 +4498,29 @@ though. You can see how many pixels were within each tile (for example to
 weight the values or discard some for later processing) with Gnuastro's
 Statistics (see @ref{Statistics}) as shown below. The output FITS file is
 going to have two extensions, one with the median calculated on each tile
-and one with the number of elements that each tile covers.
+and one with the number of elements that each tile covers. You can then use
+the @code{where} operator in @ref{Arithmetic} to set the values of all
+tiles that don't have the regular area to a blank value.
 
 @example
-$ aststatistics --median --number --ontile input.fits
+$ aststatistics --median --number --ontile input.fits    \
+                --oneelempertile --output=o.fits
+$ REGULAR_AREA=1600    # Check second extension of `o.fits'.
+$ astarithmetic o.fits o.fits $REGULAR_AREA ne nan where \
+                -h1 -h2
 @end example
+
+Note that if @file{input.fits} also has blank values, then the median on
+tiles with blank values will also be ignored with the command above (which
+is desirable).
+
+
+@item --inteponlyblank
+When values are to be interpolated, only change the values of the blank
+elements, keep the non-blank elements untouched.
+
+@item --interpnumngb=INT
+The number of nearby non-blank neighbors to use for interpolation.
 @end table
 
 @node Operating mode options,  , Processing options, Common options
@@ -5265,7 +5295,7 @@ speicy a type. For example, as a value to the common option @option{--type}
 
 @item i32
 @itemx int32
-32-bit signed integers, range:@* @mymath{[-2^{32}\rm{\ to\ }2^{32}-1]} or
+32-bit signed integers, range:@* @mymath{[-2^{31}\rm{\ to\ }2^{31}-1]} or
 @mymath{[-2147483648\rm{\ to\ }2147483647]}.
 
 @item u64
@@ -5275,7 +5305,7 @@ speicy a type. For example, as a value to the common option @option{--type}
 
 @item i64
 @itemx int64
-64-bit signed integers, range:@* @mymath{[-2^{64}\rm{\ to\ }2^{64}-1]} or
+64-bit signed integers, range:@* @mymath{[-2^{63}\rm{\ to\ }2^{63}-1]} or
 @mymath{[-9223372036854775808\rm{\ to\ }9223372036854775807]}.
 
 @item f32
@@ -5283,9 +5313,9 @@ speicy a type. For example, as a value to the common option @option{--type}
 32-bit (single-precision) floating point types. The maximum (minimum is its
 negative) possible value is
 @mymath{3.402823\times10^{38}}. Single-precision floating points can
-accurately represent a floating point number @mymath{\sim7.2} significant
-decimals. Given the heavy noise in astronomical data, this is usually more
-than sufficient for storing results.
+accurately represent a floating point number upto @mymath{\sim7.2}
+significant decimals. Given the heavy noise in astronomical data, this is
+usually more than sufficient for storing results.
 
 @item f64
 @itemx float64
@@ -5300,12 +5330,13 @@ floating points can accurately represent a floating point number
 @cartouche
 @noindent
 @strong{Some file formats don't recognize all types.} Some file formats
-don't recognize all the types, for example the FITS binary table standard
-does not define the @code{unsigned int} and @code{unsigned long} types. The
-FITS standard also only defines the following types for images:
-@code{unsigned char}, @code{short}, @code{int}, @code{long}, @code{float},
-and @code{double}. Although CFITSIO allows writing/reading to/from a wider
-range of types.
+don't recognize all the types, for example the FITS standard (see
+@ref{Fits}) does not define @code{uint64} in binary tables or images. When
+a type is not acceptable for output into a given file format, the
+respective Gnuastro program or library will let you know and abort. On the
+command-line, you can use the @ref{Arithmetic} program to convert the
+numerical type of a dataset, in the libraries, you can call
+@code{gal_data_copy_to_new_type}.
 @end cartouche
 
 
@@ -5724,15 +5755,16 @@ you can define a tile grid over the image. When the tile sizes are set
 properly, the background's variation over each tile will be negligble,
 allowing you to measure (and subtract) it. In other cases (for example
 spatial domain convolution in Gnuastro, see @ref{Convolve}), it might
-simply be for speed of processing, since each tile can be processed
-independently on a separate CPU thread. In the arts and mathematics, this
-process is formally known as
-@url{https://en.wikipedia.org/wiki/Tessellation, tessellation}.
+simply be for speed of processing: each tile can be processed independently
+on a separate CPU thread. In the arts and mathematics, this process is
+formally known as @url{https://en.wikipedia.org/wiki/Tessellation,
+tessellation}.
 
 The size of the regular tiles (in units of data-elements, or pixels in an
 image) can be defined with the @option{--tilesize} option. It takes
 multiple numbers (separated by a comma) which will be the length along the
-respective dimension (in Fortran/FITS order). For example
+respective dimension (in Fortran/FITS dimension order). Divisions are also
+acceptable, but must result in an integer. For example
 @option{--tilesize=30,40} can be used for an image (a 2D dataset). The
 regular tile size along the first FITS axis (horizontal when viewed in SAO
 ds9) will be 30 pixels and along the second it will be 40 pixels. Ideally,
@@ -5750,16 +5782,19 @@ less than the size along that dimension), the remainder will be added to
 one regular tile's size and the large tile will be cut in half and put in
 the two ends of the grid/tessellation. In this way, all the tiles in the
 central regions of the dataset will have the regular tile sizes and the
-tiles on the edge will be slightly smaller. You can set the significance
-fraction with the @option{--remainderfrac} option.
+tiles on the edge will be slightly larger/smaller depending on the
+remainder significance. The fraction which defines the remainder
+significance along all dimensions can be set through
+@option{--remainderfrac}.
 
 The best tile size is directly related to the spatial properties of the
-gradient on the image. In practice we assume that the gradient is not
-present over each tile. So if there is a strong gradient (for example in
-long wavelength ground based images) or the image is of a crowded area
-where there isn't too much blank area, you have to choose a smaller tile
-size. A larger mesh will give more pixels and so the scatter in the results
-will be less.
+property you want to study (for example, gradient on the image). In
+practice we assume that the gradient is not present over each tile. So if
+there is a strong gradient (for example in long wavelength ground based
+images) or the image is of a crowded area where there isn't too much blank
+area, you have to choose a smaller tile size. A larger mesh will give more
+pixels and and so the scatter in the results will be less (better
+statistics).
 
 @cindex CCD
 @cindex Amplifier
@@ -5788,24 +5823,26 @@ systematic biases will then propagate to all subsequent measurements we do
 on the data (for example photometry and subsequent stellar mass and star
 formation rate measurements in the case of galaxies).
 
-Therefore an accurate analysis requires a lower-level tesselation: with
-larger tiles, each large tile covering one amplifier channel. For clarity
-we'll call these larger tiles ``channels''. The number of channels along
-each dimension is defined through the @option{--numchannels}. Each channel
-will then be covered by its own individual smaller tessellation (with tile
-sizes determined by the @option{--tilesize} option). This will allow two
-adjacent pixels from different channels to never be considered together in
-the higher-level analysis. If the image is processed or the detector only
-has one amplifier, you can set the number of channels in both axes to 1.
+Therefore an accurate analysis requires a two layer tesselation: the top
+layer contains larger tiles, each covering one amplifier channel. For
+clarity we'll call these larger tiles ``channels''. The number of channels
+along each dimension is defined through the @option{--numchannels}. Each
+channel is then covered by its own individual smaller tessellation (with
+tile sizes determined by the @option{--tilesize} option). This will allow
+independent analyis of two adjacent pixels from different channels if
+necessary. If the image is processed or the detector only has one
+amplifier, you can set the number of channels in both dimension to 1.
 
-The final tesselation can be seen on the image with the
+The final tesselation can be inspected on the image with the
 @option{--checktiles} option that is available to all programs which use
 tessellation for localized operations. When this option is called, a FITS
-file with a @file{_mesh.fits} suffix will be created along with the
-outputs, see @ref{Automatic output}. Each pixel in this image has the ID of
-the tile that covers it. If the number of channels in any dimension are
-larger than unity, you will notice that the tile IDs are defined such that
-the first channels is covered first, then the second and so on.
+file with a @file{_tiled.fits} suffix will be created along with the
+outputs, see @ref{Automatic output}. Each pixel in this image has the
+number of the tile that covers it. If the number of channels in any
+dimension are larger than unity, you will notice that the tile IDs are
+defined such that the first channels is covered first, then the second and
+so on. For the full list of processing-related common options (including
+tessellation options), please see @ref{Processing options}.
 
 
 
@@ -6295,11 +6332,13 @@ END
 The most low-level and basic property of a dataset is how it is stored. To
 process, archive and transmit the data, you need a container to store it
 first. From the start of the computer age, different formats have been
-difined to store data, optimized for pariticular applications, one
-format/container can never be useful for all applications. In astronomy,
-FITS is the most common format of data storage and transmission. It has
-many useful features, for example multiple sub-containers (also known as
-extensions or header data units, HDUs) within one file. Each HDU can store
+defined to store data, optimized for pariticular applications. One
+format/container can never be useful for all applications: the storage
+defines the application and vice-versa. In astronomy, the Flexible Image
+Transport System (FITS) standard has become the most common format of data
+storage and transmission. It has many useful features, for example multiple
+sub-containers (also known as extensions or header data units, HDUs) within
+one file, or support for tables as well as images. Each HDU can store an
 independent dataset and its corresponding meta-data. Therefore, Gnuastro
 has one program (see @ref{Fits}) specifically designed to manipulate FITS
 HDUs and the meta-data (header keywords) in each HDU.
@@ -7440,7 +7479,6 @@ transformation to it.
 * Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * Warp::                        Warp/Transform an image to a different grid.
-* SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
 @node Crop, Arithmetic, Data manipulation, Data manipulation
@@ -9169,7 +9207,7 @@ of Principia) showed that: @mymath{ix=\ln(\cos{x}+i\sin{x})}.}  (1707 --
 @mymath{e^{iv+2\pi}=e^{iv}}. Later, Caspar Wessel (mathematician and
 cartographer 1745 -- 1818 A.D.)  showed how complex numbers can be
 displayed as vectors on a plane. Euler's identity might seem counter
-intuitive at first, so we will try to explain it geometrically (for a more
+intuitive at first, so we will try to explain it geometrically (for deeper
 physical insight). On the real-imaginary 2D plane (like the left hand plot
 in each box of @ref{iandtime}), multiplying a number by @mymath{i} can be
 interpretted as rotating the point by @mymath{90} degrees (for example the
@@ -10204,7 +10242,7 @@ explanations under the @option{--makekernel} option for more information.
 
 
 
-@node Warp, SubtractSky, Convolve, Data manipulation
+@node Warp,  , Convolve, Data manipulation
 @section Warp
 Image warping is the process of mapping the pixels of one image onto a new
 pixel grid. This process is sometimes known as transformation, however
@@ -10790,579 +10828,11 @@ of the pixels in the input and output images will be the same).
 
 
 
-@node SubtractSky,  , Warp, Data manipulation
-@section SubtractSky
 
-@cindex Atmosphere
-@cindex Flat field
-@cindex Stray light
-@cindex Bias subtraction
-Raw astronomical images (and even poorly processed images) don't usually
-have a uniform `sky' value over their surface prior to processing, see
-@ref{Sky value} for a complete definition of the sky value. However, a
-uniform sky value over the image is vital for further processing. For
-ground based images (particularly at longer wavelengths) this can be due to
-actual variations in the atmosphere. Another cause might be systematic
-biases in the instrument or prior processing. For example stray light in
-the telescope/camera or bad flat-fielding or bias subtraction. The latter
-is a major issue in space based images where the atmosphere is no longer a
-problem.
 
-@cindex Grid
-@cindex Mesh
-@cindex Gradient
-SubtractSky is a tool to find the sky value and its standard deviation
-on a grid over the image. The size of the grid will determine how
-accurately it can account for gradients in the sky value. Such that if
-the gradient (change of sky value) is too sharp, a smaller grid size
-has to be chosen. However the results will be most accurate with a
-larger grid size.
 
 
-@menu
-* Sky value::                   Definition of the sky value.
-* Tiling an image::             Defining a mesh grid on the image.
-* Invoking astsubtractsky::     Options and arguments to SubtractSky.
-@end menu
 
-@node Sky value, Tiling an image, SubtractSky, SubtractSky
-@subsection Sky value
-
-@cindex Sky value
-The discussion here is taken from Akhlaghi and Ichikawa
-(2015)@footnote{See the section on sky in Akhlaghi M.,
-Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Let's
-assume that all instrument defects -- bias, dark and flat -- have been
-corrected and the brightness (see @ref{Flux Brightness and magnitude})
-of a detected object, @mymath{O}, is desired. The sources of flux on
-pixel @mymath{i}@footnote{For this analysis the dimension of the
-data (image) is irrelevant. So if the data is an image (2D) with width
-of @mymath{w} pixels, then a pixel located on column @mymath{x} and
-row @mymath{y} (where all counting starts from zero and (0, 0) is
-located on the bottom left corner of the image), would have an index:
-@mymath{i=x+y\times{}w}.}  of the image can be written as follows:
-
-@itemize
-@item
-Contribution from the target object, (@mymath{O_i}).
-@item
-Contribution from other detected objects, (@mymath{D_i}).
-@item
-Undetected objects or the fainter undetected regions of bright
-objects, (@mymath{U_i}).
-@item
-@cindex Cosmic rays
-A cosmic ray, (@mymath{C_i}).
-@item
-@cindex Background flux
-The background flux, which is defined to be the count if none of the
-others exists on that pixel, (@mymath{B_i}).
-@end itemize
-@noindent
-The total flux in this pixel, @mymath{T_i}, can thus be written as:
-
-@dispmath{T_i=B_i+D_i+U_i+C_i+O_i.}
-
-@cindex Cosmic ray removal
-@noindent
-By definition, @mymath{D_i} is detected and it can be assumed that it
-is correctly subtracted, so that @mymath{D_i} can be set to
-zero. There are also methods to detect and remove cosmic rays (for
-example, van Dokkum (2001)@footnote{van Dokkum,
-P. G. (2001). Publications of the Astronomical Society of the Pacific.
-113, 1420.}) enabling us to set @mymath{C_i=0}. Note that in practice,
-@mymath{D_i} and @mymath{U_i} are correlated, because they both
-directly depend on the detection algorithm and its input
-parameters. Also note that no detection or cosmic ray removal
-algorithm is perfect. With these limitations in mind, the observed sky
-value for this pixel (@mymath{S_i}) can be defined as
-
-@cindex Sky value
-@dispmath{S_i=B_i+U_i.}
-
-@noindent
-Therefore, as the detection process (algorithm and input parameters)
-becomes more accurate, or @mymath{U_i\to0}, the sky value will tend to
-the background value or @mymath{S_i\to B_i}. Therefore, while
-@mymath{B_i} is an inherent property of the data (pixel in an image),
-@mymath{S_i} depends on the detection process. Over a group of pixels,
-for example in an image or part of an image, this equation translates
-to the average of undetected pixels.  With this definition of sky, the
-object flux in the data can be calculated with
-
-@dispmath{ T_{i}=S_{i}+O_{i} \quad\rightarrow\quad
-           O_{i}=T_{i}-S_{i}.}
-
-@noindent
-@cindex photo-electrons
-Hence, the more accurately @mymath{S_i} is measured, the more
-accurately the brightness (sum of pixel values) of the target object
-can be measured (photometry). Similarly, any under-(over-)estimation
-in the sky will directly translate to an over(under) estimation of the
-measured object's brightness.  In the fainter outskirts of an object a
-very small fraction of the photo-electrons in the pixels actually
-belong to objects. Therefore even a small over estimation of the sky
-value will result in the loss of a very large portion of most
-galaxies. Based on the definition above, the sky value is only
-correctly found when all the detected objects (@mymath{D_i} and
-@mymath{C_i}) have been removed from the data.
-
-
-@menu
-* Finding the sky value::       How SubtractSky finds the sky value.
-* Sky value misconceptions::    Sky value misconceptions and wrong approaches.
-@end menu
-
-
-
-@node Finding the sky value, Sky value misconceptions, Sky value, Sky value
-@subsubsection Finding the sky value
-
-@cindex Data
-@cindex Distribution mode
-@cindex Distribution mean
-@cindex Distribution median
-@cindex Mode of distribution
-@cindex Mean of distribution
-@cindex Median of distribution
-This technique to find the sky value in a distribution was initially
-proposed in Akhlaghi and Ichikawa 2015@footnote{Akhlaghi M.,
-Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}.
-
-Note that through the difference of the mode and median we have
-actually `detected' data in the distribution. However this detection
-was only based on the total distribution of the data, not its spatial
-position in each mesh. So we adhere to the definition of Sky value in
-@ref{Sky value}. Finding the median is very easy, the main problem is
-in finding the mode through a robust method. In Appendix C of Akhlaghi
-and Ichikawa (2015) a new approach to finding the mode in any
-astronomically relevant distribution is introduced.
-
-@cindex Cosmic rays
-Even when the mode and median are approximately equal, Cosmic rays can
-significantly bias the calculation of the average. Even if they are
-very few. However, usually, Cosmic rays have very sharp boundaries and
-do not fade away into the noise. Therefore, when the histogram of the
-distribution is plotted, they are clearly separate from the rest of
-the data. For example see Figure 15 in Akhlaghi and Ichikawa
-(2015). In such cases, @mymath{\sigma}-clipping is a perfect tool to
-remove the effect of such objects in the average and standard
-deviation. See @ref{Sigma clipping} for a complete explanation. So
-after asserting that the mode and median are approximately equal in a
-mesh (see @ref{Tiling an image}), convergence-based
-@mymath{\sigma}-clipping is also applied before getting the final sky
-value and its standard deviation for a mesh.
-
-
-@node Sky value misconceptions,  , Finding the sky value, Sky value
-@subsubsection Sky value misconceptions
-
-As defined in @ref{Sky value}, the sky value is only accurately
-defined when the detection algorithm is not significantly reliant on
-the sky value. In particular its detection threshold. However, most
-signal-based detection tools @footnote{According to Akhlaghi and
-Ichikawa (2015), signal-based detection is a detection process that
-relies heavily on assumptions about the to-be-detected objects. This
-method was the most heavily used technique prior to the introduction
-of NoiseChisel in that paper.} used the sky value as a reference to
-define the detection threshold. So these old techniques had to rely on
-approximations based on other assumptions about the data. A review of
-those other techniques can be seen in Appendix A of Akhlaghi and
-Ichikawa (2015)@footnote{Akhlaghi M.,
-Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Since
-they were extensively used in astronomical data analysis for several
-decades, such approximations have given rise to a lot of
-misconceptions, ambiguities and disagreements about the sky value and
-how to measure it. As a summary, the major methods used until now were
-an approximation of the mode of the image pixel distribution and
-@mymath{\sigma}-clipping.
-
-@itemize
-@cindex Histogram
-@cindex Distribution mode
-@cindex Mode of a distribution
-@cindex Probability density function
-@item
-To find the mode of a distribution those methods would either have to
-assume (or find) a certain probability density function (PDF) or use
-the histogram. But the image pixels can have any distribution, and the
-histogram results are very inaccurate (there is a large dispersion)
-and depend on bin-widths.
-
-@cindex sigma-clipping
-@item
-Another approach was to iteratively clip the brightest pixels in the
-image (which is known as @mymath{\sigma}-clipping, since the reference
-was found from the image mean and its standard deviation or
-@mymath{\sigma}). See @ref{Sigma clipping} for a complete
-explanation. The problem with @mymath{\sigma}-clipping was that real
-astronomical objects have diffuse and faint wings that penetrate
-deeply into the noise. So only removing their brightest parts is
-completely useless in removing the systematic bias an object's fainter
-parts cause in the sky value.
-@end itemize
-
-As discussed in @ref{Sky value}, the sky value can only be correctly
-defined as the average of undetected pixels. Therefore all such
-approaches that try to approximate the sky value prior to detection
-are ultimately poor approximations.
-
-
-
-
-@node Tiling an image, Invoking astsubtractsky, Sky value, SubtractSky
-@subsection Tiling an image
-
-@cindex Grid
-@cindex Tile
-@cindex Gradient
-@cindex Mesh grid
-@cindex Tile grid
-@cindex Tessellation
-
-
-@menu
-* Quantifying signal in a mesh::  Good meshs for gradients.
-* Grid interpolation and smoothing::  Filling the blank grid elements.
-* Checking grid values::        Check the values on the grid.
-* Mesh grid options::           Common options related to the mesh grid.
-@end menu
-
-
-@node Quantifying signal in a mesh, Grid interpolation and smoothing, Tiling an image, Tiling an image
-@subsubsection Quantifying signal in a mesh
-
-@cindex Noise
-@cindex Gaussian distribution
-Noise is characterized with a fixed background value and a certain
-distribution. For example, for the Gaussian distribution these two are
-the mean and standard deviation. When we have absolutely no signal and
-only noise in a data set, the mean, median and mode of the distribution
-are equal within statistical errors and approximately equal to the
-background value. For the next paragraph, let's assume that the
-background is subtracted and is zero.
-
-Data always has a positive value and will never become negative, see
-Figure 1 in Akhlaghi and Ichikawa (2015). Therefore, as data is buried
-into the noise, the mean, median and mode shift to the positive. The
-mean is the fastest in this shift. The median is slower since it is
-defined based on an ordered distribution and so is not affected by a
-small (less than half) number of outliers. Finally, the mode is the
-slowest to shift to the positive.
-
-Inverting the argument above provides us with the basis of Gnuastro's
-algorithm to quantify the presence of signal in a mesh. Namely, when
-the mode and median of a distribution are approximately equal, we can
-argue that there is no significant signal in that mesh. So we can
-consider the image to be made of a grid and use this argument to
-`detect' signal in each grid element. The median is defined to be the
-value of the 0.5 quantile in the image. So the only necessary
-parameter is the minimum acceptable quantile (smaller than 0.5) for
-the mode in a mesh that we deem accurate. See @ref{Mesh grid options}
-for an explanation of the options used to customize this behavior.
-
-Since there is sufficient signal in the mesh to bias the analysis on
-that mesh, any grid element whose mode quantile is smaller than the
-minimum acceptable quantile is usually kept with a blank value and no
-value is given to it. Finally, when all the grid elements have been
-checked, we can interpolate over all the empty elements and smooth the
-final result to find the sky value over the full image. See @ref{Grid
-interpolation and smoothing}.
-
-Convolving a data set (that contains signal and noise), creates a
-positive skewness in it depending on the fraction of data present in
-the distribution and also the convolution kernel. See Section 3.1.1 in
-Akhlaghi and Ichikawa (2015) and @ref{Convolution process}. This
-skewness can be interpreted as an increase in the Signal to noise
-ratio of the objects buried in the noise. Therefore, to obtain an
-even better measure of the presence of signal in a mesh, the image can
-be convolved with a given PSF first. This positive skew will result in
-more distance between the mode an median thereby enabling a more
-accurate detection of fainter signal, for example the faint wings of
-bright stars and galaxies. When convolving over a mesh grid, the
-pixels in each channel will be treated independently. This can be
-disabled with the @option{--fullconvolution} option. See
-@ref{Convolution kernel} for the respective options.
-
-@node Grid interpolation and smoothing, Checking grid values, Quantifying signal in a mesh, Tiling an image
-@subsubsection Grid interpolation and smoothing
-
-On some of the grid elements, the desired value will not be found, for
-example the Sky value in @ref{Finding the sky value}. This can happen
-for lots of reasons depending on the job that was to be done on a
-mesh, for example when a large galaxy is present in the image, no Sky
-value will be found for the grid elements that lie over it. However,
-the Sky value should be `guessed' over that part of the image. We
-cannot just ignore those regions! To fill in such blank grid elements,
-we use interpolation.
-
-@cindex Spline interpolation
-@cindex Linear interpolation
-@cindex Bicubic interpolation
-@cindex Interpolation, spline
-@cindex Interpolation, bicubic
-@cindex Interpolation, bi-linear
-Parametric interpolations like bi-linear, bicubic or spline
-interpolations are not used because they fail terribly on the edges of
-the image. For example see Figure 16 in Akhlaghi and Ichikawa
-(2015). They are also prone to cause significant gradients in the
-image. So to find the interpolated value for each grid element,
-Gnuastro will look at a certain number of the nearest neighbors. The
-exact number can be specified through @option{--numnearest}. The
-median value of those grid elements will be taken as the final value
-for each mesh. The median is chosen because on the fainter wings of
-bright objects, the mean can easily become biased. If the number of
-meshes with a good value is less than the value given to
-@option{--numnearest}, then the program will abort and notify you. In
-such cases you can either decrease the value to this option or set
-less restrictive requirements (for example a smaller
-@option{--minmodeq}, or larger/smaller meshs) at the expense of less
-accurate results.
-
-@cindex PSF
-By default the process above will occur on all the grid elements, not
-just the ones that are blank. This is done to avoid biased results on
-the faint wings of bright galaxies and stars (the PSF). Because their
-flux penetrates into the noise very slowly, it might not be possible
-to completely identify that flux and ignore that mesh. Therefore, if
-interpolation is only done on blank pixels, such false positives can
-cause a bias in the vicinity of bright objects, particularly after
-smoothing in the next step. In order to only interpolate over blank
-meshs and leave the values of the successful meshs untouched, the
-@option{--interponlyblank} option can be used.
-
-@cindex Average filter
-Once all the grid elements are filled, the values given to all the
-meshs should be smoothed. This is because the median was used in the
-interpolation. The median is robust in the face of outliers, but there
-might be strong differences from one grid element to the next. By
-smoothing the grid, the variation between grid element to grid element
-will be far less. To smooth the mesh values, Gnuastro uses an average
-filter. An average filter is just a convolution of the mesh grid
-(spatial convolution with edge correction) by a kernel with all
-elements having an equal weight, see @ref{Convolution process}. The
-kernel is a square. The length of the kernel edge can be set in units
-of meshs through the @option{--smoothwidth} option (which has to be an
-odd number as with any kernel). If a width of 1 is given for the
-kernel width, then no smoothing will take place.
-
-By default the interpolation and smoothing explained above are done
-independently on each channel. In some circumstances, it might be
-preferable to do either one of these two steps on the whole image,
-independent of the channels. For example when there are gradients over
-the image and their variation over the image is stronger than the
-variation caused by the channels. Through the two options
-@option{--fullinterpolation} and @option{--fullsmooth} you can ask for
-interpolation or smoothing to use all the meshs in the image, not just
-those in the same channel of a mesh. Note that it is still very
-important that no mesh contain pixels from two channels. Since the
-pixels have been assigned to a mesh prior to these steps (see
-@ref{Tiling an image}), there is no problem in this regard.
-
-Even after smoothing, a simple visual examination of the values given
-to the pixels in each mesh over the image will give a very `boxy' or
-pixelated impression. To our eyes it feels that it would be much
-better if the values could be smoothed in sub-mesh (pixel) scales to
-obtain a smooth variation. An example is the results of bi-linear and
-bi-cubic interpolations, see Figure 16 in Akhlaghi and Ichikawa (2015)
-for several examples. The reasons we are not doing that level of
-smoothing are two fold:
-
-@itemize
-
-@item
-The difference in value between neighboring meshs is not statistically
-significant. After smoothing, the variation between the neighboring
-mesh values will be very small. It does visually appear to be a lot
-when viewing in image viewers like SAO ds9. This is because such
-viewers use the minimum and maximum range of all the pixel values as a
-reference to choose the color given to each pixel. However compared to
-the standard deviation of the noise in the image, the different values
-of each mesh are completely negligible. Please confirm this for your
-self on your own datasets to clearly understand.
-
-@item
-Such pixel-based (not mesh-based) interpolation will be very time
-consuming. Since the difference between the neighboring meshs is
-statistically negligible, it is simply not worth the time investment.
-
-@end itemize
-
-@node Checking grid values, Mesh grid options, Grid interpolation and smoothing, Tiling an image
-@subsubsection Checking grid values
-
-Programs that use the mesh grid to calculate some value, also have
-checking options (that start with @option{--check}). When such options
-are called, the program will create a specific output file depending
-on what you want to check. When the operation is done on the meshes,
-this file shows the values assigned to each mesh grid element. It has
-three extensions:
-
-@enumerate
-
-@item
-The value that was initially calculated for each grid element. If a
-mesh was not successful in providing a value, a NaN value is stored
-for that mesh.
-
-@item
-The interpolated values, see @ref{Grid interpolation and smoothing}.
-
-@item
-The smoothed values, see @ref{Grid interpolation and smoothing}.
-
-@end enumerate
-If more than one value is calculated for each mesh (for example the
-mean and its standard deviation), then each step has that many
-extensions. By default, these check image outputs have the same size
-(pixels) as the input image. So all the pixels within a mesh are given
-the same value. This is useful if you want to later apply these values
-to the image through another program for example. There is a one to
-one correspondence between the input image pixels and the grid showing
-you the mesh values for that pixel.
-
-In other situations, the input pixel resolution might not be important
-for you and you just want to see the relative mesh values over the
-image. In such cases, you can call the @option{--meshbasedcheck}
-option so the check image only has one pixel for each mesh. This image
-will only be as big as the full mesh grid and there will be no world
-coordinate system. When the input images are really large, this can
-make a difference in both the processing of the programs and in
-viewing the images.
-
-Another case when only one pixel for each mesh will be useful is when
-you might want to display the mesh values in a document and you don't
-want the volume of the document (in bytes) to get too high. For
-example if the mesh sizes are 30 pixels by 30 pixels, then the mesh
-grid created through this option will take @mymath{30\times30=900}
-times less space! You can resize the standard output, but the borders
-between the meshs will be blurred. The best case is to call that
-program with this option.
-
-@node Mesh grid options,  , Checking grid values, Tiling an image
-@subsubsection Mesh grid options
-
-@table @option
-
-@item -d FLT
-@itemx --mirrordist=FLT
-The distance beyond the mirror point (in units of the error in the mirror
-point) to check for finding the mode in each mesh. This is part of the
-process to quantify the presence of signal in a mesh, see @ref{Quantifying
-signal in a mesh}. See appendix C in Akhlaghi and Ichikawa (2015) for a
-complete explanation of the mode-finding algorithm. The value to this
-option is shown as @mymath{\alpha} in that appendix.
-
-@item -Q FLT
-@itemx --minmodeq=FLT
-The minimum acceptable quantile for the mode of each mesh. The median is on
-the 0.5 quantile of the image and as long as we have positive signal (all
-astronomically relevant observations), the mode will be less than the
-median. The sky value is only found on meshes where the median and mode are
-approximately the same, see @ref{Sky value}.
-
-@item --interponlyblank
-Only interpolate the blank pixels. By default, interpolation will
-happen on all the mesh grids, not just the blank ones. See @ref{Grid
-interpolation and smoothing}.
-
-@item -n INT
-@itemx --numnearest=INT
-The number of nearest grid elements with a successful sky value to use for
-interpolating over blank mesh elements (those that had a significant
-contribution of signal), see @ref{Grid interpolation and smoothing}.
-
-@item --fullinterpolation
-Do interpolation irrespective of the channels in the image, see
-@ref{Grid interpolation and smoothing}.
-
-@item -T INT
-@itemx --smoothwidth=INT
-The width of the average filter kernel used to smooth the interpolated
-image in units of pixels. See @ref{Grid interpolation and smoothing}. If
-this option is given a value of 1 (one), then no smoothing will be done.
-
-@item --fullsmoothing
-Do smoothing irrespective of the channels in the image, see @ref{Grid
-interpolation and smoothing}.
-
-@item --meshbasedcheck
-Store the fixed value in each mesh in one check image pixel, see
-@ref{Checking grid values}. Note that this image has no world
-coordinate system.
-
-@end table
-
-
-
-@node Invoking astsubtractsky,  , Tiling an image, SubtractSky
-@subsection Invoking SubtractSky
-
-SubtractSky will find the sky value on a grid in an image and subtract
-it. The executable name is @file{astsubtractsky} with the following
-general template:
-
-@example
-$ astsubtractsky [OPTION ...] Image
-@end example
-
-@noindent
-One line examples:
-
-@example
-$ astsubtractsky image.fits
-$ astsubtractsky --hdu=0 --mhdu=1 image.fits
-$ astsubtractsky --nch1=2 --nch2=2 image.fits
-@end example
-
-@cindex Blank pixel
-The only required input to SubtractSky is the input data file that
-currently has to be only a 2D image. But in the future it might be useful
-to use it for 1D or 3D data too. Any pixels in the image with a blank value
-will be ignored in the analysis, see @ref{Blank pixels}. The common options
-to all Gnuastro programs can be seen in @ref{Common options} and input data
-formats are explained in @ref{Arguments}.
-
-SubtractSky uses a mesh grid to tile the image. This enables it to deal
-with possible gradients, see @ref{Tiling an image}. The mesh grid options
-are common to all the programs using it, and are listed in @ref{Mesh grid
-options}. In order to ignore some pixels during the analysis, you can use
-Gnuastro's @ref{Arithmetic} program to give those pixels a blank value
-before feeding them into SubtractSky (see @ref{Blank pixels}). For a more
-accurate result, a kernel file name can be specified so the image is first
-convolved, see @ref{Quantifying signal in a mesh}, see @ref{Convolution
-kernel} for the kernel related options. The @option{--kernel} option is not
-mandatory and if not specified anywhere prior to running, the original
-image will be used. Please run SubtractSky with the @option{--help} option
-to list all the recognized options, irrespective of which part of the book
-they are fully explained in.
-
-@table @option
-
-@item -u FLT
-@itemx --sigclipmultip=FLT
-The multiple of the standard deviation to clip from the distribution in
-@mymath{\sigma}-clipping. This is necessary to remove the effect of cosmic
-rays, see @ref{Sky value} and @ref{Sigma clipping}.
-
-@item -t FLT
-@itemx --sigcliptolerance=FLT
-The tolerance of sigma clipping. If the fractional change in the standard
-deviation before and after @mymath{\sigma}-clipping is less than the value
-given to this option, @mymath{\sigma}-clipping will stop, see @ref{Sigma
-clipping}.
-
-@item --checksky
-A two extension FITS image ending with @file{_smooth.fits} will be
-created showing how the interpolated sky value is smoothed.
-
-@item --checkskystd
-In the interpolation and sky checks above, include the sky standard
-deviation too. By default, only the sky value is shown in all the
-checks. However with this option, an extension will be added showing
-how the standard deviation on each mesh is finally found too.
-
-@end table
 
 
 
@@ -11413,6 +10883,7 @@ Statistics program is designed for such situations.
 @menu
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
+* Sky value::
 * Invoking aststatistics::      Arguments and options to Statistics.
 @end menu
 
@@ -11490,7 +10961,7 @@ determined from the actual dataset (none of these options is called), the
 last element in the dataset is included in the last bin's count.
 
 
-@node  Sigma clipping, Invoking aststatistics, Histogram and Cumulative Frequency Plot, Statistics
+@node  Sigma clipping, Sky value, Histogram and Cumulative Frequency Plot, Statistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear
@@ -11542,8 +11013,8 @@ Go back to step 1, unless the selected exit criteria is reached.
 @noindent
 The reason the median is used as a reference and not the mean is that the
 mean is too significantly affected by the presence of outliers, while the
-median is less affected, see @ref{Finding the sky value}. As you can tell
-from this algorithm, besides the condition above (that the signal have
+median is less affected, see @ref{Quantifying signal in a tile}. As you can
+tell from this algorithm, besides the condition above (that the signal have
 clear high signal to noise boundaries) @mymath{\sigma}-clipping is only
 useful when the signal does not cover more than half of the full data
 set. If they do, then the median will lie over the outliers and
@@ -11585,7 +11056,289 @@ ASCII histogram that is printed on the command-line with
 @option{--asciihist} is good enough in most cases.
 @end cartouche
 
-@node Invoking aststatistics,  , Sigma clipping, Statistics
+
+
+
+@node Sky value, Invoking aststatistics, Sigma clipping, Statistics
+@subsection Sky value
+
+@cindex Sky
+One of the most important aspects of a dataset is its reference value: the
+value of the dataset where there is no signal. Without knowing, and thus
+removing the effect of, this value it is impossible to compare the derived
+results of many high-level analyses over the dataset with other datasets
+(in the attempt to associate our results with the ``real'' world). In
+astronomy, this reference value is known as the ``Sky'' value: the value
+where there is no signal from objects (for example galaxies, stars, planets
+or comets). Depending on the dataset, the Sky value maybe a fixed value
+over the whole dataset, or it may vary based on location. For an example of
+the latter case, see Figure 11 in @url{https://arxiv.org/abs/1505.01664,
+Akhlaghi and Ichikawa (2015)}.
+
+Because of the significance of the Sky value in astronomical data analysis,
+we have devoted this subsection to it for a thorough review. We start with
+a thorough discussion on its definition (@ref{Sky value definition}).  In
+the astronomical literature, researchers use a variety of methods to
+estimate the Sky value, so in @ref{Sky value misconceptions}) we review
+those and discuss their biases. From the definition of the Sky value, the
+most accurate way to estimate the Sky value is to run a detection algorithm
+(for example @ref{NoiseChisel}) over the dataset and use the un-detected
+pixels. However, there is also a more crude method that maybe useful when
+good direct detection is not initially possible (for example due to too
+many cosmic rays in a shallow image). A more crude (but simpler method)
+that is usable in such situations is discussed in @ref{Quantifying signal
+in a tile}.
+
+@menu
+* Sky value definition::        Definition of the Sky/reference value.
+* Sky value misconceptions::    Wrong methods to estimate the Sky value.
+* Quantifying signal in a tile::  Method to estimate the presence of signal.
+@end menu
+
+@node Sky value definition, Sky value misconceptions, Sky value, Sky value
+@subsubsection Sky value definition
+
+@cindex Sky value
+This analysis is taken from @url{https://arxiv.org/abs/1505.01664, Akhlaghi
+and Ichikawa (2015)}. Let's assume that all instrument defects -- bias,
+dark and flat -- have been corrected and the brightness (see @ref{Flux
+Brightness and magnitude}) of a detected object, @mymath{O}, is
+desired. The sources of flux on pixel @mymath{i}@footnote{For this analysis
+the dimension of the data (image) is irrelevant. So if the data is an image
+(2D) with width of @mymath{w} pixels, then a pixel located on column
+@mymath{x} and row @mymath{y} (where all counting starts from zero and (0,
+0) is located on the bottom left corner of the image), would have an index:
+@mymath{i=x+y\times{}w}.}  of the image can be written as follows:
+
+@itemize
+@item
+Contribution from the target object, (@mymath{O_i}).
+@item
+Contribution from other detected objects, (@mymath{D_i}).
+@item
+Undetected objects or the fainter undetected regions of bright
+objects, (@mymath{U_i}).
+@item
+@cindex Cosmic rays
+A cosmic ray, (@mymath{C_i}).
+@item
+@cindex Background flux
+The background flux, which is defined to be the count if none of the
+others exists on that pixel, (@mymath{B_i}).
+@end itemize
+@noindent
+The total flux in this pixel (@mymath{T_i}) can thus be written as:
+
+@dispmath{T_i=B_i+D_i+U_i+C_i+O_i.}
+
+@cindex Cosmic ray removal
+@noindent
+By definition, @mymath{D_i} is detected and it can be assumed that it is
+correctly estimated (deblended) and subtracted, thus @mymath{D_i=0}. There
+are also methods to detect and remove cosmic rays, for example the method
+described in van Dokkum (2001)@footnote{van Dokkum,
+P. G. (2001). Publications of the Astronomical Society of the Pacific.
+113, 1420.}, or by comparing multiple exposures. This allows us to set
+@mymath{C_i=0}. Note that in practice, @mymath{D_i} and @mymath{U_i} are
+correlated, because they both directly depend on the detection algorithm
+and its input parameters. Also note that no detection or cosmic ray removal
+algorithm is perfect. With these limitations in mind, the observed Sky
+value for this pixel (@mymath{S_i}) can be defined as
+
+@cindex Sky value
+@dispmath{S_i=B_i+U_i.}
+
+@noindent
+Therefore, as the detection process (algorithm and input parameters)
+becomes more accurate, or @mymath{U_i\to0}, the sky value will tend to
+the background value or @mymath{S_i\to B_i}. Therefore, while
+@mymath{B_i} is an inherent property of the data (pixel in an image),
+@mymath{S_i} depends on the detection process. Over a group of pixels,
+for example in an image or part of an image, this equation translates
+to the average of undetected pixels.  With this definition of sky, the
+object flux in the data can be calculated with
+
+@dispmath{ T_{i}=S_{i}+O_{i} \quad\rightarrow\quad
+           O_{i}=T_{i}-S_{i}.}
+
+@noindent
+@cindex photo-electrons
+Hence, the more accurately @mymath{S_i} is measured, the more accurately
+the brightness (sum of pixel values) of the target object can be measured
+(photometry). Any under-(over-)estimation in the sky will directly
+translate to an over-(under-)estimation of the measured object's
+brightness. In the fainter outskirts of an object a very small fraction of
+the photo-electrons in the pixels actually belong to objects (see Figure 1b
+in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+(2015)}). Therefore even a small over estimation of the sky value will
+result in the loss of a very large portion of most galaxies. Besides the
+lost area/brightness, this will also cause an over-estimation of the Sky
+value and thus even more under-estimation of the object's brightness. It is
+thus very important to detect the diffuse flux of a target, even if they
+are not your primary target.
+
+@cartouche
+@noindent
+The @strong{Sky value} is only correctly found when all the detected
+objects (@mymath{D_i} and @mymath{C_i}) have been removed from the data.
+@end cartouche
+
+
+
+
+@node Sky value misconceptions, Quantifying signal in a tile, Sky value definition, Sky value
+@subsubsection Sky value misconceptions
+
+As defined in @ref{Sky value}, the sky value is only accurately defined
+when the detection algorithm is not significantly reliant on the sky
+value. In particular its detection threshold. However, most signal-based
+detection tools@footnote{According to Akhlaghi and Ichikawa (2015),
+signal-based detection is a detection process that relies heavily on
+assumptions about the to-be-detected objects. This method was the most
+heavily used technique prior to the introduction of NoiseChisel in that
+paper.} use the sky value as a reference to define the detection
+threshold. So these old techniques had to rely on approximations based on
+other assumptions about the data. A review of those other techniques can be
+seen in Appendix A of Akhlaghi and Ichikawa (2015)@footnote{Akhlaghi M.,
+Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Since they
+were extensively used in astronomical data analysis for several decades,
+such approximations have given rise to a lot of misconceptions, ambiguities
+and disagreements about the sky value and how to measure it. As a summary,
+the major methods used until now were an approximation of the mode of the
+image pixel distribution and @mymath{\sigma}-clipping.
+
+@itemize
+@cindex Histogram
+@cindex Distribution mode
+@cindex Mode of a distribution
+@cindex Probability density function
+@item
+To find the mode of a distribution those methods would either have to
+assume (or find) a certain probability density function (PDF) or use the
+histogram. But astronomical datasets can have any distribution, making it
+almost impossible to define a generic function. Also, histogram-based
+results are very inaccurate (there is a large dispersion) and it depends on
+the histogram bin-widths.
+
+@cindex sigma-clipping
+@item
+Another approach was to iteratively clip the brightest pixels in the
+image (which is known as @mymath{\sigma}-clipping, since the reference
+was found from the image mean and its standard deviation or
+@mymath{\sigma}). See @ref{Sigma clipping} for a complete
+explanation. The problem with @mymath{\sigma}-clipping was that real
+astronomical objects have diffuse and faint wings that penetrate
+deeply into the noise. So only removing their brightest parts is
+completely useless in removing the systematic bias an object's fainter
+parts cause in the sky value.
+@end itemize
+
+As discussed in @ref{Sky value}, the sky value can only be correctly
+defined as the average of undetected pixels. Therefore all such
+approaches that try to approximate the sky value prior to detection
+are ultimately poor approximations.
+
+
+
+@node Quantifying signal in a tile,  , Sky value misconceptions, Sky value
+@subsubsection Quantifying signal in a tile
+
+@cindex Data
+@cindex Noise
+@cindex Signal
+@cindex Gaussian distribution
+Put simply, noise can characterized with a certain spread about a
+characteristic value. In the Gaussian distribution (most commonly used to
+model noise) the spread is defined by the standard deviation about the
+characteristic mean. Before continuing let's clarify some definitions
+first: @emph{Data} is defined as the combination of signal and noise (so a
+noisy image is one @emph{data}-set). @emph{Signal} is defined as the mean
+of the noise on each element (after sky subtraction, see @ref{Sky value
+definition}).
+
+Let's assume that the @emph{background} (see @ref{Sky value definition}) is
+subtracted and is zero. When a data set doesn't have any signal (only
+noise), the mean, median and mode of the distribution are equal within
+statistical errors and approximately equal to the background value.  Signal
+always has a positive value and will never become negative, see Figure 1 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+(2015)}. Therefore, as more signal is added to the raw noise, the mean,
+median and mode of the dataset (which has both signal and noise) shift to
+the positive. The mean's shift is the largest. The median shifts less,
+since it is defined based on an ordered distribution and so is not affected
+by a small number of outliers. The distribution's mode shifts the least to
+the positive.
+
+@cindex Mode
+@cindex Median
+Inverting the argument above gives us a robust method to quantify the
+significance of signal in a dataset. Namely, when the mode and median of a
+distribution are approximately equal, we can argue that there is no
+significant signal. To allow for gradients (which are commonly present in
+ground-based images), we can consider the image to be made of a grid of
+tiles (see @ref{Tessellation}@footnote{The options to customize the
+tessellation are discussed in @ref{Processing options}.}). Hence, from the
+difference of the mode and median on each tile, we can `detect' the
+significance of signal in it. The median of a distribution is defined to be
+the value of the distribution's middle point after sorting (or 0.5
+quantile). Thus, to estimate the presence of signal, we'll compare with the
+quantile of the mode with 0.5, if the difference is larger than the value
+given to the @option{--modmedqdiff} option, this tile will be ignored. You
+can read this option as ``mode-median-quantile-diff''.
+
+This method to use the input's skewness is possible because of a new
+algorithm to find the mode of a distribution that was defined in Appendix C
+of Akhlaghi and Ichikawa (2015). However, the raw dataset's distribution is
+noisy (noise also affects the sorting), so using the argument above on the
+raw input will give a noisy result. To decrease the noise/error in
+estimating the mode, we will use convolution (see @ref{Convolution
+process}). Convolution decreases the range of the dataset and enhances its
+skewness, See Section 3.1.1 and Figure 4 in Akhlaghi and Ichikawa
+(2015). This enhanced skewness can be interpreted as an increase in the
+Signal to noise ratio of the objects buried in the noise. Therefore, to
+obtain an even better measure of the presence of signal in a mesh, the
+image can be convolved with a given kernel first.
+
+Note that through the difference of the mode and median we have actually
+`detected' data in the distribution. However this ``detection'' was only
+based on the total distribution of the data in each tile (a much lower
+resolution). This is the main limitation of this technique. The best
+approach is thus to do detection over the dataset, mask all the detected
+pixels and use the undetected regions to estimate the sky and its standard
+deviation.
+
+@cindex Cosmic rays
+The mean value of the tiles that have an approximately equal mode and
+median will be the Sky value. However there is one final hudle:
+astronomical datasets are commonly plagued with Cosmic rays. Images of
+Cosmic rays aren't smoothed by the atmosphere or telescope aperture, so
+they have sharp boundaries. Also, since they don't occupy too many pixels,
+they don't affect the mode and median calculation. But their very high
+values can greatly bias the calculation of the mean (recall how the mean
+shifts the fastest in the presence of outliers), see Figure 15 in Akhlaghi
+and Ichikawa (2015) for one example.
+
+The effect of outliers like cosmic rays on the mean and standard deviation
+can be removed through @mymath{\sigma}-clipping, see @ref{Sigma clipping}
+for a complete explanation. Therefore, after asserting that the mode and
+median are approximately equal in a tile (see @ref{Tessellation}), the
+final Sky value and its standard deviation are determined after
+@mymath{\sigma}-clipping with the @option{--sigmaclip} option.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Invoking aststatistics,  , Sky value, Statistics
 @subsection Invoking Statistics
 
 Statistics will print statistical measures of an input dataset (table
@@ -11603,19 +11356,21 @@ One line examples:
 $ aststatistics image.fits
 $ aststatistics tab.fits -c/MAG/ --histogram
 $ aststatistics catalog.fits -h1 --column=MAG_F160W
+$ aststatistics image.fits --sky --kernel=kernel.fits
 $ aststatistics cat.fits -cMAG -g26 -l27 --sigmaclip=3,0.2
 $ aststatistics tab.txt -rPHOTO_Z -g3 -cMAG_F160W --median
 @end example
 
 @noindent
-An input image or table is necessary when processing is to be done. If a
-name is given to the @option{--output} option, it is used as the base name
-for the generated files (when applicable). Without @option{--output}, the
-input name will be used to generate an output name, see @ref{Automatic
+An input image or table is necessary when processing is to be done. If any
+output file is to be created, the value to the @option{--output} option, is
+used as the base name for the generated files. Without @option{--output},
+the input name will be used to generate an output name, see @ref{Automatic
 output}. The options described below are particular to Statistics, but for
 general operations, it shares a large collection of options with the other
-Gnuastro programs, see @ref{Common options}. Options can also be given in
-configuration files, for more, please see @ref{Configuration files}.
+Gnuastro programs, see @ref{Common options} for the full list. Options can
+also be given in configuration files, for more, please see
+@ref{Configuration files}.
 
 The input dataset may have blank values (see @ref{Blank pixels}), in this
 case, all blank pixels are ignored during the calculation. Initially, the
@@ -11623,56 +11378,13 @@ full dataset will be read, but it is possible to select a specific range of
 data elements to use in the analysis of each run. You can either directly
 specify a minimum and maximum value for the range of data elements to use
 (with @option{--greaterequal} or @option{--lessthan}), or specify the range
-using quantiles (with @option{--qrange}). If a range is specified all
+using quantiles (with @option{--qrange}). If a range is specified, all
 pixels outside of it are ignored before any processing.
 
-@cindex ASCII plot
-When no operation is requested, Statistics will print some general basic
-properties of the input dataset on the command-line like the example below
-(ran on one of the output images of @command{make check}). It includes the
-basic information about the input dataset: filename, FITS extension (if a
-FITS file), the column name (if it was a table) or number if it the column
-doesn't have a name, along with the range and units of the data (if they
-were present in the input). Following that, the basic statistics of the
-dataset like number of points, minimum, maximum, and etc are printed. The
-outputs are finalized with an ASCII histogram to give you a general feeling
-of how the data are distributed in the given range.
-
-@example
-Statistics (GNU Astronomy Utilities) X.X
--------
-Input: convolve_spatial_scaled_noised.fits (hdu: 0)
-Range: from (inclusive) 9500, upto (exclusive) 11000.
-Unit: Brightness
--------
-  Number of elements:                      9074
-  Minimum:                                 9622.35
-  Maximum:                                 10999.7
-  Mode:                                    10055.45996
-  Mode quantile:                           0.4001983908
-  Median:                                  10093.7
-  Mean:                                    10143.98257
-  Standard deviation:                      221.80834
--------
-Histogram:
- |                   **
- |                 ******
- |                 *******
- |                *********
- |              *************
- |              **************
- |            ******************
- |            ********************
- |          *************************** *
- |        ***************************************** ***
- |*  **************************************************************
- |-----------------------------------------------------------------
-@end example
-
 The following set of options are for specifying the input/outputs of
-Statistics. Recall that besides these options that are only meaningful in
-Statistics, there are many other options that are common to all Gnuastro
-programs including Statistics, see @ref{Common options} for those.
+Statistics. There are many other input/output options that are common to
+all Gnuastro programs including Statistics, see @ref{Input output options}
+for those.
 
 @table @option
 
@@ -11727,26 +11439,78 @@ it.
 
 @end table
 
+@cindex ASCII plot
+When no operation is requested, Statistics will print some general basic
+properties of the input dataset on the command-line like the example below
+(ran on one of the output images of @command{make check}@footnote{You can
+try it by running the command in the @file{tests} directory, open the image
+with a FITS viewer and have a look at it to get a sence of how these
+statistics relate to the input image/dataset.}). This default behavior is
+designed to help give you a general feeling of how the data are distributed
+and help in narrowing down your analysis.
+
+@example
+$ aststatistics convolve_spatial_scaled_noised.fits     \
+                --greaterequal=9500 --lessthan=11000
+Statistics (GNU Astronomy Utilities) X.X
+-------
+Input: convolve_spatial_scaled_noised.fits (hdu: 0)
+Range: from (inclusive) 9500, upto (exclusive) 11000.
+Unit: Brightness
+-------
+  Number of elements:                      9074
+  Minimum:                                 9622.35
+  Maximum:                                 10999.7
+  Mode:                                    10055.45996
+  Mode quantile:                           0.4001983908
+  Median:                                  10093.7
+  Mean:                                    10143.98257
+  Standard deviation:                      221.80834
+-------
+Histogram:
+ |                   **
+ |                 ******
+ |                 *******
+ |                *********
+ |              *************
+ |              **************
+ |            ******************
+ |            ********************
+ |          *************************** *
+ |        ***************************************** ***
+ |*  **************************************************************
+ |-----------------------------------------------------------------
+@end example
+
+Gnuastro's Statistics is a very general purpose program, so to be able to
+easily understand this diversity in its operations (and how to possibly run
+them together), we'll devided the operations into two types: those that
+don't respect the position of the elements and those that do (by
+tessellating the input on a tile grid, see @ref{Tessellation}). The former
+treat the whole dataset as one and can re-arrange all the elements (for
+example sort them), but the former do their processing on each tile
+independently. First, we'll review the operations that work on the whole
+dataset.
+
 @cindex AWK
 @cindex GNU AWK
-When you only need a single valued statistical measurement, you can use the
-group of options below. They will print only the requested value as one
-field in a line/row, like the @option{--mean}, @option{--median}
-options. These options can be called any number of times and in any
-order. The outputs of all such options will be printed on one line
-following each other (with a space character between them). This feature
-makes these options very useful in scripts, or to redirect into programs
-like GNU AWK for further immediate higher-level processing, or when you
-don't want the clutter of all the information when no option is
-specified. These are some of the most basic measures, Gnuastro is still
-under heavy development, if you want another statistical parameter, please
-contact us and we will do out best to add it to this list.
+The group of options below can used to get a single value measurement of
+the whole dataset. They will print only the requested value as one field in
+a line/row, like the @option{--mean}, @option{--median} options. These
+options can be called any number of times and in any order. The outputs of
+all such options will be printed on one line following each other (with a
+space character between them). This feature makes these options very useful
+in scripts, or to redirect into programs like GNU AWK for higher-level
+processing. These are some of the most basic measures, Gnuastro is still
+under heavy development and this list will grow. If you want another
+statistical parameter, please contact us and we will do out best to add it
+to this list, see @ref{Suggest new feature}.
 
 @table @option
 
 @item -n
 @itemx --number
-Print the number of all used elements.
+Print the number of all used (non-blank and in range) elements.
 
 @item --minimum
 Print the minimum value of all used elements.
@@ -11838,8 +11602,8 @@ more.
 
 The list of options below are for those statistical operations that output
 more than one value. So while they can be called together in one run, their
-outputs will be distinct (each one's output will usually take in more than
-one line).
+outputs will be distinct (each one's output will usually be printed in more
+than one line).
 
 @table @option
 
@@ -11934,19 +11698,13 @@ and nice histogram than what the raw command-line can offer you (with the
 Save the cumulative frequency plot of the usable values in the input
 dataset into a table, similar to @option{--histogram}.
 
-@item -s FLT,FLT
-@itemx --sigmaclip=FLT,FLT
+@item -s
+@itemx --sigmaclip
 Do @mymath{\sigma}-clipping on the usable pixels of the input dataset. See
 @ref{Sigma clipping} for a full description on @mymath{\sigma}-clipping and
-also to better understand this option.
-
-This option takes two values which are separated by a comma (@key{,}). Each
-value can either be written as a single number or as a fraction of two
-numbers (for example @code{3,1/10}). The first value to this option is the
-multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
-section). The second value is the exit criteria. If it is less than 1, then
-it is interpretted as tolerance and if it is larger than one it is a
-specific number. Hence, in the latter case the value must be an integer.
+also to better understand this option. The @mymath{\sigma}-clipping
+parameters can be set through the @option{--sclipparams} option (see
+below).
 
 @item --mirror=FLT
 Make a histogram and cumulative frequency plot of the mirror distribution
@@ -11975,8 +11733,8 @@ it is possible to make plots like Figure 21 of
 
 @end table
 
-The final set of options in Statistics describe the histogram and
-cumulative frequency plot settings (for the @option{--histogram},
+The list of options below allow customization of the histogram and
+cumulative frequency plots (for the @option{--histogram},
 @option{--cumulative}, @option{--asciihist}, and @option{--asciicfp}
 options).
 
@@ -12010,14 +11768,14 @@ and the rest are similarly scaled. In some situations (for example if you
 want to plot the histogram and cumulative frequency plot in one plot) this
 can be very useful.
 
-@item --onebinvalue=FLT
+@item --onebinstart=FLT
 Make sure that one bin starts with the value to this option. In practice,
 this will shift the bins used to find the histogram and cumulative
 frequency plot such that one bin's lower interval becomes this value. For
 example when the histogram range includes negative and positive values and
 zero has a special significance in your analysis, then zero will be
 somewhere in one bin and will mix counts of positive and negative. By
-setting @option{--onebinvalue=0}, you can make sure that the viewers of the
+setting @option{--onebinstart=0}, you can make sure that the viewers of the
 histogram will not be confused without doing the math of setting a range
 and number of bins.
 
@@ -12028,11 +11786,100 @@ you will not see the 0.000 in the first column, you will see two symmetric
 values. If the value is not within the usable input range, this option will
 be ignored.
 
-
 @end table
 
 
+All the options described until now were from the first class of operations
+discusssed above: those that treat the whole dataset as one. However. It
+often happens that the relative position of the dataset elements over the
+dataset is significant. For example you don't want one median value for the
+whole input image, you want to know how the median changes over the
+image. For such operations, the input has to be tessellated (see
+@ref{Tessellation}). Thus this class of options can't currently be called
+along with the options above in one run of Statistics.
 
+@table @option
+
+@item -t
+@itemx --ontile
+Do the respective single-valued calculation over one tile of the input
+dataset, not the whole dataset. This option must be called with atleast one
+of the single valued options discussed above (for example @option{--mean}
+or @option{--quantile}). The output will be a file in the same format as
+the input. If the @option{--oneelempertile} option is called, then one
+element/pixel will be used for each tile (see @ref{Processing
+options}). Otherwise, the output will have the same size as the input, but
+each element will have the value corresponding to that tile's value. If
+multiple single valued operations are called, then for each operation there
+will be one extension in the output FITS file.
+
+@item -y
+@itemx --sky
+Estimate the Sky value on each tile as fully described in @ref{Quantifying
+signal in a tile}. As described in that section, several options are
+necessary to configure the Sky estimation which are listed below. The
+output file will have two extensions: the first is the Sky value and the
+second is the Sky standard deviation on each tile. Similar to
+@option{--ontile}, if the @option{--oneelempertile} option is called, then
+one element/pixel will be used for each tile (see @ref{Processing
+options}).
+
+@end table
+
+The parameters for estimating the sky value can be set with the following
+options, except for the @option{--sclipparams} option (which is also used
+by the @option{--sigmaclip}), the rest are only used for the Sky value
+estimation.
+
+@table @option
+
+@item -k=STR
+@itemx --kernel=STR
+File name of kernel to help in estimating the significance of signal in a
+tile, see @ref{Quantifying signal in a tile}.
+
+@item --khdu=STR
+Kernel HDU to help in estimating the significance of signal in a tile, see
+@ref{Quantifying signal in a tile}.
+
+@item --mirrordist=FLT
+Maximum distance (as a multiple of error) to estimate the difference
+between the input and mirror distributions in finding the mode, see
+Appendix C of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+2015}, also see @ref{Quantifying signal in a tile}.
+
+@item --modmedqdiff=FLT
+The maximum acceptable distance between the mode and median, see
+@ref{Quantifying signal in a tile}.
+
+@item --sclipparams=FLT,FLT
+The @mymath{\sigma}-clipping parameters. This option takes two values which
+are separated by a comma (@key{,}). Each value can either be written as a
+single number or as a fraction of two numbers (for example
+@code{3,1/10}). The first value to this option is the multiple of
+@mymath{\sigma} that will be clipped (@mymath{\alpha} in that section). The
+second value is the exit criteria. If it is less than 1, then it is
+interpretted as tolerance and if it is larger than one it is a specific
+number. Hence, in the latter case the value must be an integer.
+
+@item --smoothwidth=INT
+Width of a flat kernel to convolve the interpolated tile values. Tile
+interpolation is done using the median of the @option{--interpnumngb}
+neighbors of each tile (see @ref{Processing options}). If this option is
+given a value of zero or one, no smoothing will be done. Without smoothing,
+strong boundaries will probably be created between the values estimated for
+each tile. It is thus good to smooth the interpolated image so strong
+discontinuities do not show up in the final Sky values. The smoothing is
+done through convolution (see @ref{Convolution process}) with a flat
+kernel, so the value to this option must be an odd number.
+
+@item --checksky
+Create a multi-extension FITS file showing the steps that were used to
+estimate the Sky value over the input, see @ref{Quantifying signal in a
+tile}. The file will have two extensions for each step (one for the Sky and
+one for the Sky standard deviation).
+
+@end table
 
 @node NoiseChisel, MakeCatalog, Statistics, Data analysis
 @section NoiseChisel
@@ -12119,27 +11966,26 @@ Akhlaghi and Ichikawa (2015) to learn why this particular kernel was
 chosen as default. See @ref{Convolution kernel} for kernel related
 options.
 
-NoiseChisel uses a mesh grid to tile the image. This enables it to
-deal with possible gradients, see @ref{Tiling an image}. The mesh grid
-options are common to all the programs using it, and are listed in
-@ref{Mesh grid options}. In particular, NoiseChisel uses two mesh
-grids: a large and a small one. The sizes of the meshs in each grid
-can be specified with the following two options (the
-@option{--meshsize} option is not recognized by NoiseChisel). The rest
-of the options explained in @ref{Mesh grid options} apply to both
-grids.
+NoiseChisel uses a mesh grid to tile the image. This enables it to deal
+with possible gradients, see @ref{Tessellation}. The mesh grid options are
+common to all the programs using it, and are listed in @ref{Processing
+options}. In particular, NoiseChisel uses two mesh grids: a large and a
+small one. The sizes of the meshs in each grid can be specified with the
+following two options (the @option{--meshsize} option is not recognized by
+NoiseChisel). The rest of the options explained in @ref{Processing options}
+apply to both grids.
 
 @table @option
 
 @item -s
 @itemx --smeshsize
-Similar to @option{--meshsize} in @ref{Mesh grid options}, but for the
+Similar to @option{--meshsize} in @ref{Processing options}, but for the
 smaller mesh grid, which is most dependent on the gradients in the
 image.
 
 @item -l
 @itemx --lmeshsize
-Similar to @option{--meshsize} in @ref{Mesh grid options}, but for the
+Similar to @option{--meshsize} in @ref{Processing options}, but for the
 larger mesh grid, used for detection and segmentation Signal to noise
 ratio analysis.
 
@@ -12217,7 +12063,7 @@ many detected regions should be excluded.
 The minimum number of `psudo-detections' (in identifying false detections)
 or clumps (in identifying false clumps) in each large mesh grid. If their
 number is less than this value, this mesh will be left blank and filled
-during mesh interpolation, see @ref{Grid interpolation and smoothing}.
+during mesh interpolation.
 
 The Signal to noise ratio of false detections and clumps in each mesh
 is found using the quantile of the Signal to noise ratio distribution
@@ -12240,9 +12086,9 @@ can customize the detection process in NoiseChisel.
 @itemx --qthresh=FLT
 The quantile threshold to apply to the convolved image. The detection
 process begins with applying a quantile threshold to each of the small mesh
-grid elements, see @ref{Tiling an image}. The quantile is only calculated
-for those meshs that don't have any significant signal within them, see
-@ref{Quantifying signal in a mesh}.
+grid elements, see @ref{Tessellation}. The quantile is only calculated for
+those meshs that don't have any significant signal within them, see
+@ref{Quantifying signal in a tile}.
 
 @cindex Quantile
 @cindex Binary image
@@ -12260,9 +12106,8 @@ are known as background (have a value of 0).
 
 @cindex NaN
 @item --checkthreshold
-Check the quantile threshold values on the mesh grid. A file suffixed
-with @file{_thresh.fits} will be created, see @ref{Checking grid
-values}.
+Check the quantile threshold values on the mesh grid. A file suffixed with
+@file{_thresh.fits} will be created, see @ref{Tessellation}.
 
 @item -e INT
 @itemx --erode=INT
@@ -12353,13 +12198,12 @@ smaller than the value given to this option. Note that
 smaller, in which case they can be considered to be approximately equal.
 
 @item --checkdetectionsky
-Check the initial approximation of the sky value and its standard
-deviation in a FITS file ending with @file{_detsky.fits}. See
-@ref{Checking grid values} for more information. If
-@option{--meshbasedcheck} is not called, then the first extension will
-be the the binary image with initial detections labeled one and
-background labeled zero. The mesh values will be in the subsequent
-extensions.
+Check the initial approximation of the sky value and its standard deviation
+in a FITS file ending with @file{_detsky.fits}. See @ref{Tessellation} for
+more information. If @option{--meshbasedcheck} is not called, then the
+first extension will be the the binary image with initial detections
+labeled one and background labeled zero. The mesh values will be in the
+subsequent extensions.
 
 @item -R FLT
 @itemx --dthresh=FLT
@@ -12636,8 +12480,7 @@ detected region, then the whole detected region is given a label of 1.
 
 @item
 The final sky value on each pixel. See @ref{Sky value} for a complete
-explanation. See @ref{Grid interpolation and smoothing} for an
-explanation on the boxy appearance of this image.
+explanation.
 
 @item
 Similar to the previous mesh but for the standard deviation on each
@@ -12773,10 +12616,10 @@ brightness) can be seen more clearly.
 @cindex Depth
 The outputs of NoiseChisel include the Sky standard deviation
 (@mymath{\sigma}) on every group of pixels (a mesh) that were calculated
-from the undetected pixels in that mesh, see @ref{Tiling an image} and
+from the undetected pixels in that mesh, see @ref{Tessellation} and
 @ref{NoiseChisel output}. Let's take @mymath{\sigma_m} as the median
 @mymath{\sigma} over the successful meshes in the image (prior to
-interpolation or smoothing, see @ref{Grid interpolation and smoothing}).
+interpolation or smoothing).
 
 On different instruments pixels have different physical sizes (for example
 in micro-meters, or spatial angle over the sky), nevertheless, a pixel is
@@ -17282,11 +17125,11 @@ within the nodes will also be discarded.
 @subsection Mesh grid for an image (@file{mesh.h})
 
 The basic concepts behind the mesh and channel grids in Gnuastro were
-explained in @ref{Tiling an image}. Besides the improved measurement
-purposes introduced there, tiling an image can also greatly speed up some
-processing operations over the image, since each mesh can be given to a
-different thread and so the CPU can be working on multiple regions of the
-image simultaneously. The mesh structure and functions introduced here are
+explained in @ref{Tessellation}. Besides the improved measurement purposes
+introduced there, tiling an image can also greatly speed up some processing
+operations over the image, since each mesh can be given to a different
+thread and so the CPU can be working on multiple regions of the image
+simultaneously. The mesh structure and functions introduced here are
 declared in @file{gnuastro/mesh.h} and allow you to also use operate on an
 image mesh.
 
@@ -17320,16 +17163,15 @@ functions is the @code{garray}, where each mesh has a unique
 @code{gid}. @code{garray} stands for grid-array. It is used for operations
 on the mesh grid, where one value is to be assigned for each mesh. It has
 one element for each mesh in the image. However, due to the (possible)
-existence of channels (see @ref{Tiling an image}), each channel needs its
-own contiguous part (group of meshes) in the full @code{garray}. Each
-channel has @code{gs0*gs1} (dimensions of meshes in each channel)
-elements. There are @code{nch} parts (or channels) in total.  In short, the
-meshs in each channel have to be contiguous to facilitate the neighbor
-analysis in interpolation and other channel specific jobs. So, the over-all
-structure can be viewed as a 3D array. The operations on the meshs might
-need more than one output, for example the mean and the standard
-deviation. So we have two @code{garray}s and two @code{nearest} arrays (for
-interpolation).
+existence of channels (see @ref{Tessellation}), each channel needs its own
+contiguous part (group of meshes) in the full @code{garray}. Each channel
+has @code{gs0*gs1} (dimensions of meshes in each channel) elements. There
+are @code{nch} parts (or channels) in total.  In short, the meshs in each
+channel have to be contiguous to facilitate the neighbor analysis in
+interpolation and other channel specific jobs. So, the over-all structure
+can be viewed as a 3D array. The operations on the meshs might need more
+than one output, for example the mean and the standard deviation. So we
+have two @code{garray}s and two @code{nearest} arrays (for interpolation).
 @end deftp
 
 @deftypefun size_t gal_mesh_ch_based_id_from_gid (struct gal_mesh_params @code{*mp}, size_t @code{gid})
@@ -19699,10 +19541,6 @@ noise. It uses a technique to detect very faint and diffuse, irregularly
 shaped signal in noise (galaxies in the sky), using thresholds that are
 below the Sky value, see @url{http://arxiv.org/abs/1505.01664,
 arXiv:1505.01664}.
-
-@item SubtractSky
-(@file{astsubtractsky}, @ref{SubtractSky}) Find and subtract sky value by
-comparing the mode and median on a mesh grid.
 
 @item Table
 (@file{asttable}, @ref{Table}) Convert FITS binary and ASCII tables into

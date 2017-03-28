@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/convolve.h>
 #include <gnuastro/dimension.h>
 
-
+#include <checkset.h>
 
 
 
@@ -419,12 +419,16 @@ convolve_spatial_on_thread(void *inparam)
 
 
 
-/* Convolve a dataset with a given kernel in the spatial domain. Since
-   spatial convolution can be very series of tiles arranged as an array. */
+/* Convolve a dataset with a given kernel in the spatial domain. Spatial
+   convolution can be greatly sped up if it is done on separate tiles over
+   the image (on multiple threads). So as input, you can either give tile
+   values or one full array. Just note that if you give a single array as
+   input, the `next' element has to be `NULL'.*/
 gal_data_t *
 gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
                      size_t numthreads, int edgecorrection, int convoverch)
 {
+  char *name;
   struct spatial_params params;
   gal_data_t *out, *block=gal_tile_block(tiles);
 
@@ -438,8 +442,10 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
           "`float32' type input and kernel");
 
   /* Allocate the output convolved dataset. */
+  name = ( block->name
+           ? gal_checkset_malloc_cat("CONVL_", block->name) : NULL );
   out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, block->ndim, block->dsize,
-                     block->wcs, 0, block->minmapsize, "CONVOLVED",
+                     block->wcs, 0, block->minmapsize, name,
                      block->unit, NULL);
 
   /* Set the pointers in the parameters structure. */
@@ -454,5 +460,6 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
                        gal_data_num_in_ll(tiles), numthreads);
 
   /* Clean up and return the output array. */
+  free(name);
   return out;
 }

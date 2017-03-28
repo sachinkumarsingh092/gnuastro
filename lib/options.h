@@ -106,6 +106,8 @@ enum options_common_keys
   GAL_OPTIONS_KEY_WORKOVERCH,
   GAL_OPTIONS_KEY_CHECKTILES,
   GAL_OPTIONS_KEY_ONEELEMPERTILE,
+  GAL_OPTIONS_KEY_INTERPONLYBLANK,
+  GAL_OPTIONS_KEY_INTERPNUMNGB,
 };
 
 
@@ -161,6 +163,8 @@ struct gal_options_common_params
 {
   /* Tessellation. */
   struct gal_tile_two_layer_params tl; /* Two layer tessellation params.  */
+  uint8_t      interponlyblank; /* Only interpolate over blank values.    */
+  size_t          interpnumngb; /* Number of neighbors for interpolation. */
 
   /* Input. */
   char                    *hdu; /* Image extension.                       */
@@ -254,7 +258,9 @@ void *
 gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
                                 char *filename, size_t lineno, void *params);
 
-
+void *
+gal_options_read_sigma_clip(struct argp_option *option, char *arg,
+                            char *filename, size_t lineno, void *junk);
 
 
 /**********************************************************************/
