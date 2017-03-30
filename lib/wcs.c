@@ -234,7 +234,7 @@ gal_wcs_on_tile(gal_data_t *tile)
 {
   size_t i, start_ind, ndim=tile->ndim;
   gal_data_t *block=gal_tile_block(tile);
-  size_t *coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
 
   /* If the tile already has a WCS structure, don't do anything. */
   if(tile->wcs) return;
@@ -549,12 +549,12 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   double *phi, *theta, *world, *pixcrd, *imgcrd;
 
   /* Allocate all the necessary arrays. */
-  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT32, size);
-  phi=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, size);
-  theta=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, size);
-  world=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
-  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
-  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_FLOAT64, 2*size);
+  stat=gal_data_calloc_array(GAL_TYPE_INT32, size);
+  phi=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  theta=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  world=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
+  imgcrd=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
+  pixcrd=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
 
   /* Put in the values. */
   for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
@@ -573,8 +573,8 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   */
 
   /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, size);
-  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_FLOAT64, size);
+  if(*x==NULL) *x=gal_data_calloc_array(GAL_TYPE_FLOAT64, size);
+  if(*y==NULL) *y=gal_data_calloc_array(GAL_TYPE_FLOAT64, size);
 
   /* Put the values into the output arrays. */
   for(i=0;i<size;++i)

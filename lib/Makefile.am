@@ -51,10 +51,10 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 # Specify the library .c files
 libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
-  arithmetic-onlyint.c blank.c box.c checkset.c convolve.c data.c fits.c   \
-  git.c interpolate.c linkedlist.c options.c permutation.c polygon.c       \
-  qsort.c dimension.c statistics.c table.c threads.c tile.c timing.c txt.c \
-  wcs.c
+  arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c data.c \
+  fits.c git.c interpolate.c linkedlist.c options.c permutation.c          \
+  polygon.c qsort.c dimension.c statistics.c table.c threads.c tile.c      \
+  timing.c txt.c type.c wcs.c
 
 
 
@@ -66,14 +66,15 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
-  $(headersdir)/blank.h $(headersdir)/box.h $(headersdir)/convolve.h       \
-  $(headersdir)/data.h $(headersdir)/fits.h $(headersdir)/git.h            \
-  $(headersdir)/interpolate.h $(headersdir)/linkedlist.h                   \
-  $(headersdir)/dimension.h $(headersdir)/permutation.h                    \
-  $(headersdir)/polygon.h $(headersdir)/qsort.h $(headersdir)/statistics.h \
-  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tile.h       \
-  $(headersdir)/wcs.h $(headersdir)/txt.h
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h        \
+  $(headersdir)/binary.h $(headersdir)/blank.h $(headersdir)/box.h       \
+  $(headersdir)/convolve.h $(headersdir)/data.h $(headersdir)/fits.h     \
+  $(headersdir)/git.h $(headersdir)/interpolate.h                        \
+  $(headersdir)/linkedlist.h $(headersdir)/dimension.h                   \
+  $(headersdir)/permutation.h $(headersdir)/polygon.h                    \
+  $(headersdir)/qsort.h $(headersdir)/statistics.h $(headersdir)/table.h \
+  $(headersdir)/threads.h $(headersdir)/tile.h $(headersdir)/txt.h       \
+  $(headersdir)/type.h $(headersdir)/wcs.h
 
 
 

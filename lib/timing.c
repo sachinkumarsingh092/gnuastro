@@ -51,7 +51,7 @@ gal_timing_report(struct timeval *t1, char *jobname, size_t level)
   double dt=1e30;
   struct timeval t2;
 
-  if(level<2 && t1)
+  if(t1)
     {
       gettimeofday(&t2, NULL);
 
@@ -64,11 +64,15 @@ gal_timing_report(struct timeval *t1, char *jobname, size_t level)
   else if(level==1)
     {
       if(t1)
-        printf("  - %-"GAL_TIMING_VERB_MSG_LENGTH_T"s %f seconds\n",
-               jobname, dt);
-      else
-        printf("  - %-"GAL_TIMING_VERB_MSG_LENGTH_T"s\n", jobname);
+        printf("  - %-*s %f seconds\n",
+               GAL_TIMING_VERB_MSG_LENGTH_V, jobname, dt);
+      else printf("  - %s\n", jobname);
     }
   else if(level==2)
-    printf("  ---- %s\n", jobname);
+    {
+      if(t1)
+        printf("  ---- %-*s %f seconds\n",
+               GAL_TIMING_VERB_MSG_LENGTH_V-3, jobname, dt);
+      else printf("  ---- %s\n", jobname);
+    }
 }

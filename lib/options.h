@@ -38,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Type for options that don't accept an argument/value. This macro is
    defined to help make the definition and processing of these options
    easier and less buggy. Please use this macro for such options. */
-#define GAL_OPTIONS_NO_ARG_TYPE GAL_DATA_TYPE_UINT8
+#define GAL_OPTIONS_NO_ARG_TYPE GAL_TYPE_UINT8
 
 
 
@@ -123,6 +123,7 @@ enum gal_options_range_values
   GAL_OPTIONS_RANGE_GE_0,
   GAL_OPTIONS_RANGE_0_OR_1,
   GAL_OPTIONS_RANGE_GE_0_LE_1,
+  GAL_OPTIONS_RANGE_GE_0_LT_1,
   GAL_OPTIONS_RANGE_GT_0_LT_1,
 
   GAL_OPTIONS_RANGE_GT_0_ODD,

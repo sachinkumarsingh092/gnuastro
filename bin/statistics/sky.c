@@ -51,12 +51,12 @@ sky_on_thread(void *in_prm)
 {
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct statisticsparams *p=(struct statisticsparams *)tprm->params;
-  int type=p->input->type, stype=GAL_DATA_TYPE_FLOAT32;
 
   double *darr;
+  int stype=p->sky_t->type;
   void *tblock=NULL, *tarray=NULL;
   gal_data_t *tile, *mode, *sigmaclip;
-  size_t i, tind, twidth=gal_data_sizeof(stype);
+  size_t i, tind, twidth=gal_type_sizeof(stype);
 
 
   /* Find the Sky and its standard deviation on the tiles given to this
@@ -106,10 +106,10 @@ sky_on_thread(void *in_prm)
         }
       else
         {
-          gal_blank_write(gal_data_ptr_increment(p->sky_t->array, tind, type),
-                          type);
-          gal_blank_write(gal_data_ptr_increment(p->std_t->array, tind, type),
-                          type);
+          gal_blank_write(gal_data_ptr_increment(p->sky_t->array, tind,
+                                                 stype), stype);
+          gal_blank_write(gal_data_ptr_increment(p->std_t->array, tind,
+                                                 stype), stype);
         }
 
       /* Clean up. */
@@ -170,10 +170,10 @@ sky(struct statisticsparams *p)
 
 
   /* Make the arrays keeping the Sky and Sky standard deviation values. */
-  p->sky_t=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, p->input->ndim,
-                          tl->numtiles, NULL, 0, p->input->minmapsize, "SKY",
-                          p->input->unit, NULL);
-  p->std_t=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, p->input->ndim,
+  p->sky_t=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
+                          tl->numtiles, NULL, 0, p->input->minmapsize,
+                          "SKY", p->input->unit, NULL);
+  p->std_t=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
                           tl->numtiles, NULL, 0, p->input->minmapsize,
                           "SKY STD", p->input->unit, NULL);
 

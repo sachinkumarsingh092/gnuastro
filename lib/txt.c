@@ -157,7 +157,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
   gal_data_t *tmp;
   int index, strw=0;
   size_t len=strlen(comm_start);
-  int type=GAL_DATA_TYPE_FLOAT64;                     /* Default type. */
+  int type=GAL_TYPE_FLOAT64;                     /* Default type. */
   char *number=NULL, *name=NULL, *comment=NULL;
   char *inbrackets=NULL, *unit=NULL, *typestr=NULL, *blank=NULL;
 
@@ -238,14 +238,14 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
           typestr=txt_trim_space(typestr);
           if( !strncmp(typestr, "str", 3) )
             {
-              type=GAL_DATA_TYPE_STRING;
+              type=GAL_TYPE_STRING;
               strw=strtol(typestr+3, &tailptr, 0);
               if(*tailptr!='\0' || strw<0) return;
             }
           else
             {
-              type=gal_data_string_as_type(typestr);
-              if(type==GAL_DATA_TYPE_INVALID) return;
+              type=gal_type_from_string(typestr);
+              if(type==GAL_TYPE_INVALID) return;
             }
         }
 
@@ -262,7 +262,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
          structure. If the type is string, then also copy the width into
          the structure. */
       (*datall)->status=index;
-      (*datall)->disp_width = type==GAL_DATA_TYPE_STRING ? strw : 0;
+      (*datall)->disp_width = type==GAL_TYPE_STRING ? strw : 0;
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */
@@ -320,7 +320,7 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
          space set for the strings. */
       if(col)
         {
-          if( col->type==GAL_DATA_TYPE_STRING )
+          if( col->type==GAL_TYPE_STRING )
             {
               /* Remove all delimiters before the string starts. */
               while(isspace(*line) || *line==',') ++line;
@@ -363,7 +363,7 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
              information). */
           if( *datall==NULL || format==TXT_FORMAT_TABLE )
             {
-              gal_data_add_to_ll(datall, NULL, GAL_DATA_TYPE_FLOAT64, 0,
+              gal_data_add_to_ll(datall, NULL, GAL_TYPE_FLOAT64, 0,
                                  NULL, NULL, 0, -1, NULL, NULL, NULL);
               (*datall)->status=n;
             }
@@ -661,7 +661,7 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
   /* Read the proper token into the column. */
   switch(data->type)
     {
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       gal_checkset_allocate_copy(txt_trim_space(token), &str[i]);
       if( (strb=info->array) && !strcmp( *strb, str[i] ) )
         {
@@ -670,49 +670,49 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
         }
       break;
 
-    case GAL_DATA_TYPE_UINT8:
+    case GAL_TYPE_UINT8:
       uc[i]=strtol(token, &tailptr, 0);
       if( (ucb=info->array) && *ucb==uc[i] )
         uc[i]=GAL_BLANK_UINT8;
       break;
 
-    case GAL_DATA_TYPE_INT8:
+    case GAL_TYPE_INT8:
       c[i]=strtol(token, &tailptr, 0);
       if( (cb=info->array) && *cb==c[i] )
         c[i]=GAL_BLANK_INT8;
       break;
 
-    case GAL_DATA_TYPE_UINT16:
+    case GAL_TYPE_UINT16:
       us[i]=strtol(token, &tailptr, 0);
       if( (usb=info->array) && *usb==us[i] )
         us[i]=GAL_BLANK_UINT16;
       break;
 
-    case GAL_DATA_TYPE_INT16:
+    case GAL_TYPE_INT16:
       s[i]=strtol(token, &tailptr, 0);
       if( (sb=info->array) && *sb==s[i] )
         s[i]=GAL_BLANK_INT16;
       break;
 
-    case GAL_DATA_TYPE_UINT32:
+    case GAL_TYPE_UINT32:
       ui[i]=strtol(token, &tailptr, 0);
       if( (uib=info->array) && *uib==ui[i] )
         ui[i]=GAL_BLANK_UINT32;
       break;
 
-    case GAL_DATA_TYPE_INT32:
+    case GAL_TYPE_INT32:
       ii[i]=strtol(token, &tailptr, 0);
       if( (ib=info->array) && *ib==ii[i] )
         ii[i]=GAL_BLANK_INT32;
       break;
 
-    case GAL_DATA_TYPE_UINT64:
+    case GAL_TYPE_UINT64:
       ul[i]=strtoul(token, &tailptr, 0);
       if( (ulb=info->array) && *ulb==ul[i] )
         ul[i]=GAL_BLANK_UINT64;
       break;
 
-    case GAL_DATA_TYPE_INT64:
+    case GAL_TYPE_INT64:
       l[i]=strtol(token, &tailptr, 0);
       if( (lb=info->array) && *lb==l[i] )
         l[i]=GAL_BLANK_INT64;
@@ -722,14 +722,14 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
          sure it isn't a NaN, because a NaN value will fail on any
          condition check (even `=='). If it isn't NaN, then we can
          compare the values. */
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       f[i]=strtod(token, &tailptr);
       if( (fb=info->array)
           && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
         f[i]=GAL_BLANK_FLOAT64;
       break;
 
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT64:
       d[i]=strtod(token, &tailptr);
       if( (db=info->array)
           && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
@@ -742,10 +742,10 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
     }
 
   /* If a number couldn't be read properly, then report an error. */
-  if(data->type!=GAL_DATA_TYPE_STRING && *tailptr!='\0')
+  if(data->type!=GAL_TYPE_STRING && *tailptr!='\0')
     error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
                   "(`%s') couldn't be read as a `%s' number",
-                  colnum, token, gal_data_type_as_string(data->type, 1) );
+                  colnum, token, gal_type_to_string(data->type, 1) );
 }
 
 
@@ -775,7 +775,7 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
       /* Set the pointer to the start of this token/column. See
          explanations in `txt_info_from_row'. */
-      if( info[n-1].type == GAL_DATA_TYPE_STRING )
+      if( info[n-1].type == GAL_TYPE_STRING )
         {
           /* Remove any delimiters and stop at the first non-delimiter. If
              we have reached the end of the line then its an error, because
@@ -1045,7 +1045,7 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
       else
         {
           /* Set the blank value. */
-          if(data->type==GAL_DATA_TYPE_STRING)
+          if(data->type==GAL_TYPE_STRING)
             gal_checkset_allocate_copy(GAL_BLANK_STRING,
                                        &fmts[i*FMTS_COLS+2]);
           else
@@ -1080,11 +1080,11 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
-      if(data->type==GAL_DATA_TYPE_STRING)
+      if(data->type==GAL_TYPE_STRING)
         sprintf(fmts[i*FMTS_COLS+1], "%s%d",
-                gal_data_type_as_string(data->type, 0), data->disp_width);
+                gal_type_to_string(data->type, 0), data->disp_width);
       else
-        strcpy(fmts[i*FMTS_COLS+1], gal_data_type_as_string(data->type, 0));
+        strcpy(fmts[i*FMTS_COLS+1], gal_type_to_string(data->type, 0));
 
 
       /* Increment the column counter. */
@@ -1105,48 +1105,19 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
   switch(type)
     {
       /* Numerical types. */
-    case GAL_DATA_TYPE_UINT8:
-      fprintf(fp, fmt, ((uint8_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_INT8:
-      fprintf(fp, fmt, ((int8_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_UINT16:
-      fprintf(fp, fmt, ((uint16_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_INT16:
-      fprintf(fp, fmt, ((int16_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      fprintf(fp, fmt, ((uint32_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_INT32:
-      fprintf(fp, fmt, ((int32_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      fprintf(fp, fmt, ((uint64_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_INT64:
-      fprintf(fp, fmt, ((int64_t *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      fprintf(fp, fmt, ((float *)array)[ind]);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      fprintf(fp, fmt, ((double *)array)[ind]);
-      break;
+    case GAL_TYPE_UINT8:   fprintf(fp, fmt, ((uint8_t *) array)[ind]); break;
+    case GAL_TYPE_INT8:    fprintf(fp, fmt, ((int8_t *)  array)[ind]); break;
+    case GAL_TYPE_UINT16:  fprintf(fp, fmt, ((uint16_t *)array)[ind]); break;
+    case GAL_TYPE_INT16:   fprintf(fp, fmt, ((int16_t *) array)[ind]); break;
+    case GAL_TYPE_UINT32:  fprintf(fp, fmt, ((uint32_t *)array)[ind]); break;
+    case GAL_TYPE_INT32:   fprintf(fp, fmt, ((int32_t *) array)[ind]); break;
+    case GAL_TYPE_UINT64:  fprintf(fp, fmt, ((uint64_t *)array)[ind]); break;
+    case GAL_TYPE_INT64:   fprintf(fp, fmt, ((int64_t *) array)[ind]); break;
+    case GAL_TYPE_FLOAT32: fprintf(fp, fmt, ((float *)   array)[ind]); break;
+    case GAL_TYPE_FLOAT64: fprintf(fp, fmt, ((double *)  array)[ind]); break;
 
       /* Special consideration for strings. */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       if( !strcmp( ((char **)array)[ind], GAL_BLANK_STRING ) )
         fprintf(fp, fmt, GAL_BLANK_STRING);
       else

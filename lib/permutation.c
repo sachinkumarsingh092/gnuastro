@@ -99,7 +99,7 @@ gal_permutation_apply(gal_data_t *input, size_t *permutation)
   if(permutation)
     {
       /* Necessary initializations. */
-      width=gal_data_sizeof(input->type);
+      width=gal_type_sizeof(input->type);
       tmp=gal_data_malloc_array(input->type, 1);
 
       /* Do the permutation. */
@@ -148,7 +148,7 @@ gal_permutation_apply_inverse(gal_data_t *input, size_t *permutation)
   if(permutation)
     {
       /* Initializations */
-      width=gal_data_sizeof(input->type);
+      width=gal_type_sizeof(input->type);
       tmp=gal_data_malloc_array(input->type, 1);
       ttmp=gal_data_malloc_array(input->type, 1);
 

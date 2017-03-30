@@ -39,7 +39,7 @@ struct argp_option program_options[] =
       "Header keyword number to start reading WCS.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->hstartwcs,
-      GAL_DATA_TYPE_SIZE_T,
+      GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -52,7 +52,7 @@ struct argp_option program_options[] =
       "Header keyword number to stop reading WCS.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->hendwcs,
-      GAL_DATA_TYPE_SIZE_T,
+      GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -96,7 +96,7 @@ struct argp_option program_options[] =
       "Suffix (postfix) of cropped images.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->suffix,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -119,7 +119,7 @@ struct argp_option program_options[] =
       "Width (in pixels) of box at center to check.",
       ARGS_GROUP_CENTER_GENERAL,
       &p->checkcenter,
-      GAL_DATA_TYPE_SIZE_T,
+      GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_0_OR_ODD,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -132,7 +132,7 @@ struct argp_option program_options[] =
       "Width (pixels) when crop defined by X,Y.",
       ARGS_GROUP_CENTER_GENERAL,
       &p->iwidthin,
-      GAL_DATA_TYPE_SIZE_T,
+      GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0_ODD,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -145,7 +145,7 @@ struct argp_option program_options[] =
       "Width (arcseconds) for crops defined by RA,Dec.",
       ARGS_GROUP_CENTER_GENERAL,
       &p->wwidth,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -168,7 +168,7 @@ struct argp_option program_options[] =
       "Right ascension of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->ra,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -181,7 +181,7 @@ struct argp_option program_options[] =
       "Declination of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->dec,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -194,7 +194,7 @@ struct argp_option program_options[] =
       "First axis position of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->xc,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -207,7 +207,7 @@ struct argp_option program_options[] =
       "Second axis position of one crop box center.",
       ARGS_GROUP_CENTER_SINGLE,
       &p->yc,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -232,7 +232,7 @@ struct argp_option program_options[] =
       "Input catalog filename.",
       ARGS_GROUP_CENTER_CATALOG,
       &p->catname,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -245,7 +245,7 @@ struct argp_option program_options[] =
       "HDU of catalog, if it is a FITS table.",
       ARGS_GROUP_CENTER_CATALOG,
       &p->cathdu,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -258,7 +258,7 @@ struct argp_option program_options[] =
       "Column no./info of crop filename (no suffix).",
       ARGS_GROUP_CENTER_CATALOG,
       &p->namecol,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -271,7 +271,7 @@ struct argp_option program_options[] =
       "Column number/info of Right Ascension (RA).",
       ARGS_GROUP_CENTER_CATALOG,
       &p->racol,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -284,7 +284,7 @@ struct argp_option program_options[] =
       "Column number/info of Declination.",
       ARGS_GROUP_CENTER_CATALOG,
       &p->deccol,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -297,7 +297,7 @@ struct argp_option program_options[] =
       "Column number/info of X (first FITS axis).",
       ARGS_GROUP_CENTER_CATALOG,
       &p->xcol,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -310,7 +310,7 @@ struct argp_option program_options[] =
       "Column number/info of Y (second FITS axis).",
       ARGS_GROUP_CENTER_CATALOG,
       &p->ycol,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -333,7 +333,7 @@ struct argp_option program_options[] =
       "Image section string specifying crop range.",
       ARGS_GROUP_REGION,
       &p->section,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -346,7 +346,7 @@ struct argp_option program_options[] =
       "Polygon vertices of region to crop, keep inside.",
       ARGS_GROUP_REGION,
       &p->polygon,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -379,7 +379,7 @@ struct argp_option program_options[] =
       "Coordinate mode `img' or `wcs'",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &p->modestr,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

@@ -129,7 +129,7 @@ ui_initialize_options(struct imgarithparams *p,
         {
         case GAL_OPTIONS_KEY_HDU:
           cp->coptions[i].value=&p->hdus;
-          cp->coptions[i].type=GAL_DATA_TYPE_STRLL;
+          cp->coptions[i].type=GAL_TYPE_STRLL;
           cp->coptions[i].doc="Nth call, used for HDU of Nth input FITS.";
           break;
 

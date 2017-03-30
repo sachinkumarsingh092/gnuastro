@@ -39,7 +39,7 @@ struct argp_option program_options[] =
       "Redshift of interest.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->redshift,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -52,7 +52,7 @@ struct argp_option program_options[] =
       "Current expansion rate (Hubble constant).",
       GAL_OPTIONS_GROUP_INPUT,
       &p->H0,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -65,7 +65,7 @@ struct argp_option program_options[] =
       "Current cosmological cst. dens. per crit. dens.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->olambda,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -78,7 +78,7 @@ struct argp_option program_options[] =
       "Current matter density per critical density.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->omatter,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -91,7 +91,7 @@ struct argp_option program_options[] =
       "Current radiation density per critical density.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->oradiation,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET

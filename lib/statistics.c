@@ -58,7 +58,7 @@ gal_data_t *
 gal_statistics_number(gal_data_t *input)
 {
   size_t dsize=1;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* If there is no blank values in the input, then the total number is
@@ -87,7 +87,7 @@ gal_statistics_minimum(gal_data_t *input)
                                  &dsize, NULL, 1, -1, NULL, NULL, NULL);
 
   /* Initialize the output with the maximum possible value. */
-  gal_data_type_max(out->type, out->array);
+  gal_type_max(out->type, out->array);
 
   /* Parse the full input. */
   GAL_TILE_PARSE_OPERATE({*o = *i < *o ? *i : *o; ++n;}, input, out, 0, 0);
@@ -112,7 +112,7 @@ gal_statistics_maximum(gal_data_t *input)
                                  &dsize, NULL, 1, -1, NULL, NULL, NULL);
 
   /* Initialize the output with the minimum possible value. */
-  gal_data_type_min(out->type, out->array);
+  gal_type_min(out->type, out->array);
 
   /* Parse the full input. */
   GAL_TILE_PARSE_OPERATE({*o = *i > *o ? *i : *o; ++n;}, input, out, 0, 0);
@@ -133,7 +133,7 @@ gal_data_t *
 gal_statistics_sum(gal_data_t *input)
 {
   size_t dsize=1, n=0;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
@@ -156,7 +156,7 @@ gal_data_t *
 gal_statistics_mean(gal_data_t *input)
 {
   size_t dsize=1, n=0;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
@@ -182,7 +182,7 @@ gal_statistics_std(gal_data_t *input)
 {
   size_t dsize=1, n=0;
   double s=0.0f, s2=0.0f;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the input. */
@@ -205,7 +205,7 @@ gal_statistics_mean_std(gal_data_t *input)
 {
   size_t dsize=2, n=0;
   double s=0.0f, s2=0.0f;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the input. */
@@ -235,16 +235,16 @@ statistics_median_in_sorted_no_blank(gal_data_t *sorted, void *median)
 
   switch(sorted->type)
     {
-    case GAL_DATA_TYPE_UINT8:     MED_IN_SORTED( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      MED_IN_SORTED( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    MED_IN_SORTED( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     MED_IN_SORTED( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    MED_IN_SORTED( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     MED_IN_SORTED( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    MED_IN_SORTED( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     MED_IN_SORTED( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
+    case GAL_TYPE_UINT8:     MED_IN_SORTED( uint8_t  );    break;
+    case GAL_TYPE_INT8:      MED_IN_SORTED( int8_t   );    break;
+    case GAL_TYPE_UINT16:    MED_IN_SORTED( uint16_t );    break;
+    case GAL_TYPE_INT16:     MED_IN_SORTED( int16_t  );    break;
+    case GAL_TYPE_UINT32:    MED_IN_SORTED( uint32_t );    break;
+    case GAL_TYPE_INT32:     MED_IN_SORTED( int32_t  );    break;
+    case GAL_TYPE_UINT64:    MED_IN_SORTED( uint64_t );    break;
+    case GAL_TYPE_INT64:     MED_IN_SORTED( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
+    case GAL_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_statistics_median_in_sorted_no_blank'", sorted->type);
@@ -368,16 +368,16 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
   /* Find the result: */
   switch(nbs->type)
     {
-    case GAL_DATA_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
-    case GAL_DATA_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
-    case GAL_DATA_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
-    case GAL_DATA_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
-    case GAL_DATA_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
-    case GAL_DATA_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
-    case GAL_DATA_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
-    case GAL_DATA_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
-    case GAL_DATA_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
-    case GAL_DATA_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
+    case GAL_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
+    case GAL_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
+    case GAL_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
+    case GAL_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
+    case GAL_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
+    case GAL_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
+    case GAL_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
+    case GAL_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
+    case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
+    case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_statistics_quantile_function'", nbs->type);
@@ -399,7 +399,7 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
 {
   double *d;
   size_t dsize=1;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
   size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
 
@@ -452,7 +452,7 @@ struct statistics_mode_params
 
 /* Macros for the mode finding algorithm. */
 #define MODE_MIN_Q        0.01f  /* Mode search lower interval quantile.  */
-#define MODE_MAX_Q        0.90f  /* Mode search higher interval quantile. */
+#define MODE_MAX_Q        0.55f  /* Mode search higher interval quantile. */
 #define MODE_GOOD_LQ      0.02f  /* Least acceptable mode quantile.       */
 #define MODE_SYM_LOW_Q    0.01f  /* Lower quantile to get symmetricity.   */
 #define MODE_GOLDEN_RATIO 1.618034f /* Golden ratio: (1+sqrt(5))/2.       */
@@ -535,16 +535,16 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
          distribution. */
       switch(p->data->type)
         {
-        case GAL_DATA_TYPE_UINT8:     MIRR_MAX_DIFF( uint8_t  );   break;
-        case GAL_DATA_TYPE_INT8:      MIRR_MAX_DIFF( int8_t   );   break;
-        case GAL_DATA_TYPE_UINT16:    MIRR_MAX_DIFF( uint16_t );   break;
-        case GAL_DATA_TYPE_INT16:     MIRR_MAX_DIFF( int16_t  );   break;
-        case GAL_DATA_TYPE_UINT32:    MIRR_MAX_DIFF( uint32_t );   break;
-        case GAL_DATA_TYPE_INT32:     MIRR_MAX_DIFF( int32_t  );   break;
-        case GAL_DATA_TYPE_UINT64:    MIRR_MAX_DIFF( uint64_t );   break;
-        case GAL_DATA_TYPE_INT64:     MIRR_MAX_DIFF( int64_t  );   break;
-        case GAL_DATA_TYPE_FLOAT32:   MIRR_MAX_DIFF( float    );   break;
-        case GAL_DATA_TYPE_FLOAT64:   MIRR_MAX_DIFF( double   );   break;
+        case GAL_TYPE_UINT8:     MIRR_MAX_DIFF( uint8_t  );   break;
+        case GAL_TYPE_INT8:      MIRR_MAX_DIFF( int8_t   );   break;
+        case GAL_TYPE_UINT16:    MIRR_MAX_DIFF( uint16_t );   break;
+        case GAL_TYPE_INT16:     MIRR_MAX_DIFF( int16_t  );   break;
+        case GAL_TYPE_UINT32:    MIRR_MAX_DIFF( uint32_t );   break;
+        case GAL_TYPE_INT32:     MIRR_MAX_DIFF( int32_t  );   break;
+        case GAL_TYPE_UINT64:    MIRR_MAX_DIFF( uint64_t );   break;
+        case GAL_TYPE_INT64:     MIRR_MAX_DIFF( int64_t  );   break;
+        case GAL_TYPE_FLOAT32:   MIRR_MAX_DIFF( float    );   break;
+        case GAL_TYPE_FLOAT64:   MIRR_MAX_DIFF( double   );   break;
         default:
           error(EXIT_FAILURE, 0, "type code %d not recognized in "
                 "`mode_mirror_max_diff'", p->data->type);
@@ -773,16 +773,16 @@ mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
   /* Do the process. */
   switch(p->data->type)
     {
-    case GAL_DATA_TYPE_UINT8:      MODE_SYM( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:       MODE_SYM( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:     MODE_SYM( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:      MODE_SYM( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:     MODE_SYM( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:      MODE_SYM( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:     MODE_SYM( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:      MODE_SYM( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:    MODE_SYM( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:    MODE_SYM( double   );    break;
+    case GAL_TYPE_UINT8:      MODE_SYM( uint8_t  );    break;
+    case GAL_TYPE_INT8:       MODE_SYM( int8_t   );    break;
+    case GAL_TYPE_UINT16:     MODE_SYM( uint16_t );    break;
+    case GAL_TYPE_INT16:      MODE_SYM( int16_t  );    break;
+    case GAL_TYPE_UINT32:     MODE_SYM( uint32_t );    break;
+    case GAL_TYPE_INT32:      MODE_SYM( int32_t  );    break;
+    case GAL_TYPE_UINT64:     MODE_SYM( uint64_t );    break;
+    case GAL_TYPE_INT64:      MODE_SYM( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:    MODE_SYM( float    );    break;
+    case GAL_TYPE_FLOAT64:    MODE_SYM( double   );    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`mode_symmetricity'", p->data->type);
@@ -832,7 +832,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
                                   NULL, NULL, NULL);
   gal_data_t *b_val=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
                                    NULL, NULL, NULL);
-  gal_data_t *out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
 
@@ -878,7 +878,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   oa=out->array;
   modeindex = mode_golden_section(&p);
   gal_data_copy_element_same_type(p.data, modeindex, mode->array);
-  mode=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
+  mode=gal_data_copy_to_new_type_free(mode, GAL_TYPE_FLOAT64);
   gal_data_copy_element_same_type(mode, 0, &oa[0]);
 
 
@@ -891,7 +891,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
      output values to NaN. */
   if(oa[2]>GAL_STATISTICS_MODE_GOOD_SYM)
     {
-      b_val=gal_data_copy_to_new_type_free(mode, GAL_DATA_TYPE_FLOAT64);
+      b_val=gal_data_copy_to_new_type_free(mode, GAL_TYPE_FLOAT64);
       gal_data_copy_element_same_type(b_val, 0, &oa[3]);
     }
   else oa[0]=oa[1]=oa[2]=oa[3]=NAN;
@@ -939,16 +939,16 @@ statistics_make_mirror(gal_data_t *noblank_sorted, size_t index,
   /* Fill in the mirror array. */
   switch(noblank_sorted->type)
     {
-    case GAL_DATA_TYPE_UINT8:     STATS_MKMIRROR( uint8_t  );     break;
-    case GAL_DATA_TYPE_INT8:      STATS_MKMIRROR( int8_t   );     break;
-    case GAL_DATA_TYPE_UINT16:    STATS_MKMIRROR( uint16_t );     break;
-    case GAL_DATA_TYPE_INT16:     STATS_MKMIRROR( int16_t  );     break;
-    case GAL_DATA_TYPE_UINT32:    STATS_MKMIRROR( uint32_t );     break;
-    case GAL_DATA_TYPE_INT32:     STATS_MKMIRROR( int32_t  );     break;
-    case GAL_DATA_TYPE_UINT64:    STATS_MKMIRROR( uint64_t );     break;
-    case GAL_DATA_TYPE_INT64:     STATS_MKMIRROR( int64_t  );     break;
-    case GAL_DATA_TYPE_FLOAT32:   STATS_MKMIRROR( float    );     break;
-    case GAL_DATA_TYPE_FLOAT64:   STATS_MKMIRROR( double   );     break;
+    case GAL_TYPE_UINT8:     STATS_MKMIRROR( uint8_t  );     break;
+    case GAL_TYPE_INT8:      STATS_MKMIRROR( int8_t   );     break;
+    case GAL_TYPE_UINT16:    STATS_MKMIRROR( uint16_t );     break;
+    case GAL_TYPE_INT16:     STATS_MKMIRROR( int16_t  );     break;
+    case GAL_TYPE_UINT32:    STATS_MKMIRROR( uint32_t );     break;
+    case GAL_TYPE_INT32:     STATS_MKMIRROR( int32_t  );     break;
+    case GAL_TYPE_UINT64:    STATS_MKMIRROR( uint64_t );     break;
+    case GAL_TYPE_INT64:     STATS_MKMIRROR( int64_t  );     break;
+    case GAL_TYPE_FLOAT32:   STATS_MKMIRROR( float    );     break;
+    case GAL_TYPE_FLOAT64:   STATS_MKMIRROR( double   );     break;
     }
 
   /* Return the mirrored distribution. */
@@ -1053,16 +1053,16 @@ gal_statistics_is_sorted(gal_data_t *data)
   /* Do the check. */
   switch(data->type)
     {
-    case GAL_DATA_TYPE_UINT8:     IS_SORTED( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      IS_SORTED( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    IS_SORTED( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     IS_SORTED( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    IS_SORTED( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     IS_SORTED( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    IS_SORTED( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     IS_SORTED( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   IS_SORTED( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   IS_SORTED( double   );    break;
+    case GAL_TYPE_UINT8:     IS_SORTED( uint8_t  );    break;
+    case GAL_TYPE_INT8:      IS_SORTED( int8_t   );    break;
+    case GAL_TYPE_UINT16:    IS_SORTED( uint16_t );    break;
+    case GAL_TYPE_INT16:     IS_SORTED( int16_t  );    break;
+    case GAL_TYPE_UINT32:    IS_SORTED( uint32_t );    break;
+    case GAL_TYPE_INT32:     IS_SORTED( int32_t  );    break;
+    case GAL_TYPE_UINT64:    IS_SORTED( uint64_t );    break;
+    case GAL_TYPE_INT64:     IS_SORTED( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   IS_SORTED( float    );    break;
+    case GAL_TYPE_FLOAT64:   IS_SORTED( double   );    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_statistics_is_sorted'", data->type);
@@ -1082,32 +1082,32 @@ gal_statistics_is_sorted(gal_data_t *data)
 /* This function is ignorant to blank values, if you want to make sure
    there is no blank values, you can call `gal_blank_remove' first. */
 #define STATISTICS_SORT(QSORT_F) {                                        \
-    qsort(data->array, data->size, gal_data_sizeof(data->type), QSORT_F); \
+    qsort(data->array, data->size, gal_type_sizeof(data->type), QSORT_F); \
   }
 void
 gal_statistics_sort_increasing(gal_data_t *data)
 {
   switch(data->type)
     {
-    case GAL_DATA_TYPE_UINT8:
+    case GAL_TYPE_UINT8:
       STATISTICS_SORT(gal_qsort_uint8_increasing);    break;
-    case GAL_DATA_TYPE_INT8:
+    case GAL_TYPE_INT8:
       STATISTICS_SORT(gal_qsort_int8_increasing);     break;
-    case GAL_DATA_TYPE_UINT16:
+    case GAL_TYPE_UINT16:
       STATISTICS_SORT(gal_qsort_uint16_increasing);   break;
-    case GAL_DATA_TYPE_INT16:
+    case GAL_TYPE_INT16:
       STATISTICS_SORT(gal_qsort_int16_increasing);    break;
-    case GAL_DATA_TYPE_UINT32:
+    case GAL_TYPE_UINT32:
       STATISTICS_SORT(gal_qsort_uint32_increasing);   break;
-    case GAL_DATA_TYPE_INT32:
+    case GAL_TYPE_INT32:
       STATISTICS_SORT(gal_qsort_int32_increasing);    break;
-    case GAL_DATA_TYPE_UINT64:
+    case GAL_TYPE_UINT64:
       STATISTICS_SORT(gal_qsort_uint64_increasing);   break;
-    case GAL_DATA_TYPE_INT64:
+    case GAL_TYPE_INT64:
       STATISTICS_SORT(gal_qsort_int64_increasing);    break;
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       STATISTICS_SORT(gal_qsort_float32_increasing);  break;
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT64:
       STATISTICS_SORT(gal_qsort_float64_increasing);  break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
@@ -1125,25 +1125,25 @@ gal_statistics_sort_decreasing(gal_data_t *data)
 {
   switch(data->type)
     {
-    case GAL_DATA_TYPE_UINT8:
+    case GAL_TYPE_UINT8:
       STATISTICS_SORT(gal_qsort_uint8_decreasing);    break;
-    case GAL_DATA_TYPE_INT8:
+    case GAL_TYPE_INT8:
       STATISTICS_SORT(gal_qsort_int8_decreasing);     break;
-    case GAL_DATA_TYPE_UINT16:
+    case GAL_TYPE_UINT16:
       STATISTICS_SORT(gal_qsort_uint16_decreasing);   break;
-    case GAL_DATA_TYPE_INT16:
+    case GAL_TYPE_INT16:
       STATISTICS_SORT(gal_qsort_int16_decreasing);    break;
-    case GAL_DATA_TYPE_UINT32:
+    case GAL_TYPE_UINT32:
       STATISTICS_SORT(gal_qsort_uint32_decreasing);   break;
-    case GAL_DATA_TYPE_INT32:
+    case GAL_TYPE_INT32:
       STATISTICS_SORT(gal_qsort_int32_decreasing);    break;
-    case GAL_DATA_TYPE_UINT64:
+    case GAL_TYPE_UINT64:
       STATISTICS_SORT(gal_qsort_uint64_decreasing);   break;
-    case GAL_DATA_TYPE_INT64:
+    case GAL_TYPE_INT64:
       STATISTICS_SORT(gal_qsort_int64_decreasing);    break;
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       STATISTICS_SORT(gal_qsort_float32_decreasing);  break;
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT64:
       STATISTICS_SORT(gal_qsort_float64_decreasing);  break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
@@ -1310,10 +1310,10 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
   if(inrange && inrange->size)
     {
       /* Make sure we are dealing with a double type range. */
-      if(inrange->type==GAL_DATA_TYPE_FLOAT64)
+      if(inrange->type==GAL_TYPE_FLOAT64)
         range=inrange;
       else
-        range=gal_data_copy_to_new_type(inrange, GAL_DATA_TYPE_FLOAT64);
+        range=gal_data_copy_to_new_type(inrange, GAL_TYPE_FLOAT64);
 
       /* Set the minimum and maximum of the bins. */
       ra=range->array;
@@ -1326,7 +1326,7 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
           if( isnan(ra[0]) )
             {
               tmp=gal_data_copy_to_new_type_free(gal_statistics_minimum(data),
-                                                 GAL_DATA_TYPE_FLOAT64);
+                                                 GAL_TYPE_FLOAT64);
               min=*((double *)(tmp->array));
               gal_data_free(tmp);
             }
@@ -1337,7 +1337,7 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
           if( isnan(ra[1]) )
             {
               tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(data),
-                                                 GAL_DATA_TYPE_FLOAT64);
+                                                 GAL_TYPE_FLOAT64);
               max=*((double *)(tmp->array))+1e-6;
               gal_data_free(tmp);
             }
@@ -1351,18 +1351,18 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
   else
     {
       tmp=gal_data_copy_to_new_type_free(gal_statistics_minimum(data),
-                                         GAL_DATA_TYPE_FLOAT64);
+                                         GAL_TYPE_FLOAT64);
       min=*((double *)(tmp->array));
       gal_data_free(tmp);
       tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(data),
-                                         GAL_DATA_TYPE_FLOAT64);
+                                         GAL_TYPE_FLOAT64);
       max=*((double *)(tmp->array)) + 1e-6;
       gal_data_free(tmp);
     }
 
 
   /* Allocate the space for the bins. */
-  bins=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &numbins, NULL,
+  bins=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numbins, NULL,
                       0, data->minmapsize, "bin_center", data->unit,
                       "Center value of each bin.");
 
@@ -1447,7 +1447,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
 
   /* Allocate the histogram (note that we are clearning it so all values
      are zero. */
-  hist=gal_data_alloc(NULL, GAL_DATA_TYPE_SIZE_T, bins->ndim, bins->dsize,
+  hist=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, bins->ndim, bins->dsize,
                       NULL, 1, data->minmapsize, "hist_number", "counts",
                       "Number of data points within each bin.");
 
@@ -1463,16 +1463,16 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
   h=hist->array;
   switch(data->type)
     {
-    case GAL_DATA_TYPE_UINT8:     HISTOGRAM_TYPESET(uint8_t);     break;
-    case GAL_DATA_TYPE_INT8:      HISTOGRAM_TYPESET(int8_t);      break;
-    case GAL_DATA_TYPE_UINT16:    HISTOGRAM_TYPESET(uint16_t);    break;
-    case GAL_DATA_TYPE_INT16:     HISTOGRAM_TYPESET(int16_t);     break;
-    case GAL_DATA_TYPE_UINT32:    HISTOGRAM_TYPESET(uint32_t);    break;
-    case GAL_DATA_TYPE_INT32:     HISTOGRAM_TYPESET(int32_t);     break;
-    case GAL_DATA_TYPE_UINT64:    HISTOGRAM_TYPESET(uint64_t);    break;
-    case GAL_DATA_TYPE_INT64:     HISTOGRAM_TYPESET(int64_t);     break;
-    case GAL_DATA_TYPE_FLOAT32:   HISTOGRAM_TYPESET(float);       break;
-    case GAL_DATA_TYPE_FLOAT64:   HISTOGRAM_TYPESET(double);      break;
+    case GAL_TYPE_UINT8:     HISTOGRAM_TYPESET(uint8_t);     break;
+    case GAL_TYPE_INT8:      HISTOGRAM_TYPESET(int8_t);      break;
+    case GAL_TYPE_UINT16:    HISTOGRAM_TYPESET(uint16_t);    break;
+    case GAL_TYPE_INT16:     HISTOGRAM_TYPESET(int16_t);     break;
+    case GAL_TYPE_UINT32:    HISTOGRAM_TYPESET(uint32_t);    break;
+    case GAL_TYPE_INT32:     HISTOGRAM_TYPESET(int32_t);     break;
+    case GAL_TYPE_UINT64:    HISTOGRAM_TYPESET(uint64_t);    break;
+    case GAL_TYPE_INT64:     HISTOGRAM_TYPESET(int64_t);     break;
+    case GAL_TYPE_FLOAT32:   HISTOGRAM_TYPESET(float);       break;
+    case GAL_TYPE_FLOAT64:   HISTOGRAM_TYPESET(double);      break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_statistics_histogram'", data->type);
@@ -1492,7 +1492,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
     {
       /* Set the reference. */
       ref=0.0f;
-      hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_FLOAT32);
+      hist=gal_data_copy_to_new_type_free(hist, GAL_TYPE_FLOAT32);
       ff=(f=hist->array)+hist->size; do ref += *f++;   while(f<ff);
 
       /* Correct the name, units and comments. */
@@ -1506,7 +1506,7 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
     {
       /* Calculate the reference. */
       ref=-FLT_MAX;
-      hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_FLOAT32);
+      hist=gal_data_copy_to_new_type_free(hist, GAL_TYPE_FLOAT32);
       ff=(f=hist->array)+hist->size;
       do ref = *f>ref ? *f : ref; while(++f<ff);
 
@@ -1577,7 +1577,7 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
      either normalized or its maximum was set to 1. We can only use it if
      it was normalized. If it isn't normalized, then we must ignore it and
      build the histogram here.*/
-  if(hist->type==GAL_DATA_TYPE_FLOAT32)
+  if(hist->type==GAL_TYPE_FLOAT32)
     {
       sum=0.0f;
       ff=(f=hist->array)+hist->size; do sum += *f++;   while(f<ff);
@@ -1589,11 +1589,11 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
   /* Allocate the cumulative frequency plot's necessary space. */
   cfp=gal_data_alloc( NULL, hist->type, bins->ndim, bins->dsize,
                       NULL, 1, data->minmapsize,
-                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                      ( hist->type==GAL_TYPE_FLOAT32
                         ? "cfp_normalized" : "cfp_number" ),
-                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                      ( hist->type==GAL_TYPE_FLOAT32
                         ? "frac" : "count" ),
-                      ( hist->type==GAL_DATA_TYPE_FLOAT32
+                      ( hist->type==GAL_TYPE_FLOAT32
                         ? "Fraction of data elements from the start to this "
                         "bin (inclusive)."
                         : "Number of data elements from the start to this "
@@ -1603,12 +1603,12 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
   /* Fill in the cumulative frequency plot. */
   switch(hist->type)
     {
-    case GAL_DATA_TYPE_SIZE_T:
+    case GAL_TYPE_SIZE_T:
       sums=0; hs=hist->array; sf=(s=cfp->array)+cfp->size;
       do sums = (*s += *hs++ + sums); while(++s<sf);
       break;
 
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       sum=0.0f; hf=hist->array; ff=(f=cfp->array)+cfp->size;
       do sum = (*f += *hf++ + sum);  while(++f<ff);
       break;
@@ -1621,12 +1621,12 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
   /* Normalize the CFP if the user asked for it and it wasn't normalized
      until now. */
-  if(normalize && cfp->type==GAL_DATA_TYPE_SIZE_T)
+  if(normalize && cfp->type==GAL_TYPE_SIZE_T)
     {
       /* Find the sum, then divide the plot by it. Note that the sum must
          come from the histogram, not the CFP!*/
       sums=0;
-      cfp=gal_data_copy_to_new_type_free(cfp, GAL_DATA_TYPE_FLOAT32);
+      cfp=gal_data_copy_to_new_type_free(cfp, GAL_TYPE_FLOAT32);
       sf=(s=hist->array)+hist->size; do sums += *s++;   while(s<sf);
       ff=(f=cfp->array)+cfp->size;   do *f++ /= sums;   while(f<ff);
 
@@ -1741,7 +1741,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
 
   /* Allocate the necessary spaces. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &four, NULL, 0,
+  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &four, NULL, 0,
                      input->minmapsize, NULL, NULL, NULL);
   median_i=gal_data_alloc(NULL, type, 1, &one, NULL, 0, input->minmapsize,
                           NULL, NULL, NULL);
@@ -1762,7 +1762,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
     {
       /* Find the median. */
       statistics_median_in_sorted_no_blank(nbs, median_i->array);
-      median_d=gal_data_copy_to_new_type(median_i, GAL_DATA_TYPE_FLOAT64);
+      median_d=gal_data_copy_to_new_type(median_i, GAL_TYPE_FLOAT64);
 
       /* Find the average and Standard deviation, note that both `start'
          and `size' will be different in the next round. */
@@ -1793,16 +1793,16 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
          and size of the array. */
       switch(type)
         {
-        case GAL_DATA_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
-        case GAL_DATA_TYPE_INT8:      SIGCLIP( int8_t   );   break;
-        case GAL_DATA_TYPE_UINT16:    SIGCLIP( uint16_t );   break;
-        case GAL_DATA_TYPE_INT16:     SIGCLIP( int16_t  );   break;
-        case GAL_DATA_TYPE_UINT32:    SIGCLIP( uint32_t );   break;
-        case GAL_DATA_TYPE_INT32:     SIGCLIP( int32_t  );   break;
-        case GAL_DATA_TYPE_UINT64:    SIGCLIP( uint64_t );   break;
-        case GAL_DATA_TYPE_INT64:     SIGCLIP( int64_t  );   break;
-        case GAL_DATA_TYPE_FLOAT32:   SIGCLIP( float    );   break;
-        case GAL_DATA_TYPE_FLOAT64:   SIGCLIP( double   );   break;
+        case GAL_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
+        case GAL_TYPE_INT8:      SIGCLIP( int8_t   );   break;
+        case GAL_TYPE_UINT16:    SIGCLIP( uint16_t );   break;
+        case GAL_TYPE_INT16:     SIGCLIP( int16_t  );   break;
+        case GAL_TYPE_UINT32:    SIGCLIP( uint32_t );   break;
+        case GAL_TYPE_INT32:     SIGCLIP( int32_t  );   break;
+        case GAL_TYPE_UINT64:    SIGCLIP( uint64_t );   break;
+        case GAL_TYPE_INT64:     SIGCLIP( int64_t  );   break;
+        case GAL_TYPE_FLOAT32:   SIGCLIP( float    );   break;
+        case GAL_TYPE_FLOAT64:   SIGCLIP( double   );   break;
         default:
           error(EXIT_FAILURE, 0, "type code %d not recognized in "
                 "`gal_statistics_sigma_clip'", type);

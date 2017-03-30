@@ -106,16 +106,16 @@ fits_print_extension_info(struct fitsparams *p)
 
   /* Allocate all the columns (in reverse order, since this is a simple
      linked list). */
-  gal_data_add_to_ll(&cols, NULL, GAL_DATA_TYPE_STRING, 1, &numext, NULL, 1,
+  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                      p->cp.minmapsize, "HDU_SIZE", "name",
                      "Size of image or table number of rows and columns.");
-  gal_data_add_to_ll(&cols, NULL, GAL_DATA_TYPE_STRING, 1, &numext, NULL, 1,
+  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                      p->cp.minmapsize, "HDU_TYPE", "name",
                      "Image data type or `table' format (ASCII or binary).");
-  gal_data_add_to_ll(&cols, NULL, GAL_DATA_TYPE_STRING, 1, &numext, NULL, 1,
+  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                      p->cp.minmapsize, "EXTNAME", "name",
                      "Extension name of this HDU (EXTNAME in FITS).");
-  gal_data_add_to_ll(&cols, NULL, GAL_DATA_TYPE_UINT16, 1, &numext, NULL, 1,
+  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_UINT16, 1, &numext, NULL, 1,
                      p->cp.minmapsize, "HDU_INDEX", "count",
                      "Index (starting from zero) of each HDU (extension).");
 
@@ -138,14 +138,14 @@ fits_print_extension_info(struct fitsparams *p)
         {
         case IMAGE_HDU:
           gal_fits_img_info(fptr, &type, &ndim, &dsize);
-          tstr=gal_data_type_as_string(type , 1);
+          tstr=gal_type_to_string(type , 1);
           break;
 
         case ASCII_TBL:
         case BINARY_TBL:
           ndim=2;
           tstr = hdutype==ASCII_TBL ? "table_ascii" : "table_binary";
-          dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, 2);
+          dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 2);
           gal_fits_tab_size(fptr, dsize+1, dsize);
           break;
 

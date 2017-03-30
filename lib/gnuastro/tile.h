@@ -218,39 +218,42 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 #define GAL_TILE_PO_OSET(OT, OP, IN, OUT, PARSE_OUT, CHECK_BLANK) {     \
   switch(iblock->type)                                                  \
     {                                                                   \
-    case GAL_DATA_TYPE_UINT8:                                           \
+    case GAL_TYPE_UINT8:                                                \
       GAL_TILE_PO_OISET(uint8_t,  OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_INT8:                                            \
+    case GAL_TYPE_INT8:                                                 \
       GAL_TILE_PO_OISET(int8_t,   OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_UINT16:                                          \
+    case GAL_TYPE_UINT16:                                               \
       GAL_TILE_PO_OISET(uint16_t, OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_INT16:                                           \
+    case GAL_TYPE_INT16:                                                \
       GAL_TILE_PO_OISET(int16_t,  OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_UINT32:                                          \
+    case GAL_TYPE_UINT32:                                               \
       GAL_TILE_PO_OISET(uint32_t, OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_INT32:                                           \
+    case GAL_TYPE_INT32:                                                \
       GAL_TILE_PO_OISET(int32_t,  OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_UINT64:                                          \
+    case GAL_TYPE_UINT64:                                               \
       GAL_TILE_PO_OISET(uint64_t, OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_INT64:                                           \
+    case GAL_TYPE_INT64:                                                \
       GAL_TILE_PO_OISET(int64_t,  OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_FLOAT32:                                         \
+    case GAL_TYPE_FLOAT32:                                              \
       GAL_TILE_PO_OISET(float,    OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
-    case GAL_DATA_TYPE_FLOAT64:                                         \
+    case GAL_TYPE_FLOAT64:                                              \
       GAL_TILE_PO_OISET(double,   OT,OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
-            "`GAL_TILE_PO_OSET'", iblock->type);                        \
+      {                                                                 \
+        fprintf(stderr, "type code %d not recognized in "               \
+              "`GAL_TILE_PO_OSET'", iblock->type);                      \
+        exit(EXIT_FAILURE);                                             \
+      }                                                                 \
     }                                                                   \
   }
 
@@ -278,7 +281,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
              memory.
 
        `OUT': Output `gal_data_t'. It can be NULL. In that case, `o' will
-             be NULL and should not be used.
+             be NULL and should not be used. If given,
 
        `PARSE_OUT': Parse the output along with the input. When this is
              non-zero, then the `o' pointer (described in `OP') will be
@@ -308,49 +311,56 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
                                                                         \
     /* A small sanity check. */                                         \
     if( parse_out && gal_data_dsize_is_different(iblock, oblock) )      \
-      error(EXIT_FAILURE, 0, "when `PARSE_OUT' is non-zero, the "       \
-            "allocated block size of the input and output of "          \
-            "`GAL_TILE_PARSE_OPERATE' must be equal, but they are "     \
-            "not: %zu and %zu elements respectively)", iblock->size,    \
-            oblock->size);                                              \
+      {                                                                 \
+        /* The `error' function, is a GNU extension. */                 \
+        fprintf(stderr, "when `PARSE_OUT' is non-zero, the "            \
+                "allocated block size of the input and output of "      \
+                "`GAL_TILE_PARSE_OPERATE' must be equal, but they are " \
+                "not: %zu and %zu elements respectively)",              \
+                iblock->size, oblock->size);                            \
+        exit(EXIT_FAILURE);                                             \
+      }                                                                 \
                                                                         \
     /* First set the OUTPUT type. */                                    \
     if(OUT)                                                             \
       switch(oblock->type)                                              \
         {                                                               \
-        case GAL_DATA_TYPE_UINT8:                                       \
+        case GAL_TYPE_UINT8:                                            \
           GAL_TILE_PO_OSET(uint8_t,  OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_INT8:                                        \
+        case GAL_TYPE_INT8:                                             \
           GAL_TILE_PO_OSET(int8_t,   OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_UINT16:                                      \
+        case GAL_TYPE_UINT16:                                           \
           GAL_TILE_PO_OSET(uint16_t, OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_INT16:                                       \
+        case GAL_TYPE_INT16:                                            \
           GAL_TILE_PO_OSET(int16_t,  OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_UINT32:                                      \
+        case GAL_TYPE_UINT32:                                           \
           GAL_TILE_PO_OSET(uint32_t, OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_INT32:                                       \
+        case GAL_TYPE_INT32:                                            \
           GAL_TILE_PO_OSET(int32_t,  OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_UINT64:                                      \
+        case GAL_TYPE_UINT64:                                           \
           GAL_TILE_PO_OSET(uint64_t, OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_INT64:                                       \
+        case GAL_TYPE_INT64:                                            \
           GAL_TILE_PO_OSET(int64_t,  OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_FLOAT32:                                     \
+        case GAL_TYPE_FLOAT32:                                          \
           GAL_TILE_PO_OSET(float,    OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
-        case GAL_DATA_TYPE_FLOAT64:                                     \
+        case GAL_TYPE_FLOAT64:                                          \
           GAL_TILE_PO_OSET(double,   OP,IN,OUT,PARSE_OUT,CHECK_BLANK);  \
           break;                                                        \
         default:                                                        \
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "      \
-                "`GAL_TILE_PARSE_OPERATE'", oblock->type);              \
+          {                                                             \
+            fprintf(stderr, "type code %d not recognized in "           \
+                    "`GAL_TILE_PARSE_OPERATE'", oblock->type);          \
+            exit(EXIT_FAILURE);                                         \
+          }                                                             \
         }                                                               \
     else                                                                \
       /* When `OUT==NULL', its type is irrelevant, we'll just use */    \

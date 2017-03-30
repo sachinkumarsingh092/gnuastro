@@ -1,5 +1,5 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in noise.
+NoiseChisel - Detect and segment signal in a noisy dataset.
 NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -23,510 +23,497 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
 
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata";
-
-
-
-
-
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" Detects and segments signal that is deeply burried in noise. "
-  "It employs a noise-based detection and segmentation method enabling it "
-  "to be very resilient to the rich diversity of shapes in astronomical "
-  "targets.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Available letters for short options:
-
-   f j w x z
-   A J K W X Y Z
-
-   Used numbers: <=518 (except 515)
-
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
-static struct argp_option options[] =
+/* Options in argp_option format. */
+struct argp_option program_options[] =
   {
-    {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
-    {
-      "mask",
-      'M',
-      "STR",
-      0,
-      "Mask image file name.",
-      1
-    },
-    {
-      "mhdu",
-      'H',
-      "STR",
-      0,
-      "Mask image header name.",
-      1
-    },
+
+    /* Input options. */
     {
       "kernel",
-      'k',
+      ARGS_OPTION_KEY_KERNEL,
       "STR",
       0,
-      "Kernel image file name.",
-      1
+      "Filename of Kernel to convolve with input",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->kernelname,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "khdu",
-      'U',
+      ARGS_OPTION_KEY_KHDU,
       "STR",
       0,
-      "Kernel image header name.",
-      1
+      "HDU containing Kernel image.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->khdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "skysubtracted",
-      'E',
+      ARGS_OPTION_KEY_SKYSUBTRACTED,
       0,
       0,
-      "Input is already sky subtracted.",
-      1
+      "Input is Sky subtracted (for error estimation).",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skysubtracted,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "minbfrac",
-      'B',
+      ARGS_OPTION_KEY_MINBFRAC,
       "FLT",
       0,
-      "Minimum fraction of undetected area in a mesh.",
-      1
+      "Min. fraction of undetected area in a tile.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->minbfrac,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "minnumfalse",
-      'F',
+      ARGS_OPTION_KEY_MINNUMFALSE,
       "INT",
       0,
-      "Min No. of false detection/segments for quantile.",
-      1
+      "Minimum number for S/N estimation.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->minnumfalse,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
+
+    /* Output options. */
     {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
-    {
-      "detectonly",
-      517,
+      "onlydetect",
+      ARGS_OPTION_KEY_ONLYDETECT,
       0,
       0,
-      "Do not do any segmentation.",
-      2
+      "Don't do any segmentation.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->onlydetect,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "grownclumps",
-      'C',
+      ARGS_OPTION_KEY_GROWNCLUMPS,
       0,
       0,
-      "Save grownclumps instead of original clumps.",
-      2
+      "Save grown clumps instead of original.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->grownclumps,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-    {
-      0, 0, 0, 0,
-      "Mesh grid:",
-      3
-    },
-    {
-      "smeshsize",
-      's',
-      "INT",
-      0,
-      "Size of each small mesh (tile) in the grid.",
-      3
-    },
-    {
-      "lmeshsize",
-      'l',
-      "INT",
-      0,
-      "Size of each large mesh (tile) in the grid.",
-      3
-    },
-    {
-      "nch1",
-      'a',
-      "INT",
-      0,
-      "Number of channels along first FITS axis.",
-      3
-    },
-    {
-      "nch2",
-      'b',
-      "INT",
-      0,
-      "Number of channels along second FITS axis.",
-      3
-    },
-    {
-      "lastmeshfrac",
-      'L',
-      "INT",
-      0,
-      "Fraction of last mesh area to add new.",
-      3
-    },
-    {
-      "mirrordist",
-      'd',
-      "FLT",
-      0,
-      "Distance beyond mirror point. Multiple of std.",
-      3
-    },
-    {
-      "minmodeq",
-      'Q',
-      "FLT",
-      0,
-      "Minimum acceptable quantile for the mode.",
-      3
-    },
-    {
-      "interponlyblank",
-      511,
-      0,
-      0,
-      "Only interpolate over the blank pixels.",
-      3
-    },
-    {
-      "numnearest",
-      'n',
-      "INT",
-      0,
-      "Number of nearest neighbors to interpolate.",
-      3
-    },
-    {
-      "smoothwidth",
-      'T',
-      "INT",
-      0,
-      "Width of smoothing kernel (odd number).",
-      3
-    },
-    {
-      "checkmesh",
-      500,
-      0,
-      0,
-      "Store mesh IDs in `_mesh.fits' file.",
-      3
-    },
-    {
-      "fullinterpolation",
-      501,
-      0,
-      0,
-      "Ignore channels in interpolation.",
-      3
-    },
-    {
-      "fullsmooth",
-      502,
-      0,
-      0,
-      "Ignore channels in smoothing.",
-      3
-    },
-    {
-      "fullconvolution",
-      504,
-      0,
-      0,
-      "Ignore channels in convolution.",
-      3
-    },
-    {
-      "meshbasedcheck",
-      516,
-      0,
-      0,
-      "Each mesh in one pixel in mesh check images.",
-      3
-    },
 
-
-
+    /* Detection. */
     {
       0, 0, 0, 0,
       "Detection:",
-      4
+      ARGS_GROUP_DETECTION
+    },
+    {
+      "mirrordist",
+      ARGS_OPTION_KEY_MIRRORDIST,
+      "FLT",
+      0,
+      "Max. distance (error multip.) to find mode.",
+      ARGS_GROUP_DETECTION,
+      &p->mirrordist,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "modmedqdiff",
+      ARGS_OPTION_KEY_MODMEDQDIFF,
+      "FLT",
+      0,
+      "Max. mode and median quant diff. per tile.",
+      ARGS_GROUP_DETECTION,
+      &p->modmedqdiff,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "qthresh",
-      't',
+      ARGS_OPTION_KEY_QTHRESH,
       "FLT",
       0,
       "Quantile threshold on convolved image.",
-      4
+      ARGS_GROUP_DETECTION,
+      &p->qthresh,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LT_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "smoothwidth",
+      ARGS_OPTION_KEY_SMOOTHWIDTH,
+      "INT",
+      0,
+      "Flat kernel width to smooth interpolated.",
+      ARGS_GROUP_DETECTION,
+      &p->smoothwidth,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_0_OR_ODD,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "checkqthresh",
+      ARGS_OPTION_KEY_CHECKQTHRESH,
+      0,
+      0,
+      "Save quantile threshold estimation in file.",
+      ARGS_GROUP_DETECTION,
+      &p->checkqthresh,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "erode",
-      'e',
+      ARGS_OPTION_KEY_ERODE,
       "INT",
       0,
-      "Num. erosions to apply after thresholding.",
-      4
+      "Number of erosions after thresholding.",
+      ARGS_GROUP_DETECTION,
+      &p->erode,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "erodengb",
-      506,
-      "4or8",
+      ARGS_OPTION_KEY_ERODENGB,
+      "INT",
       0,
-      "Use 4 or 8 connectivity in erosion.",
-      4
+      "4 or 8 connectivity in erosion.",
+      ARGS_GROUP_DETECTION,
+      &p->erodengb,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "noerodequant",
-      503,
+      ARGS_OPTION_KEY_NOERODEQUANT,
       "FLT",
       0,
       "Quantile for no erosion.",
-      4
+      ARGS_GROUP_DETECTION,
+      &p->noerodequant,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "opening",
-      'p',
+      ARGS_OPTION_KEY_OPENING,
       "INT",
       0,
-      "Depth of opening to apply after erosion.",
-      4
+      "Depth of opening after erosion.",
+      ARGS_GROUP_DETECTION,
+      &p->opening,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "openingngb",
-      507,
-      "4or8",
+      ARGS_OPTION_KEY_OPENINGNGB,
+      "INT",
       0,
-      "Use 4 or 8 connectivity in opening.",
-      4
+      "4 or 8 connectivity in opening.",
+      ARGS_GROUP_DETECTION,
+      &p->openingngb,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "sigclipmultip",
-      'u',
-      "FLT",
+      "sigmaclip",
+      ARGS_OPTION_KEY_SIGMACLIP,
+      "FLT,FLT",
       0,
-      "Multiple of standard deviation in sigma-clipping.",
-      4
+      "Multiple of sigma and, tolerance or number.",
+      ARGS_GROUP_DETECTION,
+      &p->sigmaclip,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_sigma_clip
     },
     {
-      "sigcliptolerance",
-      'r',
-      "FLT",
+      "checkdetsky",
+      ARGS_OPTION_KEY_CHECKDETSKY,
       0,
-      "Difference in STD tolerance to halt iteration.",
-      4
+      0,
+      "Save Sky value estimation for pseudo-dets.",
+      ARGS_GROUP_DETECTION,
+      &p->checkdetsky,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "dthresh",
-      'R',
+      ARGS_OPTION_KEY_DTHRESH,
       "FLT",
       0,
-      "Threshold (STD multiple) for false detections.",
-      4
+      "Sigma threshold for Pseudo-detections.",
+      ARGS_GROUP_DETECTION,
+      &p->dthresh,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "detsnminarea",
-      'i',
+      ARGS_OPTION_KEY_DETSNMINAREA,
       "INT",
       0,
-      "Minimum area to calculate S/N in detection.",
-      4
+      "Min. pseudo-detection area for S/N dist.",
+      ARGS_GROUP_DETECTION,
+      &p->detsnminarea,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "detsnhistnbins",
-      510,
-      "INT",
+      "checkdetsn",
+      ARGS_OPTION_KEY_CHECKDETSN,
       0,
-      "Det. S/N histogram bins, suffix `_detsn.txt'.",
-      4
+      0,
+      "Save pseudo-detection S/N values to a file.",
+      ARGS_GROUP_DETECTION,
+      &p->checkdetsn,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "detquant",
-      'c',
+      ARGS_OPTION_KEY_DETQUANT,
       "FLT",
       0,
-      "False detections S/N quantile to find the true.",
-      4
+      "Quantile in pseudo-det. to define true.",
+      ARGS_GROUP_DETECTION,
+      &p->checkdetsn,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0_LT_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "dilate",
-      'I',
+      ARGS_OPTION_KEY_DILATE,
       "INT",
       0,
       "Number of times to dilate true detections.",
-      4
-    },
-
-    {
-      "checkthreshold",
-      505,
-      0,
-      0,
-      "Threshold value on each mesh `_thresh.fits'.",
-      4
+      ARGS_GROUP_DETECTION,
+      &p->dilate,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "checkdetection",
-      508,
+      ARGS_OPTION_KEY_CHECKDETECTION,
       0,
       0,
-      "False detection steps in file `_det.fits'.",
-      4
-    },
-    {
-      "checkdetectionsky",
-      509,
-      0,
-      0,
-      "Sky for false detections in file `_detsky.fits'.",
-      4
+      "Save all the detection steps to a file.",
+      ARGS_GROUP_DETECTION,
+      &p->checkdetection,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "checksky",
-      512,
+      ARGS_OPTION_KEY_CHECKSKY,
       0,
       0,
-      "Final sky and its STD per pixel `_sky.fits'.",
-      4
-    },
-    {
-      "checkmaskdet",
-      518,
-      0,
-      0,
-      "Mask detections and sky, `_maskdet.fits'.",
-      4
+      "Final sky and its STD steps in a file.",
+      ARGS_GROUP_DETECTION,
+      &p->checkdetection,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
+    /* Segmentation */
     {
       0, 0, 0, 0,
       "Segmentation:",
-      5
+      ARGS_GROUP_SEGMENTATION
     },
     {
       "segsnminarea",
-      'm',
+      ARGS_OPTION_KEY_SEGSNMINAREA,
       "INT",
       0,
-      "Minimum area to find clumps S/N.",
-      5
+      "Minimum area of clumps for S/N estimation.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->segsnminarea,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "segquant",
-      'g',
+      ARGS_OPTION_KEY_SEGQUANT,
       "FLT",
       0,
-      "Signal to noise ratio quantile for clumps.",
-      5
+      "Quantile of clumps in sky to find true S/N.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->segquant,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "clumpsnhistnbins",
-      514,
-      "INT",
+      "checkclumpsn",
+      ARGS_OPTION_KEY_CHECKCLUMPSN,
       0,
-      "Clump S/N histogram bins, suffix `_clumpsn.txt'.",
-      5
+      0,
+      "Save Sky clump S/N values into a file.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->checkclumpsn,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "keepmaxnearriver",
-      'v',
+      ARGS_OPTION_KEY_KEEPMAXNEARRIVER,
       0,
       0,
-      "Keep clumps with max touching river.",
-      5
+      "Keep clumps with peak touching a river.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->keepmaxnearriver,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "gthresh",
-      'G',
+      ARGS_OPTION_KEY_GTHRESH,
       "FLT",
       0,
-      "Threshold (STD multiple) to stop growing clumps.",
-      5
+      "Multiple of STD to stop growing clumps.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->gthresh,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "minriverlength",
-      'y',
+      ARGS_OPTION_KEY_MINRIVERLENGTH,
+      "INT",
       0,
-      0,
-      "Minimum length of useful rivers in grown clumps.",
-      5
+      "Minimum len of useful grown clump rivers.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->minriverlength,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "objbordersn",
-      'O',
+      ARGS_OPTION_KEY_OBJBORDERSN,
       "FLT",
       0,
-      "Minimum S/N for grown clumps to be one object.",
-      5
+      "Min. S/N for grown clumps to be one object.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->objbordersn,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
-
     {
       "checksegmentation",
-      513,
+      ARGS_OPTION_KEY_CHECKSEGMENTATION,
       0,
       0,
-      "Store segmentation steps in file `_seg.fits'.",
-      5
+      "Store segmentation steps in a file.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->checksegmentation,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
     {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
+      "continueaftercheck",
+      ARGS_OPTION_KEY_CONTINUEAFTERCHECK,
+      0,
+      0,
+      "Continue processing after checks.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->continueaftercheck,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -538,324 +525,21 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Define the child argp structure. */
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
+
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
-  /* Save the arguments structure: */
-  struct noisechiselparams *p = state->input;
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-
-    /* Input: */
-    case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
-                                     &p->up.masknameset);
-      break;
-    case 'H':
-      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
-      break;
-    case 'k':
-      gal_checkset_allocate_copy_set(arg, &p->up.kernelname,
-                                     &p->up.kernelnameset);
-      break;
-    case 'U':
-      gal_checkset_allocate_copy_set(arg, &p->up.khdu, &p->up.khduset);
-      break;
-    case 'E':
-      p->skysubtracted=1;
-      p->up.skysubtractedset=1;
-      break;
-    case 'B':
-      gal_checkset_float_l_0_s_1(arg, &p->minbfrac, "minbfrac", key,
-                                 SPACK, NULL, 0);
-      p->up.minbfracset=1;
-      break;
-    case 'F':
-      gal_checkset_sizet_l_zero(arg, &p->minnumfalse, "minnumfalse", key,
-                                SPACK, NULL, 0);
-      p->up.minnumfalseset=1;
-      break;
-
-    /* Output: */
-    case 517:
-      p->detectonly=1;
-      break;
-    case 'C':
-      p->grownclumps=1;
-      p->up.grownclumpsset=1;
-      break;
-
-    /* Mesh grid: */
-    case 's':
-      gal_checkset_sizet_l_zero(arg, &p->smp.meshsize, "smeshsize", key,
-                                SPACK, NULL, 0);
-      p->up.smeshsizeset=1;
-      break;
-    case 'l':
-      gal_checkset_sizet_l_zero(arg, &p->lmp.meshsize, "lmeshsize", key,
-                                SPACK, NULL, 0);
-      p->up.lmeshsizeset=1;
-      break;
-    case 'a':
-      gal_checkset_sizet_l_zero(arg, &p->smp.nch1, "nch1", key, SPACK,
-                                NULL, 0);
-      p->up.nch1set=1;
-      break;
-    case 'b':
-      gal_checkset_sizet_l_zero(arg, &p->smp.nch2, "nch2", key, SPACK,
-                                NULL, 0);
-      p->up.nch2set=1;
-      break;
-    case 'L':
-      gal_checkset_float_l_0_s_1(arg, &p->smp.lastmeshfrac, "lastmeshfrac",
-                                 key, SPACK, NULL, 0);
-      p->up.lastmeshfracset=1;
-      break;
-    case 'd':
-      gal_checkset_float_l_0(arg, &p->smp.mirrordist, "mirrordist", key,
-                             SPACK, NULL, 0);
-      p->up.mirrordistset=1;
-      break;
-    case 'Q':
-      gal_checkset_float_l_0_s_1(arg, &p->smp.minmodeq, "minmodeq", key,
-                                 SPACK, NULL, 0);
-      p->up.minmodeqset=1;
-      break;
-    case 511:
-      p->smp.interponlyblank=1;
-      break;
-    case 'n':
-      gal_checkset_sizet_l_zero(arg, &p->smp.numnearest, "numnearest", key,
-                                SPACK, NULL, 0);
-      p->up.numnearestset=1;
-      break;
-    case 'T':
-      gal_checkset_sizet_p_odd(arg, &p->smp.smoothwidth, "smoothwidth", key,
-                               SPACK, NULL, 0);
-      p->up.smoothwidthset=1;
-      break;
-    case 500:
-      p->meshname="a";  /* Just a placeholder! It will be corrected later */
-      break;
-    case 501:
-      p->smp.fullinterpolation=1;
-      p->up.fullinterpolationset=1;
-      break;
-    case 502:
-      p->smp.fullsmooth=1;
-      p->up.fullsmoothset=1;
-      break;
-    case 504:
-      p->smp.fullconvolution=1;
-      p->up.fullconvolutionset=1;
-      break;
-    case 516:
-      p->smp.meshbasedcheck=1;
-      break;
-
-
-    /* Detection */
-    case 't':
-      gal_checkset_float_l_0_s_1(arg, &p->qthresh, "qthresh", key, SPACK,
-                                 NULL, 0);
-      p->up.qthreshset=1;
-      break;
-    case 'e':
-      gal_checkset_sizet_el_zero(arg, &p->erode, "erode", key, SPACK,
-                                 NULL, 0);
-      p->up.erodeset=1;
-      break;
-    case 506:
-      gal_checkset_int_4_or_8(arg, &p->erodengb, "erodengb", key, SPACK,
-                              NULL, 0);
-      p->up.erodengbset=1;
-      break;
-    case 503:
-      gal_checkset_float_l_0_s_1(arg, &p->noerodequant, "noerodequant",
-                                 key, SPACK, NULL, 0);
-      p->up.noerodequantset=1;
-      break;
-    case 'p':
-      gal_checkset_sizet_el_zero(arg, &p->opening, "opening", key, SPACK,
-                                 NULL, 0);
-      p->up.openingset=1;
-      break;
-    case 507:
-      gal_checkset_int_4_or_8(arg, &p->openingngb, "openingngb", key, SPACK,
-                              NULL, 0);
-      p->up.openingngbset=1;
-      break;
-    case 'u':
-      gal_checkset_float_l_0(arg, &p->sigclipmultip, "sigclipmultip", key,
-                             SPACK, NULL, 0);
-      p->up.sigclipmultipset=1;
-      break;
-    case 'r':
-      gal_checkset_float_l_0_s_1(arg, &p->sigcliptolerance,
-                                 "sigcliptolerance", key, SPACK, NULL, 0);
-      p->up.sigcliptoleranceset=1;
-      break;
-    case 'R':
-      gal_checkset_any_float(arg, &p->dthresh, "dthresh", key, SPACK,
-                             NULL, 0);
-      p->up.dthreshset=1;
-      break;
-    case 'i':
-      gal_checkset_sizet_l_zero(arg, &p->detsnminarea, "detsnminarea", key,
-                                SPACK, NULL, 0);
-      p->up.detsnminareaset=1;
-      break;
-    case 510:
-      gal_checkset_sizet_el_zero(arg, &p->detsnhistnbins, "detsnhistnbins",
-                                 key, SPACK, NULL, 0);
-      p->up.detsnhistnbinsset=1;
-      break;
-    case 'c':
-      gal_checkset_float_l_0_s_1(arg, &p->detquant, "detquant", key, SPACK,
-                                 NULL, 0);
-      p->up.detquantset=1;
-      break;
-    case 'I':
-      gal_checkset_sizet_el_zero(arg, &p->dilate, "dilate", key, SPACK,
-                                 NULL, 0);
-      p->up.dilateset=1;
-      break;
-    case 505:
-      p->threshname="a";
-      break;
-    case 508:
-      p->detectionname="a";
-      break;
-    case 509:
-      p->detectionskyname="a";
-      break;
-    case 512:
-      p->skyname="a";
-      break;
-    case 518:
-      p->maskdetname="a";
-      break;
-
-
-    /* Segmentation: */
-    case 'm':
-      gal_checkset_sizet_l_zero(arg, &p->segsnminarea, "segsnminarea", key,
-                                SPACK, NULL, 0);
-      p->up.segsnminareaset=1;
-      break;
-    case 'g':
-      gal_checkset_float_l_0_s_1(arg, &p->segquant, "segquant", key, SPACK,
-                                 NULL, 0);
-      p->up.segquantset=1;
-      break;
-    case 'v':
-      p->keepmaxnearriver=1;
-      break;
-    case 'G':
-      gal_checkset_any_float(arg, &p->gthresh, "gthresh", key, SPACK, NULL, 0);
-      p->up.gthreshset=1;
-      break;
-    case 'y':
-      gal_checkset_sizet_l_zero(arg, &p->minriverlength, "minriverlength",
-                                key, SPACK, NULL, 0);
-      p->up.minriverlengthset=1;
-      break;
-    case 'O':
-      gal_checkset_float_l_0(arg, &p->objbordersn, "objbordersn", key, SPACK,
-                             NULL, 0);
-      p->up.objbordersnset=1;
-      break;
-
-    case 514:
-      gal_checkset_sizet_el_zero(arg, &p->clumpsnhistnbins,
-                                 "clumpsnhistnbins", key, SPACK, NULL, 0);
-      p->up.clumpsnhistnbinsset=1;
-      break;
-    case 513:
-      p->segmentationname="a";
-      break;
-
-
-    /* Operating modes: */
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-
-      /* See what type of input value it is and put it in. */
-      if( gal_fits_name_is_fits(arg) )
-        {
-          if(p->up.inputname)
-            argp_error(state, "only one input image should be given");
-          else
-            p->up.inputname=arg;
-        }
-      else
-        argp_error(state, "%s is not a valid file type", arg);
-      break;
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input FITS image(s) provided");
-        }
-      break;
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

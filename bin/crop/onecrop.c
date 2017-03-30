@@ -357,15 +357,15 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
      polygon keep them if the user has asked for it.*/
   switch(type)
     {
-    case GAL_DATA_TYPE_UINT8:    POLYGON_MASK(uint8_t);  break;
-    case GAL_DATA_TYPE_INT8:     POLYGON_MASK(int8_t);   break;
-    case GAL_DATA_TYPE_UINT16:   POLYGON_MASK(uint16_t); break;
-    case GAL_DATA_TYPE_INT16:    POLYGON_MASK(int16_t);  break;
-    case GAL_DATA_TYPE_UINT32:   POLYGON_MASK(uint32_t); break;
-    case GAL_DATA_TYPE_INT32:    POLYGON_MASK(int32_t);  break;
-    case GAL_DATA_TYPE_INT64:    POLYGON_MASK(int64_t);  break;
-    case GAL_DATA_TYPE_FLOAT32:  POLYGON_MASK(float);    break;
-    case GAL_DATA_TYPE_FLOAT64:  POLYGON_MASK(double);   break;
+    case GAL_TYPE_UINT8:    POLYGON_MASK(uint8_t);  break;
+    case GAL_TYPE_INT8:     POLYGON_MASK(int8_t);   break;
+    case GAL_TYPE_UINT16:   POLYGON_MASK(uint16_t); break;
+    case GAL_TYPE_INT16:    POLYGON_MASK(int16_t);  break;
+    case GAL_TYPE_UINT32:   POLYGON_MASK(uint32_t); break;
+    case GAL_TYPE_INT32:    POLYGON_MASK(int32_t);  break;
+    case GAL_TYPE_INT64:    POLYGON_MASK(int64_t);  break;
+    case GAL_TYPE_FLOAT32:  POLYGON_MASK(float);    break;
+    case GAL_TYPE_FLOAT64:  POLYGON_MASK(double);   break;
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
             "can fix the problem. For some reason, an unrecognized "
@@ -407,14 +407,14 @@ changezerotonan(void *array, size_t size, int type)
 
   switch(type)
     {
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       ffp=(fp=array)+size;
       do
         if(*fp==0.0f) *fp=NAN;
       while(++fp<ffp);
       break;
 
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT64:
       fdp=(dp=array)+size;
       do
         if(*dp==0.0f) *dp=NAN;
@@ -634,7 +634,7 @@ firstcropmakearray(struct onecropparams *crp, long *fpixel_i,
   status=0;
 
   /* Write the blank value if necessary. */
-  if( type!=GAL_DATA_TYPE_FLOAT32 && type!=GAL_DATA_TYPE_FLOAT64 )
+  if( type!=GAL_TYPE_FLOAT32 && type!=GAL_TYPE_FLOAT64 )
     if(fits_write_key(ofp, gal_fits_type_to_datatype(crp->p->type), "BLANK",
                       crp->p->bitnul, "pixels with no data", &status) )
       gal_fits_io_error(status, "adding Blank");
@@ -733,8 +733,8 @@ onecrop(struct onecropparams *crp)
          value should actually be a NaN. Unless the user specificly
          asks for it, make the conversion.*/
       if(p->zeroisnotblank==0
-         && (p->type==GAL_DATA_TYPE_FLOAT32
-             || p->type==GAL_DATA_TYPE_FLOAT64) )
+         && (p->type==GAL_TYPE_FLOAT32
+             || p->type==GAL_TYPE_FLOAT64) )
         changezerotonan(array, cropsize, p->type);
 
 
@@ -766,7 +766,7 @@ onecrop(struct onecropparams *crp)
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
               fpixel_i[1], lpixel_i[1]);
-      gal_fits_key_add_to_ll_end(&headers, GAL_DATA_TYPE_STRING, regionkey,
+      gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_STRING, regionkey,
                                  0, region, 0,
                                  "Range of pixels used for this output.", 0,
                                  NULL);

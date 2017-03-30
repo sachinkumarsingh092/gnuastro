@@ -133,12 +133,9 @@ if [ ! -f Makefile ]; then
     $srcdir/configure --srcdir=$srcdir                                        \
                  --enable-arithmetic --enable-convertt   --enable-convolve    \
                  --enable-cosmiccal  --enable-crop       --enable-fits        \
-                 --enable-mknoise    --enable-statistics --enable-mkprof      \
-                 --enable-table      --enable-warp                            \
-                 --disable-shared CFLAGS="-g -O0"
+                 --enable-mknoise    --enable-mkprof     --enable-noisechisel \
+                 --enable-statistics --enable-table      --enable-warp
 fi
-
-
 
 
 

@@ -180,7 +180,7 @@ statistics_print_one_row(struct statisticsparams *p)
 
         case ARGS_OPTION_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
-          tmpv = gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+          tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                 NULL, 1, -1, NULL, NULL, NULL);
           *((double *)(tmpv->array)) = arg;
           tmpv = gal_data_copy_to_new_type_free(tmpv, p->input->type);
@@ -267,7 +267,7 @@ statistics_on_tile(struct statisticsparams *p)
   double arg=0;
   gal_data_t *tile, *values;
   size_t tind, dsize=1, mind=-1;
-  uint8_t type=GAL_DATA_TYPE_INVALID;
+  uint8_t type=GAL_TYPE_INVALID;
   struct gal_linkedlist_ill *operation;
   gal_data_t *tmp=NULL, *tmpv=NULL, *ttmp;
   struct gal_options_common_params *cp=&p->cp;
@@ -284,7 +284,7 @@ statistics_on_tile(struct statisticsparams *p)
       switch(operation->v)
         {
         case ARGS_OPTION_KEY_NUMBER:
-          type=GAL_DATA_TYPE_INT32; break;
+          type=GAL_TYPE_INT32; break;
 
         case ARGS_OPTION_KEY_MINIMUM:
         case ARGS_OPTION_KEY_MAXIMUM:
@@ -300,7 +300,7 @@ statistics_on_tile(struct statisticsparams *p)
         case ARGS_OPTION_KEY_MODEQUANT:
         case ARGS_OPTION_KEY_MODESYM:
         case ARGS_OPTION_KEY_MODESYMVALUE:
-          type=GAL_DATA_TYPE_FLOAT64; break;
+          type=GAL_TYPE_FLOAT64; break;
 
         default:
           error(EXIT_FAILURE, 0, "a bug! %d is not a recognized operation "
@@ -320,7 +320,7 @@ statistics_on_tile(struct statisticsparams *p)
           break;
         case ARGS_OPTION_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
-          tmpv = gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+          tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                 NULL, 1, -1, NULL, NULL, NULL);
           *((double *)(tmpv->array)) = arg;
           tmpv = gal_data_copy_to_new_type_free(tmpv, p->input->type);
@@ -387,7 +387,7 @@ statistics_on_tile(struct statisticsparams *p)
           /* Put the output value into the `values' array and clean up. */
           tmp=gal_data_copy_to_new_type_free(tmp, type);
           memcpy(gal_data_ptr_increment(values->array, tind++, values->type),
-                 tmp->array, gal_data_sizeof(type));
+                 tmp->array, gal_type_sizeof(type));
           gal_data_free(tmp);
         }
 
@@ -613,10 +613,10 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 
   /* FITS tables don't accept `uint64_t', so to be consistent, we'll conver
      the histogram and CFP to `uint32_t'.*/
-  if(hist->type==GAL_DATA_TYPE_UINT64)
-    hist=gal_data_copy_to_new_type_free(hist, GAL_DATA_TYPE_UINT32);
-  if(cfp && cfp->type==GAL_DATA_TYPE_UINT64)
-    cfp=gal_data_copy_to_new_type_free(cfp, GAL_DATA_TYPE_UINT32);
+  if(hist->type==GAL_TYPE_UINT64)
+    hist=gal_data_copy_to_new_type_free(hist, GAL_TYPE_UINT32);
+  if(cfp && cfp->type==GAL_TYPE_UINT64)
+    cfp=gal_data_copy_to_new_type_free(cfp, GAL_TYPE_UINT32);
 
 
   /* Finalize the next pointers. */
@@ -647,7 +647,7 @@ print_mirror_hist_cfp(struct statisticsparams *p)
   size_t dsize=1;
   gal_data_t *table;
   double mirror_val;
-  gal_data_t *mirror=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &dsize,
+  gal_data_t *mirror=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                     NULL, 1, -1, NULL, NULL, NULL);
 
   /* Convert the given mirror value into the type of the input dataset. */

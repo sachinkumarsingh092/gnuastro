@@ -1,19 +1,9 @@
 /*********************************************************************
-TEMPLATE - Source code for a blank utility for easy creation of new
-           utilities, just copy and paste all the files here replacing
-           TEMPLATE with the new utility name (in the source code and
-           file names).
-
-         - Add the utility name to `configure.ac' and `Makefile.am' in the
-           top Gnuastro source directory.
-
-         - Correct these top comments in all the files, don't forget the
-           `astTEMPLATE.conf' and `Makefile.am' files in this directory.
-
+TEMPLATE - A minimal set of files and functions to define a program.
 TEMPLATE is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
-     Your name <your@email>
+     Your Name <your@email>
 Contributing author(s):
 Copyright (C) YYYY, Free Software Foundation, Inc.
 
@@ -35,29 +25,33 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h */
+#include <timing.h>             /* Includes time.h and sys/time.h */
 
 #include "main.h"
 
-#include "ui.h"                 /* needs main.h.                  */
-#include "TEMPLATE.h"           /* needs main.h.                  */
+#include "ui.h"
+#include "TEMPLATE.h"
 
+
+/* Main function */
 int
 main (int argc, char *argv[])
 {
+  struct timeval t1;
   struct TEMPLATEparams p={{{0},0},0};
 
-  /* Set the starting time. */
+  /* Set they starting time. */
   time(&p.rawtime);
+  gettimeofday(&t1, NULL);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
-  /* Run the program */
+  /* Run MakeProfiles */
   TEMPLATE(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p);
+  ui_free_report(&p, &t1);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

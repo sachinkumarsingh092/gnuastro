@@ -267,7 +267,7 @@ ui_preparations(struct mknoiseparams *p)
 {
   /* Read the input image as a double type */
   p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                     GAL_DATA_TYPE_FLOAT64, p->cp.minmapsize);
+                                     GAL_TYPE_FLOAT64, p->cp.minmapsize);
 
   /* Read the WSC structure. */
   gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,

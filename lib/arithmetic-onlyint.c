@@ -40,13 +40,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 #if GAL_CONFIG_BIN_OP_UINT8 == 1
 #define BINOIN_LT_IS_UINT8                                         \
-  case GAL_DATA_TYPE_UINT8:                                        \
-    BINOIN_LT_SET(uint8_t);                                        \
-    break;
+  case GAL_TYPE_UINT8: BINOIN_LT_SET(uint8_t);          break;
 #define BINOIN_LT_SET_RT_IS_UINT8(LT)                              \
-  case GAL_DATA_TYPE_UINT8:                                        \
-    BINOIN_RT_LT_SET(uint8_t, LT);                                 \
-    break;
+  case GAL_TYPE_UINT8: BINOIN_RT_LT_SET(uint8_t, LT);   break;
 #else
 #define BINOIN_LT_IS_UINT8
 #define BINOIN_LT_SET_RT_IS_UINT8(LT)
@@ -58,13 +54,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT8 == 1
 #define BINOIN_LT_IS_INT8                                          \
-  case GAL_DATA_TYPE_INT8:                                         \
-    BINOIN_LT_SET(int8_t);                                         \
-    break;
+  case GAL_TYPE_INT8: BINOIN_LT_SET(int8_t);            break;
 #define BINOIN_LT_SET_RT_IS_INT8(LT)                               \
-  case GAL_DATA_TYPE_INT8:                                         \
-    BINOIN_RT_LT_SET(int8_t, LT);                                  \
-    break;
+  case GAL_TYPE_INT8: BINOIN_RT_LT_SET(int8_t, LT);     break;
 #else
 #define BINOIN_LT_IS_INT8
 #define BINOIN_LT_SET_RT_IS_INT8(LT)
@@ -76,13 +68,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT16 == 1
 #define BINOIN_LT_IS_UINT16                                        \
-  case GAL_DATA_TYPE_UINT16:                                       \
-    BINOIN_LT_SET(uint16_t);                                       \
-    break;
+  case GAL_TYPE_UINT16: BINOIN_LT_SET(uint16_t);        break;
 #define BINOIN_LT_SET_RT_IS_UINT16(LT)                             \
-  case GAL_DATA_TYPE_UINT16:                                       \
-    BINOIN_RT_LT_SET(uint16_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT16: BINOIN_RT_LT_SET(uint16_t, LT); break;
 #else
 #define BINOIN_LT_IS_UINT16
 #define BINOIN_LT_SET_RT_IS_UINT16(LT)
@@ -94,13 +82,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT16 == 1
 #define BINOIN_LT_IS_INT16                                         \
-  case GAL_DATA_TYPE_INT16:                                        \
-    BINOIN_LT_SET(int16_t);                                        \
-    break;
+  case GAL_TYPE_INT16: BINOIN_LT_SET(int16_t);          break;
 #define BINOIN_LT_SET_RT_IS_INT16(LT)                              \
-  case GAL_DATA_TYPE_INT16:                                        \
-    BINOIN_RT_LT_SET(int16_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT16: BINOIN_RT_LT_SET(int16_t, LT);   break;
 #else
 #define BINOIN_LT_IS_INT16
 #define BINOIN_LT_SET_RT_IS_INT16(LT)
@@ -112,13 +96,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT32 == 1
 #define BINOIN_LT_IS_UINT32                                        \
-  case GAL_DATA_TYPE_UINT32:                                       \
-    BINOIN_LT_SET(uint32_t);                                       \
-    break;
+  case GAL_TYPE_UINT32: BINOIN_LT_SET(uint32_t);        break;
 #define BINOIN_LT_SET_RT_IS_UINT32(LT)                             \
-  case GAL_DATA_TYPE_UINT32:                                       \
-    BINOIN_RT_LT_SET(uint32_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT32: BINOIN_RT_LT_SET(uint32_t, LT); break;
 #else
 #define BINOIN_LT_IS_UINT32
 #define BINOIN_LT_SET_RT_IS_UINT32(LT)
@@ -130,13 +110,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT32 == 1
 #define BINOIN_LT_IS_INT32                                         \
-  case GAL_DATA_TYPE_INT32:                                        \
-    BINOIN_LT_SET(int32_t);                                        \
-    break;
+  case GAL_TYPE_INT32: BINOIN_LT_SET(int32_t);          break;
 #define BINOIN_LT_SET_RT_IS_INT32(LT)                              \
-  case GAL_DATA_TYPE_INT32:                                        \
-    BINOIN_RT_LT_SET(int32_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT32: BINOIN_RT_LT_SET(int32_t, LT);   break;
 #else
 #define BINOIN_LT_IS_INT32
 #define BINOIN_LT_SET_RT_IS_INT32(LT)
@@ -148,13 +124,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT64 == 1
 #define BINOIN_LT_IS_UINT64                                        \
-  case GAL_DATA_TYPE_UINT64:                                       \
-    BINOIN_LT_SET(uint64_t);                                       \
-    break;
+  case GAL_TYPE_UINT64: BINOIN_LT_SET(uint64_t);        break;
 #define BINOIN_LT_SET_RT_IS_UINT64(LT)                             \
-  case GAL_DATA_TYPE_UINT64:                                       \
-    BINOIN_RT_LT_SET(uint64_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT64: BINOIN_RT_LT_SET(uint64_t, LT); break;
 #else
 #define BINOIN_LT_IS_UINT64
 #define BINOIN_LT_SET_RT_IS_UINT64(LT)
@@ -166,13 +138,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT64 == 1
 #define BINOIN_LT_IS_INT64                                         \
-  case GAL_DATA_TYPE_INT64:                                        \
-    BINOIN_LT_SET(int64_t);                                        \
-    break;
+  case GAL_TYPE_INT64: BINOIN_LT_SET(int64_t);          break;
 #define BINOIN_LT_SET_RT_IS_INT64(LT)                              \
-  case GAL_DATA_TYPE_INT64:                                        \
-    BINOIN_RT_LT_SET(int64_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT64: BINOIN_RT_LT_SET(int64_t, LT);   break;
 #else
 #define BINOIN_LT_IS_INT64
 #define BINOIN_LT_SET_RT_IS_INT64(LT)
@@ -314,8 +282,8 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
     error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
           "same dimension/size", opstring);
 
-  if( lo->type==GAL_DATA_TYPE_FLOAT32 || lo->type==GAL_DATA_TYPE_FLOAT64
-      || ro->type==GAL_DATA_TYPE_FLOAT32 || ro->type==GAL_DATA_TYPE_FLOAT64 )
+  if( lo->type==GAL_TYPE_FLOAT32 || lo->type==GAL_TYPE_FLOAT64
+      || ro->type==GAL_TYPE_FLOAT32 || ro->type==GAL_TYPE_FLOAT64 )
       error(EXIT_FAILURE, 0, "the %s operator can only work on integer "
             "type operands", opstring);
 
@@ -336,7 +304,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
 
 
   /* Sanity check: see if the compiled type is actually an integer. */
-  if( l->type>=GAL_DATA_TYPE_FLOAT32 || r->type>=GAL_DATA_TYPE_FLOAT32 )
+  if( l->type>=GAL_TYPE_FLOAT32 || r->type>=GAL_TYPE_FLOAT32 )
     error(EXIT_FAILURE, 0, "no larger integer compiled type. The `%s' "
           "operator can only work on integer types. The left and right "
           "operands had types `%s' and `%s'.\n\nYou can use the "
@@ -347,11 +315,10 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
           "and `q' to return to the command-line):\n\n"
           "    $ info gnuastro \"Gnuastro configure options\"\n",
           gal_arithmetic_operator_string(operator),
-          gal_data_type_as_string(lo->type, 1),
-          gal_data_type_as_string(ro->type, 1));
+          gal_type_to_string(lo->type, 1), gal_type_to_string(ro->type, 1));
 
   /* Set the output type. */
-  otype=gal_data_out_type(l, r);
+  otype=gal_type_out(l->type, r->type);
 
 
   /* Set the output sizes. */
@@ -456,8 +423,8 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
   /* Check the type */
   switch(in->type)
     {
-    case GAL_DATA_TYPE_FLOAT32:
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
       error(EXIT_FAILURE, 0, "the bitwise not (one's complement) "
             "operator can only work on integer types");
     }
@@ -473,29 +440,29 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
   /* Start setting the types. */
   switch(in->type)
     {
-    case GAL_DATA_TYPE_UINT8:
-      ou8=o->array;   do  *ou8++ = ~(*iu8++);    while(iu8<iu8f);
+    case GAL_TYPE_UINT8:
+      ou8=o->array;   do  *ou8++ = ~(*iu8++);    while(iu8<iu8f);     break;
 
-    case GAL_DATA_TYPE_INT8:
-      oi8=o->array;   do  *oi8++ = ~(*ii8++);    while(ii8<ii8f);
+    case GAL_TYPE_INT8:
+      oi8=o->array;   do  *oi8++ = ~(*ii8++);    while(ii8<ii8f);     break;
 
-    case GAL_DATA_TYPE_UINT16:
-      ou16=o->array;  do *ou16++ = ~(*iu16++);   while(iu16<iu16f);
+    case GAL_TYPE_UINT16:
+      ou16=o->array;  do *ou16++ = ~(*iu16++);   while(iu16<iu16f);   break;
 
-    case GAL_DATA_TYPE_INT16:
-      oi16=o->array;  do *oi16++ = ~(*ii16++);   while(ii16<ii16f);
+    case GAL_TYPE_INT16:
+      oi16=o->array;  do *oi16++ = ~(*ii16++);   while(ii16<ii16f);   break;
 
-    case GAL_DATA_TYPE_UINT32:
-      ou32=o->array;  do *ou32++ = ~(*iu32++);   while(iu32<iu32f);
+    case GAL_TYPE_UINT32:
+      ou32=o->array;  do *ou32++ = ~(*iu32++);   while(iu32<iu32f);   break;
 
-    case GAL_DATA_TYPE_INT32:
-      oi32=o->array;  do *oi32++ = ~(*ii32++);   while(ii32<ii32f);
+    case GAL_TYPE_INT32:
+      oi32=o->array;  do *oi32++ = ~(*ii32++);   while(ii32<ii32f);   break;
 
-    case GAL_DATA_TYPE_UINT64:
-      ou64=o->array;  do *ou64++ = ~(*iu64++);   while(iu64<iu64f);
+    case GAL_TYPE_UINT64:
+      ou64=o->array;  do *ou64++ = ~(*iu64++);   while(iu64<iu64f);   break;
 
-    case GAL_DATA_TYPE_INT64:
-      oi64=o->array;  do *oi64++ = ~(*ii64++);   while(ii64<ii64f);
+    case GAL_TYPE_INT64:
+      oi64=o->array;  do *oi64++ = ~(*ii64++);   while(ii64<ii64f);   break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "

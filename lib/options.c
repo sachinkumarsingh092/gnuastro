@@ -248,7 +248,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
   /* Allocate the output data structure and fill it up. */
   i=num;
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 1, &num, NULL, 0,
+  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
                      minmapsize, NULL, NULL, NULL);
   for(tdll=list;tdll!=NULL;tdll=tdll->next)
     ((double *)(out->array))[--i]=tdll->v;
@@ -403,7 +403,7 @@ gal_options_read_type(struct argp_option *option, char *arg,
       /* Note that `gal_data_type_as_string' returns a static string. But
          the output must be an allocated string so we can free it. */
       gal_checkset_allocate_copy(
-           gal_data_type_as_string( *(uint8_t *)(option->value), 1), &str);
+           gal_type_to_string( *(uint8_t *)(option->value), 1), &str);
       return str;
     }
   else
@@ -412,8 +412,8 @@ gal_options_read_type(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if ( (*(uint8_t *)(option->value) = gal_data_string_as_type(arg) )
-           == GAL_DATA_TYPE_INVALID )
+      if ( (*(uint8_t *)(option->value) = gal_type_from_string(arg) )
+           == GAL_TYPE_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known "
                       "type.\n\nFor the full list of known types, please "
@@ -579,7 +579,7 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       /* Write the values into an allocated size_t array and finish it with
          a `-1' so the total number can be found later.*/
       num=values->size;
-      array=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, num+1);
+      array=gal_data_malloc_array(GAL_TYPE_SIZE_T, num+1);
       for(i=0;i<num;++i) array[num-1-i]=v[i];
       array[num] = (size_t)(-1);
 
@@ -710,8 +710,8 @@ options_sanity_check(struct argp_option *option, char *arg,
   /* Currently, this function is only for numeric types, so if the value is
      string type, or its `range' field is `GAL_OPTIONS_RANGE_ANY', then
      just return without any checks. */
-  if( option->type==GAL_DATA_TYPE_STRING
-      || option->type==GAL_DATA_TYPE_STRLL
+  if( option->type==GAL_TYPE_STRING
+      || option->type==GAL_TYPE_STRLL
       || option->range==GAL_OPTIONS_RANGE_ANY )
     return;
 
@@ -725,7 +725,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GT_0:
       message="greater than zero";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GT;
@@ -735,7 +735,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GE_0:
       message="greater or equal to zero";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GE;
@@ -745,9 +745,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_0_OR_1:
       message="either 0 or 1";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
@@ -760,9 +760,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GE_0_LE_1:
       message="between zero and one (inclusive)";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
@@ -773,11 +773,26 @@ options_sanity_check(struct argp_option *option, char *arg,
       break;
 
 
+    case GAL_OPTIONS_RANGE_GE_0_LT_1:
+      message="between zero (inclusive) and one (exclusive)";
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=1;
+
+      operator1=GAL_ARITHMETIC_OP_GE;
+      operator2=GAL_ARITHMETIC_OP_LT;
+      multicheckop=GAL_ARITHMETIC_OP_AND;
+      break;
+
+
     case GAL_OPTIONS_RANGE_GT_0_LT_1:
       message="between zero and one (not inclusive)";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
@@ -790,9 +805,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_GT_0_ODD:
       message="greater than zero and odd";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
@@ -804,9 +819,9 @@ options_sanity_check(struct argp_option *option, char *arg,
 
     case GAL_OPTIONS_RANGE_0_OR_ODD:
       message="greater than, or equal to, zero and odd";
-      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
-      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, 1, &dsize, NULL,
+      ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
                           0, -1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
@@ -893,7 +908,7 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
      command-line can have a NULL arg value). */
   if(arg)
     {
-      if(option->type==GAL_DATA_TYPE_STRLL)
+      if(option->type==GAL_TYPE_STRLL)
         gal_linkedlist_add_to_stll(option->value, arg, 1);
       else
         {
@@ -938,8 +953,8 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
               "type `%s' to be read in `gal_options_read_from_key'. "
               "However, the `%s' option has type %s",
               PACKAGE_BUGREPORT,
-              gal_data_type_as_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
-              option->name, gal_data_type_as_string(option->type, 1));
+              gal_type_to_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
+              option->name, gal_type_to_string(option->type, 1));
     }
 
 
@@ -996,7 +1011,7 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
              As a result, only when searching for options on the
              command-line, a second value to the same option will replace
              the first one. This will not happen in configuration files. */
-          if(options[i].set && gal_data_is_linked_list(options[i].type)==0)
+          if(options[i].set && gal_type_is_linked_list(options[i].type)==0)
             options[i].set=GAL_OPTIONS_NOT_SET;
 
           /* Parse the value. */
@@ -1174,7 +1189,7 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
                  list. */
           if( options[i].flags==OPTION_HIDDEN
               || ( options[i].set
-                   && !gal_data_is_linked_list(options[i].type ) ) )
+                   && !gal_type_is_linked_list(options[i].type ) ) )
             return 0;
 
           /* Read the value into the option and do a sanity check. */
@@ -1334,7 +1349,7 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
 
   /* A small sanity check because in multiple places, we have assumed the
      on/off options have a type of `unsigned char'. */
-  if(GAL_OPTIONS_NO_ARG_TYPE != GAL_DATA_TYPE_UINT8)
+  if(GAL_OPTIONS_NO_ARG_TYPE != GAL_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix the "
           "problem. The `GAL_OPTIONS_NO_ARG_TYPE' must have the "
           "`unsigned char' type. But",
@@ -1390,7 +1405,7 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
       if(options[i].set)
         switch(options[i].type)
           {
-          case GAL_DATA_TYPE_STRLL:
+          case GAL_TYPE_STRLL:
             gal_linkedlist_reverse_stll(
                   (struct gal_linkedlist_stll **)(options[i].value) );
             break;
@@ -1457,7 +1472,7 @@ option_is_printable(struct argp_option *option)
        - Options with an INVALID type are not to be printed (they are
          probably processed to a higher level value with functions). */
   if( (option->flags & OPTION_HIDDEN)
-      || option->type==GAL_DATA_TYPE_INVALID )
+      || option->type==GAL_TYPE_INVALID )
     return 0;
 
   /* Then check if it is a pre-program option. */
@@ -1522,14 +1537,14 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
 
   /* Invalid types are set for functions that don't save the raw user
      input, but do higher-level analysis on them for storing. */
-  if(option->type==GAL_DATA_TYPE_INVALID) return;
+  if(option->type==GAL_TYPE_INVALID) return;
 
   /* Get the length of the value and save its length length if its
      larger than the widest value. */
-  if(gal_data_is_linked_list(option->type))
+  if(gal_type_is_linked_list(option->type))
     {
       /* A small sanity check. */
-      if(option->type!=GAL_DATA_TYPE_STRLL)
+      if(option->type!=GAL_TYPE_STRLL)
         error(EXIT_FAILURE, 0, "currently only string linked lists "
               "are acceptable for printing");
 
@@ -1538,7 +1553,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
           tmp!=NULL; tmp=tmp->next)
         {
           /* Get the length of this node: */
-          vlen=options_print_any_type(option, &tmp->v, GAL_DATA_TYPE_STRING,
+          vlen=options_print_any_type(option, &tmp->v, GAL_TYPE_STRING,
                                       0, NULL, cp);
 
           /* If its larger than the maximum length, then put it in. */
@@ -1656,13 +1671,13 @@ options_print_all_in_group(struct argp_option *options, int groupint,
         && option_is_printable(&options[i]) )  /* Is relevant for printing.*/
       {
         /* Linked lists */
-        if(gal_data_is_linked_list(options[i].type))
+        if(gal_type_is_linked_list(options[i].type))
           for(tmp=*(struct gal_linkedlist_stll **)(options[i].value);
               tmp!=NULL; tmp=tmp->next)
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
               options_print_any_type(&options[i], &tmp->v,
-                                     GAL_DATA_TYPE_STRING, valuewidth,
+                                     GAL_TYPE_STRING, valuewidth,
                                      fp, cp);
               options_print_doc(fp, options[i].doc, namewidth+valuewidth);
             }

@@ -343,7 +343,7 @@ warppreparations(struct warpparams *p)
   /* We now know the size of the output and the starting and ending
      coordinates in the output image (bottom left corners of pixels)
      for the transformation. */
-  p->output=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT64, 2, dsize,
+  p->output=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, dsize,
                            p->input->wcs, 0, p->cp.minmapsize, "Warped",
                            p->input->unit, NULL);
 
@@ -444,7 +444,7 @@ correct_wcs_save_output(struct warpparams *p)
   for(i=0;i<9;++i)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%zu_%zu", i/3+1, i%3+1);
-      gal_fits_key_add_to_ll_end(&headers, GAL_DATA_TYPE_FLOAT64,
+      gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_FLOAT64,
                                  &keyword[i*FLEN_KEYWORD], 0,
                                  &m[i], 0, "Warp matrix element value", 0,
                                  NULL);

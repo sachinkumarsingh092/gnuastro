@@ -3209,8 +3209,16 @@ GNU/Linux distribution package managers who compile once, for a large
 audience of users who just download the compiled programs and executables,
 are recommended to enable all types to help their users.
 
-
-
+@item --enable-bin-op-alltypes
+Enable native binary arithmetic operation on all types, see the description
+above for the various types for a full discussion. As discussed there,
+enabling all types can greatly speed up arithmetic operations on any
+arbitrary dataset, but will also slow down the building time of
+Gnuastro. Recall that in practice this only affects the @ref{Arithmetic}
+program and the @code{gal_arithmetic} library binary operators, nothing
+else. This option is strongly recommended when you are building Gnuastro to
+be included in a package manager of a GNU/Linux distribution (or other
+operating system).
 
 @item --enable-gnulibcheck
 @cindex GNU C library
@@ -11853,14 +11861,14 @@ The maximum acceptable distance between the mode and median, see
 @ref{Quantifying signal in a tile}.
 
 @item --sclipparams=FLT,FLT
-The @mymath{\sigma}-clipping parameters. This option takes two values which
-are separated by a comma (@key{,}). Each value can either be written as a
-single number or as a fraction of two numbers (for example
-@code{3,1/10}). The first value to this option is the multiple of
-@mymath{\sigma} that will be clipped (@mymath{\alpha} in that section). The
-second value is the exit criteria. If it is less than 1, then it is
-interpretted as tolerance and if it is larger than one it is a specific
-number. Hence, in the latter case the value must be an integer.
+The @mymath{\sigma}-clipping parameters, see @ref{Sigma clipping}. This
+option takes two values which are separated by a comma (@key{,}). Each
+value can either be written as a single number or as a fraction of two
+numbers (for example @code{3,1/10}). The first value to this option is the
+multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
+section). The second value is the exit criteria. If it is less than 1, then
+it is interpretted as tolerance and if it is larger than one it is a
+specific number. Hence, in the latter case the value must be an integer.
 
 @item --smoothwidth=INT
 Width of a flat kernel to convolve the interpolated tile values. Tile
@@ -12058,8 +12066,7 @@ the undetected regions. Therefore, to get an accurate measurement of
 the above parameters over the full mesh grid, meshs that harbor too
 many detected regions should be excluded.
 
-@item -F INT
-@itemx --minnumfalse=INT
+@item --minnumfalse=INT
 The minimum number of `psudo-detections' (in identifying false detections)
 or clumps (in identifying false clumps) in each large mesh grid. If their
 number is less than this value, this mesh will be left blank and filled
@@ -12081,6 +12088,32 @@ Detection is the process of separating the pixels in the image into
 two groups: 1) Signal and 2) Noise. Through the parameters below, you
 can customize the detection process in NoiseChisel.
 @table @option
+
+@item --continueaftercheck
+Continue NoiseChisel after any of the options starting with
+@option{--check}. NoiseChisel involves many steps and as a result, there
+are many checks, allowing to inspect the status of the processing. The
+results of each step affect the next steps of processing, so, when you are
+want to check the status of the processing at one step, the time spent to
+complete NoiseChisel is just wasted time. As a result, by default, when you
+use any of the NoiseChisel options that start with @option{--check},
+NoiseChisel will abort once all the desired extensions (steps of the
+processign) to the file have been written into it. With this option, you
+can disable this behavior and ask NoiseChisel to continue with the rest of
+the processing.
+
+@item -r FLT
+@itemx --mirrordist=FLT
+Maximum distance (as a multiple of error) to estimate the difference
+between the input and mirror distributions in finding the mode, see
+Appendix C of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+2015}, also see @ref{Quantifying signal in a tile}.
+
+@item -Q FLT
+@itemx --modmedqdiff=FLT
+The maximum acceptable distance between the mode and median, see
+@ref{Quantifying signal in a tile}. The quantile threshold will be found on
+tiles that satisfy this mode and median difference.
 
 @item -t FLT
 @itemx --qthresh=FLT
@@ -12105,9 +12138,12 @@ pixels (have a value of 1) while those which lie below the threshold
 are known as background (have a value of 0).
 
 @cindex NaN
-@item --checkthreshold
+@item --checkqthresh
 Check the quantile threshold values on the mesh grid. A file suffixed with
-@file{_thresh.fits} will be created, see @ref{Tessellation}.
+@file{_qthresh.fits} will be created, see @ref{Tessellation}. With this
+option, NoiseChisel will abort as soon as quantile estimation has been
+completed, allowing you to inspect the status. This behavior can be
+disabled with @option{--continueaftercheck}.
 
 @item -e INT
 @itemx --erode=INT
@@ -12171,39 +12207,25 @@ them. Once opening is complete, we have @emph{initial} detections.
 The structuring element used for opening, see @option{--erodengb} for more
 information about a structuring element.
 
-@item -u FLT
-@itemx --sigclumpmultip=FLT
-The multiple of the standard deviation during
-@mymath{\sigma}-clipping. NoiseChisel uses @mymath{\sigma}-clipping to
-remove the effect of cosmic rays when calculating the average and standard
-deviation of the undetected regions.
+@item -s FLT,FLT
+@itemx --sigmaclip=FLT,FLT
+The @mymath{\sigma}-clipping parameters, see @ref{Sigma clipping}. This
+option takes two values which are separated by a comma (@key{,}). Each
+value can either be written as a single number or as a fraction of two
+numbers (for example @code{3,1/10}). The first value to this option is the
+multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
+section). The second value is the exit criteria. If it is less than 1, then
+it is interpretted as tolerance and if it is larger than one it is assumed
+to be the fixed number of iterations. Hence, in the latter case the value
+must be an integer.
 
-Since cosmic rays have sharp boundaries and are usually small, the
-erosion and opening might put them within the undetected
-pixels. Although they might cover a very small number of pixels, they
-usually have very large flux values which can easily bias the average
-and standard deviation measured on a mesh. Their effect can easily be
-removed by @mymath{\sigma}-clipping, see @ref{Sigma
-clipping}. NoiseChisel uses the convergence of the value of the
-standard deviation as the criteria to stop the
-@mymath{\sigma}-clipping iteration.
-
-@item -r FLT
-@itemx --sigcliptolerance=FLT
-The tolerance level to stop @mymath{\sigma}-clipping. The iteration is
-stopped when @mymath{(\sigma_{old}-\sigma_{new})/\sigma_{new}} becomes
-smaller than the value given to this option. Note that
-@mymath{\sigma_{old}} will always be larger than
-@mymath{\sigma_{new}}. Only statistical scatter (error) can cause it to be
-smaller, in which case they can be considered to be approximately equal.
-
-@item --checkdetectionsky
+@item --checkdetsky
 Check the initial approximation of the sky value and its standard deviation
 in a FITS file ending with @file{_detsky.fits}. See @ref{Tessellation} for
-more information. If @option{--meshbasedcheck} is not called, then the
-first extension will be the the binary image with initial detections
-labeled one and background labeled zero. The mesh values will be in the
-subsequent extensions.
+more information. If @option{--oneelempertile} is not called (see
+@ref{Processing options}), then the first extension will be the the binary
+image with initial detections labeled one and background labeled zero. The
+mesh values will be in the subsequent extensions.
 
 @item -R FLT
 @itemx --dthresh=FLT
@@ -12227,22 +12249,22 @@ be heavily skewed to the positive. So it is best to ignore any
 psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
-@item --detsnhistnbins=INT
-If not equal to zero, a histogram of the Signal to noise ratios of the
-psudo-detections will be stored in a text file ending with
-@file{_detsn.txt}. The number of bins in this histogram is specified by the
-value given to this option. This is good for inspecting the best possible
-value to @option{--detsnminarea}.
+@item --checkdetsn
+Save the S/N values of the pseudo-detections into a file ending with
+@file{_detsn.txt}. You can use these to inspect the values/distribution,
+you can use the histogram creating feature of @ref{Statistics} to make a
+histogram of the distribution (ready for plotting in a text file, or a
+crude ASCII-art demonstration on the command-line).
 
-An empirical way to estimate the best @option{--detsnminarea} value
-for your data set is that the histogram have a sharp drop towards the
-higher S/Ns. In other words, when there is a prominent peak in the
-histogram and the last few bins have less than 10 (an arbitrary
-number, meaning very few!) pseudo-detections. When the minimum area is
-too large or too small, the slope of the histogram in the higher S/N
-bins will not be to sharp with the very high S/N bins having a large
-number of objects and the peak being less significant. A good minimum
-area will result in the last bins having very few pseudo-detections.
+You can use this for an empirical way to estimate the best
+@option{--detsnminarea} value for your dataset. A good minimum area results
+in the histogram having a sharp drop towards the higher S/Ns. In other
+words, when there is a prominent peak in the histogram and the last few
+bins have less than 10 (an arbitrary number, meaning very few!)
+pseudo-detections. When the minimum area is too large or too small, the
+slope of the histogram in the higher S/N bins will not be too sharp with
+the very high S/N bins having a large number of objects and the peak being
+less significant.
 
 @item -c FLT
 @itemx --detquant=FLT
@@ -12252,7 +12274,7 @@ that this is only calculated for the large mesh grids that satisfy the
 minimum fraction of undetected pixels (value of @option{--minbfrac}) and
 minimum number of psudo-detections (value of @option{--minnumfalse}).
 
-@item -I INT
+@item -d INT
 @itemx --dilate=INT
 Number of times to dilate the final true detections. See the explanations
 in @option{--opening} for more information on dilation. The structuring
@@ -12318,7 +12340,7 @@ object.
 
 @table @option
 
-@item --detectonly
+@item --onlydetect
 If this option is called, no segmentation will be done. The object
 labels extension in the output will simply be the detection (connected
 components) labels and the clumps image will be blank (see

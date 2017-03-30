@@ -3,7 +3,7 @@
 ## Original author:
 ##     Mohammad Akhlaghi <akhlaghi@gnu.org>
 ## Contributing author(s):
-## Copyright (C) 2015, Free Software Foundation, Inc.
+## Copyright (C) 2016, Free Software Foundation, Inc.
 ##
 ## Gnuastro is free software: you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
-## for internally compiled utilities and libraries. It must not be included
-## during the tests since the bootstrapped libraries are not installed.
+## Pre-processer flags (for Gnulib's headers). Recall that the compiled
+## Gnulib library was statically linked to (copied in) Gnuastro's library.
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+
 
 
 ## Program definition (name, linking, sources and headers)
@@ -30,11 +30,11 @@ bin_PROGRAMS = astnoisechisel
 
 astnoisechisel_LDADD = -lgnuastro
 
-astnoisechisel_SOURCES = main.c ui.c noisechisel.c thresh.c binary.c    \
-  label.c detection.c sky.c segmentation.c clumps.c
+astnoisechisel_SOURCES = main.c ui.c detection.c noisechisel.c threshold.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h noisechisel.h thresh.h   \
-  binary.h label.h detection.h sky.h segmentation.h clumps.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h detection.h noisechisel.h \
+  threshold.h
+
 
 
 ## The configuration file (distribute and install).

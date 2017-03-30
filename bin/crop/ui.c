@@ -514,7 +514,7 @@ ui_read_cols(struct cropparams *p)
           colname="crop name prefix";
           if(p->namecol)
             {
-              if(tmp->type==GAL_DATA_TYPE_STRING)
+              if(tmp->type==GAL_TYPE_STRING)
                 {
                   p->name=tmp->array;
                   tmp->array=NULL;
@@ -523,7 +523,7 @@ ui_read_cols(struct cropparams *p)
               else
                 {
                   corrtype=gal_data_copy_to_new_type_free(tmp,
-                                            GAL_DATA_TYPE_STRING);
+                                            GAL_TYPE_STRING);
                   p->name=corrtype->array;
                 }
             }
@@ -533,13 +533,13 @@ ui_read_cols(struct cropparams *p)
 
         case 2:
           colname="first axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
           p->c1=corrtype->array;
           break;
 
         case 1:
           colname="second axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT64);
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
           p->c2=corrtype->array;
           break;
 
@@ -595,18 +595,18 @@ ui_make_log(struct cropparams *p)
   /* If central pixels are filled. */
   asprintf(&comment, "Are the central pixels filled? (1: yes, 0: no, "
            "%u: not checked)", GAL_BLANK_UINT8);
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT8, 1, &p->numout,
+  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "CENTER_FILLED", "bool",
                      comment);
   free(comment);
 
   /* Number of images used. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UINT16, 1, &p->numout,
+  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT16, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "NUM_INPUTS", "count",
                      "Number of input images used to make this crop.");
 
   /* Row number in input catalog. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_STRING, 1, &p->numout,
+  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_STRING, 1, &p->numout,
                      NULL, 1, p->cp.minmapsize, "CROP_NAME", "name",
                      "File name of crop.");
 }
@@ -712,9 +712,9 @@ ui_preparations(struct cropparams *p)
                   "information (press `SPACE' for going down and `q' to "
                   "return to the command-line):\n\n"
                   "    $ info Arithmetic\n",
-                  img->name, gal_data_type_as_string(p->type, 1),
-                  gal_data_type_as_string(firsttype, 1), img->name,
-                  gal_data_type_as_string(p->type, 1));
+                  img->name, gal_type_to_string(p->type, 1),
+                  gal_type_to_string(firsttype, 1), img->name,
+                  gal_type_to_string(p->type, 1));
         }
 
       /* In WCS mode, Check resolution and get the first pixel

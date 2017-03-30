@@ -26,25 +26,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <math.h>
-#include <limits.h>
-#include <stdint.h>
 
 #include <wcslib/wcs.h>
-#include <gsl/gsl_complex.h>
 
+#include <gnuastro/type.h>
 #include <gnuastro/linkedlist.h>
 
-/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
-   defined. In the build process, installation information (in particular
-   `GAL_CONFIG_SIZEOF_SIZE_T' that we need below) is kept in
-   `config.h'. When building a user's programs, this information is kept in
-   `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
-   start with the inclusion of `config.h' and that `gnuastro/config.h' is
-   only created at installation time (not present during the building of
-   Gnuastro).*/
-#ifndef IN_GNUASTRO_BUILD
-#include <gnuastro/config.h>
-#endif
+
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -62,42 +50,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Actual header contants (the above were for the Pre-processor). */
 __BEGIN_C_DECLS  /* From C++ preparations */
-
-
-
-
-
-/* Macros to identify the type of data. */
-enum gal_data_types
-{
-  GAL_DATA_TYPE_INVALID,     /* Invalid (=0 by C standard).             */
-
-  GAL_DATA_TYPE_BIT,         /* 1 bit                                   */
-  GAL_DATA_TYPE_UINT8,       /* 8-bit  unsigned integer.                */
-  GAL_DATA_TYPE_INT8,        /* 8-bit  signed   integer.                */
-  GAL_DATA_TYPE_UINT16,      /* 16-bit unsigned integer.                */
-  GAL_DATA_TYPE_INT16,       /* 16-bit signed   integer.                */
-  GAL_DATA_TYPE_UINT32,      /* 32-bit unsigned integer.                */
-  GAL_DATA_TYPE_INT32,       /* 32-bit signed   integer.                */
-  GAL_DATA_TYPE_UINT64,      /* 64-bit unsigned integer.                */
-  GAL_DATA_TYPE_INT64,       /* 64-bit signed   integer.                */
-  GAL_DATA_TYPE_FLOAT32,     /* 32-bit single precision floating point. */
-  GAL_DATA_TYPE_FLOAT64,     /* 64-bit double precision floating point. */
-  GAL_DATA_TYPE_COMPLEX32,   /* Complex 32-bit floating point.          */
-  GAL_DATA_TYPE_COMPLEX64,   /* Complex 64-bit floating point.          */
-  GAL_DATA_TYPE_STRING,      /* String of characters.                   */
-  GAL_DATA_TYPE_STRLL,       /* Linked list of strings.                 */
-};
-
-/* `size_t' is 4 and 8 bytes on 32 and 64 bit systems respectively. In both
-   cases, the standard defines `size_t' to be unsigned. During
-   `./configure' the sizeof size_t was found and is stored in
-   `GAL_CONFIG_SIZEOF_SIZE_T'. */
-#if GAL_CONFIG_SIZEOF_SIZE_T == 4
-#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT32
-#else
-#define GAL_DATA_TYPE_SIZE_T GAL_DATA_TYPE_UINT64
-#endif
 
 
 
@@ -199,7 +151,7 @@ enum gal_data_types
 typedef struct gal_data_t
 {
   /* Basic information on array of data. */
-  void              *array;  /* Array keeping data elements.               */
+  void     *restrict array;  /* Array keeping data elements.               */
   uint8_t             type;  /* Type of data (from `gal_data_alltypes').   */
   size_t              ndim;  /* Number of dimensions in the array.         */
   size_t            *dsize;  /* Size of array along each dimension.        */
@@ -230,40 +182,15 @@ typedef struct gal_data_t
 
 
 
-/*************************************************************
- **************        Type information        ***************
- *************************************************************/
-void
-gal_data_bit_print_stream(void *in, size_t size);
-
-char *
-gal_data_type_as_string(uint8_t type, int long_name);
-
-uint8_t
-gal_data_string_as_type(char *str);
-
-void
-gal_data_type_min(uint8_t type, void *in);
-
-void
-gal_data_type_max(uint8_t type, void *in);
-
-int
-gal_data_is_linked_list(uint8_t type);
-
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second);
-
-
 
 /*********************************************************************/
 /*************         Size and allocation         *******************/
 /*********************************************************************/
+void
+gal_data_bit_print_stream(void *in, size_t size);
+
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
-
-size_t
-gal_data_sizeof(uint8_t type);
 
 void *
 gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type);
@@ -301,6 +228,8 @@ gal_data_free(gal_data_t *data);
 
 
 
+
+
 /*********************************************************************/
 /*************        Array of data structures      ******************/
 /*********************************************************************/
@@ -309,6 +238,8 @@ gal_data_array_calloc(size_t size);
 
 void
 gal_data_array_free(gal_data_t *data, size_t num, int free_array);
+
+
 
 
 
@@ -340,6 +271,8 @@ gal_data_free_ll(gal_data_t *list);
 
 
 
+
+
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
@@ -364,11 +297,15 @@ gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr);
 
 
 
+
+
 /*************************************************************
  **************              Write             ***************
  *************************************************************/
 char *
 gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space);
+
+
 
 
 

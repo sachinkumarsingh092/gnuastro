@@ -45,25 +45,25 @@ gal_blank_write(void *ptr, uint8_t type)
   switch(type)
     {
     /* Numeric types */
-    case GAL_DATA_TYPE_UINT8:   *(uint8_t  *)ptr = GAL_BLANK_UINT8;    break;
-    case GAL_DATA_TYPE_INT8:    *(int8_t   *)ptr = GAL_BLANK_INT8;     break;
-    case GAL_DATA_TYPE_UINT16:  *(uint16_t *)ptr = GAL_BLANK_UINT16;   break;
-    case GAL_DATA_TYPE_INT16:   *(int16_t  *)ptr = GAL_BLANK_INT16;    break;
-    case GAL_DATA_TYPE_UINT32:  *(uint32_t *)ptr = GAL_BLANK_UINT32;   break;
-    case GAL_DATA_TYPE_INT32:   *(int32_t  *)ptr = GAL_BLANK_INT32;    break;
-    case GAL_DATA_TYPE_UINT64:  *(uint64_t *)ptr = GAL_BLANK_UINT64;   break;
-    case GAL_DATA_TYPE_INT64:   *(int64_t  *)ptr = GAL_BLANK_INT64;    break;
-    case GAL_DATA_TYPE_FLOAT32: *(float    *)ptr = GAL_BLANK_FLOAT32;  break;
-    case GAL_DATA_TYPE_FLOAT64: *(double   *)ptr = GAL_BLANK_FLOAT64;  break;
+    case GAL_TYPE_UINT8:   *(uint8_t  *)ptr = GAL_BLANK_UINT8;    break;
+    case GAL_TYPE_INT8:    *(int8_t   *)ptr = GAL_BLANK_INT8;     break;
+    case GAL_TYPE_UINT16:  *(uint16_t *)ptr = GAL_BLANK_UINT16;   break;
+    case GAL_TYPE_INT16:   *(int16_t  *)ptr = GAL_BLANK_INT16;    break;
+    case GAL_TYPE_UINT32:  *(uint32_t *)ptr = GAL_BLANK_UINT32;   break;
+    case GAL_TYPE_INT32:   *(int32_t  *)ptr = GAL_BLANK_INT32;    break;
+    case GAL_TYPE_UINT64:  *(uint64_t *)ptr = GAL_BLANK_UINT64;   break;
+    case GAL_TYPE_INT64:   *(int64_t  *)ptr = GAL_BLANK_INT64;    break;
+    case GAL_TYPE_FLOAT32: *(float    *)ptr = GAL_BLANK_FLOAT32;  break;
+    case GAL_TYPE_FLOAT64: *(double   *)ptr = GAL_BLANK_FLOAT64;  break;
 
     /* String type. */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       gal_checkset_allocate_copy(GAL_BLANK_STRING, ptr);
       break;
 
     /* Complex types */
-    case GAL_DATA_TYPE_COMPLEX32:
-    case GAL_DATA_TYPE_COMPLEX64:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "complex types are not yet supported in "
             "`gal_blank_write'");
 
@@ -149,19 +149,19 @@ gal_blank_present(gal_data_t *input)
   switch(block->type)
     {
     /* Numeric types */
-    case GAL_DATA_TYPE_UINT8:     HAS_BLANK( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      HAS_BLANK( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    HAS_BLANK( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     HAS_BLANK( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    HAS_BLANK( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     HAS_BLANK( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    HAS_BLANK( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     HAS_BLANK( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   HAS_BLANK( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   HAS_BLANK( double   );    break;
+    case GAL_TYPE_UINT8:     HAS_BLANK( uint8_t  );    break;
+    case GAL_TYPE_INT8:      HAS_BLANK( int8_t   );    break;
+    case GAL_TYPE_UINT16:    HAS_BLANK( uint16_t );    break;
+    case GAL_TYPE_INT16:     HAS_BLANK( int16_t  );    break;
+    case GAL_TYPE_UINT32:    HAS_BLANK( uint32_t );    break;
+    case GAL_TYPE_INT32:     HAS_BLANK( int32_t  );    break;
+    case GAL_TYPE_UINT64:    HAS_BLANK( uint64_t );    break;
+    case GAL_TYPE_INT64:     HAS_BLANK( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   HAS_BLANK( float    );    break;
+    case GAL_TYPE_FLOAT64:   HAS_BLANK( double   );    break;
 
     /* String. */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       if(input!=block)
         error(EXIT_FAILURE, 0, "tile mode is currently not supported for "
               "strings");
@@ -170,13 +170,13 @@ gal_blank_present(gal_data_t *input)
       break;
 
     /* Complex types */
-    case GAL_DATA_TYPE_COMPLEX32:
-    case GAL_DATA_TYPE_COMPLEX64:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "complex types are not yet supported in "
             "`gal_blank_write'");
 
     /* Bit */
-    case GAL_DATA_TYPE_BIT:
+    case GAL_TYPE_BIT:
       error(EXIT_FAILURE, 0, "bit type datasets are not yet supported in "
             "`gal_blank_present'");
 
@@ -216,7 +216,7 @@ gal_blank_flag(gal_data_t *data)
   char **str=data->array, **strf=str+data->size;
 
   /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, data->ndim, data->dsize,
+  out=gal_data_alloc(NULL, GAL_TYPE_UINT8, data->ndim, data->dsize,
                      data->wcs, 0, data->minmapsize, data->name, data->unit,
                      data->comment);
 
@@ -227,28 +227,28 @@ gal_blank_flag(gal_data_t *data)
   switch(data->type)
     {
     /* Numeric types */
-    case GAL_DATA_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     FLAG_BLANK( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    FLAG_BLANK( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     FLAG_BLANK( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    FLAG_BLANK( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     FLAG_BLANK( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
+    case GAL_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
+    case GAL_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
+    case GAL_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
+    case GAL_TYPE_INT16:     FLAG_BLANK( int16_t  );    break;
+    case GAL_TYPE_UINT32:    FLAG_BLANK( uint32_t );    break;
+    case GAL_TYPE_INT32:     FLAG_BLANK( int32_t  );    break;
+    case GAL_TYPE_UINT64:    FLAG_BLANK( uint64_t );    break;
+    case GAL_TYPE_INT64:     FLAG_BLANK( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
+    case GAL_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
 
     /* String. */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
       break;
 
     /* Currently unsupported types. */
-    case GAL_DATA_TYPE_BIT:
-    case GAL_DATA_TYPE_COMPLEX32:
-    case GAL_DATA_TYPE_COMPLEX64:
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "%s type not yet supported in `gal_blank_flag'",
-            gal_data_type_as_string(data->type, 1));
+            gal_type_to_string(data->type, 1));
 
     /* Bad input. */
     default:
@@ -288,16 +288,16 @@ gal_blank_remove(gal_data_t *data)
   /* Shift all non-blank elements to the start of the array. */
   switch(data->type)
     {
-    case GAL_DATA_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
+    case GAL_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
+    case GAL_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
+    case GAL_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
+    case GAL_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
+    case GAL_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
+    case GAL_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
+    case GAL_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
+    case GAL_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
+    case GAL_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_blank_remove'", data->type);
@@ -319,86 +319,64 @@ gal_blank_as_string(uint8_t type, int width)
   char *blank;
   switch(type)
     {
-    case GAL_DATA_TYPE_BIT:
+    case GAL_TYPE_BIT:
       error(EXIT_FAILURE, 0, "bit types are not implemented in "
             "`gal_data_blank_as_string' yet.");
       break;
 
-    case GAL_DATA_TYPE_STRING:
-      if(width)
-        asprintf(&blank, "%*s", width, GAL_BLANK_STRING);
-      else
-        asprintf(&blank, "%s", GAL_BLANK_STRING);
+    case GAL_TYPE_STRING:
+      if(width) asprintf(&blank, "%*s", width,  GAL_BLANK_STRING);
+      else      asprintf(&blank, "%s",          GAL_BLANK_STRING);
       break;
 
-    case GAL_DATA_TYPE_UINT8:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint8_t)GAL_BLANK_UINT8);
-      else
-        asprintf(&blank, "%u",         (uint8_t)GAL_BLANK_UINT8);
+    case GAL_TYPE_UINT8:
+      if(width) asprintf(&blank, "%*u", width,  (uint8_t)GAL_BLANK_UINT8);
+      else      asprintf(&blank, "%u",          (uint8_t)GAL_BLANK_UINT8);
       break;
 
-    case GAL_DATA_TYPE_INT8:
-      if(width)
-        asprintf(&blank, "%*d", width, (int8_t)GAL_BLANK_INT8);
-      else
-        asprintf(&blank, "%d",         (int8_t)GAL_BLANK_INT8);
+    case GAL_TYPE_INT8:
+      if(width) asprintf(&blank, "%*d", width,  (int8_t)GAL_BLANK_INT8);
+      else      asprintf(&blank, "%d",          (int8_t)GAL_BLANK_INT8);
       break;
 
-    case GAL_DATA_TYPE_UINT16:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint16_t)GAL_BLANK_UINT16);
-      else
-        asprintf(&blank, "%u",         (uint16_t)GAL_BLANK_UINT16);
+    case GAL_TYPE_UINT16:
+      if(width) asprintf(&blank, "%*u", width,  (uint16_t)GAL_BLANK_UINT16);
+      else      asprintf(&blank, "%u",          (uint16_t)GAL_BLANK_UINT16);
       break;
 
-    case GAL_DATA_TYPE_INT16:
-      if(width)
-        asprintf(&blank, "%*d", width, (int16_t)GAL_BLANK_INT16);
-      else
-        asprintf(&blank, "%d",         (int16_t)GAL_BLANK_INT16);
+    case GAL_TYPE_INT16:
+      if(width) asprintf(&blank, "%*d", width,  (int16_t)GAL_BLANK_INT16);
+      else      asprintf(&blank, "%d",          (int16_t)GAL_BLANK_INT16);
       break;
 
-    case GAL_DATA_TYPE_UINT32:
-      if(width)
-        asprintf(&blank, "%*u", width, (uint32_t)GAL_BLANK_UINT32);
-      else
-        asprintf(&blank, "%u",         (uint32_t)GAL_BLANK_UINT32);
+    case GAL_TYPE_UINT32:
+      if(width) asprintf(&blank, "%*u", width,  (uint32_t)GAL_BLANK_UINT32);
+      else      asprintf(&blank, "%u",          (uint32_t)GAL_BLANK_UINT32);
       break;
 
-    case GAL_DATA_TYPE_INT32:
-      if(width)
-        asprintf(&blank, "%*d", width, (int32_t)GAL_BLANK_INT32);
-      else
-        asprintf(&blank, "%d",         (int32_t)GAL_BLANK_INT32);
+    case GAL_TYPE_INT32:
+      if(width) asprintf(&blank, "%*d", width,  (int32_t)GAL_BLANK_INT32);
+      else      asprintf(&blank, "%d",          (int32_t)GAL_BLANK_INT32);
       break;
 
-    case GAL_DATA_TYPE_UINT64:
-      if(width)
-        asprintf(&blank, "%*lu", width, (uint64_t)GAL_BLANK_UINT64);
-      else
-        asprintf(&blank, "%lu",         (uint64_t)GAL_BLANK_UINT64);
+    case GAL_TYPE_UINT64:
+      if(width) asprintf(&blank, "%*lu", width, (uint64_t)GAL_BLANK_UINT64);
+      else      asprintf(&blank, "%lu",         (uint64_t)GAL_BLANK_UINT64);
       break;
 
-    case GAL_DATA_TYPE_INT64:
-      if(width)
-        asprintf(&blank, "%*ld", width, (int64_t)GAL_BLANK_INT64);
-      else
-        asprintf(&blank, "%ld",         (int64_t)GAL_BLANK_INT64);
+    case GAL_TYPE_INT64:
+      if(width) asprintf(&blank, "%*ld", width, (int64_t)GAL_BLANK_INT64);
+      else      asprintf(&blank, "%ld",         (int64_t)GAL_BLANK_INT64);
       break;
 
-    case GAL_DATA_TYPE_FLOAT32:
-      if(width)
-        asprintf(&blank, "%*f", width, (float)GAL_BLANK_FLOAT32);
-      else
-        asprintf(&blank, "%f",         (float)GAL_BLANK_FLOAT32);
+    case GAL_TYPE_FLOAT32:
+      if(width) asprintf(&blank, "%*f", width,  (float)GAL_BLANK_FLOAT32);
+      else      asprintf(&blank, "%f",          (float)GAL_BLANK_FLOAT32);
       break;
 
-    case GAL_DATA_TYPE_FLOAT64:
-      if(width)
-        asprintf(&blank, "%*f", width, (double)GAL_BLANK_FLOAT64);
-      else
-        asprintf(&blank, "%f",         (double)GAL_BLANK_FLOAT64);
+    case GAL_TYPE_FLOAT64:
+      if(width) asprintf(&blank, "%*f", width,  (double)GAL_BLANK_FLOAT64);
+      else      asprintf(&blank, "%f",          (double)GAL_BLANK_FLOAT64);
       break;
 
     default:

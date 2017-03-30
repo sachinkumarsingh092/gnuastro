@@ -75,18 +75,18 @@ set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
     /* For the integer types, if they are unsigned, then just pass their
        value, if they are signed, you have to make sure they are zero or
        positive. */
-    case GAL_DATA_TYPE_UINT8:   SET_NUM_OP(uint8_t);     break;
-    case GAL_DATA_TYPE_INT8:    SET_NUM_OP(int8_t);      break;
-    case GAL_DATA_TYPE_UINT16:  SET_NUM_OP(uint16_t);    break;
-    case GAL_DATA_TYPE_INT16:   SET_NUM_OP(int16_t);     break;
-    case GAL_DATA_TYPE_UINT32:  SET_NUM_OP(uint32_t);    break;
-    case GAL_DATA_TYPE_INT32:   SET_NUM_OP(int32_t);     break;
-    case GAL_DATA_TYPE_UINT64:  SET_NUM_OP(uint64_t);    break;
-    case GAL_DATA_TYPE_INT64:   SET_NUM_OP(int64_t);     break;
+    case GAL_TYPE_UINT8:   SET_NUM_OP(uint8_t);     break;
+    case GAL_TYPE_INT8:    SET_NUM_OP(int8_t);      break;
+    case GAL_TYPE_UINT16:  SET_NUM_OP(uint16_t);    break;
+    case GAL_TYPE_INT16:   SET_NUM_OP(int16_t);     break;
+    case GAL_TYPE_UINT32:  SET_NUM_OP(uint32_t);    break;
+    case GAL_TYPE_INT32:   SET_NUM_OP(int32_t);     break;
+    case GAL_TYPE_UINT64:  SET_NUM_OP(uint64_t);    break;
+    case GAL_TYPE_INT64:   SET_NUM_OP(int64_t);     break;
 
     /* Floating point numbers are not acceptable in this context. */
-    case GAL_DATA_TYPE_FLOAT32:
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
       error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
             "operator must be an integer type", token_string);
 
@@ -341,7 +341,7 @@ reversepolish(struct imgarithparams *p)
       /* To simplify the printing process, we will first change it to
          double, then use printf's `%g' to print it, so integers will be
          printed as an integer.  */
-      d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_FLOAT32);
+      d2=gal_data_copy_to_new_type(d1, GAL_TYPE_FLOAT32);
       printf("%g\n", *(double *)d2->array);
       gal_data_free(d2);
     }

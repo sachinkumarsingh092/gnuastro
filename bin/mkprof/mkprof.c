@@ -133,7 +133,7 @@ saveindividual(struct mkonthread *mkp)
   gal_checkset_check_remove_file(filename, 0, p->cp.dontdelete);
 
   /* Put the array into a data structure */
-  data=gal_data_alloc(ibq->img, GAL_DATA_TYPE_FLOAT32, 2, dsize, NULL, 0,
+  data=gal_data_alloc(ibq->img, GAL_TYPE_FLOAT32, 2, dsize, NULL, 0,
                       p->cp.minmapsize, "MockImage", "Brightness", NULL);
 
   /* Write the array to file (a separately built PSF doesn't need WCS

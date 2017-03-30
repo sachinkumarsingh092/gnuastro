@@ -601,12 +601,12 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 
       /* Set the greater-equal value. */
       tmp=gal_statistics_quantile(ref, p->quantmin, 1);
-      tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
       p->greaterequal=*((float *)(tmp->array));
 
       /* Set the lower-than value. */
       tmp=gal_statistics_quantile(ref, p->quantmax, 1);
-      tmp=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT32);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
       p->lessthan=*((float *)(tmp->array));
     }
 
@@ -616,7 +616,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
      less-than  */
   if(!isnan(p->greaterequal))
     {
-      tmp=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->greaterequal;
       cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, flags, ref, tmp);
@@ -627,7 +627,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   /* Same reasoning as above for `p->greaterthan'. */
   if(!isnan(p->lessthan))
     {
-      tmp=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->lessthan;
       cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, flags, ref, tmp);
@@ -651,7 +651,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 
   /* Allocate a blank value to mask all pixels that don't satisfy the
      condition. */
-  blank=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, 1, &one, NULL,
+  blank=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
                      0, -1, NULL, NULL, NULL);
   *((float *)(blank->array)) = NAN;
 
@@ -743,14 +743,14 @@ ui_read_columns(struct statisticsparams *p)
       /* Make sure it is a usable datatype. */
       switch(tmp->type)
         {
-        case GAL_DATA_TYPE_BIT:
-        case GAL_DATA_TYPE_STRLL:
-        case GAL_DATA_TYPE_STRING:
-        case GAL_DATA_TYPE_COMPLEX32:
-        case GAL_DATA_TYPE_COMPLEX64:
+        case GAL_TYPE_BIT:
+        case GAL_TYPE_STRLL:
+        case GAL_TYPE_STRING:
+        case GAL_TYPE_COMPLEX32:
+        case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, " read column number %zu has a %s type, "
                 "which is not currently supported by %s", counter,
-                gal_data_type_as_string(tmp->type, 1), PROGRAM_NAME);
+                gal_type_to_string(tmp->type, 1), PROGRAM_NAME);
         }
 
       /* Put the column into the proper pointer. */

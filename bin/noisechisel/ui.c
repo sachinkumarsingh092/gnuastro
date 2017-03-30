@@ -1,5 +1,5 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in noise.
+NoiseChisel - Detect and segment signal in a noisy dataset.
 NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -22,608 +22,169 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <stdio.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <fitsio.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
-#include <gnuastro/txtarray.h>
-#include <gnuastro/statistics.h>
+#include <gnuastro/threads.h>
+#include <gnuastro/dimension.h>
 
-#include <nproc.h>              /* From Gnulib.                   */
-#include <timing.h>             /* includes time.h and sys/time.h */
+#include <timing.h>
+#include <options.h>
 #include <checkset.h>
-#include <commonargs.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
-
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct noisechiselparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" Detects and segments signal "
+  "that is deeply burried in noise. It employs a noise-based detection and "
+  "segmentation method enabling it to be very resilient to the rich diversity "
+  "of shapes in astronomical targets.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  char key='a';        /* Not used, just a place holder. */
-
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  ARGS_GROUP_DETECTION = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  ARGS_GROUP_SEGMENTATION,
+};
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
 
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct noisechiselparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->numthreads         = gal_threads_number();
+  cp->coptions           = gal_commonopts_options;
+
+
+  /* Modify common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
-
-
-      /* Inputs: */
-      if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
-
-      else if(strcmp(name, "mask")==0)
-        gal_checkset_allocate_copy_set(value, &up->maskname,
-                                       &up->masknameset);
-
-      else if(strcmp(name, "mhdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
-
-      else if(strcmp(name, "kernel")==0)
-        gal_checkset_allocate_copy_set(value, &up->kernelname,
-                                       &up->kernelnameset);
-
-      else if(strcmp(name, "khdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->khdu, &up->khduset);
-
-      else if(strcmp(name, "skysubtracted")==0)
+      /* Select individually. */
+      switch(cp->coptions[i].key)
         {
-          if(up->skysubtractedset) continue;
-          gal_checkset_int_zero_or_one(value, &p->skysubtracted, name,
-                                       key, SPACK, filename, lineno);
-          up->skysubtractedset=1;
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+
+        case GAL_OPTIONS_KEY_TILESIZE:
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
+        case GAL_OPTIONS_KEY_NUMCHANNELS:
+        case GAL_OPTIONS_KEY_INTERPNUMNGB:
+        case GAL_OPTIONS_KEY_REMAINDERFRAC:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
         }
-      else if(strcmp(name, "minbfrac")==0)
-        {
-          if(up->minbfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->minbfrac, name,
-                                     key, SPACK, filename, lineno);
-          up->minbfracset=1;
-        }
-      else if(strcmp(name, "minnumfalse")==0)
-        {
-          if(up->minnumfalseset) continue;
-          gal_checkset_sizet_l_zero(value, &p->minnumfalse, name,
-                                    key, SPACK, filename, lineno);
-          up->minnumfalseset=1;
-        }
+    }
+}
 
 
 
-      /* Outputs */
-      else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
-
-      else if(strcmp(name, "grownclumps")==0)
-        {
-          if(up->grownclumpsset) continue;
-          gal_checkset_int_zero_or_one(value, &p->grownclumps, name,
-                                       key, SPACK, filename, lineno);
-          up->grownclumpsset=1;
-        }
 
 
-      /* Mesh grid: */
-      else if(strcmp(name, "smeshsize")==0)
-        {
-          if(up->smeshsizeset) continue;
-          gal_checkset_sizet_l_zero(value, &p->smp.meshsize, name,
-                                    key, SPACK, filename, lineno);
-          up->smeshsizeset=1;
-        }
-      else if(strcmp(name, "lmeshsize")==0)
-        {
-          if(up->lmeshsizeset) continue;
-          gal_checkset_sizet_l_zero(value, &p->lmp.meshsize, name,
-                                    key, SPACK, filename, lineno);
-          up->lmeshsizeset=1;
-        }
-      else if(strcmp(name, "nch1")==0)
-        {
-          if(up->nch1set) continue;
-          gal_checkset_sizet_l_zero(value, &p->smp.nch1, name, key,
-                                    SPACK, filename, lineno);
-          up->nch1set=1;
-        }
-      else if(strcmp(name, "nch2")==0)
-        {
-          if(up->nch2set) continue;
-          gal_checkset_sizet_l_zero(value, &p->smp.nch2, name, key,
-                                    SPACK, filename, lineno);
-          up->nch2set=1;
-        }
-      else if(strcmp(name, "lastmeshfrac")==0)
-        {
-          if(up->lastmeshfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->smp.lastmeshfrac, name,
-                                     key, SPACK, filename, lineno);
-          up->lastmeshfracset=1;
-        }
-      else if(strcmp(name, "mirrordist")==0)
-        {
-          if(up->mirrordistset) continue;
-          gal_checkset_float_l_0(value, &p->smp.mirrordist, name,
-                                 key, SPACK, filename, lineno);
-          up->mirrordistset=1;
-        }
-      else if(strcmp(name, "minmodeq")==0)
-        {
-          if(up->minmodeqset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->smp.minmodeq, name,
-                                     key, SPACK, filename, lineno);
-          up->minmodeqset=1;
-        }
-      else if(strcmp(name, "numnearest")==0)
-        {
-          if(up->numnearestset) continue;
-          gal_checkset_sizet_l_zero(value, &p->smp.numnearest, name,
-                                    key, SPACK, filename, lineno);
-          up->numnearestset=1;
-        }
-      else if(strcmp(name, "smoothwidth")==0)
-        {
-          if(up->smoothwidthset) continue;
-          gal_checkset_sizet_p_odd(value, &p->smp.smoothwidth, name,
-                                   key, SPACK, filename, lineno);
-          up->smoothwidthset=1;
-        }
-      else if(strcmp(name, "fullconvolution")==0)
-        {
-          if(up->fullconvolutionset) continue;
-          gal_checkset_int_zero_or_one(value, &p->smp.fullconvolution,
-                                       name, key, SPACK, filename, lineno);
-          up->fullconvolutionset=1;
-        }
-      else if(strcmp(name, "fullinterpolation")==0)
-        {
-          if(up->fullinterpolationset) continue;
-          gal_checkset_int_zero_or_one(value, &p->smp.fullinterpolation,
-                                       name, key, SPACK, filename, lineno);
-          up->fullinterpolationset=1;
-        }
-      else if(strcmp(name, "fullsmooth")==0)
-        {
-          if(up->fullsmoothset) continue;
-          gal_checkset_int_zero_or_one(value, &p->smp.fullsmooth, name, key,
-                                       SPACK, filename, lineno);
-          up->fullsmoothset=1;
-        }
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct noisechiselparams *p = state->input;
 
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
 
-      /* Detection: */
-      else if(strcmp(name, "qthresh")==0)
-        {
-          if(up->qthreshset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->qthresh, name, key,
-                                     SPACK, filename, lineno);
-          up->qthreshset=1;
-        }
-      else if(strcmp(name, "erode")==0)
-        {
-          if(up->erodeset) continue;
-          gal_checkset_sizet_el_zero(value, &p->erode, name, key,
-                                     SPACK, filename, lineno);
-          up->erodeset=1;
-        }
-      else if(strcmp(name, "erodengb")==0)
-        {
-          if(up->erodengbset) continue;
-          gal_checkset_int_4_or_8(value, &p->erodengb, name, key,
-                                  SPACK, filename, lineno);
-          up->erodengbset=1;
-        }
-      else if(strcmp(name, "noerodequant")==0)
-        {
-          if(up->noerodequantset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->noerodequant, name, key,
-                                     SPACK, filename, lineno);
-          up->noerodequantset=1;
-        }
-      else if(strcmp(name, "opening")==0)
-        {
-          if(up->openingset) continue;
-          gal_checkset_sizet_el_zero(value, &p->opening, name, key,
-                                     SPACK, filename, lineno);
-          up->openingset=1;
-        }
-      else if(strcmp(name, "openingngb")==0)
-        {
-          if(up->openingngbset) continue;
-          gal_checkset_int_4_or_8(value, &p->openingngb, name,
-                                  key, SPACK, filename, lineno);
-          up->openingngbset=1;
-        }
-      else if(strcmp(name, "sigclipmultip")==0)
-        {
-          if(up->sigclipmultipset) continue;
-          gal_checkset_float_l_0(value, &p->sigclipmultip, name,
-                                 key, SPACK, filename, lineno);
-          up->sigclipmultipset=1;
-        }
-      else if(strcmp(name, "sigcliptolerance")==0)
-        {
-          if(up->sigcliptoleranceset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name,
-                                     key, SPACK, filename, lineno);
-          up->sigcliptoleranceset=1;
-        }
-      else if(strcmp(name, "dthresh")==0)
-        {
-          if(up->dthreshset) continue;
-          gal_checkset_any_float(value, &p->dthresh, name, key,
-                                 SPACK, filename, lineno);
-          up->dthreshset=1;
-        }
-      else if(strcmp(name, "detsnminarea")==0)
-        {
-          if(up->detsnminareaset) continue;
-          gal_checkset_sizet_l_zero(value, &p->detsnminarea, name,
-                                    key, SPACK, filename, lineno);
-          up->detsnminareaset=1;
-        }
-      else if(strcmp(name, "detsnhistnbins")==0)
-        {
-          if(up->detsnhistnbinsset) continue;
-          gal_checkset_sizet_el_zero(value, &p->detsnhistnbins, name,
-                                     key, SPACK, filename, lineno);
-          up->detsnhistnbinsset=1;
-        }
-      else if(strcmp(name, "detquant")==0)
-        {
-          if(up->detquantset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->detquant, name, key,
-                                     SPACK, filename, lineno);
-          up->detquantset=1;
-        }
-      else if(strcmp(name, "dilate")==0)
-        {
-          if(up->dilateset) continue;
-          gal_checkset_sizet_el_zero(value, &p->dilate, name, key,
-                                     SPACK, filename, lineno);
-          up->dilateset=1;
-        }
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
 
+  /* Set the key to this option. */
+  switch(key)
+    {
 
-      /* Segmentation: */
-      else if(strcmp(name, "segsnminarea")==0)
-        {
-          if(up->segsnminareaset) continue;
-          gal_checkset_sizet_l_zero(value, &p->segsnminarea, name,
-                                    key, SPACK, filename, lineno);
-          up->segsnminareaset=1;
-        }
-      else if(strcmp(name, "keepmaxnearriver")==0)
-        {
-          if(up->keepmaxnearriverset) continue;
-          gal_checkset_int_zero_or_one(value, &p->keepmaxnearriver, name,
-                                       key, SPACK, filename, lineno);
-          up->keepmaxnearriverset=1;
-        }
-      else if(strcmp(name, "segquant")==0)
-        {
-          if(up->segquantset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->segquant, name, key,
-                                     SPACK, filename, lineno);
-          up->segquantset=1;
-        }
-      else if(strcmp(name, "clumpsnhistnbins")==0)
-        {
-          if(up->clumpsnhistnbinsset) continue;
-          gal_checkset_sizet_el_zero(value, &p->clumpsnhistnbins, name,
-                                     key, SPACK,filename, lineno);
-          up->clumpsnhistnbinsset=1;
-        }
-      else if(strcmp(name, "gthresh")==0)
-        {
-          if(up->gthreshset) continue;
-          gal_checkset_any_float(value, &p->gthresh, name, key, SPACK,
-                                 filename, lineno);
-          up->gthreshset=1;
-        }
-      else if(strcmp(name, "minriverlength")==0)
-        {
-          if(up->minriverlengthset) continue;
-          gal_checkset_sizet_l_zero(value, &p->minriverlength, name,
-                                    key, SPACK, filename, lineno);
-          up->minriverlengthset=1;
-        }
-      else if(strcmp(name, "objbordersn")==0)
-        {
-          if(up->objbordersnset) continue;
-          gal_checkset_float_l_0(value, &p->objbordersn, name, key,
-                                 SPACK, filename, lineno);
-          up->objbordersnset=1;
-        }
-
-
-      /* Operating modes: */
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      if(p->inputname)
+        argp_error(state, "only one argument (input file) should be given");
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
+        p->inputname=arg;
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
     }
 
-  free(line);
-  fclose(fp);
-}
-
-
-
-
-
-void
-printvalues(FILE *fp, struct noisechiselparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input:\n");
-  if(cp->hduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
-  if(up->masknameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
-  if(up->mhdu)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
-  if(up->kernelnameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("kernel", up->kernelname);
-  if(up->khdu)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("khdu", up->khdu);
-  if(up->skysubtractedset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "skysubtracted", p->skysubtracted);
-  if(up->minbfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minbfrac", p->minbfrac);
-  if(up->minnumfalseset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "minnumfalse", p->minnumfalse);
-
-
-  fprintf(fp, "\n# Output:\n");
-  if(cp->outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
-  if(up->grownclumpsset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "grownclumps", p->grownclumps);
-
-
-  fprintf(fp, "\n# Mesh grid:\n");
-  if(up->smeshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "smeshsize", smp->meshsize);
-  if(up->lmeshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "lmeshsize", lmp->meshsize);
-  if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch1", smp->nch1);
-  if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch2", smp->nch2);
-  if(up->lastmeshfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", smp->lastmeshfrac);
-  if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", smp->mirrordist);
-  if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", smp->minmodeq);
-  if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "numnearest", smp->numnearest);
-  if(up->smoothwidthset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "smoothwidth", smp->smoothwidth);
-  if(up->fullconvolutionset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
-            smp->fullconvolution);
-  if(up->fullinterpolationset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "fullinterpolation",
-            smp->fullinterpolation);
-  if(up->fullsmoothset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "fullsmooth", smp->fullsmooth);
-
-
-  fprintf(fp, "\n# Detection:\n");
-  if(up->qthreshset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
-  if(up->erodeset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "erode", p->erode);
-  if(up->erodengbset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "erodengb", p->erodengb);
-  if(up->noerodequantset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "noerodequant", p->noerodequant);
-  if(up->openingset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "opening", p->opening);
-  if(up->openingngbset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "openingngb", p->openingngb);
-  if(up->sigclipmultipset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
-  if(up->sigcliptoleranceset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
-            p->sigcliptolerance);
-  if(up->dthreshset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
-  if(up->detsnminareaset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "detsnminarea", p->detsnminarea);
-  if(up->detsnhistnbinsset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "detsnhistnbins", p->detsnhistnbins);
-  if(up->detquantset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "detquant", p->detquant);
-  if(up->dilateset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "dilate", p->dilate);
-
-
-  fprintf(fp, "\n# Segmentation:\n");
-  if(up->segsnminareaset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "segsnminarea", p->segsnminarea);
-  if(up->keepmaxnearriverset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "keepmaxnearriver", p->keepmaxnearriver);
-  if(up->segquantset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
-  if(up->clumpsnhistnbinsset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "clumpsnhistnbins", p->clumpsnhistnbins);
-  if(up->gthreshset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "gthresh", p->gthresh);
-  if(up->minriverlengthset)
-    fprintf(fp, CONF_SHOWFMT"%zu\n", "minriverlength", p->minriverlength);
-  if(up->objbordersnset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "objbordersn", p->objbordersn);
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating mode:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-}
-
-
-
-
-
-
-/* Note that numthreads will be used automatically based on the
-   configure time. */
-void
-checkifset(struct noisechiselparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-  int intro=0;
-  if(cp->hduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-  if(up->khduset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
-  if(up->skysubtractedset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("skysubtracted");
-  if(up->minbfracset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("minbfrac");
-  if(up->minnumfalseset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("minnumfalse");
-
-  /* Output */
-  if(up->grownclumpsset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("grownclumps");
-
-  /* Mesh grid: */
-  if(up->smeshsizeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("smeshsize");
-  if(up->lmeshsizeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("lmeshsize");
-  if(up->nch1set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
-  if(up->nch2set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
-  if(up->lastmeshfracset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
-  if(up->mirrordistset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
-  if(up->minmodeqset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("minmodeq");
-  if(up->numnearestset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("numnearest");
-  if(up->smoothwidthset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("smoothwidth");
-  if(up->fullconvolutionset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
-  if(up->fullinterpolationset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("fullinterpolation");
-  if(up->fullsmoothset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("fullsmooth");
-
-  /* Detection: */
-  if(up->qthreshset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("qthresh");
-  if(up->erodeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("erode");
-  if(up->erodengbset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("erodengb");
-  if(up->noerodequantset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("noerodequant");
-  if(up->openingset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("opening");
-  if(up->openingngbset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("openingngb");
-  if(up->sigclipmultipset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
-  if(up->sigcliptoleranceset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
-  if(up->dthreshset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("dthresh");
-  if(up->detsnminareaset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("detsnminarea");
-  if(up->detsnhistnbinsset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("detsnhistnbins");
-  if(up->detquantset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("detquant");
-  if(up->dilateset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("dilate");
-
-  /* Segmentation: */
-  if(up->segsnminareaset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("segsnminarea");
-  if(up->keepmaxnearriverset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("keepmaxnearriver");
-  if(up->segquantset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("segquant");
-  if(up->clumpsnhistnbinsset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("clumpsnhistnbins");
-  if(up->gthreshset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("gthresh");
-  if(up->minriverlengthset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("minriverlength");
-  if(up->objbordersnset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("objbordersn");
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
+  return 0;
 }
 
 
@@ -648,113 +209,68 @@ checkifset(struct noisechiselparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-void
-sanitycheck(struct noisechiselparams *p)
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct noisechiselparams *p)
 {
-  struct gal_mesh_params *smp=&p->smp;
+  /* Make sure the connectivity is defined. */
+  if(p->erodengb!=4 && p->erodengb!=8)
+    error(EXIT_FAILURE, 0, "%zu not acceptable for `--erodengb'. It must "
+          "be 4 or 8 (specifying the type of connectivity)", p->erodengb);
+  if(p->openingngb!=4 && p->openingngb!=8)
+    error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
+          "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
 
-  /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.inputname);
-
-  /* Make sure that the noerode quantile is larger than qthresh. */
+  /* Make sure that the no-erode-quantile is not smaller or equal to
+     qthresh. */
   if( p->noerodequant <= p->qthresh)
-    error(EXIT_FAILURE, 0, "The quantile for no erosion (`--noerodequant') "
+    error(EXIT_FAILURE, 0, "the quantile for no erosion (`--noerodequant') "
           "must be larger than the base quantile threshold (`--qthresh', "
           "or `-t'). You have provided %.4f and %.4f for the former and "
-          "latter, respectively.", p->noerodequant, p->qthresh);
+          "latter, respectively", p->noerodequant, p->qthresh);
+}
 
-  /* Set the maskname and mask hdu accordingly: */
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
-                                 "mask");
 
-  /* Set the output name: */
-  if(p->cp.output)
+
+
+
+static void
+ui_check_options_and_arguments(struct noisechiselparams *p)
+{
+  /* Basic input file checks. */
+  if(p->inputname)
     {
-      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+      /* Check if it exists. */
+      gal_checkset_check_file(p->inputname);
 
-      /* When the output name is given (possibly with directory
-         information), the user certainly wants the directory
-         information, if they have bothered to include it. */
-      p->cp.removedirinfo=0;
-
+      /* If its FITS, see if a HDU has been provided. */
+      if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified for input. When the input "
+              "is a FITS file, a HDU must also be specified, you can use "
+              "the `--hdu' (`-h') option and give it the HDU number "
+              "(starting from zero), extension name, or anything "
+              "acceptable by CFITSIO");
     }
   else
-    gal_checkset_automatic_output(p->up.inputname, "_labeled.fits",
-                                  p->cp.removedirinfo, p->cp.dontdelete,
-                                  &p->cp.output);
+    error(EXIT_FAILURE, 0, "no input file is specified");
 
-  /* Set the check image names: */
-  if(p->meshname)
+  /* Basic Kernel file checks. */
+  if(p->kernelname)
     {
-      p->meshname=NULL;         /* Was not allocated before!  */
-      gal_checkset_automatic_output(p->cp.output, "_meshs.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->meshname);
-    }
-  if(p->threshname)
-    {
-      p->threshname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_thresh.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->threshname);
-    }
-  if(p->detectionname)
-    {
-      p->detectionname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_det.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->detectionname);
-    }
-  if(p->detectionskyname)
-    {
-      p->detectionskyname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_detsky.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->detectionskyname);
-    }
-  if(p->detsnhistnbins)
-    {
-      p->detectionsnhist=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_detsn.txt",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->detectionsnhist);
-    }
-  if(p->skyname)
-    {
-      p->skyname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_sky.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->skyname);
-    }
-  if(p->segmentationname)
-    {
-      p->segmentationname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_seg.fits",
-                                    p->cp.removedirinfo,
-                                    p->cp.dontdelete, &p->segmentationname);
-    }
-  if(p->clumpsnhistnbins)
-    {
-      p->clumpsnhist=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_clumpsn.txt",
-                                    p->cp.removedirinfo,
-                                    p->cp.dontdelete, &p->clumpsnhist);
-    }
-  if(p->maskdetname)
-    {
-      p->maskdetname=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_maskdet.fits",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->maskdetname);
-    }
+      /* Check if it exists. */
+      gal_checkset_check_file(p->kernelname);
 
-  /* Other checks: */
-  if(smp->numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
-    error(EXIT_FAILURE, 0, "the smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %zu",
-          GAL_MESH_MIN_ACCEPTABLE_NEAREST, smp->numnearest);
+      /* If its FITS, see if a HDU has been provided. */
+      if( gal_fits_name_is_fits(p->kernelname) && p->khdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified for kernel. When the "
+              "kernel is a FITS file, a HDU must also be specified, you "
+              "can use the `--khdu' option and give it the HDU number "
+              "(starting from zero), extension name, or anything "
+              "acceptable by CFITSIO");
+    }
 }
+
 
 
 
@@ -777,197 +293,199 @@ sanitycheck(struct noisechiselparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-/* The default PSF. It was created by saving the following commands in
-   a script and running it. The crop is because the first and last
-   rows of all PSFs made by MakeProfiles is blank (zero). You can keep
-   the spaces when copying and pasting ;-). Just make it executable
-   and run it.
+static void
+ui_set_output_names(struct noisechiselparams *p)
+{
+  char *output=p->cp.output;
+  char *basename = output ? output : p->inputname;
 
-   set -o errexit           # Stop if a program returns false.
-   echo "0    0.0    0.0   2   2   0   0   1   1   5" > tmp.txt
-   export GSL_RNG_TYPE=ranlxs2
-   export GSL_RNG_SEED=1
-   astmkprof tmp.txt --oversample=1 --envseed --numrandom=10000 \
-             --tolerance=0.01
-   astcrop 0.fits --section=2:*,2:* --zeroisnotblank --output=fwhm2.fits
-   astconvertt fwhm2.fits --output=fwhm2.txt
-   rm 0.fits tmp.fits *.log tmp.txt
-*/
-size_t defaultkernel_s0=11;
-size_t defaultkernel_s1=11;
-float defaultkernel[121]=
-  {
-    0, 0, 0, 0, 0, 2.58073e-08, 0, 0, 0, 0, 0,
+  /* Main program output. */
+  if(output)
+    {
+      /* Delete the file if it already exists. */
+      gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
 
-    0, 0, 2.90237e-08, 6.79851e-07, 4.4435e-06, 8.31499e-06,
-    4.50166e-06, 6.97185e-07, 3.00904e-08, 0, 0,
+      /* When the output name is given (possibly with directory
+         information), the check images will also be put in that same
+         directory.. */
+      p->cp.keepinputdir=1;
+    }
+  else
+    p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
+                                               "_labeled.fits");
 
-    0, 2.87873e-08, 2.48435e-06, 5.81339e-05, 0.000379508, 0.000709334,
-    0.000383714, 5.94125e-05, 2.56498e-06, 3.00032e-08, 0,
+  /* Quantile threshold. */
+  if(p->checkqthresh)
+    p->qthreshname=gal_checkset_automatic_output(&p->cp, basename,
+                                                 "_qthresh.fits");
 
-    0, 6.70501e-07, 5.77826e-05, 0.00134992, 0.00879665, 0.0164126,
-    0.00886609, 0.00137174, 5.92134e-05, 6.92853e-07, 0,
+  /* Initial detection Sky values. */
+  if(p->checkdetsky)
+    p->detskyname=gal_checkset_automatic_output(&p->cp, basename,
+                                                "_detsky.fits");
 
-    0, 4.3798e-06, 0.000376616, 0.00877689, 0.0570404, 0.106142, 0.0572108,
-    0.00883846, 0.000381257, 4.46059e-06, 0,
+  /* Pseudo-detection S/N values. */
+  if(p->checkdetsn)
+    p->detsnname=gal_checkset_automatic_output(&p->cp, basename,
+                                               "_detsn.txt");
 
-    2.54661e-08, 8.24845e-06, 0.00070725, 0.0164287, 0.10639, 0.19727,
-    0.106003, 0.0163402, 0.000703951, 8.23152e-06, 2.55057e-08,
+  /* Detection steps. */
+  if(p->checkdetection)
+    p->detectionname=gal_checkset_automatic_output(&p->cp, basename,
+                                               "_det.fits");
 
-    0, 4.5229e-06, 0.000386632, 0.00894947, 0.0577282, 0.106614, 0.0570877,
-    0.00877699, 0.000377496, 4.41036e-06, 0,
+  /* Detection steps. */
+  if(p->checksky)
+    p->skyname=gal_checkset_automatic_output(&p->cp, basename, "_sky.fits");
 
-    0, 7.1169e-07, 6.0678e-05, 0.00140013, 0.00899917, 0.0165582, 0.00883658,
-    0.00135509, 5.81823e-05, 6.79067e-07, 0,
+  /* Clump S/N values. */
+  if(p->checkclumpsn)
+    p->clumpsnname=gal_checkset_automatic_output(&p->cp, basename,
+                                                 "_clumpsn.txt");
 
-    0, 3.12002e-08, 2.65502e-06, 6.11192e-05, 0.000391739, 0.000718637,
-    0.000382453, 5.85194e-05, 2.50864e-06, 2.9249e-08, 0,
+  /* Segmentation steps. */
+  if(p->checksegmentation)
+    p->segmentationname=gal_checkset_automatic_output(&p->cp, basename,
+                                                      "_seg.txt");
 
-    0, 0, 3.14197e-08, 7.22146e-07, 4.61954e-06, 8.45613e-06, 4.49082e-06,
-    6.85919e-07, 2.9364e-08, 0, 0,
+}
 
-    0, 0, 0, 0, 0, 2.63305e-08, 0, 0, 0, 0, 0
-  };
+
+
+
+
+static void
+ui_prepare_kernel(struct noisechiselparams *p)
+{
+  /* The default kernel. It was created by saving the following commands in a
+     script and running it. It will create a plain text array along with a
+     FITS image. The crop is because the first and last rows and columns of
+     all PSFs made by MakeProfiles are blank (zero) when you run with
+     oversample=1. You can keep the spaces when copying and pasting ;-). Just
+     make it executable and run it.
+
+     set -o errexit           # Stop if a program returns false.
+     echo "0 0.0 0.0 3 2 0 0 1 1 5" > tmp.txt
+     export GSL_RNG_TYPE=ranlxs2
+     export GSL_RNG_SEED=1
+     astmkprof tmp.txt --oversample=1 --envseed --numrandom=10000 \
+     --tolerance=0.01 --nomerged
+     astcrop 0_tmp.fits --section=2:*-1,2:*-1 --zeroisnotblank    \
+     --output=fwhm2.fits
+     astconvertt fwhm2.fits --output=fwhm2.txt
+     rm 0_tmp.fits tmp.txt
+  */
+  size_t kernel_2d_dsize[2]={11,11};
+  float *f, *ff, *k, kernel_2d[121]=
+    {
+      0, 0, 0, 0, 0, 6.57699e-09, 0, 0, 0, 0, 0,
+
+      0, 0, 6.57699e-09, 2.10464e-07, 1.68371e-06, 3.36742e-06, 1.68371e-06,
+      2.10464e-07, 6.57699e-09, 0, 0,
+
+      0, 6.57699e-09, 8.41855e-07, 2.69394e-05, 0.000383569, 0.000717224,
+      0.000379782, 2.69394e-05, 8.41855e-07, 6.57699e-09, 0,
+
+      0, 2.10464e-07, 2.69394e-05, 0.00140714, 0.00888549, 0.016448,
+      0.00867408, 0.00138203, 2.69394e-05, 2.10464e-07, 0,
+
+      0, 1.68371e-06, 0.000381138, 0.00875434, 0.0573377, 0.106308, 0.0570693,
+      0.00891745, 0.000378914, 1.68371e-06, 0,
+
+      6.57699e-09, 3.36742e-06, 0.00071364, 0.0164971, 0.106865, 0.197316,
+      0.106787, 0.0166434, 0.000713827, 3.36742e-06, 6.57699e-09,
+
+      0, 1.68371e-06, 0.000215515, 0.00894112, 0.0573699, 0.106239, 0.0567907,
+      0.00901191, 0.000215515, 1.68371e-06, 0,
+
+      0, 2.10464e-07, 2.69394e-05, 0.00135085, 0.0089288, 0.0164171,
+      0.00879334, 0.0013622, 2.69394e-05, 2.10464e-07, 0,
+
+      0, 6.57699e-09, 8.41855e-07, 2.69394e-05, 0.000215515, 0.000724137,
+      0.000215515, 2.69394e-05, 8.41855e-07, 6.57699e-09, 0,
+
+      0, 0, 6.57699e-09, 2.10464e-07, 1.68371e-06, 3.36742e-06, 1.68371e-06,
+      2.10464e-07, 6.57699e-09, 0, 0,
+
+      0, 0, 0, 0, 0, 6.57699e-09, 0, 0, 0, 0, 0
+    };
+
+  /* If a kernel file is given, then use it. Otherwise, use the default
+     kernel. */
+  if(p->kernelname)
+    p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                       p->cp.minmapsize);
+  else
+    {
+      /* Allocate space for the kernel (we don't want to use the statically
+         allocated array. */
+      p->kernel=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 2,
+                               kernel_2d_dsize, NULL, 0, p->cp.minmapsize,
+                               NULL, NULL, NULL);
+
+      /* Now copy the staticly allocated array into it. */
+      k=p->kernel->array;
+      ff=(f=kernel_2d)+gal_dimension_total_size(2, p->kernel->dsize);
+      do *k++=*f; while(++f<ff);
+    }
+}
 
 
 
 
 
 void
-preparearrays(struct noisechiselparams *p)
+ui_preparations(struct noisechiselparams *p)
 {
-  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
+  gal_data_t *check;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
-  long *meshindexs;
-  float *f, *ff, *fp;
-  size_t *relngb=p->relngb, s0, s1;
+  /* Prepare the names of the outputs. */
+  ui_set_output_names(p);
 
-  /* Read the input image in. Note that the pointer to the image is
-     also kept in p->img. Since some of the mesh operations should be
-     done on the convolved image and some on the actual image, we will
-     need to change the mesh's img value some times and the p->img
-     will be used to keep its actual value. */
-  gal_fits_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
-                              p->up.mhdu, (float **)&smp->img, &p->bitpix,
-                              &p->anyblank, &smp->s0, &smp->s1);
-  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
-  s0=smp->s0; s1=smp->s1;
+  /* Read the input as a single precision floating point dataset. */
+  p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
+                                       GAL_TYPE_FLOAT32,
+                                       p->cp.minmapsize);
+  gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,
+               &p->input->wcs);
+  if(p->input->name==NULL)
+    gal_checkset_allocate_copy("INPUT", &p->input->name);
 
-  /* make sure the channel sizes fit the channel sizes. */
-  if( s0%smp->nch2 || s1%smp->nch1 )
-    error(EXIT_FAILURE, 0, "the input image size (%zu x %zu) is not an "
-          "exact multiple of the number of the given channels (%zu, %zu) "
-          "in the respective axis", s1, s0, smp->nch1, smp->nch2);
+  /* Read in the kernel for convolution. */
+  ui_prepare_kernel(p);
 
-  /* p->imgss (image-sky-subtracted) is the sky subtracted input
-     image. For both the removal of false detections and also the
-     segmentation, it is important to use the sky subtracted image,
-     not the actual input image for some operations. In both cases the
-     input image is used for Signal to noise ratio measurements (where
-     subtracting the sky will add noise).
+  /* Check the tile parameters and make the tile structure. We will also
+     need the dimensions of the tile with the maximum required memory.  */
+  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
+  gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
+  gal_tile_full_two_layers(p->input, tl);
+  gal_tile_full_permutation(tl);
+  for(check=tl->tiles; check!=NULL; check=check->next)
+    if( check->size > p->maxtcontig )/* p->maxtcontig was initialized to 0. */
+      {
+        p->maxtcontig=check->size;
+        memcpy(p->maxtsize, check->dsize, tl->ndim*sizeof *p->maxtsize);
+      }
 
-       False detection removal: The sky subtracted image will be used
-           for thresholding over the detected and undetected regions.
-
-       Segmentation: The sky subtracted image will also be used for
-           generating the catalog.
-
-     Since both operations involve the sky subtracted input image
-     (with different sky values) one array playing the role can really
-     help in following the code. It will also help in the memory usage
-     of the program. This array is allocated in the beginning and
-     freed in the end and used throughout. A huge chunk of memory
-     doesn't have to be allocated and de-allocated on every step.  */
-  errno=0; p->imgss=malloc(s0*s1*sizeof *p->imgss);
-  if(p->imgss==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->imgss in preparearrays "
-          "(ui.c)", s0*s1*sizeof *p->imgss);
-
-  /* Read the kernel: */
-  if(p->up.kernelnameset)
-    gal_fits_prep_float_kernel(p->up.kernelname, p->up.khdu, &smp->kernel,
-                                    &smp->ks0, &smp->ks1);
-  else
+  /* Make the tile check image if requested. */
+  if(tl->checktiles)
     {
-      errno=0;
-      smp->ks0=defaultkernel_s0;
-      smp->ks1=defaultkernel_s1;
-      smp->kernel=malloc(smp->ks0*smp->ks1*sizeof *smp->kernel);
-      if(smp->kernel==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for default kernel",
-              smp->ks0*smp->ks1);
-      ff=defaultkernel;
-      fp=(f=smp->kernel)+smp->ks0*smp->ks1;
-      do *f=*ff++; while(++f<fp);
+      tl->tilecheckname=gal_checkset_automatic_output(&p->cp, p->inputname,
+                                                      "_tiled.fits");
+      check=gal_tile_block_check_tiles(tl->tiles);
+      gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
+      gal_data_free(check);
+      free(tl->tilecheckname);
     }
 
-  /* Allocate the other necessary arrays: */
-  errno=0; p->byt=malloc(s0*s1*sizeof *p->byt);
-  if(p->byt==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->byt (ui.c)",
-          s0*s1*sizeof *p->byt);
-  errno=0; p->olab=malloc(s0*s1*sizeof *p->olab);
-  if(p->olab==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->olab (ui.c)",
-          s0*s1*sizeof *p->olab);
-  errno=0; p->clab=malloc(s0*s1*sizeof *p->clab);
-  if(p->clab==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->clab (ui.c)",
-          s0*s1*sizeof *p->clab);
-
-  /* This ngb array is used to keep the relative indexs of the
-     neighbors of a pixel. It is used in the over-segmentation step
-     (clumps.c). The labelings are such that the first four elements
-     are the four-connected ones and the second four are
-     8-connected. There is no problem with the negative values that
-     are stored as size_t (which is an unsigned type): they will be
-     added with positive values during the processing to give correct
-     values. */
-  relngb[4]=    s1-1;    relngb[0]=    s1;    relngb[5]=    s1+1;
-  relngb[1]=      -1;                         relngb[2]=       1;
-  relngb[6]= -1*s1-1;    relngb[3]= -1*s1;    relngb[7]= -1*s1+1;
-
-  /* Set the parameters for both mesh grids. */
-  lmp->s0=smp->s0;
-  lmp->s1=smp->s1;
-  lmp->ks0=smp->ks0;
-  lmp->ks1=smp->ks1;
-  lmp->nch1=smp->nch1;
-  lmp->nch2=smp->nch2;
-  lmp->kernel=smp->kernel;
-  lmp->img=p->img=smp->img;
-  lmp->params=smp->params=p;
-  lmp->minmodeq=smp->minmodeq;
-  lmp->mirrordist=smp->mirrordist;
-  lmp->fullsmooth=smp->fullsmooth;
-  lmp->numnearest=smp->numnearest;
-  lmp->smoothwidth=smp->smoothwidth;
-  lmp->lastmeshfrac=smp->lastmeshfrac;
-  lmp->meshbasedcheck=smp->meshbasedcheck;
-  lmp->interponlyblank=smp->interponlyblank;
-  lmp->fullinterpolation=smp->fullinterpolation;
-  lmp->numthreads=smp->numthreads=p->cp.numthreads;
-
-
-  /* Prepare the mesh structures. */
-  gal_mesh_make_mesh(smp);
-  gal_mesh_make_mesh(lmp);
-  if(p->meshname)
-    {
-      gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
-                             smp->img, s0, s1, p->anyblank, p->wcs,
-                             NULL, SPACK_STRING);
-      gal_mesh_check_mesh_id(smp, &meshindexs);
-      gal_fits_array_to_file(p->meshname, "SmallMeshIndexs",
-                             LONG_IMG, meshindexs, s0, s1, 0, p->wcs,
-                             NULL, SPACK_STRING);
-      free(meshindexs);
-      gal_mesh_check_mesh_id(lmp, &meshindexs);
-      gal_fits_array_to_file(p->meshname, "LargeMeshIndexs", LONG_IMG,
-                             meshindexs, s0, s1, 0, p->wcs,
-                             NULL, SPACK_STRING);
-      free(meshindexs);
-    }
+  /* Allocate space for the over-all necessary arrays. */
+  p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
+                           p->input->dsize, p->input->wcs, 0,
+                           p->cp.minmapsize, NULL, "binary", NULL);
+  p->olabel=gal_data_alloc(NULL, GAL_TYPE_UINT32, p->input->ndim,
+                           p->input->dsize, p->input->wcs, 0,
+                           p->cp.minmapsize, NULL, "labels", NULL);
 }
 
 
@@ -991,54 +509,68 @@ preparearrays(struct noisechiselparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
 void
-setparams(int argc, char *argv[], struct noisechiselparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct noisechiselparams *p)
 {
-  struct gal_commonparams *cp=&p->cp;
+  struct gal_options_common_params *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  /* NoiseChisel parameter initializations. */
-  p->detsnhistnbins=p->clumpsnhistnbins=0;
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
 
-  /* Read the arguments. */
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Do a sanity check. */
-  sanitycheck(p);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
-  /* Make the array of input images. */
-  preparearrays(p);
 
-  /* Everything is ready, notify the user of the program starting. */
-  if(cp->verb)
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
+
+
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
+  ui_check_options_and_arguments(p);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
+
+
+  /* Let the user know that processing has started. */
+  if(!p->cp.quiet)
     {
-      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
       printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
-      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
-      if(p->up.maskname)
-        printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
-      if(p->up.kernelnameset)
-        printf("  - Kernel: %s (hdu: %s)\n", p->up.kernelname,
-               p->up.khdu);
+      printf("  - Input: %s (hdu: %s)\n", p->inputname, p->cp.hdu);
+      if(p->kernelname)
+        printf("  - Kernel: %s (hdu: %s)\n", p->kernelname, p->khdu);
       else
         printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
     }
@@ -1064,43 +596,58 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
 
 
 /**************************************************************/
-/************      Free allocated, report         *************/
+/************     Pre-finish/abort operations     *************/
 /**************************************************************/
 void
-freeandreport(struct noisechiselparams *p, struct timeval *t1)
+ui_abort_after_check(struct noisechiselparams *p, char *filename,
+                     char *description)
 {
-  /* Free the allocated arrays: */
-  free(p->img);
-  free(p->byt);
-  free(p->olab);
-  free(p->clab);
-  free(p->imgss);
+  /* Let the user know that NoiseChisel is aborting. */
+  fprintf(stderr,
+          "------------------------------------------------\n"
+          "%s aborted for a check\n"
+          "------------------------------------------------\n"
+          "`%s' (%s) has been created.\n\n"
+          "If you want %s to continue its processing AND save any "
+          "requested check(s), please run it again with "
+          "`--continueaftercheck'.\n"
+          "------------------------------------------------\n",
+          PROGRAM_NAME, filename, description, PROGRAM_NAME);
+
+  /* Clean up. */
+  ui_free_report(p, NULL);
+
+  /* Abort. */
+  exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+void
+ui_free_report(struct noisechiselparams *p, struct timeval *t1)
+{
+  /* Free the simply allocated spaces. */
   free(p->cp.hdu);
-  free(p->up.mhdu);
-  free(p->up.khdu);
+  free(p->maxtsize);
   free(p->cp.output);
-  free(p->smp.kernel);
-  free(p->up.kernelname);
+  if(p->skyname)          free(p->skyname);
+  if(p->detsnname)        free(p->detsnname);
+  if(p->detskyname)       free(p->detskyname);
+  if(p->clumpsnname)      free(p->clumpsnname);
+  if(p->qthreshname)      free(p->qthreshname);
+  if(p->detectionname)    free(p->detectionname);
+  if(p->segmentationname) free(p->segmentationname);
 
-  /* Free the mask image name. Note that p->up.inputname was not
-     allocated, but given to the program by the operating system. */
-  if(p->up.maskname && p->up.maskname!=p->up.inputname)
-    free(p->up.maskname);
-
-  /* Free all the allocated names. Note that detsnhist */
-  free(p->skyname);
-  free(p->meshname);
-  free(p->threshname);
-  free(p->maskdetname);
-  free(p->detectionname);
-  free(p->segmentationname);
-  free(p->detectionskyname);
-
-  /* Free the WCS structure: */
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
+  /* Free the allocated datasets. */
+  gal_data_free(p->conv);
+  gal_data_free(p->input);
+  gal_data_free(p->kernel);
+  gal_data_free(p->binary);
+  gal_data_free(p->olabel);
 
   /* Print the final message. */
-  if(p->cp.verb)
-    gal_timing_report(t1, SPACK_NAME" finished in", 0);
+  if(!p->cp.quiet && t1)
+    gal_timing_report(t1, PROGRAM_NAME" finished in: ", 0);
 }

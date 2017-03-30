@@ -45,7 +45,7 @@ struct argp_option program_options[] =
       "Remove extension from input file.",
       ARGS_GROUP_EXTENSION,
       &p->remove,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -58,7 +58,7 @@ struct argp_option program_options[] =
       "Copy extension to output file.",
       ARGS_GROUP_EXTENSION,
       &p->copy,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -71,7 +71,7 @@ struct argp_option program_options[] =
       "Copy extension to output and remove from input.",
       ARGS_GROUP_EXTENSION,
       &p->cut,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -92,7 +92,7 @@ struct argp_option program_options[] =
       "Write the argument string as is into the header.",
       ARGS_GROUP_KEYWORD,
       &p->asis,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -105,7 +105,7 @@ struct argp_option program_options[] =
       "Delete a keyword from the header.",
       ARGS_GROUP_KEYWORD,
       &p->delete,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -118,7 +118,7 @@ struct argp_option program_options[] =
       "Rename keyword, keeping value and comments.",
       ARGS_GROUP_KEYWORD,
       &p->rename,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -131,7 +131,7 @@ struct argp_option program_options[] =
       "Update a keyword value or comments.",
       ARGS_GROUP_KEYWORD,
       &p->update,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -144,7 +144,7 @@ struct argp_option program_options[] =
       "Write a keyword (with value, comments and units).",
       ARGS_GROUP_KEYWORD,
       &p->write,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -157,7 +157,7 @@ struct argp_option program_options[] =
       "Add HISTORY keyword, any length is ok.",
       ARGS_GROUP_KEYWORD,
       &p->history,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -170,7 +170,7 @@ struct argp_option program_options[] =
       "Add COMMENT keyword, any length is ok.",
       ARGS_GROUP_KEYWORD,
       &p->comment,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

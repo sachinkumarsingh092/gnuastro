@@ -1,19 +1,9 @@
 /*********************************************************************
-TEMPLATE - Source code for a blank utility for easy creation of new
-           utilities, just copy and paste all the files here replacing
-           TEMPLATE with the new utility name (in the source code and
-           file names).
-
-         - Add the utility name to `configure.ac' and `Makefile.am' in the
-           top Gnuastro source directory.
-
-         - Correct these top comments in all the files, don't forget the
-           `astTEMPLATE.conf' and `Makefile.am' files.
-
+TEMPLATE - A minimal set of files and functions to define a program.
 TEMPLATE is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
-     Your name <your@email>
+     Your Name <your@email>
 Contributing author(s):
 Copyright (C) YYYY, Free Software Foundation, Inc.
 
@@ -33,39 +23,33 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <gnuastro/fits.h>
-#include <gnuastro/commonparams.h>
+/* Include necessary headers */
+#include <gnuastro/data.h>
 
-/* Progarm name macros: */
-#define SPACK           "astTEMPLATE" /* Subpackage executable name. */
-#define SPACK_NAME      "TEMPLATE"    /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+#include <options.h>
 
-
-
-
-
-
-struct uiparams
-{
-  char             *inputname;  /* Name of input file.             */
-};
+/* Progarm names.  */
+#define PROGRAM_NAME   "TEMPLATE"    /* Program full name.       */
+#define PROGRAM_EXEC   "astTEMPLATE" /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
 
 
+
+
+/* Main program parameters structure */
 struct TEMPLATEparams
 {
-  /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.         */
-  struct gal_commonparams  cp;  /* Common parameters.                 */
+  /* From command-line */
+  struct gal_options_common_params     cp; /* Common parameters.        */
+  struct gal_linkedlist_strll *multivalue; /* Pointer to multivalue.    */
+  char             *inputname;  /* Input filename.                      */
+  uint8_t              *onoff;  /* How to store on/off options.         */
 
-  /* Input: */
-
-
-  /* Internal: */
-  time_t              rawtime;  /* Starting time of the program.      */
+  /* Output: */
+  time_t              rawtime;  /* Starting time of the program.        */
 };
 
 #endif

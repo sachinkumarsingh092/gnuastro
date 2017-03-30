@@ -51,222 +51,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/*************************************************************
- **************            Type info           ***************
- *************************************************************/
-
-char *
-gal_data_type_as_string(uint8_t type, int long_name)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      if(long_name) return "bit";                 else return "b";
-
-    case GAL_DATA_TYPE_UINT8:
-      if(long_name) return "uint8";               else return "u8";
-
-    case GAL_DATA_TYPE_INT8:
-      if(long_name) return "int8";                else return "i8";
-
-    case GAL_DATA_TYPE_UINT16:
-      if(long_name) return "uint16";              else return "u16";
-
-    case GAL_DATA_TYPE_INT16:
-      if(long_name) return "int16";               else return "i16";
-
-    case GAL_DATA_TYPE_UINT32:
-      if(long_name) return "uint32";              else return "u32";
-
-    case GAL_DATA_TYPE_INT32:
-      if(long_name) return "int32";               else return "i32";
-
-    case GAL_DATA_TYPE_UINT64:
-      if(long_name) return "uint64";              else return "u64";
-
-    case GAL_DATA_TYPE_INT64:
-      if(long_name) return "int64";               else return "i64";
-
-    case GAL_DATA_TYPE_FLOAT32:
-      if(long_name) return "float32";             else return "f32";
-
-    case GAL_DATA_TYPE_FLOAT64:
-      if(long_name) return "float64";             else return "f64";
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      if(long_name) return "complex32";           else return "c32";
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      if(long_name) return "complex64";           else return "c64";
-
-    case GAL_DATA_TYPE_STRING:
-      if(long_name) return "string";              else return "str";
-
-    case GAL_DATA_TYPE_STRLL:
-      if(long_name) return "string linked list";  else return "strll";
-
-    default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_type_as_string'", type);
-    }
-
-  /* Any of the cases above should return this function, so if control
-     reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_type_as_string' function. This must not happen",
-        PACKAGE_BUGREPORT);
-  return NULL;
-}
-
-
-
-
-
-uint8_t
-gal_data_string_as_type(char *str)
-{
-  if(      !strcmp(str, "b")     || !strcmp(str, "bit") )
-    return GAL_DATA_TYPE_BIT;
-
-  else if( !strcmp(str, "u8")    || !strcmp(str, "uint8") )
-    return GAL_DATA_TYPE_UINT8;
-
-  else if( !strcmp(str, "i8")    || !strcmp(str, "int8") )
-    return GAL_DATA_TYPE_INT8;
-
-  else if( !strcmp(str, "u16")   || !strcmp(str, "uint16") )
-    return GAL_DATA_TYPE_UINT16;
-
-  else if( !strcmp(str, "i16")   || !strcmp(str, "int16") )
-    return GAL_DATA_TYPE_INT16;
-
-  else if( !strcmp(str, "u32")   || !strcmp(str, "uint32") )
-    return GAL_DATA_TYPE_UINT32;
-
-  else if( !strcmp(str, "i32")   || !strcmp(str, "int32") )
-    return GAL_DATA_TYPE_INT32;
-
-  else if( !strcmp(str, "u64")   || !strcmp(str, "uint64") )
-    return GAL_DATA_TYPE_UINT64;
-
-  else if( !strcmp(str, "i64")   || !strcmp(str, "int64") )
-    return GAL_DATA_TYPE_INT64;
-
-  else if( !strcmp(str, "f32")   || !strcmp(str, "float32") )
-    return GAL_DATA_TYPE_FLOAT32;
-
-  else if( !strcmp(str, "f64")   || !strcmp(str, "float64") )
-    return GAL_DATA_TYPE_FLOAT64;
-
-  else if( !strcmp(str, "c32")   || !strcmp(str, "complex32") )
-    return GAL_DATA_TYPE_COMPLEX32;
-
-  else if( !strcmp(str, "c64")   || !strcmp(str, "complex64") )
-    return GAL_DATA_TYPE_COMPLEX64;
-
-  else if( !strcmp(str, "str")   || !strcmp(str, "string") )
-    return GAL_DATA_TYPE_STRING;
-
-  else
-    return GAL_DATA_TYPE_INVALID;
-
-  /* Any of the cases above should return this function, so if control
-     reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_string_as_type' function. This must not happen",
-        PACKAGE_BUGREPORT);
-  return 0;
-}
-
-
-
-
-
-/* Put the minimum (or maximum for the `gal_data_type_max') value for the
-   type in the space (that must already be allocated before the call to
-   this function) pointed to by in.  */
-void
-gal_data_type_min(uint8_t type, void *in)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_UINT8:    *(uint8_t *)  in = 0;            break;
-    case GAL_DATA_TYPE_INT8:     *(int8_t *)   in = INT8_MIN;     break;
-    case GAL_DATA_TYPE_UINT16:   *(uint16_t *) in = 0;            break;
-    case GAL_DATA_TYPE_INT16:    *(int16_t *)  in = INT16_MIN;    break;
-    case GAL_DATA_TYPE_UINT32:   *(uint32_t *) in = 0;            break;
-    case GAL_DATA_TYPE_INT32:    *(int32_t *)  in = INT32_MIN;    break;
-    case GAL_DATA_TYPE_UINT64:   *(uint64_t *) in = 0;            break;
-    case GAL_DATA_TYPE_INT64:    *(int64_t *)  in = INT64_MIN;    break;
-    case GAL_DATA_TYPE_FLOAT32:  *(float *)    in = -FLT_MAX;     break;
-    case GAL_DATA_TYPE_FLOAT64:  *(double *)   in = -DBL_MAX;     break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
-    }
-}
-
-
-
-
-
-void
-gal_data_type_max(uint8_t type, void *in)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_UINT8:    *(uint8_t *)  in = UINT8_MAX;    break;
-    case GAL_DATA_TYPE_INT8:     *(int8_t *)   in = INT8_MAX;     break;
-    case GAL_DATA_TYPE_UINT16:   *(uint16_t *) in = UINT16_MAX;   break;
-    case GAL_DATA_TYPE_INT16:    *(int16_t *)  in = INT16_MAX;    break;
-    case GAL_DATA_TYPE_UINT32:   *(uint32_t *) in = UINT32_MAX;   break;
-    case GAL_DATA_TYPE_INT32:    *(int32_t *)  in = INT32_MAX;    break;
-    case GAL_DATA_TYPE_UINT64:   *(uint64_t *) in = UINT64_MAX;   break;
-    case GAL_DATA_TYPE_INT64:    *(int64_t *)  in = INT64_MAX;    break;
-    case GAL_DATA_TYPE_FLOAT32:  *(float *)    in = FLT_MAX;      break;
-    case GAL_DATA_TYPE_FLOAT64:  *(double *)   in = DBL_MAX;      break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
-    }
-}
-
-
-
-
-
-/* Since linked lists need a different process than arrays, for functions
-   that work on both, it is convenient to simiplify the check with this
-   function. */
-int
-gal_data_is_linked_list(uint8_t type)
-{
-  return type==GAL_DATA_TYPE_STRLL;
-}
-
-
-
-
-
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second)
-{
-  int ftype=gal_tile_block(first)->type;
-  int stype=gal_tile_block(second)->type;
-  return ftype > stype ? ftype : stype;
-}
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -323,82 +107,6 @@ gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second)
 
 
 
-size_t
-gal_data_sizeof(uint8_t type)
-{
-  /* Allocate space for the array to keep the image. */
-  switch(type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "types, please get in touch with us to implement it.");
-
-      /* The parenthesis after sizeof is not a function, it is actually a
-         type cast, so we have put a space between size of and the
-         parenthesis to highlight this. In C, `sizeof' is an operator, not
-         a function.*/
-    case GAL_DATA_TYPE_UINT8:
-      return sizeof (uint8_t);
-
-    case GAL_DATA_TYPE_INT8:
-      return sizeof (int8_t);
-
-    case GAL_DATA_TYPE_UINT16:
-      return sizeof (uint16_t);
-
-    case GAL_DATA_TYPE_INT16:
-      return sizeof (int16_t);
-
-    case GAL_DATA_TYPE_UINT32:
-      return sizeof (uint32_t);
-
-    case GAL_DATA_TYPE_INT32:
-      return sizeof (int32_t);
-
-    case GAL_DATA_TYPE_UINT64:
-      return sizeof (uint64_t);
-
-    case GAL_DATA_TYPE_INT64:
-      return sizeof (int64_t);
-
-    case GAL_DATA_TYPE_FLOAT32:
-      if( sizeof (float) != 4 )
-        error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
-      return sizeof (float);
-
-    case GAL_DATA_TYPE_FLOAT64:
-      if( sizeof (double) != 8 )
-        error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
-      return sizeof (double);
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      if( sizeof (float) != 4 )
-        error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
-      return sizeof (gsl_complex_float);
-
-    case GAL_DATA_TYPE_COMPLEX64:
-      if( sizeof (double) != 8 )
-        error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
-      return sizeof (gsl_complex);
-
-    case GAL_DATA_TYPE_STRING:
-      return sizeof (char *);
-
-    default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "gal_data_sizeof", type);
-    }
-
-  error(EXIT_FAILURE, 0, "Control has reached the end of `gal_data_sizeof' "
-        "This is a bug! Please contact us at %s so we can find the cause "
-        "of the problem.", PACKAGE_BUGREPORT);
-  return -1;
-}
-
-
-
-
-
 /* Increment a give pointer depending on the given type.
 
    When working with the `array' elements of `gal_data_t', we are actually
@@ -415,7 +123,7 @@ void *
 gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type)
 {
   char *p=(char *)pointer;
-  return p + increment * gal_data_sizeof(type);
+  return p + increment * gal_type_sizeof(type);
 }
 
 
@@ -428,7 +136,7 @@ size_t
 gal_data_ptr_dist(void *earlier, void *later, uint8_t type)
 {
   char *e=(char *)earlier, *l=(char *)later;
-  return (l-e)/gal_data_sizeof(type);
+  return (l-e)/gal_type_sizeof(type);
 }
 
 
@@ -445,10 +153,10 @@ gal_data_malloc_array(uint8_t type, size_t size)
   void *array;
 
   errno=0;
-  array=malloc( size * gal_data_sizeof(type) );
+  array=malloc( size * gal_type_sizeof(type) );
   if(array==NULL)
     error(EXIT_FAILURE, errno, "array of %zu bytes in gal_data_malloc_array",
-          size * gal_data_sizeof(type));
+          size * gal_type_sizeof(type));
 
   return array;
 }
@@ -463,10 +171,10 @@ gal_data_calloc_array(uint8_t type, size_t size)
   void *array;
 
   errno=0;
-  array=calloc( size,  gal_data_sizeof(type) );
+  array=calloc( size,  gal_type_sizeof(type) );
   if(array==NULL)
     error(EXIT_FAILURE, errno, "array of %zu bytes in gal_data_calloc_array",
-          size * gal_data_sizeof(type));
+          size * gal_type_sizeof(type));
 
   return array;
 }
@@ -480,71 +188,42 @@ gal_data_calloc_array(uint8_t type, size_t size)
 void *
 gal_data_alloc_number(uint8_t type, void *number)
 {
-  void *allocated;
+  void *allocd;
 
   /* Allocate the space for the blank value: */
-  allocated=gal_data_malloc_array(type, 1);
+  allocd=gal_data_malloc_array(type, 1);
 
   /* Put the blank value into it. */
   errno=0;
   switch(type)
     {
-    case GAL_DATA_TYPE_BIT:
+    case GAL_TYPE_BIT:
       error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
-            "values for `GAL_DATA_TYPE_BIT', please get in touch with "
+            "values for `GAL_TYPE_BIT', please get in touch with "
             "us to see how we can implement it.");
 
-    case GAL_DATA_TYPE_UINT8:
-      *(uint8_t *)allocated=*(uint8_t *)number;
-      break;
+    case GAL_TYPE_UINT8:   *(uint8_t *)allocd  = *(uint8_t *)  number; break;
+    case GAL_TYPE_INT8:    *(int8_t *)allocd   = *(int8_t *)   number; break;
+    case GAL_TYPE_UINT16:  *(uint16_t *)allocd = *(uint16_t *) number; break;
+    case GAL_TYPE_INT16:   *(int16_t *)allocd  = *(int16_t *)  number; break;
+    case GAL_TYPE_UINT32:  *(uint32_t *)allocd = *(uint32_t *) number; break;
+    case GAL_TYPE_INT32:   *(int32_t *)allocd  = *(int32_t *)  number; break;
+    case GAL_TYPE_UINT64:  *(uint64_t *)allocd = *(uint64_t *) number; break;
+    case GAL_TYPE_INT64:   *(int64_t *)allocd  = *(int64_t *)  number; break;
+    case GAL_TYPE_FLOAT32: *(float *)allocd    = *(float *)    number; break;
+    case GAL_TYPE_FLOAT64: *(double *)allocd   = *(double *)   number; break;
 
-    case GAL_DATA_TYPE_INT8:
-      *(int8_t *)allocated=*(int8_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_UINT16:
-      *(uint16_t *)allocated=*(uint16_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_INT16:
-      *(int16_t *)allocated=*(int16_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_UINT32:
-      *(uint32_t *)allocated=*(uint32_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_INT32:
-      *(int32_t *)allocated=*(int32_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_UINT64:
-      *(uint64_t *)allocated=*(uint64_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_INT64:
-      *(int64_t *)allocated=*(int64_t *)number;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT32:
-      *(float *)allocated=*(float *)number;
-      break;
-
-    case GAL_DATA_TYPE_FLOAT64:
-      *(double *)allocated=*(double *)number;
-      break;
-
-    case GAL_DATA_TYPE_COMPLEX32:
-      GSL_COMPLEX_P_REAL(((gsl_complex_float *)allocated)) =
+    case GAL_TYPE_COMPLEX32:
+      GSL_COMPLEX_P_REAL(((gsl_complex_float *)allocd)) =
         GSL_COMPLEX_P_REAL(((gsl_complex_float *)number));
-      GSL_COMPLEX_P_IMAG(((gsl_complex_float *)allocated)) =
+      GSL_COMPLEX_P_IMAG(((gsl_complex_float *)allocd)) =
         GSL_COMPLEX_P_IMAG(((gsl_complex_float *)number));
       break;
 
-    case GAL_DATA_TYPE_COMPLEX64:
-      GSL_COMPLEX_P_REAL(((gsl_complex *)allocated)) =
+    case GAL_TYPE_COMPLEX64:
+      GSL_COMPLEX_P_REAL(((gsl_complex *)allocd)) =
         GSL_COMPLEX_P_REAL(((gsl_complex *)number));
-      GSL_COMPLEX_P_IMAG(((gsl_complex *)allocated)) =
+      GSL_COMPLEX_P_IMAG(((gsl_complex *)allocd)) =
         GSL_COMPLEX_P_IMAG(((gsl_complex *)number));
       break;
 
@@ -553,7 +232,7 @@ gal_data_alloc_number(uint8_t type, void *number)
             "`gal_data_alloc_number'", type);
     }
 
-  return allocated;
+  return allocd;
 }
 
 
@@ -566,7 +245,7 @@ gal_data_mmap(gal_data_t *data, int clear)
   int filedes;
   char *filename;
   unsigned char uc=0;
-  size_t bsize=data->size*gal_data_sizeof(data->type);
+  size_t bsize=data->size*gal_type_sizeof(data->type);
 
   /* Check if the .gnuastro folder exists, write the file there. If it
      doesn't exist, then make the .gnuastro directory.*/
@@ -694,7 +373,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         data->array=array;
       else
         {
-          if( gal_data_sizeof(type)*data->size  > minmapsize )
+          if( gal_type_sizeof(type)*data->size  > minmapsize )
             gal_data_mmap(data, clear);
           else
             {
@@ -761,7 +440,7 @@ gal_data_string_fixed_alloc_size(gal_data_t *data)
   char *tmp, **strarr=data->array;
 
   /* Return 0 if the dataset is not a string. */
-  if(data->type!=GAL_DATA_TYPE_STRING)
+  if(data->type!=GAL_TYPE_STRING)
     return -1;
 
   /* Get the maximum length. */
@@ -828,7 +507,7 @@ gal_data_free_contents(gal_data_t *data)
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the
      actual array. */
-  if(data->type==GAL_DATA_TYPE_STRING && data->array)
+  if(data->type==GAL_TYPE_STRING && data->array)
     {
       size_t i;
       char **strarr=data->array;
@@ -908,7 +587,7 @@ gal_data_array_calloc(size_t size)
   for(i=0;i<size;++i)
     {
       out[i].array      = NULL;
-      out[i].type       = GAL_DATA_TYPE_INVALID;
+      out[i].type       = GAL_TYPE_INVALID;
       out[i].ndim       = 0;
       out[i].dsize      = NULL;
       out[i].nwcs       = 0;
@@ -1174,7 +853,7 @@ data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
     gal_blank_write(to, type);
   else
     error(EXIT_FAILURE, 0, "`%s' couldn't be parsed as `%s' type",
-          string, gal_data_type_as_string(type, 1));
+          string, gal_type_to_string(type, 1));
 }
 
 
@@ -1192,7 +871,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
   char **strarr=from->array, **outstrarr=to->array;
 
   /* Sanity check. */
-  if(from->type!=GAL_DATA_TYPE_STRING)
+  if(from->type!=GAL_TYPE_STRING)
     error(EXIT_FAILURE, 0, "`from' in `data_copy_from_string' must have "
           "a string type.");
   if(from->block)
@@ -1206,34 +885,23 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
       /* Set the pointer. */
       switch(to->type)
         {
-        case GAL_DATA_TYPE_UINT8:    ptr = (uint8_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_INT8:     ptr = (int8_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_UINT16:   ptr = (uint16_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_INT16:    ptr = (int16_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_UINT32:   ptr = (uint32_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_INT32:    ptr = (int32_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_UINT64:   ptr = (uint64_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_INT64:    ptr = (int64_t *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_FLOAT32:  ptr = (float *)(to->array) + i;
-          break;
-        case GAL_DATA_TYPE_FLOAT64:  ptr = (double *)(to->array) + i;
-          break;
-
-        case GAL_DATA_TYPE_BIT:
-        case GAL_DATA_TYPE_STRLL:
-        case GAL_DATA_TYPE_COMPLEX32:
-        case GAL_DATA_TYPE_COMPLEX64:
+        case GAL_TYPE_UINT8:    ptr = (uint8_t *)(to->array)  + i;   break;
+        case GAL_TYPE_INT8:     ptr = (int8_t *)(to->array)   + i;   break;
+        case GAL_TYPE_UINT16:   ptr = (uint16_t *)(to->array) + i;   break;
+        case GAL_TYPE_INT16:    ptr = (int16_t *)(to->array)  + i;   break;
+        case GAL_TYPE_UINT32:   ptr = (uint32_t *)(to->array) + i;   break;
+        case GAL_TYPE_INT32:    ptr = (int32_t *)(to->array)  + i;   break;
+        case GAL_TYPE_UINT64:   ptr = (uint64_t *)(to->array) + i;   break;
+        case GAL_TYPE_INT64:    ptr = (int64_t *)(to->array)  + i;   break;
+        case GAL_TYPE_FLOAT32:  ptr = (float *)(to->array)    + i;   break;
+        case GAL_TYPE_FLOAT64:  ptr = (double *)(to->array)   + i;   break;
+        case GAL_TYPE_BIT:
+        case GAL_TYPE_STRLL:
+        case GAL_TYPE_COMPLEX32:
+        case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, "`data_copy_from_string' currently doesn't "
                 "support copying to %s type",
-                gal_data_type_as_string(to->type, 1));
+                gal_type_to_string(to->type, 1));
           break;
 
         default:
@@ -1242,7 +910,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         }
 
       /* Read/put the input into the output. */
-      if(to->type==GAL_DATA_TYPE_STRING)
+      if(to->type==GAL_TYPE_STRING)
         gal_checkset_allocate_copy(strarr[i], &outstrarr[i]);
       else
         {
@@ -1263,7 +931,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
       {                                                                 \
         if(a[i]!=BLANK) asprintf(&strarr[i], FMT, a[i]);                \
         else                                                            \
-          gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]); \
+          gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]);     \
       }                                                                 \
   }
 
@@ -1274,7 +942,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         if(isnan(BLANK)) isblank = isnan(a[i]) ? 1 : 0;                 \
         else             isblank = a[i]==BLANK ? 1 : 0;                 \
         if(isblank==0) asprintf(&strarr[i], "%f", a[i]);                \
-        else gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]); \
+        else gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]);  \
       }                                                                 \
   }
 
@@ -1288,7 +956,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   char **strarr=to->array, **instrarr=from->array;
 
   /* Sanity check */
-  if(to->type!=GAL_DATA_TYPE_STRING)
+  if(to->type!=GAL_TYPE_STRING)
     error(EXIT_FAILURE, 0, "`to' in `data_copy_to_string' must have a "
           "string type");
   if(from->block)
@@ -1299,48 +967,48 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   /* Do the copying */
   switch(from->type)
     {
-    case GAL_DATA_TYPE_UINT8:
+    case GAL_TYPE_UINT8:
       COPY_TO_STR_INT(uint8_t,  GAL_BLANK_UINT8, "%u");    break;
 
-    case GAL_DATA_TYPE_INT8:
+    case GAL_TYPE_INT8:
       COPY_TO_STR_INT(int8_t,   GAL_BLANK_INT8, "%d");     break;
 
-    case GAL_DATA_TYPE_UINT16:
+    case GAL_TYPE_UINT16:
       COPY_TO_STR_INT(uint16_t, GAL_BLANK_UINT16, "%u");   break;
 
-    case GAL_DATA_TYPE_INT16:
+    case GAL_TYPE_INT16:
       COPY_TO_STR_INT(int16_t,  GAL_BLANK_INT16, "%d");    break;
 
-    case GAL_DATA_TYPE_UINT32:
+    case GAL_TYPE_UINT32:
       COPY_TO_STR_INT(uint32_t, GAL_BLANK_UINT32, "%u");   break;
 
-    case GAL_DATA_TYPE_INT32:
+    case GAL_TYPE_INT32:
       COPY_TO_STR_INT(int32_t,  GAL_BLANK_INT32, "%d");    break;
 
-    case GAL_DATA_TYPE_UINT64:
+    case GAL_TYPE_UINT64:
       COPY_TO_STR_INT(uint64_t, GAL_BLANK_UINT64, "%lu");  break;
 
-    case GAL_DATA_TYPE_INT64:
+    case GAL_TYPE_INT64:
       COPY_TO_STR_INT(int64_t,  GAL_BLANK_INT64, "%ld");   break;
 
-    case GAL_DATA_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT32:
       COPY_TO_STR_FLT(float, GAL_BLANK_FLOAT32);           break;
 
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT64:
       COPY_TO_STR_FLT(double, GAL_BLANK_FLOAT32);          break;
 
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       for(i=0;i<from->size;++i)
         gal_checkset_allocate_copy(instrarr[i], &strarr[i]);
       break;
 
-    case GAL_DATA_TYPE_BIT:
-    case GAL_DATA_TYPE_STRLL:
-    case GAL_DATA_TYPE_COMPLEX32:
-    case GAL_DATA_TYPE_COMPLEX64:
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_STRLL:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "`data_copy_to_string' currently doesn't "
             "support copying to %s type",
-            gal_data_type_as_string(from->type, 1));
+            gal_type_to_string(from->type, 1));
       break;
 
     default:
@@ -1354,10 +1022,10 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
 
 #define COPY_OT_IT_SET(OT, IT) {                                        \
-    OT ob, *o=out->array;                                               \
+    OT ob, *restrict o=out->array;                                      \
     size_t increment=0, num_increment=1;                                \
-    IT ib, *ist, *i=in->array, *f=i+in->size;                           \
     size_t mclen=0, contig_len=in->dsize[in->ndim-1];                   \
+    IT ib, *ist, *restrict i=in->array, *f=i+in->size;                  \
     size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* If we are on a tile, the default values need to change. */       \
@@ -1385,7 +1053,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
         /* conversion). */                                              \
         if(iblock->type==out->type)                                     \
           {                                                             \
-            memcpy(o, i, mclen*gal_data_sizeof(iblock->type));          \
+            memcpy(o, i, mclen*gal_type_sizeof(iblock->type));          \
             o += mclen;                                                 \
           }                                                             \
         else                                                            \
@@ -1415,57 +1083,24 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 #define COPY_OT_SET(OT)                                                 \
   switch(iblock->type)                                                  \
     {                                                                   \
-    case GAL_DATA_TYPE_UINT8:                                           \
-      COPY_OT_IT_SET(OT, uint8_t);                                      \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_INT8:                                            \
-      COPY_OT_IT_SET(OT, int8_t);                                       \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_UINT16:                                          \
-      COPY_OT_IT_SET(OT, uint16_t);                                     \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_INT16:                                           \
-      COPY_OT_IT_SET(OT, int16_t);                                      \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_UINT32:                                          \
-      COPY_OT_IT_SET(OT, uint32_t);                                     \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_INT32:                                           \
-      COPY_OT_IT_SET(OT, int32_t);                                      \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_UINT64:                                          \
-      COPY_OT_IT_SET(OT, uint64_t);                                     \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_INT64:                                           \
-      COPY_OT_IT_SET(OT, int64_t);                                      \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_FLOAT32:                                         \
-      COPY_OT_IT_SET(OT, float);                                        \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_FLOAT64:                                         \
-      COPY_OT_IT_SET(OT, double);                                       \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_STRING:                                          \
-      data_copy_from_string(in, out);                                   \
-      break;                                                            \
-                                                                        \
-    case GAL_DATA_TYPE_BIT:                                             \
-    case GAL_DATA_TYPE_STRLL:                                           \
-    case GAL_DATA_TYPE_COMPLEX32:                                       \
-    case GAL_DATA_TYPE_COMPLEX64:                                       \
+    case GAL_TYPE_UINT8:      COPY_OT_IT_SET(OT, uint8_t  );    break;  \
+    case GAL_TYPE_INT8:       COPY_OT_IT_SET(OT, int8_t   );    break;  \
+    case GAL_TYPE_UINT16:     COPY_OT_IT_SET(OT, uint16_t );    break;  \
+    case GAL_TYPE_INT16:      COPY_OT_IT_SET(OT, int16_t  );    break;  \
+    case GAL_TYPE_UINT32:     COPY_OT_IT_SET(OT, uint32_t );    break;  \
+    case GAL_TYPE_INT32:      COPY_OT_IT_SET(OT, int32_t  );    break;  \
+    case GAL_TYPE_UINT64:     COPY_OT_IT_SET(OT, uint64_t );    break;  \
+    case GAL_TYPE_INT64:      COPY_OT_IT_SET(OT, int64_t  );    break;  \
+    case GAL_TYPE_FLOAT32:    COPY_OT_IT_SET(OT, float    );    break;  \
+    case GAL_TYPE_FLOAT64:    COPY_OT_IT_SET(OT, double   );    break;  \
+    case GAL_TYPE_STRING:     data_copy_from_string(in, out);   break;  \
+    case GAL_TYPE_BIT:                                                  \
+    case GAL_TYPE_STRLL:                                                \
+    case GAL_TYPE_COMPLEX32:                                            \
+    case GAL_TYPE_COMPLEX64:                                            \
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently "   \
             "doesn't support copying from %s type to a numeric (real) " \
-            "type", gal_data_type_as_string(in->type, 1));              \
+            "type", gal_type_to_string(in->type, 1));                   \
       break;                                                            \
                                                                         \
     default:                                                            \
@@ -1513,53 +1148,67 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 
 
 
-/* Copy an array into the already allocated space in `out'. */
+/* Copy an array into the already allocated space of `out'. Note this
+   function won't re-allocate the space if the required size is larger. It
+   will abort with an error. If the output's size parameters are larger
+   than the input, then this function will update them to be the same as
+   the input. */
 void
 gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
                                        uint8_t newtype)
 {
   gal_data_t *iblock=gal_tile_block(in);
 
-  /* Two small sanity checks to avoid segmentation faults. */
-  if(out->size<in->size)
+  /* Make sure the number of allocated elements (of whatever type) in the
+     output is not smaller than the input. Note that the type is irrelevant
+     because we will be doing type conversion if they differ.*/
+  if( out->size < in->size  )
     error(EXIT_FAILURE, 0, "the output dataset must be equal or larger than "
           "the input in `gal_data_copy_to_new_type_allocated', the sizes "
           "are %zu and %zu respectively", out->size, in->size);
-  if(out->type!=newtype)
-    error(EXIT_FAILURE, 0, "the output dataset must have the same type as "
-          "the requested type in `gal_data_copy_to_new_type_allocated', "
-          "the types are %s and %s respectively",
-          gal_data_type_as_string(out->type, 1),
-          gal_data_type_as_string(newtype, 1));
+  if( out->ndim != in->ndim )
+    error(EXIT_FAILURE, 0, "the output dataset must have the same number of "
+          "dimensions in `gal_data_copy_to_new_type_allocated', the "
+          "dimensions "
+          "are %zu and %zu respectively", out->ndim, in->ndim);
+
 
   /* Do the copying. */
   switch(out->type)
     {
-    case GAL_DATA_TYPE_UINT8:   COPY_OT_SET( uint8_t  );      break;
-    case GAL_DATA_TYPE_INT8:    COPY_OT_SET( int8_t   );      break;
-    case GAL_DATA_TYPE_UINT16:  COPY_OT_SET( uint16_t );      break;
-    case GAL_DATA_TYPE_INT16:   COPY_OT_SET( int16_t  );      break;
-    case GAL_DATA_TYPE_UINT32:  COPY_OT_SET( uint32_t );      break;
-    case GAL_DATA_TYPE_INT32:   COPY_OT_SET( int32_t  );      break;
-    case GAL_DATA_TYPE_UINT64:  COPY_OT_SET( uint64_t );      break;
-    case GAL_DATA_TYPE_INT64:   COPY_OT_SET( int64_t  );      break;
-    case GAL_DATA_TYPE_FLOAT32: COPY_OT_SET( float    );      break;
-    case GAL_DATA_TYPE_FLOAT64: COPY_OT_SET( double   );      break;
-    case GAL_DATA_TYPE_STRING:  data_copy_to_string(in, out); break;
+    case GAL_TYPE_UINT8:   COPY_OT_SET( uint8_t  );      break;
+    case GAL_TYPE_INT8:    COPY_OT_SET( int8_t   );      break;
+    case GAL_TYPE_UINT16:  COPY_OT_SET( uint16_t );      break;
+    case GAL_TYPE_INT16:   COPY_OT_SET( int16_t  );      break;
+    case GAL_TYPE_UINT32:  COPY_OT_SET( uint32_t );      break;
+    case GAL_TYPE_INT32:   COPY_OT_SET( int32_t  );      break;
+    case GAL_TYPE_UINT64:  COPY_OT_SET( uint64_t );      break;
+    case GAL_TYPE_INT64:   COPY_OT_SET( int64_t  );      break;
+    case GAL_TYPE_FLOAT32: COPY_OT_SET( float    );      break;
+    case GAL_TYPE_FLOAT64: COPY_OT_SET( double   );      break;
+    case GAL_TYPE_STRING:  data_copy_to_string(in, out); break;
 
-    case GAL_DATA_TYPE_BIT:
-    case GAL_DATA_TYPE_STRLL:
-    case GAL_DATA_TYPE_COMPLEX32:
-    case GAL_DATA_TYPE_COMPLEX64:
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_STRLL:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
             "support copying to %s type",
-            gal_data_type_as_string(out->type, 1));
+            gal_type_to_string(out->type, 1));
       break;
 
     default:
       error(EXIT_FAILURE, 0, "type %d not recognized for "
             "for `out->type' in gal_data_copy_to_new_type", out->type);
     }
+
+
+  /* Correct the sizes of the output to be the same as the input. If it is
+     equal, there is no problem, if not, the size information will be
+     changed, so if you want to use this allocated space again, be sure to
+     re-set the size parameters. */
+  out->size=in->size;
+  memcpy(out->dsize, in->dsize, in->ndim * sizeof *(in->dsize) );
 }
 
 
@@ -1601,23 +1250,25 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 
 /* Copy/read the element at `index' of the array in `data' into the space
    pointed to by `ptr'. */
-#define COPY_ELEM(IT) { IT *o=ptr, *a=input->array; *o = a[index]; }
+#define COPY_ELEM(IT) {                                                 \
+    IT *restrict o=ptr, *restrict a=input->array; *o = a[index];        \
+}
 void
 gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr)
 {
   /* Set the value. */
   switch(input->type)
     {
-    case GAL_DATA_TYPE_UINT8:     COPY_ELEM( uint8_t  );    break;
-    case GAL_DATA_TYPE_INT8:      COPY_ELEM( int8_t   );    break;
-    case GAL_DATA_TYPE_UINT16:    COPY_ELEM( uint16_t );    break;
-    case GAL_DATA_TYPE_INT16:     COPY_ELEM( int16_t  );    break;
-    case GAL_DATA_TYPE_UINT32:    COPY_ELEM( uint32_t );    break;
-    case GAL_DATA_TYPE_INT32:     COPY_ELEM( int32_t  );    break;
-    case GAL_DATA_TYPE_UINT64:    COPY_ELEM( uint64_t );    break;
-    case GAL_DATA_TYPE_INT64:     COPY_ELEM( int64_t  );    break;
-    case GAL_DATA_TYPE_FLOAT32:   COPY_ELEM( float    );    break;
-    case GAL_DATA_TYPE_FLOAT64:   COPY_ELEM( double   );    break;
+    case GAL_TYPE_UINT8:     COPY_ELEM( uint8_t  );    break;
+    case GAL_TYPE_INT8:      COPY_ELEM( int8_t   );    break;
+    case GAL_TYPE_UINT16:    COPY_ELEM( uint16_t );    break;
+    case GAL_TYPE_INT16:     COPY_ELEM( int16_t  );    break;
+    case GAL_TYPE_UINT32:    COPY_ELEM( uint32_t );    break;
+    case GAL_TYPE_INT32:     COPY_ELEM( int32_t  );    break;
+    case GAL_TYPE_UINT64:    COPY_ELEM( uint64_t );    break;
+    case GAL_TYPE_INT64:     COPY_ELEM( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   COPY_ELEM( float    );    break;
+    case GAL_TYPE_FLOAT64:   COPY_ELEM( double   );    break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_data_copy_elem'", input->type);
@@ -1656,7 +1307,7 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
     /* For a string we might need to make sure it has no white space
        characters, if it does, it can be printed it within quotation
        signs. */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       if(quote_if_str_has_space)
         {
           c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
@@ -1667,16 +1318,16 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
         asprintf(&str, "%s", *(char **)ptr);
       break;
 
-    case GAL_DATA_TYPE_UINT8:   WRITE_TO_STRING(uint8_t,   "%u");  break;
-    case GAL_DATA_TYPE_INT8:    WRITE_TO_STRING(int8_t,    "%d");  break;
-    case GAL_DATA_TYPE_UINT16:  WRITE_TO_STRING(uint16_t,  "%u");  break;
-    case GAL_DATA_TYPE_INT16:   WRITE_TO_STRING(int16_t,   "%d");  break;
-    case GAL_DATA_TYPE_UINT32:  WRITE_TO_STRING(uint32_t,  "%u");  break;
-    case GAL_DATA_TYPE_INT32:   WRITE_TO_STRING(int32_t,   "%d");  break;
-    case GAL_DATA_TYPE_UINT64:  WRITE_TO_STRING(uint64_t, "%lu");  break;
-    case GAL_DATA_TYPE_INT64:   WRITE_TO_STRING(int64_t,  "%ld");  break;
-    case GAL_DATA_TYPE_FLOAT32: WRITE_TO_STRING(float,   "%.6g");  break;
-    case GAL_DATA_TYPE_FLOAT64: WRITE_TO_STRING(double, "%.10g");  break;
+    case GAL_TYPE_UINT8:   WRITE_TO_STRING( uint8_t,   "%u");  break;
+    case GAL_TYPE_INT8:    WRITE_TO_STRING( int8_t,    "%d");  break;
+    case GAL_TYPE_UINT16:  WRITE_TO_STRING( uint16_t,  "%u");  break;
+    case GAL_TYPE_INT16:   WRITE_TO_STRING( int16_t,   "%d");  break;
+    case GAL_TYPE_UINT32:  WRITE_TO_STRING( uint32_t,  "%u");  break;
+    case GAL_TYPE_INT32:   WRITE_TO_STRING( int32_t,   "%d");  break;
+    case GAL_TYPE_UINT64:  WRITE_TO_STRING( uint64_t, "%lu");  break;
+    case GAL_TYPE_INT64:   WRITE_TO_STRING( int64_t,  "%ld");  break;
+    case GAL_TYPE_FLOAT32: WRITE_TO_STRING( float,   "%.6g");  break;
+    case GAL_TYPE_FLOAT64: WRITE_TO_STRING( double, "%.10g");  break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
@@ -1736,17 +1387,17 @@ gal_data_string_to_number(char *string)
          types. */
       if( d < 0 )
         {
-          if     (d>INT8_MIN)    {i8=d;  ptr=&i8;  type=GAL_DATA_TYPE_INT8;}
-          else if(d>INT16_MIN)   {i16=d; ptr=&i16; type=GAL_DATA_TYPE_INT16;}
-          else if(d>INT32_MIN)   {i32=d; ptr=&i32; type=GAL_DATA_TYPE_INT32;}
-          else                   {i64=d; ptr=&i64; type=GAL_DATA_TYPE_INT64;}
+          if     (d>INT8_MIN)    {i8=d;  ptr=&i8;  type=GAL_TYPE_INT8;}
+          else if(d>INT16_MIN)   {i16=d; ptr=&i16; type=GAL_TYPE_INT16;}
+          else if(d>INT32_MIN)   {i32=d; ptr=&i32; type=GAL_TYPE_INT32;}
+          else                   {i64=d; ptr=&i64; type=GAL_TYPE_INT64;}
         }
       else
         {
-          if     (d<=UINT8_MAX)  {u8=d;  ptr=&u8;  type=GAL_DATA_TYPE_UINT8;}
-          else if(d<=UINT16_MAX) {u16=d; ptr=&u16; type=GAL_DATA_TYPE_UINT16;}
-          else if(d<=UINT32_MAX) {u32=d; ptr=&u32; type=GAL_DATA_TYPE_UINT32;}
-          else                   {u64=d; ptr=&u64; type=GAL_DATA_TYPE_UINT64;}
+          if     (d<=UINT8_MAX)  {u8=d;  ptr=&u8;  type=GAL_TYPE_UINT8;}
+          else if(d<=UINT16_MAX) {u16=d; ptr=&u16; type=GAL_TYPE_UINT16;}
+          else if(d<=UINT32_MAX) {u32=d; ptr=&u32; type=GAL_TYPE_UINT32;}
+          else                   {u64=d; ptr=&u64; type=GAL_TYPE_UINT64;}
         }
     }
   else
@@ -1780,9 +1431,9 @@ gal_data_string_to_number(char *string)
       /* Calculate the number of decimal digits and decide if it the number
          should be a float or a double. */
       if( lnz-fnz < FLT_DIG || ( d<FLT_MAX && d>FLT_MIN ) )
-        { f=d; ptr=&f; type=GAL_DATA_TYPE_FLOAT32; }
+        { f=d; ptr=&f; type=GAL_TYPE_FLOAT32; }
       else
-        {      ptr=&d; type=GAL_DATA_TYPE_FLOAT64; }
+        {      ptr=&d; type=GAL_TYPE_FLOAT64; }
     }
 
   /* Return the pointer to the data structure. */
@@ -1824,7 +1475,7 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
   /* If the output is NULL, then allocate the necessary space if we are not
      dealing with a linked list. In a linked list, a NULL value is
      meaningful (it is the end of the list). */
-  if( *out==NULL && !gal_data_is_linked_list(type) )
+  if( *out==NULL && !gal_type_is_linked_list(type) )
     {
       allocated=1;
       *out=gal_data_malloc_array(type, 1);
@@ -1836,28 +1487,28 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
     {
 
     /* Linked lists, currently only string linked lists. */
-    case GAL_DATA_TYPE_STRLL:
+    case GAL_TYPE_STRLL:
       gal_linkedlist_add_to_stll( (struct gal_linkedlist_stll **)out,
                                   string, 1);
       break;
 
     /* String, just allocate and copy the string and keep its pointer in
        the place `*out' points to (for strings, `*out' is `char **'). */
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
       gal_checkset_allocate_copy(string, value);
       break;
 
     /* Floating point: Read it as a double or long, then put it in the
        array. When the conversion can't be done (the string isn't a number
        for example), then just assume no blank value was given. */
-    case GAL_DATA_TYPE_FLOAT32:
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
       d=strtod(string, &tailptr);
       if(*tailptr!='\0')
         status=1;
       else
         {
-          if(type==GAL_DATA_TYPE_FLOAT32) *(float *) value=d;
+          if(type==GAL_TYPE_FLOAT32) *(float *) value=d;
           else                            *(double *) value=d;
         }
       break;
@@ -1871,10 +1522,10 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
         switch(type)
           {
           /* The signed values can easily be put in. */
-          case GAL_DATA_TYPE_INT8:         *(int8_t *)    value = l; break;
-          case GAL_DATA_TYPE_INT16:        *(int16_t *)   value = l; break;
-          case GAL_DATA_TYPE_INT32:        *(int32_t *)   value = l; break;
-          case GAL_DATA_TYPE_INT64:        *(int64_t *)   value = l; break;
+          case GAL_TYPE_INT8:         *(int8_t *)    value = l; break;
+          case GAL_TYPE_INT16:        *(int16_t *)   value = l; break;
+          case GAL_TYPE_INT32:        *(int32_t *)   value = l; break;
+          case GAL_TYPE_INT64:        *(int64_t *)   value = l; break;
 
           /* For the unsigned types, the value has to be positive, so if
              the input was negative, then just return a status of one and
@@ -1885,10 +1536,10 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
             else
               switch(type)
                 {
-                case GAL_DATA_TYPE_UINT8:  *(uint8_t *)   value=l; break;
-                case GAL_DATA_TYPE_UINT16: *(uint16_t *)  value=l; break;
-                case GAL_DATA_TYPE_UINT32: *(uint32_t *)  value=l; break;
-                case GAL_DATA_TYPE_UINT64: *(uint64_t *)  value=l; break;
+                case GAL_TYPE_UINT8:  *(uint8_t *)   value=l;   break;
+                case GAL_TYPE_UINT16: *(uint16_t *)  value=l;   break;
+                case GAL_TYPE_UINT32: *(uint32_t *)  value=l;   break;
+                case GAL_TYPE_UINT64: *(uint64_t *)  value=l;   break;
                 default:
                   error(EXIT_FAILURE, 0, "type code %d not recognized in "
                         "`gal_data_string_to_type'", type);

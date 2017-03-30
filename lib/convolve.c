@@ -102,7 +102,7 @@ struct spatial_params
    the necessary input image parameters are stored in `overlap' (its
    `array' and `dsize' elements). The pointer to the kernel array that the
    overlap starts will be returned. */
-int
+static int
 convolve_spatial_overlap(int on_edge, size_t *parse_coords, size_t *hsize,
                          gal_data_t *block, gal_data_t *kernel,
                          gal_data_t *overlap, size_t *k_start_inc,
@@ -393,13 +393,12 @@ convolve_spatial_on_thread(void *inparam)
 
   size_t i;
   gal_data_t overlap, *block=gal_tile_block(cprm->tiles);
-  size_t *parse_coords=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T,
-                                             6*block->ndim);
+  size_t *parse_coords=gal_data_malloc_array(GAL_TYPE_SIZE_T, 6*block->ndim);
 
   /* Initialize the necessary overlap parameters. */
   overlap.block=block;
   overlap.ndim=block->ndim;
-  overlap.dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, block->ndim);
+  overlap.dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, block->ndim);
 
 
   /* Go over all the tiles given to this thread. */
@@ -436,15 +435,15 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
   if(tiles->ndim!=kernel->ndim)
     error(EXIT_FAILURE, 0, "The number of dimensions between the kernel and "
           "input should be the same in `gal_convolve_spatial'");
-  if( block->type!=GAL_DATA_TYPE_FLOAT32
-      || kernel->type!=GAL_DATA_TYPE_FLOAT32 )
+  if( block->type!=GAL_TYPE_FLOAT32
+      || kernel->type!=GAL_TYPE_FLOAT32 )
     error(EXIT_FAILURE, 0, "`gal_convolve_spatial' currently only works on "
           "`float32' type input and kernel");
 
   /* Allocate the output convolved dataset. */
   name = ( block->name
            ? gal_checkset_malloc_cat("CONVL_", block->name) : NULL );
-  out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, block->ndim, block->dsize,
+  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, block->ndim, block->dsize,
                      block->wcs, 0, block->minmapsize, name,
                      block->unit, NULL);
 
@@ -460,6 +459,6 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
                        gal_data_num_in_ll(tiles), numthreads);
 
   /* Clean up and return the output array. */
-  free(name);
+  if(name) free(name);
   return out;
 }

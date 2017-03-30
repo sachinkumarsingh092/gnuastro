@@ -39,7 +39,7 @@ struct argp_option program_options[] =
       "Standard deviation addition constant.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->stdadd,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -52,7 +52,7 @@ struct argp_option program_options[] =
       "Fixed background magnitude for whole input.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->background_mag,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -65,7 +65,7 @@ struct argp_option program_options[] =
       "Zeropoint magnitude of input.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->zeropoint,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET

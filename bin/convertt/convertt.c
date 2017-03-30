@@ -236,11 +236,10 @@ convertt_scale_to_uchar(struct converttparams *p)
       if(channel->status==0)
         {
           /* If the type isn't float, then convert it to float. */
-          if(channel->type!=GAL_DATA_TYPE_FLOAT32)
+          if(channel->type!=GAL_TYPE_FLOAT32)
             {
               /* Change the type to float. */
-              copied=gal_data_copy_to_new_type(channel,
-                                               GAL_DATA_TYPE_FLOAT32);
+              copied=gal_data_copy_to_new_type(channel, GAL_TYPE_FLOAT32);
 
               /* Correct the pointers. */
               copied->next=channel->next;
@@ -277,15 +276,14 @@ convertt_scale_to_uchar(struct converttparams *p)
       if(p->flminbyte)
         {
           /* Convert the fluxlow value to float and put it in min. */
-          copied=gal_data_copy_to_new_type(p->fluxlow, GAL_DATA_TYPE_FLOAT32);
+          copied=gal_data_copy_to_new_type(p->fluxlow, GAL_TYPE_FLOAT32);
           min = *((float *)(copied->array));
           gal_data_free(copied);
         }
       if(p->fhmaxbyte)
         {
           /* Convert the fluxhigh value to float and put it in min. */
-          copied=gal_data_copy_to_new_type(p->fluxhigh,
-                                           GAL_DATA_TYPE_FLOAT32);
+          copied=gal_data_copy_to_new_type(p->fluxhigh, GAL_TYPE_FLOAT32);
           max = *((float *)(copied->array));
           gal_data_free(copied);
         }
@@ -316,7 +314,7 @@ convertt_scale_to_uchar(struct converttparams *p)
             }
 
           /* Change the type to unsigned char. */
-          copied=gal_data_copy_to_new_type(channel, GAL_DATA_TYPE_UINT8);
+          copied=gal_data_copy_to_new_type(channel, GAL_TYPE_UINT8);
 
           /* Correct the pointers. */
           copied->next=channel->next;

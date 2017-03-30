@@ -39,13 +39,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 #if GAL_CONFIG_BIN_OP_UINT8 == 1
 #define BINARY_LT_IS_UINT8                                         \
-  case GAL_DATA_TYPE_UINT8:                                        \
-    BINARY_LT_SET(uint8_t);                                        \
-    break;
+  case GAL_TYPE_UINT8: BINARY_LT_SET(uint8_t);          break;
 #define BINARY_LT_SET_RT_IS_UINT8(LT)                              \
-  case GAL_DATA_TYPE_UINT8:                                        \
-    BINARY_RT_LT_SET(uint8_t, LT);                                 \
-    break;
+  case GAL_TYPE_UINT8: BINARY_RT_LT_SET(uint8_t, LT);   break;
 #else
 #define BINARY_LT_IS_UINT8
 #define BINARY_LT_SET_RT_IS_UINT8(LT)
@@ -57,13 +53,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT8 == 1
 #define BINARY_LT_IS_INT8                                          \
-  case GAL_DATA_TYPE_INT8:                                         \
-    BINARY_LT_SET(int8_t);                                         \
-    break;
+  case GAL_TYPE_INT8: BINARY_LT_SET(int8_t);            break;
 #define BINARY_LT_SET_RT_IS_INT8(LT)                               \
-  case GAL_DATA_TYPE_INT8:                                         \
-    BINARY_RT_LT_SET(int8_t, LT);                                  \
-    break;
+  case GAL_TYPE_INT8: BINARY_RT_LT_SET(int8_t, LT);     break;
 #else
 #define BINARY_LT_IS_INT8
 #define BINARY_LT_SET_RT_IS_INT8(LT)
@@ -75,13 +67,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT16 == 1
 #define BINARY_LT_IS_UINT16                                        \
-  case GAL_DATA_TYPE_UINT16:                                       \
-    BINARY_LT_SET(uint16_t);                                       \
-    break;
+  case GAL_TYPE_UINT16: BINARY_LT_SET(uint16_t);        break;
 #define BINARY_LT_SET_RT_IS_UINT16(LT)                             \
-  case GAL_DATA_TYPE_UINT16:                                       \
-    BINARY_RT_LT_SET(uint16_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT16: BINARY_RT_LT_SET(uint16_t, LT); break;
 #else
 #define BINARY_LT_IS_UINT16
 #define BINARY_LT_SET_RT_IS_UINT16(LT)
@@ -93,13 +81,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT16 == 1
 #define BINARY_LT_IS_INT16                                         \
-  case GAL_DATA_TYPE_INT16:                                        \
-    BINARY_LT_SET(int16_t);                                        \
-    break;
+  case GAL_TYPE_INT16: BINARY_LT_SET(int16_t);          break;
 #define BINARY_LT_SET_RT_IS_INT16(LT)                              \
-  case GAL_DATA_TYPE_INT16:                                        \
-    BINARY_RT_LT_SET(int16_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT16: BINARY_RT_LT_SET(int16_t, LT);   break;
 #else
 #define BINARY_LT_IS_INT16
 #define BINARY_LT_SET_RT_IS_INT16(LT)
@@ -111,13 +95,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT32 == 1
 #define BINARY_LT_IS_UINT32                                        \
-  case GAL_DATA_TYPE_UINT32:                                       \
-    BINARY_LT_SET(uint32_t);                                       \
-    break;
+  case GAL_TYPE_UINT32: BINARY_LT_SET(uint32_t);        break;
 #define BINARY_LT_SET_RT_IS_UINT32(LT)                             \
-  case GAL_DATA_TYPE_UINT32:                                       \
-    BINARY_RT_LT_SET(uint32_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT32: BINARY_RT_LT_SET(uint32_t, LT); break;
 #else
 #define BINARY_LT_IS_UINT32
 #define BINARY_LT_SET_RT_IS_UINT32(LT)
@@ -129,13 +109,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT32 == 1
 #define BINARY_LT_IS_INT32                                         \
-  case GAL_DATA_TYPE_INT32:                                        \
-    BINARY_LT_SET(int32_t);                                        \
-    break;
+  case GAL_TYPE_INT32: BINARY_LT_SET(int32_t);          break;
 #define BINARY_LT_SET_RT_IS_INT32(LT)                              \
-  case GAL_DATA_TYPE_INT32:                                        \
-    BINARY_RT_LT_SET(int32_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT32: BINARY_RT_LT_SET(int32_t, LT);   break;
 #else
 #define BINARY_LT_IS_INT32
 #define BINARY_LT_SET_RT_IS_INT32(LT)
@@ -147,13 +123,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_UINT64 == 1
 #define BINARY_LT_IS_UINT64                                        \
-  case GAL_DATA_TYPE_UINT64:                                       \
-    BINARY_LT_SET(uint64_t);                                       \
-    break;
+  case GAL_TYPE_UINT64: BINARY_LT_SET(uint64_t);        break;
 #define BINARY_LT_SET_RT_IS_UINT64(LT)                             \
-  case GAL_DATA_TYPE_UINT64:                                       \
-    BINARY_RT_LT_SET(uint64_t, LT);                                \
-    break;
+  case GAL_TYPE_UINT64: BINARY_RT_LT_SET(uint64_t, LT); break;
 #else
 #define BINARY_LT_IS_UINT64
 #define BINARY_LT_SET_RT_IS_UINT64(LT)
@@ -165,13 +137,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_INT64 == 1
 #define BINARY_LT_IS_INT64                                         \
-  case GAL_DATA_TYPE_INT64:                                        \
-    BINARY_LT_SET(int64_t);                                        \
-    break;
+  case GAL_TYPE_INT64: BINARY_LT_SET(int64_t);          break;
 #define BINARY_LT_SET_RT_IS_INT64(LT)                              \
-  case GAL_DATA_TYPE_INT64:                                        \
-    BINARY_RT_LT_SET(int64_t, LT);                                 \
-    break;
+  case GAL_TYPE_INT64: BINARY_RT_LT_SET(int64_t, LT);   break;
 #else
 #define BINARY_LT_IS_INT64
 #define BINARY_LT_SET_RT_IS_INT64(LT)
@@ -183,13 +151,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_FLOAT32 == 1
 #define BINARY_LT_IS_FLOAT32                                       \
-  case GAL_DATA_TYPE_FLOAT32:                                      \
-    BINARY_LT_SET(float);                                          \
-    break;
+  case GAL_TYPE_FLOAT32: BINARY_LT_SET(float);          break;
 #define BINARY_LT_SET_RT_IS_FLOAT32(LT)                            \
-  case GAL_DATA_TYPE_FLOAT32:                                      \
-    BINARY_RT_LT_SET(float, LT);                                   \
-    break;
+  case GAL_TYPE_FLOAT32: BINARY_RT_LT_SET(float, LT);   break;
 #else
 #define BINARY_LT_IS_FLOAT32
 #define BINARY_LT_SET_RT_IS_FLOAT32(LT)
@@ -201,13 +165,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #if GAL_CONFIG_BIN_OP_FLOAT64 == 1
 #define BINARY_LT_IS_FLOAT64                                       \
-  case GAL_DATA_TYPE_FLOAT64:                                      \
-    BINARY_LT_SET(double);                                         \
-    break;
+  case GAL_TYPE_FLOAT64: BINARY_LT_SET(double);         break;
 #define BINARY_LT_SET_RT_IS_FLOAT64(LT)                            \
-  case GAL_DATA_TYPE_FLOAT64:                                      \
-    BINARY_RT_LT_SET(double, LT);                                  \
-    break;
+  case GAL_TYPE_FLOAT64: BINARY_RT_LT_SET(double, LT);  break;
 #else
 #define BINARY_LT_IS_FLOAT64
 #define BINARY_LT_SET_RT_IS_FLOAT64(LT)

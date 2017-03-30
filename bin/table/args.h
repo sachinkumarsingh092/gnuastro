@@ -39,7 +39,7 @@ struct argp_option program_options[] =
       "Column number (counting from 1) or search string.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->columns,
-      GAL_DATA_TYPE_STRLL,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

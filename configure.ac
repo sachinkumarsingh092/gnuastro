@@ -283,20 +283,38 @@ AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
 
 
 # The native types for binary arithmetic operations, see the manual for a
-# detailed discussion. The initial list of values given here specify the
-# default list of types. If they have a value of 1, they will be
-# compiled. unless the user configures with `--disable-bin-op-TYPENAME', or
+# detailed discussion. The initial list of which types to compile can be
+# determined with the `--enable-bin-op-alltypes' option. If they have a
+# value of 1, they will be compiled. It is possible to disable a previously
+# compiled type with with `--disable-bin-op-TYPENAME', or
 # `--enable-bin-op-TYPENAME=no'.
-binop_uint8=1
-binop_int8=0
-binop_uint16=0
-binop_int16=0
-binop_uint32=0
-binop_int32=0
-binop_uint64=1
-binop_int64=1
-binop_float32=1
-binop_float64=1
+binop_alltypes=0
+AC_ARG_ENABLE([bin-op-alltypes],
+              [AS_HELP_STRING([--enable-bin-op-alltypes],
+                    [Allow native binary operations for all types.])],
+	      [AS_IF([test "x$enable_bin_op_alltypes" != xno],
+                     [binop_alltypes=1], [binop_alltypes=0])], [])
+AS_IF([test "x$binop_alltypes" != x0],
+      [binop_uint8=1
+       binop_int8=1
+       binop_uint16=1
+       binop_int16=1
+       binop_uint32=1
+       binop_int32=1
+       binop_uint64=1
+       binop_int64=1
+       binop_float32=1
+       binop_float64=1],
+      [binop_uint8=1
+       binop_int8=0
+       binop_uint16=0
+       binop_int16=0
+       binop_uint32=0
+       binop_int32=0
+       binop_uint64=1
+       binop_int64=1
+       binop_float32=1
+       binop_float64=1] )
 
 AC_MSG_CHECKING(compilation of 8-bit unsigned int binary operators)
 AC_ARG_ENABLE([bin-op-uint8],

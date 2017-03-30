@@ -135,7 +135,7 @@ ui_initialize_options(struct converttparams *p,
         {
         case GAL_OPTIONS_KEY_HDU:
           cp->coptions[i].value=&p->hdus;
-          cp->coptions[i].type=GAL_DATA_TYPE_STRLL;
+          cp->coptions[i].type=GAL_TYPE_STRLL;
           cp->coptions[i].doc="FITS input HDU, multiple calls possible.";
           break;
 
@@ -460,7 +460,7 @@ ui_make_channels_ll(struct converttparams *p)
       /* Blank: */
       else if(strcmp(name->v, BLANK_CHANNEL_NAME)==0)
         {
-          gal_data_add_to_ll(&p->chll, NULL, GAL_DATA_TYPE_INVALID, 0,
+          gal_data_add_to_ll(&p->chll, NULL, GAL_TYPE_INVALID, 0,
                              &dsize, NULL, 0, p->cp.minmapsize, "blank",
                              NULL, NULL);
           ++p->numch;
@@ -571,7 +571,7 @@ ui_prepare_input_channels(struct converttparams *p)
       if(tmp->ndim==0)
         {
           /* Make the blank data structure. */
-          blank=gal_data_alloc(NULL, GAL_DATA_TYPE_UINT8, ndim, dsize,
+          blank=gal_data_alloc(NULL, GAL_TYPE_UINT8, ndim, dsize,
                                wcs, 1, p->cp.minmapsize, "blank channel",
                                NULL, NULL);
 

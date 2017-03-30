@@ -238,8 +238,8 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
       if(allcols[i].unit && strlen(allcols[i].unit)>uw)
         uw=strlen(allcols[i].unit);
       if(allcols[i].type
-         && strlen(gal_data_type_as_string(allcols[i].type, 1))>tw)
-        tw=strlen(gal_data_type_as_string(allcols[i].type, 1));
+         && strlen(gal_type_to_string(allcols[i].type, 1))>tw)
+        tw=strlen(gal_type_to_string(allcols[i].type, 1));
     }
 
   /* We want one column space between the columns for readability, not the
@@ -263,7 +263,7 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
       printf("%-*zu%-*s%-*s%-*s%s\n", Nw, i+1,
              nw, name ? name : GAL_BLANK_STRING ,
              uw, unit ? unit : GAL_BLANK_STRING ,
-             tw, gal_data_type_as_string(allcols[i].type, 1),
+             tw, gal_type_to_string(allcols[i].type, 1),
              comment ? comment : GAL_BLANK_STRING);
     }
 
@@ -313,7 +313,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
   fmt[0]=fmt[1]=lng[0]=lng[1]=lng[2]='\0';
   switch(col->type)
     {
-    case GAL_DATA_TYPE_BIT:
+    case GAL_TYPE_BIT:
       error(EXIT_FAILURE, 0, "printing of bit types is currently "
             "not supported");
       break;
@@ -321,7 +321,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_STRING:
+    case GAL_TYPE_STRING:
 
       /* Set the basic information. */
       fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 's' : 'A';
@@ -341,10 +341,10 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_UINT8:
-    case GAL_DATA_TYPE_UINT16:
-    case GAL_DATA_TYPE_UINT32:
-    case GAL_DATA_TYPE_UINT64:
+    case GAL_TYPE_UINT8:
+    case GAL_TYPE_UINT16:
+    case GAL_TYPE_UINT32:
+    case GAL_TYPE_UINT64:
 
       /* For the FITS ASCII table, there is only one format for all
          integers.  */
@@ -360,7 +360,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
           }
 
       /* If we have a long type, then make changes. */
-      if(col->type==GAL_DATA_TYPE_UINT64)
+      if(col->type==GAL_TYPE_UINT64)
         {
           lng[0]='l';
           width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
@@ -375,9 +375,9 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_INT8:
-    case GAL_DATA_TYPE_INT16:
-    case GAL_DATA_TYPE_INT32:
+    case GAL_TYPE_INT8:
+    case GAL_TYPE_INT16:
+    case GAL_TYPE_INT32:
       fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
       width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                 : col->disp_width );
@@ -388,7 +388,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
 
-    case GAL_DATA_TYPE_INT64:
+    case GAL_TYPE_INT64:
       lng[0] = 'l';
       fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
       width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
@@ -400,8 +400,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
     /* We need a default value (because in most cases, it won't be set. */
-    case GAL_DATA_TYPE_FLOAT32:
-    case GAL_DATA_TYPE_FLOAT64:
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
       switch(col->disp_fmt)
         {
         case GAL_TABLE_DISPLAY_FMT_FLOAT:
@@ -414,7 +414,7 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
           fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         }
       width = ( col->disp_width<=0
-                ? ( col->type==GAL_DATA_TYPE_FLOAT32
+                ? ( col->type==GAL_TYPE_FLOAT32
                     ? GAL_TABLE_DEF_FLT_WIDTH
                     : GAL_TABLE_DEF_DBL_WIDTH )
                 : col->disp_width );
@@ -445,6 +445,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 void
 gal_table_read_blank(gal_data_t *col, char *blank)
 {
+  void *colarr=col->array;
+
   /* If there is nothing to use as blank, then don't continue, note that
      the column data structure was initialized to mean that there is no
      blank value. */
@@ -460,7 +462,7 @@ gal_table_read_blank(gal_data_t *col, char *blank)
      `gal_data_string_to_type' will return 0. In that case, we need to
      initialize the necessary paramters to read this data structure
      correctly. */
-  if( !gal_data_string_to_type(&(col->array), blank, col->type) )
+  if( !gal_data_string_to_type(&colarr, blank, col->type) )
     {
       errno=0;
       col->dsize=malloc(sizeof *col->dsize);

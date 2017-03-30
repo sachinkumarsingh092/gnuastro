@@ -19,10 +19,10 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
-## for internally compiled utilities and libraries. It must not be included
-## during the tests since the bootstrapped libraries are not installed.
+## Pre-processer flags (for Gnulib's headers). Recall that the compiled
+## Gnulib library was statically linked to (copied in) Gnuastro's library.
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+
 
 
 ## Program definition (name, linking, sources and headers)

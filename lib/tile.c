@@ -61,7 +61,7 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
   /* If the input tile is actually the same as the block, then the start is
      at 0 (in all dimensions). */
   if(block==tile)
-    memset(start_coord, 0, ndim*gal_data_sizeof(GAL_DATA_TYPE_SIZE_T));
+    memset(start_coord, 0, ndim*gal_type_sizeof(GAL_TYPE_SIZE_T));
   else
     {
       /* Calculate the coordinates of the first pixel of the tile. */
@@ -136,8 +136,8 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 {
   gal_data_t *block=gal_tile_block(tile);
   size_t ndim=tile->ndim, *s, *e, *l, *sf;
-  size_t *start_coord = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  size_t *end_coord   = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  size_t *start_coord = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *end_coord   = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
 
 
   /* The starting index can be found from the distance of the `tile->array'
@@ -368,7 +368,7 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
     {
       /* Set the pointer to use as input. */
       in=gal_data_ptr_increment(tilevalues->array, tile_ind++, type);;
-      GAL_TILE_PARSE_OPERATE({memcpy(o, in, gal_data_sizeof(type));},
+      GAL_TILE_PARSE_OPERATE({memcpy(o, in, gal_type_sizeof(type));},
                              tile, tofill, 1, 0);
     }
 
@@ -393,7 +393,7 @@ gal_tile_block_check_tiles(gal_data_t *tilesll)
   gal_data_t *ids, *out, *block=gal_tile_block(tilesll);
 
   /* Allocate the array to keep the IDs of each tile. */
-  ids=gal_data_alloc(NULL, GAL_DATA_TYPE_INT32, 1, &dsize,
+  ids=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &dsize,
                      NULL, 0, block->minmapsize, NULL, NULL, NULL);
 
   /* Put the IDs into the array. */
@@ -578,11 +578,11 @@ gal_tile_full(gal_data_t *input, size_t *regular,
 {
   size_t i, d, tind, numtiles, *start=NULL;
   gal_data_t *tiles, *block=gal_tile_block(input);
-  size_t *last   = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  size_t *first  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  size_t *coord  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  size_t *tcoord = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
-  size_t *tsize  = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim+1);
+  size_t *last   = gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *first  = gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *coord  = gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *tcoord = gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *tsize  = gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim+1);
 
 
   /* Set the first tile size and total number of tiles along each
@@ -602,7 +602,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
      the block's dimensions when calculating the position of this block. */
   if(input->block)
     {
-      start=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, input->ndim);
+      start=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
       gal_tile_start_coord(input, start);
     }
 
@@ -646,7 +646,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       tiles[i].size=1;
       tiles[i].ndim=input->ndim;
       tiles[i].minmapsize=input->minmapsize;
-      tiles[i].dsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T,input->ndim);
+      tiles[i].dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T,input->ndim);
       for(d=0;d<input->ndim;++d)
         {
           /* The size of the first and last tiles can be different from the
@@ -741,7 +741,7 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
 
 
   /* Allocate space for the channel sizes. */
-  tl->channelsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  tl->channelsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
 
 
   /* Check if the channels are exactly divisible by the input's size along
@@ -837,7 +837,7 @@ gal_tile_full_two_layers(gal_data_t *input,
   /* Multiply the number of tiles along each dimension OF ONE CHANNEL by
      the number of channels in each dimension to get the dimensionality of
      the full tile structure. */
-  tl->numtiles = gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
+  tl->numtiles = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   for(i=0;i<ndim;++i)
     tl->numtiles[i] = tl->numtilesinch[i] * tl->numchannels[i];
   tl->tottiles = gal_dimension_total_size(ndim, tl->numtiles);
@@ -915,9 +915,9 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl)
   if( ndim==1 || tl->totchannels==1) return;
 
   /* Allocate the space for the permutation and coordinates. */
-  ch_coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  tinch_coord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  tl->permutation=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, tl->tottiles);
+  ch_coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  tinch_coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  tl->permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, tl->tottiles);
 
   /* Fill in the permutation, we use the fact that the tiles are filled
      from the first channel to the last. */
@@ -1016,12 +1016,12 @@ gal_tile_full_values_smooth(gal_data_t *tilevalues,
 
 
   /* Prepare the kernel size along every dimension. */
-  kdsize=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, tl->ndim);
+  kdsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, tl->ndim);
   for(i=0;i<tl->ndim;++i) kdsize[i]=width;
 
 
   /* Make the kernel. */
-  kernel=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT32, tilevalues->ndim,
+  kernel=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, tilevalues->ndim,
                         kdsize, NULL, 0, -1, NULL, NULL, NULL);
   knum=gal_dimension_total_size(tl->ndim, kernel->dsize);
   for(i=0;i<knum;++i) ((float *)(kernel->array))[i]=1/((double)knum);

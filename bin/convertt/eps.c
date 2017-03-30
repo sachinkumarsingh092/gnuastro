@@ -198,7 +198,7 @@ eps_convert_to_bitstream(struct converttparams *p)
   for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
       /* Allocate the array. */
-      bits=gal_data_malloc_array(GAL_DATA_TYPE_UINT8, bytesinimg);
+      bits=gal_data_malloc_array(GAL_TYPE_UINT8, bytesinimg);
 
       /* Put the values in. */
       in=channel->array;
@@ -224,7 +224,7 @@ eps_convert_to_bitstream(struct converttparams *p)
         }
       free(channel->array);
       channel->array=bits;
-      channel->type=GAL_DATA_TYPE_BIT;
+      channel->type=GAL_TYPE_BIT;
     }
 
   /* Return the total number of bytes in the image. */

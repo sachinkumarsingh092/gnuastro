@@ -40,7 +40,7 @@ struct argp_option program_options[] =
       "File name of kernel for convolution.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->kernelname,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -53,7 +53,7 @@ struct argp_option program_options[] =
       "HDU containing the kernel.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->khdu,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -92,7 +92,7 @@ struct argp_option program_options[] =
       "Deconvolution: min spectrum of sharp img.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->minsharpspec,
-      GAL_DATA_TYPE_FLOAT64,
+      GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -143,7 +143,7 @@ struct argp_option program_options[] =
       "Convolution domain: `spatial', `frequency'.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &p->domainstr,
-      GAL_DATA_TYPE_STRING,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -156,7 +156,7 @@ struct argp_option program_options[] =
       "Make 2*INT kernel to create input image.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &p->makekernel,
-      GAL_DATA_TYPE_SIZE_T,
+      GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

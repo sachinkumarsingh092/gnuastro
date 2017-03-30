@@ -19,22 +19,23 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
-## for internally compiled utilities and libraries. It must not be included
-## during the tests since the bootstrapped libraries are not installed.
+## Pre-processer flags (for Gnulib's headers). Recall that the compiled
+## Gnulib library was statically linked to (copied in) Gnuastro's library.
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
+
 ## Program definition (name, linking, sources and headers)
-bin_PROGRAMS = astTEMPLATE
+bin_PROGRAMS = astnoisechisel
 
-astTEMPLATE_LDADD = -lgnuastro
+astnoisechisel_LDADD = -lgnuastro
 
-astTEMPLATE_SOURCES = main.c ui.c TEMPLATE.c
+astnoisechisel_SOURCES = main.c ui.c noisechisel.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h TEMPLATE.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h noisechisel.h
+
 
 
 ## The configuration file (distribute and install).
 ## NOTE: the man page is created in doc/Makefile.am
-dist_sysconf_DATA = astTEMPLATE.conf
+dist_sysconf_DATA = astnoisechisel.conf

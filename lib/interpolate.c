@@ -92,9 +92,9 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   size_t ngb_counter, dist, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
+  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *ncoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   size_t size = (correct_index ? tl->tottilesinch : input->size);
-  size_t *icoord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
-  size_t *ncoord=gal_data_malloc_array(GAL_DATA_TYPE_SIZE_T, ndim);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
   uint8_t *fullflag=&prm->thread_flags[tprm->id*input->size], *flag=fullflag;
 
@@ -138,7 +138,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
             {
               memcpy(gal_data_ptr_increment(tout->array, fullind, tin->type),
                      gal_data_ptr_increment(tin->array,  fullind, tin->type),
-                     gal_data_sizeof(tin->type));
+                     gal_type_sizeof(tin->type));
               tin=tin->next;
             }
           continue;
@@ -161,8 +161,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           chstart = (fullind / tl->tottilesinch) * tl->tottilesinch;
 
           /* Set the channel's starting pointer for the flags. */
-          flag = gal_data_ptr_increment(fullflag, chstart,
-                                        GAL_DATA_TYPE_UINT8);
+          flag = gal_data_ptr_increment(fullflag, chstart, GAL_TYPE_UINT8);
         }
       else
         {
@@ -203,7 +202,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                                                 tin->type),
                          gal_data_ptr_increment(tin->array, chstart+pind,
                                                 tin->type),
-                         gal_data_sizeof(tin->type));
+                         gal_type_sizeof(tin->type));
                   tin=tin->next;
                 }
 
@@ -252,7 +251,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           /* Find the median and copy it. */
           median=gal_statistics_median(tnear, 1);
           memcpy(gal_data_ptr_increment(tout->array, fullind, tout->type),
-                 median->array, gal_data_sizeof(tout->type));
+                 median->array, gal_type_sizeof(tout->type));
 
           /* Clean up and go to next array. */
           gal_data_free(median);
@@ -366,7 +365,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
   /* Allocate space for all the flag values of all the threads here (memory
      in each thread is limited) and this is cleaner. */
-  prm.thread_flags=gal_data_malloc_array(GAL_DATA_TYPE_UINT8,
+  prm.thread_flags=gal_data_malloc_array(GAL_TYPE_UINT8,
                                          numthreads*input->size);
 
 

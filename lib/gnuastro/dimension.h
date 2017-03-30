@@ -96,7 +96,7 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
    -------
 
    This macro will allow you to do a fixed operation on the neighbors of an
-   eleemnt. The identifier for the element is its dimension-agnostic index
+   element. The identifier for the element is its dimension-agnostic index
    (distance from start of array). It is defined as a macro (and not a
    function) it is often necessary to loop over a very large number of
    pixels/indexs and the number of neighbors differs (in different
@@ -160,7 +160,9 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
                 that is defined by this macro and will have the index of
                 each neighbor. You can use this `nind' for any processing
                 that you like on the neighbor. Note that `op' will be
-                repeated the number of times there is a neighbor.
+                repeated the number of times there is a neighbor. If you
+                want to stop parsing the neighbors, set the `stop' variable
+                to 1.
 
 
    Implementation

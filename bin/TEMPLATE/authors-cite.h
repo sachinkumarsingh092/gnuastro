@@ -1,21 +1,11 @@
 /*********************************************************************
-TEMPLATE - Source code for a blank utility for easy creation of new
-           utilities, just copy and paste all the files here replacing
-           TEMPLATE with the new utility name (in the source code and
-           file names).
-
-         - Add the utility name to `configure.ac' and `Makefile.am' in the
-           top Gnuastro source directory.
-
-         - Correct these top comments in all the files, don't forget the
-           `astTEMPLATE.conf' and `Makefile.am' files.
-
+TEMPLATE - A minimal set of files and functions to define a program.
 TEMPLATE is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
-     Mohammad Akhlaghi <akhlaghi@gnu.org>
+     Your Name <your@email>
 Contributing author(s):
-Copyright (C) 2017, Free Software Foundation, Inc.
+Copyright (C) YYYY, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the

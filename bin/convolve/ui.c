@@ -297,7 +297,7 @@ ui_read_kernel(struct convolveparams *p)
 
   /* Read the image into file. */
   p->kernel = gal_fits_img_read_to_type(p->kernelname, p->khdu,
-                                        GAL_DATA_TYPE_FLOAT32,
+                                        GAL_TYPE_FLOAT32,
                                         p->cp.minmapsize);
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
@@ -343,7 +343,7 @@ ui_preparations(struct convolveparams *p)
 
   /* Read the input image as a float64 array and its WCS info. */
   p->input=gal_fits_img_read_to_type(p->filename, cp->hdu,
-                                     GAL_DATA_TYPE_FLOAT32, cp->minmapsize);
+                                     GAL_TYPE_FLOAT32, cp->minmapsize);
   gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs, &p->input->wcs);
 
 
@@ -391,11 +391,11 @@ ui_preparations(struct convolveparams *p)
          1 and their division (in the frequency domain) would be
          meaningful. */
       sum=gal_statistics_sum(p->input);
-      sum=gal_data_copy_to_new_type_free(sum, GAL_DATA_TYPE_FLOAT32);
+      sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
       p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
                                 GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
       sum=gal_statistics_sum(p->kernel);
-      sum=gal_data_copy_to_new_type_free(sum, GAL_DATA_TYPE_FLOAT32);
+      sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
       p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
                                 GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
     }
