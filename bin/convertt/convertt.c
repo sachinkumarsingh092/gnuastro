@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/txtarray.h>
 #include <gnuastro/arithmetic.h>
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 

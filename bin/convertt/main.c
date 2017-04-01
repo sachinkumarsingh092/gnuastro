@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <timing.h>              /* Includes time.h and sys/time.h */
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 

@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include necessary headers */
 #include <gnuastro/data.h>
 
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 /* Progarm names.  */
 #define PROGRAM_NAME   "NoiseChisel"    /* Program full name.       */
@@ -97,6 +97,8 @@ struct noisechiselparams
   gal_data_t            *conv;  /* Convolved input.                       */
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
+  gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
+  gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
   time_t              rawtime;  /* Starting time of the program.          */
 
   size_t           numobjects;  /* Number of objects detected.            */

@@ -439,3 +439,35 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   free(dinc);
   return curlab-1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*****************            Fill holes          ********************/
+/*********************************************************************/
+void
+gal_binary_fill_holes(gal_data_t *input)
+{
+  /* A small sanity check. */
+  if( input->type != GAL_TYPE_UINT8 )
+    error(EXIT_FAILURE, 0, "input to `gal_binary_fill_holes' must have "
+          "`uint8' type, but its input dataset has `%s' type",
+          gal_type_to_string(input->type, 1));
+}

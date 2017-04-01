@@ -39,7 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 

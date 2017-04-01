@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/convolve.h>
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 
@@ -67,4 +67,7 @@ noisechisel(struct noisechiselparams *p)
 
   /* Do the initial detection: */
   detection_initial(p);
+
+  /* Remove false detections */
+  detection_remove_false(p);
 }

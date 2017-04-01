@@ -39,8 +39,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/interpolate.h>
 #include <gnuastro/permutation.h>
 
-#include <timing.h>
-#include <checkset.h>
+#include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 

@@ -33,8 +33,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
 
-#include <arithmetic-binary.h>
-#include <arithmetic-onlyint.h>
+#include <gnuastro-internal/arithmetic-binary.h>
+#include <gnuastro-internal/arithmetic-onlyint.h>
 
 
 

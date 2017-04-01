@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <math.h>
 #include <fitsio.h>
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS

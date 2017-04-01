@@ -300,6 +300,55 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
       `b': blank value in input't type.
 
    See `lib/statistics.c' for some example applications of this function.
+
+  -----------
+  TIPS/TRICKS
+  -----------
+
+  You can use a given tile on a dataset that it was not initialized with
+  (but has the same size). You can do that like this:
+
+     void *tarray;
+     gal_data_t *tblock;
+
+     tarray=tile->array;
+     tblock=tile->block;
+     tile->array=gal_tile_block_relative_to_other(tile, THE_OTHER_DATASET);
+     tile->block=THE_OTHER_DATASET;  <<-- `tile->block' must corrected
+                                          AFTER `tile->array'.
+     GAL_TILE_PARSE_OPERATE(...)
+
+     tile->array=tarray;
+     tile->block=tblock;
+
+  You can work on one other array while working on the one that tile
+  actually points to. To do that, you can make a fake tile and pass that as
+  the `OUT' argument to this macro. While the name is `OUT' it can be used
+  in any manner you like. To do this, you can take the following steps. In
+  this example, `tile' is the actual tile that you have.
+
+     gal_data_t *faketile;
+
+     // These can be done outside a loop.
+     faketile=gal_data_alloc(NULL, OTHER_DATASET->type, 1, &dsize,
+                            NULL, 0, -1, NULL, NULL, NULL);
+     free(faketile->array);
+     free(faketile->dsize);
+     faketile->block=OTHER_DATASET;
+     faketile->ndim=OTHER_DATASET->ndim;
+
+     // These can be done in the loop over tiles.
+     faketile->size=tile->size;
+     faketile->dsize=tile->dsize;
+     faketile->array=gal_tile_block_relative_to_other(tile, OTHER_DATASET);
+
+     // Do your processing....
+     GAL_TILE_PARSE_OPERATE(PROCESSING, tile, faketile, 1, 1);
+
+     // Clean up.
+     bintile->array=NULL;
+     bintile->dsize=NULL;
+     gal_data_free(bintile);
 */
 #define GAL_TILE_PARSE_OPERATE(OP, IN, OUT, PARSE_OUT, CHECK_BLANK) {   \
     int parse_out=(OUT && PARSE_OUT);                                   \

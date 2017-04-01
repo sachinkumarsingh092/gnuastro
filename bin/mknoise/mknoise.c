@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gsl/gsl_randist.h>     /* To make noise.        */
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 

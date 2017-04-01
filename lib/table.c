@@ -34,8 +34,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
-#include <timing.h>
-#include <checkset.h>
+#include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 
 

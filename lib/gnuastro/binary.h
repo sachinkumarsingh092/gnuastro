@@ -93,6 +93,12 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
 
 
+/*********************************************************************/
+/*****************            Fill holes          ********************/
+/*********************************************************************/
+void
+gal_binary_fill_holes(gal_data_t *input);
+
 
 
 __END_C_DECLS    /* From C++ preparations */

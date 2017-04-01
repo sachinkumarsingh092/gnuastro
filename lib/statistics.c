@@ -38,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
-#include <checkset.h>
+#include <gnuastro-internal/checkset.h>
 
 
 

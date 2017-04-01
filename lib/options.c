@@ -35,9 +35,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
-#include <timing.h>
-#include <options.h>
-#include <checkset.h>
+#include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/options.h>
+#include <gnuastro-internal/checkset.h>
 
 
 

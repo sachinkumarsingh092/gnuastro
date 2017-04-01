@@ -25,7 +25,25 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define THRESHOLD_NO_ERODE_VALUE 2
 
+
+enum threshold_type
+  {
+    THRESHOLD_QUANTILES,
+    THRESHOLD_SKY_STD,
+  };
+
+
 void
 threshold_quantile_find_apply(struct noisechiselparams *p);
+
+
+void
+threshold_sky_and_std(struct noisechiselparams *p);
+
+
+void
+threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
+                int type);
+
 
 #endif

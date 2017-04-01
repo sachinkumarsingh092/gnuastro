@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 #include <gsl/gsl_rng.h>
 
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 /* Progarm names.  */
 #define PROGRAM_NAME   "MakeNoise"     /* Program full name.       */

@@ -34,12 +34,190 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/interpolate.h>
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 
 #include "ui.h"
 #include "threshold.h"
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/***************        Apply a given threshold.      *****************/
+/**********************************************************************/
+void
+threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
+                int type)
+{
+  size_t tid;
+  void *tarray=NULL;
+  gal_data_t *tile, *tblock=NULL;
+
+  /* Clear the binary array (this is mainly because the input may contain
+     blank values and we won't be doing the thresholding no those
+     pixels. */
+  memset(p->binary->array, 0, p->binary->size);
+
+  /* Go over all the tiles. */
+  for(tid=0; tid<p->cp.tl.tottiles; ++tid)
+    {
+      /* For easy reading. */
+      tile=&p->cp.tl.tiles[tid];
+
+      switch(type)
+        {
+
+        /* This is a quantile threshold. */
+        case THRESHOLD_QUANTILES:
+          /* Correct the tile's pointers to apply the threshold on the
+             convolved image. */
+          if(p->conv)
+            {
+              tarray=tile->array; tblock=tile->block;
+              tile->array=gal_tile_block_relative_to_other(tile, p->conv);
+              tile->block=p->conv;
+            }
+
+          /* Apply the threshold. */
+          GAL_TILE_PARSE_OPERATE({
+              *o = ( *i > value1[tid]
+                     ? ( *i > value2[tid] ? THRESHOLD_NO_ERODE_VALUE : 1 )
+                     : 0 );
+            }, tile, p->binary, 1, 1);
+
+          /* Revert the tile's pointers back to what they were. */
+          if(p->conv) { tile->array=tarray; tile->block=tblock; }
+          break;
+
+
+        /* This is a Sky and Sky STD threshold. */
+        case THRESHOLD_SKY_STD:
+
+          /* The threshold is always low. So for the majority of non-NaN
+             pixels in the image, the condition above will be true. If we
+             come over a NaN pixel, then by definition of NaN, all
+             conditionals will fail.
+
+             If an image doesn't have any NaN pixels, only the pixels below
+             the threshold have to be checked for a NaN which are by
+             definition a very small fraction of the total pixels. And if
+             there are NaN pixels in the image. */
+          GAL_TILE_PARSE_OPERATE({
+              *o = ( ( *i - value1[tid] > p->dthresh * value2[tid] )
+                     ? 1 : *i==*i ? 0 : GAL_BLANK_UINT8 );
+            }, tile, p->binary, 1, 1);
+          break;
+
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
+                "address the problem. For some reason a value of %d had "
+                "been given to `type' in `threshold_apply'",
+                PACKAGE_BUGREPORT, type);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/***************     Interpolation and smoothing      *****************/
+/**********************************************************************/
+/* Interpolate and smooth the values for each tile over the whole image. */
+static void
+threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
+                        gal_data_t **second, char *filename)
+{
+  gal_data_t *tmp;
+  struct gal_options_common_params *cp=&p->cp;
+  struct gal_tile_two_layer_params *tl=&cp->tl;
+
+  /* A small sanity check. */
+  if( (*first)->next )
+    error(EXIT_FAILURE, 0, "the `first' argument to "
+          "`threshold_interp_smooth' must not have any `next' pointer.");
+
+
+  /* Do the interpolation of both arrays. */
+  (*first)->next = *second;
+  tmp=gal_interpolate_close_neighbors(*first, tl, cp->interpnumngb,
+                                      cp->numthreads, cp->interponlyblank, 1);
+  gal_data_free(*first);
+  gal_data_free(*second);
+  *first=tmp;
+  *second=tmp->next;
+  (*first)->next=(*second)->next=NULL;
+  if(filename)
+    {
+      gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
+      gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+    }
+
+
+  /* Smooth the threshold if requested. */
+  if(p->smoothwidth>1)
+    {
+      /* Smooth the first. */
+      tmp=gal_tile_full_values_smooth(*first, tl, p->smoothwidth,
+                                      p->cp.numthreads);
+      gal_data_free(*first);
+      *first=tmp;
+
+      /* Smooth the second */
+      tmp=gal_tile_full_values_smooth(*second, tl, p->smoothwidth,
+                                      p->cp.numthreads);
+      gal_data_free(*second);
+      *second=tmp;
+
+      /* Add them to the check image. */
+      if(filename)
+        {
+          gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
+          gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -89,16 +267,14 @@ qthresh_on_tile(void *in_prm)
       memcpy(usage->dsize, p->maxtsize, ndim*sizeof *p->maxtsize);
 
 
-      /* Copy the tile's contents into the pre-allocated space. Note that
-         we have to initialize the `dsize' and `size' elements of
-         `contents', since they can be changed and the size is
-         important. Recall that this is a 1D array. */
+      /* For easy reading. */
       tind = tprm->indexs[i];
       tile = &p->cp.tl.tiles[tind];
 
 
       /* If we have a convolved image, temporarily change the tile's
-         pointers so we can do the work on the convolved image. */
+         pointers so we can do the work on the convolved image, then copy
+         the desired contents into the already allocated `usage' array. */
       if(p->conv)
         {
           tarray=tile->array; tblock=tile->block;
@@ -130,7 +306,7 @@ qthresh_on_tile(void *in_prm)
           gal_data_free(qvalue);
 
           /* Do the same for the no-erode quantile. */
-          qvalue=gal_statistics_quantile(tile, p->noerodequant, 1);
+          qvalue=gal_statistics_quantile(usage, p->noerodequant, 1);
           memcpy(gal_data_ptr_increment(qprm->noerode_th->array, tind, type),
                  qvalue->array, twidth);
           gal_data_free(qvalue);
@@ -158,61 +334,10 @@ qthresh_on_tile(void *in_prm)
 
 
 
-static void
-apply_quantile_threshold(struct qthreshparams *qprm)
-{
-  size_t tid;
-  void *tarray=NULL;
-  gal_data_t *tile, *tblock=NULL;
-  struct noisechiselparams *p=qprm->p;
-  float *erode_th=qprm->erode_th->array, *noerode_th=qprm->noerode_th->array;
-
-  /* A small sanity check. */
-  if(qprm->erode_th->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "`apply_quantile_threshold' currently only "
-          "supports float arrays.");
-
-  /* Clear the binary array (this is mainly because the input may contain
-     blank values and we won't be doing the thresholding no those
-     pixels. */
-  memset(p->binary->array, 0, p->binary->size);
-
-  /* Go over all the tiles. */
-  for(tid=0; tid<p->cp.tl.tottiles;++tid)
-    {
-      /* For easy reading. */
-      tile=&p->cp.tl.tiles[tid];
-
-      /* Correct the tile's pointers to apply the threshold on the
-         convolved image. */
-      if(p->conv)
-        {
-          tarray=tile->array; tblock=tile->block;
-          tile->array=gal_tile_block_relative_to_other(tile, p->conv);
-          tile->block=p->conv;
-        }
-
-      /* Apply the threshold. */
-      GAL_TILE_PARSE_OPERATE({
-          *o = ( *i > erode_th[tid]
-                 ? ( *i > noerode_th[tid] ? THRESHOLD_NO_ERODE_VALUE : 1 )
-                 : 0 );
-        }, tile, p->binary, 1, 1);
-
-      /* Revert the tile's pointers back to what they were. */
-      if(p->conv) { tile->array=tarray; tile->block=tblock; }
-    }
-}
-
-
-
-
-
 void
 threshold_quantile_find_apply(struct noisechiselparams *p)
 {
   char *msg;
-  gal_data_t *tmp;
   struct timeval t1;
   struct qthreshparams qprm;
   struct gal_options_common_params *cp=&p->cp;
@@ -258,53 +383,14 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   free(qprm.usage);
 
 
-  /* Interpolate over the blank tiles. */
-  qprm.erode_th->next = qprm.noerode_th;
-  tmp=gal_interpolate_close_neighbors(qprm.erode_th, tl, cp->interpnumngb,
-                                      cp->numthreads, cp->interponlyblank, 1);
-  gal_data_free(qprm.erode_th);
-  gal_data_free(qprm.noerode_th);
-  qprm.erode_th=tmp;
-  qprm.noerode_th=tmp->next;
-  qprm.erode_th->next=qprm.noerode_th->next=NULL;
-  if(p->qthreshname)
-    {
-      gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname,
-                                 PROGRAM_STRING);
-      gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname,
-                                 PROGRAM_STRING);
-    }
+  /* Interpolate and smooth the derived values. */
+  threshold_interp_smooth(p, &qprm.erode_th, &qprm.noerode_th,
+                          p->qthreshname);
 
 
-  /* Smooth the threshold if requested. */
-  if(p->smoothwidth>1)
-    {
-      /* Do the smoothing on the erosion quantile. */
-      if(!cp->quiet) gettimeofday(&t1, NULL);
-      tmp=gal_tile_full_values_smooth(qprm.erode_th, tl, p->smoothwidth,
-                                      p->cp.numthreads);
-      gal_data_free(qprm.erode_th);
-      qprm.erode_th=tmp;
-
-      /* Same for the no-erosion quantile. */
-      tmp=gal_tile_full_values_smooth(qprm.noerode_th, tl, p->smoothwidth,
-                                      p->cp.numthreads);
-      gal_data_free(qprm.noerode_th);
-      qprm.noerode_th=tmp;
-
-      /* Add them to the check image. */
-      if(p->qthreshname)
-        {
-          gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname,
-                                     PROGRAM_STRING);
-          gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname,
-                                     PROGRAM_STRING);
-        }
-    }
-
-
-  /* The quantile threshold is found, now apply it. */
-  apply_quantile_threshold(&qprm);
+  /* We now have a threshold for all tiles, apply it. */
+  threshold_apply(p, qprm.erode_th->array, qprm.noerode_th->array,
+                  THRESHOLD_QUANTILES);
 
 
   /* Write the binary image if check is requested. */
@@ -317,8 +403,8 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   gal_data_free(qprm.noerode_th);
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "%.2f quantile threshold found and applied.",
-               p->qthresh);
+      asprintf(&msg, "%.2f & %0.2f quantile thresholds applied.",
+               p->qthresh, p->noerodequant);
       gal_timing_report(&t1, msg, 2);
     }
 
@@ -327,4 +413,153 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
      `continueaftercheck', then stop NoiseChisel. */
   if(p->qthreshname && !p->continueaftercheck)
     ui_abort_after_check(p, p->qthreshname, "quantile threshold check");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ ************       Mean and STD of undetected       ************
+ ****************************************************************/
+static void *
+threshold_mean_std_undetected(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct noisechiselparams *p=(struct noisechiselparams *)tprm->params;
+
+  double *darr, s, s2;
+  int type=p->sky->type;
+  size_t i, tind, numsky, dsize=2;
+  gal_data_t *tile, *meanstd_d, *meanstd, *bintile;
+
+
+  /* A dataset to keep the mean and STD in double type. */
+  meanstd_d=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
+                           NULL, 0, -1, NULL, NULL, NULL);
+  darr=meanstd_d->array;
+
+
+  /* An empty dataset to replicate a tile on the binary array. */
+  bintile=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize,
+                         NULL, 0, -1, NULL, NULL, NULL);
+  free(bintile->array);
+  free(bintile->dsize);
+  bintile->block=p->binary;
+  bintile->ndim=p->binary->ndim;
+
+
+  /* Go over all the tiles given to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+    {
+      /* Basic definitions */
+      numsky=0;
+      tind = tprm->indexs[i];
+      tile = &p->cp.tl.tiles[tind];
+
+      /* Correct the fake binary tile's properties to be the same as this
+         one, then count the number of zero valued elements in it. */
+      bintile->size=tile->size;
+      bintile->dsize=tile->dsize;
+      bintile->array=gal_tile_block_relative_to_other(tile, p->binary);
+      GAL_TILE_PARSE_OPERATE({if(!*i) numsky++;}, bintile, NULL, 0, 0);
+
+      /* Only continue, if the fraction of Sky values are less than the
+         requested fraction. */
+      if( (float)(numsky)/(float)(tile->size) > p->minbfrac)
+        {
+          /* Calculate the mean and STD over this tile. */
+          s=s2=0.0f;
+          GAL_TILE_PARSE_OPERATE({ if(!*o) {s += *i; s2 += *i * *i;} },
+                                 tile, bintile, 1, 1);
+          darr[0]=s/numsky;
+          darr[1]=sqrt( (s2-s*s/numsky)/numsky );
+
+          /* Convert the mean and std into the same type as the sky and std
+             arrays. */
+          meanstd=gal_data_copy_to_new_type(meanstd_d, type);
+
+          /* Copy the mean and STD to their respective places in the tile
+             arrays. */
+          memcpy(gal_data_ptr_increment(p->sky->array, tind, type),
+                 meanstd->array, gal_type_sizeof(type));
+          memcpy(gal_data_ptr_increment(p->std->array, tind, type),
+                 gal_data_ptr_increment(meanstd->array, 1, type),
+                 gal_type_sizeof(type));
+        }
+      else
+        {
+          gal_blank_write(gal_data_ptr_increment(p->sky->array, tind, type),
+                          type);
+          gal_blank_write(gal_data_ptr_increment(p->std->array, tind, type),
+                          type);
+        }
+    }
+
+  /* Clean up and wait for other threads to finish and abort. */
+  bintile->array=NULL;
+  bintile->dsize=NULL;
+  gal_data_free(bintile);
+  gal_data_free(meanstd_d);
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
+void
+threshold_sky_and_std(struct noisechiselparams *p)
+{
+  struct gal_options_common_params *cp=&p->cp;
+  struct gal_tile_two_layer_params *tl=&cp->tl;
+
+
+  /* When the check image has the same resolution as the input, write the
+     binary array as a reference to help in the comparison. */
+  if(p->detskyname && !tl->oneelempertile)
+    gal_fits_img_write(p->binary, p->detskyname, NULL, PROGRAM_STRING);
+
+
+  /* Allocate space for the mean and standard deviation. */
+  p->sky=gal_data_alloc(NULL, p->input->type, p->input->ndim, tl->numtiles,
+                        NULL, 0, cp->minmapsize, "SKY", p->input->unit, NULL);
+  p->std=gal_data_alloc(NULL, p->input->type, p->input->ndim, tl->numtiles,
+                        NULL, 0, cp->minmapsize, "STD", p->input->unit, NULL);
+
+
+  /* Find the Sky and its STD on proper tiles. */
+  gal_threads_spin_off(threshold_mean_std_undetected, p, tl->tottiles,
+                       cp->numthreads);
+  if(p->detskyname)
+    {
+      gal_tile_full_values_write(p->sky, tl, p->detskyname, PROGRAM_STRING);
+      gal_tile_full_values_write(p->std, tl, p->detskyname, PROGRAM_STRING);
+    }
+
+
+  /* Interpolate and smooth the derived values. */
+  threshold_interp_smooth(p, &p->sky, &p->std, p->detskyname);
+
+
+  /* If a check was requested, abort NoiseChisel. */
+  if(p->detskyname && !p->continueaftercheck)
+    ui_abort_after_check(p, p->detskyname, "showing derivation of Sky value"
+                         "and its standard deviation, or STD");
 }

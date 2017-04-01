@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/convolve.h>
 #include <gnuastro/dimension.h>
 
-#include <checkset.h>
+#include <gnuastro-internal/checkset.h>
 
 
 

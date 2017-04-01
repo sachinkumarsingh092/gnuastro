@@ -38,10 +38,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
-#include <timing.h>
-#include <options.h>
-#include <checkset.h>
-#include <fixedstringmacros.h>
+#include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/options.h>
+#include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
 
@@ -495,7 +495,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct convolveparams *p)
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only
      available within the scope of this function. */
-#include <commonopts.h>
+#include <gnuastro-internal/commonopts.h>
 #include "args.h"
 
 

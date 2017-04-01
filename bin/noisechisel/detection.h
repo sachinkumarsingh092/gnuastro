@@ -26,4 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 detection_initial(struct noisechiselparams *p);
 
+void
+detection_remove_false(struct noisechiselparams *p);
+
 #endif

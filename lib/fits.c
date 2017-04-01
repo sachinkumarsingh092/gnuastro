@@ -39,8 +39,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 
-#include "checkset.h"
-#include "fixedstringmacros.h"
+#include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/fixedstringmacros.h>
 
 
 

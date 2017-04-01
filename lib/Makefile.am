@@ -85,9 +85,12 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h        \
 # and if they are not explicitly mentioned somewhere in the Makefile, they
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
-EXTRA_DIST = $(headersdir)/README gnuastro.pc.in arithmetic-binary.h    \
-  arithmetic-onlyint.h arithmetic-other.h config.h.in checkset.h        \
-  fixedstringmacros.h options.h timing.h
+internaldir=$(top_srcdir)/lib/gnuastro-internal
+EXTRA_DIST = gnuastro.pc.in $(headersdir)/README			 \
+  $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-onlyint.h \
+  $(internaldir)/arithmetic-other.h $(internaldir)/config.h.in		 \
+  $(internaldir)/checkset.h $(internaldir)/fixedstringmacros.h		 \
+  $(internaldir)/options.h $(internaldir)/timing.h
 
 
 
@@ -105,7 +108,7 @@ CLEANFILES = gnuastro.pc gnuastro/config.h
 
 # Build `gnuastro/config.h' based on the information in the Makefile after
 # the Makefile has been built.
-gnuastro/config.h: Makefile config.h.in
+gnuastro/config.h: Makefile $(internaldir)/config.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
 	$(SED) -e 's|@VERSION[@]|$(VERSION)|g'                            \
@@ -123,7 +126,7 @@ gnuastro/config.h: Makefile config.h.in
 	       -e 's|@HAVE_BIN_OP_FLOAT32[@]|$(HAVE_BIN_OP_FLOAT32)|g'    \
 	       -e 's|@HAVE_BIN_OP_FLOAT64[@]|$(HAVE_BIN_OP_FLOAT64)|g'    \
 	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g'                \
-               $(srcdir)/config.h.in >> $@.tmp
+               $(internaldir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 

@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include necessary headers */
 #include <gnuastro/data.h>
 
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 /* Program names.  */
 #define PROGRAM_NAME   "Convolve"      /* Program full name.       */

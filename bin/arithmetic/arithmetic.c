@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/arithmetic.h>
 
-#include <checkset.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 

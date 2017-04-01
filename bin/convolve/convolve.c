@@ -36,7 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/convolve.h>
 #include <gnuastro/spatialconvolve.h>
 
-#include <timing.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 #include "convolve.h"

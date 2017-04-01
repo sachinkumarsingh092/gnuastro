@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/arithmetic.h>
 
-#include <arithmetic-onlyint.h>
+#include <gnuastro-internal/arithmetic-onlyint.h>
 
 
 

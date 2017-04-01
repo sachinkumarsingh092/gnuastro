@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 
 /* Progarm name macros: */
