@@ -27,6 +27,6 @@ void
 detection_initial(struct noisechiselparams *p);
 
 void
-detection_remove_false(struct noisechiselparams *p);
+detection(struct noisechiselparams *p);
 
 #endif

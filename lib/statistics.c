@@ -263,9 +263,10 @@ gal_data_t *
 gal_statistics_median(gal_data_t *input, int inplace)
 {
   size_t dsize=1;
-  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);;
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize, NULL, 1, -1,
                                  NULL, NULL, NULL);
+
   /* Write the median. */
   statistics_median_in_sorted_no_blank(nbs, out->array);
 
@@ -1201,7 +1202,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       else
         {
           noblank=gal_data_copy(contig);   /* We aren't allowed to touch */
-          gal_blank_remove(contig);        /* the input, so make a copy. */
+          gal_blank_remove(noblank);       /* the input, so make a copy. */
         }
     }
   else noblank=contig;

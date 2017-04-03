@@ -69,5 +69,5 @@ noisechisel(struct noisechiselparams *p)
   detection_initial(p);
 
   /* Remove false detections */
-  detection_remove_false(p);
+  detection(p);
 }

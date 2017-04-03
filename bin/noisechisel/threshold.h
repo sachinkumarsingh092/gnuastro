@@ -36,6 +36,10 @@ enum threshold_type
 void
 threshold_quantile_find_apply(struct noisechiselparams *p);
 
+void
+threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *sntable,
+                         gal_data_t *snind, char *filename,
+                         struct gal_linkedlist_stll *comments);
 
 void
 threshold_sky_and_std(struct noisechiselparams *p);

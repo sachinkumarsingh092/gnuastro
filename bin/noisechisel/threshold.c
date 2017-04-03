@@ -146,6 +146,67 @@ threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
 
 
 /**********************************************************************/
+/***************            Write S/N values          *****************/
+/**********************************************************************/
+void
+threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
+                         gal_data_t *inind, char *filename,
+                         struct gal_linkedlist_stll *comments)
+{
+  gal_data_t *sn, *ind, *cols;
+
+  /* Remove all blank elements. The index and sn values must have the same
+     set of blank elements, but checking on the integer array is faster. */
+  if( gal_blank_present(inind) )
+    {
+      ind=gal_data_copy(inind);
+      sn=gal_data_copy(insn);
+      gal_blank_remove(ind);
+      gal_blank_remove(sn);
+    }
+  else
+    {
+      sn  = insn;
+      ind = inind;
+    }
+
+  /* Set the columns. */
+  cols       = ind;
+  cols->next = sn;
+
+
+  /* Prepare the comments. */
+  gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
+
+
+  /* write the table. */
+  gal_table_write(cols, comments, p->cp.tableformat, filename, 1);
+
+
+  /* Clean up (if necessary). */
+  if(sn!=insn) gal_data_free(sn);
+  if(ind==inind) ind->next=NULL; else gal_data_free(ind);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
 /***************     Interpolation and smoothing      *****************/
 /**********************************************************************/
 /* Interpolate and smooth the values for each tile over the whole image. */
@@ -477,7 +538,7 @@ threshold_mean_std_undetected(void *in_prm)
       bintile->size=tile->size;
       bintile->dsize=tile->dsize;
       bintile->array=gal_tile_block_relative_to_other(tile, p->binary);
-      GAL_TILE_PARSE_OPERATE({if(!*i) numsky++;}, bintile, NULL, 0, 0);
+      GAL_TILE_PARSE_OPERATE({if(!*o) numsky++;}, tile, bintile, 1, 1);
 
       /* Only continue, if the fraction of Sky values are less than the
          requested fraction. */
@@ -485,8 +546,14 @@ threshold_mean_std_undetected(void *in_prm)
         {
           /* Calculate the mean and STD over this tile. */
           s=s2=0.0f;
-          GAL_TILE_PARSE_OPERATE({ if(!*o) {s += *i; s2 += *i * *i;} },
-                                 tile, bintile, 1, 1);
+          GAL_TILE_PARSE_OPERATE(
+                                 {
+                                   if(!*o)
+                                     {
+                                       s  += *i;
+                                       s2 += *i * *i;
+                                     }
+                                 }, tile, bintile, 1, 1);
           darr[0]=s/numsky;
           darr[1]=sqrt( (s2-s*s/numsky)/numsky );
 
@@ -527,6 +594,7 @@ threshold_mean_std_undetected(void *in_prm)
 void
 threshold_sky_and_std(struct noisechiselparams *p)
 {
+  gal_data_t *tmp;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&cp->tl;
 
@@ -553,6 +621,28 @@ threshold_sky_and_std(struct noisechiselparams *p)
       gal_tile_full_values_write(p->std, tl, p->detskyname, PROGRAM_STRING);
     }
 
+  /* Get the basic information about the standard deviation
+     distribution. */
+  tmp=gal_statistics_median(p->std, 0);
+  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  memcpy(&p->medstd, tmp->array, sizeof p->medstd);
+  free(tmp);
+
+  tmp=gal_statistics_minimum(p->std);
+  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  memcpy(&p->minstd, tmp->array, sizeof p->minstd);
+  free(tmp);
+
+  tmp=gal_statistics_maximum(p->std);
+  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  memcpy(&p->maxstd, tmp->array, sizeof p->maxstd);
+  free(tmp);
+
+  /* In case the image is in electrons or counts per second, the standard
+     deviation of the noise will become smaller than unity, so we need to
+     correct it in the S/N calculation. So, we'll calculate the correction
+     factor here. */
+  p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
   /* Interpolate and smooth the derived values. */
   threshold_interp_smooth(p, &p->sky, &p->std, p->detskyname);

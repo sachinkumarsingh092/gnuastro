@@ -100,6 +100,22 @@ struct argp_option program_options[] =
     },
 
 
+    /* Tessellation.
+    {
+      "largetilesize",
+      ARGS_OPTION_KEY_LARGETILESIZE,
+      "INT[,INT]",
+      0,
+      "Regular tile size on dim.s (FITS order).",
+      GAL_OPTIONS_GROUP_TESSELLATION,
+      &cp->tl.tilesize,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_sizes_reverse
+    },
+    */
 
 
     /* Output options. */
@@ -342,7 +358,7 @@ struct argp_option program_options[] =
       0,
       "Quantile in pseudo-det. to define true.",
       ARGS_GROUP_DETECTION,
-      &p->checkdetsn,
+      &p->detquant,
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GT_0_LT_1,
       GAL_OPTIONS_MANDATORY,

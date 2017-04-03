@@ -28,7 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/linkedlist.h>
@@ -400,7 +402,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   b=binary->array;
   for(i=0;i<binary->size;++i)
     /* Check if this pixel is already labeled. */
-    if( b[i] && !l[i] )
+    if( b[i] && l[i]==0 )
       {
         /* This is the first pixel of this connected region that we have
            got to. */
@@ -421,7 +423,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
             GAL_DIMENSION_NEIGHBOR_OP(p, binary->ndim, binary->dsize,
                                       connectivity, dinc,
               {
-                if( b[ nind ] && !l[ nind ] )
+                if( b[ nind ] && l[ nind ]==0 )
                   {
                     l[ nind ] = curlab;
                     gal_linkedlist_add_to_sll(&Q, nind);
@@ -462,12 +464,127 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 /*********************************************************************/
 /*****************            Fill holes          ********************/
 /*********************************************************************/
+/* Make the array that is the inverse of the input byt of fill
+   holes. The inverse array will also be 4 pixels larger in both
+   dimensions. This is because we might also want to fill those holes
+   that are touching the side of the image. One pixel for a pixel that
+   is one pixel away from the image border. Another pixel for those
+   objects that are touching the image border. */
+static gal_data_t *
+binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
+{
+  uint8_t *in;
+  size_t i, startind;
+  gal_data_t *inv, *tile;
+  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *startcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+
+
+  /* Set the size of the padded inverse image and the coordinates of the
+     start. We want the inverse to be padded on the edges of each dimension
+     by 2 pixels, so each dimension should be padded by 4 pixels. */
+  for(i=0;i<input->ndim;++i)
+    {
+      startcoord[i]=2;
+      dsize[i]=input->dsize[i]+4;
+    }
+
+
+  /* Allocate the inverse dataset and initialize it to 1 (mainly for the
+     edges, the inner region will be set afterwards).
+
+     PADDING MUST BE INITIALIZED WITH 1: This is done so the connected body
+     of 1 valued pixels (after inversion) gets a label of 1 after labeling
+     the connected components and any hole, will get a value larger than
+     1. */
+  inv=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, dsize, NULL, 0,
+                     input->minmapsize, "INVERSE", "binary", NULL);
+  memset(inv->array, 1, inv->size);
+
+
+  /* Define a tile to fill the central regions of the inverse. */
+  startind=gal_dimension_coord_to_index(input->ndim, inv->dsize, startcoord);
+  tile=gal_data_alloc(gal_data_ptr_increment(inv->array, startind, inv->type),
+                      inv->type, input->ndim, input->dsize, NULL, 0, 0, NULL,
+                      NULL, NULL);
+  *outtile=tile;
+  tile->block=inv;
+
+
+  /* Fill the central regions. */
+  in=input->array;
+  GAL_TILE_PARSE_OPERATE({*i = *in==GAL_BLANK_UINT8 ? *in : !*in; ++in;},
+                         tile, NULL, 0, 0);
+
+
+  /* Clean up and return. */
+  free(dsize);
+  return inv;
+}
+
+
+
+
+
+/* Fill all the holes in an input unsigned char array that are bounded
+   within a 4-connected region.
+
+   The basic method is this:
+
+   1. An inverse image is created:
+
+        * For every pixel in the input that is 1, the inverse is 0.
+
+        * The inverse image has two extra pixels on each edge to
+          ensure that all the inv[i]==1 pixels around the image are
+          touching each other and a diagonal object passing through
+          the image does not cause the inv[i]==1 pixels on the edges
+          of the image to get a different label.
+
+   2. The 8 connected regions in this inverse image are found.
+
+   3. Since we had a 2 pixel padding on the edges of the image, we
+      know for sure that all labeled regions with a label of 1 are
+      actually connected `holes' in the input image.
+
+      Any pixel with a label larger than 1, is therefore a bounded
+      hole that is not 8-connected to the rest of the holes.  */
 void
 gal_binary_fill_holes(gal_data_t *input)
 {
+  uint8_t *in;
+  gal_data_t *inv, *tile, *holelabs=NULL;
+
   /* A small sanity check. */
   if( input->type != GAL_TYPE_UINT8 )
     error(EXIT_FAILURE, 0, "input to `gal_binary_fill_holes' must have "
           "`uint8' type, but its input dataset has `%s' type",
           gal_type_to_string(input->type, 1));
+
+
+  /* Make the inverse image. */
+  inv=binary_make_padded_inverse(input, &tile);
+
+
+  /* Label the 8-connected (connectivity==2) holes. */
+  gal_binary_connected_components(inv, &holelabs, 2);
+
+
+  /* Any pixel with a label larger than 1 is a hole in the input image and
+     we should invert the respective pixel. To do it, we'll use the tile
+     that was defined before, just change its block and array.*/
+  in=input->array;
+  tile->array=gal_tile_block_relative_to_other(tile, holelabs);
+  tile->block=holelabs; /* has to be after correcting `tile->array'. */
+  GAL_TILE_PARSE_OPERATE({
+      *in = *i>1 && *i!=GAL_BLANK_UINT32 ? 1 : *in;
+      ++in;
+    }, tile, NULL, 0, 0);
+
+
+  /* Clean up and return. */
+  tile->array=NULL;
+  gal_data_free(inv);
+  gal_data_free(tile);
+  gal_data_free(holelabs);
 }

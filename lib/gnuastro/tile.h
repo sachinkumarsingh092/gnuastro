@@ -109,15 +109,18 @@ struct gal_tile_two_layer_params
   size_t         *numtilesinch; /* Tile no. in each dim. on one channel.  */
   char          *tilecheckname; /* Name of file to check tiles.           */
   size_t          *permutation; /* Tile pos. in memory --> pos. overall.  */
+  size_t           *firsttsize; /* See `gal_tile_full_regular_first'.     */
 
   /* Actual tile and channel data structures. */
   gal_data_t            *tiles; /* Tiles array (also linked with `next'). */
   gal_data_t         *channels; /* Channels array (linked with `next').   */
 };
 
+
 size_t *
 gal_tile_full(gal_data_t *input, size_t *regular,
-              float remainderfrac, gal_data_t **out, size_t multiple);
+              float remainderfrac, gal_data_t **out, size_t multiple,
+              size_t **firsttsize);
 
 void
 gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
@@ -139,6 +142,10 @@ gal_data_t *
 gal_tile_full_values_smooth(gal_data_t *tilevalues,
                             struct gal_tile_two_layer_params *tl,
                             size_t width, size_t numthreads);
+
+size_t
+gal_tile_full_id_from_coord(struct gal_tile_two_layer_params *tl,
+                            size_t *coord);
 
 void
 gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
@@ -191,10 +198,10 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
         /* itself or not. */                                            \
         if(hasblank)                                                    \
           {                                                             \
-            if(b==b) do if(*i!=b)  {OP; if(parse_out) ++o;} while(++i<f); \
-            else     do if(*i==*i) {OP; if(parse_out) ++o;} while(++i<f); \
+            if(b==b) do{if(*i!=b) {OP;}if(parse_out) ++o;} while(++i<f); \
+            else     do{if(*i==*i){OP;}if(parse_out) ++o;} while(++i<f); \
           }                                                             \
-        else         do            {OP; if(parse_out) ++o;} while(++i<f); \
+        else         do          {{OP;}if(parse_out) ++o;} while(++i<f); \
                                                                         \
                                                                         \
         /* Set the incrementation. On a fully allocated iblock (when */ \

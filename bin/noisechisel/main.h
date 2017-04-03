@@ -44,6 +44,7 @@ struct noisechiselparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.              */
+  /*struct gal_tile_two_layer_params ltl;*/ /* Large tessellation.        */
   char             *inputname;  /* Input filename.                        */
   char            *kernelname;  /* Input kernel filename.                 */
   char                  *khdu;  /* Kernel HDU.                            */
@@ -87,7 +88,8 @@ struct noisechiselparams
   /* Internal. */
   char           *qthreshname;  /* Name of Quantile threshold check image.*/
   char            *detskyname;  /* Name of Initial det sky check image.   */
-  char             *detsnname;  /* Name of pseudo-detections S/N values.  */
+  char          *detsn_s_name;  /* Sky pseudo-detections S/N name.        */
+  char          *detsn_d_name;  /* Detection pseudo-detections S/N name.  */
   char         *detectionname;  /* Name of detection steps file.          */
   char               *skyname;  /* Name of Sky estimation steps file.     */
   char           *clumpsnname;  /* Name of Clump S/N values file.         */
@@ -100,6 +102,11 @@ struct noisechiselparams
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
   time_t              rawtime;  /* Starting time of the program.          */
+
+  float                medstd;  /* Median STD before interpolation.       */
+  float                minstd;  /* Minimum STD before interpolation.      */
+  float                maxstd;  /* Maximum STD before interpolation.      */
+  float               cpscorr;  /* Counts/second correction.              */
 
   size_t           numobjects;  /* Number of objects detected.            */
   size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */

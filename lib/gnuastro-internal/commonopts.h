@@ -315,7 +315,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_MINMAPSIZE,
       "INT",
       0,
-      "Minimum no. bytes to map arrays to hdd/ssd.",
+      "Minimum bytes in array to not use ram RAM.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &cp->minmapsize,
       GAL_TYPE_SIZE_T,

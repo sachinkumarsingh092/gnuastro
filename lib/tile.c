@@ -479,7 +479,7 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
    input's length. */
 static void
 gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
-                            float significance, size_t *first, size_t *last,
+                            float remainderfrac, size_t *first, size_t *last,
                             size_t *tsize)
 {
   size_t i, remainder, *dsize=parent->dsize;;
@@ -493,7 +493,7 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
       /* Depending on the remainder, set the first tile size and number. */
       if(remainder)
         {
-          if( remainder > significance * regular[i] )
+          if( remainder > remainderfrac * regular[i] )
             {
               first[i]  = ( remainder + regular[i] )/2;
               tsize[i] = dsize[i]/regular[i] + 1 ;
@@ -574,7 +574,8 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
 */
 size_t *
 gal_tile_full(gal_data_t *input, size_t *regular,
-              float remainderfrac, gal_data_t **out, size_t multiple)
+              float remainderfrac, gal_data_t **out, size_t multiple,
+              size_t **firsttsize)
 {
   size_t i, d, tind, numtiles, *start=NULL;
   gal_data_t *tiles, *block=gal_tile_block(input);
@@ -588,7 +589,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   /* Set the first tile size and total number of tiles along each
      dimension, then allocate the array of tiles. */
   gal_tile_full_regular_first(input, regular, remainderfrac,
-                             first, last, tsize);
+                              first, last, tsize);
   numtiles=gal_dimension_total_size(input->ndim, tsize);
 
 
@@ -682,9 +683,9 @@ gal_tile_full(gal_data_t *input, size_t *regular,
 
   /* Clean up and return. */
   free(last);
-  free(first);
   free(coord);
   free(tcoord);
+  *firsttsize=first;
   if(start) free(start);
   tsize[input->ndim]=-1; /* So it can be used for another tessellation, */
   return tsize;          /* see `gal_tile_full_sanity_check'.           */
@@ -796,14 +797,14 @@ gal_tile_full_two_layers(gal_data_t *input,
                          struct gal_tile_two_layer_params *tl)
 {
   gal_data_t *t;
-  size_t i, *junk, ndim=tl->ndim=input->ndim;
+  size_t i, *junk, *junk2, ndim=tl->ndim=input->ndim;
 
   /* Initialize.  */
   tl->channels=tl->tiles=NULL;
 
   /* Initialize necessary values and do the channels tessellation. */
   junk = gal_tile_full(input, tl->channelsize, tl->remainderfrac,
-                       &tl->channels, 1);
+                       &tl->channels, 1, &junk2);
   tl->totchannels = gal_dimension_total_size(ndim, tl->numchannels);
   for(i=0;i<ndim;++i)
     if(junk[i]!=tl->numchannels[i])
@@ -811,13 +812,14 @@ gal_tile_full_two_layers(gal_data_t *input,
             "`gal_tile_full_two_layers' don't match in dimension %zu, with "
             "values of %zu and %zu respectively.", ndim-i,
             tl->numchannels[i], junk[i]);
+  free(junk2);
 
   /* Tile each channel. While tiling the first channel, we are also going
      to allocate the space for the other channels. Then pass those pointers
      when we want to fill in each tile of the other channels. */
   tl->numtilesinch = gal_tile_full(tl->channels, tl->tilesize,
                                    tl->remainderfrac, &tl->tiles,
-                                   tl->totchannels);
+                                   tl->totchannels, &tl->firsttsize);
   tl->tottilesinch = gal_dimension_total_size(ndim, tl->numtilesinch);
   for(i=1; i<tl->totchannels; ++i)
     {
@@ -830,8 +832,9 @@ gal_tile_full_two_layers(gal_data_t *input,
       /* Fill in the information for all the tiles in this channel. Note
          that we already have the returned value, so it isn't important.*/
       junk=gal_tile_full(&tl->channels[i], tl->tilesize, tl->remainderfrac,
-                         &t, 1);
+                         &t, 1, &junk2);
       free(junk);
+      free(junk2);
     }
 
   /* Multiply the number of tiles along each dimension OF ONE CHANNEL by
@@ -1065,6 +1068,42 @@ gal_tile_full_values_smooth(gal_data_t *tilevalues,
 
 
 
+size_t
+gal_tile_full_id_from_coord(struct gal_tile_two_layer_params *tl,
+                            size_t *coord)
+{
+  /* This function only works for 10 dimensions. */
+  size_t i, tr, chid, tile[10];
+
+
+  /* Host channel's ID. */
+  for(i=0;i<tl->ndim;++i)
+    tile[i] = tl->totchannels == 1 ? 0 : coord[i] / tl->channelsize[i];
+  chid=gal_dimension_coord_to_index(tl->ndim, tl->numchannels, tile);
+
+
+  /* Find the tile within the channel. */
+  for(i=0;i<tl->ndim;++i)
+    {
+      tr=coord[i] % tl->channelsize[i];
+      if( tl->firsttsize[i] != tl->tilesize[i] )
+        tile[i] = ( tr <= tl->firsttsize[i]
+                    ? 0
+                    : 1 + (tr - tl->firsttsize[i]) / tl->tilesize[i] );
+      else
+        tile[i] = tr / tl->tilesize[i];
+    }
+
+
+  /* Return the tile ID. */
+  return ( chid * tl->tottilesinch
+           + gal_dimension_coord_to_index(tl->ndim, tl->numtilesinch, tile) );
+}
+
+
+
+
+
 /* Clean up the allocated spaces in the parameters. */
 void
 gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
@@ -1077,6 +1116,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
   if(tl->numtilesinch)  free(tl->numtilesinch);
   if(tl->tilecheckname) free(tl->tilecheckname);
   if(tl->permutation)   free(tl->permutation);
+  if(tl->firsttsize)    free(tl->firsttsize);
 
   /* Free the arrays of `gal_data_c' for each tile and channel. */
   if(tl->tiles)    gal_data_array_free(tl->tiles,    tl->tottiles,    0);

@@ -127,7 +127,6 @@ ui_initialize_options(struct noisechiselparams *p,
         {
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
-        case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 
@@ -229,6 +228,16 @@ ui_read_check_only_options(struct noisechiselparams *p)
           "must be larger than the base quantile threshold (`--qthresh', "
           "or `-t'). You have provided %.4f and %.4f for the former and "
           "latter, respectively", p->noerodequant, p->qthresh);
+
+  /* For the options that make tables, the table formation option is
+     mandatory. */
+  if( (p->checkdetsn || p->checkclumpsn) && p->cp.tableformat==0 )
+    error(EXIT_FAILURE, 0, "`--tableformat' is necessary with the "
+          "`--checkdetsn' and `--checkclumpsn' options.\n"
+          "Please see description for `--tableformat' after running the "
+          "following command for more information (use `SPACE' to go down "
+          "the page and `q' to return to the command-line):\n\n"
+          "    $ info gnuastro \"Input Output options\"");
 }
 
 
@@ -326,8 +335,14 @@ ui_set_output_names(struct noisechiselparams *p)
 
   /* Pseudo-detection S/N values. */
   if(p->checkdetsn)
-    p->detsnname=gal_checkset_automatic_output(&p->cp, basename,
-                                               "_detsn.txt");
+    {
+      p->detsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
+                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                   ? "_detsn_sky.txt" : "_detsn_sky.fits") );
+      p->detsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
+                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                   ? "_detsn_det.txt" : "_detsn_det.fits") );
+    }
 
   /* Detection steps. */
   if(p->checkdetection)
@@ -438,6 +453,7 @@ void
 ui_preparations(struct noisechiselparams *p)
 {
   gal_data_t *check;
+  /*struct gal_tile_two_layer_params *ltl=&p->ltl;*/
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* Prepare the names of the outputs. */
@@ -633,10 +649,11 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   free(p->maxtsize);
   free(p->cp.output);
   if(p->skyname)          free(p->skyname);
-  if(p->detsnname)        free(p->detsnname);
   if(p->detskyname)       free(p->detskyname);
   if(p->clumpsnname)      free(p->clumpsnname);
   if(p->qthreshname)      free(p->qthreshname);
+  if(p->detsn_s_name)     free(p->detsn_s_name);
+  if(p->detsn_d_name)     free(p->detsn_d_name);
   if(p->detectionname)    free(p->detectionname);
   if(p->segmentationname) free(p->segmentationname);
 
