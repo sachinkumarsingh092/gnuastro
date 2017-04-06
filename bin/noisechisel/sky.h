@@ -20,34 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef THRESHOLD_H
-#define THRESHOLD_H
-
-#define THRESHOLD_NO_ERODE_VALUE 2
-
-
-enum threshold_type
-  {
-    THRESHOLD_QUANTILES,
-    THRESHOLD_SKY_STD,
-  };
-
+#ifndef SKY_H
+#define SKY_H
 
 void
-threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
-                int type);
+sky_and_std(struct noisechiselparams *p, char *checkname);
 
 void
-threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *sntable,
-                         gal_data_t *snind, char *filename,
-                         struct gal_linkedlist_stll *comments);
-
-void
-threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
-                        gal_data_t **second, char *filename);
-
-void
-threshold_quantile_find_apply(struct noisechiselparams *p);
-
+sky_subtract(struct noisechiselparams *p);
 
 #endif

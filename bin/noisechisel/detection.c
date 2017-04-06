@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"
+#include "sky.h"
 #include "threshold.h"
 
 
@@ -586,10 +587,13 @@ detection_remove_false_initial(struct noisechiselparams *p,
         ++b;
       }
     while(++l<lf);
-  else
-    do
-      if(*l!=GAL_BLANK_UINT32)
-        *l = newlabels[ *l ];
+  else                               /* We need the binary array even when */
+    do                               /* there is no dilation: the binary   */
+      {                              /* array is used for estimating the   */
+        if(*l!=GAL_BLANK_UINT32)     /* Sky and its STD. */
+          *b = ( *l = newlabels[ *l ] ) > 0;
+        ++b;
+      }
     while(++l<lf);
 
 
@@ -622,7 +626,7 @@ detection(struct noisechiselparams *p)
 
   /* Find the Sky and its Standard Deviation from the initial detectios. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  threshold_sky_and_std(p);
+  sky_and_std(p, p->detskyname);
   if(!p->cp.quiet)
     gal_timing_report(&t1, "Initial (crude) Sky and its STD found.", 2);
 
@@ -655,7 +659,6 @@ detection(struct noisechiselparams *p)
     }
 
 
-
   /* If the user asked for dilation, then apply it. */
   if(p->dilate)
     {
@@ -678,8 +681,12 @@ detection(struct noisechiselparams *p)
     }
 
 
-
-  /*  */
+  /* p->binary was used to keep the initial pseudo-detection threshold. But
+     we don't need it any more, so we'll just free it and put the `workbin'
+     array in its place. Note that `workbin' has a map of all the detected
+     objects, which is still necessary during NoiseChisel. */
+  gal_data_free(p->binary);
+  p->binary=workbin;
 
 
   /* If the user wanted to check the threshold and hasn't called

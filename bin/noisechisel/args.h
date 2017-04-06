@@ -397,7 +397,7 @@ struct argp_option program_options[] =
       0,
       "Final sky and its STD steps in a file.",
       ARGS_GROUP_DETECTION,
-      &p->checkdetection,
+      &p->checksky,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
