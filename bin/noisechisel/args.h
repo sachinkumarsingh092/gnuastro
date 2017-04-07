@@ -100,22 +100,22 @@ struct argp_option program_options[] =
     },
 
 
-    /* Tessellation.
+    /* Tessellation. */
     {
       "largetilesize",
       ARGS_OPTION_KEY_LARGETILESIZE,
       "INT[,INT]",
       0,
-      "Regular tile size on dim.s (FITS order).",
+      "Sim. to --tilesize, but for larger tiles.",
       GAL_OPTIONS_GROUP_TESSELLATION,
-      &cp->tl.tilesize,
+      &p->ltl.tilesize,
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET,
       gal_options_parse_sizes_reverse
     },
-    */
+
 
 
     /* Output options. */

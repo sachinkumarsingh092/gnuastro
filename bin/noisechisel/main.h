@@ -44,7 +44,7 @@ struct noisechiselparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.              */
-  /*struct gal_tile_two_layer_params ltl;*/ /* Large tessellation.        */
+  struct gal_tile_two_layer_params ltl;/* Large tessellation.             */
   char             *inputname;  /* Input filename.                        */
   char            *kernelname;  /* Input kernel filename.                 */
   char                  *khdu;  /* Kernel HDU.                            */
@@ -110,7 +110,9 @@ struct noisechiselparams
 
   size_t           numobjects;  /* Number of objects detected.            */
   size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */
-  size_t            *maxtsize;  /* Maximum size of a single tile.         */
+  size_t          maxltcontig;  /* Maximum contiguous space for a tile.   */
+  size_t            *maxtsize;  /* Maximum size of a single small tile.   */
+  size_t           *maxltsize;  /* Maximum size of a single large tile.   */
 };
 
 #endif

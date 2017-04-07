@@ -145,7 +145,7 @@ ui_initialize_options(struct noisechiselparams *p,
 
 
 /* Parse a single option: */
-error_t
+static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct noisechiselparams *p = state->input;
@@ -323,6 +323,11 @@ ui_set_output_names(struct noisechiselparams *p)
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
                                                "_labeled.fits");
 
+  /* Tile check. */
+  if(p->cp.tl.checktiles)
+    p->cp.tl.tilecheckname=gal_checkset_automatic_output(&p->cp, basename,
+                                                         "_tiles.fits");
+
   /* Quantile threshold. */
   if(p->checkqthresh)
     p->qthreshname=gal_checkset_automatic_output(&p->cp, basename,
@@ -449,15 +454,79 @@ ui_prepare_kernel(struct noisechiselparams *p)
 
 
 
-void
-ui_preparations(struct noisechiselparams *p)
+static void
+ui_prepare_tiles(struct noisechiselparams *p)
 {
   gal_data_t *check;
-  /*struct gal_tile_two_layer_params *ltl=&p->ltl;*/
-  struct gal_tile_two_layer_params *tl=&p->cp.tl;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
 
+
+  /* Check the tile parameters for the small tile sizes and make the tile
+     structure. We will also need the dimensions of the tile with the
+     maximum required memory. */
+  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
+  gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
+  gal_tile_full_two_layers(p->input, tl);
+  gal_tile_full_permutation(tl);
+  for(check=tl->tiles; check!=NULL; check=check->next)
+    if( check->size > p->maxtcontig )/* p->maxtcontig initialized to 0. */
+      {
+        p->maxtcontig=check->size;
+        memcpy(p->maxtsize, check->dsize, tl->ndim*sizeof *p->maxtsize);
+      }
+
+
+  /* Make the large tessellation, except for the size, the rest of the
+     parameters are the same as the small tile sizes. */
+  ltl->numchannels    = tl->numchannels;
+  ltl->remainderfrac  = tl->remainderfrac;
+  ltl->workoverch     = tl->workoverch;
+  ltl->checktiles     = tl->checktiles;
+  ltl->oneelempertile = tl->oneelempertile;
+  p->maxltsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
+  gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, ltl);
+  gal_tile_full_two_layers(p->input, ltl);
+  gal_tile_full_permutation(ltl);
+  for(check=ltl->tiles; check!=NULL; check=check->next)
+    if( check->size > p->maxltcontig )/* p->maxltcontig initialized to 0. */
+      {
+        p->maxltcontig=check->size;
+        memcpy(p->maxltsize, check->dsize, ltl->ndim*sizeof *p->maxltsize);
+      }
+
+  /* Make the tile check image if requested. */
+  if(tl->checktiles)
+    {
+      /* Large tiles. */
+      check=gal_tile_block_check_tiles(ltl->tiles);
+      gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
+      gal_data_free(check);
+
+      /* Small tiles. */
+      check=gal_tile_block_check_tiles(tl->tiles);
+      gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
+      gal_data_free(check);
+
+      /* If `continueaftercheck' hasn't been called, abort NoiseChisel. */
+      if(!p->continueaftercheck)
+        ui_abort_after_check(p, tl->tilecheckname,
+                             "showing all tiles over the image");
+
+      /* Free the name. */
+      free(tl->tilecheckname);
+    }
+}
+
+
+
+
+
+static void
+ui_preparations(struct noisechiselparams *p)
+{
   /* Prepare the names of the outputs. */
   ui_set_output_names(p);
+
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
@@ -468,32 +537,14 @@ ui_preparations(struct noisechiselparams *p)
   if(p->input->name==NULL)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
 
+
   /* Read in the kernel for convolution. */
   ui_prepare_kernel(p);
 
-  /* Check the tile parameters and make the tile structure. We will also
-     need the dimensions of the tile with the maximum required memory.  */
-  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
-  gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
-  gal_tile_full_two_layers(p->input, tl);
-  gal_tile_full_permutation(tl);
-  for(check=tl->tiles; check!=NULL; check=check->next)
-    if( check->size > p->maxtcontig )/* p->maxtcontig was initialized to 0. */
-      {
-        p->maxtcontig=check->size;
-        memcpy(p->maxtsize, check->dsize, tl->ndim*sizeof *p->maxtsize);
-      }
 
-  /* Make the tile check image if requested. */
-  if(tl->checktiles)
-    {
-      tl->tilecheckname=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                                      "_tiled.fits");
-      check=gal_tile_block_check_tiles(tl->tiles);
-      gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
-      gal_data_free(check);
-      free(tl->tilecheckname);
-    }
+  /* Prepare the tessellation. */
+  ui_prepare_tiles(p);
+
 
   /* Allocate space for the over-all necessary arrays. */
   p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
@@ -523,11 +574,11 @@ ui_preparations(struct noisechiselparams *p)
 
 
 /**************************************************************/
-/************         Set the parameters          *************/
+/************     High level reading function     *************/
 /**************************************************************/
-
 void
-ui_read_check_inputs_setup(int argc, char *argv[], struct noisechiselparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[],
+                           struct noisechiselparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
@@ -663,6 +714,11 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   gal_data_free(p->kernel);
   gal_data_free(p->binary);
   gal_data_free(p->olabel);
+
+  /* Clean up the tile structure. */
+  p->ltl.numchannels=NULL;
+  gal_tile_full_free_contents(&p->ltl);
+  gal_tile_full_free_contents(&p->cp.tl);
 
   /* Print the final message. */
   if(!p->cp.quiet && t1)

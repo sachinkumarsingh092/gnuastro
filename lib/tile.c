@@ -487,29 +487,43 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
   /* For each dimension, set the size of the first tile. */
   for(i=0;i<parent->ndim;++i)
     {
-      /* Calculate the remainder in this dimension. */
-      remainder=dsize[i] % regular[i];
-
-      /* Depending on the remainder, set the first tile size and number. */
-      if(remainder)
+      /* It might happen that the tile size is bigger than the parent size
+         in a dimension, in that case the analysis in the comments above
+         are useless and only one tile should cover this dimension with the
+         size of the parent. */
+      if( regular[i] >= dsize[i] )
         {
-          if( remainder > remainderfrac * regular[i] )
-            {
-              first[i]  = ( remainder + regular[i] )/2;
-              tsize[i] = dsize[i]/regular[i] + 1 ;
-              last[i]   = dsize[i] - ( first[i] + regular[i]*(tsize[i]-2) );
-            }
-          else
-            {
-              first[i]  = remainder + regular[i];
-              tsize[i]  = dsize[i]/regular[i];
-              last[i]   = regular[i];
-            }
+          tsize[i]=1;
+          first[i]=last[i]=dsize[i];
         }
       else
         {
-          first[i]  = last[i] = regular[i];
-          tsize[i] = dsize[i]/regular[i];
+          /* Calculate the remainder in this dimension. */
+          remainder=dsize[i] % regular[i];
+
+          /* Depending on the remainder, set the first tile size and
+             number. */
+          if(remainder)
+            {
+              if( remainder > remainderfrac * regular[i] )
+                {
+                  first[i]  = ( remainder + regular[i] )/2;
+                  tsize[i]  = dsize[i]/regular[i] + 1 ;
+                  last[i]   = ( dsize[i]
+                                - ( first[i] + regular[i]*(tsize[i]-2) ) );
+                }
+              else
+                {
+                  first[i]  = remainder + regular[i];
+                  tsize[i]  = dsize[i]/regular[i];
+                  last[i]   = regular[i];
+                }
+            }
+          else
+            {
+              first[i]  = last[i] = regular[i];
+              tsize[i] = dsize[i]/regular[i];
+            }
         }
     }
 }
@@ -592,7 +606,6 @@ gal_tile_full(gal_data_t *input, size_t *regular,
                               first, last, tsize);
   numtiles=gal_dimension_total_size(input->ndim, tsize);
 
-
   /* Allocate the necessary space for all the tiles (if necessary). */
   if(*out)        tiles = *out;
   else     *out = tiles = gal_data_array_calloc(numtiles*multiple);
@@ -671,7 +684,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
          next pointer as the next tile. Note that only when we are dealing
          with the last tile should the `next' pointer be set to NULL.*/
       tiles[i].block = input;
-      tiles[i].next = i==numtiles-1 ? NULL : &tiles[i+1];
+      tiles[i].next  = i==numtiles-1 ? NULL : &tiles[i+1];
 
       /* For a check:
       printf("%zu:\n\tStart index: %zu\n\tsize: %zu x %zu\n", i, tind,
@@ -687,9 +700,9 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   free(tcoord);
   *firsttsize=first;
   if(start) free(start);
-  tsize[input->ndim]=-1; /* So it can be used for another tessellation, */
-  return tsize;          /* see `gal_tile_full_sanity_check'.           */
-}
+  tsize[input->ndim]=-1; /* `tsize' had ndim+1 values, we will mark the  */
+  return tsize;          /* extra space with the largest possible value: */
+}                        /* -1, see `gal_tile_full_sanity_check'.        */
 
 
 

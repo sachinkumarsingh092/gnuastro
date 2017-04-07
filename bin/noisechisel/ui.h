@@ -30,11 +30,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Available letters for short options:
 
    a b f j l n u w x z
-   A H J L W X Y
+   A H J W X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
+  ARGS_OPTION_KEY_LARGETILESIZE      = 'L',
   ARGS_OPTION_KEY_KERNEL             = 'k',
   ARGS_OPTION_KEY_SKYSUBTRACTED      = 'E',
   ARGS_OPTION_KEY_MINBFRAC           = 'B',
@@ -59,7 +60,7 @@ enum option_keys_enum
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  ARGS_OPTION_KEY_KHDU              = 1000,
+  ARGS_OPTION_KEY_KHDU               = 1000,
   ARGS_OPTION_KEY_MINNUMFALSE,
   ARGS_OPTION_KEY_ONLYDETECT,
   ARGS_OPTION_KEY_GROWNCLUMPS,

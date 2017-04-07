@@ -105,15 +105,12 @@ noisechisel_convolve_correct_ch_edges(struct noisechiselparams *p)
 {
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
-  gal_checkset_check_remove_file("conv-correct.fits", 0, 0);
-  gal_fits_img_write(p->conv, "conv-correct.fits", NULL, PROGRAM_STRING);
-
+  /* Correct the convolved image if necessary. */
   if( tl->totchannels>1 && tl->workoverch==0 )
     gal_convolve_spatial_correct_ch_edge(tl->tiles, p->kernel,
                                          p->cp.numthreads, 1, p->conv);
 
-  gal_fits_img_write(p->conv, "conv-correct.fits", NULL, PROGRAM_STRING);
-
+  /* Inform the user. */
   if(!p->cp.quiet)
     gal_timing_report(NULL, "Corrected convolution of touching channel "
                       "edges", 1);
@@ -153,9 +150,13 @@ noisechisel(struct noisechiselparams *p)
   /* Remove false detections. */
   detection(p);
 
-  /* Find the Sky value and subtract it. */
+  /* Find the Sky value and subtract it from the input and convolved
+     images. */
   noisechisel_find_sky_subtract(p);
 
   /* Correct the convolved image channel edges if necessary. */
   noisechisel_convolve_correct_ch_edges(p);
+
+  /* Do the segmentation. */
+
 }

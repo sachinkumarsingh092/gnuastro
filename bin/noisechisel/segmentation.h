@@ -20,39 +20,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
+#ifndef SEGMENTATION_H
+#define SEGMENTATION_H
 
-#include <stdio.h>
-#include <stdlib.h>
+void
+segmentation(struct noisechiselparams *p);
 
-#include <gnuastro-internal/timing.h>
-
-#include "main.h"
-
-#include "ui.h"
-#include "noisechisel.h"
-
-
-/* Main function */
-int
-main (int argc, char *argv[])
-{
-  struct timeval t1;
-  struct noisechiselparams p={{{0},0},{0},0};
-
-  /* Set they starting time. */
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Read the input parameters. */
-  ui_read_check_inputs_setup(argc, argv, &p);
-
-  /* Run MakeProfiles */
-  noisechisel(&p);
-
-  /* Free all non-freed allocations. */
-  ui_free_report(&p, &t1);
-
-  /* Return successfully.*/
-  return EXIT_SUCCESS;
-}
+#endif

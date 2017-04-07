@@ -26,9 +26,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/binary.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -165,6 +167,105 @@ detection_pseudo_sky_or_det(struct noisechiselparams *p, uint8_t *w, int s0d1)
 
 
 
+/* Copy the space of this tile into the full/large array. */
+static void
+detection_write_in_large(gal_data_t *tile, gal_data_t *copy)
+{
+  uint8_t *c=copy->array;
+  GAL_TILE_PARSE_OPERATE({*i=*c++;}, tile, NULL, 0, 0);
+}
+
+
+
+
+
+/* Fill the holes and open on multiple threads to find the
+   pseudo-detections. Ideally both these should be done immediately after
+   each other on each large tile, but when the user wants to check the
+   steps, we need to break out of the threads at each step. */
+struct fho_params
+{
+  int                    step;
+  uint8_t          *copyspace;
+  gal_data_t         *workbin;
+  gal_data_t         *worklab;
+  struct noisechiselparams *p;
+};
+
+static void *
+detection_fill_holes_open(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct fho_params *fho_prm=(struct fho_params *)(tprm->params);
+  struct noisechiselparams *p=fho_prm->p;
+
+  void *tarray;
+  gal_data_t *tile, *copy, *tblock;
+  size_t i, dsize[]={1,1,1,1,1,1,1,1,1,1}; /* For upto 10-Dimensions! */
+
+
+  /* A temporary data structure to wrap around the copy space. Note that
+     the initially allocated space for this tile is only 1 pixel! */
+  copy=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim, dsize,
+                      NULL, 0, -1, NULL, NULL, NULL);
+  free(copy->array);
+  copy->array=&fho_prm->copyspace[p->maxltcontig*tprm->id];
+
+
+  /* Go over all the tiles given to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+    {
+      /* For easy reading. */
+      tile=&p->ltl.tiles[tprm->indexs[i]];
+
+      /* Change the tile pointers (temporarily). */
+      tarray=tile->array;
+      tblock=tile->block;
+      tile->array=gal_tile_block_relative_to_other(tile, fho_prm->workbin);
+      tile->block=fho_prm->workbin;
+
+      /* Copy the tile into the contiguous patch of memory to work on, but
+         first reset the size element so `gal_data_copy_to_allocated' knows
+         there is enough space. */
+      copy->size=p->maxltcontig;
+      gal_data_copy_to_allocated(tile, copy);
+
+      /* Fill the holes in this tile. */
+      gal_binary_fill_holes(copy);
+      if(fho_prm->step!=2)
+        {
+          detection_write_in_large(tile, copy);
+          tile->array=tarray;
+          tile->block=tblock;
+          continue;
+        }
+
+      /* Open all the regions. */
+      gal_binary_open(copy, 1, 4, 1);
+
+      /* Write the copied region back into the large input and AFTERWARDS,
+         correct the tile's pointers, the pointers must not be corrected
+         before writing the copy. */
+      detection_write_in_large(tile, copy);
+      tile->array=tarray;
+      tile->block=tblock;
+    }
+
+
+  /* Clean up. */
+  copy->array=NULL;
+  gal_data_free(copy);
+
+
+  /* Wait until all the threads finish and return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
 /* We have the thresholded image (with blank values for regions that should
    not be used). Find the pseudo-detections in those regions. */
 static size_t
@@ -172,6 +273,8 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
                       gal_data_t *worklab, int s0d1)
 {
   uint8_t *b, *bf;
+  gal_data_t *bin;
+  struct fho_params fho_prm={0, NULL, workbin, worklab, p};
 
 
   /* Set all the initial detected pixels to blank values. */
@@ -184,33 +287,84 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
     }
 
 
-  /* Fill the four-connected bounded holes. */
-  gal_binary_fill_holes(workbin);
-  if(p->detectionname)
-    {
-      workbin->name="HOLES-FILLED";
-      gal_fits_img_write(workbin, p->detectionname, NULL, PROGRAM_STRING);
-      workbin->name=NULL;
-    }
+  /* Allocate the space necessary to work on each tile (to avoid having to
+     allocate it it separately for each tile and within each
+     thread. `maxltcontig' is the maximum contiguous patch of memory needed
+     to store all tiles. Finally, since we are working on a `uint8_t' type,
+     the size of each element is only 1 byte. */
+  fho_prm.copyspace=gal_data_malloc_array(GAL_TYPE_UINT8,
+                                          p->cp.numthreads*p->maxltcontig);
 
 
-  /* Open the image. */
-  gal_binary_open(workbin, 1, 4, 1);
-  if(p->detectionname)
+  /* Fill the holes and open on each large tile. When no check image is
+     requested, the two steps can be done independently on each tile, but
+     when a check image is requested, we need to break out of the thread
+     spinning function to save the full image then continue it. */
+  if( p->detectionname )
     {
-      workbin->name="OPENED";
-      gal_fits_img_write(workbin, p->detectionname, NULL, PROGRAM_STRING);
-      workbin->name=NULL;
+      /* Necessary initializations. */
+      bin=gal_data_copy(workbin); /*  - Temporary array for demonstration.  */
+      fho_prm.workbin=bin;        /*  - To pass onto the thread.            */
+      fho_prm.step=1;             /*  - So we can break out of the threads. */
+
+      /* Do each step. */
+      while(fho_prm.step<3)
+        {
+          /* Put a copy of `workbin' into `bin' for every step (only
+             necessary for the second step and after). For the first time
+             it was already copied.*/
+          if(fho_prm.step>1)
+            memcpy(bin->array, workbin->array, workbin->size);
+
+          /* Do the respective step. */
+          gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
+                               p->ltl.tottiles, p->cp.numthreads);
+
+          /* Set the extension name based on the step. */
+          switch(fho_prm.step)
+            {
+            case 1:
+              bin->name="HOLES-FILLED";
+              break;
+            case 2:
+              bin->name="OPENED";
+              break;
+            default:
+              error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
+                    "in `detection_pseudo_find'. Please contact us at %s so "
+                    "we can address the issue", fho_prm.step,
+                    PACKAGE_BUGREPORT);
+            }
+
+          /* Write the temporary array into the check image. */
+          gal_fits_img_write(bin, p->detectionname, NULL, PROGRAM_STRING);
+
+          /* Increment the step counter. */
+          ++fho_prm.step;
+        }
+
+      /* Clean up: the array in `bin' should just be replaced with that in
+         `workbin' because it is used in later steps. */
+      free(workbin->array);
+      workbin->array=bin->array;
+      bin->name=bin->array=NULL;
+      gal_data_free(bin);
     }
+  else
+    gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
+                         p->ltl.tottiles, p->cp.numthreads);
+
+
+  /* Clean up. */
+  free(fho_prm.copyspace);
 
 
   /* Label all regions, but first, deal with the blank pixels in the
-     `workbin' dataset when working on the Sky. Recall that the blank
-     pixels are the other domain (detections if working on Sky and sky if
-     working on detections). On the Sky image, blank should be set to 1
-     (because we want the detected objects to have the same labels as the
-     pseudo-detections that cover them). This will allow us to later remove
-     these pseudo-detections. */
+     `workbin' dataset when working on the Sky. Recall that in this case,
+     the blank pixels are the detections. On the Sky image, blank should be
+     set to 1 (because we want the detected objects to have the same labels
+     as the pseudo-detections that cover them). This will allow us to later
+     remove these pseudo-detections. */
   if(s0d1==0)
     {
       bf=(b=workbin->array)+workbin->size;

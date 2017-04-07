@@ -31,10 +31,10 @@ bin_PROGRAMS = astnoisechisel
 astnoisechisel_LDADD = -lgnuastro
 
 astnoisechisel_SOURCES = main.c ui.c detection.c noisechisel.c sky.c     \
-  threshold.c
+  segmentation.c threshold.c
 
 EXTRA_DIST = main.h authors-cite.h args.h ui.h detection.h noisechisel.h \
-  sky.h threshold.h
+  segmentation.h sky.h threshold.h
 
 
 
