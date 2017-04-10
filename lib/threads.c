@@ -281,9 +281,10 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
      void *
      run_on_thread(void *in_prm)
      {
-       size_t i;
        struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
        struct my_params *prm=(struct my_params *)(tprm->params);
+
+       size_t i;
 
        for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
        {

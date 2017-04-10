@@ -360,13 +360,19 @@ ui_set_output_names(struct noisechiselparams *p)
 
   /* Clump S/N values. */
   if(p->checkclumpsn)
-    p->clumpsnname=gal_checkset_automatic_output(&p->cp, basename,
-                                                 "_clumpsn.txt");
+    {
+      p->clumpsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
+                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                   ? "_clumpsn_sky.txt" : "_clumpsn_sky.fits") );
+      p->clumpsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
+                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                   ? "_clumpsn_det.txt" : "_clumpsn_det.fits") );
+    }
 
   /* Segmentation steps. */
   if(p->checksegmentation)
     p->segmentationname=gal_checkset_automatic_output(&p->cp, basename,
-                                                      "_seg.txt");
+                                                      "_seg.fits");
 
 }
 
@@ -509,7 +515,7 @@ ui_prepare_tiles(struct noisechiselparams *p)
 
       /* If `continueaftercheck' hasn't been called, abort NoiseChisel. */
       if(!p->continueaftercheck)
-        ui_abort_after_check(p, tl->tilecheckname,
+        ui_abort_after_check(p, tl->tilecheckname, NULL,
                              "showing all tiles over the image");
 
       /* Free the name. */
@@ -667,21 +673,27 @@ ui_read_check_inputs_setup(int argc, char *argv[],
 /**************************************************************/
 void
 ui_abort_after_check(struct noisechiselparams *p, char *filename,
-                     char *description)
+                     char *file2name, char *description)
 {
+  char *name;
+
+  if(file2name) asprintf(&name, "`%s' and `%s'", filename, file2name);
+  else          asprintf(&name, "`%s'", filename);
+
   /* Let the user know that NoiseChisel is aborting. */
   fprintf(stderr,
           "------------------------------------------------\n"
           "%s aborted for a check\n"
           "------------------------------------------------\n"
-          "`%s' (%s) has been created.\n\n"
+          "%s (%s) has been created.\n\n"
           "If you want %s to continue its processing AND save any "
           "requested check(s), please run it again with "
           "`--continueaftercheck'.\n"
           "------------------------------------------------\n",
-          PROGRAM_NAME, filename, description, PROGRAM_NAME);
+          PROGRAM_NAME, name, description, PROGRAM_NAME);
 
   /* Clean up. */
+  free(name);
   ui_free_report(p, NULL);
 
   /* Abort. */
@@ -701,19 +713,23 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   free(p->cp.output);
   if(p->skyname)          free(p->skyname);
   if(p->detskyname)       free(p->detskyname);
-  if(p->clumpsnname)      free(p->clumpsnname);
   if(p->qthreshname)      free(p->qthreshname);
   if(p->detsn_s_name)     free(p->detsn_s_name);
   if(p->detsn_d_name)     free(p->detsn_d_name);
   if(p->detectionname)    free(p->detectionname);
+  if(p->clumpsn_s_name)   free(p->clumpsn_s_name);
+  if(p->clumpsn_d_name)   free(p->clumpsn_d_name);
   if(p->segmentationname) free(p->segmentationname);
 
   /* Free the allocated datasets. */
+  gal_data_free(p->sky);
+  gal_data_free(p->std);
   gal_data_free(p->conv);
   gal_data_free(p->input);
   gal_data_free(p->kernel);
   gal_data_free(p->binary);
   gal_data_free(p->olabel);
+  gal_data_free(p->clabel);
 
   /* Clean up the tile structure. */
   p->ltl.numchannels=NULL;

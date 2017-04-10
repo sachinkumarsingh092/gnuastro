@@ -892,7 +892,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
      output values to NaN. */
   if(oa[2]>GAL_STATISTICS_MODE_GOOD_SYM)
     {
-      b_val=gal_data_copy_to_new_type_free(mode, GAL_TYPE_FLOAT64);
+      b_val=gal_data_copy_to_new_type_free(b_val, GAL_TYPE_FLOAT64);
       gal_data_copy_element_same_type(b_val, 0, &oa[3]);
     }
   else oa[0]=oa[1]=oa[2]=oa[3]=NAN;
@@ -905,6 +905,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
   /* Clean up (if necessary), then return the output */
   if(p.data!=input) gal_data_free(p.data);
+  gal_data_free(b_val);
   gal_data_free(mode);
   return out;
 }

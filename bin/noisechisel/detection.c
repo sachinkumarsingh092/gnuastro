@@ -83,6 +83,7 @@ detection_initial(struct noisechiselparams *p)
       asprintf(&msg, "Eroded %zu time%s (%zu-connectivity).", p->erode,
                p->erode>1?"s":"", p->erodengb);
       gal_timing_report(&t1, msg, 2);
+      free(msg);
     }
   if(p->detectionname)
     {
@@ -104,6 +105,7 @@ detection_initial(struct noisechiselparams *p)
       asprintf(&msg, "Opened (depth: %zu, %s connectivity).",
               p->opening, p->openingngb==4 ? "4" : "8");
       gal_timing_report(&t1, msg, 2);
+      free(msg);
     }
 
 
@@ -386,7 +388,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   uint8_t *flag;
   size_t tablen=num+1;
   gal_data_t *sn, *snind;
-  uint32_t *plabend, *indarr;
+  uint32_t *plabend, *indarr=NULL;
   double ave, err, *xy, *brightness;
   struct gal_linkedlist_stll *comments=NULL;
   size_t ind, ndim=p->input->ndim, xyncols=1+ndim;
@@ -491,11 +493,11 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
     }
 
 
-  /* calculate the signal to noise for successful detections: */
+  /* Calculate the signal to noise for successful detections: */
   snarr=sn->array;
   if(snind) indarr=snind->array;
   if(s0d1) { snarr[0]=NAN; if(snind) indarr[0]=GAL_BLANK_UINT32; }
-  for(i=1;i<num+1;++i)
+  for(i=1;i<tablen;++i)
     {
       ave=brightness[i]/area[i];
       if( area[i]>p->detsnminarea && ave>0.0f && xy[i*xyncols]>0.0f )
@@ -558,12 +560,18 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
       threshold_write_sn_table(p, sn, snind, ( s0d1 ? p->detsn_d_name
                                                : p->detsn_s_name ), comments);
       gal_linkedlist_free_stll(comments, 1);
+
+      /* Abort NoiseChisel if the user asked for it. */
+      if(s0d1 && !p->continueaftercheck)
+        ui_abort_after_check(p, p->detsn_s_name, p->detsn_d_name,
+                             "pseudo-detection S/N values in a table");
     }
 
 
   /* Clean up and return. */
   free(xy);
   free(area);
+  free(coord);
   free(brightness);
   if(flag) free(flag);
   if(snind) gal_data_free(snind);
@@ -632,6 +640,7 @@ detection_pseudo_real(struct noisechiselparams *p)
                          p->input->dsize, p->input->wcs, 0, p->cp.minmapsize,
                          NULL, NULL, NULL);
 
+
   /* Over the Sky: find the pseudo-detections and make the S/N table. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   numpseudo=detection_pseudo_find(p, workbin, worklab, 0);
@@ -646,6 +655,7 @@ detection_pseudo_real(struct noisechiselparams *p)
       asprintf(&msg, "Pseudo-det S/N: %.2f (%.3f quant of %zu).",
                snthresh, p->detquant, sn->size);
       gal_timing_report(&t1, msg, 2);
+      free(msg);
     }
   gal_data_free(sn);
   gal_data_free(quant);
@@ -825,6 +835,7 @@ detection(struct noisechiselparams *p)
       asprintf(&msg, "%zu detections after %zu dilation%s",
               p->numobjects, p->dilate, p->dilate>1 ? "s." : ".");
       gal_timing_report(&t0, msg, 1);
+      free(msg);
     }
   if(p->detectionname)
     {
@@ -846,5 +857,6 @@ detection(struct noisechiselparams *p)
   /* If the user wanted to check the threshold and hasn't called
      `continueaftercheck', then stop NoiseChisel. */
   if(p->detectionname && !p->continueaftercheck)
-    ui_abort_after_check(p, p->detectionname, "showing all detection steps");
+    ui_abort_after_check(p, p->detectionname, NULL,
+                         "showing all detection steps");
 }

@@ -60,7 +60,8 @@ gal_dimension_increment(size_t ndim, size_t *dsize)
   /* Along the fastest dimension, it is 1. */
   out[ndim-1]=1;
 
-  /* For the rest of the dimensions, it is  */
+  /* For the rest of the dimensions, it is the multiple of the faster
+     dimension's length and the value for the previous dimension. */
   if(ndim>1)
     for(i=ndim-2;i>=0;--i)
       out[i]=dsize[i+1]*out[i+1];

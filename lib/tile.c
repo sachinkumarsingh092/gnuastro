@@ -825,6 +825,7 @@ gal_tile_full_two_layers(gal_data_t *input,
             "`gal_tile_full_two_layers' don't match in dimension %zu, with "
             "values of %zu and %zu respectively.", ndim-i,
             tl->numchannels[i], junk[i]);
+  free(junk);
   free(junk2);
 
   /* Tile each channel. While tiling the first channel, we are also going

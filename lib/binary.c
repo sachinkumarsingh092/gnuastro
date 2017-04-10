@@ -519,6 +519,7 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
 
   /* Clean up and return. */
   free(dsize);
+  free(startcoord);
   return inv;
 }
 

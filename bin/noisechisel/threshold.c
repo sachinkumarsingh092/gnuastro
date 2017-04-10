@@ -467,11 +467,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
       asprintf(&msg, "%.2f & %0.2f quantile thresholds applied.",
                p->qthresh, p->noerodequant);
       gal_timing_report(&t1, msg, 2);
+      free(msg);
     }
 
 
   /* If the user wanted to check the threshold and hasn't called
      `continueaftercheck', then stop NoiseChisel. */
   if(p->qthreshname && !p->continueaftercheck)
-    ui_abort_after_check(p, p->qthreshname, "quantile threshold check");
+    ui_abort_after_check(p, p->qthreshname, NULL, "quantile threshold check");
 }

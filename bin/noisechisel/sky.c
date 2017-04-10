@@ -119,6 +119,9 @@ sky_mean_std_undetected(void *in_prm)
           memcpy(gal_data_ptr_increment(p->std->array, tind, type),
                  gal_data_ptr_increment(meanstd->array, 1, type),
                  gal_type_sizeof(type));
+
+          /* Clean up. */
+          gal_data_free(meanstd);
         }
       else
         {
@@ -175,19 +178,19 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   /* Get the basic information about the standard deviation
      distribution. */
   tmp=gal_statistics_median(p->std, 0);
-  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
   memcpy(&p->medstd, tmp->array, sizeof p->medstd);
-  free(tmp);
+  gal_data_free(tmp);
 
   tmp=gal_statistics_minimum(p->std);
-  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
   memcpy(&p->minstd, tmp->array, sizeof p->minstd);
-  free(tmp);
+  gal_data_free(tmp);
 
   tmp=gal_statistics_maximum(p->std);
-  tmp=gal_data_copy_to_new_type(tmp, GAL_TYPE_FLOAT32);
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
   memcpy(&p->maxstd, tmp->array, sizeof p->maxstd);
-  free(tmp);
+  gal_data_free(tmp);
 
   /* In case the image is in electrons or counts per second, the standard
      deviation of the noise will become smaller than unity, so we need to
@@ -201,8 +204,8 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
 
   /* If a check was requested, abort NoiseChisel. */
   if(checkname && !p->continueaftercheck)
-    ui_abort_after_check(p, checkname, "showing derivation of Sky value"
-                         "and its standard deviation, or STD");
+    ui_abort_after_check(p, checkname, NULL, "showing derivation of Sky "
+                         "value and its standard deviation, or STD");
 }
 
 

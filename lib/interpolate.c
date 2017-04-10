@@ -206,8 +206,13 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                   tin=tin->next;
                 }
 
-              /* If we have filled all the elements, break out. */
-              if(++ngb_counter>=prm->numneighbors) break;
+              /* If we have filled all the elements clean up the linked
+                 list and break out. */
+              if(++ngb_counter>=prm->numneighbors)
+                {
+                  if(lQ) gal_linkedlist_tosll_free(lQ);
+                  break;
+                }
             }
 
           /* Go over all the neighbors of this popped pixel and add them to
@@ -265,6 +270,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   gal_data_free_ll(nearest);
   free(icoord);
   free(ncoord);
+  free(dinc);
 
 
   /* Wait for all the other threads to finish and return. */
@@ -386,8 +392,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
 
   /* Clean up and return. */
-  gal_data_free(prm.blanks);
   free(prm.thread_flags);
-  free(prm.ngb_vals);
+  gal_data_free(prm.blanks);
+  gal_linkedlist_free_vll(prm.ngb_vals, 1);
   return prm.out;
 }

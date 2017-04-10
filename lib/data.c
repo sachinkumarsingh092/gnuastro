@@ -243,8 +243,8 @@ static void
 gal_data_mmap(gal_data_t *data, int clear)
 {
   int filedes;
+  uint8_t uc=0;
   char *filename;
-  unsigned char uc=0;
   size_t bsize=data->size*gal_type_sizeof(data->type);
 
   /* Check if the .gnuastro folder exists, write the file there. If it
@@ -269,8 +269,11 @@ gal_data_mmap(gal_data_t *data, int clear)
           "%zu bytes", filename, bsize);
 
 
-  /* Write to the newly set file position so the space is allocated. */
-  if( write(filedes, &uc, bsize) == -1)
+  /* Write to the newly set file position so the space is allocated. To do
+     this, we are simply writing `uc' (a byte with value 0) into the space
+     we identified by `lseek' (above). This will ensure that this space is
+     set a side for this array and prepare us to use `mmap'. */
+  if( write(filedes, &uc, 1) == -1)
     error(EXIT_FAILURE, errno, "%s: unable to write one byte at the "
           "%zu-th position", filename, bsize);
 

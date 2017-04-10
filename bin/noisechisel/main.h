@@ -92,13 +92,16 @@ struct noisechiselparams
   char          *detsn_d_name;  /* Detection pseudo-detections S/N name.  */
   char         *detectionname;  /* Name of detection steps file.          */
   char               *skyname;  /* Name of Sky estimation steps file.     */
-  char           *clumpsnname;  /* Name of Clump S/N values file.         */
+  char        *clumpsn_s_name;  /* Sky clump S/N name.                    */
+  char        *clumpsn_d_name;  /* Detection clumps S/N name.             */
   char      *segmentationname;  /* Name of segmentation steps file.       */
+
   gal_data_t           *input;  /* Input image.                           */
   gal_data_t          *kernel;  /* Input image.                           */
   gal_data_t            *conv;  /* Convolved input.                       */
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
+  gal_data_t          *clabel;  /* Labels of clumps in the detection.     */
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
   time_t              rawtime;  /* Starting time of the program.          */
@@ -109,6 +112,7 @@ struct noisechiselparams
   float               cpscorr;  /* Counts/second correction.              */
 
   size_t           numobjects;  /* Number of objects detected.            */
+  size_t            numclumps;  /* Number of true clumps.                 */
   size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */
   size_t          maxltcontig;  /* Maximum contiguous space for a tile.   */
   size_t            *maxtsize;  /* Maximum size of a single small tile.   */

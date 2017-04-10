@@ -186,52 +186,52 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
 */
 #define GAL_DIMENSION_NEIGHBOR_OP(index, ndim, dsize, connectivity,     \
                                   dinc, operation) {                    \
-    uint32_t bitstr=0;                                                  \
-    size_t nind, ind=index;                                             \
-    uint8_t D, *is_start, *is_end, *is_edge, one=1;                     \
+    uint32_t gdn_bitstr=0;                                              \
+    size_t nind, gdn_ind=index;                                         \
+    uint8_t gdn_D, *gdn_is_start, *gdn_is_end, *gdn_is_edge, gdn_one=1; \
                                                                         \
     /* Initialize the start/end. */                                     \
-    is_start=(uint8_t *)(&bitstr);                                      \
-    is_end=(uint8_t *)(&bitstr)+1;                                      \
+    gdn_is_start=(uint8_t *)(&gdn_bitstr);                              \
+    gdn_is_end=(uint8_t *)(&gdn_bitstr)+1;                              \
                                                                         \
     /* Start with the slowest dimension and see if it is on the edge */ \
     /* or not, similar to `gal_dimension_index_to_coord'. In the */     \
     /* process, also fill the `connectivity==1' neighbors. */           \
-    for(D=0;D<ndim;++D)                                                 \
+    for(gdn_D=0;gdn_D<ndim;++gdn_D)                                     \
       {                                                                 \
         /* If this dimension is only one element wide, no neighbors. */ \
-        if( (dsize)[D] == 1 )                                           \
+        if( (dsize)[gdn_D] == 1 )                                       \
           {                                                             \
-            *is_start |= 1<<D;                                          \
-            *is_end   |= 1<<D;                                          \
+            *gdn_is_start |= 1<<gdn_D;                                  \
+            *gdn_is_end   |= 1<<gdn_D;                                  \
           }                                                             \
         else                                                            \
           {                                                             \
-            if( ind / (dinc)[D] )                                       \
+            if( gdn_ind / (dinc)[gdn_D] )                               \
               {                                                         \
                 /* We are at the end of this dimension. */              \
-                if( ind / (dinc)[D] == (dsize)[D]-1 )                   \
+                if( gdn_ind / (dinc)[gdn_D] == (dsize)[gdn_D]-1 )       \
                   {                                                     \
-                    *is_end |= one<<D;                                  \
-                    nind = (index) - (dinc)[D]; {operation;};           \
+                    *gdn_is_end |= gdn_one<<gdn_D;                      \
+                    nind = (index) - (dinc)[gdn_D]; {operation;};       \
                   }                                                     \
                                                                         \
                 /* Middle of the dimension: both +1 and -1 possible. */ \
                 else                                                    \
                   {                                                     \
-                    nind = (index) - (dinc)[D]; {operation;};           \
-                    nind = (index) + (dinc)[D]; {operation;};           \
+                    nind = (index) - (dinc)[gdn_D]; {operation;};       \
+                    nind = (index) + (dinc)[gdn_D]; {operation;};       \
                   }                                                     \
               }                                                         \
             else                                                        \
               {                                                         \
-                *is_start |= one<<D;                                    \
-                nind = (index) + (dinc)[D]; {operation;};               \
+                *gdn_is_start |= gdn_one<<gdn_D;                        \
+                nind = (index) + (dinc)[gdn_D]; {operation;};           \
               }                                                         \
           }                                                             \
                                                                         \
         /* Change `ind' to the remainder of previous dimensions. */     \
-        ind %= dinc[D];                                                 \
+        gdn_ind %= dinc[gdn_D];                                         \
       }                                                                 \
                                                                         \
     /* We now know if the index is on the edge or not. During the */    \
@@ -240,19 +240,21 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
     if(connectivity>1 && ndim>1)                                        \
       {                                                                 \
         /* Finalize `is_edge' (bit value 1 for respective dim.). */     \
-        is_edge=(uint8_t *)(&bitstr)+2;                                 \
-        *is_edge = *is_start | *is_end;                                 \
+        gdn_is_edge=(uint8_t *)(&gdn_bitstr)+2;                         \
+        *gdn_is_edge = *gdn_is_start | *gdn_is_end;                     \
                                                                         \
         /* Shared between 2D and 3D datasets. */                        \
-        if(*is_edge)                                                    \
+        if(*gdn_is_edge)                                                \
           { /* NOTE: these are bitwise operators, not conditionals. */  \
-            if( !( *is_start & ( one | one<<1 ) ) )                     \
+            if( !( *gdn_is_start & ( gdn_one | gdn_one<<1 ) ) )         \
               { nind=(index) - (dinc)[0] - (dinc)[1]; {operation;}; }   \
-            if( !( *is_start & one ) && !( *is_end   & one<<1 ) )       \
+            if( !( *gdn_is_start & gdn_one )                            \
+                && !( *gdn_is_end   & gdn_one<<1 ) )                    \
               { nind=(index) - (dinc)[0] + (dinc)[1]; {operation;}; }   \
-            if( !( *is_end   & one ) && !( *is_start & one<<1 ) )       \
+            if( !( *gdn_is_end & gdn_one )                              \
+                && !( *gdn_is_start & gdn_one<<1 ) )                    \
               { nind=(index) + (dinc)[0] - (dinc)[1]; {operation;}; }   \
-            if( !( *is_end   & ( one | one<<1 ) ) )                     \
+            if( !( *gdn_is_end   & ( gdn_one | gdn_one<<1 ) ) )         \
               { nind=(index) + (dinc)[0] + (dinc)[1]; {operation;}; }   \
           }                                                             \
         else                                                            \
@@ -267,67 +269,79 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
         if(ndim>2)                                                      \
           {                                                             \
             /* Connectivity == 2. */                                    \
-            if(*is_edge)                                                \
-              for(D=0;D<2;++D)                                          \
+            if(*gdn_is_edge)                                            \
+              for(gdn_D=0;gdn_D<2;++gdn_D)                              \
                 {                                                       \
-                  if( !( *is_start & ( one<<D | one<<2 ) ) )            \
-                    { nind=(index) - (dinc)[D] - (dinc)[2]; {operation;}; } \
-                  if( !( *is_start & one<<D ) && !( *is_end   & one<<2 ) ) \
-                    { nind=(index) - (dinc)[D] + (dinc)[2]; {operation;}; } \
-                  if( !( *is_end   & one<<D ) && !( *is_start & one<<2 ) ) \
-                    { nind=(index) + (dinc)[D] - (dinc)[2]; {operation;}; } \
-                  if( !( *is_end   & ( one<<D | one<<2 ) ) )            \
-                    { nind=(index) + (dinc)[D] + (dinc)[2]; {operation;}; } \
+                  if( !( *gdn_is_start & ( gdn_one<<gdn_D | gdn_one<<2 ) ) ) \
+                    { nind=(index) - (dinc)[gdn_D] - (dinc)[2];         \
+                      {operation;}; }                                   \
+                  if( !( *gdn_is_start & gdn_one<<gdn_D )               \
+                      && !( *gdn_is_end   & gdn_one<<2 ) )              \
+                    { nind=(index) - (dinc)[gdn_D] + (dinc)[2];         \
+                      {operation;}; }                                   \
+                  if( !( *gdn_is_end   & gdn_one<<gdn_D )               \
+                      && !( *gdn_is_start & gdn_one<<2 ) )              \
+                    { nind=(index) + (dinc)[gdn_D] - (dinc)[2];         \
+                      {operation;}; }                                   \
+                  if( !( *gdn_is_end   & ( gdn_one<<gdn_D | gdn_one<<2 ) ) ) \
+                    { nind=(index) + (dinc)[gdn_D] + (dinc)[2];         \
+                      {operation;}; }                                   \
                 }                                                       \
             else                                                        \
-              for(D=0;D<2;++D)                                          \
+              for(gdn_D=0;gdn_D<2;++gdn_D)                              \
                 {                                                       \
-                  nind=(index) - (dinc)[D] - (dinc)[2]; {operation;};   \
-                  nind=(index) - (dinc)[D] + (dinc)[2]; {operation;};   \
-                  nind=(index) + (dinc)[D] - (dinc)[2]; {operation;};   \
-                  nind=(index) + (dinc)[D] + (dinc)[2]; {operation;};   \
+                  nind=(index) - (dinc)[gdn_D] - (dinc)[2]; {operation;}; \
+                  nind=(index) - (dinc)[gdn_D] + (dinc)[2]; {operation;}; \
+                  nind=(index) + (dinc)[gdn_D] - (dinc)[2]; {operation;}; \
+                  nind=(index) + (dinc)[gdn_D] + (dinc)[2]; {operation;}; \
                 }                                                       \
                                                                         \
             /* Connectivity == 3. */                                    \
             if(connectivity>2)                                          \
               {                                                         \
-                if(*is_edge)                                            \
+                if(*gdn_is_edge)                                        \
                   {                                                     \
-                    if( !*is_start )                                    \
+                    if( !*gdn_is_start )                                \
                       { nind=(index) - (dinc)[0] - (dinc)[1] - (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_start & one) && !(*is_start & one<<1)     \
-                        && !(*is_end & one<<2))                         \
+                    if( !(*gdn_is_start & gdn_one)                      \
+                        && !(*gdn_is_start & gdn_one<<1)                \
+                        && !(*gdn_is_end & gdn_one<<2))                 \
                       { nind=(index) - (dinc)[0] - (dinc)[1] + (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_start & one) && !(*is_end & one<<1)       \
-                        && !(*is_start & one<<2))                       \
+                    if( !(*gdn_is_start & gdn_one)                      \
+                        && !(*gdn_is_end & gdn_one<<1)                  \
+                        && !(*gdn_is_start & gdn_one<<2))               \
                       { nind=(index) - (dinc)[0] + (dinc)[1] - (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_start & one) && !(*is_end & one<<1)       \
-                        && !(*is_end & one<<2))                         \
+                    if( !(*gdn_is_start & gdn_one)                      \
+                        && !(*gdn_is_end & gdn_one<<1)                  \
+                        && !(*gdn_is_end & gdn_one<<2))                 \
                       { nind=(index) - (dinc)[0] + (dinc)[1] + (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_end & one) && !(*is_start & one<<1)       \
-                        && !(*is_start & one<<2))                       \
+                    if( !(*gdn_is_end & gdn_one)                        \
+                        && !(*gdn_is_start & gdn_one<<1)                \
+                        && !(*gdn_is_start & gdn_one<<2))               \
                       { nind=(index) + (dinc)[0] - (dinc)[1] - (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_end & one) && !(*is_start & one<<1)       \
-                        && !(*is_end & one<<2))                         \
+                    if( !(*gdn_is_end & gdn_one)                        \
+                        && !(*gdn_is_start & gdn_one<<1)                \
+                        && !(*gdn_is_end & gdn_one<<2))                 \
                       { nind=(index) + (dinc)[0] - (dinc)[1] + (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !(*is_end & one) && !(*is_end & one<<1)         \
-                        && !(*is_start & one<<2))                       \
+                    if( !(*gdn_is_end & gdn_one)                        \
+                        && !(*gdn_is_end & gdn_one<<1)                  \
+                        && !(*gdn_is_start & gdn_one<<2))               \
                       { nind=(index) + (dinc)[0] + (dinc)[1] - (dinc)[2]; \
                         {operation;}; }                                 \
                                                                         \
-                    if( !*is_end )                                      \
+                    if( !*gdn_is_end )                                  \
                       { nind=(index) + (dinc)[0] + (dinc)[1] + (dinc)[2]; \
                         {operation;}; }                                 \
                   }                                                     \
@@ -356,7 +370,7 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
                                                                         \
     /* For a check. */                                                  \
     /* printf("\nEdge bit flags: "); */                                 \
-    /* gal_data_bit_print_stream(&bitstr, 3); printf("\n"); */          \
+    /* gal_data_bit_print_stream(&gdn_bitstr, 3); printf("\n"); */      \
   }
 
 

@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "sky.h"
 #include "detection.h"
 #include "threshold.h"
+#include "segmentation.h"
 
 
 
@@ -85,8 +86,8 @@ noisechisel_find_sky_subtract(struct noisechiselparams *p)
 
   /* Abort if the user only wanted to see until this point.*/
   if(p->skyname && !p->continueaftercheck)
-    ui_abort_after_check(p, p->skyname, "derivation of final Sky (and its "
-                         "STD) value");
+    ui_abort_after_check(p, p->skyname, NULL,
+                         "derivation of final Sky (and its STD) value");
 
   /* Subtract the Sky from the Input and Convolved (necessary for
      segmentation) images. */
@@ -158,5 +159,5 @@ noisechisel(struct noisechiselparams *p)
   noisechisel_convolve_correct_ch_edges(p);
 
   /* Do the segmentation. */
-
+  segmentation(p);
 }

@@ -87,7 +87,7 @@ ui_read_check_inputs_setup(int argc, char *argv[],
 
 void
 ui_abort_after_check(struct noisechiselparams *p, char *filename,
-                     char *description);
+                     char *file2name, char *description);
 
 void
 ui_free_report(struct noisechiselparams *p, struct timeval *t1);
