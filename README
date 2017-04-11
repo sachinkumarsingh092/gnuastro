@@ -75,9 +75,6 @@ context under categories/chapters.
   - Statistics (aststatistics): Get pixel statistics and save histogram and
     cumulative frequency plots.
 
-  - SubtractSky (astsubtractsky): Find and subtract sky value by comparing
-    the mode and median on a mesh grid.
-
   - Table (asttable): convert FITS binary and ASCII tables into other such
     tables, or print them on the command-line, or save them in a plain text
     file.  Output columns can also be determined by number or regular

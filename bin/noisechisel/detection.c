@@ -234,7 +234,7 @@ detection_fill_holes_open(void *in_prm)
 
       /* Fill the holes in this tile. */
       gal_binary_fill_holes(copy);
-      if(fho_prm->step!=2)
+      if(fho_prm->step==1)
         {
           detection_write_in_large(tile, copy);
           tile->array=tarray;

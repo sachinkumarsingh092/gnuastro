@@ -36,11 +36,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
+#include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
 #include "ui.h"
+#include "threshold.h"
 
 
 
@@ -57,23 +59,25 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Parameters for all threads. */
 struct clumps_params
 {
-  int               sky0_det1;  /* If working on the Sky or Detections.    */
-  gal_data_t              *sn;  /* Array of clump S/N tables.              */
-  gal_data_t           *snind;  /* Array of clump S/N index (for check).   */
-  struct noisechiselparams *p;  /* Pointer to main NoiseChisel parameters. */
+  int                     step; /* Counter if we want to check steps.      */
+  int                sky0_det1; /* If working on the Sky or Detections.    */
+  gal_data_t               *sn; /* Array of clump S/N tables.              */
+  gal_data_t            *snind; /* Array of clump S/N index (for check).   */
+  struct noisechiselparams  *p; /* Pointer to main NoiseChisel parameters. */
+  pthread_mutex_t     labmutex; /* Mutex to change the total numbers.      */
 };
 
 /* Parameters for one thread. */
 struct clumps_thread_params
 {
-  size_t                   id;  /* ID of this detection/tile over tile.    */
-  size_t             *topinds;  /* Indexs of all local maxima.             */
-  size_t            numclumps;  /* The number of clumps found in this run. */
-  gal_data_t          *indexs;  /* Array containing indexs of this object. */
-  gal_data_t            *info;  /* Information for all clumps.             */
-  gal_data_t              *sn;  /* Signal-to-noise ratio for these clumps. */
-  gal_data_t           *snind;  /* Index of S/N for these clumps.          */
-  struct clumps_params *clprm;  /* Pointer to main structure.              */
+  size_t                    id; /* ID of this detection/tile over tile.    */
+  size_t              *topinds; /* Indexs of all local maxima.             */
+  size_t            numinitial; /* The number of clumps found in this run. */
+  gal_data_t           *indexs; /* Array containing indexs of this object. */
+  gal_data_t             *info; /* Information for all clumps.             */
+  gal_data_t               *sn; /* Signal-to-noise ratio for these clumps. */
+  gal_data_t            *snind; /* Index of S/N for these clumps.          */
+  struct clumps_params  *clprm; /* Pointer to main structure.              */
 };
 
 /* Constants for the clump over-segmentation. */
@@ -351,18 +355,18 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
   while(++a<af);
 
   /* Save the total number of clumps. */
-  cltprm->numclumps=curlab-1;
+  cltprm->numinitial=curlab-1;
 
-
-  /* Set all the river pixels to zero, this is only necessary for the
-     clumps over detections, not the sky clumps (they will be converted
-     over all the image. */
+  /* Set all the river pixels to zero. Note that this is only necessary for
+     the detected clumps. When finding clumps over the Sky, we will be
+     going over the full tile and removing rivers. This is because, we set
+     the borders of the tile to a river value and didn't include them in
+     the list of indexs. */
   if(cltprm->clprm->sky0_det1)
     {
       af=(a=indexs->array)+indexs->size;
       do if( clabel[*a]==CLUMPS_RIVER ) clabel[*a]=0; while(++a<af);
     }
-
 
   /*********************************************
    For checks and debugging:
@@ -401,7 +405,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
    pixels around it. So this function will go over all the pixels in the
    object (already found in deblendclumps()) and add them appropriately.
 
-   The output is an array of size numclumps*INFO_NCOLS. as listed
+   The output is an array of size cltprm->numinitial*INFO_NCOLS. as listed
    below.*/
 enum infocols
   {
@@ -497,7 +501,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   /* Do the final preparations. All the calculations are only necessary for
      the clumps that satisfy the minimum area. So there is no need to waste
      time on the smaller ones. */
-  for(lab=1; lab<=cltprm->numclumps; ++lab)
+  for(lab=1; lab<=cltprm->numinitial; ++lab)
     {
       row = &info [ lab * INFO_NCOLS ];
       if ( row[INFO_INAREA] > p->segsnminarea )
@@ -536,7 +540,7 @@ static void
 clumps_make_sn_table(struct clumps_thread_params *cltprm)
 {
   struct noisechiselparams *p=cltprm->clprm->p;
-  size_t tablen=cltprm->numclumps+1;
+  size_t tablen=cltprm->numinitial+1;
 
   float *snarr;
   uint32_t *indarr=NULL;
@@ -548,15 +552,15 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   /* Allocate the arrays to keep the final S/N table (and possibly S/N
      index) for this object or tile. */
   cltprm->sn        = &cltprm->clprm->sn[ cltprm->id ];
-  cltprm->sn->ndim  = 1;                       /* Depends on `cltprm->sn' */
+  cltprm->sn->ndim  = 1;                        /* Depends on `cltprm->sn' */
   cltprm->sn->type  = GAL_TYPE_FLOAT32;
   cltprm->sn->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
   cltprm->sn->array = gal_data_malloc_array(cltprm->sn->type, tablen);
-  cltprm->sn->size  = cltprm->sn->dsize[0] = tablen;      /* After dsize. */
-  if(p->checkclumpsn)
+  cltprm->sn->size  = cltprm->sn->dsize[0] = tablen;       /* After dsize. */
+  if(p->checksegmentation || p->checkclumpsn)
     {
       cltprm->snind        = &cltprm->clprm->snind [ cltprm->id ];
-      cltprm->snind->ndim  = 1;             /* Depends on `cltprm->snind' */
+      cltprm->snind->ndim  = 1;              /* Depends on `cltprm->snind' */
       cltprm->snind->type  = GAL_TYPE_UINT32;
       cltprm->snind->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
       cltprm->snind->size  = cltprm->snind->dsize[0]=tablen;/* After dsize */
@@ -575,7 +579,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   /* First get the raw information necessary for making the S/N table. */
   clumps_get_raw_info(cltprm);
 
-  /* Calculate the signal to noise for successful detections */
+  /* Calculate the signal to noise for successful clumps */
   snarr=cltprm->sn->array;
   if(cltprm->snind) indarr=cltprm->snind->array;
   for(i=1;i<tablen;++i)
@@ -598,11 +602,11 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
           var = ( (p->skysubtracted ? 2.0f : 1.0f)
                   * row[INFO_INSTD] * row[INFO_INSTD] );
 
-          /* Calculate the Signal to noise ratio, if we are on the
-             noise regions, we don't care about the IDs of the clumps
-             anymore, so store the Signal to noise ratios contiguously
-             (for easy sorting and etc). Note that counter will always
-             be smaller and equal to i. */
+          /* Calculate the Signal to noise ratio, if we are on the noise
+             regions, we don't care about the IDs of the clumps anymore, so
+             store the Signal to noise ratios contiguously (for easy
+             sorting and etc). Note that counter will always be smaller and
+             equal to i. */
           ind = sky0_det1 ? i : counter++;
           if(cltprm->snind) indarr[ind]=i;
           snarr[ind]=( sqrt(Ni/p->cpscorr)*(I-O)
@@ -610,9 +614,11 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
         }
       else
         {
-          ind = sky0_det1 ? i : counter++;
-          if(cltprm->snind) indarr[ind]=i;
-          snarr[ind]=NAN;
+          if(sky0_det1)
+            {
+              snarr[i]=NAN;
+              if(cltprm->snind) indarr[i]=i;
+            }
         }
     }
 
@@ -627,6 +633,61 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
 
   /* Clean up. */
   gal_data_free(cltprm->info);
+}
+
+
+
+
+
+/* Correct the labels of the clumps that will be used in determining the
+   S/N threshold for true clumps.   */
+static void
+clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
+                                    gal_data_t *tile)
+{
+  gal_data_t *newinds;
+  size_t len=cltprm->numinitial+1;
+  struct noisechiselparams *p=cltprm->clprm->p;
+  uint32_t *ninds, curlab, *l=cltprm->snind->array, *lf=l+cltprm->snind->size;
+
+  /* A small sanity check. */
+  if(gal_tile_block(tile)!=p->clabel)
+    error(EXIT_FAILURE, 0, "a bug! the tile->block' must point to the "
+          "`clabel' dataset. Please contact us at %s to address the "
+          "problem, thank you", PACKAGE_BUGREPORT);
+
+
+  /* Allocate a dataset with the new indexs, note that it will need to have
+     one element for each initial label (the excluded clumps need to be set
+     to zero). So we also need to clear the allocated space. */
+  newinds=gal_data_alloc(NULL, p->clabel->type, 1, &len, NULL, 1,
+                         p->cp.minmapsize, NULL, NULL, NULL);
+
+
+  /* Get the next available label for these clumps. If more than one thread
+     was used, we are first going to lock the mutex (so no other thread
+     changes these values), we will then read the shared number for this
+     thread to use, then update the shared number and finally, unlock the
+     mutex so other threads can do the same when they get to this point. */
+  if(p->cp.numthreads>1) pthread_mutex_lock(&cltprm->clprm->labmutex);
+  curlab        = p->numclumps+1;   /* Note that counting begins from 1. */
+  p->numclumps += cltprm->snind->size;
+  if(p->cp.numthreads>1) pthread_mutex_unlock(&cltprm->clprm->labmutex);
+
+
+  /* The new indexs array has been initialized to zero. So we just need to
+     go over the labels in `cltprm->sninds' and give them a value of
+     `curlab++'. */
+  ninds=newinds->array;
+  do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
+
+
+  /* Go over this tile and correct the values. */
+  GAL_TILE_PARSE_OPERATE({*i = ninds[*(uint32_t *)i];}, tile, NULL, 0, 1);
+
+
+  /* Clean up. */
+  gal_data_free(newinds);
 }
 
 
@@ -689,7 +750,6 @@ clumps_find_make_sn_table(void *in_prm)
                                        NULL, 0, p->cp.minmapsize, NULL, NULL,
                                        NULL);
 
-
           /* Change the tile's block to the clump labels dataset (because
              we'll need to set the labels of the rivers on the edge of the
              tile here). */
@@ -735,17 +795,24 @@ clumps_find_make_sn_table(void *in_prm)
           /* Generate the clumps over this region. */
           clumps_oversegment(&cltprm);
 
-          /* Correct the river pixels */
+          /* Set all river pixels to zero. */
           GAL_TILE_PARSE_OPERATE({if(*i==CLUMPS_RIVER) *i=0;}, tile,
                                  NULL, 0, 1);
+
+          /* For a check, the step variable will be set. */
+          if(clprm->step==1) continue;
 
           /* Make the clump S/N table. */
           clumps_make_sn_table(&cltprm);
 
+          /* If the user wanted to check the steps, remove the clumps that
+             weren't used. */
+          if(cltprm.snind)
+            clumps_correct_sky_labels_for_check(&cltprm, tile);
+
           /* Clean up. */
           gal_data_free(cltprm.indexs);
         }
-
 
       /* Reset the tile's pointers back to what they were. */
       tile->array=tarray;
@@ -780,7 +847,7 @@ clumps_find_make_sn_table(void *in_prm)
 
 
 /**********************************************************************/
-/*****************         High level functins        *****************/
+/*****************         High level functions        *****************/
 /**********************************************************************/
 /* The job of this function is to find the best signal to noise value to
    use as a threshold to detect real clumps.
@@ -797,29 +864,168 @@ clumps_find_make_sn_table(void *in_prm)
    Using these two arrays, after all the threads are finished, we can
    concatenate all the S/N values into one array and send it to the main
    findsnthresh function in thresh.c. */
-void
+#define CLUMPS_SNEXTNAME "CLUMPS_FOR_SN"
+float
 clumps_on_undetected_sn(struct noisechiselparams *p)
 {
+  char *msg;
+  float snthresh;
+  struct timeval t1;
+  size_t i, j, c, numsn=0;
   struct clumps_params clprm;
+  struct gal_linkedlist_stll *comments=NULL;
+  gal_data_t *clab, *claborig, *sn, *snind, *quant;
 
-  /* Initialize/allocate the clump parameters structure,  */
+  /* Get starting time for later reporting if necessary. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
+
+
+  /* Initialize/allocate the clump parameters structure, Note that the S/N
+     indexs are also needed when we want to check the segmentation steps
+     (they are used to correct the indexs in the final output). */
   clprm.p=p;
   clprm.sky0_det1=0;
   clprm.sn=gal_data_array_calloc(p->ltl.tottiles);
-  clprm.snind = ( p->checkclumpsn
+  clprm.snind = ( p->checksegmentation || p->checkclumpsn
                   ? gal_data_array_calloc(p->ltl.tottiles) : NULL );
 
 
+  /* If the user wants to check the steps of get an S/N table, then we need
+     a unique label for each clump. But in each region, the labels start
+     from 1. So we need a central place to keep the next available
+     label. Since `p->numclumps' is not used yet, we will use it here. When
+     multiple threads are used, we will need a mutex to make sure that only
+     one thread can change this central variable at every one moment. */
+  if(p->checksegmentation || p->checkclumpsn)
+    {
+      p->numclumps=0;
+      if( p->cp.numthreads > 1 ) pthread_mutex_init(&clprm.labmutex, NULL);
+    }
+
+
   /* Spin off the threads to start the work. */
-  gal_threads_spin_off(clumps_find_make_sn_table, &clprm, p->ltl.tottiles,
-                       p->cp.numthreads);
-
-
-  /* If the user wanted to see the steps. */
   if(p->segmentationname)
-    gal_fits_img_write(p->clabel, p->segmentationname, NULL, PROGRAM_STRING);
+    {
+      /* Necessary initializations. */
+      clab=gal_data_copy(p->clabel);
+      claborig=p->clabel;
+      p->clabel=clab;
+      clprm.step=1;
+
+      /* Do each step. */
+      while(clprm.step<3)
+        {
+          /* Reset the temporary copy of clabel back to its original. */
+          if(clprm.step>1)
+            memcpy(p->clabel->array, claborig->array,
+                   clab->size*gal_type_sizeof(clab->type));
+
+          /* Do this step. */
+          gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
+                               p->ltl.tottiles, p->cp.numthreads);
+
+          /* Set the extension name. */
+          switch(clprm.step)
+            {
+            case 1: p->clabel->name = "CLUMPS_ALL";      break;
+            case 2: p->clabel->name = CLUMPS_SNEXTNAME;  break;
+            default:
+              error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
+                    "in `clumps_on_undetected_sn'. Please contact us at %s "
+                    "so we can address the issue", clprm.step,
+                    PACKAGE_BUGREPORT);
+            }
+
+          /* Write the temporary array into the check image. */
+          gal_fits_img_write(p->clabel, p->segmentationname, NULL,
+                             PROGRAM_STRING);
+
+          /* Increment the step counter. */
+          ++clprm.step;
+        }
+
+      /* Clean up (we don't need the original any more). */
+      gal_data_free(claborig);
+      p->clabel->name=NULL;
+    }
+  else
+    {
+      clprm.step=0;
+      gal_threads_spin_off(clumps_find_make_sn_table, &clprm, p->ltl.tottiles,
+                           p->cp.numthreads);
+    }
+
+
+  /* Destroy the mutex if it was initialized. */
+  if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )
+    pthread_mutex_destroy(&clprm.labmutex);
+
+
+  /* Find the total number of S/N values we have for all the clumps. */
+  for(i=0;i<p->ltl.tottiles;++i)
+    if(clprm.sn[i].ndim)  /* Only on tiles were an S/N was calculated. */
+      numsn+=clprm.sn[i].size;
+
+
+  /* Allocate the space to keep all the S/N values. */
+  sn=gal_data_alloc(NULL, clprm.sn->type, 1, &numsn, NULL, 0,
+                    p->cp.minmapsize, "CLUMP_S/N", "ratio", NULL);
+  snind = ( p->checkclumpsn
+            ? gal_data_alloc(NULL, clprm.snind->type, 1, &numsn, NULL, 0,
+                             p->cp.minmapsize, "CLUMP_ID", "counter", NULL)
+            : NULL );
+
+
+  /* Copy the S/N values of all the clumps into the unified array. */
+  c=0;
+  for(i=0;i<p->ltl.tottiles;++i)
+    if(clprm.sn[i].ndim)
+      for(j=0;j<clprm.sn[i].size;++j)
+        {
+          ((float *)(sn->array))[c] = ((float *)(clprm.sn[i].array))[j];
+          if(snind)
+            ((uint32_t *)(snind->array))[c] =
+              ((uint32_t *)(clprm.snind[i].array))[j];
+          ++c;
+        }
+
+
+  /* If the user wanted to see the S/N table, then save it. */
+  if(p->checkclumpsn)
+    {
+      /* Make the comments, then write the table and free the comments. */
+      if(p->cp.numthreads>1)
+        gal_linkedlist_add_to_stll(&comments, "NOTE: In multi-threaded mode, "
+                                   "clump IDs differ in each run and are not "
+                                   "sorted.", 1);
+      gal_linkedlist_add_to_stll(&comments, "See also: `"CLUMPS_SNEXTNAME
+                                 "' HDU of output with `--checksegmentation'",
+                                 1);
+      gal_linkedlist_add_to_stll(&comments, "S/N of clumps over undetected "
+                                 "regions.", 1);
+      threshold_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);
+      gal_linkedlist_free_stll(comments, 1);
+    }
+
+
+  /* Find the desired quantile from the full S/N distribution. */
+  quant=gal_statistics_quantile(sn, p->segquant, 1);
+  snthresh = *((float *)(quant->array));
+  if(!p->cp.quiet)
+    {
+      asprintf(&msg, "Clump S/N: %.2f (%.3f quant of %zu).",
+               snthresh, p->segquant, sn->size);
+      gal_timing_report(&t1, msg, 2);
+      free(msg);
+    }
 
   /* Clean up. */
+  gal_data_free(sn);
+  gal_data_free(snind);
+  gal_data_free(quant);
   gal_data_array_free(clprm.sn, p->ltl.tottiles, 1);
-  if(p->checkclumpsn) gal_data_array_free(clprm.snind, p->ltl.tottiles, 1);
+  gal_data_array_free(clprm.snind, p->ltl.tottiles, 1);
+
+  /* Return the S/N threshold. */
+  return snthresh;
 }

@@ -125,6 +125,7 @@ ui_initialize_options(struct noisechiselparams *p,
       /* Select individually. */
       switch(cp->coptions[i].key)
         {
+        case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
           cp->coptions[i].flags=OPTION_HIDDEN;
@@ -136,6 +137,12 @@ ui_initialize_options(struct noisechiselparams *p,
         case GAL_OPTIONS_KEY_INTERPNUMNGB:
         case GAL_OPTIONS_KEY_REMAINDERFRAC:
           cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          break;
+
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
+          cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          cp->coptions[i].doc="Formats: `txt', `fits-ascii', `fits-binary'.";
+          break;
         }
     }
 }

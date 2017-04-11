@@ -30,6 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 
+#include <gnuastro-internal/timing.h>
+
 #include "main.h"
 
 #include "ui.h"
@@ -40,16 +42,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 segmentation(struct noisechiselparams *p)
 {
-  float *f;
   uint32_t *l, *lf;
+  float *f, snthresh;
 
-
-  /* Start off the counter for the number of objects and clumps. The
-     value to these variables will be the label that is given to the
-     next clump or object found. Note that we stored a copy of the
-     initial number of objects in the numobjsinit variable above.*/
-  p->numclumps=1;
-  p->numobjects=1;
+  /* To keep the user up to date. */
+  if(!p->cp.quiet)
+    gal_timing_report(NULL, "Starting over-segmentation (finding clumps).",
+                      1);
 
 
   /* If a check segmentation image was requested, then put in the
@@ -75,7 +74,7 @@ segmentation(struct noisechiselparams *p)
 
 
   /* Find the clumps over the un-detected regions of the input. */
-  clumps_on_undetected_sn(p);
+  snthresh=clumps_on_undetected_sn(p);
 
 
   /* If the user wanted to check the segmentation and hasn't called

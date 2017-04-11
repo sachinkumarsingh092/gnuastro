@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CLUMPS_H
 #define CLUMPS_H
 
-void
+float
 clumps_on_undetected_sn(struct noisechiselparams *p);
 
 #endif

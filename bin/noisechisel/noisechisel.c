@@ -108,13 +108,16 @@ noisechisel_convolve_correct_ch_edges(struct noisechiselparams *p)
 
   /* Correct the convolved image if necessary. */
   if( tl->totchannels>1 && tl->workoverch==0 )
-    gal_convolve_spatial_correct_ch_edge(tl->tiles, p->kernel,
-                                         p->cp.numthreads, 1, p->conv);
+    {
+      /* Do the correction. */
+      gal_convolve_spatial_correct_ch_edge(tl->tiles, p->kernel,
+                                           p->cp.numthreads, 1, p->conv);
 
-  /* Inform the user. */
-  if(!p->cp.quiet)
-    gal_timing_report(NULL, "Corrected convolution of touching channel "
-                      "edges", 1);
+      /* Inform the user. */
+      if(!p->cp.quiet)
+        gal_timing_report(NULL, "Corrected convolution of touching channel "
+                          "edges", 1);
+    }
 }
 
 
