@@ -376,16 +376,20 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         data->array=array;
       else
         {
-          if( gal_type_sizeof(type)*data->size  > minmapsize )
-            gal_data_mmap(data, clear);
-          else
+          if(data->size)
             {
-              /* Allocate the space for the array. */
-              if(clear)
-                data->array = gal_data_calloc_array(data->type, data->size);
+              if( gal_type_sizeof(type)*data->size  > minmapsize )
+                /* Allocate the space into disk (HDD/SSD). */
+                gal_data_mmap(data, clear);
               else
-                data->array = gal_data_malloc_array(data->type, data->size);
+                /* Allocate the space in RAM. */
+                data->array = ( clear
+                                ? gal_data_calloc_array(data->type,
+                                                        data->size)
+                                : gal_data_malloc_array(data->type,
+                                                        data->size) );
             }
+          else data->array=NULL; /* The given size was zero! */
         }
     }
   else
@@ -484,15 +488,20 @@ gal_data_string_fixed_alloc_size(gal_data_t *data)
 
 
 /* Free the allocated contents of a data structure, not the structure
-   itsself. The reason for this function begin separate from
-   `gal_data_free) is that the data structure might be allocated as an
-   array (statically like `gal_data_t da[20]', or dynamically like
-   `gal_data_t *da; da=malloc(20*sizeof *da);'). In both cases, a loop will
-   be necessary to delete the allocated contents of each element of the
-   data structure array, but not the structure its self. After that loop,
-   if the array of data structures was statically allocated, you don't have
-   to do anything. If it was dynamically allocated, we just have to run
-   `free(da)'.*/
+   itsself. The reason that this function is separate from `gal_data_free'
+   is that the data structure might be allocated as an array (statically
+   like `gal_data_t da[20]', or dynamically like `gal_data_t *da;
+   da=malloc(20*sizeof *da);'). In both cases, a loop will be necessary to
+   delete the allocated contents of each element of the data structure
+   array, but not the structure its self. After that loop, if the array of
+   data structures was statically allocated, you don't have to do
+   anything. If it was dynamically allocated, we just have to run
+   `free(da)'.
+
+   Since we aren't freeing the `gal_data_t' its-self, after the allocated
+   space for each pointer is freed, the pointer is set to NULL for safety
+   (to avoid possible re-calls).
+*/
 void
 gal_data_free_contents(gal_data_t *data)
 {
@@ -501,11 +510,11 @@ gal_data_free_contents(gal_data_t *data)
           "`gal_data_free_contents' was a NULL pointer");
 
   /* Free all the possible allocations. */
-  if(data->name)    free(data->name);
-  if(data->unit)    free(data->unit);
-  if(data->dsize)   free(data->dsize);
-  if(data->wcs)     wcsfree(data->wcs);
-  if(data->comment) free(data->comment);
+  if(data->name)    { free(data->name);    data->name=NULL;    }
+  if(data->unit)    { free(data->unit);    data->unit=NULL;    }
+  if(data->dsize)   { free(data->dsize);   data->dsize=NULL;   }
+  if(data->wcs)     { wcsfree(data->wcs);  data->wcs=NULL;     }
+  if(data->comment) { free(data->comment); data->comment=NULL; }
 
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the
@@ -528,6 +537,7 @@ gal_data_free_contents(gal_data_t *data)
     }
   else
     if(data->array) free(data->array);
+  data->array=NULL;
 }
 
 

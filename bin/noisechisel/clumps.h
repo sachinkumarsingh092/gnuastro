@@ -23,7 +23,48 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CLUMPS_H
 #define CLUMPS_H
 
-float
-clumps_on_undetected_sn(struct noisechiselparams *p);
+
+/* Parameters for all threads. */
+struct clumps_params
+{
+  /* General */
+  int                     step; /* Counter if we want to check steps.      */
+  int                sky0_det1; /* If working on the Sky or Detections.    */
+  struct noisechiselparams  *p; /* Pointer to main NoiseChisel parameters. */
+  pthread_mutex_t     labmutex; /* Mutex to change the total numbers.      */
+
+  /* For Sky region. */
+  gal_data_t               *sn; /* Array of clump S/N tables.              */
+  gal_data_t            *snind; /* Array of clump S/N index (for check).   */
+
+  /* For detections. */
+  gal_data_t        *labindexs; /* Array of `gal_data_t' with obj indexs.  */
+};
+
+
+/* Parameters for one thread. */
+struct clumps_thread_params
+{
+  size_t                    id; /* ID of this detection/tile over tile.    */
+  size_t              *topinds; /* Indexs of all local maxima.             */
+  size_t            numinitial; /* The number of clumps found in this run. */
+  gal_data_t           *indexs; /* Array containing indexs of this object. */
+  gal_data_t             *info; /* Information for all clumps.             */
+  gal_data_t               *sn; /* Signal-to-noise ratio for these clumps. */
+  gal_data_t            *snind; /* Index of S/N for these clumps.          */
+  struct clumps_params  *clprm; /* Pointer to main structure.              */
+};
+
+void
+clumps_oversegment(struct clumps_thread_params *cltprm);
+
+void
+clumps_true_find_sn_thresh(struct noisechiselparams *p);
+
+void
+clumps_make_sn_table(struct clumps_thread_params *cltprm);
+
+gal_data_t *
+clumps_label_indexs(struct noisechiselparams *p);
 
 #endif

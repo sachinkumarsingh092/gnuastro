@@ -2401,15 +2401,15 @@ explains how to check if it has been installed correctly.
 CFITSIO comes with two executables called fpack and funpack. From their
 manual: they ``are standalone programs for compressing and uncompressing
 images and tables that are stored in the FITS (Flexible Image Transport
-System) data format.  They are analogous to the gzip and gunzip compression
+System) data format. They are analogous to the gzip and gunzip compression
 programs except that they are optimized for the types of astronomical
-images that are often stored in FITS format''. The instruction below
-explain how to compile and install them on your system along with
-CFITSIO. They are not essential for Gnuastro, since they are just wrappers
-for functions within CFITSIO, but they can come in handy. The @command{make
-utils} command is only available for versions above 3.39, it will build
-these executables along with several other test executables which are
-deleted before the installation (otherwise they will also be installed).
+images that are often stored in FITS format''. The commands below will
+compile and install them on your system along with CFITSIO. They are not
+essential for Gnuastro, since they are just wrappers for functions within
+CFITSIO, but they can come in handy. The @command{make utils} command is
+only available for versions above 3.39, it will build these executables
+along with several other test executables which are deleted before the
+installation (otherwise they will also be installed).
 
 The CFITSIO installation from source process is given below. Let's assume
 you have downloaded
@@ -2446,9 +2446,9 @@ standard}@footnote{Greisen E.W., Calabretta M.R. (2002) Representation of
 world coordinates in FITS. Astronomy and Astrophysics, 395, 1061-1075.},
 Mark Calabretta. It might be already built and ready in your distribution's
 package management system. However, here the installation from source is
-explained, for the advantages please see @ref{Mandatory dependencies}. To
-install WCSLIB you will need to have CFITSIO already installed, see
-@ref{CFITSIO}.
+explained, for the advantages of installation from source please see
+@ref{Mandatory dependencies}. To install WCSLIB you will need to have
+CFITSIO already installed, see @ref{CFITSIO}.
 
 @vindex --without-pgplot
 WCSLIB also has plotting capabilities which use PGPLOT (a plotting library
@@ -3388,15 +3388,16 @@ can use any other directory, but this is the most recognized.
 
 The top installation directory will be used to keep all the package's
 components: programs (executables), libraries, include (header) files,
-shared data (like manuals), or configuration files. So it commonly has some
-of the following sub-directories for each class of components respectively:
-@file{bin/}, @file{lib/}, @file{include/} @file{man/}, @file{share/},
-@file{etc/}. Since the @file{PATH} variable is only used for executables,
-you can add the @file{~/.local/bin} directory to @file{PATH} with the
-following command. As defined below, first the existing value of
-@file{PATH} is used, then your given directory is added to its end and the
-combined value is put back in @file{PATH} (run `@command{$ echo $PATH}'
-afterwards to check if it was added).
+shared data (like manuals), or configuration files (see @ref{Review of
+library fundamentals} for a thorough introduction to headers and
+linking). So it commonly has some of the following sub-directories for each
+class of components respectively: @file{bin/}, @file{lib/}, @file{include/}
+@file{man/}, @file{share/}, @file{etc/}. Since the @file{PATH} variable is
+only used for executables, you can add the @file{~/.local/bin} directory to
+@file{PATH} with the following command. As defined below, first the
+existing value of @file{PATH} is used, then your given directory is added
+to its end and the combined value is put back in @file{PATH} (run
+`@command{$ echo $PATH}' afterwards to check if it was added).
 
 @example
 $ PATH=$PATH:~/.local/bin
@@ -3407,11 +3408,12 @@ $ PATH=$PATH:~/.local/bin
 @cindex Scripts, startup
 Any executable that you installed in this directory will now be usable
 without having to remember and type its full address. However, as soon as
-you leave your current terminal session, this modification will be
-lost. Adding your specified directory to the @file{PATH} environment
-variable each time you start a terminal is also very inconvenient and prone
-to errors. So there are standard `startup files' defined by your
-shell. There is a special startup file for every significant starting step:
+you leave your current terminal session, this modified @file{PATH} variable
+will be forgotten. Adding your specified directory to the @file{PATH}
+environment variable each time you start a terminal is also very
+inconvenient and prone to errors. So there are standard `startup files'
+defined by your shell. There is a special startup file for every
+significant starting step:
 
 @table @asis
 
@@ -3436,13 +3438,13 @@ For security reasons, it is highly recommended to directly type in your
 @file{HOME} directory value by hand in startup files instead of using
 variables. So in the following, let's assume your user name is
 `@file{name}'. To add @file{~/.local/bin} to your @file{PATH} automatically
-on every startup you have to ``export'' the new value of @command{PATH} in
-the startup file that is most relevant to you with the line
+on any startup file, you have to ``export'' the new value of @command{PATH}
+in the startup file that is most relevant to you with the line
 `@command{export PATH=$PATH:/home/name/.local/bin}'. You can either do it
 manually using a text editor, or by running the following command which
 will add this line as the last line of the file. Let's assume you want to
 add it to @file{~/.bashrc} (afterwards, open your @file{~/.bashrc} with a
-text editor and check it out to see for your self):
+text editor and check it out, to see the result for your self):
 
 @example
 $ echo 'export PATH=$PATH:/home/name/.local/bin' >> ~/.bashrc
@@ -3463,8 +3465,8 @@ install-able files will be put in their respective directory under
 @file{~/.local/} (as discussed above). Note that tilde (`@key{~}')
 expansion will not happen if you put a `@key{=}' between @option{--prefix}
 and @file{~/.local}@footnote{If you insist on using `@key{=}', you can use
-@option{--prefix=$HOME/.local}.}, so we have avoided it here, see
-@ref{Options}.
+@option{--prefix=$HOME/.local}.}, so we have avoided the @key{=} character
+here which is optional in GNU-style options, see @ref{Options}.
 
 @example
 $ ./configure --prefix ~/.local
@@ -3483,7 +3485,7 @@ CFITSIO, or Gnuastro which needs both.} that depend on libraries you
 installed like this, you have to guide your compiler to the necessary
 directories. To do that, you have to define the @command{LDFLAGS} and
 @command{CPPFLAGS} environment variables respectively. This can be done
-while calling @file{./configure}:
+while calling @file{./configure} as shown below:
 
 @example
 $ ./configure LDFLAGS=-L/home/name/.local/lib            \
@@ -3491,17 +3493,19 @@ $ ./configure LDFLAGS=-L/home/name/.local/lib            \
               --prefix ~/.local
 @end example
 
-It can be annoying to do this when configuring every package, so you can
-define these two variables in a startup file (discussed above). The
-convention on using these variables doesn't include a colon to separate
-values (as @command{PATH}-like variables do), they use white space
+If you do this for all your libraries, it can be annoying to do this when
+configuring every software that depends on them. Hence, you can define
+these two variables in the most relevant startup file (discussed
+above). The convention on using these variables doesn't include a colon to
+separate values (as @command{PATH}-like variables do), they use white space
 characters and each value is prefixed with a compiler option@footnote{These
 variables are ultimately used as options while building the programs, so
 every value has be an option name followed be a value as discussed in
 @ref{Options}.} (note the @option{-L} and @option{-I} above, see
-@ref{Options}). Therefore we have to keep the value in double quotation
-signs to keep the white space characters. Run the following two commands to
-do that if you want them in your @file{~/.bashrc}.
+@ref{Options}, @ref{Headers} for @option{-I}, and @ref{Linking} for
+@option{-L}). Therefore we have to keep the value in double quotation signs
+to keep the white space characters. Run the following two commands to do
+that if you want them in your @file{~/.bashrc}.
 
 @example
 echo 'export LDFLAGS="$LDFLAGS -L/home/name/.local/lib"' >> ~/.bashrc
@@ -3509,23 +3513,35 @@ echo 'export CPPFLAGS="$CPPFLAGS -I/home/name/.local/include"' \
      >> ~/.bashrc
 @end example
 
-To be able to link to the locally installed dynamic libraries (which are
-linked at run time) after installation, add @file{~/.local/lib} to your
-@command{LD_LIBRARY_PATH} environment variable similar to the example above
-for @command{PATH}. If you also want to access the Info (see @ref{Info})
-and man pages (see @ref{Man pages}) documentations add
-@file{~/.local/share/info} and @file{~/.local/share/man} to your
-@command{INFOPATH}@footnote{Info has the following convention: ``If the
-value of @command{INFOPATH} ends with a colon [or it isn't defined] ...,
-the initial list of directories is constructed by appending the build-time
-default to the value of @command{INFOPATH}.'' So when installing in a
-non-standard directory and if @command{INFOPATH} was not initially defined,
-add a colon to the end of @command{INFOPATH} as shown below, otherwise Info
-will not be able to find system-wide installed
-documentation:@*@command{echo 'export
+Dynamic libraries are linked to the executable every time you run a program
+that depends on them (see @ref{Linking} to fully understand this important
+concept). Hence dynamic libraries also require a special path variable
+called @command{LD_LIBRARY_PATH}. To use programs that depend on these
+libraries, you will need to have @file{~/.local/lib} added to your
+@command{LD_LIBRARY_PATH} environment variable in the relevant start-up
+file (similar to @command{PATH}) as shown below (the @key{\} is only to fit
+this command within the page width, you can ignore it when typing on the
+terminal):
+
+@example
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/name/.local/lib' \
+     >> ~/.bashrc
+@end example
+
+If you also want to access the Info (see @ref{Info}) and man pages (see
+@ref{Man pages}) documentations add @file{~/.local/share/info} and
+@file{~/.local/share/man} to your @command{INFOPATH}@footnote{Info has the
+following convention: ``If the value of @command{INFOPATH} ends with a
+colon [or it isn't defined] ..., the initial list of directories is
+constructed by appending the build-time default to the value of
+@command{INFOPATH}.'' So when installing in a non-standard directory and if
+@command{INFOPATH} was not initially defined, add a colon to the end of
+@command{INFOPATH} as shown below, otherwise Info will not be able to find
+system-wide installed documentation:@*@command{echo 'export
 INFOPATH=$INFOPATH:/home/name/.local/share/info:' >> ~/.bashrc}@* Note that
 this is only an internal convention of Info, do not use it for other
-@command{*PATH} variables.} and @command{MANPATH} environment variables.
+@command{*PATH} variables.} and @command{MANPATH} environment variables
+respectively.
 
 @cindex Search directory order
 @cindex Order in search directory
@@ -3546,15 +3562,15 @@ This is good when a library, for example CFITSIO, is already present on the
 system, but the system-wide install wasn't configured with the correct
 configuration flags (see @ref{CFITSIO}), or you want to use a newer version
 and you don't have administrator or root access to update it. If you update
-@file{LD_LIBRARY_PATH} with the order shown above, the linker will first
-find the CFITSIO you installed for yourself and use it, it will never reach
-the system-wide installation. However there are important security problems
-with this order: all important system-wide programs and libraries can be
-replaced by non-secure versions with the same file names and put in the
-customized directory (@file{./.local/} in this example). So if you choose
-to search in your customized directory first, be sure to keep it clean from
-executables or libraries with the same names as important system programs
-or libraries.
+@file{LD_LIBRARY_PATH} with the @file{~/.local/lib} installation first, the
+linker will first find the CFITSIO you installed for yourself and link with
+it. It will never reach the system-wide installation. However there are
+important security problems with this order: all important system-wide
+programs and libraries can be replaced by non-secure versions with the same
+file names and put in the customized directory (@file{./.local/lib} in this
+example). So if you choose to search in your customized directory first, be
+sure to keep it clean from executables or libraries with the same names as
+important system programs or libraries.
 
 
 

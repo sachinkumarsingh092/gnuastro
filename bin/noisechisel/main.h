@@ -104,6 +104,10 @@ struct noisechiselparams
   gal_data_t          *clabel;  /* Labels of clumps in the detection.     */
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
+  size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */
+  size_t          maxltcontig;  /* Maximum contiguous space for a tile.   */
+  size_t            *maxtsize;  /* Maximum size of a single small tile.   */
+  size_t           *maxltsize;  /* Maximum size of a single large tile.   */
   time_t              rawtime;  /* Starting time of the program.          */
 
   float                medstd;  /* Median STD before interpolation.       */
@@ -111,12 +115,10 @@ struct noisechiselparams
   float                maxstd;  /* Maximum STD before interpolation.      */
   float               cpscorr;  /* Counts/second correction.              */
 
-  size_t           numobjects;  /* Number of objects detected.            */
+  size_t          numinitdets;  /* Number of objects detected.            */
   size_t            numclumps;  /* Number of true clumps.                 */
-  size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */
-  size_t          maxltcontig;  /* Maximum contiguous space for a tile.   */
-  size_t            *maxtsize;  /* Maximum size of a single small tile.   */
-  size_t           *maxltsize;  /* Maximum size of a single large tile.   */
+  float           detsnthresh;  /* Pseudo-detection S/N threshold.        */
+  float         clumpsnthresh;  /* Clump S/N threshold.                   */
 };
 
 #endif

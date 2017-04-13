@@ -110,7 +110,7 @@ detection_initial(struct noisechiselparams *p)
 
 
   /* Label the connected components. */
-  p->numobjects=gal_binary_connected_components(p->binary, &p->olabel, 1);
+  p->numinitdets=gal_binary_connected_components(p->binary, &p->olabel, 1);
   if(p->detectionname)
     {
       p->olabel->name="OPENED-LABELED";
@@ -122,7 +122,7 @@ detection_initial(struct noisechiselparams *p)
   /* Report the ending of initial detection. */
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "%zu initial detections found.", p->numobjects);
+      asprintf(&msg, "%zu initial detections found.", p->numinitdets);
       gal_timing_report(&t0, msg, 1);
       free(msg);
     }
@@ -585,7 +585,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
 static void
 detection_pseudo_remove_low_sn(struct noisechiselparams *p,
                                gal_data_t *workbin, gal_data_t *worklab,
-                               gal_data_t *sn, float snthresh)
+                               gal_data_t *sn)
 {
   size_t i;
   float *snarr=sn->array;
@@ -598,7 +598,7 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
      (which will fail on any condition), so it acts as if it had an S/N
      lower than the required value. */
   for(i=0;i<sn->size;++i)
-    if( snarr[i] > snthresh ) keep[i]=1;
+    if( snarr[i] > p->detsnthresh ) keep[i]=1;
 
 
   /* Go over the pseudo-detection labels and only keep those that must be
@@ -629,7 +629,6 @@ static gal_data_t *
 detection_pseudo_real(struct noisechiselparams *p)
 {
   char *msg;
-  float snthresh;
   size_t numpseudo;
   struct timeval t1;
   gal_data_t *sn, *quant, *workbin, *worklab;
@@ -649,11 +648,11 @@ detection_pseudo_real(struct noisechiselparams *p)
 
   /* Get the S/N quantile and report it if we are in non-quiet mode. */
   quant=gal_statistics_quantile(sn, p->detquant, 1);
-  snthresh = *((float *)(quant->array));
+  p->detsnthresh = *((float *)(quant->array));
   if(!p->cp.quiet)
     {
       asprintf(&msg, "Pseudo-det S/N: %.2f (%.3f quant of %zu).",
-               snthresh, p->detquant, sn->size);
+               p->detsnthresh, p->detquant, sn->size);
       gal_timing_report(&t1, msg, 2);
       free(msg);
     }
@@ -668,7 +667,7 @@ detection_pseudo_real(struct noisechiselparams *p)
 
 
   /* Remove the pseudo detections with a low S/N. */
-  detection_pseudo_remove_low_sn(p, workbin, worklab, sn, snthresh);
+  detection_pseudo_remove_low_sn(p, workbin, worklab, sn);
 
 
   /* Clean up and return. */
@@ -705,7 +704,8 @@ detection_remove_false_initial(struct noisechiselparams *p,
   size_t i;
   uint8_t *b=workbin->array;
   uint32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
-  uint32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32, p->numobjects+1);
+  uint32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
+                                            p->numinitdets+1);
 
   /* Find the new labels for all the existing labels. Recall that
      `newlabels' was initialized to zero, so any label that is not given a
@@ -734,7 +734,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
 
   /* Now that we know which labels to keep, set the new labels for the
      detections that must be kept. */
-  for(i=0;i<p->numobjects;++i) if(newlabels[i]) newlabels[i] = curlab++;
+  for(i=0;i<p->numinitdets;++i) if(newlabels[i]) newlabels[i] = curlab++;
 
 
   /* Replace the byt and olab values with their proper values. If the
@@ -817,7 +817,7 @@ detection(struct noisechiselparams *p)
   if(!p->cp.quiet)
     {
       asprintf(&msg, "%zu false initial detections removed.",
-               p->numobjects - num_true_initial);
+               p->numinitdets - num_true_initial);
       gal_timing_report(&t1, msg, 2);
       free(msg);
     }
@@ -827,13 +827,14 @@ detection(struct noisechiselparams *p)
   if(p->dilate)
     {
       gal_binary_dilate(workbin, p->dilate, 8, 1);
-      p->numobjects = gal_binary_connected_components(workbin, &p->olabel, 8);
+      p->numinitdets = gal_binary_connected_components(workbin, &p->olabel,
+                                                       8);
     }
-  else p->numobjects=num_true_initial;
+  else p->numinitdets=num_true_initial;
   if(!p->cp.quiet)
     {
       asprintf(&msg, "%zu detections after %zu dilation%s",
-              p->numobjects, p->dilate, p->dilate>1 ? "s." : ".");
+              p->numinitdets, p->dilate, p->dilate>1 ? "s." : ".");
       gal_timing_report(&t0, msg, 1);
       free(msg);
     }
