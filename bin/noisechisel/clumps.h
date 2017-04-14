@@ -24,6 +24,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CLUMPS_H
 
 
+/* Constants for the clump over-segmentation. */
+#define CLUMPS_RIVER     UINT32_MAX-2
+#define CLUMPS_TMPCHECK  UINT32_MAX-3
+#define CLUMPS_INIT      UINT32_MAX-4
+#define CLUMPS_MAXLAB    UINT32_MAX-5   /* Largest clump label (unsigned). */
+
+
 /* Parameters for all threads. */
 struct clumps_params
 {
@@ -39,24 +46,41 @@ struct clumps_params
 
   /* For detections. */
   gal_data_t        *labindexs; /* Array of `gal_data_t' with obj indexs.  */
+  size_t            totobjects; /* Total number of objects at any point.   */
+  size_t             totclumps; /* Total number of clumps at any point.    */
 };
 
 
-/* Parameters for one thread. */
+/* Parameters for one thread (a tile or a detected region). */
 struct clumps_thread_params
 {
   size_t                    id; /* ID of this detection/tile over tile.    */
   size_t              *topinds; /* Indexs of all local maxima.             */
-  size_t            numinitial; /* The number of clumps found in this run. */
-  gal_data_t           *indexs; /* Array containing indexs of this object. */
+  size_t         numinitclumps; /* Number of clumps in tile/detection.     */
+  size_t         numtrueclumps; /* Number of true clumps in tile/detection.*/
+  size_t            numobjects; /* Number of objects over this clump.      */
+  float                    std; /* Standard deviation of noise on center.  */
+  gal_data_t           *indexs; /* Array containing indexs of this det.    */
+  gal_data_t    *diffuseindexs; /* Diffuse region (after finding clumps).  */
   gal_data_t             *info; /* Information for all clumps.             */
   gal_data_t               *sn; /* Signal-to-noise ratio for these clumps. */
   gal_data_t            *snind; /* Index of S/N for these clumps.          */
+  gal_data_t       *clumptoobj; /* Index of object that a clump belongs to.*/
   struct clumps_params  *clprm; /* Pointer to main structure.              */
 };
 
+
 void
 clumps_oversegment(struct clumps_thread_params *cltprm);
+
+void
+clumps_grow_prepare_initial(struct clumps_thread_params *cltprm);
+
+void
+clumps_grow_prepare_final(struct clumps_thread_params *cltprm);
+
+void
+clumps_grow(struct clumps_thread_params *cltprm, int withrivers);
 
 void
 clumps_true_find_sn_thresh(struct noisechiselparams *p);
@@ -65,6 +89,9 @@ void
 clumps_make_sn_table(struct clumps_thread_params *cltprm);
 
 gal_data_t *
-clumps_label_indexs(struct noisechiselparams *p);
+clumps_det_label_indexs(struct noisechiselparams *p);
+
+void
+clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm);
 
 #endif

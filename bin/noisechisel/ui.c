@@ -694,7 +694,7 @@ ui_abort_after_check(struct noisechiselparams *p, char *filename,
           "------------------------------------------------\n"
           "%s (%s) has been created.\n\n"
           "If you want %s to continue its processing AND save any "
-          "requested check(s), please run it again with "
+          "requested check outputs, please run it again with "
           "`--continueaftercheck'.\n"
           "------------------------------------------------\n",
           PROGRAM_NAME, name, description, PROGRAM_NAME);

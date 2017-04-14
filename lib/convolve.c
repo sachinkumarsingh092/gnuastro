@@ -536,7 +536,7 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   else
     {
       name = ( block->name
-               ? gal_checkset_malloc_cat("CONVL_", block->name) : NULL );
+               ? gal_checkset_malloc_cat(block->name, "_CONVOLVED") : NULL );
       out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, block->ndim, block->dsize,
                          block->wcs, 0, block->minmapsize, name,
                          block->unit, NULL);

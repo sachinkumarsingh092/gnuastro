@@ -89,8 +89,9 @@ size_t
 gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
                                 int connectivity);
 
-
-
+gal_data_t *
+gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
+                                      size_t *numnewlabs);
 
 
 /*********************************************************************/

@@ -54,31 +54,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/**********************************************************************/
-/*****************         Basic macro values         *****************/
-/**********************************************************************/
-/* Constants for the clump over-segmentation. */
-#define CLUMPS_RIVER     UINT32_MAX-2
-#define CLUMPS_TMPCHECK  UINT32_MAX-3
-#define CLUMPS_INIT      UINT32_MAX-4
-#define CLUMPS_MAXLAB    UINT32_MAX-5   /* Largest clump label (unsigned). */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /****************************************************************
  *****************   Over segmentation       ********************
  ****************************************************************/
@@ -205,8 +180,8 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
                          if( nlab==CLUMPS_INIT && arr[nind]==arr[*a] )
                            {
                              clabel[nind]=CLUMPS_TMPCHECK;
-                             gal_linkedlist_add_to_sll(&cleanup, nind);
                              gal_linkedlist_add_to_sll(&Q, nind);
+                             gal_linkedlist_add_to_sll(&cleanup, nind);
                            }
 
                          /* If this neighbour has a positive nlab, it
@@ -242,7 +217,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
             else
               {
                 rlab = curlab++;
-                if( cltprm->topinds)        /* This is a local maximum of  */
+                if( cltprm->topinds )       /* This is a local maximum of  */
                   cltprm->topinds[rlab]=*a; /* this region, save its index.*/
               }
 
@@ -332,7 +307,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
   while(++a<af);
 
   /* Save the total number of clumps. */
-  cltprm->numinitial=curlab-1;
+  cltprm->numinitclumps=curlab-1;
 
   /* Set all the river pixels to zero. Note that this is only necessary for
      the detected clumps. When finding clumps over the Sky, we will be
@@ -351,6 +326,282 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
   gal_data_free(tile);
   printf("Total number of clumps: %u\n", curlab-1);
   **********************************************/
+
+  /* Clean up. */
+  free(dinc);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/*****************              Grow clumps           *****************/
+/**********************************************************************/
+/* Make the preparations for the intiial growing the clumps to identify
+   objects: a single standard deviation for the whole object and preparing
+   the labels (because the growth is going to happen on the `olabel'
+   image. */
+void
+clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
+{
+  gal_data_t *indexs=cltprm->indexs;
+  gal_data_t *input=cltprm->clprm->p->input;
+  struct noisechiselparams *p=cltprm->clprm->p;
+
+  size_t *s, *sf, *dsize=input->dsize;
+  size_t ndiffuse=0, coord[2], *dindexs;
+  double wcoord[2]={0.0f,0.0f}, brightness=0.0f;
+  float glimit, *imgss=input->array, *std=p->std->array;
+  uint32_t *olabel=p->olabel->array, *clabel=p->clabel->array;
+
+
+  /* Find the flux weighted center (meaningful only for positive valued
+     pixels). */
+  sf=(s=indexs->array)+indexs->size;
+  do
+    if( imgss[ *s ] > 0.0f )
+      {
+        brightness += imgss[ *s ];
+        wcoord[0]  += imgss[ *s ] * (*s/dsize[1]);
+        wcoord[1]  += imgss[ *s ] * (*s%dsize[1]);
+      }
+  while(++s<sf);
+
+
+  /* Calculate the center, if no pixels were positive, use the
+     geometric center (irrespective of flux). */
+  if(brightness==0.0f)
+    {
+      sf=(s=indexs->array)+indexs->size;
+      do
+        {
+          wcoord[0] += *s / dsize[1];
+          wcoord[1] += *s % dsize[1];
+        }
+      while(++s<sf);
+      brightness = indexs->size;
+    }
+
+
+  /* Convert floatint point coordinates to FITS integers. */
+  coord[0] = GAL_DIMENSION_FLT_TO_INT(wcoord[0]);
+  coord[1] = GAL_DIMENSION_FLT_TO_INT(wcoord[1]);
+
+
+  /* Find the growth limit  */
+  cltprm->std = std[ gal_tile_full_id_from_coord(&p->cp.tl, coord) ];
+  glimit = p->gthresh * cltprm->std;
+
+
+  /* Allocate space to keep the diffuse indexs over this detection. We need
+     to keep the actual indexs since it is our only connection to the
+     object at this stage: we are also going to re-label the pixels to
+     grow. For most astronomical objects, the major part of the detection
+     area is going to be diffuse flux, so we will just allocate the same
+     size as `indexs' array (the `dsize' will be corrected after getting
+     the exact number. */
+  cltprm->diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1,
+                                       cltprm->indexs->dsize, NULL, 0,
+                                       p->cp.minmapsize, NULL, NULL, NULL);
+  dindexs=cltprm->diffuseindexs->array;
+  sf=(s=indexs->array)+indexs->size;
+  do
+    {
+      if( clabel[*s] ) olabel[*s] = clabel[*s];
+      else
+        {
+          olabel[*s] = CLUMPS_INIT;
+          if( imgss[*s]>glimit ) dindexs[ ndiffuse++ ] = *s;
+        }
+    }
+  while(++s<sf);
+
+
+  /* When a user just wants clumps and doesn't want multiple clumps to be
+     considered part of one object, they are going to set an impossibly
+     high `--gthresh' so no growth actually happens. In that case, we don't
+     need the allocated array of indexs. So just free it. */
+  if(ndiffuse==0)
+    {
+      free(cltprm->diffuseindexs->array);
+      cltprm->diffuseindexs->array=NULL;
+    }
+
+
+  /* Correct the sizes of the `diffuseindexs' data structure. */
+  cltprm->diffuseindexs->size = cltprm->diffuseindexs->dsize[0] = ndiffuse;
+}
+
+
+
+
+
+/* Add all the remaining pixels in the detection (below the growth
+   threshold, or those that were not touching). Note that initially
+   `diffuseindexs' was filled with the pixels that are above the growth
+   threshold. That was necessary for identifying the objects. Now that we
+   have identified the objects and labeled them, we want to add the
+   remaining diffuse pixels to it too before doing the final growth.
+
+   Note that the most efficient way is just to re-fill the `diffuseindexs'
+   array instead of adding the pixels below the threshold and sorting them
+   afterwards.*/
+void
+clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
+{
+  size_t ndiffuse=0;
+  size_t *dindexs=cltprm->diffuseindexs->array;
+  uint32_t *olabel=cltprm->clprm->p->olabel->array;
+  size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
+
+  /* Recall that we initially allocated `diffuseindexs' to have the same
+     size as the indexs. So there is no problem if there are more pixels in
+     this final round compared to the initial round. */
+  do
+    if( olabel[*s] > CLUMPS_MAXLAB )
+      dindexs[ ndiffuse++ ] = *s;
+  while(++s<sf);
+
+  /* Correct the sizes of the `diffuseindexs' data structure. */
+  cltprm->diffuseindexs->size = cltprm->diffuseindexs->dsize[0] = ndiffuse;
+}
+
+
+
+
+
+/* Grow the true clumps over the diffuse regions of a detection. Note that
+   unlike before, were river pixels would get a separate label for them
+   selves, here, they don't, they just get set back to SEGMENTINIT. This is
+   because some of the pixels that lie immediately between two labeled
+   regions might not be in the blankinds array (they were below the
+   threshold). So we have to find river pixels later on, after the growth
+   is done independently.
+
+   This function is going to be used before identifying objects and also
+   after it (to completely fill in the diffuse area). The distinguishing
+   point between these two steps is the presence of rivers, so you can use
+   the `withrivers' argument. */
+void
+clumps_grow(struct clumps_thread_params *cltprm, int withrivers)
+{
+  struct noisechiselparams *p=cltprm->clprm->p;
+  gal_data_t *diffuseindexs=cltprm->diffuseindexs;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  int stopngbsearch;
+  size_t *diarray=cltprm->diffuseindexs->array;
+  uint32_t n1, nlab, *olabel=p->olabel->array;
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
+  size_t *s, *sf, thisround, ndiffuse=diffuseindexs->size;
+
+  /* The basic idea is this: after growing, not all the blank pixels are
+     necessarily filled, for example the pixels might belong to two regions
+     above the growth threshold. So the pixels in between them (which are
+     below the threshold will not ever be able to get a label). Therefore,
+     the safest way we can terminate the loop of growing the objects is to
+     stop it when the number of pixels left to fill in this round
+     (thisround) equals the number of blanks.
+
+     To start the loop, we set `thisround' to one more than the number of
+     diffuse pixels. Note that it will be corrected immediately after the
+     loop has started, it is just important to pass the `while'. */
+  thisround=ndiffuse+1;
+  while( thisround > ndiffuse )
+    {
+      /* `thisround' will keep the number of pixels to be inspected in this
+         round. `ndiffuse' will count the number of pixels left without a
+         label by the end of this round. Since `ndiffuse' comes from the
+         previous loop (or outside, for the first round) it has to be saved
+         in `thisround' to begin counting a fresh. */
+      thisround=ndiffuse;
+      ndiffuse=0;
+
+      /* Go over all the available indexs. */
+      sf=(s=diffuseindexs->array)+diffuseindexs->size;
+      do
+        {
+          /* We'll begin by assuming the nearest neighbor of this pixel has
+             no label (has a value of 0). */
+          n1=0;
+
+          /* Check the very closest neighbors of each pixel (4-connectivity
+             in a 2D image). Note that since this macro has multiple loops
+             within it, we can't use break. We'll use a variable instead. */
+          stopngbsearch=0;
+          GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, 1, dinc,
+            {
+              if(!stopngbsearch)
+                {
+                  nlab = olabel[nind];
+                  if(nlab && nlab<CLUMPS_MAXLAB)  /* This is a real label. */
+                    {
+                      if(n1)  /* A prev. neighboring label has been found. */
+                        {
+                          if( n1 != nlab )       /* Different label from   */
+                            {  /* prevously found neighbor for this pixel. */
+                              n1=CLUMPS_RIVER;
+                              stopngbsearch=1;
+                            }
+                        }
+                      else
+                        {      /* This is the first labeld neighbor found. */
+                          n1=nlab;
+
+                          /* If we want to completely fill in the region
+                             (`withrivers==0'), then there is no point in
+                             looking in other neighbors, the first neighbor
+                             we find is the one we'll use. */
+                          if(!withrivers) stopngbsearch=1;
+                        }
+                    }
+                }
+            } );
+
+          /* The loop above over neighbors finishes with three
+             possibilities:
+
+               n1==0                    --> No labeled neighbor was found.
+               n1==CLUMPS_RIVER         --> Connecting two labeled regions.
+               n1>0 && n1<CLUMPS_MAXLAB --> Only has one neighbouring label.
+
+             The first one means that no neighbors was found and this pixel
+             should be kept for the next loop (we'll be growing the objects
+             pixel-layer by pixel-layer). In the other two cases, we just
+             need to write in the value of `n1'. */
+          if(n1)
+            {
+              olabel[*s]=n1;
+              if(n1>CLUMPS_MAXLAB)             /* We want to keep river   */
+                {
+                  if(withrivers==0) printf("%zu\n", *s);
+                diarray[ ndiffuse++ ] = *s;    /* pixels the diffuse list.*/
+                }
+            }
+          else
+            diarray[ ndiffuse++ ] = *s;
+
+          /* Correct the size of the `diffuseindexs' dataset. */
+          diffuseindexs->size = diffuseindexs->dsize[0] = ndiffuse;
+        }
+      while(++s<sf);
+    }
 
   /* Clean up. */
   free(dinc);
@@ -478,7 +729,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   /* Do the final preparations. All the calculations are only necessary for
      the clumps that satisfy the minimum area. So there is no need to waste
      time on the smaller ones. */
-  for(lab=1; lab<=cltprm->numinitial; ++lab)
+  for(lab=1; lab<=cltprm->numinitclumps; ++lab)
     {
       row = &info [ lab * INFO_NCOLS ];
       if ( row[INFO_INAREA] > p->segsnminarea )
@@ -517,7 +768,7 @@ void
 clumps_make_sn_table(struct clumps_thread_params *cltprm)
 {
   struct noisechiselparams *p=cltprm->clprm->p;
-  size_t tablen=cltprm->numinitial+1;
+  size_t tablen=cltprm->numinitclumps+1;
 
   float *snarr;
   uint32_t *indarr=NULL;
@@ -624,7 +875,7 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
                                     gal_data_t *tile)
 {
   gal_data_t *newinds;
-  size_t len=cltprm->numinitial+1;
+  size_t len=cltprm->numinitclumps+1;
   struct noisechiselparams *p=cltprm->clprm->p;
   uint32_t *ninds, curlab, *l=cltprm->snind->array, *lf=l+cltprm->snind->size;
 
@@ -812,82 +1063,6 @@ clumps_find_make_sn_table(void *in_prm)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************/
-/*****************           Over detections           *****************/
-/***********************************************************************/
-/* Put the indexs of each labeled region into an array of `gal_data_t's
-   (where each element is a dataset containing the respective label's
-   indexs). */
-gal_data_t *
-clumps_label_indexs(struct noisechiselparams *p)
-{
-  size_t i, *areas;
-  uint32_t *a, *l, *lf;
-  gal_data_t *labindexs=gal_data_array_calloc(p->numinitdets+1);
-
-  /* Find the area in each detected objects (to see how much space we need
-     to allocate). */
-  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numinitdets+1);
-  lf=(l=p->olabel->array)+p->olabel->size; do ++areas[*l++]; while(l<lf);
-
-  /* Allocate/Initialize the dataset containing the indexs of each
-     object. We don't want the labels of the non-detected regions
-     (areas[0]). So we'll set that to zero.*/
-  areas[0]=0;
-  for(i=1;i<p->numinitdets+1;++i)
-    gal_data_initialize(&labindexs[i], NULL, GAL_TYPE_SIZE_T, 1,
-                        &areas[i], NULL, 0, p->cp.minmapsize, NULL, NULL,
-                        NULL);
-
-  /* Put the indexs into each dataset. We will use the areas array again,
-     but this time, use it as a counter. */
-  memset(areas, 0, (p->numinitdets+1)*sizeof *areas);
-  lf=(a=l=p->olabel->array)+p->olabel->size;
-  do
-    if(*l)  /* We don't want the undetected regions (*l==0) */
-      ((size_t *)(labindexs[*l].array))[ areas[*l]++ ] = l-a;
-  while(++l<lf);
-
-  /* Clean up and return. */
-  free(areas);
-  return labindexs;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************/
-/*****************         High level function         *****************/
-/***********************************************************************/
 /* The job of this function is to find the best signal to noise value to
    use as a threshold to detect real clumps.
 
@@ -907,11 +1082,13 @@ void
 clumps_true_find_sn_thresh(struct noisechiselparams *p)
 {
   char *msg;
+  uint8_t *b;
+  uint32_t *l, *lf;
   struct timeval t1;
   size_t i, j, c, numsn=0;
   struct clumps_params clprm;
   struct gal_linkedlist_stll *comments=NULL;
-  gal_data_t *claborig, *sn, *snind, *quant;
+  gal_data_t *sn, *tmp, *snind, *quant, *claborig;
 
   /* Get starting time for later reporting if necessary. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
@@ -968,8 +1145,8 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
           /* Set the extension name. */
           switch(clprm.step)
             {
-            case 1: p->clabel->name = "CLUMPS_ALL_SKY";  break;
-            case 2: p->clabel->name = "CLUMPS_FOR_SN";   break;
+            case 1: p->clabel->name = "SKY_CLUMPS_ALL";  break;
+            case 2: p->clabel->name = "SKY_CLUMPS_FOR_SN";   break;
             default:
               error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
                     "in `clumps_true_find_sn_thresh'. Please contact us at "
@@ -977,9 +1154,17 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
                     PACKAGE_BUGREPORT);
             }
 
-          /* Write the temporary array into the check image. */
-          gal_fits_img_write(p->clabel, p->segmentationname, NULL,
-                             PROGRAM_STRING);
+          /* Write the demonstration array into the check image. The
+             default values are hard to view, so we'll make a copy of the
+             demo, set all Sky regions to blank and all clump macro values
+             to zero. */
+          tmp=gal_data_copy(p->clabel);
+          b=p->binary->array; lf=(l=tmp->array)+tmp->size;
+          do *l = ( *b++
+                    ? GAL_BLANK_UINT32
+                    : ( *l > CLUMPS_MAXLAB ? 0 : *l ) );  while(++l<lf);
+          gal_fits_img_write(tmp, p->segmentationname, NULL, PROGRAM_STRING);
+          gal_data_free(tmp);
 
           /* Increment the step counter. */
           ++clprm.step;
@@ -1041,8 +1226,9 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
         gal_linkedlist_add_to_stll(&comments, "NOTE: In multi-threaded mode, "
                                    "clump IDs differ in each run and are not "
                                    "sorted.", 1);
-      gal_linkedlist_add_to_stll(&comments, "See also: `CLUMPS_FOR_SN' HDU "
-                                 "of output with `--checksegmentation'.", 1);
+      gal_linkedlist_add_to_stll(&comments, "See also: `SKY_CLUMPS_FOR_SN' "
+                                 "HDU of output with `--checksegmentation'.",
+                                 1);
       gal_linkedlist_add_to_stll(&comments, "S/N of clumps over undetected "
                                  "regions.", 1);
       threshold_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);
@@ -1061,10 +1247,124 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
       free(msg);
     }
 
+
   /* Clean up. */
   gal_data_free(sn);
   gal_data_free(snind);
   gal_data_free(quant);
   gal_data_array_free(clprm.sn, p->ltl.tottiles, 1);
   gal_data_array_free(clprm.snind, p->ltl.tottiles, 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/*****************           Over detections           *****************/
+/***********************************************************************/
+/* Put the indexs of each labeled region into an array of `gal_data_t's
+   (where each element is a dataset containing the respective label's
+   indexs). */
+gal_data_t *
+clumps_det_label_indexs(struct noisechiselparams *p)
+{
+  size_t i, *areas;
+  uint32_t *a, *l, *lf;
+  gal_data_t *labindexs=gal_data_array_calloc(p->numdetections+1);
+
+  /* Find the area in each detected objects (to see how much space we need
+     to allocate). */
+  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numdetections+1);
+  lf=(l=p->olabel->array)+p->olabel->size; do ++areas[*l++]; while(l<lf);
+
+  /* Allocate/Initialize the dataset containing the indexs of each
+     object. We don't want the labels of the non-detected regions
+     (areas[0]). So we'll set that to zero.*/
+  areas[0]=0;
+  for(i=1;i<p->numdetections+1;++i)
+    gal_data_initialize(&labindexs[i], NULL, GAL_TYPE_SIZE_T, 1,
+                        &areas[i], NULL, 0, p->cp.minmapsize, NULL, NULL,
+                        NULL);
+
+  /* Put the indexs into each dataset. We will use the areas array again,
+     but this time, use it as a counter. */
+  memset(areas, 0, (p->numdetections+1)*sizeof *areas);
+  lf=(a=l=p->olabel->array)+p->olabel->size;
+  do
+    if(*l)  /* We don't want the undetected regions (*l==0) */
+      ((size_t *)(labindexs[*l].array))[ areas[*l]++ ] = l-a;
+  while(++l<lf);
+
+  /* Clean up and return. */
+  free(areas);
+  return labindexs;
+}
+
+
+
+
+
+/* Only keep true clumps over detections. */
+void
+clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
+{
+  struct noisechiselparams *p=cltprm->clprm->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  int istouching;
+  size_t *s, *sf;
+  float *sn=cltprm->sn->array;
+  uint32_t *clabel=p->clabel->array;
+  size_t i, *dinc=gal_dimension_increment(ndim, dsize);
+  uint32_t curlab=1, *newlabs=gal_data_calloc_array(GAL_TYPE_UINT32,
+                                                    cltprm->numinitclumps+1);
+
+  /* Set the new labels. Here we will also be removing clumps with a peak
+     that touches a river pixel. */
+  if(p->keepmaxnearriver)
+    {
+      for(i=1;i<cltprm->numinitclumps+1;++i)
+        if( sn[i] > p->clumpsnthresh ) newlabs[i]=curlab++;
+    }
+  else
+    {
+      for(i=1;i<cltprm->numinitclumps+1;++i)
+        {
+          /* Check if all the neighbors of this top element are touching a
+             river or not. */
+          istouching=0;
+          GAL_DIMENSION_NEIGHBOR_OP(cltprm->topinds[i], ndim, dsize, ndim,
+                                    dinc,
+                                    { if(clabel[nind]==0) istouching=1; });
+
+          /* If the peak isn't touching a river, then check its S/N and if
+             that is also good, give it a new label. */
+          if( !istouching && sn[i] > p->clumpsnthresh ) newlabs[i]=curlab++;
+        }
+    }
+
+  /* Save the total number of true clumps in this detection. */
+  cltprm->numtrueclumps=curlab-1;
+
+  /* Correct the clump labels. */
+  sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
+  do if(clabel[*s]) clabel[*s]=newlabs[ clabel[*s] ]; while(++s<sf);
+
+  /* Clean up. */
+  free(dinc);
+  free(newlabs);
 }

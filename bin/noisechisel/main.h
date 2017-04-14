@@ -115,8 +115,10 @@ struct noisechiselparams
   float                maxstd;  /* Maximum STD before interpolation.      */
   float               cpscorr;  /* Counts/second correction.              */
 
-  size_t          numinitdets;  /* Number of objects detected.            */
+  size_t       numinitialdets;  /* Number of initial detections.          */
+  size_t        numdetections;  /* Number of final detections.            */
   size_t            numclumps;  /* Number of true clumps.                 */
+  size_t           numobjects;  /* Number of objects.                     */
   float           detsnthresh;  /* Pseudo-detection S/N threshold.        */
   float         clumpsnthresh;  /* Clump S/N threshold.                   */
 };

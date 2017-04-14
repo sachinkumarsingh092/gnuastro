@@ -328,6 +328,16 @@ gal_binary_open(gal_data_t *input, size_t num, int connectivity,
 
 
 
+
+
+
+
+
+
+
+
+
+
 /*********************************************************************/
 /*****************      Connected components      ********************/
 /*********************************************************************/
@@ -440,6 +450,107 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   /* Clean up and return the total number. */
   free(dinc);
   return curlab-1;
+}
+
+
+
+
+
+/* Given an adjacency matrix (which should be binary), find the number of
+   connected objects and return an array of new labels for each old
+   label. In other words, this function will find the objects that are
+   connected (possibly through a third object) and in the output array, the
+   respective elements for all these objects is going to have the same
+   value. The total number of connected labels is put into the place
+   pointed to by `numconnected'.
+
+   Labels begin from 1 (0 is kept for non-labeled regions usually). So if
+   you have 3 initial objects/labels, the input matrix to this function
+   should have a size of 4x4. The first (label 0) row and column are not
+   going to be parsed/checked.
+
+   The adjacency matrix needs to be completely filled (on both sides of the
+   diagonal) for this function.
+
+   If the input adjacency matrix has a size of `amsize * amsize', the
+   output will have a size of `amsize' with each index having a new label
+   in its place. */
+gal_data_t *
+gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
+                                      size_t *numconnected)
+{
+  uint32_t *newlabs;
+  gal_data_t *newlabs_d;
+  struct gal_linkedlist_sll *Q=NULL;
+  size_t i, j, p, num=adjacency->dsize[0];
+  uint8_t *adj=adjacency->array, curlab=1;
+
+  /* Some small sanity checks. */
+  if(adjacency->type != GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
+          "accepts a `uint8' numeric type. However, the input dataset has "
+          "type of `%s'", gal_type_to_string(adjacency->type, 1));
+
+  if(adjacency->ndim != 2)
+    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
+          "accepts a 2-dimensional array. However, the input dataset has "
+          "%zu dimensions", adjacency->ndim);
+
+  if(adjacency->dsize[0] != adjacency->dsize[1])
+    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
+          "accepts a square matrix. However, the input dataset has a size "
+          "of %zu x %zu", adjacency->dsize[0], adjacency->dsize[1]);
+
+
+  /* Allocate (and clear) the output datastructure. */
+  newlabs_d=gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &num, NULL, 1,
+                           adjacency->minmapsize, NULL, NULL, NULL);
+  newlabs=newlabs_d->array;
+
+
+  /* Go over the input matrix and apply the same principle as we used to
+     identify connected components in an image: through a queue, find those
+     elements that are connected. */
+  for(i=1;i<num;++i)
+    if(newlabs[i]==0)
+      {
+        /* Add this old label to the list that must be corrected. */
+        gal_linkedlist_add_to_sll(&Q, i);
+
+        /* Continue while the list has elements. */
+        while(Q!=NULL)
+          {
+            /* Pop the top old-label from the list. */
+            gal_linkedlist_pop_from_sll(&Q, &p);
+
+            /* If it has already been labeled then ignore it. */
+            if( newlabs[p]!=curlab )
+              {
+                /* Give it the new label. */
+                newlabs[p]=curlab;
+
+                /* Go over the adjacecny matrix row for this touching
+                   object and see if there are any not-yet-labeled objects
+                   that are touching it. */
+                for(j=1;j<num;++j)
+                  if( adj[ p*num+j ] && newlabs[j]==0 )
+                    gal_linkedlist_add_to_sll(&Q, j);
+              }
+          }
+
+        /* Increment the current label. */
+        ++curlab;
+      }
+
+
+  /* For a check.
+  printf("=== Old labels --> new labels ===\n");
+  for(i=1;i<num;++i) printf("%zu: %u\n", i, newlabs[i]);
+  */
+
+  /* Return the output. */
+  *numconnected = curlab-1;
+  return newlabs_d;
 }
 
 
