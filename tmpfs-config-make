@@ -135,7 +135,7 @@ if [ ! -f Makefile ]; then
                  --enable-cosmiccal  --enable-crop       --enable-fits        \
                  --enable-mknoise    --enable-mkprof     --enable-noisechisel \
                  --enable-statistics --enable-table      --enable-warp        \
-                 CFLAGS="-g -O0" --disable-shared
+                 #CFLAGS="-g -O0" --disable-shared
 fi
 
 

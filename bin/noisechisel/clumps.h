@@ -25,10 +25,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Constants for the clump over-segmentation. */
-#define CLUMPS_RIVER     UINT32_MAX-2
-#define CLUMPS_TMPCHECK  UINT32_MAX-3
-#define CLUMPS_INIT      UINT32_MAX-4
-#define CLUMPS_MAXLAB    UINT32_MAX-5   /* Largest clump label (unsigned). */
+#define CLUMPS_INIT      -1
+#define CLUMPS_RIVER     -2
+#define CLUMPS_TMPCHECK  -3
 
 
 /* Parameters for all threads. */

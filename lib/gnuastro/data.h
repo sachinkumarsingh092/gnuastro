@@ -55,6 +55,40 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Flag values for the dataset. Note that these are bit-values, so to be
+   more clear, we'll use hexadecimal notation: `0x1' (=1), `0x2' (=2),
+   `0x4' (=4), `0x8' (=8), `0x10' (=16), `0x20' (=32) and so on. */
+
+/* Number of bytes in the unsigned integer hosting the bit-flags (`flag'
+   element) of `gal_data_t'. */
+#define GAL_DATA_FLAG_SIZE       1
+
+/* Bit 0: The has-blank flag has been checked, so a flag value of 0 for the
+          blank flag is strustable. This can be very useful to avoid
+          repetative checks when the necessary value of the bit is 0. */
+#define GAL_DATA_FLAG_BLANK_CH     0x1
+
+/* Bit 1: Dataset contains blank values. */
+#define GAL_DATA_FLAG_HASBLANK     0x2
+
+/* Bit 2: Sorted flags have been checked, see GAL_DATA_FLAG_BLANK_CH. */
+#define GAL_DATA_FLAG_SORT_CH      0x4
+
+/* Bit 3: Dataset is sorted and increasing. */
+#define GAL_DATA_FLAG_SORTED_I     0x8
+
+/* Bit 4: Dataset is sorted and decreasing. */
+#define GAL_DATA_FLAG_SORTED_D     0x10
+
+/*    Maximum internal flag value, using bitwise shift operators, this can
+      be used to define internal flags for libraries/programs that depend
+      on Gnuastro without causing any conflict with the internal flags or
+      having to check the values manually on every release. */
+#define GAL_DATA_FLAG_MAXFLAG      GAL_DATA_FLAG_SORTED_D
+
+
+
+
 /* Main data structure.
 
    mmap (keep data outside of RAM)
@@ -164,7 +198,8 @@ typedef struct gal_data_t
   struct wcsprm       *wcs;  /* WCS information for this dataset.          */
 
   /* Content descriptions. */
-  int               status;  /* Any context-specific status value.         */
+  uint8_t             flag;  /* Flags: currently 8-bits are enough.        */
+  int               status;  /* Context specific value for the dataset.    */
   char               *name;  /* e.g., EXTNAME, or column, or keyword.      */
   char               *unit;  /* Units of the data.                         */
   char            *comment;  /* A more detailed description of the data.   */
@@ -186,9 +221,6 @@ typedef struct gal_data_t
 /*********************************************************************/
 /*************         Size and allocation         *******************/
 /*********************************************************************/
-void
-gal_data_bit_print_stream(void *in, size_t size);
-
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
 

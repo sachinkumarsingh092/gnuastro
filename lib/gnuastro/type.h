@@ -126,7 +126,8 @@ gal_type_is_linked_list(uint8_t type);
 int
 gal_type_out(int first_type, int second_type);
 
-
+char *
+gal_type_bit_string(void *in, size_t size);
 
 
 __END_C_DECLS    /* From C++ preparations */

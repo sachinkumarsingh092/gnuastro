@@ -68,6 +68,7 @@
 # symbolic link in `tmpfs-config-make', it is also assumed in the version
 # controlled version of this script. Note, if your directory names have
 # space characters in them, quote the full value
+numthreads=8
 builddir=build
 outdir=
 
@@ -91,9 +92,10 @@ options=
 # First, make sure the variables are set. Note that arguments and options
 # are not absolutly vital! so they are not checked here. The utility will
 # warn and halt if it needs them.
-if [ x"$outdir" = x ];   then echo "outdir is not set.";   exit 1; fi
-if [ x$utilname = x ];   then echo "utilname is not set."; exit 1; fi
-if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
+if [ x"$outdir" = x ];     then echo "outdir is not set.";      exit 1; fi
+if [ x$utilname = x ];     then echo "utilname is not set.";    exit 1; fi
+if [ x"$builddir" = x ];   then echo "builddir is not set.";    exit 1; fi
+if [ x"$numthreads" = x ]; then echo "numthreads is not set.";  exit 1; fi
 
 
 # If builddir is relative, then append the current directory to make it
@@ -123,7 +125,7 @@ if [ -f "$utility" ]; then rm "$utility"; fi
 # Before actually running put a copy of the configuration file in the
 # output directory and also add the onlydirconf option so user or system
 # wide configuration files don't interfere.
-if make -C "$builddir"; then
+if make -j$numthreads -C "$builddir"; then
 
     # Change to the output directory.
     cd "$outdir"

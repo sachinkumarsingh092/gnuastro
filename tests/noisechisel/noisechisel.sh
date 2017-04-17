@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --checkdetection --checksegmentation
+$execname $img --checkdetection --checksegmentation --continueaftercheck

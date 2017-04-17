@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/type.h>
-
+#include <gnuastro/data.h>
 
 
 
@@ -294,4 +294,36 @@ int
 gal_type_out(int first_type, int second_type)
 {
   return first_type > second_type ? first_type : second_type;
+}
+
+
+
+
+
+/* Write the bit (0 or 1) contents of `in' into a string ready for
+   printing. `size' is used to determine the number of bytes to print. The
+   output string will be dynamically allocated within this function. This
+   can be useful for easy checking of bit flag values, for example in an
+   expression like below:
+
+      printf("flag: %s\n", gal_type_bit_string(&flag, sizeof flag) );    */
+char *
+gal_type_bit_string(void *in, size_t size)
+{
+  size_t i;
+  char *byte=in;
+  char *str=gal_data_malloc_array(GAL_TYPE_UINT8, 8*size+1);
+
+  /* Print the bits into the allocated string. This was inspired from
+
+     http://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format */
+  for(i=0;i<size;++i)
+    sprintf(str+i*8, "%c%c%c%c%c%c%c%c ",
+           (byte[i] & 0x80 ? '1' : '0'), (byte[i] & 0x40 ? '1' : '0'),
+           (byte[i] & 0x20 ? '1' : '0'), (byte[i] & 0x10 ? '1' : '0'),
+           (byte[i] & 0x08 ? '1' : '0'), (byte[i] & 0x04 ? '1' : '0'),
+           (byte[i] & 0x02 ? '1' : '0'), (byte[i] & 0x01 ? '1' : '0') );
+
+  /* Return the allocated and filled string. */
+  return str;
 }

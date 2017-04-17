@@ -441,8 +441,10 @@ NoiseChisel
 
 Invoking NoiseChisel
 
-* NoiseChisel options::         The options specific to NoiseChisel.
-* NoiseChisel output::          NoiseChisel's output. Why no catalog?
+* General NoiseChisel options::  General NoiseChisel preprocessing.
+* Detection options::           Configure detection in NoiseChisel.
+* Segmentation options::        Configure segmentation in NoiseChisel.
+* NoiseChisel output::          NoiseChisel's output format.
 
 MakeCatalog
 
@@ -11908,46 +11910,73 @@ one for the Sky standard deviation).
 @node NoiseChisel, MakeCatalog, Statistics, Data analysis
 @section NoiseChisel
 
-Once raw data have gone through the initial reduction process (through the
-programs in @ref{Data manipulation}). We are ready to derive scientific
-results out of them. Unfortunately in most cases, the scientifically
-interesting targets are deeply drowned in a sea of noise. NoiseChisel is
-Gnuastro's tool to detect signal in noise. In fact, NoiseChisel was the
-motivation behind creating Gnuastro and has a journal article devoted to
-its techniques: @url{http://arxiv.org/abs/1505.01664, arXiv:1505.01664},
-published in 2015 by the Astrophysical Journal Supplement Series
-220.
-
-Following the explanations for the options in @ref{NoiseChisel options}
-should provide a relatively good idea of how NoiseChisel works, but it is
-recommended to see the paper since it does a very thorough job at
-explaining the concepts and methods of NoiseChisel with abundant
-demonstrations for each step. However, the paper cannot undergo any further
-updates, but NoiseChisel will evolve: better algorithms or steps will be
-found, thus options will be added or removed. So this section is the
-definitive guide. Please follow the @file{NEWS} file with each release for
-such updates.
-
+@cindex Labeling
 @cindex Detection
-Detection is the process of separating signal from noise. In other
-words, after detection is complete, one set of data elements (pixels
-in an image) will be distinguished as signal and another set of the
-data elements will be noise. Segmentation is the process of labeling
-the detected pixels into possibly multiple components (objects). For
-example when two galaxies lie sufficiently close to each other to be
-detected as one object.
+@cindex Segmentation
+Once instrumental signatures are removed from the raw data in the initial
+reduction process (see @ref{Data manipulation}). We are ready to derive
+scientific results out of them. But we can't do anything special with a raw
+dataset, for example an image is just an array of values. Every pixel just
+has one value and its position within the image. Therefore, the first step
+of your high-level analysis will be to classify/label the dataset
+elements/pixels into two classes: signal and noise. This process is
+formally known as @emph{detection}. Afterwards, you want to separate the
+detections into multiple components (for example when two detected regions
+aren't touching, they should be treated independently as two distant
+galaxies for example). This higher level classification of the detections
+is known as @emph{segmentation}. NoiseChisel is Gnuastro's program for
+detection and segmentation.
 
-@cindex Noise-based detection
-NoiseChisel was the first software to make use of a noise-based concept to
-detection and segmentation. In this method, instead of emphasizing on the
-signal and trying to guess the properties of the to-be-detected targets
-prior to detection (for example assuming that it is an ellipse), the
-emphasis is put on the noise in the image and it imposes statistically
-negligible requirements on the signal. The name of NoiseChisel is derived
-from the first thing it does after thresholding the image: to erode it. In
-mathematical morphology, erosion on pixels can be pictured as carving off
-boundary pixels. So what NoiseChisel does is similar to what a wood chisel
-or stone chisel do. It is just not a hardware but software.
+NoiseChisel works based on a new noise-based approach to signal detection
+and was introduced to the astronomical community in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+[2015]}. NoiseChisel's primary output is an array (image) with the same
+size as the input but containing labels: those pixels with a label of 0 are
+noise/sky while those pixels with labels larger than 0 are detections
+(separate segments will be given positive integers, starting from 1). For
+more on NoiseChisel's particular output format and its benefits (especially
+in conjunction with @ref{MakeCatalog}), please see
+@url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}.
+
+Data is inherently mixed with noise: only mock/simulated datasets are free
+of noise. So this process of separating signal from noise is not
+trivial. In particular, most scientifically interesting astronomical
+targets are faint, can have a large variety of morphologies along with a
+large distribution in brightness and size which are all drowned in a ocean
+of noise. So detection is a uniquely vital aspect of any scientific work
+and even more so for astronomical research. This is such a fundamental step
+that designing of NoiseChisel was the primary motivation behind creating
+Gnuastro: the first generation of Gnuastro's programs were all first part
+of what later became NoiseChisel, afterwards they spinned-off into separate
+programs.
+
+Before using NoiseChisel it is strongly recommended to read
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} to
+gain a good understanding of what it does and how each parameter influences
+the output. Thanks to that paper, there is no more need to continue this
+introduction any further and we can just dive into the details of running
+NoiseChisel in the following sections. However, the paper cannot undergo
+any further updates, but NoiseChisel will evolve: better algorithms or
+steps will be found, thus options will be added or removed. So this section
+is the definitive guide to the options. Please follow the
+@file{NEWS}@footnote{The @file{NEWS} file is in the released Gnuastro
+tarball (see @ref{Release tarball}). You can also see it online at
+@url{http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS}.} file with
+each release to see how they have changed since the publication of that
+paper.
+
+@cindex Erosion
+The name of NoiseChisel is derived from the first thing it does after
+thresholding the dataset: to erode it. In mathematical morphology, erosion
+on pixels can be pictured as carving off boundary pixels. Hence, what
+NoiseChisel does is similar to what a wood chisel or stone chisel do. It is
+just not a hardware, but a software. Infact looking at it as a chisel and
+your dataset as a solid cube of rock will greatly help in best using it:
+with NoiseChisel you literally carve the galaxies/stars/comets out of the
+noise. Try running it with the @option{--checkdetection} option to see each
+step of the carving process on your input dataset. You can then change a
+specific option to carve out your signal out of the noise more
+successfully.
 
 @menu
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
@@ -11956,7 +11985,9 @@ or stone chisel do. It is just not a hardware but software.
 @node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
 @subsection Invoking NoiseChisel
 
-NoiseChisel will detect signal in noise. The executable name is
+NoiseChisel will detect and segment signal in noise producing a
+multi-extension labeled image, ready for input into @ref{MakeCatalog} to
+generate a catalog or other processing. The executable name is
 @file{astnoisechisel} with the following general template
 
 @example
@@ -11968,142 +11999,208 @@ One line examples:
 
 @example
 $ astnoisechisel input.fits
-$ astnoisechisel --nch1=4 --lmesh=256 input.fits
+$ astnoisechisel --numchannels=4,1 --tilesize=100,100 input.fits
 @end example
 
 @cindex Gaussian
 @noindent
-If NoiseChisel is to do processing, an input image should be provided with
-the recognized extensions as input data, see @ref{Arguments}.  The options
-that are shared by all Gnuastro programs can be seen in @ref{Common
-options}. In order to ignore some pixels during the analysis, you can use
-Gnuastro's @ref{Arithmetic} program to set them as blank (see @ref{Blank
-pixels}). Any blank pixel is ignored by all the steps of NoiseChisel.
+If NoiseChisel is to do processing (for example you don't want to get help,
+or see the values to each input parameter), an input image should be
+provided with the recognized extensions (see @ref{Arguments}).  NoiseChisel
+shares a large set of common operations with other Gnuastro programs,
+mainly regarding input/output, general processing steps, and general
+operating modes. To help in a unified experience between all of Gnuastro's
+programs, these operations have the same command-line options, see
+@ref{Common options} for a full list. Since the common options are
+thoroughly discussed there, they are no longer reviewed here. You can see
+all the options with a short description on the command-line with the
+@option{--help} option, see @ref{Getting help}.
 
-A convolution kernel can also be optionally given. If a value (file
-name) is given to @option{--kernel} on the command-line or in a
-configuration file (see @ref{Configuration files}), then that file
-will be used to convolve the image prior to thresholding. Otherwise a
-default kernel will be used. The default kernel is a 2D Gaussian with
-a FWHM of 2 pixels truncated at 5 times the FWHM. See Section 3.1.1 of
-Akhlaghi and Ichikawa (2015) to learn why this particular kernel was
-chosen as default. See @ref{Convolution kernel} for kernel related
-options.
+NoiseChisel's input image may contain blank elements (see @ref{Blank
+pixels}). Blank elements will be ignored in all steps of NoiseChisel. Hence
+if your dataset has bad pixels which should be masked with a mask image,
+please use Gnuastro's @ref{Arithmetic} program (in particular its
+@command{where} operator) to convert those pixels to blank pixels before
+running NoiseChisel. Gnuastro's Arithmetic program has bitwise operators
+helping you select specific kinds of bad-pixels when necessary.
 
-NoiseChisel uses a mesh grid to tile the image. This enables it to deal
-with possible gradients, see @ref{Tessellation}. The mesh grid options are
-common to all the programs using it, and are listed in @ref{Processing
-options}. In particular, NoiseChisel uses two mesh grids: a large and a
-small one. The sizes of the meshs in each grid can be specified with the
-following two options (the @option{--meshsize} option is not recognized by
-NoiseChisel). The rest of the options explained in @ref{Processing options}
-apply to both grids.
+A convolution kernel can also be optionally given. If a value (file name)
+is given to @option{--kernel} on the command-line or in a configuration
+file (see @ref{Configuration files}), then that file will be used to
+convolve the image prior to thresholding. Otherwise a default kernel will
+be used. The default kernel is a 2D Gaussian with a FWHM of 2 pixels
+truncated at 5 times the FWHM. This choice of the default kernel is
+discussed in Section 3.1.1 of @url{https://arxiv.org/abs/1505.01664,
+Akhlaghi and Ichikawa [2015]}. See @ref{Convolution kernel} for kernel
+related options.
 
-@table @option
+NoiseChisel defines two tessellations over the input (see
+@ref{Tessellation}). This enables it to deal with possible gradients in the
+input dataset and also significantly improve speed by processing each tile
+on different threads. The tessellation related options are discussed in
+@ref{Processing options}. In particular, NoiseChisel uses two tessellations
+(with everything between them identical except the tile sizes): a
+fine-grained one with smaller tiles (mainly used in detection) and a more
+larger tiled one which is used for multi-threaded processing. The common
+Tessellation options discribed in @ref{Processing options} define all
+parameters of both tessellations, only the large tile size for the latter
+tessellation is set through the @option{--largetilesize} option. To inspect
+the tessellations on your input dataset, run NoiseChisel with
+@option{--checktiles}.
 
-@item -s
-@itemx --smeshsize
-Similar to @option{--meshsize} in @ref{Processing options}, but for the
-smaller mesh grid, which is most dependent on the gradients in the
-image.
-
-@item -l
-@itemx --lmeshsize
-Similar to @option{--meshsize} in @ref{Processing options}, but for the
-larger mesh grid, used for detection and segmentation Signal to noise
-ratio analysis.
-
-@end table
-
+@cartouche
 @noindent
-Please run NoiseChisel with the @option{--help} option to list all the
-recognized options with a short explanation, irrespective of which
-part of the Gnuastro book they are fully explained in, see
-@ref{Getting help}.
+@strong{Usage TIP:} Frequently use the options starting with
+@option{--check}. Depending on what you want to detect in the data, you can
+often play with the paramters/options for a better result than the default
+parameters. You can start with @option{--checkdetection} and
+@option{--checksegmentation} for the main steps. For their full list please
+run:
+@example
+$ astnoisechisel --help | grep check
+@end example
+@end cartouche
 
+In the sections below, NoiseChisel's options are classified into three
+general classes to help in easy navigation. @ref{General NoiseChisel
+options} mainly discusses the options relating to input and those that are
+shared in both detection and segmentation. Options to configure the
+detection are described in @ref{Detection options} and @ref{Segmentation
+options} we discuss how you can fine-tune the segmentation of the
+detections. Finally in @ref{NoiseChisel output} the format of NoiseChisel's
+output is discussed. The order of options here follow the same logical
+order that the respective action takes place within NoiseChisel (note that
+the output of @option{--help} is sorted alphabetically).
 
 @menu
-* NoiseChisel options::         The options specific to NoiseChisel.
-* NoiseChisel output::          NoiseChisel's output. Why no catalog?
+* General NoiseChisel options::  General NoiseChisel preprocessing.
+* Detection options::           Configure detection in NoiseChisel.
+* Segmentation options::        Configure segmentation in NoiseChisel.
+* NoiseChisel output::          NoiseChisel's output format.
 @end menu
 
-@node NoiseChisel options, NoiseChisel output, Invoking astnoisechisel, Invoking astnoisechisel
-@subsubsection NoiseChisel options
-The options particular to NoiseChisel are listed below. They are
-classified by context and also sorted in the same order that the
-operations are done on the image. See Akhlaghi and Ichikawa (2015) for
-a very complete, detailed and illustrated explanation of each
-step. Reading through the option explanations should be enough to
-obtain a general idea of how NoiseChisel works. Before the procedures
-explained by these options begin, the image is convolved with a
-kernel. The first group of options listed below are those that apply
-to both the detection and the segmentation processes.
+@node General NoiseChisel options, Detection options, Invoking astnoisechisel, Invoking astnoisechisel
+@subsubsection General NoiseChisel options
+
+The options discussed in this section are mainly regarding the input(s),
+output, and some general processing options that are shared between both
+detection and segmentation. Recall that you can always see the full list of
+Gnuastro's options with the @option{--help} option.
+
 @table @option
+
+@item -k STR
+@itemx --kernel=STR
+File name of kernel to smooth the image before applying the threshold, see
+@ref{Convolution kernel}. The first step of NoiseChisel is to
+convolve/smooth the image and use the convolved image in multiple steps
+during the processing. It will be used to define (and later apply) the
+quantile threshold (see @option{--qthresh}). The convolved image is also
+used to define the clumps (see Section 3.2.1 and Figure 8 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}).
+
+The @option{--kernel} option is not mandatory. If no kernel is provided, a
+2D Gaussian profile with a FWHM of 2 pixels truncated at 5 times the FWHM
+is used. This choice of the default kernel is discussed in Section 3.1.1 of
+Akhlaghi and Ichikawa [2015].
+
+@item --khdu=STR
+HDU containing the kernel in the file given to the @option{--kernel}
+option.
 
 @item -E
 @itemx --skysubtracted
-If this option is called, it is assumed that the image has already
-been sky subtracted once. Knowing if the sky has already been
-subtracted once or not is very important in estimating the Signal to
-noise ratio of the detections and clumps. In short an extra
-@mymath{\sigma_{sky}^2} must be added in the error (noise or
-denominator in the Signal to noise ratio) for every flux value that is
-present in the calculation. This can be interpreted as the error in
-measuring that sky value when it was subtracted by any other
-program. See Section 3.3 in Akhlaghi and Ichikawa (2015) for a
-complete explanation.
+If this option is called, it is assumed that the image has already been sky
+subtracted once. Knowing if the sky has already been subtracted once or not
+is very important in estimating the Signal to noise ratio of the detections
+and clumps. In short an extra @mymath{\sigma_{sky}^2} must be added in the
+error (noise or denominator in the Signal to noise ratio) for every flux
+value that is present in the calculation. This can be interpreted as the
+error in measuring that sky value when it was subtracted by any other
+program. See Section 3.3 in @url{https://arxiv.org/abs/1505.01664, Akhlaghi
+and Ichikawa [2015]}) for a complete explanation.
 
 @item -B FLT
-@itemx --minbfrac=FLT
-Minimum fraction (value between 0 and 1) of blank (undetected) area in a
-mesh for it to be considered in measuring the following properties.
+@itemx --minskyfrac=FLT
+Minimum fraction (value between 0 and 1) of sky (undetected) areas in a
+tile for it to be considered in measuring the following detection and
+segmentation properties.
 
 @itemize
 
 @item
-Measuring the Signal to noise ratio of false detections during the
-false detection removal.
+Measuring the Signal to noise ratio of false detections during the false
+detection removal on small tiles.
 
 @item
-Measuring the sky value (average of undetected pixels). Both before
-the removal of false detections and after it.
+Measuring the sky value (average of undetected pixels) on small tiles. Both
+before the removal of false detections and after it.
 
 @item
-Clump Signal to noise ratio in the blank regions.
+Clump Signal to noise ratio in the sky regions of large files.
 
 @end itemize
 
-Because of the PSF, astronomical objects, other than cosmic rays,
-never have a clear cutoff and commonly sink into the noise very
-slowly. Even below the very low thresholds used by NoiseChisel. So
-when a large fraction of the area of one mesh is covered by
-detections, it is very probable that their faint wings are present in
-the undetected regions. Therefore, to get an accurate measurement of
-the above parameters over the full mesh grid, meshs that harbor too
-many detected regions should be excluded.
+Because of the PSF and their intrinsic amorphous properties, astronomical
+objects (except cosmic rays) never have a clear cutoff and commonly sink
+into the noise very slowly. Even below the very low thresholds used by
+NoiseChisel. So when a large fraction of the area of one mesh is covered by
+detections, it is very plausible that their faint wings are present in the
+undetected regions (hence causing a bias in any measurement). To get an
+accurate measurement of the above parameters over the tessellation, tiles
+that harbor too many detected regions should be excluded. The used tiles
+are visible in the respective @option{--check} option of the given step.
 
 @item --minnumfalse=INT
-The minimum number of `psudo-detections' (in identifying false detections)
-or clumps (in identifying false clumps) in each large mesh grid. If their
-number is less than this value, this mesh will be left blank and filled
-during mesh interpolation.
+The minimum number of `pseudo-detections' (to identify false initial
+detections) or clumps (to identifying false clumps) found over the
+un-detected regions to identify a Signal-to-Noise ratio threshold.
 
-The Signal to noise ratio of false detections and clumps in each mesh
-is found using the quantile of the Signal to noise ratio distribution
-of the psudo-detections and clumps over the undetected pixels in each
-mesh. If the number of Signal to noise ratio measurements in each mesh
-is not enough, the quantile will not be accurate. For example if you
-set @option{--detquant=0.99} (or the top 1 percent), then it is best
-to have at least 100 Signal to noise ratio measurements.
+The Signal to noise ratio (S/N) of false pseudo-detections and clumps in
+each tile is found using the quantile of the S/N distribution of the
+psudo-detections and clumps over the undetected pixels in each mesh. If the
+number of S/N measurements is not large enough, the quantile will not be
+accurate (can have large scatter). For example if you set
+@option{--detquant=0.99} (or the top 1 percent), then it is best to have at
+least 100 S/N measurements.
 
-@end table
+@item -L INT[,INT]
+@itemx --largetilesize=INT[,INT]
+The size of each tile for the tessellation with the larger tile
+sizes. Except for the tile size, all the other parameters for this
+tessellation are taken from the common options described in @ref{Processing
+options}. The format is identical to that of the @option{--tilesize} option
+that is discussed in that section.
 
+@item --onlydetection
+If this option is called, no segmentation will be done and the output will
+only have four extensions (no clumps extension, see @ref{NoiseChisel
+output}). The second extension of the output is not going to be objects but
+raw detections (a large region will be given one label): labeling is only
+done based on connectivity. The last two extensions of the output will be
+the Sky and its Standard deviation.
 
-@noindent
-Detection is the process of separating the pixels in the image into
-two groups: 1) Signal and 2) Noise. Through the parameters below, you
-can customize the detection process in NoiseChisel.
-@table @option
+This option can result in faster processing when only the noise properties
+of the image are desired for a catalog using another image's labels for
+example. A common case is when you want to measure colors or SEDs in
+several images. Let's say you have images in two colors: A and B. For
+simplicity also assume that they are exactly on the same position in the
+sky with the same pixel scale.
+
+You choose to set A as a reference, so you run the NoiseChisel fully on
+A. Then you run NoiseChisel on B with @option{--onlydetection} since you
+only need the noise properties of B (for the signal to noise column in its
+catalog). You can then run MakeCatalog on A normally, see
+@ref{MakeCatalog}. To run MakeCatalog on B, you simply set the object and
+clump labels images to those that NoiseChisel produced for A, see
+@ref{Invoking astmkcatalog}.
+
+@item --grownclumps
+In the output (see @ref{NoiseChisel output}) store the grown clumps (or
+full detected region if only one clump was present in that detection). By
+default the original clumps are stored as the third extension of the
+output, if this option is called, it is replaced with the grown clump
+labels.
 
 @item --continueaftercheck
 Continue NoiseChisel after any of the options starting with
@@ -12111,12 +12208,26 @@ Continue NoiseChisel after any of the options starting with
 are many checks, allowing to inspect the status of the processing. The
 results of each step affect the next steps of processing, so, when you are
 want to check the status of the processing at one step, the time spent to
-complete NoiseChisel is just wasted time. As a result, by default, when you
-use any of the NoiseChisel options that start with @option{--check},
-NoiseChisel will abort once all the desired extensions (steps of the
-processign) to the file have been written into it. With this option, you
-can disable this behavior and ask NoiseChisel to continue with the rest of
-the processing.
+complete NoiseChisel is just wasted/distracting time.
+
+To encourage easier experimentation with the option values, when you use
+any of the NoiseChisel options that start with @option{--check},
+NoiseChisel will abort once all the desired check file(s) is (are)
+completed. If you call the @option{--continueaftercheck} option, you can
+disable this behavior and ask NoiseChisel to continue with the rest of the
+processing after completeting the check file(s).
+
+@end table
+
+@node Detection options, Segmentation options, General NoiseChisel options, Invoking astnoisechisel
+@subsubsection Detection options
+
+Detection is the process of separating the pixels in the image into two
+groups: 1) Signal and 2) Noise. Through the parameters below, you can
+customize the detection process in NoiseChisel. Recall that you can always
+see the full list of Gnuastro's options with the @option{--help} option.
+
+@table @option
 
 @item -r FLT
 @itemx --mirrordist=FLT
@@ -12134,32 +12245,39 @@ tiles that satisfy this mode and median difference.
 @item -t FLT
 @itemx --qthresh=FLT
 The quantile threshold to apply to the convolved image. The detection
-process begins with applying a quantile threshold to each of the small mesh
-grid elements, see @ref{Tessellation}. The quantile is only calculated for
-those meshs that don't have any significant signal within them, see
-@ref{Quantifying signal in a tile}.
+process begins with applying a quantile threshold to each of the tiles in
+the small tessellation. The quantile is only calculated for tiles that
+don't have any significant signal within them, see @ref{Quantifying signal
+in a tile}. Interpolation is then used to give a value to the un-successful
+tiles and it is finally smoothed.
 
 @cindex Quantile
 @cindex Binary image
 @cindex Foreground pixels
 @cindex Background pixels
-The quantile value is a floating point value between 0 and 1. Assume
-that we have sorted the @mymath{N} data elements of a distribution
-(the pixels in each mesh on the convolved image). The quantile
-(@mymath{q}) of this distribution is the value of the element with an
-index of (the nearest integer to) @mymath{q\times{N}} in the sorted
-data set. After thresholding is complete, we will have a binary (two
-valued) image. The pixels above the threshold are known as foreground
-pixels (have a value of 1) while those which lie below the threshold
-are known as background (have a value of 0).
+The quantile value is a floating point value between 0 and 1. Assume that
+we have sorted the @mymath{N} data elements of a distribution (the pixels
+in each mesh on the convolved image). The quantile (@mymath{q}) of this
+distribution is the value of the element with an index of (the nearest
+integer to) @mymath{q\times{N}} in the sorted data set. After thresholding
+is complete, we will have a binary (two valued) image. The pixels above the
+threshold are known as foreground pixels (have a value of 1) while those
+which lie below the threshold are known as background (have a value of 0).
+
+@item --smoothwidth=INT
+Width of flat kernel used to smooth the interpolated quantile thresholds,
+see @option{--qthresh} for more.
 
 @cindex NaN
 @item --checkqthresh
 Check the quantile threshold values on the mesh grid. A file suffixed with
-@file{_qthresh.fits} will be created, see @ref{Tessellation}. With this
-option, NoiseChisel will abort as soon as quantile estimation has been
-completed, allowing you to inspect the status. This behavior can be
-disabled with @option{--continueaftercheck}.
+@file{_qthresh.fits} will be created showing each step. With this option,
+NoiseChisel will abort as soon as quantile estimation has been completed,
+allowing you to inspect the steps leading to the final quantile threshold,
+this can be disabled with @option{--continueaftercheck}. By default the
+output will have the same pixel size as the input, but with the
+@option{--oneelempertile} option, only one pixel will be used for each tile
+(see @ref{Processing options}).
 
 @item -e INT
 @itemx --erode=INT
@@ -12237,22 +12355,25 @@ must be an integer.
 
 @item --checkdetsky
 Check the initial approximation of the sky value and its standard deviation
-in a FITS file ending with @file{_detsky.fits}. See @ref{Tessellation} for
-more information. If @option{--oneelempertile} is not called (see
-@ref{Processing options}), then the first extension will be the the binary
-image with initial detections labeled one and background labeled zero. The
-mesh values will be in the subsequent extensions.
+in a FITS file ending with @file{_detsky.fits}. With this option,
+NoiseChisel will abort as soon as the sky value used for defining
+pseudo-detections is complete. This allows you to inspect the steps leading
+to the final quantile threshold, this behavior can be disabled with
+@option{--continueaftercheck}. By default the output will have the same
+pixel size as the input, but with the @option{--oneelempertile} option,
+only one pixel will be used for each tile (see @ref{Processing options}).
 
 @item -R FLT
 @itemx --dthresh=FLT
 The detection threshold: a multiple of the initial sky standard deviation
-added with the initial sky approximation. This flux threshold is applied to
-the initially undetected regions on the unconvolved image. The background
-pixels that are completely engulfed in a 4-connected foreground region are
-converted to background (holes are filled) and one opening (depth of 1) is
-applied over both the initially detected and undetected regions. The Signal
-to noise ratio of the resulting `psudo-detections' are used to identify
-true vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
+added with the initial sky approximation (which you can inspect with
+@option{--checkdetsky}). This flux threshold is applied to the initially
+undetected regions on the unconvolved image. The background pixels that are
+completely engulfed in a 4-connected foreground region are converted to
+background (holes are filled) and one opening (depth of 1) is applied over
+both the initially detected and undetected regions. The Signal to noise
+ratio of the resulting `psudo-detections' are used to identify true
+vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
 Ichikawa (2015) for a very complete explanation.
 
 @item -i INT
@@ -12266,21 +12387,20 @@ psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
 @item --checkdetsn
-Save the S/N values of the pseudo-detections into a file ending with
-@file{_detsn.txt}. You can use these to inspect the values/distribution,
-you can use the histogram creating feature of @ref{Statistics} to make a
-histogram of the distribution (ready for plotting in a text file, or a
-crude ASCII-art demonstration on the command-line).
+Save the S/N values of the pseudo-detections into two files ending with
+@file{_detsn_sky.XXX} and @file{_detsn_det.XXX}. The @file{.XXX} is
+determined from the @option{--tableformat} option (see @ref{Input output
+options}, for example @file{.txt} or @file{.fits}). You can use these to
+inspect the S/N values and their distribution (in combination with the
+@option{--checkdetection} option to see where the pseudo-detections are).
+You can use Gnuastro's @ref{Statistics} to make a histogram of the
+distribution (ready for plotting in a text file, or a crude ASCII-art
+demonstration on the command-line).
 
-You can use this for an empirical way to estimate the best
-@option{--detsnminarea} value for your dataset. A good minimum area results
-in the histogram having a sharp drop towards the higher S/Ns. In other
-words, when there is a prominent peak in the histogram and the last few
-bins have less than 10 (an arbitrary number, meaning very few!)
-pseudo-detections. When the minimum area is too large or too small, the
-slope of the histogram in the higher S/N bins will not be too sharp with
-the very high S/N bins having a large number of objects and the peak being
-less significant.
+With this option, NoiseChisel will abort as soon as the two tables are
+created. This allows you to inspect the steps leading to the final quantile
+threshold, this behavior can be disabled with
+@option{--continueaftercheck}.
 
 @item -c FLT
 @itemx --detquant=FLT
@@ -12300,114 +12420,93 @@ never have a clear cutoff, so all the 8-pixels connected to the border
 pixels of a detection might harbor data.
 
 @item --checkdetection
-Every step of the detection process will be added as an extension to a
-file with the suffix @file{_det.fits}. Going through each would just
-be a repeat of the explanations above and also of those in Akhlaghi
-and Ichikawa (2015). The extension label should be sufficient to
-recognize which step you are observing. Viewing all the steps can be
-the best guide in choosing the best set of parameters. Note that
-calling this function will significantly slow NoiseChisel. Normally
-the detection steps are done in parallel, but to show you each step
-individually, the parallel processing has to be halted and restarted
-multiple times. Below are some notes that might be useful in
-interpreting certain steps, beyond the paper.
-
-@itemize
-@item
-Going from the first ``Labeled'' extension (for the background
-pseudo-detections, which shows the labeled pseudo-detections) to the
-next extension (``For S/N''), with a relatively low @option{--dthresh}
-value, you will notice that a lot of the large area pseudo-detections
-are removed and not used in calculating the S/N threshold. The main
-reason for this is that they overlap with possible detections. You can
-check by going to the next extension and seeing how there are
-detections there. The filled holes have been covering initial
-detections. If you have many such cases, it might be a good sign that
-your @option{--dthresh} value is too low.
-@end itemize
+Every step of the detection process will be added as an extension to a file
+with the suffix @file{_det.fits}. Going through each would just be a repeat
+of the explanations above and also of those in Akhlaghi and Ichikawa
+(2015). The extension label should be sufficient to recognize which step
+you are observing. Viewing all the steps can be the best guide in choosing
+the best set of parameters. With this option, NoiseChisel will abort as
+soon as a snapshot of all the detection process is saved. This behavior can
+be disabled with @option{--continueaftercheck}.
 
 @item --checksky
-Check the final sky and its standard deviation values on the mesh
-grid. Similar to @option{--checkdetectionsky}.
-
-@item --checkmaskdet
-Mask (set to NaN) the undetected pixels in one extension and the
-detected pixels in the next extension of a file ending with
-@file{_maskdet.fits}.
+Check the derivation of the final sky and its standard deviation values on
+the mesh grid. With this option, NoiseChisel will abort as soon as the sky
+value is estimated over the image (on each tile). This behavior can be
+disabled with @option{--continueaftercheck}. By default the output will
+have the same pixel size as the input, but with the
+@option{--oneelempertile} option, only one pixel will be used for each tile
+(see @ref{Processing options}).
 
 @end table
 
-@noindent
-Segmentation is the process of possibly breaking up a detection into
-multiple objects and clumps. In deep surveys segmentation becomes
-particularly important since galaxies might fall along the same line
-of sight or they might be merging. It is thus very important to be
-able separate the pixels within a detection if it is necessary. After
-segmentation, such a detected region will get different labels.
 
-In NoiseChisel, segmentation is done by first finding the `true'
-clumps over a detection and then expanding those clumps to a certain
-flux limit. True clumps are found in a process very similar to the
-true detections explained above, see Akhlaghi and Ichikawa (2015) for
-more information. If the connections between the grown clumps are
-weaker than a given threshold, the grown clumps are considered to be
-separate objects. Otherwise, the are considered to be part of the same
-object.
+@node Segmentation options, NoiseChisel output, Detection options, Invoking astnoisechisel
+@subsubsection Segmentation options
+
+Segmentation is the process of (possibly) breaking up a detection into
+multiple segments (technically called @emph{objects} and @emph{clumps} in
+NoiseChisel). In deep surveys segmentation becomes particularly important
+because we will be detecting more diffuse flux so galaxy images are going
+to overlap more. It is thus very important to be able separate the pixels
+within a detection.
+
+In NoiseChisel, segmentation is done by first finding the `true' clumps
+over a detection and then expanding those clumps to a certain flux
+limit. True clumps are found in a process very similar to the true
+detections explained in @ref{Detection options}, see
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} for more
+information. If the connections between the grown clumps are weaker than a
+given threshold, the grown clumps are considered to be separate objects.
 
 @table @option
-
-@item --onlydetect
-If this option is called, no segmentation will be done. The object
-labels extension in the output will simply be the detection (connected
-components) labels and the clumps image will be blank (see
-@ref{NoiseChisel output}).
-
-This option can result in faster processing when only the noise
-properties of the image are desired for a catalog using another
-image's labels. A common case is when you want to measure colors or
-SEDs in several images. Let's say you have images in two colors: A and
-B. For simplicity also assume that they are exactly on the same
-position in the sky with the same pixel scale.
-
-You choose to set A as a reference, so you run the full NoiseChisel on
-A. Then you run NoiseChisel on B with this option since you only need
-the noise properties of B (for the signal to noise column in its
-catalog). You can then run MakeCatalog on A normally, see
-@ref{MakeCatalog}. To run MakeCatalog on B, you simply set the object
-and clump labels images to those that NoiseChisel produced for A, see
-@ref{Invoking astmkcatalog}.
 
 @item -m INT
 @itemx --segsnminarea=INT
 The minimum area which a clump in the undetected regions should have in
 order to be considered in the clump Signal to noise ratio measurement. If
 this size is set to a small value, the Signal to noise ratio of false
-clumps will not be accurately found. Note that this has to be larger than
-the value to @option{--detsnminarea}. Because the clumps are found on the
-convolved (smoothed) image while the psudo-detections are found on the
-input image. Use @option{--clumpsnhistnbins} to check if this value is
-reasonable or not.
+clumps will not be accurately found. It is recommended that this value be
+larger than the value to @option{--detsnminarea}. Because the clumps are
+found on the convolved (smoothed) image while the psudo-detections are
+found on the input image. You can use @option{--checkclumpsn} and
+@option{--checksegmentation} to see if your chosen value is reasonable or
+not.
 
-@item --clumpsnhistnbins=INT
-Similar to @option{--detsnhistnbins} (see there for more explanations), but
-for the distribution of the S/N of clumps over the undetected regions. The
-relevant parameter to check here is be @option{--segsnminarea}.
+@item --checkclumpsn
+Save the S/N values of the clumps into two files ending with
+@file{_clumpsn_sky.XXX} and @file{_clumpsn_det.XXX}. The @file{.XXX} is
+determined from the @option{--tableformat} option (see @ref{Input output
+options}, for example @file{.txt} or @file{.fits}). You can use these to
+inspect the S/N values and their distribution (in combination with the
+@option{--checksegmentation} option to see where the clumps are). You can
+use Gnuastro's @ref{Statistics} to make a histogram of the distribution
+(ready for plotting in a text file, or a crude ASCII-art demonstration on
+the command-line).
+
+With this option, NoiseChisel will abort as soon as the two tables are
+created. This allows you to inspect the steps leading to the final S/N
+quantile threshold, this behavior can be disabled with
+@option{--continueaftercheck}.
 
 @item -g FLT
 @itemx --segquant=FLT
 The quantile of the noise clump Signal to noise ratio distribution. This
-value is used to identify true clumps over the detected regions.
+value is used to identify true clumps over the detected regions. You can
+get the full distribution of clumps S/Ns over the undetected areas with the
+@option{--checkclumpsn} option and see them with
+@option{--checksegmentation}.
 
 @item -v
 @itemx --keepmaxnearriver
-Keep a clump whose maximum flux is 8-connected to a river pixel. By
-default such clumps over detections are considered to be noise and are
-removed irrespective of their brightness (see @ref{Flux Brightness and
-magnitude}). Over large profiles, that sink into the noise very
-slowly, noise can cause part of the profile (which was flat without
-noise) to become a very large and with a very high Signal to noise
-ratio. In such cases, the pixel with the maximum flux in the clump
-will be immediately touching a river pixel.
+Keep a clump whose maximum flux is 8-connected to a river pixel. By default
+such clumps over detections are considered to be noise and are removed
+irrespective of their brightness (see @ref{Flux Brightness and
+magnitude}). Over large profiles, that sink into the noise very slowly,
+noise can cause part of the profile (which was flat without noise) to
+become a very large and with a very high Signal to noise ratio. In such
+cases, the pixel with the maximum flux in the clump will be immediately
+touching a river pixel.
 
 @item -G FLT
 @itemx --gthresh=FLT
@@ -12415,13 +12514,6 @@ Threshold (multiple of the sky standard deviation added with the sky) to
 stop growing true clumps. Once true clumps are found, they are set as the
 basis to segment the detected region. They are grown until the threshold
 specified by this option.
-
-@item --grownclumps
-In the output (see @ref{NoiseChisel output}) store the grown clumps
-(or full detected region if only one clump was present in that
-detection). By default the original clumps are stored as the third
-extension of the output, if this option is called, it is replaced with
-the grown clump labels.
 
 @item -y INT
 @itemx --minriverlength=INT
@@ -12458,18 +12550,22 @@ identified from the noise characteristics of the image, so you don't
 have to give any hand input Signal to noise ratio.
 
 @item --checksegmentation
-A file with the suffix @file{_seg.fits} will be created. This file
-keeps all the relevant steps in finding true clumps and segmenting the
-detections in various extensions. Having read the paper or the steps
-above, the extension name should be enough to understand which step
-each extension is showing. Examining this file can be an excellent guide
-in choosing the best set of parameters. Note that calling this
-function will significantly slow NoiseChisel.
+A file with the suffix @file{_seg.fits} will be created. This file keeps
+all the relevant steps in finding true clumps and segmenting the detections
+into multiple objects in various extensions. Having read the paper or the
+steps above. Examining this file can be an excellent guide in choosing the
+best set of parameters. Note that calling this function will significantly
+slow NoiseChisel. In verbose mode (without the @option{--quiet} option, see
+@ref{Operating mode options}) the important steps (along with their
+extension names) will also be reported.
+
+With this option, NoiseChisel will abort as soon as the two tables are
+created. This behavior can be disabled with @option{--continueaftercheck}.
 
 @end table
 
 
-@node NoiseChisel output,  , NoiseChisel options, Invoking astnoisechisel
+@node NoiseChisel output,  , Segmentation options, Invoking astnoisechisel
 @subsubsection NoiseChisel output
 
 The default name and directory of the outputs are explained in
@@ -12497,18 +12593,22 @@ very easy.
 @end itemize
 
 @item
-The object labels. Each pixel in the input image is given a label in
-this extension, the labels start from one. The total number of labels
-is stored as the value to the @code{NOBJS} keyword in the header of
-this extension. It is also printed in verbose mode.
+The object/detection labels. Each pixel in the input image is given a label
+in this extension, the labels start from one. If the
+@option{--onlydetection} option is given, each large connected part of the
+image has one label. Without that option, this extension is going to show
+the labels of the objects that are found after segmentation. The total
+number of labels is stored as the value to the @code{NOBJS}/@code{NDETS}
+keyword in the header of this extension. This number is also printed in
+verbose mode.
 
 @item
-The clump labels. All the pixels in the input image that belong to a
-true clump are given a positive label in this extension. The detected
-regions that were not a clump are given a negative value to clearly
-identify the noise from the detections. The total number of clumps in
-this image is stored in the @code{NCLUMPS} keyword of this extension
-and printed in verbose output.
+The clump labels when @option{--onlydetection} is not called. All the
+pixels in the input image that belong to a true clump are given a positive
+label in this extension. The detected regions that were not a clump are
+given a negative value to clearly identify the sky noise from the diffuse
+detections. The total number of clumps in this image is stored in the
+@code{NCLUMPS} keyword of this extension and printed in verbose output.
 
 If the @option{--grownclumps} option is called, or a value of @code{1}
 is given to it in any of the configuration files, then instead of the

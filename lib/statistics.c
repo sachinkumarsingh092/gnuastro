@@ -705,7 +705,7 @@ mode_golden_section(struct statistics_mode_params *p)
 
 
 /* Once the mode is found, we need to do a quality control. This quality
-   control is the measure of its symmetricity. Lets assume the mode index
+   control is the measure of its symmetricity. Let's assume the mode index
    is at `m', since an index is just a count, from the Poisson
    distribution, the error in `m' is sqrt(m).
 
@@ -719,7 +719,7 @@ mode_golden_section(struct statistics_mode_params *p)
    a completly symmetric mode, this should be 1. Note that the search for
    `b` only goes to the 95% of the distribution.  */
 #define MODE_SYM(IT) {                                                  \
-    IT *a=p->data->array, af, bf, mf, fi;                               \
+    IT *a=p->data->array, af=0, bf=0, mf=0, fi;                         \
                                                                         \
     /* Set the values at the mirror and at `a' (see above). */          \
     mf=a[m];                                                            \
@@ -758,9 +758,10 @@ mode_golden_section(struct statistics_mode_params *p)
     if(bi==0) bi=topi;                                                  \
                                                                         \
     bf = *(IT *)b_val = a[bi];                                          \
-    /* printf("%f, %f, %f\n", af, mf, bf); */                           \
+    /*printf("%zu: %f,%f,%f\n", m, (double)af, (double)mf, (double)bf);*/ \
                                                                         \
-    return (bf-mf)/(mf-af);                                             \
+    /* For a bad result, return 0 (which will not output any mode). */  \
+    return bf==af ? 0 : (bf-mf)/(mf-af);                                \
   }
 static double
 mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
@@ -847,6 +848,12 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   p.data=gal_statistics_no_blank_sorted(input, inplace);
 
 
+  /* It can happen that the whole array is blank. In such cases,
+     `p.data->size==0', so set all output elements to NaN and return. */
+  oa=out->array;
+  if(p.data->size==0) { oa[0]=oa[1]=oa[2]=oa[3]=NAN; return out; }
+
+
   /* Basic constants. */
   p.tolerance    = 0.01;
   p.mirrordist   = mirrordist;
@@ -876,7 +883,6 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   /* Do the golden-section search iteration, read the mode value from the
      input array and save it as the first element of the output dataset's
      array, then free the `mode' structure. */
-  oa=out->array;
   modeindex = mode_golden_section(&p);
   gal_data_copy_element_same_type(p.data, modeindex, mode->array);
   mode=gal_data_copy_to_new_type_free(mode, GAL_TYPE_FLOAT64);
@@ -1195,16 +1201,14 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
      `noblank'.*/
   if( gal_blank_present(contig) )
     {
-      if(inplace)                     /* If we can free the input, then */
-        {                             /* just remove the blank elements */
-          gal_blank_remove(contig);    /* in place. */
-          noblank=contig;
-        }
-      else
-        {
-          noblank=gal_data_copy(contig);   /* We aren't allowed to touch */
-          gal_blank_remove(noblank);       /* the input, so make a copy. */
-        }
+      /* See if we should allocate a new dataset to remove blanks or if we
+         can use the actual contiguous patch of memory. */
+      noblank = inplace ? contig : gal_data_copy(contig);
+      gal_blank_remove(noblank);
+
+      /* If we are working in place, then remove the blank flag. */
+      if(inplace)
+        noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
     }
   else noblank=contig;
 

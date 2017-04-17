@@ -73,13 +73,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "minbfrac",
-      ARGS_OPTION_KEY_MINBFRAC,
+      "minskyfrac",
+      ARGS_OPTION_KEY_MINSKYFRAC,
       "FLT",
       0,
       "Min. fraction of undetected area in tile.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->minbfrac,
+      &p->minskyfrac,
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
@@ -120,13 +120,13 @@ struct argp_option program_options[] =
 
     /* Output options. */
     {
-      "onlydetect",
-      ARGS_OPTION_KEY_ONLYDETECT,
+      "onlydetection",
+      ARGS_OPTION_KEY_ONLYDETECTION,
       0,
       0,
-      "Don't do any segmentation.",
+      "Stop at the end of detection.",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &p->onlydetect,
+      &p->onlydetection,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -426,19 +426,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "segquant",
-      ARGS_OPTION_KEY_SEGQUANT,
-      "FLT",
-      0,
-      "S/N Quantile of true sky clumps.",
-      ARGS_GROUP_SEGMENTATION,
-      &p->segquant,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
       "checkclumpsn",
       ARGS_OPTION_KEY_CHECKCLUMPSN,
       0,
@@ -449,6 +436,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "segquant",
+      ARGS_OPTION_KEY_SEGQUANT,
+      "FLT",
+      0,
+      "S/N Quantile of true sky clumps.",
+      ARGS_GROUP_SEGMENTATION,
+      &p->segquant,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {

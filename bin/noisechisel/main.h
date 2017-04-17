@@ -49,10 +49,10 @@ struct noisechiselparams
   char            *kernelname;  /* Input kernel filename.                 */
   char                  *khdu;  /* Kernel HDU.                            */
   uint8_t       skysubtracted;  /* Input has been Sky subtracted before.  */
-  float              minbfrac;  /* Undetected area min. frac. in tile.    */
+  float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
 
-  uint8_t          onlydetect;  /* Do not do any segmentation.            */
+  uint8_t       onlydetection;  /* Do not do any segmentation.            */
   uint8_t         grownclumps;  /* Save grown clumps instead of original. */
   uint8_t  continueaftercheck;  /* Don't abort after the check steps.     */
 
@@ -77,8 +77,8 @@ struct noisechiselparams
   uint8_t            checksky;  /* Check the Sky value estimation.        */
 
   size_t         segsnminarea;  /* Minimum area for segmentation.         */
-  float              segquant;  /* Quantile of clumps in sky for true S/N.*/
   uint8_t        checkclumpsn;  /* Save the clump S/N values to a file.   */
+  float              segquant;  /* Quantile of clumps in sky for true S/N.*/
   uint8_t    keepmaxnearriver;  /* Keep clumps with a peak near a river.  */
   float               gthresh;  /* Multiple of STD to stop growing clumps.*/
   size_t       minriverlength;  /* Min, len of good grown clump rivers.   */

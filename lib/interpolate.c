@@ -282,6 +282,40 @@ interpolate_close_neighbors_on_thread(void *in_prm)
 
 
 
+/* When no interpolation is needed, then we can just copy the input into
+   the output. */
+static gal_data_t *
+interpolate_copy_input(gal_data_t *input, int aslinkedlist)
+{
+  gal_data_t *tin, *tout;
+
+  /* Make a copy of the first input. */
+  tout=gal_data_copy(input);
+  tout->next=NULL;
+
+  /* If we have a linked list, copy each element. */
+  if(aslinkedlist)
+    {
+      /* Note that we have already copied the first input. */
+      for(tin=input->next; tin!=NULL; tin=tin->next)
+        {
+          /* Copy this dataset (will also copy flags). */
+          tout->next=gal_data_copy(tin);
+          tout=tout->next;
+        }
+
+      /* Output is the reverse of the input, so reverse it. */
+      gal_data_reverse_ll(&tout);
+    }
+
+  /* Return the copied list. */
+  return tout;
+}
+
+
+
+
+
 /* Interpolate blank values in an array. If the `tl!=NULL', then it is
    assumed that the tile values correspond to given tessellation. Such that
    `input[i]' corresponds to `tiles[i]' in the tessellation. */
@@ -291,11 +325,18 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                                 size_t numneighbors, size_t numthreads,
                                 int onlyblank, int aslinkedlist)
 {
-  char *name;
   gal_data_t *tin, *tout;
   struct interpolate_params prm;
   size_t ngbvnum=numthreads*numneighbors;
   int permute=(tl && tl->totchannels>1 && tl->workoverch);
+
+
+  /* If there are no blank values in the array we should only fill blank
+     values, then simply copy the input and abort. */
+  if( (input->flag | GAL_DATA_FLAG_BLANK_CH)     /* Zero bit is meaningful.*/
+      && !(input->flag | GAL_DATA_FLAG_HASBLANK) /* There are no blanks.   */
+      && onlyblank )                             /* Only interpolate blank.*/
+    return interpolate_copy_input(input, aslinkedlist);
 
 
   /* Initialize the constant parameters. */
@@ -330,11 +371,9 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
 
   /* Allocate space for the (first) output. */
-  name = input->name ? gal_checkset_malloc_cat("INTRP_", input->name) : NULL;
   prm.out=gal_data_alloc(NULL, input->type, input->ndim, input->dsize,
-                         input->wcs, 0, input->minmapsize, name, input->unit,
-                         NULL);
-  free(name);
+                         input->wcs, 0, input->minmapsize, NULL,
+                         input->unit, NULL);
   gal_linkedlist_add_to_vll(&prm.ngb_vals,
                             gal_data_malloc_array(input->type, ngbvnum));
 
@@ -354,12 +393,9 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                 "`gal_interpolate_close_neighbors'");
 
         /* Allocate the output array for this node. */
-        name = ( tin->name
-                 ? gal_checkset_malloc_cat("INTRP_", tin->name) : NULL );
         gal_data_add_to_ll(&prm.out, NULL, tin->type, tin->ndim, tin->dsize,
-                           tin->wcs, 0, tin->minmapsize, name, tin->unit,
+                           tin->wcs, 0, tin->minmapsize, NULL, tin->unit,
                            NULL);
-        if(name) free(name);
 
         /* Allocate the space for the neighbor values of this input. */
         gal_linkedlist_add_to_vll(&prm.ngb_vals,
@@ -388,6 +424,15 @@ gal_interpolate_close_neighbors(gal_data_t *input,
       gal_permutation_apply_inverse(input, tl->permutation);
       for(tout=prm.out; tout!=NULL; tout=tout->next)
         gal_permutation_apply_inverse(tout, tl->permutation);
+    }
+
+
+  /* The interpolated array doesn't have blank values. So set the blank
+     flag to 0 and set the use-zero to 1. */
+  for(tout=prm.out; tout!=NULL; tout=tout->next)
+    {
+      tout->flag |= GAL_DATA_FLAG_BLANK_CH;
+      tout->flag &= ~GAL_DATA_FLAG_HASBLANK;
     }
 
 

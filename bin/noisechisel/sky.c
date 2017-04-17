@@ -93,7 +93,7 @@ sky_mean_std_undetected(void *in_prm)
 
       /* Only continue, if the fraction of Sky values are less than the
          requested fraction. */
-      if( (float)(numsky)/(float)(tile->size) > p->minbfrac)
+      if( (float)(numsky)/(float)(tile->size) > p->minskyfrac)
         {
           /* Calculate the mean and STD over this tile. */
           s=s2=0.0f;

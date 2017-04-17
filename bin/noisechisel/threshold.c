@@ -53,26 +53,39 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**********************************************************************/
 /***************        Apply a given threshold.      *****************/
 /**********************************************************************/
-void
-threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
-                int type)
+struct threshold_apply_p
 {
-  size_t tid;
+  float               *value1;
+  float               *value2;
+  int                    kind;
+  struct noisechiselparams *p;
+};
+
+
+
+
+/* Apply the threshold on the tiles given to this thread. */
+static void *
+threshold_apply_on_thread(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct threshold_apply_p *taprm=(struct threshold_apply_p *)(tprm->params);
+  struct noisechiselparams *p=taprm->p;
+
+  size_t i, tid;
   void *tarray=NULL;
   gal_data_t *tile, *tblock=NULL;
+  float *value1=taprm->value1, *value2=taprm->value2;
 
-  /* Clear the binary array (this is mainly because the input may contain
-     blank values and we won't be doing the thresholding no those
-     pixels. */
-  memset(p->binary->array, 0, p->binary->size);
-
-  /* Go over all the tiles. */
-  for(tid=0; tid<p->cp.tl.tottiles; ++tid)
+  /* Go over all the tiles assigned to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
     {
       /* For easy reading. */
+      tid=tprm->indexs[i];
       tile=&p->cp.tl.tiles[tid];
 
-      switch(type)
+      /* Based on the kind of threshold. */
+      switch(taprm->kind)
         {
 
         /* This is a quantile threshold. */
@@ -86,12 +99,23 @@ threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
               tile->block=p->conv;
             }
 
-          /* Apply the threshold. */
+          /* Apply the threshold: When the `>' comparison fails, it can be
+             either because the pixel was actually smaller than the
+             threshold, or that it was a NaN value. In the first case,
+             return 0, in the second, return a blank value.
+
+             We already know if a tile contains a blank value (which is a
+             constant over the whole loop). So before checking if the value
+             is blank, see if the tile actually has a blank value. This
+             will help in efficiency, because the compiler can move this
+             check out of the loop and only check for NaN values when we
+             know the tile has blank pixels. */
           GAL_TILE_PARSE_OPERATE({
               *o = ( *i > value1[tid]
                      ? ( *i > value2[tid] ? THRESHOLD_NO_ERODE_VALUE : 1 )
-                     : 0 );
-            }, tile, p->binary, 1, 1);
+                     : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
+                         ? GAL_BLANK_UINT8 : 0 ) );
+            }, tile, p->binary, 1, 0);
 
           /* Revert the tile's pointers back to what they were. */
           if(p->conv) { tile->array=tarray; tile->block=tblock; }
@@ -101,19 +125,14 @@ threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
         /* This is a Sky and Sky STD threshold. */
         case THRESHOLD_SKY_STD:
 
-          /* The threshold is always low. So for the majority of non-NaN
-             pixels in the image, the condition above will be true. If we
-             come over a NaN pixel, then by definition of NaN, all
-             conditionals will fail.
-
-             If an image doesn't have any NaN pixels, only the pixels below
-             the threshold have to be checked for a NaN which are by
-             definition a very small fraction of the total pixels. And if
-             there are NaN pixels in the image. */
+          /* See the explanation above the same step in the quantile
+             threshold for an explanation. */
           GAL_TILE_PARSE_OPERATE({
               *o = ( ( *i - value1[tid] > p->dthresh * value2[tid] )
-                     ? 1 : *i==*i ? 0 : GAL_BLANK_UINT8 );
-            }, tile, p->binary, 1, 1);
+                     ? 1
+                     : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
+                         ? GAL_BLANK_UINT8 : 0 ) );
+            }, tile, p->binary, 1, 0);
           break;
 
 
@@ -121,11 +140,28 @@ threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
           error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
                 "address the problem. For some reason a value of %d had "
                 "been given to `type' in `threshold_apply'",
-                PACKAGE_BUGREPORT, type);
+                PACKAGE_BUGREPORT, taprm->kind);
         }
     }
+
+  /* Wait until all the other threads finish. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
 }
 
+
+
+
+
+/* Apply a given threshold threshold on the tiles. */
+void
+threshold_apply(struct noisechiselparams *p, float *value1,
+                float *value2, int kind)
+{
+  struct threshold_apply_p taprm={value1, value2, kind, p};
+  gal_threads_spin_off(threshold_apply_on_thread, &taprm, p->cp.tl.tottiles,
+                       p->cp.numthreads);
+}
 
 
 
@@ -235,10 +271,12 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
   (*first)->next=(*second)->next=NULL;
   if(filename)
     {
+      (*first)->name="THRESH1_INTERP";
+      (*second)->name="THRESH2_INTERP";
       gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
       gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+      (*first)->name = (*second)->name = NULL;
     }
-
 
   /* Smooth the threshold if requested. */
   if(p->smoothwidth>1)
@@ -258,8 +296,11 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
       /* Add them to the check image. */
       if(filename)
         {
+          (*first)->name="THRESH1_SMOOTH";
+          (*second)->name="THRESH2_SMOOTH";
           gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
           gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+          (*first)->name = (*second)->name = NULL;
         }
     }
 }
@@ -421,27 +462,37 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   /* Allocate space for the quantile threshold values. */
   qprm.erode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                tl->numtiles, NULL, 0, cp->minmapsize,
-                               "QTHRESH-ERODE", p->input->unit, NULL);
+                               NULL, p->input->unit, NULL);
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
-                                 "QTHRESH-NOERODE", p->input->unit, NULL);
+                                 NULL, p->input->unit, NULL);
 
 
   /* Allocate temporary space for processing in each tile. */
   qprm.usage=gal_data_malloc_array(p->input->type,
                                    cp->numthreads * p->maxtcontig);
 
-  /* Find the threshold on each tile, then clean up the temporary space. */
+
+  /* Find the threshold on each tile, free the temporary processing space
+     and set the blank flag. */
   qprm.p=p;
   gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
+  free(qprm.usage);
+  if( gal_blank_present(qprm.erode_th) )
+    {
+      qprm.erode_th->flag   |= GAL_DATA_FLAG_HASBLANK;
+      qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+    }
   if(p->qthreshname)
     {
+      qprm.erode_th->name="QTHRESH_ERODE";
+      qprm.noerode_th->name="QTHRESH_NOERODE";
       gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname,
                                  PROGRAM_STRING);
       gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname,
                                  PROGRAM_STRING);
+      qprm.erode_th->name = qprm.noerode_th->name = NULL;
     }
-  free(qprm.usage);
 
 
   /* Interpolate and smooth the derived values. */

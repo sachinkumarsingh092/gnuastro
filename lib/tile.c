@@ -358,8 +358,22 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
                         0, block->minmapsize, tilevalues->name,
                         tilevalues->unit, tilevalues->comment);
 
-  /* If requested, initialize `tofill'. */
+  /* If requested, initialize `tofill', otherwise it is assumed that the
+     full area of the output is covered by the tiles. */
   if(initialize) gal_blank_initialize(tofill);
+  else
+    {
+      /* Copy the flags. */
+      tofill->flag=tilevalues->flag;
+
+      /* If we have more than one dimension, then remove the possibly
+         sorted flags. */
+      if(block->ndim>1)
+        {
+          tofill->flag &= ~GAL_DATA_FLAG_SORTED_I;
+          tofill->flag &= ~GAL_DATA_FLAG_SORTED_D;
+        }
+    }
 
   /* Go over the tiles and write the values in. Note Recall that `tofill'
      has the same type as `tilevalues'. So we are using memcopy. */
@@ -422,6 +436,8 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
                                                   tile->array, block->type),
                                 other->type);
 }
+
+
 
 
 
@@ -657,7 +673,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       tiles[i].array=gal_data_ptr_increment(block->array, tind, block->type);
 
       /* Set the sizes of the tile. */
-      tiles[i].size=1;
+      tiles[i].size=1; /* Just an initializer, will be changed. */
       tiles[i].ndim=input->ndim;
       tiles[i].minmapsize=input->minmapsize;
       tiles[i].dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T,input->ndim);
@@ -683,6 +699,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       /* Set the block structure for this tile to the `input', and set the
          next pointer as the next tile. Note that only when we are dealing
          with the last tile should the `next' pointer be set to NULL.*/
+      tiles[i].flag  = 0;
       tiles[i].block = input;
       tiles[i].next  = i==numtiles-1 ? NULL : &tiles[i+1];
 
@@ -1112,6 +1129,46 @@ gal_tile_full_id_from_coord(struct gal_tile_two_layer_params *tl,
   /* Return the tile ID. */
   return ( chid * tl->tottilesinch
            + gal_dimension_coord_to_index(tl->ndim, tl->numtilesinch, tile) );
+}
+
+
+
+
+
+/* To use within `gal_tile_full_blank_bit'. */
+static void *
+tile_full_blank_flag(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  gal_data_t *tile_ll=(gal_data_t *)(tprm->params);
+
+  size_t i;
+  gal_data_t *tile;
+
+  /* Check all the tiles given to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+    {
+      tile=&tile_ll[ tprm->indexs[i] ];
+      if( gal_blank_present(tile) )
+        tile->flag |= GAL_DATA_FLAG_HASBLANK;
+    }
+
+  /* Wait for all the other threads to finish. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
+/* Update the blank flag on the tiles within the list of input tiles. */
+void
+gal_tile_full_blank_flag(gal_data_t *tile_ll, size_t numthreads)
+{
+  /* Go over all the tiles and update their blank flag. */
+  gal_threads_spin_off(tile_full_blank_flag, tile_ll,
+                       gal_data_num_in_ll(tile_ll), numthreads);
 }
 
 

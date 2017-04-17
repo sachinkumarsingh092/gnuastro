@@ -56,7 +56,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 static void
 segmentation_relab_noseg(struct clumps_thread_params *cltprm)
 {
-  uint32_t *olabel=cltprm->clprm->p->olabel->array;
+  int32_t *olabel=cltprm->clprm->p->olabel->array;
   size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
   do olabel[ *s ] = 1; while(++s<sf);
 }
@@ -92,11 +92,11 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
   float *imgss=p->input->array;
   uint8_t *adjacency=adjacency_d->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
-  uint32_t *clumptoobj, *olabel=p->olabel->array;
+  int32_t *clumptoobj, *olabel=p->olabel->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   size_t *s, *sf, i, j, ii, rpnum, *nums=nums_d->array;
   double ave, rpsum, c=sqrt(1/p->cpscorr), *sums=sums_d->array;
-  uint32_t *ngblabs=gal_data_malloc_array(GAL_TYPE_UINT32, nngb);
+  int32_t *ngblabs=gal_data_malloc_array(GAL_TYPE_UINT32, nngb);
   double err=cltprm->std*cltprm->std*(p->skysubtracted?1.0f:2.0f);
 
 
@@ -113,7 +113,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
     if( olabel[ *s ]==CLUMPS_RIVER )
       {
         /* Initialize the values. */
-        ii=0;
+        i=ii=0;
         rpnum=1;              /* River-pixel number of points used. */
         rpsum=imgss[*s];      /* River-pixel sum of values used.    */
         memset(ngblabs, 0, nngb*sizeof *ngblabs);
@@ -121,7 +121,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
         /* Check all the fully-connected neighbors of this pixel and see if
            it touches a label or not */
         GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, ndim, dinc, {
-            if( olabel[nind] && olabel[nind] < CLUMPS_MAXLAB )
+            if( olabel[nind] > 0 )
               {
                 /* Add this neighbor's value and increment the number. */
                 if( !isnan(imgss[nind]) ) { ++rpnum; rpsum+=imgss[nind]; }
@@ -189,23 +189,26 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
 
 
   /* For a check:
-  printf("=====================\n");
-  printf("%zu:\n--------\n", cltprm->id);
-  for(i=1;i<amwidth;++i)
+  if(cltprm->id==XXX)
     {
-      printf(" %zu...\n", i);
-      for(j=1;j<amwidth;++j)
+      printf("=====================\n");
+      printf("%zu:\n--------\n", cltprm->id);
+      for(i=1;i<amwidth;++i)
         {
-          ii=i*amwidth+j;
-          if(nums[ii])
+          printf(" %zu...\n", i);
+          for(j=1;j<amwidth;++j)
             {
-              ave=sums[ii]/nums[ii];
-              printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f "
-                     "--> %u\n", j, nums[ii], sums[ii], c*ave/sqrt(ave+err),
-                       adjacency[ii]);
+              ii=i*amwidth+j;
+              if(nums[ii])
+                {
+                  ave=sums[ii]/nums[ii];
+                  printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f "
+                         "--> %u\n", j, nums[ii], sums[ii],
+                         c*ave/sqrt(ave+err), adjacency[ii]);
+                }
             }
+          printf("\n");
         }
-      printf("\n");
     }
   */
 
@@ -215,11 +218,21 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
                                                       &cltprm->numobjects);
   clumptoobj = cltprm->clumptoobj->array;
 
+  /* For a check
+  if(cltprm->id==XXXX)
+    {
+      printf("NUMTRUECLUMPS: %zu\n----------\n", cltprm->numtrueclumps);
+      for(i=0;i<cltprm->numtrueclumps+1;++i)
+        printf("\t%zu --> %d\n", i, clumptoobj[i]);
+      printf("=== numobjects: %zu====\n", cltprm->numobjects);
+      exit(0);
+    }
+  */
 
   /* Correct all the labels. */
   sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
   do
-    if( olabel[*s]<CLUMPS_MAXLAB )
+    if( olabel[*s] > 0 )
       olabel[*s] = clumptoobj[ olabel[*s] ];
   while(++s<sf);
 
@@ -243,18 +256,18 @@ segmentation_relab_clumps_in_objects(struct clumps_thread_params *cltprm)
 {
   size_t numobjects=cltprm->numobjects, numtrueclumps=cltprm->numtrueclumps;
 
-  uint32_t *clumptoobj=cltprm->clumptoobj->array;
-  uint32_t *clabel=cltprm->clprm->p->clabel->array;
+  int32_t *clumptoobj=cltprm->clumptoobj->array;
+  int32_t *clabel=cltprm->clprm->p->clabel->array;
   size_t i, *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
   size_t *nclumpsinobj=gal_data_calloc_array(GAL_TYPE_SIZE_T, numobjects+1);
-  uint32_t *newlabs=gal_data_calloc_array(GAL_TYPE_UINT32, numtrueclumps+1);
+  int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_UINT32, numtrueclumps+1);
 
   /* Fill both arrays. */
   for(i=1;i<numtrueclumps+1;++i)
     newlabs[i] = ++nclumpsinobj[ clumptoobj[i] ];
 
   /* Reset the clump labels over the detection region. */
-  do if(clabel[*s]) clabel[*s] = newlabs[ clabel[*s] ]; while(++s<sf);
+  do if(clabel[*s]>0) clabel[*s] = newlabs[ clabel[*s] ]; while(++s<sf);
 
   /* Clean up. */
   free(newlabs);
@@ -276,7 +289,7 @@ static void
 segmentation_relab_overall(struct clumps_thread_params *cltprm)
 {
   struct clumps_params *clprm=cltprm->clprm;
-  uint32_t startinglab, *olabel=clprm->p->olabel->array;
+  int32_t startinglab, *olabel=clprm->p->olabel->array;
   size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
 
   /* Lock the mutex if we are working on more than one thread. NOTE: it is
@@ -332,7 +345,7 @@ segmentation_on_threads(void *in_prm)
   size_t i, *s, *sf;
   gal_data_t *topinds;
   struct clumps_thread_params cltprm;
-  uint32_t *clabel=p->clabel->array, *olabel=p->olabel->array;
+  int32_t *clabel=p->clabel->array, *olabel=p->olabel->array;
 
   /* Initialize the general parameters for this thread. */
   cltprm.clprm   = clprm;
@@ -433,7 +446,7 @@ segmentation_on_threads(void *in_prm)
             {
               sf=(s=cltprm.indexs->array)+cltprm.indexs->size;
               do
-                if(olabel[*s]<CLUMPS_MAXLAB) clabel[*s]=olabel[*s];
+                if(olabel[*s]>0) clabel[*s]=olabel[*s];
               while(++s<sf);
             }
 
@@ -474,7 +487,7 @@ segmentation_on_threads(void *in_prm)
           if(cltprm.numobjects>1)
             segmentation_relab_clumps_in_objects(&cltprm);
           gal_data_free(cltprm.clumptoobj);
-          if(clprm->step==6) continue;
+          if(clprm->step==6) {continue;}
         }
 
       /* Convert the object labels to their final value */
@@ -497,7 +510,7 @@ segmentation_save_sn_table(struct clumps_params *clprm)
 {
   char *msg;
   float *sarr;
-  uint32_t *oiarr, *cioarr;
+  int32_t *oiarr, *cioarr;
   size_t i, j, c=0, totclumps=0;
   gal_data_t *sn, *objind, *clumpinobj;
   struct noisechiselparams *p=clprm->p;
@@ -514,10 +527,10 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   sn=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &totclumps, NULL, 0,
                     p->cp.minmapsize, "CLUMP_S/N", "ratio",
                     "Signal-to-noise ratio.");
-  objind=gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &totclumps, NULL, 0,
+  objind=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &totclumps, NULL, 0,
                         p->cp.minmapsize, "HOST_DET_ID", "counter",
                         "ID of detection hosting this clump.");
-  clumpinobj=gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &totclumps, NULL, 0,
+  clumpinobj=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &totclumps, NULL, 0,
                             p->cp.minmapsize, "CLUMP_ID_IN_OBJ", "counter",
                             "ID of clump in host detection.");
 
@@ -576,10 +589,8 @@ static void
 segmentation_detections(struct noisechiselparams *p)
 {
   char *msg;
-  uint8_t *b;
-  uint32_t *l, *lf;
   struct clumps_params clprm;
-  gal_data_t *tmp, *demo, *labindexs, *claborig;
+  gal_data_t *labindexs, *claborig, *demo=NULL;
 
 
   /* Get the indexs of all the pixels in each label. */
@@ -726,13 +737,7 @@ segmentation_detections(struct noisechiselparams *p)
              default values are hard to view, so we'll make a copy of the
              demo, set all Sky regions to blank and all clump macro values
              to zero. */
-          tmp=gal_data_copy(demo);
-          b=p->binary->array; lf=(l=tmp->array)+tmp->size;
-          do *l = ( *b++
-                    ? ( *l > CLUMPS_MAXLAB ? 0 : *l )
-                    : GAL_BLANK_UINT32 );  while(++l<lf);
-          gal_fits_img_write(tmp, p->segmentationname, NULL, PROGRAM_STRING);
-          gal_data_free(tmp);
+          gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_STRING);
 
           /* If the user wanted to check the clump S/N values, then break
              out of the loop, we don't need the rest of the process any
@@ -796,7 +801,7 @@ segmentation(struct noisechiselparams *p)
 {
   float *f;
   char *msg;
-  uint32_t *l, *lf;
+  int32_t *l, *lf;
   struct timeval t1;
 
   /* To keep the user up to date. */
@@ -806,7 +811,6 @@ segmentation(struct noisechiselparams *p)
       gal_timing_report(NULL, "Starting segmentation.",
                         1);
     }
-
 
   /* If a check segmentation image was requested, then put in the
      inputs. */
@@ -820,16 +824,16 @@ segmentation(struct noisechiselparams *p)
       p->olabel->name=NULL;
     }
 
-
   /* Allocate the clump labels image. */
   p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
                            p->olabel->dsize, p->olabel->wcs, 1,
                            p->cp.minmapsize, NULL, NULL, NULL);
+  p->clabel->flag=p->input->flag;
 
 
   /* Set any possibly existing NaN values to blank. */
   f=p->input->array; lf=(l=p->clabel->array)+p->clabel->size;
-  do if(isnan(*f++)) *l=GAL_BLANK_UINT32; while(++l<lf);
+  do if(isnan(*f++)) *l=GAL_BLANK_INT32; while(++l<lf);
 
 
   /* Find the clump S/N threshold. */
@@ -838,11 +842,12 @@ segmentation(struct noisechiselparams *p)
 
   /* Reset the clabel array to find true clumps in objects. */
   f=p->input->array; lf=(l=p->clabel->array)+p->clabel->size;
-  do *l = isnan(*f++) ? GAL_BLANK_UINT32 : 0; while(++l<lf);
+  do *l = isnan(*f++) ? GAL_BLANK_INT32 : 0; while(++l<lf);
 
 
   /* Find true clumps over the detected regions. */
   segmentation_detections(p);
+
 
   /* Report the results and timing to the user. */
   if(!p->cp.quiet)

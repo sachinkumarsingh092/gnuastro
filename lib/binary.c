@@ -345,15 +345,15 @@ gal_binary_open(gal_data_t *input, size_t num, int connectivity,
    through the breadth first search algorithm. `binary' has to have an
    `uint8' datatype and only zero and non-zero values in it will be
    distinguished. The output dataset (which will contain a label on each
-   pixel) maybe already allocated (with type `uint32'). If `*out!=NULL',
-   the labels will be reset to zero before the start and the labels will be
+   pixel) maybe already allocated (with type `int32'). If `*out!=NULL', the
+   labels will be reset to zero before the start and the labels will be
    written into it. If `*out==NULL', the necessary dataset will be
    allocated here and put into it. */
 size_t
 gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
                                 int connectivity)
 {
-  uint32_t *l;
+  int32_t *l;
   uint8_t *b, *bf;
   gal_data_t *lab;
   size_t p, i, curlab=1;
@@ -380,10 +380,10 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
         error(EXIT_FAILURE, 0, "the `binary' and `out' datasets must have "
               "the same size in `gal_binary_connected_components'");
 
-      /* Make sure it has a `uint32' type. */
-      if( lab->type!=GAL_TYPE_UINT32 )
+      /* Make sure it has a `int32' type. */
+      if( lab->type!=GAL_TYPE_INT32 )
         error(EXIT_FAILURE, 0, "the `out' dataset in "
-              "`gal_binary_connected_components' must have `uint32' type"
+              "`gal_binary_connected_components' must have `int32' type"
               "but the array you have given is `%s' type",
               gal_type_to_string(lab->type, 1));
 
@@ -391,7 +391,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
       memset(lab->array, 0, lab->size * gal_type_sizeof(lab->type));
     }
   else
-    lab=*out=gal_data_alloc(NULL, GAL_TYPE_UINT32, binary->ndim,
+    lab=*out=gal_data_alloc(NULL, GAL_TYPE_INT32, binary->ndim,
                             binary->dsize, binary->wcs, 1,
                             binary->minmapsize, NULL, "labels", NULL);
 
@@ -402,7 +402,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   l=lab->array;
   bf=(b=binary->array)+binary->size;
   if( gal_blank_present(binary) )
-    do *l++ = *b==GAL_BLANK_UINT8 ? GAL_BLANK_UINT32 : 0; while(++b<bf);
+    do *l++ = *b==GAL_BLANK_UINT8 ? GAL_BLANK_INT32 : 0; while(++b<bf);
 
 
   /* Go over all the pixels and do a breadth-first: any pixel that is not
@@ -479,11 +479,11 @@ gal_data_t *
 gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                                       size_t *numconnected)
 {
-  uint32_t *newlabs;
   gal_data_t *newlabs_d;
+  int32_t *newlabs, curlab=1;
+  uint8_t *adj=adjacency->array;
   struct gal_linkedlist_sll *Q=NULL;
   size_t i, j, p, num=adjacency->dsize[0];
-  uint8_t *adj=adjacency->array, curlab=1;
 
   /* Some small sanity checks. */
   if(adjacency->type != GAL_TYPE_UINT8)
@@ -503,7 +503,7 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
 
 
   /* Allocate (and clear) the output datastructure. */
-  newlabs_d=gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &num, NULL, 1,
+  newlabs_d=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &num, NULL, 1,
                            adjacency->minmapsize, NULL, NULL, NULL);
   newlabs=newlabs_d->array;
 
@@ -622,6 +622,10 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
   tile->block=inv;
 
 
+  /* Put the input's flags into the inverted array and the tile. */
+  inv->flag = tile->flag = input->flag;
+
+
   /* Fill the central regions. */
   in=input->array;
   GAL_TILE_PARSE_OPERATE({*i = *in==GAL_BLANK_UINT8 ? *in : !*in; ++in;},
@@ -689,7 +693,7 @@ gal_binary_fill_holes(gal_data_t *input)
   tile->array=gal_tile_block_relative_to_other(tile, holelabs);
   tile->block=holelabs; /* has to be after correcting `tile->array'. */
   GAL_TILE_PARSE_OPERATE({
-      *in = *i>1 && *i!=GAL_BLANK_UINT32 ? 1 : *in;
+      *in = *i>1 && *i!=GAL_BLANK_INT32 ? 1 : *in;
       ++in;
     }, tile, NULL, 0, 0);
 

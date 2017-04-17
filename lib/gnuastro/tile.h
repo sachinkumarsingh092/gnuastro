@@ -85,6 +85,8 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other);
 
 
 
+
+
 /***********************************************************************/
 /**************           Tile full dataset         ********************/
 /***********************************************************************/
@@ -146,6 +148,9 @@ gal_tile_full_values_smooth(gal_data_t *tilevalues,
 size_t
 gal_tile_full_id_from_coord(struct gal_tile_two_layer_params *tl,
                             size_t *coord);
+
+void
+gal_tile_full_blank_flag(gal_data_t *tile_ll, size_t numthreads);
 
 void
 gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);

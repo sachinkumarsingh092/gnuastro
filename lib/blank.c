@@ -111,7 +111,23 @@ gal_blank_alloc_write(uint8_t type)
 
 
 
-/* Return 1 if the dataset has a blank value and zero if it doesn't. */
+/* Return 1 if the dataset has a blank value and zero if it doesn't. Before
+   checking the dataset, this function will look at its flags. If the
+   `GAL_DATA_FLAG_HASBLANK' or `GAL_DATA_FLAG_DONT_CHECK_ZERO' bits of
+   `input->flag' are set to 1, this function will not do any check and will
+   just use the information in the flags.
+
+   If you want to re-check a dataset which has non-zero flags, then
+   explicitly set the appropriate flag to zero before calling this
+   function. When there are no other flags, you can just set `input->flags'
+   to zero, otherwise you can use this expression:
+
+       input->flags &= ~ (GAL_DATA_FLAG_HASBLANK | GAL_DATA_FLAG_USE_ZERO);
+
+   This function has no side-effects on the dataset: it will not toggle the
+   flags, to avoid repeating parsing of the full dataset multiple times
+   (when it occurs), please toggle the flags your self after the first
+   check. */
 #define HAS_BLANK(IT) {                                                 \
     IT b, *a=input->array, *af=a+input->size, *start;                   \
     gal_blank_write(&b, block->type);                                   \
@@ -123,10 +139,15 @@ gal_blank_alloc_write(uint8_t type)
     /* Go over all the elements. */                                     \
     while( start_end_inc[0] + increment <= start_end_inc[1] )           \
       {                                                                 \
+        /* Necessary when we are on a tile. */                          \
         if(input!=block)                                                \
           af = ( a = start + increment ) + input->dsize[input->ndim-1]; \
+                                                                        \
+        /* Check for blank values. */                                   \
         if(b==b) do if(*a==b)  return 1; while(++a<af);                 \
         else     do if(*a!=*a) return 1; while(++a<af);                 \
+                                                                        \
+        /* Necessary when we are on a tile. */                          \
         if(input!=block)                                                \
           increment += gal_tile_block_increment(block, input->dsize,    \
                                                 num_increment++, NULL); \
@@ -144,6 +165,12 @@ gal_blank_present(gal_data_t *input)
   /* If there is nothing in the array (its size is zero), then return 0 (no
      blank is present. */
   if(input->size==0) return 0;
+
+  /* From the user's flags, it might not be necessary to go through the
+     dataset any more.  */
+  if( ( input->flag & GAL_DATA_FLAG_HASBLANK )
+      || ( input->flag & GAL_DATA_FLAG_BLANK_CH ) )
+    return input->flag & GAL_DATA_FLAG_HASBLANK;
 
   /* Go over the pixels and check: */
   switch(block->type)
@@ -201,60 +228,68 @@ gal_blank_present(gal_data_t *input)
    type that has a value of 1 for data that are blank and 0 for those that
    aren't. */
 #define FLAG_BLANK(IT) {                                                \
-    IT b, *a=data->array;                                               \
-    gal_blank_write(&b, data->type);                                    \
+    IT b, *a=input->array;                                              \
+    gal_blank_write(&b, input->type);                                   \
     if(b==b) /* Blank value can be checked with the equal comparison */ \
       do { *o = *a==b;  ++a; } while(++o<of);                           \
     else     /* Blank value will fail with the equal comparison */      \
       do { *o = *a!=*a; ++a; } while(++o<of);                           \
   }
 gal_data_t *
-gal_blank_flag(gal_data_t *data)
+gal_blank_flag(gal_data_t *input)
 {
   uint8_t *o, *of;
   gal_data_t *out;
-  char **str=data->array, **strf=str+data->size;
+  char **str=input->array, **strf=str+input->size;
 
-  /* Allocate the output array. */
-  out=gal_data_alloc(NULL, GAL_TYPE_UINT8, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize, data->name, data->unit,
-                     data->comment);
-
-  /* Set the pointers for easy looping. */
-  of=(o=out->array)+data->size;
-
-  /* Go over the pixels and set the output values. */
-  switch(data->type)
+  if( gal_blank_present(input) )
     {
-    /* Numeric types */
-    case GAL_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
-    case GAL_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
-    case GAL_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
-    case GAL_TYPE_INT16:     FLAG_BLANK( int16_t  );    break;
-    case GAL_TYPE_UINT32:    FLAG_BLANK( uint32_t );    break;
-    case GAL_TYPE_INT32:     FLAG_BLANK( int32_t  );    break;
-    case GAL_TYPE_UINT64:    FLAG_BLANK( uint64_t );    break;
-    case GAL_TYPE_INT64:     FLAG_BLANK( int64_t  );    break;
-    case GAL_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
-    case GAL_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
+      /* Allocate a non-cleared output array, we are going to parse the
+         input and fill in each element. */
+      out=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, input->dsize,
+                         input->wcs, 0, input->minmapsize, NULL, "bool",
+                         NULL);
 
-    /* String. */
-    case GAL_TYPE_STRING:
-      do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
-      break;
+      /* Set the pointers for easy looping. */
+      of=(o=out->array)+input->size;
 
-    /* Currently unsupported types. */
-    case GAL_TYPE_BIT:
-    case GAL_TYPE_COMPLEX32:
-    case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "%s type not yet supported in `gal_blank_flag'",
-            gal_type_to_string(data->type, 1));
+      /* Go over the pixels and set the output values. */
+      switch(input->type)
+        {
+          /* Numeric types */
+        case GAL_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
+        case GAL_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
+        case GAL_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
+        case GAL_TYPE_INT16:     FLAG_BLANK( int16_t  );    break;
+        case GAL_TYPE_UINT32:    FLAG_BLANK( uint32_t );    break;
+        case GAL_TYPE_INT32:     FLAG_BLANK( int32_t  );    break;
+        case GAL_TYPE_UINT64:    FLAG_BLANK( uint64_t );    break;
+        case GAL_TYPE_INT64:     FLAG_BLANK( int64_t  );    break;
+        case GAL_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
+        case GAL_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
 
-    /* Bad input. */
-    default:
-      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `gal_blank_flag'", data->type);
+          /* String. */
+        case GAL_TYPE_STRING:
+          do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
+          break;
+
+          /* Currently unsupported types. */
+        case GAL_TYPE_BIT:
+        case GAL_TYPE_COMPLEX32:
+        case GAL_TYPE_COMPLEX64:
+          error(EXIT_FAILURE, 0, "%s type not yet supported in "
+                "`gal_blank_flag'", gal_type_to_string(input->type, 1));
+
+          /* Bad input. */
+        default:
+          error(EXIT_FAILURE, 0, "type value (%d) not recognized "
+                "in `gal_blank_flag'", input->type);
+        }
     }
+  else
+    /* Allocate a CLEAR data structure (all zeros). */
+    out=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, input->dsize,
+                       input->wcs, 1, input->minmapsize, NULL, "bool", NULL);
 
   /* Return */
   return out;
@@ -269,43 +304,50 @@ gal_blank_flag(gal_data_t *data)
    the input array, all it does is to shift the blank eleemnts to the end
    and adjust the size elements of the `gal_data_t'. */
 #define BLANK_REMOVE(IT) {                                              \
-    IT b, *a=data->array, *af=a+data->size, *o=data->array;             \
-    if( gal_blank_present(data) )                                       \
-      {                                                                 \
-        gal_blank_write(&b, data->type);                                \
-        if(b==b)       /* Blank value can be be checked with equal. */  \
-          do if(*a!=b)  { ++num; *o++=*a; } while(++a<af);              \
-        else           /* Blank value will fail on equal comparison. */ \
-          do if(*a==*a) { ++num; *o++=*a; } while(++a<af);              \
-      }                                                                 \
-    else num=data->size;                                                \
+    IT b, *a=input->array, *af=a+input->size, *o=input->array;          \
+    gal_blank_write(&b, input->type);                                   \
+    if(b==b)       /* Blank value can be be checked with equal. */      \
+      do if(*a!=b)  { ++num; *o++=*a; } while(++a<af);                  \
+    else           /* Blank value will fail on equal comparison. */     \
+      do if(*a==*a) { ++num; *o++=*a; } while(++a<af);                  \
   }
 void
-gal_blank_remove(gal_data_t *data)
+gal_blank_remove(gal_data_t *input)
 {
   size_t num=0;
 
-  /* Shift all non-blank elements to the start of the array. */
-  switch(data->type)
+  /* This function currently assumes a contiguous patch of memory. */
+  if(input->block && input->ndim!=1 )
+    error(EXIT_FAILURE, 0, "`gal_blank_remove' doesn't currently work on "
+          "tiles in datasets with more dimensions than 1, your input has "
+          "%zu dimensions", input->ndim);
+
+  /* If the dataset doesn't have blank values, then just get the size. */
+  if( gal_blank_present(input) )
     {
-    case GAL_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
-    case GAL_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
-    case GAL_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
-    case GAL_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
-    case GAL_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
-    case GAL_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
-    case GAL_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
-    case GAL_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
-    case GAL_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
-    case GAL_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_blank_remove'", data->type);
+      /* Shift all non-blank elements to the start of the array. */
+      switch(input->type)
+        {
+        case GAL_TYPE_UINT8:    BLANK_REMOVE( uint8_t  );    break;
+        case GAL_TYPE_INT8:     BLANK_REMOVE( int8_t   );    break;
+        case GAL_TYPE_UINT16:   BLANK_REMOVE( uint16_t );    break;
+        case GAL_TYPE_INT16:    BLANK_REMOVE( int16_t  );    break;
+        case GAL_TYPE_UINT32:   BLANK_REMOVE( uint32_t );    break;
+        case GAL_TYPE_INT32:    BLANK_REMOVE( int32_t  );    break;
+        case GAL_TYPE_UINT64:   BLANK_REMOVE( uint64_t );    break;
+        case GAL_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
+        case GAL_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
+        case GAL_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
+        default:
+          error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                "`gal_blank_remove'", input->type);
+        }
     }
+  else num=input->size;
 
   /* Adjust the size elements of the dataset. */
-  data->ndim=1;
-  data->dsize[0]=data->size=num;
+  input->ndim=1;
+  input->dsize[0]=input->size=num;
 }
 
 

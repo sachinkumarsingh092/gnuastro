@@ -92,9 +92,9 @@ detection_initial(struct noisechiselparams *p)
       p->binary->name=NULL;
     }
 
-
   /* Correct the no-erode values. */
-  bf=(b=p->binary->array)+p->binary->size; do *b = *b>0; while(++b<bf);
+  bf=(b=p->binary->array)+p->binary->size;
+  do *b = *b==THRESHOLD_NO_ERODE_VALUE ? 1 : *b; while(++b<bf);
 
 
   /* Do the opening. */
@@ -108,12 +108,11 @@ detection_initial(struct noisechiselparams *p)
       free(msg);
     }
 
-
   /* Label the connected components. */
   p->numinitialdets=gal_binary_connected_components(p->binary, &p->olabel, 1);
   if(p->detectionname)
     {
-      p->olabel->name="OPENED-LABELED";
+      p->olabel->name="OPENED_AND_LABELED";
       gal_fits_img_write(p->olabel, p->detectionname, NULL, PROGRAM_STRING);
       p->olabel->name=NULL;
     }
@@ -154,15 +153,22 @@ detection_initial(struct noisechiselparams *p)
 static void
 detection_pseudo_sky_or_det(struct noisechiselparams *p, uint8_t *w, int s0d1)
 {
-  uint32_t *l=p->olabel->array;
+  int32_t *l=p->olabel->array;
   uint8_t *b=p->binary->array, *bf=b+p->binary->size;
 
   if(s0d1)
-    /* Set all sky regions (label equal to zero) to zero. */
+    /* Set all sky regions (label equal to zero) to zero, since a blank
+       pixel is also non-zero, we don't need to check for blanks in this
+       case. */
     do *w++ = *l++ ? *b : 0; while(++b<bf);
   else
-    /* Set all detected pixels (label larger than zero) to blank. */
-    do *w++ = *l++ ? GAL_BLANK_UINT8 : *b; while(++b<bf);
+    /* Set all detected pixels to 1. */
+    do
+      {
+        *w++ = *l ? *l==GAL_BLANK_INT32 ? GAL_BLANK_UINT8 : 1 : *b;
+        ++l;
+      }
+    while(++b<bf);
 }
 
 
@@ -274,7 +280,6 @@ static size_t
 detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
                       gal_data_t *worklab, int s0d1)
 {
-  uint8_t *b, *bf;
   gal_data_t *bin;
   struct fho_params fho_prm={0, NULL, workbin, worklab, p};
 
@@ -356,7 +361,6 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
     gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
                          p->ltl.tottiles, p->cp.numthreads);
 
-
   /* Clean up. */
   free(fho_prm.copyspace);
 
@@ -366,12 +370,13 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
      the blank pixels are the detections. On the Sky image, blank should be
      set to 1 (because we want the detected objects to have the same labels
      as the pseudo-detections that cover them). This will allow us to later
-     remove these pseudo-detections. */
+     remove these pseudo-detections.
   if(s0d1==0)
     {
       bf=(b=workbin->array)+workbin->size;
       do if(*b==GAL_BLANK_UINT8) *b = !s0d1; while(++b<bf);
     }
+  */
   return gal_binary_connected_components(workbin, &worklab, 1);
 }
 
@@ -379,23 +384,23 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
 
 
-#define PSN_EXTNAME "PSEUDOS-FOR-SN"
+
 static gal_data_t *
 detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
-                         size_t num, int s0d1)
+                    size_t num, int s0d1)
 {
   float *snarr;
   uint8_t *flag;
   size_t tablen=num+1;
   gal_data_t *sn, *snind;
-  uint32_t *plabend, *indarr=NULL;
+  int32_t *plabend, *indarr=NULL;
   double ave, err, *xy, *brightness;
   struct gal_linkedlist_stll *comments=NULL;
   size_t ind, ndim=p->input->ndim, xyncols=1+ndim;
   size_t i, *area, counter=0, *dsize=p->input->dsize;
   size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   float *img=p->input->array, *f=p->input->array, *ff=f+p->input->size;
-  uint32_t *plab = worklab->array, *dlab = s0d1 ? NULL : p->olabel->array;
+  int32_t *plab = worklab->array, *dlab = s0d1 ? NULL : p->olabel->array;
 
 
   /* Sanity check. */
@@ -423,17 +428,17 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
                               p->cp.minmapsize, "SIGNAL-TO-NOISE", "ratio",
                               NULL);
   snind      = ( p->checkdetsn==0 ? NULL
-                 : gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &tablen, NULL, 1,
+                 : gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &tablen, NULL, 1,
                                   p->cp.minmapsize, "LABEL", "counter",
                                   NULL) );
-
 
   /* Go over all the pixels and get the necessary information. */
   do
     {
-      /* All this work os only necessary when we are actually on a
-         pseudo-detection label? */
-      if(*plab)
+      /* All this work is only necessary when we are actually on a
+         pseudo-detection label: it is non-zero and not blank. */
+      if(*plab && ( (p->input->flag | GAL_DATA_FLAG_HASBLANK)
+                    && *plab!=GAL_BLANK_INT32 ) )
         {
           /* For Sky pseudo-detections we'll start to see if it has already
              been determined that the object lies over a detected object or
@@ -465,6 +470,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
     }
   while(++f<ff);
 
+
   /* A small sanity check.
   {
     size_t i;
@@ -483,10 +489,11 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
     {
       plabend = (plab=worklab->array) + worklab->size;
       do
-        if( *plab && ( area[*plab]<p->detsnminarea || brightness[*plab]<0) )
+        if( *plab!=GAL_BLANK_INT32
+            && ( area[*plab]<p->detsnminarea || brightness[*plab]<0) )
           *plab=0;
       while(++plab<plabend);
-      worklab->name=PSN_EXTNAME;
+      worklab->name="PSEUDOS-FOR-SN";
       gal_fits_img_write(worklab, p->detectionname, NULL,
                          PROGRAM_STRING);
       worklab->name=NULL;
@@ -496,7 +503,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   /* Calculate the signal to noise for successful detections: */
   snarr=sn->array;
   if(snind) indarr=snind->array;
-  if(s0d1) { snarr[0]=NAN; if(snind) indarr[0]=GAL_BLANK_UINT32; }
+  if(s0d1) { snarr[0]=NAN; if(snind) indarr[0]=GAL_BLANK_INT32; }
   for(i=1;i<tablen;++i)
     {
       ave=brightness[i]/area[i];
@@ -533,7 +540,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
         if(s0d1)
           {
             snarr[i]=NAN;
-            if(snind) indarr[i]=GAL_BLANK_UINT32;;
+            if(snind) indarr[i]=GAL_BLANK_INT32;;
           }
     }
 
@@ -551,8 +558,8 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   if(snind)
     {
       /* Make the comments, then write the table. */
-      gal_linkedlist_add_to_stll(&comments, "See also: `"PSN_EXTNAME"' HDU "
-                                 "of output with `--checkdetection'", 1);
+      gal_linkedlist_add_to_stll(&comments, "See also: `PSEUDOS-FOR-SN' "
+                                 "HDU of output with `--checkdetection'", 1);
       gal_linkedlist_add_to_stll(&comments, s0d1 ? "Pseudo-detection S/N "
                                  "over initially detected regions."
                                  : "Pseudo-detection S/N over initially "
@@ -590,7 +597,7 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
   size_t i;
   float *snarr=sn->array;
   uint8_t *b=workbin->array;
-  uint32_t *l=worklab->array, *lf=l+worklab->size;
+  int32_t *l=worklab->array, *lf=l+worklab->size;
   uint8_t *keep=gal_data_calloc_array(GAL_TYPE_UINT8, sn->size);
 
   /* Specify the new labels for those that must be kept/changed. Note that
@@ -602,8 +609,13 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
 
 
   /* Go over the pseudo-detection labels and only keep those that must be
-     kept (using the new labels). */
-  do *b++ = keep[ *l++ ] > 0; while(l<lf);
+     kept (using the new labels) in the binary array.. */
+  if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
+    do
+      *b++ = *l == GAL_BLANK_INT32 ? GAL_BLANK_UINT8 : keep[ *l ] > 0;
+    while(++l<lf);
+  else
+    do *b++ = keep[ *l ] > 0; while(++l<lf);
 
 
   /* If the user wanted to see the steps. */
@@ -638,6 +650,7 @@ detection_pseudo_real(struct noisechiselparams *p)
   workbin=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
                          p->input->dsize, p->input->wcs, 0, p->cp.minmapsize,
                          NULL, NULL, NULL);
+  workbin->flag=p->input->flag;
 
 
   /* Over the Sky: find the pseudo-detections and make the S/N table. */
@@ -651,7 +664,7 @@ detection_pseudo_real(struct noisechiselparams *p)
   p->detsnthresh = *((float *)(quant->array));
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "Pseudo-det S/N: %.2f (%.3f quant of %zu).",
+      asprintf(&msg, "Pseudo-det S/N: %.2f (%.2f quant of %zu).",
                p->detsnthresh, p->detquant, sn->size);
       gal_timing_report(&t1, msg, 2);
       free(msg);
@@ -703,8 +716,8 @@ detection_remove_false_initial(struct noisechiselparams *p,
 {
   size_t i;
   uint8_t *b=workbin->array;
-  uint32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
-  uint32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
+  int32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
+  int32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
                                             p->numinitialdets+1);
 
   /* Find the new labels for all the existing labels. Recall that
@@ -719,7 +732,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
      array. They are not important so you can just ignore them. */
   do
     {
-      if(*l)
+      if( *l && *l!=GAL_BLANK_INT32 )
         {
           newlabels[ *l ] =
             newlabels[ *l ]     /* Have we already checked this label?    */
@@ -746,7 +759,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
   if(p->dilate)
     do
       {
-        if(*l!=GAL_BLANK_UINT32)
+        if(*l!=GAL_BLANK_INT32)
           *b = newlabels[ *l ] > 0;
         ++b;
       }
@@ -754,7 +767,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
   else                               /* We need the binary array even when */
     do                               /* there is no dilation: the binary   */
       {                              /* array is used for estimating the   */
-        if(*l!=GAL_BLANK_UINT32)     /* Sky and its STD. */
+        if(*l!=GAL_BLANK_INT32)     /* Sky and its STD. */
           *b = ( *l = newlabels[ *l ] ) > 0;
         ++b;
       }

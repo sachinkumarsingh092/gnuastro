@@ -516,7 +516,6 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
                              size_t numthreads, int edgecorrection,
                              int convoverch, gal_data_t *tocorrect)
 {
-  char *name;
   struct spatial_params params;
   gal_data_t *out, *block=gal_tile_block(tiles);
 
@@ -535,12 +534,15 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   if(tocorrect) out=tocorrect;
   else
     {
-      name = ( block->name
-               ? gal_checkset_malloc_cat(block->name, "_CONVOLVED") : NULL );
+      /* Allocate the space for the convolved image. */
       out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, block->ndim, block->dsize,
-                         block->wcs, 0, block->minmapsize, name,
+                         block->wcs, 0, block->minmapsize, NULL,
                          block->unit, NULL);
-      if(name) free(name);
+
+      /* Spatial convolution won't change the blank bit-flag, so use the
+         block structure's blank bit flag. */
+      out->flag = ( block->flag
+                    | ( GAL_DATA_FLAG_BLANK_CH | GAL_DATA_FLAG_HASBLANK ) );
     }
 
 

@@ -841,6 +841,8 @@ ui_preparations(struct statisticsparams *p)
     {
       /* Only keep the elements we want. */
       gal_blank_remove(p->input);
+      p->input->flag &= ~GAL_DATA_FLAG_HASBLANK ;
+      p->input->flag |= GAL_DATA_FLAG_BLANK_CH ;
 
       /* Make sure there is data remaining: */
       if(p->input->size==0)

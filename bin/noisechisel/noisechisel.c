@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/convolve.h>
 
 #include <gnuastro-internal/timing.h>
@@ -61,6 +62,8 @@ noisechisel_convolve(struct noisechiselparams *p)
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   p->conv=gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
                                1, tl->workoverch);
+  gal_checkset_allocate_copy("INPUT_CONVOLVED", &p->conv->name);
+
 
   if(!p->cp.quiet) gal_timing_report(&t1, "Convolved with kernel.", 1);
   if(p->detectionname)
@@ -140,6 +143,145 @@ noisechisel_convolve_correct_ch_edges(struct noisechiselparams *p)
 
 
 /***********************************************************************/
+/*************                   Output                  ***************/
+/***********************************************************************/
+/* The input image has been sky subtracted for further processing. So we'll
+   need to copy the input image directly into the output. */
+static void
+noisechisel_output_copy_input(struct noisechiselparams *p)
+{
+  int status=0;
+  fitsfile *in, *out;
+  char card[FLEN_CARD];
+
+
+  /* Create/open the output file. */
+  out=gal_fits_open_to_write(p->cp.output);
+
+
+  /* Open the input FITS file in the proper extension. */
+  in=gal_fits_hdu_open(p->inputname, p->cp.hdu, READWRITE);
+
+
+  /* Copy the input HDU into the output. */
+  if( fits_copy_hdu(in, out, 0, &status) )
+    gal_fits_io_error(status, "copying input hdu into first output hdu");
+
+
+  /* If an extension name exists in the input HDU, then don't touch it. If
+     the input doesn't have any, then make an EXTNAME keyword for it. Note
+     that `fits_read_card' will return a non-zero if it doesn't find the
+     keyword. */
+  if( fits_read_card(out, "EXTNAME", card, &status) )
+    {
+      status=0;
+      fits_write_key(out, TSTRING, "EXTNAME", "INPUT", "", &status);
+    }
+
+
+  /* Close the two files. */
+  fits_close_file(in, &status);
+  fits_close_file(out, &status);
+}
+
+
+
+
+
+/* Write the output file. */
+static void
+noisechisel_output(struct noisechiselparams *p)
+{
+  struct gal_fits_key_ll *keys=NULL;
+
+  /* Copy the input image into the first extension. */
+  noisechisel_output_copy_input(p);
+
+
+  /* Write the object labels and useful information into it's header. */
+  if(p->onlydetection)
+    {
+      p->olabel->name = "OBJECTS";
+      gal_fits_key_add_to_ll(&keys, GAL_TYPE_SIZE_T, "NDETS", 0,
+                             &p->numobjects, 0, "Total number of detections",
+                             0, "counter");
+    }
+  else
+    {
+      p->olabel->name = "OBJECTS";
+      gal_fits_key_add_to_ll(&keys, GAL_TYPE_STRING, "WCLUMPS", 0, "yes", 0,
+                             "Generate catalog with clumps?", 0, "bool");
+      gal_fits_key_add_to_ll(&keys, GAL_TYPE_SIZE_T, "NOBJS", 0,
+                             &p->numobjects, 0, "Total number of objects",
+                             0, "counter");
+    }
+  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
+                         0, "Minimum S/N of true pseudo-detections", 0,
+                         "ratio");
+  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_STRING);
+  p->olabel->name=NULL;
+  keys=NULL;
+
+
+  /* Write the clumps labels and useful information into it's header. Note
+     that to make the clumps image more easily viewable, we will set all
+     sky pixels to blank. Only clump pixels that have an overlapping object
+     pixel will be use anyway, so the sky pixels are irrelevant. */
+  if(p->onlydetection==0)
+    {
+      p->clabel->name="CLUMPS";
+      gal_fits_key_add_to_ll(&keys, GAL_TYPE_SIZE_T, "NCLUMPS", 0,
+                             &p->numclumps, 0, "Total number of clumps", 0,
+                             "counter");
+      gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
+                             &p->clumpsnthresh, 0,
+                             "Minimum S/N of true clumps", 0, "ratio");
+      gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_STRING);
+      p->clabel->name=NULL;
+      keys=NULL;
+    }
+
+
+  /* Write the Sky image into the output */
+  if(p->sky->name) free(p->sky->name);
+  p->sky->name="SKY";
+  gal_tile_full_values_write(p->sky, &p->cp.tl, p->cp.output, PROGRAM_STRING);
+  p->sky->name=NULL;
+
+
+  /* Write the Sky standard deviation into the output. */
+  p->std->name="SKY_STD";
+  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0,
+                         &p->maxstd, 0, "Maximum raw tile standard deviation",
+                         0, p->input->unit);
+  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0,
+                         &p->minstd, 0, "Minimum raw tile standard deviation",
+                         0, p->input->unit);
+  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0,
+                         &p->medstd, 0, "Median raw tile standard deviation",
+                         0, p->input->unit);
+  gal_tile_full_values_write(p->std, &p->cp.tl, p->cp.output, PROGRAM_STRING);
+  p->std->name=NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
 /*************             High level function           ***************/
 /***********************************************************************/
 void
@@ -158,9 +300,16 @@ noisechisel(struct noisechiselparams *p)
      images. */
   noisechisel_find_sky_subtract(p);
 
-  /* Correct the convolved image channel edges if necessary. */
-  noisechisel_convolve_correct_ch_edges(p);
+  /* If the user only wanted detection, ignore the segmentation steps. */
+  if(p->onlydetection==0)
+    {
+      /* Correct the convolved image channel edges if necessary. */
+      noisechisel_convolve_correct_ch_edges(p);
 
-  /* Do the segmentation. */
-  segmentation(p);
+      /* Do the segmentation. */
+      segmentation(p);
+    }
+
+  /* Write the output. */
+  noisechisel_output(p);
 }

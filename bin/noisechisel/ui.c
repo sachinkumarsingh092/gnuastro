@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 
@@ -470,7 +471,7 @@ ui_prepare_kernel(struct noisechiselparams *p)
 static void
 ui_prepare_tiles(struct noisechiselparams *p)
 {
-  gal_data_t *check;
+  gal_data_t *check, *tile;
   struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
 
 
@@ -506,6 +507,21 @@ ui_prepare_tiles(struct noisechiselparams *p)
         p->maxltcontig=check->size;
         memcpy(p->maxltsize, check->dsize, ltl->ndim*sizeof *p->maxltsize);
       }
+
+
+  /* If the input has blank elements, then go over all the tiles and set
+     their blank flag to 1 if they have blank values within
+     them. Afterwards, set the use-zero flag for the tiles in any case.*/
+  if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
+    {
+      gal_tile_full_blank_flag(tl->tiles,  p->cp.numthreads);
+      gal_tile_full_blank_flag(ltl->tiles, p->cp.numthreads);
+    }
+  for(tile=tl->tiles;tile!=NULL;tile=tile->next)
+    tile->flag |= GAL_DATA_FLAG_BLANK_CH;
+  for(tile=ltl->tiles;tile!=NULL;tile=tile->next)
+    tile->flag |= GAL_DATA_FLAG_BLANK_CH;
+
 
   /* Make the tile check image if requested. */
   if(tl->checktiles)
@@ -551,6 +567,20 @@ ui_preparations(struct noisechiselparams *p)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
 
 
+  /* NoiseChisel currently only works on 2D datasets (images). */
+  if(p->input->ndim!=2)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) has %zu dimensions but NoiseChisel "
+          "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
+          p->input->ndim);
+
+
+  /* Check for blank values to help later processing. AFTERWARDS, set the
+     USE_ZERO flag, so the zero-bit (if the input doesn't have any blank
+     value) will be meaningful. */
+  if( gal_blank_present(p->input) ) p->input->flag |= GAL_DATA_FLAG_HASBLANK;
+  p->input->flag |= GAL_DATA_FLAG_BLANK_CH;
+
+
   /* Read in the kernel for convolution. */
   ui_prepare_kernel(p);
 
@@ -563,9 +593,10 @@ ui_preparations(struct noisechiselparams *p)
   p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
                            p->input->dsize, p->input->wcs, 0,
                            p->cp.minmapsize, NULL, "binary", NULL);
-  p->olabel=gal_data_alloc(NULL, GAL_TYPE_UINT32, p->input->ndim,
+  p->olabel=gal_data_alloc(NULL, GAL_TYPE_INT32, p->input->ndim,
                            p->input->dsize, p->input->wcs, 0,
                            p->cp.minmapsize, NULL, "labels", NULL);
+  p->binary->flag = p->olabel->flag = p->input->flag;
 }
 
 

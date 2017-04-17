@@ -64,27 +64,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /*************          Size and allocation        *******************/
 /*********************************************************************/
-/* Print the contents of any place in memory that `in' points to for `size'
-   bytes. This solution was inspired from:
-
-   http://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format */
-void
-gal_data_bit_print_stream(void *in, size_t size)
-{
-  size_t i;
-  char *byte=in;
-  for(i=0;i<size;++i)
-    printf("%c%c%c%c%c%c%c%c ",
-           (byte[i] & 0x80 ? '1' : '0'), (byte[i] & 0x40 ? '1' : '0'),
-           (byte[i] & 0x20 ? '1' : '0'), (byte[i] & 0x10 ? '1' : '0'),
-           (byte[i] & 0x08 ? '1' : '0'), (byte[i] & 0x04 ? '1' : '0'),
-           (byte[i] & 0x02 ? '1' : '0'), (byte[i] & 0x01 ? '1' : '0') );
-}
-
-
-
-
-
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second)
 {
@@ -325,13 +304,14 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
   /* Do the simple copying cases. For the display elements, set them all to
      impossible (negative) values so if not explicitly set by later steps,
      the default values are used if/when printing.*/
-  data->status=0;
-  data->next=NULL;
-  data->ndim=ndim;
-  data->type=type;
-  data->block=NULL;
-  data->mmapname=NULL;
-  data->minmapsize=minmapsize;
+  data->flag       = 0;
+  data->status     = 0;
+  data->next       = NULL;
+  data->ndim       = ndim;
+  data->type       = type;
+  data->block      = NULL;
+  data->mmapname   = NULL;
+  data->minmapsize = minmapsize;
   gal_checkset_allocate_copy(name, &data->name);
   gal_checkset_allocate_copy(unit, &data->unit);
   gal_checkset_allocate_copy(comment, &data->comment);
@@ -1134,21 +1114,9 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 {
   gal_data_t *out;
 
-  /* Allocate space for the output type */
+  /* Allocate the output datastructure. */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
                      0, in->minmapsize, in->name, in->unit, in->comment);
-
-  /* Set the rest of the values. */
-  out->next=in->next;
-  out->status=in->status;
-  out->disp_width=in->disp_width;
-  out->disp_precision=in->disp_precision;
-
-  /* For debugging.
-  printf("in: %d (%s)\nout: %d (%s)\n\n", in->type,
-         gal_data_type_as_string(in->type, 1), out->type,
-         gal_data_type_as_string(out->type, 1));
-  */
 
   /* Fill in the output array: */
   gal_data_copy_to_new_type_to_allocated(in, out, newtype);
@@ -1161,11 +1129,21 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 
 
 
-/* Copy an array into the already allocated space of `out'. Note this
-   function won't re-allocate the space if the required size is larger. It
-   will abort with an error. If the output's size parameters are larger
-   than the input, then this function will update them to be the same as
-   the input. */
+/* Copy a given dataset (`in') into an already allocated dataset `out' (the
+   actual dataset and its `array' element). The meta-data of `in' will be
+   fully copied into `out' also. `out->size' will be used to find the
+   available space in the allocated space.
+
+   When `in->size != out->size' this function will behave as follows:
+
+      `out->size < in->size': it won't re-allocate the necessary space, it
+          will abort with an error, so please check before calling this
+          function.
+
+      `out->size > in->size': it will update `out->size' and `out->dsize'
+          to be the same as the input. So if you want to re-use a
+          pre-allocated space with varying input sizes, be sure to reset
+          `out->size' before every call to this function. */
 void
 gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
                                        uint8_t newtype)
@@ -1185,6 +1163,12 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
           "dimensions "
           "are %zu and %zu respectively", out->ndim, in->ndim);
 
+  /* Write the constant values. */
+  out->flag=in->flag;
+  out->next=in->next;
+  out->status=in->status;
+  out->disp_width=in->disp_width;
+  out->disp_precision=in->disp_precision;
 
   /* Do the copying. */
   switch(out->type)
@@ -1215,7 +1199,6 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
             "for `out->type' in gal_data_copy_to_new_type", out->type);
     }
 
-
   /* Correct the sizes of the output to be the same as the input. If it is
      equal, there is no problem, if not, the size information will be
      changed, so if you want to use this allocated space again, be sure to
@@ -1228,7 +1211,8 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
 
 
 
-/* Copy the input data structure into a new type  */
+/* Copy the input data structure into a new type and free the allocated
+   space. */
 gal_data_t *
 gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
 {

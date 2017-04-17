@@ -48,5 +48,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img $img - $img / --hdu=0 --hdu=3 --hdu=4    \
+$execname $img $img - $img / --hdu=1 --hdu=4 --hdu=5    \
           --output=snimage.fits
