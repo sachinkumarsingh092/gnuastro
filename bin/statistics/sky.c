@@ -185,8 +185,8 @@ sky(struct statisticsparams *p)
   if(!cp->quiet)
     {
       num=gal_statistics_number(p->sky_t);
-      asprintf(&msg, "Sky and its STD found on %lu/%zu tiles.",
-               *((uint64_t *)(num->array)), tl->tottiles );
+      asprintf(&msg, "Sky and its STD found on %zu/%zu tiles.",
+               (size_t)(*((uint64_t *)(num->array))), tl->tottiles );
       gal_timing_report(&t1, msg, 1);
       gal_data_free(num);
       free(msg);
