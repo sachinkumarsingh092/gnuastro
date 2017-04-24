@@ -29,10 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/mesh.h>
 #include <gnuastro/qsort.h>
-#include <gnuastro/array.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/convolve.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/interpolate.h>

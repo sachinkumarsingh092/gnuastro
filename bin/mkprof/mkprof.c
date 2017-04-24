@@ -32,9 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/box.h>
 #include <gnuastro/git.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>

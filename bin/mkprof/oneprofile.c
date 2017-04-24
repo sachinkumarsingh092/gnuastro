@@ -34,7 +34,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>

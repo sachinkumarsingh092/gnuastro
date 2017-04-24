@@ -31,7 +31,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
 
 #include "main.h"
 

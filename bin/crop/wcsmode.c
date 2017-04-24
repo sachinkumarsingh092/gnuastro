@@ -70,7 +70,7 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
           img->name, p->cp.hdu, img->name, p->cp.hdu);
   if(wcs->pc[0]>0)
     error(EXIT_FAILURE, 0, "%s: HDU %s: An increase in the first "
-          "FITS axis pixel coordinates should be a decrese in the "
+          "FITS axis pixel coordinates should be a decrease in the "
           "RA. You have to flip the image along the second axis "
           "before running Crop", img->name, p->cp.hdu);
   if(wcs->pc[3]<0)

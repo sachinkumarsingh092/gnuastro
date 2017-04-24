@@ -30,7 +30,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/array.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/checkset.h>
