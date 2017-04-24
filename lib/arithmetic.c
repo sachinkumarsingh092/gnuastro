@@ -563,7 +563,7 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
     OT b, *o=out->array, *of=o+out->size;                            \
     if(iftrue->size==1)                                              \
       {                                                              \
-        if( gal_blank_present(iftrue) )                              \
+        if( gal_blank_present(iftrue, 0) )                           \
           {                                                          \
             gal_blank_write(&b, out->type);                          \
             do { *o = *c++ ? b : *o;        } while(++o<of);         \
@@ -979,7 +979,7 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
      list element or not. */
   hasblank=gal_data_malloc_array(GAL_TYPE_UINT8, dnum);
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
-    hasblank[i++]=gal_blank_present(tmp);
+    hasblank[i++]=gal_blank_present(tmp, 0);
 
 
   /* Start the operation. */

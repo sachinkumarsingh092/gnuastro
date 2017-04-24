@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
    start with the inclusion of `config.h' and that `gnuastro/config.h' is
    only created at installation time (not present during the building of
-   Gnuastro).*/
+   Gnuastro). */
 #ifndef IN_GNUASTRO_BUILD
 #include <gnuastro/config.h>
 #endif

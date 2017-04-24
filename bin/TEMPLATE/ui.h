@@ -35,8 +35,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_MULTIVALUE      = 'm',
-  ARGS_OPTION_KEY_ONOFF           = 'O',
+  UI_KEY_MULTIVALUE      = 'm',
+  UI_KEY_ONOFF           = 'O',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

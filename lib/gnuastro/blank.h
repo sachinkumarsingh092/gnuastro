@@ -27,6 +27,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
 
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   `GAL_CONFIG_SIZEOF_SIZE_T' that we need below) is kept in
+   `config.h'. When building a user's programs, this information is kept in
+   `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
+   start with the inclusion of `config.h' and that `gnuastro/config.h' is
+   only created at installation time (not present during the building of
+   Gnuastro). */
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
+
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
 #undef __END_C_DECLS
@@ -63,7 +75,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_BLANK_FLOAT64    NAN
 #define GAL_BLANK_STRING     "n/a"
 
-
+#if GAL_CONFIG_SIZEOF_SIZE_T == 4
+#define GAL_BLANK_SIZE_T     GAL_BLANK_UINT32
+#else
+#define GAL_BLANK_SIZE_T     GAL_BLANK_UINT64
+#endif
 
 
 /* Functions. */
@@ -80,7 +96,7 @@ char *
 gal_blank_as_string(uint8_t type, int width);
 
 int
-gal_blank_present(gal_data_t *data);
+gal_blank_present(gal_data_t *input, int updateflag);
 
 gal_data_t *
 gal_blank_flag(gal_data_t *data);

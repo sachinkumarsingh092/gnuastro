@@ -259,14 +259,14 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
       /* Do the appropriate operations with the  */
       switch(option->key)
         {
-        case ARGS_OPTION_KEY_QUANTILE:
-        case ARGS_OPTION_KEY_QUANTFUNC:
+        case UI_KEY_QUANTILE:
+        case UI_KEY_QUANTFUNC:
           /* For the quantile and the quantile function, its possible to
              give any number of arguments, so add the operation index and
              the argument once for each given number. */
           for(i=0;i<inputs->size;++i)
             {
-              if(option->key==ARGS_OPTION_KEY_QUANTILE && (d[i]<0 || d[i]>1) )
+              if(option->key==UI_KEY_QUANTILE && (d[i]<0 || d[i]>1) )
                 error_at_line(EXIT_FAILURE, 0, filename, lineno, "values "
                               "to `--quantile' (`-u') must be between 0 "
                               "and 1, you had asked for %g (read from `%s')",
@@ -449,10 +449,10 @@ ui_read_check_only_options(struct statisticsparams *p)
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
-      case ARGS_OPTION_KEY_MODE:
-      case ARGS_OPTION_KEY_MODESYM:
-      case ARGS_OPTION_KEY_MODEQUANT:
-      case ARGS_OPTION_KEY_MODESYMVALUE:
+      case UI_KEY_MODE:
+      case UI_KEY_MODESYM:
+      case UI_KEY_MODEQUANT:
+      case UI_KEY_MODESYMVALUE:
         if( isnan(p->mirrordist) )
           error(EXIT_FAILURE, 0, "`--mirrordist' is required for the "
                 "mode-related single measurements (`--mode', `--modequant', "
@@ -678,10 +678,10 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
-      case ARGS_OPTION_KEY_MODE:
-      case ARGS_OPTION_KEY_MEDIAN:
-      case ARGS_OPTION_KEY_QUANTILE:
-      case ARGS_OPTION_KEY_QUANTFUNC:
+      case UI_KEY_MODE:
+      case UI_KEY_MEDIAN:
+      case UI_KEY_QUANTILE:
+      case UI_KEY_QUANTFUNC:
         is_necessary=1;
         break;
       }

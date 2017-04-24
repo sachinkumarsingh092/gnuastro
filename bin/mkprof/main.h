@@ -142,7 +142,6 @@ struct mkprofparams
 
   /* Output */
   gal_data_t           *out;  /* Output image.                            */
-  int                  type;  /* User's desired output type.              */
   char              *outdir;  /* Output directory.                        */
   char            *basename;  /* Merged image name with no directory.     */
 

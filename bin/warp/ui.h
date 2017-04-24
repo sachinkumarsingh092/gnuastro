@@ -35,22 +35,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_KEEPWCS         = 'k',
-  ARGS_OPTION_KEY_COVEREDFRAC     = 'C',
-  ARGS_OPTION_KEY_ALIGN           = 'a',
-  ARGS_OPTION_KEY_ROTATE          = 'r',
-  ARGS_OPTION_KEY_SCALE           = 's',
-  ARGS_OPTION_KEY_FLIP            = 'f',
-  ARGS_OPTION_KEY_SHEAR           = 'e',
-  ARGS_OPTION_KEY_TRANSLATE       = 't',
-  ARGS_OPTION_KEY_PROJECT         = 'p',
-  ARGS_OPTION_KEY_MATRIX          = 'm',
-  ARGS_OPTION_KEY_CENTERONCORNER  = 'c',
+  UI_KEY_KEEPWCS         = 'k',
+  UI_KEY_COVEREDFRAC     = 'C',
+  UI_KEY_ALIGN           = 'a',
+  UI_KEY_ROTATE          = 'r',
+  UI_KEY_SCALE           = 's',
+  UI_KEY_FLIP            = 'f',
+  UI_KEY_SHEAR           = 'e',
+  UI_KEY_TRANSLATE       = 't',
+  UI_KEY_PROJECT         = 'p',
+  UI_KEY_MATRIX          = 'm',
+  UI_KEY_CENTERONCORNER  = 'c',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  ARGS_OPTION_KEY_HSTARTWCS       = 1000,
-  ARGS_OPTION_KEY_HENDWCS,
+  UI_KEY_HSTARTWCS       = 1000,
+  UI_KEY_HENDWCS,
 };
 
 

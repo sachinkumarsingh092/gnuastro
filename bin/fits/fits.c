@@ -87,7 +87,7 @@ fits_print_extension_info(struct fitsparams *p)
   char **tstra, **estra, **sstra;
   size_t i, numext, *dsize, ndim;
   int j, nc, numhdu, hdutype, status=0, type;
-  char *msg, *tstr=NULL, *estr=NULL, sstr[1000], extname[FLEN_VALUE];
+  char *msg, *tstr=NULL, sstr[1000], extname[FLEN_VALUE];
 
 
   /* Open the FITS file and read the first extension type, upon moving to
@@ -160,12 +160,11 @@ fits_print_extension_info(struct fitsparams *p)
       switch(status)
         {
         case 0:
-          estr=gal_fits_key_clean_str_value(extname);
+          gal_fits_key_clean_str_value(extname);
           break;
 
         case KEY_NO_EXIST:
           sprintf(extname, "%s", GAL_BLANK_STRING);
-          estr=extname;
           status=0;
           break;
 
@@ -201,10 +200,10 @@ fits_print_extension_info(struct fitsparams *p)
         {
           switch(j)
             {
-            case 0: ui16[i]=i;                                   break;
-            case 1: gal_checkset_allocate_copy(estr, estra+i);   break;
-            case 2: gal_checkset_allocate_copy(tstr, tstra+i);   break;
-            case 3: gal_checkset_allocate_copy(sstr, sstra+i);   break;
+            case 0: ui16[i]=i;                                    break;
+            case 1: gal_checkset_allocate_copy(extname, estra+i); break;
+            case 2: gal_checkset_allocate_copy(tstr, tstra+i);    break;
+            case 3: gal_checkset_allocate_copy(sstr, sstra+i);    break;
             }
           ++j;
         }
@@ -225,7 +224,8 @@ fits_print_extension_info(struct fitsparams *p)
       printf("%s\nRun on %s-----\n", PROGRAM_STRING, ctime(&p->rawtime));
       printf("HDU (extension) information: `%s'.\n", p->filename);
       printf(" Column 1: Index (counting from 0, usable with `--hdu').\n");
-      printf(" Column 2: Name (`EXTNAME' in FITS standard, usable with `--hdu').\n");
+      printf(" Column 2: Name (`EXTNAME' in FITS standard, usable with "
+             "`--hdu').\n");
       printf(" Column 3: Image data type or `table' format (ASCII or "
              "binary).\n");
       printf(" Column 4: Size of data in HDU.\n");

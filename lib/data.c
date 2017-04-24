@@ -485,6 +485,9 @@ gal_data_string_fixed_alloc_size(gal_data_t *data)
 void
 gal_data_free_contents(gal_data_t *data)
 {
+  size_t i;
+  char **strarr;
+
   if(data==NULL)
     error(EXIT_FAILURE, 0, "the input data structure to "
           "`gal_data_free_contents' was a NULL pointer");
@@ -501,8 +504,7 @@ gal_data_free_contents(gal_data_t *data)
      actual array. */
   if(data->type==GAL_TYPE_STRING && data->array)
     {
-      size_t i;
-      char **strarr=data->array;
+      strarr=data->array;
       for(i=0;i<data->size;++i) free(strarr[i]);
     }
 
@@ -586,6 +588,7 @@ gal_data_array_calloc(size_t size)
       out[i].nwcs       = 0;
       out[i].wcs        = NULL;
       out[i].mmapname   = NULL;
+      out[i].next       = NULL;
       out[i].name = out[i].unit = out[i].comment = NULL;
       out[i].disp_fmt = out[i].disp_width = out[i].disp_precision = -1;
     }

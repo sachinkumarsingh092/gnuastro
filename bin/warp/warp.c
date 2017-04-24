@@ -125,7 +125,7 @@ warponthread(void *inparam)
   double ocrn[8], icrn_base[8], icrn[8], *output=p->output->array;
   double pcrn[8], *outfpixval=p->outfpixval, ccrn[GAL_POLYGON_MAX_CORNERS];
 
-  for(i=0;(ind=iwp->indexs[i])!=GAL_THREADS_NON_THRD_INDEX;++i)
+  for(i=0; (ind=iwp->indexs[i])!=GAL_BLANK_SIZE_T; ++i)
     {
       /* Initialize the output pixel value: */
       numinput=0;
@@ -539,7 +539,7 @@ warp(struct warpparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             iwp[i].p=p;
             iwp[i].b=&b;

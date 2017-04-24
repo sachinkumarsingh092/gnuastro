@@ -61,7 +61,7 @@ sky_on_thread(void *in_prm)
 
   /* Find the Sky and its standard deviation on the tiles given to this
      thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Set the tile and copy its values into the array we'll be using. */
       tind = tprm->indexs[i];
@@ -193,9 +193,9 @@ sky(struct statisticsparams *p)
     }
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname,
+      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
                                  PROGRAM_STRING);
-      gal_tile_full_values_write(p->std_t, tl, p->checkskyname,
+      gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
                                  PROGRAM_STRING);
     }
 
@@ -214,9 +214,9 @@ sky(struct statisticsparams *p)
     gal_timing_report(&t1, "All blank tiles filled (interplated).", 1);
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname,
+      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
                                  PROGRAM_STRING);
-      gal_tile_full_values_write(p->std_t, tl, p->checkskyname,
+      gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
                                  PROGRAM_STRING);
     }
 
@@ -238,9 +238,9 @@ sky(struct statisticsparams *p)
                           1);
       if(p->checksky)
         {
-          gal_tile_full_values_write(p->sky_t, tl, p->checkskyname,
+          gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
                                      PROGRAM_STRING);
-          gal_tile_full_values_write(p->std_t, tl, p->checkskyname,
+          gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
                                      PROGRAM_STRING);
         }
     }
@@ -251,8 +251,8 @@ sky(struct statisticsparams *p)
                                         ( p->cp.output
                                           ? p->cp.output
                                           : p->inputname ), "_sky.fits");
-  gal_tile_full_values_write(p->sky_t, tl, outname, PROGRAM_STRING);
-  gal_tile_full_values_write(p->std_t, tl, outname, PROGRAM_STRING);
+  gal_tile_full_values_write(p->sky_t, tl, outname, NULL, PROGRAM_STRING);
+  gal_tile_full_values_write(p->std_t, tl, outname, NULL, PROGRAM_STRING);
   if(!cp->quiet)
     printf("  - Written to `%s'.\n", outname);
 

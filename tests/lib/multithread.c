@@ -55,7 +55,7 @@ worker(void *inparam)
   size_t i;
 
   /* Go over the jobs indexed for this thread: */
-  for(i=0; prm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; prm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* The indexes of the actions will make it possible to point to
          whatever data structure or input you want. So in this test, we
@@ -127,7 +127,7 @@ main(void)
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             prm[i].id=i;
             prm[i].b=&b;

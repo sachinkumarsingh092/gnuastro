@@ -355,6 +355,9 @@ ui_set_output_names(struct noisechiselparams *p)
       p->detsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
                    ? "_detsn_det.txt" : "_detsn_det.fits") );
+      p->detsn_D_name=gal_checkset_automatic_output(&p->cp, basename,
+                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                   ? "_detsn_dilated.txt" : "_detsn_dilated.fits") );
     }
 
   /* Detection steps. */
@@ -577,8 +580,7 @@ ui_preparations(struct noisechiselparams *p)
   /* Check for blank values to help later processing. AFTERWARDS, set the
      USE_ZERO flag, so the zero-bit (if the input doesn't have any blank
      value) will be meaningful. */
-  if( gal_blank_present(p->input) ) p->input->flag |= GAL_DATA_FLAG_HASBLANK;
-  p->input->flag |= GAL_DATA_FLAG_BLANK_CH;
+  gal_blank_present(p->input, 1);
 
 
   /* Read in the kernel for convolution. */

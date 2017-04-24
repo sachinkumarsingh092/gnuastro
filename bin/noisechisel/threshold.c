@@ -78,7 +78,7 @@ threshold_apply_on_thread(void *in_prm)
   float *value1=taprm->value1, *value2=taprm->value2;
 
   /* Go over all the tiles assigned to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* For easy reading. */
       tid=tprm->indexs[i];
@@ -193,7 +193,7 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
 
   /* Remove all blank elements. The index and sn values must have the same
      set of blank elements, but checking on the integer array is faster. */
-  if( gal_blank_present(inind) )
+  if( gal_blank_present(inind, 1) )
     {
       ind=gal_data_copy(inind);
       sn=gal_data_copy(insn);
@@ -273,8 +273,8 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
     {
       (*first)->name="THRESH1_INTERP";
       (*second)->name="THRESH2_INTERP";
-      gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
-      gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+      gal_tile_full_values_write(*first, tl, filename, NULL, PROGRAM_STRING);
+      gal_tile_full_values_write(*second, tl, filename, NULL, PROGRAM_STRING);
       (*first)->name = (*second)->name = NULL;
     }
 
@@ -298,8 +298,10 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
         {
           (*first)->name="THRESH1_SMOOTH";
           (*second)->name="THRESH2_SMOOTH";
-          gal_tile_full_values_write(*first, tl, filename, PROGRAM_STRING);
-          gal_tile_full_values_write(*second, tl, filename, PROGRAM_STRING);
+          gal_tile_full_values_write(*first, tl, filename, NULL,
+                                     PROGRAM_STRING);
+          gal_tile_full_values_write(*second, tl, filename, NULL,
+                                     PROGRAM_STRING);
           (*first)->name = (*second)->name = NULL;
         }
     }
@@ -360,7 +362,7 @@ qthresh_on_tile(void *in_prm)
                        NULL, NULL, NULL);
 
   /* Go over all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Re-initialize the usage array's space (will be changed in
          `gal_data_copy_to_allocated' for each tile). */
@@ -474,22 +476,22 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
 
   /* Find the threshold on each tile, free the temporary processing space
-     and set the blank flag. */
+     and set the blank flag on both. Since they have the same blank
+     elements, it is only necessary to check one (with the `updateflag'
+     value set to 1), then update the next. */
   qprm.p=p;
   gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
   free(qprm.usage);
-  if( gal_blank_present(qprm.erode_th) )
-    {
-      qprm.erode_th->flag   |= GAL_DATA_FLAG_HASBLANK;
-      qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
-    }
+  if( gal_blank_present(qprm.erode_th, 1) )
+    qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+  qprm.noerode_th->flag |= GAL_DATA_FLAG_BLANK_CH;
   if(p->qthreshname)
     {
       qprm.erode_th->name="QTHRESH_ERODE";
       qprm.noerode_th->name="QTHRESH_NOERODE";
-      gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname,
+      gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname, NULL,
                                  PROGRAM_STRING);
-      gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname,
+      gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname, NULL,
                                  PROGRAM_STRING);
       qprm.erode_th->name = qprm.noerode_th->name = NULL;
     }

@@ -35,10 +35,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_STDADD      = 's',
-  ARGS_OPTION_KEY_BACKGROUND  = 'b',
-  ARGS_OPTION_KEY_ZEROPOINT   = 'z',
-  ARGS_OPTION_KEY_ENVSEED     = 'e',
+  UI_KEY_STDADD      = 's',
+  UI_KEY_BACKGROUND  = 'b',
+  UI_KEY_ZEROPOINT   = 'z',
+  UI_KEY_ENVSEED     = 'e',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
@@ -52,6 +52,6 @@ void
 ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p);
 
 void
-ui_free_report(struct mknoiseparams *p);
+ui_free_report(struct mknoiseparams *p, struct timeval *t1);
 
 #endif

@@ -204,7 +204,7 @@ imgmodecrop(void *inparam)
   crp->infits=gal_fits_hdu_open_type(img->name, p->cp.hdu, 0);
 
   /* Go over all the outputs that are assigned to this thread: */
-  for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
+  for(i=0; crp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
       /* Set all the output parameters: */
       crp->out_ind=crp->indexs[i];
@@ -272,7 +272,7 @@ wcsmodecrop(void *inparam)
 
 
   /* Go over all the output objects for this thread. */
-  for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
+  for(i=0; crp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
       /* Set all the output parameters: */
       crp->out_ind=crp->indexs[i];
@@ -430,7 +430,7 @@ crop(struct cropparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             crp[i].p=p;
             crp[i].b=&b;

@@ -33,7 +33,7 @@ struct argp_option program_options[] =
   {
     {
       "column",
-      ARGS_OPTION_KEY_COLUMN,
+      UI_KEY_COLUMN,
       "STR",
       0,
       "Column name or number if input is a table.",
@@ -46,7 +46,7 @@ struct argp_option program_options[] =
     },
     {
       "refcol",
-      ARGS_OPTION_KEY_REFCOL,
+      UI_KEY_REFCOL,
       "STR",
       0,
       "Reference column name or number.",
@@ -59,7 +59,7 @@ struct argp_option program_options[] =
     },
     {
       "greaterequal",
-      ARGS_OPTION_KEY_GREATEREQUAL,
+      UI_KEY_GREATEREQUAL,
       "FLT",
       0,
       "Only use values greater-equal than this.",
@@ -72,7 +72,7 @@ struct argp_option program_options[] =
     },
     {
       "lessthan",
-      ARGS_OPTION_KEY_LESSTHAN,
+      UI_KEY_LESSTHAN,
       "FLT",
       0,
       "Only use values less than this.",
@@ -85,7 +85,7 @@ struct argp_option program_options[] =
     },
     {
       "qrange",
-      ARGS_OPTION_KEY_QRANGE,
+      UI_KEY_QRANGE,
       "FLT[,FLT]",
       0,
       "Quantile range: one (from Q to 1-Q) or two.",
@@ -103,7 +103,7 @@ struct argp_option program_options[] =
     /* Tessellation */
     {
       "interpolate",
-      ARGS_OPTION_KEY_INTERPOLATE,
+      UI_KEY_INTERPOLATE,
       0,
       0,
       "Interpolate over blank tiles to fill them.",
@@ -125,7 +125,7 @@ struct argp_option program_options[] =
     },
     {
       "number",
-      ARGS_OPTION_KEY_NUMBER,
+      UI_KEY_NUMBER,
       0,
       0,
       "Number (non-blank).",
@@ -139,7 +139,7 @@ struct argp_option program_options[] =
     },
     {
       "minimum",
-      ARGS_OPTION_KEY_MINIMUM,
+      UI_KEY_MINIMUM,
       0,
       0,
       "Minimum.",
@@ -153,7 +153,7 @@ struct argp_option program_options[] =
     },
     {
       "maximum",
-      ARGS_OPTION_KEY_MAXIMUM,
+      UI_KEY_MAXIMUM,
       0,
       0,
       "Maximum.",
@@ -167,7 +167,7 @@ struct argp_option program_options[] =
     },
     {
       "sum",
-      ARGS_OPTION_KEY_SUM,
+      UI_KEY_SUM,
       0,
       0,
       "Sum.",
@@ -181,7 +181,7 @@ struct argp_option program_options[] =
     },
     {
       "mean",
-      ARGS_OPTION_KEY_MEAN,
+      UI_KEY_MEAN,
       0,
       0,
       "Mean.",
@@ -195,7 +195,7 @@ struct argp_option program_options[] =
     },
     {
       "std",
-      ARGS_OPTION_KEY_STD,
+      UI_KEY_STD,
       0,
       0,
       "Standad deviation.",
@@ -209,7 +209,7 @@ struct argp_option program_options[] =
     },
     {
       "median",
-      ARGS_OPTION_KEY_MEDIAN,
+      UI_KEY_MEDIAN,
       0,
       0,
       "Median.",
@@ -223,7 +223,7 @@ struct argp_option program_options[] =
     },
     {
       "quantile",
-      ARGS_OPTION_KEY_QUANTILE,
+      UI_KEY_QUANTILE,
       "FLT[,...]",
       0,
       "Quantile (multiple values acceptable).",
@@ -237,7 +237,7 @@ struct argp_option program_options[] =
     },
     {
       "quantfunc",
-      ARGS_OPTION_KEY_QUANTFUNC,
+      UI_KEY_QUANTFUNC,
       "FLT[,...]",
       0,
       "Quantile function (multiple values acceptable).",
@@ -251,7 +251,7 @@ struct argp_option program_options[] =
     },
     {
       "mode",
-      ARGS_OPTION_KEY_MODE,
+      UI_KEY_MODE,
       0,
       0,
       "Mode (Appendix C of arXiv:1505.01664).",
@@ -265,7 +265,7 @@ struct argp_option program_options[] =
     },
     {
       "modequant",
-      ARGS_OPTION_KEY_MODEQUANT,
+      UI_KEY_MODEQUANT,
       0,
       0,
       "Mode quantile (see --mode)",
@@ -279,7 +279,7 @@ struct argp_option program_options[] =
     },
     {
       "modesym",
-      ARGS_OPTION_KEY_MODESYM,
+      UI_KEY_MODESYM,
       0,
       0,
       "Mode symmetricity (see --mode).",
@@ -293,7 +293,7 @@ struct argp_option program_options[] =
     },
     {
       "modesymvalue",
-      ARGS_OPTION_KEY_MODESYMVALUE,
+      UI_KEY_MODESYMVALUE,
       0,
       0,
       "Value at mode symmetricity (see --mode).",
@@ -316,7 +316,7 @@ struct argp_option program_options[] =
     },
     {
       "asciihist",
-      ARGS_OPTION_KEY_ASCIIHIST,
+      UI_KEY_ASCIIHIST,
       0,
       0,
       "Print an ASCII histogram.",
@@ -329,7 +329,7 @@ struct argp_option program_options[] =
     },
     {
       "asciicfp",
-      ARGS_OPTION_KEY_ASCIICFP,
+      UI_KEY_ASCIICFP,
       0,
       0,
       "Print an ASCII cumulative frequency plot.",
@@ -342,7 +342,7 @@ struct argp_option program_options[] =
     },
     {
       "histogram",
-      ARGS_OPTION_KEY_HISTOGRAM,
+      UI_KEY_HISTOGRAM,
       0,
       0,
       "Save the histogram in output.",
@@ -355,7 +355,7 @@ struct argp_option program_options[] =
     },
     {
       "cumulative",
-      ARGS_OPTION_KEY_CUMULATIVE,
+      UI_KEY_CUMULATIVE,
       0,
       0,
       "Save the cumulative frequency plot in output.",
@@ -368,7 +368,7 @@ struct argp_option program_options[] =
     },
     {
       "mirror",
-      ARGS_OPTION_KEY_MIRROR,
+      UI_KEY_MIRROR,
       "FLT",
       0,
       "Save the histogram and CFP of the mirror dist.",
@@ -381,7 +381,7 @@ struct argp_option program_options[] =
     },
     {
       "ontile",
-      ARGS_OPTION_KEY_ONTILE,
+      UI_KEY_ONTILE,
       0,
       0,
       "Single values on separate tiles, not full input.",
@@ -394,7 +394,7 @@ struct argp_option program_options[] =
     },
     {
       "sky",
-      ARGS_OPTION_KEY_SKY,
+      UI_KEY_SKY,
       0,
       0,
       "Find the Sky and its STD over the tessellation.",
@@ -407,7 +407,7 @@ struct argp_option program_options[] =
     },
     {
       "sigmaclip",
-      ARGS_OPTION_KEY_SIGMACLIP,
+      UI_KEY_SIGMACLIP,
       0,
       0,
       "Overall sigma-clipping (see `--sclipparams')",
@@ -430,7 +430,7 @@ struct argp_option program_options[] =
     },
     {
       "kernel",
-      ARGS_OPTION_KEY_KERNEL,
+      UI_KEY_KERNEL,
       "STR",
       0,
       "File name of kernel to convolve input.",
@@ -443,7 +443,7 @@ struct argp_option program_options[] =
     },
     {
       "khdu",
-      ARGS_OPTION_KEY_KHDU,
+      UI_KEY_KHDU,
       "STR",
       0,
       "HDU/extension name or number of kernel.",
@@ -456,7 +456,7 @@ struct argp_option program_options[] =
     },
     {
       "mirrordist",
-      ARGS_OPTION_KEY_MIRRORDIST,
+      UI_KEY_MIRRORDIST,
       "FLT",
       0,
       "Max. distance (error multip.) to find mode.",
@@ -469,7 +469,7 @@ struct argp_option program_options[] =
     },
     {
       "modmedqdiff",
-      ARGS_OPTION_KEY_MODMEDQDIFF,
+      UI_KEY_MODMEDQDIFF,
       "FLT",
       0,
       "Max. mode and median quantile diff. per tile.",
@@ -482,7 +482,7 @@ struct argp_option program_options[] =
     },
     {
       "sclipparams",
-      ARGS_OPTION_KEY_SCLIPPARAMS,
+      UI_KEY_SCLIPPARAMS,
       "FLT,FLT",
       0,
       "Sigma clip: Multiple, and tolerance/number.",
@@ -496,7 +496,7 @@ struct argp_option program_options[] =
     },
     {
       "smoothwidth",
-      ARGS_OPTION_KEY_SMOOTHWIDTH,
+      UI_KEY_SMOOTHWIDTH,
       "INT",
       0,
       "Sky: flat kernel width to smooth interpolated.",
@@ -509,7 +509,7 @@ struct argp_option program_options[] =
     },
     {
       "checksky",
-      ARGS_OPTION_KEY_CHECKSKY,
+      UI_KEY_CHECKSKY,
       0,
       0,
       "Store steps in `_sky_steps.fits' file.",
@@ -531,7 +531,7 @@ struct argp_option program_options[] =
     },
     {
       "numbins",
-      ARGS_OPTION_KEY_NUMBINS,
+      UI_KEY_NUMBINS,
       "INT",
       0,
       "No. of bins in histogram or CFP tables.",
@@ -544,7 +544,7 @@ struct argp_option program_options[] =
     },
     {
       "numasciibins",
-      ARGS_OPTION_KEY_NUMASCIIBINS,
+      UI_KEY_NUMASCIIBINS,
       "INT",
       0,
       "No. of bins in ASCII histogram or CFP plots.",
@@ -557,7 +557,7 @@ struct argp_option program_options[] =
     },
     {
       "asciiheight",
-      ARGS_OPTION_KEY_ASCIIHEIGHT,
+      UI_KEY_ASCIIHEIGHT,
       "INT",
       0,
       "Height of ASCII histogram or CFP plots.",
@@ -570,7 +570,7 @@ struct argp_option program_options[] =
     },
     {
       "normalize",
-      ARGS_OPTION_KEY_NORMALIZE,
+      UI_KEY_NORMALIZE,
       0,
       0,
       "Set sum of all bins to 1.",
@@ -583,7 +583,7 @@ struct argp_option program_options[] =
     },
     {
       "maxbinone",
-      ARGS_OPTION_KEY_MAXBINONE,
+      UI_KEY_MAXBINONE,
       0,
       0,
       "Scale such that the maximum bin has value of one.",
@@ -596,7 +596,7 @@ struct argp_option program_options[] =
     },
     {
       "onebinstart",
-      ARGS_OPTION_KEY_ONEBINSTART,
+      UI_KEY_ONEBINSTART,
       "FLT",
       0,
       "Shift bins so one bin starts on this value.",

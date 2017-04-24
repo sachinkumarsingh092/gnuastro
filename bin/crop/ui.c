@@ -562,7 +562,7 @@ ui_read_cols(struct cropparams *p)
       if(corrtype)
         {
           /* Make sure there are no blank values in this column. */
-          if( gal_blank_present(corrtype) )
+          if( gal_blank_present(corrtype, 1) )
             error(EXIT_FAILURE, 0, "%s column has blank values. "
                   "Input columns cannot contain blank values", colname);
 

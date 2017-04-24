@@ -33,7 +33,7 @@ struct argp_option program_options[] =
   {
     {
       "redshift",
-      ARGS_OPTION_KEY_REDSHIFT,
+      UI_KEY_REDSHIFT,
       "FLT",
       0,
       "Redshift of interest.",
@@ -46,7 +46,7 @@ struct argp_option program_options[] =
     },
     {
       "H0",
-      ARGS_OPTION_KEY_H0,
+      UI_KEY_H0,
       "FLT",
       0,
       "Current expansion rate (Hubble constant).",
@@ -59,7 +59,7 @@ struct argp_option program_options[] =
     },
     {
       "olambda",
-      ARGS_OPTION_KEY_OLAMBDA,
+      UI_KEY_OLAMBDA,
       "FLT",
       0,
       "Current cosmological cst. dens. per crit. dens.",
@@ -72,7 +72,7 @@ struct argp_option program_options[] =
     },
     {
       "omatter",
-      ARGS_OPTION_KEY_OMATTER,
+      UI_KEY_OMATTER,
       "FLT",
       0,
       "Current matter density per critical density.",
@@ -85,7 +85,7 @@ struct argp_option program_options[] =
     },
     {
       "oradiation",
-      ARGS_OPTION_KEY_ORADIATION,
+      UI_KEY_ORADIATION,
       "FLT",
       0,
       "Current radiation density per critical density.",
@@ -102,7 +102,7 @@ struct argp_option program_options[] =
 
     {
       "onlyvolumne",
-      ARGS_OPTION_KEY_ONLYVOLUME,
+      UI_KEY_ONLYVOLUME,
       0,
       0,
       "Only print comoving volume in Mpc^3.",
@@ -115,7 +115,7 @@ struct argp_option program_options[] =
     },
     {
       "onlyabsmagconv",
-      ARGS_OPTION_KEY_ONLYABSMAGCONV,
+      UI_KEY_ONLYABSMAGCONV,
       0,
       0,
       "Only print conversion to absolute magnitude.",

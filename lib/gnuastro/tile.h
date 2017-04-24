@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
+#include <gnuastro/fits.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -58,6 +59,15 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block);
 void *
 gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
                                  size_t *start_end_inc);
+
+
+
+
+/***********************************************************************/
+/**************           Series of tiles             ******************/
+/***********************************************************************/
+gal_data_t *
+gal_tile_series_from_minmax(gal_data_t *block, size_t *minmax, size_t number);
 
 
 
@@ -138,7 +148,8 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl);
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
-                           char *filename, char *program_string);
+                           char *filename, struct gal_fits_key_ll *keys,
+                           char *program_string);
 
 gal_data_t *
 gal_tile_full_values_smooth(gal_data_t *tilevalues,
@@ -367,7 +378,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
     size_t increment=0, num_increment=1;                                \
     gal_data_t *iblock = gal_tile_block(IN);                            \
     gal_data_t *oblock = OUT ? gal_tile_block(OUT) : NULL;              \
-    int hasblank = CHECK_BLANK ? gal_blank_present(IN) : 0;             \
+    int hasblank = CHECK_BLANK ? gal_blank_present(IN, 0) : 0;          \
     size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* A small sanity check. */                                         \

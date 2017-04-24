@@ -5,7 +5,7 @@ MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -23,635 +23,891 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <gnuastro/linkedlist.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
 
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata";
-
-
-
-
-
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" will create a catalog from an input, labeled, and noise "
-  "identification images.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Available letters for short options:
-
-   f g k l u v w
-   F G J L Q R U W X Y Z
-
-   Number keys used: <= 541
-
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
-static struct argp_option options[] =
+/* Array of acceptable options. */
+struct argp_option program_options[] =
   {
+    /* Input options. */
     {
-      0, 0, 0, 0,
-      "Input:",
-      1
-    },
-    {
-      "mask",
-      'M',
+      "objectsfile",
+      UI_KEY_OBJECTSFILE,
       "STR",
       0,
-      "Mask image file name.",
-      1
+      "Image containing object/detection labels.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->objectsfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "mhdu",
-      'H',
+      "objectshdu",
+      UI_KEY_OBJECTSHDU,
       "STR",
       0,
-      "Mask image header name or number.",
-      1
+      "Object image extension name or number.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->objectshdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "objlabs",
-      'O',
+      "clumpsfile",
+      UI_KEY_CLUMPSFILE,
       "STR",
       0,
-      "Image specifying object labels.",
-      1
+      "Image containing clump labels.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->clumpsfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "objhdu",
-      501,
+      "clumpshdu",
+      UI_KEY_CLUMPSHDU,
       "STR",
       0,
-      "Object image header name or number.",
-      1
+      "Clump image extension name or number.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->clumpshdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "clumplabs",
-      'c',
+      "skyfile",
+      UI_KEY_SKYFILE,
       "STR",
       0,
-      "Image specifying clump labels.",
-      1
-    },
-    {
-      "clumphdu",
-      502,
-      "STR",
-      0,
-      "Clumps image header name or number.",
-      1
-    },
-    {
-      "skyfilename",
-      's',
-      "STR",
-      0,
-      "Sky value image.",
-      1
+      "Image containing sky values.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skyfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "skyhdu",
-      503,
+      UI_KEY_SKYHDU,
       "STR",
       0,
-      "Sky image header name or number.",
-      1
+      "Sky image extension name or number.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skyhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "stdfilename",
-      't',
+      "stdfile",
+      UI_KEY_STDFILE,
       "STR",
       0,
-      "Sky standard deviation image.",
-      1
+      "Image containing sky STD values.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->stdfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "stdhdu",
-      504,
+      UI_KEY_SKYHDU,
       "STR",
       0,
-      "Sky STD image header name or number.",
-      1
+      "Sky image extension name or number.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->stdhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "zeropoint",
-      'z',
+      UI_KEY_ZEROPOINT,
       "FLT",
       0,
-      "Image zeropoint magnitude.",
-      1
+      "Zeropoint magnitude of input dataset.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->zeropoint,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "skysubtracted",
-      'E',
+      UI_KEY_SKYSUBTRACTED,
       0,
       0,
       "Input is already sky subtracted (for S/N).",
-      1
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skysubtracted,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "threshold",
-      'T',
+      UI_KEY_THRESHOLD,
       "FLT",
       0,
-      "Only values larger than this multiple of STD.",
-      1
+      "Use pixels more than this multiple of STD.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->threshold,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-
-    {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
+    /* Output. */
     {
       "nsigmag",
-      521,
+      UI_KEY_NSIGMAG,
       "FLT",
       0,
       "Multiple of Sky STD to report magnitude of.",
-      2
-    },
-    {
-      "intwidth",
-      516,
-      "INT",
-      0,
-      "Width of integer columns.",
-      2
-    },
-    {
-      "floatwidth",
-      517,
-      "INT",
-      0,
-      "Width of floating point columns.",
-      2
-    },
-    {
-      "accuwidth",
-      518,
-      "INT",
-      0,
-      "Width of more accurate floating point columns.",
-      2
-    },
-    {
-      "floatprecision",
-      519,
-      "INT",
-      0,
-      "Precision of floating point columns.",
-      2
-    },
-    {
-      "accuprecision",
-      520,
-      "INT",
-      0,
-      "Precision of more accurate floating pnt. cols.",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->nsigmag,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
+    /* Upper limit magnitude configurations. */
     {
       0, 0, 0, 0,
       "Upper limit magnitude:",
-      3
+      ARGS_GROUP_UPPERLIMIT
     },
     {
-      "upmask",
-      535,
+      "upmaskfile",
+      UI_KEY_UPMASKFILE,
       "STR",
       0,
       "Mask image file name only for upper limit.",
-      3
+      ARGS_GROUP_UPPERLIMIT,
+      &p->upmaskfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "upmaskhdu",
-      536,
+      UI_KEY_UPMASKHDU,
       "STR",
       0,
-      "Upper limit mask image header name or number.",
-      3
+      "Mask image HDU only for upper limit.",
+      ARGS_GROUP_UPPERLIMIT,
+      &p->upmaskhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "upnum",
-      537,
+      UI_KEY_UPNUM,
       "INT",
       0,
-      "Number of randomly positioned samples.",
-      3
+      "Number of randomly positioned samples",
+      ARGS_GROUP_UPPERLIMIT,
+      &p->upnum,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "envseed",
-      540,
+      UI_KEY_ENVSEED,
       0,
       0,
-      "Random number generator info from environment.",
-      3
+      "Use GSL_RNG_SEED environment variable for seed.",
+      ARGS_GROUP_UPPERLIMIT,
+      &p->envseed,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
-      "upsclipmultip",
-      538,
-      "FLT",
+      "upsigmaclip",
+      UI_KEY_UPSIGMACLIP,
+      "FLT,FLT",
       0,
-      "Sigma clipping multiple of std.",
-      3
-    },
-    {
-      "upsclipaccu",
-      539,
-      "FLT",
-      0,
-      "Acceptable relative diff to stop clipping.",
-      3
+      "Sigma multiple and, tolerance or number.",
+      ARGS_GROUP_UPPERLIMIT,
+      &p->upsigmaclip,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_sigma_clip
     },
     {
       "upnsigma",
-      541,
+      UI_KEY_UPNSIGMA,
       "FLT",
       0,
-      "Multiple of final sigma to use.",
-      3
+      "Multiple of sigma to define upperlimit.",
+      ARGS_GROUP_UPPERLIMIT,
+      &p->upnsigma,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
 
-
-
+    /* Output columns: IMPORTANT: Throughout MakeCatalogs, the order of
+       columns is based on this. So if you make changes/additions, please
+       update all the other places the columns are searched. */
     {
       0, 0, 0, 0,
-      "Catalog columns:",
-      4
+      "Output catalog columns",
+      ARGS_GROUP_COLUMNS
+    },
+    {  /* `ids' is not a unique column, it is a combination of several
+          columns. */
+      "ids",
+      UI_KEY_IDS,
+      0,
+      0,
+      "All IDs of objects and clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
-      "id",
-      'i',
+      "objid",
+      UI_KEY_OBJID,
       0,
       0,
-      "Overall ID of this object or clump.",
-      4
+      "Object label/ID.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "hostobjid",
-      'j',
+      UI_KEY_HOSTOBJID,
       0,
       0,
       "ID of object hosting this clump.",
-      4
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "idinhostobj",
-      'I',
+      UI_KEY_IDINHOSTOBJ,
       0,
       0,
       "ID of clump in host object.",
-      4
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "numclumps",
-      'C',
+      UI_KEY_NUMCLUMPS,
       0,
       0,
       "Number of clumps in this object.",
-      4
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "area",
-      'a',
+      UI_KEY_AREA,
       0,
       0,
-      "Number of pixels.",
-      4
+      "Number of pixels in clump or object.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsarea",
-      513,
+      UI_KEY_CLUMPSAREA,
       0,
       0,
-      "Area of clumps in an object.",
-      4
+      "Sum of all clump areas in an object.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "x",
-      'x',
+      UI_KEY_X,
       0,
       0,
-      "All obj. flux weighted center (first FITS axis).",
-      4
+      "Flux weighted center in first FITS axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "y",
-      'y',
+      UI_KEY_Y,
       0,
       0,
-      "All obj. flux weighted center (second FITS axis).",
-      4
+      "Flux weighted center in second FITS axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geox",
-      522,
+      UI_KEY_GEOX,
       0,
       0,
-      "All obj. geometric center (first FITS axis).",
-      4
+      "Geometric center in first FITS axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geoy",
-      523,
+      UI_KEY_GEOY,
       0,
       0,
-      "All obj. geometric center (second FITS axis).",
-      4
+      "Geometric center in second FITS axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsx",
-      507,
+      UI_KEY_CLUMPSX,
       0,
       0,
-      "Clumps flux weighted center (first FITS axis).",
-      4
+      "Flux.wht center of all clumps in obj. (X).",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsy",
-      508,
+      UI_KEY_CLUMPSY,
       0,
       0,
-      "Clumps flux weighted center (second FITS axis).",
-      4
+      "Flux.wht center of all clumps in obj. (Y).",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsgeox",
-      524,
+      UI_KEY_CLUMPSGEOX,
       0,
       0,
-      "Clumps geometric center (first FITS axis).",
-      4
+      "Geometric center of all clumps in obj. (X).",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsgeoy",
-      525,
+      UI_KEY_CLUMPSGEOY,
       0,
       0,
-      "Clumps geometric center (second FITS axis).",
-      4
+      "Geometric center of all clumps in obj. (Y).",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "ra",
-      'r',
+      UI_KEY_RA,
       0,
       0,
-      "All object flux weighted center right ascension.",
-      4
+      "Right ascension of flux weighted center.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "dec",
-      'd',
+      UI_KEY_DEC,
       0,
       0,
-      "All object flux weighted center declination.",
-      4
+      "Declination of flux weighted center.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geora",
-      526,
+      UI_KEY_GEORA,
       0,
       0,
-      "All object geometric center right ascension.",
-      4
+      "Right ascension of geometric center.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geodec",
-      527,
+      UI_KEY_GEODEC,
       0,
       0,
-      "All object geometric center declination.",
-      4
+      "Declination of geometric center.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsra",
-      509,
+      UI_KEY_CLUMPSRA,
       0,
       0,
-      "Clumps flux weighted center right ascension.",
-      4
+      "Right ascension of f.wht center of all clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsdec",
-      510,
+      UI_KEY_CLUMPSDEC,
       0,
       0,
-      "Clumps flux weighted center declination.",
-      4
+      "Declination of f.wht center of all clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsgeora",
-      528,
+      UI_KEY_CLUMPSGEORA,
       0,
       0,
-      "Clumps geometric center right ascension.",
-      4
+      "Right ascension of geo. center of all clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsgeodec",
-      529,
+      UI_KEY_CLUMPSGEODEC,
       0,
       0,
-      "Clumps geometric center declination.",
-      4
+      "Declination of geometric center of all clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "brightness",
-      'b',
+      UI_KEY_BRIGHTNESS,
       0,
       0,
       "Brightness (sum of pixel values).",
-      4
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpbrightness",
-      511,
+      UI_KEY_CLUMPSBRIGHTNESS,
       0,
       0,
-      "Brightness in clumps of an object.",
-      4
+      "Brightness of clumps in an object.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "noriverbrightness",
-      533,
+      UI_KEY_NORIVERBRIGHTNESS,
       0,
       0,
       "Sky (not river) subtracted clump brightness.",
-      4
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "magnitude",
-      'm',
+      UI_KEY_MAGNITUDE,
       0,
       0,
-      "Total magnitude.",
-      4
+      "Total magnitude of objects or clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "magnitudeerr",
-      'e',
+      UI_KEY_MAGNITUDEERR,
       0,
       0,
-      "Total magnitude error.",
-      4
+      "Magnitude error of objects or clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "clumpsmagnitude",
-      512,
+      UI_KEY_CLUMPSMAGNITUDE,
       0,
       0,
-      "Total magnitude of clumps in this object.",
-      4
+      "Magnitude of all clumps in object.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "upperlimit",
+      UI_KEY_UPPERLIMIT,
+      0,
+      0,
+      "Upper-limit value, use other options to config.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "upperlimitmag",
-      534,
+      UI_KEY_UPPERLIMITMAG,
       0,
       0,
-      "Upper limit magnitude for each clump or object.",
-      4
+      "Upper-limit mag. use other options to config.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "riverave",
-      514,
+      UI_KEY_RIVERAVE,
       0,
       0,
-      "Average river value surrounding this clump.",
-      4
+      "Average river value surrounding a clump.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "rivernum",
-      515,
+      UI_KEY_RIVERNUM,
       0,
       0,
-      "Number of river pixels surrounding this clump.",
-      4
+      "Number of river pixels around a clump.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "sn",
-      'n',
+      UI_KEY_SN,
       0,
       0,
-      "Signal to noise ratio column.",
-      4
+      "Signal to noise ratio of objects or clumps.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "sky",
-      505,
+      UI_KEY_SKY,
       0,
       0,
-      "Sky value.",
-      4
+      "Average Sky value under this clump or object.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "std",
-      506,
+      UI_KEY_STD,
       0,
       0,
-      "Sky standard deviation.",
-      4
+      "Average Sky standard deviation.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "semimajor",
-      'A',
+      UI_KEY_SEMIMAJOR,
       0,
       0,
-      "Flux weighted Semi-major axis.",
-      4
+      "Flux weighted semi-major axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "semiminor",
-      'B',
+      UI_KEY_SEMIMINOR,
       0,
       0,
-      "Flux weighted Semi-minor axis.",
-      4
+      "Flux weighted semi-minor axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "axisratio",
+      UI_KEY_AXISRATIO,
+      0,
+      0,
+      "Flux weighted axis ratio.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "positionangle",
-      'p',
+      UI_KEY_POSITIONANGLE,
       0,
       0,
-      "Flux weighted Position angle.",
-      4
+      "Flux weighted position angle.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geosemimajor",
-      530,
+      UI_KEY_GEOSEMIMAJOR,
       0,
       0,
-      "Flux weighted Semi-major axis.",
-      4
+      "Geometric semi-major axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geosemiminor",
-      531,
+      UI_KEY_GEOSEMIMINOR,
       0,
       0,
-      "Flux weighted Semi-minor axis.",
-      4
+      "Geometric semi-minor axis.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "geoaxisratio",
+      UI_KEY_GEOAXISRATIO,
+      0,
+      0,
+      "Geometric axis ratio.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
     {
       "geopositionangle",
-      532,
+      UI_KEY_GEOPOSITIONANGLE,
       0,
       0,
-      "Flux weighted Position angle.",
-      4
+      "Geometric position angle.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
     },
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
-
 
 
     {0}
@@ -661,378 +917,24 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+/* Define the child argp structure
+   -------------------------------
+
+   NOTE: these parts can be left untouched.*/
+struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
+
+/* Use the child argp structure in list of children (only one for now). */
+struct argp_child
+children[]=
 {
-  /* Save the arguments structure: */
-  struct mkcatalogparams *p = state->input;
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  switch(key)
-    {
-
-    /* Input: */
-    case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
-                                     &p->up.masknameset);
-      break;
-    case 'H':
-      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
-      break;
-    case 'O':
-      gal_checkset_allocate_copy_set(arg, &p->up.objlabsname,
-                                     &p->up.objlabsnameset);
-      break;
-    case 501:
-      gal_checkset_allocate_copy_set(arg, &p->up.objhdu, &p->up.objhduset);
-      break;
-    case 'c':
-      gal_checkset_allocate_copy_set(arg, &p->up.clumplabsname,
-                                     &p->up.clumplabsnameset);
-      break;
-    case 502:
-      gal_checkset_allocate_copy_set(arg, &p->up.clumphdu,
-                                     &p->up.clumphduset);
-      break;
-    case 's':
-      gal_checkset_allocate_copy_set(arg, &p->up.skyname, &p->up.skynameset);
-      break;
-    case 503:
-      gal_checkset_allocate_copy_set(arg, &p->up.skyhdu, &p->up.skyhduset);
-      break;
-    case 't':
-      gal_checkset_allocate_copy_set(arg, &p->up.stdname, &p->up.stdnameset);
-      break;
-    case 504:
-      gal_checkset_allocate_copy_set(arg, &p->up.stdhdu, &p->up.stdhduset);
-      break;
-    case 'z':
-      gal_checkset_any_float(arg, &p->zeropoint, "zeropoint", key, SPACK,
-                             NULL, 0);
-      p->up.zeropointset=1;
-      break;
-    case 'E':
-      p->skysubtracted=1;
-      p->up.skysubtractedset=1;
-      break;
-    case 'T':
-      gal_checkset_any_double(arg, &p->threshold, "threshold", key, SPACK,
-                              NULL, 0);
-      p->up.thresholdset=1;
-      break;
-
-
-    /* Output: */
-    case 521:
-      gal_checkset_any_double(arg, &p->nsigmag, "nsigmag", key, SPACK,
-                              NULL, 0);
-      p->up.nsigmagset=1;
-      break;
-    case 516:
-      gal_checkset_int_l_zero(arg, &p->intwidth, "intwidth", key, SPACK,
-                              NULL, 0);
-      p->up.intwidthset=1;
-      break;
-    case 517:
-      gal_checkset_int_l_zero(arg, &p->floatwidth, "floatwidth", key, SPACK,
-                              NULL, 0);
-      p->up.floatwidthset=1;
-      break;
-    case 518:
-      gal_checkset_int_l_zero(arg, &p->accuwidth, "accuwidth", key, SPACK,
-                              NULL, 0);
-      p->up.floatwidthset=1;
-      break;
-    case 519:
-      gal_checkset_int_l_zero(arg, &p->floatprecision, "flatprecision",
-                              key, SPACK, NULL, 0);
-      p->up.floatprecisionset=1;
-      break;
-    case 520:
-      gal_checkset_int_l_zero(arg, &p->accuprecision, "accuprecision",
-                              key, SPACK, NULL, 0);
-      p->up.accuprecisionset=1;
-      break;
-
-
-    /* Upper limit magnitude */
-    case 535:
-      gal_checkset_allocate_copy_set(arg, &p->up.upmaskname,
-                                     &p->up.upmasknameset);
-      break;
-    case 536:
-      gal_checkset_allocate_copy_set(arg, &p->up.upmaskhdu,
-                                     &p->up.upmaskhduset);
-      break;
-    case 537:
-      gal_checkset_sizet_l_zero(arg, &p->upnum, "upnum", key, SPACK,
-                                NULL, 0);
-      p->up.upnumset=1;
-      break;
-    case 540:
-      p->envseed=1;
-      p->up.envseedset=1;
-      break;
-    case 538:
-      gal_checkset_float_l_0(arg, &p->upsclipmultip, "upsclipmultip",
-                             key, SPACK, NULL, 0);
-      p->up.upsclipmultipset=1;
-      break;
-    case 539:
-      gal_checkset_float_l_0_s_1(arg, &p->upsclipaccu, "upsclipaccu",
-                                 key, SPACK, NULL, 0);
-      p->up.upsclipaccuset=1;
-      break;
-    case 541:
-      gal_checkset_float_l_0(arg, &p->upnsigma, "upnsigma", key,
-                             SPACK, NULL, 0);
-      p->up.upnsigmaset=1;
-      break;
-
-
-
-    /* Catalog columns: */
-    case 'i':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATID);
-      p->up.idset=1;
-      break;
-    case 'j':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATHOSTOBJID);
-      p->up.hostobjidset=1;
-      break;
-    case 'I':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
-      p->up.idinhostobjset=1;
-      break;
-    case 'C':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATNUMCLUMPS);
-      p->up.numclumpsset=1;
-      break;
-    case 'a':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATAREA);
-      p->up.areaset=1;
-      break;
-    case 513:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSAREA);
-      p->up.clumpsareaset=1;
-      break;
-    case 'x':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATX);
-      p->up.xset=1;
-      break;
-    case 'y':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATY);
-      p->up.yset=1;
-      break;
-    case 522:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOX);
-      p->up.geoxset=1;
-      break;
-    case 523:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOY);
-      p->up.geoyset=1;
-      break;
-    case 507:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSX);
-      p->up.clumpsxset=1;
-      break;
-    case 508:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSY);
-      p->up.clumpsyset=1;
-      break;
-    case 524:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
-      p->up.clumpsgeoxset=1;
-      break;
-    case 525:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
-      p->up.clumpsgeoyset=1;
-      break;
-    case 'r':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATRA);
-      p->up.raset=1;
-      break;
-    case 'd':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATDEC);
-      p->up.decset=1;
-      break;
-    case 526:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEORA);
-      p->up.georaset=1;
-      break;
-    case 527:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEODEC);
-      p->up.geodecset=1;
-      break;
-    case 509:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSRA);
-      p->up.clumpsraset=1;
-      break;
-    case 510:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSDEC);
-      p->up.clumpsdecset=1;
-      break;
-    case 528:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
-      p->up.clumpsgeoraset=1;
-      break;
-    case 529:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
-      p->up.clumpsgeodecset=1;
-      break;
-    case 'b':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATBRIGHTNESS);
-      p->up.brightnessset=1;
-      break;
-    case 511:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
-      p->up.clumpsbrightnessset=1;
-      break;
-    case 533:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
-      p->up.noriverbrightnessset=1;
-      break;
-    case 'm':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDE);
-      p->up.magnitudeset=1;
-      break;
-    case 'e':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
-      p->up.magnitudeerrset=1;
-      break;
-    case 512:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
-      p->up.clumpsmagnitudeset=1;
-      break;
-    case 534:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATUPPERLIMITMAG);
-      p->up.upperlimitmagset=1;
-      break;
-    case 514:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERAVE);
-      p->up.riveraveset=1;
-      break;
-    case 515:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERNUM);
-      p->up.rivernumset=1;
-      break;
-    case 'n':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATSN);
-      p->up.snset=1;
-      break;
-    case 505:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATSKY);
-      p->up.skyset=1;
-      break;
-    case 506:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATSTD);
-      p->up.stdset=1;
-      break;
-    case 'A':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMAJOR);
-      p->up.semimajorset=1;
-      break;
-    case 'B':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMINOR);
-      p->up.semiminorset=1;
-      break;
-    case 'p':
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
-      p->up.positionangleset=1;
-      break;
-    case 530:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
-      p->up.geosemimajorset=1;
-      break;
-    case 531:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
-      p->up.geosemiminorset=1;
-      break;
-    case 532:
-      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
-      p->up.geopositionangleset=1;
-      break;
-
-
-
-
-    /* Operating modes: */
-
-
-    /* Read the non-option arguments: */
-    case ARGP_KEY_ARG:
-
-      /* See what type of input value it is and put it in. */
-      if( gal_fits_name_is_fits(arg) )
-        {
-          if(p->up.inputname)
-            argp_error(state, "only one input image should be given");
-          else
-            p->up.inputname=arg;
-        }
-      else
-        argp_error(state, "%s is not a valid file type", arg);
-      break;
-
-
-
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input FITS image(s) provided");
-        }
-      break;
-
-
-
-
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-
-
-
-
-/* Specify the children parsers: */
-struct argp_child children[]=
-  {
-    {&commonargp, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
-
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
-
+/* Set all the necessary argp parameters. */
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

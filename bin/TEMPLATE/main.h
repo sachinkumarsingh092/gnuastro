@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include necessary headers */
 #include <gnuastro/data.h>
 
-#include <options.h>
+#include <gnuastro-internal/options.h>
 
 /* Progarm names.  */
 #define PROGRAM_NAME   "TEMPLATE"    /* Program full name.       */

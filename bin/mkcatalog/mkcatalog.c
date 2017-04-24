@@ -34,730 +34,822 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/data.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/threads.h>
+#include <gnuastro/dimension.h>
 
-#include <timing.h>
-#include <neighbors.h>
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
-
-#include "columns.h"
 #include "mkcatalog.h"
 
+#include "ui.h"
+#include "columns.h"
+#include "upperlimit.h"
+
 
 
 
 
 /*********************************************************************/
-/*****************     Fill information tables     *******************/
+/*************      Definitions and initialization     ***************/
 /*********************************************************************/
-
-/* Macro to see if the label is indexable (belongs to an object or
-   not). See the explanation in bin/noisechisel/label.h. */
-#if GAL_DATA_BLANK_LONG<0
-#define ISINDEXABLEOBJLABEL (objects[i]>0)
-#define ISINDEXABLECLPLABEL (clumps[i]>0)
-#else
-#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_DATA_BLANK_LONG)
-#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_DATA_BLANK_LONG)
-#endif
-
-
-
-
-
-/* In the first pass, the most basic properties (mainly about the
-   objects) are found. The primary reason is that we still don't know
-   how many objects there are in order to be able to put the clump
-   information in the proper place. This could maybe be fixed with a
-   linked list in one pass, but that would drastically bring down the
-   speed. */
-void
-firstpass(struct mkcatalogparams *p)
+/* Both passes are going to need their starting pointers set, so we'll do
+   that here. */
+static void
+mkcatalog_initialize_params(struct mkcatalog_passparams *pp)
 {
-  float imgss;
-  size_t i, is1=p->s1;
-  double x, y, sx, sy, *thisobj;
-  long *objects=p->objects, *clumps=p->clumps;
+  struct mkcatalogparams *p=pp->p;
 
-  /* Go over the pixels and fill the information array. */
-  for(i=0;i<p->s0*p->s1;++i)
-    if(ISINDEXABLEOBJLABEL)
-      {
-        /* thisobj is a pointer to the start of the row in the object
-           information array (oinfo). It is mainly used to keep things
-           short, simple, less bugy and most importantly: elegant. */
-        imgss = p->img[i] - p->sky[i];
-        thisobj = p->oinfo + objects[i]*OCOLUMNS;
+  /* Initialize the number of clumps in this object. */
+  pp->clumpsinobj=0;
 
-        /* Set the shifts to avoid round-off errors in large numbers
-           for the non-linear calculations. We are using the first
-           pixel of each object as the shift parameter to keep the
-           mean reasonably near to the standard deviation. Otherwise,
-           when the object is far out in the image (large x and y
-           positions), then roundoff errors are going to decrease the
-           accuracy of the second order calculations.
 
-           When the object and clumps columns were allocated, the
-           shift columns were set to NaN so we know when to set them
-           for each object/clump. For later parallelization, a mutex
-           can be set up within the `if' statement below and another
-           check can be done within the mutex, this way, only if
-           separate threads get to the start of an object in their
-           respective mesh, for an object that doesn't have a shift
-           already assigned to it, at the same time (highly unlikely)
-           will the process be slightly slowed down. Otherwise, there
-           will be no speed penalty. */
-        if(isnan(thisobj[ OPOSSHIFTX ]))
-          {
-            thisobj[ OPOSSHIFTX ] = i%is1+1;
-            thisobj[ OPOSSHIFTY ] = i/is1+1;
-          }
+  /* Initialize the intermediate values. */
+  memset(pp->oi, 0, OCOL_NUMCOLS * sizeof *pp->oi);
 
-        /* Set the positional variables: */
-        x = i%is1+1;
-        y = i/is1+1;
-        sx = x - thisobj[ OPOSSHIFTX ];
-        sy = y - thisobj[ OPOSSHIFTY ];
 
-        /* Properties that are independent of threshod: */
-        ++thisobj[OALLAREA];
-        thisobj[ OSKY ]        += p->sky[i];
-        thisobj[ OSTD ]        += p->std[i];
+  /* Set the shifts in every dimension to avoid round-off errors in large
+     numbers for the non-linear calculations. We are using the first pixel
+     of each object's tile as the shift parameter to keep the mean
+     (average) reasonably near to the standard deviation. Otherwise, when
+     the object is far out in the image (large x and y positions), then
+     roundoff errors are going to decrease the accuracy of the second order
+     calculations. */
+  gal_dimension_index_to_coord( ( (float *)(pp->tile->array)
+                                  - (float *)(pp->tile->block->array) ),
+                                p->input->ndim, p->input->dsize, pp->shift);
 
-        /* Only if the pixel is above the desired threshold.
 
-           REASON: The reason this condition is given like this that
-           we don't want to do multiple checks. The basic idea is
-           this: when the user doesn't want any thresholds applied,
-           then p->threshold=NAN and any conditional that involves a
-           NaN will fail, so its logical negation will be positive and
-           the calculations below will be done. However, if the user
-           does specify a threhold and the pixel is above the
-           threshold, then (imgss<p->threshold*p->std[i]) will be
-           false and its logigal negation will be positive, so the
-           pixel will be included.*/
-        if(!(imgss<p->threshold*p->std[i]))
-          {
-            ++thisobj[OAREA];
-            thisobj[ OGeoX ]       += x;
-            thisobj[ OGeoY ]       += y;
-            thisobj[ OGeoXX ]      += sx * sx;
-            thisobj[ OGeoYY ]      += sy * sy;
-            thisobj[ OGeoXY ]      += sx * sy;
-            thisobj[ OBrightness ] += imgss;
-            if(imgss>0)
-              {
-                thisobj[ OPosBright ]  += imgss;
-                thisobj[ OFlxWhtX   ]  += imgss * x;
-                thisobj[ OFlxWhtY   ]  += imgss * y;
-                thisobj[ OFlxWhtXX  ]  += imgss * sx * sx;
-                thisobj[ OFlxWhtYY  ]  += imgss * sy * sy;
-                thisobj[ OFlxWhtXY  ]  += imgss * sx * sy;
-              }
-          }
-
-        if(clumps && clumps[i]>0)
-          {
-            /* The largest clump ID over each object is the number of
-               clumps that object has. */
-            thisobj[ ONCLUMPS ] = ( clumps[i] > thisobj[ONCLUMPS]
-                                    ? clumps[i] : thisobj[ONCLUMPS] );
-
-            /* Only if the pixel is above the desired threshold, see
-               explanation under similar condition above. */
-            if(!(imgss<p->threshold*p->std[i]))
-              {
-                /* Save the information. */
-                ++thisobj [ OAREAC ];
-                thisobj[ OBrightnessC ]  += imgss;
-                thisobj[ OGeoCX  ]       += x;
-                thisobj[ OGeoCY  ]       += y;
-                thisobj[ OGeoCXX ]       += sx * sx;
-                thisobj[ OGeoCYY ]       += sy * sy;
-                thisobj[ OGeoCXY ]       += sx * sy;
-                if(imgss>0)
-                  {
-                    thisobj[ OPosBrightC ]  += imgss;
-                    thisobj[ OFlxWhtCX   ]  += imgss * x;
-                    thisobj[ OFlxWhtCY   ]  += imgss * y;
-                    thisobj[ OFlxWhtCXX  ]  += imgss * sx * sx;
-                    thisobj[ OFlxWhtCYY  ]  += imgss * sy * sy;
-                    thisobj[ OFlxWhtCXY  ]  += imgss * sx * sy;
-                  }
-              }
-          }
-      }
+  /* Set the starting and ending indexs of this tile/object.  */
+  pp->st_i   = gal_tile_start_end_ind_inclusive(pp->tile, p->input,
+                                                pp->start_end_inc);
+  pp->st_sky = (float *)(p->sky->array)       + pp->start_end_inc[0];
+  pp->st_std = (float *)(p->std->array)       + pp->start_end_inc[0];
+  pp->st_o   = (int32_t *)(p->objects->array) + pp->start_end_inc[0];
+  pp->st_c   = ( p->clumps
+                 ? (int32_t *)(p->clumps->array)  + pp->start_end_inc[0]
+                 : NULL );
 }
 
 
 
 
 
-/* In the second pass, we have the number of clumps so we can find the
-   total values for the clumps. */
-void
-clumppass(struct mkcatalogparams *p)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*************         First and second passes         ***************/
+/*********************************************************************/
+static void
+mkcatalog_first_pass(struct mkcatalog_passparams *pp)
 {
-  float imgss;
-  double x, y, sx, sy;
-  long wngb[2*WNGBSIZE];
-  size_t ii, *n, *nf, numngb, ngb[8];
-  double *thisclump, *cinfo=p->cinfo;
-  long *objects=p->objects, *clumps=p->clumps;
-  float *img=p->img, *sky=p->sky, *std=p->std;
-  size_t i, j, *ind, *ofcrow, row=0, is0=p->s0, is1=p->s1;
+  struct mkcatalogparams *p=pp->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  double *oi=pp->oi;
+  int32_t *O, *C=NULL;
+  size_t d, increment=0, num_increment=1;
+  float ss, *I, *II, *SK, *ST, *input=p->input->array;
+  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
 
 
-
-  /* The job of ofcrow (object-first-clump-row) is to give the row
-     number of the first clump within an object in the clumps
-     information table. This value can be added with the clumpid in
-     order to give the row number in the clumps information table. */
-  errno=0; ofcrow=malloc((p->numobjects+1)*sizeof *ofcrow);
-  if(ofcrow==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for ofcrow in seconpass "
-          "(mkcatalog.c)", (p->numobjects+1)*sizeof *ofcrow);
-
-
-  /* Fill ofcrow using the known number of clumps in each object. Note
-     that while ofcrow counts from zero, the clump[i] values (which
-     are added with this later) are added with one. So the clump
-     information will start from the second row (with index 1) of the
-     clumps array, not the first (with index 0). */
-  for(i=1;i<=p->numobjects;++i)
-    if(p->oinfo[i*OCOLUMNS+ONCLUMPS]>0.0f)
-      {
-        ofcrow[i]=row;
-        row+=p->oinfo[i*OCOLUMNS+ONCLUMPS];
-      }
-
-  /* Go over all the pixels in the image and fill in the clump
-     information: */
-  for(i=0;i<p->s0*p->s1;++i)
+  /* Parse each contiguous patch of memory covered by this object. */
+  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
-      /* We are on a clump, save its properties. */
-      if(ISINDEXABLECLPLABEL)
+      /* Set the contiguous range to parse, we will check the count
+         over the `I' pointer and just increment the rest. */
+      O  = pp->st_o   + increment;
+      SK = pp->st_sky + increment;
+      ST = pp->st_std + increment;
+      if(p->clumps) C = pp->st_c + increment;
+      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
+
+      /* Parse the tile. */
+      do
         {
-          /* This pointer really simplifies things below! */
-          thisclump = ( cinfo
-                        + ( ofcrow[objects[i]] + clumps[i] )
-                        * CCOLUMNS );
-
-          /* Set the shifts for this object if not already set, see
-             the explanations in the firstpass function. */
-          if(isnan(thisclump[ CPOSSHIFTX ]))
+          /* If this pixel belongs to the requested object and isn't
+             NAN, then do the processing. `hasblank' is constant, so
+             when the input doesn't have any blank values, the `isnan'
+             will never be checked. */
+          if( *O==pp->object && !( p->hasblank && isnan(*I) ) )
             {
-              thisclump[ CPOSSHIFTX ] = i%is1+1;
-              thisclump[ CPOSSHIFTY ] = i/is1+1;
-            }
 
-          /* Set the positional variables: */
-          x = i%is1+1;
-          y = i/is1+1;
-          sx = x - thisclump[ CPOSSHIFTX ];
-          sy = y - thisclump[ CPOSSHIFTY ];
+              /* Total area (independent of threshold). */
+              ++oi[ OCOL_NUMALL ];
 
-          /* Calculations that are independent of the threshold. The
-             CALLAREA is the full area of the clump irrespective of
-             the threshold, this is needed to correctly implement the
-             average river flux (which is defined by the. */
-          ++thisclump[ CALLAREA ];
-          thisclump[ CSKY ]  += sky[i];
-          thisclump[ CSTD ]  += std[i];
+              /* Sky subtracted value. */
+              ss = *I - *SK;
 
-          /* Only if the pixel is above the desired threshold, see
-             explanation under similar condition above. */
-          if(!(img[i]-sky[i]<p->threshold*p->std[i]))
-            {
-              /* Sky subtracted brightness */
-              imgss=img[i]-sky[i];
+              /* Get the number of clumps in this object: the largest clump
+                 ID over each object. */
+              if( p->clumps && *C>0 )
+                pp->clumpsinobj = *C > pp->clumpsinobj ? *C : pp->clumpsinobj;
 
-              /* Fill in this clump information. IMPORTANT NOTE: The
-                 Sky is not subtracted from the clump brightness or
-                 river, because later, we will subtract the river flux
-                 from the clump brightness and therefore we don't need
-                 to know the Sky for the clump brightness. */
-              ++thisclump[ CAREA ];
-              thisclump[ CGeoX ]              += x;
-              thisclump[ CGeoY ]              += y;
-              thisclump[ CGeoXX ]             += sx * sx;
-              thisclump[ CGeoYY ]             += sy * sy;
-              thisclump[ CGeoXY ]             += sx * sy;
-              thisclump[ CINHOSTID ]           = clumps[i];
-              thisclump[ CHOSTOID ]            = objects[i];
-              thisclump[ CBrightness ]        += img[i];
-              thisclump[ CNoRiverBrightness ] += imgss;
-              if( imgss > 0.0f )
+              /* Only continue if the pixel is above the threshold.
+
+                 ABOUT THE CHECK: The reason this condition is given
+                 like this is that the `threshold' value is optional
+                 and we don't want to do multiple checks. The basic
+                 idea is this: when the user doesn't want any
+                 thresholds applied, then `p->threshold==NAN' and any
+                 conditional that involves a NaN will fail, so its
+                 logical negation will be positive and the calculations
+                 below will be done. However, if the user does specify
+                 a threhold and the pixel is above the threshold, then
+                 (`ss < p->threshold * *ST') will be false and its
+                 logical negation will be positive, so the pixel will
+                 be included. */
+              if( !( ss < p->threshold * *ST ) )
                 {
-                  thisclump[ CPosBright ]   += imgss;
-                  thisclump[ CFlxWhtX ]     += imgss * x;
-                  thisclump[ CFlxWhtY ]     += imgss * y;
-                  thisclump[ CFlxWhtXX ]    += imgss * sx * sx;
-                  thisclump[ CFlxWhtYY ]    += imgss * sy * sy;
-                  thisclump[ CFlxWhtXY ]    += imgss * sx * sy;
-                }
-            }
+                  /* Sum of the Sky and its STD value. */
+                  oi[ OCOL_SUMSKY ] += *SK;
+                  oi[ OCOL_SUMSTD ] += *ST;
 
-        }
+                  /* Get the coordinates of this point. */
+                  gal_dimension_index_to_coord(I-input, ndim, dsize, c);
 
-      /* We are on a detected region but not a clump (with a negative
-         label). This region can be used to find properties like the
-         river fluxs in the vicinity of clumps. */
-      else if (clumps[i]!=GAL_DATA_BLANK_LONG)
+                  /* Calculate the shifted coordinates for second order
+                     calculations. The coordinate is incremented
+                     because from now on, the positions are in the FITS
+                     standard (starting from one).
 
-        /* We want to check the river pixels in each detection that
-           has a clump. Recall that each detection can host more than
-           one object. Since all the detection's pixels are given to
-           one object, you can check if we are on an object or not
-           with the clumps[i]<0 test.
+                     IMPORTANT NOTE: this is a postfix increment, so after
+                     the expression (difference) is evaluated, the
+                     coordinate is going to change. This is necessary
+                     because `shift' is also starting from zero.    */
+                  for(d=0;d<ndim;++d) sc[d] = c[d] - pp->shift[d];
 
-           The process that keeps the labels of the clumps and their
-           host object that have already been used for each river
-           pixel in wngb wngb is inherited from the getclumpinfo
-           function in NoiseChisel's clump.c.
-
-           There is one big difference. When NoiseChisel was
-           identifying the clumps, there were no `object's. The clumps
-           were all within one detection. But here, the clumps can be
-           separated by a one pixel thick river, but belong to
-           different objects. So wngb has to keep two value for each
-           neighboring clump: the object it belongs to and the clump
-           within that object.
-        */
-        if(clumps[i]<0 && p->oinfo[objects[i]*OCOLUMNS+ONCLUMPS] > 0.0f)
-          {
-            /* Make the preparations: */
-            ii=0;
-            ind=&i;
-            GAL_NEIGHBORS_FILL_8_ALLIMG;
-            nf=(n=ngb)+numngb;
-            memset(wngb, 0, sizeof(wngb));
-
-            /* Go over the neighbors and add the flux of this river
-               pixel to a clump's information if it has not been added
-               already. */
-            do
-              if(clumps[*n]>0)
-                {
-                  /* Go over wngb to see if this river pixel's value
-                     has been added to a segment or not. */
-                  for(j=0;j<ii;++j)
-                    if(wngb[j*2]==objects[*n] && wngb[j*2+1]==clumps[*n])
-                      /* It is already present. break out. */
-                      break;
-
-                  /* First time we are seeing this clump for this
-                     river pixel. */
-                  if(j==ii)
+                  /* Geometric positions and total number. */
+                  ++oi[ OCOL_NUM ];
+                  oi[ OCOL_SUM   ] += ss;
+                  oi[ OCOL_GX    ] += c[1]+1;
+                  oi[ OCOL_GY    ] += c[0]+1;
+                  oi[ OCOL_GXX   ] += sc[1] * sc[1];
+                  oi[ OCOL_GYY   ] += sc[0] * sc[0];
+                  oi[ OCOL_GXY   ] += sc[1] * sc[0];
+                  if(p->clumps && *C>0)
                     {
-                      /* Note that the object label has to come from
-                         the object label on the neighbor, not the
-                         object label of the river. This river pixel
-                         might be immediately between two clumps on
-                         separate objects, so it will read it
-                         correctly for one clump and incorrectly for
-                         the next. */
-                      cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
-                             * CCOLUMNS + CRivAve ] += img[i];
-                      ++cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
-                               * CCOLUMNS + CRivArea ];
-                      wngb[ii*2]=objects[*n];
-                      wngb[ii*2+1]=clumps[*n];
-                      ++ii;
+                      ++oi[ OCOL_C_NUM ];
+                      oi[ OCOL_C_SUM   ] += ss;
+                      oi[ OCOL_C_GX    ] += c[1]+1;
+                      oi[ OCOL_C_GY    ] += c[0]+1;
+                    }
+
+                  /* For flux weighted centers, we can only use positive
+                     values, so do those measurements here. */
+                  if( ss > 0.0f )
+                    {
+                      oi[ OCOL_SUMPOS ] += ss;
+                      oi[ OCOL_VX     ] += ss * c[1]+1;
+                      oi[ OCOL_VY     ] += ss * c[0]+1;
+                      oi[ OCOL_VXX    ] += ss * sc[1] * sc[1];
+                      oi[ OCOL_VYY    ] += ss * sc[0] * sc[0];
+                      oi[ OCOL_VXY    ] += ss * sc[1] * sc[0];
+                      if(p->clumps && *C>0)
+                        {
+                          oi[ OCOL_C_SUMPOS ] += ss;
+                          oi[ OCOL_C_VX     ] += ss * (c[1]+1);
+                          oi[ OCOL_C_VY     ] += ss * (c[0]+1);
+                        }
                     }
                 }
-            while(++n<nf);
-          }
-    }
-
-  /* Clean up: */
-  free(ofcrow);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/*****************           Make output           *******************/
-/*********************************************************************/
-void
-makeoutput(struct mkcatalogparams *p)
-{
-  double sn, pixarea;
-  size_t col, *cols, tmpcol;
-  char comment[COMMENTSIZE], tline[100], *target;
-  int prec[2]={p->floatprecision, p->accuprecision};
-  int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
-
-
-  /* Calculate the pixel area in arcseconds^2: */
-  pixarea=gal_wcs_pixel_area_arcsec2(p->wcs);
-
-
-  /* First make the objects catalog, then the clumps catalog. */
-  for(p->obj0clump1=0;p->obj0clump1<2;++p->obj0clump1)
-    {
-
-      /* If no clumps image was provided, then ignore the clumps
-         catalog. */
-      if(p->obj0clump1==1 && p->clumps==NULL)
-        continue;
-
-
-      /* Do the preparations for this round: */
-      p->intcounter=p->accucounter=p->curcol=0;
-      p->name      = p->obj0clump1 ? "clump" : "object";
-      p->icols     = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
-      p->info      = p->obj0clump1 ? p->cinfo : p->oinfo;
-      p->cat       = p->obj0clump1 ? p->clumpcat : p->objcat;
-      target       = p->obj0clump1 ? MKCATCLUMP : MKCATOBJECT;
-      p->filename  = p->obj0clump1 ? p->ccatname : p->ocatname;
-      cols         = p->obj0clump1 ? p->clumpcols : p->objcols;
-      p->numcols   = p->obj0clump1 ? p->clumpncols : p->objncols;
-      p->num       = p->obj0clump1 ? p->numclumps : p->numobjects;
-
-
-
-      /* Allocate the integer and accuracy arrays: */
-      errno=0; p->intcols=malloc(p->numcols*sizeof *p->intcols);
-      if(p->intcols==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for intcols in makeoutput "
-              "(mkcatalog.c)", p->numcols*sizeof *p->intcols);
-      errno=0; p->accucols=malloc(p->numcols*sizeof *p->accucols);
-      if(p->accucols==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for accucols in makeoutput "
-              "(mkcatalog.c)", p->numcols*sizeof *p->accucols);
-
-
-
-      /* Write the top of the comments: */
-      sprintf(comment, "# %s %s catalog.\n", SPACK_STRING, p->name);
-      sprintf(p->line, "# %s started on %s", SPACK_NAME, ctime(&p->rawtime));
-      strcat(comment, p->line);
-      if(gal_git_describe())
-        {
-          sprintf(p->line, "# From commit %s\n", gal_git_describe());
-          strcat(comment, p->line);
-        }
-
-
-      /* Write the input files: */
-      strcat(comment, "#\n# Input files and information:\n"
-             "# ----------------------------\n");
-      sprintf(p->line, "# Input   %s (hdu: %s)\n", p->up.inputname,
-              p->cp.hdu);
-      strcat(comment, p->line);
-      if(p->up.masknameset)
-        {
-          sprintf(p->line, "# Mask   %s (hdu: %s)\n", p->up.maskname,
-                  p->up.mhdu);
-          strcat(comment, p->line);
-        }
-      sprintf(p->line, "# Objects %s (hdu: %s)\n", p->up.objlabsname,
-              p->up.objhdu);
-      strcat(comment, p->line);
-      if(p->up.clumplabsname)
-        {
-          sprintf(p->line, "# Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
-                  p->up.clumphdu);
-          strcat(comment, p->line);
-        }
-      sprintf(p->line, "# Sky     %s (hdu: %s)\n", p->up.skyname,
-              p->up.skyhdu);
-      strcat(comment, p->line);
-      sprintf(p->line, "# Sky STD %s (hdu: %s)\n", p->up.stdname,
-              p->up.stdhdu);
-      strcat(comment, p->line);
-      if(p->obj0clump1==0 && p->upmask)
-        {
-          sprintf(p->line, "# Upper limit magnitude mask %s (hdu: %s)\n",
-                  p->up.upmaskname, p->up.upmaskhdu);
-          strcat(comment, p->line);
-        }
-
-
-
-
-      /* If a magnitude is also desired, print the zero point
-         magnitude and the 5sigma magnitude: */
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              "Zero point magnitude:", p->zeropoint);
-      strcat(comment, p->line);
-      sprintf(tline, "Pixel %g sigma surface brightness (magnitude)",
-              p->nsigmag);
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              tline, -2.5f*log10(p->nsigmag*p->medstd)+p->zeropoint );
-      strcat(comment, p->line);
-
-      sn = p->obj0clump1 ? p->clumpsn : p->detsn;
-      if(!isnan(sn))
-        {
-          sprintf(tline, "%s limiting Signal to noise ratio: ",
-                  p->obj0clump1 ? "Clump" : "Detection");
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
-          strcat(comment, p->line);
-          if(p->obj0clump1==0)
-            strcat(comment, "# (NOTE: limits above are for detections, not "
-                   "objects)\n");
-        }
-
-
-      /* If cpscorr was used, report it: */
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              "Counts-per-second correction:", 1/p->cpscorr);
-      strcat(comment, p->line);
-
-
-
-      /* Report the area of each pixel in stradians: */
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n",
-              "Pixel area (arcsec^2)", pixarea);
-      strcat(comment, p->line);
-
-      /* if a threshold was used then report it: */
-      if(!isnan(p->threshold))
-        {
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n", "**IMPORTANT** "
-                  "Pixel threshold (multiple of local std)",
-                  p->threshold);
-          strcat(comment, p->line);
-        }
-
-      /* If an upper limit was output then report its parameters: */
-      if(p->obj0clump1==0 && p->up.upperlimitmagset)
-        {
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Number of upper "
-                  "limit magnitude samples", p->upnum);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Number of threads "
-                  "used for upper limit magnitude",
-                  p->cp.numthreads);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%s\n", "Random number "
-                  "generator type for upper limit magnitude",
-                  gsl_rng_default->name);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Random number "
-                  "generator seed for upper limit magnitude",
-                  gsl_rng_default_seed);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "STD multiple for "
-                  "upper limit magnitude sigma-clip", p->upsclipmultip);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "STD accuracy "
-                  "to stop upper limit magnitude sigma-clip", p->upsclipaccu);
-          strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "Multiple of "
-                  "sigma for final upper limit magnitude", p->upnsigma);
-          strcat(comment, p->line);
-        }
-
-
-      /* Prepare for printing the columns: */
-      strcat(comment, "#\n# Columns:\n# --------\n");
-
-
-      /* Fill the catalog array, in the end set the last elements in
-         intcols and accucols to -1, so gal_txtarray_array_to_txt knows
-         when to stop. */
-      for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
-        {
-          col=cols[p->curcol];
-          switch(col)
-            {
-
-            case CATID:
-              idcol(p);
-              break;
-
-            case CATHOSTOBJID:
-              hostobj(p, 1);
-              break;
-
-            case CATIDINHOSTOBJ:
-              hostobj(p, 0);
-              break;
-
-            case CATNUMCLUMPS:
-              numclumps(p);
-              break;
-
-            case CATAREA:
-              area(p, 0, 0);
-              break;
-
-            case CATCLUMPSAREA:
-              area(p, 1, 0);
-              break;
-
-
-            case CATX:
-              tmpcol = p->obj0clump1 ? CFlxWhtX : OFlxWhtX;
-              position(p, tmpcol, target, MKCATWHTC, MKCATX);
-              break;
-
-            case CATY:
-              tmpcol = p->obj0clump1 ? CFlxWhtY : OFlxWhtY;
-              position(p, tmpcol, target, MKCATWHTC, MKCATY);
-              break;
-
-            case CATGEOX:
-              tmpcol = p->obj0clump1 ? CGeoX : OGeoX;
-              position(p, tmpcol, target, MKCATGEOC, MKCATX);
-              break;
-
-            case CATGEOY:
-              tmpcol = p->obj0clump1 ? CGeoY : OGeoY;
-              position(p, tmpcol, target, MKCATGEOC, MKCATY);
-              break;
-
-            case CATCLUMPSX:
-              position(p, OFlxWhtCX, MKCATCINO, MKCATWHTC, MKCATX);
-              break;
-
-            case CATCLUMPSY:
-              position(p, OFlxWhtCY, MKCATCINO, MKCATWHTC, MKCATY);
-              break;
-
-            case CATCLUMPSGEOX:
-              position(p, OGeoCX, MKCATCINO, MKCATGEOC, MKCATX);
-              break;
-
-            case CATCLUMPSGEOY:
-              position(p, OGeoCY, MKCATCINO, MKCATGEOC, MKCATY);
-              break;
-
-            case CATRA:
-              tmpcol = p->obj0clump1 ? CFlxWhtRA : OFlxWhtRA;
-              position(p, tmpcol, target, MKCATWHTC, MKCATRA);
-              break;
-
-            case CATDEC:
-              tmpcol = p->obj0clump1 ? CFlxWhtDec : OFlxWhtDec;
-              position(p, tmpcol, target, MKCATWHTC, MKCATDEC);
-              break;
-
-            case CATGEORA:
-              tmpcol = p->obj0clump1 ? CGeoRA : OGeoRA;
-              position(p, tmpcol, target, MKCATGEOC, MKCATRA);
-              break;
-
-            case CATGEODEC:
-              tmpcol = p->obj0clump1 ? CGeoDec : OGeoDec;
-              position(p, tmpcol, target, MKCATGEOC, MKCATDEC);
-              break;
-
-            case CATCLUMPSRA:
-              position(p, OFlxWhtCRA, MKCATCINO, MKCATWHTC, MKCATRA);
-              break;
-
-            case CATCLUMPSDEC:
-              position(p, OFlxWhtCDec, MKCATCINO, MKCATWHTC, MKCATDEC);
-              break;
-
-            case CATCLUMPSGEORA:
-              position(p, OGeoCRA, MKCATCINO, MKCATGEOC, MKCATRA);
-              break;
-
-            case CATCLUMPSGEODEC:
-              position(p, OGeoCDec, MKCATCINO, MKCATGEOC, MKCATDEC);
-              break;
-
-            case CATBRIGHTNESS:
-              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
-              brightnessmag(p, tmpcol, target, MKCATBRIGHT);
-              break;
-
-            case CATCLUMPSBRIGHTNESS:
-              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATBRIGHT);
-              break;
-
-            case CATNORIVERBRIGHTNESS:
-              brightnessmag(p, CNoRiverBrightness, target, MKCATBRIGHT);
-              break;
-
-            case CATMAGNITUDE:
-              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
-              brightnessmag(p, tmpcol, target, MKCATMAG);
-              break;
-
-            case CATMAGNITUDEERR:
-              sncol(p, 1, target);
-              break;
-
-            case CATCLUMPSMAGNITUDE:
-              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATMAG);
-              break;
-
-            case CATUPPERLIMITMAG:
-              upperlimitcol(p);
-              break;
-
-            case CATRIVERAVE:
-              brightnessmag(p, CRivAve, MKRIVERSSUR, MKCATBRIGHT);
-              break;
-
-            case CATRIVERNUM:
-              area(p, 0, 1);
-              break;
-
-            case CATSN:
-              sncol(p, 0, target);
-              break;
-
-            case CATSKY:
-              skystd(p, p->obj0clump1 ? CSKY : OSKY);
-              break;
-
-            case CATSTD:
-              skystd(p, p->obj0clump1 ? CSTD : OSTD);
-              break;
-
-            case CATSEMIMAJOR: case CATSEMIMINOR: case CATPOSITIONANGLE:
-            case CATGEOSEMIMAJOR: case CATGEOSEMIMINOR:
-            case CATGEOPOSITIONANGLE:
-              secondordermoment(p, col, target);
-              break;
-
-            default:
-              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                    "can fix the problem. The value to cols[%zu] (%zu), is "
-                    "not recognized in makeoutput (mkcatalog.c)",
-                    PACKAGE_BUGREPORT, p->curcol, cols[p->curcol]);
             }
 
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"[%s]\n",
-                  p->description, p->unitp);
-          strcat(comment, p->line);
+          /* Increment the other pointers. */
+          ++O; ++SK; ++ST; if(p->clumps) ++C;
         }
-      p->intcols[p->intcounter]=p->accucols[p->accucounter]=-1;
+      while(++I<II);
+
+      /* Increment to the next contiguous region of this tile. */
+      increment += ( gal_tile_block_increment(p->input, dsize,
+                                              num_increment++, NULL) );
+    }
+
+  /* Clean up. */
+  free(c);
+  free(sc);
+}
 
 
 
-      /* Write the catalog to file: */
-      gal_txtarray_array_to_txt(p->cat, p->num, p->numcols, comment,
-                                p->intcols, p->accucols, space, prec,
-                                'f', p->filename);
 
-      /* Clean up: */
-      free(p->intcols);
-      free(p->accucols);
+
+/* Do the second pass  */
+static void
+mkcatalog_second_pass(struct mkcatalog_passparams *pp)
+{
+  struct mkcatalogparams *p=pp->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  double *ci;
+  int32_t *O, *C=NULL, nlab, *ngblabs;
+  size_t i, ii, d, increment=0, num_increment=1;
+  size_t nngb=gal_dimension_num_neighbors(ndim);
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
+  float ss, *I, *II, *SK, *ST, *input=p->input->array;
+  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  int32_t *objects=p->objects->array, *clumps=p->clumps->array;
+
+  /* Allocate array to keep the neighbor labels. */
+  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb);
+
+  /* Parse each contiguous patch of memory covered by this object. */
+  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
+    {
+      /* Set the contiguous range to parse, we will check the count
+         over the `I' pointer and just increment the rest. */
+      O  = pp->st_o   + increment;
+      SK = pp->st_sky + increment;
+      ST = pp->st_std + increment;
+      if(p->clumps) C = pp->st_c + increment;
+      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
+
+      /* Parse the next contiguous region of this tile. */
+      do
+        {
+          /* If this pixel belongs to the requested object, is a clumps and
+             isn't NAN, then do the processing. `hasblank' is constant, so
+             when the input doesn't have any blank values, the `isnan' will
+             never be checked. */
+          if( *O==pp->object && !( p->hasblank && isnan(*I) ) )
+            {
+              /* We are on a clump. */
+              if(p->clumps && *C>0)
+                {
+                  /* Pointer to make things easier. Note that the clump
+                     counters start from 1, but the array indexs from 0.*/
+                  ci=&pp->ci[ (*C-1) * CCOL_NUMCOLS ];
+
+                  /* Total area (independent of threshold). */
+                  ++ci[ CCOL_NUMALL ];
+
+                  /* Sky subtracted value. */
+                  ss = *I - *SK;
+
+                  /* Only use pixels above the threshold, see explanations in
+                     first pass for an explanation. */
+                  if( !( ss < p->threshold * *ST ) )
+                    {
+                      /* Sum of the Sky and its STD value. */
+                      ci[ CCOL_SUMSKY ] += *SK;
+                      ci[ CCOL_SUMSTD ] += *ST;
+
+                      /* Get the coordinates of this point. */
+                      gal_dimension_index_to_coord(I-input, ndim, dsize, c);
+
+                      /* Shifted coordinates for second order moments, see
+                         explanations in the first pass.*/
+                      for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
+
+                      /* Fill in the necessary information. */
+                      ++ci[ CCOL_NUM ];
+                      ci[ CCOL_SUM   ] += ss;
+                      ci[ CCOL_GX    ] += c[1];
+                      ci[ CCOL_GY    ] += c[0];
+                      ci[ CCOL_GXX   ] += sc[1] * sc[1];
+                      ci[ CCOL_GYY   ] += sc[0] * sc[0];
+                      ci[ CCOL_GXY   ] += sc[1] * sc[0];
+                      if( ss > 0.0f )
+                        {
+                          ci[ CCOL_SUMPOS ] += ss;
+                          ci[ CCOL_VX     ] += ss * c[1];
+                          ci[ CCOL_VY     ] += ss * c[0];
+                          ci[ CCOL_VXX    ] += ss * sc[1] * sc[1];
+                          ci[ CCOL_VYY    ] += ss * sc[0] * sc[0];
+                          ci[ CCOL_VXY    ] += ss * sc[1] * sc[0];
+                        }
+                    }
+                }
+
+              /* This pixel is on the diffuse region, check to see if it is
+                 touching a clump or not, but only if this object actually
+                 has any clumps. */
+              else if(pp->clumpsinobj)
+                {
+                  /* We are on a diffuse (possibly a river) pixel. So the
+                     value of this pixel has to be added to any of the
+                     clumps in touches. But since it might touch a labeled
+                     region more than once, we use `ngblabs' to keep track
+                     of which label we have already added its value
+                     to. `ii' is the number of different labels this river
+                     pixel has already been considered for. `ngblabs' will
+                     keep the list labels. */
+                  ii=0;
+                  memset(ngblabs, 0, nngb*sizeof *ngblabs);
+
+                  /* Go over the neighbors and see if this pixel is
+                     touching a clump or not. */
+                  GAL_DIMENSION_NEIGHBOR_OP(I-input, ndim, dsize, ndim, dinc,
+                     {
+                       /* Neighbor's label (mainly for easy reading). */
+                       nlab=clumps[nind];
+
+                       /* We only want neighbors that are a clump and part
+                          of this object and part of the same object. */
+                       if( nlab>0 && objects[nind]==pp->object)
+                         {
+                           /* Go over all already checked labels and make
+                              sure this clump hasn't already been
+                              considered. */
+                           for(i=0;i<ii;++i) if(ngblabs[i]==nlab) break;
+
+                           /* It hasn't been considered yet: */
+                           if(i==ii)
+                             {
+                               ngblabs[ii++] = nlab;
+
+                               ++(pp->ci)[ (nlab-1) * CCOL_NUMCOLS
+                                           + CCOL_RIV_NUM ];
+                               pp->ci[ (nlab-1) * CCOL_NUMCOLS
+                                       + CCOL_RIV_SUM ] += *I-*SK;
+                             }
+                         }
+                     });
+                }
+            }
+
+          /* Increment the other pointers. */
+          ++O; ++SK; ++ST; if(p->clumps) ++C;
+        }
+      while(++I<II);
+
+      /* Increment to the next contiguous region of this tile. */
+      increment += ( gal_tile_block_increment(p->input, dsize,
+                                              num_increment++, NULL) );
+    }
+
+  /* Clean up. */
+  free(c);
+  free(sc);
+  free(dinc);
+  free(ngblabs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*****************       High-level funcitons      *******************/
+/*********************************************************************/
+static void
+mkcatalog_clump_starting_index(struct mkcatalog_passparams *pp)
+{
+  struct mkcatalogparams *p=pp->p;
+
+  /* Lock the mutex if we are working on more than one thread. NOTE: it is
+     very important to keep the number of operations within the mutex to a
+     minimum so other threads don't get delayed. */
+  if(p->cp.numthreads>1)
+    pthread_mutex_lock(&p->mutex);
+
+  /* Put the current total number of rows filled into the output, then
+     increment the total number by the number of clumps. */
+  pp->clumpstartindex = p->clumprowsfilled;
+  p->clumprowsfilled += pp->clumpsinobj;
+
+  /* Unlock the mutex (if it was locked). */
+  if(p->cp.numthreads>1)
+    pthread_mutex_unlock(&p->mutex);
+}
+
+
+
+
+
+/* Each thread will call this function once. It will go over all the
+   objects that are assigned to it. */
+static void *
+mkcatalog_single_object(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct mkcatalogparams *p=(struct mkcatalogparams *)(tprm->params);
+  size_t ndim=p->input->ndim;
+
+  size_t i;
+  struct mkcatalog_passparams pp;
+
+  /* Initialize the mkcatalog_passparams elements. */
+  pp.p               = p;
+  pp.clumpstartindex = 0;
+  pp.rng             = p->rng ? gsl_rng_clone(p->rng) : NULL;
+  pp.shift           = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  pp.oi              = gal_data_malloc_array(GAL_TYPE_FLOAT64, OCOL_NUMCOLS);
+
+  /* If we have upper-limit mode, then allocate the container to keep the
+     values to calculate the standard deviation. */
+  pp.up_vals = p->upperlimit ? gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1,
+                                              &p->upnum, NULL, 0,
+                                              p->cp.minmapsize, NULL, NULL,
+                                              NULL) : NULL;
+
+  /* Fill the desired columns for all the objects given to this thread. */
+  for(i=0; tprm->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
+    {
+      /* For easy reading, Note that the object IDs start from one while
+         the array positions start from 0. */
+      pp.ci=NULL;
+      pp.object = tprm->indexs[i] + 1;
+      pp.tile   = &p->tiles[ tprm->indexs[i] ];
+
+      /* Initialize the parameters for this object/tile. */
+      mkcatalog_initialize_params(&pp);
+
+      /* Get the first pass information. */
+      mkcatalog_first_pass(&pp);
+
+      /* Currently the second pass is only necessary when there is a clumps
+         image. */
+      if(p->clumps)
+        {
+          /* Allocate space for the properties of each clump. */
+          pp.ci = gal_data_calloc_array(GAL_TYPE_FLOAT64,
+                                        pp.clumpsinobj * CCOL_NUMCOLS);
+
+          /* Get the starting row of this object's clumps in the final
+             catalog. This index is also necessary for the unique random
+             number generator seeds of each clump. */
+          mkcatalog_clump_starting_index(&pp);
+
+          /* Get the second pass information. */
+          mkcatalog_second_pass(&pp);
+        }
+
+      /* Calculate the upper limit magnitude (if necessary). */
+      if(p->upperlimit) upperlimit_calculate(&pp);
+
+      /* Write the pass information into the columns. */
+      columns_fill(&pp);
+
+      /* Clean up for this object. */
+      if(pp.ci) free(pp.ci);
+    }
+
+  /* Clean up. */
+  free(pp.oi);
+  free(pp.shift);
+  gal_data_free(pp.up_vals);
+  if(pp.rng) gsl_rng_free(pp.rng);
+
+  /* Wait until all the threads finish and return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********         Processing after threads finish        *************/
+/*********************************************************************/
+/* Convert internal image coordinates to WCS for table.
+
+   Note that from the beginning (during the passing steps), we saved FITS
+   coordinates. Also note that we are doing the conversion in place. */
+static void
+mkcatalog_wcs_conversion(struct mkcatalogparams *p)
+{
+  double *c, *d, *df;
+  gal_data_t *column;
+
+  /* Flux weighted center positions for clumps and objects. */
+  if(p->rd_vo)
+    {
+      gal_wcs_img_to_world(p->input->wcs, p->rd_vo[0], p->rd_vo[1],
+                           &p->rd_vo[0], &p->rd_vo[1], p->numobjects);
+      if(p->rd_vc)
+        gal_wcs_img_to_world(p->input->wcs, p->rd_vc[0], p->rd_vc[1],
+                             &p->rd_vc[0], &p->rd_vc[1], p->numclumps);
+    }
+
+  /* Geometric center positions for clumps and objects. */
+  if(p->rd_go)
+    {
+      gal_wcs_img_to_world(p->input->wcs, p->rd_go[0], p->rd_go[1],
+                           &p->rd_go[0], &p->rd_go[1], p->numobjects);
+      if(p->rd_gc)
+        gal_wcs_img_to_world(p->input->wcs, p->rd_gc[0], p->rd_gc[1],
+                             &p->rd_gc[0], &p->rd_gc[1], p->numclumps);
+    }
+
+  /* All clumps flux weighted center. */
+  if(p->rd_vcc)
+    gal_wcs_img_to_world(p->input->wcs, p->rd_vcc[0], p->rd_vcc[1],
+                         &p->rd_vcc[0], &p->rd_vcc[1], p->numobjects);
+
+  /* All clumps geometric center. */
+  if(p->rd_gcc)
+    gal_wcs_img_to_world(p->input->wcs, p->rd_gcc[0], p->rd_gcc[1],
+                         &p->rd_gcc[0], &p->rd_gcc[1], p->numobjects);
+
+
+  /* Go over all the object columns and fill in the values. */
+  for(column=p->objectcols; column!=NULL; column=column->next)
+    {
+      /* Definitions */
+      c=NULL;
+
+      /* Set `c' for the columns that must be corrected. Note that this
+         `switch' statement doesn't need any `default', because there are
+         probably columns that don't need any correction. */
+      switch(column->status)
+        {
+        case UI_KEY_RA:           c=p->rd_vo[0];   break;
+        case UI_KEY_DEC:          c=p->rd_vo[1];   break;
+        case UI_KEY_GEORA:        c=p->rd_go[0];   break;
+        case UI_KEY_GEODEC:       c=p->rd_go[1];   break;
+        case UI_KEY_CLUMPSRA:     c=p->rd_vcc[0];  break;
+        case UI_KEY_CLUMPSDEC:    c=p->rd_vcc[1];  break;
+        case UI_KEY_CLUMPSGEORA:  c=p->rd_gcc[0];  break;
+        case UI_KEY_CLUMPSGEODEC: c=p->rd_gcc[1];  break;
+        }
+
+      /* Copy the elements. */
+      if(c) { df=(d=column->array)+column->size; do *d=*c++; while(++d<df); }
+    }
+
+
+  /* Go over all the clump columns and fill in the values. */
+  for(column=p->clumpcols; column!=NULL; column=column->next)
+    {
+      /* Definitions */
+      c=NULL;
+
+      /* Set `c' for the columns that must be corrected. Note that this
+         `switch' statement doesn't need any `default', because there are
+         probably columns that don't need any correction. */
+      switch(column->status)
+        {
+        case UI_KEY_RA:           c=p->rd_vc[0];   break;
+        case UI_KEY_DEC:          c=p->rd_vc[1];   break;
+        case UI_KEY_GEORA:        c=p->rd_gc[0];   break;
+        case UI_KEY_GEODEC:       c=p->rd_gc[1];   break;
+        }
+
+      /* Copy the elements. */
+      if(c) { df=(d=column->array)+column->size; do *d=*c++; while(++d<df); }
+    }
+}
+
+
+
+
+
+/* Write the similar information. */
+static struct gal_linkedlist_stll *
+mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
+                             char *ObjClump)
+{
+  char *str;
+  float snlim;
+  struct gal_linkedlist_stll *comments=NULL;
+  char *skyfile=p->skyfile ? p->skyfile : p->inputname;
+  char *stdfile=p->stdfile ? p->stdfile : p->inputname;
+  char *clumpsfile=p->clumpsfile ? p->clumpsfile : p->inputname;
+  char *objectsfile=p->objectsfile ? p->objectsfile : p->inputname;
+
+  asprintf(&str, "%s %s catalog.", PROGRAM_STRING, o0c1 ? "object" : "clump");
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+  /* If in a Git controlled directory and output isn't a FITS file (in
+     FITS, this will be automatically included). */
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT && gal_git_describe())
+    {
+      asprintf(&str, "# Directory commit %s\n", gal_git_describe());
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      asprintf(&str, "--------- Input files ---------");
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  asprintf(&str, "Values:  %s (hdu: %s).", p->inputname, p->cp.hdu);
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+  asprintf(&str, "Objects: %s (hdu: %s).", objectsfile, p->objectshdu);
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+  if(p->clumps)
+    {
+      asprintf(&str, "Clumps:  %s (hdu: %s).", clumpsfile, p->clumpshdu);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  asprintf(&str, "Sky:     %s (hdu: %s).", skyfile, p->skyhdu);
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+  asprintf(&str, "Sky STD: %s (hdu: %s).", stdfile, p->stdhdu);
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+  if(p->upmaskfile)
+    {
+      asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
+               p->upmaskhdu);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      asprintf(&str, "--------- Supplimentary information ---------");
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if(p->input->wcs)
+    {
+      asprintf(&str, "Pixel area (arcsec^2): %g",
+               gal_wcs_pixel_area_arcsec2(p->input->wcs));
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if(p->hasmag)
+    {
+      asprintf(&str, "Zeropoint magnitude: %.4f", p->zeropoint);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if( !isnan(p->zeropoint) )
+    {
+      asprintf(&str, "Pixel %g sigma surface brightness (magnitude): %.3f",
+               p->nsigmag, -2.5f*log10(p->nsigmag*p->medstd)+p->zeropoint);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  snlim = o0c1 ? p->clumpsn : p->detsn;
+  if( !isnan(snlim) )
+    {
+      asprintf(&str, "%s limiting signal-to-noise ratio: %.3f", ObjClump,
+               snlim);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if(o0c1==0)
+    {
+      asprintf(&str, "(NOTE: S/N limit above is for pseudo-detections, "
+               "not objects.)");
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if(p->cpscorr>1.0f)
+    {
+      asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  if( !isnan(p->threshold) )
+    {
+      asprintf(&str, "**IMPORTANT** Pixel threshold (multiple of local "
+               "std): %.3f", p->threshold);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+
+  if(p->upperlimit)
+    {
+      if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+        {
+          asprintf(&str, "--------- Upper-limit measurement ---------");
+          gal_linkedlist_add_to_stll(&comments, str, 0);
+        }
+
+      asprintf(&str, "Number of random samples: %zu", p->upnum);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      asprintf(&str, "Random number generator name: %s", p->rngname);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      asprintf(&str, "Random number generator seed: %lu", p->seed);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
+               p->upsigmaclip[0]);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      if(p->upsigmaclip[1]>=1.0f)
+        asprintf(&str, "Number of clips for sigma-clipping: %.0f",
+                 p->upsigmaclip[1]);
+      else
+        asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
+                 p->upsigmaclip[1]);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: %.3f",
+               p->upnsigma);
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+
+
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      asprintf(&str, "-------------------------------------------\n");
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+
+      asprintf(&str, "--------- Table columns ---------");
+      gal_linkedlist_add_to_stll(&comments, str, 0);
+    }
+
+  /* Return the comments. */
+  return comments;
+}
+
+
+
+
+
+/* Write the produced columns into the output */
+static void
+mkcatalog_write_outputs(struct mkcatalogparams *p)
+{
+  /*char *str;*/
+  struct gal_linkedlist_stll *comments;
+
+
+  /* OBJECT CATALOG
+     ============== */
+  comments=mkcatalog_outputs_same_start(p, 0, "Detection");
+
+
+  /* Write objects catalog
+     ---------------------
+
+     Reverse the comments list (so it is printed in the same order here),
+     write the objects catalog and free the comments. */
+  gal_linkedlist_reverse_stll(&comments);
+  gal_table_write(p->objectcols, comments, p->cp.tableformat, p->objectsout,
+                  p->cp.dontdelete);
+  gal_linkedlist_free_stll(comments, 1);
+
+
+
+  /* OBJECT CATALOG
+     ============== */
+  if(p->clumps)
+    {
+      comments=mkcatalog_outputs_same_start(p, 1, "Clumps");
+
+
+
+      /* Write objects catalog
+         ---------------------
+
+         Reverse the comments list (so it is printed in the same order here),
+         write the objects catalog and free the comments. */
+      gal_linkedlist_reverse_stll(&comments);
+      gal_table_write(p->clumpcols, comments, p->cp.tableformat,
+                      p->clumpsout, p->cp.dontdelete);
+      gal_linkedlist_free_stll(comments, 1);
     }
 }
 
@@ -781,19 +873,30 @@ makeoutput(struct mkcatalogparams *p)
 
 
 /*********************************************************************/
-/*****************          Main function          *******************/
+/*****************       Top-level function        *******************/
 /*********************************************************************/
 void
 mkcatalog(struct mkcatalogparams *p)
 {
-  /* Run through the data for the first time: */
-  firstpass(p);
-  if(p->clumps) clumppass(p);
+  /* When more than one thread is to be used, initialize the mutex: we need
+     it to assign a column to the clumps in the final catalog. */
+  if( p->cp.numthreads > 1 ) pthread_mutex_init(&p->mutex, NULL);
 
-  /* Write the output: */
-  makeoutput(p);
 
-  /* Clean up: */
-  free(p->oinfo);
-  free(p->cinfo);
+  /* Do the processing on each thread. */
+  gal_threads_spin_off(mkcatalog_single_object, p, p->numobjects,
+                       p->cp.numthreads);
+
+
+  /* Post-thread processing, for example to convert image coordinates to RA
+     and Dec. */
+  mkcatalog_wcs_conversion(p);
+
+
+  /* Write the filled columns into the output. */
+  mkcatalog_write_outputs(p);
+
+
+  /* Destroy the mutex. */
+  if( p->cp.numthreads>1 ) pthread_mutex_destroy(&p->mutex);
 }

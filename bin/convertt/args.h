@@ -33,7 +33,7 @@ struct argp_option program_options[] =
     /* Output */
     {
       "quality",
-      ARGS_OPTION_KEY_QUALITY,
+      UI_KEY_QUALITY,
       "INT",
       0,
       "Quality of output JPEG image (1 to 100).",
@@ -46,7 +46,7 @@ struct argp_option program_options[] =
     },
     {
       "widthincm",
-      ARGS_OPTION_KEY_WIDTHINCM,
+      UI_KEY_WIDTHINCM,
       "FLT",
       0,
       "Width in units of centimeters.",
@@ -59,7 +59,7 @@ struct argp_option program_options[] =
     },
     {
       "borderwidth",
-      ARGS_OPTION_KEY_BORDERWIDTH,
+      UI_KEY_BORDERWIDTH,
       "INT",
       0,
       "EPS/PDF border width in units of 1/72 inch.",
@@ -72,7 +72,7 @@ struct argp_option program_options[] =
     },
     {
       "hex",
-      ARGS_OPTION_KEY_HEX,
+      UI_KEY_HEX,
       0,
       0,
       "Hexadecimal encoding in EPS. Default: ASCII85.",
@@ -95,7 +95,7 @@ struct argp_option program_options[] =
     },
     {
       "fluxlow",
-      ARGS_OPTION_KEY_FLUXLOW,
+      UI_KEY_FLUXLOW,
       "FLT",
       0,
       "Lower flux truncation value.",
@@ -108,7 +108,7 @@ struct argp_option program_options[] =
     },
     {
       "fluxhigh",
-      ARGS_OPTION_KEY_FLUXHIGH,
+      UI_KEY_FLUXHIGH,
       "FLT",
       0,
       "Higher flux truncation value.",
@@ -121,7 +121,7 @@ struct argp_option program_options[] =
     },
     {
       "maxbyte",
-      ARGS_OPTION_KEY_MAXBYTE,
+      UI_KEY_MAXBYTE,
       "INT",
       0,
       "Maximum byte value for all color channels.",
@@ -134,7 +134,7 @@ struct argp_option program_options[] =
     },
     {
       "flminbyte",
-      ARGS_OPTION_KEY_FLMINBYTE,
+      UI_KEY_FLMINBYTE,
       0,
       0,
       "Set value of fluxlow as the minimum byte value.",
@@ -147,7 +147,7 @@ struct argp_option program_options[] =
     },
     {
       "fhmaxbyte",
-      ARGS_OPTION_KEY_FHMAXBYTE,
+      UI_KEY_FHMAXBYTE,
       0,
       0,
       "Set value of fluxhigh as the maximum byte value.",
@@ -160,7 +160,7 @@ struct argp_option program_options[] =
     },
     {
       "change",
-      ARGS_OPTION_KEY_CHANGE,
+      UI_KEY_CHANGE,
       "STR",
       0,
       "Change pixel values `from_1:to_1,from_2:to_2`.",
@@ -173,7 +173,7 @@ struct argp_option program_options[] =
     },
     {
       "changeaftertrunc",
-      ARGS_OPTION_KEY_CHANGEAFTERTRUNC,
+      UI_KEY_CHANGEAFTERTRUNC,
       0,
       0,
       "First truncate then change pixel values.",
@@ -186,7 +186,7 @@ struct argp_option program_options[] =
     },
     {
       "invert",
-      ARGS_OPTION_KEY_INVERT,
+      UI_KEY_INVERT,
       0,
       0,
       "Invert the values in JPEG and EPS/PDF.",

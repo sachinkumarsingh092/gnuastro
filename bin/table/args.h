@@ -33,7 +33,7 @@ struct argp_option program_options[] =
   {
     {
       "column",
-      ARGS_OPTION_KEY_COLUMN,
+      UI_KEY_COLUMN,
       "STR",
       0,
       "Column number (counting from 1) or search string.",
@@ -51,7 +51,7 @@ struct argp_option program_options[] =
 
     {
       "information",
-      ARGS_OPTION_KEY_INFORMATION,
+      UI_KEY_INFORMATION,
       0,
       0,
       "Only print table and column information.",

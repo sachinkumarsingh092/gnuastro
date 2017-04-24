@@ -2,18 +2,10 @@
 MakeCatalog - Make a catalog from an input and labeled image.
 MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
 
-ABOUT THIS FILE: The information tables are fully explained in the
-  comments of main.h. After the raw information is read in the first
-  and second pass, the job of the functions here is to process the raw
-  columns that are needed into useful knowledge and print them. for
-  example those functions will only record the weighted sum of pixel
-  positions and the total weight, here the weighted sum is divided by
-  the total weight to yeild an average.
-
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -34,16 +26,155 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
-#include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 
-#include <gnuastro/wcs.h>
+#include <gnuastro/linkedlist.h>
 
 #include "main.h"
-
-#include "columns.h"
 #include "mkcatalog.h"
-#include "upperlimit.h"
+
+#include "ui.h"
+#include "columns.h"
+
+
+
+
+/******************************************************************/
+/*******************     Intermediate arrays     ******************/
+/******************************************************************/
+/* Allocate RA-DEC internal arrays. These arrays are defined to keep all
+   the positions in one place and do the RA-DEC conversion once in the
+   end. They are all allocated together, but we don't know if RA is
+   requested first or Dec or if they are requested multiple times. So
+   before the allocation, we'll check the first one.
+
+   The space that is allocated in `columns_define_alloc' is for the final
+   values that are written in the output file. */
+static void
+columns_alloc_radec(struct mkcatalogparams *p)
+{
+  if(p->rd_vo==NULL)
+    {
+      /* Allocate the space for all dimensions. */
+      errno=0;
+      p->rd_vo = malloc(p->input->ndim * sizeof *p->rd_vo);
+      if(p->rd_vo==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vo, "
+              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_vo );
+
+      /* Space for each dimension. */
+      p->rd_vo[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_vo[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      if(p->clumps)
+        {
+          /* Allocate the space for all dimensions. */
+          errno=0;
+          p->rd_vc = malloc(p->input->ndim * sizeof *p->rd_vc);
+          if(p->rd_vc==NULL)
+            error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vo, "
+                  "`columns_alloc_radec'",
+                  p->input->ndim * sizeof *p->rd_vc );
+
+          /* Space for each dimension. */
+          p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+          p->rd_vc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+        }
+    }
+}
+
+
+
+
+
+/* Similar to `columns_alloc_radec'. */
+static void
+columns_alloc_georadec(struct mkcatalogparams *p)
+{
+  if(p->rd_go==NULL)
+    {
+      /* Allocate the space for all dimensions. */
+      errno=0;
+      p->rd_go = malloc(p->input->ndim * sizeof *p->rd_go);
+      if(p->rd_go==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_go, "
+              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_go );
+
+      /* Space for each dimension. */
+      p->rd_go[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_go[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      if(p->clumps)
+        {
+          /* Allocate the space for all dimensions. */
+          errno=0;
+          p->rd_gc = malloc(p->input->ndim * sizeof *p->rd_gc);
+          if(p->rd_gc==NULL)
+            error(EXIT_FAILURE, 0, "%zu bytes for p->rd_go, "
+                  "`columns_alloc_radec'",
+                  p->input->ndim * sizeof *p->rd_gc );
+
+          /* Space for each dimension. */
+          p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+          p->rd_gc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+        }
+    }
+}
+
+
+
+
+
+/* Similar to `columns_alloc_radec'. */
+static void
+columns_alloc_clumpsradec(struct mkcatalogparams *p)
+{
+  if(p->rd_vcc==NULL)
+    {
+      /* Allocate the space for all dimensions. */
+      errno=0;
+      p->rd_vcc = malloc(p->input->ndim * sizeof *p->rd_vcc);
+      if(p->rd_vcc==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vcc, "
+              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_vcc );
+
+      /* Space for each dimension. */
+      p->rd_vcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_vcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+    }
+}
+
+
+
+
+
+/* Similar to `columns_alloc_radec'. */
+static void
+columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
+{
+  if(p->rd_gcc==NULL)
+    {
+      /* Allocate the space for all dimensions. */
+      errno=0;
+      p->rd_gcc = malloc(p->input->ndim * sizeof *p->rd_gcc);
+      if(p->rd_gcc==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_gcc, "
+              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_gcc );
+
+      /* Space for each dimension. */
+      p->rd_gcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_gcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -55,502 +186,756 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /******************************************************************/
-/*******        Information table modifications       *************/
+/**********       Column definition/allocation      ***************/
 /******************************************************************/
-/* Correct the average Sky and Sky standard deviation value for
-   objects and clumps. Note that during the passes, these were just
-   sums of pixel values, they need to be divided by the area of the
-   object/clump, which is done here. */
+/* Set the necessary parameters for each output column and allocate the
+   space necessary to keep the values. */
 void
-setskystd(struct mkcatalogparams *p, size_t col)
+columns_define_alloc(struct mkcatalogparams *p)
 {
-  size_t ac;
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);
+  struct gal_linkedlist_ill *colcode;
+  int disp_fmt=0, disp_width=0, disp_precision=0;
+  struct gal_linkedlist_stll *strtmp, *noclumpimg=NULL;
+  char *name=NULL, *unit=NULL, *ocomment=NULL, *ccomment=NULL;
+  uint8_t otype=GAL_TYPE_INVALID, ctype=GAL_TYPE_INVALID, *oiflag, *ciflag;
 
-  /* Only do the correction if this column is not already flagged. */
-  if(p->info[col]==0.0f)
+  /* Allocate the array for which intermediate parameters are
+     necessary. The basic issue is that higher-level calculations require a
+     smaller domain of raw measurements. So to avoid having to calculate
+     something multiple times, each parameter will flag the intermediate
+     parameters it requires in these arrays. */
+  oiflag = p->oiflag = gal_data_malloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS);
+  ciflag = p->ciflag = gal_data_malloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS);
+
+  /* Allocate the columns. */
+  for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
     {
-
-      /* Set the area column: */
-      ac = p->obj0clump1 ? CALLAREA : OALLAREA;
-
-      /* Go over every row and do the correction. */
-      do
+      /* Set the column-specific parameters, please follow the same order
+         as `args.h'. IMPORTANT: we want the names to be the same as the
+         option names. Note that zero `disp_' variables will be
+         automatically determined.*/
+      switch(colcode->v)
         {
-          row[col] = ( row[ac]>0.0f ? row[col]/row[ac] : NAN );
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Set the flag so this operation is not done again. */
-      p->info[col]=1.0f;
-    }
-}
-
-
-
-
-
-/* Correct the average river value, after the passes, it is just the
-   sum. */
-void
-setaveriver(struct mkcatalogparams *p)
-{
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);
-
-  /* Only do the correction if this column is not already flagged. */
-  if(p->info[CRivAve]==0.0f)
-    {
-
-      /* Make sure the Sky values are corrected */
-      setskystd(p, CSKY);
-
-      /* Go over every row and do the correction. Note that in cases
-         where the grown clumps are used instead of the clumps, we are
-         not going to have any rivers (row[CRivArea]==0.0f). In such
-         situations, set the per-pixel average river value to the Sky
-         value under the clump. The reason is that for the clumps, Sky
-         subtraction was not done on the Clump brightness, so this
-         value will be used, and if there was no river, then we need
-         something to replace it. */
-      do
-        {
-          row[CRivAve] = ( row[CRivArea]>0.0f
-                           ? row[CRivAve]/row[CRivArea] : row[CSKY] );
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Set the flag so this operation is not done again. */
-      p->info[CRivAve]=1.0f;
-    }
-}
-
-
-
-
-
-/* The clump brightness values are not Sky subtracted since the river
-   values (which are also not Sky subtracted) should be subtracted
-   from them. Here that job is done. */
-void
-setclumpbrightness(struct mkcatalogparams *p)
-{
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);
-
-  /* Only do the correction if this column is not already flagged. */
-  if(p->info[CBrightness]==0.0f)
-    {
-
-      /* Make sure the average river value is calculated */
-      setaveriver(p);
-
-      /* On a clump, we have to subtract the average river flux
-         multiplied by the the area of the clump. The value in the
-         CBrightness column is simply the sum of pixels. Note that
-         here we are multiplying by the area of the clump (CALLAREA)
-         irrespective of threshold, while in setaveriver(), we divided
-         by the area of the river (CRivArea). */
-      do
-        {
-          row[CBrightness] -= row[CRivAve]*row[CAREA];
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Set the flag so this operation is not done again. */
-      p->info[CBrightness]=1.0f;
-    }
-}
-
-
-
-
-
-/* Find the geometric center of the profile (average position,
-   ignoring any flux of the pixels). */
-void
-geoxy(struct mkcatalogparams *p, size_t col)
-{
-  size_t ac=-1;
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);
-
-  /* Only if this column is not flagged as already done (==1.0f). */
-  if(p->info[col]==0.0f)
-    {
-
-      /* First, set the columns to use for the conversion. */
-      if(p->obj0clump1)                         ac=CAREA;
-      else
-        {
-          if      (col==OGeoX || col==OGeoY)    ac=OAREA;
-          else if (col==OGeoCX || col==OGeoCY)  ac=OAREAC;
-          else
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in the --OBJECTS-- "
-                  "information table was not recognized for calculating the "
-                  "geometric X and/or Y", PACKAGE_BUGREPORT);
-        }
-
-      /* Go over all the rows and correct this column. */
-      do
-        {
-          /* Set the value for this row. Note that unlike the
-             calculations here that start counting with zero, the FITS
-             standard starts counting from 1, so add a one after
-             dividing by the area. If the area is zero, then set
-             NaN. */
-          row[col] = row[ac]>0.0f ? row[col] / row[ac] : NAN;
-
-          /* Go onto the next row: */
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Flag this column as complete for future reference. */
-      p->info[col]=1.0f;
-    }
-}
-
-
-
-
-
-/* A low-level function used to find the flux weighted center, since
-   it is needed by multiple columns. The geometric center for this
-   axis colum (geocol) and area column (areacol) are needed for backup
-   (when there might not be any positive flux pixel/data values to use
-   for weight). */
-void
-flxwhtimg(struct mkcatalogparams *p, size_t col)
-{
-  size_t wc=-1, gc=-1;
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);;
-
-
-  /* Only if this column is not flagged as already done (==1.0f). */
-  if(p->info[col]==0.0f)
-    {
-
-      /* First, set the columns to use for the conversion. */
-      if(p->obj0clump1)
-        {
-          wc=CPosBright;
-          if     (col==CFlxWhtX) gc=CGeoX;
-          else if(col==CFlxWhtY) gc=CGeoY;
-          else
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in the --CLUMPS-- "
-                  "information table was not recognized for calculating the "
-                  "final flux weighted X and/or Y", PACKAGE_BUGREPORT);
-        }
-      else
-        {
-          if (col==OFlxWhtX || col==OFlxWhtY)
-            {
-              wc=OPosBright;
-              gc = col==OFlxWhtX ? OGeoX : OGeoY;
-            }
-          else if (col==OFlxWhtCX || col==OFlxWhtCY)
-            {
-              wc=OPosBrightC;
-              gc = col==OFlxWhtCX ? OGeoCX : OGeoCY;
-            }
-          else
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in the --OBJECTS-- "
-                  "information table was not recognized for calculating the "
-                  "final flux weighted X and/or Y", PACKAGE_BUGREPORT);
-        }
-
-
-      /* The geometric positions act as a backup for the flux weighted
-         centers, so make sure the appropriate geometric center is
-         defined. */
-      geoxy(p, gc);
-
-      /* For a check, uncomment these two lines:
-      printf("\n\nInfocol: %zu (%s, %zu)\n", col,
-             p->info==p->oinfo?"Objects":"Clumps", p->num);
-      Then add these two lines before and after row[col] in the loop*/
-      /*printf("%zu: %f --> ", (row-p->info)/p->icols, row[col]);*/
-      /*printf("%f\n", row[col]);*/
-
-      /* Go over all the rows and correct this column. */
-      do
-        {
-          /* Set the value for this row. When a positive weight is
-             present, we are adding with one (1) because of the FITS
-             standard. */
-          row[col] = row[wc]>0.0f ? (row[col]/row[wc]) : row[gc];
-
-          /* Go onto the next row: */
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Set the flag for this column to one, so this whole proces is
-         not done again. */
-      p->info[col]=1.0f;
-    }
-}
-
-
-
-
-
-/* To correct the second moment, we need three variables: the first
-   moment in first axis, first moment in second axis and the total
-   weight. The first two are the same when the second moment is a
-   power of one axis. The weight is either the total positive flux
-   used for the weights, or is the area. */
-void
-setsecondmoment(struct mkcatalogparams *p, size_t col)
-{
-  double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);
-  size_t fc=-1, sc=-1, wc=-1, sfc=-1, ssc=-1;
-
-
-  /* Only if this column is not flagged as already done (==1.0f). */
-  if(p->info[col]==0.0f)
-    {
-
-      /* First, set the columns to use for the conversion. Note that
-         since we also need to correct the column, we have merged the
-         setting of fc and sc and the calling of the flxwhtimg
-         function into one call.  */
-      if(p->obj0clump1)
-        switch(col)
-          {
-          /* Clump brightness weighted */
-          case CFlxWhtXX:
-            wc=CPosBright; fc=sc=CFlxWhtX; flxwhtimg(p, fc);
-            sfc=ssc=CPOSSHIFTX;                   break;
-          case CFlxWhtYY:
-            wc=CPosBright; fc=sc=CFlxWhtY; flxwhtimg(p, fc);
-            sfc=ssc=CPOSSHIFTY;                   break;
-          case CFlxWhtXY:
-            wc=CPosBright;
-            flxwhtimg(p, fc=CFlxWhtX); flxwhtimg(p, sc=CFlxWhtY);
-            sfc=CPOSSHIFTX;  ssc=CPOSSHIFTY;      break;
-
-          /* Clump geometric: */
-          case CGeoXX:
-            wc=CAREA;       fc=sc=CGeoX;    geoxy(p, fc);
-            sfc=ssc=CPOSSHIFTX;                   break;
-          case CGeoYY:
-            wc=CAREA;       fc=sc=CGeoY;    geoxy(p, fc);
-            sfc=ssc=CPOSSHIFTY;                   break;
-          case CGeoXY:
-            wc=CAREA; geoxy(p, fc=CGeoX); geoxy(p, sc=CGeoY);
-            sfc=CPOSSHIFTX;  ssc=CPOSSHIFTY;      break;
-
-          default:
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in setsecondmoment's "
-                  "--CLUMP-- information table (%zu) was not recognized for "
-                  "correcting the second moment", PACKAGE_BUGREPORT, col);
-          }
-      else
-        switch(col)
-          {
-          /* All object brightness weighted: */
-          case OFlxWhtXX:
-            wc=OPosBright;  fc=sc=OFlxWhtX; flxwhtimg(p, fc);
-            sfc=ssc=OPOSSHIFTX;                   break;
-          case OFlxWhtYY:
-            wc=OPosBright;  fc=sc=OFlxWhtY; flxwhtimg(p, fc);
-            sfc=ssc=OPOSSHIFTY;                   break;
-          case OFlxWhtXY:
-            wc=OPosBright;
-            flxwhtimg(p, fc=OFlxWhtX); flxwhtimg(p, sc=OFlxWhtY);
-            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
-
-          /* All object geometric: */
-          case OGeoXX:
-            wc=OAREA;       fc=sc=OGeoX;    geoxy(p, fc);
-            sfc=ssc=OPOSSHIFTX;                   break;
-          case OGeoYY:
-            wc=OAREA;       fc=sc=OGeoY;    geoxy(p, fc);
-            sfc=ssc=OPOSSHIFTY;                   break;
-          case OGeoXY:
-            wc=OAREA; geoxy(p, fc=OGeoX); geoxy(p, sc=OGeoY);
-            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
-
-          /* Clumps in object brightness weighted: */
-          case OFlxWhtCXX:
-            wc=OPosBrightC; fc=sc=OFlxWhtCX; flxwhtimg(p, fc);
-            sfc=ssc=OPOSSHIFTX;                   break;
-          case OFlxWhtCYY:
-            wc=OPosBrightC; fc=sc=OFlxWhtCY; flxwhtimg(p, fc);
-            sfc=ssc=OPOSSHIFTY;                   break;
-          case OFlxWhtCXY:
-            wc=OPosBrightC;
-            flxwhtimg(p, fc=OFlxWhtCX); flxwhtimg(p, sc=OFlxWhtCY);
-            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
-
-          /* Clumps in object geometric: */
-          case OGeoCXX:
-            wc=OAREAC;      fc=sc=OGeoCX;    geoxy(p, fc);
-            sfc=ssc=OPOSSHIFTX;                   break;
-          case OGeoCYY:
-            wc=OAREAC;      fc=sc=OGeoCY;    geoxy(p, fc);
-            sfc=ssc=OPOSSHIFTY;                   break;
-          case OGeoCXY:
-            wc=OAREAC; geoxy(p, fc=OGeoCX); geoxy(p, sc=OGeoCY);
-            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
-          default:
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in setsecondmoment's "
-                  "--OBJECT-- information table (%zu) was not recognized for "
-                  "correcting the second moment", PACKAGE_BUGREPORT, col);
-          }
-
-      /* Go over all the rows and correct this column. */
-      do
-        {
-
-          /* Set the value for this row, including the shift in
-             calculating the second order moments. */
-          row[col] = ( row[col]/row[wc] -
-                       (row[fc]-row[sfc]) * (row[sc]-row[ssc]) );
-
-          /* Go onto the next row: */
-          row+=p->icols;
-        }
-      while(row<end);
-
-      /* Set the flag for this column to one, so this whole proces is
-         not done again. */
-      p->info[col]=1.0f;
-    }
-}
-
-
-
-
-
-/* Fill in the RA and Dec columns, note that we will need the X and Y
-   colums first for this. */
-void
-preparewcs(struct mkcatalogparams *p, size_t col)
-{
-  /* Initialize all the columns to -1 (largest possible number in the
-     C's unsigned char, so if there is any bugs, we get a good error. */
-  int wht0geo1=-1;
-  size_t xc=-1, yc=-1, rc=-1, dc=-1;
-
-
-  /* RA and Dec are usually needed together and must also be
-     calculated together, but here, we are giving the user complete
-     freedom in setting the columns in which ever order they want. So
-     after calculating the RA and Dec once for either of the two,
-     there is no more need to do the calculation again.  */
-  if(p->info[col]==0.0f)
-    {
-
-      /* First, set the columns to use for the conversion. */
-      if(p->obj0clump1)
-        {
-          /* Clump, flux weighted: */
-          if(col==CFlxWhtRA || col==CFlxWhtDec)
-            {
-              xc=CFlxWhtX;  yc=CFlxWhtY;
-              rc=CFlxWhtRA; dc=CFlxWhtDec;
-              wht0geo1=0;
-            }
-          /* Clump, geometric: */
-          else if(col==CGeoRA || col==CGeoDec)
-            {
-              xc=CGeoX;     yc=CGeoY;
-              rc=CGeoRA;    dc=CGeoDec;
-              wht0geo1=1;
-            }
-          else
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in the --CLUMPS-- "
-                  "information table was not recognized for calculating the "
-                  "RA and Dec", PACKAGE_BUGREPORT);
-        }
-      else
-        {
-          /* All clumps in object, flux weighted: */
-          if(col==OFlxWhtCRA || col==OFlxWhtCDec)
-            {
-              xc=OFlxWhtCX;  yc=OFlxWhtCY;
-              rc=OFlxWhtCRA; dc=OFlxWhtCDec;
-              wht0geo1=0;
-            }
-          /* All clumps in object, geometric: */
-          else if(col==OGeoCRA || col==OGeoCDec)
-            {
-              xc=OGeoCX;  yc=OGeoCY;
-              rc=OGeoCRA; dc=OGeoCDec;
-              wht0geo1=1;
-            }
-          /* All object, flux weighted */
-          else if(col==OFlxWhtRA || col==OFlxWhtDec)
-            {
-              xc=OFlxWhtX;  yc=OFlxWhtY;
-              rc=OFlxWhtRA; dc=OFlxWhtDec;
-              wht0geo1=0;
-            }
-          /* All object, geometric */
-          else if(col==OGeoRA || col==OGeoDec)
-            {
-              xc=OGeoX;     yc=OGeoY;
-              rc=OGeoRA;    dc=OGeoDec;
-              wht0geo1=1;
-            }
-          else
-            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                  "can fix this. The given column in the --OBJECT-- "
-                  "information table was not recognized for calculating the "
-                  "RA and Dec", PACKAGE_BUGREPORT);
-        }
-
-
-      /* Finalize the relevant X and Y positions first (which are
-         needed for the WCS conversion). Note that if they are ready
-         to use (their flag is 1.0f), these functions will not do
-         anything. But if the user hasn't already asked for X and Y,
-         then these columns will be corrected here.*/
-      switch(wht0geo1)
-        {
-        case 0:
-          flxwhtimg(p, xc);
-          flxwhtimg(p, yc);
+        case UI_KEY_OBJID:
+          name           = "OBJ_ID";
+          unit           = "counter";
+          ocomment       = "Object identifier.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_INT32;  /* Same type as clumps image. */
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          /* Is an internal parameter. */
           break;
-        case 1:
-          geoxy(p, xc);
-          geoxy(p, yc);
+
+        case UI_KEY_HOSTOBJID:
+          name           = "HOST_OBJ_ID";
+          unit           = "counter";
+          ocomment       = NULL;
+          ccomment       = "Object identifier hosting this clump.";
+          otype          = GAL_TYPE_INVALID;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          /* Is an internal parameter. */
           break;
+
+        case UI_KEY_IDINHOSTOBJ:
+          name           = "ID_IN_HOST_OBJ";
+          unit           = "counter";
+          ocomment       = NULL;
+          ccomment       = "ID of clump in its host object.";
+          otype          = GAL_TYPE_INVALID;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          /* Is an internal parameter. */
+          break;
+
+        case UI_KEY_NUMCLUMPS:
+          name           = "NUM_CLUMPS";
+          unit           = "counter";
+          ocomment       = "Number of clumps in this object.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = 0;
+          disp_width     = 5;
+          disp_precision = 0;
+          /* Is an internal parameter. */
+          break;
+
+        case UI_KEY_AREA:
+          name           = "AREA";
+          unit           = "counter";
+          ocomment       = "Number of pixels covered.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 5;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM ] = 1;
+          ciflag[ CCOL_NUM ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSAREA:
+          name           = "CLUMPS_AREA";
+          unit           = "counter";
+          ocomment       = "Total number of clump pixels in object.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = 0;
+          disp_width     = 5;
+          disp_precision = 0;
+          oiflag[ OCOL_C_NUM ] = 1;
+          break;
+
+        case UI_KEY_X:
+          name           = "X";
+          unit           = "position";
+          ocomment       = "Flux weighted center (FITS axis 1).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_VX ] = 1;
+          ciflag[ CCOL_VX ] = 1;
+          break;
+
+        case UI_KEY_Y:
+          name           = "Y";
+          unit           = "position";
+          ocomment       = "Flux weighted center (FITS axis 2).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_VY ] = 1;
+          ciflag[ CCOL_VY ] = 1;
+          break;
+
+        case UI_KEY_GEOX:
+          name           = "GEO_X";
+          unit           = "position";
+          ocomment       = "Geometric center (FITS axis 1).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_GX ] = 1;
+          ciflag[ CCOL_GX ] = 1;
+          break;
+
+        case UI_KEY_GEOY:
+          name           = "GEO_Y";
+          unit           = "position";
+          ocomment       = "Geometric center (FITS axis 2).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_GY ] = 1;
+          ciflag[ CCOL_GY ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSX:
+          name           = "CLUMPS_X";
+          unit           = "position";
+          ocomment       = "Flux weighted center of clumps (FITS axis 1).";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_C_VX ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSY:
+          name           = "CLUMPS_Y";
+          unit           = "position";
+          ocomment       = "Flux weighted center of clumps (FITS axis 2).";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_C_VY ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSGEOX:
+          name           = "CLUMPS_GEO_X";
+          unit           = "position";
+          ocomment       = "Geometric center of clumps (FITS axis 1).";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_C_GX ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSGEOY:
+          name           = "CLUMPS_GEO_Y";
+          unit           = "position";
+          ocomment       = "Geometric center of clumps (FITS axis 2).";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_C_GY ] = 1;
+          break;
+
+        case UI_KEY_RA:
+          name           = "RA";
+          unit           = "degrees";
+          ocomment       = "Flux weighted center right ascension.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_FLOAT64;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_C_VY ] = 1;
+          columns_alloc_radec(p);
+          break;
+
+        case UI_KEY_DEC:
+          name           = "DEC";
+          unit           = "degrees";
+          ocomment       = "Flux weighted center declination.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_FLOAT64;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_C_VY ] = 1;
+          columns_alloc_radec(p);
+          break;
+
+        case UI_KEY_GEORA:
+          name           = "GEO_RA";
+          unit           = "degrees";
+          ocomment       = "Geometric center right ascension.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_FLOAT64;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_GX ] = 1;
+          oiflag[ OCOL_GY ] = 1;
+          ciflag[ CCOL_GX ] = 1;
+          ciflag[ CCOL_GY ] = 1;
+          columns_alloc_georadec(p);
+          break;
+
+        case UI_KEY_GEODEC:
+          name           = "GEO_DEC";
+          unit           = "degrees";
+          ocomment       = "Geometric center declination.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_FLOAT64;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_GX ] = 1;
+          oiflag[ OCOL_GY ] = 1;
+          ciflag[ CCOL_GX ] = 1;
+          ciflag[ CCOL_GY ] = 1;
+          columns_alloc_georadec(p);
+          break;
+
+        case UI_KEY_CLUMPSRA:
+          name           = "CLUMPS_RA";
+          unit           = "degrees";
+          ocomment       = "RA of all clumps flux weighted center.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_C_VX ] = 1;
+          oiflag[ OCOL_C_VY ] = 1;
+          columns_alloc_clumpsradec(p);
+          break;
+
+        case UI_KEY_CLUMPSDEC:
+          name           = "CLUMPS_DEC";
+          unit           = "degrees";
+          ocomment       = "Declination of all clumps flux weighted center.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 15;
+          disp_precision = 7;
+          oiflag[ OCOL_C_VX ] = 1;
+          oiflag[ OCOL_C_VY ] = 1;
+          columns_alloc_clumpsradec(p);
+          break;
+
+        case UI_KEY_CLUMPSGEORA:
+          name           = "CLUMPS_RA";
+          unit           = "degrees";
+          ocomment       = "RA of all clumps geometric center.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_C_GX ] = 1;
+          oiflag[ OCOL_C_GY ] = 1;
+          columns_alloc_clumpsgeoradec(p);
+          break;
+
+        case UI_KEY_CLUMPSGEODEC:
+          name           = "CLUMPS_DEC";
+          unit           = "degrees";
+          ocomment       = "Declination of all clumps geometric center.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT64;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 13;
+          disp_precision = 7;
+          oiflag[ OCOL_C_GX ] = 1;
+          oiflag[ OCOL_C_GY ] = 1;
+          columns_alloc_clumpsgeoradec(p);
+          break;
+
+        case UI_KEY_BRIGHTNESS:
+          name           = "BRIGHTNESS";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = "Brightness (sum of sky subtracted values).";
+          ccomment       = "Brightness (sum of pixels subtracted by rivers).";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          oiflag[ OCOL_SUM ]     = 1;
+          ciflag[ CCOL_SUM ]     = 1;
+          ciflag[ CCOL_RIV_NUM ] = 1;
+          ciflag[ CCOL_RIV_SUM ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSBRIGHTNESS:
+          name           = "CLUMPS_BRIGHTNESS";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = "Brightness (sum of pixel values) in clumps.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          oiflag[ OCOL_C_SUM ] = 1;
+          break;
+
+        case UI_KEY_NORIVERBRIGHTNESS:
+          name           = "NO_RIVER_BRIGHTNESS";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = NULL;
+          ccomment       = "Brightness (sum of sky subtracted values).";
+          otype          = GAL_TYPE_INVALID;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          ciflag[ CCOL_SUM ] = 1;
+          break;
+
+        case UI_KEY_MAGNITUDE:
+          name           = "MAGNITUDE";
+          unit           = "log";
+          ocomment       = "Magnitude.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 8;
+          disp_precision = 3;
+          oiflag[ OCOL_SUM ] = 1;
+          ciflag[ CCOL_SUM ] = 1;
+          p->hasmag      = 1;
+          break;
+
+        case UI_KEY_MAGNITUDEERR:
+          name           = "MAGNITUDE_ERR";
+          unit           = "log";
+          ocomment       = "Error in measuring magnitude.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 8;
+          disp_precision = 3;
+          oiflag[ OCOL_SUMSTD ] = 1;
+          oiflag[ OCOL_NUM    ] = 1;
+          oiflag[ OCOL_SUM    ] = 1;
+          ciflag[ CCOL_SUMSTD ] = 1;
+          ciflag[ CCOL_NUM    ] = 1;
+          ciflag[ CCOL_SUM    ] = 1;
+          break;
+
+        case UI_KEY_CLUMPSMAGNITUDE:
+          name           = "CLUMPS_MAGNITUDE";
+          unit           = "log";
+          ocomment       = "Magnitude in all clumps.";
+          ccomment       = NULL;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_INVALID;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 8;
+          disp_precision = 3;
+          oiflag[ OCOL_C_SUM ] = 1;
+          p->hasmag      = 1;
+          break;
+
+        case UI_KEY_UPPERLIMIT:
+          name           = "UPPERLIMIT";
+          unit           = p->input->unit;
+          ocomment       = "Upper limit value (random positionings).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          /* Upper limit measurement doesn't need per-pixel calculations. */
+          break;
+
+        case UI_KEY_UPPERLIMITMAG:
+          name           = "UPPERLIMIT_MAG";
+          unit           = "log";
+          ocomment       = "Upper limit magnitude (random positionings).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          p->hasmag      = 1;
+          /* Upper limit magnitude doesn't need per-pixel calculations. */
+          break;
+
+        case UI_KEY_RIVERAVE:
+          name           = "RIVER_AVE";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = NULL;
+          ccomment       = "Average river value surrounding this clump.";
+          otype          = GAL_TYPE_INVALID;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          ciflag[ CCOL_RIV_NUM ] = 1;
+          ciflag[ CCOL_RIV_SUM ] = 1;
+          break;
+
+        case UI_KEY_RIVERNUM:
+          name           = "RIVER_NUM";
+          unit           = "counter";
+          ocomment       = NULL;
+          ccomment       = "Number of river pixels around this clump.";
+          otype          = GAL_TYPE_INVALID;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 5;
+          disp_precision = 0;
+          ciflag[ CCOL_RIV_NUM ] = 1;
+          break;
+
+        case UI_KEY_SN:
+          name           = "SN";
+          unit           = "ratio";
+          ocomment       = "Signal to noise ratio.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_SUMSTD ] = 1;
+          oiflag[ OCOL_NUM    ] = 1;
+          oiflag[ OCOL_SUM    ] = 1;
+          ciflag[ CCOL_SUMSTD ] = 1;
+          ciflag[ CCOL_NUM    ] = 1;
+          ciflag[ CCOL_SUM    ] = 1;
+          break;
+
+        case UI_KEY_SKY:
+          name           = "SKY";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = "Average input sky value.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          oiflag[ OCOL_NUM    ] = 1;
+          oiflag[ OCOL_SUMSKY ] = 1;
+          ciflag[ CCOL_NUM    ] = 1;
+          ciflag[ CCOL_SUMSKY ] = 1;
+          break;
+
+        case UI_KEY_STD:
+          name           = "STD";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = "Average of input standard deviation.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          oiflag[ OCOL_NUM    ] = 1;
+          oiflag[ OCOL_SUMSTD ] = 1;
+          ciflag[ CCOL_NUM    ] = 1;
+          ciflag[ CCOL_SUMSTD ] = 1;
+          break;
+
+        case UI_KEY_SEMIMAJOR:
+          name           = "SEMI_MAJOR";
+          unit           = "pixel";
+          ocomment       = "Flux weighted semi-major axis.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_VXX ] = 1;
+          oiflag[ OCOL_VYY ] = 1;
+          oiflag[ OCOL_VXY ] = 1;
+          ciflag[ CCOL_VXX ] = 1;
+          ciflag[ CCOL_VYY ] = 1;
+          ciflag[ CCOL_VXY ] = 1;
+          break;
+
+        case UI_KEY_SEMIMINOR:
+          name           = "SEMI_MINOR";
+          unit           = "pixel";
+          ocomment       = "Flux weighted semi-minor axis.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_VXX ] = 1;
+          oiflag[ OCOL_VYY ] = 1;
+          oiflag[ OCOL_VXY ] = 1;
+          ciflag[ CCOL_VXX ] = 1;
+          ciflag[ CCOL_VYY ] = 1;
+          ciflag[ CCOL_VXY ] = 1;
+          break;
+
+        case UI_KEY_AXISRATIO:
+          name           = "AXIS_RATIO";
+          unit           = "ratio";
+          ocomment       = "Flux weighted axis ratio (minor/major).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 7;
+          disp_precision = 3;
+          oiflag[ OCOL_VXX ] = 1;
+          oiflag[ OCOL_VYY ] = 1;
+          oiflag[ OCOL_VXY ] = 1;
+          ciflag[ CCOL_VXX ] = 1;
+          ciflag[ CCOL_VYY ] = 1;
+          ciflag[ CCOL_VXY ] = 1;
+          break;
+
+        case UI_KEY_POSITIONANGLE:
+          name           = "POSITION_ANGLE";
+          unit           = "degrees";
+          ocomment       = "Position angle.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_VXX ] = 1;
+          oiflag[ OCOL_VYY ] = 1;
+          oiflag[ OCOL_VXY ] = 1;
+          ciflag[ CCOL_VXX ] = 1;
+          ciflag[ CCOL_VYY ] = 1;
+          ciflag[ CCOL_VXY ] = 1;
+          break;
+
+        case UI_KEY_GEOSEMIMAJOR:
+          name           = "GEO_SEMI_MAJOR";
+          unit           = "pixel";
+          ocomment       = "Geometric semi-major axis.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_GXX ] = 1;
+          oiflag[ OCOL_GYY ] = 1;
+          oiflag[ OCOL_GXY ] = 1;
+          ciflag[ CCOL_GXX ] = 1;
+          ciflag[ CCOL_GYY ] = 1;
+          ciflag[ CCOL_GXY ] = 1;
+          break;
+
+        case UI_KEY_GEOSEMIMINOR:
+          name           = "GEO_SEMI_MINOR";
+          unit           = "pixel";
+          ocomment       = "Geometric semi-minor axis.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_GXX ] = 1;
+          oiflag[ OCOL_GYY ] = 1;
+          oiflag[ OCOL_GXY ] = 1;
+          ciflag[ CCOL_GXX ] = 1;
+          ciflag[ CCOL_GYY ] = 1;
+          ciflag[ CCOL_GXY ] = 1;
+          break;
+
+        case UI_KEY_GEOAXISRATIO:
+          name           = "GEO_AXIS_RATIO";
+          unit           = "ratio";
+          ocomment       = "Geometric axis ratio (minor/major).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 7;
+          disp_precision = 3;
+          oiflag[ OCOL_VXX ] = 1;
+          oiflag[ OCOL_VYY ] = 1;
+          oiflag[ OCOL_VXY ] = 1;
+          ciflag[ CCOL_VXX ] = 1;
+          ciflag[ CCOL_VYY ] = 1;
+          ciflag[ CCOL_VXY ] = 1;
+          break;
+
+        case UI_KEY_GEOPOSITIONANGLE:
+          name           = "GEO_POSITION_ANGLE";
+          unit           = "degrees";
+          ocomment       = "Geometric Position angle.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_GXX ] = 1;
+          oiflag[ OCOL_GYY ] = 1;
+          oiflag[ OCOL_GXY ] = 1;
+          ciflag[ CCOL_GXX ] = 1;
+          ciflag[ CCOL_GYY ] = 1;
+          ciflag[ CCOL_GXY ] = 1;
+          break;
+
         default:
-          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                "can fix this. The value of the wht0geo1 variable (%d) is "
-                "not recognized", PACKAGE_BUGREPORT, wht0geo1);
+          error(EXIT_FAILURE, 0, "a bug! please contact us at %s to fix the "
+                "problem. The code %d is not an internally recognized "
+                "column code, this is due to some mistake in the programming",
+                PACKAGE_BUGREPORT, colcode->v);
+        }
+
+      /* If this is an objects column, add it to the list of columns. We
+         will be using the `status' element to keep the MakeCatalog code
+         for the columns. */
+      if(otype!=GAL_TYPE_INVALID)
+        {
+          gal_data_add_to_ll(&p->objectcols, NULL, otype, 1, &p->numobjects,
+                             NULL, 0, p->cp.minmapsize, name, unit, ocomment);
+          p->objectcols->status         = colcode->v;
+          p->objectcols->disp_fmt       = disp_fmt;
+          p->objectcols->disp_width     = disp_width;
+          p->objectcols->disp_precision = disp_precision;
         }
 
 
-      /* Do the conversion. Note that the p->icols is added because
-         the first row is not used by any object or colump (since
-         their indexes begin from 1).*/
-      gal_wcs_xy_array_to_radec(p->wcs, p->info+p->icols+xc,
-                                p->info+p->icols+rc, p->num, p->icols);
+      /* Similar to the objects column above but for clumps, but since the
+         clumps image is optional, we need a further check before actually
+         allocating the column. */
+      if(ctype!=GAL_TYPE_INVALID)
+        {
+          /* A clumps image has been given, so allocate space for this
+             column. */
+          if(p->clumps)
+            {
+              gal_data_add_to_ll(&p->clumpcols, NULL, ctype, 1, &p->numclumps,
+                                 NULL, 0, p->cp.minmapsize, name, unit,
+                                 ccomment);
+              p->clumpcols->status         = colcode->v;
+              p->clumpcols->disp_fmt       = disp_fmt;
+              p->clumpcols->disp_width     = disp_width;
+              p->clumpcols->disp_precision = disp_precision;
+            }
 
 
-      /* Set the flag of the converted columns to 1.0f, so the
-         calculations are not repeated if any of the columns is needed
-         again. Note that it is irrelevant which one of the RA or Dec
-         were calculated, so we are not using `col' here. */
-      p->info[rc]=p->info[dc]=1.0f;
+          /* If this is a clumps-only column and no clumps image was
+             given. Add the column to the list of similar columns to inform
+             the user. */
+          else if(otype==GAL_TYPE_INVALID)
+            gal_linkedlist_add_to_stll(&noclumpimg, name, 1);
+        }
     }
+
+
+  /* If a warning for clumps columns and no clumps image is necessary make
+     the warning. */
+  if(noclumpimg)
+    {
+      gal_linkedlist_reverse_stll(&noclumpimg);
+      fprintf(stderr, "\n-------\n"
+              "WARNING: the following column(s) are unique to "
+              "clumps (not objects), but the objects image doesn't have "
+              " `WCLUMPS' keyword. So these requested columns will be "
+              "ignored.\n\n");
+      for(strtmp=noclumpimg; strtmp!=NULL; strtmp=strtmp->next)
+        fprintf(stderr, "\t%s\n", strtmp->v);
+      gal_linkedlist_free_stll(noclumpimg, 1);
+      fprintf(stderr, "\n-------\n");
+    }
+
+
+  /* Free the general columns information because it is no longe needed,
+     we'll set it back to NULL afterwards so it is not mistakenly used. */
+  gal_linkedlist_free_ill(p->columnids);
+  p->columnids=NULL;
 }
 
 
@@ -573,502 +958,512 @@ preparewcs(struct mkcatalogparams *p, size_t col)
 
 
 /******************************************************************/
-/***************    Add columns for printing    *******************/
+/**********            Column calculation           ***************/
 /******************************************************************/
-void
-idcol(struct mkcatalogparams *p)
+#define MKC_RATIO(TOP,BOT) ( (BOT)!=0.0f ? (TOP)/(BOT) : NAN )
+#define MKC_MAG(B)         ( ((B)>0) ? -2.5f * log10(B) + p->zeropoint : NAN )
+
+
+
+
+
+/* Calculate the Signal to noise ratio for the object. */
+static double
+columns_sn(struct mkcatalogparams *p, double *row, int o0c1)
 {
-  size_t i;
+  double var, sn, std, Ni, I, O;
 
-  p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%zu: Overall %s ID",
-          p->curcol, p->name);
+  /* Get all the values as averages (per pixel). */
+  Ni  = row[ o0c1 ? CCOL_NUM : OCOL_NUM ];
+  I   = MKC_RATIO( row[ o0c1 ? CCOL_SUM    : OCOL_SUM ],    Ni );
+  std = MKC_RATIO( row[ o0c1 ? CCOL_SUMSTD : OCOL_SUMSTD ], Ni );
+  var = (p->skysubtracted ? 2.0f : 1.0f) * std * std;
 
-  for(i=0;i<p->num;++i)
-    p->cat[ i * p->numcols + p->curcol ] = i+1;
+  /* Calculate the S/N. Note that when grown clumps are requested from
+     NoiseChisel, some "clumps" will completely cover their objects and
+     there will be no rivers. So if this is a clump, and the river area is
+     0, we should treat the S/N as a an object. */
+  if( o0c1 && row[ CCOL_RIV_NUM ] )
+    {
+      /* If the Sky is already subtracted, the varience should be counted
+         two times. */
+      O   = row[ CCOL_RIV_SUM ] / row[ CCOL_RIV_NUM ];  /* Outside.  */
+      sn  = ( sqrt(Ni/p->cpscorr) * (I-O)
+              / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) );
+    }
+  else
+    sn  = sqrt(Ni/p->cpscorr) * I / sqrt( (I>0?I:-1*I) + var );
 
-  p->intcols[p->intcounter++]=p->curcol;
+  /* Return the derived value. */
+  return sn;
 }
 
 
 
 
 
-/* Store IDs related to the host object:
-
-   o1c0==1 --> hostobjid: The ID of object hosting this clump
-   o1c0==0 --> idinhostobj: The ID of clump in object
- */
-void
-hostobj(struct mkcatalogparams *p, int o1c0)
+/* Do the second order calculations, see "Measuring elliptical parameters"
+   section of the book/manual for a thorough explanation of the
+   derivation. */
+static double
+columns_second_order(struct mkcatalog_passparams *pp, double *row,
+                     int key, int o0c1)
 {
-  char *des;
-  double counter;
-  size_t i, j, n, row=0;
+  double x=NAN, y=NAN, xx=NAN, yy=NAN, xy=NAN;
+  double denom, kx=pp->shift[1]+1, ky=pp->shift[0]+1;
 
-  p->unitp=CATUNITCOUNTER;
-  des = ( o1c0 ? "ID of object hosting this clump"
-          : "ID of clump in host object" );
-  sprintf(p->description, "%zu: %s.",
-          p->curcol, des);
+  /* Preparations. */
+  switch(key)
+    {
+    /* Brightness weighted. */
+    case UI_KEY_SEMIMAJOR:
+    case UI_KEY_SEMIMINOR:
+    case UI_KEY_POSITIONANGLE:
 
-  for(i=1;i<=p->numobjects;++i)
-    if( (n=p->oinfo[i*OCOLUMNS+ONCLUMPS]) > 0.0f)
+      /* Denominator (to be divided). */
+      denom = row[ o0c1 ? CCOL_SUMPOS : OCOL_SUMPOS ];
+
+      /* First order. */
+      x  = MKC_RATIO( row[ o0c1 ? CCOL_VX     : OCOL_VX     ], denom );
+      y  = MKC_RATIO( row[ o0c1 ? CCOL_VY     : OCOL_VY     ], denom );
+
+      /* Second order. */
+      xx = ( MKC_RATIO( row[ o0c1 ? CCOL_VXX    : OCOL_VXX    ], denom )
+             - (x-kx) * (x-kx) );
+      yy = ( MKC_RATIO( row[ o0c1 ? CCOL_VYY    : OCOL_VYY    ], denom )
+             - (y-ky) * (y-ky) );
+      xy = ( MKC_RATIO( row[ o0c1 ? CCOL_VXY    : OCOL_VXY    ], denom )
+             - (x-kx) * (y-ky) );
+      break;
+
+    /* Geometric. */
+    case UI_KEY_GEOSEMIMAJOR:
+    case UI_KEY_GEOSEMIMINOR:
+    case UI_KEY_GEOPOSITIONANGLE:
+
+      /* Denominator (to be divided). */
+      denom = row[ o0c1 ? CCOL_NUM : OCOL_NUM ];
+
+      /* First order. */
+      x  = MKC_RATIO( row[ o0c1 ? CCOL_GX  : OCOL_GX  ], denom );
+      y  = MKC_RATIO( row[ o0c1 ? CCOL_GY  : OCOL_GY  ], denom );
+
+      /* Second order. */
+      xx = ( MKC_RATIO( row[ o0c1 ? CCOL_GXX : OCOL_GXX ], denom )
+             - (x-kx) * (x-kx) );
+      yy = ( MKC_RATIO( row[ o0c1 ? CCOL_GYY : OCOL_GYY ], denom )
+             - (y-ky) * (y-ky) );
+      xy = ( MKC_RATIO( row[ o0c1 ? CCOL_GXY : OCOL_GXY ], denom )
+             - (x-kx) * (y-ky) );
+      break;
+
+    /* Error. */
+    default:
+      error(EXIT_FAILURE, 0, "a bug! Code %d not a recognized key in "
+            "`columns_second_order'", key);
+    }
+
+  /* Return the output. */
+  switch(key)
+    {
+    /* Semi-major axis. */
+    case UI_KEY_SEMIMAJOR:
+    case UI_KEY_GEOSEMIMAJOR:
+      return sqrt( ( xx + yy ) / 2
+                   + sqrt( (xx - yy)/2 * (xx - yy)/2 + xy * xy ) );
+
+    /* Semi-minor axis. */
+    case UI_KEY_SEMIMINOR:
+    case UI_KEY_GEOSEMIMINOR:
+      /*printf("\nhere\n");*/
+      return sqrt( ( xx + yy )/2
+                   - sqrt( (xx - yy)/2 * (xx - yy)/2 + xy * xy ) );
+
+    /* Position angle. */
+    case UI_KEY_POSITIONANGLE:
+    case UI_KEY_GEOPOSITIONANGLE:
+      return 0.5f * atan2(2 * xy, xx - yy) * 180/M_PI;
+    }
+
+
+  /* Control should not reach here! If it does, its a bug, so abort and let
+     the user know. */
+  error(EXIT_FAILURE, 0, "a bug! control has reached the end of "
+        "`columns_second_order' (which should not have happened). Please "
+        "contact us at %s, so we can address the problem", PACKAGE_BUGREPORT);
+  return NAN;
+}
+
+
+
+
+
+/* The magnitude error is directly derivable from the S/N:
+
+   To derive the error in measuring the magnitude from the S/N, let's take
+   `F' as the flux, `Z' is the zeropoint, `M' is the magnitude, `S' is the
+   S/N, and `D' to stand for capital delta (or error in a value) then from
+
+      `M = -2.5*log10(F) + Z'
+
+   we get the following equation after calculating the derivative with
+   respect to F.
+
+      `dM/df = -2.5 * ( 1 / ( F * ln(10) ) )'
+
+   From the Tailor series, `DM' can be written as:
+
+      `DM = dM/dF * DF'
+
+   So
+
+      `DM = |-2.5/ln(10)| * DF/F'
+
+   But `DF/F' is just the inverse of the Signal to noise ratio, or
+  `1/S'. So
+
+      `DM = 2.5 / ( S * ln(10) )'               */
+#define MAG_ERROR(P,ROW,O0C1) (2.5f/(columns_sn((P),(ROW),(O0C1)) * log(10)))
+
+
+
+
+
+
+/* All the raw first and second pass information has been collected, now
+   write them into the output columns. The list of columns here is in the
+   same order as `columns_alloc_set_out_cols', see there for the type of
+   each column. */
+void
+columns_fill(struct mkcatalog_passparams *pp)
+{
+  struct mkcatalogparams *p=pp->p;
+
+  int key;
+  double tmp;
+  void *colarr;
+  gal_data_t *column;
+  double *ci, *oi=pp->oi;
+  size_t sr=pp->clumpstartindex, cind, coind;
+  size_t oind=pp->object-1; /* IDs start from 1, indexs from 0. */
+
+  /* Go over all the object columns and fill in the information. */
+  for(column=p->objectcols; column!=NULL; column=column->next)
+    {
+      /* For easy reading. */
+      key=column->status;
+      colarr=column->array;
+
+      /* Go over all the columns. */
+      switch(key)
+        {
+        case UI_KEY_OBJID:
+          ((int32_t *)colarr)[oind] = pp->object;
+          break;
+
+        case UI_KEY_NUMCLUMPS:
+          ((int32_t *)colarr)[oind] = pp->clumpsinobj;
+          break;
+
+        case UI_KEY_AREA:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUM];
+          break;
+
+        case UI_KEY_CLUMPSAREA:
+          ((int32_t *)colarr)[oind] = oi[OCOL_C_NUM];
+          break;
+
+        case UI_KEY_X:
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_VX], oi[OCOL_SUMPOS] );
+          break;
+
+        case UI_KEY_Y:
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_VY], oi[OCOL_SUMPOS] );
+          break;
+
+        case UI_KEY_GEOX:
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUM] );
+          break;
+
+        case UI_KEY_GEOY:
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUM] );
+          break;
+
+        case UI_KEY_CLUMPSX:
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_VX],
+                                               oi[OCOL_C_SUMPOS] );
+          break;
+
+        case UI_KEY_CLUMPSY:
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_VY],
+                                              oi[OCOL_C_SUMPOS] );
+          break;
+
+        case UI_KEY_CLUMPSGEOX:
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_GX], oi[OCOL_C_NUM]);
+          break;
+
+        case UI_KEY_CLUMPSGEOY:
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_GY], oi[OCOL_C_NUM]);
+          break;
+
+        case UI_KEY_RA:
+        case UI_KEY_DEC:
+          p->rd_vo[0][oind] = MKC_RATIO( oi[OCOL_VX], oi[OCOL_SUMPOS] );
+          p->rd_vo[1][oind] = MKC_RATIO( oi[OCOL_VY], oi[OCOL_SUMPOS] );
+          break;
+
+        case UI_KEY_GEORA:
+        case UI_KEY_GEODEC:
+          p->rd_go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUM] );
+          p->rd_go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUM] );
+          break;
+
+        case UI_KEY_CLUMPSRA:
+        case UI_KEY_CLUMPSDEC:
+          p->rd_vcc[0][oind] = MKC_RATIO( oi[OCOL_C_VX], oi[OCOL_C_SUMPOS] );
+          p->rd_vcc[1][oind] = MKC_RATIO( oi[OCOL_C_VY], oi[OCOL_C_SUMPOS] );
+          break;
+
+        case UI_KEY_CLUMPSGEORA:
+        case UI_KEY_CLUMPSGEODEC:
+          p->rd_gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUM] );
+          p->rd_gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUM] );
+          break;
+
+        case UI_KEY_BRIGHTNESS:
+          ((float *)colarr)[oind] = oi[ OCOL_SUM ];
+          break;
+
+        case UI_KEY_CLUMPSBRIGHTNESS:
+          ((float *)colarr)[oind] = oi[ OCOL_C_SUM ];
+          break;
+
+        case UI_KEY_MAGNITUDE:
+          ((float *)colarr)[oind] = MKC_MAG(oi[ OCOL_SUM ]);
+          break;
+
+        case UI_KEY_MAGNITUDEERR:
+          ((float *)colarr)[oind] = MAG_ERROR(p, oi, 0);
+          break;
+
+        case UI_KEY_CLUMPSMAGNITUDE:
+          ((float *)colarr)[oind] = MKC_MAG(oi[ OCOL_C_SUM ]);
+          break;
+
+        case UI_KEY_UPPERLIMIT:
+          ((float *)colarr)[oind] = oi[ OCOL_UPPERLIMIT_B ];
+          break;
+
+        case UI_KEY_UPPERLIMITMAG:
+          ((float *)colarr)[oind] = MKC_MAG(oi[ OCOL_UPPERLIMIT_B ]);
+          break;
+
+        case UI_KEY_SN:
+          ((float *)colarr)[oind] = columns_sn(p, oi, 0);
+          break;
+
+        case UI_KEY_SKY:
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_SUMSKY], oi[OCOL_NUM]);
+          break;
+
+        case UI_KEY_STD:
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_SUMSTD], oi[OCOL_NUM]);
+          break;
+
+        case UI_KEY_SEMIMAJOR:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        case UI_KEY_SEMIMINOR:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        case UI_KEY_AXISRATIO:
+          ((float *)colarr)[oind]
+            = ( columns_second_order(pp, oi, UI_KEY_SEMIMINOR, 0)
+                / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
+          break;
+
+        case UI_KEY_POSITIONANGLE:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        case UI_KEY_GEOSEMIMAJOR:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        case UI_KEY_GEOSEMIMINOR:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        case UI_KEY_GEOAXISRATIO:
+          ((float *)colarr)[oind]
+            = ( columns_second_order(pp, oi, UI_KEY_GEOSEMIMINOR, 0)
+                / columns_second_order(pp, oi, UI_KEY_GEOSEMIMAJOR, 0) );
+          break;
+
+        case UI_KEY_GEOPOSITIONANGLE:
+          ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! the output column code %d not "
+                "recognized in `mkcatalog_fill_output_columns' (for "
+                "objects). Please contact us at %s to solve the problem",
+                key, PACKAGE_BUGREPORT);
+        }
+    }
+
+  /* Go over the clump columns and fill the information. */
+  for(column=p->clumpcols; column!=NULL; column=column->next)
+    for(coind=0;coind<pp->clumpsinobj;++coind)
       {
-        counter=1.0f;
-        for(j=row;j<row+n;++j)
-          p->cat[ j * p->numcols + p->curcol] = o1c0 ? i : counter++;
-        row+=n;
+        /* `coind': clump-in-object-index.
+           `cind': clump-index (over all the catalog). */
+        cind   = sr + coind;
+        colarr = column->array;
+        key    = column->status;
+        ci     = &pp->ci[ coind * CCOL_NUMCOLS ];
+
+        /* Parse columns */
+        switch(key)
+          {
+          case UI_KEY_HOSTOBJID:
+            ((int32_t *)colarr)[cind]=pp->object;
+            break;
+
+          case UI_KEY_IDINHOSTOBJ:
+            ((int32_t *)colarr)[cind]=coind+1;
+            break;
+
+          case UI_KEY_AREA:
+            ((int32_t *)colarr)[cind]=ci[CCOL_NUM];
+            break;
+
+          case UI_KEY_X:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_VX],
+                                                 ci[CCOL_SUMPOS] );
+            break;
+
+          case UI_KEY_Y:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_VY],
+                                                 ci[CCOL_SUMPOS] );
+            break;
+
+          case UI_KEY_GEOX:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUM] );
+            break;
+
+          case UI_KEY_GEOY:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUM] );
+            break;
+
+          case UI_KEY_RA:
+          case UI_KEY_DEC:
+            p->rd_vc[0][cind] = MKC_RATIO( ci[CCOL_VX], ci[CCOL_SUMPOS] );
+            p->rd_vc[1][cind] = MKC_RATIO( ci[CCOL_VY], ci[CCOL_SUMPOS] );
+            break;
+
+          case UI_KEY_GEORA:
+          case UI_KEY_GEODEC:
+            p->rd_gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUM] );
+            p->rd_gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUM] );
+            break;
+
+          case UI_KEY_BRIGHTNESS:
+            /* Calculate the river flux over the clump area. */
+            tmp = ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ];
+
+            /* Subtract it from the clump's brightness. */
+            ((float *)colarr)[cind] = ci[ CCOL_SUM ] - tmp;
+            break;
+
+          case UI_KEY_NORIVERBRIGHTNESS:
+            ((float *)colarr)[cind] = ci[ CCOL_SUM ];
+            break;
+
+          case UI_KEY_MAGNITUDE: /* Similar: brightness for clumps */
+            tmp = ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ];
+            ((float *)colarr)[cind] = MKC_MAG(ci[ CCOL_SUM ]-tmp);
+            break;
+
+          case UI_KEY_MAGNITUDEERR:
+            ((float *)colarr)[cind] = MAG_ERROR(p, ci, 1);
+            break;
+
+          case UI_KEY_UPPERLIMIT:
+            ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_B ];
+            break;
+
+          case UI_KEY_UPPERLIMITMAG:
+            ((float *)colarr)[cind] = MKC_MAG(ci[ CCOL_UPPERLIMIT_B ]);
+            break;
+
+          case UI_KEY_RIVERAVE:
+            ((float *)colarr)[cind] = ( ci[ CCOL_RIV_SUM]
+                                        / ci[ CCOL_RIV_NUM] );
+            break;
+
+          case UI_KEY_RIVERNUM:
+            ((int32_t *)colarr)[cind] = ci[ CCOL_RIV_NUM ];
+            break;
+
+          case UI_KEY_SN:
+            ((float *)colarr)[cind] = columns_sn(p, ci, 1);
+            break;
+
+          case UI_KEY_SKY:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[ CCOL_SUMSKY],
+                                                 ci[ CCOL_NUM] );
+            break;
+
+          case UI_KEY_STD:
+            ((float *)colarr)[cind] = MKC_RATIO( ci[ CCOL_SUMSTD ],
+                                                 ci[ CCOL_NUM ] );
+            break;
+
+          case UI_KEY_SEMIMAJOR:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_SEMIMINOR:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_AXISRATIO:
+            ((float *)colarr)[cind]
+              = ( columns_second_order(pp, ci, UI_KEY_SEMIMINOR, 1)
+                  / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
+          break;
+
+          case UI_KEY_POSITIONANGLE:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_GEOSEMIMAJOR:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_GEOSEMIMINOR:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_GEOAXISRATIO:
+            ((float *)colarr)[cind]
+              = ( columns_second_order(pp, ci, UI_KEY_GEOSEMIMINOR, 1)
+                  / columns_second_order(pp, ci, UI_KEY_GEOSEMIMAJOR, 1) );
+          break;
+
+          case UI_KEY_GEOPOSITIONANGLE:
+            ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          default:
+            error(EXIT_FAILURE, 0, "a bug! the output column code %d not "
+                  "recognized in `mkcatalog_fill_output_columns' (for "
+                  "clumps). Please contact us at %s to solve the problem",
+                  key, PACKAGE_BUGREPORT);
+          }
       }
-
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-void
-numclumps(struct mkcatalogparams *p)
-{
-  size_t i;
-
-  p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%zu: Number of clumps in this object.",
-          p->curcol);
-
-  for(i=0;i<p->numobjects;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->oinfo[(i+1)*OCOLUMNS+ONCLUMPS];
-
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-void
-area(struct mkcatalogparams *p, int cinobj, int isriver)
-{
-  char *type;
-  size_t i, col;
-
-  /* Set the proper column to use */
-  if(p->obj0clump1)
-    {
-      if(isriver)
-        {
-          type="Number of river pixels around this clump";
-          col=CRivArea;
-        }
-      else
-        {
-          type = isnan(p->threshold)
-            ? "Area of this clump"
-            : "Area of this clump above threshold";
-          col = CAREA;
-        }
-    }
-  else
-    {
-      if(cinobj)    /* It is the positions of clumps in object. */
-        {
-          type="Clumps in object area";
-          col = OAREAC;
-        }
-      else          /* It is the position of the object itsself.*/
-        {
-          type="Full object area";
-          col = OAREA;
-        }
-    }
-
-  /* Set the unit and print the header. */
-  p->unitp = isriver ? CATUNITCOUNTER : CATUNITPIXAREA;
-  sprintf(p->description, "%zu: %s.", p->curcol, type);
-
-  /* Fill in the output array. */
-  for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
-
-  /* Set the precision for printing. */
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-void
-position(struct mkcatalogparams *p, size_t col, char *target,
-         char *type, char *axis)
-{
-  size_t i;
-  int wcsax = ( !strcmp(axis, MKCATRA) || !strcmp(axis, MKCATDEC) ) ? 1 : 0;
-
-  /* Set the header information. */
-  sprintf(p->description, "%zu: %s %s (%s).", p->curcol, target, type, axis);
-
-  /* Prepare the respective column, set the units and also the
-     printing accuracy if we are in RA/Dec mode (wcsax==1). */
-  if(wcsax)
-    {
-      /* Run the respective function to prepare the information table,
-         then set the units and print accuracy. */
-      preparewcs(p, col);
-      p->unitp = CATUNITDEGREE;
-      p->accucols[p->accucounter++]=p->curcol;
-    }
-  else
-    {
-      /* Run the respective function to prepare the information table. */
-      if(!strcmp(type, MKCATGEOC))
-        geoxy(p, col);
-      else if(!strcmp(type, MKCATWHTC))
-        flxwhtimg(p, col);
-      else
-        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-              "solve this problem. The value to `type' (%s) is not "
-              "recognized in position (image mode)", PACKAGE_BUGREPORT,
-              type);
-
-      /* Set the units. */
-      p->unitp = CATUNITPIXLENGTH;
-    }
-
-  /* Write respective column of the information table into the output. */
-  for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
-}
-
-
-
-
-
-/* Note that here, the output column is used, not the input one. */
-void
-secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
-{
-  double a, *row;
-  char *name=NULL, *type=NULL;
-  size_t i, xxc=-1, yyc=-1, xyc=-1;
-
-  /* Set the necessary columns, and the type of output: */
-  switch(ocol)
-    {
-    /* The brightness weighted second moments. */
-    case CATSEMIMAJOR: case CATSEMIMINOR: case CATPOSITIONANGLE:
-      type="weighted";
-      if(p->obj0clump1) {xxc=CFlxWhtXX; yyc=CFlxWhtYY; xyc=CFlxWhtXY;}
-      else              {xxc=OFlxWhtXX; yyc=OFlxWhtYY; xyc=OFlxWhtXY;}
-      break;
-
-    /* The geometric second moments. */
-    case CATGEOSEMIMAJOR: case CATGEOSEMIMINOR: case CATGEOPOSITIONANGLE:
-      type="geometric";
-      if(p->obj0clump1) {xxc=CGeoXX; yyc=CGeoYY; xyc=CGeoXY;}
-      else              {xxc=OGeoXX; yyc=OGeoYY; xyc=OGeoXY;}
-      break;
-
-    /* Output column not recognized */
-    default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "solve this problem. The value to `ocol' (%zu) is not "
-            "recognized in secondordermoment (first)", PACKAGE_BUGREPORT,
-            ocol);
-    }
-
-  /* Prepare the columns which will be needed in the next step. */
-  setsecondmoment(p, xxc);
-  setsecondmoment(p, yyc);
-  setsecondmoment(p, xyc);
-
-  /* Set output name and do the calculation, the calculations are
-     taken from the SExtractor manual. */
-  switch(ocol)
-    {
-    case CATSEMIMAJOR: case CATGEOSEMIMAJOR:
-      name="semi major axis";
-      p->unitp = CATUNITPIXLENGTH;
-      for(i=0;i<p->num;++i)
-        {
-          row = p->info + (i+1)*p->icols;
-          a=(row[xxc]-row[yyc])*(row[xxc]-row[yyc])/4;
-          p->cat[i * p->numcols + p->curcol ] =
-            sqrt( (row[xxc]+row[yyc])/2 + sqrt( a + row[xyc]*row[xyc]) );
-        }
-      break;
-    case CATSEMIMINOR: case CATGEOSEMIMINOR:
-      name="semi minor axis";
-      p->unitp = CATUNITPIXLENGTH;
-      for(i=0;i<p->num;++i)
-        {
-          row = p->info + (i+1)*p->icols;
-          a=(row[xxc]-row[yyc])*(row[xxc]-row[yyc])/4;
-          p->cat[i * p->numcols + p->curcol ] =
-            sqrt( (row[xxc]+row[yyc])/2 - sqrt( a + row[xyc]*row[xyc]) );
-        }
-      break;
-    case CATPOSITIONANGLE: case CATGEOPOSITIONANGLE:
-      name="position angle";
-      p->unitp = CATUNITDEGREE;
-      for(i=0;i<p->num;++i)
-        {
-          row = p->info + (i+1)*p->icols;
-          p->cat[i * p->numcols + p->curcol ] =
-            0.5*atan2(2*row[xyc], row[xxc]-row[yyc]) * 180/M_PI;
-        }
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "solve this problem. The value to `ocol' (%zu) is not "
-            "recognized in secondordermoment (second)", PACKAGE_BUGREPORT,
-            ocol);
-    }
-
-  /* Set the header value */
-  sprintf(p->description, "%zu: %s %s %s.", p->curcol, target, type, name);
-}
-
-
-
-
-
-void
-brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
-              char *scale)
-{
-  size_t i;
-  char *add;
-  double bright, *value;
-
-  /* Prepare other necessary columns */
-  if( !strcmp(MKRIVERSSUR, target) )
-    setaveriver(p);
-  if( !strcmp(MKCATCLUMP, target) && col!=CNoRiverBrightness )
-    setclumpbrightness(p);
-
-  /* Fill the output columns: */
-  for(i=0;i<p->num;++i)
-    {
-
-      /* Set the basic values: */
-      bright = p->info[ (i+1) * p->icols + col ];
-      value  = &p->cat[i * p->numcols + p->curcol ];
-
-
-      /* Do the job: */
-      if(!strcmp(MKCATMAG, scale))
-        *value = bright<=0.0f ? NAN : -2.5f*log10(bright)+p->zeropoint;
-      else if(!strcmp(MKCATBRIGHT, scale))
-        *value = bright;
-      else
-        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-              "fix this issue. For some reason, the value to `scale' in"
-              "brightnessfluxmag (columns.c) is `%s', which is not "
-              "recognized", PACKAGE_BUGREPORT, scale);
-    }
-
-  /* Make final preparations for output. When dealing with the average
-     river value, set the accuracy to high, also set the units to
-     average values (per pixel). */
-  if(!strcmp(MKRIVERSSUR, target))
-    {
-      p->unitp = CATUNITAVE;
-      p->accucols[p->accucounter++]=p->curcol;
-    }
-  else
-    p->unitp = strcmp(MKCATMAG, scale) ? CATUNITBRIGHTNESS : CATUNITMAG;
-
-  /* Set the header information: */
-  add = (col==CNoRiverBrightness) ? " sky (not river) subtracted " : " ";
-  sprintf(p->description, "%zu: %s%s%s.", p->curcol, target, add, scale);
-}
-
-
-
-
-
-void
-upperlimitcol(struct mkcatalogparams *p)
-{
-  size_t i;
-  float *std;
-  double *ptr;
-
-  /* For the comments: */
-  p->unitp = CATUNITMAG;
-  sprintf(p->description, "%zu: Upper limit magnitude for this %s.",
-          p->curcol, p->name);
-
-
-  /* Correct the raw values (divide them by area) if not already
-     done. */
-  std=upperlimit(p->img, p->sky, p->objects, p->upmask, p->s0, p->s1,
-                 p->upnum, p->cp.numthreads, p->envseed, p->upsclipmultip,
-                 p->upsclipaccu);
-
-
-  /* Write the standard deviations values in the final catalog as
-     magnitudes. */
-  for(i=0;i<p->num;++i)
-    {
-      /* `ptr' is defined for a short/readable line. */
-      ptr  = &p->cat[i * p->numcols + p->curcol ];
-      *ptr =  -2.5f * log10( p->upnsigma*std[i+1] ) + p->zeropoint;
-    }
-
-  free(std);
-}
-
-
-
-
-
-void
-skystd(struct mkcatalogparams *p, size_t col)
-{
-  size_t i;
-
-  /* For the comments: */
-  p->unitp = CATUNITAVE;
-  sprintf(p->description, "%zu: Average %s under this %s.",
-          p->curcol, ( (col==OSKY || col==CSKY)
-                       ? "sky" : "sky standard deviation" ),
-          p->name);
-
-  /* Correct the raw values (divide them by area) if not already
-     done. */
-  setskystd(p, col);
-
-  /* Fill the sky value, note that in the information array, we have
-     only calculated the sum. So here, we need to divide by the area
-     to find the average. */
-  for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
-
-  /* This column should be accurate: */
-  p->accucols[p->accucounter++]=p->curcol;
-}
-
-
-
-
-
-void
-sncol(struct mkcatalogparams *p, int sn0_magerr1, char *target)
-{
-  size_t i;
-  double sn, I, O, Ni, errpt, *row;
-  size_t stdcol        = p->obj0clump1 ? CSTD        : OSTD;
-  size_t areacol       = p->obj0clump1 ? CAREA       : OAREA;
-  size_t brightnesscol = p->obj0clump1 ? CBrightness : OBrightness;
-
-  /* Do the corrections:
-
-       1. If we are dealing with clumps, make sure the clump
-          brightness is corrected first.
-
-       2. Make sure the STD values are corrected in any case. */
-  setskystd(p, stdcol);
-  if(p->obj0clump1)
-    setclumpbrightness(p);
-
-  /* For the comments: */
-  p->unitp = sn0_magerr1 ? CATUNITMAG : CATUNITRATIO;
-  if(sn0_magerr1)
-    sprintf(p->description, "%zu: %s Magnitude error.", p->curcol,
-            target);
-  else
-    sprintf(p->description, "%zu: %s signal to noise ratio.", p->curcol,
-            target);
-
-  /* Calculate the signal to noise ratio. Recall that for the objects,
-     the sky value was subtracted from oinfo, but for the clumps, it
-     was not subtracted. */
-  for(i=0;i<p->num;++i)
-    {
-      /* Some convenience variables to make things readable. */
-      row = p->info + ((i+1)*p->icols);     /* Pointer to this row.       */
-      Ni  = row[ areacol ];                 /* Number-in                  */
-      I   = row[ brightnesscol ]/Ni;        /* Inner brightness (average) */
-      errpt = row[ stdcol ]*row[ stdcol ];  /* error-to-power-two         */
-
-      /* If we are on a clump and there are actually rivers (NOTE: it
-         is possible that there are no rivers, see the NoiseChisel
-         dropout paper). In short, they are actually objects with no
-         more than one clump. So, NoiseChisel parameters were set such
-         that the objects also show up in the clumps labels. */
-      if(p->obj0clump1 && row[ CRivArea ]>0.0f)
-        {
-
-          /* Another convenience variable. */
-          O=row[ CRivAve ];                 /* Outer brightness (average)*/
-
-          /* Modify the error based on the conditions. Note that the
-             inner flux has already been subtracted from the average
-             outer flux multiplied by the clump area in
-             setclumpbrightness and was divided by the clump area
-             above. It is also in per pixel units. row[CRivAve] is
-             also in per pixel units. So simply by adding the two, we
-             get the per pixel flux within the clump before removing
-             the average river value.
-
-             If the image was already Sky subtracted, then the Sky
-             error^2 (=err) must be multiplied by 2 (we have
-             implicitly used it in both estimating the inner and outer
-             fluxes). Otherwise, it is multiplied by 0.0f, since we
-             don't care because we are not using the Sky value
-             here. */
-          errpt = ( (   I+O > 0.0f ? I+O : 0.0f )
-                    + ( O   > 0.0f ? O   : 0.0f )
-                    + errpt * (p->skysubtracted ? 2.0f : 0.0f) );
-        }
-      else
-        {
-          /* When the flux is negative (can easily happen in matched
-             photometry), then ignore the error in flux (the S/N is
-             meaningless anyway) and just keep the Sky error.
-
-             When the image was already Sky subtracted, we need two
-             errpt terms, because the error in the previous Sky
-             subtraction must also be included. */
-          errpt = ( ( I>0 ? I : 0 )
-                    + errpt * (p->skysubtracted ? 1.0f : 2.0f) );
-        }
-
-      /* Fill in the output column. Note that magnitude error is directly
-         derivable from the S/N:
-
-         To derive the error in measuring the magnitude from the S/N, let's
-         take `F' as the flux, `Z' is the zeropoint, `M' is the magnitude,
-         `S' is the S/N, and `D' to stand for capital delta (or error in a
-         value) then from
-
-              `M = -2.5*log10(F) + Z'
-
-         we get the following equation after calculating the derivative
-         with respect to F.
-
-              `dM/df = -2.5 * ( 1 / ( F * ln(10) ) )'
-
-         From the Tailor series, `DM' can be written as:
-
-              `DM = dM/dF * DF'
-
-         So
-
-              `DM = |-2.5/ln(10)| * DF/F'
-
-         But `DF/F' is just the inverse of the Signal to noise ratio, or
-         `1/S'. So
-
-              `DM = 2.5 / ( S * ln(10) )'
-      */
-      sn = sqrt(Ni/p->cpscorr)*I / sqrt( errpt );
-      p->cat[i * p->numcols + p->curcol ] = ( sn0_magerr1
-                                              ? ( 2.5 / (sn*log(10)) )
-                                              : sn );
-    }
-
 }

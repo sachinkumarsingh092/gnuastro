@@ -23,7 +23,7 @@
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=mkcatalog
-objimg=inputascanvas.fits
+objimg=clearcanvas.fits
 execname=../bin/$prog/ast$prog
 img=convolve_spatial_noised_labeled.fits
 
@@ -41,7 +41,9 @@ img=convolve_spatial_noised_labeled.fits
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
+if [ ! -f $execname ]; then echo "$execname doesn't exist."; exit 77; fi
+if [ ! -f $img ];      then echo "$img doesn't exist.";      exit 77; fi
+if [ ! -f $objimg ];   then echo "$objimg doesn't exist";    exit 77; fi
 
 
 
@@ -49,5 +51,6 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --objlabs=$objimg --objhdu=0 --output=aperturephot.txt  \
-          --sn --magnitude --dec --ra --y --x
+$execname $img --objectsfile=$objimg --objectshdu=1 \
+          --output=aperturephot.txt                 \
+          --ids --x --y --ra --dec --magnitude --sn

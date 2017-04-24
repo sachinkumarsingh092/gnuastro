@@ -49,7 +49,7 @@ main (int argc, char *argv[])
   mknoise(&p);
 
   /* Free all non-freed allocations. */
-  ui_free_report(&p);
+  ui_free_report(&p, &t1);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

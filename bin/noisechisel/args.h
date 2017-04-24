@@ -35,7 +35,7 @@ struct argp_option program_options[] =
     /* Input options. */
     {
       "kernel",
-      ARGS_OPTION_KEY_KERNEL,
+      UI_KEY_KERNEL,
       "STR",
       0,
       "Filename of Kernel to convolve with input",
@@ -48,7 +48,7 @@ struct argp_option program_options[] =
     },
     {
       "khdu",
-      ARGS_OPTION_KEY_KHDU,
+      UI_KEY_KHDU,
       "STR",
       0,
       "HDU containing Kernel image.",
@@ -61,7 +61,7 @@ struct argp_option program_options[] =
     },
     {
       "skysubtracted",
-      ARGS_OPTION_KEY_SKYSUBTRACTED,
+      UI_KEY_SKYSUBTRACTED,
       0,
       0,
       "Input is Sky subtracted (for error estimation).",
@@ -74,7 +74,7 @@ struct argp_option program_options[] =
     },
     {
       "minskyfrac",
-      ARGS_OPTION_KEY_MINSKYFRAC,
+      UI_KEY_MINSKYFRAC,
       "FLT",
       0,
       "Min. fraction of undetected area in tile.",
@@ -87,7 +87,7 @@ struct argp_option program_options[] =
     },
     {
       "minnumfalse",
-      ARGS_OPTION_KEY_MINNUMFALSE,
+      UI_KEY_MINNUMFALSE,
       "INT",
       0,
       "Minimum number for S/N estimation.",
@@ -103,7 +103,7 @@ struct argp_option program_options[] =
     /* Tessellation. */
     {
       "largetilesize",
-      ARGS_OPTION_KEY_LARGETILESIZE,
+      UI_KEY_LARGETILESIZE,
       "INT[,INT]",
       0,
       "Sim. to --tilesize, but for larger tiles.",
@@ -121,7 +121,7 @@ struct argp_option program_options[] =
     /* Output options. */
     {
       "onlydetection",
-      ARGS_OPTION_KEY_ONLYDETECTION,
+      UI_KEY_ONLYDETECTION,
       0,
       0,
       "Stop at the end of detection.",
@@ -134,7 +134,7 @@ struct argp_option program_options[] =
     },
     {
       "grownclumps",
-      ARGS_OPTION_KEY_GROWNCLUMPS,
+      UI_KEY_GROWNCLUMPS,
       0,
       0,
       "Save grown clumps instead of original.",
@@ -157,7 +157,7 @@ struct argp_option program_options[] =
     },
     {
       "mirrordist",
-      ARGS_OPTION_KEY_MIRRORDIST,
+      UI_KEY_MIRRORDIST,
       "FLT",
       0,
       "Max. dist. (error multip.) to find mode.",
@@ -170,7 +170,7 @@ struct argp_option program_options[] =
     },
     {
       "modmedqdiff",
-      ARGS_OPTION_KEY_MODMEDQDIFF,
+      UI_KEY_MODMEDQDIFF,
       "FLT",
       0,
       "Max. mode and median quant diff. per tile.",
@@ -183,7 +183,7 @@ struct argp_option program_options[] =
     },
     {
       "qthresh",
-      ARGS_OPTION_KEY_QTHRESH,
+      UI_KEY_QTHRESH,
       "FLT",
       0,
       "Quantile threshold on convolved image.",
@@ -196,7 +196,7 @@ struct argp_option program_options[] =
     },
     {
       "smoothwidth",
-      ARGS_OPTION_KEY_SMOOTHWIDTH,
+      UI_KEY_SMOOTHWIDTH,
       "INT",
       0,
       "Flat kernel width to smooth interpolated.",
@@ -209,7 +209,7 @@ struct argp_option program_options[] =
     },
     {
       "checkqthresh",
-      ARGS_OPTION_KEY_CHECKQTHRESH,
+      UI_KEY_CHECKQTHRESH,
       0,
       0,
       "Save quantile threshold estimation in file.",
@@ -222,7 +222,7 @@ struct argp_option program_options[] =
     },
     {
       "erode",
-      ARGS_OPTION_KEY_ERODE,
+      UI_KEY_ERODE,
       "INT",
       0,
       "Number of erosions after thresholding.",
@@ -235,7 +235,7 @@ struct argp_option program_options[] =
     },
     {
       "erodengb",
-      ARGS_OPTION_KEY_ERODENGB,
+      UI_KEY_ERODENGB,
       "INT",
       0,
       "4 or 8 connectivity in erosion.",
@@ -248,7 +248,7 @@ struct argp_option program_options[] =
     },
     {
       "noerodequant",
-      ARGS_OPTION_KEY_NOERODEQUANT,
+      UI_KEY_NOERODEQUANT,
       "FLT",
       0,
       "Quantile for no erosion.",
@@ -261,7 +261,7 @@ struct argp_option program_options[] =
     },
     {
       "opening",
-      ARGS_OPTION_KEY_OPENING,
+      UI_KEY_OPENING,
       "INT",
       0,
       "Depth of opening after erosion.",
@@ -274,7 +274,7 @@ struct argp_option program_options[] =
     },
     {
       "openingngb",
-      ARGS_OPTION_KEY_OPENINGNGB,
+      UI_KEY_OPENINGNGB,
       "INT",
       0,
       "4 or 8 connectivity in opening.",
@@ -287,7 +287,7 @@ struct argp_option program_options[] =
     },
     {
       "sigmaclip",
-      ARGS_OPTION_KEY_SIGMACLIP,
+      UI_KEY_SIGMACLIP,
       "FLT,FLT",
       0,
       "Sigma multiple and, tolerance or number.",
@@ -301,7 +301,7 @@ struct argp_option program_options[] =
     },
     {
       "checkdetsky",
-      ARGS_OPTION_KEY_CHECKDETSKY,
+      UI_KEY_CHECKDETSKY,
       0,
       0,
       "Save Sky value estimation for pseudo-dets.",
@@ -314,7 +314,7 @@ struct argp_option program_options[] =
     },
     {
       "dthresh",
-      ARGS_OPTION_KEY_DTHRESH,
+      UI_KEY_DTHRESH,
       "FLT",
       0,
       "Sigma threshold for Pseudo-detections.",
@@ -327,7 +327,7 @@ struct argp_option program_options[] =
     },
     {
       "detsnminarea",
-      ARGS_OPTION_KEY_DETSNMINAREA,
+      UI_KEY_DETSNMINAREA,
       "INT",
       0,
       "Min. pseudo-detection area for S/N dist.",
@@ -340,7 +340,7 @@ struct argp_option program_options[] =
     },
     {
       "checkdetsn",
-      ARGS_OPTION_KEY_CHECKDETSN,
+      UI_KEY_CHECKDETSN,
       0,
       0,
       "Save pseudo-detection S/N values to a file.",
@@ -353,7 +353,7 @@ struct argp_option program_options[] =
     },
     {
       "detquant",
-      ARGS_OPTION_KEY_DETQUANT,
+      UI_KEY_DETQUANT,
       "FLT",
       0,
       "Quantile in pseudo-det. to define true.",
@@ -366,7 +366,7 @@ struct argp_option program_options[] =
     },
     {
       "dilate",
-      ARGS_OPTION_KEY_DILATE,
+      UI_KEY_DILATE,
       "INT",
       0,
       "Number of times to dilate true detections.",
@@ -378,8 +378,21 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "cleandilated",
+      UI_KEY_CLEANDILATED,
+      0,
+      0,
+      "Remove small S/N dilated objects.",
+      ARGS_GROUP_DETECTION,
+      &p->cleandilated,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "checkdetection",
-      ARGS_OPTION_KEY_CHECKDETECTION,
+      UI_KEY_CHECKDETECTION,
       0,
       0,
       "Save all the detection steps to a file.",
@@ -392,7 +405,7 @@ struct argp_option program_options[] =
     },
     {
       "checksky",
-      ARGS_OPTION_KEY_CHECKSKY,
+      UI_KEY_CHECKSKY,
       0,
       0,
       "Final sky and its STD steps in a file.",
@@ -414,7 +427,7 @@ struct argp_option program_options[] =
     },
     {
       "segsnminarea",
-      ARGS_OPTION_KEY_SEGSNMINAREA,
+      UI_KEY_SEGSNMINAREA,
       "INT",
       0,
       "Minimum area of clumps for S/N estimation.",
@@ -427,7 +440,7 @@ struct argp_option program_options[] =
     },
     {
       "checkclumpsn",
-      ARGS_OPTION_KEY_CHECKCLUMPSN,
+      UI_KEY_CHECKCLUMPSN,
       0,
       0,
       "Save Sky clump S/N values into a file.",
@@ -440,7 +453,7 @@ struct argp_option program_options[] =
     },
     {
       "segquant",
-      ARGS_OPTION_KEY_SEGQUANT,
+      UI_KEY_SEGQUANT,
       "FLT",
       0,
       "S/N Quantile of true sky clumps.",
@@ -453,7 +466,7 @@ struct argp_option program_options[] =
     },
     {
       "keepmaxnearriver",
-      ARGS_OPTION_KEY_KEEPMAXNEARRIVER,
+      UI_KEY_KEEPMAXNEARRIVER,
       0,
       0,
       "Keep clumps with peak touching a river.",
@@ -466,7 +479,7 @@ struct argp_option program_options[] =
     },
     {
       "gthresh",
-      ARGS_OPTION_KEY_GTHRESH,
+      UI_KEY_GTHRESH,
       "FLT",
       0,
       "Multiple of STD to stop growing clumps.",
@@ -479,7 +492,7 @@ struct argp_option program_options[] =
     },
     {
       "minriverlength",
-      ARGS_OPTION_KEY_MINRIVERLENGTH,
+      UI_KEY_MINRIVERLENGTH,
       "INT",
       0,
       "Minimum len of useful grown clump rivers.",
@@ -492,7 +505,7 @@ struct argp_option program_options[] =
     },
     {
       "objbordersn",
-      ARGS_OPTION_KEY_OBJBORDERSN,
+      UI_KEY_OBJBORDERSN,
       "FLT",
       0,
       "Min. S/N for grown clumps as one object.",
@@ -505,7 +518,7 @@ struct argp_option program_options[] =
     },
     {
       "checksegmentation",
-      ARGS_OPTION_KEY_CHECKSEGMENTATION,
+      UI_KEY_CHECKSEGMENTATION,
       0,
       0,
       "Store segmentation steps in a file.",
@@ -520,7 +533,7 @@ struct argp_option program_options[] =
 
     {
       "continueaftercheck",
-      ARGS_OPTION_KEY_CONTINUEAFTERCHECK,
+      UI_KEY_CONTINUEAFTERCHECK,
       0,
       0,
       "Continue processing after checks.",

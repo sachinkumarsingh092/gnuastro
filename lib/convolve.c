@@ -479,7 +479,7 @@ convolve_spatial_on_thread(void *inparam)
 
 
   /* Go over all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Set this tile's pointer into this thread's parameters. */
       pprm->tile = &cprm->tiles[ tprm->indexs[i] ];

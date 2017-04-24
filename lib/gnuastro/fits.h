@@ -166,12 +166,15 @@ gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1);
 /**********            Header keywords             ************/
 /**************************************************************/
 void
+gal_fits_key_clean_str_value(char *string);
+
+void
 gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
                            int readcomment, int readunit);
 
 void
 gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
-                       int readcomment, int readunit);
+                  int readcomment, int readunit);
 
 void
 gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
@@ -196,9 +199,6 @@ gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist);
 void
 gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
                            char *program_string);
-
-char *
-gal_fits_key_clean_str_value(char *string);
 
 
 

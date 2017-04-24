@@ -20,14 +20,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __MKCATALOG_UPPERLIMIT_H__
-#define __MKCATALOG_UPPERLIMIT_H__
+#ifndef UPPERLIMIT_H
+#define UPPERLIMIT_H
 
-
-/* Functions: */
-float *
-upperlimit(float *img, float *sky, long *seg, long *mask, size_t s0,
-           size_t s1, size_t upnum, size_t numthreads, int envseed,
-           float sclipmultip, float sclipaccu);
+void
+upperlimit_calculate(struct mkcatalog_passparams *pp);
 
 #endif

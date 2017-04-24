@@ -144,8 +144,8 @@ gal_blank_alloc_write(uint8_t type)
           af = ( a = start + increment ) + input->dsize[input->ndim-1]; \
                                                                         \
         /* Check for blank values. */                                   \
-        if(b==b) do if(*a==b)  return 1; while(++a<af);                 \
-        else     do if(*a!=*a) return 1; while(++a<af);                 \
+        if(b==b) do if(*a==b)  { hasblank=1; break; } while(++a<af);    \
+        else     do if(*a!=*a) { hasblank=1; break; } while(++a<af);    \
                                                                         \
         /* Necessary when we are on a tile. */                          \
         if(input!=block)                                                \
@@ -155,8 +155,9 @@ gal_blank_alloc_write(uint8_t type)
       }                                                                 \
   }
 int
-gal_blank_present(gal_data_t *input)
+gal_blank_present(gal_data_t *input, int updateflag)
 {
+  int hasblank=0;
   char **str, **strf;
   size_t increment=0, num_increment=1;
   gal_data_t *block=gal_tile_block(input);
@@ -208,14 +209,22 @@ gal_blank_present(gal_data_t *input)
             "`gal_blank_present'");
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
+      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
             "in `gal_blank_present'", block->type);
+    }
+
+  /* Update the flag if requested. */
+  if(updateflag)
+    {
+      input->flag |= GAL_DATA_FLAG_BLANK_CH;
+      if(hasblank) input->flag |= GAL_DATA_FLAG_HASBLANK;
+      else         input->flag &= ~GAL_DATA_FLAG_HASBLANK;
     }
 
   /* If there was a blank value, then the function would have returned with
      a value of 1. So if it reaches here, then we can be sure that there
      was no blank values, hence, return 0. */
-  return 0;
+  return hasblank;
 }
 
 
@@ -242,7 +251,7 @@ gal_blank_flag(gal_data_t *input)
   gal_data_t *out;
   char **str=input->array, **strf=str+input->size;
 
-  if( gal_blank_present(input) )
+  if( gal_blank_present(input, 0) )
     {
       /* Allocate a non-cleared output array, we are going to parse the
          input and fill in each element. */
@@ -323,7 +332,7 @@ gal_blank_remove(gal_data_t *input)
           "%zu dimensions", input->ndim);
 
   /* If the dataset doesn't have blank values, then just get the size. */
-  if( gal_blank_present(input) )
+  if( gal_blank_present(input, 0) )
     {
       /* Shift all non-blank elements to the start of the array. */
       switch(input->type)
@@ -348,6 +357,10 @@ gal_blank_remove(gal_data_t *input)
   /* Adjust the size elements of the dataset. */
   input->ndim=1;
   input->dsize[0]=input->size=num;
+
+  /* Set the flags to mark that there is no blanks. */
+  input->flag |= GAL_DATA_FLAG_BLANK_CH;
+  input->flag &= ~GAL_DATA_FLAG_HASBLANK;
 }
 
 

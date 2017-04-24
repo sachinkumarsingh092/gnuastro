@@ -199,7 +199,7 @@ gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+numthreads*thrdcols;
-  do *sp=GAL_THREADS_NON_THRD_INDEX; while(++sp<fp);
+  do *sp=GAL_BLANK_SIZE_T; while(++sp<fp);
 
   /* Distribute the labels in the threads.  */
   for(i=0;i<numactions;++i)
@@ -211,7 +211,7 @@ gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
       size_t j;
       printf("\n\n############################\n");
       printf("THREAD %zu: \n", i);
-      for(j=0;thrds[i*thrdcols+j]!=GAL_THREADS_NON_THRD_INDEX;j++)
+      for(j=0;thrds[i*thrdcols+j]!=GAL_BLANK_SIZE_T;j++)
         printf("%zu, ", thrds[i*thrdcols+j]);
       printf("\b\b.\n");
     }
@@ -286,7 +286,7 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
 
        size_t i;
 
-       for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+       for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
        {
 
            THE INDEX OF THE TARGET IS NOW AVAILABLE AS
@@ -381,7 +381,7 @@ gal_threads_spin_off(void *(*function)(void *), void *caller_params,
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             prm[i].id=i;
             prm[i].b=&b;

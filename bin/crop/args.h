@@ -33,7 +33,7 @@ struct argp_option program_options[] =
     /* Input. */
     {
       "hstartwcs",
-      ARGS_OPTION_KEY_HSTARTWCS,
+      UI_KEY_HSTARTWCS,
       "INT",
       0,
       "Header keyword number to start reading WCS.",
@@ -46,7 +46,7 @@ struct argp_option program_options[] =
     },
     {
       "hendwcs",
-      ARGS_OPTION_KEY_HENDWCS,
+      UI_KEY_HENDWCS,
       "INT",
       0,
       "Header keyword number to stop reading WCS.",
@@ -59,7 +59,7 @@ struct argp_option program_options[] =
     },
     {
       "zeroisnotblank",
-      ARGS_OPTION_KEY_ZEROISNOTBLANK,
+      UI_KEY_ZEROISNOTBLANK,
       0,
       0,
       "0.0 in float or double images are not blank.",
@@ -77,7 +77,7 @@ struct argp_option program_options[] =
     /* Output. */
     {
       "noblank",
-      ARGS_OPTION_KEY_NOBLANK,
+      UI_KEY_NOBLANK,
       0,
       0,
       "Remove parts of the crop box out of input image.",
@@ -90,7 +90,7 @@ struct argp_option program_options[] =
     },
     {
       "suffix",
-      ARGS_OPTION_KEY_SUFFIX,
+      UI_KEY_SUFFIX,
       "STR",
       0,
       "Suffix (postfix) of cropped images.",
@@ -113,7 +113,7 @@ struct argp_option program_options[] =
     },
     {
       "checkcenter",
-      ARGS_OPTION_KEY_CHECKCENTER,
+      UI_KEY_CHECKCENTER,
       "INT",
       0,
       "Width (in pixels) of box at center to check.",
@@ -126,7 +126,7 @@ struct argp_option program_options[] =
     },
     {
       "iwidth",
-      ARGS_OPTION_KEY_IWIDTH,
+      UI_KEY_IWIDTH,
       "INT",
       0,
       "Width (pixels) when crop defined by X,Y.",
@@ -139,7 +139,7 @@ struct argp_option program_options[] =
     },
     {
       "wwidth",
-      ARGS_OPTION_KEY_WWIDTH,
+      UI_KEY_WWIDTH,
       "FLT",
       0,
       "Width (arcseconds) for crops defined by RA,Dec.",
@@ -162,7 +162,7 @@ struct argp_option program_options[] =
     },
     {
       "ra",
-      ARGS_OPTION_KEY_RA,
+      UI_KEY_RA,
       "FLT",
       0,
       "Right ascension of one crop box center.",
@@ -175,7 +175,7 @@ struct argp_option program_options[] =
     },
     {
       "dec",
-      ARGS_OPTION_KEY_DEC,
+      UI_KEY_DEC,
       "FLT",
       0,
       "Declination of one crop box center.",
@@ -188,7 +188,7 @@ struct argp_option program_options[] =
     },
     {
       "xc",
-      ARGS_OPTION_KEY_XC,
+      UI_KEY_XC,
       "FLT",
       0,
       "First axis position of one crop box center.",
@@ -201,7 +201,7 @@ struct argp_option program_options[] =
     },
     {
       "yc",
-      ARGS_OPTION_KEY_YC,
+      UI_KEY_YC,
       "FLT",
       0,
       "Second axis position of one crop box center.",
@@ -226,7 +226,7 @@ struct argp_option program_options[] =
     },
     {
       "catalog",
-      ARGS_OPTION_KEY_CATALOG,
+      UI_KEY_CATALOG,
       "STR",
       0,
       "Input catalog filename.",
@@ -239,7 +239,7 @@ struct argp_option program_options[] =
     },
     {
       "cathdu",
-      ARGS_OPTION_KEY_CATHDU,
+      UI_KEY_CATHDU,
       "STR/INT",
       0,
       "HDU of catalog, if it is a FITS table.",
@@ -252,7 +252,7 @@ struct argp_option program_options[] =
     },
     {
       "namecol",
-      ARGS_OPTION_KEY_NAMECOL,
+      UI_KEY_NAMECOL,
       "STR/INT",
       0,
       "Column no./info of crop filename (no suffix).",
@@ -265,7 +265,7 @@ struct argp_option program_options[] =
     },
     {
       "racol",
-      ARGS_OPTION_KEY_RACOL,
+      UI_KEY_RACOL,
       "STR/INT",
       0,
       "Column number/info of Right Ascension (RA).",
@@ -278,7 +278,7 @@ struct argp_option program_options[] =
     },
     {
       "deccol",
-      ARGS_OPTION_KEY_DECCOL,
+      UI_KEY_DECCOL,
       "STR/INT",
       0,
       "Column number/info of Declination.",
@@ -291,7 +291,7 @@ struct argp_option program_options[] =
     },
     {
       "xcol",
-      ARGS_OPTION_KEY_XCOL,
+      UI_KEY_XCOL,
       "STR/INT",
       0,
       "Column number/info of X (first FITS axis).",
@@ -304,7 +304,7 @@ struct argp_option program_options[] =
     },
     {
       "ycol",
-      ARGS_OPTION_KEY_YCOL,
+      UI_KEY_YCOL,
       "STR/INT",
       0,
       "Column number/info of Y (second FITS axis).",
@@ -327,7 +327,7 @@ struct argp_option program_options[] =
     },
     {
       "section",
-      ARGS_OPTION_KEY_SECTION,
+      UI_KEY_SECTION,
       "STR",
       0,
       "Image section string specifying crop range.",
@@ -340,7 +340,7 @@ struct argp_option program_options[] =
     },
     {
       "polygon",
-      ARGS_OPTION_KEY_POLYGON,
+      UI_KEY_POLYGON,
       "STR",
       0,
       "Polygon vertices of region to crop, keep inside.",
@@ -353,7 +353,7 @@ struct argp_option program_options[] =
     },
     {
       "outpolygon",
-      ARGS_OPTION_KEY_OUTPOLYGON,
+      UI_KEY_OUTPOLYGON,
       0,
       0,
       "Keep the polygon's outside, mask the inside.",
@@ -373,7 +373,7 @@ struct argp_option program_options[] =
     /* Operating mode */
     {
       "mode",
-      ARGS_OPTION_KEY_MODE,
+      UI_KEY_MODE,
       "STR",
       0,
       "Coordinate mode `img' or `wcs'",

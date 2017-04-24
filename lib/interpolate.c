@@ -121,7 +121,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
 
 
   /* Go over all the points given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* For easy reading. */
       fullind=tprm->indexs[i];

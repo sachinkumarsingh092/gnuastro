@@ -63,7 +63,7 @@ gal_statistics_number(gal_data_t *input)
 
   /* If there is no blank values in the input, then the total number is
      just the size. */
-  if(gal_blank_present(input))
+  if(gal_blank_present(input, 0))
     { GAL_TILE_PARSE_OPERATE({++(*o);}, input, out, 0, 1) }
   else
     *((uint64_t *)(out->array)) = input->size;
@@ -1198,17 +1198,21 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 
   /* Make sure there is no blanks in the array that will be used. After
      this step, we won't be dealing with `input' any more, but with
-     `noblank'.*/
-  if( gal_blank_present(contig) )
+     `noblank'. */
+  if( gal_blank_present(contig, inplace) )
     {
       /* See if we should allocate a new dataset to remove blanks or if we
          can use the actual contiguous patch of memory. */
       noblank = inplace ? contig : gal_data_copy(contig);
       gal_blank_remove(noblank);
 
-      /* If we are working in place, then remove the blank flag. */
+      /* If we are working in place, then mark that there are no blank
+         pixels. */
       if(inplace)
-        noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
+        {
+          noblank->flag |= GAL_DATA_FLAG_BLANK_CH;
+          noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
+        }
     }
   else noblank=contig;
 
@@ -1671,10 +1675,7 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 /****************************************************************
  *****************         Outliers          ********************
  ****************************************************************/
-/* Return a float32 type data structure with an array of four values: the
-   final number of points used, the median, average and standard
-   deviation. The number of clips is put into the `status' element of the
-   data structure.
+/* Sigma-cilp a given distribution:
 
    Inputs:
 
@@ -1686,6 +1687,13 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
 
          - param>=1.0 and an integer: a specific number of times to do the
            clippping.
+
+   Output elements (type FLOAT32):
+
+     - 0: Number of points used.
+     - 1: Median.
+     - 2: Mean.
+     - 3: Standard deviation.
 
   The way this function works is very simple: first it will sort the input
   (if it isn't sorted). Afterwards, it will recursively change the starting

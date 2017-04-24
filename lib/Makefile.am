@@ -66,15 +66,14 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h        \
-  $(headersdir)/binary.h $(headersdir)/blank.h $(headersdir)/box.h       \
-  $(headersdir)/convolve.h $(headersdir)/data.h $(headersdir)/fits.h     \
-  $(headersdir)/git.h $(headersdir)/interpolate.h                        \
-  $(headersdir)/linkedlist.h $(headersdir)/dimension.h                   \
-  $(headersdir)/permutation.h $(headersdir)/polygon.h                    \
-  $(headersdir)/qsort.h $(headersdir)/statistics.h $(headersdir)/table.h \
-  $(headersdir)/threads.h $(headersdir)/tile.h $(headersdir)/txt.h       \
-  $(headersdir)/type.h $(headersdir)/wcs.h
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h	   \
+  $(headersdir)/binary.h $(headersdir)/blank.h $(headersdir)/box.h	   \
+  $(headersdir)/convolve.h $(headersdir)/data.h $(headersdir)/dimension.h  \
+  $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/interpolate.h	   \
+  $(headersdir)/linkedlist.h $(headersdir)/permutation.h		   \
+  $(headersdir)/polygon.h $(headersdir)/qsort.h $(headersdir)/statistics.h \
+  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tile.h	   \
+  $(headersdir)/txt.h $(headersdir)/type.h $(headersdir)/wcs.h
 
 
 
@@ -86,10 +85,10 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h        \
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
 internaldir=$(top_srcdir)/lib/gnuastro-internal
-EXTRA_DIST = gnuastro.pc.in $(headersdir)/README			 \
+EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README   \
   $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-onlyint.h \
-  $(internaldir)/arithmetic-other.h $(internaldir)/config.h.in		 \
-  $(internaldir)/checkset.h $(internaldir)/fixedstringmacros.h		 \
+  $(internaldir)/checkset.h $(internaldir)/commonopts.h                  \
+  $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h          \
   $(internaldir)/options.h $(internaldir)/timing.h
 
 

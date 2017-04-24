@@ -1040,7 +1040,7 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 
       /* If we have a blank value, get the blank value as a string and
          adjust the width */
-      if(gal_blank_present(data)==0)
+      if(gal_blank_present(data, 0)==0)
         fmts[i*FMTS_COLS+2]=NULL;
       else
         {

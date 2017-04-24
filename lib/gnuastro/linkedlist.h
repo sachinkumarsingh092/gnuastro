@@ -226,6 +226,9 @@ gal_linkedlist_pop_from_ill(struct gal_linkedlist_ill **list, int *value);
 void
 gal_linkedlist_reverse_ill(struct gal_linkedlist_ill **list);
 
+size_t
+gal_linkedlist_num_in_ill(struct gal_linkedlist_ill *list);
+
 void
 gal_linkedlist_print_ill(struct gal_linkedlist_ill *list);
 

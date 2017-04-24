@@ -852,7 +852,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   clumps_get_raw_info(cltprm);
 
 
-  /* Calculate the signal to noise for successful clumps */
+  /* Calculate the signal to noise ratio for successful clumps */
   snarr=cltprm->sn->array;
   if(cltprm->snind) indarr=cltprm->snind->array;
   for(i=1;i<tablen;++i)
@@ -862,6 +862,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
       Ni  = row[ INFO_INAREA ];
       I   = row[ INFO_INFLUX ]  / row[ INFO_INAREA ];
       O   = row[ INFO_RIVFLUX ] / row[ INFO_RIVAREA ];
+
 
       /* If the inner flux is smaller than the outer flux (happens only in
          noise cases) or the area is smaller than the minimum area to
@@ -882,7 +883,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
              equal to i. */
           ind = sky0_det1 ? i : counter++;
           if(cltprm->snind) indarr[ind]=i;
-          snarr[ind]=( sqrt(Ni/p->cpscorr)*(I-O)
+          snarr[ind]=( sqrt(Ni/p->cpscorr) * (I-O)
                        / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) );
         }
       else
@@ -999,7 +1000,7 @@ clumps_find_make_sn_table(void *in_prm)
 
 
   /* Go over all the tiles/detections given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* IDs. */
       cltprm.id = tind  = tprm->indexs[i];

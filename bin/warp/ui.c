@@ -218,6 +218,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /**********      Modular matrix linked list       *************/
 /**************************************************************/
+/* Save the codes of the user's desired modular warpings into the linked
+   list. Because the types of these options are `GAL_TYPE_INVALID', this
+   function will not be called when printing the full list of parameters
+   and their values. */
 static void *
 ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
                            char *filename, size_t lineno, void *params)
@@ -229,7 +233,7 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
 
 
   /* Parse the (possible) arguments. */
-  if(option->key==ARGS_OPTION_KEY_ALIGN)
+  if(option->key==UI_KEY_ALIGN)
     {
       /* For functions the standard checking isn't done, so first, we'll
          make sure that if we are in a configuration file (where
@@ -254,7 +258,7 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
   /* If this was a matrix, then put it in the matrix element of the main
      data structure. Otherwise, add the list of given values to the modular
      warpings list. */
-  if(option->key==ARGS_OPTION_KEY_MATRIX)
+  if(option->key==UI_KEY_MATRIX)
     {
       /* Some sanity checks. */
       if(p->matrix)
@@ -280,14 +284,14 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
 
       /* Some modular-warp specific sanity checks: rotate only needs one
          number, and flip's values should only be 0 and 1. */
-      if(option->key==ARGS_OPTION_KEY_ROTATE)
+      if(option->key==UI_KEY_ROTATE)
         {
           if(new->size!=1)
             error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `rotate' "
                       "option only takes one value (the angle of rotation). "
                       "You have given: `%s'", arg);
         }
-      else if (option->key==ARGS_OPTION_KEY_FLIP)
+      else if (option->key==UI_KEY_FLIP)
         {
           for(i=0;i<new->size;++i)
             {
@@ -611,11 +615,11 @@ ui_matrix_from_modular(struct warpparams *p)
          structure.*/
       switch(pop->status)
         {
-        case ARGS_OPTION_KEY_ALIGN:
+        case UI_KEY_ALIGN:
           ui_matrix_make_align(p, module);
           break;
 
-        case ARGS_OPTION_KEY_ROTATE:
+        case UI_KEY_ROTATE:
           s = sin( v1 * M_PI / 180 );
           c = cos( v1 * M_PI / 180 );
           module[0]=c;          module[1]=s;      module[2]=0.0f;
@@ -623,13 +627,13 @@ ui_matrix_from_modular(struct warpparams *p)
           module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
           break;
 
-        case ARGS_OPTION_KEY_SCALE:
+        case UI_KEY_SCALE:
           module[0]=v1;         module[1]=0.0f;   module[2]=0.0f;
           module[3]=0.0f;       module[4]=v2;     module[5]=0.0f;
           module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
           break;
 
-        case ARGS_OPTION_KEY_FLIP:
+        case UI_KEY_FLIP:
           if      ( v1==1.0f && v2==0.0f )
             {
               module[0]=1.0f;   module[1]=0.0f;
@@ -655,19 +659,19 @@ ui_matrix_from_modular(struct warpparams *p)
           module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
           break;
 
-        case ARGS_OPTION_KEY_SHEAR:
+        case UI_KEY_SHEAR:
           module[0]=1.0f;       module[1]=v1;     module[2]=0.0f;
           module[3]=v2;         module[4]=1.0f;   module[5]=0.0f;
           module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
           break;
 
-        case ARGS_OPTION_KEY_TRANSLATE:
+        case UI_KEY_TRANSLATE:
           module[0]=1.0f;       module[1]=0.0f;     module[2]=v1;
           module[3]=0.0f;       module[4]=1.0f;     module[5]=v2;
           module[6]=0.0f;       module[7]=0.0f;     module[8]=1.0f;
           break;
 
-        case ARGS_OPTION_KEY_PROJECT:
+        case UI_KEY_PROJECT:
           module[0]=1.0f;       module[1]=0.0f;     module[2]=0.0f;
           module[3]=0.0f;       module[4]=1.0f;     module[5]=0.0f;
           module[6]=v1;         module[7]=v2;       module[8]=1.0f;
@@ -819,25 +823,25 @@ ui_set_suffix(struct warpparams *p)
   if(p->matrix==NULL && p->modularll->next==NULL)
     switch(p->modularll->status)
       {
-      case ARGS_OPTION_KEY_ALIGN:
+      case UI_KEY_ALIGN:
         return "_aligned.fits";
 
-      case ARGS_OPTION_KEY_ROTATE:
+      case UI_KEY_ROTATE:
         return "_rotated.fits";
 
-      case ARGS_OPTION_KEY_SCALE:
+      case UI_KEY_SCALE:
         return "_scaled.fits";
 
-      case ARGS_OPTION_KEY_FLIP:
+      case UI_KEY_FLIP:
         return "_flipped.fits";
 
-      case ARGS_OPTION_KEY_SHEAR:
+      case UI_KEY_SHEAR:
         return "_sheared.fits";
 
-      case ARGS_OPTION_KEY_TRANSLATE:
+      case UI_KEY_TRANSLATE:
         return "_translated.fits";
 
-      case ARGS_OPTION_KEY_PROJECT:
+      case UI_KEY_PROJECT:
         return "_projected.fits";
 
       default:
@@ -988,4 +992,8 @@ ui_free_report(struct warpparams *p, struct timeval *t1)
   free(p->cp.output);
   gal_data_free(p->input);
   gal_data_free(p->matrix);
+
+  /* Report how long the operation took. */
+  if(!p->cp.quiet)
+    gal_timing_report(t1, PROGRAM_NAME" finished in: ", 0);
 }

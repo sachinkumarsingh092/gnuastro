@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Used to generate random numbers, since the type of `tv_sec' and
-   `tv_usec' is `long int' (from the GNU C Library manual), this function
-   will also return a signed 64-bit integer. */
-int64_t
+/* Micro-second based timer, which can be used to generate random numbers.
+   The type of `tv_sec' and `tv_usec' is `long int' (from the GNU C Library
+   manual), so this function will also return long. */
+long
 gal_timing_time_based_rng_seed()
 {
   struct timeval tv;

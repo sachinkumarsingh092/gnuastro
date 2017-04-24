@@ -106,6 +106,10 @@ void
 gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
                      double **x, double **y, size_t size);
 
+void
+gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
+                     double **ra, double **dec, size_t size);
+
 
 
 

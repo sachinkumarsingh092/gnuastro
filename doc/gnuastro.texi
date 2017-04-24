@@ -437,6 +437,7 @@ Sky value
 
 NoiseChisel
 
+* NoiseChisel changes after publication::  Changes to the software after publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Invoking NoiseChisel
@@ -448,10 +449,18 @@ Invoking NoiseChisel
 
 MakeCatalog
 
-* Quantifying data limits::     For comparing different catalogs.
+* Detection and catalog production::  Discussing why/how to treat these separately
+* Quantifying measurement limits::  For comparing different catalogs.
 * Measuring elliptical parameters::  Estimating elliptical parameters.
-* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 * Adding new columns to MakeCatalog::  How to add new columns.
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+
+Invoking MakeCatalog
+
+* MakeCatalog input files::     Specifying the different input files.
+* MakeCatalog general settings::  Options for general column settings.
+* Upper-limit magnitude settings::  Necessary to define upper-limit magnitudes.
+* MakeCatalog output columns::  How to specify the columns in the output.
 
 Modeling and fitting
 
@@ -1858,80 +1867,82 @@ all, all observations have noise associated with them.
 
 @end enumerate
 
-Fortunately Sufi had heard of GNU Astronomy Utilities from a colleague
-in Isfahan (where he worked) and had installed it on his computer a
-year before. It had tools to do all the steps above. He had used
-MakeProfiles before, but wasn't sure which columns he had chosen in
-his user or system wide configuration files for which parameters, see
-@ref{Configuration files}. So to start his simulation, Sufi runs
-MakeProfiles with the @option{-P} option to make sure what columns in
-a catalog MakeProfiles currently recognizes and the output image
-parameters:
+Fortunately Sufi had heard of GNU Astronomy Utilities from a colleague in
+Isfahan (where he worked) and had installed it on his computer a year
+before. It had tools to do all the steps above. He had used MakeProfiles
+before, but wasn't sure which columns he had chosen in his user or system
+wide configuration files for which parameters, see @ref{Configuration
+files}. So to start his simulation, Sufi runs MakeProfiles with the
+@option{-P} option to make sure what columns in a catalog MakeProfiles
+currently recognizes and the output image parameters. In particular, Sufi
+is interested in the recognized columns (shown below).
 
 @example
 $ astmkprof -P
-# MakeProfiles (GNU Astronomy Utilities 0.1) 0.1
-# Configured on 21 September 952 at 19:37
-# Written on Sat Oct  6 15:49:31 953
+
+[[[ ... Truncated lines ... ]]]
 
 # Output:
- naxis1              1000
- naxis2              1000
- oversample          5
+ type         float32     # Type of output: e.g., int16, float32, etc...
+ naxis1       1000        # Number of pixels along first FITS axis.
+ naxis2       1000        # Number of pixels along second FITS axis.
+ oversample   5           # Scale of oversampling (>0 and odd).
 
-[[[ Truncated middle of list ]]]
+[[[ ... Truncated lines ... ]]]
 
-# Catalog:
- xcol                1
- ycol                2
- fcol                3
- rcol                4
- ncol                5
- pcol                6
- qcol                7
- mcol                8
- tcol                9
+# Columns, by info (see `--searchin'), or number (starting from 1):
+ xcol         2           # Center along first FITS axis (horizontal).
+ ycol         3           # Center along second FITS axis (vertical).
+ fcol         4           # sersic (1), moffat (2), gaussian (3),
+                          # point (4), flat (5), circumference (6).
+ rcol         5           # Effective radius or FWHM in pixels.
+ ncol         6           # Sersic index or Moffat beta.
+ pcol         7           # Position angle.
+ qcol         8           # Axis ratio.
+ mcol         9           # Magnitude.
+ tcol         10          # Truncation in units of radius or pixels.
 
-[[[ Truncated rest of list ]]]
+[[[ ... Truncated lines ... ]]]
+
 @end example
 
 @noindent
-In particular, Sufi looks at the parameters under the catalog
-grouping.  Fortunately the columns are naturally numbered such that
-column 0 can be an ID he specifies for each object (which MakeProfiles
-ignores) and each subsequent column specifies a given
-parameter. Fortunately MakeProfiles has the capability to also make
-the PSF which is to be used on the mock image and using the
-@option{--prepforconv} option, he can also make the mock image to be
-larger by the correct amount and all the sources to be shifted by the
-correct amount.
+In Gnuastro, column counting starts from 1, so the columns are ordered such
+that the first column (number 1) can be an ID he specifies for each object
+(and MakeProfiles ignores), each subsequent column is used used for another
+property of the profile. It is also possible to use column names for the
+values of these options and change these defaults, but Sufi preferred to
+stick to the defaults. Fortunately MakeProfiles has the capability to also
+make the PSF which is to be used on the mock image and using the
+@option{--prepforconv} option, he can also make the mock image to be larger
+by the correct amount and all the sources to be shifted by the correct
+amount.
 
-For his initial check he decides to simulate the nebula in the
-Andromeda constellation. The night he was observing, the PSF had
-roughly a FWHM of about 5 pixels, so as the first row, he defines the
-PSF parameters and sets the radius column (@code{rcol} above, fifth
-column) to @code{5.000}, he also chooses a Moffat function for its
-functional form. Remembering how diffuse the nebula in the Andromeda
-constellation was, he decides to simulate it with a mock S@'{e}rsic
-index 1.0 profile. He wants the output to be 500 pixels by 500 pixels,
-so he puts the mock profile in the center. Looking at his drawings of
-it, he decides a reasonable effective radius for it would be 40 pixels
-on this image pixel scale, he sets the axis ratio and position angle
-to approximately correct values too and finally he sets the total
-magnitude of the profile to 3.44 which he had accurately
-measured. Sufi also decides to truncate both the mock profile and PSF
-at 5 times the respective radius parameters. In the end he decides to
-put four stars on the four corners of the image at very low magnitudes
-as a visual scale.
+For his initial check he decides to simulate the nebula in the Andromeda
+constellation. The night he was observing, the PSF had roughly a FWHM of
+about 5 pixels, so as the first row (profile), he defines the PSF
+parameters and sets the radius column (@code{rcol} above, fifth column) to
+@code{5.000}, he also chooses a Moffat function for its functional
+form. Remembering how diffuse the nebula in the Andromeda constellation
+was, he decides to simulate it with a mock S@'{e}rsic index 1.0 profile. He
+wants the output to be 500 pixels by 500 pixels, so he puts the mock
+profile in the center. Looking at his drawings of it, he decides a
+reasonable effective radius for it would be 40 pixels on this image pixel
+scale, he sets the axis ratio and position angle to approximately correct
+values too and finally he sets the total magnitude of the profile to 3.44
+which he had accurately measured. Sufi also decides to truncate both the
+mock profile and PSF at 5 times the respective radius parameters. In the
+end he decides to put four stars on the four corners of the image at very
+low magnitudes as a visual scale.
 
-Using all the information above, he creates the catalog of mock
-profiles he wants in a file named @file{cat.txt} (short for catalog)
-using his favorite text editor and stores it in a directory named
-@file{simulationtest} in his home directory. [The @command{cat}
-command prints the contents of a file, short for concatenation. So
-please copy-paste the outputs of the command ``@command{cat cat.txt}''
-into @file{cat.txt} when the editor opens in the steps above it, note
-that there are 6 lines]:
+Using all the information above, he creates the catalog of mock profiles he
+wants in a file named @file{cat.txt} (short for catalog) using his favorite
+text editor and stores it in a directory named @file{simulationtest} in his
+home directory. [The @command{cat} command prints the contents of a file,
+short for concatenation. So please copy-paste the lines after
+``@command{cat cat.txt}'' into @file{cat.txt} when the editor opens in the
+steps above it, note that there are 7 lines, first one starting with
+@key{#}]:
 
 @example
 $ mkdir ~/simulationtest
@@ -1942,12 +1953,13 @@ $ emacs cat.txt
 $ ls
 cat.txt
 $ cat cat.txt
- 0  0.0000   0.0000  1  5.000  4.765  0.0000  1.000  30.000  5.000
- 1  250.00   250.00  0  40.00  1.000  -25.00  0.400  3.4400  5.000
- 2  50.000   50.000  3  0.000  0.000  0.0000  0.000  9.0000  0.000
- 3  450.00   50.000  3  0.000  0.000  0.0000  0.000  9.2500  0.000
- 4  50.000   450.00  3  0.000  0.000  0.0000  0.000  9.5000  0.000
- 5  450.00   450.00  3  0.000  0.000  0.0000  0.000  9.7500  0.000
+# Column 4: PROFILE_NAME [,str7] Radial profile's functional name
+ 1  0.0000   0.0000  moffat  5.000  4.765  0.0000  1.000  30.000  5.000
+ 2  250.00   250.00  sersic  40.00  1.000  -25.00  0.400  3.4400  5.000
+ 3  50.000   50.000  point   0.000  0.000  0.0000  0.000  9.0000  0.000
+ 4  450.00   50.000  point   0.000  0.000  0.0000  0.000  9.2500  0.000
+ 5  50.000   450.00  point   0.000  0.000  0.0000  0.000  9.5000  0.000
+ 6  450.00   450.00  point   0.000  0.000  0.0000  0.000  9.7500  0.000
 @end example
 
 @noindent
@@ -1959,112 +1971,124 @@ necessary parameters and runs MakeProfiles with the following command:
 $ astmkprof --prepforconv --naxis1=500 --naxis2=500         \
             --zeropoint=18.0 cat.txt
 MakeProfiles started on Sat Oct  6 16:26:56 953
-  - 6 profiles read from cat.txt             in 0.000209 seconds
-  ---- Row 5 complete, 5 left to go.
-  ---- Row 3 complete, 4 left to go.
-  ---- Row 2 complete, 3 left to go.
-  ---- Row 4 complete, 2 left to go.
+  - 6 profiles read from cat.txt
+  - Random number generator (RNG) type: mt19937
+  - Using 8 threads.
+  ---- row 2 complete, 5 left to go
+  ---- row 3 complete, 4 left to go
+  ---- row 4 complete, 3 left to go
+  ---- row 5 complete, 2 left to go
   ---- ./0_cat.fits created.
-  ---- Row 0 complete, 1 left to go.
-  ---- Row 1 complete, 0 left to go.
-  - cat.fits created.                        in 0.024811 seconds
-MakeProfiles finished in:  0.236629 (seconds)
+  ---- row 0 complete, 1 left to go
+  ---- row 1 complete, 0 left to go
+  - ./cat.fits created.                                0.041651 seconds
+MakeProfiles finished in 0.267234 seconds
+
 $ls
-0_cat.fits  astmkprof.log  cat.fits  cat.txt
+0_cat.fits  cat.fits  cat.txt
 @end example
 
 @cindex Oversample
 @noindent
-The file @file{0.fits} is the PSF Sufi had asked for and
-@file{cat.fits} is the image containing the 5 objects. The PSF is now
-available to him as a separate file for the convolution step. While he
-was preparing the catalog, one of his students came up and was also
-following the steps. When he opened the image, the student was
-surprised to see that all the stars are only one pixel and not in the
-shape of the PSF as we see when we image the sky at night. So Sufi
-explained to him that the stars will take the shape of the PSF after
-convolution and this is how they would look if we didn't have an
-atmosphere or an aperture when we took the image. The size of the
-image was also surprising for the student, instead of 500 by 500, it
-was 2630 by 2630 pixels. So Sufi had to explain why oversampling is
-very important for parts of the image where the flux change is
-significant over a pixel. Sufi then explained to him that after
+The file @file{0_cat.fits} is the PSF Sufi had asked for and
+@file{cat.fits} is the image containing the other 5 objects. The PSF is now
+available to him as a separate file for the convolution step. While he was
+preparing the catalog, one of his students approached him and was also
+following the steps. When he opened the image, the student was surprised to
+see that all the stars are only one pixel and not in the shape of the PSF
+as we see when we image the sky at night. So Sufi explained to him that the
+stars will take the shape of the PSF after convolution and this is how they
+would look if we didn't have an atmosphere or an aperture when we took the
+image. The size of the image was also surprising for the student, instead
+of 500 by 500, it was 2630 by 2630 pixels. So Sufi had to explain why
+oversampling is very important for parts of the image where the flux change
+is significant over a pixel. Sufi then explained to him that after
 convolving we will re-sample the image to get our originally desired
 size. To convolve the image, Sufi ran the following command:
 
 @example
 $ astconvolve --kernel=0_cat.fits cat.fits
 Convolve started on Mon Apr  6 16:35:32 953
-Convolving cat.fits (hdu: 0)
- with the kernel 0.fits (hdu: 0).
- using 8 CPU threads in the frequency domain.
-  - Input and Kernel images padded.          in 0.045576 seconds
-  - Images converted to frequency domain.    in 10.486712 seconds
-  - Multiplied in the frequency domain.      in 0.032780 seconds
-  - Converted back to the spatial domain.    in 5.342335 seconds
-  - Padded parts removed.                    in 0.011880 seconds
-Convolve finished in:  15.972771 (seconds)
+  - Using 8 CPU threads.
+  - Input: cat.fits (hdu: 1)
+  - Kernel: 0_cat.fits (hdu: 1)
+  - Input and Kernel images padded.                    0.075541 seconds
+  - Images converted to frequency domain.              6.728407 seconds
+  - Multiplied in the frequency domain.                0.040659 seconds
+  - Converted back to the spatial domain.              3.465344 seconds
+  - Padded parts removed.                              0.016767 seconds
+Convolve finished in:  10.422161 seconds
+
 $ls
-0_cat.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
+0_cat.fits  cat_convolved.fits  cat.fits  cat.txt
 @end example
 
 @noindent
 When convolution finished, Sufi opened the @file{cat_convolved.fits} file
 and showed the effect of convolution to his student and explained to him
 how a PSF with a larger FWHM would make the points even wider. With the
-convolved image ready, they were ready to re-sample it to the original
-pixel scale Sufi had planned. Sufi explained the basic concepts of warping
-the image to his student and ran Warp with the following command:
+convolved image ready, they were prepared to re-sample it to the original
+pixel scale Sufi had planned [from the @command{$ astmkprof -P} command
+above, recall that MakeProfiles had oversampled the image by 5 times]. Sufi
+explained the basic concepts of warping the image to his student and ran
+Warp with the following command:
 
 @example
-$ astwarp cat_convolved.fits --scale=0.2
+$ astwarp --scale=1/5 --centeroncorner cat_convolved.fits
 Warp started on Mon Apr  6 16:51:59 953
  Using 8 CPU threads.
- Input image: cat_convolved.fits
+ Input: cat_convolved.fits (hdu: 1)
  matrix:
-        0.2000   0.0000   0.4000
-        0.0000   0.2000   0.4000
-        0.0000   0.0000   1.0000
-Warp finished in:  0.481421 (seconds)
+	0.2000   0.0000   0.4000
+	0.0000   0.2000   0.4000
+	0.0000   0.0000   1.0000
+
 $ ls
-0_cat.fits     cat_convolved.fits         cat.fits
-astmkprof.log  cat_convolved_warped.fits  cat.txt
+0_cat.fits          cat_convolved_scaled.fits     cat.txt
+cat_convolved.fits  cat.fits
+
+$ astfits -p cat_convolved_scaled.fits | grep NAXIS
+NAXIS   =                    2 / number of data axes
+NAXIS1  =                  526 / length of data axis 1
+NAXIS2  =                  526 / length of data axis 2
 @end example
 
 @noindent
 @file{cat_convolved_warped.fits} now has the correct pixel scale. However,
 the image is still larger than what we had wanted, it is 526
 (@mymath{500+13+13}) by 526 pixels. The student is slightly confused, so
-Sufi also resamples the PSF with Warp and the same warping matrix and shows
-him that it is 27 (@mymath{2\times13+1}) by 27 pixels. Sufi goes on to
-explain how frequency space convolution will dim the edges and that is why
-he added the @option{--prepforconv} option to MakeProfiles, see @ref{If
-convolving afterwards}. Now that convolution is done Sufi can remove those
-extra pixels using Crop:
+Sufi also resamples the PSF with the same scale and shows him that it is 27
+(@mymath{2\times13+1}) by 27 pixels. Sufi goes on to explain how frequency
+space convolution will dim the edges and that is why he added the
+@option{--prepforconv} option to MakeProfiles, see @ref{If convolving
+afterwards}. Now that convolution is done, Sufi can remove those extra
+pixels using Crop with the command below. Crop's @option{--section} option
+accepts coordinates inclusively and counting from 1 (according to the FITS
+standard), so the crop's first pixel has to be 14, not 13.
 
 @example
-$ astcrop cat_convolved_warped.fits --section=13:*-13,13:*-13  \
-             --zeroisnotblank
+$ astcrop cat_convolved_scaled.fits --section=14:*-13,14:*-13    \
+          --zeroisnotblank
 Crop started on Sat Oct  6 17:03:24 953
-  - Read metadata of 1 images.               in 0.000560 seconds
-  ---- cat_convolved_warped_crop.fits 1 1
-Crop finished in:  0.018917 (seconds)
+  - Read metadata of 1 image.                          0.001304 seconds
+  ---- ...nvolved_scaled_cropped.fits created: 1 input.
+Crop finished in:  0.027204 seconds
+
 $ls
-0_cat.fits      astmkprof.log           cat_convolved_warped.fits
-0_warped.fits   cat_convolved.fits              cat.fits
-astcrop.log  cat_convolved_warped_crop.fits  cat.txt
+0_cat.fits          cat_convolved_scaled_cropped.fits  cat.fits
+cat_convolved.fits  cat_convolved_scaled.fits          cat.txt
 @end example
 
 @noindent
-Finally, the @file{cat_convolved_warped.fits} has the same dimensions as
-Sufi had asked for in the beginning. All this trouble was certainly worth
+Finally, @file{cat_convolved_scaled_cropped.fits} has the same dimensions
+as Sufi had desired in the beginning. All this trouble was certainly worth
 it because now there is no dimming on the edges of the image and the
 profile centers are more accurately sampled. The final step to simulate a
 real observation would be to add noise to the image. Sufi set the zeropoint
 magnitude to the same value that he set when making the mock profiles and
-looking again at his observation log, he found that at that night the
-background flux near the nebula had a magnitude of 7. So using these values
-he ran MakeNoise:
+looking again at his observation log, he had measured the background flux
+near the nebula had a magnitude of 7 that night. So using these values he
+ran MakeNoise:
 
 @example
 $ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
@@ -2073,51 +2097,79 @@ MakeNoise started on Mon Apr  6 17:05:06 953
   - Generator type: mt19937
   - Generator seed: 1428318100
 MakeNoise finished in:  0.033491 (seconds)
+
 $ls
-0_cat.fits      cat_convolved.fits              cat.txt
-0_warped.fits   cat_convolved_warped_crop.fits  out.fits
-astcrop.log  cat_convolved_warped.fits
-astmkprof.log   cat.fits
+0_cat.fits         cat_convolved_scaled_cropped.fits cat.fits  out.fits
+cat_convolved.fits cat_convolved_scaled.fits         cat.txt
 @end example
 
 @noindent
-The @file{out.fits} file now has the noised image of the mock catalog
-Sufi had asked for. Seeing how the @option{--output} option allows the
-user to specify the name of the output file, the student was confused
-and wanted to know why Sufi hadn't used it before? Sufi then explained
-to him that for intermediate steps it is best to rely on the automatic
-output, see @ref{Automatic output}. Doing so will give all the
-intermediate files the same basic name structure, so in the end you
-can simply remove them all with the Shell's capabilities. So Sufi
-decided to show this to the student by making a shell script from the
-commands he had used before.
+The @file{out.fits} file now contains the noised image of the mock catalog
+Sufi had asked for. Seeing how the @option{--output} option allows the user
+to specify the name of the output file, the student was confused and wanted
+to know why Sufi hadn't used it before? Sufi then explained to him that for
+intermediate steps it is best to rely on the automatic output, see
+@ref{Automatic output}. Doing so will give all the intermediate files the
+same basic name structure, so in the end you can simply remove them all
+with the Shell's capabilities. So Sufi decided to show this to the student
+by making a shell script from the commands he had used before.
 
-The command-line shell has the capability to read all the separate
-input commands from a file. This is very useful when you want to do
-the same thing multiple times, with only the names of the files or
-minor parameters changing between the different instances. Using the
-shell's history (by pressing the up keyboard key) Sufi reviewed all
-the commands and then he retrieved the last 5 commands with the
-@command{$ history 5} command. He selected all those lines he had
-input and put them in a text file named @file{mymock.sh}. Then he used
-some shell variables to set the two main constant parts of all the
-command to generalized variables.
+The command-line shell has the capability to read all the separate input
+commands from a file. This is very useful when you want to do the same
+thing multiple times, with only the names of the files or minor parameters
+changing between the different instances. Using the shell's history (by
+pressing the up keyboard key) Sufi reviewed all the commands and then he
+retrieved the last 5 commands with the @command{$ history 5} command. He
+selected all those lines he had input and put them in a text file named
+@file{mymock.sh}. Then he defined the @code{edge} and @code{base} shell
+variables for easier customization later. Finally, before every command, he
+added some comments (lines starting with @key{#}) for future
+readability.
 
 @example
+# Basic settings:
 edge=13
 base=cat
+
+# Remove any existing image to avoid confusion.
 rm out.fits
 
-astmkprof --prepforconv --naxis1=500 --naxis2=500            \
+# Run MakeProfiles to create an oversampled FITS image.
+astmkprof --prepforconv --naxis1=500 --naxis2=500                \
           --zeropoint=18.0 "$base".txt
-astconvolve --kernel=0.fits "$base".fits
-astwarp "$base"_convolved.fits --scale=0.2
-astcrop "$base"_convolved_warped.fits                        \
-           --section=$edge:*-$edge,$edge:*-$edge
-astmknoise --zeropoint=18 --background=7 --output=out.fits   \
-           "$base"_convolved_warped_crop.fits
-rm 0*.fits cat*.fits *.log
+
+# Convolve the created image with the kernel.
+astconvolve --kernel=0_"$base".fits "$base".fits
+
+# Scale the image back to the intended resolution.
+astwarp --scale=1/5 --centeroncorner "$base"_convolved.fits
+
+# Crop the edges out (dimmed during convolution). `--section' accepts
+# inclusive coordinates, so the start of start of the section must be
+# one pixel larger than its end.
+st_edge=$(( edge + 1 ))
+astcrop "$base"_convolved_scaled.fits --zeroisnotblank          \
+        --section=$st_edge:*-$edge,$st_edge:*-$edge
+
+# Add noise to the image.
+astmknoise --zeropoint=18 --background=7 --output=out.fits      \
+           "$base"_convolved_scaled_cropped.fits
+
+# Remove all the temporary files.
+rm 0*.fits cat*.fits
 @end example
+
+@cindex Comments
+He used this chance to remind the student of the importance of comments in
+code or shell scripts: when writing the code, you have a very good mental
+picture of what you are doing, so writing comments might seem superfluous
+and excessive. However, in one month when you want to re-use the script,
+you have lost that mental picture and rebuilding it is can be very
+time-consuming and frustrating. The importance of comments is further
+amplified when you want to share the script with a friend/colleague. So it
+is very good to accompany any script/code with useful comments while you
+are writing it (have a good mental picture of what/why you are doing
+something).
 
 @cindex Gedit
 @cindex GNU Emacs
@@ -4436,10 +4488,7 @@ this option are:
 @table @command
 @item txt
 A plain text table with white-space characters between the columns (see
-@ref{Gnuastro text table format}). Setting @option{--tabletype} to this
-value is acceptable, but in many cases irrelevant, because the plain text
-table format is identified by filename, and currently there is only format
-to write plane text tables.
+@ref{Gnuastro text table format}).
 @item fits-ascii
 A FITS ASCII table (see @ref{Recognized table formats}).
 @item fits-binary
@@ -11936,7 +11985,10 @@ noise/sky while those pixels with labels larger than 0 are detections
 (separate segments will be given positive integers, starting from 1). For
 more on NoiseChisel's particular output format and its benefits (especially
 in conjunction with @ref{MakeCatalog}), please see
-@url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}.
+@url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. The published
+paper cannot under go any updates, but the NoiseChisel software has
+evolved, you can see the major changes in @ref{NoiseChisel changes after
+publication}.
 
 Data is inherently mixed with noise: only mock/simulated datasets are free
 of noise. So this process of separating signal from noise is not
@@ -11949,21 +12001,6 @@ that designing of NoiseChisel was the primary motivation behind creating
 Gnuastro: the first generation of Gnuastro's programs were all first part
 of what later became NoiseChisel, afterwards they spinned-off into separate
 programs.
-
-Before using NoiseChisel it is strongly recommended to read
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} to
-gain a good understanding of what it does and how each parameter influences
-the output. Thanks to that paper, there is no more need to continue this
-introduction any further and we can just dive into the details of running
-NoiseChisel in the following sections. However, the paper cannot undergo
-any further updates, but NoiseChisel will evolve: better algorithms or
-steps will be found, thus options will be added or removed. So this section
-is the definitive guide to the options. Please follow the
-@file{NEWS}@footnote{The @file{NEWS} file is in the released Gnuastro
-tarball (see @ref{Release tarball}). You can also see it online at
-@url{http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS}.} file with
-each release to see how they have changed since the publication of that
-paper.
 
 @cindex Erosion
 The name of NoiseChisel is derived from the first thing it does after
@@ -11979,10 +12016,62 @@ specific option to carve out your signal out of the noise more
 successfully.
 
 @menu
+* NoiseChisel changes after publication::  Changes to the software after publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 @end menu
 
-@node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
+@node NoiseChisel changes after publication, Invoking astnoisechisel, NoiseChisel, NoiseChisel
+@subsection NoiseChisel changes after publication
+
+Before using NoiseChisel it is strongly recommended to read
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} to
+gain a good understanding of what it does and how each parameter influences
+the output. Thanks to that paper, there is no more need to continue this
+introduction any further and we can just dive into the details of running
+NoiseChisel in @ref{Invoking astnoisechisel}. However, the paper cannot
+undergo any further updates, but NoiseChisel will evolve: better algorithms
+or steps will be found, thus options will be added or removed. So this book
+is the final and definitive guide. To make the transition form the paper to
+this book easier (and encourage reading the paper), below you can see the
+major changes since that paper was published.
+
+@itemize
+
+@item
+@option{--noerodequant}: to specify a quantile threshold where erosion
+will not apply. This is useful to detect sharper point-like sources that
+will be missed due to too much erosion. To completely ignore this features
+give this option a value of 1 (only the largest valued pixel in the input
+will not be eroded).
+
+@item
+@option{--cleandilated}: After dilation, if the signal-to-noise ratio of a
+detection is less than the derived pseudo-detection S/N limit, that
+detection will be discarded. In an ideal/clean noise, a true detection's
+S/N should be larger than its constituent pseudo-detections because its
+area is larger and it also covers more signal. However, on a false
+detections (especially at lower @option{--detquant} values), the increase
+in size can cause a decrease in S/N below that threshold.
+
+This will improve purity and not change completeness (a true detection will
+not be discarded). Because a true detection has flux in its vicinity and
+dilation will catch more of that flux and increase the S/N. So on a true
+detection, the final S/N cannot be less than pseudo-detections.
+
+However, in many real images bad processing creates artifacts that cannot
+be accurately removed by the Sky subtraction. In such cases, this option
+will decrease the completeness (will artificially discard true
+detections). So this feature is not default and should to be explicitly
+called when you know the noise is clean.
+
+@end itemize
+
+For a more detailed list of updates in each release, please follow the
+@file{NEWS} file. The @file{NEWS} file is in the released Gnuastro tarball
+(see @ref{Release tarball}). You can also see it online at
+@url{http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS}.
+
+@node Invoking astnoisechisel,  , NoiseChisel changes after publication, NoiseChisel
 @subsection Invoking NoiseChisel
 
 NoiseChisel will detect and segment signal in noise producing a
@@ -12387,19 +12476,20 @@ psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
 @item --checkdetsn
-Save the S/N values of the pseudo-detections into two files ending with
-@file{_detsn_sky.XXX} and @file{_detsn_det.XXX}. The @file{.XXX} is
-determined from the @option{--tableformat} option (see @ref{Input output
-options}, for example @file{.txt} or @file{.fits}). You can use these to
-inspect the S/N values and their distribution (in combination with the
-@option{--checkdetection} option to see where the pseudo-detections are).
-You can use Gnuastro's @ref{Statistics} to make a histogram of the
-distribution (ready for plotting in a text file, or a crude ASCII-art
-demonstration on the command-line).
+Save the S/N values of the pseudo-detections and dilated detections into
+three files ending with @file{_detsn_sky.XXX}, @file{_detsn_det.XXX}, and
+@file{_detsn_dilated.XXX}. The @file{.XXX} is determined from the
+@option{--tableformat} option (see @ref{Input output options}, for example
+@file{.txt} or @file{.fits}). You can use these to inspect the S/N values
+and their distribution (in combination with the @option{--checkdetection}
+option to see where the pseudo-detections are).  You can use Gnuastro's
+@ref{Statistics} to make a histogram of the distribution or any other
+analysis you would like for better understanding of the distribution (for
+example through a histogram).
 
-With this option, NoiseChisel will abort as soon as the two tables are
+With this option, NoiseChisel will abort as soon as the tables are
 created. This allows you to inspect the steps leading to the final quantile
-threshold, this behavior can be disabled with
+threshold, this behavior (to abort NoiseChisel) can be disabled with
 @option{--continueaftercheck}.
 
 @item -c FLT
@@ -12455,7 +12545,7 @@ In NoiseChisel, segmentation is done by first finding the `true' clumps
 over a detection and then expanding those clumps to a certain flux
 limit. True clumps are found in a process very similar to the true
 detections explained in @ref{Detection options}, see
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} for more
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} for more
 information. If the connections between the grown clumps are weaker than a
 given threshold, the grown clumps are considered to be separate objects.
 
@@ -12638,46 +12728,125 @@ pixel.
 @node MakeCatalog,  , NoiseChisel, Data analysis
 @section MakeCatalog
 
-Detecting and segmenting signal over an image results in labeled
-images where each pixel is labeled with the ID (an integer) that is
-specified by the detector program. But this labeled image by its self
-can hardly be of any scientific use. The job of MakeCatalog is to
-combine the input image, the noise properties and the labels of pixels
-into a catalog (a text file table) which can easily be used for
-high-level scientific interpretations.
+At the lowest level, a dataset (for example an image) is just a collection
+of values, placed after each other in any number of dimensions (for example
+an image is a 2D dataset). Each data-element (pixel) just has two
+properties: its position (relative to the rest) and its value. The entire
+input dataset (a large image for example) is rarely treated as a singular
+entity for higher-level analysis@footnote{In low-level
+reduction/preparation of a dataset, you do infact treat a whole image as a
+single entity. You can derive the over-all properties of all the pixels in
+a dataset with Gnuastro's Statistics program (see @ref{Statistics})}. You
+want to know the properties of the scientifically intresting targets that
+are embedded in it. For example the magnitudes, positions and elliptical
+properties of the galaxies that are in the image. MakeCatalog is Gnuastro's
+program to derive higher-level information for @emph{pre-defined} regions
+of a dataset. The role of MakeCatalog in a scientific analysis and the
+benefits of this model of data-analysis (were detection/identification is
+separated from measurement) is discussed in
+@url{https://arxiv.org/abs/1611.06387v1, Akhlaghi [2016]}. We strongly
+recommend reading this short paper for a better understanding of this
+methodology and use MakeCatalog most effectively. However, that paper
+cannot undergo any more change, so this manual is the definitive guide.
 
-NoiseChisel (Gnuastro's signal detection tool, see @ref{NoiseChisel})
-does not produce any catalog of the detected objects by its self. Only
-a labeled FITS image is output, see @ref{NoiseChisel output}. The
-output of NoiseChisel can be directly fed into MakeCatalog to generate
-the catalog. Some of the reasons for making the catalog in a separate
-program@footnote{Most existing software that do object detection also
-output a catalog, so this is not a common practice.} are listed below:
+As discussed above, you have to define the regions of a dataset that you
+are interested in @emph{before} running MakeCatalog. MakeProfiles currently
+uses labeled dataset(s) for this job. A labeled dataset for a given input
+dataset has the size/dimensions as the input, but its pixels have an
+integer type (see @ref{Numeric data types})@footnote{If the program you
+used to generate the labeled image only outputs floating point types, but
+you know it only has integer valued pixels that are stored in a floating
+point container, you can use Gnuastro's Arithmetic program (see
+@ref{Arithmetic}) to change the numerical data type of the image
+(@file{flabel.fits}) to an integer type image (@file{label.fits}) with a
+command like below:@*@command{$ astarithmetic flabel.fits int32
+--output=label.fits}}: all pixels with the same label (integers larger and
+equal to one) are used to generate the requested output columns of
+MakeCatalog for the row of their labeled value. For example, the flux
+weighted average position of all the pixels with a label of 42 will be
+considered as the central position@footnote{See @ref{Measuring elliptical
+parameters} for a discussion on this and the derivation of positional
+parameters.} of the 42nd row of the output catalog. Pixels with labels
+equal to or smaller than zero will be ignored by MakeCatalog. In other
+words, the number of rows of the output catalog will be determined from the
+labeled image.
+
+The labeled image maybe created with any tool@footnote{For example, you can
+even use a graphic user interfase image editing tool like the GNU Image
+Manipulation Program (or GIMP) and use Gnuastro's ConvertType to convert it
+to a FITS file.}. Within Gnuastro you can use these two solutions depending
+on a-priori/parametric knowledge of the targets you want to study:
+@itemize
+@cindex Aperture photometry
+@cindex Photometry, aperture
+@item
+When you already know the positions and parametric (for example circular or
+elliptical) properties of the targets, you can use @ref{MakeProfiles} to
+generate a labeled image from another catalog. This is also known as
+aperture photometry (the apertures are defined a-priori).
+
+@item
+When the shape of your targets cannot be parametrized accurately (for
+example galaxies), or if you don't know the number/shape of the targets in
+the image, you can use Gnuastro's NoiseChisel program to detect and segment
+(make labeled images of) the @emph{objects} and @emph{clumps} in the input
+image, see @ref{NoiseChisel}.
+@end itemize
+
+@menu
+* Detection and catalog production::  Discussing why/how to treat these separately
+* Quantifying measurement limits::  For comparing different catalogs.
+* Measuring elliptical parameters::  Estimating elliptical parameters.
+* Adding new columns to MakeCatalog::  How to add new columns.
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+@end menu
+
+@node Detection and catalog production, Quantifying measurement limits, MakeCatalog, MakeCatalog
+@subsection Detection and catalog production
+
+As discussed above (@ref{MakeCatalog}), NoiseChisel (Gnuastro's signal
+detection tool, see @ref{NoiseChisel}) does not produce any catalog of the
+detected objects. However, most other common tools in astronomical
+data-analysis (for example
+SExtractor@footnote{@url{https://www.astromatic.net/software/sextractor}})
+merge the two processes into one. Gnuastro's modularized methodology is
+therefore new to many experienced astronomers and deserves a short review
+here. Further discussion on the benefits of this methodology can be seen in
+@url{https://arxiv.org/abs/1611.06387v1, Akhlaghi [2016]}.
+
+To simplify catalog production from a raw input image in Gnuastro,
+NoiseChisel's output (see @ref{NoiseChisel output}) can be directly fed
+into MakeCatalog. This is good when no further customization is necessary
+and you want a fast/simple. But the modular approach taken by Gnuastro has
+many benefits that will become more apparent as you get more experienced in
+astronomical data analysis and want to be more creative in using your
+valuable data for the exciting scientific project you are working on. In
+short the reasons for this modularity can be classified as below:
 
 @itemize
 
 @item
-Complexity: Adding in a catalog functionality to the detector program
-will add several more steps (and options) to its processing that can
-equally well be done outside of it. This makes following the code
-harder for a curious reader and also potentially adds bugs.
+Complexity of a monolith: Adding in a catalog functionality to the detector
+program will add several more steps (and many more options) to its
+processing that can equally well be done outside of it. This makes
+following what the program does harder for the users and developers, it can
+also potentially add many bugs.
 
-Another advantage of less complexity is when the parameter you want to
-measure over one profile is not provided by the developers of
-MakeCatalog. You can simply open this tiny little program and add your
-desired calculation easily. In @ref{Adding new columns to
-MakeCatalog}, we have explained all the necessary steps to add a new
-column to MakeCatalog. However, if making a catalog was part of
-NoiseChisel, it would require a lot of energy to understand all the
-steps in order to add desired parameter.
+As an example, if the parameter you want to measure over one profile is not
+provided by the developers of MakeCatalog. You can simply open this tiny
+little program and add your desired calculation easily. This process is
+discussed in @ref{Adding new columns to MakeCatalog}. However, if making a
+catalog was part of NoiseChisel, it would require a lot of energy to
+understand all the steps and internal structures of that large program (the
+most complex in Gnuastro) in order to add desired parameter in a catalog.
 
 @item
-Low level nature of Gnuastro: Making catalogs is a separate process
-from labeling (detecting and segmenting) the pixels. A user might want
-to do certain operations on the labeled regions before creating a
-catalog for them. Another user might want the properties of the same
-pixels in another image (possibly from another broadband filter) for
-measuring the colors or SEDs for example.
+Simplicity/robustness of independent, modular tools: making a catalog is a
+logically separate process from labeling (detection and segmentation). A
+user might want to do certain operations on the labeled regions before
+creating a catalog for them. Another user might want the properties of the
+same pixels/objects in another image (another filter for example) to
+measure the colors or SED fittings.
 
 Here is an example of doing both: suppose you have images in various
 broad band filters at various resolutions and orientations. The image
@@ -12685,49 +12854,52 @@ of one color will thus not lie exactly on another or even be in the
 same scale. However, it is imperative that the same pixels be used in
 measuring the colors of galaxies.
 
-Therefore NoiseChisel can be run on the reference image and Warp
-(@ref{Warp}) can be applied to the labeled images to find the pixels to use
-in the other image. Then MakeCatalog can generate the final catalog for
-both targets. It is currently customary to warp the images to the same
-pixel grid, however, this is very harmful for the data and creates
-correlated noise. It is much more accurate to do the transformations on the
-labeled image.
+To solve the problem, NoiseChisel can be run on the reference image to
+generate the labeled image. After wards, the labeled image can be warped
+into the grid of the other color (using @ref{Warp}). MakeCatalog will then
+generate the same catalog for both colors (with the different labeled
+images). It is currently customary to warp the images to the same pixel
+grid, however, modification of the scientific dataset is very harmful for
+the data and creates correlated noise. It is much more accurate to do the
+transformations on the labeled image.
 
 @end itemize
 
 
-@menu
-* Quantifying data limits::     For comparing different catalogs.
-* Measuring elliptical parameters::  Estimating elliptical parameters.
-* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
-* Adding new columns to MakeCatalog::  How to add new columns.
-@end menu
 
 
 
 
-@node Quantifying data limits, Measuring elliptical parameters, MakeCatalog, MakeCatalog
-@subsection Quantifying data limits
+
+@node Quantifying measurement limits, Measuring elliptical parameters, Detection and catalog production, MakeCatalog
+@subsection Quantifying measurement limits
 
 @cindex Depth
 @cindex Clump magnitude limit
 @cindex Object magnitude limit
 @cindex Limit, object/clump magnitude
 @cindex Magnitude, object/clump detection limit
-Different datasets (images in the case of MakeCatalog) have different noise
-properties and different detection methods (or one method with a different
-set of parameters) will have different abilities to detect or measure
-certain kinds of objects in an image. Therefore it is very important to
-quantify our ability to detect and measure signal in noise. In this section
-we discuss these limits that are very important in any analysis.
+A meaningful scientific analysis requires knowledge of the limits of your
+dataset and detection/measurement tools: different datasets (images in the
+case of MakeCatalog) have different noise properties and different
+detection methods (or one method that is run with a different set of
+parameters) will have different abilities to detect or measure certain
+kinds of objects and their properties in an image. Therefore quantifying
+the target detection and measurement limitations with the particular
+dataaset and analysis tools will be the most crutial aspect of any
+analysis.
 
-In astronomy, it is common to use the magnitude (a unit-less scale) and
+In this section we discuss some of the most general limits that are very
+important in any astronomical data analysis and how MakeCatalog makes it
+easy to find them. Depending on the higher-level analysis, there are more
+tests that must be done, but these are usually necessary in any case. In
+astronomy, it is common to use the magnitude (a unit-less scale) and
 physical units, see @ref{Flux Brightness and magnitude}. Therefore all the
-measured discussed here are commonly defined in units of magnitudes.
+measurements discussed here are defined in units of magnitudes.
 
 @table @asis
 
-@item Depth
+@item Dataset's depth
 As we make more observations on one region of the sky and add the images
 over each other, we are able to decrease the standard deviation of the
 noise in each pixel@footnote{This is true for any noisy data, not just
@@ -12751,7 +12923,7 @@ you wait. The summits of hills begin to appear. As the depth of clear water
 increases, the parts of the hills with lower heights (less surface
 brightness) can be seen more clearly.
 
-@cindex Depth
+@cindex Data's depth
 The outputs of NoiseChisel include the Sky standard deviation
 (@mymath{\sigma}) on every group of pixels (a mesh) that were calculated
 from the undetected pixels in that mesh, see @ref{Tessellation} and
@@ -12779,7 +12951,41 @@ a single orbit image, this same field has a depth of 31.32. Recall that a
 larger magnitude corresponds to less brightness, see @ref{Flux Brightness
 and magnitude}.
 
-@item Upper limit magnitude
+@item Target magnitude measurement error
+Any measurement has an error and this includes the derived magnitude for an
+object. Note that this value is only meaningful when the object's magnitude
+is brighter than the upper-limit magnitude (see the next items in this
+list). As discussed in @ref{Flux Brightness and magnitude}, the magnitude
+(@mymath{M}) of an object with brightness @mymath{B} and Zeropoint
+magnitude @mymath{Z} can be written as:
+
+@dispmath{M=-2.5\log(B)+Z}
+
+@noindent
+Calculating the derivative with respect to @mymath{B}, we get:
+
+@dispmath{{dM\over dB} = {-2.5\over {B\times ln(10)}}}
+
+@noindent
+From the Tailor series (@mymath{\Delta{M}=dM/dB\times\Delta{B}}), we can
+write:
+
+@dispmath{\Delta{M} = \left|{-2.5\over ln(10)}\right|\times{\Delta{B}\over{B}}}
+
+@noindent
+But, @mymath{\Delta{B}/B} is just the inverse of the Signal-to-noise
+ratio (@mymath{S/N}), so we can write the error in magnitude in terms of
+the signal-to-noise ratio:
+
+@dispmath{ \Delta{M} = {2.5\over{S/N\times ln(10)}} }
+
+MakeCatalog uses this relation to estimate the magnitude errors. The
+signal-to-noise ratio is calculated in different ways for clumps and
+objects (see @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+[2015]}), but this single equation can be used to estimate the measured
+magnitude error afterwards for any type of target.
+
+@item Target's upper limit magnitude
 Due to the noisy nature of data, it is possible to get arbitrarily low
 values for a faint object's brightness (or arbitrarily high
 magnitudes). Given the scatter caused by the noise, such small values are
@@ -12826,7 +13032,7 @@ certain patters, so the shape of the object can also affect the result. So
 in MakeCatalog, the upper limit magnitude is found for each object in the
 image separately. Not one value for the whole image.
 
-@item Completeness limit
+@item Object's completeness limit
 @cindex Completeness
 As the surface brightness of the objects decreases, the ability to detect
 them will also decrease. An important statistic is thus the fraction of
@@ -12860,126 +13066,120 @@ model profiles as similar to the target of interest as possible.
 
 
 
-@node Measuring elliptical parameters, Invoking astmkcatalog, Quantifying data limits, MakeCatalog
+@node Measuring elliptical parameters, Adding new columns to MakeCatalog, Quantifying measurement limits, MakeCatalog
 @subsection Measuring elliptical parameters
 
-One of the most important class of parameters that are important for
-astronomical image analysis is the shape or morphology of the
-objects. In the case of galaxies (with a very rich variety of
-morphologies) studying the morphology of the detected objects is its
-self a is very complicated research subject which is a very active
-field of research now. So in this section, we will just discuss how
-the most basic morphological parameters are estimated: the elliptical
-parameters for a set of labeled pixels (that will be studied together
-and define our object of interest). These are: the major axis, the
-minor axis and the position angle along with the central position of
-the profile. The derivations below follow the SExtractor manual
-derivations but include more explanations.
+The shape or morphology of a target is one of the most commonly desired
+paramters of a target. Here, we will review the derivation of the most
+basic/simple morphological parameters are estimated: the elliptical
+parameters for a set of labeled pixels. The elliptical parameters are: the
+(semi-)major axis, the (semi-)minor axis and the position angle along with
+the central position of the profile. The derivations below follow the
+SExtractor manual derivations with some added explanations for easier
+reading.
 
 @cindex Moments
 Let's begin with one dimension for simplicity: Assume we have a set of
-@mymath{N} values (brightness for example) @mymath{B_i}, each at
-position @mymath{x_i}. The simplest parameter we can define is the
-geometric center of the object (@mymath{x_g}) (ignoring the brightness
-values): @mymath{x_g=(\sum_ix_i)/N}. @emph{Moments} are defined to
-incorporate both the value (brightness) and position of the data. The
-first moment can be written as:
+@mymath{N} values @mymath{B_i} (keeping the spatial distribution of
+brightness for example), each at position @mymath{x_i}. The simplest
+parameter we can define is the geometric center of the object
+(@mymath{x_g}) (ignoring the brightness values):
+@mymath{x_g=(\sum_ix_i)/N}. @emph{Moments} are defined to incorporate both
+the value (brightness) and position of the data. The first moment can be
+written as:
 
 @dispmath{\overline{x}={\sum_iB_ix_i \over \sum_iB_i}}
 
 @cindex Variance
 @cindex Second moment
 @noindent
-This is essentially the weighted (by @mymath{B_i}) average
-position. The geometric center (@mymath{x_g}, defined above) is a
-special case of this with all @mymath{B_i=1}. The second moment is
-essentially the variance of the distributions:
+This is essentially the weighted (by @mymath{B_i}) mean position. The
+geometric center (@mymath{x_g}, defined above) is a special case of this
+with all @mymath{B_i=1}. The second moment is essentially the variance of
+the distribution:
 
-@dispmath{\overline{x^2}\equiv{\sum_i(B_ix_i-\overline{x})^2 \over
-        \sum_iB_i} ={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+@dispmath{\overline{x^2}\equiv{\sum_iB_i(x_i-\overline{x})^2 \over
+        \sum_iB_i} = {\sum_iB_ix_i^2 \over \sum_iB_i} -
         2\overline{x}{\sum_iB_ix_i\over\sum_iB_i} + \overline{x}^2
-        ={\sum_iB_i^2x_i^2 \over \sum_iB_i} - \overline{x}^2}
+        ={\sum_iB_ix_i^2 \over \sum_iB_i} - \overline{x}^2}
 
 @cindex Standard deviation
 @noindent
-The last step was done from the definition of
-@mymath{\overline{x}}. So the square root of @mymath{\overline{x^2}}
-is the positional standard deviation (along the one-dimensional) of
-this particular brightness distribution (@mymath{B_i}). Crudely (or
-qualitatively), you can think of its square root as the distance (from
-@mymath{\overline{x}}) which contains a specific amount of the flux
-(depending on the @mymath{B_i} distribution). Similar to the first
-moment, the geometric second moment can be found by setting all
-@mymath{B_i=1}. So while the first moment quantified the position of
-the brightness distribution, the second moment quantifies how that
-brightness is dispersed about the first moment. In other words, it
-quantifies how ``sharp'' the object's image is.
+The last step was done from the definition of @mymath{\overline{x}}. Hence,
+the square root of @mymath{\overline{x^2}} is the spatial standard
+deviation (along the one-dimensional) of this particular brightness
+distribution (@mymath{B_i}). Crudely (or qualitatively), you can think of
+its square root as the distance (from @mymath{\overline{x}}) which contains
+a specific amount of the flux (depending on the @mymath{B_i}
+distribution). Similar to the first moment, the geometric second moment can
+be found by setting all @mymath{B_i=1}. So while the first moment
+quantified the position of the brightness distribution, the second moment
+quantifies how that brightness is dispersed about the first moment. In
+other words, it quantifies how ``sharp'' the object's image is.
 
 @cindex Floating point error
-Before continuing to two dimensions and the derivation of the
-elliptical parameters we will pause for an implementation
-technicality. You can ignore this paragraph if you don't want to
-implement these concepts. The basic definition (first fraction for
-@mymath{\overline{x^2}}) can be used without any major
-problem. However, using this fraction requires two runs over the data:
-one run to specify @mymath{\overline{x}} and one run for
-@mymath{\overline{x^2}}, this can be slow. However, using the last
-fraction above, we can estimate both the first and second moments in
-one run (since the @mymath{-\overline{x}^2} term can easily be added
-later). Using the last form creates a major technical issue however:
-due to the floating point accuracy. Suppose the object is located
-between pixels 10000 and 10020. While the object pixels are only
-distributed over 20 pixels (with a standard deviation @mymath{<20}),
-the mean has a value of @mymath{\sim10000}. The
-@mymath{\sum_iB_i^2x_i^2} will go to very very large values while the
-individual pixel differences will be much smaller, this will lower the
-accuracy of our calculation due to the limited accuracy of floating
-point operations. Since the variance only depends on the distance of
-each point from the mean, and for a constant/arbitrary @mymath{K},
-@mymath{\overline{x-K}=\overline{x}-K}, we can calculate the second
-order moment using:
+Before continuing to two dimensions and the derivation of the elliptical
+parameters, let's pause for an important implementation technicality. You
+can ignore this paragraph if you don't want to implement these
+concepts. The basic definition (first fraction for @mymath{\overline{x^2}})
+can be used without any major problem. However, using this fraction
+requires two runs over the data: one run to find @mymath{\overline{x}} and
+one run to find @mymath{\overline{x^2}}, this can be slow. However, using
+the last fraction above, we can estimate both the first and second moments
+in one run (since the @mymath{-\overline{x}^2} term can easily be added
+later). The logarithmic nature of floating point number digitization
+creates a complication in this approach: suppose the object is located
+between pixels 10000 and 10020. Hence the target's pixels are only
+distributed over 20 pixels (with a standard deviation @mymath{<20}), while
+the mean has a value of @mymath{\sim10000}. The @mymath{\sum_iB_i^2x_i^2}
+will go to very very large values while the individual pixel differences
+will be much smaller, this will lower the accuracy of our calculation due
+to the limited accuracy of floating point operations. The variance only
+depends on the distance of each point from the mean, so we can shift all
+position by a constant/arbitrary @mymath{K} which is much closer to the
+mean: @mymath{\overline{x-K}=\overline{x}-K}. Hence we can calculate the
+second order moment using:
 
-@dispmath{\overline{x^2}={\sum_iB_i^2(x_i-K)^2 \over \sum_iB_i} -
-             (\overline{x}-K)^2}
+@dispmath{ \overline{x^2}={\sum_iB_i(x_i-K)^2 \over \sum_iB_i} -
+           (\overline{x}-K)^2 }
 
 @noindent
-The closer @mymath{K} is to @mymath{\overline{x}}, the better (the
-sums of squares will involve smaller numbers), as long as @mymath{K}
-is within the object limits (in the example above:
-@mymath{10000\leq{K}\leq10020}), the floating point error induced in
-our calculation will be negligible. For the most simplest
-implementation, in order to find the second moments (variance) in each
-dimension, MakeCatalog takes @mymath{K} to be the position of the
-first pixel that is assigned to the object under each dimension. Since
-@mymath{K} is arbitrary and an implementation/technical detail, we
-will ignore it for the remainder of this discussion.
+The closer @mymath{K} is to @mymath{\overline{x}}, the better (the sums of
+squares will involve smaller numbers), as long as @mymath{K} is within the
+object limits (in the example above: @mymath{10000\leq{K}\leq10020}), the
+floating point error induced in our calculation will be negligible. For the
+most simplest implementation, MakeCatalog takes @mymath{K} to be the
+smallest position of the object in each dimension. Since @mymath{K} is
+arbitrary and an implementation/technical detail, we will ignore it for the
+remainder of this discussion.
 
 In two dimensions, the mean and variances can be written as:
 
 @dispmath{\overline{x}={\sum_iB_ix_i\over B_i}, \quad
-          \overline{x^2}={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+          \overline{x^2}={\sum_iB_ix_i^2 \over \sum_iB_i} -
           \overline{x}^2}
 @dispmath{\overline{y}={\sum_iB_iy_i\over B_i}, \quad
-          \overline{y^2}={\sum_iB_i^2y_i^2 \over \sum_iB_i} -
+          \overline{y^2}={\sum_iB_iy_i^2 \over \sum_iB_i} -
           \overline{y}^2}
 @dispmath{\quad\quad\quad\quad\quad\quad\quad\quad\quad
-          \overline{xy}={\sum_iB_i^2x_iy_i \over \sum_iB_i} -
+          \overline{xy}={\sum_iB_ix_iy_i \over \sum_iB_i} -
           \overline{x}\times\overline{y}}
 
-If an elliptical profile's major axis lies exactly along the
-@mymath{x} axis, then @mymath{\overline{x^2}} will be directly
-proportional with the major axis, @mymath{\overline{y^2}} with its
-minor axis and @mymath{\overline{xy}=0}. However, in reality we are
-not that lucky and (assuming galaxies can be parametrized as an
-ellipse) the major axis of galaxies can be in any direction on the
-image (in fact this is one of the core principles behind weak-lensing
-by shear estimation). So the purpose of the remainder of this section
-is to define a strategy to measure the position angle and axis ratio
-of some randomly positioned ellipses in an image, using the raw second
-moments that we have calculated above in our image coordinates.
+If an elliptical profile's major axis exactly lies along the @mymath{x}
+axis, then @mymath{\overline{x^2}} will be directly proportional with the
+profile's major axis, @mymath{\overline{y^2}} with its minor axis and
+@mymath{\overline{xy}=0}. However, in reality we are not that lucky and
+(assuming galaxies can be parametrized as an ellipse) the major axis of
+galaxies can be in any direction on the image (in fact this is one of the
+core principles behind weak-lensing by shear estimation). So the purpose of
+the remainder of this section is to define a strategy to measure the
+position angle and axis ratio of some randomly positioned ellipses in an
+image, using the raw second moments that we have calculated above in our
+image coordinates.
 
-Let's assume we have rotated the galaxy by @mymath{\theta}, then the
-new second order moments can be written as:
+Let's assume we have rotated the galaxy by @mymath{\theta}, the new second
+order moments are:
+
 @dispmath{\overline{x_\theta^2} = \overline{x^2}\cos^2\theta +
            \overline{y^2}\sin^2\theta -
            2\overline{xy}\cos\theta\sin\theta }
@@ -12989,9 +13189,11 @@ new second order moments can be written as:
 @dispmath{\overline{xy_\theta} = \overline{x^2}\cos\theta\sin\theta -
            \overline{y^2}\cos\theta\sin\theta +
            \overline{xy}(\cos^2\theta-\sin^2\theta)}
-We can now find the best @mymath{\theta} (@mymath{\theta_0}) such that
-the major axis lies along the @mymath{x_\theta} axis. This can be
-found by setting:
+
+@noindent
+The best @mymath{\theta} (@mymath{\theta_0}, where major axis lies
+along the @mymath{x_\theta} axis) can be found by:
+
 @dispmath{\left.{\partial \overline{x_\theta^2} \over \partial \theta}\right|_{\theta_0}=0}
 Taking the derivative, we get:
 @dispmath{2\cos\theta_0\sin\theta_0(\overline{y^2}-\overline{x^2}) +
@@ -12999,6 +13201,7 @@ Taking the derivative, we get:
 @mymath{\overline{x^2}\neq\overline{y^2}}, we can write:
 @dispmath{\tan2\theta_0 =
 2{\overline{xy} \over \overline{x^2}-\overline{y^2}}.}
+
 @cindex Position angle
 @noindent
 MakeCatalog uses the standard C math library's @code{atan2} function
@@ -13020,17 +13223,112 @@ get the semi-major (@mymath{A}) and semi-minor (@mymath{B}) lengths:
 @dispmath{B^2\equiv\overline{y_{\theta_0}^2}= {\overline{x^2} +
 \overline{y^2} \over 2} - \sqrt{\left({\overline{x^2}-\overline{y^2} \over 2}\right)^2 + \overline{xy}^2}}
 
-So as a summary, it is important to remember that the units of
-@mymath{A} and @mymath{B} are in pixels (same as the standard
-deviation) and that they represent the spatial light distribution of
-the object in both image dimensions if the object could be
-approximated as an ellipse. When the object cannot be represented as
-an ellipse, this interpretation breaks down:
-@mymath{\overline{xy_{\theta_0}}\neq0} and
-@mymath{\overline{y_{\theta_0}^2}} will not be the direction of
-minimum variance.
+As a summary, it is important to remember that the units of @mymath{A} and
+@mymath{B} are in pixels (the standard deviation of a positional
+distribution) and that they represent the spatial light distribution of the
+object in both image dimensions (rotated by @mymath{\theta_0}). When the
+object cannot be represented as an ellipse, this interpretation breaks
+down: @mymath{\overline{xy_{\theta_0}}\neq0} and
+@mymath{\overline{y_{\theta_0}^2}} will not be the direction of minimum
+variance.
 
-@node Invoking astmkcatalog, Adding new columns to MakeCatalog, Measuring elliptical parameters, MakeCatalog
+
+
+
+
+@node Adding new columns to MakeCatalog, Invoking astmkcatalog, Measuring elliptical parameters, MakeCatalog
+@subsection Adding new columns to MakeCatalog
+
+MakeCatalog is designed to allow easy addition of different measurements
+over a labeled image (see @url{https://arxiv.org/abs/1611.06387v1, Akhlaghi
+[2016]}). A check-list style description of necessary steps to do that is
+described in this section. The common development characteristics of
+MakeCatalog and other Gnuastro programs is explained in
+@ref{Developing}. We strongly encourage you to have a look at that chapter
+to greatly simplify your navigation in the code. After adding and testing
+your column, you are most welcome (and encouraged) to share it with us so
+we can add to the next release of Gnuastro for everyone else to also
+benefit from your efforts.
+
+MakeCatalog will first pass over each label's pixels two times and do
+necessary raw/internal calculations. Once the passes are done, it will use
+the raw information for filling the final catalog's columns. In the first
+pass it will gather mainly object information and in the second run, it
+will mainly focus on the clumps, or any other measurement that needs an
+output from the first pass. These two passes are designed to be raw
+summations: no extra processing. This will allow parallel processing and
+simplicity/clarity. So if your new calculation, needs new raw information
+from the pixels, then you will need to also modify the respective
+@code{mkcatalog_first_pass} and @code{mkcatalog_second_pass} functions
+(both in @file{bin/mkcatalog/mkcatalog.c}) and define new raw table columns
+in @file{main.h} (hopefully the comments in the code are clear enough).
+
+In all these different places, the final columns are sorted in the same
+order (same order as @ref{Invoking astmkcatalog}). This allows a particular
+column/option to be easily found in all steps. Therefore in adding your new
+option, be sure to keep it in the same relative place in the list in all
+the separate places (it doesn't necessarily have to be in the end), and
+near conceptually similar options.
+
+@table @file
+
+@item main.h
+The @code{objectcols} and @code{clumpcols} enumerated variables
+(@code{enum}) define the raw/internal calculation columns. If your new
+column requires new raw calculations, add a row to the respective list. If
+your calculation requires any other settings paramters, you should add a
+variable to the @code{mkcatalogparams} structure.
+
+@item ui.h
+The @code{option_keys_enum} associates a unique value for each option to
+MakeProfiles. The options that have a short option version, the single
+character short comment is used for the value. Those that don't have a
+short option version, get a large integer automatically. You should add a
+variable here to identify your desired column.
+
+@cindex GNU C library
+@item args.h
+This file specifies all the parameters for the GNU C library, Argp
+structure that is in charge of reading the user's options. To define your
+new column, just copy an existing set of parameters and change the first,
+second and 5th values (the only ones that differ between all the columns),
+you should use the macro you defined in @file{ui.h} here.
+
+@item ui.c
+If your column includes any particular settings (you added a variable to
+the @code{mkcatalogparams} structure in @file{main.h}), you should do the
+sanity checks and preparations for it here. Otherwise, you can ignore this
+file.
+
+@item columns.c
+This file will contain the main defintion and high-level calculation of
+your new column through the @code{columns_define_alloc} and
+@code{columns_fill} functions. In the first, you specify the basic
+information about the column: its name, units, comments, type (see
+@ref{Numeric data types}) and how it should be printed if the output is a
+text file. You should also specify the raw/internal columns that are
+necessary for this column here as the many existing examples show. Through
+the types for objects and rows, you can specify if this column is only for
+clumps, objects or both.
+
+The second main function (@code{columns_fill}) writes the final value into
+the appropriate column for each object and clump. As you can see in the
+many existing examples, you can define your processing on the raw/internal
+calculations here and save them in the output.
+
+@item mkcatalog.c
+As described before, this file contains the two main MakeCatalog
+work-horses: @code{mkcatalog_first_pass} and @code{mkcatalog_second_pass},
+their names are descriptive enough and their internals are also clear and
+heavily commented.
+
+@end table
+
+
+
+
+
+@node Invoking astmkcatalog,  , Adding new columns to MakeCatalog, MakeCatalog
 @subsection Invoking MakeCatalog
 
 MakeCatalog will make a catalog from an input image and at least on labeled
@@ -13046,97 +13344,146 @@ One line examples:
 
 @example
 $ astmkcatalog -mdri input.fits
-$ astmkcatalog --floatprecision=5 input.fits
 $ astmkcatalog --output=cat input_labeled.fits
-$ astmkcatalog --objlabs=K_labeled.fits --objhdu=1 \
-               --clumplabs=K_labeled.fits --clumphdu=2 i_band.fits
+$ astmkcatalog --config=columns.conf input_labeled.fits
+$ astmkcatalog --objectsfile=K_labeled.fits --objectshdu=1    \
+               --clumpsfile=K_labeled.fits --clumpshdu=2 i_band.fits
 @end example
 
 @cindex Gaussian
 @noindent
 If MakeCatalog is to do processing, an input image should be provided with
-the recognized extensions as input data, see @ref{Arguments}. Optionally a
-mask file can be specified to ignore some of the pixels in the image. The
-options common to all Gnuastro programs are explained in @ref{Common
-options}.
+the recognized extensions as input data, see @ref{Arguments}. The options
+described in this section are those that are only particular to
+MakeProfiles. For operations that MakeProfiles shares with other programs
+(mainly involving input/output or general processing steps), see
+@ref{Common options}. Also see @ref{Common program behavior} for some
+general characteristics of all Gnuastro programs including MakeCatalog.
 
 MakeCatalog needs 4 (or 5) images as input. These images can be separate
 extensions in one file (NoiseChisel's default output), or each can have its
-own file and its own extension. The full 5 images are listed in
-@ref{NoiseChisel output}. However, the clump labels image is not mandatory
-(when no clump catalog is required, for example in aperture
-photometry). When inspecting the object labels image, MakeProfiles will
-look for a @code{WCLUMPS} (short for with-clumps) header keyword. If that
-keyword is present and has a value of @code{yes} (not case sensitive, so
-@code{Yes}, or @code{YES} are also acceptable) then a clump image must also
-be provided and a clump catalog will be made. When @code{WCLUMPS} isn't
-present or has any other value, only an object catalog will be created and
-all clump related options will be ignored.
+own file and its own extension. See @ref{NoiseChisel output} for the
+list. The clump labels image is not mandatory (when no clump catalog is
+required, for example in aperture photometry). When inspecting the object
+labels image, MakeProfiles will look for a @code{WCLUMPS} (short for
+with-clumps) header keyword. If that keyword is present and has a value of
+@code{yes}, @code{1}, or @code{y} (case insensitive) then a clump image
+must also be provided and a clump catalog will be made. When @code{WCLUMPS}
+isn't present or has any other value, only an object catalog will be
+created and all clump related options/columns will be ignored.
 
 @cindex Photometry, aperture
 @cindex Aperture photometry
 For example, if you only need an object catalog from NoiseChisel's output,
-you can use Fits (see @ref{Fits}) to modify or remove the
-@code{WCLUMPS} keyword in the objects HDU, then run MakeCatalog on
+you can use Gnuastro's Fits program (see @ref{Fits}) to modify or remove
+the @code{WCLUMPS} keyword in the objects HDU, then run MakeCatalog on
 it. Another example can be aperture photometry: let's assume you have made
 your labeled image (defining the apertures) with MakeProfiles. Clumps are
 not defined in this context, so besides the input and labeled image, you
-only need NoiseChisel's Sky and Sky standard deviation images. Since
-MakeProfile's output doesn't contain the @code{WCLUMPS} keyword, you just
-have to specify your labeled image with the @option{--objlabs} option and
-also set its HDU and no clumps catalog will be created. Note that labeled
-images have to be an integer type. Therefore, when using MakeProfiles to
-define the apertures/labels, you can use @option{--type=long} for example.
+only need NoiseChisel's Sky and Sky standard deviation images (run
+NoiseChisel with the @option{--onlydetection} option). Since MakeProfile's
+output doesn't contain the @code{WCLUMPS} keyword, you just have to specify
+your labeled image with the @option{--objectsfile} option and also set its
+HDU. Note that labeled images have to be an integer type. Therefore, if you
+are using MakeProfiles to define the apertures/labels, you can use its
+@option{--type=int32} for example, see @ref{Input output options} and
+@ref{Numeric data types}.
 
 When a clump catalog is also desired, two catalogs will be made: one for
-the objects (suffixed with @file{_o.txt}) and another for the clumps
-(suffixed with @file{_c.txt}). Therefore if any value is given to the
-@option{--output} option, MakeCatalogs will replace these two suffixes with
-any existing suffix in the given value. If no output value is given,
-MakeCatalog will use the input name, see @ref{Automatic output}. When only
-building an object catalog, any suffix in the value to output will just be
-replaced with @file{.txt}.
+the objects (suffixed with @file{_o.txt} or @file{_o.fits}) and another for
+the clumps (suffixed with @file{_c.txt} or @file{_c.fits}). Therefore if
+any value is given to the @option{--output} option, MakeCatalogs will
+replace these two suffixes with any existing suffix in the given value. If
+no output value is given, MakeCatalog will use the input name, see
+@ref{Automatic output}. The format of the output table is specified with
+the @option{--tableformat} option, see @ref{Input output options}.
 
-The first set of options specify the properties of the inputs. If no name
-is specified for the other necessary input images, their HDU is checked and
-if that differs from the input HDU, then there is no need to specify a file
-name for them. The object and column label images or segmentation maps
-should not be of a floating point type (@code{BITPIX}).
+When MakeCatalog is run on multiple threads, the clumps catalog rows will
+not be sorted by object since each object is processed independently by one
+thread and threaded applications are asynchronous. The clumps in each
+object will be sorted based on their labels, but you will find lower-index
+objects come after higher-index ones (especially if they have more clumps
+and thus take more time). If the order is very important for you, you can
+run the following command to sort the rows by object ID (and clump ID with
+each object):
+
+@example
+$ awk '!/^#/' out_c.txt | sort -g -k1,1 -k2,2
+@end example
+
+@menu
+* MakeCatalog input files::     Specifying the different input files.
+* MakeCatalog general settings::  Options for general column settings.
+* Upper-limit magnitude settings::  Necessary to define upper-limit magnitudes.
+* MakeCatalog output columns::  How to specify the columns in the output.
+@end menu
+
+@node MakeCatalog input files, MakeCatalog general settings, Invoking astmkcatalog, Invoking astmkcatalog
+@subsubsection MakeCatalog input files
+
+MakeCatalog needs multiple images as input: a values image, one (or two)
+labeled images and Sky and Sky standandard deviation images. The options
+described in this section allow you to identify them. If you use the
+default output of NoiseChisel (see @ref{NoiseChisel output}) you don't have
+to worry about any of these options and just give NoiseChisel's output file
+to MakeCatalog as described in @ref{Invoking astmkcatalog}.
 
 @table @option
 
 @item -O STR
-@itemx --objlabs=STR
-The file name of the object labels, if in the same file as input, it is not
-mandatory.
+@itemx --objectsfile=STR
+The file name of the object labels image, if the image is in another
+extension of the input file, calling this option is not mandatory, just
+specify the extension/HDU with the @option{--objectshdu} option.
 
-@item --objhdu=STR
-The HDU of the object labels image, the header keyword @code{NOBJS} must be
-present in this extension. The value to this keyword is used as the final
-number of objects and the number of rows in the output objects
-catalog. Only pixels with values above zero will be considered.
+@item --objectshdu=STR
+The HDU/extension of the object labels image. Only pixels with values above
+zero will be considered. The objects label image has to be an integer data
+type (see @ref{Numeric data types}) and only pixels with a value larger
+than zero will be used. If this extension contains teh @code{WCLUMPS}
+keyword with a value of @code{yes}, @code{1}, or @code{y} (not case
+sensitive), then MakeCatalog will also build a clumps catalog, see
+@ref{Invoking astmkcatalog}.
 
-@item -c STR
-@itemx --clumplabs=STR
-Similar to @option{--objlabs} but for the labels of the clumps.
+@item -C STR
+@itemx --clumpsfile=STR
+Similar to @option{--objlabs} but for the labels of the clumps. This is
+only necessary if the image containing clump labels is not in the input
+file and the objects image has a @code{WCLUMPS} keyword, see
+@option{--objectshdu}.
 
-@item --clumphdu=STR
-Similar to @option{--objhdu}, but for the clumps. The @code{NCLUMPS}
-keyword in this header specifies the number of recognized clumps.
+@item --clumpshdu=STR
+The HDU/extension of the object labels image. Only pixels with values above
+zero will be considered. The objects label image has to be an integer data
+type (see @ref{Numeric data types}) and only pixels with a value larger
+than zero will be used.
 
 @item -s STR
-@itemx --skyfilename=STR
+@itemx --skyfile=STR
 File name of an image keeping the Sky value for each pixel.
 
 @item --skyhdu=STR
 The HDU of the Sky value image.
 
 @item -t STR
-@itemx --stdfilename=STR
+@itemx --stdfile=STR
 File name of image keeping the Sky value standard deviation for each pixel.
 
 @item --stdhdu=STR
 The HDU of the Sky value standard deviation image.
+
+@end table
+
+
+
+@node MakeCatalog general settings, Upper-limit magnitude settings, MakeCatalog input files, Invoking astmkcatalog
+@subsubsection MakeCatalog general settings
+
+Some of the columns require particular settings (for example the zero point
+magnitdue for measuring magnitudes), the options in this section can be
+used for such configurations.
+
+@table @option
 
 @item -z FLT
 @itemx --zeropoint=FLT
@@ -13145,9 +13492,9 @@ magnitude}.
 
 @item -E
 @itemx --skysubtracted
-If the image has already been sky subtracted by another program, then
-you need to notify MakeCatalog through this option. Note that this is
-only relevant when the Signal to noise ratio is to be calculated.
+If the image has already been sky subtracted by another program, then you
+need to notify MakeCatalog through this option. Note that this is only
+relevant when the Signal to noise ratio is to be calculated.
 
 @item -T FLT
 @itemx --threshold=FLT
@@ -13182,106 +13529,72 @@ C library's @code{strtod} function to read floats, which is not
 case-sensative in reading NaN values. But to be consistent, it is good
 practice to only use @option{nan}.
 
-@end table
-
-@noindent
-Through the next group of options, you can customize the general
-output plain text catalog. The basic idea behind the options about the
-width and precision of the different types is the fact that some
-columns don't need too much space, while some do. The width is the
-number of text columns given to data of each type in the output plain
-text catalog.
-
-The precision is the number of digits to show after the decimal point
-in floating point numbers. We have defined two types of floating point
-numbers here, one is for less accurate precision, like magnitude,
-while the other is used when more accuracy is necessary. A common
-example of the latter is right ascension and declination. These
-variables usually need to be printed with more than 6 point
-accuracy. Note that all the values are calculated and stored
-internally as double precision floating point numbers, the distinction
-made here is only for printing them.
-
-@table @option
-
 @item --nsigmag=FLT
-The magnitude of the value to this option multiplied by the maximum
-standard deviation over the objects or clumps is reported in the output
-catalog. This value is a per-pixel value, not per object and is not found
-over an area or aperture, like the common @mymath{5\sigma} values that are
-commonly reported as a measure of depth. They are based on a certain area
-and are relics from the time of analog data collection and
-processing. Modern tools use digital imaging detectors and the area is that
-of a pixel.
-
-@item --intwidth=INT
-The width of printing the integer values. In MakeCatalog, all IDs, numbers
-(counters) and areas are considered to be an integer.
-
-@item --floatwidth=INT
-The width of a normal precision floating point column. Any column that is
-not designated in @option{--intwidth} or @option{--accuwidth} is considered
-to be a normal precision floating point.
-
-@item --accuwidth=INT
-The width columns to be printed with extra accuracy. In MakeCatalog the
-following columns are printed with extra accuracy: right ascension,
-declination, brightness, river pixel averages (see Akhlaghi and Ichikawa
-2015 for the definition of river pixels), the sky and the sky standard
-deviation.
-
-@item --floatprecision=INT
-The number of digits to the right of the decimal point in normal floating
-point display.
-
-@item --accuprecision=INT
-The number of digits to the right of the decimal point in more accurate
-floating point display.
+The median standard deviation (from the standard deviation image) will be
+multiplied by the value to this option and its magnitude will be reported
+in the comments of the output catalog. This value is a per-pixel value, not
+per object/clump and is not found over an area or aperture, like the common
+@mymath{5\sigma} values that are commonly reported as a measure of depth or
+the upper-limit measurements (see @ref{Quantifying measurement
+limits}).
 
 @end table
 
-The upper limit magnitude was discussed in @ref{Quantifying data
+
+@node Upper-limit magnitude settings, MakeCatalog output columns, MakeCatalog general settings, Invoking astmkcatalog
+@subsubsection Upper-limit magnitude settings
+
+
+The upper limit magnitude was discussed in @ref{Quantifying measurement
 limits}. Unlike other measured values/columns in MakeCatalog, the upper
 limit magnitude needs several defined parameters which are discussed
 here. All the upper limit magnitude specific options start with @option{up}
-for upper limit, except for @option{--envseed} that is also present in
+for upper-limit, except for @option{--envseed} that is also present in
 other programs and is general for any job requiring random number
-generation.
+generation (see @ref{Generating random numbers}).
 
 @cindex Reproducibility
 One very important consideration in Gnuastro is reproducibility. Therefore,
 the values to all of these parameters along with others (like the random
 number generator type and seed) are also reported in the comments of the
-final catalog when the upper limit magnitude column is desired. One of
-those parameters is the number of threads used in this run of MakeCatalog.
-This might seem irrelevant.
+final catalog when the upper limit magnitude column is desired. The random
+seed that is used to define the random positionings for each object or
+clump is unique and set based on the given seed, the total number of
+objects and clumps and also the labels of the clumps and objects. So with
+identical inputs, an identical upper-limit magnitude will be found. But
+even if the ordering of the object/clump labels differs (and the seed is
+the same) the result will not be the same.
 
-The job of sampling a large number of positions over the image is an
-``embarrasingly parallel'' kind of problem which can greatly benefit from
-threads. For maximum efficiency, the objects in the catalog are divided
-between the threads and the random number generator is used independently
-on each thread. So even when the random number generator type and seed are
-identical, if the number of threads differ, you will get different
-results. Ofcourse, the difference is due to scatter and is statistically
-negligible, but it is not exactly reproducible (which is important in some
-contexts).
+MakeCatalog will randomly place the object/clump footprint over the image
+and when the footprint doesn't fall on any object or masked region (see
+@option{--upmaskfile}) it will be used until the desired number
+(@option{--upnum}) of samples are found to estimate the distribution's
+standard deviation (see @ref{Quantifying measurement limits}). Otherwise it
+will be ignored and another random position will be generated. But when the
+profile is very large or the image is significantly covered by detections,
+it might not be possible to find the desired number of
+samplings. MakeProfiles will continue searching until 50 times the value
+given to @option{--upnum}. If @option{--upnum} good samples cannot be found
+until this limit, it will set the upper-limit magnitude for that object to
+NaN (blank).
 
 @table @option
 
-@item --upmask=STR
+@item --upmaskfile=STR
 File name of mask image to use for upper-limit calculation. In some cases
 (especially when doing matched photometry), the object labels specified in
 the main input and mask image might not be adequate. In other words they do
 not necessarily have to cover @emph{all} detected objects: the user might
-have selected only a few of the objects in their labeled image. All the
-non-zero pixels of the image specified by this option (in the
-@option{--upmaskhdu} extension) will be set as blank for the upper limit
-magnitude calculation.
+have selected only a few of the objects in their labeled image. This option
+can be used to ignore regions in the image in these situations when
+estimating the upper-limit magnitude. All the non-zero pixels of the image
+specified by this option (in the @option{--upmaskhdu} extension) will be
+ignored in the upper-limit magnitude measurements.
 
 For example, when you are using labels from another image, you can give
 NoiseChisel's objects image output for this image as the value to this
 option. In this way, you can be sure that regions with data do not harm
-your distribution. See @ref{Quantifying data limits} for more on the upper
+your distribution. See @ref{Quantifying measurement limits} for more on the upper
 limit magnitude.
 
 @item --upmaskhdu=STR
@@ -13294,90 +13607,64 @@ also slow down the process. When a randomly positioned sample overlaps with
 a detected/masked pixel it is not counted and another random position is
 found until the object completely lies over an undetected region. So you
 can be sure that for each object, this many samples over undetected objects
-are made. See the upper limit magnitude discussion in @ref{Quantifying data
-limits} for more.
+are made. See the upper limit magnitude discussion in @ref{Quantifying
+measurement limits} for more.
 
 @item --envseed
 Read the random number generator type and seed value from the environment
 (see @ref{Generating random numbers}). Random numbers are used in
 calculating the random positions of different samples of each object.
 
-@item --upsclipmultip=FLT
-The multiple of @mymath{\sigma} to use in @mymath{\sigma}-clipping the
-final distribution (see @ref{Sigma clipping}). The images might have some
-artifacts or some regions with signal in the image might not have been
-removed correctly. If a random sampling falls over such regions, they can
-significantly bias the final standard deviation. To avoid the effect of
-such outliers, after the distribution is found, it is
-@mymath{\sigma}-clipped (by convergence).
-
-@item --upsclipaccu=FLT
-Relative difference between two successive @mymath{\sigma} measurements to
-halt the @mymath{\sigma}-clipping process by convergence, see the
-explanations for @option{--upsclipmultip} for more.
+@item --upsigmaclip=FLT,FLT
+The raw distribution of random values will not be used to find the
+upper-limit magnitude, it will first be @mymath{\sigma}-clipped (see
+@ref{Sigma clipping}) to avoid outliers in the distribution (mainly the
+faint undetected wings of bright/large objects in the image). This option
+takes two values: the first is the multiple of @mymath{\sigma}, and the
+second is theh termination criteria. If the latter is larger than 1, it is
+read as an integer number and will be the number of times to clip. If it is
+smaller than 1, it is interpretted as the tollerance level to stop
+clipping. See @ref{Sigma clipping} for a complete explanation.
 
 @item --upnsigma=FLT
-The multiple of the standard deviation (or @mymath{\sigma}) used to measure
-the magnitude. Note that this is the final @mymath{\sigma} produced after
-the @mymath{\sigma}-clipping.
+The multiple of the final (@mymath{\sigma}-clipped) standard deviation (or
+@mymath{\sigma}) used to measure the upper-limit brightness or
+magnitude.
 
 @end table
 
 
+@node MakeCatalog output columns,  , Upper-limit magnitude settings, Invoking astmkcatalog
+@subsubsection MakeCatalog output columns
 
-
-The final group of options particular to MakeCatalog are those that
-specify which columns should be displayed in the output catalogs. For
-each column there is an option, if it has been called on the command
-line or in any of the configuration files, it will included as a
-column in the output catalog. Some of the options apply to both
-objects and clumps and some are particular to only one of them. The
-latter cases are explicitly marked with [Objects] or [Clumps] to
-specify the catalog they will be placed in.
-
-The order of the columns in the output catalog is the inverse of the
-order their options are read in. For example see the following
-command@footnote{This command is practically identical to the first
-command in the one-line examples, see @ref{Options} for an explanation
-of the concatenation of the on/off options.}:
-
-@example
-$ astmkcatalog --magnitude --dec --ra --id input.fits
-@end example
-
-@noindent
-In this example, if no columns are specified in any of the
-configuration files (see @ref{Configuration files}), then the columns
-in the catalogs produced by this command will have the following
-order: ID, RA, Dec and Magnitude. Contrary to what it looks like, this
-is done to make life easier for the users. The configuration files can
-also keep any of the columns (so you don't have to specify your
-desired columns every time). This inverse ordering thus comes from
-their precedence, see @ref{Configuration file precedence}.
-
-For example catalogs usually have at least an ID column and position
-columns (in the image and/or the world coordinate system). By reading
-the order of the columns in reverse you can have your fixed set of
-columns in your system wide configuration file and in any particular
-run, if you want some other information about objects or clumps, you
-can add those columns on the command-line. Through the user and
-current directory configuration files, you can also have custom
-catalogs in each of your working directories, without bothering to
-specify the columns every time you run MakeCatalog in those
-directories.
+The final group of options particular to MakeCatalog are those that specify
+which columns should be written into the final output table. For each
+column there is an option, if it has been called on the command line or in
+any of the configuration files, it will included as a column in the output
+catalog in the same order (see @ref{Configuration file precedence}). Some
+of the columns apply to both objects and clumps and some are particular to
+only one of them. The latter cases are explicitly marked with [Objects] or
+[Clumps] to specify the catalog they will be placed in.
 
 @table @option
 
 @item --i
-@itemx --id
-The ID of the clump or object.
+@itemx --ids
+This is a unique option it can add multiple columns to the final
+catalog(s). Calling this option will put the object IDs (@option{--objid})
+in the objects catalog and host-object-ID (@option{--hostobjid}) and
+ID-in-host-object (@option{--idinhostobj}) into the clumps catalog. Hence
+if only object catalogs are required, it has the same effect as
+@option{--objid}.
+
+@item --objid
+[Objects] ID of this object.
 
 @item -j
-@itemx hostobjid
+@itemx --hostobjid
 [Clumps] The ID of the object which hosts this clump.
 
-@item -I
-@itemx --idinhostobj
+@item --idinhostobj
 [Clumps] The ID of this clump in its host object.
 
 @item -C
@@ -13393,20 +13680,18 @@ The area (number of pixels) in any clump or object.
 
 @item -x
 @itemx --x
-The flux weighted center of all objects and clumps along the first
-FITS axis (horizontal when viewed in SAO ds9). The weight has to have
-a positive value (pixel value larger than the Sky value) to be
-meaningful! Specially when doing matched photometry, this might not
-happen: no pixel value might be above the Sky value. In such cases,
-where there was no pixel with a value larger than the Sky in the
-object or clump, the geometric center (ignoring pixel values, only
-their positions) over the object or clump is used instead of the flux
-weighted center (see @option{--geox}).
+The flux weighted center of all objects and clumps along the first FITS
+axis (horizontal when viewed in SAO ds9), see @mymath{\overline{x}} in
+@ref{Measuring elliptical parameters}. The weight has to have a positive
+value (pixel value larger than the Sky value) to be meaningful! Specially
+when doing matched photometry, this might not happen: no pixel value might
+be above the Sky value. In such cases, you can use the geometric center,
+see @option{--geox}.
 
 @item -y
 @itemx --y
-The flux weighted center of all objects and clumps along the second
-FITS axis (vertical when viewed in SAO ds9). See @option{--x}.
+The flux weighted center of all objects and clumps along the second FITS
+axis (vertical when viewed in SAO ds9). See @option{--x}.
 
 @item --geox
 The geometric center of all objects and clumps along the first FITS
@@ -13435,8 +13720,7 @@ the second FITS axis. See @option{--geox}.
 
 @item -r
 @itemx --ra
-Flux weighted right ascension of all objects or clumps, see
-@option{--x}.
+Flux weighted right ascension of all objects or clumps, see @option{--x}.
 
 @item -d
 @itemx --dec
@@ -13508,11 +13792,10 @@ The magnitude of clumps or objects, see @option{--brightness}.
 @item -e
 @itemx --magnitudeerr
 The magnitude error of clumps or objects. The magnitude error is calculated
-from the signal-to-noise ratio (see @option{--sn}, abbreviated as
-@mymath{S}): @mymath{\Delta{M}=2.5/(S\times\ln{10})}. Note that until now
-this error assumes un-correlated pixel values and also does not include the
-error in estimating the aperture (or error in generating the labeled
-image).
+from the signal-to-noise ratio (see @option{--sn} and @ref{Quantifying
+measurement limits}). Note that until now this error assumes un-correlated
+pixel values and also does not include the error in estimating the aperture
+(or error in generating the labeled image).
 
 For now these factors have to be found by other means.
 @url{https://savannah.gnu.org/task/index.php?14124, Task 14124} has been
@@ -13522,13 +13805,19 @@ defined for work on adding these sources of error too.
 [Objects] The magnitude of all clumps in this object, see
 @option{--clumpbrightness}.
 
+@item --upperlimit
+The upper limit value (in units of the input image) for this object or
+clump. See @ref{Quantifying measurement limits} and @ref{Upper-limit
+magnitude settings} for a complete explanation. This is very important for
+the fainter and smaller objects in the image where the measured magnitudes
+are not reliable.
+
+
 @item --upperlimitmag
-[Objects] The upper limit magnitude for this object. The object's footprint
-is used over randomly positioned parts of the image that do not cover a
-detected object. The standard deviation of the final distribution is then
-the upper limit magnitude, see @ref{Quantifying data limits} for a complete
-explanation. This is very important for the fainter objects in the image
-where the measured magnitudes are not reliable.
+The upper limit magnitude for this object or clump. See @ref{Quantifying
+measurement limits} and @ref{Upper-limit magnitude settings} for a complete
+explanation. This is very important for the fainter and smaller objects in
+the image where the measured magnitudes are not reliable.
 
 @item --riverave
 [Clumps] The average brightness of the river pixels around this
@@ -13562,18 +13851,18 @@ input sky standard deviation image pixels that lie over this object.
 
 @item -A
 @itemx --semimajor
-The pixel-value weighted semi-major axis of the profile (assuming it
-is an ellipse) in units of pixels.
+The pixel-value weighted semi-major axis of the profile (assuming it is an
+ellipse) in units of pixels. See @ref{Measuring elliptical parameters}.
 
 @item -B
 @itemx --semiminor
-The pixel-value weighted semi-minor axis of the profile (assuming it
-is an ellipse) in units of pixels.
+The pixel-value weighted semi-minor axis of the profile (assuming it is an
+ellipse) in units of pixels. See @ref{Measuring elliptical parameters}.
 
 @item -p
 @itemx --positionangle
-The pixel-value weighted angle of the semi-major axis with the first
-FITS axis in degrees.
+The pixel-value weighted angle of the semi-major axis with the first FITS
+axis in degrees. See @ref{Measuring elliptical parameters}.
 
 @item --geosemimajor
 The geometric (ignoring pixel values) semi-major axis of the profile,
@@ -13590,105 +13879,6 @@ with the first FITS axis in degrees.
 @end table
 
 
-
-
-
-@node Adding new columns to MakeCatalog,  , Invoking astmkcatalog, MakeCatalog
-@subsection Adding new columns to MakeCatalog
-
-The common development characteristics of MakeCatalog and other
-Gnuastro programs is explained in @ref{Developing}. This section
-might be more clearly understood after reading that
-chapter. MakeCatalog has been designed to allow easy addition of new
-columns, here we will give a fast over-view of the steps you need to
-take to define a new output column. After adding and testing your
-column, you are most welcome (and encouraged) to share it with us so
-we can add to the next release of Gnuastro for everyone else to also
-benefit from your efforts.
-
-MakeCatalog will first have two passes over the input pixels: in the
-first pass it will gather mainly object information and in the second
-run, it will mainly focus on the clumps, or any other measurement that
-needs an output from the first pass. These two passes are designed to
-be raw summations: no extra processing. This will allow parallel
-processing and simplicity/clarity. Once the passes are done, depending
-on the order of options that the user has defined the appropriate
-function will be called to add a processed column from the raw
-calculations to the output array (which will be printed). So if your
-new calculation, needs new raw information from the pixels, then you
-will need to also modify the respective @code{firstpass} and
-@code{secondpass} functions and define new information table columns
-in @file{main.h}.
-
-For all the steps below, it is easiest to just copy and paste an existing
-option and change the variables in each step. In all these different
-places, the options are sorted in the same order (same order as
-@ref{Invoking astmkcatalog}). This allows a particular column/option to be
-easily found in all steps. Therefore in adding your new option, be sure to
-keep it in the same relative place in the list in all the separate places
-(it doesn't necessarily have to be in the end), and near conceptually
-similar options.
-
-@table @file
-
-@item main.h
-The @code{objectcols} and @code{clumpcols} enumerated variables
-(@code{enum}) define the labels for the separate information table columns
-(the raw pixel calculations). If your new calculation requires new raw
-columns, the add new macros for them. The @code{outcols} enumerated
-variables define the recognized output columns. You will need to add a new
-name for your desired column here, then add a row for your new parameter in
-the @code{uiparams} structure, the name should be the same as the one you
-used in @code{outcols} (in small caps).
-
-@cindex GNU C library
-@item args.h
-This file specifies all the parameters for the GNU C library, Argp
-structure that is in charge of reading the user's options. It is best
-that the option name be the same as the name you put in @code{outcols}
-(in @file{main.h}), like the other options that are already
-defined.
-
-Define a new option in @code{argp_option} (rows between the @code{@{} and
-@code{@}}). The first is the name of the option, the second is its short
-option name (see @ref{Options}). The next two values should be @code{0} and
-the last should be a short description of your option/column. For the
-second element is best to use a number (so no short option is defined for
-the user) which in Gnuastro is defined to be a number larger than 500. The
-range of used numbers (and short option names) are shown in the comment
-immediately above @code{argp_option} structure, increase that number by one
-and use that number for your new option.
-
-Go down to the @code{parse_opt} function and add a @code{case} for your
-specific option (using the same number you specified above), then update
-the contents, based on the new macros you defined @code{main.h}.
-
-@item ui.c
-In the @code{readconfig} function, add an @code{else if} for your option
-(easiest to just copy and paste, then update). In the @code{printvalues}
-function's @code{switch} structure, add a @code{case} for your
-option. Finally, in the @code{preparearrays} function, add a @code{case}
-for your new output column. Note that if the column is to be used for both
-objects and clumps, you need to set both @code{p->objcols} and
-@code{p->clumpcols}.
-
-@item mkcatalog.c
-If your procedure needs new raw calculations, add a new line to
-appropriate parts of the @code{firstpass}, and/or @code{secondpass}
-functions, they should be clear and are fully commented. Then add a
-@code{case} for your column in the @code{makeoutput} function, here
-you will need to call a function (which should be defined in
-@file{columns.c}).
-
-@item columns.c
-Define the function that will write your desired column in the output
-column using the raw input calculations here. There are a lot of
-functions in this file which you can use to model and they are
-commented, in short you have to specify a header (commented column),
-the units of your variable, the possible accuracy to print and finally
-the actual columns.
-
-@end table
 
 
 
@@ -17977,13 +18167,6 @@ small program was compiled and run on your system when you ran
 @command{make check}. You can use it as a template to easily create small
 multi-threaded programs and efficiently use your powerful CPU.
 
-@deffn Macro GAL_THREADS_NON_THRD_INDEX
-This value will be used in the output of @code{gal_threads_dist_in_threads}
-as a non-index. It plays the same role as a string's null character:
-`@code{\0}': as soon as the parser sees this value, it will stop
-continuing.
-@end deffn
-
 @deftypefun void gal_threads_attr_barrier_init (pthread_attr_t @code{*attr}, pthread_barrier_t @code{*b}, size_t @code{limit})
 @cindex Detached threads
 Initialize the general thread attribute @code{attr} and the barrier
@@ -18018,7 +18201,7 @@ The purpose of this function is to do what we explained above: each row in
 the @code{outthrds} array contains the indexs of actions which must be done
 by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
 using @code{outthrds}, you don't have to know the number of columns. The
-@code{GAL_THREADS_NON_THRD_INDEX} macro has a role very similar to a
+@code{GAL_BLANK_SIZE_T} macro has a role very similar to a
 string's @code{\0}: every row finishes with this macro, so can easily stop
 parsing the indexes in the row when you confront it. Please see the example
 program in @file{tests/lib/multithread.c} for a demonstration.

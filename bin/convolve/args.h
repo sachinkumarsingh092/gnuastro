@@ -34,7 +34,7 @@ struct argp_option program_options[] =
     /* Inputs */
     {
       "kernel",
-      ARGS_OPTION_KEY_KERNEL,
+      UI_KEY_KERNEL,
       "STR",
       0,
       "File name of kernel for convolution.",
@@ -47,7 +47,7 @@ struct argp_option program_options[] =
     },
     {
       "khdu",
-      ARGS_OPTION_KEY_KHDU,
+      UI_KEY_KHDU,
       "STR",
       0,
       "HDU containing the kernel.",
@@ -60,7 +60,7 @@ struct argp_option program_options[] =
     },
     {
       "nokernelflip",
-      ARGS_OPTION_KEY_NOKERNELFLIP,
+      UI_KEY_NOKERNELFLIP,
       0,
       0,
       "Do not flip the kernel image.",
@@ -73,7 +73,7 @@ struct argp_option program_options[] =
     },
     {
       "nokernelnorm",
-      ARGS_OPTION_KEY_NOKERNELNORM,
+      UI_KEY_NOKERNELNORM,
       0,
       0,
       "Do not normalize the kernel image.",
@@ -86,7 +86,7 @@ struct argp_option program_options[] =
     },
     {
       "minsharpspec",
-      ARGS_OPTION_KEY_MINSHARPSPEC,
+      UI_KEY_MINSHARPSPEC,
       "FLT",
       0,
       "Deconvolution: min spectrum of sharp img.",
@@ -105,7 +105,7 @@ struct argp_option program_options[] =
     /* Outputs */
     {
       "checkfreqsteps",
-      ARGS_OPTION_KEY_CHECKFREQSTEPS,
+      UI_KEY_CHECKFREQSTEPS,
       0,
       0,
       "View the steps in the frequency domain.",
@@ -118,7 +118,7 @@ struct argp_option program_options[] =
     },
     {
       "noedgecorrection",
-      ARGS_OPTION_KEY_NOEDGECORRECTION,
+      UI_KEY_NOEDGECORRECTION,
       0,
       0,
       "Do not correct the edges in the spatial domain",
@@ -137,7 +137,7 @@ struct argp_option program_options[] =
     /* Operating mode. */
     {
       "domain",
-      ARGS_OPTION_KEY_DOMAIN,
+      UI_KEY_DOMAIN,
       "STR",
       0,
       "Convolution domain: `spatial', `frequency'.",
@@ -150,7 +150,7 @@ struct argp_option program_options[] =
     },
     {
       "makekernel",
-      ARGS_OPTION_KEY_MAKEKERNEL,
+      UI_KEY_MAKEKERNEL,
       "INT",
       0,
       "Make 2*INT kernel to create input image.",

@@ -32,7 +32,7 @@ astfits_LDADD = -lgnuastro
 
 astfits_SOURCES = main.c ui.c extension.c fits.c keywords.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h extension.c fits.c keywords.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h extension.c fits.h keywords.h
 
 
 

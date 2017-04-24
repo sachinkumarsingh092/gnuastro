@@ -35,19 +35,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_REMOVE       = 'R',
-  ARGS_OPTION_KEY_COPY         = 'C',
-  ARGS_OPTION_KEY_CUT          = 'k',
-  ARGS_OPTION_KEY_PRINTALLKEYS = 'p',
-  ARGS_OPTION_KEY_ASIS         = 'a',
-  ARGS_OPTION_KEY_DELETE       = 'd',
-  ARGS_OPTION_KEY_RENAME       = 'r',
-  ARGS_OPTION_KEY_UPDATE       = 'u',
-  ARGS_OPTION_KEY_WRITE        = 'w',
-  ARGS_OPTION_KEY_COMMENT      = 'c',
-  ARGS_OPTION_KEY_HISTORY      = 'H',
-  ARGS_OPTION_KEY_DATE         = 't',
-  ARGS_OPTION_KEY_QUITONERROR  = 'Q',
+  UI_KEY_REMOVE       = 'R',
+  UI_KEY_COPY         = 'C',
+  UI_KEY_CUT          = 'k',
+  UI_KEY_PRINTALLKEYS = 'p',
+  UI_KEY_ASIS         = 'a',
+  UI_KEY_DELETE       = 'd',
+  UI_KEY_RENAME       = 'r',
+  UI_KEY_UPDATE       = 'u',
+  UI_KEY_WRITE        = 'w',
+  UI_KEY_COMMENT      = 'c',
+  UI_KEY_HISTORY      = 'H',
+  UI_KEY_DATE         = 't',
+  UI_KEY_QUITONERROR  = 'Q',
 
 
   /* Only with long version (start with a value 1000, the rest will be set

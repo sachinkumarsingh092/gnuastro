@@ -92,6 +92,7 @@ detection_initial(struct noisechiselparams *p)
       p->binary->name=NULL;
     }
 
+
   /* Correct the no-erode values. */
   bf=(b=p->binary->array)+p->binary->size;
   do *b = *b==THRESHOLD_NO_ERODE_VALUE ? 1 : *b; while(++b<bf);
@@ -107,6 +108,7 @@ detection_initial(struct noisechiselparams *p)
       gal_timing_report(&t1, msg, 2);
       free(msg);
     }
+
 
   /* Label the connected components. */
   p->numinitialdets=gal_binary_connected_components(p->binary, &p->olabel, 1);
@@ -221,7 +223,7 @@ detection_fill_holes_open(void *in_prm)
 
 
   /* Go over all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* For easy reading. */
       tile=&p->ltl.tiles[tprm->indexs[i]];
@@ -384,10 +386,53 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
 
 
+/* Write the S/N tables to a file. */
+static void
+detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
+                           gal_data_t *snind, int s0d1D2)
+{
+  char *str;
+  struct gal_linkedlist_stll *comments=NULL;
+
+  /* Comment for extension on further explanation. */
+  asprintf(&str, "See also: `%s' HDU of output with "
+           "`--checkdetection'", ( s0d1D2<2
+                                   ? "PSEUDOS-FOR-SN": "DILATED" ));
+  gal_linkedlist_add_to_stll(&comments, str, 0);
+
+
+  /* Description comment. */
+  str = ( s0d1D2
+          ? ( s0d1D2==2
+              ? "S/N of dilated detections."
+              : "Pseudo-detection S/N over initial detections." )
+          : "Pseudo-detection S/N over initial undetections.");
+  gal_linkedlist_add_to_stll(&comments, str, 1);
+
+
+  /* Set the file name. */
+  str = ( s0d1D2
+          ? ( s0d1D2==2 ? p->detsn_D_name : p->detsn_d_name )
+          : p->detsn_s_name );
+  threshold_write_sn_table(p, sn, snind, str, comments);
+  gal_linkedlist_free_stll(comments, 1);
+
+
+  /* Abort NoiseChisel if the user asked for it. */
+  if(s0d1D2==2 && !p->continueaftercheck)
+    ui_abort_after_check(p, p->detsn_s_name, p->detsn_d_name,
+                         "pseudo-detection and dilated S/N values in "
+                         "a table");
+}
+
+
+
+
+
 
 static gal_data_t *
-detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
-                    size_t num, int s0d1)
+detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
+             int s0d1D2, char *extname)
 {
   float *snarr;
   uint8_t *flag;
@@ -395,25 +440,24 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   gal_data_t *sn, *snind;
   int32_t *plabend, *indarr=NULL;
   double ave, err, *xy, *brightness;
-  struct gal_linkedlist_stll *comments=NULL;
   size_t ind, ndim=p->input->ndim, xyncols=1+ndim;
   size_t i, *area, counter=0, *dsize=p->input->dsize;
   size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   float *img=p->input->array, *f=p->input->array, *ff=f+p->input->size;
-  int32_t *plab = worklab->array, *dlab = s0d1 ? NULL : p->olabel->array;
+  int32_t *plab = worklab->array, *dlab = s0d1D2 ? NULL : p->olabel->array;
 
 
   /* Sanity check. */
   if(p->input->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "the input dataset to `detection_pseudo_sn' "
+    error(EXIT_FAILURE, 0, "the input dataset to `detection_sn' "
           "must be float32 type, it is %s",
           gal_type_to_string(p->input->type, 1));
   if(!isnan(GAL_BLANK_FLOAT32))
-    error(EXIT_FAILURE, 0, "currently `detection_pseudo_sn' only "
+    error(EXIT_FAILURE, 0, "currently `detection_sn' only "
           "recognizes a NaN value for blank floating point data types, the "
           "blank value is defined to be %f", GAL_BLANK_FLOAT32);
   if(ndim!=2)
-    error(EXIT_FAILURE, 0, "currently `detection_pseudo_sn' only "
+    error(EXIT_FAILURE, 0, "currently `detection_sn' only "
           "works on 2D datasets, your input is %zu dimensions", ndim);
 
 
@@ -423,7 +467,9 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   area       = gal_data_calloc_array(GAL_TYPE_SIZE_T,  tablen          );
   brightness = gal_data_calloc_array(GAL_TYPE_FLOAT64, tablen          );
   xy         = gal_data_calloc_array(GAL_TYPE_FLOAT64, xyncols*tablen  );
-  flag       = s0d1==0 ? gal_data_calloc_array(GAL_TYPE_UINT8, tablen) : NULL;
+  flag       = ( s0d1D2==0
+                 ? gal_data_calloc_array(GAL_TYPE_UINT8, tablen)
+                 : NULL );
   sn         = gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &tablen, NULL, 1,
                               p->cp.minmapsize, "SIGNAL-TO-NOISE", "ratio",
                               NULL);
@@ -443,7 +489,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
           /* For Sky pseudo-detections we'll start to see if it has already
              been determined that the object lies over a detected object or
              not. If it does, then just ignore it. */
-          if(s0d1==0)
+          if(s0d1D2==0)
             {
               if( flag[*plab] ) { ++plab; ++dlab; continue; }
               else if(*dlab)    /* We are on a detection. */
@@ -451,7 +497,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
             }
 
           /* If we are on a blank pixel, ignore this pixel. */
-          if( isnan(*f) ) { ++plab; if(s0d1==0) ++dlab; continue; }
+          if( isnan(*f) ) { ++plab; if(s0d1D2==0) ++dlab; continue; }
 
           /* Save all the necessary values. */
           ++area[*plab];
@@ -466,7 +512,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
 
       /* Increment the other two labels. */
       ++plab;
-      if(s0d1==0) ++dlab;
+      if(s0d1D2==0) ++dlab;
     }
   while(++f<ff);
 
@@ -482,20 +528,22 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   */
 
 
-  /* If the user wants to see the steps (on the background), remove all the
-     pseudo-detections that will not be used in the final quantile
-     calcluation. */
+  /* If the user wants to see the steps (on the background) and we are
+     working on pseudo-detections, remove those that will not be used in
+     the final quantile calculation. */
   if(p->detectionname)
     {
-      plabend = (plab=worklab->array) + worklab->size;
-      do
-        if( *plab!=GAL_BLANK_INT32
-            && ( area[*plab]<p->detsnminarea || brightness[*plab]<0) )
-          *plab=0;
-      while(++plab<plabend);
-      worklab->name="PSEUDOS-FOR-SN";
-      gal_fits_img_write(worklab, p->detectionname, NULL,
-                         PROGRAM_STRING);
+      if(s0d1D2<2)
+        {
+          plabend = (plab=worklab->array) + worklab->size;
+          do
+            if( *plab!=GAL_BLANK_INT32
+                && ( area[*plab]<p->detsnminarea || brightness[*plab]<0) )
+              *plab=0;
+          while(++plab<plabend);
+        }
+      worklab->name=extname;
+      gal_fits_img_write(worklab, p->detectionname, NULL, PROGRAM_STRING);
       worklab->name=NULL;
     }
 
@@ -503,7 +551,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
   /* Calculate the signal to noise for successful detections: */
   snarr=sn->array;
   if(snind) indarr=snind->array;
-  if(s0d1) { snarr[0]=NAN; if(snind) indarr[0]=GAL_BLANK_INT32; }
+  if(s0d1D2) { snarr[0]=NAN; if(snind) indarr[0]=GAL_BLANK_INT32; }
   for(i=1;i<tablen;++i)
     {
       ave=brightness[i]/area[i];
@@ -529,7 +577,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
              counter. But for initial detections, it is very important that
              their Signal to noise ratio be placed in the same index as
              their label. */
-          ind = s0d1 ? i : counter++;
+          ind = s0d1D2 ? i : counter++;
           if(snind) indarr[ind]=i;
           snarr[ind] = ( sqrt( (float)(area[i])/p->cpscorr )
                          * ave / sqrt(ave+err) );
@@ -537,7 +585,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
       else
         /* In detection pseudo-detections, order matters, so we will set
            all non-usable values to blank. */
-        if(s0d1)
+        if(s0d1D2)
           {
             snarr[i]=NAN;
             if(snind) indarr[i]=GAL_BLANK_INT32;;
@@ -546,7 +594,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
 
 
   /* If we are in Sky mode, the sizes have to be corrected */
-  if(s0d1==0)
+  if(s0d1D2==0)
     {
       sn->dsize[0]=sn->size=counter;
       if(snind) snind->dsize[0]=snind->size=counter;
@@ -555,24 +603,7 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
 
   /* If the user wanted a list of S/N values for all pseudo-detections,
      save it. */
-  if(snind)
-    {
-      /* Make the comments, then write the table. */
-      gal_linkedlist_add_to_stll(&comments, "See also: `PSEUDOS-FOR-SN' "
-                                 "HDU of output with `--checkdetection'", 1);
-      gal_linkedlist_add_to_stll(&comments, s0d1 ? "Pseudo-detection S/N "
-                                 "over initially detected regions."
-                                 : "Pseudo-detection S/N over initially "
-                                 "undetected regions.", 1);
-      threshold_write_sn_table(p, sn, snind, ( s0d1 ? p->detsn_d_name
-                                               : p->detsn_s_name ), comments);
-      gal_linkedlist_free_stll(comments, 1);
-
-      /* Abort NoiseChisel if the user asked for it. */
-      if(s0d1 && !p->continueaftercheck)
-        ui_abort_after_check(p, p->detsn_s_name, p->detsn_d_name,
-                             "pseudo-detection S/N values in a table");
-    }
+  if(snind) detection_sn_write_to_file(p, sn, snind, s0d1D2);
 
 
   /* Clean up and return. */
@@ -589,6 +620,8 @@ detection_pseudo_sn(struct noisechiselparams *p, gal_data_t *worklab,
 
 
 
+/* ONLY FOR PSEUDO DETECTIONS: remove pseudo-detections that have a small
+   S/N from the binary image (the labeled image will be left untouched). */
 static void
 detection_pseudo_remove_low_sn(struct noisechiselparams *p,
                                gal_data_t *workbin, gal_data_t *worklab,
@@ -609,7 +642,7 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
 
 
   /* Go over the pseudo-detection labels and only keep those that must be
-     kept (using the new labels) in the binary array.. */
+     kept (using the new labels) in the binary array. */
   if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
     do
       *b++ = *l == GAL_BLANK_INT32 ? GAL_BLANK_UINT8 : keep[ *l ] > 0;
@@ -656,7 +689,7 @@ detection_pseudo_real(struct noisechiselparams *p)
   /* Over the Sky: find the pseudo-detections and make the S/N table. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   numpseudo=detection_pseudo_find(p, workbin, worklab, 0);
-  sn=detection_pseudo_sn(p, worklab, numpseudo, 0);
+  sn=detection_sn(p, worklab, numpseudo, 0, "PSEUDOS-FOR-SN");
 
 
   /* Get the S/N quantile and report it if we are in non-quiet mode. */
@@ -676,7 +709,7 @@ detection_pseudo_real(struct noisechiselparams *p)
   /* Over the detections: find pseudo-detections and make S/N table. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   numpseudo=detection_pseudo_find(p, workbin, worklab, 1);
-  sn=detection_pseudo_sn(p, worklab, numpseudo, 1);
+  sn=detection_sn(p, worklab, numpseudo, 1, "PSEUDOS-FOR-SN");
 
 
   /* Remove the pseudo detections with a low S/N. */
@@ -687,6 +720,91 @@ detection_pseudo_real(struct noisechiselparams *p)
   gal_data_free(sn);
   gal_data_free(worklab);
   return workbin;
+}
+
+
+
+
+
+/* This is for the final detections (dilated) detections. */
+static size_t
+detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
+{
+  size_t i;
+  int8_t *b;
+  float *snarr;
+  gal_data_t *sn, *snind;
+  int32_t *l, *lf, curlab=1;
+  struct gal_linkedlist_stll *comments=NULL;
+  int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_INT32, num+1);
+
+
+  /* Get the Signal to noise ratio of all detections. */
+  sn=detection_sn(p, p->olabel, num, 2, "DILATED");
+
+
+  /* Only keep the objects with an S/N above the pseudo-detection limit. */
+  snarr=sn->array;
+  for(i=1;i<num+1;++i)
+    newlabs[i] = snarr[i] > p->detsnthresh ? curlab++ : 0;
+
+
+  /* Go over the labeled image and correct the labels. */
+  b=p->binary->array;
+  lf=(l=p->olabel->array)+p->olabel->size;
+  if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
+    {
+      do
+        {
+          if( *l != GAL_BLANK_INT32 )
+            *b = (*l=newlabs[ *l ]) > 0;
+          ++b;
+        }
+      while(++l<lf);
+    }
+  else do *b++ = (*l=newlabs[ *l ]) > 0; while(++l<lf);
+
+
+  /* Save the S/N values if the user asked for them. */
+  if(p->detsn_D_name)
+    {
+      /* Make the S/N index array. */
+      snind=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &num, NULL, 0,
+                           p->cp.minmapsize, NULL, NULL, NULL);
+
+      /* Fill in the indexs. Note that the S/N array had num+1 elements, so
+         we also want to shift them back by one element, so we also need to
+         correct its size. */
+      l=snind->array;
+      sn->size = sn->dsize[0] = num;
+      for(i=0;i<num;++i) { l[i]=i+1; snarr[i]=snarr[i+1]; }
+
+      /* Make the comments, then write the table. */
+      gal_linkedlist_add_to_stll(&comments, "See also: `DILATED' "
+                                 "HDU of output with `--checkdetection'.", 1);
+      gal_linkedlist_add_to_stll(&comments, "S/N of finally dilated "
+                                 "detections.", 1);
+
+
+      threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments);
+      gal_linkedlist_free_stll(comments, 1);
+
+    }
+
+
+  /* For a check image. */
+  if(p->detectionname)
+    {
+      p->olabel->name="DETECTION_FINAL";
+      gal_fits_img_write(p->olabel, p->detectionname, NULL,
+                         PROGRAM_STRING);
+      p->olabel->name=NULL;
+    }
+
+  /* Clean up and return. */
+  free(newlabs);
+  gal_data_free(sn);
+  return curlab-1;
 }
 
 
@@ -719,6 +837,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
   int32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
   int32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
                                             p->numinitialdets+1);
+
 
   /* Find the new labels for all the existing labels. Recall that
      `newlabels' was initialized to zero, so any label that is not given a
@@ -840,23 +959,42 @@ detection(struct noisechiselparams *p)
   if(p->dilate)
     {
       gal_binary_dilate(workbin, p->dilate, 8, 1);
-      p->numdetections = gal_binary_connected_components(workbin, &p->olabel,
-                                                       8);
+      num_true_initial = gal_binary_connected_components(workbin, &p->olabel,
+                                                         8);
     }
-  else p->numdetections=num_true_initial;
   if(!p->cp.quiet)
     {
       asprintf(&msg, "%zu detections after %zu dilation%s",
-              p->numdetections, p->dilate, p->dilate>1 ? "s." : ".");
-      gal_timing_report(&t0, msg, 1);
+              num_true_initial, p->dilate, p->dilate>1 ? "s." : ".");
+      gal_timing_report(&t0, msg, 2);
       free(msg);
     }
-  if(p->detectionname)
+
+
+  /* When the final (dilated or over-all object) detection's S/N is less
+     than the pseudo-detection's S/N limit, the object is false. For a real
+     detection, the actual object S/N should be higher than any of its
+     pseudo-detection because it has a much larger area (and possibly more
+     flux under it).  So when the final S/N is smaller than the minimum
+     acceptable S/N threshold, we have a false pseudo-detection. */
+  if(p->cleandilated)
+    p->numdetections = detection_final_remove_small_sn(p, num_true_initial);
+  else
     {
-      p->olabel->name="TRUE-INITIAL-DETECTIONS";
-      gal_fits_img_write(p->olabel, p->detectionname, NULL,
-                         PROGRAM_STRING);
-      p->olabel->name=NULL;
+      p->numdetections = num_true_initial;
+      if(p->detectionname)
+        {
+          p->olabel->name="DETECTION_FINAL";
+          gal_fits_img_write(p->olabel, p->detectionname, NULL,
+                             PROGRAM_STRING);
+          p->olabel->name=NULL;
+        }
+    }
+  if(!p->cp.quiet)
+    {
+      asprintf(&msg, "%zu final true detections.", p->numdetections);
+      gal_timing_report(&t0, msg, 1);
+      free(msg);
     }
 
 
@@ -866,6 +1004,12 @@ detection(struct noisechiselparams *p)
      objects, which is still necessary during NoiseChisel. */
   gal_data_free(p->binary);
   p->binary=workbin;
+
+
+  /* The initial Sky and Sky STD values were only for detection. */
+  gal_data_free(p->sky);
+  gal_data_free(p->std);
+  p->sky = p->std = NULL;
 
 
   /* If the user wanted to check the threshold and hasn't called

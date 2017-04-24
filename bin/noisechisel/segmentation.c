@@ -304,9 +304,9 @@ segmentation_relab_overall(struct clumps_thread_params *cltprm)
   clprm->totobjects += cltprm->numobjects;
   clprm->totclumps  += cltprm->numtrueclumps;
 
-  /* Unlock it (if it was locked). */
+  /* Unlock the mutex (if it was locked). */
   if(clprm->p->cp.numthreads>1)
-    pthread_mutex_destroy(&clprm->labmutex);
+    pthread_mutex_unlock(&clprm->labmutex);
 
   /* Increase all the object labels by `startinglab'. */
   do olabel[*s] += startinglab; while(++s<sf);
@@ -351,7 +351,7 @@ segmentation_on_threads(void *in_prm)
   cltprm.clprm   = clprm;
 
   /* Go over all the detections given to this thread (counting from zero.) */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Set the ID of this detection, note that for the threads, we
          counted from zero, but the IDs start from 1, so we'll add a 1 to
@@ -853,9 +853,10 @@ segmentation(struct noisechiselparams *p)
   if(!p->cp.quiet)
     {
       asprintf(&msg, "%zu object%s""containing %zu clump%sfound.",
-               p->numobjects-1, p->numobjects==2 ? " " : "s ",
-               p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
+               p->numobjects, p->numobjects==1 ? " " : "s ",
+               p->numclumps,  p->numclumps ==1 ? " " : "s ");
       gal_timing_report(&t1, msg, 1);
+      free(msg);
     }
 
   /* If the user wanted to check the segmentation and hasn't called

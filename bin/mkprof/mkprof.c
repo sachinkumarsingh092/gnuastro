@@ -226,7 +226,7 @@ mkprof_build(void *inparam)
   pthread_cond_t *qready=&p->qready;
 
   /* Make each profile that was specified for this thread. */
-  for(i=0;mkp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
+  for(i=0; mkp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
       /* Create a new builtqueue element with all the information. fbq
          will be used when we want to add ibq to p->bq. It is defined
@@ -323,7 +323,7 @@ mkprof_build(void *inparam)
              this thread to add up its built profiles). So we have to
              lock the mutex to pass on this built structure to the
              builtqueue. */
-          else if (mkp->indexs[i+1]==GAL_THREADS_NON_THRD_INDEX)
+          else if (mkp->indexs[i+1]==GAL_BLANK_SIZE_T)
             {
               pthread_mutex_lock(qlock);
               fbq->next=p->bq;
@@ -375,10 +375,10 @@ mkprof_write(struct mkprofparams *p)
   struct timeval t1;
   long os=p->oversample;
   int replace=p->replace;
+  gal_data_t *out=p->out, *log;
   struct builtqueue *ibq=NULL, *tbq;
   float *to, *from, *colend, *rowend;
   size_t complete=0, num=p->num, clog;
-  gal_data_t *out=p->out, *log, *towrite;
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
 
 
@@ -512,20 +512,12 @@ mkprof_write(struct mkprofparams *p)
       /* Get the current time for verbose output. */
       if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
-      /* Prepare type of output. */
-      if(out->type==p->type)
-        towrite=out;
-      else
-        {
-          towrite=gal_data_copy_to_new_type(out, p->type);
-          free(out);
-        }
-
-      /* Write the final image into a FITS file. */
-      gal_fits_img_write(towrite, p->mergedimgname, NULL, PROGRAM_STRING);
+      /* Write the final image into a FITS file with the requested type. */
+      gal_fits_img_write_to_type(out, p->mergedimgname, NULL,
+                                 PROGRAM_STRING, p->cp.type);
 
       /* Clean up */
-      gal_data_free(towrite);
+      gal_data_free(out);
 
       /* In verbose mode, print the information. */
       if(!p->cp.quiet)
@@ -623,7 +615,7 @@ mkprof(struct mkprofparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             mkp[i].p=p;
             mkp[i].b=&b;

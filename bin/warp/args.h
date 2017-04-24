@@ -35,7 +35,7 @@ struct argp_option program_options[] =
     /* Input. */
     {
       "hstartwcs",
-      ARGS_OPTION_KEY_HSTARTWCS,
+      UI_KEY_HSTARTWCS,
       "INT",
       0,
       "Header keyword number to start reading WCS.",
@@ -48,7 +48,7 @@ struct argp_option program_options[] =
     },
     {
       "hendwcs",
-      ARGS_OPTION_KEY_HENDWCS,
+      UI_KEY_HENDWCS,
       "INT",
       0,
       "Header keyword number to end reading WCS.",
@@ -65,7 +65,7 @@ struct argp_option program_options[] =
     /* Output. */
     {
       "keepwcs",
-      ARGS_OPTION_KEY_KEEPWCS,
+      UI_KEY_KEEPWCS,
       0,
       0,
       "Do not apply warp to input's WCS",
@@ -78,7 +78,7 @@ struct argp_option program_options[] =
     },
     {
       "coveredfrac",
-      ARGS_OPTION_KEY_COVEREDFRAC,
+      UI_KEY_COVEREDFRAC,
       "FLT",
       0,
       "Acceptable fraction of output pixel covered.",
@@ -98,7 +98,7 @@ struct argp_option program_options[] =
     },
     {
       "align",
-      ARGS_OPTION_KEY_ALIGN,
+      UI_KEY_ALIGN,
       0,
       0,
       "Align the image and celestial axes.",
@@ -112,7 +112,7 @@ struct argp_option program_options[] =
     },
     {
       "rotate",
-      ARGS_OPTION_KEY_ROTATE,
+      UI_KEY_ROTATE,
       "FLT",
       0,
       "Rotate by the given angle in degrees.",
@@ -126,7 +126,7 @@ struct argp_option program_options[] =
     },
     {
       "scale",
-      ARGS_OPTION_KEY_SCALE,
+      UI_KEY_SCALE,
       "FLT[,FLT]",
       0,
       "Scale along the given axis(es).",
@@ -140,7 +140,7 @@ struct argp_option program_options[] =
     },
     {
       "flip",
-      ARGS_OPTION_KEY_FLIP,
+      UI_KEY_FLIP,
       "INT[,INT]",
       0,
       "Flip along the given axis(es).",
@@ -154,7 +154,7 @@ struct argp_option program_options[] =
     },
     {
       "shear",
-      ARGS_OPTION_KEY_SHEAR,
+      UI_KEY_SHEAR,
       "FLT[,FLT]",
       0,
       "Shear along the given axis(es).",
@@ -168,7 +168,7 @@ struct argp_option program_options[] =
     },
     {
       "translate",
-      ARGS_OPTION_KEY_TRANSLATE,
+      UI_KEY_TRANSLATE,
       "FLT[,FLT]",
       0,
       "Translate along the given axis(es).",
@@ -182,7 +182,7 @@ struct argp_option program_options[] =
     },
     {
       "project",
-      ARGS_OPTION_KEY_PROJECT,
+      UI_KEY_PROJECT,
       "FLT[,FLT]",
       0,
       "Project along the given axis(es).",
@@ -196,7 +196,7 @@ struct argp_option program_options[] =
     },
     {
       "matrix",
-      ARGS_OPTION_KEY_MATRIX,
+      UI_KEY_MATRIX,
       "STR",
       0,
       "Raw transformation matrix, highest priority.",
@@ -210,7 +210,7 @@ struct argp_option program_options[] =
     },
     {
       "centeroncorner",
-      ARGS_OPTION_KEY_CENTERONCORNER,
+      UI_KEY_CENTERONCORNER,
       0,
       0,
       "Center of coordinates on first pixel corner.",

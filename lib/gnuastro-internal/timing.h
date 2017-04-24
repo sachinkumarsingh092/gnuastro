@@ -52,7 +52,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TIMING_VERB_MSG_LENGTH_V     50
 #define GAL_TIMING_VERB_MSG_LENGTHS_2_V  65
 
-int64_t
+long
 gal_timing_time_based_rng_seed();
 
 void

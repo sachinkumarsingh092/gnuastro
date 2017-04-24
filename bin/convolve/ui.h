@@ -35,21 +35,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_KERNEL         = 'k',
-  ARGS_OPTION_KEY_KHDU           = 'u',
-  ARGS_OPTION_KEY_MINSHARPSPEC   = 'H',
-  ARGS_OPTION_KEY_CHECKFREQSTEPS = 'C',
-  ARGS_OPTION_KEY_TILESIZE       = 't',
-  ARGS_OPTION_KEY_NUMCHANNELS    = 'c',
-  ARGS_OPTION_KEY_REMAINDERFRAC  = 'r',
-  ARGS_OPTION_KEY_DOMAIN         = 'd',
-  ARGS_OPTION_KEY_MAKEKERNEL     = 'm',
+  UI_KEY_KERNEL         = 'k',
+  UI_KEY_KHDU           = 'u',
+  UI_KEY_MINSHARPSPEC   = 'H',
+  UI_KEY_CHECKFREQSTEPS = 'C',
+  UI_KEY_TILESIZE       = 't',
+  UI_KEY_NUMCHANNELS    = 'c',
+  UI_KEY_REMAINDERFRAC  = 'r',
+  UI_KEY_DOMAIN         = 'd',
+  UI_KEY_MAKEKERNEL     = 'm',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  ARGS_OPTION_KEY_NOKERNELFLIP = 1000,
-  ARGS_OPTION_KEY_NOKERNELNORM,
-  ARGS_OPTION_KEY_NOEDGECORRECTION,
+  UI_KEY_NOKERNELFLIP = 1000,
+  UI_KEY_NOKERNELNORM,
+  UI_KEY_NOEDGECORRECTION,
 };
 
 

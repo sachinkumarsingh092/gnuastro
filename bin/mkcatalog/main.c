@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <timing.h>             /* Includes time.h and sys/time.h */
+#include <gnuastro-internal/timing.h>
 
 #include "main.h"
 
@@ -43,13 +43,13 @@ main (int argc, char *argv[])
   gettimeofday(&t1, NULL);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   mkcatalog(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  ui_free_report(&p, &t1);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

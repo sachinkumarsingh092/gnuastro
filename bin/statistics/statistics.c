@@ -107,24 +107,24 @@ statistics_print_one_row(struct statisticsparams *p)
       /* Calculate respective values. Checking with `if(num==NULL)' gives
          compiler warnings of `this if clause does not guard ...'. So we
          are using this empty-if and else statement. */
-      case ARGS_OPTION_KEY_NUMBER:
+      case UI_KEY_NUMBER:
         num = num ? num : gal_statistics_number(p->input);           break;
-      case ARGS_OPTION_KEY_MINIMUM:
+      case UI_KEY_MINIMUM:
         min = min ? min : gal_statistics_minimum(p->input);          break;
-      case ARGS_OPTION_KEY_MAXIMUM:
+      case UI_KEY_MAXIMUM:
         max = max ? max : gal_statistics_maximum(p->input);          break;
-      case ARGS_OPTION_KEY_SUM:
+      case UI_KEY_SUM:
         sum = sum ? sum : gal_statistics_sum(p->input);              break;
-      case ARGS_OPTION_KEY_MEDIAN:
+      case UI_KEY_MEDIAN:
         med = med ? med : gal_statistics_median(p->sorted, 0); break;
-      case ARGS_OPTION_KEY_MEAN:
-      case ARGS_OPTION_KEY_STD:
+      case UI_KEY_MEAN:
+      case UI_KEY_STD:
         meanstd = meanstd ? meanstd : gal_statistics_mean_std(p->input);
         break;
-      case ARGS_OPTION_KEY_MODE:
-      case ARGS_OPTION_KEY_MODEQUANT:
-      case ARGS_OPTION_KEY_MODESYM:
-      case ARGS_OPTION_KEY_MODESYMVALUE:
+      case UI_KEY_MODE:
+      case UI_KEY_MODEQUANT:
+      case UI_KEY_MODESYM:
+      case UI_KEY_MODESYMVALUE:
         modearr = ( modearr ? modearr
                     : gal_statistics_mode(p->sorted, p->mirrordist, 0) );
         d=modearr->array;
@@ -132,8 +132,8 @@ statistics_print_one_row(struct statisticsparams *p)
         break;
 
       /* Will be calculated as printed. */
-      case ARGS_OPTION_KEY_QUANTILE:
-      case ARGS_OPTION_KEY_QUANTFUNC:
+      case UI_KEY_QUANTILE:
+      case UI_KEY_QUANTFUNC:
         break;
 
       /* The option isn't recognized. */
@@ -154,31 +154,31 @@ statistics_print_one_row(struct statisticsparams *p)
       switch(tmp->v)
         {
         /* Previously calculated values. */
-        case ARGS_OPTION_KEY_NUMBER:     out=num;                  break;
-        case ARGS_OPTION_KEY_MINIMUM:    out=min;                  break;
-        case ARGS_OPTION_KEY_MAXIMUM:    out=max;                  break;
-        case ARGS_OPTION_KEY_SUM:        out=sum;                  break;
-        case ARGS_OPTION_KEY_MEDIAN:     out=med;                  break;
-        case ARGS_OPTION_KEY_MEAN:
+        case UI_KEY_NUMBER:     out=num;                  break;
+        case UI_KEY_MINIMUM:    out=min;                  break;
+        case UI_KEY_MAXIMUM:    out=max;                  break;
+        case UI_KEY_SUM:        out=sum;                  break;
+        case UI_KEY_MEDIAN:     out=med;                  break;
+        case UI_KEY_MEAN:
           out=statistics_pull_out_element(meanstd, 0); mustfree=1; break;
-        case ARGS_OPTION_KEY_STD:
+        case UI_KEY_STD:
           out=statistics_pull_out_element(meanstd, 1); mustfree=1; break;
-        case ARGS_OPTION_KEY_MODE:
+        case UI_KEY_MODE:
           out=statistics_pull_out_element(modearr, 0); mustfree=1; break;
-        case ARGS_OPTION_KEY_MODEQUANT:
+        case UI_KEY_MODEQUANT:
           out=statistics_pull_out_element(modearr, 1); mustfree=1; break;
-        case ARGS_OPTION_KEY_MODESYM:
+        case UI_KEY_MODESYM:
           out=statistics_pull_out_element(modearr, 2); mustfree=1; break;
-        case ARGS_OPTION_KEY_MODESYMVALUE:
+        case UI_KEY_MODESYMVALUE:
           out=statistics_pull_out_element(modearr, 3); mustfree=1; break;
 
         /* Not previously calculated. */
-        case ARGS_OPTION_KEY_QUANTILE:
+        case UI_KEY_QUANTILE:
           arg = statistics_read_check_args(p);
           out = gal_statistics_quantile(p->sorted, arg, 0);
           break;
 
-        case ARGS_OPTION_KEY_QUANTFUNC:
+        case UI_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
           tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                 NULL, 1, -1, NULL, NULL, NULL);
@@ -243,7 +243,7 @@ statistics_interpolate_and_write(struct statisticsparams *p,
 
   /* Do the interpolation (if necessary). */
   if( p->interpolate
-      && !(p->cp.interponlyblank && gal_blank_present(values)==0) )
+      && !(p->cp.interponlyblank && gal_blank_present(values, 1)==0) )
     {
       interpd=gal_interpolate_close_neighbors(values, &cp->tl,
                                               cp->interpnumngb,
@@ -254,7 +254,7 @@ statistics_interpolate_and_write(struct statisticsparams *p,
     }
 
   /* Write the values. */
-  gal_tile_full_values_write(values, &cp->tl, output, PROGRAM_STRING);
+  gal_tile_full_values_write(values, &cp->tl, output, NULL, PROGRAM_STRING);
 }
 
 
@@ -283,23 +283,23 @@ statistics_on_tile(struct statisticsparams *p)
       /* Set the type of the output array. */
       switch(operation->v)
         {
-        case ARGS_OPTION_KEY_NUMBER:
+        case UI_KEY_NUMBER:
           type=GAL_TYPE_INT32; break;
 
-        case ARGS_OPTION_KEY_MINIMUM:
-        case ARGS_OPTION_KEY_MAXIMUM:
-        case ARGS_OPTION_KEY_MEDIAN:
-        case ARGS_OPTION_KEY_MODE:
-        case ARGS_OPTION_KEY_QUANTFUNC:
+        case UI_KEY_MINIMUM:
+        case UI_KEY_MAXIMUM:
+        case UI_KEY_MEDIAN:
+        case UI_KEY_MODE:
+        case UI_KEY_QUANTFUNC:
           type=p->input->type; break;
 
-        case ARGS_OPTION_KEY_SUM:
-        case ARGS_OPTION_KEY_MEAN:
-        case ARGS_OPTION_KEY_STD:
-        case ARGS_OPTION_KEY_QUANTILE:
-        case ARGS_OPTION_KEY_MODEQUANT:
-        case ARGS_OPTION_KEY_MODESYM:
-        case ARGS_OPTION_KEY_MODESYMVALUE:
+        case UI_KEY_SUM:
+        case UI_KEY_MEAN:
+        case UI_KEY_STD:
+        case UI_KEY_QUANTILE:
+        case UI_KEY_MODEQUANT:
+        case UI_KEY_MODESYM:
+        case UI_KEY_MODESYMVALUE:
           type=GAL_TYPE_FLOAT64; break;
 
         default:
@@ -315,10 +315,10 @@ statistics_on_tile(struct statisticsparams *p)
          here, because below, the functions are repeated on each tile. */
       switch(operation->v)
         {
-        case ARGS_OPTION_KEY_QUANTILE:
+        case UI_KEY_QUANTILE:
           arg = statistics_read_check_args(p);
           break;
-        case ARGS_OPTION_KEY_QUANTFUNC:
+        case UI_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
           tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                 NULL, 1, -1, NULL, NULL, NULL);
@@ -333,43 +333,43 @@ statistics_on_tile(struct statisticsparams *p)
           /* Do the proper operation. */
           switch(operation->v)
             {
-            case ARGS_OPTION_KEY_NUMBER:
+            case UI_KEY_NUMBER:
               tmp=gal_statistics_number(tile);                      break;
 
-            case ARGS_OPTION_KEY_MINIMUM:
+            case UI_KEY_MINIMUM:
               tmp=gal_statistics_minimum(tile);                     break;
 
-            case ARGS_OPTION_KEY_MAXIMUM:
+            case UI_KEY_MAXIMUM:
               tmp=gal_statistics_maximum(tile);                     break;
 
-            case ARGS_OPTION_KEY_MEDIAN:
+            case UI_KEY_MEDIAN:
               tmp=gal_statistics_median(tile, 1);                   break;
 
-            case ARGS_OPTION_KEY_QUANTFUNC:
+            case UI_KEY_QUANTFUNC:
               tmp=gal_statistics_quantile_function(tile, tmpv, 1);  break;
 
-            case ARGS_OPTION_KEY_SUM:
+            case UI_KEY_SUM:
               tmp=gal_statistics_sum(tile);                         break;
 
-            case ARGS_OPTION_KEY_MEAN:
+            case UI_KEY_MEAN:
               tmp=gal_statistics_mean(tile);                        break;
 
-            case ARGS_OPTION_KEY_STD:
+            case UI_KEY_STD:
               tmp=gal_statistics_std(tile);                         break;
 
-            case ARGS_OPTION_KEY_QUANTILE:
+            case UI_KEY_QUANTILE:
               tmp=gal_statistics_quantile(tile, arg, 1);            break;
 
-            case ARGS_OPTION_KEY_MODE:
-            case ARGS_OPTION_KEY_MODESYM:
-            case ARGS_OPTION_KEY_MODEQUANT:
-            case ARGS_OPTION_KEY_MODESYMVALUE:
+            case UI_KEY_MODE:
+            case UI_KEY_MODESYM:
+            case UI_KEY_MODEQUANT:
+            case UI_KEY_MODESYMVALUE:
               switch(operation->v)
                 {
-                case ARGS_OPTION_KEY_MODE:         mind=0;  break;
-                case ARGS_OPTION_KEY_MODESYM:      mind=2;  break;
-                case ARGS_OPTION_KEY_MODEQUANT:    mind=1;  break;
-                case ARGS_OPTION_KEY_MODESYMVALUE: mind=3;  break;
+                case UI_KEY_MODE:         mind=0;  break;
+                case UI_KEY_MODESYM:      mind=2;  break;
+                case UI_KEY_MODEQUANT:    mind=1;  break;
+                case UI_KEY_MODESYMVALUE: mind=3;  break;
                 }
               tmp=gal_statistics_mode(tile, p->mirrordist, 1);
               ttmp=statistics_pull_out_element(tmp, mind);
@@ -397,7 +397,7 @@ statistics_on_tile(struct statisticsparams *p)
 
       /* Clean up. */
       gal_data_free(values);
-      if(operation->v==ARGS_OPTION_KEY_QUANTFUNC) gal_data_free(tmpv);
+      if(operation->v==UI_KEY_QUANTFUNC) gal_data_free(tmpv);
     }
 
   /* Clean up. */

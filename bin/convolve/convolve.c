@@ -481,7 +481,7 @@ onedimensionfft(void *inparam)
      by each other) is stored in p->pimg. So the check below works
      both in the forward and the backward transformation.
   */
-  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
+  for(i=0; indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
       data = ( indexs[i]<maxindex
                ? &pimg[ 2*indexs[i]*indmultip ]   /* *2 because complex. */
@@ -558,7 +558,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             fp[i].id=i;
             fp[i].b=&b;
@@ -598,7 +598,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
           {
             fp[i].b=&b;
             fp[i].stride=p->ps1; /* On each column, stride is p->ps1 */

@@ -400,8 +400,8 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
      array, then give them the blank labeled array. Note that since
      their value will not be 0, they will also not be labeled. */
   l=lab->array;
-  bf=(b=binary->array)+binary->size;
-  if( gal_blank_present(binary) )
+  bf=(b=binary->array)+binary->size; /* Library must have no side effect,   */
+  if( gal_blank_present(binary, 0) ) /* So blank flag should not be changed.*/
     do *l++ = *b==GAL_BLANK_UINT8 ? GAL_BLANK_INT32 : 0; while(++b<bf);
 
 

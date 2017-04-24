@@ -301,11 +301,13 @@ ui_read_kernel(struct convolveparams *p)
                                         p->cp.minmapsize);
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
-     pixels. */
-  if(gal_blank_present(p->kernel))
+     pixels, also update the flags so it is not checked any more. */
+  if(gal_blank_present(p->kernel, 1))
     {
       ff = (f=p->kernel->array) + p->kernel->size;
       do *f = isnan(*f) ? 0.0f : *f; while(++f<ff);
+      p->kernel->flag |= GAL_DATA_FLAG_BLANK_CH;
+      p->kernel->flag &= ~GAL_DATA_FLAG_HASBLANK;
     }
 }
 
@@ -350,7 +352,7 @@ ui_preparations(struct convolveparams *p)
   /* See if there are any blank values. */
   if(p->domain==CONVOLVE_DOMAIN_FREQUENCY)
     {
-      if( gal_blank_present(p->input) )
+      if( gal_blank_present(p->input, 1) )
         fprintf(stderr, "\n----------------------------------------\n"
                 "######## %s WARNING ########\n"
                 "There are blank pixels in `%s' (hdu: `%s') and you have "

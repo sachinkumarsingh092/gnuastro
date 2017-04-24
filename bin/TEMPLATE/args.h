@@ -33,7 +33,7 @@ struct argp_option program_options[] =
   {
     {
       "multivalue",
-      ARGS_OPTION_KEY_MULTIVALUE,
+      UI_KEY_MULTIVALUE,
       "STR",
       0,
       "This option can take multiple values.",
@@ -51,7 +51,7 @@ struct argp_option program_options[] =
 
     {
       "onoff",
-      ARGS_OPTION_KEY_ONOFF,
+      UI_KEY_ONOFF,
       0,
       0,
       "This option takes no value,.",

@@ -127,7 +127,7 @@ ui_initialize_options(struct mkprofparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Default program parameters. */
-  p->type=GAL_TYPE_FLOAT32;
+  p->cp.type=GAL_TYPE_FLOAT32;
 
 
   /* Modify the common options for this program. */
@@ -235,7 +235,7 @@ static void
 ui_read_check_only_options(struct mkprofparams *p)
 {
   /* When a no-merged image is to be created, type is necessary. */
-  if( p->type==GAL_TYPE_INVALID && p->nomerged==0)
+  if( p->cp.type==GAL_TYPE_INVALID && p->nomerged==0)
     error(EXIT_FAILURE, 0, "an output type `--type' is necessary when a "
           "merged image is to be built.");
 
@@ -510,7 +510,7 @@ ui_read_cols(struct mkprofparams *p)
       if(corrtype)
         {
           /* Make sure there are no blank values in this column. */
-          if( checkblank && gal_blank_present(corrtype) )
+          if( checkblank && gal_blank_present(corrtype, 1) )
             error(EXIT_FAILURE, 0, "%s column has blank values. "
                   "Input columns cannot contain blank values", colname);
 

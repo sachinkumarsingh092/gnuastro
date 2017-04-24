@@ -22,292 +22,103 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <float.h>
 #include <stdlib.h>
-#include <sys/time.h>
 
-#include <gsl/gsl_rng.h>
-#include <gnuastro/data.h>
-#include <gnuastro/fits.h>
+#include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
-#include <gsl/gsl_statistics_double.h>
 
-#include <timing.h>
-
-#include "upperlimit.h"
-
+#include "main.h"
+#include "mkcatalog.h"
 
 
 
 /*********************************************************************/
-/************           Structures and macros         ****************/
+/*******************       Tiles for clumps       ********************/
 /*********************************************************************/
-/* These structures and macros are defined in the C file since they are
-   only necessary in the processing here, they do not need to be given to
-   the user through the header, it will just complicate their
-   name-space. */
-struct upperlimitparams
+static gal_data_t *
+upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 {
-  size_t                  s0;   /* Number of rows in image.          */
-  size_t                  s1;   /* Number of columns in image.       */
-  int                envseed;   /* ==1: evironment for rng setup.    */
-  long                minlab;   /* Minimum label in image.           */
-  long               numlabs;   /* Number of labels in image.        */
-  float                 *img;   /* The input image.                  */
-  size_t                *box;	/* The box parameters of each label. */
-  unsigned char        **pix;   /* The pixels of each label.         */
-  float                 *std;	/* Standard deviation of the sums.   */
-  size_t               upnum;   /* Number of random samples.         */
-  size_t          numthreads;   /* Number of threads to use.         */
-  float          sclipmultip;   /* Multiple of STD for sigma clip.   */
-  float            sclipaccu;   /* Accuracy to stop sigma clipping.  */
-};
+  gal_data_t *input=pp->p->input;
+  size_t ndim=input->ndim, *dsize=input->dsize;
 
+  int32_t *O, *C;
+  gal_data_t *tiles=NULL;
+  float *I, *II, *start=input->array;
+  size_t increment=0, num_increment=1;
+  size_t i, d, *min, *max, width=2*ndim;
+  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
+                                       width*pp->clumpsinobj);
 
-
-
-
-/* Information for each thread. */
-struct tupperlimitparams
-{
-  size_t                  id;   /* Id of this thread.                */
-  size_t             *indexs;   /* Indexes for this thread.          */
-  pthread_barrier_t       *b;   /* Barrier for all threads.          */
-  struct upperlimitparams *p;   /* Pointer to main program struct.   */
-};
-
-
-
-
-
-/* Columns of labeled region information. Note that the width columns
-   (WIDCOL) are actually the same as the max columns (MAXCOL). The
-   width values are written over the maximum columns because we don't
-   need the maximum values any more. */
-#define XMINCOL 0
-#define YMINCOL 1
-#define XMAXCOL 2
-#define YMAXCOL 3
-#define XWIDCOL XMAXCOL
-#define YWIDCOL YMAXCOL
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/************               Preparations              ****************/
-/*********************************************************************/
-static void
-fillseginfo(struct upperlimitparams *p, long *seg)
-{
-  float *f, *ff;
-  long *l, *ll, maxlab;
-  unsigned char *u, *uu;
-  size_t xw, yw, xmin, ymin;
-  size_t i, j, asize, label, size=p->s0*p->s1;
-
-
-  /* Find the minimum and maximum labels: */
-  maxlab    = INT32_MIN;
-  p->minlab = INT32_MAX;
-  ll=(l=seg)+size;
-  do
-    /* We don't want to look at pixels with value zero or blank pixels, so
-       ignore them.  */
-    if( *l!=0 && *l!=GAL_DATA_BLANK_LONG )
+  /* Initialize the minimum and maximum position for each tile/clump. So,
+     we'll initialize the minimum coordinates to the maximum possible
+     `size_t' value (in `GAL_BLANK_SIZE_T') and the maximums to zero. */
+  for(i=0;i<pp->clumpsinobj;++i)
+    for(d=0;d<ndim;++d)
       {
-        if(*l>maxlab)    maxlab=*l;
-        if(*l<p->minlab) p->minlab=*l;
+        minmax[ i * width +        d ] = GAL_BLANK_SIZE_T; /* Minimum. */
+        minmax[ i * width + ndim + d ] = 0;                /* Maximum. */
       }
-  while(++l<ll);
 
-
-  /* Do a small sanity check: */
-  if(maxlab<0 || p->minlab<0)
-    error(EXIT_FAILURE, 0, "the labeled image must not contain negative "
-          "pixels");
-
-
-  /* Allocate the space to keep the object information. This array will
-     keep the minimum and maximum coordinate for each labeled region. Note
-     that max is in the image, and we want to use the labels as indexs (row
-     numbers), so we must allocate max+1 rows.
-
-     Note: we are not assuming that the first index is 1. Because many
-     cases can arise where the lowest index can be a large number (for
-     example when the user can be working on a sub-set of objects selected
-     from a large catalog), so we don't want to allocate a huge amount of
-     memory and waste thread resources on them. We have stored the minimum
-     label and will use that in reporting the final output to make a full
-     array. */
-  p->numlabs = maxlab - p->minlab + 1;
-  errno=0;
-  p->box=malloc(p->numlabs * 4 * sizeof *p->box);
-  if(p->box==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->box",
-          p->numlabs * 4 * sizeof *p->box);
-
-  /* Initialize the information array*/
-  for(i=0;i<p->numlabs;++i)
+  /* Parse over the object and get the clump's minimum and maximum. */
+  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
-      p->box[ i*4 + XMINCOL ] = p->s0;
-      p->box[ i*4 + YMINCOL ] = p->s1;
-      p->box[ i*4 + XMAXCOL ] = p->box[ i*4 + YMAXCOL ] = 0;
-    }
+      /* Set the pointers for this tile. */
+      I = pp->st_i + increment;
+      O = pp->st_o + increment;
+      C = pp->st_c + increment;
 
-  /* Fill it in with the minimum and maximum positions. */
-  for(i=0;i<p->s0;++i)
-    for(j=0;j<p->s1;++j)
-      if(seg[i*p->s1+j]>0)
-	{
-	  label = seg[i*p->s1+j] - p->minlab;
-	  if(i<p->box[ label*4 + XMINCOL ]) p->box[ label*4 + XMINCOL ] = i;
-	  if(j<p->box[ label*4 + YMINCOL ]) p->box[ label*4 + YMINCOL ] = j;
-	  if(i>p->box[ label*4 + XMAXCOL ]) p->box[ label*4 + XMAXCOL ] = i;
-	  if(j>p->box[ label*4 + YMAXCOL ]) p->box[ label*4 + YMAXCOL ] = j;
-	}
-
-  /* For a check. Note that in DS9 the coordinates are inverted and
-     start from 1, not zero.
-  {
-    i=0;
-    printf("%zu: (%zu, %zu) --> (%zu, %zu)\n", i+p->minlab,
-	   p->box[i*4+YMINCOL]+1, p->box[i*4+XMINCOL]+1,
-	   p->box[i*4+YMAXCOL]+1, p->box[i*4+XMAXCOL]+1);
-  }
-  */
-
-
-  /* Allocate the pointers to the object's pixels and allocate space
-     for the area of each detection. In the meantime, Change the xmax
-     and ymax to width in X and width in Y*/
-  errno=0;
-  p->pix=malloc(p->numlabs * sizeof *p->pix);
-  if(p->pix==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->pix",
-          p->numlabs * sizeof *p->pix);
-  for(i=0; i<p->numlabs; ++i)
-    {
-      /* Replace the max values with the width of each box. */
-      p->box[i*4+XWIDCOL] = p->box[i*4+XMAXCOL] - p->box[i*4+XMINCOL] + 1;
-      p->box[i*4+YWIDCOL] = p->box[i*4+YMAXCOL] - p->box[i*4+YMINCOL] + 1;
-
-      /* Allocate space for the pixels of this label. */
-      errno=0;
-      asize = p->box[i*4+XWIDCOL] * p->box[i*4+YWIDCOL] * sizeof **p->pix;
-      p->pix[i] = malloc(asize);
-      if(p->pix[i]==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for p->pix[i] (i=%zu)",
-              asize, i);
-
-      /* Set the array values. Any pixel that is equal to the object's
-	 label over the box is given a value of 1.0f, other pixels are
-	 given a value of 0.0f. We set the starting pointers for the
-	 larger and smaller arrays in this row, then go along the row
-	 until it finshes. `j' will take us to the next row after this
-	 row finishes. */
-      xmin = p->box[ i*4+XMINCOL ];
-      ymin = p->box[ i*4+YMINCOL ];
-      xw   = p->box[ i*4+XWIDCOL ];
-      yw   = p->box[ i*4+YWIDCOL ];
-      for(j=0; j<xw; ++j)
-	{
-	  uu = ( u = p->pix[i] + yw*j ) + yw;
-	  l  = seg + (xmin+j)*p->s1 + ymin;
-	  do *u = (*l++ == i+p->minlab); while(++u<uu);
-	}
-    }
-
-
-  /* For a check:
-  i=0;
-  gal_fits_array_to_file("tmpf.fits", "check", BYTE_IMG, p->pix[i],
-			 p->box[i*4+XWIDCOL], p->box[i*4+YWIDCOL], 0,
-			 NULL, NULL, "myprog");
-  exit(0);
-  */
-
-  /* Allocate an array for the output values, note that this is for the
-     full list of IDs, not just those in the image. */
-  p->std = malloc( (maxlab+1) * sizeof *p->std );
-  if(p->std==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->std (upperlimit.c)",
-          (maxlab+1) * sizeof *p->std);
-  ff=(f=p->std)+(maxlab+1); do *f++=NAN; while(f<ff);
-}
-
-
-
-
-
-/* Subtract the Sky and set all the segmentation and mask pixels to
-   NaN. Note that the mask and sky images are optional. If the caller
-   didn't want them, they have to be set to NULL.
-
-   We could also be doing this during the actual flux calculation, but
-   since many iterations of many objects will be done, it is more efficient
-   to do all the preparations (setting blank pixels and subtracting the
-   sky. */
-void
-prepareimg(struct upperlimitparams *p, float *img, float *sky, long *seg,
-           long *mask)
-{
-  float *f, *ff;
-  size_t size=p->s0*p->s1;
-
-  /* Allocate the space for the image. */
-  errno=0;
-  p->img=malloc(size * sizeof *p->img);
-  if(p->img==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->img (upperlimit.c)",
-          size * sizeof *p->img);
-
-  /* Set the values. */
-  ff=(f=p->img)+size;
-  do
-    {
-      /* Note that the Sky and mask are optional (can be NULL), so we are
-         checking their existance (not NULL) first.  */
-      if(mask)
+      /* Go over the contiguous region. */
+      II = I + dsize[ndim-1];
+      do
         {
-          *f = *img++ - (( *seg || *mask )  ? NAN :  ( sky ? *sky : 0 ));
-          ++mask;
+          /* Only consider clumps. */
+          if( *O==pp->object && *C>0 )
+            {
+              /* Get the coordinates of this pixel. */
+              gal_dimension_index_to_coord(I-start, ndim, dsize, coord);
+
+              /* Check to see if this coordinate is the smallest/largest
+                 found so far for this label. Note that labels start from
+                 1, while indexs here start from zero. */
+              min = &minmax[ (*C-1) * width        ];
+              max = &minmax[ (*C-1) * width + ndim ];
+              for(d=0;d<ndim;++d)
+                {
+                  if( coord[d] < min[d] ) min[d] = coord[d];
+                  if( coord[d] > max[d] ) max[d] = coord[d];
+                }
+            }
+
+          /* Increment the other pointers. */
+          ++O; ++C;
         }
-      else
-        *f = *img++ - (*seg  ? NAN :  ( sky ? *sky : 0 ));
+      while(++I<II);
 
-      /* Increment the pointers (when they exist) to the next pixel. */
-      ++seg;
-      if(sky) ++sky;
+      /* Increment to the next contiguous region. */
+      increment += ( gal_tile_block_increment(input, dsize, num_increment++,
+                                              NULL) );
     }
-  while(++f<ff);
 
-  /* For a check:
-  gal_fits_array_to_file("in.fits", "check", FLOAT_IMG, p->img,
-			 p->s0, p->s1, 0, NULL, NULL, "myprog");
-  exit(0);
+  /* For a check.
+  for(i=0;i<pp->clumpsinobj;++i)
+    printf("%zu: (%zu, %zu) --> (%zu, %zu)\n", i+1, minmax[i*width],
+           minmax[i*width+1], minmax[i*width+2], minmax[i*width+3]);
   */
+
+  /* Make the tiles. */
+  tiles=gal_tile_series_from_minmax(input, minmax, pp->clumpsinobj);
+
+  /* Cleanup and return. */
+  free(coord);
+  free(minmax);
+  return tiles;
 }
 
 
@@ -330,244 +141,192 @@ prepareimg(struct upperlimitparams *p, float *img, float *sky, long *seg,
 
 
 /*********************************************************************/
-/************       Actual operation on threads       ****************/
+/*******************         For one tile         ********************/
 /*********************************************************************/
-static void *
-upperlimit_on_thread(void *inparam)
+static double
+upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
+                    unsigned long seed, int32_t clumplab)
 {
-  /* The first thing to do is to say what the input pointer actually is. */
-  struct tupperlimitparams *tp = (struct tupperlimitparams *)inparam;
-  struct upperlimitparams *p = tp->p;
+  struct mkcatalogparams *p=pp->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
-  /* Now you can go onto do defining the function like any other
-     function: first you define the variables and so on... */
-  double *sum;
-  gsl_rng *rng;
-  unsigned char *u, *uu;
-  float *l, ave, med, *fsum;
-  size_t i, j, c, xw, yw, lab, xmin, ymin;
+  void *tarray;
+  double sum, out;
+  int continueparse;
+  gal_data_t *sigclip;
+  uint8_t *M=NULL, *st_m=NULL;
+  float *uparr=pp->up_vals->array;
+  size_t increment, num_increment;
+  float *I, *II, *SK, *st_i, *st_sky;
+  size_t d, tcounter=0, counter=0, se_inc[2];
+  int32_t *O, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
+  size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t maxcount = p->upnum * MKCATALOG_UPPERLIMIT_STOP_MULTIP;
 
-  /* Allcate space to keep the total sums */
-  errno=0;
-  sum=malloc(p->upnum*sizeof *sum);
-  if(sum==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for sum (upperlimit.c)",
-          p->upnum*sizeof *sum);
-
-  /* Allocate the random number generator for this thread. Note that when
-     envseed is non-zero, then we need to use the given environment
-     value. However, we cannot use the same value for all threads because
-     all the positions of all threads will be the same, so we add the
-     thread-id (which is also a known paramter) to the seed. A given number
-     of segments will be distributed between a given number of threads in a
-     reproducible manner, so with this seed value for this thread, we will
-     get reproducible results.*/
-  rng=gsl_rng_alloc(gsl_rng_default);
-  gsl_rng_set(rng, gsl_rng_default_seed+tp->id);
+  /* Initializations. */
+  tarray=tile->array;
+  gsl_rng_set(pp->rng, seed);
 
 
-  /* Go over the jobs indexed for this thread: */
-  for(i=0; tp->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  /* `se_inc' is just used temporarily, the important thing here is
+     `st_oo'. */
+  st_oo = ( clumplab
+            ? gal_tile_start_end_ind_inclusive(tile, p->objects, se_inc)
+            : pp->st_o );
+  st_oc = clumplab ? (int32_t *)(p->clumps->array) + se_inc[0] : NULL;
+
+
+  /* Continue measuring magnitudes randomly until we get the desired
+     number. */
+  while(tcounter<maxcount && counter<p->upnum)
     {
-      /* Setup this labels parameters */
-      c=0;
-      lab=tp->indexs[i];
-      xw = p->box[ lab*4 + XWIDCOL ];
-      yw = p->box[ lab*4 + YWIDCOL ];
+      /* Get the random coordinates, note that `gsl_rng_uniform_int'
+         returns an inclusive value. */
+      for(d=0;d<ndim;++d)
+        rcoord[d] = gsl_rng_uniform_int(pp->rng, dsize[d]-tile->dsize[d]-1);
 
-      /* The starting point should be placed between 0 and Image_width
-	 - box_width. */
-      while(c<p->upnum)
-	{
-	  /* Get a randomly placed start for this label */
-	  sum[c] = 0.0f;
-	  xmin = gsl_rng_uniform_int(rng, p->s0-xw);
-	  ymin = gsl_rng_uniform_int(rng, p->s1-yw);
+      /* Set the tile's new starting pointer. */
+      tile->array = gal_data_ptr_increment(p->input->array,
+                          gal_dimension_coord_to_index(ndim, dsize, rcoord),
+                                           p->input->type);
 
-	  /* Go over the pixels and get the sum of the pixel values,
-	     this is very similar to the loop in fillseginfo. */
-	  for(j=0; j<xw; ++j)
-	    {
-	      uu = ( u = p->pix[lab] + yw*j ) + yw;
-	      l  = p->img + (xmin+j)*p->s1 + ymin;
+      /* Starting and ending coordinates for this random position, note
+         that in `pp' we have the starting and ending coordinates of the
+         actual tile. */
+      increment     = 0;
+      num_increment = 1;
+      continueparse = 1;
+      sum           = 0.0f;
 
-	      /* We can't simply multiply, since NaN values might be
-		 involved over regions that we don't need.*/
-	      do {sum[c] += *u==1.0f ? *l : 0.0f; ++l;} while(++u<uu);
-	    }
+      /* Starting pointers for the random tile. */
+      st_i   = gal_tile_start_end_ind_inclusive(tile, p->input, se_inc);
+      st_o               = (int32_t *)(p->objects->array) + se_inc[0];
+      st_sky             = (float   *)(p->sky->array)     + se_inc[0];
+      if(p->upmask) st_m = (uint8_t *)(p->upmask->array)  + se_inc[0];
 
-	  /* Only use this sum if it is not a NaN. */
-          /*printf("%zu: %f\n", c, sum[c]);*/
-	  if(!isnan(sum[c])) ++c;
-	}
 
-      /* Get the standard deviation by sigma-clipping */
-      gal_fits_change_type (sum, DOUBLE_IMG, c, 0, (void **)&fsum, FLOAT_IMG);
-      gal_statistics_sigma_clip_converge(fsum, 0, c, p->sclipmultip,
-                                         p->sclipaccu, &ave, &med,
-					 &p->std[p->minlab+lab], 0);
+      /* Starting pointers for the original tile.*/
 
-      /*
-      printf("%f\n", p->std[ lab*p->numoutcols + p->nimg ]);
-      exit(0);
+      /* Parse over this object/clump. */
+      while( se_inc[0] + increment <= se_inc[1] )
+        {
+          /* Set the pointers. */
+          I                = st_i   + increment;    /* Random tile.   */
+          SK               = st_sky + increment;    /* Random tile.   */
+          O                = st_o   + increment;    /* Random tile.   */
+          if(st_m) M       = st_m   + increment;    /* Random tile.   */
+          oO               = st_oo  + increment;    /* Original tile. */
+          if(clumplab) oC  = st_oc  + increment;    /* Original tile. */
 
-      p->std[ lab*p->numoutcols + p->nimg ] = gsl_stats_sd(sum, 1, c);
-      */
+
+          /* Parse over this contiguous region, similar to the first and
+             second pass functions. */
+          II = I + tile->dsize[ndim-1];
+          do
+            {
+              /* Only use pixels over this object/clump. */
+              if( *oO==pp->object
+                  && ( oC==NULL || clumplab==0 || *oC==clumplab ) )
+                {
+                  if( *O || (M && *M) || ( p->hasblank && isnan(*I) ) )
+                    continueparse=0;
+                  else
+                    sum += *I-*SK;
+                }
+
+              /* Increment the other pointers. */
+              ++SK; ++O; ++oO; if(oC) ++oC;
+            }
+          while(continueparse && ++I<II);
+
+
+          /* Increment to the next contiguous region of this tile. */
+          if(continueparse)
+            increment += ( gal_tile_block_increment(p->input, dsize,
+                                                    num_increment++, NULL) );
+          else break;
+        }
+
+      /* Further processing is only necessary if this random tile
+         actually covered the sky region. */
+      if(continueparse) uparr[ counter++ ] = sum;
+
+      /* Increment the total-counter. */
+      ++tcounter;
     }
 
-  /* Free the random number generator space. */
-  free(sum);
-  gsl_rng_free(rng);
+  /* Calculate the standard deviation of this distribution. */
+  if(counter==p->upnum)
+    {
+      sigclip=gal_statistics_sigma_clip(pp->up_vals, p->upsigmaclip[0],
+                                        p->upsigmaclip[1], 1, 1);
+      out = ((float *)(sigclip->array))[3] * p->upnsigma;
+    }
+  else out=NAN;
 
-  /* Wait until all other threads finish. When there was only one thread,
-     we explicitly set the pointer to the barrier structure to NULL, so
-     only wait when a barrier is actually defined.*/
-  if(tp->b)
-    pthread_barrier_wait(tp->b);
-
-  /* Return the NULL pointer. */
-  return NULL;
+  /* Reset the tile's array pointer, clean up and return. */
+  tile->array=tarray;
+  free(rcoord);
+  return out;
 }
 
 
 
 
 
-/* This is the thread spinner function. For each image we will divide
-   all the objects between the threads and the  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/*******************     High level funciton      ********************/
+/*********************************************************************/
 void
-upperlimit_manager(struct upperlimitparams *p)
-{
-  int err;
-  pthread_t t;          /* All thread ids saved in this, not used. */
-  size_t numbarriers;
-  pthread_attr_t attr;
-  pthread_barrier_t b;
-  size_t i, *indexs, thrdcols;
-  struct tupperlimitparams *tp;
-
-  /* Allocate the array of `param' structures. Note that in most cases, the
-     number of threads will not be a constant like this simple case, it
-     will be a variable passed to the thread-spinner. So we are using
-     dynamic allocation for more general use as a tutorial. */
-  errno=0;
-  tp = malloc(p->numthreads*sizeof *tp);
-  if( tp==NULL )
-    error(EXIT_FAILURE, errno, "%zu bytes for tp (upperlimit.c)",
-          p->numthreads*sizeof *tp);
-
-  /* Distribute the actions into the threads: */
-  gal_threads_dist_in_threads(p->numlabs, p->numthreads, &indexs, &thrdcols);
-
-  /* Do the job: when only one thread is necessary, there is no need to
-     spin off one thread, just call the function directly (spinning off
-     threads is expensive). This is for the generic thread spinner
-     function, not this simple function where `p->numthreads' is a
-     constant. */
-  if(p->numthreads==1)
-    {
-      tp[0].p=p;
-      tp[0].id=0;
-      tp[0].b=NULL;
-      tp[0].indexs=indexs;
-      upperlimit_on_thread(&tp[0]);
-    }
-  else
-    {
-      /* Initialize the attributes. Note that this running thread
-         (that spinns off the nt threads) is also a thread, so the
-         number the barriers should be one more than the number of
-         threads spinned off. */
-      numbarriers = ( (p->numlabs<p->numthreads ? p->numlabs : p->numthreads)
-                      + 1 );
-      gal_threads_attr_barrier_init(&attr, &b, numbarriers);
-
-      /* Spin off the threads: */
-      for(i=0;i<p->numthreads;++i)
-        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-          {
-            tp[i].p=p;
-            tp[i].id=i;
-            tp[i].b=&b;
-            tp[i].indexs=&indexs[i*thrdcols];
-            err=pthread_create(&t, &attr, upperlimit_on_thread, &tp[i]);
-            if(err)
-              {
-                fprintf(stderr, "can't create thread %zu", i);
-                exit(EXIT_FAILURE);
-              }
-          }
-
-      /* Wait for all threads to finish and free the spaces. */
-      pthread_barrier_wait(&b);
-      pthread_attr_destroy(&attr);
-      pthread_barrier_destroy(&b);
-    }
-
-  /* Clean up. */
-  free(tp);
-  free(indexs);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/************             External function           ****************/
-/*********************************************************************/
-float *
-upperlimit(float *img, float *sky, long *seg, long *mask, size_t s0,
-           size_t s1, size_t upnum, size_t numthreads, int envseed,
-           float sclipmultip, float sclipaccu)
+upperlimit_calculate(struct mkcatalog_passparams *pp)
 {
   size_t i;
-  struct upperlimitparams p;
+  double *ci;
+  unsigned long seed;
+  gal_data_t *clumptiles;
+  struct mkcatalogparams *p=pp->p;
 
-  /* Put the input parameters in the structure. */
-  p.s0=s0;
-  p.s1=s1;
-  p.upnum=upnum;
-  p.envseed=envseed;
-  p.sclipaccu=sclipaccu;
-  p.numthreads=numthreads;
-  p.sclipmultip=sclipmultip;
+  /* First find the upper limit magnitude for this object. */
+  pp->oi[OCOL_UPPERLIMIT_B] = upperlimit_one_tile(pp, pp->tile,
+                                                  p->seed+pp->object, 0);
 
-  /* Fill the information for each segment. */
-  fillseginfo(&p, seg);
+  /* If a clumps image is present (a clump catalog is requested( and this
+     object has clumps, then find the upper limit magnitude for the clumps
+     within this object. */
+  if(p->clumps && pp->clumpsinobj)
+    {
+      /* Make tiles covering the clumps. */
+      clumptiles=upperlimit_make_clump_tiles(pp);
 
-  /* Prepare the image. */
-  prepareimg(&p, img, sky, seg, mask);
+      /* Go over all the clumps. The random number generator seed for each
+         clump/object has to be unique, but also reproducible (given the
+         intial seed and identical inputs). So we have defined it based on
+         the total number of objects and clumps and this object and clump's
+         IDs. */
+      for(i=0;i<pp->clumpsinobj;++i)
+        {
+          ci=&pp->ci[ i * CCOL_NUMCOLS ];
+          seed = p->seed + p->numobjects + p->numclumps * pp->object + i;
+          ci[CCOL_UPPERLIMIT_B] = upperlimit_one_tile(pp, &clumptiles[i],
+                                                          seed, i+1);
+        }
 
-  /* Find the upper limit for all the objects on a thread. */
-  upperlimit_manager(&p);
-
-  /* For a check:
-  for(i=1;i<p.minlab+p.numlabs;++i)
-    printf("i=%zu: %-10.5f\n", i, p.std[i]);
-  exit(0);
-  */
-
-  /* Clean up and return. */
-  for(i=0; i<p.numlabs; ++i)
-    free(p.pix[i]);
-  free(p.img);
-  free(p.pix);
-  free(p.box);
-  return p.std;
+      /* Clean up the clump tiles. */
+      gal_data_array_free(clumptiles, pp->clumpsinobj, 0);
+    }
 }

@@ -314,3 +314,15 @@ $(top_srcdir)/AUTHORS: $(top_srcdir)/.version
 ## distribution. Note that AUTHORS depends on `.version'.
 dist-hook: $(top_srcdir)/AUTHORS
 	echo $(VERSION) > $(distdir)/.tarball-version
+
+
+
+
+## Nice joke
+## =========
+##
+## This joke is taken from the "The art of unix programming", and a quote
+## by Stuart Feldman (creator of Make): "One of the older Unix jokes is
+## "Make love" which results in "Don’t know how to make love"."
+love:
+	@echo "Don't know how to make love!"

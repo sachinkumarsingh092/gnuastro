@@ -207,6 +207,89 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 
 
 /***********************************************************************/
+/**************           Series of tiles             ******************/
+/***********************************************************************/
+/* Construct a list of tile(s) given positional minimum(s) and maximum(s).
+   The output is an allocated an allocated array that can later be freed
+   with `gal_data_array_free'. The minimum and maximums are assumed to be
+   inclusive.
+
+   The array keeping the minmium and maximum coordinates for each label
+   will have the following format:
+
+       | min0_d0 | min0_d1 | max0_d0 | max0_d1 | ...
+
+                       ... | minN_d0 | minN_d1 | maxN_d0 | maxN_d1 |   */
+gal_data_t *
+gal_tile_series_from_minmax(gal_data_t *block, size_t *minmax, size_t number)
+{
+  size_t ndim=block->ndim;
+
+  size_t *min, *max;
+  size_t i, d, ind, size, width=2*ndim;
+  gal_data_t *tiles=gal_data_array_calloc(number);
+
+  /* Fill the tile information.  */
+  for(i=0;i<number;++i)
+    {
+      /* To make things more readable. */
+      min = &minmax[ i * width        ];
+      max = &minmax[ i * width + ndim ];
+
+      /* Tile types should be invalid (we shouldn't use tiles directly),
+         also se the other simple values. */
+      tiles[i].flag  = 0;
+      tiles[i].block = block;
+      tiles[i].type  = GAL_TYPE_INVALID;
+      tiles[i].next  = i==number-1 ? NULL : &tiles[i+1];
+
+      /* Set the size related constants. */
+      size = 1;
+      tiles[i].ndim  = ndim;
+      tiles[i].dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+      for(d=0;d<ndim;++d) size *= tiles[i].dsize[d] = max[d] - min[d] + 1;
+      tiles[i].size  = size;
+
+      /* Tile's array pointer. */
+      ind=gal_dimension_coord_to_index(ndim, block->dsize, min);
+      tiles[i].array = gal_data_ptr_increment(block->array, ind, block->type);
+    }
+
+  /* For a check (put all the objects in an extension of a test file).
+  {
+    gal_data_t *copy;
+    for(i=0;i<number;++i)
+      {
+        copy=gal_data_copy(&tiles[i]);
+        gal_fits_img_write(copy, "tiles.fits", NULL, NULL);
+      }
+  }
+  */
+
+  /* Return the final pointer. */
+  return tiles;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
 /**************        Allocated block of memory      ******************/
 /***********************************************************************/
 /* When you are working on an array, it important to know the size of the
@@ -995,7 +1078,8 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl)
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
-                           char *filename, char *program_string)
+                           char *filename, struct gal_fits_key_ll *keys,
+                           char *program_string)
 {
   gal_data_t *disp;
 
@@ -1023,7 +1107,7 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
 
 
   /* Write the array as a file and then clean up (if necessary). */
-  gal_fits_img_write(disp, filename, NULL, program_string);
+  gal_fits_img_write(disp, filename, keys, program_string);
   if(disp!=tilevalues) gal_data_free(disp);
 }
 
@@ -1146,10 +1230,10 @@ tile_full_blank_flag(void *in_prm)
   gal_data_t *tile;
 
   /* Check all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       tile=&tile_ll[ tprm->indexs[i] ];
-      if( gal_blank_present(tile) )
+      if( gal_blank_present(tile, 0) )
         tile->flag |= GAL_DATA_FLAG_HASBLANK;
     }
 

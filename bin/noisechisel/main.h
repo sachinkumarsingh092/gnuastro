@@ -73,6 +73,7 @@ struct noisechiselparams
   uint8_t          checkdetsn;  /* Save pseudo-detection S/N values.      */
   float              detquant;  /* True detection quantile.               */
   size_t               dilate;  /* Number of times to dilate true dets.   */
+  uint8_t        cleandilated;  /* Remove dilated objects with small S/N. */
   uint8_t      checkdetection;  /* Save all detection steps to a file.    */
   uint8_t            checksky;  /* Check the Sky value estimation.        */
 
@@ -90,6 +91,7 @@ struct noisechiselparams
   char            *detskyname;  /* Name of Initial det sky check image.   */
   char          *detsn_s_name;  /* Sky pseudo-detections S/N name.        */
   char          *detsn_d_name;  /* Detection pseudo-detections S/N name.  */
+  char          *detsn_D_name;  /* Final detection S/N name.              */
   char         *detectionname;  /* Name of detection steps file.          */
   char               *skyname;  /* Name of Sky estimation steps file.     */
   char        *clumpsn_s_name;  /* Sky clump S/N name.                    */

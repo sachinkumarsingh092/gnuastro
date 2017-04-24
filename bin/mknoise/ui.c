@@ -207,17 +207,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in `ui_check_options_and_arguments'.
 static void
 ui_read_check_only_options(struct mknoiseparams *p)
 {
 
-  /* Check if the format of the output table is valid, given the type of
-     the output. */
-  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
-
 }
-
+*/
 
 
 
@@ -269,9 +265,17 @@ ui_preparations(struct mknoiseparams *p)
   p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
                                      GAL_TYPE_FLOAT64, p->cp.minmapsize);
 
+
   /* Read the WSC structure. */
   gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,
                &p->input->wcs);
+
+
+  /* If we are dealing with an input table, make sure the format of the
+     output table is valid, given the type of the output. */
+  if(p->input->ndim==1)
+    gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+
 
   /* Set the output name: */
   if(p->cp.output)
@@ -280,6 +284,7 @@ ui_preparations(struct mknoiseparams *p)
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
                                                "_noised.fits");
 
+
   /* Convert the background value from magnitudes to flux. Note that
      magnitudes are actually calculated from the ratio of brightness,
      not flux. But in the context of MakeNoise where everything is
@@ -287,6 +292,7 @@ ui_preparations(struct mknoiseparams *p)
      (flux is multiplied by the area of one pixel (=1) to give
      brightness).*/
   p->background=pow(10, (p->zeropoint-p->background_mag)/2.5f);
+
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
@@ -353,9 +359,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
 
 
   /* Read the options into the program's structure, and check them and
-     their relations prior to printing. */
+     their relations prior to printing.
   ui_read_check_only_options(p);
-
+  */
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
@@ -408,11 +414,15 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-ui_free_report(struct mknoiseparams *p)
+ui_free_report(struct mknoiseparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->rng_type);
   free(p->cp.output);
   gal_data_free(p->input);
+
+  /* Print the final message. */
+  if(!p->cp.quiet)
+    gal_timing_report(t1, PROGRAM_NAME" finished in: ", 0);
 }

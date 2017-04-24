@@ -77,7 +77,7 @@ sky_mean_std_undetected(void *in_prm)
 
 
   /* Go over all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_THREADS_NON_THRD_INDEX; ++i)
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Basic definitions */
       numsky=0;
@@ -171,8 +171,8 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
                        cp->numthreads);
   if(checkname)
     {
-      gal_tile_full_values_write(p->sky, tl, checkname, PROGRAM_STRING);
-      gal_tile_full_values_write(p->std, tl, checkname, PROGRAM_STRING);
+      gal_tile_full_values_write(p->sky, tl, checkname, NULL, PROGRAM_STRING);
+      gal_tile_full_values_write(p->std, tl, checkname, NULL, PROGRAM_STRING);
     }
 
   /* Get the basic information about the standard deviation

@@ -33,7 +33,7 @@ struct argp_option program_options[] =
   {
     {
       "stdadd",
-      ARGS_OPTION_KEY_STDADD,
+      UI_KEY_STDADD,
       "FLT",
       0,
       "Standard deviation addition constant.",
@@ -46,7 +46,7 @@ struct argp_option program_options[] =
     },
     {
       "background",
-      ARGS_OPTION_KEY_BACKGROUND,
+      UI_KEY_BACKGROUND,
       "FLT",
       0,
       "Fixed background magnitude for whole input.",
@@ -59,7 +59,7 @@ struct argp_option program_options[] =
     },
     {
       "zeropoint",
-      ARGS_OPTION_KEY_ZEROPOINT,
+      UI_KEY_ZEROPOINT,
       "FLT",
       0,
       "Zeropoint magnitude of input.",
@@ -76,7 +76,7 @@ struct argp_option program_options[] =
 
     {
       "envseed",
-      ARGS_OPTION_KEY_ENVSEED,
+      UI_KEY_ENVSEED,
       0,
       0,
       "Use GSL_RNG_SEED environment variable for seed",

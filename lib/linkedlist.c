@@ -775,6 +775,20 @@ gal_linkedlist_reverse_ill(struct gal_linkedlist_ill **list)
 
 
 
+size_t
+gal_linkedlist_num_in_ill(struct gal_linkedlist_ill *list)
+{
+  size_t num=0;
+  struct gal_linkedlist_ill *tmp;
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    ++num;
+  return num;
+}
+
+
+
+
+
 void
 gal_linkedlist_print_ill(struct gal_linkedlist_ill *list)
 {

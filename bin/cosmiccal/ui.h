@@ -35,13 +35,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  ARGS_OPTION_KEY_REDSHIFT       = 'z',
-  ARGS_OPTION_KEY_H0             = 'H',
-  ARGS_OPTION_KEY_OLAMBDA        = 'l',
-  ARGS_OPTION_KEY_OMATTER        = 'm',
-  ARGS_OPTION_KEY_ORADIATION     = 'r',
-  ARGS_OPTION_KEY_ONLYVOLUME     = 'v',
-  ARGS_OPTION_KEY_ONLYABSMAGCONV = 'a',
+  UI_KEY_REDSHIFT       = 'z',
+  UI_KEY_H0             = 'H',
+  UI_KEY_OLAMBDA        = 'l',
+  UI_KEY_OMATTER        = 'm',
+  UI_KEY_ORADIATION     = 'r',
+  UI_KEY_ONLYVOLUME     = 'v',
+  UI_KEY_ONLYABSMAGCONV = 'a',
 
 
   /* Only with long version (start with a value 1000, the rest will be set

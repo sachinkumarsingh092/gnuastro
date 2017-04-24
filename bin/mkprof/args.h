@@ -32,7 +32,7 @@ struct argp_option program_options[] =
   {
     {
       "background",
-      ARGS_OPTION_KEY_BACKGROUND,
+      UI_KEY_BACKGROUND,
       "STR",
       0,
       "A background image to make the profiles on.",
@@ -45,7 +45,7 @@ struct argp_option program_options[] =
     },
     {
       "backhdu",
-      ARGS_OPTION_KEY_BACKHDU,
+      UI_KEY_BACKHDU,
       "INT/STR",
       0,
       "HDU of background image.",
@@ -58,7 +58,7 @@ struct argp_option program_options[] =
     },
     {
       "clearcanvas",
-      ARGS_OPTION_KEY_CLEARCANVAS,
+      UI_KEY_CLEARCANVAS,
       0,
       0,
       "All pixels in background image read as zero.",
@@ -76,7 +76,7 @@ struct argp_option program_options[] =
 
     {
       "naxis1",
-      ARGS_OPTION_KEY_NAXIS1,
+      UI_KEY_NAXIS1,
       "INT",
       0,
       "Number of pixels along first FITS axis.",
@@ -89,7 +89,7 @@ struct argp_option program_options[] =
     },
     {
       "naxis2",
-      ARGS_OPTION_KEY_NAXIS2,
+      UI_KEY_NAXIS2,
       "INT",
       0,
       "Number of pixels along second FITS axis.",
@@ -102,7 +102,7 @@ struct argp_option program_options[] =
     },
     {
       "oversample",
-      ARGS_OPTION_KEY_OVERSAMPLE,
+      UI_KEY_OVERSAMPLE,
       "INT",
       0,
       "Scale of oversampling (>0 and odd).",
@@ -115,7 +115,7 @@ struct argp_option program_options[] =
     },
     {
       "psfinimg",
-      ARGS_OPTION_KEY_PSFINIMG,
+      UI_KEY_PSFINIMG,
       0,
       0,
       "PSF profiles made with all in output image.",
@@ -128,7 +128,7 @@ struct argp_option program_options[] =
     },
     {
       "individual",
-      ARGS_OPTION_KEY_INDIVIDUAL,
+      UI_KEY_INDIVIDUAL,
       0,
       0,
       "Build all profiles separately.",
@@ -141,7 +141,7 @@ struct argp_option program_options[] =
     },
     {
       "nomerged",
-      ARGS_OPTION_KEY_NOMERGED,
+      UI_KEY_NOMERGED,
       0,
       0,
       "Do not create a merged image of all profiles.",
@@ -164,7 +164,7 @@ struct argp_option program_options[] =
     },
     {
       "numrandom",
-      ARGS_OPTION_KEY_NUMRANDOM,
+      UI_KEY_NUMRANDOM,
       "INT",
       0,
       "No. of random points in Monte Carlo integration.",
@@ -177,7 +177,7 @@ struct argp_option program_options[] =
     },
     {
       "tolerance",
-      ARGS_OPTION_KEY_TOLERANCE,
+      UI_KEY_TOLERANCE,
       "FLT",
       0,
       "Tolerance to switch to less accurate method.",
@@ -190,7 +190,7 @@ struct argp_option program_options[] =
     },
     {
       "tunitinp",
-      ARGS_OPTION_KEY_TUNITINP,
+      UI_KEY_TUNITINP,
       0,
       0,
       "Truncation is in units of pixels, not radius.",
@@ -203,7 +203,7 @@ struct argp_option program_options[] =
     },
     {
       "xshift",
-      ARGS_OPTION_KEY_XSHIFT,
+      UI_KEY_XSHIFT,
       "FLT",
       0,
       "Shift profile centers and enlarge image, X axis.",
@@ -216,7 +216,7 @@ struct argp_option program_options[] =
     },
     {
       "yshift",
-      ARGS_OPTION_KEY_YSHIFT,
+      UI_KEY_YSHIFT,
       "FLT",
       0,
       "Shift profile centers and enlarge image, Y axis.",
@@ -229,7 +229,7 @@ struct argp_option program_options[] =
     },
     {
       "prepforconv",
-      ARGS_OPTION_KEY_PREPFORCONV,
+      UI_KEY_PREPFORCONV,
       0,
       0,
       "Shift and expand based on first catalog PSF.",
@@ -242,7 +242,7 @@ struct argp_option program_options[] =
     },
     {
       "zeropoint",
-      ARGS_OPTION_KEY_ZEROPOINT,
+      UI_KEY_ZEROPOINT,
       "FLT",
       0,
       "Magnitude zero point.",
@@ -255,7 +255,7 @@ struct argp_option program_options[] =
     },
     {
       "circumwidth",
-      ARGS_OPTION_KEY_CIRCUMWIDTH,
+      UI_KEY_CIRCUMWIDTH,
       "FLT",
       0,
       "Width of circumference (inward) profiles",
@@ -268,7 +268,7 @@ struct argp_option program_options[] =
     },
     {
       "replace",
-      ARGS_OPTION_KEY_REPLACE,
+      UI_KEY_REPLACE,
       0,
       0,
       "Replace overlapping profile pixels, don't add.",
@@ -281,7 +281,7 @@ struct argp_option program_options[] =
     },
     {
       "magatpeak",
-      ARGS_OPTION_KEY_MAGATPEAK,
+      UI_KEY_MAGATPEAK,
       0,
       0,
       "Magnitude is for peak pixel, not full profile.",
@@ -294,7 +294,7 @@ struct argp_option program_options[] =
     },
     {
       "envseed",
-      ARGS_OPTION_KEY_ENVSEED,
+      UI_KEY_ENVSEED,
       0,
       0,
       "Use GSL_RNG_SEED environment variable for seed.",
@@ -317,7 +317,7 @@ struct argp_option program_options[] =
     },
     {
       "xcol",
-      ARGS_OPTION_KEY_XCOL,
+      UI_KEY_XCOL,
       "STR/INT",
       0,
       "Center along first FITS axis (horizontal).",
@@ -330,7 +330,7 @@ struct argp_option program_options[] =
     },
     {
       "ycol",
-      ARGS_OPTION_KEY_YCOL,
+      UI_KEY_YCOL,
       "STR/INT",
       0,
       "Center along second FITS axis (vertical).",
@@ -343,7 +343,7 @@ struct argp_option program_options[] =
     },
     {
       "racol",
-      ARGS_OPTION_KEY_RACOL,
+      UI_KEY_RACOL,
       "STR/INT",
       0,
       "Center right ascension.",
@@ -356,7 +356,7 @@ struct argp_option program_options[] =
     },
     {
       "deccol",
-      ARGS_OPTION_KEY_DECCOL,
+      UI_KEY_DECCOL,
       "STR/INT",
       0,
       "Center declination.",
@@ -369,7 +369,7 @@ struct argp_option program_options[] =
     },
     {
       "fcol",
-      ARGS_OPTION_KEY_FCOL,
+      UI_KEY_FCOL,
       "STR/INT",
       0,
       "sersic (1), moffat (2), gaussian (3), point (4), "
@@ -383,7 +383,7 @@ struct argp_option program_options[] =
     },
     {
       "rcol",
-      ARGS_OPTION_KEY_RCOL,
+      UI_KEY_RCOL,
       "STR/INT",
       0,
       "Effective radius or FWHM in pixels.",
@@ -396,7 +396,7 @@ struct argp_option program_options[] =
     },
     {
       "ncol",
-      ARGS_OPTION_KEY_NCOL,
+      UI_KEY_NCOL,
       "STR/INT",
       0,
       "Sersic index or Moffat beta.",
@@ -409,7 +409,7 @@ struct argp_option program_options[] =
     },
     {
       "pcol",
-      ARGS_OPTION_KEY_PCOL,
+      UI_KEY_PCOL,
       "STR/INT",
       0,
       "Position angle.",
@@ -422,7 +422,7 @@ struct argp_option program_options[] =
     },
     {
       "qcol",
-      ARGS_OPTION_KEY_QCOL,
+      UI_KEY_QCOL,
       "STR/INT",
       0,
       "Axis ratio.",
@@ -435,7 +435,7 @@ struct argp_option program_options[] =
     },
     {
       "mcol",
-      ARGS_OPTION_KEY_MCOL,
+      UI_KEY_MCOL,
       "STR/INT",
       0,
       "Magnitude.",
@@ -448,7 +448,7 @@ struct argp_option program_options[] =
     },
     {
       "tcol",
-      ARGS_OPTION_KEY_TCOL,
+      UI_KEY_TCOL,
       "STR/INT",
       0,
       "Truncation in units of --rcol, unless --tunitinp.",
@@ -461,7 +461,7 @@ struct argp_option program_options[] =
     },
     {
       "mforflatpix",
-      ARGS_OPTION_KEY_MFORFLATPIX,
+      UI_KEY_MFORFLATPIX,
       0,
       0,
       "mcol is flat pixel value (when fcol is 5 or 6)",
@@ -484,7 +484,7 @@ struct argp_option program_options[] =
     },
     {
       "crpix1",
-      ARGS_OPTION_KEY_CRPIX1,
+      UI_KEY_CRPIX1,
       "FLT",
       0,
       "Pixel coordinate of reference point (axis 1).",
@@ -497,7 +497,7 @@ struct argp_option program_options[] =
     },
     {
       "crpix2",
-      ARGS_OPTION_KEY_CRPIX2,
+      UI_KEY_CRPIX2,
       "FLT",
       0,
       "Pixel coordinate of reference point (axis 2).",
@@ -510,7 +510,7 @@ struct argp_option program_options[] =
     },
     {
       "crval1",
-      ARGS_OPTION_KEY_CRVAL1,
+      UI_KEY_CRVAL1,
       "FLT",
       0,
       "Right ascension at reference point (degrees).",
@@ -523,7 +523,7 @@ struct argp_option program_options[] =
     },
     {
       "crval2",
-      ARGS_OPTION_KEY_CRVAL2,
+      UI_KEY_CRVAL2,
       "FLT",
       0,
       "Declination at reference point (degrees).",
@@ -536,7 +536,7 @@ struct argp_option program_options[] =
     },
     {
       "resolution",
-      ARGS_OPTION_KEY_RESOLUTION,
+      UI_KEY_RESOLUTION,
       "FLT",
       0,
       "Resolution of image (arcseconds/pixel).",

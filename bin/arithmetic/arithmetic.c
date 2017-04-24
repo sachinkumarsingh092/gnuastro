@@ -260,6 +260,10 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_ARITHMETIC_OP_TO_UINT16;     nop=1;  }
           else if (!strcmp(token->v, "int16"))
             { op=GAL_ARITHMETIC_OP_TO_INT16;      nop=1;  }
+          else if (!strcmp(token->v, "uint32"))
+            { op=GAL_ARITHMETIC_OP_TO_UINT32;     nop=1;  }
+          else if (!strcmp(token->v, "int32"))
+            { op=GAL_ARITHMETIC_OP_TO_INT32;      nop=1;  }
           else if (!strcmp(token->v, "uint64"))
             { op=GAL_ARITHMETIC_OP_TO_UINT64;     nop=1;  }
           else if (!strcmp(token->v, "int64"))

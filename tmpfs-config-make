@@ -115,27 +115,15 @@ cd $build_dir
 #
 # FOR DEBUGGING: uncomment the second half of this line. Gnuastro uses GNU
 # Libtool to build shared libraries for highly portable and maintainable
-# usage on a wide variety of systems. While this is great for binaries, it
-# can be a pain when trying to debug. For this reason, compilation of
-# shared libraries can be turned off by specifying the --disable-shared
-# option to configure. With static libraries, compilation (the `make'
-# command) will also significantly speed up. Also, by default (in
-# `configure.ac'), we have set optimization flags which have to be
+# usage on a wide variety of systems. While this is great for binaries,
+# shared libraries can be a pain when debuggin. For this reason,
+# compilation of shared libraries can be turned off by specifying the
+# --disable-shared option to configure. With static libraries, compilation
+# (the `make' command) will also significantly speed up. Also, by default
+# (in `configure.ac'), we have set optimization flags which have to be
 # cancelled in debugging.
-#
-# ####################################
-#
-# Correct this configure command after the datastruct branch is complete
-# and fully merged with master.
-#
-# ####################################
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir                                        \
-                 --enable-arithmetic --enable-convertt   --enable-convolve    \
-                 --enable-cosmiccal  --enable-crop       --enable-fits        \
-                 --enable-mknoise    --enable-mkprof     --enable-noisechisel \
-                 --enable-statistics --enable-table      --enable-warp        \
-                 #CFLAGS="-g -O0" --disable-shared
+    $srcdir/configure --srcdir=$srcdir #CFLAGS="-g -O0" --disable-shared
 fi
 
 

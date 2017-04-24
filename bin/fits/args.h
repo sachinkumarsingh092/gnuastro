@@ -39,7 +39,7 @@ struct argp_option program_options[] =
     },
     {
       "remove",
-      ARGS_OPTION_KEY_REMOVE,
+      UI_KEY_REMOVE,
       "STR",
       0,
       "Remove extension from input file.",
@@ -52,7 +52,7 @@ struct argp_option program_options[] =
     },
     {
       "copy",
-      ARGS_OPTION_KEY_COPY,
+      UI_KEY_COPY,
       "STR",
       0,
       "Copy extension to output file.",
@@ -65,7 +65,7 @@ struct argp_option program_options[] =
     },
     {
       "cut",
-      ARGS_OPTION_KEY_CUT,
+      UI_KEY_CUT,
       "STR",
       0,
       "Copy extension to output and remove from input.",
@@ -86,7 +86,7 @@ struct argp_option program_options[] =
     },
     {
       "asis",
-      ARGS_OPTION_KEY_ASIS,
+      UI_KEY_ASIS,
       "STR",
       0,
       "Write the argument string as is into the header.",
@@ -99,7 +99,7 @@ struct argp_option program_options[] =
     },
     {
       "delete",
-      ARGS_OPTION_KEY_DELETE,
+      UI_KEY_DELETE,
       "STR",
       0,
       "Delete a keyword from the header.",
@@ -112,7 +112,7 @@ struct argp_option program_options[] =
     },
     {
       "rename",
-      ARGS_OPTION_KEY_RENAME,
+      UI_KEY_RENAME,
       "STR",
       0,
       "Rename keyword, keeping value and comments.",
@@ -125,7 +125,7 @@ struct argp_option program_options[] =
     },
     {
       "update",
-      ARGS_OPTION_KEY_UPDATE,
+      UI_KEY_UPDATE,
       "STR",
       0,
       "Update a keyword value or comments.",
@@ -138,7 +138,7 @@ struct argp_option program_options[] =
     },
     {
       "write",
-      ARGS_OPTION_KEY_WRITE,
+      UI_KEY_WRITE,
       "STR",
       0,
       "Write a keyword (with value, comments and units).",
@@ -151,7 +151,7 @@ struct argp_option program_options[] =
     },
     {
       "history",
-      ARGS_OPTION_KEY_HISTORY,
+      UI_KEY_HISTORY,
       "STR",
       0,
       "Add HISTORY keyword, any length is ok.",
@@ -164,7 +164,7 @@ struct argp_option program_options[] =
     },
     {
       "comment",
-      ARGS_OPTION_KEY_COMMENT,
+      UI_KEY_COMMENT,
       "STR",
       0,
       "Add COMMENT keyword, any length is ok.",
@@ -177,7 +177,7 @@ struct argp_option program_options[] =
     },
     {
       "date",
-      ARGS_OPTION_KEY_DATE,
+      UI_KEY_DATE,
       0,
       0,
       "Set the DATE keyword to the current time.",
@@ -190,7 +190,7 @@ struct argp_option program_options[] =
     },
     {
       "printallkeys",
-      ARGS_OPTION_KEY_PRINTALLKEYS,
+      UI_KEY_PRINTALLKEYS,
       0,
       0,
       "Print all keywords in the selected HDU.",
@@ -206,7 +206,7 @@ struct argp_option program_options[] =
 
     {
       "quitonerror",
-      ARGS_OPTION_KEY_QUITONERROR,
+      UI_KEY_QUITONERROR,
       0,
       0,
       "Quit if there is an error on any action.",

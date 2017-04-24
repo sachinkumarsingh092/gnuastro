@@ -490,56 +490,16 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 
 
 /**************************************************************/
-/**********              Conversion                ************/
+/**********            Array conversion            ************/
 /**************************************************************/
-/* Use the X and Y columns in a larger array to fill the RA and Dec columns
-   in that same array. `xy' points to the first element in the X column and
-   `radec' points to the first element in the RA column. The columns for Y
-   and Dec have to be immediately after X and RA.
-
-   It appears that WCSLIB can only deal with static allocation. At least in
-   its tests it only uses static allocation. I tried dynamic allocation,
-   but it didn't work. So I can't use the vector functionalities of WCSLIB
-   and have to translate each point separately.
-*/
-void
-gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
-                          size_t number, size_t stride)
-{
-  size_t i;
-  double imgcrd[2], phi, theta;
-  int status=0, ncoord=1, nelem=2;
-
-  for(i=0;i<number;++i)
-    {
-      if(isnan(xy[i*stride]) || isnan(xy[i*stride+1]))
-        radec[i*stride]=radec[i*stride+1]=NAN;
-      else
-        {
-          wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
-                 &theta, radec+i*stride, &status);
-          if(status)
-            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
-                  wcs_errmsg[status]);
-
-          /* For a check:
-             printf("(%f, %f) --> (%f, %f)\n", xy[i*stride], xy[i*stride+1],
-                    radec[i*stride], radec[i*stride+1]);
-          */
-        }
-    }
-}
-
-
-
-
-
 /* Convert an array of world coordinates to image coordinates. Note that in
    Gnuastro, each column is treated independently, so the inputs are
    separate. If `*x==NULL', or `*y==NULL', then space will be allocated for
    them, otherwise, it is assumed that space has already been
-   allocated. Note that they must be a 1 dimensional array (recall that in
-   Gnuastro columns are treated independently).*/
+   allocated. Note that they must each be a 1 dimensional array.
+
+   You can do the conversion in place: just pass the same array as you give
+   to RA and Dec to X and Y. */
 void
 gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
                      double **x, double **y, size_t size)
@@ -549,14 +509,14 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   double *phi, *theta, *world, *pixcrd, *imgcrd;
 
   /* Allocate all the necessary arrays. */
-  stat=gal_data_calloc_array(GAL_TYPE_INT32, size);
-  phi=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
-  theta=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
-  world=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
-  imgcrd=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
-  pixcrd=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*size);
+  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
+  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size   );
+  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
+  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
 
-  /* Put in the values. */
+  /* Write the values into the allocated contiguous array. */
   for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
 
   /* Use WCSLIB's `wcss2p'. */
@@ -573,14 +533,71 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   */
 
   /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_calloc_array(GAL_TYPE_FLOAT64, size);
-  if(*y==NULL) *y=gal_data_calloc_array(GAL_TYPE_FLOAT64, size);
+  if(*x==NULL) *x=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  if(*y==NULL) *y=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
 
   /* Put the values into the output arrays. */
   for(i=0;i<size;++i)
     {
       (*x)[i] = stat[i] ? NAN : pixcrd[i*2];
       (*y)[i] = stat[i] ? NAN : pixcrd[i*2+1];
+    }
+
+  /* Clean up. */
+  free(phi);
+  free(stat);
+  free(theta);
+  free(world);
+  free(pixcrd);
+}
+
+
+
+
+
+/* Similar to `gal_wcs_world_to_img' but converts image coordinates into
+   world coordinates. */
+void
+gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
+                     double **ra, double **dec, size_t size)
+{
+  size_t i;
+  int status, *stat, ncoord=size, nelem=2;
+  double *phi, *theta, *world, *pixcrd, *imgcrd;
+
+  /* Allocate all the necessary arrays. */
+  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
+  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size   );
+  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
+  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+
+  /* Write the values into the allocated contiguous array. */
+  for(i=0;i<size;++i) { pixcrd[i*2]=x[i]; pixcrd[i*2+1]=y[i]; }
+
+  /* Use WCSLIB's wcsp2s for the conversion. */
+  status=wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta, world, stat);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
+          wcs_errmsg[status]);
+
+  /* For a sanity check:
+  printf("\n\ngal_wcs_img_to_world sanity check:\n");
+  for(i=0;i<size;++i)
+    printf("img (%f, %f) --> world (%f, %f), [stat: %d]\n",
+           pixcrd[i*2], pixcrd[i*2+1], world[i*2], world[i*2+1], stat[i]);
+  */
+
+  /* Allocate the output arrays if they were not already allocated. */
+  if(*ra==NULL)  *ra  = gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  if(*dec==NULL) *dec = gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+
+  /* Put the values into the output arrays. */
+  for(i=0;i<size;++i)
+    {
+      (*ra)[i]  = stat[i] ? NAN : world[i*2];
+      (*dec)[i] = stat[i] ? NAN : world[i*2+1];
     }
 
   /* Clean up. */

@@ -659,45 +659,90 @@ gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1)
 /**************************************************************/
 /**********            Header keywords             ************/
 /**************************************************************/
+/* CFITSIO doesn't remove the two single quotes around the string value, so
+   the strings it reads are like: 'value ', or 'some_very_long_value'. To
+   use the value, it is commonly necessary to remove the single quotes (and
+   possible extra spaces). This function fill modify the string in its own
+   allocated space. You can use this to later free the original string (if
+   it was allocated). */
+void
+gal_fits_key_clean_str_value(char *string)
+{
+  int end;       /* Has to be int because size_t is always >=0. */
+  char *c, *cf;
 
-/* Each keyword name, value, comment, type is kept within a Gnuastro data
-   structure. The input should be an array of such data structures,
-   either statically allocated like:
+  /* Start from the second last character (the last is a single quote) and
+     go down until you hit a non-space character. This will also work when
+     there is no space characters between the last character of the value
+     and ending single-quote: it will be set to '\0' after this loop. */
+  for(end=strlen(string)-2;end>=0;--end)
+    if(string[end]!=' ')
+      break;
 
-        gal_data_t keys[2];
+  /* Shift all the characters after the first one (which is a `'' back by
+     one and put the string ending characters on the `end'th element. */
+  cf=(c=string)+end; do *c=*(c+1); while(++c<cf);
+  *cf='\0';
+}
 
-   or dynamically allocated like:
 
-        gal_data_t *keys;
-        keys=malloc(2*sizeof *keys);
 
-   Before calling this function, you just have to set the `title' and
-   `type' values of the data structure. The given title value will be
-   directly passed to CFITSIO to read the desired keyword.
+
+
+/* Read the keyword values from a FITS pointer. The input should be a
+   linked list of `gal_data_t'. Before calling this function, you just have
+   to set the `name' and desired `type' values of each element in the list
+   to the keyword you want it to keep the value of. The given `name' value
+   will be directly passed to CFITSIO to read the desired keyword. This
+   function will allocate space to keep the value. Here is one example of
+   using this function:
+
+      gal_data_t *keysll=gal_data_array_calloc(N);
+
+      for(i=0;i<N-2;++i) keysll[i]->next=keysll[i+1];
+
+      \\ Put a name and type for each element.
+
+      gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
+
+      \\ use the values as you like.
+
+      gal_data_array_free(keysll, N, 1);
+
+   If the `array' pointer of each keyword's dataset is not NULL, then it is
+   assumed that the space has already been allocated. If it is NULL, then
+   space will be allocated internally here.
+
+   Strings need special consideration: the reason is that generally,
+   `gal_data_t' needs to also allow for array of strings (as it supports
+   arrays of integers for example). Hence two allocations will be done here
+   (one if `array!=NULL') and `keysll[i].array' must be interpretted as
+   `char **': one allocation for the pointer, one for the actual
+   characters. You don't have to worry about the freeing,
+   `gal_data_array_free' will free both allocations. So to read a string,
+   one easy way would be the following:
+
+      char *str, **strarray;
+      strarr = keysll[i].array;
+      str    = strarray[0];
+
+   If CFITSIO is unable to read a keyword for any reason the `status'
+   element of the respective `gal_data_t' will be non-zero. You can check
+   the successful reading of the keyword from the `status' value in each
+   keyword's `gal_data_t'. If it is zero, then the keyword was found and
+   succesfully read. Otherwise, it a CFITSIO status value. You can use
+   CFITSIO's error reporting tools or `gal_fits_io_error' for reporting the
+   reason. A tip: when the keyword doesn't exist, then CFITSIO's status
+   value will be `KEY_NO_EXIST'.
 
    CFITSIO will start searching for the keywords from the last place in the
    header that it searched for a keyword. So it is much more efficient if
    the order that you ask for keywords is based on the order they are
    stored in the header.
-
-   ABOUT THE STRING VALUES:
-
-   The space for a string value is dynamically allocated within the
-   `gal_fits_key' structure (to be `FLEN_VALUE' characters, `FLEN_VALUE' is
-   defined by CFITSIO and is the largest possible number of characters).
-
-   This function will not abort if CFITSIO is unable to read the keyword
-   due to any reason. You can check the successful reading of the keyword
-   from the `status' value in each keyword's data structure. If its zero,
-   then the keyword was found and read as expected. Otherwise, this a
-   CFITSIO status, so you use its error reporting tools or
-   `gal_fits_io_error' for reporting the reason. If you have an alternative
-   to the keyword, or its not mandatory, and the keyword doesn't exist,
-   then the status value will be KEY_NO_EXIST (from CFITSIO).
  */
 void
 gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
-                            int readcomment, int readunit)
+                           int readcomment, int readunit)
 {
   void *valueptr;
   char **strarray;
@@ -710,6 +755,13 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         /* Initialize the status: */
         tmp->status=0;
 
+        /* For each keyword, this function stores one value currently. So
+           set the size and ndim to 1. But first allocate dsize if it
+           wasn't already allocated. */
+        if(tmp->dsize==NULL)
+          tmp->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
+        tmp->ndim=tmp->size=tmp->dsize[0]=1;
+
         /* When the type is a string, `tmp->array' is an array of pointers
            to a separately allocated piece of memory. So we have to
            allocate that space here. If its not a string, then the
@@ -718,7 +770,9 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
           {
           case GAL_TYPE_STRING:
             errno=0;
-            strarray=tmp->array;
+            tmp->array=strarray=( tmp->array
+                                  ? tmp->array
+                                  : gal_data_malloc_array(tmp->type, 1) );
             valueptr=strarray[0]=malloc(FLEN_VALUE * sizeof *strarray[0]);
             if(strarray[0]==NULL)
               error(EXIT_FAILURE, errno, "%zu bytes for strarray[0] in "
@@ -727,7 +781,9 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
             break;
 
           default:
-            valueptr=tmp->array;
+            tmp->array=valueptr=( tmp->array
+                                  ? tmp->array
+                                  : gal_data_malloc_array(tmp->type, 1) );
           }
 
         /* Allocate space for the keyword comment if necessary.*/
@@ -773,39 +829,11 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         /* If the comment was empty, free the space and set it to zero. */
         if(tmp->comment && tmp->comment[0]=='\0')
           {free(tmp->comment); tmp->comment=NULL;}
+
+        /* Strings need to be cleaned (CFITSIO puts `'' around them with
+           some (possiblly) extra space on the two ends of the string. */
+
       }
-}
-
-
-
-
-
-/* CFITSIO doesn't remove the two single quotes around the string value, so
-   the strings it reads are like: 'value ', or 'some_very_long_value'. To
-   use the value, it is commonly necessary to remove the single quotes (and
-   possible extra spaces). This function fill modify the string in its own
-   allocated space. You can use this to later free the original string (if
-   it was allocated). */
-char *
-gal_fits_key_clean_str_value(char *string)
-{
-  size_t i;
-  char *out=string+1;
-
-  /* Start from the second last character (the last is a single quote) and
-     go down until you hit a non-space character. This will also work when
-     there is no space characters between the last character of the value
-     and ending single-quote: it will be set to '\0' after this loop. */
-  for(i=strlen(out)-2;i>0;--i)
-    if(out[i]!=' ')
-      break;
-
-  /* If the string is empty, it will stop at the first character that is a
-     single quote. So no need to check further. */
-  out[i+1]='\0';
-
-  /* Return the new string. */
-  return out;
 }
 
 
@@ -1432,7 +1460,7 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
      dealing with integer types. */
-  if(gal_blank_present(towrite))
+  if(gal_blank_present(towrite, 0))
     switch(towrite->type)
       {
       case GAL_TYPE_FLOAT32:
@@ -1812,7 +1840,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   long long *tzero;
   gal_data_t *allcols;
   int status=0, datatype, *tscal;
-  char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE], *val;
+  char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
 
   /* Open the FITS file and get the basic information. */
@@ -1852,9 +1880,10 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
       /* For string valued keywords, CFITSIO's function above, keeps the
          single quotes around the value string, one before and one
-         after. The latter single-quote will be automatically be removed
-         with the `remove_trailign_space' function.*/
-      val = value[0]=='\'' ? gal_fits_key_clean_str_value(value) : value;
+         after. `gal_fits_key_clean_str_value' will remove these single
+         quotes and any possible trailing space within the allocated
+         space.*/
+      if(value[0]=='\'') gal_fits_key_clean_str_value(value);
 
       /* COLUMN DATA TYPE. According the the FITS standard, the value of
          TFORM is most generally in this format: `rTa'. `T' is actually a
@@ -1877,9 +1906,9 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               /* The FITS standard's value to this option for FITS ASCII
                  and binary files differ. */
               if(*tabletype==GAL_TABLE_FORMAT_AFITS)
-                fits_ascii_tform(val, &datatype, NULL, NULL, &status);
+                fits_ascii_tform(value, &datatype, NULL, NULL, &status);
               else
-                fits_binary_tform(val, &datatype, &repeat, NULL, &status);
+                fits_binary_tform(value, &datatype, &repeat, NULL, &status);
 
               /* Write the type into the data structure. */
               allcols[index].type=gal_fits_datatype_to_type(datatype, 1);
@@ -1890,12 +1919,12 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                 {
                   if(*tabletype==GAL_TABLE_FORMAT_AFITS)
                     {
-                      repeat=strtol(val+1, &tailptr, 0);
+                      repeat=strtol(value+1, &tailptr, 0);
                       if(*tailptr!='\0')
                         error(EXIT_FAILURE, 0, "%s (hdu: %s): the value to "
                               "keyword `%s' (`%s') is not in `Aw' format "
                               "(for strings) as required by the FITS "
-                              "standard", filename, hdu, keyname, val);
+                              "standard", filename, hdu, keyname, value);
                     }
                   allcols[index].disp_width=repeat;
                 }
@@ -1908,11 +1937,11 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
             {
-              tscal[index]=strtol(val, &tailptr, 0);
+              tscal[index]=strtol(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
                       "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, val);
+                      keyname, value);
             }
         }
 
@@ -1922,11 +1951,11 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
             {
-              tzero[index]=strtoll(val, &tailptr, 0);
+              tzero[index]=strtoll(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
                       "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, val);
+                      keyname, value);
             }
         }
 
@@ -1939,7 +1968,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(val, &allcols[index].name);
+            gal_checkset_allocate_copy(value, &allcols[index].name);
         }
 
       /* COLUMN UNITS. */
@@ -1947,7 +1976,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(val, &allcols[index].unit);
+            gal_checkset_allocate_copy(value, &allcols[index].unit);
         }
 
       /* COLUMN COMMENTS */
@@ -1955,7 +1984,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(val, &allcols[index].comment);
+            gal_checkset_allocate_copy(value, &allcols[index].comment);
         }
 
       /* COLUMN BLANK VALUE. Note that to interpret the blank value the
@@ -1973,7 +2002,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                         "blank value cannot be deduced", filename, hdu,
                         keyname, index+1);
               else
-                gal_table_read_blank(&allcols[index], val);
+                gal_table_read_blank(&allcols[index], value);
             }
         }
 
@@ -1982,7 +2011,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            set_display_format(val, &allcols[index], filename, hdu,
+            set_display_format(value, &allcols[index], filename, hdu,
                                keyname);
         }
 
@@ -2121,7 +2150,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
                expected width or not. Its initial width is set the output
                of the function above, but if the value is larger,
                `asprintf' (which is used) will make it wider. */
-            blank = ( gal_blank_present(col)
+            blank = ( gal_blank_present(col, 0)
                       ? gal_blank_as_string(col->type, col->disp_width)
                       : NULL );
 
@@ -2327,7 +2356,7 @@ gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
 
       /* Set the blank pointer if its necessary, note that strings don't
          need a blank pointer in a FITS ASCII table.*/
-      blank = ( gal_blank_present(col)
+      blank = ( gal_blank_present(col, 0)
                 ? gal_blank_alloc_write(col->type) : NULL );
       if(tabletype==GAL_TABLE_FORMAT_AFITS && col->type==GAL_TYPE_STRING)
         { if(blank) free(blank); blank=NULL; }
