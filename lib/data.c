@@ -162,62 +162,6 @@ gal_data_calloc_array(uint8_t type, size_t size)
 
 
 
-/* Allocate space for one blank value of the given type and put the value
-   in it. */
-void *
-gal_data_alloc_number(uint8_t type, void *number)
-{
-  void *allocd;
-
-  /* Allocate the space for the blank value: */
-  allocd=gal_data_malloc_array(type, 1);
-
-  /* Put the blank value into it. */
-  errno=0;
-  switch(type)
-    {
-    case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
-            "values for `GAL_TYPE_BIT', please get in touch with "
-            "us to see how we can implement it.");
-
-    case GAL_TYPE_UINT8:   *(uint8_t *)allocd  = *(uint8_t *)  number; break;
-    case GAL_TYPE_INT8:    *(int8_t *)allocd   = *(int8_t *)   number; break;
-    case GAL_TYPE_UINT16:  *(uint16_t *)allocd = *(uint16_t *) number; break;
-    case GAL_TYPE_INT16:   *(int16_t *)allocd  = *(int16_t *)  number; break;
-    case GAL_TYPE_UINT32:  *(uint32_t *)allocd = *(uint32_t *) number; break;
-    case GAL_TYPE_INT32:   *(int32_t *)allocd  = *(int32_t *)  number; break;
-    case GAL_TYPE_UINT64:  *(uint64_t *)allocd = *(uint64_t *) number; break;
-    case GAL_TYPE_INT64:   *(int64_t *)allocd  = *(int64_t *)  number; break;
-    case GAL_TYPE_FLOAT32: *(float *)allocd    = *(float *)    number; break;
-    case GAL_TYPE_FLOAT64: *(double *)allocd   = *(double *)   number; break;
-
-    case GAL_TYPE_COMPLEX32:
-      GSL_COMPLEX_P_REAL(((gsl_complex_float *)allocd)) =
-        GSL_COMPLEX_P_REAL(((gsl_complex_float *)number));
-      GSL_COMPLEX_P_IMAG(((gsl_complex_float *)allocd)) =
-        GSL_COMPLEX_P_IMAG(((gsl_complex_float *)number));
-      break;
-
-    case GAL_TYPE_COMPLEX64:
-      GSL_COMPLEX_P_REAL(((gsl_complex *)allocd)) =
-        GSL_COMPLEX_P_REAL(((gsl_complex *)number));
-      GSL_COMPLEX_P_IMAG(((gsl_complex *)allocd)) =
-        GSL_COMPLEX_P_IMAG(((gsl_complex *)number));
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_alloc_number'", type);
-    }
-
-  return allocd;
-}
-
-
-
-
-
 static void
 gal_data_mmap(gal_data_t *data, int clear)
 {
@@ -413,60 +357,6 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
 
 
 
-/* In some contexts, it is necessary for all the strings to have the same
-   allocated space (when the `strlen' is different). This function will
-   allocate new copies for all elements to have the same length as the
-   maximum length and set all trailing elements to `\0' for those that are
-   shorter than the length. The return value is the allocated space. If the
-   dataset is not a string, the returned value will be -1 (largest number
-   of `size_t'). */
-size_t
-gal_data_string_fixed_alloc_size(gal_data_t *data)
-{
-  size_t i, j, maxlen=0;
-  char *tmp, **strarr=data->array;
-
-  /* Return 0 if the dataset is not a string. */
-  if(data->type!=GAL_TYPE_STRING)
-    return -1;
-
-  /* Get the maximum length. */
-  for(i=0;i<data->size;++i)
-    maxlen = strlen(strarr[i])>maxlen ? strlen(strarr[i]) : maxlen;
-
-  /* For all elements, check the length and if they aren't equal to maxlen,
-     then allocate a maxlen sized array and put the values in. */
-  for(i=0;i<data->size;++i)
-    {
-      /* Allocate (and clear) the space for the new string. We want it to
-         be cleared, so when the strings are smaller, the rest of the space
-         is filled with '\0' (ASCII for 0) values.*/
-      errno=0;
-      tmp=calloc(maxlen+1, sizeof *strarr[i]);
-      if(tmp==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for tmp in "
-              "`gal_data_fixed_alloc_size_for_string'",
-              maxlen+1*sizeof *strarr[i]);
-
-      /* Put the old array into the newly allocated space. `tmp' was
-         cleared (all values set to `\0', so we don't need to set the final
-         one explicity after the copy.*/
-      for(j=0;strarr[i][j]!='\0';++j)
-        tmp[j]=strarr[i][j];
-
-      /* Free the old array and put in the new one. */
-      free(strarr[i]);
-      strarr[i]=tmp;
-    }
-
-  /* Return the allocated space. */
-  return maxlen+1;
-}
-
-
-
-
-
 /* Free the allocated contents of a data structure, not the structure
    itsself. The reason that this function is separate from `gal_data_free'
    is that the data structure might be allocated as an array (statically
@@ -603,26 +493,26 @@ gal_data_array_calloc(size_t size)
 
 /* When you have an array of data structures. */
 void
-gal_data_array_free(gal_data_t *data, size_t size, int free_array)
+gal_data_array_free(gal_data_t *dataarr, size_t size, int free_array)
 {
   size_t i;
 
   /* If its NULL, don't do anything. */
-  if(data==NULL) return;
+  if(dataarr==NULL) return;
 
   /* First free all the contents. */
   for(i=0;i<size;++i)
     {
       /* See if the array should be freed or not. */
       if(free_array==0)
-        data[i].array=NULL;
+        dataarr[i].array=NULL;
 
       /* Now clear the contents of the dataset. */
-      gal_data_free_contents(&data[i]);
+      gal_data_free_contents(&dataarr[i]);
     }
 
   /* Now you can free the whole array. */
-  free(data);
+  free(dataarr);
 }
 
 
@@ -1363,10 +1253,11 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
 gal_data_t *
 gal_data_string_to_number(char *string)
 {
-  size_t dsize[1]={1};
+  void *ptr;
+  gal_data_t *out;
   int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
-  void *ptr, *numarr;
   char *tailptr, *cp;
+  size_t dsize[1]={1};
   uint8_t type, forcedfloat=0;
 
   /* Define initial spaces to keep the value. */
@@ -1436,10 +1327,10 @@ gal_data_string_to_number(char *string)
         {      ptr=&d; type=GAL_TYPE_FLOAT64; }
     }
 
-  /* Return the pointer to the data structure. */
-  numarr=gal_data_alloc_number(type, ptr);
-  return gal_data_alloc(numarr, type, 1, dsize, NULL, 0, -1,
-                        NULL, NULL, NULL);
+  /* Allocate a one-element dataset, then copy the number into it. */
+  out=gal_data_alloc(NULL, type, 1, dsize, NULL, 0, -1, NULL, NULL, NULL);
+  memcpy(out->array, ptr, gal_type_sizeof(type));
+  return out;
 }
 
 

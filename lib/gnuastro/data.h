@@ -72,10 +72,10 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Number of bytes in the unsigned integer hosting the bit-flags (`flag'
    element) of `gal_data_t'. */
-#define GAL_DATA_FLAG_SIZE       1
+#define GAL_DATA_FLAG_SIZE         1
 
 /* Bit 0: The has-blank flag has been checked, so a flag value of 0 for the
-          blank flag is strustable. This can be very useful to avoid
+          blank flag is trustable. This can be very useful to avoid
           repetative checks when the necessary value of the bit is 0. */
 #define GAL_DATA_FLAG_BLANK_CH     0x1
 
@@ -91,10 +91,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Bit 4: Dataset is sorted and decreasing. */
 #define GAL_DATA_FLAG_SORTED_D     0x10
 
-/*    Maximum internal flag value, using bitwise shift operators, this can
-      be used to define internal flags for libraries/programs that depend
-      on Gnuastro without causing any conflict with the internal flags or
-      having to check the values manually on every release. */
+/* Maximum internal flag value. Higher-level flags can be defined with the
+   bitwise shift operators on this value to define internal flags for
+   libraries/programs that depend on Gnuastro without causing any possible
+   conflict with the internal flags or having to check the values manually
+   on every release. */
 #define GAL_DATA_FLAG_MAXFLAG      GAL_DATA_FLAG_SORTED_D
 
 
@@ -197,7 +198,7 @@ typedef struct gal_data_t
 {
   /* Basic information on array of data. */
   void     *restrict array;  /* Array keeping data elements.               */
-  uint8_t             type;  /* Type of data (from `gal_data_alltypes').   */
+  uint8_t             type;  /* Type of data (see `gnuastro/type.h').      */
   size_t              ndim;  /* Number of dimensions in the array.         */
   size_t            *dsize;  /* Size of array along each dimension.        */
   size_t              size;  /* Total number of data-elements.             */
@@ -247,9 +248,6 @@ gal_data_malloc_array(uint8_t type, size_t size);
 void *
 gal_data_calloc_array(uint8_t type, size_t size);
 
-void *
-gal_data_alloc_number(uint8_t type, void *number);
-
 void
 gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
                     size_t *dsize, struct wcsprm *wcs, int clear,
@@ -259,9 +257,6 @@ gal_data_t *
 gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment);
-
-size_t
-gal_data_string_fixed_alloc_size(gal_data_t *data);
 
 void
 gal_data_free_contents(gal_data_t *data);
@@ -280,7 +275,7 @@ gal_data_t *
 gal_data_array_calloc(size_t size);
 
 void
-gal_data_array_free(gal_data_t *data, size_t num, int free_array);
+gal_data_array_free(gal_data_t *dataarr, size_t num, int free_array);
 
 
 

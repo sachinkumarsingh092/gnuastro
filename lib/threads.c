@@ -274,7 +274,7 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
        int    value1;
        double value2;
        float  *array;
-     }
+     };
 
 
      ---------    Function to run on each thread  ---------

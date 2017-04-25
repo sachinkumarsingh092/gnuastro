@@ -2099,6 +2099,58 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
 
 
+/* This function will allocate new copies for all elements to have the same
+   length as the maximum length and set all trailing elements to `\0' for
+   those that are shorter than the length. The return value is the
+   allocated space. If the dataset is not a string, the returned value will
+   be -1 (largest number of `size_t'). */
+static size_t
+fits_string_fixed_alloc_size(gal_data_t *data)
+{
+  size_t i, j, maxlen=0;
+  char *tmp, **strarr=data->array;
+
+  /* Return 0 if the dataset is not a string. */
+  if(data->type!=GAL_TYPE_STRING)
+    return -1;
+
+  /* Get the maximum length. */
+  for(i=0;i<data->size;++i)
+    maxlen = strlen(strarr[i])>maxlen ? strlen(strarr[i]) : maxlen;
+
+  /* For all elements, check the length and if they aren't equal to maxlen,
+     then allocate a maxlen sized array and put the values in. */
+  for(i=0;i<data->size;++i)
+    {
+      /* Allocate (and clear) the space for the new string. We want it to
+         be cleared, so when the strings are smaller, the rest of the space
+         is filled with '\0' (ASCII for 0) values.*/
+      errno=0;
+      tmp=calloc(maxlen+1, sizeof *strarr[i]);
+      if(tmp==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for tmp in "
+              "`gal_data_fixed_alloc_size_for_string'",
+              maxlen+1*sizeof *strarr[i]);
+
+      /* Put the old array into the newly allocated space. `tmp' was
+         cleared (all values set to `\0', so we don't need to set the final
+         one explicity after the copy.*/
+      for(j=0;strarr[i][j]!='\0';++j)
+        tmp[j]=strarr[i][j];
+
+      /* Free the old array and put in the new one. */
+      free(strarr[i]);
+      strarr[i]=tmp;
+    }
+
+  /* Return the allocated space. */
+  return maxlen+1;
+}
+
+
+
+
+
 static void
 fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
                           char ***outtform, char ***outttype,
@@ -2195,7 +2247,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
 
           /* If this is a string column, set all the strings to same size,
              then write the value of tform depending on the type. */
-          col->disp_width=gal_data_string_fixed_alloc_size(col);
+          col->disp_width=fits_string_fixed_alloc_size(col);
           fmt[0]=gal_fits_type_to_bin_tform(col->type);
           if( col->type==GAL_TYPE_STRING )
             asprintf(&tform[i], "%d%c", col->disp_width, fmt[0]);

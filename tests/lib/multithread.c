@@ -4,7 +4,7 @@ A test program to multithreaded building using Gnuastro's helpers.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2016, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -22,134 +22,102 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "gnuastro/fits.h"
 #include "gnuastro/threads.h"
 
 
-/* The params structure will keep the input information for each thread. As
-   you see below, we will actually be defining an array of these
-   structures, one for each thread. The reason for this is that the
-   function that spins off threads only passes one argument, so as that
-   argument, we will be passing the pointer to this structure. You can
-   easily add new elements to this structure to use in the threads
-   function. */
+/* This structure can keep all information you want to pass onto the worker
+   function on each thread. */
 struct params
 {
-  size_t            id; /* Id of this thread.                            */
-  size_t       *indexs; /* Indexes of actions to be done in this thread. */
-  pthread_barrier_t *b; /* Pointer the barrier for all threads.          */
+  gal_data_t *image;            /* Dataset to print values of. */
 };
 
 
 
 
-
-/* Worker function on threads */
+/* This is the main worker function which will be called by the different
+   threads. `gal_threads_params' is defined in `gnuastro/threads.h' and
+   contains the pointer to the paramter we want. Note that its input and
+   output must have `void *' types. */
 void *
-worker(void *inparam)
+worker_on_thread(void *in_prm)
 {
-  /* The first thing to do is to say what the input pointer actually is. */
-  struct params *prm=(struct params*)inparam;
+  /* Low-level definitions to be done first. */
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct params *p=(struct params *)tprm->params;
 
-  /* Now you can go onto do defining the function like any other
-     function: first you define the variables and so on... */
-  size_t i;
 
-  /* Go over the jobs indexed for this thread: */
-  for(i=0; prm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
+  /* Subsequent definitions. */
+  float *array=p->image->array;
+  size_t i, index, *dsize=p->image->dsize;
+
+
+  /* Go over all the pixels that were assigned to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
-      /* The indexes of the actions will make it possible to point to
-         whatever data structure or input you want. So in this test, we
-         will just print the thread ID and action id. */
-      printf("thread %zu: %zu\n", prm->id, prm->indexs[i]);
+      /* For easy reading. */
+      index = tprm->indexs[i];
+
+
+      /* Print the information. */
+      printf("(%zu, %zu) on thread %zu: %g\n", index%dsize[1]+1,
+             index/dsize[1]+1, tprm->id, array[index]);
     }
 
-  /* Wait until all other threads finish. When there was only one thread,
-     we explicitly set the pointer to the barrier structure to NULL, so
-     only wait when a barrier is actually defined.*/
-  if(prm->b)
-    pthread_barrier_wait(prm->b);
 
-  /* Return the NULL pointer. */
+  /* Wait for all the other threads to finish, then return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
   return NULL;
 }
 
 
 
 
-/* This is the thread spinner function. */
+/* A simple program to open a FITS image, distributes its pixels between
+   different threads and print the value of each pixel and the thread it
+   was assigned to, this will test both the opening of a FITS file and also
+   the multi-threaded functions. After running `make check' you can see the
+   outputs in `tests/multithread.log'.
+
+   Please run the following command for an explanation on easily linking
+   and compiling C programs that use Gnuastro's libraries (without having
+   to worry about the libraries to link to) anywhere on your system:
+
+      $ info gnuastro "Automatic linking script"
+*/
 int
 main(void)
 {
-  int err;
-  pthread_t t;          /* All thread ids saved in this, not used. */
-  struct params *prm;
-  size_t numbarriers;
-  pthread_attr_t attr;
-  pthread_barrier_t b;
-  size_t i, *indexs, thrdcols;
-  size_t numthreads=8, numactions=1000;
+  struct params p;
+  char *filename="psf.fits", *hdu="1";
+  size_t numthreads=gal_threads_number();
 
-  /* Allocate the array of `param' structures. Note that in most cases, the
-     number of threads will not be a constant like this simple case, it
-     will be a variable passed to the thread-spinner. So we are using
-     dynamic allocation for more general use as a tutorial. */
-  prm=malloc(numthreads*sizeof *prm);
-  if(prm==NULL)
+
+  /* Read the image into memory as a float32 data type. */
+  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+
+
+  /* Print some basic information before the actual contents: */
+  printf("Pixel values of %s (HDU: %s) on %zu threads.\n", filename, hdu,
+         numthreads);
+  printf("Used to check the compiled library's capability in opening a "
+         "FITS file, and also spinning-off threads.\n");
+
+
+  /* A small sanity check: this is only intended for 2D arrays. */
+  if(p.image->ndim!=2)
     {
-      fprintf(stderr, "%zu bytes could not be allocated for prm.",
-              numthreads*sizeof *prm);
+      fprintf(stderr, "only 2D images are supported.");
       exit(EXIT_FAILURE);
     }
 
-  /* Distribute the actions into the threads: */
-  gal_threads_dist_in_threads(numactions, numthreads, &indexs, &thrdcols);
 
-  /* Do the job: when only one thread is necessary, there is no need to
-     spin off one thread, just call the function directly (spinning off
-     threads is expensive). This is for the generic thread spinner
-     function, not this simple function where `numthreads' is a
-     constant. */
-  if(numthreads==1)
-    {
-      prm[0].id=0;
-      prm[0].b=NULL;
-      prm[0].indexs=indexs;
-      worker(&prm[0]);
-    }
-  else
-    {
-      /* Initialize the attributes. Note that this running thread
-         (that spinns off the nt threads) is also a thread, so the
-         number the barriers should be one more than the number of
-         threads spinned off. */
-      numbarriers = (numactions<numthreads ? numactions : numthreads) + 1;
-      gal_threads_attr_barrier_init(&attr, &b, numbarriers);
+  /* Spin-off the threads and do the processing on each thread. */
+  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads);
 
-      /* Spin off the threads: */
-      for(i=0;i<numthreads;++i)
-        if(indexs[i*thrdcols]!=GAL_BLANK_SIZE_T)
-          {
-            prm[i].id=i;
-            prm[i].b=&b;
-            prm[i].indexs=&indexs[i*thrdcols];
-            err=pthread_create(&t, &attr, worker, &prm[i]);
-            if(err)
-              {
-                fprintf(stderr, "can't create thread %zu", i);
-                exit(EXIT_FAILURE);
-              }
-          }
 
-      /* Wait for all threads to finish and free the spaces. */
-      pthread_barrier_wait(&b);
-      pthread_attr_destroy(&attr);
-      pthread_barrier_destroy(&b);
-    }
-
-  /* Clean up. */
-  free(prm);
-  free(indexs);
-
-  /* Return. */
+  /* Clean up and return. */
+  gal_data_free(p.image);
   return EXIT_SUCCESS;
 }

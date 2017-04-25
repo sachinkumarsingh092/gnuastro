@@ -177,6 +177,7 @@ AM_CPPFLAGS = -I../lib
 
 # Environment variables for the test scripts.
 AM_TESTS_ENVIRONMENT =                              \
+export mkdir_p="$(MKDIR_P)";                        \
 export topsrc=$(top_srcdir);                        \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
@@ -185,21 +186,32 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 
 
-# Compilations that are to be done with `make check'.
+# Library checks
+# ==============
+#
+# The Gnuastro library is checked by compiling programs and linking them
+# with the library. As described in the last paragraph of the "Scripts
+# based test suites" section of the Automake manual, all targets specified
+# by `check_PROGRAMS' are compiled prior to actually running the targets of
+# `TESTS'. So they do not need to be specified as any dependency, they will
+# be present when the `.sh' based tests are run.
 LDADD = -lgnuastro
 check_PROGRAMS = versioncpp multithread
 versioncpp_SOURCES = lib/versioncpp.cpp
 multithread_SOURCES = lib/multithread.c
+lib/multithread.sh: mkprof/mosaic1.sh.log
 
 
 
 
-# The actual test scripts that are run:
-TESTS = prepconf.sh $(check_PROGRAMS) $(MAYBE_ARITHMETIC_TESTS)		   \
-  $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
-  $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS)	   \
-  $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)  \
-  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)			   \
+# Final Tests
+# ===========
+TESTS = prepconf.sh lib/versioncpp.sh lib/multithread.sh                \
+  $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_CONVERTT_TESTS)                     \
+  $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) $(MAYBE_CROP_TESTS)  \
+  $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS) $(MAYBE_MKNOISE_TESTS)   \
+  $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)                      \
+  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                  \
   $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
 
 

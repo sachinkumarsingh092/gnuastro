@@ -516,6 +516,7 @@ Libraries
 
 * Review of library fundamentals::  Guide on libraries and linking.
 * Gnuastro library::            Description of all library functions.
+* Library demo programs::
 
 Review of library fundamentals
 
@@ -529,7 +530,9 @@ Gnuastro library
 * Configuration information::   General information about library config.
 * Library data container::
 * Library data types::
+* Table input output::
 * Arithmetic on datasets::
+* Tessellation library::
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
 * Text files::
@@ -543,7 +546,8 @@ Gnuastro library
 
 Data container (@file{data.h})
 
-* Data container type::
+* Generic data container::
+* Basic dataset functions::
 
 FITS files (@file{fits.h})
 
@@ -554,6 +558,10 @@ Multithreaded programming (@file{threads.h})
 
 * Implementation of pthread_barrier::  Some systems don't have pthread_barrier
 * Gnuastro's thread related functions::  Functions for managing threads.
+
+Library demo programs
+
+* Library demo - reading a image::
 
 Developing
 
@@ -15846,6 +15854,7 @@ program} to easily define your own programs(s).
 @menu
 * Review of library fundamentals::  Guide on libraries and linking.
 * Gnuastro library::            Description of all library functions.
+* Library demo programs::
 @end menu
 
 @node Review of library fundamentals, Gnuastro library, Libraries, Libraries
@@ -16475,7 +16484,7 @@ $ gnuastro-gcc myprog && ./myprog
 @end example
 
 
-@node Gnuastro library,  , Review of library fundamentals, Libraries
+@node Gnuastro library, Library demo programs, Review of library fundamentals, Libraries
 @section Gnuastro library
 
 Gnuastro library's programming constructs (function declarations, macros,
@@ -16530,7 +16539,9 @@ documentation will correspond to your installed version.
 * Configuration information::   General information about library config.
 * Library data container::
 * Library data types::
+* Table input output::
 * Arithmetic on datasets::
+* Tessellation library::
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
 * Text files::
@@ -16640,22 +16651,23 @@ mask images are integers using bit-wise flags to identify certain classes
 of special pixels, see @ref{Numeric data types}). Certain other information
 about a dataset are also commonly necessary, for example the units of the
 dataset, the name of the dataset and some comments. To deal with any
-generic dataset, Gnuastro defines the @code{gal_data_t} type.
+generic dataset, Gnuastro defines the @code{gal_data_t} as input or output.
 
 @menu
-* Data container type::
+* Generic data container::
+* Basic dataset functions::
 @end menu
 
-@node Data container type,  , Library data container, Library data container
-@subsubsection Data container type (@code{gal_data_t})
+@node Generic data container, Basic dataset functions, Library data container, Library data container
+@subsubsection Generic data container (@code{gal_data_t})
 
-For a generic operation on any dataset (with various dimensions, numeric
-data types, units and higher-level structures), Gnuastro defines the
-@code{gal_data_t} type which is the main input/output of many Gnuastro's
-library functions. It is defined in @file{gnuastro/data.h}. If you will be
-using (`@code{# include}'ing) those libraries, you don't need to include
-this header explicity, it is already included by any library header that
-uses @code{gal_data_t}.
+To be able to deal with any dataset (various dimensions, numeric data
+types, units and higher-level structures), Gnuastro defines the
+@code{gal_data_t} type which is the input/output container of choice for
+many of Gnuastro library's functions. It is defined in
+@file{gnuastro/data.h}. If you will be using (`@code{# include}'ing) those
+libraries, you don't need to include this header explicity, it is already
+included by any library header that uses @code{gal_data_t}.
 
 @deftp {Type (C @code{struct})} gal_data_t
 The main container for datasets in Gnuastro. It can host data of any
@@ -16697,71 +16709,426 @@ typedef struct gal_data_t
 @noindent
 The list below contains a description for each @code{gal_data_t} element.
 
+@cindex @code{void *}
 @table @code
 @item void *restrict array
 This is the pointer to the main array of the dataset containing the raw
 data (values). All the other elements in this data-structure are actually
 meta-data enabling us to use/understand the series of values in this
-array. Since it is to use data of any type, the array is actually a
-@code{void *} pointer. A @code{void *} array is not directly usable, you
-can use a procedure like the example below to use the array in any
-type. You can compile and run this program with the script described in
-@ref{Automatic linking script}
+array. It must allow data of any type (see @ref{Numeric data types}), so it
+is defined as a @code{void *} pointer. A @code{void *} array is not
+directly usable in C, so you have to cast it to proper type before using
+it, please see @ref{Library demo - reading a image} for a demonstration.
 
+@cindex @code{restrict}
+@cindex C: @code{restrict}
+The @code{restrict} keyword was formally introduced in C99 and is used to
+tell the compiler that at any moment only this pointer will modify what it
+points to (the a pixel in an image for example)@footnote{Also see
+@url{https://en.wikipedia.org/wiki/Restrict}.}. This extra piece of
+information can greatly help in compiler optimizations and thus the running
+time of the program. But older compilers might not have this capability, so
+at @command{./configure} time, Gnuastro checks this feature and if the
+user's compiler doesn't support @code{restrict}, it will be removed from
+this definition.
+
+@cindex Data type
+@item uint8_t type
+A fixed code (integer) used to identify the type of data in @code{array}
+(see @ref{Numeric data types}). For the list of acceptable values to this
+variable, please see @ref{Library data types}.
+
+@item size_t ndim
+The dataset's number of dimensions.
+
+
+@cindex Fortran
+@cindex FITS standard
+@cindex Standard, FITS
+@item size_t *dsize
+The size of the dataset along each dimension. This is an array (with
+@code{ndim} elements), of positive integers in row-major
+order@footnote{Also see
+@url{https://en.wikipedia.org/wiki/Row-_and_column-major_order}.}  (based
+on C). When a data file is read into memory with Gnuastro's libraries, this
+array is dynamically allocated based on the number of dimensions that the
+dataset has.
+
+It is important to remember that C's row-major ordering is the opposite of
+the FITS standard which is in column-major order: in the FITS standard the
+fastest dimension's size is specified by @code{NAXIS1}, and slower
+dimensions follow. The FITS standard was defined mainly based on the
+Fortran language which is the opposite of C's approach to multi-dimensional
+arrays (and also starts counting from 1 not 0). Hence if a FITS image has
+@code{NAXIS1==20} and @code{NAXIS2==50}, the @code{dsize} array must be
+filled with @code{dsize[0]==50} and @code{dsize[1]==20}.
+
+The fastest dimension is the one that is contiguous in memory: to increment
+by one along that dimension, just go to the next element in the array. As
+we go to slower dimensions, the number of memory cells we have to skip for
+an increment along that dimension becomes larger.
+
+@item size_t size
+The total number of elements in the dataset. This is actually a
+multiplication of all the values in the @code{dsize} array, so it is not an
+indepenent parameter. However, low-level operations with the dataset
+(irrespective of its dimensionality) commonly need this number, so this
+element is designed to avoid calculating it everytime.
+
+@item char *mmapname
+Name of file hosting the @code{mmap}'d contents of @code{array}. If the
+value of this variable is @code{NULL}, then the contents of @code{array}
+are actually stored in RAM, not in a file on the HDD/SSD. See the
+description of @code{minmapsize} below for more.
+
+If a file is used, it will be kept in the hidden @file{.gnuastro} directory
+with a randomly selected name to allow multiple arrays to be kept there at
+the same time. When @code{gal_data_free} is called the randomly named file
+will be deleted.
+
+@item size_t minmapsize
+The minimum size of an array (in bytes) to store the contents of
+@code{array} as a file (on the non-volatile HDD/SSD), not in RAM. This can
+be very useful for large datasets which can be very memory intensive and
+the user's hardware RAM might not be sufficent to keep/process it. A random
+filename is assigned to the array which is available in the @code{mmapname}
+element of @code{gal_data_t} (above), see there for more.
+
+When this variable has a value of @code{0} (zero), any allocated
+@code{array} will actually be in a file (not in RAM). When the value is
+@code{-1} (largest possible number in the unsigned types including
+@code{size_t}) the array will be definitely allocated in RAM.
+
+Please note that using a non-volatile file instead of RAM will
+significantly increase the programs running time, especially on HDDs. So it
+is best to give this option very large values (depending on how much memory
+you will need for a given input). For example your processing might involve
+a copy of the the input (possibly to a wider data type which takes more
+bytes for each element), so take all such issues into
+consideration. @code{minmapsize} is actually stored in each
+@code{gal_data_t}, so it can be passed on to derivate datasets.
+
+@item nwcs
+The number of WCS coordinate representations (for WCSLIB).
+
+@item struct wcsprm *wcs
+The main WCSLIB structure keeping all the relevant information necessary
+for WCSLIB to do its processing and convert data-set positions into
+real-world positions. When it is given a @code{NULL} value, all posssible
+WCS calculations/measurements will be ignored.
+
+@item uint8_t flag
+Bit-wise flags to describe general properties of the dataset. The number of
+bytes available in this flag is stored in the @code{GAL_DATA_FLAG_SIZE}
+macro. Note that you should use bit-wise operators@footnote{See
+@url{https://en.wikipedia.org/wiki/Bitwise_operations_in_C}.} to check
+these flags. The currently recognized bits are stored in these macros:
+
+@table @code
+
+@cindex Blank data
+@item GAL_DATA_FLAG_BLANK_CH
+Marking that the dataset has been checked for blank values. Therefore, the
+value of the bit in @code{GAL_DATA_FLAG_HASBLANK} is relibable. Without
+this bit, when a dataset doesn't have any blank values (and this has been
+checked), the @code{GAL_DATA_FLAG_HASBLANK} bit will be zero so a checker
+has no way to know if this zero is real or if no check has been done yet.
+
+@item GAL_DATA_FLAG_HASBLANK
+This bit has a value of @code{1} when the given dataset has blank
+values. If this bit is @code{0} and @code{GAL_DATA_FLAG_BLANK_CH} is
+@code{1}, then the dataset has been checked and it didn't have any blank
+values, so there is no more need for further checks.
+
+@item GAL_DATA_FLAG_SORT_CH
+Marking that the dataset is already checked for being sorted or not and
+thus that the possible @code{0} values in @code{GAL_DATA_FLAG_SORTED_I} and
+@code{GAL_DATA_FLAG_SORTED_D} are meaningful.
+
+@item GAL_DATA_FLAG_SORTED_I
+This bit has a value of @code{1} when the given dataset is sorted in an
+increasing manner. If this bit is @code{0} and @code{GAL_DATA_FLAG_SORT_CH}
+is @code{1}, then the dataset has been checked and wasn't sorted
+(increasing), so there is no more need for further checks.
+
+@item GAL_DATA_FLAG_SORTED_D
+This bit has a value of @code{1} when the given dataset is sorted in a
+decreasing manner. If this bit is @code{0} and @code{GAL_DATA_FLAG_SORT_CH}
+is @code{1}, then the dataset has been checked and wasn't sorted
+(decreasing), so there is no more need for further checks.
+
+@end table
+
+The macro @code{GAL_DATA_FLAG_MAXFLAG} contains the largest internally used
+bit-position. Higher-level flags can be defined with the bit-wise shift
+operators using this macro to define internal flags for libraries/programs
+that depend on Gnuastro without causing any possible conflict with the
+internal flags discussed above or having to check the values manually on
+every release.
+
+
+@item int status
+A context-specific status values for this data-structure. This integer will
+not be set by Gnuastro's libraries. You can use it keep some additional
+information about the dataset (with integer constants) depending on your
+applications.
+
+@item char *name
+The name of the dataset. If the dataset is a multi-dimensional array and
+read/written as a FITS image, this will be the value in the @code{EXTNAME}
+FITS keyword. If the dataset is a one-dimensional table column, this will
+be the column name. If it is set to @code{NULL} (by default), it will be
+ignored.
+
+@item char *unit
+The units of the dataset (for example @code{BUNIT} in the standard FITS
+keywords) that will be read from or written to files/tables along with the
+dataset. If it is set to @code{NULL} (by default), it will be ignored.
+
+@item char *comment
+Any further explanation about the dataset which will be written to any
+output file if present.
+
+@item disp_fmt
+Format to use for printing each element of the dataset to a plain text
+file, the acceptable values to this element are defined in @ref{Table input
+output}. Based on C's @code{printf} standards.
+
+@item disp_width
+Width of printing each element of the dataset to a plain text file, the
+acceptable values to this element are defined in @ref{Table input
+output}. Based on C's @code{printf} standards.
+
+@item disp_precision
+Width of printing each element of the dataset to a plain text file, the
+acceptable values to this element are defined in @ref{Table input
+output}. Based on C's @code{printf} standards.
+
+@item gal_data_t *next
+Through this pointer, you can link a @code{gal_data_t} with other datasets
+related datasets, for example the different columns in a dataset each have
+one @code{gal_data_t} associate with them and they are linked to each other
+using this element. There are several functions described below to
+facilitate using @code{gal_data_t} as a linked list. See @ref{Linked lists}
+for more on these wonderful high-level constructs.
+
+@item gal_data_t *block
+Pointer to the start of the complete allocated block of memory. When this
+pointer is not @code{NULL}, the dataset is not treated as a contiguous
+patch of memory. Rather, it is seen as covering only a portion of the
+larger patch of memory that @code{block} points to.
+
+In many contexts, it is desirable to slice the dataset into subsets or
+tiles (not necessarily overlapping). In such a way that you can work on
+each tile independently. One method would be to copy that region to a
+separate allocated space, but in many contexts this isn't necessary and
+infact can be a big burden on CPU/Memory usage. The @code{block} pointer in
+@code{gal_data_t} is defined for such situations: where allocation is not
+necessary. You just want to read the data or write to it independently (or
+in coordination with) other regions of the dataset. Added with parallel
+processing, this can greatly improve the time/memory consumption.
+
+See the figure below for example: assume the @code{larger} dataset is a
+contiguous block of memory that you are interpretting as a 2D array. But
+you only want to work on the smaller @code{tile} region.
 
 @example
-#include <stdio.h>
-#include <stdlib.h>
-#include <gnuastro/fits.h>
-#include <gnuastro/statistics.h>
-
-int
-main(void)
-@{
-  size_t i;
-  float *farray;
-  double sum=0.0f;
-  gal_data_t *image;
-  char *filename="img.fits", *hdu="1";
-
-  /* Read `img.fits' (HDU: 1) as a float32 array. */
-  image=gal_fits_img_read_to_type(filename, hdu,
-                                  GAL_TYPE_FLOAT32, -1);
-
-  /* Use the allocated space as a single precision floating
-   * point array (recall that `image->array' has `void *'
-   * type, so it is not directly usable. */
-  farray=image->array;
-
-  /* Calculate the sum of all the values. */
-  for(i=0; i<image->size; ++i)
-    sum += farray[i];
-
-  /* Report the sum. */
-  printf("Sum of values in %s (hdu %s) is: %f\n",
-         filename, hdu, sum);
-
-  /* Clean up and return. */
-  gal_data_free(image);
-  return EXIT_SUCCESS;
-@}
+                            larger
+              ---------------------------------
+              |                               |
+              |              tile             |
+              |           ----------          |
+              |           |        |          |
+              |           |_       |          |
+              |           |*|      |          |
+              |           ----------          |
+              |       tile->block = larger    |
+              |_                              |
+              |*|                             |
+              ---------------------------------
 @end example
+
+To use @code{gal_data_t}'s @code{block} concept, you allocate a
+@code{gal_data_t *tile} which is initialized with the pointer to the first
+element in the sub-array (as its @code{array} argument). Note that this is
+not necessarily the first element in the larger array. You can set the size
+of the tile along with the initialization as you please. Recall that, when
+given a non-@code{NULL} pointer as @code{array}, @code{gal_data_initialize}
+(and thus @code{gal_data_alloc}) do not allocate any space and just uses
+the given pointer for the new @code{array} element of the
+@code{gal_data_t}. So your @code{tile} data structure will not be pointing
+to a separately allocated space.
+
+After the allocation is done, you just point @code{tile->block} to the
+@code{larger} dataset which hosts the full block of memory. Gnuastro's
+library will check the @code{block} pointer of their input dataset to see
+how to deal with dimensions and increments so they can always remain within
+the tile, see @ref{Tessellation library}.
+
+Since the block structure is defined as a pointer, arbitrary levels of
+tesselation/griding are possible (@code{tile->block} may itself be a tile
+in an even larger allocated space). Therefore, just like a linked-list (see
+@ref{Linked lists}), it is important to have the @code{block} pointer of
+the largest dataset set to @code{NULL}. Normally, you won't have to worry
+about this, because @code{gal_data_initialize} (and thus
+@code{gal_data_alloc}) will set the @code{block} element to @code{NULL} by
+default (just remember not to change it). You can then only change the
+@code{block} element for the tiles you define over the allocated space.
+
+The functions in @ref{Tessellation library} are defined to help you most
+effectively use/check/define a tessellation or tiles. This approach to
+dealing with parts of a larger block was inspired from the way the GNU
+Scientific Library (GSL) does it in its ``Vectors and Matrices'' chapter.
 
 @end table
 
 
+@node Basic dataset functions,  , Generic data container, Library data container
+@subsubsection Basic dataset functions
 
-@node Library data types, Arithmetic on datasets, Library data container, Gnuastro library
+Gnuastro's main data container was defined in @ref{Generic data container},
+the functions listed in this section describe the most basic operations on
+@code{gal_data_t}, operations related to the size, allocation,
+initializations, copying, changing types and etc. The first class of
+functions discussed below are for size, allocation and initialization.
+
+@deftypefun int gal_data_dsize_is_different (gal_data_t @code{*first}, gal_data_t @code{*second})
+Return @code{1} (one) if the two datasets don't have the same size along
+all dimensions. This function will also return @code{1} when the number of
+dimensions of the two datasets are different.
+@end deftypefun
+
+@deftypefun {void *} gal_data_ptr_increment (void @code{*pointer}, size_t @code{increment}, uint8_t @code{type})
+Return a pointer to an element that is @code{increment} elements ahead of
+@code{pointer}, assuming each element has type of @code{type} (for the type
+codes, see @ref{Library data types}).
+
+When working with the @code{array} elements of @code{gal_data_t}, we are
+actually dealing with @code{void *} pointers. However, pointer arithmetic
+doesn't apply to @code{void *}, because the system doesn't know how many
+bytes there are in each element to increment the pointer respectively. This
+function will use the given @code{type} to calculate where the incremented
+element is located in memory.
+@end deftypefun
+
+@deftypefun size_t gal_data_ptr_dist (void @code{*earlier}, void @code{*later}, uint8_t @code{type})
+Return the number of elements between @code{earlier} and @code{later}
+assuming each element has a type defined by @code{type} (for the type
+codes, see @ref{Library data types}).
+@end deftypefun
+
+@deftypefun {void *} gal_data_malloc_array (uint8_t @code{type}, size_t @code{size})
+Allocate an array of type @code{type} with @code{size} elements in RAM (for
+the type codes, see @ref{Library data types}). This is effectively just a
+wrapper around C's @code{malloc} function but takes Gnuastro's integer type
+codes and will also abort with an error if there the allocation was not
+successful.
+@end deftypefun
+
+@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size})
+Allocate and clear (initialize to zero) an array of type @code{type} with
+@code{size} elements in RAM (for the type codes, see @ref{Library data
+types}). This is effectively just a wrapper around C's @code{calloc}
+function but takes Gnuastro's integer type codes and will also abort with
+an error if there the allocation was not successful.
+@end deftypefun
+
+@deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+
+Initialize the given data structure (@code{data}) with all the given
+values. Note that the raw input @code{gal_data_t} must already have been
+allocated before calling this function. For a description of each variable
+see @ref{Generic data container}. It will set the values and do the
+necessary allocations. If they aren't @code{NULL}, all input arrays
+(@code{dsize}, @code{wcs}, @code{name}, @code{unit}, @code{comment}) are
+separately copied (allocated) by this function for usage in @code{data}, so
+you can safely use one value to initialize many datasets or use statically
+allocated variables in this function call. Once you are done with the
+dataset, you can clean all the allocated spaces with
+@code{gal_data_free_contents}.
+
+If @code{array} is not @code{NULL}, it will be directly copied into
+@code{data->array} and no new space will be allocated for the array of this
+dataset, this has many low-level advantages and can be used to work on
+regions of a dataset instead of the whole allocated array (see the
+description under @code{block} in @ref{Generic data container} for one
+example). If the given pointer is not the start of an allocated block of
+memory or it is used in multiple datasets, be sure to set it to @code{NULL}
+(with @code{data->array=NULL}) before cleaning up with
+@code{gal_data_free_contents}.
+@end deftypefun
+
+@deftypefun {void *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+
+Dynamically allocate a @code{gal_data_t} and initialize it will all the
+given values. See the description of @code{gal_data_initialize} and
+@ref{Generic data container} for more information. This function will often
+be the most frequently used because it allocates the @code{gal_data_t}
+hosting all the values @emph{and} initializes it. Once you are done with
+the dataset, be sure to clean up all the allocated spaces with
+@code{gal_data_free}.
+@end deftypefun
+
+@deftypefun void gal_data_free_contents (gal_data_t @code{*data})
+Free all the non-@code{NULL} pointers in @code{gal_data_t}, for a complete
+description of the @code{gal_data_t} contents, see @ref{Generic data
+container}.
+@end deftypefun
+
+@deftypefun void gal_data_free (gal_data_t @code{*data})
+Free all the non-@code{NULL} pointers in @code{gal_data_t}, then free the
+actual data structure.
+@end deftypefun
+
+@code{gal_data_t} is a very versatile structure that can be used in many
+higher-level contexts. For example you can have an array of
+@code{gal_data_t} structures when several @code{gal_data_t}s are
+related. The functions below are defined to create a cleared array of data
+structures and to free them.
+
+@deftypefun {gal_data_t *} gal_data_array_calloc (size_t @code{size})
+Allocate an array of @code{gal_data_t} with @code{size} elements. This
+function will also initialize all the values (@code{NULL} for pointers and
+0 for other types). You can use @code{gal_data_initialize} to fill each
+element of the array. The following code snippet is one example of using
+arrays of @code{gal_data_t}.
+
+@example
+size_t i;
+gal_data_t *dataarr;
+dataarr=gal_data_array_calloc(10);
+for(i=0;i<10;++i) gal_data_initialize(&dataarr[i], ...);
+...
+gal_data_array_free(dataarr, 10, 1);
+@end example
+@end deftypefun
+
+@deftypefun void gal_data_array_free (gal_data_t @code{*dataarr}, size_t @code{num}, int @code{free_array})
+Free all the @code{num} elements within @code{dataarr} and the actual
+allocated array. If @code{free_array} is not zero, then the @code{array}
+element of all the datasets will also be freed, see @ref{Generic data
+container}.
+@end deftypefun
+
+@node Library data types, Table input output, Library data container, Gnuastro library
 @subsection Library data types (@file{type.h})
 
 This header defines basic type identifiers and functions relating to the
 different types.
 
-@node Arithmetic on datasets, Bounding box, Library data types, Gnuastro library
+@node Table input output, Arithmetic on datasets, Library data types, Gnuastro library
+@subsection Table input output (@file{table.h})
+
+Functions to read columns from/to tables.
+
+@node Arithmetic on datasets, Tessellation library, Table input output, Gnuastro library
 @subsection Arithmetic on datasets (@file{arithmetic.h})
 
+@node Tessellation library, Bounding box, Arithmetic on datasets, Gnuastro library
+@subsection Tessellation library (@file{tile.h})
 
-@node Bounding box, FITS files, Arithmetic on datasets, Gnuastro library
+
+@node Bounding box, FITS files, Tessellation library, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporting a the bounding box of certain inputs are
@@ -18221,6 +18588,82 @@ first FITS axis, or the horizontal axis when viewed in SAO ds9.
 Given the WCS structure @code{wcs} calculate the pixel area in
 arcsec-squared.
 @end deftypefun
+
+@node Library demo programs,  , Gnuastro library, Libraries
+@section Library demo programs
+
+In this final section of @ref{Libraries}, we give some example Gnuastro
+programs to demonstrate various features in the library. All these programs
+have been tested and once Gnuastro is installed you can compile and run
+them with with the program-like shell function that is described in
+@ref{Automatic linking script}. If you don't have any FITS file to
+experiment on, you can use those that are generated by Gnuastro after
+@command{make check} in the @file{tests/} directory, see @ref{Quick start}.
+
+
+@menu
+* Library demo - reading a image::
+@end menu
+
+@node Library demo - reading a image,  , Library demo programs, Library demo programs
+@subsection Library demo - reading a FITS image
+
+The following simple program demonstrates how to read a FITS image into
+memory and use the @code{void *array} pointer in of @ref{Generic data
+container}. For easy linking/compilation of this program along with a first
+run see @ref{Automatic linking script}. Before running, also change the
+@code{filename} and @code{hdu} variable values to specify an existing FITS
+file and/or extension/HDU.
+
+This is just intended to demonstrate how to use the @code{array} pointer of
+@code{gal_data_t}. Hence it doesn't do important sanity checks, for example
+in real datasets you may also have blank pixels. In such cases, this
+program will return a NaN value (see @ref{Blank pixels}). So for general
+statistical information of a dataset, it is much better to use Gnuastro's
+@ref{Statistics} program which can deal with blank pixels any many other
+issues in a generic dataset.
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+#include <gnuastro/fits.h> /* includes gnuastro's data.h and type.h */
+#include <gnuastro/statistics.h>
+
+int
+main(void)
+@{
+  size_t i;
+  float *farray;
+  double sum=0.0f;
+  gal_data_t *image;
+  char *filename="img.fits", *hdu="1";
+
+
+  /* Read `img.fits' (HDU: 1) as a float32 array. */
+  image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+
+
+  /* Use the allocated space as a single precision floating
+   * point array (recall that `image->array' has `void *'
+   * type, so it is not directly usable. */
+  farray=image->array;
+
+
+  /* Calculate the sum of all the values. */
+  for(i=0; i<image->size; ++i)
+    sum += farray[i];
+
+
+  /* Report the sum. */
+  printf("Sum of values in %s (hdu %s) is: %f\n",
+         filename, hdu, sum);
+
+
+  /* Clean up and return. */
+  gal_data_free(image);
+  return EXIT_SUCCESS;
+@}
+@end example
 
 
 
