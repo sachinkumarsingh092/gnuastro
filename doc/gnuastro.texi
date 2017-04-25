@@ -527,17 +527,23 @@ Review of library fundamentals
 Gnuastro library
 
 * Configuration information::   General information about library config.
+* Library data container::
+* Library data types::
+* Arithmetic on datasets::
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
+* Text files::
 * Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
-* Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
-* Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
 * World Coordinate System::     Dealing with the world coordinate system.
+
+Data container (@file{data.h})
+
+* Data container type::
 
 FITS files (@file{fits.h})
 
@@ -16395,16 +16401,47 @@ you feel all these linkings can be confusing, please have a look at
 The number and order of libraries that are necessary for linking a program
 with Gnuastro library might be too confusing when you need to compile a
 small program for one particular job (with one source file). To solve this
-problem, please add these lines to your @file{~/.bashrc} with a text editor
-and replace @code{PREFIX} with Gnuastro's installation directory (see
-@ref{Installation directory}).
+problem, please add the following lines to your @file{~/.bashrc} with a
+text editor and replace @code{PREFIX} with Gnuastro's installation
+directory (see @ref{Installation directory}, if you haven't changed it the
+installation directory explicity at installation, put @file{/usr/local} in
+place of @code{PREFIX}). Also copy the comments to help readability later.
 
 @example
-# Compile and correctly link Gnuastro related programs
-# example:
-#    $ gnuastro-gcc myprog "-lfirst -lsecond"
-function gnuastro-gcc @{
-  libtool --mode=link gcc $1.c $2 PREFIX/lib/libgnuastro.la -o $1
+# Program-like function to compile and run (once) programs that use
+# the Gnuastro library. The general usage pattern is:
+#
+#     $ astcompilerun SOURCE  [ARGUMENTS]  [OTHER-LIBRARIES]
+#
+#
+#   SOURCE: the name of the `.c' source file without the `.c', for
+#      example, for `myprog.c', SOURCE would be `myprog'.
+#
+#   ARGUMENTS: any arguments to run the program with after
+#      compilation. If there are multiple arguments, put them in
+#      double quotes, for example "img1.fits img2.fits". This is
+#      optional.
+#
+#   OTHER-LIBRARIES: If your program depends on any libraries other
+#      than Gnuastro's dependencies. For example if it needs libfirst
+#      and libsecond, use "-lfirst -lsecond". This is optional.
+#
+# When there are no arguments and no libraries other than Gnuastro's
+# dependencies, you can simply run this command (when your source is
+# in `myprog.c'
+#
+#     $ astcompilerun myprog
+#
+function astcompilerun @{
+  echo "---- compilation command ----"
+  if libtool --mode=link gcc $1.c $3 PREFIX/lib/libgnuastro.la -o $1
+    then
+      echo "-----------------------------"
+      echo " \"$1\" created in this directory and will be run below."
+      echo " For later runs in this directory, run: \"\$ ./$1 $2\""
+      echo "-----------------------------"
+      ./$1 $2
+  fi
 @}
 @end example
 
@@ -16418,7 +16455,7 @@ you want to compile a C program that uses Gnuastro library (for example
 contains the source file:
 
 @example
-$ gnuastro-gcc myprog
+$ astcompilerun myprog
 @end example
 
 @noindent
@@ -16430,10 +16467,8 @@ $ gnuastro-gcc myprog "-lfirst -lsecond"
 @end example
 
 @noindent
-If you also want to execute the compiled program without typing a second
-command, add @command{&& ./myprog} to either of the lines above, like the
-example below. If your program can take arguments, then you can also
-include them afterwards.
+If your program can take arguments, then you can also include them
+afterwards.
 
 @example
 $ gnuastro-gcc myprog && ./myprog
@@ -16443,31 +16478,30 @@ $ gnuastro-gcc myprog && ./myprog
 @node Gnuastro library,  , Review of library fundamentals, Libraries
 @section Gnuastro library
 
-Gnuastro library's exported constructs (functions, macros, data structures,
-or global variables) are classified by context into multiple header files
-(see @ref{Headers})@footnote{Within Gnuastro's source, all installed
-@file{.h} files in @file{lib/gnuastro/} are accompanied by a @file{.c} file
-in @file{/lib/}.}. In this section, the functions in each header will be
-discussed under a separate sub-section, which includes the name of the
-header. Assuming a function declaration is in @file{headername.h}, you can
-include its declaration in your source code with:
+Gnuastro library's programming constructs (function declarations, macros,
+data structures, or global variables) are classified by context into
+multiple header files (see @ref{Headers})@footnote{Within Gnuastro's
+source, all installed @file{.h} files in @file{lib/gnuastro/} are
+accompanied by a @file{.c} file in @file{/lib/}.}. In this section, the
+functions in each header will be discussed under a separate sub-section,
+which includes the name of the header. Assuming a function declaration is
+in @file{headername.h}, you can include its declaration in your source code
+with:
 
 @example
 # include <gnuastro/headername.h>
 @end example
 
 @noindent
-The names of all constructs are prefixed with @code{gal_headername_} (or
-@code{GAL_HEADERNAME_} for macros). The @code{gal_} prefix stands for
-@emph{G}NU @emph{A}stronomy @emph{L}ibrary. The @code{headername} prefix is
-replaced by the header file name (without the @file{.h}) which contains the
-construct.
+The names of all constructs in @file{headername.h} are prefixed with
+@code{gal_headername_} (or @code{GAL_HEADERNAME_} for macros). The
+@code{gal_} prefix stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary.
 
-All Gnuastro library functions are compiled into a single file which can be
+Gnuastro library functions are compiled into a single file which can be
 linked on the command-line with the @option{-lgnuastro} option, (see
 @ref{Linking} and @ref{Summary and example on libraries} for an
-introduction). Gnuastro library is a high-level library which depends on
-lower level libraries for some operations (see
+introduction on linking and example). Gnuastro library is a high-level
+library which depends on lower level libraries for some operations (see
 @ref{Dependencies}). Therefore if at least one of Gnuastro's functions in
 your program use functions from the dependencies, you will also need to
 link those dependencies after linking with Gnuastro. The outside libraries
@@ -16483,33 +16517,33 @@ your exciting science.
 @strong{Libraries are still under heavy development: } Gnuastro was
 initially created to be a collection of command-line programs. However, as
 the programs and their the shared functions grew, internal (not installed)
-libraries were added. With the 0.2 release, the libraries are
-install able. Because of this history in these early phases, the libraries
-are not fully programmer friendly yet: they abort the program on an error,
-their naming and arguments are not fully uniform, or modular, and most of
-the interesting functions (that are currently only used within one program)
-are still internal to the program. During the next releases, Gnuastro's
-library structure will undergo significant evolution to address all these
-problems. It will stabilize with the removal of this notice. Check the
-@file{NEWS} file for interface changes.
+libraries were added. Since the 0.2 release, the libraries are
+installable. Hence the libraries are currently under heavy development and
+will significantly evolve between releases and will become more mature and
+stable in due time. It will stabilize with the removal of this
+notice. Check the @file{NEWS} file for interface changes. If you use the
+Info version of this manual (see @ref{Info}), you don't have to worry: the
+documentation will correspond to your installed version.
 @end cartouche
 
 @menu
 * Configuration information::   General information about library config.
+* Library data container::
+* Library data types::
+* Arithmetic on datasets::
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
+* Text files::
 * Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
-* Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
-* Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
 * World Coordinate System::     Dealing with the world coordinate system.
 @end menu
 
-@node Configuration information, Bounding box, Gnuastro library, Gnuastro library
+@node Configuration information, Library data container, Gnuastro library, Gnuastro library
 @subsection Configuration information (@file{config.h})
 
 The @file{gnuastro/config.h} header contains information about the full
@@ -16517,8 +16551,8 @@ Gnuastro installation on your system. Gnuastro developers should note that
 this is the only header that is not available within Gnuastro, it is only
 available to a Gnuastro library user @emph{after} installation. Within
 Gnuastro, @file{config.h} (which is included in every Gnuastro @file{.c}
-file, see @ref{Coding conventions}) should have more than enough
-information about the overall Gnuastro installation.
+file, see @ref{Coding conventions}) has more than enough information about
+the overall Gnuastro installation.
 
 @deffn Macro GAL_CONFIG_VERSION
 This macro can be used as a string
@@ -16542,25 +16576,192 @@ char *gnuastro_version=GAL_CONFIG_VERSION;
 @deffn Macro GAL_CONFIG_HAVE_LIBGIT2
 Libgit2 is an optional dependency of Gnuastro (see @ref{Optional
 dependencies}). When it is installed and detected at configure time, this
-macro will have a value of @code{1}. Otherwise, it will have a value of
-@code{0}. Gnuastro also comes with some wrappers to make it easier to use
-libgit2 (see @ref{Git wrappers}).
+macro will have a value of @code{1} (one). Otherwise, it will have a value
+of @code{0} (zero). Gnuastro also comes with some wrappers to make it
+easier to use libgit2 (see @ref{Git wrappers}).
 @end deffn
 
+
+@deffn Macro GAL_CONFIG_HAVE_WCSLIB_VERSION
+WCSLIB is the reference library for world coordinate system transformation
+(see @ref{WCSLIB} and @ref{World Coordinate System}). However, only more
+recent versions of WCSLIB also provide its version number. If the WCSLIB
+that is installed on the system provides its version (through the possibly
+existing @code{wcslib_version} function), this macro will have a value of
+one, otherwise it will have a value of zero.
+@end deffn
 
 @deffn Macro GAL_CONFIG_HAVE_PTHREAD_BARRIER
 The POSIX threads standard define barriers as an optional
-requirement. Therefore, some operating systems choose to not include
-it. While installing Gnuastro, we check if your system has this construct
-and if so, we give this macro a value of @code{1}, otherwise it will have a
-value of @code{0}. see @ref{Implementation of pthread_barrier} for more.
+requirement. Therefore, some operating systems choose to not include it. As
+one of the @command{./configure} step checks, Gnuastro we check if your
+system has this POSIX thread barriers. If so, this macro will have a value
+of @code{1}, otherwise it will have a value of @code{0}. see
+@ref{Implementation of pthread_barrier} for more.
 @end deffn
 
+@deffn Macro GAL_CONFIG_BIN_OP_UINT8
+@deffnx Macro GAL_CONFIG_BIN_OP_INT8
+@deffnx Macro GAL_CONFIG_BIN_OP_UINT16
+@deffnx Macro GAL_CONFIG_BIN_OP_INT16
+@deffnx Macro GAL_CONFIG_BIN_OP_UINT32
+@deffnx Macro GAL_CONFIG_BIN_OP_INT32
+@deffnx Macro GAL_CONFIG_BIN_OP_UINT64
+@deffnx Macro GAL_CONFIG_BIN_OP_INT64
+@deffnx Macro GAL_CONFIG_BIN_OP_FLOAT32
+@deffnx Macro GAL_CONFIG_BIN_OP_FLOAT64
+If biniary arithmetic operators were configured for any type, the
+respective macro will have a value of @code{1} (one), otherwise its value
+will be @code{0} (zero). Please see the similar configure-time options in
+@ref{Gnuastro configure options} for a thorough explanation. These are only
+relevant for you if you intend to use the binary operators of
+@ref{Arithmetic on datasets}
+@end deffn
+
+@cindex 32-bit
+@cindex 64-bit
+@cindex bit-32
+@cindex bit-64
+@deffn Macro GAL_CONFIG_SIZEOF_SIZE_T
+The size of (number of bytes in) the system's @code{size_t} type. Its value
+is either 4 or 8 for 32-bit and 64-bit systems. You can also get this value
+with the expression `@code{sizeof size_t}' without having to include this
+header.
+@end deffn
+
+@node Library data container, Library data types, Configuration information, Gnuastro library
+@subsection Data container (@file{data.h})
+
+Astronomical datasets have various dimensions, for example 1D spectra or
+table columns, 2D images, or 3D Integral field data cubes. Datasets can
+also have various numeric data types, depending on the operation/purpose,
+for example processed images are in commonly in floating point, but their
+mask images are integers using bit-wise flags to identify certain classes
+of special pixels, see @ref{Numeric data types}). Certain other information
+about a dataset are also commonly necessary, for example the units of the
+dataset, the name of the dataset and some comments. To deal with any
+generic dataset, Gnuastro defines the @code{gal_data_t} type.
+
+@menu
+* Data container type::
+@end menu
+
+@node Data container type,  , Library data container, Library data container
+@subsubsection Data container type (@code{gal_data_t})
+
+For a generic operation on any dataset (with various dimensions, numeric
+data types, units and higher-level structures), Gnuastro defines the
+@code{gal_data_t} type which is the main input/output of many Gnuastro's
+library functions. It is defined in @file{gnuastro/data.h}. If you will be
+using (`@code{# include}'ing) those libraries, you don't need to include
+this header explicity, it is already included by any library header that
+uses @code{gal_data_t}.
+
+@deftp {Type (C @code{struct})} gal_data_t
+The main container for datasets in Gnuastro. It can host data of any
+dimensionality, with any numeric data type. It is actually a structure, but
+@code{typedef}'d as a new type to avoid having to write the @code{struct}
+before any declaration. The actual structure is shown below which is
+followed by a description of each element.
+
+@example
+typedef struct gal_data_t
+@{
+  void     *restrict array;  /* Basic array information.   */
+  uint8_t             type;
+  size_t              ndim;
+  size_t            *dsize;
+  size_t              size;
+  char           *mmapname;
+  size_t        minmapsize;
+
+  int                 nwcs;  /* WCS information.           */
+  struct wcsprm       *wcs;
+
+  uint8_t             flag;  /* Content description.       */
+  int               status;
+  char               *name;
+  char               *unit;
+  char            *comment;
+
+  int             disp_fmt;  /* For text printing.         */
+  int           disp_width;
+  int       disp_precision;
+
+  struct gal_data_t  *next;  /* For higher-level datasets. */
+  struct gal_data_t *block;
+@} gal_data_t;
+@end example
+@end deftp
+
+@noindent
+The list below contains a description for each @code{gal_data_t} element.
+
+@table @code
+@item void *restrict array
+This is the pointer to the main array of the dataset containing the raw
+data (values). All the other elements in this data-structure are actually
+meta-data enabling us to use/understand the series of values in this
+array. Since it is to use data of any type, the array is actually a
+@code{void *} pointer. A @code{void *} array is not directly usable, you
+can use a procedure like the example below to use the array in any
+type. You can compile and run this program with the script described in
+@ref{Automatic linking script}
+
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+#include <gnuastro/fits.h>
+#include <gnuastro/statistics.h>
+
+int
+main(void)
+@{
+  size_t i;
+  float *farray;
+  double sum=0.0f;
+  gal_data_t *image;
+  char *filename="img.fits", *hdu="1";
+
+  /* Read `img.fits' (HDU: 1) as a float32 array. */
+  image=gal_fits_img_read_to_type(filename, hdu,
+                                  GAL_TYPE_FLOAT32, -1);
+
+  /* Use the allocated space as a single precision floating
+   * point array (recall that `image->array' has `void *'
+   * type, so it is not directly usable. */
+  farray=image->array;
+
+  /* Calculate the sum of all the values. */
+  for(i=0; i<image->size; ++i)
+    sum += farray[i];
+
+  /* Report the sum. */
+  printf("Sum of values in %s (hdu %s) is: %f\n",
+         filename, hdu, sum);
+
+  /* Clean up and return. */
+  gal_data_free(image);
+  return EXIT_SUCCESS;
+@}
+@end example
+
+@end table
 
 
 
+@node Library data types, Arithmetic on datasets, Library data container, Gnuastro library
+@subsection Library data types (@file{type.h})
 
-@node Bounding box, FITS files, Configuration information, Gnuastro library
+This header defines basic type identifiers and functions relating to the
+different types.
+
+@node Arithmetic on datasets, Bounding box, Library data types, Gnuastro library
+@subsection Arithmetic on datasets (@file{arithmetic.h})
+
+
+@node Bounding box, FITS files, Arithmetic on datasets, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporting a the bounding box of certain inputs are
@@ -16592,7 +16793,7 @@ last pixels of the overlap will be put in @code{fpixel_o} and
 @code{lpixel_o}.
 @end deftypefun
 
-@node FITS files, Git wrappers, Bounding box, Gnuastro library
+@node FITS files, Text files, Bounding box, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -17018,7 +17219,11 @@ error notice.
 @c@end deftypefun
 
 
-@node Git wrappers, Linked lists, FITS files, Gnuastro library
+@node Text files, Git wrappers, FITS files, Gnuastro library
+@subsection Text files (@file{txt.h})
+
+
+@node Git wrappers, Linked lists, Text files, Gnuastro library
 @subsection Git wrappers (@file{git.h})
 
 @cindex Git
@@ -17054,7 +17259,7 @@ not installed or the program calling this function is not within a version
 controlled directory, then the output will be the @code{NULL} pointer.
 @end deftypefun
 
-@node Linked lists, Mesh grid for an image, Git wrappers, Gnuastro library
+@node Linked lists, Polygons, Git wrappers, Gnuastro library
 @subsection Linked lists (@file{linkedlist.h})
 
 @cindex Array
@@ -17449,222 +17654,7 @@ within the nodes will also be discarded.
 @end deftypefun
 
 
-@node Mesh grid for an image, Polygons, Linked lists, Gnuastro library
-@subsection Mesh grid for an image (@file{mesh.h})
-
-The basic concepts behind the mesh and channel grids in Gnuastro were
-explained in @ref{Tessellation}. Besides the improved measurement purposes
-introduced there, tiling an image can also greatly speed up some processing
-operations over the image, since each mesh can be given to a different
-thread and so the CPU can be working on multiple regions of the image
-simultaneously. The mesh structure and functions introduced here are
-declared in @file{gnuastro/mesh.h} and allow you to also use operate on an
-image mesh.
-
-Please note that as discussed in @ref{Gnuastro library}, most library
-functions will significantly evolve with future releases. The mesh
-structure and functions introduced here are high on this list: until now
-they were only internally used and so not much attention had been paid to
-their usability outside Gnuastro. Gnuastro's @file{lib/mesh.c} contains the
-full function definitions and is heavily commented, please also consult
-that file if the explanations here are not clear enough. However, the basic
-idea behind this structure, and the functions to manipulate data over it,
-is a powerful tool that can be generically used in many contexts. So please
-use the structure and functions here very critically and share your
-criticisms, thoughts and ideas on them. Hopefully in future releases the
-structure and functions were will evolve to become an easy to use and
-generically applicable mesh grid system.
-
-
-
-@deftp Structure gal_mesh_params
-This structure keeps all the necessary parameters for a particular mesh and
-channel grid over an image. This structure only keeps the information about
-the mesh and channel grid structure. It doesn't keep a copy of the
-different parts of the image. So when working on several images of the same
-size, you can use the same mesh structure. Its individual elements are too
-many to fully list here, if you are interested please look into the
-installed @file{gnuastro/mesh.h} header.
-
-One important component of the structure which is commonly used in the
-functions is the @code{garray}, where each mesh has a unique
-@code{gid}. @code{garray} stands for grid-array. It is used for operations
-on the mesh grid, where one value is to be assigned for each mesh. It has
-one element for each mesh in the image. However, due to the (possible)
-existence of channels (see @ref{Tessellation}), each channel needs its own
-contiguous part (group of meshes) in the full @code{garray}. Each channel
-has @code{gs0*gs1} (dimensions of meshes in each channel) elements. There
-are @code{nch} parts (or channels) in total.  In short, the meshs in each
-channel have to be contiguous to facilitate the neighbor analysis in
-interpolation and other channel specific jobs. So, the over-all structure
-can be viewed as a 3D array. The operations on the meshs might need more
-than one output, for example the mean and the standard deviation. So we
-have two @code{garray}s and two @code{nearest} arrays (for interpolation).
-@end deftp
-
-@deftypefun size_t gal_mesh_ch_based_id_from_gid (struct gal_mesh_params @code{*mp}, size_t @code{gid})
-As discussed in the description of @code{gal_mesh_params}, there are two
-internal ways to refer to a mesh (with an ID):
-
-@itemize
-@item
-By default, the mesh IDs are set based on their position within the
-channels (so the meshs in each channel are contiguous). We call this the
-channel-based mesh ID. The @code{cgarray1} and @code{cgarray2} in
-@code{gal_mesh_params} store the mesh values based on this ID. All the
-basic mesh properties, like their types and height and widths are stored
-based on this ID.
-
-@item
-If the user asks for a full image interpolation or smoothing, then two new
-arrays are created called @code{fgarray1} and @code{fgarray2}. These arrays
-keep the mesh values as they appear on the image, irrespective of which
-channel they belong to. We call this the image-based ID. The image based ID
-is contiguous over the image.
-@end itemize
-
-The @code{garray1} and @code{garray2} pointers can point to either the
-@code{cgarrays} or the @code{fgarrays}. Ideally, the user should not worry
-about what garray is pointing to. The caller knows the type of IDs they are
-using, but they don't know what to put into @code{garray}. We call the ID
-that should be put into garray the channel-based ID. It can be either of
-the two kinds above. So we have the following two functions
-@code{gal_mesh_ch_based_id_from_gid} and
-@code{gal_mesh_gid_from_ch_based_id} for changing between these IDs.
-
-The former (this function) is used when you are going over the elements in
-garray (and you are completely ignorant to which one of cgarrays or
-fgarrays garray points to) and you need the channel based IDs to get basic
-mesh information like the mesh type and size.
-@end deftypefun
-
-@deftypefun size_t gal_mesh_gid_from_ch_based_id (struct gal_mesh_params @code{*mp}, size_t @code{chbasedid})
-See the explanations in @code{gal_mesh_ch_based_id_from_gid} first. This
-function is used when you are going over the meshs through the
-channel-based IDs, but you need to know what ID to use for @code{garray}.
-@end deftypefun
-
-@deftypefun size_t gal_mesh_img_xy_to_mesh_id (struct gal_mesh_params @code{*mp}, size_t @code{x}, size_t @code{y})
-You have a pixel's position as @code{x} and @code{y} in the final image (in
-C-based dimensions) and want to know the id to be used in the
-@code{garray}s to get a value for this pixel in the mesh-grid. This
-function will return that ID. As an example, you can get the mesh value at
-a specific position in the image with:
-@example
-mp->garray[ gal_mesh_img_xy_to_mesh_id(mp, x, y) ];
-@end example
-@end deftypefun
-
-@deftypefun void gal_mesh_check_mesh_id (struct gal_mesh_params @code{*mp}, long @code{**out})
-Save the meshid of each pixel into an array the size of the original
-image. All the pixels over the mesh will get the value of the mesh ID. The
-output array @code{out} can then be written to a FITS file for
-viewing. This is mainly used for checking/debugging purposes, hence the
-@code{check} in the name.
-@end deftypefun
-
-@deftypefun void gal_mesh_check_garray (struct gal_mesh_params @code{*mp}, float @code{**out1}, float @code{**out2})
-Save the values in the @code{garray}s of the input @code{mp} structure into
-two arrays the size of the input image. All the pixels over each mesh will
-get the value corresponding to that mesh in the @code{garray}s. The output
-arrays can then be written to a FITS file for viewing. This is mainly used
-for checking/debugging purposes, hence the @code{check} in the
-name. @code{out2} will only be set if there are two @code{garray}s.
-@end deftypefun
-
-@deftypefun void gal_mesh_value_file (struct gal_mesh_params @code{*mp}, char @code{*filename}, char @code{*extname1}, char @code{*extname2}, struct wcsprm @code{*wcs}, char @code{*spack_string})
-Save the mesh grid values into the @file{filename} FITS file with
-@code{extname1} and @code{extname2} extension names (for the two possible
-@code{garrays}), a WCS structure may also optionally be given and
-@code{spack_string} is the name of your program to be written in the
-header. The output FITS file will have one pixel for each mesh, so its
-dimensions will be significantly smaller than the input image. If you want
-the mesh values in the same dimension as the input image, use
-@code{gal_mesh_check_garray}.
-@end deftypefun
-
-@deftypefun void gal_mesh_full_garray (struct gal_mesh_params @code{*mp}, int @code{reverse})
-As described in @code{gal_mesh_ch_based_id_from_gid}, the there can be two
-arrays that keep a value for each mesh in @code{gal_mesh_params}:
-@code{cgarray} and @code{fgarray}. When @code{reverse==0}, then this
-function will fill in the @code{fgarray}s using the @code{cgarray}s and
-vice-versa when @code{reverse==1}.
-@end deftypefun
-
-@deftypefun void gal_mesh_make_mesh (struct gal_mesh_params @code{*mp})
-Make the mesh structure using the basic information that must already be
-present within it. The complete list of necessary parameters are as
-follows, but note that some might not be necessary for your desired
-functionality. @code{s0}, @code{s1}, @code{ks0}, @code{ks1}, @code{nch1},
-@code{nch2}, @code{kernel}, @code{img}, @code{params}, @code{minmodeq},
-@code{mirrordist}, @code{fullsmooth}, @code{numnearest},
-@code{smoothwidth}, @code{lastmeshfrac}, @code{meshbasedcheck},
-@code{interponlyblank}, @code{fullinterpolation}, @code{numthreads}. See
-the installed @file{gnuastro/mesh.h} for a comment on each parameter within
-the @code{gal_mesh_params} structure.
-@end deftypefun
-
-@deftypefun void gal_mesh_free_mesh (struct gal_mesh_params @code{*mp})
-Free all the allocated spaces within the @code{gal_mesh_params} structure.
-@end deftypefun
-
-@deftypefun void gal_mesh_operate_on_mesh (struct gal_mesh_params @code{*mp}, void @code{*(*meshfunc)(void *)}, size_t @code{oneforallsize}, int @code{makegarray2}, int @code{initialize})
-@cindex NaN
-@cindex Pthread
-@cindex IEEE NaN
-Run the @code{meshfunc} function on each mesh in parallel. As the
-declaration above shows, @code{meshfunc} should only take one @code{void *}
-input and return one @code{void *} output. This function will setup a
-pthread environment and make @code{mp->numthreads} (a number!) calls
-@code{meshfunc} which will work on each
-mesh. @code{gal_mesh_operate_on_mesh} will return when all the threads have
-finished their work. If @code{meshfunc} needs to store more than one value
-for each mesh, then set @code{makegarray2=1}. When @code{initialize==1},
-the @code{garray}(s) will be initialized to NaN.
-
-This function is commonly used within Gnuastro (mainly in NoiseChisel, see
-@ref{NoiseChisel}), so search for its applications in the programs for
-some real-world examples. You can do this with the following command in the
-top Gnuastro source directory (after unpacking the tarball):
-@example
-grep -r gal_mesh_operate_on_mesh ./bin/*
-@end example
-@end deftypefun
-
-@deftypefun void gal_mesh_interpolate (struct gal_mesh_params @code{*mp}, char @code{*errstart})
-@cindex NaN
-@cindex IEEE NaN
-Interpolate the mesh values (@code{garray}s). After you have run a function
-on all the meshes with @code{gal_mesh_operate_on_mesh}, some meshes might
-not get any values. This function will fill the meshes that didn't get any
-values (have a value of NaN) using the meshes that received a value. The
-interpolation is done based on the nearest neighbors, specified within the
-@code{gal_mesh_params} structure.
-@end deftypefun
-
-@deftypefun void gal_mesh_smooth (struct gal_mesh_params @code{*mp})
-Smooth the mesh values arrays based on the parameters in
-@code{gal_mesh_params}.
-@end deftypefun
-
-@deftypefun void gal_mesh_spatial_convolve_on_mesh (struct gal_mesh_params @code{*mp}, float @code{**conv})
-Do spatial convolution (see @ref{Spatial domain convolution}) on each
-channel of the mesh grid independently, therefore two adjacent pixels within
-the image that are not in the same channel will not affect each other during
-the convolution.
-@end deftypefun
-
-@deftypefun void gal_mesh_change_to_full_convolution (struct gal_mesh_params @code{*mp}, float @code{*conv})
-After running @code{gal_mesh_spatial_convolve_on_mesh}, it might become
-necessary to change the convolution into a full image convolution. This
-function will do the convolution process only on the regions near the
-channel borders that need to be changed, the rest of the pixels will not be
-changed by this function.
-@end deftypefun
-
-
-
-@node Polygons, Qsort functions, Mesh grid for an image, Gnuastro library
+@node Polygons, Qsort functions, Linked lists, Gnuastro library
 @subsection Polygons (@file{polygon.h})
 
 Polygons are commonly necessary in image processing. In Gnuastro, they are
@@ -17774,7 +17764,7 @@ both polygons have to be sorted in an anti-clock-wise manner.
 
 
 
-@node Qsort functions, Spatial convolution, Polygons, Gnuastro library
+@node Qsort functions, Statistical operations, Polygons, Gnuastro library
 @subsection Qsort functions (@file{qsort.h})
 
 The C programming language comes with the @code{qsort} (Quick sort)
@@ -17851,51 +17841,13 @@ The output will be: @code{2, 0, 1, 3}.
 
 
 
-@node Spatial convolution, Statistical operations, Qsort functions, Gnuastro library
-@subsection Spatial convolution (@file{spatialconvolve.h})
-
-Convolution is a common operation in data processing and is fully explained
-in @ref{Spatial domain convolution} as part of @ref{Convolve}. We will
-therefore not explain the details, or its purpose here. The main high-level
-function here is @code{gal_spatialconvolve_convolve} which will do spatial
-convolution on multiple threads. The structure and functions introduced
-here are declared in @file{gnuastro/spatialconvolve.h}.
-
-In the first release of the Gnuastro libraries, this is the most high-level
-library since it was needed by multiple programs. In future releases this
-library will most probably merge with the frequency domain convolution
-functions to allow programmers to choose from the type of convolution they
-want. The main
-
-@deffn Structure gal_spatialconvolve_params
-This structure keeps all the basic convolution information so subsequent
-calls can be simpler. Please see the header for the details of its
-elements, complemented with comments.
-@end deffn
-
-@deftypefun void gal_spatialconvolve_pparams (float @code{*input}, size_t @code{is0}, size_t @code{is1}, float @code{*kernel}, size_t @code{ks0}, size_t @code{ks1}, size_t @code{nt}, int @code{edgecorrection}, float @code{*out}, size_t @code{*indexs}, struct gal_spatialconvolve_params @code{*scp})
-Initialize @code{gal_spatialconvolve_params} with the given arguments.
-@end deftypefun
-
-@deftypefun {void *} gal_spatialconvolve_thread (void @code{*inparam})
-This function should be passed onto @code{pthread_create} to create a new
-thread for convolution on a region of the image.
-@end deftypefun
-
-@deftypefun void gal_spatialconvolve_convolve (float @code{*input}, size_t @code{is0}, size_t @code{is1}, float @code{*kernel}, size_t @code{ks0}, size_t @code{ks1}, size_t @code{numthreads}, int @code{edgecorrection}, float @code{**out})
-Convolve @code{input} (with @code{is0*is1} pixels) with the @code{kernel}
-(with @code{ks0*ks1}) on @code{numthreads} CPU threads. If you want
-edge-correction (see @ref{Edges in the spatial domain}), then set
-@code{edgecorrection} to @code{1}, otherwise set it to @code{0}. Memory
-will be allocated for the output and the convolved image will be stored in
-@code{out}.
-@end deftypefun
 
 
 
 
 
-@node Statistical operations, Multithreaded programming, Spatial convolution, Gnuastro library
+
+@node Statistical operations, Multithreaded programming, Qsort functions, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
 This header includes a large variety of very basic statistical operators

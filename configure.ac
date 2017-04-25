@@ -180,9 +180,20 @@ AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
 
 
 
-#Gnulib checks:
+# Gnulib checks:
 gl_INIT
 
+
+
+
+# Gnulib checks for the proper name for the C99 equivalent `restrict'
+# keyword and puts it in the `ac_cv_c_restrict' variable. If none exists,
+# it will put a `no' inside of this variable. As described in the output
+# `bootstrapped/m4/gnulib-common.m4', this is only necessary until Autoconf
+# 2.70 is released. Afterwards, we can use AC_C_RESTRICT.
+AS_IF([test "x$ac_cv_c_restrict" = "xno"],
+      [gal_restrict_replace=], [gal_restrict_replace=$ac_cv_c_restrict])
+AC_SUBST(RESTRICT_REPLACEMENT, [$gal_restrict_replace])
 
 
 

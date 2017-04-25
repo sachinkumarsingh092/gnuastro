@@ -26,6 +26,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 
 
+/* The restrict keyword might not be present on some systems, so we are
+   redefining it here based on the checks in `configure.ac', see there for
+   more comments. */
+#define restrict @RESTRICT_REPLACEMENT@
+
 
 /* Configuration macros: */
 

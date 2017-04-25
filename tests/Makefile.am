@@ -114,7 +114,7 @@ if COND_MKCATALOG
 
   mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
   mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
-                             mkprof/clearcanvas.sh
+                             mkprof/clearcanvas.sh.log
 endif
 if COND_MKNOISE
   MAYBE_MKNOISE_TESTS = mknoise/addnoise.sh

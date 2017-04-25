@@ -26,8 +26,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <math.h>
-
 #include <wcslib/wcs.h>
+
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   the `restrict' replacement) is kept in `config.h' (top source
+   directory). When building a user's programs, this information is kept in
+   `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
+   start with the inclusion of `config.h' and that `gnuastro/config.h' is
+   only created at installation time (not present during the building of
+   Gnuastro). */
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
 
 #include <gnuastro/type.h>
 #include <gnuastro/linkedlist.h>

@@ -1123,7 +1123,7 @@ gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
      defined. Sometime in the future were everyone has moved to more
      recent versions of WCSLIB, we can remove this macro and its check
      in configure.ac.*/
-#ifdef GAL_CONFIG_HAVE_WCSLIB_VERSION
+#if GAL_CONFIG_HAVE_WCSLIB_VERSION == 1
   int wcslibvers[3];
   char wcslibversion[20];
   const char *wcslibversion_const;
@@ -1165,7 +1165,7 @@ gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
                   "CFITSIO version.", &status);
 
   /* Write the WCSLIB version. */
-#ifdef GAL_CONFIG_HAVE_WCSLIB_VERSION
+#if GAL_CONFIG_HAVE_WCSLIB_VERSION == 1
   wcslibversion_const=wcslib_version(wcslibvers);
   strcpy(wcslibversion, wcslibversion_const);
   fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
