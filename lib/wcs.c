@@ -287,13 +287,13 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
           "`gal_wcs_array_from_wcsprm'", size*sizeof *out);
 
   /* Fill in the array. */
-  if(wcs->altlin |= 1)          /* Has a PCi_j array. */
+  if(wcs->altlin & 0x1)        /* Has a PCi_j array. */
     {
       for(i=0;i<wcs->naxis;++i)
         for(j=0;j<wcs->naxis;++j)
           out[i*wcs->naxis+j] = wcs->cdelt[i] * wcs->pc[i*wcs->naxis+j];
     }
-  else if(wcs->altlin |= 2)     /* Has CDi_j array */
+  else if(wcs->altlin & 0x2)     /* Has CDi_j array */
     {
       for(i=0;i<size;++i)
         out[i]=wcs->cd[i];
@@ -330,7 +330,7 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
 
   /* The correction is only needed when the matrix is internally stored
      as PCi_j. */
-  if(wcs->altlin |= 1)
+  if(wcs->altlin & 1)
     {
       /* Get the pixel scale. */
       ps=gal_wcs_pixel_scale_deg(wcs);

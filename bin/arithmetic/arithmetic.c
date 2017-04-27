@@ -133,7 +133,7 @@ reversepolish(struct imgarithparams *p)
 {
   int op=0, nop=0;
   unsigned int numop, i;
-  struct gal_linkedlist_stll *token;
+  gal_list_str_t *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
   unsigned char flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
                           | GAL_ARITHMETIC_NUMOK );
@@ -310,7 +310,7 @@ reversepolish(struct imgarithparams *p)
               numop=set_number_of_operands(p, pop_operand(p, token->v),
                                            token->v);
               for(i=0;i<numop;++i)
-                gal_data_add_existing_to_ll(&d1, pop_operand(p, token->v));
+                gal_list_data_add(&d1, pop_operand(p, token->v));
               break;
 
             default:
@@ -367,7 +367,7 @@ reversepolish(struct imgarithparams *p)
   /* Clean up. Note that the tokens were taken from the command-line
      arguments, so the string within each token linked list must not be
      freed. */
-  gal_linkedlist_free_stll(p->tokens, 0);
+  gal_list_str_free(p->tokens, 0);
   free(p->operands);
 }
 

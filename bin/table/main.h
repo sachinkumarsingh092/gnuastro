@@ -45,7 +45,7 @@ struct tableparams
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
   char              *filename;  /* Input filename.                      */
-  struct gal_linkedlist_stll *columns; /* List of given columns.        */
+  gal_list_str_t     *columns;  /* List of given columns.               */
   uint8_t         information;  /* ==1, only print FITS information.    */
 
   /* Output: */

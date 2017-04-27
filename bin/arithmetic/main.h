@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 #include <gnuastro/fits.h>
-#include <gnuastro/linkedlist.h>
+#include <gnuastro/list.h>
 
 #include <gnuastro-internal/options.h>
 
@@ -68,8 +68,8 @@ struct imgarithparams
   struct gal_options_common_params cp;  /* Common parameters.           */
 
   /* Input: */
-  struct gal_linkedlist_stll   *hdus; /* List of all given HDU strings. */
-  struct gal_linkedlist_stll *tokens; /* List of all arithmetic tokens. */
+  gal_list_str_t     *hdus; /* List of all given HDU strings. */
+  gal_list_str_t   *tokens; /* List of all arithmetic tokens. */
   size_t        addcounter;  /* The number of FITS images added.        */
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */

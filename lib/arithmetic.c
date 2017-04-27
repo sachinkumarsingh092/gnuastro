@@ -139,17 +139,15 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
 
 
 
-#define ARITHMETIC_ABS_SGN(CTYPE, U0_S1) {                        \
-    CTYPE *o=out->array, *a=in->array, *af=a+in->size;            \
-    if(U0_S1)          do *o++ = abs(*a); while(++a<af);          \
-    else if(out!=in) { do *o++ = *a; while(++a<af); }             \
-  }
-
 
 /* We don't want to use the standard function for unary functions in the
    case of the absolute operator. This is because there are multiple
    versions of this function in the C library for different types, which
    can greatly improve speed. */
+#define ARITHMETIC_ABS_SGN(CTYPE, FUNC) {                          \
+    CTYPE *o=out->array, *a=in->array, *af=a+in->size;             \
+    do *o++ = FUNC(*a); while(++a<af);                             \
+  }
 static gal_data_t *
 arithmetic_abs(unsigned char flags, gal_data_t *in)
 {
@@ -163,21 +161,28 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
                          in->wcs, 0, in->minmapsize, in->name, in->unit,
                          in->comment);
 
-  /* Put the absolute value depending on the type. Note that the unsigned
-     types are already positive, so if the input is not to be freed (the
-     output must be a separate array), just copy the values.*/
+  /* Put the absolute value depending on the type. */
   switch(in->type)
     {
-    case GAL_TYPE_UINT8:   ARITHMETIC_ABS_SGN(uint8_t, 0);   break;
-    case GAL_TYPE_INT8:    ARITHMETIC_ABS_SGN(int8_t, 1);    break;
-    case GAL_TYPE_UINT16:  ARITHMETIC_ABS_SGN(uint16_t, 0);  break;
-    case GAL_TYPE_INT16:   ARITHMETIC_ABS_SGN(int16_t, 1);   break;
-    case GAL_TYPE_UINT32:  ARITHMETIC_ABS_SGN(uint32_t, 0);  break;
-    case GAL_TYPE_INT32:   ARITHMETIC_ABS_SGN(int32_t, 1);   break;
-    case GAL_TYPE_UINT64:  ARITHMETIC_ABS_SGN(uint64_t, 0);  break;
-    case GAL_TYPE_INT64:   ARITHMETIC_ABS_SGN(int64_t, 1);   break;
-    case GAL_TYPE_FLOAT32: ARITHMETIC_ABS_SGN(float, 1);     break;
-    case GAL_TYPE_FLOAT64: ARITHMETIC_ABS_SGN(double, 1);    break;
+    /* Unsigned types are already positive, so if the input is not to be
+       freed (the output must be a separate array), just copy the whole
+       array. */
+    case GAL_TYPE_UINT8:
+    case GAL_TYPE_UINT16:
+    case GAL_TYPE_UINT32:
+    case GAL_TYPE_UINT64:
+      if(out!=in) gal_data_copy_to_allocated(in, out);
+      break;
+
+    /* For the signed types, we actually have to go over the data and
+       calculate the absolute value. There are unique functions for
+       different types, so we will be using them.*/
+    case GAL_TYPE_INT8:    ARITHMETIC_ABS_SGN( int8_t,  abs   );  break;
+    case GAL_TYPE_INT16:   ARITHMETIC_ABS_SGN( int16_t, abs   );  break;
+    case GAL_TYPE_INT32:   ARITHMETIC_ABS_SGN( int32_t, labs  );  break;
+    case GAL_TYPE_INT64:   ARITHMETIC_ABS_SGN( int64_t, llabs );  break;
+    case GAL_TYPE_FLOAT32: ARITHMETIC_ABS_SGN( float,   fabsf );  break;
+    case GAL_TYPE_FLOAT64: ARITHMETIC_ABS_SGN( double,  fabs  );  break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`arithmetic_abs'", in->type);
@@ -1356,7 +1361,7 @@ static gal_data_t *
 arithmetic_from_statistics(int operator, unsigned char flags,
                            gal_data_t *input)
 {
-  gal_data_t *out;
+  gal_data_t *out=NULL;
   int ip=(flags & GAL_ARITHMETIC_INPLACE) || (flags & GAL_ARITHMETIC_FREE);
 
   switch(operator)

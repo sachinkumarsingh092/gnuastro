@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/wcs.h>
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
@@ -200,7 +201,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      gal_linkedlist_add_to_stll(&p->inputs, arg, 0);
+      gal_list_str_add(&p->inputs, arg, 0);
       ++p->numin;
       break;
 
@@ -480,16 +481,16 @@ ui_read_cols(struct cropparams *p)
   char *colname;
   size_t counter=0;
   int toomanycols=0;
+  gal_list_str_t *colstrs=NULL;
   gal_data_t *cols, *tmp, *corrtype=NULL;
-  struct gal_linkedlist_stll *colstrs=NULL;
   char *ax1col = p->mode==IMGCROP_MODE_IMG ? p->xcol : p->racol;
   char *ax2col = p->mode==IMGCROP_MODE_IMG ? p->ycol : p->deccol;
 
   /* Specify the order of columns. */
   if(p->namecol)
-    gal_linkedlist_add_to_stll(&colstrs, p->namecol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, ax1col, 0);
-  gal_linkedlist_add_to_stll(&colstrs, ax2col, 0);
+    gal_list_str_add(&colstrs, p->namecol, 0);
+  gal_list_str_add(&colstrs, ax1col, 0);
+  gal_list_str_add(&colstrs, ax2col, 0);
 
   /* Read the desired columns from the file. */
   cols=gal_table_read(p->catname, p->cathdu, colstrs, p->cp.searchin,
@@ -503,7 +504,7 @@ ui_read_cols(struct cropparams *p)
   while(cols!=NULL)
     {
       /* Pop out the top node. */
-      tmp=gal_data_pop_from_ll(&cols);
+      tmp=gal_list_data_pop(&cols);
 
       /* Note that the input was a linked list, so the output order is the
          inverse of the input order. For the position, we will store the
@@ -595,20 +596,20 @@ ui_make_log(struct cropparams *p)
   /* If central pixels are filled. */
   asprintf(&comment, "Are the central pixels filled? (1: yes, 0: no, "
            "%u: not checked)", GAL_BLANK_UINT8);
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->numout,
-                     NULL, 1, p->cp.minmapsize, "CENTER_FILLED", "bool",
-                     comment);
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->numout,
+                          NULL, 1, p->cp.minmapsize, "CENTER_FILLED",
+                          "bool", comment);
   free(comment);
 
   /* Number of images used. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT16, 1, &p->numout,
-                     NULL, 1, p->cp.minmapsize, "NUM_INPUTS", "count",
-                     "Number of input images used to make this crop.");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT16, 1, &p->numout,
+                          NULL, 1, p->cp.minmapsize, "NUM_INPUTS", "count",
+                          "Number of input images used to make this crop.");
 
   /* Row number in input catalog. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_STRING, 1, &p->numout,
-                     NULL, 1, p->cp.minmapsize, "CROP_NAME", "name",
-                     "File name of crop.");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_STRING, 1, &p->numout,
+                          NULL, 1, p->cp.minmapsize, "CROP_NAME", "name",
+                          "File name of crop.");
 }
 
 
@@ -673,7 +674,7 @@ ui_preparations(struct cropparams *p)
       /* Pop from the list of input images and get the info. */
       status=0;
       img=&p->imgs[--input_counter];
-      gal_linkedlist_pop_from_stll(&p->inputs, &img->name);
+      img->name=gal_list_str_pop(&p->inputs);
       tmpfits=gal_fits_hdu_open_type(img->name, p->cp.hdu, 0);
       gal_fits_img_info(tmpfits, &p->type, &img->ndim, &img->dsize);
       gal_wcs_read_from_fitsptr(tmpfits, &img->nwcs, &img->wcs,
@@ -845,7 +846,7 @@ ui_free_report(struct cropparams *p, struct timeval *t1)
   if(p->catname) free(p->catname);
 
   /* The arguments (note that the values were not allocated). */
-  gal_linkedlist_free_stll(p->inputs, 0);
+  gal_list_str_free(p->inputs, 0);
 
   /* Free the name/ array.  */
   if(p->name)
@@ -856,7 +857,7 @@ ui_free_report(struct cropparams *p, struct timeval *t1)
     }
 
   /* Free the log information. */
-  if(p->cp.log) gal_data_free_ll(p->log);
+  if(p->cp.log) gal_list_data_free(p->log);
 
   /* Print the final message. */
   if(!p->cp.quiet)

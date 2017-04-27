@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
@@ -240,12 +241,12 @@ ui_column_codes_ll(struct argp_option *option, char *arg,
      column means three columns. */
   if(option->key==UI_KEY_IDS)
     {
-      gal_linkedlist_add_to_ill(&p->columnids, UI_KEY_OBJID);
-      gal_linkedlist_add_to_ill(&p->columnids, UI_KEY_HOSTOBJID);
-      gal_linkedlist_add_to_ill(&p->columnids, UI_KEY_IDINHOSTOBJ);
+      gal_list_i32_add(&p->columnids, UI_KEY_OBJID);
+      gal_list_i32_add(&p->columnids, UI_KEY_HOSTOBJID);
+      gal_list_i32_add(&p->columnids, UI_KEY_IDINHOSTOBJ);
     }
   else
-    gal_linkedlist_add_to_ill(&p->columnids, option->key);
+    gal_list_i32_add(&p->columnids, option->key);
 
   /* Return NULL */
   return NULL;
@@ -328,8 +329,8 @@ static void
 ui_preparations_read_inputs(struct mkcatalogparams *p)
 {
   size_t one;
+  gal_list_i32_t *tmp;
   int readclumps=0, readwcs=0;
-  struct gal_linkedlist_ill *tmp;
   char *namestypes, **strarr=NULL;
   gal_data_t *zero, *key=gal_data_array_calloc(1);
   char *skyfile=p->skyfile ? p->skyfile : p->inputname;
@@ -909,7 +910,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
       if(p->upperlimit)
         {
           printf("  - Random number generator name: %s\n", p->rngname);
-          printf("  - Random number generator seed: %lu\n", p->seed);
+          printf("  - Random number generator seed: %"PRIu64"\n", p->seed);
         }
     }
 }

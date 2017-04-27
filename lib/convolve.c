@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/list.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/convolve.h>
@@ -566,7 +567,7 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
 
   /* Do the spatial convolution on threads. */
   gal_threads_spin_off(convolve_spatial_on_thread, &params,
-                       gal_data_num_in_ll(tiles), numthreads);
+                       gal_list_data_number(tiles), numthreads);
 
 
   /* Clean up and return the output array. */

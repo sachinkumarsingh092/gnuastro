@@ -110,7 +110,7 @@ threshold_apply_on_thread(void *in_prm)
              will help in efficiency, because the compiler can move this
              check out of the loop and only check for NaN values when we
              know the tile has blank pixels. */
-          GAL_TILE_PARSE_OPERATE({
+          GAL_TILE_PO_OISET(float, uint8_t, {
               *o = ( *i > value1[tid]
                      ? ( *i > value2[tid] ? THRESHOLD_NO_ERODE_VALUE : 1 )
                      : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
@@ -127,7 +127,7 @@ threshold_apply_on_thread(void *in_prm)
 
           /* See the explanation above the same step in the quantile
              threshold for an explanation. */
-          GAL_TILE_PARSE_OPERATE({
+          GAL_TILE_PO_OISET(float, uint8_t, {
               *o = ( ( *i - value1[tid] > p->dthresh * value2[tid] )
                      ? 1
                      : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
@@ -187,7 +187,7 @@ threshold_apply(struct noisechiselparams *p, float *value1,
 void
 threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
                          gal_data_t *inind, char *filename,
-                         struct gal_linkedlist_stll *comments)
+                         gal_list_str_t *comments)
 {
   gal_data_t *sn, *ind, *cols;
 

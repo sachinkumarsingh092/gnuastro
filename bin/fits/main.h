@@ -23,6 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 
 #include <gnuastro-internal/options.h>
@@ -52,21 +53,21 @@ enum fits_mode
 struct fitsparams
 {
   /* From the environment. */
-  struct gal_options_common_params cp;  /* Common parameters.              */
-  char                      *filename;  /* Name of input file.             */
-  struct gal_linkedlist_stll  *remove;  /* Remove extensions from a file.  */
-  struct gal_linkedlist_stll    *copy;  /* Copy extensions to output.      */
-  struct gal_linkedlist_stll     *cut;  /* Copy ext. to output and remove. */
-  uint8_t                printallkeys;  /* Print all the header keywords.  */
-  uint8_t                        date;  /* Set DATE to current time.       */
-  char                       *comment;  /* COMMENT value.                  */
-  char                       *history;  /* HISTORY value.                  */
-  struct gal_linkedlist_stll    *asis;  /* Strings to write asis.          */
-  struct gal_linkedlist_stll  *delete;  /* Keywords to remove.             */
-  struct gal_linkedlist_stll  *rename;  /* Rename a keyword.               */
-  struct gal_linkedlist_stll  *update;  /* For keywords to update.         */
-  struct gal_linkedlist_stll   *write;  /* Full arg. for keywords to add.  */
-  uint8_t                 quitonerror;  /* Quit if an error occurs.        */
+  struct gal_options_common_params cp;  /* Common parameters.     */
+  char          *filename;     /* Name of input file.             */
+  gal_list_str_t  *remove;     /* Remove extensions from a file.  */
+  gal_list_str_t    *copy;     /* Copy extensions to output.      */
+  gal_list_str_t     *cut;     /* Copy ext. to output and remove. */
+  uint8_t    printallkeys;     /* Print all the header keywords.  */
+  uint8_t            date;     /* Set DATE to current time.       */
+  char           *comment;     /* COMMENT value.                  */
+  char           *history;     /* HISTORY value.                  */
+  gal_list_str_t    *asis;     /* Strings to write asis.          */
+  gal_list_str_t  *delete;     /* Keywords to remove.             */
+  gal_list_str_t  *rename;     /* Rename a keyword.               */
+  gal_list_str_t  *update;     /* For keywords to update.         */
+  gal_list_str_t   *write;     /* Full arg. for keywords to add.  */
+  uint8_t     quitonerror;     /* Quit if an error occurs.        */
 
   /* Internal: */
   int                            mode;  /* Operating on HDUs or keywords.  */

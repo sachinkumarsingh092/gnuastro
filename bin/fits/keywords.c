@@ -89,7 +89,7 @@ keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
   while(p->rename!=NULL)
     {
       /* Pop out the top element. */
-      gal_linkedlist_pop_from_stll(&p->rename, &str);
+      str=gal_list_str_pop(&p->rename);
 
       /* Take a copy of the input string for error reporting, because
          `strtok' will write into the array. */
@@ -264,7 +264,7 @@ keywords(struct fitsparams *p)
   int status=0;
   int r=EXIT_SUCCESS;
   fitsfile *fptr=NULL;
-  struct gal_linkedlist_stll *tstll;
+  gal_list_str_t *tstll;
 
 
   /* Delete the requested keywords. */

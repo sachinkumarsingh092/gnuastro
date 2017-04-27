@@ -308,15 +308,14 @@ ui_check_options_and_arguments(struct fitsparams *p)
    keyword, so here, we tokenize them and put them into a `gal_fits_key_ll'
    list. */
 static void
-ui_fill_fits_headerll(struct gal_linkedlist_stll *input,
-                          struct gal_fits_key_ll **output)
+ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
 {
   long l, *lp;
   void *fvalue;
   double d, *dp;
+  gal_list_str_t *tmp;
   int i=0, type, vfree;
   char *c, *cf, *start, *tailptr;
-  struct gal_linkedlist_stll *tmp;
   char *original, *keyname, *value, *comment, *unit;
 
   for(tmp=input; tmp!=NULL; tmp=tmp->next)

@@ -227,10 +227,10 @@ makepixbypix(struct mkonthread *mkp)
   size_t ndim=2, dsize[2]={mkp->width[1], mkp->width[0]};
 
   uint8_t *byt;
+  gal_list_sizet_t *Q=NULL;
   int use_rand_points=1, ispeak=1;
   struct builtqueue *ibq=mkp->ibq;
   float circ_r, *img=mkp->ibq->img;
-  struct gal_linkedlist_sll *Q=NULL;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   double tolerance=mkp->p->tolerance, pixfrac, junk;
   double (*profile)(struct mkonthread *)=mkp->profile;
@@ -239,7 +239,7 @@ makepixbypix(struct mkonthread *mkp)
   double truncr=mkp->truncr, approx, hp=0.5f/mkp->p->oversample;
 
   /* lQ: Largest. sQ: Smallest in queue */
-  struct gal_linkedlist_tosll *lQ=NULL, *sQ;
+  gal_list_tosizet_t *lQ=NULL, *sQ;
 
   /* Find the nearest pixel to the profile center and add it to the
      queue. */
@@ -258,7 +258,7 @@ makepixbypix(struct mkonthread *mkp)
 
   /* Start the queue: */
   byt[p]=1;
-  gal_linkedlist_add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
+  gal_list_tosizet_add( &lQ, &sQ, p, r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
   if(mkp->func==PROFILE_SERSIC || mkp->func==PROFILE_MOFFAT
@@ -276,7 +276,7 @@ makepixbypix(struct mkonthread *mkp)
              over sampled image. But all the profile parameters are in the
              non-oversampled image. So we divide the distance by os
              (p->oversample in double type) */
-          gal_linkedlist_pop_from_tosll_start(&lQ, &sQ, &p, &circ_r);
+          gal_list_tosizet_pop_smallest(&lQ, &sQ, &p, &circ_r);
           mkp->x=(p/is1-xc)/os;
           mkp->y=(p%is1-yc)/os;
           r_el(mkp);
@@ -312,8 +312,7 @@ makepixbypix(struct mkonthread *mkp)
               if(byt[nind]==0)
                 {
                   byt[nind]=1;
-                  gal_linkedlist_add_to_tosll_end( &lQ, &sQ, nind,
-                                                   r_circle(nind, mkp) );
+                  gal_list_tosizet_add( &lQ, &sQ, nind, r_circle(nind, mkp) );
                 }
             } );
 
@@ -324,13 +323,13 @@ makepixbypix(struct mkonthread *mkp)
 
   /* All the pixels that required integration or random points are now
      done, so we don't need an ordered array any more. */
-  gal_linkedlist_tosll_into_sll(lQ, &Q);
+  gal_list_tosizet_to_sizet(lQ, &Q);
 
 
   /* Order doesn't matter any more, add all the pixels you find. */
   while(Q)
     {
-      gal_linkedlist_pop_from_sll(&Q, &p);
+      p=gal_list_sizet_pop(&Q);
       mkp->x=(p/is1-xc)/os;
       mkp->y=(p%is1-yc)/os;
       r_el(mkp);
@@ -356,7 +355,7 @@ makepixbypix(struct mkonthread *mkp)
           if(byt[nind]==0)
             {
               byt[nind]=1;
-              gal_linkedlist_add_to_sll(&Q, nind);
+              gal_list_sizet_add(&Q, nind);
             }
         } );
     }

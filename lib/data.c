@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <inttypes.h>
 #include <sys/mman.h>
 
 #include <gnuastro/wcs.h>
@@ -534,176 +535,6 @@ gal_data_array_free(gal_data_t *dataarr, size_t size, int free_array)
 
 
 
-/*********************************************************************/
-/*************    Data structure as a linked list   ******************/
-/*********************************************************************/
-/* Add a new data structure to the top of an existing linked list of data
-   structures. Note that if the new node is its self a list, all its nodes
-   will be added to the list. */
-void
-gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode)
-{
-  gal_data_t *tmp=newnode, *toadd;
-
-  /* Check if newnode is itself a list or not. */
-  if(newnode->next)
-    {
-      /* Go onto the last node in newnode's existing list. */
-      while(tmp->next) tmp=tmp->next;
-
-      /* Set the last node as the node to add to the list. */
-      toadd=tmp;
-    }
-  else
-    /* Its not a list, so just set it to `toadd'. */
-    toadd=newnode;
-
-
-  /* Set the next element of toadd and update what list points to.*/
-  toadd->next=*list;
-  *list=toadd;
-}
-
-
-
-
-
-void
-gal_data_add_to_ll(gal_data_t **list, void *array, uint8_t type, size_t ndim,
-                   size_t *dsize, struct wcsprm *wcs, int clear,
-                   size_t minmapsize, char *name, char *unit, char *comment)
-{
-  gal_data_t *newnode;
-
-  /* Put all the input information into a new data structure node. */
-  newnode=gal_data_alloc(array, type, ndim, dsize, wcs, clear,
-                         minmapsize, name, unit, comment);
-
-  /* Add the new node to the list. */
-  gal_data_add_existing_to_ll(list, newnode);
-}
-
-
-
-
-
-gal_data_t *
-gal_data_pop_from_ll(gal_data_t **list)
-{
-  struct gal_data_t *out;
-
-  /* Keep the top pointer. */
-  out=*list;
-
-  /* Move the list pointer to the next node. */
-  *list=out->next;
-
-  /* Set the next poitner of the out pointer to NULL so it isn't
-     interpretted as a list any more. */
-  out->next=NULL;
-  return out;
-}
-
-
-
-
-
-void
-gal_data_reverse_ll(gal_data_t **list)
-{
-  gal_data_t *popped, *in=*list, *reversed=NULL;
-
-  /* Only do the job if the list is not NULL and has more than one node. */
-  if( in && in->next )
-    {
-      while(in!=NULL)
-        {
-          popped=gal_data_pop_from_ll(&in);
-          gal_data_add_existing_to_ll(&reversed, popped);
-        }
-      *list=reversed;
-    }
-}
-
-
-
-
-
-size_t
-gal_data_num_in_ll(gal_data_t *list)
-{
-  size_t num=0;
-  while(list!=NULL)
-    {
-      ++num;
-      list=list->next;
-    }
-  return num;
-}
-
-
-
-
-
-gal_data_t **
-gal_data_ll_to_array_of_ptrs(gal_data_t *list, size_t *num)
-{
-  size_t i=0;
-  gal_data_t **out;
-
-  /* Find the number of nodes in the list. */
-  *num=gal_data_num_in_ll(list);
-
-  /* Allocate space for the array. */
-  errno=0;
-  out=malloc(*num * sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for the output pointer in "
-          "`gal_data_ll_to_array_of_ptrs'", *num * sizeof *out);
-
-  /* Fill in the array with pointers to each data-structure. Note that we
-     don't need the list pointer any more, so we can just increment it.*/
-  while(list!=NULL) { out[i++]=list; list=list->next; }
-
-  /* Return the allocated array. */
-  return out;
-}
-
-
-
-
-
-void
-gal_data_free_ll(gal_data_t *list)
-{
-  struct gal_data_t *tmp;
-  while(list!=NULL)
-    {
-      tmp=list->next;
-      gal_data_free(list);
-      list=tmp;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
@@ -854,34 +685,34 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   switch(from->type)
     {
     case GAL_TYPE_UINT8:
-      COPY_TO_STR_INT(uint8_t,  GAL_BLANK_UINT8, "%u");    break;
+      COPY_TO_STR_INT(uint8_t,  GAL_BLANK_UINT8,  "%"PRIu8);  break;
 
     case GAL_TYPE_INT8:
-      COPY_TO_STR_INT(int8_t,   GAL_BLANK_INT8, "%d");     break;
+      COPY_TO_STR_INT(int8_t,   GAL_BLANK_INT8,   "%"PRId8);  break;
 
     case GAL_TYPE_UINT16:
-      COPY_TO_STR_INT(uint16_t, GAL_BLANK_UINT16, "%u");   break;
+      COPY_TO_STR_INT(uint16_t, GAL_BLANK_UINT16, "%"PRIu16); break;
 
     case GAL_TYPE_INT16:
-      COPY_TO_STR_INT(int16_t,  GAL_BLANK_INT16, "%d");    break;
+      COPY_TO_STR_INT(int16_t,  GAL_BLANK_INT16,  "%"PRId16); break;
 
     case GAL_TYPE_UINT32:
-      COPY_TO_STR_INT(uint32_t, GAL_BLANK_UINT32, "%u");   break;
+      COPY_TO_STR_INT(uint32_t, GAL_BLANK_UINT32, "%"PRIu32); break;
 
     case GAL_TYPE_INT32:
-      COPY_TO_STR_INT(int32_t,  GAL_BLANK_INT32, "%d");    break;
+      COPY_TO_STR_INT(int32_t,  GAL_BLANK_INT32,  "%"PRId32); break;
 
     case GAL_TYPE_UINT64:
-      COPY_TO_STR_INT(uint64_t, GAL_BLANK_UINT64, "%lu");  break;
+      COPY_TO_STR_INT(uint64_t, GAL_BLANK_UINT64, "%"PRIu64); break;
 
     case GAL_TYPE_INT64:
-      COPY_TO_STR_INT(int64_t,  GAL_BLANK_INT64, "%ld");   break;
+      COPY_TO_STR_INT(int64_t,  GAL_BLANK_INT64,  "%"PRId64); break;
 
     case GAL_TYPE_FLOAT32:
-      COPY_TO_STR_FLT(float, GAL_BLANK_FLOAT32);           break;
+      COPY_TO_STR_FLT(float, GAL_BLANK_FLOAT32);              break;
 
     case GAL_TYPE_FLOAT64:
-      COPY_TO_STR_FLT(double, GAL_BLANK_FLOAT32);          break;
+      COPY_TO_STR_FLT(double, GAL_BLANK_FLOAT32);             break;
 
     case GAL_TYPE_STRING:
       for(i=0;i<from->size;++i)
@@ -1191,7 +1022,7 @@ gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr)
 char *
 gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
 {
-  char *c, *str;
+  char *c, *str=NULL;
   switch(type)
     {
     /* For a string we might need to make sure it has no white space
@@ -1208,16 +1039,16 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
         asprintf(&str, "%s", *(char **)ptr);
       break;
 
-    case GAL_TYPE_UINT8:   WRITE_TO_STRING( uint8_t,   "%u");  break;
-    case GAL_TYPE_INT8:    WRITE_TO_STRING( int8_t,    "%d");  break;
-    case GAL_TYPE_UINT16:  WRITE_TO_STRING( uint16_t,  "%u");  break;
-    case GAL_TYPE_INT16:   WRITE_TO_STRING( int16_t,   "%d");  break;
-    case GAL_TYPE_UINT32:  WRITE_TO_STRING( uint32_t,  "%u");  break;
-    case GAL_TYPE_INT32:   WRITE_TO_STRING( int32_t,   "%d");  break;
-    case GAL_TYPE_UINT64:  WRITE_TO_STRING( uint64_t, "%lu");  break;
-    case GAL_TYPE_INT64:   WRITE_TO_STRING( int64_t,  "%ld");  break;
-    case GAL_TYPE_FLOAT32: WRITE_TO_STRING( float,   "%.6g");  break;
-    case GAL_TYPE_FLOAT64: WRITE_TO_STRING( double, "%.10g");  break;
+    case GAL_TYPE_UINT8:   WRITE_TO_STRING( uint8_t,  "%"PRIu8  );  break;
+    case GAL_TYPE_INT8:    WRITE_TO_STRING( int8_t,   "%"PRId8  );  break;
+    case GAL_TYPE_UINT16:  WRITE_TO_STRING( uint16_t, "%"PRIu16 );  break;
+    case GAL_TYPE_INT16:   WRITE_TO_STRING( int16_t,  "%"PRId16 );  break;
+    case GAL_TYPE_UINT32:  WRITE_TO_STRING( uint32_t, "%"PRIu32 );  break;
+    case GAL_TYPE_INT32:   WRITE_TO_STRING( int32_t,  "%"PRId32 );  break;
+    case GAL_TYPE_UINT64:  WRITE_TO_STRING( uint64_t, "%"PRIu64 );  break;
+    case GAL_TYPE_INT64:   WRITE_TO_STRING( int64_t,  "%"PRId64 );  break;
+    case GAL_TYPE_FLOAT32: WRITE_TO_STRING( float,    "%.6g"    );  break;
+    case GAL_TYPE_FLOAT64: WRITE_TO_STRING( double,   "%.10g"   );  break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
@@ -1379,8 +1210,7 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
 
     /* Linked lists, currently only string linked lists. */
     case GAL_TYPE_STRLL:
-      gal_linkedlist_add_to_stll( (struct gal_linkedlist_stll **)out,
-                                  string, 1);
+      gal_list_str_add( (struct gal_list_str_t **)out, string, 1);
       break;
 
     /* String, just allocate and copy the string and keep its pointer in

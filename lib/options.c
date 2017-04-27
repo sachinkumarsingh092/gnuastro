@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/git.h>
 #include <gnuastro/txt.h>
+#include <gnuastro/list.h>
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
@@ -85,8 +86,8 @@ void
 gal_options_add_to_not_given(struct gal_options_common_params *cp,
                              struct argp_option *option)
 {
-  gal_linkedlist_add_to_stll(&cp->novalue_doc, (char *)option->doc, 0);
-  gal_linkedlist_add_to_stll(&cp->novalue_name, (char *)option->name, 0);
+  gal_list_str_add(&cp->novalue_doc, (char *)option->doc, 0);
+  gal_list_str_add(&cp->novalue_name, (char *)option->name, 0);
 }
 
 
@@ -97,8 +98,8 @@ void
 gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp)
 {
   int namewidth=0;
+  gal_list_str_t *tmp;
   char info[5000], *name, *doc;
-  struct gal_linkedlist_stll *tmp;
 
   /* If there is no mandatory options, then just return. */
   if(cp->novalue_name==NULL)
@@ -116,8 +117,8 @@ gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp)
   /* Print the list of options along with their description. */
   while(cp->novalue_name!=NULL)
     {
-      gal_linkedlist_pop_from_stll(&cp->novalue_doc, &doc);
-      gal_linkedlist_pop_from_stll(&cp->novalue_name, &name);
+      doc  = gal_list_str_pop(&cp->novalue_doc);
+      name = gal_list_str_pop(&cp->novalue_name);
       sprintf(info+strlen(info), "  %-*s (%s\b)\n", namewidth+4, name, doc);
     }
   sprintf(info+strlen(info), "\n");
@@ -166,8 +167,8 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   size_t i, num=0;
   gal_data_t *out;
   char *c=string, *tailptr;
+  gal_list_f64_t *list=NULL, *tdll;
   double numerator=NAN, denominator=NAN, tmp;
-  struct gal_linkedlist_dll *list=NULL, *tdll;
 
 
   /* The nature of the arrays/numbers read here is very small, so since
@@ -194,8 +195,8 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
             error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
                           "must be given before `,'. You have given: `%s'",
                           string);
-          gal_linkedlist_add_to_dll(&list, isnan(denominator)
-                                    ? numerator : numerator/denominator);
+          gal_list_f64_add(&list, isnan(denominator)
+                           ? numerator : numerator/denominator);
           numerator=denominator=NAN;
           ++num;
           ++c;
@@ -241,8 +242,8 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   if( !isnan(numerator) )
     {
       ++num;
-      gal_linkedlist_add_to_dll(&list, isnan(denominator)
-                                ? numerator : numerator/denominator);
+      gal_list_f64_add(&list, isnan(denominator)
+                       ? numerator : numerator/denominator);
     }
 
 
@@ -255,7 +256,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
 
   /* Clean up and return. */
-  gal_linkedlist_free_dll(list);
+  gal_list_f64_free(list);
   return out;
 }
 
@@ -909,7 +910,7 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
   if(arg)
     {
       if(option->type==GAL_TYPE_STRLL)
-        gal_linkedlist_add_to_stll(option->value, arg, 1);
+        gal_list_str_add(option->value, arg, 1);
       else
         {
           /* If the option is already set, ignore the given value. */
@@ -1406,8 +1407,7 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
         switch(options[i].type)
           {
           case GAL_TYPE_STRLL:
-            gal_linkedlist_reverse_stll(
-                  (struct gal_linkedlist_stll **)(options[i].value) );
+            gal_list_str_reverse( (gal_list_str_t **)(options[i].value) );
             break;
           }
       else if(options[i].mandatory==GAL_OPTIONS_MANDATORY)
@@ -1533,7 +1533,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
                             struct gal_options_common_params *cp)
 {
   int vlen;
-  struct gal_linkedlist_stll *tmp;
+  gal_list_str_t *tmp;
 
   /* Invalid types are set for functions that don't save the raw user
      input, but do higher-level analysis on them for storing. */
@@ -1549,7 +1549,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
               "are acceptable for printing");
 
       /* Check each node, one by one. */
-      for(tmp=*(struct gal_linkedlist_stll **)(option->value);
+      for(tmp=*(gal_list_str_t **)(option->value);
           tmp!=NULL; tmp=tmp->next)
         {
           /* Get the length of this node: */
@@ -1661,7 +1661,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
                            struct gal_options_common_params *cp)
 {
   size_t i;
-  struct gal_linkedlist_stll *tmp;
+  gal_list_str_t *tmp;
   int namewidth=namelen+1, valuewidth=valuelen+1;
 
   /* Go over all the options. */
@@ -1672,7 +1672,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
       {
         /* Linked lists */
         if(gal_type_is_linked_list(options[i].type))
-          for(tmp=*(struct gal_linkedlist_stll **)(options[i].value);
+          for(tmp=*(gal_list_str_t **)(options[i].value);
               tmp!=NULL; tmp=tmp->next)
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
@@ -1705,9 +1705,9 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
   FILE *fp;
   time_t rawtime;
   char *topicstr, *filename;
+  gal_list_i32_t *group=NULL;
+  gal_list_str_t *topic=NULL;
   int groupint, namelen, valuelen;
-  struct gal_linkedlist_ill *group=NULL;
-  struct gal_linkedlist_stll *topic=NULL;
   struct argp_option *coptions=cp->coptions, *poptions=cp->poptions;
 
   /* If the configurations are to be written to a file, then do the
@@ -1761,19 +1761,19 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
       {
         /* The `(char *)' is because `.doc' is a constant and this helps
            remove the compiler warning. */
-        gal_linkedlist_add_to_ill(&group, coptions[i].group);
-        gal_linkedlist_add_to_stll(&topic, (char *)coptions[i].doc, 0);
+        gal_list_i32_add(&group, coptions[i].group);
+        gal_list_str_add(&topic, (char *)coptions[i].doc, 0);
       }
   for(i=0; !gal_options_is_last(&poptions[i]); ++i)
     if(poptions[i].name==NULL && poptions[i].key==0 && poptions[i].doc)
       {
-        gal_linkedlist_add_to_ill(&group, poptions[i].group);
-        gal_linkedlist_add_to_stll(&topic, (char *)poptions[i].doc, 0);
+        gal_list_i32_add(&group, poptions[i].group);
+        gal_list_str_add(&topic, (char *)poptions[i].doc, 0);
       }
 
   /* Reverse the linked lists to get the same input order. */
-  gal_linkedlist_reverse_stll(&topic);
-  gal_linkedlist_reverse_ill(&group);
+  gal_list_str_reverse(&topic);
+  gal_list_i32_reverse(&group);
 
   /* Get the maximum width of names and values. */
   options_set_lengths(poptions, coptions, &namelen, &valuelen, cp);
@@ -1782,8 +1782,8 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
   while(topic)
     {
       /* Pop the nodes from the linked list. */
-      gal_linkedlist_pop_from_ill(&group, &groupint);
-      gal_linkedlist_pop_from_stll(&topic, &topicstr);
+      groupint = gal_list_i32_pop(&group);
+      topicstr = gal_list_str_pop(&topic);
 
       /* First print the topic, */
       fprintf(fp, "\n# %s\n", topicstr);

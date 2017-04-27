@@ -511,10 +511,10 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   char *msg;
   float *sarr;
   int32_t *oiarr, *cioarr;
+  gal_list_str_t *comments=NULL;
   size_t i, j, c=0, totclumps=0;
   gal_data_t *sn, *objind, *clumpinobj;
   struct noisechiselparams *p=clprm->p;
-  struct gal_linkedlist_stll *comments=NULL;
 
 
   /* Find the total number of clumps in all the initial detections. Recall
@@ -550,14 +550,12 @@ segmentation_save_sn_table(struct clumps_params *clprm)
 
 
   /* Write the comments. */
-  gal_linkedlist_add_to_stll(&comments, "See also: `CLUMPS_ALL_DET' HDU of "
-                             "output with `--checksegmentation'.", 1);
+  gal_list_str_add(&comments, "See also: `CLUMPS_ALL_DET' HDU of "
+                   "output with `--checksegmentation'.", 1);
   asprintf(&msg, "S/N values of `nan': clumps smaller than `--segsnminarea' "
            "of %zu.", p->segsnminarea);
-  gal_linkedlist_add_to_stll(&comments, msg, 1);
-  free(msg);
-  gal_linkedlist_add_to_stll(&comments, "S/N of clumps over detected "
-                             "regions.", 1);
+  gal_list_str_add(&comments, msg, 0);
+  gal_list_str_add(&comments, "S/N of clumps over detected regions.", 1);
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
 
@@ -571,7 +569,7 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   gal_data_free(sn);
   gal_data_free(objind);
   gal_data_free(clumpinobj);
-  gal_linkedlist_free_stll(comments, 1);
+  gal_list_str_free(comments, 1);
 
 
   /* Abort NoiseChisel if necessary. */

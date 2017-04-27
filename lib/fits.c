@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
@@ -1293,10 +1294,10 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
      the linked list of keys to keep the `name' and `unit' pointers. We can
      free the linked list after `gal_data_alloc' has read/copied the
      values.*/
-  gal_data_add_to_ll(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                     NULL, 0, -1, "EXTNAME", NULL, NULL);
-  gal_data_add_to_ll(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                     NULL, 0, -1, "BUNIT", NULL, NULL);
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
+                          NULL, 0, -1, "EXTNAME", NULL, NULL);
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
+                          NULL, 0, -1, "BUNIT", NULL, NULL);
   gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
   if(keysll->status==0)       {str=keysll->array;       unit=*str; }
   if(keysll->next->status==0) {str=keysll->next->array; name=*str; }
@@ -1306,7 +1307,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
   img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
   blank=gal_blank_alloc_write(type);
-  gal_data_free_ll(keysll);
+  gal_list_data_free(keysll);
   free(dsize);
 
 
@@ -2039,7 +2040,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
    input indexs linked list. You can use */
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
-                  gal_data_t *allcols, struct gal_linkedlist_sll *indexll,
+                  gal_data_t *allcols, gal_list_sizet_t *indexll,
                   int minmapsize)
 {
   size_t i=0;
@@ -2049,7 +2050,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
   fitsfile *fptr;
   gal_data_t *out=NULL;
   int status=0, anynul=0;
-  struct gal_linkedlist_sll *ind;
+  gal_list_sizet_t *ind;
 
   /* Open the FITS file */
   fptr=gal_fits_hdu_open_type(filename, hdu, 1);
@@ -2060,9 +2061,9 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
       /* Allocate the necessary data structure (including the array) for
          this column. */
       dsize=numrows;
-      gal_data_add_to_ll(&out, NULL, allcols[ind->v].type, 1, &dsize,
-                         NULL, 0, minmapsize, allcols[ind->v].name,
-                         allcols[ind->v].unit, allcols[ind->v].comment);
+      gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1, &dsize,
+                              NULL, 0, minmapsize, allcols[ind->v].name,
+                              allcols[ind->v].unit, allcols[ind->v].comment);
 
       /* For a string column, we need an allocated array for each element,
          even in binary values. This value should be stored in the
@@ -2351,16 +2352,16 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
 /* Write the given columns (a linked list of `gal_data_t') into a FITS
    table.*/
 void
-gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
                    int tabletype, char *filename, int dontdelete)
 {
   void *blank;
   fitsfile *fptr;
   gal_data_t *col;
   size_t i, numrows=-1;
+  gal_list_str_t *strt;
   char **ttype, **tform, **tunit;
   int tbltype, numcols=0, status=0;
-  struct gal_linkedlist_stll *strt;
 
 
   /* Make sure all the input columns have the same number of elements */

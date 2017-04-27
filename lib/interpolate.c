@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
-#include <gnuastro/data.h>
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
@@ -64,7 +64,7 @@ struct interpolate_params
   size_t                  numneighbors;
   uint8_t                *thread_flags;
   int                        onlyblank;
-  struct gal_linkedlist_vll  *ngb_vals;
+  gal_list_void_t            *ngb_vals;
   struct gal_tile_two_layer_params *tl;
 };
 
@@ -87,8 +87,8 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   void *nv;
   float pdist;
   uint8_t *b, *bf, *bb;
-  struct gal_linkedlist_vll *tvll;
-  struct gal_linkedlist_tosll *lQ, *sQ;
+  gal_list_void_t *tvll;
+  gal_list_tosizet_t *lQ, *sQ;
   size_t ngb_counter, dist, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
@@ -113,11 +113,11 @@ interpolate_close_neighbors_on_thread(void *in_prm)
     {
       nv=gal_data_ptr_increment(tvll->v, tprm->id*prm->numneighbors,
                                 input->type);
-      gal_data_add_to_ll(&nearest, nv, tin->type, 1, &prm->numneighbors,
-                         NULL, 0, -1, NULL, NULL, NULL);
+      gal_list_data_add_alloc(&nearest, nv, tin->type, 1, &prm->numneighbors,
+                              NULL, 0, -1, NULL, NULL, NULL);
       tin=tin->next;
     }
-  gal_data_reverse_ll(&nearest);
+  gal_list_data_reverse(&nearest);
 
 
   /* Go over all the points given to this thread. */
@@ -184,11 +184,11 @@ interpolate_close_neighbors_on_thread(void *in_prm)
          list structure. To start from the nearest and go out to the
          farthest. */
       lQ=sQ=NULL;
-      gal_linkedlist_add_to_tosll_end(&lQ, &sQ, index, 0.0f);
+      gal_list_tosizet_add(&lQ, &sQ, index, 0.0f);
       while(sQ)
         {
           /* Pop-out (p) an index from the queue: */
-          gal_linkedlist_pop_from_tosll_start(&lQ, &sQ, &pind, &pdist);
+          gal_list_tosizet_pop_smallest(&lQ, &sQ, &pind, &pdist);
 
           /* If this isn't a blank value then add its values to the list of
              neighbor values. Note that we didn't check whether the values
@@ -210,7 +210,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                  list and break out. */
               if(++ngb_counter>=prm->numneighbors)
                 {
-                  if(lQ) gal_linkedlist_tosll_free(lQ);
+                  if(lQ) gal_list_tosizet_free(lQ);
                   break;
                 }
             }
@@ -232,7 +232,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                  dist=gal_dimension_dist_manhattan(icoord, ncoord, ndim);
 
                  /* Add this neighbor to the list. */
-                 gal_linkedlist_add_to_tosll_end(&lQ, &sQ, nind, dist);
+                 gal_list_tosizet_add(&lQ, &sQ, nind, dist);
 
                  /* Flag this neighbor as checked. */
                  flag[nind] |= INTERPOLATE_FLAGS_CHECKED;
@@ -267,7 +267,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
 
   /* Clean up. */
   for(tnear=nearest; tnear!=NULL; tnear=tnear->next) tnear->array=NULL;
-  gal_data_free_ll(nearest);
+  gal_list_data_free(nearest);
   free(icoord);
   free(ncoord);
   free(dinc);
@@ -305,7 +305,7 @@ interpolate_copy_input(gal_data_t *input, int aslinkedlist)
         }
 
       /* Output is the reverse of the input, so reverse it. */
-      gal_data_reverse_ll(&tout);
+      gal_list_data_reverse(&tout);
     }
 
   /* Return the copied list. */
@@ -345,7 +345,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   prm.input        = input;
   prm.onlyblank    = onlyblank;
   prm.numneighbors = numneighbors;
-  prm.num          = aslinkedlist ? gal_data_num_in_ll(input) : 1;
+  prm.num          = aslinkedlist ? gal_list_data_number(input) : 1;
 
 
   /* Flag the blank values. */
@@ -374,8 +374,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   prm.out=gal_data_alloc(NULL, input->type, input->ndim, input->dsize,
                          input->wcs, 0, input->minmapsize, NULL,
                          input->unit, NULL);
-  gal_linkedlist_add_to_vll(&prm.ngb_vals,
-                            gal_data_malloc_array(input->type, ngbvnum));
+  gal_list_void_add(&prm.ngb_vals,
+                    gal_data_malloc_array(input->type, ngbvnum));
 
 
   /* If we are given a list of datasets, make the necessary
@@ -393,16 +393,16 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                 "`gal_interpolate_close_neighbors'");
 
         /* Allocate the output array for this node. */
-        gal_data_add_to_ll(&prm.out, NULL, tin->type, tin->ndim, tin->dsize,
-                           tin->wcs, 0, tin->minmapsize, NULL, tin->unit,
-                           NULL);
+        gal_list_data_add_alloc(&prm.out, NULL, tin->type, tin->ndim,
+                                tin->dsize, tin->wcs, 0, tin->minmapsize,
+                                NULL, tin->unit, NULL);
 
         /* Allocate the space for the neighbor values of this input. */
-        gal_linkedlist_add_to_vll(&prm.ngb_vals,
-                                  gal_data_malloc_array(tin->type, ngbvnum));
+        gal_list_void_add(&prm.ngb_vals,
+                          gal_data_malloc_array(tin->type, ngbvnum));
       }
-  gal_data_reverse_ll(&prm.out);
-  gal_linkedlist_reverse_vll(&prm.ngb_vals);
+  gal_list_data_reverse(&prm.out);
+  gal_list_void_reverse(&prm.ngb_vals);
 
 
   /* Allocate space for all the flag values of all the threads here (memory
@@ -439,6 +439,6 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   /* Clean up and return. */
   free(prm.thread_flags);
   gal_data_free(prm.blanks);
-  gal_linkedlist_free_vll(prm.ngb_vals, 1);
+  gal_list_void_free(prm.ngb_vals, 1);
   return prm.out;
 }

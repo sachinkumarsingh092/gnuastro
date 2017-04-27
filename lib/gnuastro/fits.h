@@ -257,11 +257,11 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
-                    gal_data_t *colinfo, struct gal_linkedlist_sll *indexll,
-                    int minmapsize);
+                  gal_data_t *colinfo, gal_list_sizet_t *indexll,
+                  int minmapsize);
 
 void
-gal_fits_tab_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
                    int tabletype, char *filename, int dontdelete);
 
 

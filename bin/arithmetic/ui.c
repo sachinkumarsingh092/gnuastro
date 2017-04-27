@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
@@ -187,7 +188,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      gal_linkedlist_add_to_stll(&p->tokens, arg, 0);
+      gal_list_str_add(&p->tokens, arg, 0);
       break;
 
 
@@ -229,13 +230,13 @@ ui_check_options_and_arguments(struct imgarithparams *p)
 {
   int output_checked=0;
   size_t numfits=0, numhdus=0;
-  struct gal_linkedlist_stll *token, *hdu;
+  gal_list_str_t *token, *hdu;
 
   /* The input tokens are put in a lastin-firstout (simple) linked list, so
      change them to the correct order so the order we pop a token is the
      same order that the user input a value. Note that for the options this
      was done in `gal_options_read_config_set'. */
-  gal_linkedlist_reverse_stll(&p->tokens);
+  gal_list_str_reverse(&p->tokens);
 
   /* Set the output file name (if any is needed). Note that since the
      lists are already reversed, the first FITS file encountered, is
@@ -386,7 +387,7 @@ freeandreport(struct imgarithparams *p, struct timeval *t1)
   /* If there are any remaining HDUs in the hdus linked list, then
      free them. */
   if(p->hdus)
-    gal_linkedlist_free_stll(p->hdus, 1);
+    gal_list_str_free(p->hdus, 1);
 
   /* Report the duration of the job */
   if(!p->cp.quiet)

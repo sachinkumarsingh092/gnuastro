@@ -24,9 +24,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <argp.h>
 
-#include <gnuastro/data.h>
 #include <gnuastro/tile.h>
-
+#include <gnuastro/list.h>
 
 
 
@@ -200,9 +199,9 @@ struct gal_options_common_params
   char        *program_authors; /* List of the program authors.           */
   struct argp_option *coptions; /* Common options to all programs.        */
   struct argp_option *poptions; /* Program specific options.              */
-  struct gal_linkedlist_ill   *mand_common; /* Common mandatory options.  */
-  struct gal_linkedlist_stll  *novalue_doc; /* Mandatory opts, no value   */
-  struct gal_linkedlist_stll *novalue_name; /* Mandatory opts, no value   */
+  gal_list_i32_t  *mand_common; /* Common mandatory options.  */
+  gal_list_str_t  *novalue_doc; /* Mandatory opts, no value   */
+  gal_list_str_t *novalue_name; /* Mandatory opts, no value   */
 };
 
 

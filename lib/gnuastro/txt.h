@@ -26,8 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
-#include <gnuastro/data.h>
-#include <gnuastro/linkedlist.h>
+#include <gnuastro/list.h>
 
 
 
@@ -90,14 +89,14 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows);
 
 gal_data_t *
 gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, size_t minmapsize);
+                   gal_list_sizet_t *indexll, size_t minmapsize);
 
 gal_data_t *
 gal_txt_image_read(char *filename, size_t minmapsize);
 
 void
-gal_txt_write(gal_data_t *cols, struct gal_linkedlist_stll *comment,
-              char *filename, int dontdelete);
+gal_txt_write(gal_data_t *cols, gal_list_str_t *comment, char *filename,
+              int dontdelete);
 
 
 

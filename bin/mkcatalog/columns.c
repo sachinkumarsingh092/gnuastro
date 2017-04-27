@@ -193,9 +193,9 @@ columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
 void
 columns_define_alloc(struct mkcatalogparams *p)
 {
-  struct gal_linkedlist_ill *colcode;
+  gal_list_i32_t *colcode;
+  gal_list_str_t *strtmp, *noclumpimg=NULL;
   int disp_fmt=0, disp_width=0, disp_precision=0;
-  struct gal_linkedlist_stll *strtmp, *noclumpimg=NULL;
   char *name=NULL, *unit=NULL, *ocomment=NULL, *ccomment=NULL;
   uint8_t otype=GAL_TYPE_INVALID, ctype=GAL_TYPE_INVALID, *oiflag, *ciflag;
 
@@ -878,8 +878,9 @@ columns_define_alloc(struct mkcatalogparams *p)
          for the columns. */
       if(otype!=GAL_TYPE_INVALID)
         {
-          gal_data_add_to_ll(&p->objectcols, NULL, otype, 1, &p->numobjects,
-                             NULL, 0, p->cp.minmapsize, name, unit, ocomment);
+          gal_list_data_add_alloc(&p->objectcols, NULL, otype, 1,
+                                  &p->numobjects, NULL, 0, p->cp.minmapsize,
+                                  name, unit, ocomment);
           p->objectcols->status         = colcode->v;
           p->objectcols->disp_fmt       = disp_fmt;
           p->objectcols->disp_width     = disp_width;
@@ -896,9 +897,9 @@ columns_define_alloc(struct mkcatalogparams *p)
              column. */
           if(p->clumps)
             {
-              gal_data_add_to_ll(&p->clumpcols, NULL, ctype, 1, &p->numclumps,
-                                 NULL, 0, p->cp.minmapsize, name, unit,
-                                 ccomment);
+              gal_list_data_add_alloc(&p->clumpcols, NULL, ctype, 1,
+                                      &p->numclumps, NULL, 0,
+                                      p->cp.minmapsize, name, unit, ccomment);
               p->clumpcols->status         = colcode->v;
               p->clumpcols->disp_fmt       = disp_fmt;
               p->clumpcols->disp_width     = disp_width;
@@ -910,7 +911,7 @@ columns_define_alloc(struct mkcatalogparams *p)
              given. Add the column to the list of similar columns to inform
              the user. */
           else if(otype==GAL_TYPE_INVALID)
-            gal_linkedlist_add_to_stll(&noclumpimg, name, 1);
+            gal_list_str_add(&noclumpimg, name, 1);
         }
     }
 
@@ -919,7 +920,7 @@ columns_define_alloc(struct mkcatalogparams *p)
      the warning. */
   if(noclumpimg)
     {
-      gal_linkedlist_reverse_stll(&noclumpimg);
+      gal_list_str_reverse(&noclumpimg);
       fprintf(stderr, "\n-------\n"
               "WARNING: the following column(s) are unique to "
               "clumps (not objects), but the objects image doesn't have "
@@ -927,14 +928,14 @@ columns_define_alloc(struct mkcatalogparams *p)
               "ignored.\n\n");
       for(strtmp=noclumpimg; strtmp!=NULL; strtmp=strtmp->next)
         fprintf(stderr, "\t%s\n", strtmp->v);
-      gal_linkedlist_free_stll(noclumpimg, 1);
+      gal_list_str_free(noclumpimg, 1);
       fprintf(stderr, "\n-------\n");
     }
 
 
   /* Free the general columns information because it is no longe needed,
      we'll set it back to NULL afterwards so it is not mistakenly used. */
-  gal_linkedlist_free_ill(p->columnids);
+  gal_list_i32_free(p->columnids);
   p->columnids=NULL;
 }
 

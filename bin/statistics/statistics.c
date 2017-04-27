@@ -77,7 +77,7 @@ statistics_read_check_args(struct statisticsparams *p)
           "requested single measurement options. Please contact "
           "us at %s so we can address the problem",
           PACKAGE_BUGREPORT);
-  gal_linkedlist_pop_from_dll(&p->tp_args, &d);
+  d=gal_list_f64_pop(&p->tp_args);
   return d;
 }
 
@@ -92,7 +92,7 @@ statistics_print_one_row(struct statisticsparams *p)
   char *toprint;
   size_t dsize=1;
   double arg, *d;
-  struct gal_linkedlist_ill *tmp;
+  gal_list_i32_t *tmp;
   gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
 
@@ -264,10 +264,10 @@ static void
 statistics_on_tile(struct statisticsparams *p)
 {
   double arg=0;
+  gal_list_i32_t *operation;
   gal_data_t *tile, *values;
   size_t tind, dsize=1, mind=-1;
   uint8_t type=GAL_TYPE_INVALID;
-  struct gal_linkedlist_ill *operation;
   gal_data_t *tmp=NULL, *tmpv=NULL, *ttmp;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
@@ -523,7 +523,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   char *output;
   int use_auto_output=0;
   char *fix, *suffix=NULL, *tmp;
-  struct gal_linkedlist_stll *comments=NULL;
+  gal_list_str_t *comments=NULL;
 
 
   /* Automatic output should be used when no output name was specified or
@@ -551,10 +551,10 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
      the order we want them. They will later be freed as part of the list's
      freeing.*/
   tmp=gal_fits_name_save_as_string(p->inputname, p->cp.hdu);
-  gal_linkedlist_add_to_stll(&comments, tmp, 0);
+  gal_list_str_add(&comments, tmp, 0);
 
   asprintf(&tmp, "%s created from:", contents);
-  gal_linkedlist_add_to_stll(&comments, tmp, 0);
+  gal_list_str_add(&comments, tmp, 0);
 
   if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
     gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
@@ -572,8 +572,8 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
   /* Clean up. */
   if(suffix) free(suffix);
+  gal_list_str_free(comments, 1);
   if(output!=p->cp.output) free(output);
-  gal_linkedlist_free_stll(comments, 1);
 }
 
 

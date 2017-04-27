@@ -600,17 +600,17 @@ table_set_strcheck(gal_data_t *col, int searchin)
 
 
 
-static struct gal_linkedlist_sll *
-make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
+static gal_list_sizet_t *
+make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                     size_t numcols, int searchin, int ignorecase,
                     char *filename, char *hdu)
 {
   long tlong;
   int regreturn;
   regex_t *regex;
+  gal_list_str_t *tmp;
   size_t i, nummatch, len;
-  struct gal_linkedlist_stll *tmp;
-  struct gal_linkedlist_sll *indexll=NULL;
+  gal_list_sizet_t *indexll=NULL;
   char *str, *strcheck, *tailptr, *errorstring;
 
   for(tmp=cols; tmp!=NULL; tmp=tmp->next)
@@ -665,7 +665,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
               if(strcheck && regexec(regex, strcheck, 0, 0, 0)==0)
                 {
                   ++nummatch;
-                  gal_linkedlist_add_to_sll(&indexll, i);
+                  gal_list_sizet_add(&indexll, i);
                 }
             }
 
@@ -711,7 +711,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
               /* Everything seems to be fine, put this column number in the
                  output column numbers linked list. Note that internally,
                  the column numbers start from 0, not 1.*/
-              gal_linkedlist_add_to_sll(&indexll, tlong-1);
+              gal_list_sizet_add(&indexll, tlong-1);
               ++nummatch;
             }
 
@@ -733,7 +733,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
                                    : !strcmp(tmp->v, strcheck) ) )
                     {
                       ++nummatch;
-                      gal_linkedlist_add_to_sll(&indexll, i);
+                      gal_list_sizet_add(&indexll, i);
                     }
                 }
             }
@@ -752,7 +752,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
     }
 
   /* Reverse the list. */
-  gal_linkedlist_reverse_sll(&indexll);
+  gal_list_sizet_reverse(&indexll);
   return indexll;
 }
 
@@ -777,13 +777,13 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
    So the first requested column is the first popped data structure and so
    on. */
 gal_data_t *
-gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
+gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
                int searchin, int ignorecase, int minmapsize)
 {
   int tableformat;
+  gal_list_sizet_t *indexll;
   size_t i, numcols, numrows;
   gal_data_t *allcols, *out=NULL;
-  struct gal_linkedlist_sll *indexll;
 
   /* If the column string linked list is empty, no need to continue. */
   if(cols==NULL) return NULL;
@@ -807,7 +807,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
      order as the input list of desired columns. Also note that after these
      functions, the `indexll' will be all freed (each popped element is
      actually freed).*/
-  gal_linkedlist_reverse_sll(&indexll);
+  gal_list_sizet_reverse(&indexll);
   switch(tableformat)
     {
     case GAL_TABLE_FORMAT_TXT:
@@ -830,7 +830,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   for(i=0;i<numcols;++i)
     gal_data_free_contents(&allcols[i]);
   free(allcols);
-  gal_linkedlist_free_sll(indexll);
+  gal_list_sizet_free(indexll);
 
   /* Return the final linked list. */
   return out;
@@ -862,8 +862,8 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
    comments field. Note that the `comments' has to be already sorted in the
    proper order. */
 void
-gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
-                             char *program_string, time_t *rawtime)
+gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
+                             time_t *rawtime)
 {
   char gitdescribe[100], *tmp;
 
@@ -877,16 +877,16 @@ gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
   /* Git version and time of program's starting, this will be the second
      line. Note that ctime puts a `\n' at the end of its string, so we'll
      have to remove that. Also, note that since we are allocating `msg', we
-     are setting the allocate flag of `gal_linkedlist_add_to_stll' to 0. */
+     are setting the allocate flag of `gal_list_str_add' to 0. */
   asprintf(&tmp, "Created%s on %s", gitdescribe, ctime(rawtime));
   tmp[ strlen(tmp)-1 ]='\0';
-  gal_linkedlist_add_to_stll(comments, tmp, 0);
+  gal_list_str_add(comments, tmp, 0);
 
 
   /* Program name: this will be the top of the list (first line). We will
      need to set the allocation flag for this one, because program_string
      is usually statically allocated.*/
-  gal_linkedlist_add_to_stll(comments, program_string, 1);
+  gal_list_str_add(comments, program_string, 1);
 }
 
 
@@ -898,7 +898,7 @@ gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
    specified by `tableformat'. If it already exists, and `dontdelete' has a
    value of 1, then it won't be deleted and an error will be printed. */
 void
-gal_table_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
                 int tableformat, char *filename, int dontdelete)
 {
   /* If a filename was given, then the tableformat is relevant and must be
@@ -922,7 +922,7 @@ gal_table_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
 
 void
 gal_table_write_log(gal_data_t *logll, char *program_string,
-                    time_t *rawtime, struct gal_linkedlist_stll *comments,
+                    time_t *rawtime, gal_list_str_t *comments,
                     char *filename, int dontdelete, int quiet)
 {
   char *msg;

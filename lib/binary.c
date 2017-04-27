@@ -357,7 +357,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   uint8_t *b, *bf;
   gal_data_t *lab;
   size_t p, i, curlab=1;
-  struct gal_linkedlist_sll *Q=NULL;
+  gal_list_sizet_t *Q=NULL;
   size_t *dinc=gal_dimension_increment(binary->ndim, binary->dsize);
 
   /* Two small sanity checks. */
@@ -419,14 +419,14 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
         l[i]=curlab;
 
         /* Add this pixel to the queue of pixels to work with. */
-        gal_linkedlist_add_to_sll(&Q, i);
+        gal_list_sizet_add(&Q, i);
 
         /* While a pixel remains in the queue, continue labelling and
            searching for neighbors. */
         while(Q!=NULL)
           {
             /* Pop an element from the queue. */
-            gal_linkedlist_pop_from_sll(&Q, &p);
+            p=gal_list_sizet_pop(&Q);
 
             /* Go over all its neighbors and add them to the list if they
                haven't already been labeled. */
@@ -436,7 +436,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
                 if( b[ nind ] && l[ nind ]==0 )
                   {
                     l[ nind ] = curlab;
-                    gal_linkedlist_add_to_sll(&Q, nind);
+                    gal_list_sizet_add(&Q, nind);
                   }
               } );
           }
@@ -480,9 +480,9 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                                       size_t *numconnected)
 {
   gal_data_t *newlabs_d;
+  gal_list_sizet_t *Q=NULL;
   int32_t *newlabs, curlab=1;
   uint8_t *adj=adjacency->array;
-  struct gal_linkedlist_sll *Q=NULL;
   size_t i, j, p, num=adjacency->dsize[0];
 
   /* Some small sanity checks. */
@@ -515,13 +515,13 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
     if(newlabs[i]==0)
       {
         /* Add this old label to the list that must be corrected. */
-        gal_linkedlist_add_to_sll(&Q, i);
+        gal_list_sizet_add(&Q, i);
 
         /* Continue while the list has elements. */
         while(Q!=NULL)
           {
             /* Pop the top old-label from the list. */
-            gal_linkedlist_pop_from_sll(&Q, &p);
+            p=gal_list_sizet_pop(&Q);
 
             /* If it has already been labeled then ignore it. */
             if( newlabs[p]!=curlab )
@@ -534,7 +534,7 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                    that are touching it. */
                 for(j=1;j<num;++j)
                   if( adj[ p*num+j ] && newlabs[j]==0 )
-                    gal_linkedlist_add_to_sll(&Q, j);
+                    gal_list_sizet_add(&Q, j);
               }
           }
 
@@ -692,7 +692,13 @@ gal_binary_fill_holes(gal_data_t *input)
   in=input->array;
   tile->array=gal_tile_block_relative_to_other(tile, holelabs);
   tile->block=holelabs; /* has to be after correcting `tile->array'. */
-  GAL_TILE_PARSE_OPERATE({
+
+
+  /* The type of the tile is already known (it is `int32_t') and we have no
+     output, so we'll just put `int' as a place-holder. In this way we can
+     avoid the switch statement of GAL_TILE_PARSE_OPERATE, and directly
+     use the workhorse macro `GAL_TILE_PO_OISET'. */
+  GAL_TILE_PO_OISET(int32_t, int, {
       *in = *i>1 && *i!=GAL_BLANK_INT32 ? 1 : *in;
       ++in;
     }, tile, NULL, 0, 0);

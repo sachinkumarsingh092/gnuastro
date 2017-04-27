@@ -377,21 +377,21 @@ ui_read_cols(struct mkprofparams *p)
   int checkblank;
   char *colname=NULL;
   size_t counter=0, i;
+  gal_list_str_t *colstrs=NULL;
   gal_data_t *cols, *tmp, *corrtype=NULL;
   char *ax1col=p->racol?p->racol:p->xcol;
   char *ax2col=p->deccol?p->deccol:p->ycol;
-  struct gal_linkedlist_stll *colstrs=NULL;
 
   /* Specify the order of columns. */
-  gal_linkedlist_add_to_stll(&colstrs, ax1col, 0);
-  gal_linkedlist_add_to_stll(&colstrs, ax2col, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->fcol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->rcol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->ncol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->pcol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->qcol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->mcol, 0);
-  gal_linkedlist_add_to_stll(&colstrs, p->tcol, 0);
+  gal_list_str_add(&colstrs, ax1col, 0);
+  gal_list_str_add(&colstrs, ax2col, 0);
+  gal_list_str_add(&colstrs, p->fcol, 0);
+  gal_list_str_add(&colstrs, p->rcol, 0);
+  gal_list_str_add(&colstrs, p->ncol, 0);
+  gal_list_str_add(&colstrs, p->pcol, 0);
+  gal_list_str_add(&colstrs, p->qcol, 0);
+  gal_list_str_add(&colstrs, p->mcol, 0);
+  gal_list_str_add(&colstrs, p->tcol, 0);
 
   /* Read the desired columns from the file. */
   cols=gal_table_read(p->catname, p->cp.hdu, colstrs, p->cp.searchin,
@@ -405,7 +405,7 @@ ui_read_cols(struct mkprofparams *p)
   while(cols!=NULL)
     {
       /* Pop out the top column. */
-      tmp=gal_data_pop_from_ll(&cols);
+      tmp=gal_list_data_pop(&cols);
 
       /* By default check if the column has blank values, but it can be
          turned off for some columns. */
@@ -806,31 +806,33 @@ ui_make_log(struct mkprofparams *p)
   if(p->cp.log==0) return;
 
   /* Individual created. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "INDIV_CREATED", "bool",
-                     "If an individual image was made (1) or not (0).");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->num, NULL,
+                          1, p->cp.minmapsize, "INDIV_CREATED", "bool",
+                          "If an individual image was made (1) or not (0).");
 
   /* Fraction of monte-carlo. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "FRAC_MONTECARLO", "frac",
-                     "Fraction of brightness in Monte-carlo integrated "
-                     "pixels.");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
+                          1, p->cp.minmapsize, "FRAC_MONTECARLO", "frac",
+                          "Fraction of brightness in Monte-carlo integrated "
+                          "pixels.");
 
   /* Number of monte-carlo. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "NUM_MONTECARLO", "count",
-                     "Number of Monte Carlo integrated pixels.");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
+                          1, p->cp.minmapsize, "NUM_MONTECARLO", "count",
+                          "Number of Monte Carlo integrated pixels.");
 
   /* Magnitude of profile overlap. */
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "MAG_OVERLAP", "mag",
-                     "Magnitude of profile's overlap with merged image.");
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
+                          1, p->cp.minmapsize, "MAG_OVERLAP", "mag",
+                          "Magnitude of profile's overlap with merged "
+                          "image.");
 
   /* Row number in input catalog. */
   name=gal_fits_name_save_as_string(p->catname, p->cp.hdu);
   asprintf(&comment, "Row number of profile in %s.", name);
-  gal_data_add_to_ll(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
-                     1, p->cp.minmapsize, "INPUT_ROW_NO", "count", comment);
+  gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
+                          1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
+                          comment);
   free(comment);
   free(name);
 }
@@ -1035,7 +1037,7 @@ ui_free_report(struct mkprofparams *p, struct timeval *t1)
 
   /* Free the log file information. */
   if(p->cp.log)
-    gal_data_free_ll(p->log);
+    gal_list_data_free(p->log);
 
   /* Report the duration of the job */
   if(!p->cp.quiet)

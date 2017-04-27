@@ -67,9 +67,9 @@ struct change
 struct converttparams
 {
   /* From command-line */
-  struct gal_options_common_params cp;    /* Common parameters.        */
-  struct gal_linkedlist_stll *inputnames; /* The names of input files. */
-  struct gal_linkedlist_stll *hdus;       /* The names of input hdus.  */
+  struct gal_options_common_params cp;   /* Common parameters.         */
+  gal_list_str_t          *inputnames;   /* The names of input files.  */
+  gal_list_str_t                *hdus;   /* The names of input hdus.   */
   uint8_t           quality;  /* Quality of JPEG image.                */
   float           widthincm;  /* Width in centimeters.                 */
   uint32_t      borderwidth;  /* Width of border in PostScript points. */

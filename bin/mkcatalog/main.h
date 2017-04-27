@@ -132,7 +132,7 @@ struct mkcatalogparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
-  struct gal_linkedlist_ill  *columnids; /* The desired column codes.   */
+  gal_list_i32_t   *columnids; /* The desired column codes.   */
   char             *inputname;  /* Input filename.                      */
   char           *objectsfile;  /* File name of objects file.           */
   char            *objectshdu;  /* HDU of objects image.                */
@@ -180,7 +180,7 @@ struct mkcatalogparams
   pthread_mutex_t       mutex;  /* Mutex to change the total numbers.   */
   size_t      clumprowsfilled;  /* No. filled clump rows at this moment.*/
   gsl_rng                *rng;  /* Main random number generator.        */
-  unsigned long          seed;  /* Random number generator seed.        */
+  uint64_t               seed;  /* Random number generator seed.        */
   const char         *rngname;  /* Name of random number generator.     */
 
   double              **rd_vo;  /* Object RA-Dec flux weighted X, Y.    */

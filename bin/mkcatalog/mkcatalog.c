@@ -642,88 +642,88 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
 
 
 /* Write the similar information. */
-static struct gal_linkedlist_stll *
+static gal_list_str_t *
 mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                              char *ObjClump)
 {
   char *str;
   float snlim;
-  struct gal_linkedlist_stll *comments=NULL;
+  gal_list_str_t *comments=NULL;
   char *skyfile=p->skyfile ? p->skyfile : p->inputname;
   char *stdfile=p->stdfile ? p->stdfile : p->inputname;
   char *clumpsfile=p->clumpsfile ? p->clumpsfile : p->inputname;
   char *objectsfile=p->objectsfile ? p->objectsfile : p->inputname;
 
   asprintf(&str, "%s %s catalog.", PROGRAM_STRING, o0c1 ? "object" : "clump");
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
   /* If in a Git controlled directory and output isn't a FITS file (in
      FITS, this will be automatically included). */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT && gal_git_describe())
     {
       asprintf(&str, "# Directory commit %s\n", gal_git_describe());
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       asprintf(&str, "--------- Input files ---------");
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   asprintf(&str, "Values:  %s (hdu: %s).", p->inputname, p->cp.hdu);
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
   asprintf(&str, "Objects: %s (hdu: %s).", objectsfile, p->objectshdu);
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
   if(p->clumps)
     {
       asprintf(&str, "Clumps:  %s (hdu: %s).", clumpsfile, p->clumpshdu);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   asprintf(&str, "Sky:     %s (hdu: %s).", skyfile, p->skyhdu);
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
   asprintf(&str, "Sky STD: %s (hdu: %s).", stdfile, p->stdhdu);
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
   if(p->upmaskfile)
     {
       asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
                p->upmaskhdu);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       asprintf(&str, "--------- Supplimentary information ---------");
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if(p->input->wcs)
     {
       asprintf(&str, "Pixel area (arcsec^2): %g",
                gal_wcs_pixel_area_arcsec2(p->input->wcs));
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if(p->hasmag)
     {
       asprintf(&str, "Zeropoint magnitude: %.4f", p->zeropoint);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if( !isnan(p->zeropoint) )
     {
       asprintf(&str, "Pixel %g sigma surface brightness (magnitude): %.3f",
                p->nsigmag, -2.5f*log10(p->nsigmag*p->medstd)+p->zeropoint);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   snlim = o0c1 ? p->clumpsn : p->detsn;
@@ -731,27 +731,27 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
     {
       asprintf(&str, "%s limiting signal-to-noise ratio: %.3f", ObjClump,
                snlim);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if(o0c1==0)
     {
       asprintf(&str, "(NOTE: S/N limit above is for pseudo-detections, "
                "not objects.)");
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if(p->cpscorr>1.0f)
     {
       asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   if( !isnan(p->threshold) )
     {
       asprintf(&str, "**IMPORTANT** Pixel threshold (multiple of local "
                "std): %.3f", p->threshold);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
 
@@ -760,21 +760,21 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
         {
           asprintf(&str, "--------- Upper-limit measurement ---------");
-          gal_linkedlist_add_to_stll(&comments, str, 0);
+          gal_list_str_add(&comments, str, 0);
         }
 
       asprintf(&str, "Number of random samples: %zu", p->upnum);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "Random number generator name: %s", p->rngname);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "Random number generator seed: %lu", p->seed);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
                p->upsigmaclip[0]);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       if(p->upsigmaclip[1]>=1.0f)
         asprintf(&str, "Number of clips for sigma-clipping: %.0f",
@@ -782,11 +782,11 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       else
         asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
                  p->upsigmaclip[1]);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: %.3f",
                p->upnsigma);
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
 
@@ -794,10 +794,10 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       asprintf(&str, "-------------------------------------------\n");
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "--------- Table columns ---------");
-      gal_linkedlist_add_to_stll(&comments, str, 0);
+      gal_list_str_add(&comments, str, 0);
     }
 
   /* Return the comments. */
@@ -813,7 +813,7 @@ static void
 mkcatalog_write_outputs(struct mkcatalogparams *p)
 {
   /*char *str;*/
-  struct gal_linkedlist_stll *comments;
+  gal_list_str_t *comments;
 
 
   /* OBJECT CATALOG
@@ -826,10 +826,10 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
 
      Reverse the comments list (so it is printed in the same order here),
      write the objects catalog and free the comments. */
-  gal_linkedlist_reverse_stll(&comments);
+  gal_list_str_reverse(&comments);
   gal_table_write(p->objectcols, comments, p->cp.tableformat, p->objectsout,
                   p->cp.dontdelete);
-  gal_linkedlist_free_stll(comments, 1);
+  gal_list_str_free(comments, 1);
 
 
 
@@ -846,10 +846,10 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
 
          Reverse the comments list (so it is printed in the same order here),
          write the objects catalog and free the comments. */
-      gal_linkedlist_reverse_stll(&comments);
+      gal_list_str_reverse(&comments);
       gal_table_write(p->clumpcols, comments, p->cp.tableformat,
                       p->clumpsout, p->cp.dontdelete);
-      gal_linkedlist_free_stll(comments, 1);
+      gal_list_str_free(comments, 1);
     }
 }
 

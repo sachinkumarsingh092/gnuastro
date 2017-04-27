@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <string.h>
 
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 
@@ -106,18 +107,18 @@ fits_print_extension_info(struct fitsparams *p)
 
   /* Allocate all the columns (in reverse order, since this is a simple
      linked list). */
-  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                     p->cp.minmapsize, "HDU_SIZE", "name",
-                     "Size of image or table number of rows and columns.");
-  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                     p->cp.minmapsize, "HDU_TYPE", "name",
-                     "Image data type or `table' format (ASCII or binary).");
-  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                     p->cp.minmapsize, "EXTNAME", "name",
-                     "Extension name of this HDU (EXTNAME in FITS).");
-  gal_data_add_to_ll(&cols, NULL, GAL_TYPE_UINT16, 1, &numext, NULL, 1,
-                     p->cp.minmapsize, "HDU_INDEX", "count",
-                     "Index (starting from zero) of each HDU (extension).");
+  gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
+                          p->cp.minmapsize, "HDU_SIZE", "name", "Size of "
+                          "image or table number of rows and columns.");
+  gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
+                          p->cp.minmapsize, "HDU_TYPE", "name", "Image "
+                          "data type or `table' format (ASCII or binary).");
+  gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
+                          p->cp.minmapsize, "EXTNAME", "name",
+                          "Extension name of this HDU (EXTNAME in FITS).");
+  gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_UINT16, 1, &numext, NULL, 1,
+                          p->cp.minmapsize, "HDU_INDEX", "count", "Index "
+                          "(starting from zero) of each HDU (extension).");
 
 
   /* Keep pointers to the array of each column for easy writing. */
@@ -232,7 +233,7 @@ fits_print_extension_info(struct fitsparams *p)
       printf("-----\n");
     }
   gal_table_write(cols, NULL, GAL_TABLE_FORMAT_TXT, NULL, 0);
-  gal_data_free_ll(cols);
+  gal_list_data_free(cols);
 }
 
 
@@ -249,7 +250,7 @@ fits_hdu_remove(struct fitsparams *p, int *r)
   while(p->remove)
     {
       /* Pop-out the top element. */
-      gal_linkedlist_pop_from_stll(&p->remove, &hdu);
+      hdu=gal_list_str_pop(&p->remove);
 
       /* Open the FITS file at the specified HDU. */
       fptr=gal_fits_hdu_open(p->filename, hdu, READWRITE);
@@ -273,7 +274,7 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
   char *hdu;
   fitsfile *in, *out;
   int status=0, hdutype;
-  struct gal_linkedlist_stll *list = cut1_copy0 ? p->cut : p->copy;
+  gal_list_str_t *list = cut1_copy0 ? p->cut : p->copy;
 
   /* Open the output file. */
   out=gal_fits_open_to_write(p->cp.output);
@@ -282,7 +283,7 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
   while(list)
     {
       /* Pop-out the top element. */
-      gal_linkedlist_pop_from_stll(&list, &hdu);
+      hdu=gal_list_str_pop(&list);
 
       /* Open the FITS file at the specified HDU. */
       in=gal_fits_hdu_open(p->filename, hdu, READWRITE);

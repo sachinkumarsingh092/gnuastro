@@ -588,7 +588,7 @@ ui_matrix_from_modular(struct warpparams *p)
 
   /* Reverse the list of modular warpings to be in the same order as the
      user specified.*/
-  gal_data_reverse_ll(&p->modularll);
+  gal_list_data_reverse(&p->modularll);
 
   /* Allocate space for the final matrix. */
   p->matrix=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, dsize, NULL, 0,
@@ -604,7 +604,7 @@ ui_matrix_from_modular(struct warpparams *p)
   while(p->modularll)
     {
       /* Pop the top element. */
-      pop=gal_data_pop_from_ll(&p->modularll);
+      pop=gal_list_data_pop(&p->modularll);
 
       /* Set the (possibly) two values given for this warp. */
       v1 = pop->ndim   ? ((double *)(pop->array))[0] : 0.0f;

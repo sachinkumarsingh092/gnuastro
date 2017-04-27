@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/txt.h>
+#include <gnuastro/list.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
@@ -255,8 +256,8 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
          into the array by `gal_table_read_blank'. To keep the name, unit,
          and comment strings, trim the white space before and after each
          before using them here.  */
-      gal_data_add_to_ll(datall, NULL, type, 0, NULL, NULL, 0, -1, name,
-                         txt_trim_space(unit), txt_trim_space(comment) );
+      gal_list_data_add_alloc(datall, NULL, type, 0, NULL, NULL, 0, -1, name,
+                              txt_trim_space(unit), txt_trim_space(comment) );
 
       /* Put the number of this column into the status variable of the data
          structure. If the type is string, then also copy the width into
@@ -363,8 +364,8 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
              information). */
           if( *datall==NULL || format==TXT_FORMAT_TABLE )
             {
-              gal_data_add_to_ll(datall, NULL, GAL_TYPE_FLOAT64, 0,
-                                 NULL, NULL, 0, -1, NULL, NULL, NULL);
+              gal_list_data_add_alloc(datall, NULL, GAL_TYPE_FLOAT64, 0,
+                                      NULL, NULL, 0, -1, NULL, NULL, NULL);
               (*datall)->status=n;
             }
         }
@@ -464,7 +465,7 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
       while(datall!=NULL)
         {
           /* Pop the top element. */
-          data=gal_data_pop_from_ll(&datall);
+          data=gal_list_data_pop(&datall);
 
           /* The `status' value is the number of the column (counting from
              1, not 0). */
@@ -840,13 +841,13 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
 static gal_data_t *
 gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
-             struct gal_linkedlist_sll *indexll, int minmapsize, int format)
+             gal_list_sizet_t *indexll, int minmapsize, int format)
 {
   FILE *fp;
   char *line;
   char **tokens;
   gal_data_t *out=NULL;
-  struct gal_linkedlist_sll *ind;
+  gal_list_sizet_t *ind;
   size_t maxcolnum=0, rowind=0, lineno=0, ndim;
   size_t linelen=10;        /* `linelen' will be increased by `getline'. */
 
@@ -878,9 +879,9 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
         {
           ndim=1;
           maxcolnum = maxcolnum>ind->v+1 ? maxcolnum : ind->v+1;
-          gal_data_add_to_ll(&out, NULL, info[ind->v].type, ndim, dsize,
-                             NULL, 0, minmapsize, info[ind->v].name,
-                             info[ind->v].unit, info[ind->v].comment);
+          gal_list_data_add_alloc(&out, NULL, info[ind->v].type, ndim, dsize,
+                                  NULL, 0, minmapsize, info[ind->v].name,
+                                  info[ind->v].unit, info[ind->v].comment);
           out->disp_width=info[ind->v].disp_width;
           out->status=ind->v+1;
         }
@@ -944,7 +945,7 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
 
 gal_data_t *
 gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, size_t minmapsize)
+                   gal_list_sizet_t *indexll, size_t minmapsize)
 {
   return gal_txt_read(filename, &numrows, colinfo, indexll, minmapsize,
                       TXT_FORMAT_TABLE);
@@ -959,7 +960,7 @@ gal_txt_image_read(char *filename, size_t minmapsize)
 {
   size_t numimg, dsize[2];
   gal_data_t *img, *imginfo;
-  struct gal_linkedlist_sll *indexll=NULL;
+  gal_list_sizet_t *indexll=NULL;
 
   /* Get the image information. */
   imginfo=gal_txt_image_info(filename, &numimg, dsize);
@@ -1136,14 +1137,14 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
 
 static FILE *
 txt_open_file_write_info(gal_data_t *datall, char **fmts,
-                         struct gal_linkedlist_stll *comment,
-                         char *filename, int dontdelete)
+                         gal_list_str_t *comment, char *filename,
+                         int dontdelete)
 {
   FILE *fp;
   gal_data_t *data;
   char *tmp, *nstr;
   size_t i, j, num=0;
-  struct gal_linkedlist_stll *strt;
+  gal_list_str_t *strt;
   int nlen, nw=0, uw=0, tw=0, bw=0;
 
 
@@ -1228,8 +1229,8 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
 
 void
-gal_txt_write(gal_data_t *datall, struct gal_linkedlist_stll *comment,
-              char *filename, int dontdelete)
+gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
+              int dontdelete)
 {
   FILE *fp;
   char **fmts;

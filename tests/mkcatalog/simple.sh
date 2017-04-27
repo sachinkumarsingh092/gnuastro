@@ -48,4 +48,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --sn --upperlimitmag --magnitude --dec --ra --y --x
+$execname $img --x --y --ra --dec --magnitude --upperlimitmag --sn  \
+          --tableformat=txt

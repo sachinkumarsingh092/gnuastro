@@ -248,7 +248,7 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
         }
 
       /* Add this option to the print list. */
-      gal_linkedlist_add_to_ill(&p->singlevalue, option->key);
+      gal_list_i32_add(&p->singlevalue, option->key);
     }
   else
     {
@@ -271,8 +271,8 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
                               "to `--quantile' (`-u') must be between 0 "
                               "and 1, you had asked for %g (read from `%s')",
                               d[i], arg);
-              gal_linkedlist_add_to_dll(&p->tp_args, d[i]);
-              gal_linkedlist_add_to_ill(&p->singlevalue, option->key);
+              gal_list_f64_add(&p->tp_args, d[i]);
+              gal_list_i32_add(&p->singlevalue, option->key);
             }
           break;
 
@@ -374,7 +374,7 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct statisticsparams *p)
 {
-  struct gal_linkedlist_ill *tmp;
+  gal_list_i32_t *tmp;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* Check if the format of the output table is valid, given the type of
@@ -495,8 +495,8 @@ ui_read_check_only_options(struct statisticsparams *p)
 
   /* Reverse the list of statistics to print in one row and also the
      arguments, so it has the same order the user wanted. */
-  gal_linkedlist_reverse_ill(&p->singlevalue);
-  gal_linkedlist_reverse_dll(&p->tp_args);
+  gal_list_f64_reverse(&p->tp_args);
+  gal_list_i32_reverse(&p->singlevalue);
 }
 
 
@@ -672,7 +672,7 @@ static void
 ui_make_sorted_if_necessary(struct statisticsparams *p)
 {
   int is_necessary=0;
-  struct gal_linkedlist_ill *tmp;
+  gal_list_i32_t *tmp;
 
   /* Check in the one-row outputs. */
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
@@ -716,13 +716,13 @@ ui_read_columns(struct statisticsparams *p)
   int toomanycols=0;
   size_t size, counter=0;
   gal_data_t *cols, *tmp;
-  struct gal_linkedlist_stll *column=NULL;
+  gal_list_str_t *column=NULL;
 
   /* Define the columns that we want, note that they should be added to the
      list in reverse. */
   if(p->refcol)
-    gal_linkedlist_add_to_stll(&column, p->refcol, 0);
-  gal_linkedlist_add_to_stll(&column, p->column, 0);
+    gal_list_str_add(&column, p->refcol, 0);
+  gal_list_str_add(&column, p->column, 0);
 
   /* Read the desired column(s). */
   cols=gal_table_read(p->inputname, p->cp.hdu, column, p->cp.searchin,
@@ -733,7 +733,7 @@ ui_read_columns(struct statisticsparams *p)
   while(cols!=NULL)
     {
       /* Pop out the top column. */
-      tmp=gal_data_pop_from_ll(&cols);
+      tmp=gal_list_data_pop(&cols);
 
       /* Make sure it has the proper size. */
       if(tmp->size!=size)
@@ -771,7 +771,7 @@ ui_read_columns(struct statisticsparams *p)
     }
 
   /* Clean up. */
-  gal_linkedlist_free_stll(column, 0);
+  gal_list_str_free(column, 0);
 }
 
 
@@ -961,11 +961,10 @@ ui_free_report(struct statisticsparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  if(p->sorted!=p->input)
-    gal_data_free(p->sorted);
   gal_data_free(p->input);
   gal_data_free(p->reference);
-  gal_linkedlist_free_dll(p->tp_args);
+  gal_list_f64_free(p->tp_args);
+  gal_list_i32_free(p->singlevalue);
   gal_tile_full_free_contents(&p->cp.tl);
-  gal_linkedlist_free_ill(p->singlevalue);
+  if(p->sorted!=p->input) gal_data_free(p->sorted);
 }

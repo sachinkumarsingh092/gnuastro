@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 
 #include <gnuastro/fits.h> /* Includes `gnuastro/data.h' and `fitsio.h' */
-#include <gnuastro/linkedlist.h>
+#include <gnuastro/list.h>
 
 
 
@@ -179,7 +179,7 @@ gal_table_info(char *filename, char *hdu, size_t *numcols,
 /***************               Read a table               ***************/
 /************************************************************************/
 gal_data_t *
-gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
+gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
                int searchin, int ignorecase, int minmapsize);
 
 
@@ -188,16 +188,16 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 /***************              Write a table               ***************/
 /************************************************************************/
 void
-gal_table_comments_add_intro(struct gal_linkedlist_stll **comments,
+gal_table_comments_add_intro(gal_list_str_t **comments,
                              char *program_string, time_t *rawtime);
 
 void
-gal_table_write(gal_data_t *cols, struct gal_linkedlist_stll *comments,
+gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
                 int tableformat, char *filename, int dontdelete);
 
 void
 gal_table_write_log(gal_data_t *logll, char *program_string,
-                    time_t *rawtime, struct gal_linkedlist_stll *comments,
+                    time_t *rawtime, gal_list_str_t *comments,
                     char *filename, int dontdelete, int quiet);
 
 

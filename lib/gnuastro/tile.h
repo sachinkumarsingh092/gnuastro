@@ -173,10 +173,21 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 /***********************************************************************/
 /**************           Function-like macros        ******************/
 /***********************************************************************/
+
+/* Useful when the input and output types are already known. We want this
+   to be self-sufficient (and be possible to call it independent of
+   `GAL_TILE_PARSE_OPERATE'), so some variables (basic definitions) are
+   re-defined here are in `GAL_TILE_PARSE_OPERATE'.*/
 #define GAL_TILE_PO_OISET(IT, OT, OP, IN, OUT, PARSE_OUT, CHECK_BLANK) { \
-    gal_data_t *out_w=OUT; /* Since `OUT' may be NULL. */               \
-    OT *ost, *o = out_w ? out_w->array : NULL;                          \
+    int parse_out=(OUT && PARSE_OUT);                                   \
+    size_t increment=0, num_increment=1;                                \
+    gal_data_t *out_w=OUT; /* `OUT' may be NULL. */                     \
+    gal_data_t *iblock = gal_tile_block(IN);                            \
     IT b=0, *st=NULL, *i=IN->array, *f=i+IN->size;                      \
+    OT *ost=NULL, *o = out_w ? out_w->array : NULL;                     \
+    gal_data_t *oblock = OUT ? gal_tile_block(OUT) : NULL;              \
+    int hasblank = CHECK_BLANK ? gal_blank_present(IN, 0) : 0;          \
+    size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* Write the blank value for the input type into `b'). Note that */ \
     /* a tile doesn't necessarily have to have a type. */               \
@@ -375,11 +386,8 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 */
 #define GAL_TILE_PARSE_OPERATE(OP, IN, OUT, PARSE_OUT, CHECK_BLANK) {   \
     int parse_out=(OUT && PARSE_OUT);                                   \
-    size_t increment=0, num_increment=1;                                \
     gal_data_t *iblock = gal_tile_block(IN);                            \
     gal_data_t *oblock = OUT ? gal_tile_block(OUT) : NULL;              \
-    int hasblank = CHECK_BLANK ? gal_blank_present(IN, 0) : 0;          \
-    size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* A small sanity check. */                                         \
     if( parse_out && gal_data_dsize_is_different(iblock, oblock) )      \

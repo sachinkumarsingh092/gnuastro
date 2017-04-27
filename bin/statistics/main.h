@@ -55,8 +55,8 @@ struct statisticsparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.             */
-  struct gal_linkedlist_ill  *singlevalue; /* Single value calculations. */
-  struct gal_linkedlist_dll  *tp_args; /* Arguments for printing.        */
+  gal_list_i32_t         *singlevalue; /* Single value calculations.     */
+  gal_list_f64_t  *tp_args;  /* Arguments for printing.                  */
   char          *inputname;  /* Input filename.                          */
   char             *column;  /* Column name or number if input is table. */
   char             *refcol;  /* Reference column name or number.         */

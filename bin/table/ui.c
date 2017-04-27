@@ -317,7 +317,7 @@ ui_preparations(struct tableparams *p)
         for(i=1;i<=numcols;++i)
           {
             asprintf(&tmp, "%zu", i);
-            gal_linkedlist_add_to_stll(&p->columns, tmp, 0);
+            gal_list_str_add(&p->columns, tmp, 0);
           }
     }
 
@@ -325,7 +325,7 @@ ui_preparations(struct tableparams *p)
      (since this is a last-in-first-out linked list, the order that
      elements were added to the list is the reverse of the order that they
      will be popped). */
-  gal_linkedlist_reverse_stll(&p->columns);
+  gal_list_str_reverse(&p->columns);
   p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
                           cp->ignorecase, cp->minmapsize);
 
@@ -337,7 +337,7 @@ ui_preparations(struct tableparams *p)
 
   /* Now that the data columns are ready, we can free the string linked
      list. */
-  gal_linkedlist_free_stll(p->columns, 1);
+  gal_list_str_free(p->columns, 1);
 }
 
 
@@ -442,5 +442,5 @@ ui_free_report(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  gal_data_free_ll(p->table);
+  gal_list_data_free(p->table);
 }

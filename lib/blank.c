@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <gnuastro/data.h>
 #include <gnuastro/tile.h>
@@ -367,11 +368,15 @@ gal_blank_remove(gal_data_t *input)
 
 
 
-/* Print the blank value as a string. */
+/* Print the blank value as a string. For the integer types, we'll use the
+   PRIxNN keywords of `inttypes.h' (which is imported into Gnuastro from
+   Gnulib, so we don't necessarily rely on the host system having it). */
 char *
 gal_blank_as_string(uint8_t type, int width)
 {
-  char *blank;
+  char *blank=NULL, *fmt;
+
+  /* Print the given value. */
   switch(type)
     {
     case GAL_TYPE_BIT:
@@ -385,43 +390,51 @@ gal_blank_as_string(uint8_t type, int width)
       break;
 
     case GAL_TYPE_UINT8:
-      if(width) asprintf(&blank, "%*u", width,  (uint8_t)GAL_BLANK_UINT8);
-      else      asprintf(&blank, "%u",          (uint8_t)GAL_BLANK_UINT8);
+      fmt = width ? "%*"PRIu8 : "%*"PRIu8;
+      if(width) asprintf(&blank, fmt, width, (uint8_t)GAL_BLANK_UINT8);
+      else      asprintf(&blank, fmt,        (uint8_t)GAL_BLANK_UINT8);
       break;
 
     case GAL_TYPE_INT8:
-      if(width) asprintf(&blank, "%*d", width,  (int8_t)GAL_BLANK_INT8);
-      else      asprintf(&blank, "%d",          (int8_t)GAL_BLANK_INT8);
+      fmt = width ? "%*"PRId8 : "%*"PRId8;
+      if(width) asprintf(&blank, fmt, width, (int8_t)GAL_BLANK_INT8);
+      else      asprintf(&blank, fmt,        (int8_t)GAL_BLANK_INT8);
       break;
 
     case GAL_TYPE_UINT16:
-      if(width) asprintf(&blank, "%*u", width,  (uint16_t)GAL_BLANK_UINT16);
-      else      asprintf(&blank, "%u",          (uint16_t)GAL_BLANK_UINT16);
+      fmt = width ? "%*"PRIu16 : "%*"PRIu16;
+      if(width) asprintf(&blank, fmt, width, (uint16_t)GAL_BLANK_UINT16);
+      else      asprintf(&blank, fmt,        (uint16_t)GAL_BLANK_UINT16);
       break;
 
     case GAL_TYPE_INT16:
-      if(width) asprintf(&blank, "%*d", width,  (int16_t)GAL_BLANK_INT16);
-      else      asprintf(&blank, "%d",          (int16_t)GAL_BLANK_INT16);
+      fmt = width ? "%*"PRId16 : "%*"PRId16;
+      if(width) asprintf(&blank, fmt, width, (int16_t)GAL_BLANK_INT16);
+      else      asprintf(&blank, fmt,        (int16_t)GAL_BLANK_INT16);
       break;
 
     case GAL_TYPE_UINT32:
-      if(width) asprintf(&blank, "%*u", width,  (uint32_t)GAL_BLANK_UINT32);
-      else      asprintf(&blank, "%u",          (uint32_t)GAL_BLANK_UINT32);
+      fmt = width ? "%*"PRIu32 : "%*"PRIu32;
+      if(width) asprintf(&blank, fmt, width, (uint32_t)GAL_BLANK_UINT32);
+      else      asprintf(&blank, fmt,        (uint32_t)GAL_BLANK_UINT32);
       break;
 
     case GAL_TYPE_INT32:
-      if(width) asprintf(&blank, "%*d", width,  (int32_t)GAL_BLANK_INT32);
-      else      asprintf(&blank, "%d",          (int32_t)GAL_BLANK_INT32);
+      fmt = width ? "%*"PRId32 : "%*"PRId32;
+      if(width) asprintf(&blank, fmt, width, (int32_t)GAL_BLANK_INT32);
+      else      asprintf(&blank, fmt,        (int32_t)GAL_BLANK_INT32);
       break;
 
     case GAL_TYPE_UINT64:
-      if(width) asprintf(&blank, "%*lu", width, (uint64_t)GAL_BLANK_UINT64);
-      else      asprintf(&blank, "%lu",         (uint64_t)GAL_BLANK_UINT64);
+      fmt = width ? "%*"PRIu64 : "%*"PRIu64;
+      if(width) asprintf(&blank, fmt, width, (uint64_t)GAL_BLANK_UINT64);
+      else      asprintf(&blank, fmt,        (uint64_t)GAL_BLANK_UINT64);
       break;
 
     case GAL_TYPE_INT64:
-      if(width) asprintf(&blank, "%*ld", width, (int64_t)GAL_BLANK_INT64);
-      else      asprintf(&blank, "%ld",         (int64_t)GAL_BLANK_INT64);
+      fmt = width ? "%*"PRId64 : "%*"PRId64;
+      if(width) asprintf(&blank, fmt, width, (int64_t)GAL_BLANK_INT64);
+      else      asprintf(&blank, fmt,        (int64_t)GAL_BLANK_INT64);
       break;
 
     case GAL_TYPE_FLOAT32:

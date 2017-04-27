@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/wcs.h>
+#include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
@@ -198,7 +199,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      gal_linkedlist_add_to_stll(&p->inputnames, arg, 0);
+      gal_list_str_add(&p->inputnames, arg, 0);
       break;
 
 
@@ -283,7 +284,7 @@ ui_check_options_and_arguments(struct converttparams *p)
 
   /* Reverse the `inputnames' linked list, note that the `hdu' linked list
      was reversed during option parsing.*/
-  gal_linkedlist_reverse_stll(&p->inputnames);
+  gal_list_str_reverse(&p->inputnames);
 
 }
 
@@ -400,10 +401,10 @@ ui_make_change_struct(char *arg)
 static void
 ui_make_channels_ll(struct converttparams *p)
 {
-  char *hdu;
+  char *hdu=NULL;
   size_t dsize=0;
   gal_data_t *data;
-  struct gal_linkedlist_stll *name;
+  gal_list_str_t *name;
 
   /* Go through the input files and add the channel(s). */
   p->numch=0;
@@ -424,7 +425,7 @@ ui_make_channels_ll(struct converttparams *p)
         {
           /* Get the HDU value for this channel. */
           if(p->hdus)
-            gal_linkedlist_pop_from_stll(&p->hdus, &hdu);
+            hdu=gal_list_str_pop(&p->hdus);
           else
             error(EXIT_FAILURE, 0, "not enough HDUs. Every input FITS image "
                   "needs a HDU, you can use the `--hdu' (`-h') option once "
@@ -433,7 +434,7 @@ ui_make_channels_ll(struct converttparams *p)
           /* Read in the array and its WCS information. */
           data=gal_fits_img_read(name->v, hdu, p->cp.minmapsize);
           gal_wcs_read(name->v, hdu, 0, 0, &data->nwcs, &data->wcs);
-          gal_data_add_existing_to_ll(&p->chll, data);
+          gal_list_data_add(&p->chll, data);
 
           /* A FITS file only has one channel. */
           ++p->numch;
@@ -460,9 +461,9 @@ ui_make_channels_ll(struct converttparams *p)
       /* Blank: */
       else if(strcmp(name->v, BLANK_CHANNEL_NAME)==0)
         {
-          gal_data_add_to_ll(&p->chll, NULL, GAL_TYPE_INVALID, 0,
-                             &dsize, NULL, 0, p->cp.minmapsize, "blank",
-                             NULL, NULL);
+          gal_list_data_add_alloc(&p->chll, NULL, GAL_TYPE_INVALID, 0,
+                                  &dsize, NULL, 0, p->cp.minmapsize,
+                                  "blank", NULL, NULL);
           ++p->numch;
         }
 
@@ -487,14 +488,14 @@ ui_make_channels_ll(struct converttparams *p)
       else
         {
           data=gal_txt_image_read(name->v, p->cp.minmapsize);
-          gal_data_add_existing_to_ll(&p->chll, data);
+          gal_list_data_add(&p->chll, data);
           ++p->numch;
         }
     }
 
 
   /* Reverse the list of channels into the input order. */
-  gal_data_reverse_ll(&p->chll);
+  gal_list_data_reverse(&p->chll);
 }
 
 
@@ -609,7 +610,7 @@ ui_prepare_input_channels(struct converttparams *p)
 void
 ui_add_dot_use_automatic_output(struct converttparams *p)
 {
-  struct gal_linkedlist_stll *stll;
+  gal_list_str_t *stll;
   char *tmp, *firstname="output.txt", *suffix=p->cp.output;
 
   /* Find the first non-blank file name in the input(s). */
@@ -847,7 +848,7 @@ ui_free_report(struct converttparams *p)
   /* Free the allocated spaces */
   gal_data_free(p->fluxlow);
   gal_data_free(p->fluxhigh);
+  gal_list_str_free(p->hdus, 1);
   if(p->cp.output) free(p->cp.output);
-  gal_linkedlist_free_stll(p->hdus, 1);
-  gal_linkedlist_free_stll(p->inputnames, 0);
+  gal_list_str_free(p->inputnames, 0);
 }

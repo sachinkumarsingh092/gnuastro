@@ -392,13 +392,13 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
                            gal_data_t *snind, int s0d1D2)
 {
   char *str;
-  struct gal_linkedlist_stll *comments=NULL;
+  gal_list_str_t *comments=NULL;
 
   /* Comment for extension on further explanation. */
   asprintf(&str, "See also: `%s' HDU of output with "
            "`--checkdetection'", ( s0d1D2<2
                                    ? "PSEUDOS-FOR-SN": "DILATED" ));
-  gal_linkedlist_add_to_stll(&comments, str, 0);
+  gal_list_str_add(&comments, str, 0);
 
 
   /* Description comment. */
@@ -407,7 +407,7 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
               ? "S/N of dilated detections."
               : "Pseudo-detection S/N over initial detections." )
           : "Pseudo-detection S/N over initial undetections.");
-  gal_linkedlist_add_to_stll(&comments, str, 1);
+  gal_list_str_add(&comments, str, 1);
 
 
   /* Set the file name. */
@@ -415,7 +415,7 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
           ? ( s0d1D2==2 ? p->detsn_D_name : p->detsn_d_name )
           : p->detsn_s_name );
   threshold_write_sn_table(p, sn, snind, str, comments);
-  gal_linkedlist_free_stll(comments, 1);
+  gal_list_str_free(comments, 1);
 
 
   /* Abort NoiseChisel if the user asked for it. */
@@ -735,7 +735,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
   float *snarr;
   gal_data_t *sn, *snind;
   int32_t *l, *lf, curlab=1;
-  struct gal_linkedlist_stll *comments=NULL;
+  gal_list_str_t *comments=NULL;
   int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_INT32, num+1);
 
 
@@ -780,14 +780,14 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
       for(i=0;i<num;++i) { l[i]=i+1; snarr[i]=snarr[i+1]; }
 
       /* Make the comments, then write the table. */
-      gal_linkedlist_add_to_stll(&comments, "See also: `DILATED' "
-                                 "HDU of output with `--checkdetection'.", 1);
-      gal_linkedlist_add_to_stll(&comments, "S/N of finally dilated "
-                                 "detections.", 1);
+      gal_list_str_add(&comments, "See also: `DILATED' "
+                       "HDU of output with `--checkdetection'.", 1);
+      gal_list_str_add(&comments, "S/N of finally dilated "
+                       "detections.", 1);
 
 
       threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments);
-      gal_linkedlist_free_stll(comments, 1);
+      gal_list_str_free(comments, 1);
 
     }
 

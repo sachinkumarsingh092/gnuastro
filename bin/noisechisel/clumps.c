@@ -73,8 +73,8 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
 
   float *arr=p->conv->array;
   gal_data_t *indexs=cltprm->indexs;
+  gal_list_sizet_t *Q=NULL, *cleanup=NULL;
   size_t *a, *af, ind, *dsize=p->input->dsize;
-  struct gal_linkedlist_sll *Q=NULL, *cleanup=NULL;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t n1, nlab, rlab, curlab=1, *clabel=p->clabel->array;
 
@@ -153,8 +153,8 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
                     "flux regions they aren't", PACKAGE_BUGREPORT);
 
             /* Add this pixel to a queue. */
-            gal_linkedlist_add_to_sll(&Q, *a);
-            gal_linkedlist_add_to_sll(&cleanup, *a);
+            gal_list_sizet_add(&Q, *a);
+            gal_list_sizet_add(&cleanup, *a);
             clabel[*a] = CLUMPS_TMPCHECK;
 
             /* Find all the pixels that have the same flux and are
@@ -162,7 +162,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
             while(Q!=NULL)
               {
                 /* Pop an element from the queue. */
-                gal_linkedlist_pop_from_sll(&Q, &ind);
+                ind=gal_list_sizet_pop(&Q);
 
                 /* Look at the neighbors and see if we already have a
                    label. */
@@ -184,8 +184,8 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
                              if( nlab==CLUMPS_INIT && arr[nind]==arr[*a] )
                                {
                                  clabel[nind]=CLUMPS_TMPCHECK;
-                                 gal_linkedlist_add_to_sll(&Q, nind);
-                                 gal_linkedlist_add_to_sll(&cleanup, nind);
+                                 gal_list_sizet_add(&Q, nind);
+                                 gal_list_sizet_add(&cleanup, nind);
                                }
                              else
                                n1=( nlab>0
@@ -246,7 +246,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
                the image and were a river pixel. */
             while(cleanup!=NULL)
               {
-                gal_linkedlist_pop_from_sll(&cleanup, &ind);
+                ind=gal_list_sizet_pop(&cleanup);
                 /* If it was on the sides of the image, it has been
                    changed to a river pixel. */
                 if( clabel[ ind ]==CLUMPS_TMPCHECK ) clabel[ ind ]=rlab;
@@ -1057,10 +1057,16 @@ clumps_find_make_sn_table(void *in_prm)
                                                          p->clabel->type),
                                        ndim, dsize, scoord);
 
-          /* Add the index of every sky element to the array of indexs. */
+          /* Add the index of every sky element to the array of
+             indexs. Note that since we know the array is always of type
+             `int32_t', we can call the `GAL_TILE_PO_OISET' macro to avoid
+             having to deal with multiple possible types in
+             `GAL_TILE_PARSE_OPERATE'. Since the OUT macro-variable is
+             NULL, the `int' is just a place-holder, it will not be
+             used. */
           c=0;
           indarr=cltprm.indexs->array;
-          GAL_TILE_PARSE_OPERATE({
+          GAL_TILE_PO_OISET(int32_t, int, {
               /* This pixel's index over all the image. */
               ind = (int32_t *)i - (int32_t *)(p->clabel->array);
               gal_dimension_index_to_coord(ind, ndim, dsize, icoord);
@@ -1110,8 +1116,9 @@ clumps_find_make_sn_table(void *in_prm)
 
           /* Set all river pixels to CLUMPS_INIT (to be distinguishable
              from the detected regions). */
-          GAL_TILE_PARSE_OPERATE({if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;},
-                                 tile, NULL, 0, 1);
+          GAL_TILE_PO_OISET(int32_t, int,
+                            {if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;},
+                            tile, NULL, 0, 1);
 
           /* For a check, the step variable will be set. */
           if(clprm->step==1)
@@ -1170,7 +1177,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
   struct timeval t1;
   size_t i, j, c, numsn=0;
   struct clumps_params clprm;
-  struct gal_linkedlist_stll *comments=NULL;
+  gal_list_str_t *comments=NULL;
   gal_data_t *sn, *snind, *quant, *claborig;
 
   /* Get starting time for later reporting if necessary. */
@@ -1305,16 +1312,14 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
     {
       /* Make the comments, then write the table and free the comments. */
       if(p->cp.numthreads>1)
-        gal_linkedlist_add_to_stll(&comments, "NOTE: In multi-threaded mode, "
-                                   "clump IDs differ in each run and are not "
-                                   "sorted.", 1);
-      gal_linkedlist_add_to_stll(&comments, "See also: `SKY_CLUMPS_FOR_SN' "
-                                 "HDU of output with `--checksegmentation'.",
-                                 1);
-      gal_linkedlist_add_to_stll(&comments, "S/N of clumps over undetected "
-                                 "regions.", 1);
+        gal_list_str_add(&comments, "NOTE: In multi-threaded mode, clump "
+                         "IDs differ in each run and are not sorted.", 1);
+      gal_list_str_add(&comments, "See also: `SKY_CLUMPS_FOR_SN' HDU of "
+                       "output with `--checksegmentation'.", 1);
+      gal_list_str_add(&comments, "S/N of clumps over undetected regions.",
+                       1);
       threshold_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);
-      gal_linkedlist_free_stll(comments, 1);
+      gal_list_str_free(comments, 1);
     }
 
 

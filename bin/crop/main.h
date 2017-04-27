@@ -81,7 +81,7 @@ struct cropparams
 {
   /* Directly from command-line */
   struct gal_options_common_params cp;  /* Common parameters.             */
-  struct gal_linkedlist_stll  *inputs;  /* All input FITS files.          */
+  struct gal_list_str_t       *inputs;  /* All input FITS files.          */
   size_t             hstartwcs;  /* Header keyword No. to start read WCS. */
   size_t               hendwcs;  /* Header keyword No. to end read WCS.   */
   uint8_t       zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */

@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
@@ -386,7 +387,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
       sprintf(message, "Random number generator type: %s",
               gsl_rng_name(p->rng));
       gal_timing_report(NULL, message, 1);
-      sprintf(message, "Random number generator seed: %ld", p->rng_seed);
+      sprintf(message, "Random number generator seed: %"PRId64, p->rng_seed);
       gal_timing_report(NULL, message, 1);
     }
 }

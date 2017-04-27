@@ -44,7 +44,7 @@ struct TEMPLATEparams
 {
   /* From command-line */
   struct gal_options_common_params     cp; /* Common parameters.        */
-  struct gal_linkedlist_strll *multivalue; /* Pointer to multivalue.    */
+  gal_list_str_t  *multivalue; /* Pointer to multivalue.    */
   char             *inputname;  /* Input filename.                      */
   uint8_t              *onoff;  /* How to store on/off options.         */
 

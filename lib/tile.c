@@ -486,7 +486,7 @@ gal_data_t *
 gal_tile_block_check_tiles(gal_data_t *tilesll)
 {
   int32_t *arr;
-  size_t i, dsize=gal_data_num_in_ll(tilesll);
+  size_t i, dsize=gal_list_data_number(tilesll);
   gal_data_t *ids, *out, *block=gal_tile_block(tilesll);
 
   /* Allocate the array to keep the IDs of each tile. */
@@ -1252,7 +1252,7 @@ gal_tile_full_blank_flag(gal_data_t *tile_ll, size_t numthreads)
 {
   /* Go over all the tiles and update their blank flag. */
   gal_threads_spin_off(tile_full_blank_flag, tile_ll,
-                       gal_data_num_in_ll(tile_ll), numthreads);
+                       gal_list_data_number(tile_ll), numthreads);
 }
 
 

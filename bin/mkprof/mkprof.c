@@ -564,9 +564,9 @@ mkprof(struct mkprofparams *p)
   pthread_barrier_t b;
   struct mkonthread *mkp;
   size_t i, *indexs, thrdcols;
+  gal_list_str_t *comments=NULL;
   size_t nt=p->cp.numthreads, nb;
   long onaxes[2], os=p->oversample;
-  struct gal_linkedlist_stll *comments=NULL;
 
 
   /* Allocate the arrays to keep the thread and parameters for each
@@ -634,10 +634,10 @@ mkprof(struct mkprofparams *p)
   if(p->cp.log)
     {
       asprintf(&tmp, "Zeropoint: %g", p->zeropoint);
-      gal_linkedlist_add_to_stll(&comments, tmp, 0);
+      gal_list_str_add(&comments, tmp, 0);
       gal_table_write_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
                           LOGFILENAME, p->cp.dontdelete, p->cp.quiet);
-      gal_linkedlist_free_stll(comments, 1);
+      gal_list_str_free(comments, 1);
     }
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy

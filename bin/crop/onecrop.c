@@ -180,9 +180,9 @@ crop_polygonparser(struct cropparams *p)
 {
   size_t dim=0;
   char *tailptr;
-  double read[2], *array;
-  struct gal_linkedlist_tdll *gal_linkedlist_tdll=NULL;
   char *pt=p->polygon;
+  double read, *array;
+  gal_list_f64_t *vertices=NULL;
 
   /* If control reached here, then the cropped region is not defined by its
      center. So it makes no sense to check if the center is blank. */
@@ -220,10 +220,10 @@ crop_polygonparser(struct cropparams *p)
       else
         {
           /* Read the number: */
-          read[dim]=strtod(pt, &tailptr);
+          read=strtod(pt, &tailptr);
 
           /* Check if there actually was a number.
-          printf("\n\n------\n%zu: %f (%s)\n", dim, read[dim], tailptr);
+          printf("\n\n------\n%zu: %f (%s)\n", dim, read, tailptr);
           */
 
           /* Make sure if a number was read at all? */
@@ -243,36 +243,37 @@ crop_polygonparser(struct cropparams *p)
                   "sequence in the value to the `--polygon' option, error "
                   "detected at '%s'", pt, tailptr);
 
-          /* If this was the second dimension, then put the values
-             into the linked list: */
-          if(dim==1)
-            gal_linkedlist_add_to_tdll(&gal_linkedlist_tdll, read[0],
-                                       read[1]);
+          /* Add the read coordinate to the list of coordinates. */
+          gal_list_f64_add(&vertices, read);
 
           /* The job here is done, start from tailptr */
           pt=tailptr;
         }
     }
 
-  /* Convert the linked list to an array: */
-  gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array,
-                                   &p->nvertices);
+  /* Put the coordinates into an array while reversing their order so they
+     correspond to the user's order, then put it in the right place.*/
+  array=gal_list_f64_to_array(vertices, 1, &p->nvertices);
   if(p->mode==IMGCROP_MODE_IMG) { p->ipolygon=array; p->wpolygon=NULL;  }
   else                          { p->ipolygon=NULL;  p->wpolygon=array; }
 
-  /* Put them in the proper order in WCS mode: */
+  /* The number of vertices is actually the number of nodes in the list
+     divided by the dimension of the dataset (note that we were counting
+     the dimension from 0. */
+  p->nvertices/=(dim+1);
 
   /* For a check:
   {
     size_t i;
-    double *polygon=p->imgmode?p->ipolygon:p->wpolygon;
+    double *polygon=p->mode==IMGCROP_MODE_IMG?p->ipolygon:p->wpolygon;
     for(i=0;i<p->nvertices;++i)
       printf("(%f, %f)\n", polygon[i*2], polygon[i*2+1]);
   }
+  exit(0);
   */
 
   /* Clean up: */
-  gal_linkedlist_free_tdll(gal_linkedlist_tdll);
+  gal_list_f64_free(vertices);
 }
 
 
