@@ -239,7 +239,7 @@ makepixbypix(struct mkonthread *mkp)
   double truncr=mkp->truncr, approx, hp=0.5f/mkp->p->oversample;
 
   /* lQ: Largest. sQ: Smallest in queue */
-  gal_list_tosizet_t *lQ=NULL, *sQ;
+  gal_list_dosizet_t *lQ=NULL, *sQ;
 
   /* Find the nearest pixel to the profile center and add it to the
      queue. */
@@ -258,7 +258,7 @@ makepixbypix(struct mkonthread *mkp)
 
   /* Start the queue: */
   byt[p]=1;
-  gal_list_tosizet_add( &lQ, &sQ, p, r_circle(p, mkp) );
+  gal_list_dosizet_add( &lQ, &sQ, p, r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
   if(mkp->func==PROFILE_SERSIC || mkp->func==PROFILE_MOFFAT
@@ -276,7 +276,7 @@ makepixbypix(struct mkonthread *mkp)
              over sampled image. But all the profile parameters are in the
              non-oversampled image. So we divide the distance by os
              (p->oversample in double type) */
-          gal_list_tosizet_pop_smallest(&lQ, &sQ, &p, &circ_r);
+          p=gal_list_dosizet_pop_smallest(&lQ, &sQ, &circ_r);
           mkp->x=(p/is1-xc)/os;
           mkp->y=(p%is1-yc)/os;
           r_el(mkp);
@@ -312,7 +312,7 @@ makepixbypix(struct mkonthread *mkp)
               if(byt[nind]==0)
                 {
                   byt[nind]=1;
-                  gal_list_tosizet_add( &lQ, &sQ, nind, r_circle(nind, mkp) );
+                  gal_list_dosizet_add( &lQ, &sQ, nind, r_circle(nind, mkp) );
                 }
             } );
 
@@ -323,7 +323,7 @@ makepixbypix(struct mkonthread *mkp)
 
   /* All the pixels that required integration or random points are now
      done, so we don't need an ordered array any more. */
-  gal_list_tosizet_to_sizet(lQ, &Q);
+  gal_list_dosizet_to_sizet(lQ, &Q);
 
 
   /* Order doesn't matter any more, add all the pixels you find. */

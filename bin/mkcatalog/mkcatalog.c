@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <string.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
@@ -769,7 +770,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       asprintf(&str, "Random number generator name: %s", p->rngname);
       gal_list_str_add(&comments, str, 0);
 
-      asprintf(&str, "Random number generator seed: %lu", p->seed);
+      asprintf(&str, "Random number generator seed: %"PRIu64, p->seed);
       gal_list_str_add(&comments, str, 0);
 
       asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",

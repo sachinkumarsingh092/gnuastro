@@ -528,16 +528,16 @@ Review of library fundamentals
 Gnuastro library
 
 * Configuration information::   General information about library config.
-* Library data types::
-* Library blank values::
-* Library data container::
+* Library data types::          Definitions and functions for types in Gnuastro.
+* Library blank values::        Blank values and functions to deal with them.
+* Library data container::      General data container in Gnuastro.
 * Linked lists::                Various types of linked lists.
-* Table input output::
-* Arithmetic on datasets::
-* Tessellation library::
+* Table input output::          Reading and writing table columns.
+* Arithmetic on datasets::      Arithmetic operations on a dataset.
+* Tessellation library::        Functions for working on tiles.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
-* Text files::
+* Text files::                  Functions to work on Text files.
 * Git wrappers::                Wrappers for functions in libgit2.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
@@ -553,12 +553,15 @@ Data container (@file{data.h})
 
 Linked lists (@file{linkedlist.h})
 
-* List of strings::
-* List of int32_t::
-* List of size_t::
-* Ordered list of size_t::
-* Two way list of ordered size_t::
-* List of gal_data_t::
+* List of strings::             Simply linked list of strings.
+* List of int32_t::             Simply linked list of int32_ts.
+* List of size_t::              Simply linked list of size_ts.
+* List of float::               Simply linked list of floats.
+* List of double::              Simply linked list of doubles
+* List of void::                Simply linked list of void * pointers.
+* Ordered list of size_t::      Simply linked, ordered list of size_t.
+* Doubly linked ordered list of size_t::  Definition and functions.
+* List of gal_data_t::          Simply linked list Gnuastro's generic datatype.
 
 FITS files (@file{fits.h})
 
@@ -16437,14 +16440,13 @@ place of @code{PREFIX}). Also copy the comments to help readability later.
 #   SOURCE: the name of the `.c' source file without the `.c', for
 #      example, for `myprog.c', SOURCE would be `myprog'.
 #
-#   ARGUMENTS: any arguments to run the program with after
+#   ARGUMENTS: [optional] any arguments to run the program with after
 #      compilation. If there are multiple arguments, put them in
-#      double quotes, for example "img1.fits img2.fits". This is
-#      optional.
+#      double quotes, for example "img1.fits img2.fits".
 #
-#   OTHER-LIBRARIES: If your program depends on any libraries other
-#      than Gnuastro's dependencies. For example if it needs libfirst
-#      and libsecond, use "-lfirst -lsecond". This is optional.
+#   OTHER-LIBRARIES: [optional] if your program depends on any
+#      libraries other than Gnuastro's dependencies. For example
+#      if it needs libfirst and libsecond, use "-lfirst -lsecond".
 #
 # When there are no arguments and no libraries other than Gnuastro's
 # dependencies, you can simply run this command (when your source is
@@ -16548,16 +16550,16 @@ documentation will correspond to your installed version.
 
 @menu
 * Configuration information::   General information about library config.
-* Library data types::
-* Library blank values::
-* Library data container::
+* Library data types::          Definitions and functions for types in Gnuastro.
+* Library blank values::        Blank values and functions to deal with them.
+* Library data container::      General data container in Gnuastro.
 * Linked lists::                Various types of linked lists.
-* Table input output::
-* Arithmetic on datasets::
-* Tessellation library::
+* Table input output::          Reading and writing table columns.
+* Arithmetic on datasets::      Arithmetic operations on a dataset.
+* Tessellation library::        Functions for working on tiles.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
-* Text files::
+* Text files::                  Functions to work on Text files.
 * Git wrappers::                Wrappers for functions in libgit2.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
@@ -16655,8 +16657,219 @@ header.
 @node Library data types, Library blank values, Configuration information, Gnuastro library
 @subsection Library data types (@file{type.h})
 
-This header defines basic type identifiers and functions relating to the
-different types.
+Data in astronomy can have many types, numeric (numbers) and strings
+(names, identifiers). The former can also be divided into integers and
+floats, see @ref{Numeric data types} for a thorough discussion of the
+different numeric data types and which one is useful for different
+contexts.
+
+To deal with the very large diversity of types that are available (and used
+in different contexts), in Gnuastro each type is identified with global
+integer variable with a fixed name, this variable is then passed onto
+functions that can work on any type or is stored in Gnuastro's @ref{Generic
+data container} as one piece of meta-data.
+
+The actual values within these integer constants is irrelevant and you
+should never rely on them. When you need to check, explicitly use the named
+variable in the table below. If you want to check with more than one type,
+you can use C's @code{switch} statement.
+
+Since Gnuastro heavily deals with file input-output, the types it defines
+are fixed width types, these types are portable to all systems and are
+defined in the standard C header @file{stdint.h}. You don't need to include
+this header, it is included by any Gnuastro header that deals with the
+different types. However, the most commonly used types in a C (or C++)
+program (for example @code{int} or @code{long} are not defined by their
+exact width (storage), but by their minimum storage. So for example on some
+systems, @code{int} may be 2 bytes (16-bits, the minimum required by the
+standard) and on others it may be 4 bytes (32-bits, common in modern
+systems).
+
+With every type, a unique ``blank'' value (or place holder showing the
+absence of data) can be defined. Please see @ref{Library blank values} for
+constants that Gnuastro recognizes as a blank value for each type. See
+@ref{Numeric data types} for more explanation on the limits and particular
+aspects of each type.
+
+@deffn {Global integer} GAL_TYPE_INVALID
+This is just a place holder to specifically mark that no type has been set.
+@end deffn
+
+@deffn {Global integer} GAL_TYPE_BIT
+Identifier for a bit-stream. Currently no program in Gnuastro works
+directly on bits, but features will be added in the future.
+@end deffn
+
+@deffn {Global integer} GAL_TYPE_UINT8
+Identifier for an unsigned, 8-bit integer type: @code{uint8_t} (from
+@file{stdint.h}), or an @code{unsigned char} in most modern systems.
+@end deffn
+
+@deffn {Global integer} GAL_TYPE_INT8
+Identifier for a signed, 8-bit integer type: @code{int8_t} (from
+@file{stdint.h}), or an @code{signed char} in most modern systems.
+@end deffn
+
+@deffn {Global integer} GAL_TYPE_UINT16
+Identifier for an unsigned, 16-bit integer type: @code{uint16_t} (from
+@file{stdint.h}), or an @code{unsigned short} in most modern systems.
+@end deffn
+
+@deffn {Global integer} GAL_TYPE_INT16
+Identifier for a signed, 16-bit integer type: @code{int16_t} (from
+@file{stdint.h}), or a @code{short} in most modern systems.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_UINT32
+Identifier for an unsigned, 32-bit integer type: @code{uint32_t} (from
+@file{stdint.h}), or an @code{unsigned int} in most modern systems.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_INT32
+Identifier for a signed, 32-bit integer type: @code{int32_t} (from
+@file{stdint.h}), or an @code{int} in most modern systems.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_UINT64
+Identifier for an unsigned, 64-bit integer type: @code{uint64_t} (from
+@file{stdint.h}), or an @code{unsigned long} in most modern 64-bit systems.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_INT64
+Identifier for a signed, 64-bit integer type: @code{int64_t} (from
+@file{stdint.h}), or an @code{long} in most modern 64-bit systems.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_SIZE_T
+Identifier for a @code{size_t} type. This is just an alias to
+@code{uint32}, or @code{uint64} types for 32-bit, or 64-bit systems
+respectively.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_FLOAT32
+Identifier for a 32-bit single precision floating point type or
+@code{float} in C.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_FLOAT64
+Identifier for a 64-bit double precision floating point type or
+@code{double} in C.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_COMPLEX32
+Identifier for a complex number composed of two @code{float} types. Note
+that the complex type is not yet fully implemented in all Gnuastro's
+programs.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_COMPLEX64
+Identifier for a complex number composed of two @code{double} types. Note
+that the complex type is not yet fully implemented in all Gnuastro's
+programs.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_STRING
+Identifier for a string of characters (@code{char *}).
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_STRLL
+Identifier for a linked list of string of characters
+(@code{gal_list_str_t}, see @ref{List of strings}).
+@end deffn
+
+@noindent
+The functions below are defined to make working with the integer constants
+above easier. In the functions below, the constants above can be used for
+the @code{type} input argument.
+
+@deftypefun size_t gal_type_sizeof (uint8_t @code{type})
+Return the number of bytes occurpied by @code{type}. Internally, this
+function uses C's @code{sizeof} operator to measure the size of each type.
+@end deftypefun
+
+@deftypefun {char *} gal_type_to_string (uint8_t @code{type}, int @code{long_name})
+Return a string that contains the name of the type. This can be used in
+messages to the users when your function/program accepts many types. It can
+return two types of string identifiers (short like @code{f32} or long like
+@code{float32}). The output string is statically allocated, so it should
+not be freed. The strings it will return for each type are the identifiers
+of the types in @ref{Numeric data types}.
+@end deftypefun
+
+@deftypefun uint8_t gal_type_from_string (char @code{*str})
+Return the Gnuastro integer constant that corresponds to the string
+@code{str}. This is effectively the inverse of the
+@code{gal_type_to_string} function and accepts both the short and long
+formats of each type.
+@end deftypefun
+
+@deftypefun void gal_type_min (uint8_t @code{type}, void @code{*in})
+Put the minimum possible value of @code{type} in the space pointed to by
+@code{in}. Since the value can have any type, this function doesn't return
+anything, it assumes the space for the given type is available to @code{in}
+and writes the value there. Here is one example
+@example
+int32_t min;
+gal_type_min(GAL_TYPE_INT32, &min);
+@end example
+
+@noindent
+Note: Do not use the minimum value for a blank value of a general
+(initially unknown) type, please use the constants/functions provided in
+@ref{Library blank values} for the definition and usage of blank values.
+@end deftypefun
+
+@deftypefun void gal_type_max (uint8_t @code{type}, void @code{*in})
+Put the maximum possible value of @code{type} in the space pointed to by
+@code{in}. Since the value can have any type, this function doesn't return
+anything, it assumes the space for the given type is available to @code{in}
+and writes the value there. Here is one example
+@example
+uint16_t max;
+gal_type_max(GAL_TYPE_INT16, &max);
+@end example
+
+@noindent
+Note: Do not use the maximum value for a blank value of a general
+(initially unknown) type, please use the constants/functions provided in
+@ref{Library blank values} for the definition and usage of blank values.
+@end deftypefun
+
+@deftypefun int gal_type_is_linked_list (uint8_t @code{type})
+Return 1 if the type is a linked list and zero otherwise.
+@end deftypefun
+
+@deftypefun int gal_type_out (int @code{first_type}, int @code{second_type})
+Return the larger of the two given types which can be used for the type of
+the output of an operation involving the two input types.
+@end deftypefun
+
+@deftypefun {char *} gal_type_bit_string (void @code{*in}, size_t @code{size})
+Return the bit-string in the @code{size} bytes that @code{in} points
+to. The string is dynamically allocated and must be freed afterwards. You
+can use it to inspect the bits within one region of memory. Here is one
+short example:
+
+@example
+int32_t a=2017;
+char *bitstr=gal_type_bit_string(&a, 4);
+printf("%d: %s (%X)\n", a, bitstr, a);
+free(bitstr);
+@end example
+
+@noindent
+It will produce:
+@example
+2017: 11100001000001110000000000000000  (7E1)
+@end example
+
+As the example above shows, the bit-string is not the most efficient way to
+inspect bits. If you are familiar with hexademical notation, it is much
+more compact, see @url{https://en.wikipedia.org/wiki/Hexadecimal}. You can
+use @code{printf}'s @code{%x} or @code{%X} to print integers in hexadecimal
+format.
+@end deftypefun
+
 
 @node Library blank values, Library data container, Library data types, Gnuastro library
 @subsection Library blank values (@file{blank.h})
@@ -16665,9 +16878,10 @@ pixel in an image), a place-holder is necessary for the element if we don't
 have a value to fill it with (for example the CCD cannot read those
 pixels). We cannot simply shift all the other pixels to fill in the one we
 have no value for. In other cases, it often occurs that the field of sky
-that you are studying is not a clean rectangle. You need a way to separate
-the pixels outside your scientific field from those inside it. Blank values
-are these place holders.
+that you are studying is not a clean rectangle to nicely fit into the
+boundaries of an image. You need a way to separate the pixels outside your
+scientific field from those inside it. Blank values act as these place
+holders in a dataset. They have no usable value but they have a position.
 
 @cindex NaN
 Every type needs a corresponding blank value (see @ref{Numeric data types}
@@ -16679,8 +16893,138 @@ the given type: for signed types (that allow negatives), the minimum
 possible value is used as blank and for unsigned types (that only accept
 positives), the maximum possible value is used. To be generic and easy to
 read/write we define a macro for these blank values and strongly encourage
-you tonly use these. Never make any assumption on the value of a type's
+you only use these, and never make any assumption on the value of a type's
 blank value.
+
+@cindex NaN
+The IEEE NaN blank value type is defined to fail on any comparison, so if
+you are dealing with floating point types, you cannot use equality (a NaN
+will @emph{not} be equal to a NaN). If you know your dataset if floating
+point, you can use the @code{isnan} function in C's @file{math.h}
+header. For a description of numeric data types see @ref{Numeric data
+types}. For the constants identifying integers, please see @ref{Library
+data types}.
+
+@deffn {Global integer}  GAL_BLANK_UINT8
+Blank value for an unsigned, 8-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_INT8
+Blank value for a signed, 8-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_UINT16
+Blank value for an unsigned, 16-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_INT16
+Blank value for a signed, 16-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_UINT32
+Blank value for an unsigned, 32-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_INT32
+Blank value for a signed, 32-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_UINT64
+Blank value for an unsigned, 64-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_INT64
+Blank value for a signed, 64-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_SIZE_T
+Blank value for @code{size_t} type (@code{uint32_t} or @code{uint64_t} in
+32-bit or 64-bit systems).
+@end deffn
+
+@cindex NaN
+@deffn {Global integer}  GAL_BLANK_FLOAT32
+Blank value for a single precision, 32-bit floating point type (IEEE NaN
+value).
+@end deffn
+
+@cindex NaN
+@deffn {Global integer}  GAL_BLANK_FLOAT64
+Blank value for a double precision, 64-bit floating point type (IEEE NaN
+value).
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_STRING
+Blank value for string types (this is itsself a string, it isn't the
+@code{NULL} pointer).
+@end deffn
+
+@noindent
+The functions below can be used to work with blank pixels.
+
+@deftypefun void gal_blank_write (void @code{*pointer}, uint8_t @code{type})
+Write the blank value for the given @code{type} into the space that
+@code{pointer} points to. This can be used when the space is already
+allocated (for example one element in an array or a statically allocated
+variable).
+@end deftypefun
+
+@deftypefun {void *} gal_blank_alloc_write (uint8_t @code{type})
+Allocate the space required to keep the blank for the given data type
+@code{type}, write the blank value into it and return the pointer to it.
+@end deftypefun
+
+@deftypefun void gal_blank_initialize (gal_data_t @code{*input})
+Initialize all the elements in the @code{input} dataset to the blank value
+that corresponds to its type. If @code{input} is a tile over a larger
+dataset, only the region that the tile covers will be set to blank.
+@end deftypefun
+
+
+@deftypefun int gal_blank_present (gal_data_t @code{*input}, int @code{updateflag})
+Return 1 if the dataset has a blank value and zero if it doesn't. Before
+checking the dataset, this function will look at @code{input}'s flags. If
+the @code{GAL_DATA_FLAG_HASBLANK} or @code{GAL_DATA_FLAG_DONT_CHECK_ZERO}
+bits of @code{input->flag} are set to 1, this function will not do any
+check and will just use the information in the flags. This can greatly
+speed up processing when a dataset needs to be checked multiple times.
+
+If you want to re-check a dataset which has non-zero flags, then explicitly
+set the appropriate flag to zero before calling this function. When there
+are no other flags, you can just set @code{input->flags} to zero, otherwise
+you can use this expression:
+
+@example
+input->flags &= ~(GAL_DATA_FLAG_HASBLANK | GAL_DATA_FLAG_USE_ZERO);
+@end example
+
+When @code{updateflags} is zero, this function has no side-effects on the
+dataset: it will not toggle the flags. When the dataset's flags were not
+used and @code{updateflags} is non-zero, this function will set the flags
+appropriately to avoid having to re-check the dataset in future calls.
+@end deftypefun
+
+
+@deftypefun {gal_data_t *} gal_blank_flag (gal_data_t @code{*input})
+Create a dataset of the the same size as the input, but with an
+@code{uint8_t} type that has a value of 1 for data that are blank and 0 for
+those that aren't.
+@end deftypefun
+
+
+@deftypefun void gal_blank_remove (gal_data_t @code{*input})
+Remove blank elements from a dataset, convert it to a 1D dataset, and
+adjust the size properly (the number of non-blank elements). In practice
+this function doesn't @code{realloc} the input array, it just shifts the
+blank elements to the end and adjusts the size elements of the
+@code{gal_data_t}, see @ref{Generic data container}.
+@end deftypefun
+
+@deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
+Write the blank value for the given data type @code{type} into a string and
+return it. The space for the string is dynamically allocated so it must be
+freed after you are done with it.
+@end deftypefun
 
 @node Library data container, Linked lists, Library blank values, Gnuastro library
 @subsection Data container (@file{data.h})
@@ -17259,12 +17603,15 @@ structure. All these structures and functions are defined and declared in
 
 
 @menu
-* List of strings::
-* List of int32_t::
-* List of size_t::
-* Ordered list of size_t::
-* Two way list of ordered size_t::
-* List of gal_data_t::
+* List of strings::             Simply linked list of strings.
+* List of int32_t::             Simply linked list of int32_ts.
+* List of size_t::              Simply linked list of size_ts.
+* List of float::               Simply linked list of floats.
+* List of double::              Simply linked list of doubles
+* List of void::                Simply linked list of void * pointers.
+* Ordered list of size_t::      Simply linked, ordered list of size_t.
+* Doubly linked ordered list of size_t::  Definition and functions.
+* List of gal_data_t::          Simply linked list Gnuastro's generic datatype.
 @end menu
 
 @node List of strings, List of int32_t, Linked lists, Linked lists
@@ -17297,7 +17644,7 @@ remain. Here is one short/simple example of initializing and adding
 elements to a string list:
 
 @example
-gal_list_str_t *strlist=NULL;
+gal_list_str_t *strlist;
 gal_list_str_add(&strlist, "bottom of list.");
 gal_list_str_add(&strlist, "second last element of list.");
 @end example
@@ -17324,7 +17671,7 @@ more user-friendly, format. For example the following code snippet.
 
 @example
 size_t i;
-gal_list_str_t *tmp=NULL;
+gal_list_str_t *tmp;
 for(tmp=list; tmp!=NULL; tmp=tmp->next)
   printf("String %zu: %s\n", i, tmp->v);
 @end example
@@ -17336,7 +17683,7 @@ calling this function becomes the bottom node after it.
 @end deftypefun
 
 @deftypefun void gal_list_str_free (gal_list_str_t @code{*list}, int @code{freevalue})
-Free each node in @code{list}. If @code{freevalue} is not zero, also free
+Free every node in @code{list}. If @code{freevalue} is not zero, also free
 the string within the nodes.
 @end deftypefun
 
@@ -17349,25 +17696,28 @@ the string within the nodes.
 Signed integers are the best types when you are dealing with a positive or
 negative integers. The are generally useful in many contexts, for example
 when you want to keep the order of a series of states (each state stored as
-a given number in an @code{enum} for example).
+a given number in an @code{enum} for example). On many modern systems,
+@code{int32_t} is just an alias for @code{int}, so you can use them
+interchably. To make sure, check the size of @code{int} on your system:
 
 @deftp {Type (C @code{struct})} gal_list_i32_t
-A single node in a list containing a 32-bit signed integers (see
+A single node in a list containing a 32-bit signed integer (see
 @ref{Numeric data types}).
 @example
 typedef struct gal_list_i32_t
 @{
-  int32_t *v;
+  int32_t v;
   struct gal_list_i32_t *next;
 @} gal_list_i32_t;
 @end example
 @end deftp
 
 
-@deftypefun void gal_list_i32_add (gal_list_i32_t @code{**list}, int32_t @code{*value})
-Add a new node (containing @code{value}) to the list of integers
-(@code{list}) and update it.  Here is one short example of initializing and
-adding elements to a string list:
+@deftypefun void gal_list_i32_add (gal_list_i32_t @code{**list}, int32_t @code{value})
+Add a new node (containing @code{value}) to the top of the @code{list} of
+@code{int32_t}s (@code{uint32_t} is equal to @code{int} on many modern
+systems), and update @code{list}. Here is one short example of initializing
+and adding elements to a string list:
 
 @example
 gal_list_i32_t *i32list=NULL;
@@ -17399,7 +17749,7 @@ context of your program.
 
 @example
 size_t i;
-gal_list_i32_t *tmp=NULL;
+gal_list_i32_t *tmp;
 for(tmp=list; tmp!=NULL; tmp=tmp->next)
   printf("String %zu: %s\n", i, tmp->v);
 @end example
@@ -17410,13 +17760,26 @@ Reverse the order of the list such that the top node in the list before
 calling this function becomes the bottom node after it.
 @end deftypefun
 
+@deftypefun {int32_t *} gal_list_i32_to_array (gal_list_i32_t @code{*list}, int @code{reverse}, size_t @code{*num})
+Dynamically allocate an array and fill it with the values in
+@code{list}. The function will return a pointer to the allocated array and
+put the number of elements in the array into the @code{num} pointer. If
+@code{reverse} has a non-zero value, the array will be filled in the
+opposite order of elements in @code{list}. This function can be
+useful after you have finished reading an initially unknown number of
+values and want to put them in an array for easy random access.
+@end deftypefun
+
 @deftypefun void gal_list_i32_free (gal_list_i32_t @code{*list})
-Free each node in @code{list}.
+Free every node in @code{list}.
 @end deftypefun
 
 
 
-@node List of size_t, Ordered list of size_t, List of int32_t, Linked lists
+
+
+
+@node List of size_t, List of float, List of int32_t, Linked lists
 @subsubsection List of @code{size_t}
 
 The @code{size_t} type is a unique type in C: as the name suggests it is
@@ -17434,26 +17797,28 @@ system's (virtual) memory and since its name has the word ``size'' inside
 it, it provides a good level of documentation@footnote{So you know that a
 variable of this type is not used to store some generic state for
 example.}. In Gnuastro, we do all counting and array indexing with this
-type, so this list is very handy.
+type, so this list is very handy. As discussed above, @code{size_t} maps to
+different types on different machines, so a portable way to print them with
+@code{printf} is to use C99's @code{%zu} format.
 
 @deftp {Type (C @code{struct})} gal_list_sizet_t
-A single node in a list containing a @code{size_t} values: either
-@code{uint32_t} or @code{uint64_t} depending on the host system, see
+A single node in a list containing a @code{size_t} value (which maps to
+@code{uint32_t} or @code{uint64_t} on 32-bit and 64-bit systems), see
 @ref{Numeric data types}.
 @example
 typedef struct gal_list_sizet_t
 @{
-  size_t *v;
+  size_t v;
   struct gal_list_sizet_t *next;
 @} gal_list_sizet_t;
 @end example
 @end deftp
 
 
-@deftypefun void gal_list_sizet_add (gal_list_sizet_t @code{**list}, size_t @code{*value})
-Add a new node (containing @code{value}) to the list of @code{size_t}s
-(@code{list}) and update it.  Here is one short example of initializing and
-adding elements to a string list:
+@deftypefun void gal_list_sizet_add (gal_list_sizet_t @code{**list}, size_t @code{value})
+Add a new node (containing @code{value}) to the top of the @code{list} of
+@code{size_t}s and update @code{list}.  Here is one short example of
+initializing and adding elements to a string list:
 
 @example
 gal_list_sizet_t *slist=NULL;
@@ -17485,7 +17850,7 @@ context of your program.
 
 @example
 size_t i;
-gal_list_sizet_t *tmp=NULL;
+gal_list_sizet_t *tmp;
 for(tmp=list; tmp!=NULL; tmp=tmp->next)
   printf("String %zu: %zu\n", i, tmp->v);
 @end example
@@ -17496,62 +17861,331 @@ Reverse the order of the list such that the top node in the list before
 calling this function becomes the bottom node after it.
 @end deftypefun
 
+@deftypefun {size_t *} gal_list_sizet_to_array (gal_list_sizet_t @code{*list}, int @code{reverse}, size_t @code{*num})
+Dynamically allocate an array and fill it with the values in
+@code{list}. The function will return a pointer to the allocated array and
+put the number of elements in the array into the @code{num} pointer. If
+@code{reverse} has a non-zero value, the array will be filled in the
+inverse of the order of elements in @code{list}. This function can be
+useful after you have finished reading an initially unknown number of
+values and want to put them in an array for easy random access.
+@end deftypefun
+
 @deftypefun void gal_list_sizet_free (gal_list_sizet_t @code{*list})
-Free each node in @code{list}.
+Free every node in @code{list}.
 @end deftypefun
 
 
 
+@node List of float, List of double, List of size_t, Linked lists
+@subsubsection List of @code{float}
 
+Single precision floating point numbers can accurately store real number
+until 7.2 decimals and only consume 4 bytes (32-bits) of memory, see
+@ref{Numeric data types}. Since astronomical data rarely reach that level
+of precision, single precision floating points are the type of choice to
+keep and read data. However, when processing the data, it is best to use
+double precision floating points (since errors propagate).
 
-
-@node Ordered list of size_t, Two way list of ordered size_t, List of size_t, Linked lists
-@subsubsection Ordered list of size_t
-
-@deftp Structure gal_linkedlist_osll
-@cindex @code{size_t}
-Ordered @code{size_t} linked list (@code{osll}. Each node in this
-singly-linked list contains a @code{size_t} value and a floating point
-value. The floating point value is used as a reference to add new nodes in
-a sorted manner. At any moment, the first popped node in this list will
-have the smallest @code{tosort} value, and subsequent nodes will have
-larger to values.
-@end deftp
+@deftp {Type (C @code{struct})} gal_list_f32_t
+A single node in a list containing a 32-bit single precision @code{float}
+value: see @ref{Numeric data types}.
 @example
-struct gal_linkedlist_osll
+typedef struct gal_list_f32_t
 @{
-  size_t                         v;
-  float                          s;
-  struct gal_linkedlist_osll *next;
-@};
+  float v;
+  struct gal_list_f32_t *next;
+@} gal_list_f32_t;
+@end example
+@end deftp
+
+
+@deftypefun void gal_list_f32_add (gal_list_f32_t @code{**list}, float @code{value})
+Add a new node (containing @code{value}) to the top of the @code{list} of
+@code{float}s and update @code{list}.  Here is one short example of
+initializing and adding elements to a string list:
+
+@example
+gal_list_f32_t *flist=NULL;
+gal_list_f32_add(&flist, 3.89);
+gal_list_f32_add(&flist, 1.23e-20);
 @end example
 
-@deftypefun void gal_linkedlist_add_to_osll (struct gal_linkedlist_osll @code{**list}, size_t @code{value}, float @code{tosort})
-Allocate space for a new node in @code{list}, and store @code{value} into
-it. The new node will be added to the list based on the @code{tosort}
-value.
 @end deftypefun
 
-@deftypefun void gal_linkedlist_pop_from_osll (struct gal_linkedlist_osll @code{**list}, size_t @code{*value}, float @code{*sortvalue})
-Pop a node from the top of @code{list}, put its value in @code{value} and
-its sort value in @code{sortvalue}. This function will also free the
-allocated space for the popped node and after this function, @code{list}
-will point to the next node (which has a larger @code{tosort} element).
+@deftypefun {float} gal_list_f32_pop (gal_list_f32_t @code{**list})
+Pop the top element of @code{list} and return the value. This function will
+also change @code{list} to point to the next node in the list. If
+@code{*list==NULL}, then this function will return @code{GAL_BLANK_FLOAT32}
+(NaN, see @ref{Library blank values}).
 @end deftypefun
 
-@deftypefun void gal_linkedlist_osll_into_sll (struct gal_linkedlist_osll @code{*in}, struct gal_linkedlist_sll @code{**out})
-Convert the orderd @code{size_t} linked list into an ordinary @code{size_t}
-linked list (no longer sorted). This can be useful when all the elements
-have been added and you just need to pop-out elements.
+@deftypefun size_t gal_list_f32_number (gal_list_f32_t @code{*list})
+Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun void gal_list_f32_print (gal_list_f32_t @code{*list})
+Print the values within each node of @code{*list} on the standard output in
+the same order that they are stored. Each floating point number is printed
+on one line. This function is mainly good for checking/debugging your
+program. For program outputs, its best to make your own implementation with
+a better, more user-friendly format. For example, in the following code
+snippet. You can also modify it to print all values in one line, and etc,
+depending on the context of your program.
+
+@example
+size_t i;
+gal_list_f32_t *tmp;
+for(tmp=list; tmp!=NULL; tmp=tmp->next)
+  printf("Node %zu: %f\n", i, tmp->v);
+@end example
+@end deftypefun
+
+@deftypefun void gal_list_f32_reverse (gal_list_f32_t @code{**list})
+Reverse the order of the list such that the top node in the list before
+calling this function becomes the bottom node after it.
+@end deftypefun
+
+@deftypefun {float *} gal_list_f32_to_array (gal_list_f32_t @code{*list}, int @code{reverse}, size_t @code{*num})
+Dynamically allocate an array and fill it with the values in
+@code{list}. The function will return a pointer to the allocated array and
+put the number of elements in the array into the @code{num} pointer. If
+@code{reverse} has a non-zero value, the array will be filled in the
+inverse of the order of elements in @code{list}. This function can be
+useful after you have finished reading an initially unknown number of
+values and want to put them in an array for easy random access.
+@end deftypefun
+
+@deftypefun void gal_list_f32_free (gal_list_f32_t @code{*list})
+Free every node in @code{list}.
 @end deftypefun
 
 
-@node Two way list of ordered size_t, List of gal_data_t, Ordered list of size_t, Linked lists
-@subsubsection Two way list of ordered @code{size_t}
-@deftp Structure gal_linkedlist_tosll
+
+
+@node List of double, List of void, List of float, Linked lists
+@subsubsection List of @code{double}
+
+Double precision floating point numbers can accurately store real number
+until 15.9 decimals and consume 8 bytes (64-bits) of memory, see
+@ref{Numeric data types}. This level of precision makes them very good for
+serious processing in the middle of a program's execution: in many cases,
+the propagation of errors will still be insignificant compared to actual
+obervational errors in a data set. But since they consume 8 bytes and more
+CPU processing power, they are often not the best choice for storing and
+transferring of data.
+
+@deftp {Type (C @code{struct})} gal_list_f64_t
+A single node in a list containing a 64-bit double precision @code{double}
+value: see @ref{Numeric data types}.
+@example
+typedef struct gal_list_f64_t
+@{
+  double v;
+  struct gal_list_f64_t *next;
+@} gal_list_f64_t;
+@end example
+@end deftp
+
+
+@deftypefun void gal_list_f64_add (gal_list_f64_t @code{**list}, double @code{value})
+Add a new node (containing @code{value}) to the top of the @code{list} of
+@code{double}s and update @code{list}.  Here is one short example of
+initializing and adding elements to a string list:
+
+@example
+gal_list_f64_t *dlist=NULL;
+gal_list_f64_add(&dlist, 3.8129395763193);
+gal_list_f64_add(&dlist, 1.239378923931e-20);
+@end example
+
+@end deftypefun
+
+@deftypefun {double} gal_list_f64_pop (gal_list_f64_t @code{**list})
+Pop the top element of @code{list} and return the value. This function will
+also change @code{list} to point to the next node in the list. If
+@code{*list==NULL}, then this function will return @code{GAL_BLANK_FLOAT64}
+(NaN, see @ref{Library blank values}).
+@end deftypefun
+
+@deftypefun size_t gal_list_f64_number (gal_list_f64_t @code{*list})
+Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun void gal_list_f64_print (gal_list_f64_t @code{*list})
+Print the values within each node of @code{*list} on the standard output in
+the same order that they are stored. Each floating point number is printed
+on one line. This function is mainly good for checking/debugging your
+program. For program outputs, its best to make your own implementation with
+a better, more user-friendly format. For example, in the following code
+snippet. You can also modify it to print all values in one line, and etc,
+depending on the context of your program.
+
+@example
+size_t i;
+gal_list_f64_t *tmp;
+for(tmp=list; tmp!=NULL; tmp=tmp->next)
+  printf("Node %zu: %f\n", i, tmp->v);
+@end example
+@end deftypefun
+
+@deftypefun void gal_list_f64_reverse (gal_list_f64_t @code{**list})
+Reverse the order of the list such that the top node in the list before
+calling this function becomes the bottom node after it.
+@end deftypefun
+
+@deftypefun {double *} gal_list_f64_to_array (gal_list_f64_t @code{*list}, int @code{reverse}, size_t @code{*num})
+Dynamically allocate an array and fill it with the values in
+@code{list}. The function will return a pointer to the allocated array and
+put the number of elements in the array into the @code{num} pointer. If
+@code{reverse} has a non-zero value, the array will be filled in the
+inverse of the order of elements in @code{list}. This function can be
+useful after you have finished reading an initially unknown number of
+values and want to put them in an array for easy random access.
+@end deftypefun
+
+@deftypefun void gal_list_f64_free (gal_list_f64_t @code{*list})
+Free every node in @code{list}.
+@end deftypefun
+
+
+
+
+@node List of void, Ordered list of size_t, List of double, Linked lists
+@subsubsection List of @code{void *}
+
+In C, @code{void *} is the most generic pointer. Usually pointers are
+associated with the type of content they point to. For example @code{int *}
+means a pointer to an integer. This ancillary information about the
+contents of the memory location is very useful for the compiler, catching
+bad errors and also documentation (it helps the reader see what the address
+in memory actually contains). However, @code{void *} is just a raw address
+(pointer), it contains no information on the contents it points to.
+
+These properties make the @code{void *} very useful when you want to treat
+the contents of an address in differnt ways. You can use the @code{void *}
+list defined in this section and its function on any kind of data: for
+example you can use it to keep a list of custom data structures that you
+have built for your own separate program. Each node in the list can keep
+anything and this gives you great versatily. But in using @code{void *},
+please beware that ``with great power comes great responsibilty''.
+
+
+@deftp {Type (C @code{struct})} gal_list_void_t
+A single node in a list containing a @code{void *} pointer.
+@example
+typedef struct gal_list_void_t
+@{
+  void *v;
+  struct gal_list_void_t *next;
+@} gal_list_void_t;
+@end example
+@end deftp
+
+
+@deftypefun void gal_list_void_add (gal_list_void_t @code{**list}, void @code{*value})
+Add a new node (containing @code{value}) to the top of the @code{list} of
+@code{void *}s and update @code{list}.  Here is one short example of
+initializing and adding elements to a string list:
+
+@example
+gal_list_void_t *vlist=NULL;
+gal_list_f64_add(&vlist, some_pointer);
+gal_list_f64_add(&vlist, another_pointer);
+@end example
+
+@end deftypefun
+
+@deftypefun {void *} gal_list_void_pop (gal_list_void_t @code{**list})
+Pop the top element of @code{list} and return the value. This function will
+also change @code{list} to point to the next node in the list. If
+@code{*list==NULL}, then this function will return @code{NULL}.
+@end deftypefun
+
+@deftypefun size_t gal_list_void_number (gal_list_void_t @code{*list})
+Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun void gal_list_void_reverse (gal_list_void_t @code{**list})
+Reverse the order of the list such that the top node in the list before
+calling this function becomes the bottom node after it.
+@end deftypefun
+
+@deftypefun void gal_list_void_free (gal_list_void_t @code{*list})
+Free every node in @code{list}.
+@end deftypefun
+
+
+@node Ordered list of size_t, Doubly linked ordered list of size_t, List of void, Linked lists
+@subsubsection Ordered list of @code{size_t}
+
+Positions/sizes in a dataset are conventionally in the @code{size_t} type
+(see @ref{List of size_t}) and it sometimes occurs that you want to parse
+and read the values in a specific order. For example you want to start from
+one pixel and add pixels to the list based on their distance to that
+pixel. So that ever time you pop an element from the list, you know it is
+the nearest that has not yet been studied. The @code{gal_list_osizet_t}
+type and its functions in this section are designed to facilitate such
+operations.
+
+@deftp {Type (C @code{struct})} gal_list_osizet_t
+@cindex @code{size_t}
+Each node in this singly-linked list contains a @code{size_t} value and a
+floating point value. The floating point value is used as a reference to
+add new nodes in a sorted manner. At any moment, the first popped node in
+this list will have the smallest @code{tosort} value, and subsequent nodes
+will have larger to values.
+@end deftp
+@example
+typedef struct gal_list_osizet_t
+@{
+  size_t v;                       /* The actual value. */
+  float  s;                       /* The parameter to sort by. */
+  struct gal_list_osizet_t *next;
+@} gal_list_osizet_t;
+@end example
+
+@deftypefun void gal_list_osizet_add (gal_list_osizet_t @code{**list}, size_t @code{value}, float @code{tosort})
+Allocate space for a new node in @code{list}, and store @code{value} and
+@code{tosort} into it. The new node will not necessarily be at the ``top''
+of the list. If @code{*list!=NULL}, then the @code{tosort} values of
+existing nodes is inspected and the given node is placed in the list such
+that the top element (which is popped with @code{gal_list_osizet_pop}) has
+the smallest @code{tosort} value.
+@end deftypefun
+
+@deftypefun size_t gal_list_osizet_pop (gal_list_osizet_t @code{**list}, float @code{*sortvalue})
+Pop a node from the top of @code{list}, return the node's @code{value} and
+put its sort value in the space that @code{sortvalue} points to. This
+function will also free the allocated space for the popped node and after
+this function, @code{list} will point to the next node (which has a larger
+@code{tosort} element).
+@end deftypefun
+
+@deftypefun void gal_list_osizet_to_sizet_free (gal_list_osizet_t @code{*in}, gal_list_sizet_t @code{**out})
+Convert the orderd list of @code{size_t}s into an ordinary @code{size_t}
+linked list. This can be useful when all the elements have been added and
+you just need to pop-out elements and don't care about the sorting values
+any more. After the conversion is done, this function will free the input
+list. Note that the @code{out} list doesn't have to be empty. If it already
+contains some nodes, the new nodes will be added ontop of them.
+@end deftypefun
+
+
+@node Doubly linked ordered list of size_t, List of gal_data_t, Ordered list of size_t, Linked lists
+@subsubsection Doubly linked ordered list of @code{size_t}
+
+An ordered list of indexs is required in many contexts, one example was
+discussed at the beginning of @ref{Ordered list of size_t}. But the list
+that was introduced there only has one point of entry: you can always only
+parse the list from smallest to largest. In this section, the doubly-linked
+@code{gal_list_dosizet_t} node is defined which will allow us to parse the
+values in ascending or descending order.
+
+@deftp {Type (C @code{struct})} gal_list_dosizet_t
 @cindex @code{size_t}
 
-Two-way, ordered @code{size_t} linked list (@code{tosll}. Each node in this
+Doubly-linked, ordered @code{size_t} list node structure. Each node in this
 Doubly-linked list contains a @code{size_t} value and a floating point
 value. The floating point value is used as a reference to add new nodes in
 a sorted manner. In the functions here, this linked list can be pointed to
@@ -17563,149 +18197,105 @@ by two pointers (largest and smallest) with the following format:
                                           |
                            smallest pointer
 @end example
-At any moment, the two pointers will point the nodes containing the
+At any moment, the two pointers will point to the nodes containing the
 ``largest'' and ``smallest'' values and the rest of the nodes will be
 sorted. This is useful when an unknown number of nodes are being added
 continuously and during the operations it is important to have the nodes in
 a sorted format.
-@end deftp
+
 @example
-struct gal_linkedlist_tosll
+typedef struct gal_list_dosizet_t
 @{
-  size_t                          v;
-  float                           s;
-  struct gal_linkedlist_tosll *prev;
-  struct gal_linkedlist_tosll *next;
-@};
+  size_t v;                       /* The actual value. */
+  float s;                        /* The parameter to sort by. */
+  struct gal_list_dosizet_t *prev;
+  struct gal_list_dosizet_t *next;
+@} gal_list_dosizet_t;
 @end example
+@end deftp
 
-@deftypefun void gal_linkedlist_print_tosll (struct gal_linkedlist_tosll @code{*largest}, struct gal_linkedlist_tosll @code{*smallest})
-Print all the values within the linked list to the output terminal. This
-can be used for inspecting the status of the list during development.
+@deftypefun void gal_list_dosizet_add (gal_list_dosizet_t @code{**largest}, gal_list_dosizet_t @code{**smallest}, size_t @code{value}, float @code{tosort})
+Allocate space for a new node in @code{list}, and store @code{value} and
+@code{tosort} into it. If the list is empty, both @code{largest} and
+@code{smallest} must be @code{NULL}.
 @end deftypefun
 
-@deftypefun void gal_linkedlist_add_to_tosll_end (struct gal_linkedlist_tosll @code{**largest}, struct gal_linkedlist_tosll @code{**smallest}, size_t @code{value}, float @code{tosort})
-Allocate space for a new node in @code{list}, and store @code{value} into
-it. The new node will be added to the list based on the @code{s} value as
-described in the description of @code{gal_linkedlist_tosll}. If this is the
-first node to be added to the list, both the @code{largest} and
-@code{smallest} pointers can be @code{NULL}.
-@end deftypefun
-
-@deftypefun void gal_linkedlist_pop_from_tosll_start (struct gal_linkedlist_tosll @code{**lartest}, struct gal_linkedlist_tosll @code{**smallest}, size_t @code{*value}, float @code{*tosort})
-Pop the node with the smallest @code{s} of @code{list}, then put its value
-in @code{value} and its sort value in @code{sortvalue}. This function will
-also free the allocated space for the popped node and after this function,
-@code{largest} and @code{smallest} will be modified respectively. Note that
+@deftypefun size_t gal_list_dosizet_pop_smallest (gal_list_dosizet_t @code{**largest}, gal_list_dosizet_t @code{**smallest}, float @code{tosort})
+Pop the value with the smallest reference from the doubly linked list and
+store the reference into the space pointed to by @code{tosort}. Note that
 even though only the smallest pointer will be popped, when there was only
 one node in the list, the @code{largest} pointer also has to change, so we
 need both.
 @end deftypefun
 
-@deftypefun void gal_linkedlist_smallest_tosll (struct gal_linkedlist_tosll @code{*largest}, struct gal_linkedlist_tosll @code{**smallest})
-Given the @code{largest} pointer, set @code{smallest} as described in
-@code{gal_linkedlist_tosll}.
-@end deftypefun
-
-@deftypefun void gal_linkedlist_tosll_into_sll (struct gal_linkedlist_tosll @code{*in}, struct gal_linkedlist_sll @code{**out})
-Convert the two-way orderd @code{size_t} linked list into an ordinary
-@code{size_t} linked list (no longer sorted). This can be useful when all
-the elements have been added and you just need to pop-out elements.
-@end deftypefun
-
-@deftypefun void gal_linkedlist_tosll_free (struct gal_linkedlist_tosll @code{*largest})
-Free the space for all the nodes in @code{largest}. Note that any values
-within the nodes will also be discarded.
+@deftypefun void gal_list_dosizet_print (gal_list_dosizet_t @code{*largest}, gal_list_dosizet_t @code{*smallest})
+Print the largest and smallest values sequentially until the list is
+parsed.
 @end deftypefun
 
 
+@deftypefun void gal_list_dosizet_to_sizet (gal_list_dosizet_t @code{*in}, gal_list_sizet_t @code{**out})
+Convert the doubly linked, ordered @code{size_t} list into a singly-linked
+list of @code{size_t}.
+@end deftypefun
 
-@node List of gal_data_t,  , Two way list of ordered size_t, Linked lists
+@deftypefun void gal_list_dosizet_free (gal_list_dosizet_t @code{*largest})
+Free the doubly linked, ordered @code{sizet_t} list.
+@end deftypefun
+
+
+@node List of gal_data_t,  , Doubly linked ordered list of size_t, Linked lists
 @subsubsection List of @code{gal_data_t}
 
-Linked lists are a programming construct that allow several containers to
-be connected without a-priori knowledge of the number of elements, see
-@url{https://en.wikipedia.org/wiki/Linked_list, Wikipedia}, or @ref{Linked
-lists} for a more thorough discussion. The @code{next} element of
-Gnuastro's generic data container enables each dataset to be treated as a
-node in a simply linked list (see @ref{Generic data container}). This
-higher-level construct offers great versatility in combining multiple
-datasets and treating them as a larger whole.
+Gnuastro's generic data container has a @code{next} element which enables
+it to be used as a singly-linked list (see @ref{Generic data
+container}). The ability to connect the different data containers offers
+great advantages. For example each column in a table in an independent
+dataset: with its own name, units, numeric data type (see @ref{Numeric data
+types}). Another application is in Tessellating an input dataset into
+separate tiles or only studying particular regions, or tiles, of a larger
+dataset (see @ref{Tessellation} and @ref{Tessellation library}). Each
+independent tile over the dataset can be connected to the others as a
+linked list and thus any number of tiles can be represented with one
+variable.
 
-Tables are one example of the usage of linked lists: each column in a table
-in an independent dataset: with its own name, units, numeric data type (see
-@ref{Numeric data types}). The only constraint is on a table column dataset
-is its size: it is one-dimensional and must have the same number of
-elements as the other columns in the table. Another application is in
-Tessellating an input dataset into separate tiles or only studying
-particular regions, or tiles, of a larger dataset (see @ref{Tessellation
-library}). Each independent tile over the dataset can be connected to the
-others as a linked list and thus any number of tiles can be represented
-with one variable.
-
-The space keeping each @code{gal_data_t} node (column/tile in the examples
-above) in the linked list can be allocated once for many nodes as an array,
-when the total number is known a-priori (see @ref{Arrays of datasets}), or
-each dataset can be allocated separately: when the total number isn't
-finalized. In any case, through the @code{next} element, it is possible to
-connect them to define a linked list. The functions here are mainly useful
-in the latter case. There are two important things to keep in mind when
-defining and using simple linked lists:
-
-@itemize
-
-@item
-Before adding any nodes to a list, initialize it with a @code{NULL}
-pointer. The @code{NULL} pointer will mark the end/bottom of the list as
-more elements are added ontop of it.
-
-@item
-Simple linked lists are a last-in-first-out structure: so the last element
-you add to the top of the list is the first one that is popped out of, or
-read from, the list later. Hence when order matters, you can add the nodes
-to a list, then reverse the list with @code{gal_data_reverse_ll},
-otherwise, you should add them in reverse order from the beginning (which
-is only possible when the total number is known a-priori).
-@end itemize
-
-Here is one example of using these functions:
-
+@deftypefun void gal_list_data_add (gal_data_t @code{**list}, gal_data_t @code{*newnode})
+Add an already allocated dataset (@code{newnode}) to top of @code{list}. In
+this example multiple images are linked together as a list:
 @example
-gal_data_t *node, *newnode, *list=NULL;
-size_t minmapsize=-1; /* Largest unsigned number: data in RAM. */
-
-newnode=gal_fits_img_read("img1.fits", "1", minmapsize);
-gal_data_add_existing_to_ll(&list, newnode);
-
-newnode=gal_fits_img_read("img2.fits", "1", minmapsize);
-gal_data_add_existing_to_ll(&list, newnode);
-
-...                                   /* Read any more images. */
-
-gal_data_reverse_ll(&list);              /* Correct the order. */
-
-for(node=list; node!=NULL; node=node->next) /* Parse the list. */
-  @{
-    ...                          /* Do any further processing. */
-  @}
-
-gal_data_free_ll(list);                           /* Clean up. */
-list=NULL;          /* To be safe (if the function continues). */
+size_t minmapsize=-1;
+gal_data_t *tmp, *list=NULL;
+tmp = gal_fits_img_read("file1.fits", "1", minmapsize);
+gal_list_data_add( &list, tmp );
+tmp = gal_fits_img_read("file2.fits", "1", minmapsize);
+gal_list_data_add( &list, tmp );
 @end example
-
-These functions are declared in @file{gnuastro/data.h} which is also
-visible from the function names (see @ref{Gnuastro library}).
-
-@deftypefun void gal_data_add_existing_to_ll (gal_data_t @code{**list}, gal_data_t @code{*newnode})
-This function will add @code{newnode} to the top of the linked list pointed
-to by @code{*list}. Note that you need to give the pointer to the list,
-since this function will put @code{newnode} at the list's start/top (and
-thus change @code{*list}). Here is one example to read-in a series of
-images:
 @end deftypefun
 
+@deftypefun void gal_list_data_add_alloc (gal_data_t @code{**list}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+Allocate a new dataset (with @code{gal_data_alloc} in @ref{Dataset size and
+allocation}) and put it as the first element of @code{list}. Note that if
+this is the first node to be added to the list, @code{list} must be
+@code{NULL}.
+@end deftypefun
 
+@deftypefun {gal_data_t *} gal_list_data_pop (gal_data_t @code{**list})
+Pop the top node from @code{list} and return it.
+@end deftypefun
 
+@deftypefun void gal_list_data_reverse (gal_data_t @code{**list})
+Reverse the order of the list such that the top node in the list before
+calling this function becomes the bottom node after it.
+@end deftypefun
+
+@deftypefun size_t gal_list_data_number (gal_data_t @code{*list})
+Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun void gal_list_data_free (gal_data_t @code{*list})
+Free all the datasets in @code{list} along with all the allocated spaces in
+each.
+@end deftypefun
 
 
 @node Table input output, Arithmetic on datasets, Linked lists, Gnuastro library

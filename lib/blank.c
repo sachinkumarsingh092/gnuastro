@@ -79,18 +79,6 @@ gal_blank_write(void *ptr, uint8_t type)
 
 
 
-/* Initialize (set all the values in the array) with the blank value of the
-   given type. */
-void
-gal_blank_initialize(gal_data_t *input)
-{
-  GAL_TILE_PARSE_OPERATE({*i=b;}, input, NULL, 0, 0);
-}
-
-
-
-
-
 /* Allocate some space for the given type and put the blank value into
    it. */
 void *
@@ -106,6 +94,18 @@ gal_blank_alloc_write(uint8_t type)
 
   /* Return the allocated space. */
   return out;
+}
+
+
+
+
+
+/* Initialize (set all the values in the array) with the blank value of the
+   given type. */
+void
+gal_blank_initialize(gal_data_t *input)
+{
+  GAL_TILE_PARSE_OPERATE({*i=b;}, input, NULL, 0, 0);
 }
 
 

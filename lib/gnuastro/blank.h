@@ -86,11 +86,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 void
 gal_blank_write(void *pointer, uint8_t type);
 
-void
-gal_blank_initialize(gal_data_t *input);
-
 void *
 gal_blank_alloc_write(uint8_t type);
+
+void
+gal_blank_initialize(gal_data_t *input);
 
 char *
 gal_blank_as_string(uint8_t type, int width);

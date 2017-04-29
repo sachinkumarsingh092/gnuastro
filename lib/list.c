@@ -260,7 +260,7 @@ gal_list_i32_reverse(gal_list_i32_t **list)
 
 
 int32_t *
-gal_list_i32_to_array(gal_list_i32_t *list, int inverse, size_t *num)
+gal_list_i32_to_array(gal_list_i32_t *list, int reverse, size_t *num)
 {
   size_t i;
   int32_t *out=NULL;
@@ -272,8 +272,8 @@ gal_list_i32_to_array(gal_list_i32_t *list, int inverse, size_t *num)
     {
       out=gal_data_malloc_array(GAL_TYPE_SIZE_T, *num);
 
-      i = inverse ? *num-1: 0;
-      if(inverse)
+      i = reverse ? *num-1: 0;
+      if(reverse)
         for(tmp=list;tmp!=NULL;tmp=tmp->next)
           out[i--]=tmp->v;
       else
@@ -411,7 +411,7 @@ gal_list_sizet_reverse(gal_list_sizet_t **list)
 
 
 size_t *
-gal_list_sizet_to_array(gal_list_sizet_t *list, int inverse, size_t *num)
+gal_list_sizet_to_array(gal_list_sizet_t *list, int reverse, size_t *num)
 {
   size_t i, *out=NULL;
   gal_list_sizet_t *tmp;
@@ -422,8 +422,8 @@ gal_list_sizet_to_array(gal_list_sizet_t *list, int inverse, size_t *num)
     {
       out=gal_data_malloc_array(GAL_TYPE_SIZE_T, *num);
 
-      i = inverse ? *num-1: 0;
-      if(inverse)
+      i = reverse ? *num-1: 0;
+      if(reverse)
         for(tmp=list;tmp!=NULL;tmp=tmp->next)
           out[i--]=tmp->v;
       else
@@ -562,7 +562,7 @@ gal_list_f32_print(gal_list_f32_t *list)
 
 
 float *
-gal_list_f32_to_array(gal_list_f32_t *list, int inverse, size_t *num)
+gal_list_f32_to_array(gal_list_f32_t *list, int reverse, size_t *num)
 {
   size_t i;
   float *out=NULL;
@@ -579,8 +579,8 @@ gal_list_f32_to_array(gal_list_f32_t *list, int inverse, size_t *num)
       out=gal_data_malloc_array(GAL_TYPE_FLOAT32, *num);
 
       /* Fill in the array. */
-      i = inverse ? *num-1: 0;
-      if(inverse)
+      i = reverse ? *num-1: 0;
+      if(reverse)
         for(tmp=list;tmp!=NULL;tmp=tmp->next)
           out[i--]=tmp->v;
       else
@@ -720,7 +720,7 @@ gal_list_f64_reverse(gal_list_f64_t **list)
 
 
 double *
-gal_list_f64_to_array(gal_list_f64_t *list, int inverse, size_t *num)
+gal_list_f64_to_array(gal_list_f64_t *list, int reverse, size_t *num)
 {
   size_t i;
   double *out=NULL;
@@ -737,8 +737,8 @@ gal_list_f64_to_array(gal_list_f64_t *list, int inverse, size_t *num)
       out=gal_data_malloc_array(GAL_TYPE_FLOAT64, *num);
 
       /* Fill in the array. */
-      i = inverse ? *num-1: 0;
-      if(inverse)
+      i = reverse ? *num-1: 0;
+      if(reverse)
         for(tmp=list;tmp!=NULL;tmp=tmp->next)
           out[i--]=tmp->v;
       else
@@ -943,24 +943,26 @@ gal_list_osizet_add(gal_list_osizet_t **list,
 
 
 /* Note that the popped element is the smallest! */
-void
-gal_list_osizet_pop(gal_list_osizet_t **list,
-                    size_t *value, float *sortvalue)
+size_t
+gal_list_osizet_pop(gal_list_osizet_t **list, float *sortvalue)
 {
+  size_t value;
   gal_list_osizet_t *tmp=*list;
 
   if(*list)
     {
-      *value=tmp->v;
+      value=tmp->v;
       *sortvalue=tmp->s;
       *list=tmp->next;
       free(tmp);
     }
   else
     {
-      *value=GAL_BLANK_SIZE_T;
+      value=GAL_BLANK_SIZE_T;
       *sortvalue=NAN;
     }
+
+  return value;
 }
 
 
@@ -1005,8 +1007,7 @@ gal_list_osizet_to_sizet_free(gal_list_osizet_t *in,
  ******************   Two way, Ordered SLL   ********************
  *****************           size_t          ********************
  ****************************************************************/
-
-/* The two way ordered SLL looks something like this:
+/* Doubly-linked ordered size_t list can be visualized like this:
 
             largest pointer
             |
@@ -1018,11 +1019,10 @@ gal_list_osizet_to_sizet_free(gal_list_osizet_t *in,
 */
 /* Very similar to Ordered SLL, but now it is two way. */
 void
-gal_list_tosizet_add(gal_list_tosizet_t **largest,
-                     gal_list_tosizet_t **smallest,
-                     size_t value, float tosort)
+gal_list_dosizet_add(gal_list_dosizet_t **largest,
+                     gal_list_dosizet_t **smallest, size_t value, float tosort)
 {
-  gal_list_tosizet_t *newnode, *tmp=*largest;
+  gal_list_dosizet_t *newnode, *tmp=*largest;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
@@ -1072,9 +1072,50 @@ gal_list_tosizet_add(gal_list_tosizet_t **largest,
 
 
 
+/* Note that start has to be initialized. */
+size_t
+gal_list_dosizet_pop_smallest(gal_list_dosizet_t **largest,
+                              gal_list_dosizet_t **smallest, float *tosort)
+{
+  size_t value;
+  gal_list_dosizet_t *tmp=*smallest;
+
+  if(*smallest)
+    {
+      value=tmp->v;
+      *tosort=tmp->s;
+
+      *smallest=tmp->prev;
+      free(tmp);
+      if(*smallest)
+        (*smallest)->next=NULL;
+      else
+        *largest=NULL;
+    }
+  else
+    {
+      /* If `smallest' is NULL, `largest' should also be NULL. */
+      if(*largest)
+        error(EXIT_FAILURE, 0, "`largest' and `smallest' pointers to "
+              "`gal_list_dosizet_pop_smallest' must both be non-NULL or "
+              "both be NULL. However, in this call, `smallest' was NULL "
+              "while `largest' isn't NULL");
+      value=GAL_BLANK_SIZE_T;
+      *tosort=NAN;
+    }
+
+  /*printf("Popped v: %zu, s: %f\n", *value, *tosort);*/
+
+  return value;
+}
+
+
+
+
+
 void
-gal_list_tosizet_print(gal_list_tosizet_t *largest,
-                       gal_list_tosizet_t *smallest)
+gal_list_dosizet_print(gal_list_dosizet_t *largest,
+                       gal_list_dosizet_t *smallest)
 {
   size_t counter=1;   /* We are not counting array elements :-D ! */
   while(largest!=NULL)
@@ -1092,49 +1133,10 @@ gal_list_tosizet_print(gal_list_tosizet_t *largest,
 
 
 
-/* Note that start has to be initialized. */
 void
-gal_list_tosizet_pop_smallest(gal_list_tosizet_t **largest,
-                              gal_list_tosizet_t **smallest,
-                              size_t *value, float *tosort)
+gal_list_dosizet_to_sizet(gal_list_dosizet_t *in, gal_list_sizet_t **out)
 {
-  gal_list_tosizet_t *tmp=*smallest;
-
-  if(*smallest)
-    {
-      *value=tmp->v;
-      *tosort=tmp->s;
-
-      *smallest=tmp->prev;
-      free(tmp);
-      if(*smallest)
-        (*smallest)->next=NULL;
-      else
-        *largest=NULL;
-    }
-  else
-    {
-      /* If `smallest' is NULL, `largest' should also be NULL. */
-      if(*largest)
-        error(EXIT_FAILURE, 0, "`largest' and `smallest' pointers to "
-              "`gal_list_tosizet_pop_smallest' must both be non-NULL or "
-              "both be NULL. However, in this call, `smallest' was NULL "
-              "while `largest' isn't NULL");
-      *value=GAL_BLANK_SIZE_T;
-      *tosort=NAN;
-    }
-
-  /*printf("Popped v: %zu, s: %f\n", *value, *tosort);*/
-}
-
-
-
-
-
-void
-gal_list_tosizet_to_sizet(gal_list_tosizet_t *in, gal_list_sizet_t **out)
-{
-  gal_list_tosizet_t *tmp;
+  gal_list_dosizet_t *tmp;
   while(in!=NULL)
     {
       tmp=in->next;
@@ -1149,9 +1151,9 @@ gal_list_tosizet_to_sizet(gal_list_tosizet_t *in, gal_list_sizet_t **out)
 
 
 void
-gal_list_tosizet_free(gal_list_tosizet_t *largest)
+gal_list_dosizet_free(gal_list_dosizet_t *largest)
 {
-  gal_list_tosizet_t *tmp;
+  gal_list_dosizet_t *tmp;
   while(largest!=NULL)
     {
       tmp=largest->next;

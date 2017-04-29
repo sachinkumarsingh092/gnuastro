@@ -88,7 +88,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   float pdist;
   uint8_t *b, *bf, *bb;
   gal_list_void_t *tvll;
-  gal_list_tosizet_t *lQ, *sQ;
+  gal_list_dosizet_t *lQ, *sQ;
   size_t ngb_counter, dist, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
@@ -184,11 +184,11 @@ interpolate_close_neighbors_on_thread(void *in_prm)
          list structure. To start from the nearest and go out to the
          farthest. */
       lQ=sQ=NULL;
-      gal_list_tosizet_add(&lQ, &sQ, index, 0.0f);
+      gal_list_dosizet_add(&lQ, &sQ, index, 0.0f);
       while(sQ)
         {
           /* Pop-out (p) an index from the queue: */
-          gal_list_tosizet_pop_smallest(&lQ, &sQ, &pind, &pdist);
+          pind=gal_list_dosizet_pop_smallest(&lQ, &sQ, &pdist);
 
           /* If this isn't a blank value then add its values to the list of
              neighbor values. Note that we didn't check whether the values
@@ -210,7 +210,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                  list and break out. */
               if(++ngb_counter>=prm->numneighbors)
                 {
-                  if(lQ) gal_list_tosizet_free(lQ);
+                  if(lQ) gal_list_dosizet_free(lQ);
                   break;
                 }
             }
@@ -232,7 +232,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                  dist=gal_dimension_dist_manhattan(icoord, ncoord, ndim);
 
                  /* Add this neighbor to the list. */
-                 gal_list_tosizet_add(&lQ, &sQ, nind, dist);
+                 gal_list_dosizet_add(&lQ, &sQ, nind, dist);
 
                  /* Flag this neighbor as checked. */
                  flag[nind] |= INTERPOLATE_FLAGS_CHECKED;

@@ -106,7 +106,7 @@ void
 gal_list_i32_reverse(gal_list_i32_t **list);
 
 int32_t *
-gal_list_i32_to_array(gal_list_i32_t *list, int inverse, size_t *num);
+gal_list_i32_to_array(gal_list_i32_t *list, int reverse, size_t *num);
 
 void
 gal_list_i32_free(gal_list_i32_t *list);
@@ -140,7 +140,7 @@ void
 gal_list_sizet_reverse(gal_list_sizet_t **list);
 
 size_t *
-gal_list_sizet_to_array(gal_list_sizet_t *list, int inverse, size_t *num);
+gal_list_sizet_to_array(gal_list_sizet_t *list, int reverse, size_t *num);
 
 void
 gal_list_sizet_free(gal_list_sizet_t *list);
@@ -174,7 +174,7 @@ void
 gal_list_f32_print(gal_list_f32_t *list);
 
 float *
-gal_list_f32_to_array(gal_list_f32_t *list, int inverse, size_t *num);
+gal_list_f32_to_array(gal_list_f32_t *list, int reverse, size_t *num);
 
 void
 gal_list_f32_free(gal_list_f32_t *list);
@@ -208,7 +208,7 @@ void
 gal_list_f64_reverse(gal_list_f64_t **list);
 
 double *
-gal_list_f64_to_array(gal_list_f64_t *list, int inverse, size_t *num);
+gal_list_f64_to_array(gal_list_f64_t *list, int reverse, size_t *num);
 
 void
 gal_list_f64_free(gal_list_f64_t *list);
@@ -259,9 +259,8 @@ void
 gal_list_osizet_add(gal_list_osizet_t **list,
                     size_t value, float tosort);
 
-void
-gal_list_osizet_pop(gal_list_osizet_t **list,
-                    size_t *value, float *sortvalue);
+size_t
+gal_list_osizet_pop(gal_list_osizet_t **list, float *sortvalue);
 
 void
 gal_list_osizet_to_sizet_free(gal_list_osizet_t *in,
@@ -272,36 +271,34 @@ gal_list_osizet_to_sizet_free(gal_list_osizet_t *in,
 
 
 /****************************************************************
- ***********        Two way ordered size_t         **************
+ ***********     Doubly linked, ordered size_t     **************
  ****************************************************************/
-typedef struct gal_list_tosizet_t
+typedef struct gal_list_dosizet_t
 {
   size_t v;                       /* The actual value. */
   float s;                        /* The parameter to sort by. */
-  struct gal_list_tosizet_t *prev;
-  struct gal_list_tosizet_t *next;
-} gal_list_tosizet_t;
+  struct gal_list_dosizet_t *prev;
+  struct gal_list_dosizet_t *next;
+} gal_list_dosizet_t;
 
 void
-gal_list_tosizet_add(gal_list_tosizet_t **largest,
-                     gal_list_tosizet_t **smallest,
-                     size_t value, float tosort);
+gal_list_dosizet_add(gal_list_dosizet_t **largest,
+                     gal_list_dosizet_t **smallest, size_t value, float tosort);
+
+size_t
+gal_list_dosizet_pop_smallest(gal_list_dosizet_t **lartest,
+                              gal_list_dosizet_t **smallest, float *tosort);
 
 void
-gal_list_tosizet_print(gal_list_tosizet_t *largest,
-                       gal_list_tosizet_t *smallest);
+gal_list_dosizet_print(gal_list_dosizet_t *largest,
+                       gal_list_dosizet_t *smallest);
 
 void
-gal_list_tosizet_pop_smallest(gal_list_tosizet_t **lartest,
-                              gal_list_tosizet_t **smallest,
-                              size_t *value, float *tosort);
-
-void
-gal_list_tosizet_to_sizet(gal_list_tosizet_t *in,
+gal_list_dosizet_to_sizet(gal_list_dosizet_t *in,
                           gal_list_sizet_t **out);
 
 void
-gal_list_tosizet_free(gal_list_tosizet_t *largest);
+gal_list_dosizet_free(gal_list_dosizet_t *largest);
 
 
 
