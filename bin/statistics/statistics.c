@@ -73,10 +73,9 @@ statistics_read_check_args(struct statisticsparams *p)
 {
   double d;
   if(p->tp_args==NULL)
-    error(EXIT_FAILURE, 0, "a bug! Not enough arguments for the "
-          "requested single measurement options. Please contact "
-          "us at %s so we can address the problem",
-          PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+          "address the problem. Not enough arguments for the requested "
+          "single measurement options", __func__, PACKAGE_BUGREPORT);
   d=gal_list_f64_pop(&p->tp_args);
   return d;
 }
@@ -137,9 +136,9 @@ statistics_print_one_row(struct statisticsparams *p)
 
       /* The option isn't recognized. */
       default:
-        error(EXIT_FAILURE, 0, "A bug! Operation code %d not recognized in "
-              "`statistics_print_one_row'. Please contact us at %s so we "
-              "can address the problem", tmp->v, PACKAGE_BUGREPORT);
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
+              "can address the problem. Operation code %d not recognized",
+              __func__, PACKAGE_BUGREPORT, tmp->v);
       }
 
 
@@ -302,8 +301,8 @@ statistics_on_tile(struct statisticsparams *p)
           type=GAL_TYPE_FLOAT64; break;
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! %d is not a recognized operation "
-                "code in `statistics_on_tile'", operation->v);
+          error(EXIT_FAILURE, 0, "%s: a bug! %d is not a recognized operation "
+                "code", __func__, operation->v);
         }
 
       /* Allocate the space necessary to keep the value for each tile. */
@@ -377,10 +376,9 @@ statistics_on_tile(struct statisticsparams *p)
               break;
 
             default:
-              error(EXIT_FAILURE, 0, "a bug! please contact us at %s to "
-                    "fix the problem. THe operation code %d is not "
-                    "recognized in `statistics_on_tile'", PACKAGE_BUGREPORT,
-                    operation->v);
+              error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to "
+                    "fix the problem. The operation code %d is not "
+                    "recognized", __func__, PACKAGE_BUGREPORT, operation->v);
             }
 
           /* Put the output value into the `values' array and clean up. */
@@ -672,7 +670,8 @@ print_mirror_hist_cfp(struct statisticsparams *p)
     write_output_table(p, table, "_mirror_hist_cfp",
                        "Histogram and CFP of mirror distribution");
   else
-    error(EXIT_FAILURE, 0, "mirror value %g is out of range", p->mirror);
+    error(EXIT_FAILURE, 0, "%s: mirror value %g is out of range",
+          __func__, p->mirror);
 }
 
 

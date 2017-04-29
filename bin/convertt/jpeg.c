@@ -149,7 +149,8 @@ makejsample(JSAMPLE **a, size_t size)
   errno=0;
   jsarr=malloc(size*sizeof *jsarr);
   if(jsarr==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for jsarr", size*sizeof *jsarr);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for jsarr",
+          __func__, size*sizeof *jsarr);
 
   *a=jsarr;
 }
@@ -183,7 +184,7 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
     {
       jpeg_destroy_decompress(&cinfo);
       fclose(infile);
-      error(EXIT_FAILURE, 0, "problem in reading %s", inname);
+      error(EXIT_FAILURE, 0, "%s: problem in reading %s", __func__, inname);
     }
   jpeg_create_decompress(&cinfo);
   jpeg_stdio_src(&cinfo, infile);
@@ -204,14 +205,15 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
   errno=0;
   all=malloc(nc*sizeof *all);
   if(all==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for all", nc*sizeof *all);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `all'",
+          __func__, nc*sizeof *all);
   for(i=0;i<nc;++i)
     {
       errno=0;
       all[i]=malloc(s0*s1*sizeof *all[i]);
       if(all[i]==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for all[%zu]",
-              s0*s1*sizeof *all[i], i);
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `all[%zu]'",
+              __func__, s0*s1*sizeof *all[i], i);
     }
 
   /* Read the image line by line: */
@@ -336,9 +338,9 @@ jpeg_write_array(JSAMPLE *jsr, struct converttparams *p)
       cinfo.in_color_space = JCS_CMYK;
       break;
     default:
-      error(EXIT_FAILURE, 0, "a bug! The number of channels in writejpeg "
-            "is not 1, 3 or 4, but %zu. This should not happen. Please "
-            "contact us so we can fix the problem", p->numch);
+      error(EXIT_FAILURE, 0, "%s: a bug! The number of channels is not 1, 3 "
+            "or 4, but %zu. This should not happen. Please contact us so we "
+            "can fix the problem", __func__, p->numch);
     }
 
   jpeg_set_defaults(&cinfo);
@@ -374,18 +376,18 @@ jpeg_write(struct converttparams *p)
 
   /* A small sanity check */
   if(p->numch==2 || p->numch>4)
-    error(EXIT_FAILURE, 0, "in jpeg, only 1, 3, and 4 color channels are "
-          "acceptable, ");
+    error(EXIT_FAILURE, 0, "%s: only 1, 3, and 4 color channels are "
+          "acceptable", __func__);
 
   /* Make sure the JSAMPLE is 8bits, then allocate the necessary space
      based on the number of channels. */
   if(sizeof *jsr!=1)
-    error(EXIT_FAILURE, 0, "JSAMPLE has to be 8bit");
+    error(EXIT_FAILURE, 0, "%s: JSAMPLE has to be 8bit", __func__);
   errno=0;
   jsr=malloc(numch * p->chll->size * sizeof *jsr);
   if(jsr==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for jsr",
-          numch * p->chll->size * sizeof *jsr );
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for jsr",
+          __func__, numch * p->chll->size * sizeof *jsr );
 
   /* Set the pointers to each color. */
   i=0;

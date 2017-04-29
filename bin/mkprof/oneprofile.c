@@ -510,10 +510,9 @@ oneprof_set_prof_params(struct mkonthread *mkp)
 
 
     default:
-      error(EXIT_FAILURE, 0, "a bug in setprofparams (oneprofile.c)! "
-            "The profile code is not recognized. This should have been "
-            "seen and reported prior to this step. Please contact us so "
-            "we can correct this");
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can correct "
+            "this problem. The profile code %d is not recognized.", __func__,
+            mkp->func);
     }
 }
 
@@ -575,7 +574,8 @@ oneprofile_make(struct mkonthread *mkp)
   size=mkp->width[0]*mkp->width[1];
   mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for object in row %zu of data in %s",
+    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for object in row %zu of "
+          "data in %s", __func__,
           size*sizeof *mkp->ibq->img, mkp->ibq->id, p->catname);
 
 

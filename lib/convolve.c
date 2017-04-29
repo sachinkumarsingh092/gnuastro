@@ -523,12 +523,12 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
 
   /* Small sanity checks. */
   if(tiles->ndim!=kernel->ndim)
-    error(EXIT_FAILURE, 0, "The number of dimensions between the kernel and "
-          "input should be the same in `gal_convolve_spatial'");
+    error(EXIT_FAILURE, 0, "%s: The number of dimensions between the kernel "
+          "and input should be the same", __func__);
   if( block->type!=GAL_TYPE_FLOAT32
       || kernel->type!=GAL_TYPE_FLOAT32 )
-    error(EXIT_FAILURE, 0, "`gal_convolve_spatial' currently only works on "
-          "`float32' type input and kernel");
+    error(EXIT_FAILURE, 0, "%s: only accepts `float32' type input and "
+          "kernel currently", __func__);
 
 
   /* Set the output datastructure.  */
@@ -561,8 +561,8 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   errno=0;
   params.pprm=malloc(numthreads * sizeof *params.pprm);
   if(params.pprm==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for `params.p' in "
-          "`gal_convolve_spatial_general'", numthreads * sizeof *params.pprm);
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for `params.pprm'",
+          __func__, numthreads * sizeof *params.pprm);
 
 
   /* Do the spatial convolution on threads. */
@@ -612,14 +612,13 @@ gal_convolve_spatial_correct_ch_edge(gal_data_t *tiles, gal_data_t *kernel,
 
   /* Some small sanity checks. */
   if( gal_data_dsize_is_different(block, tocorrect) )
-    error(EXIT_FAILURE, 0, "the `tocorrect' dataset has to have the same "
-          "dimensions/size as the block of the `tiles' input in "
-          "`gal_convolve_spatial_correct_ch_edge'");
+    error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the "
+          "same dimensions/size as the block of the `tiles' input", __func__);
   if( block->type != tocorrect->type )
-    error(EXIT_FAILURE, 0, "the `tocorrect' dataset has to have the same "
-          "type as the block of the `tiles' input in "
-          "`gal_convolve_spatial_correct_ch_edge'. The given types are `%s' "
-          "and `%s' respectively", gal_type_to_string(tocorrect->type, 1),
+    error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the same "
+          "type as the block of the `tiles' input. The given types are `%s' "
+          "and `%s' respectively", __func__,
+          gal_type_to_string(tocorrect->type, 1),
           gal_type_to_string(block->type, 1));
 
   /* Call the general function, which will do the correction. */

@@ -125,12 +125,11 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
     tindexs[GAL_POLYGON_MAX_CORNERS];
 
   if(n>GAL_POLYGON_MAX_CORNERS)
-    error(EXIT_FAILURE, 0, "most probably a bug! The number of corners "
-          "given to `gal_polygon_ordered_corners' is more than %d. This is an "
-          "internal value and cannot be set from the outside. Most probably "
-          "Some bug has caused this un-normal value. Please contact us at "
-          PACKAGE_BUGREPORT" so we can solve this problem",
-          GAL_POLYGON_MAX_CORNERS);
+    error(EXIT_FAILURE, 0, "%s: most probably a bug! The number of corners "
+          "is more than %d. This is an internal value and cannot be set from "
+          "the outside. Most probably some bug has caused this un-normal "
+          "value. Please contact us at %s so we can solve this problem",
+          __func__, GAL_POLYGON_MAX_CORNERS, PACKAGE_BUGREPORT);
 
   /* For a check:
   printf("\n\nBefore sorting:\n");

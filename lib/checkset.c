@@ -77,8 +77,8 @@ gal_checkset_malloc_cat(char *inname, char *toappend)
   errno=0;
   out=malloc(inl+apl+1);
   if(out==NULL)
-    error(EXIT_FAILURE, errno,
-          "allocating %zu bytes in gal_checkset_malloc_cat", inl+apl+1);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes", __func__,
+          inl+apl+1);
 
   strcpy(out, inname);
   strcat(out, toappend);
@@ -98,7 +98,7 @@ gal_checkset_allocate_copy(const char *arg, char **copy)
       errno=0;
       *copy=malloc(strlen(arg)+1);
       if(*copy==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
+        error(EXIT_FAILURE, errno, "%s: %zu bytes to copy %s", __func__,
               strlen(arg)+1, arg);
       strcpy(*copy, arg);
     }
@@ -123,7 +123,7 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set)
   errno=0;
   *copy=malloc(strlen(arg)+1);
   if(*copy==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
+    error(EXIT_FAILURE, errno, "%s: %zu bytes to copy %s", __func__,
           strlen(arg)+1, arg);
   strcpy(*copy, arg);
   *set=1;
@@ -259,10 +259,9 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
   struct stat nameinfo;
 
   if(name==NULL)
-    error(EXIT_FAILURE, 0, "a bug! The input to the "
-          "gal_checkset_dir_0_file_1 function in checkset.c should not "
-          "be NULL. Please contact us at "PACKAGE_BUGREPORT" so we can "
-          "see what went wrong and fix it in future updates");
+    error(EXIT_FAILURE, 0, "%s: a bug! The input should not be NULL. "
+          "Please contact us at %s so we can see what went wrong and "
+          "fix it in future updates", __func__, PACKAGE_BUGREPORT);
 
   errno=0;
   if(stat(name, &nameinfo)!=0)
@@ -299,10 +298,9 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
   else                                 /* Not a file or a dir, ABORT */
     error(EXIT_FAILURE, 0, "%s not a file or a directory", name);
 
-  error(EXIT_FAILURE, 0, "a bug! In gal_checkset_dir_0_file_1, (in "
-        "checkset.c). The process should not reach the end of the "
-        "function! Please contact us at "PACKAGE_BUGREPORT" so we can "
-        "see what went wrong and fix it in future updates");
+  error(EXIT_FAILURE, 0, "%s: a bug! The process should not reach the end "
+        "of the function! Please contact us at %s so we can see what went "
+        "wrong and fix it in future updates", __func__, PACKAGE_BUGREPORT);
   return 0;
 }
 
@@ -411,8 +409,8 @@ gal_checkset_dir_part(char *input)
       errno=0;
       out=malloc(3*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for current directory "
-              "gal_checkset_dir_part", 3*sizeof *out);
+        error(EXIT_FAILURE, errno, "%s: %zu bytes for current directory name",
+              __func__, 3*sizeof *out);
       strcpy(out, "./");
     }
   else
@@ -420,7 +418,7 @@ gal_checkset_dir_part(char *input)
       errno=0;
       out=malloc((l+1)*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for gal_checkset_dir_part",
+        error(EXIT_FAILURE, errno, "%s: %zu bytes for `out'", __func__,
               (l+1)*sizeof *out);
       strcpy(out, input);
       out[i+1]='\0';
@@ -453,7 +451,8 @@ gal_checkset_not_dir_part(char *input)
   errno=0;
   out=malloc((l+1)*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for notdir", (l+1)*sizeof *out);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for notdir", __func__,
+          (l+1)*sizeof *out);
 
   strcpy(out, tmp);
   return out;
@@ -482,8 +481,8 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
   errno=0;
   file_d=mkstemp(tmpname);
   if(file_d==-1)
-    error(EXIT_FAILURE, errno, "cannot write output in the directory %s",
-          indir);
+    error(EXIT_FAILURE, errno, "cannot write output in the directory "
+          "%s", indir);
   /*
   errno=0;
   printf("\n\n%s\n\n", tmpname);

@@ -80,8 +80,7 @@ gal_dimension_num_neighbors(size_t ndim)
   if(ndim)
     return pow(3, ndim)-1;
   else
-    error(EXIT_FAILURE, 0, "ndim cannot be zero in "
-          "`gal_dimension_num_neighbors'");
+    error(EXIT_FAILURE, 0, "%s: ndim cannot be zero", __func__);
   return 0;
 }
 
@@ -126,8 +125,8 @@ gal_dimension_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
   switch(ndim)
     {
     case 0:
-      error(EXIT_FAILURE, 0, "`gal_dimension_coord_to_index' doesn't accept "
-            "0 dimensional arrays");
+      error(EXIT_FAILURE, 0, "%s: doesn't accept 0 dimensional arrays",
+            __func__);
 
     case 1:
       ind=coord[0];
@@ -176,8 +175,8 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
   switch(ndim)
     {
     case 0:
-      error(EXIT_FAILURE, 0, "a 0-dimensional dataset is not defined in "
-            "`gal_dimension_ind_to_coord'");
+      error(EXIT_FAILURE, 0, "%s: a 0-dimensional dataset is not defined",
+            __func__);
 
     /* One dimensional dataset. */
     case 1:

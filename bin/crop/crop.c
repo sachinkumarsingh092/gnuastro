@@ -174,9 +174,9 @@ crop_write_to_log(struct onecropparams *crp)
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to fix the "
-                "problem. For some reason `counter' has become %zu in "
-                "`crop_write_to_log'", PACKAGE_BUGREPORT, counter);
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+                "the problem. The value of %zu is not valid for `counter'",
+                __func__, PACKAGE_BUGREPORT, counter);
         }
     }
 }
@@ -233,7 +233,7 @@ imgmodecrop(void *inparam)
             {
               errno=0;
               if(unlink(crp->name))
-                error(EXIT_FAILURE, errno, "can't delet %s (center"
+                error(EXIT_FAILURE, errno, "can't delete %s (center"
                       "was blank)", crp->name);
             }
 
@@ -400,8 +400,8 @@ crop(struct cropparams *p)
   errno=0;
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
-    error(EXIT_FAILURE, errno,
-          "%zu bytes in crop (crop.c) for crp", nt*sizeof *crp);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `crp'",
+          __func__, nt*sizeof *crp);
 
 
   /* Distribute the indexs into the threads (this is needed even if we
@@ -437,7 +437,8 @@ crop(struct cropparams *p)
             crp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, modefunction, &crp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
+              error(EXIT_FAILURE, 0, "%s: can't create thread %zu",
+                    __func__, i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

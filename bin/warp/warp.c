@@ -508,8 +508,8 @@ warp(struct warpparams *p)
   errno=0;
   iwp=malloc(nt*sizeof *iwp);
   if(iwp==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes in warp (warp.c) for iwp",
-          nt*sizeof *iwp);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for iwp",
+          __func__, nt*sizeof *iwp);
 
 
   /* Prepare the output array and all the necessary things: */
@@ -546,7 +546,8 @@ warp(struct warpparams *p)
             iwp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, warponthread, &iwp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
+              error(EXIT_FAILURE, 0, "%s: can't create thread %zu",
+                    __func__, i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

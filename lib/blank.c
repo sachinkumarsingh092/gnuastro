@@ -65,13 +65,13 @@ gal_blank_write(void *ptr, uint8_t type)
     /* Complex types */
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "complex types are not yet supported in "
-            "`gal_blank_write'");
+      error(EXIT_FAILURE, 0, "%s: complex types are not yet supported",
+            __func__);
 
     /* Unrecognized type. */
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_blank_write'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            type);
     }
 }
 
@@ -192,8 +192,8 @@ gal_blank_present(gal_data_t *input, int updateflag)
     /* String. */
     case GAL_TYPE_STRING:
       if(input!=block)
-        error(EXIT_FAILURE, 0, "tile mode is currently not supported for "
-              "strings");
+        error(EXIT_FAILURE, 0, "%s: tile mode is currently not supported for "
+              "strings", __func__);
       strf = (str=input->array) + input->size;
       do if(!strcmp(*str++,GAL_BLANK_STRING)) return 1; while(str<strf);
       break;
@@ -201,17 +201,17 @@ gal_blank_present(gal_data_t *input, int updateflag)
     /* Complex types */
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "complex types are not yet supported in "
-            "`gal_blank_write'");
+      error(EXIT_FAILURE, 0, "%s: complex types are not yet supported",
+            __func__);
 
     /* Bit */
     case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "bit type datasets are not yet supported in "
-            "`gal_blank_present'");
+      error(EXIT_FAILURE, 0, "%s: bit type datasets are not yet supported",
+            __func__);
 
     default:
-      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `gal_blank_present'", block->type);
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, block->type);
     }
 
   /* Update the flag if requested. */
@@ -287,13 +287,13 @@ gal_blank_flag(gal_data_t *input)
         case GAL_TYPE_BIT:
         case GAL_TYPE_COMPLEX32:
         case GAL_TYPE_COMPLEX64:
-          error(EXIT_FAILURE, 0, "%s type not yet supported in "
-                "`gal_blank_flag'", gal_type_to_string(input->type, 1));
+          error(EXIT_FAILURE, 0, "%s: %s type not yet supported",
+                __func__, gal_type_to_string(input->type, 1));
 
           /* Bad input. */
         default:
-          error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-                "in `gal_blank_flag'", input->type);
+          error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+                __func__, input->type);
         }
     }
   else
@@ -328,9 +328,9 @@ gal_blank_remove(gal_data_t *input)
 
   /* This function currently assumes a contiguous patch of memory. */
   if(input->block && input->ndim!=1 )
-    error(EXIT_FAILURE, 0, "`gal_blank_remove' doesn't currently work on "
-          "tiles in datasets with more dimensions than 1, your input has "
-          "%zu dimensions", input->ndim);
+    error(EXIT_FAILURE, 0, "%s: tiles in datasets with more dimensions than "
+          "1 are not yet supported. Your input has %zu dimensions",
+          __func__, input->ndim);
 
   /* If the dataset doesn't have blank values, then just get the size. */
   if( gal_blank_present(input, 0) )
@@ -349,8 +349,8 @@ gal_blank_remove(gal_data_t *input)
         case GAL_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
         case GAL_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
         default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`gal_blank_remove'", input->type);
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, input->type);
         }
     }
   else num=input->size;
@@ -380,8 +380,8 @@ gal_blank_as_string(uint8_t type, int width)
   switch(type)
     {
     case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "bit types are not implemented in "
-            "`gal_data_blank_as_string' yet.");
+      error(EXIT_FAILURE, 0, "%s: bit types are not implemented yet",
+            __func__);
       break;
 
     case GAL_TYPE_STRING:
@@ -448,8 +448,8 @@ gal_blank_as_string(uint8_t type, int width)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_blank_as_string'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            type);
     }
   return blank;
 }

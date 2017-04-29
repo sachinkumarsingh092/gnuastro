@@ -90,8 +90,8 @@ set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
             "operator must be an integer type", token_string);
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`set_number_of_operands", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 
   /* If control reaches here, then the number must have been a negative

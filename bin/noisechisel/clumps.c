@@ -147,10 +147,10 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
 
             /* A small sanity check. */
             if(Q!=NULL || cleanup!=NULL)
-              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                    "can fix this problem. In `clumps_oversegment', `Q' and "
-                    "`cleanup' should be NULL but while checking the equal"
-                    "flux regions they aren't", PACKAGE_BUGREPORT);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
+                    "can fix this problem. `Q' and `cleanup' should be NULL "
+                    "but while checking the equal flux regions they aren't",
+                    __func__, PACKAGE_BUGREPORT);
 
             /* Add this pixel to a queue. */
             gal_list_sizet_add(&Q, *a);
@@ -927,9 +927,9 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
 
   /* A small sanity check. */
   if(gal_tile_block(tile)!=p->clabel)
-    error(EXIT_FAILURE, 0, "a bug! the tile->block' must point to the "
-          "`clabel' dataset. Please contact us at %s to address the "
-          "problem, thank you", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address the "
+          "problem. `tile->block' must point to the `clabel' dataset",
+          __func__, PACKAGE_BUGREPORT);
 
 
   /* Allocate a dataset with the new indexs, note that it will need to have
@@ -1238,10 +1238,9 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
             case 1: p->clabel->name = "SKY_CLUMPS_ALL";  break;
             case 2: p->clabel->name = "SKY_CLUMPS_FOR_SN";   break;
             default:
-              error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
-                    "in `clumps_true_find_sn_thresh'. Please contact us at "
-                    "%s so we can address the issue", clprm.step,
-                    PACKAGE_BUGREPORT);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
+                    "we can address the issue. The value %d is not valid for "
+                    "clprm.step", __func__, PACKAGE_BUGREPORT, clprm.step);
             }
 
           /* Write the demonstration array into the check image. The

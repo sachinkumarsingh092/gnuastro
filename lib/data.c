@@ -135,7 +135,7 @@ gal_data_malloc_array(uint8_t type, size_t size)
   errno=0;
   array=malloc( size * gal_type_sizeof(type) );
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "array of %zu bytes in gal_data_malloc_array",
+    error(EXIT_FAILURE, errno, "%s: array of %zu bytes", __func__,
           size * gal_type_sizeof(type));
 
   return array;
@@ -153,7 +153,7 @@ gal_data_calloc_array(uint8_t type, size_t size)
   errno=0;
   array=calloc( size,  gal_type_sizeof(type) );
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "array of %zu bytes in gal_data_calloc_array",
+    error(EXIT_FAILURE, errno, "%s: array of %zu bytes", __func__,
           size * gal_type_sizeof(type));
 
   return array;
@@ -183,14 +183,15 @@ gal_data_mmap(gal_data_t *data, int clear)
   /*filedes=open(filename, O_RDWR | O_CREAT | O_EXCL | O_TRUNC );*/
   filedes=mkstemp(filename);
   if(filedes==-1)
-    error(EXIT_FAILURE, errno, "%s couldn't be created", filename);
+    error(EXIT_FAILURE, errno, "%s: %s couldn't be created",
+          __func__, filename);
 
 
   /* Make enough space to keep the array data. */
   errno=0;
   if( lseek(filedes, bsize, SEEK_SET) == -1 )
-    error(EXIT_FAILURE, errno, "%s: unable to change file position by "
-          "%zu bytes", filename, bsize);
+    error(EXIT_FAILURE, errno, "%s: %s: unable to change file position by "
+          "%zu bytes", __func__, filename, bsize);
 
 
   /* Write to the newly set file position so the space is allocated. To do
@@ -198,8 +199,8 @@ gal_data_mmap(gal_data_t *data, int clear)
      we identified by `lseek' (above). This will ensure that this space is
      set a side for this array and prepare us to use `mmap'. */
   if( write(filedes, &uc, 1) == -1)
-    error(EXIT_FAILURE, errno, "%s: unable to write one byte at the "
-          "%zu-th position", filename, bsize);
+    error(EXIT_FAILURE, errno, "%s: %s: unable to write one byte at the "
+          "%zu-th position", __func__, filename, bsize);
 
 
   /* Map the memory. */
@@ -208,7 +209,8 @@ gal_data_mmap(gal_data_t *data, int clear)
 
   /* Close the file. */
   if( close(filedes) == -1 )
-    error(EXIT_FAILURE, errno, "%s couldn't be closed", filename);
+    error(EXIT_FAILURE, errno, "%s: %s couldn't be closed",
+          __func__, filename);
 
   /* Keep the filename. */
   data->mmapname=filename;
@@ -276,8 +278,8 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
       errno=0;
       data->dsize=malloc(ndim*sizeof *data->dsize);
       if(data->dsize==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for data->dsize in "
-              "`gal_data_alloc'", ndim*sizeof *data->dsize);
+        error(EXIT_FAILURE, errno, "%s: %zu bytes for data->dsize",
+              __func__, ndim*sizeof *data->dsize);
 
 
       /* Fill in the `dsize' array and in the meantime set `size': */
@@ -286,9 +288,9 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         {
           /* Do a small sanity check. */
           if(dsize[i]<=0)
-            error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero "
-                  "or negative. dsize[%zu] in `gal_data_alloc' has a value "
-                  "of %ld", i, dsize[i]);
+            error(EXIT_FAILURE, 0, "%s: the size of a dimension cannot be zero "
+                  "or negative. dsize[%zu], but has a value of %ld", __func__,
+                  i, dsize[i]);
 
           /* Write this dimension's size, also correct the total number of
              elements. */
@@ -343,8 +345,8 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
   errno=0;
   out=malloc(sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for gal_data_t in gal_data_alloc",
-          sizeof *out);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for gal_data_t",
+          __func__, sizeof *out);
 
   /* Initialize the allocated array. */
   gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
@@ -380,8 +382,8 @@ gal_data_free_contents(gal_data_t *data)
   char **strarr;
 
   if(data==NULL)
-    error(EXIT_FAILURE, 0, "the input data structure to "
-          "`gal_data_free_contents' was a NULL pointer");
+    error(EXIT_FAILURE, 0, "%s: the input data structure to "
+          "`gal_data_free_contents' was a NULL pointer", __func__);
 
   /* Free all the possible allocations. */
   if(data->name)    { free(data->name);    data->name=NULL;    }
@@ -462,8 +464,8 @@ gal_data_array_calloc(size_t size)
   errno=0;
   out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
-          "`gal_data_calloc_dataarray'", size*sizeof *out);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for `out'", __func__,
+          size*sizeof *out);
 
 
   /* Set the pointers to NULL if they didn't exist and the non-pointers to
@@ -538,30 +540,6 @@ gal_data_array_free(gal_data_t *dataarr, size_t size, int free_array)
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
-/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
-   as the input. Recall that if the input is a tile (a part of the input,
-   which is not-contiguous if it has more than one dimension), then the
-   output will have only the elements that cover the tile.*/
-gal_data_t *
-gal_data_copy(gal_data_t *in)
-{
-  return gal_data_copy_to_new_type(in, gal_tile_block(in)->type);
-}
-
-
-
-
-/* Copy the input dataset into the already allocated space of out. */
-void
-gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
-{
-  gal_data_copy_to_new_type_to_allocated(in, out, out->type);
-}
-
-
-
-
-
 /* Only to be used in `data_copy_from_string'. */
 static void
 data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
@@ -569,8 +547,8 @@ data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
   if( strcmp(string, GAL_BLANK_STRING) )
     gal_blank_write(to, type);
   else
-    error(EXIT_FAILURE, 0, "`%s' couldn't be parsed as `%s' type",
-          string, gal_type_to_string(type, 1));
+    error(EXIT_FAILURE, 0, "%s: `%s' couldn't be parsed as `%s' type",
+          __func__, string, gal_type_to_string(type, 1));
 }
 
 
@@ -589,12 +567,11 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
 
   /* Sanity check. */
   if(from->type!=GAL_TYPE_STRING)
-    error(EXIT_FAILURE, 0, "`from' in `data_copy_from_string' must have "
-          "a string type.");
+    error(EXIT_FAILURE, 0, "%s: `from' must have a string type.", __func__);
   if(from->block)
-    error(EXIT_FAILURE, 0, "'data_copyt_from_string' doesn't currently "
-          "support tile inputs. Please contact us at %s so we can implement "
-          "this feature", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: tiles not currently supported (`block' "
+          "element must be NULL). Please contact us at %s so we can "
+          "implement this feature", __func__, PACKAGE_BUGREPORT);
 
   /* Do the copying. */
   for(i=0;i<from->size;++i)
@@ -616,14 +593,13 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         case GAL_TYPE_STRLL:
         case GAL_TYPE_COMPLEX32:
         case GAL_TYPE_COMPLEX64:
-          error(EXIT_FAILURE, 0, "`data_copy_from_string' currently doesn't "
-                "support copying to %s type",
-                gal_type_to_string(to->type, 1));
+          error(EXIT_FAILURE, 0, "%s: copying to %s type not currently "
+                "supported", __func__, gal_type_to_string(to->type, 1));
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "type %d not recognized for to->type in "
-                "`data_copy_from_string'", to->type);
+          error(EXIT_FAILURE, 0, "%s: type %d not recognized for to->type",
+                __func__, to->type);
         }
 
       /* Read/put the input into the output. */
@@ -674,12 +650,11 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
   /* Sanity check */
   if(to->type!=GAL_TYPE_STRING)
-    error(EXIT_FAILURE, 0, "`to' in `data_copy_to_string' must have a "
-          "string type");
+    error(EXIT_FAILURE, 0, "%s: `to' must have a string type", __func__);
   if(from->block)
-    error(EXIT_FAILURE, 0, "'data_copyt_to_string' doesn't currently "
-          "support tile inputs. Please contact us at %s so we can implement "
-          "this feature", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: tile inputs not currently supported (`block' "
+          "element must be NULL). Please contact us at %s so we can implement "
+          "this feature", __func__, PACKAGE_BUGREPORT);
 
   /* Do the copying */
   switch(from->type)
@@ -723,14 +698,13 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     case GAL_TYPE_STRLL:
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "`data_copy_to_string' currently doesn't "
-            "support copying to %s type",
-            gal_type_to_string(from->type, 1));
+      error(EXIT_FAILURE, 0, "%s: copying to %s type not currently supported",
+            __func__, gal_type_to_string(from->type, 1));
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type %d not recognized for `from->type' in "
-            "`data_copy_to_string'", from->type);
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for `from->type'",
+            __func__, from->type);
     }
 }
 
@@ -815,15 +789,39 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     case GAL_TYPE_STRLL:                                                \
     case GAL_TYPE_COMPLEX32:                                            \
     case GAL_TYPE_COMPLEX64:                                            \
-      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently "   \
-            "doesn't support copying from %s type to a numeric (real) " \
-            "type", gal_type_to_string(in->type, 1));                   \
+      error(EXIT_FAILURE, 0, "%s: copying from %s type to a numeric "   \
+            "(real) type not supported", "COPY_OT_SET",                 \
+            gal_type_to_string(in->type, 1));                           \
       break;                                                            \
                                                                         \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type code %d not recognized for "         \
-            "`in->type' in COPY_OT_SET", in->type);                     \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized for "     \
+            "`in->type'", "COPY_OT_SET", in->type);                     \
     }
+
+
+
+
+
+/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
+   as the input. Recall that if the input is a tile (a part of the input,
+   which is not-contiguous if it has more than one dimension), then the
+   output will have only the elements that cover the tile.*/
+gal_data_t *
+gal_data_copy(gal_data_t *in)
+{
+  return gal_data_copy_to_new_type(in, gal_tile_block(in)->type);
+}
+
+
+
+
+/* Copy the input dataset into the already allocated space of out. */
+void
+gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
+{
+  gal_data_copy_to_new_type_to_allocated(in, out, out->type);
+}
 
 
 
@@ -878,21 +876,20 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
      output is not smaller than the input. Note that the type is irrelevant
      because we will be doing type conversion if they differ.*/
   if( out->size < in->size  )
-    error(EXIT_FAILURE, 0, "the output dataset must be equal or larger than "
-          "the input in `gal_data_copy_to_new_type_allocated', the sizes "
-          "are %zu and %zu respectively", out->size, in->size);
+    error(EXIT_FAILURE, 0, "%s: the output dataset must be equal or larger "
+          "than the input. the sizes are %zu and %zu respectively", __func__,
+          out->size, in->size);
   if( out->ndim != in->ndim )
-    error(EXIT_FAILURE, 0, "the output dataset must have the same number of "
-          "dimensions in `gal_data_copy_to_new_type_allocated', the "
-          "dimensions "
-          "are %zu and %zu respectively", out->ndim, in->ndim);
+    error(EXIT_FAILURE, 0, "%s: the output dataset must have the same number "
+          "of dimensions, the dimensions are %zu and %zu respectively",
+          __func__, out->ndim, in->ndim);
 
-  /* Write the constant values. */
-  out->flag=in->flag;
-  out->next=in->next;
-  out->status=in->status;
-  out->disp_width=in->disp_width;
-  out->disp_precision=in->disp_precision;
+  /* Write the basic meta-data. */
+  out->flag           = in->flag;
+  out->next           = in->next;
+  out->status         = in->status;
+  out->disp_width     = in->disp_width;
+  out->disp_precision = in->disp_precision;
 
   /* Do the copying. */
   switch(out->type)
@@ -913,14 +910,13 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
     case GAL_TYPE_STRLL:
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
-            "support copying to %s type",
-            gal_type_to_string(out->type, 1));
+      error(EXIT_FAILURE, 0, "%s: copying to %s type not yet supported",
+            __func__, gal_type_to_string(out->type, 1));
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type %d not recognized for "
-            "for `out->type' in gal_data_copy_to_new_type", out->type);
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for `out->type'",
+            __func__, out->type);
     }
 
   /* Correct the sizes of the output to be the same as the input. If it is
@@ -991,8 +987,8 @@ gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr)
     case GAL_TYPE_FLOAT32:   COPY_ELEM( float    );    break;
     case GAL_TYPE_FLOAT64:   COPY_ELEM( double   );    break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_copy_elem'", input->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            input->type);
     }
 }
 
@@ -1051,8 +1047,7 @@ gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
     case GAL_TYPE_FLOAT64: WRITE_TO_STRING( double,   "%.10g"   );  break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_write_to_string'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
     }
   return str;
 }
@@ -1262,8 +1257,8 @@ gal_data_string_to_type(void **out, char *string, uint8_t type)
                 case GAL_TYPE_UINT32: *(uint32_t *)  value=l;   break;
                 case GAL_TYPE_UINT64: *(uint64_t *)  value=l;   break;
                 default:
-                  error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                        "`gal_data_string_to_type'", type);
+                  error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                        __func__, type);
                 }
           }
     }

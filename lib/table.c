@@ -120,8 +120,7 @@ gal_table_format_as_string(uint8_t format)
     case GAL_TABLE_FORMAT_AFITS:  return "fits-ascii";
     case GAL_TABLE_FORMAT_BFITS:  return "fits-binary";
     default:
-      error(EXIT_FAILURE, 0, "code %d not recognized as a valid format "
-            "in `gal_table_format_as_string'", format);
+      error(EXIT_FAILURE, 0, "%s: code %d not recognized", __func__, format);
       return NULL;
     }
 }
@@ -161,8 +160,8 @@ gal_table_searchin_as_string(uint8_t searchin)
     case GAL_TABLE_SEARCH_UNIT:    return "unit";
     case GAL_TABLE_SEARCH_COMMENT: return "comment";
     default:
-      error(EXIT_FAILURE, 0, "code %d not recognized as a valid search "
-            "field in `gal_table_searchin_as_string'", searchin);
+      error(EXIT_FAILURE, 0, "%s: code %d not recognized as a valid search "
+            "field", __func__, searchin);
       return NULL;
     }
 }
@@ -301,8 +300,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
     case GAL_TABLE_FORMAT_AFITS:
       break;
     default:
-      error(EXIT_FAILURE, 0, "tableformat code %d not recognized in "
-            "`gal_table_col_print_info'", tableformat);
+      error(EXIT_FAILURE, 0, "%s: tableformat code %d not recognized",
+            __func__, tableformat);
     }
 
 
@@ -314,8 +313,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
   switch(col->type)
     {
     case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "printing of bit types is currently "
-            "not supported");
+      error(EXIT_FAILURE, 0, "%s: printing of bit types is currently "
+            "not supported", __func__);
       break;
 
 
@@ -425,8 +424,8 @@ gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
 
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_table_col_print_info'", col->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, col->type);
     }
 
   /* Write the final width and precision into the column's data structure. */
@@ -454,9 +453,8 @@ gal_table_read_blank(gal_data_t *col, char *blank)
 
   /* Just for a sanity check, the ndim and array elements should be zero. */
   if(col->ndim || col->array)
-    error(EXIT_FAILURE, 0, "A bug! The number of dimensions, and the pointer "
-          "to the array in the data structure passed "
-          "`to gal_table_read_blank' must be zero");
+    error(EXIT_FAILURE, 0, "%s: a bug! The number of dimensions, and the "
+          "`array' element of a column must be zero", __func__);
 
   /* Read the blank value as the given type. If successful, then
      `gal_data_string_to_type' will return 0. In that case, we need to
@@ -467,8 +465,8 @@ gal_table_read_blank(gal_data_t *col, char *blank)
       errno=0;
       col->dsize=malloc(sizeof *col->dsize);
       if(col->dsize==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for `col->dsize' in "
-              "`txt_read_blank' ", sizeof *col->dsize);
+        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `col->dsize'",
+              __func__, sizeof *col->dsize);
       col->dsize[0]=col->ndim=col->size=1;
     }
 }
@@ -519,9 +517,9 @@ gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
     }
 
   /* Abort with an error if we get to this point. */
-  error(EXIT_FAILURE, 0, "A bug! please contact us at %s so we can fix "
-        "the problem. For some reason, control has reached the end of "
-        "`gal_table_info'", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we can fix "
+        "the problem. Control must not have reached the end of this function",
+        __func__, PACKAGE_BUGREPORT);
   return NULL;
 }
 
@@ -559,11 +557,12 @@ regexerrorexit(int errcode, regex_t *compiled, char *input)
   errno=0;
   regexerrbuf=malloc(length);
   if(regexerrbuf==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for regexerrbuf", length);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for regexerrbuf",
+          __func__, length);
   (void) regerror(errcode, compiled, regexerrbuf, length);
 
-  error(EXIT_FAILURE, 0, "Regular expression error: %s in value to "
-        "`--column' (`-c'): `%s'", regexerrbuf, input);
+  error(EXIT_FAILURE, 0, "%s: regular expression error: %s in value to "
+        "`--column' (`-c'): `%s'", __func__, regexerrbuf, input);
 }
 
 
@@ -586,13 +585,13 @@ table_set_strcheck(gal_data_t *col, int searchin)
       return col->comment;
 
     default:
-      error(EXIT_FAILURE, 0, "the code %d to searchin was not "
-            "recognized in `table_set_strcheck'", searchin);
+      error(EXIT_FAILURE, 0, "%s: the code %d to searchin was not "
+            "recognized", __func__, searchin);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, For some reason "
-        "control has reached the end of `table_set_strcheck'. This must "
-        "not have happened", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+        "address the problem. Control must not have reached the end of "
+        "this function", __func__, PACKAGE_BUGREPORT);
   return NULL;
 }
 
@@ -633,7 +632,8 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
           errno=0;
           regex=malloc(sizeof *regex);
           if(regex==NULL)
-            error(EXIT_FAILURE, errno, "%zu bytes for regex", sizeof *regex);
+            error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for regex",
+                  __func__, sizeof *regex);
 
           /* First we have to "compile" the string into the regular
              expression, see the "POSIX Regular Expression Compilation"
@@ -695,9 +695,9 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
             {
               /* Make sure the number is larger than zero! */
               if(tlong<=0)
-                error(EXIT_FAILURE, 0, "column numbers must be positive "
+                error(EXIT_FAILURE, 0, "%s: column numbers must be positive "
                       "(not zero or negative). You have asked for column "
-                      "number %ld", tlong);
+                      "number %ld", __func__, tlong);
 
               /* Check if the given value is not larger than the number of
                  columns in the input catalog (note that the user is
@@ -822,8 +822,8 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "table format code %d not recognized for "
-            "`tableformat' in `gal_table_read_cols'", tableformat);
+      error(EXIT_FAILURE, 0, "%s: table format code %d not recognized for "
+            "`tableformat'", __func__, tableformat);
     }
 
   /* Clean up. */

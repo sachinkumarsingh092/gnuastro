@@ -176,9 +176,9 @@ keywords_write_update(struct fitsparams *p, fitsfile **fptr,
             gal_fits_io_error(status, NULL);
         }
       else
-        error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can "
-              "fix this problem. In `header.c'. The value of u1w2 in "
-              "writeupdatekeys must not be %d\n", PACKAGE_BUGREPORT, u1w2);
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at `%s' so we "
+              "can fix this problem. The value %d is not valid for `u1w2'",
+              __func__, PACKAGE_BUGREPORT, u1w2);
 
       /* Add the unit (if one was given). */
       if(keyll->unit

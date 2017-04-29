@@ -725,10 +725,9 @@ segmentation_detections(struct noisechiselparams *p)
               break;
 
             default:
-              error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
-                    "in `segmentation_detections'. Please contact us at "
-                    "%s so we can address the issue", clprm.step,
-                    PACKAGE_BUGREPORT);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
+                    "we can address the issue. The value %d is not recognized "
+                    "for clprm.step", __func__, PACKAGE_BUGREPORT, clprm.step);
             }
 
           /* Write the demonstration array into the check image. The

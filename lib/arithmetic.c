@@ -65,8 +65,8 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
     case GAL_ARITHMETIC_OP_TO_FLOAT32:  type=GAL_TYPE_FLOAT32;  break;
     case GAL_ARITHMETIC_OP_TO_FLOAT64:  type=GAL_TYPE_FLOAT64;  break;
     default:
-      error(EXIT_FAILURE, 0, "operator value of %d not recognized in "
-            "`arithmetic_change_type'", operator);
+      error(EXIT_FAILURE, 0, "%s: operator value of %d not recognized",
+            __func__, operator);
     }
 
   /* Copy to the new type. */
@@ -119,12 +119,12 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
     case GAL_TYPE_FLOAT64: TYPE_CASE_FOR_NOT(double);    break;
 
     case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "datatype, please get in touch with us to implement it.");
+      error(EXIT_FAILURE, 0, "%s: bit datatypes are not yet supported, "
+            "please get in touch with us to implement it.", __func__);
 
     default:
-      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `arithmetic_not'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, data->type);
     }
 
   /* Delete the input structure if the user asked for it. */
@@ -184,8 +184,8 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
     case GAL_TYPE_FLOAT32: ARITHMETIC_ABS_SGN( float,   fabsf );  break;
     case GAL_TYPE_FLOAT64: ARITHMETIC_ABS_SGN( double,  fabs  );  break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`arithmetic_abs'", in->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, in->type);
     }
 
   /* Clean up and return */
@@ -308,8 +308,8 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
       UNIFUNC_RUN_FUNCTION_ON_ELEMENT(double, OP)                       \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
-            "`UNIFUNC_PER_ELEMENT'", in->type);                         \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",         \
+            "UNIARY_FUNCTION_ON_ELEMENT", in->type);                    \
     }
 
 
@@ -345,8 +345,8 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "operator code %d not recognized in "
-            "arithmetic_unary_function", operator);
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
+            __func__, operator);
     }
 
 
@@ -412,9 +412,8 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
       BINFUNC_RUN_FUNCTION(double, RT, LT, OP);                         \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for o->type in BINFUNC_F_OPERATOR_LEFT_RIGHT_SET",         \
-            o->type);                                                   \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for o->type ", \
+            "BINFUNC_F_OPERATOR_LEFT_RIGHT_SET", o->type);              \
     }
 
 
@@ -431,8 +430,8 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
       BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(double, LT, OP);                \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for r->type in BINFUNC_F_OPERATOR_LEFT_SET", r->type);     \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for r->type",  \
+            "BINFUNC_F_OPERATOR_LEFT_SET", r->type);                    \
     }
 
 
@@ -449,8 +448,8 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
       BINFUNC_F_OPERATOR_LEFT_SET(double, OP);                          \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for l->type in BINFUNC_F_OPERATOR_SET", l->type);          \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for l->type",  \
+            "BINFUNC_F_OPERATOR_SET", l->type);                         \
     }
 
 
@@ -469,8 +468,8 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
   /* Simple sanity check on the input sizes */
   if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
       && gal_data_dsize_is_different(l, r) )
-    error(EXIT_FAILURE, 0, "the input datasets don't have the same "
-          "dimension/size in data_arithmetic_binary_function");
+    error(EXIT_FAILURE, 0, "%s: the input datasets don't have the same "
+          "dimension/size", __func__);
 
   /* Check for the types of the left and right operands. */
   arithmetic_check_float_input(l, operator, "first");
@@ -513,8 +512,8 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
     {
     case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
     default:
-      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
-            "data_arithmetic_binary_function", operator);
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
+            __func__, operator);
     }
 
 
@@ -598,8 +597,8 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
     case GAL_TYPE_FLOAT32:  DO_WHERE_OPERATION( float,    OT);  break;  \
     case GAL_TYPE_FLOAT64:  DO_WHERE_OPERATION( double,   OT);  break;  \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type code %d not recognized for the "     \
-            "`iftrue' dataset of `WHERE_OUT_SET'", iftrue->type);       \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized for the " \
+            "`iftrue' dataset", "WHERE_OUT_SET", iftrue->type);         \
     }
 
 
@@ -614,15 +613,15 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
   /* The condition operator has to be unsigned char. */
   if(cond->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "the condition operand to `arithmetic_where' "
-          "must be an `unsigned char' type, but the given condition "
-          "operator has a `%s' type", gal_type_to_string(cond->type, 1));
+    error(EXIT_FAILURE, 0, "%s: the condition operand must be an "
+          "`uint8' type, but the given condition operand has a "
+          "`%s' type", __func__, gal_type_to_string(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
   if(gal_data_dsize_is_different(out, cond))
-    error(EXIT_FAILURE, 0, "the output and condition data sets of the "
-          "`where' operator must be the same size");
+    error(EXIT_FAILURE, 0, "%s: the output and condition data sets of the "
+          "must be the same size", __func__);
 
   /* Do the operation. */
   switch(out->type)
@@ -638,8 +637,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     case GAL_TYPE_FLOAT32:       WHERE_OUT_SET( float    );      break;
     case GAL_TYPE_FLOAT64:       WHERE_OUT_SET( double   );      break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized for the `out' "
-            "dataset of `arithmetic_where'", out->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized for the `out'",
+            __func__, out->type);
     }
 
   /* Clean up if necessary. */
@@ -883,7 +882,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     errno=0;                                                            \
     a=malloc(dnum*sizeof *a);                                           \
     if(a==NULL)                                                         \
-      error(EXIT_FAILURE, 0, "%zu bytes for `arrays' in "               \
+      error(EXIT_FAILURE, 0, "%s: %zu bytes for `a'",                   \
             "MULTIOPERAND_TYPE_SET", dnum*sizeof *a);                   \
                                                                         \
     /* Fill in the array pointers and the blank value for this type. */ \
@@ -923,8 +922,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
         break;                                                          \
                                                                         \
       default:                                                          \
-        error(EXIT_FAILURE, 0, "the operator code %d not recognized "   \
-              "in MULTIOPERAND_TYPE_SET", operator);                    \
+        error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",   \
+              "MULTIOPERAND_TYPE_SET", operator);                       \
       }                                                                 \
                                                                         \
     /* Clean up. */                                                     \
@@ -960,14 +959,14 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 
       /* Check the types. */
       if(tmp->type!=list->type)
-        error(EXIT_FAILURE, 0, "the types of all operands to the %s "
-              "operator must be same",
+        error(EXIT_FAILURE, 0, "%s: the types of all operands to the %s "
+              "operator must be same", __func__,
               gal_arithmetic_operator_string(operator));
 
       /* Check the sizes. */
       if( gal_data_dsize_is_different(list, tmp) )
-        error(EXIT_FAILURE, 0, "the sizes of all operands to the %s "
-              "operator must be same",
+        error(EXIT_FAILURE, 0, "%s: the sizes of all operands to the %s "
+              "operator must be same", __func__,
               gal_arithmetic_operator_string(operator));
     }
 
@@ -1021,8 +1020,8 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
       MULTIOPERAND_TYPE_SET(double,    gal_qsort_float64_increasing);
       break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`arithmetic_multioperand'", list->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, list->type);
     }
 
 
@@ -1194,8 +1193,7 @@ arithmetic_nearest_compiled_type(int intype)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type %d not recognized in "
-            "binary_type_for_convert_to_compiled_type", intype);
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized", __func__, intype);
     }
 
   return 0;
@@ -1287,13 +1285,13 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_TO_FLOAT64:   return "float64";
 
     default:
-      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
-            "gal_data_operator_to_string", operator);
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
+            __func__, operator);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us to fix the problem. "
-        "for some reason, control of the `gal_data_operator_to_string' "
-        "function has reached its end! This should not have happened");
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the problem. "
+        "Control has reached the end of this function. This should not have "
+        "happened", __func__);
   return NULL;
 }
 
@@ -1346,9 +1344,9 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
 
   /* Return the output data structure */
   if(out==NULL)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we can fix "
-          "the problem. For some reason, the `out' array in "
-          "`binary_convert_to_compiled_type' is not set", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s, so we can "
+          "fix the problem. For some reason, the `out' array has not been "
+          "set", __func__, PACKAGE_BUGREPORT);
   return out;
 }
 
@@ -1375,8 +1373,8 @@ arithmetic_from_statistics(int operator, unsigned char flags,
     case GAL_ARITHMETIC_OP_MEDIANVAL:
       out=gal_statistics_median(input, ip); break;
     default:
-      error(EXIT_FAILURE, 0, "operator code %d not recognized in "
-            "`arithmetic_from_statistics'", operator);
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
+            __func__, operator);
     }
 
   /* If the input is to be freed, then do so and return the output. */
@@ -1521,8 +1519,8 @@ gal_arithmetic(int operator, unsigned char flags, ...)
 
     /* When operator is not recognized. */
     default:
-      error(EXIT_FAILURE, 0, "the argument \"%d\" could not be "
-            "interpretted as an operator", operator);
+      error(EXIT_FAILURE, 0, "%s: the argument \"%d\" could not be "
+            "interpretted as an operator", __func__, operator);
     }
 
   /* End the variable argument structure and return. */

@@ -354,8 +354,8 @@ ui_make_change_struct(char *arg)
               errno=0;
               ch=malloc(sizeof *ch);
               if(ch==NULL)
-                error(EXIT_FAILURE, errno, "%zu bytes for ch in "
-                      "`ui_make_change_struct'", sizeof *ch);
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `ch'",
+                      __func__, sizeof *ch);
 
               /* If the last structure has already been defined (!=NULL)
                  then we should set its next element to `ch' and change it

@@ -328,7 +328,8 @@ ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
       errno=0;
       original=malloc(strlen(tmp->v)+1);
       if(original==NULL)
-        error(EXIT_FAILURE, errno, "space for c in setuprename");
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `original'",
+              __func__, strlen(tmp->v)+1);
       strcpy(original, tmp->v);
 
       /* Tokenize the input. Note that strlen does not include the \0
@@ -392,8 +393,8 @@ ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
           errno=0;
           fvalue=lp=malloc(sizeof *lp);
           if(lp==NULL)
-            error(EXIT_FAILURE, errno, "%zu bytes for long integer",
-                  sizeof *lp);
+            error(EXIT_FAILURE, errno, "%s: %zu bytes for `lp'",
+                  __func__, sizeof *lp);
           *lp=l;
         }
       else
@@ -407,8 +408,8 @@ ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)
-                error(EXIT_FAILURE, errno, "%zu bytes for double",
-                      sizeof *dp);
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `dp'",
+                      __func__, sizeof *dp);
               *dp=d;
             }
           else

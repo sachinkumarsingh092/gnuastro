@@ -69,8 +69,8 @@ add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
       errno=0;
       newnode=malloc(sizeof *newnode);
       if(newnode==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for newnode in"
-              "add_operand", sizeof *newnode);
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `newnode'",
+              __func__, sizeof *newnode);
 
       /* Fill in the values. */
       newnode->data=data;
@@ -147,8 +147,9 @@ pop_operand(struct imgarithparams *p, char *operator)
           errno=0;
           p->refdata.dsize=malloc(p->refdata.ndim * sizeof *p->refdata.dsize);
           if(p->refdata.dsize==NULL)
-            error(EXIT_FAILURE, errno, "%zu bytes for p->refdata.dsize in "
-                  "`operands.c'", p->refdata.ndim * sizeof *p->refdata.dsize);
+            error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                  "p->refdata.dsize", __func__,
+                  p->refdata.ndim * sizeof *p->refdata.dsize);
 
           /* Write the values into it. */
           for(i=0;i<p->refdata.ndim;++i)

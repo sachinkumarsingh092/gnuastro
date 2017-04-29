@@ -147,8 +147,7 @@ options_get_home()
   char *home;
   home=getenv("HOME");
   if(home==NULL)
-    error(EXIT_FAILURE, 0, "the HOME environment variable "
-          "is not defined");
+    error(EXIT_FAILURE, 0, "HOME environment variable not defined");
   return home;
 }
 
@@ -538,11 +537,11 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       for(i=num-1;i>=0;--i)
         {
           if( nc > PARSE_SIZES_STATICSTR_LEN-100 )
-            error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
                   "can address the problem. The number of necessary "
-                  "characters in the statically allocated string of "
-                  "`gal_options_parse_sizes' has become too close to %d",
-                  PACKAGE_BUGREPORT, PARSE_SIZES_STATICSTR_LEN);
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  PARSE_SIZES_STATICSTR_LEN);
           nc += sprintf(sstr+nc, "%zu,", array[i]);
         }
       sstr[nc-1]='\0';
@@ -833,8 +832,8 @@ options_sanity_check(struct argp_option *option, char *arg,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "range code %d not recognized in "
-            "`gal_options_check_set'", option->range);
+      error(EXIT_FAILURE, 0, "%s: range code %d not recognized",
+            __func__, option->range);
     }
 
 
@@ -949,11 +948,10 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
       if(option->type==GAL_OPTIONS_NO_ARG_TYPE)
         *(uint8_t *)(option->value)=1;
       else
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
               "correct it. Options with no arguments, must have "
-              "type `%s' to be read in `gal_options_read_from_key'. "
-              "However, the `%s' option has type %s",
-              PACKAGE_BUGREPORT,
+              "type `%s'. However, the `%s' option has type %s",
+              __func__, PACKAGE_BUGREPORT,
               gal_type_to_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
               option->name, gal_type_to_string(option->type, 1));
     }
@@ -1259,7 +1257,7 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
       if(errno==ENOENT && enoent_abort==0)
         return;
       else
-        error(EXIT_FAILURE, errno, "%s: to read as a configuration file",
+        error(EXIT_FAILURE, errno, "%s: to be read as a configuration file",
               filename);
     }
 
@@ -1270,8 +1268,8 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
   errno=0;
   line=malloc(linelen*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `line' in `gal_txt_table_read'",
-          linelen*sizeof *line);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `line'",
+          __func__, linelen*sizeof *line);
 
 
   /* Read the parameters line by line. */
@@ -1303,7 +1301,7 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
   errno=0;
   if(fclose(fp))
     error(EXIT_FAILURE, errno, "%s: couldn't close after reading as "
-          "a configuration file", filename);
+          "a configuration file in %s", filename, __func__);
 
   /* Clean up and return. */
   free(line);
@@ -1351,10 +1349,9 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
   /* A small sanity check because in multiple places, we have assumed the
      on/off options have a type of `unsigned char'. */
   if(GAL_OPTIONS_NO_ARG_TYPE != GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix the "
-          "problem. The `GAL_OPTIONS_NO_ARG_TYPE' must have the "
-          "`unsigned char' type. But",
-          PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix "
+          "the problem. `GAL_OPTIONS_NO_ARG_TYPE' must be the "
+          "`uint8' type", __func__, PACKAGE_BUGREPORT);
 
   /* The program's current directory configuration file. */
   asprintf(&filename, ".%s/%s.conf", PACKAGE, cp->program_exec);
@@ -1545,8 +1542,8 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
     {
       /* A small sanity check. */
       if(option->type!=GAL_TYPE_STRLL)
-        error(EXIT_FAILURE, 0, "currently only string linked lists "
-              "are acceptable for printing");
+        error(EXIT_FAILURE, 0, "%s: currently only string linked lists "
+              "are acceptable for printing", __func__);
 
       /* Check each node, one by one. */
       for(tmp=*(gal_list_str_t **)(option->value);
@@ -1728,7 +1725,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
       fp=fopen(filename, "w");
       if(fp==NULL)
         error(EXIT_FAILURE, errno, "%s: could't open to write "
-              "configuration file", dirname);
+              "configuration file in %s", dirname, __func__);
 
       /* Print the basic information as comments in the file first. */
       time(&rawtime);

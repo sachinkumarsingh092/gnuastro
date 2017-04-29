@@ -137,10 +137,9 @@ threshold_apply_on_thread(void *in_prm)
 
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
-                "address the problem. For some reason a value of %d had "
-                "been given to `type' in `threshold_apply'",
-                PACKAGE_BUGREPORT, taprm->kind);
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+                "address the problem. A value of %d had for `taprm->kind' "
+                "is not valid", __func__, PACKAGE_BUGREPORT, taprm->kind);
         }
     }
 
@@ -256,8 +255,8 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
 
   /* A small sanity check. */
   if( (*first)->next )
-    error(EXIT_FAILURE, 0, "the `first' argument to "
-          "`threshold_interp_smooth' must not have any `next' pointer.");
+    error(EXIT_FAILURE, 0, "%s: the `first' argument to must not have any "
+          "`next' pointer.", __func__);
 
 
   /* Do the interpolation of both arrays. */

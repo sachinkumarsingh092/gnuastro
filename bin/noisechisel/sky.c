@@ -240,8 +240,9 @@ sky_subtract(struct noisechiselparams *p)
 
   /* A small sanity check. */
   if(p->sky->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "`sky_subtract' currently only works on float32 "
-          "type sky values.");
+    error(EXIT_FAILURE, 0, "%s: only `float32' type is acceptable "
+          "for sky values. but `p->sky' has type `%s'", __func__,
+          gal_type_to_string(p->sky->type, 1));
 
   /* Go over all the tiles. */
   for(tid=0; tid<p->cp.tl.tottiles; ++tid)

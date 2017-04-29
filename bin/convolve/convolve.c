@@ -74,9 +74,8 @@ complextoreal(double *c, size_t size, int action, double **output)
       do { *o++ = *c;                            c+=2; } while(o<of);
       break;
     default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "correct it. For some reason, the action code for "
-            "complextoreal in convolve.c (%d) is not recognized",
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+            "correct it. The `action' code %d is not recognized", __func__,
             PACKAGE_BUGREPORT, action);
     }
 }
@@ -306,8 +305,8 @@ fftinitializer(struct convolveparams *p, struct fftonthreadparams **outfp)
   errno=0;
   *outfp=fp=malloc(p->cp.numthreads*sizeof *fp);
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes in forward2dfft for fp",
-          p->cp.numthreads*sizeof *fp);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for fp",
+          __func__, p->cp.numthreads*sizeof *fp);
 
   /* Initialize the gsl_fft_wavetable structures (these are thread
      safe): */
@@ -360,9 +359,8 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
 
   /* Check if the image has even sides. */
   if(ps0%2 || ps1%2)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s. In "
-          "correctdeconvolve, the padded image sides are not an "
-          "even number", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s. The padded "
+          "image sides are not an even number", __func__, PACKAGE_BUGREPORT);
 
   /* First convert the complex image to a real image: */
   complextoreal(p->pimg, ps0*ps1, COMPLEX_TO_REAL_SPEC, &s);
@@ -371,8 +369,8 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
   errno=0;
   n=malloc(ps0*ps1*sizeof *n);
   if(n==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for n in correctdeconvolve "
-          "(convolve.c). ", ps0*ps1*sizeof *n);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `n'",
+          __func__, ps0*ps1*sizeof *n);
 
 
   /* Put the elements in their proper place: For example in one
@@ -528,10 +526,10 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   if(forward1backwardn1==1)       multiple=2;
   else if(forward1backwardn1==-1) multiple=1;
   else
-    error(EXIT_FAILURE, 0, "a bug! In forward2dfft, the value of the "
-          "variable forward1backwardn1 is somehow not 1 or 2, but %d. "
-          "Please contact us at "PACKAGE_BUGREPORT" so we can find the "
-          "cause of the problem and fix it", forward1backwardn1);
+    error(EXIT_FAILURE, 0, "%s: a bug! The value of the variable "
+          "`forward1backwardn1' is %d not 1 or 2. Please contact us at %s "
+          "so we can find the cause of the problem and fix it", __func__,
+          forward1backwardn1, PACKAGE_BUGREPORT);
 
 
   /* ==================== */
@@ -566,8 +564,8 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].forward1backwardn1=forward1backwardn1;
             err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %zu for rows",
-                    i);
+              error(EXIT_FAILURE, 0, "%s: can't create thread %zu for rows",
+                    __func__, i);
           }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -605,8 +603,8 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].forward1backwardn1=forward1backwardn1;
             err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
             if(err)
-              error(EXIT_FAILURE, 0,
-                    "can't create thread %zu for columns", i);
+              error(EXIT_FAILURE, 0, "%s: can't create thread %zu for columns",
+                    __func__, i);
           }
       pthread_barrier_wait(&b);
       pthread_attr_destroy(&attr);

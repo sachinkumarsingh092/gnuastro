@@ -56,20 +56,20 @@ pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
   if(limit==0)
     {
       errno = EINVAL;
-      error(EXIT_FAILURE, errno, "in pthread_barrier_init, limit is zero");
+      error(EXIT_FAILURE, errno, "%s: limit is zero", __func__);
     }
 
   /* Initialize the mutex: */
   err=pthread_mutex_init(&b->mutex, 0);
   if(err)
-    error(EXIT_FAILURE, err, "inializing mutex in pthread_barrier_init");
+    error(EXIT_FAILURE, err, "%s: inializing mutex", __func__);
 
   /* Initialize the condition variable: */
   err=pthread_cond_init(&b->cond, 0);
   if(err)
     {
       pthread_mutex_destroy(&b->mutex);
-      error(EXIT_FAILURE, err, "inializing cond in pthread_barrier_init");
+      error(EXIT_FAILURE, err, "%s: inializing cond", __func__);
     }
 
   /* set the values: */
@@ -195,7 +195,7 @@ gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
   errno=0;
   thrds=*outthrds=malloc(numthreads*thrdcols*sizeof *thrds);
   if(thrds==NULL)
-    error(EXIT_FAILURE, errno, "allocating thrds in prepindexsinthreads");
+    error(EXIT_FAILURE, errno, "%s: allocating thrds", __func__);
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+numthreads*thrdcols;
@@ -230,11 +230,12 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
   int err;
 
   err=pthread_attr_init(attr);
-  if(err) error(EXIT_FAILURE, 0, "thread attr not initialized");
+  if(err) error(EXIT_FAILURE, 0, "%s: thread attr not initialized", __func__);
   err=pthread_attr_setdetachstate(attr, PTHREAD_CREATE_DETACHED);
-  if(err) error(EXIT_FAILURE, 0, "thread attr not detached");
+  if(err) error(EXIT_FAILURE, 0, "%s: thread attr not detached", __func__);
   err=pthread_barrier_init(b, NULL, limit);
-  if(err) error(EXIT_FAILURE, 0, "thread barrier not initialized");
+  if(err) error(EXIT_FAILURE, 0, "%s: thread barrier not initialized",
+                __func__);
 }
 
 
@@ -341,8 +342,8 @@ gal_threads_spin_off(void *(*function)(void *), void *caller_params,
 
   /* Sanity check. */
   if(numthreads==0)
-    error(EXIT_FAILURE, 0, "the number of threads (`numthreads') in "
-          "`gal_threads_spin_off' cannot be zero");
+    error(EXIT_FAILURE, 0, "%s: the number of threads (`numthreads') "
+          "cannot be zero", __func__);
 
   /* Allocate the array of parameters structure structures. */
   errno=0;

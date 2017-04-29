@@ -60,8 +60,8 @@ columns_alloc_radec(struct mkcatalogparams *p)
       errno=0;
       p->rd_vo = malloc(p->input->ndim * sizeof *p->rd_vo);
       if(p->rd_vo==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vo, "
-              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_vo );
+        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for p->rd_vo",
+              __func__, p->input->ndim * sizeof *p->rd_vo );
 
       /* Space for each dimension. */
       p->rd_vo[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
@@ -72,9 +72,8 @@ columns_alloc_radec(struct mkcatalogparams *p)
           errno=0;
           p->rd_vc = malloc(p->input->ndim * sizeof *p->rd_vc);
           if(p->rd_vc==NULL)
-            error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vo, "
-                  "`columns_alloc_radec'",
-                  p->input->ndim * sizeof *p->rd_vc );
+            error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for p->rd_vo",
+                  __func__, p->input->ndim * sizeof *p->rd_vc );
 
           /* Space for each dimension. */
           p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
@@ -97,8 +96,8 @@ columns_alloc_georadec(struct mkcatalogparams *p)
       errno=0;
       p->rd_go = malloc(p->input->ndim * sizeof *p->rd_go);
       if(p->rd_go==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_go, "
-              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_go );
+        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_go'",
+              __func__, p->input->ndim * sizeof *p->rd_go );
 
       /* Space for each dimension. */
       p->rd_go[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
@@ -109,9 +108,8 @@ columns_alloc_georadec(struct mkcatalogparams *p)
           errno=0;
           p->rd_gc = malloc(p->input->ndim * sizeof *p->rd_gc);
           if(p->rd_gc==NULL)
-            error(EXIT_FAILURE, 0, "%zu bytes for p->rd_go, "
-                  "`columns_alloc_radec'",
-                  p->input->ndim * sizeof *p->rd_gc );
+            error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_go'",
+                  __func__, p->input->ndim * sizeof *p->rd_gc );
 
           /* Space for each dimension. */
           p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
@@ -134,8 +132,8 @@ columns_alloc_clumpsradec(struct mkcatalogparams *p)
       errno=0;
       p->rd_vcc = malloc(p->input->ndim * sizeof *p->rd_vcc);
       if(p->rd_vcc==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_vcc, "
-              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_vcc );
+        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_vcc'",
+              __func__, p->input->ndim * sizeof *p->rd_vcc );
 
       /* Space for each dimension. */
       p->rd_vcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
@@ -157,8 +155,8 @@ columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
       errno=0;
       p->rd_gcc = malloc(p->input->ndim * sizeof *p->rd_gcc);
       if(p->rd_gcc==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for p->rd_gcc, "
-              "`columns_alloc_radec'", p->input->ndim * sizeof *p->rd_gcc );
+        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_gcc'",
+              __func__, p->input->ndim * sizeof *p->rd_gcc );
 
       /* Space for each dimension. */
       p->rd_gcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
@@ -867,10 +865,9 @@ columns_define_alloc(struct mkcatalogparams *p)
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! please contact us at %s to fix the "
-                "problem. The code %d is not an internally recognized "
-                "column code, this is due to some mistake in the programming",
-                PACKAGE_BUGREPORT, colcode->v);
+          error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix "
+                "the problem. The code %d is not an internally recognized "
+                "column code", __func__, PACKAGE_BUGREPORT, colcode->v);
         }
 
       /* If this is an objects column, add it to the list of columns. We
@@ -1060,8 +1057,8 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
 
     /* Error. */
     default:
-      error(EXIT_FAILURE, 0, "a bug! Code %d not a recognized key in "
-            "`columns_second_order'", key);
+      error(EXIT_FAILURE, 0, "%s: a bug! Code %d not a recognized key",
+            __func__, key);
     }
 
   /* Return the output. */
@@ -1089,9 +1086,9 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
 
   /* Control should not reach here! If it does, its a bug, so abort and let
      the user know. */
-  error(EXIT_FAILURE, 0, "a bug! control has reached the end of "
-        "`columns_second_order' (which should not have happened). Please "
-        "contact us at %s, so we can address the problem", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s, so we can "
+        "address the problem. Control should not have reached the end of "
+        "this function", __func__, PACKAGE_BUGREPORT);
   return NAN;
 }
 
@@ -1309,10 +1306,9 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! the output column code %d not "
-                "recognized in `mkcatalog_fill_output_columns' (for "
-                "objects). Please contact us at %s to solve the problem",
-                key, PACKAGE_BUGREPORT);
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                "solve the problem. the output column code %d not recognized "
+                "(for objects). ", __func__, PACKAGE_BUGREPORT, key);
         }
     }
 
@@ -1461,10 +1457,10 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           default:
-            error(EXIT_FAILURE, 0, "a bug! the output column code %d not "
-                  "recognized in `mkcatalog_fill_output_columns' (for "
-                  "clumps). Please contact us at %s to solve the problem",
-                  key, PACKAGE_BUGREPORT);
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                  "solve the problem. The output column code %d not "
+                  "recognized (for clumps). ", __func__, PACKAGE_BUGREPORT,
+                  key);
           }
       }
 }

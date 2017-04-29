@@ -137,8 +137,8 @@ gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
 
   /* Initialize the wcsprm struct
   if ((status = wcsset(*wcs)))
-    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
-          wcs_errmsg[status]);
+    error(EXIT_FAILURE, 0, "%s: wcsset ERROR %d: %s.\n", __func__,
+          status, wcs_errmsg[status]);
   */
 }
 
@@ -199,8 +199,8 @@ gal_wcs_copy(struct wcsprm *in, size_t ndim)
       errno=0;
       out=malloc(sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for out in `gal_wcs_copy'",
-              sizeof *out);
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `out'",
+              __func__, sizeof *out);
 
       /* Initialize the allocated WCS structure. The WCSLIB manual says "On
          the first invokation, and only the first invokation, wcsprm::flag
@@ -283,8 +283,8 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
   errno=0;
   out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
-          "`gal_wcs_array_from_wcsprm'", size*sizeof *out);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `out'",
+          __func__, size*sizeof *out);
 
   /* Fill in the array. */
   if(wcs->altlin & 0x1)        /* Has a PCi_j array. */
@@ -299,8 +299,8 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
         out[i]=wcs->cd[i];
     }
   else
-    error(EXIT_FAILURE, 0, "currently, `gal_wcs_array_from_wcsprm' only "
-          "recognizes PCi_ja and CDi_ja keywords");
+    error(EXIT_FAILURE, 0, "%s: currently only PCi_ja and CDi_ja keywords "
+          "are recognized", __func__);
 
   /* Return the result */
   return out;
@@ -413,12 +413,12 @@ gal_wcs_pixel_scale_deg(struct wcsprm *wcs)
   /* Allocate space for the `v' and `pixscale' arrays. */
   errno=0; v=malloc(n*n*sizeof *v);
   if(v==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `v' in "
-          "`gal_wcs_pixel_scale_deg'", n*n*sizeof *v);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `v'",
+          __func__, n*n*sizeof *v);
   errno=0; pixscale=malloc(n*sizeof *pixscale);
   if(pixscale==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `pixscale' in "
-          "`gal_wcs_pixel_scale_deg'", n*sizeof *pixscale);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `pixscale'",
+          __func__, n*sizeof *pixscale);
 
   /* Write the full matrix into an array, irrespective of what type it was
      stored in the wcsprm structure (`PCi_j' style or `CDi_j' style). */
@@ -459,8 +459,8 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
      can find which ones correlate to RA and Dec and use them to find the
      pixel area in arcsec^2. */
   if(wcs->naxis!=2)
-    error(EXIT_FAILURE, 0, "`gal_wcs_pixel_area_arcsec2' can currently "
-          "calculate the area only when the image has 2 dimensions.");
+    error(EXIT_FAILURE, 0, "%s: currently only 2D datasets supported. "
+          "The input WCS has %d dimensions", __func__, wcs->naxis);
 
   /* Get the pixel scales along each axis in degrees, then multiply. */
   pixscale=gal_wcs_pixel_scale_deg(wcs);
@@ -522,7 +522,7 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   /* Use WCSLIB's `wcss2p'. */
   status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
   if(status)
-    error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
+    error(EXIT_FAILURE, 0, "%s: wcss2p ERROR %d: %s", __func__, status,
           wcs_errmsg[status]);
 
   /* For a sanity check:
@@ -579,7 +579,7 @@ gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
   /* Use WCSLIB's wcsp2s for the conversion. */
   status=wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta, world, stat);
   if(status)
-    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
+    error(EXIT_FAILURE, 0, "%s: wcsp2s ERROR %d: %s", __func__, status,
           wcs_errmsg[status]);
 
   /* For a sanity check:

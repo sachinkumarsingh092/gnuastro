@@ -274,8 +274,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       BINARY_OP_INCR_OT_RT_LT_SET(||, uint8_t, RT, LT);            \
       break;                                                       \
     default:                                                       \
-      error(EXIT_FAILURE, 0, "operator code %d not recognized in " \
-            "`BINARY_RT_LT_SET", operator);                        \
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",\
+            "BINARY_RT_LT_SET", operator);                         \
     }
 
 
@@ -298,8 +298,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       BINARY_LT_SET_RT_IS_FLOAT32(LT);                             \
       BINARY_LT_SET_RT_IS_FLOAT64(LT);                             \
     default:                                                       \
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "     \
-            "`BINARY_LT_SET'", r->type);                           \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",    \
+            "BINARY_LT_SET", r->type);                             \
     }
 
 
@@ -339,8 +339,9 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
   /* Simple sanity check on the input sizes */
   if( !( (flags & GAL_ARITHMETIC_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
-    error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
-          "same dimension/size", gal_arithmetic_operator_string(operator));
+    error(EXIT_FAILURE, 0, "%s: the non-number inputs to %s don't have the "
+          "same dimension/size", __func__,
+          gal_arithmetic_operator_string(operator));
 
 
   /* Set the final output type (independent of which types are
@@ -408,8 +409,8 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
       BINARY_LT_IS_FLOAT32;
       BINARY_LT_IS_FLOAT64;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`arithmetic_binary'", l->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, l->type);
     }
 
 

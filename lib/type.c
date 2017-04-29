@@ -41,8 +41,8 @@ gal_type_sizeof(uint8_t type)
   switch(type)
     {
     case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
-            "types, please get in touch with us to implement it.");
+      error(EXIT_FAILURE, 0, "%s: bit types are not currently supported, "
+            "please get in touch with us to implement it", __func__);
 
       /* The parenthesis after sizeof is not a function, it is actually a
          type cast, so we have put a space between size of and the
@@ -59,35 +59,39 @@ gal_type_sizeof(uint8_t type)
 
     case GAL_TYPE_FLOAT32:
       if( sizeof (float) != 4 )
-        error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
+        error(EXIT_FAILURE, 0, "%s: `float' is not 32 bits on this machine",
+              __func__);
       return sizeof (float);
 
     case GAL_TYPE_FLOAT64:
       if( sizeof (double) != 8 )
-        error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
+        error(EXIT_FAILURE, 0, "%s: `double' is not 64 bits on this machine",
+              __func__);
       return sizeof (double);
 
     case GAL_TYPE_COMPLEX32:
       if( sizeof (float) != 4 )
-        error(EXIT_FAILURE, 0, "`float` is not 32 bits on this machine");
+        error(EXIT_FAILURE, 0, "%s: `float' is not 32 bits on this machine",
+              __func__);
       return sizeof (gsl_complex_float);
 
     case GAL_TYPE_COMPLEX64:
       if( sizeof (double) != 8 )
-        error(EXIT_FAILURE, 0, "`double` is not 64 bits on this machine");
+        error(EXIT_FAILURE, 0, "%s: `double` is not 64 bits on this machine",
+              __func__);
       return sizeof (gsl_complex);
 
     case GAL_TYPE_STRING:
       return sizeof (char *);
 
     default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "gal_data_sizeof", type);
+      error(EXIT_FAILURE, 0, "%s: type value of %d not recognized",
+            __func__, type);
     }
 
-  error(EXIT_FAILURE, 0, "Control has reached the end of `gal_data_sizeof' "
-        "This is a bug! Please contact us at %s so we can find the cause "
-        "of the problem.", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can find "
+        "the cause of the problem. Control should not have reached the end of "
+        "this function", __func__, PACKAGE_BUGREPORT);
   return -1;
 }
 
@@ -146,16 +150,15 @@ gal_type_to_string(uint8_t type, int long_name)
       if(long_name) return "string linked list";  else return "strll";
 
     default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_type_as_string'", type);
+      error(EXIT_FAILURE, 0, "%s: type value of %d not recognized",
+            __func__, type);
     }
 
   /* Any of the cases above should return this function, so if control
      reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_type_as_string' function. This must not happen",
-        PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+        "address the problem. Control should not have reached the end of "
+        "this function", __func__, PACKAGE_BUGREPORT);
   return NULL;
 }
 
@@ -213,10 +216,9 @@ gal_type_from_string(char *str)
 
   /* Any of the cases above should return this function, so if control
      reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_string_as_type' function. This must not happen",
-        PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+        "address the problem. Control must not have reached the end of this "
+        "function", __func__, PACKAGE_BUGREPORT);
   return 0;
 }
 
@@ -243,8 +245,7 @@ gal_type_min(uint8_t type, void *in)
     case GAL_TYPE_FLOAT32:      *(float *)    in = -FLT_MAX;     break;
     case GAL_TYPE_FLOAT64:      *(double *)   in = -DBL_MAX;     break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
     }
 }
 
@@ -268,8 +269,7 @@ gal_type_max(uint8_t type, void *in)
     case GAL_TYPE_FLOAT32:      *(float *)    in = FLT_MAX;      break;
     case GAL_TYPE_FLOAT64:      *(double *)   in = DBL_MAX;      break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
     }
 }
 

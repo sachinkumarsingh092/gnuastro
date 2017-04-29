@@ -54,8 +54,7 @@ gal_list_str_add(gal_list_str_t **list, char *value,
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "list: New element in gal_list_stll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   if(allocate)
     gal_checkset_allocate_copy(value, &newnode->v);
@@ -180,8 +179,7 @@ gal_list_i32_add(gal_list_i32_t **list, int32_t value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "list: New element in gal_list_ill");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->next=*list;
@@ -331,8 +329,7 @@ gal_list_sizet_add(gal_list_sizet_t **list, size_t value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "list: New element in gal_list_sll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->next=*list;
@@ -481,8 +478,7 @@ gal_list_f32_add(gal_list_f32_t **list, float value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "list: New element in "
-          "gal_list_f32_t");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->next=*list;
@@ -639,8 +635,7 @@ gal_list_f64_add(gal_list_f64_t **list, double value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "list: New element in "
-          "gal_list_dll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->next=*list;
@@ -796,8 +791,7 @@ gal_list_void_add(gal_list_void_t **list, void *value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "list: New element in gal_list_ill");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->next=*list;
@@ -908,8 +902,7 @@ gal_list_osizet_add(gal_list_osizet_t **list,
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "list: New element "
-          "in gal_list_osll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->s=tosort;
@@ -1027,8 +1020,7 @@ gal_list_dosizet_add(gal_list_dosizet_t **largest,
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "list: New element "
-          "in gal_list_tosll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   newnode->v=value;
   newnode->s=tosort;
@@ -1096,10 +1088,9 @@ gal_list_dosizet_pop_smallest(gal_list_dosizet_t **largest,
     {
       /* If `smallest' is NULL, `largest' should also be NULL. */
       if(*largest)
-        error(EXIT_FAILURE, 0, "`largest' and `smallest' pointers to "
-              "`gal_list_dosizet_pop_smallest' must both be non-NULL or "
-              "both be NULL. However, in this call, `smallest' was NULL "
-              "while `largest' isn't NULL");
+        error(EXIT_FAILURE, 0, "%s: `largest' and `smallest' pointers must "
+              "both be non-NULL or both be NULL. However, in this call, "
+              "`smallest' was NULL while `largest' isn't NULL", __func__);
       value=GAL_BLANK_SIZE_T;
       *tosort=NAN;
     }

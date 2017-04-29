@@ -54,10 +54,9 @@ binary_erode_dilate_2d_4con(gal_data_t *input, int dilate0_erode1)
 
   /* Do a sanity check: */
   if(dilate0_erode1!=1 && dilate0_erode1!=0)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
-          "this problem. In binary_2d_4con, the value to `dilate0_erode1' "
-          "is %u while it should be 0 or 1", PACKAGE_BUGREPORT,
-          dilate0_erode1);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+          "fix this problem. The value to `dilate0_erode1' is %u while it "
+          "should be 0 or 1", __func__, PACKAGE_BUGREPORT, dilate0_erode1);
 
   /* Set the foreground and background values. */
   if(dilate0_erode1==0) {f=1; b=0;}
@@ -138,10 +137,9 @@ binary_erode_dilate_2d_8con(gal_data_t *input, unsigned char dilate0_erode1)
 
   /* Do a sanity check: */
   if(dilate0_erode1!=1 && dilate0_erode1!=0)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
-          "this problem. In dilate0_erode1_4con (binary.c), the value to "
-          "dilate0_erode1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT,
-          dilate0_erode1);
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix "
+          "this problem. The value to dilate0_erode1 is %u while it should "
+          "be 0 or 1", __func__, PACKAGE_BUGREPORT, dilate0_erode1);
 
   /* Set the foreground and background values: */
   if(dilate0_erode1==0) {f=1; b=0;}
@@ -242,8 +240,9 @@ binary_erode_dilate(gal_data_t *input, size_t num, int connectivity,
 
   /* Currently this only works on blocks. */
   if(input->block)
-    error(EXIT_FAILURE, 0, "`gal_binary_erode' currently only works on a "
-          "fully allocated block of memory");
+    error(EXIT_FAILURE, 0, "%s: currently only works on a fully "
+          "allocated block of memory, but the input is a tile (its `block' "
+          "element is not NULL)", __func__);
 
   /* Set the dataset to work on. */
   binary = ( (inplace && input->type==GAL_TYPE_UINT8)
@@ -260,14 +259,14 @@ binary_erode_dilate(gal_data_t *input, size_t num, int connectivity,
           case 4: binary_erode_dilate_2d_4con(binary, d0e1); break;
           case 8: binary_erode_dilate_2d_8con(binary, d0e1); break;
           default:
-            error(EXIT_FAILURE, 0, "%d not acceptable for connectivity in "
-                  "a 2D dataset", connectivity);
+            error(EXIT_FAILURE, 0, "%s: %d not acceptable for connectivity "
+                  "in a 2D dataset", __func__, connectivity);
           }
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "`gal_binary_erode' currently doesn't work on "
-            "%zu dimensional datasets", binary->ndim);
+      error(EXIT_FAILURE, 0, "%s: currently doesn't work on %zu "
+            "dimensional datasets", __func__, binary->ndim);
     }
 
   /* Clean up and return. */
@@ -362,11 +361,11 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
   /* Two small sanity checks. */
   if(binary->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "the input data structure to "
-          "`gal_binary_connected_components' must be `uint8' type");
+    error(EXIT_FAILURE, 0, "%s: the input data set type must be `uint8'",
+          __func__);
   if(binary->block)
-    error(EXIT_FAILURE, 0, "currently, the input data structure to "
-          "`gal_binary_connected_components' must not be a tile");
+    error(EXIT_FAILURE, 0, "%s: currently, the input data structure to "
+          "must not be a tile", __func__);
 
 
   /* Prepare the dataset for the labels. */
@@ -377,14 +376,13 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
       /* Make sure the given dataset has the same size as the input. */
       if( gal_data_dsize_is_different(binary, lab) )
-        error(EXIT_FAILURE, 0, "the `binary' and `out' datasets must have "
-              "the same size in `gal_binary_connected_components'");
+        error(EXIT_FAILURE, 0, "%s: the `binary' and `out' datasets must have "
+              "the same size", __func__);
 
       /* Make sure it has a `int32' type. */
       if( lab->type!=GAL_TYPE_INT32 )
-        error(EXIT_FAILURE, 0, "the `out' dataset in "
-              "`gal_binary_connected_components' must have `int32' type"
-              "but the array you have given is `%s' type",
+        error(EXIT_FAILURE, 0, "%s: the `out' dataset must have `int32' type"
+              "but the array you have given is `%s' type", __func__,
               gal_type_to_string(lab->type, 1));
 
       /* Reset all its values to zero. */
@@ -487,19 +485,19 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
 
   /* Some small sanity checks. */
   if(adjacency->type != GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
-          "accepts a `uint8' numeric type. However, the input dataset has "
-          "type of `%s'", gal_type_to_string(adjacency->type, 1));
+    error(EXIT_FAILURE, 0, "%s: input must have type `uint8'. However, the "
+          "input dataset has type of `%s'", __func__,
+          gal_type_to_string(adjacency->type, 1));
 
   if(adjacency->ndim != 2)
-    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
-          "accepts a 2-dimensional array. However, the input dataset has "
-          "%zu dimensions", adjacency->ndim);
+    error(EXIT_FAILURE, 0, "%s: input must be 2-dimensional (a matrix)."
+          "However, the input dataset has %zu dimensions", __func__,
+          adjacency->ndim);
 
   if(adjacency->dsize[0] != adjacency->dsize[1])
-    error(EXIT_FAILURE, 0, "`gal_binary_connected_adjacency_matrix' only "
-          "accepts a square matrix. However, the input dataset has a size "
-          "of %zu x %zu", adjacency->dsize[0], adjacency->dsize[1]);
+    error(EXIT_FAILURE, 0, "%s: input must be square (same length in both "
+          "dimensions). However, the input dataset has a size of %zu x %zu",
+          __func__, adjacency->dsize[0], adjacency->dsize[1]);
 
 
   /* Allocate (and clear) the output datastructure. */
@@ -673,8 +671,8 @@ gal_binary_fill_holes(gal_data_t *input)
 
   /* A small sanity check. */
   if( input->type != GAL_TYPE_UINT8 )
-    error(EXIT_FAILURE, 0, "input to `gal_binary_fill_holes' must have "
-          "`uint8' type, but its input dataset has `%s' type",
+    error(EXIT_FAILURE, 0, "%s: input must have `uint8' type, but its "
+          "input dataset has `%s' type", __func__,
           gal_type_to_string(input->type, 1));
 
 

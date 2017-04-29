@@ -550,6 +550,7 @@ Data container (@file{data.h})
 * Generic data container::
 * Dataset size and allocation::
 * Arrays of datasets::
+* Copying datasets::
 
 Linked lists (@file{linkedlist.h})
 
@@ -17043,6 +17044,7 @@ generic dataset, Gnuastro defines the @code{gal_data_t} as input or output.
 * Generic data container::
 * Dataset size and allocation::
 * Arrays of datasets::
+* Copying datasets::
 @end menu
 
 @node Generic data container, Dataset size and allocation, Library data container, Library data container
@@ -17467,7 +17469,7 @@ Free all the non-@code{NULL} pointers in @code{gal_data_t}, then free the
 actual data structure.
 @end deftypefun
 
-@node Arrays of datasets,  , Dataset size and allocation, Library data container
+@node Arrays of datasets, Copying datasets, Dataset size and allocation, Library data container
 @subsubsection Arrays of datasets
 
 Gnuastro's generic data container (@code{gal_data_t}) is a very versatile
@@ -17507,6 +17509,19 @@ Free all the @code{num} elements within @code{dataarr} and the actual
 allocated array. If @code{free_array} is not zero, then the @code{array}
 element of all the datasets will also be freed, see @ref{Generic data
 container}.
+@end deftypefun
+
+@node Copying datasets,  , Arrays of datasets, Library data container
+@subsubsection Copying datasets
+
+The functions in this section describes Gnuastro's facilities to copy a
+given datset into another. The new dataset can have a different type
+(including a string), it can be already allocated (in which case only the
+values will be written into it). In all these cases, if the input dataset
+is a tile, only the data within the tile are copied.
+
+@deftypefun {gal_data_t *} gal_data_copy (gal_data_t @code{*in})
+Return a new dataset that is a copy of @code{in}.
 @end deftypefun
 
 @node Linked lists, Table input output, Library data container, Gnuastro library

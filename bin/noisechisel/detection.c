@@ -339,10 +339,9 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
               bin->name="OPENED";
               break;
             default:
-              error(EXIT_FAILURE, 0, "a bug! the value %d is not recognized "
-                    "in `detection_pseudo_find'. Please contact us at %s so "
-                    "we can address the issue", fho_prm.step,
-                    PACKAGE_BUGREPORT);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
+                    "we can address the issue. the value %d is not "
+                    "recognized.", __func__, PACKAGE_BUGREPORT, fho_prm.step);
             }
 
           /* Write the temporary array into the check image. */
@@ -449,16 +448,15 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
 
   /* Sanity check. */
   if(p->input->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "the input dataset to `detection_sn' "
-          "must be float32 type, it is %s",
-          gal_type_to_string(p->input->type, 1));
+    error(EXIT_FAILURE, 0, "%s: the input dataset must be float32 type, "
+          "it is %s", __func__, gal_type_to_string(p->input->type, 1));
   if(!isnan(GAL_BLANK_FLOAT32))
-    error(EXIT_FAILURE, 0, "currently `detection_sn' only "
-          "recognizes a NaN value for blank floating point data types, the "
-          "blank value is defined to be %f", GAL_BLANK_FLOAT32);
+    error(EXIT_FAILURE, 0, "%s: only a NaN value is recognized for blank "
+          "floating point data types, the blank value is defined to be %f",
+          __func__, GAL_BLANK_FLOAT32);
   if(ndim!=2)
-    error(EXIT_FAILURE, 0, "currently `detection_sn' only "
-          "works on 2D datasets, your input is %zu dimensions", ndim);
+    error(EXIT_FAILURE, 0, "%s: only 2D datasets are acceptable, your input "
+          "is %zu dimensions", __func__, ndim);
 
 
   /* Allocate all the necessary arrays, note that since we want to put each

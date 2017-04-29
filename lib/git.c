@@ -63,8 +63,8 @@ gal_git_describe(void)
       errno=0;
       describe_return=malloc(strlen(buf.ptr)+1);
       if(describe_return==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes to copy Git's describe",
-              strlen(buf.ptr)+1);
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes to copy "
+              "Git's describe", __func__, strlen(buf.ptr)+1);
       strcpy(describe_return, buf.ptr);
     }
 

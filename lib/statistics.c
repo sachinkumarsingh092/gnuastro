@@ -246,8 +246,8 @@ statistics_median_in_sorted_no_blank(gal_data_t *sorted, void *median)
     case GAL_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
     case GAL_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_median_in_sorted_no_blank'", sorted->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, sorted->type);
     }
 }
 
@@ -286,9 +286,8 @@ gal_statistics_quantile_index(size_t size, double quant)
   double floatindex;
 
   if(quant<0.0f || quant>1.0f)
-    error(EXIT_FAILURE, 0, "the quantile in `gal_statistics_quantile_index' "
-          "should be between 0.0 and 1.0 (inclusive). You have asked for "
-          "%g", quant);
+    error(EXIT_FAILURE, 0, "%s: the input quantile should be between 0.0 "
+          "and 1.0 (inclusive). You have asked for %g", __func__, quant);
 
   /* Find the index of the quantile. */
   floatindex=(double)(size-1)*quant;
@@ -363,8 +362,8 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
 
   /* A sanity check. */
   if(nbs->type!=value->type)
-    error(EXIT_FAILURE, 0, "the types of the input dataset and value to "
-          "`gal_statistics_quantile_function' have to be the same");
+    error(EXIT_FAILURE, 0, "%s: the types of the input dataset and requested "
+          "value have to be the same", __func__);
 
   /* Find the result: */
   switch(nbs->type)
@@ -380,8 +379,8 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
     case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
     case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_quantile_function'", nbs->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, nbs->type);
     }
 
   /* Clean up and return. */
@@ -547,8 +546,8 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
         case GAL_TYPE_FLOAT32:   MIRR_MAX_DIFF( float    );   break;
         case GAL_TYPE_FLOAT64:   MIRR_MAX_DIFF( double   );   break;
         default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`mode_mirror_max_diff'", p->data->type);
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, p->data->type);
         }
 
       /*
@@ -786,15 +785,14 @@ mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
     case GAL_TYPE_FLOAT32:    MODE_SYM( float    );    break;
     case GAL_TYPE_FLOAT64:    MODE_SYM( double   );    break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`mode_symmetricity'", p->data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, p->data->type);
     }
 
   /* Control shouldn't reach here! */
-  error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "`mode_symmetricity', this should not have happened",
-        PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we can "
+        "address the problem. Control must not have reached the end of this "
+        "function", __func__, PACKAGE_BUGREPORT);
   return NAN;
 }
 
@@ -840,8 +838,8 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
   /* A small sanity check. */
   if(mirrordist<=0)
-    error(EXIT_FAILURE, 0, "%f not acceptable as a value to `mirrordist'. "
-          "Only positive values can be given to it", mirrordist);
+    error(EXIT_FAILURE, 0, "%s: %f not acceptable as a value to `mirrordist'. "
+          "Only positive values can be given to it", __func__, mirrordist);
 
 
   /* Make sure the input doesn't have blank values and is sorted.  */
@@ -939,10 +937,9 @@ statistics_make_mirror(gal_data_t *noblank_sorted, size_t index,
   /* Make sure the index is less than or equal to the number of
      elements. */
   if( index >= noblank_sorted->size )
-    error(EXIT_FAILURE, 0, "the index value to `statistics_make_mirror' "
-          "must be less than or equal to the number of elements in the "
-          "input, but it isn't: index: %zu, size of input: %zu", index,
-          noblank_sorted->size);
+    error(EXIT_FAILURE, 0, "%s: the index value must be less than or equal "
+          "to the number of elements in the input, but it isn't: index: "
+          "%zu, size of input: %zu", __func__, index, noblank_sorted->size);
 
   /* Fill in the mirror array. */
   switch(noblank_sorted->type)
@@ -1072,14 +1069,14 @@ gal_statistics_is_sorted(gal_data_t *data)
     case GAL_TYPE_FLOAT32:   IS_SORTED( float    );    break;
     case GAL_TYPE_FLOAT64:   IS_SORTED( double   );    break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_is_sorted'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 
   /* Control shouldn't reach this point. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix the "
-        "problem. For some reason, control has reached the end of "
-        "`gal_statistics_is_sorted'", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix the "
+        "problem. Control must not have reached the end of this function",
+        __func__, PACKAGE_BUGREPORT);
   return -1;
 }
 
@@ -1118,8 +1115,8 @@ gal_statistics_sort_increasing(gal_data_t *data)
     case GAL_TYPE_FLOAT64:
       STATISTICS_SORT(gal_qsort_float64_increasing);  break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_sort_increasing'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 }
 
@@ -1154,8 +1151,8 @@ gal_statistics_sort_decreasing(gal_data_t *data)
     case GAL_TYPE_FLOAT64:
       STATISTICS_SORT(gal_qsort_float64_decreasing);  break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_sort_decreasing'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 }
 
@@ -1312,8 +1309,8 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
 
   /* Some sanity checks. */
   if(numbins==0)
-    error(EXIT_FAILURE, 0, "`numbins' in `gal_statistics_regular_bins' "
-          "cannot be given a value of 0");
+    error(EXIT_FAILURE, 0, "%s: `numbins' cannot be given a value of 0",
+          __func__);
 
 
   /* Set the minimum and maximum values. */
@@ -1328,8 +1325,8 @@ gal_statistics_regular_bins(gal_data_t *data, gal_data_t *inrange,
       /* Set the minimum and maximum of the bins. */
       ra=range->array;
       if( (range->size)%2 )
-        error(EXIT_FAILURE, 0, "Quantile ranges are not implemented in "
-              "`gal_statistics_regular_bins' yet.");
+        error(EXIT_FAILURE, 0, "%s: quantile ranges are not implemented yet",
+              __func__);
       else
         {
           /* If the minimum isn't set (is blank), find it. */
@@ -1442,17 +1439,16 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
      either use the old implementation, or GSL's histogram
      functionality. */
   if(bins==NULL)
-    error(EXIT_FAILURE, 0, "no `bins' in `gal_statistics_histogram");
+    error(EXIT_FAILURE, 0, "%s: `bins' is NULL", __func__);
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
-    error(EXIT_FAILURE, 0, "the input bins to `gal_statistics_histogram' "
-          "are not regular. Currently it is only implemented for regular "
-          "bins");
+    error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
+          "it is only implemented for regular bins", __func__);
 
 
   /* Check if normalize and `maxone' are not called together. */
   if(normalize && maxone)
-    error(EXIT_FAILURE, 0, "only one of `normalize' and `maxone' may "
-          "be given to `gal_statistics_histogram'");
+    error(EXIT_FAILURE, 0, "%s: only one of `normalize' and `maxone' may "
+          "be given", __func__);
 
 
   /* Allocate the histogram (note that we are clearning it so all values
@@ -1484,8 +1480,8 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins, int normalize,
     case GAL_TYPE_FLOAT32:   HISTOGRAM_TYPESET(float);       break;
     case GAL_TYPE_FLOAT64:   HISTOGRAM_TYPESET(double);      break;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_histogram'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 
 
@@ -1572,9 +1568,8 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
      either use the old implementation, or GSL's histogram
      functionality. */
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
-    error(EXIT_FAILURE, 0, "the input bins to `gal_statistics_cfp' "
-          "are not regular. Currently it is only implemented for regular "
-          "bins");
+    error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
+          "it is only implemented for regular bins", __func__);
 
 
   /* Prepare the histogram. */
@@ -1624,8 +1619,8 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_statistics_cfp'", cfp->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, cfp->type);
     }
 
 
@@ -1742,16 +1737,15 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
   /* Some sanity checks. */
   if( multip<=0 )
-    error(EXIT_FAILURE, 0, "`multip', must be greater than zero in "
-          "`gal_statistics_sigma_clip'. The given value was %g", multip);
+    error(EXIT_FAILURE, 0, "%s: `multip', must be greater than zero. The "
+          "given value was %g", __func__, multip);
   if( param<=0 )
-    error(EXIT_FAILURE, 0, "`param', must be greater than zero in "
-          "`gal_statistics_sigma_clip'. The given value was %g", param);
+    error(EXIT_FAILURE, 0, "%s: `param', must be greater than zero. The "
+          "given value was %g", __func__, param);
   if( param >= 1.0f && ceil(param) != param )
-    error(EXIT_FAILURE, 0, "when `param' is larger than 1.0, it is "
-          "interpretted as an absolute number of clips in "
-          "`gal_statistics_sigma_clip'. So it must be an integer. However, "
-          "your given value %g", param);
+    error(EXIT_FAILURE, 0, "%s: when `param' is larger than 1.0, it is "
+          "interpretted as an absolute number of clips. So it must be an "
+          "integer. However, your given value %g", __func__, param);
 
 
   /* Allocate the necessary spaces. */
@@ -1818,8 +1812,8 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
         case GAL_TYPE_FLOAT32:   SIGCLIP( float    );   break;
         case GAL_TYPE_FLOAT64:   SIGCLIP( double   );   break;
         default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`gal_statistics_sigma_clip'", type);
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, type);
         }
 
       /* Set the values from this round in the old elements, so the next
@@ -1861,7 +1855,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
 
 
-
+#if 0
 /* Using the cumulative distribution function this funciton will
    remove outliers from a dataset. */
 void
@@ -1869,7 +1863,6 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
 {
   printf("\n ... in gal_statistics_remove_outliers_flat_cdf ... \n");
   exit(1);
-#if 0
   int firstfound=0;
   size_t size=*outsize, i, maxind;
   float *slopes, minslope, maxslope;
@@ -1878,9 +1871,8 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
      you want to think about slopes. */
   errno=0; slopes=malloc(size*sizeof *slopes);
   if(slopes==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for slopes in "
-          "gal_statistics_remove_outliers_flat_cdf (statistics.c)",
-          size*sizeof *slopes);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for slopes",
+          __func__, size*sizeof *slopes);
 
   /* Calcuate the slope of the CDF and put it in the slopes array. */
   for(i=1;i<size-1;++i)
@@ -1919,5 +1911,5 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
   */
 
   free(slopes);
-#endif
 }
+#endif

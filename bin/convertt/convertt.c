@@ -113,9 +113,9 @@ convertt_trunc_function(int operator, gal_data_t *data, gal_data_t *value)
   /* A small sanity check. The process must be in-place so the original
      data structure must not have changed. */
   if(out!=data)
-    error(EXIT_FAILURE, 0, "a bug! please contact us at %s to solve the "
-          "problem. The `out' and `data' pointers in "
-          "`convertt_trunc_function' are not equal", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to solve the "
+          "problem. The `out' and `data' pointers are the same", __func__,
+          PACKAGE_BUGREPORT);
 
 
   /* Clean up. */
@@ -190,8 +190,8 @@ save_with_gnuastro_lib(struct converttparams *p)
 
     /* Not recognized. */
     default:
-      error(EXIT_FAILURE, 0, "a bug! output format code `%d' not "
-            "recognized in `save_with_gnuastro_lib'", p->outformat);
+      error(EXIT_FAILURE, 0, "%s: a bug! output format code `%d' not "
+            "recognized", __func__, p->outformat);
     }
 }
 
@@ -403,8 +403,8 @@ convertt(struct converttparams *p)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! The internal type of the output is "
-            "not recognized. Please contact us so we can find the problem "
-            "and fix it");
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can find "
+            "the problem and fix it The internal type of the output is "
+            "not recognized. ", __func__);
     }
 }

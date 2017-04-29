@@ -56,15 +56,15 @@ fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
     case FITS_ACTION_REMOVE:        action="renoved";      break;
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can fix "
-            "this problem. In `header.c'. The value of actionid in "
-            "`haserror' must not be %d", PACKAGE_BUGREPORT, actioncode);
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at `%s' so we "
+            "can fix this problem. The value of `actioncode' must not be %d",
+            __func__, PACKAGE_BUGREPORT, actioncode);
     }
 
   if(p->quitonerror)
     {
       fits_report_error(stderr, status);
-      error(EXIT_FAILURE, 0, "not %s: %s\n", action, string);
+      error(EXIT_FAILURE, 0, "%s: not %s: %s\n", __func__, action, string);
     }
   else
     {
@@ -151,8 +151,8 @@ fits_print_extension_info(struct fitsparams *p)
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "a bug! the `hdutype' code %d not "
-                "recognized", hdutype);
+          error(EXIT_FAILURE, 0, "%s: a bug! the `hdutype' code %d not "
+                "recognized", __func__, hdutype);
         }
 
 
@@ -345,10 +345,9 @@ fits(struct fitsparams *p)
 
     /* Not recognized. */
     default:
-      error(EXIT_FAILURE, 0, "a bug! please contact us at %s to address "
-            "the problem. The code %d is not recognized for p->mode in the "
-            "`fits' function of the Fits program", PACKAGE_BUGREPORT,
-            p->mode);
+      error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to address "
+            "the problem. The code %d is not recognized for p->mode",
+            __func__, PACKAGE_BUGREPORT, p->mode);
     }
 
   return r;

@@ -352,14 +352,14 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
   size_t *b=block->dsize, *t=tsize;
 
   if(n>3)
-    error(EXIT_FAILURE, 0, "`gal_tile_block-increment' is currently only "
-          "implemented for at most 3 dimensions");
+    error(EXIT_FAILURE, 0, "%s: currently only implemented for at most 3 "
+          "dimensions", __func__);
 
   switch(n)
     {
     case 0:
-      error(EXIT_FAILURE, 0, "zero dimensional input is not acceptable in "
-            "`gal_tile_block_parse'");
+      error(EXIT_FAILURE, 0, "%s: zero dimensional input is not acceptable",
+            __func__);
 
     /* 1D: the increment is just the tile size. */
     case 1:
@@ -432,9 +432,8 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
   /* A small sanity check. */
   for(tile=tilesll; tile!=NULL; tile=tile->next) ++nt;
   if(nt!=nv)
-    error(EXIT_FAILURE, 0, "the number of elements in `tilevalues' (%zu) "
-          "and `tilesll' (%zu) must be the same in "
-          "`gal_tile_block_write_const_value'", nv, nt);
+    error(EXIT_FAILURE, 0, "%s: the number of elements in `tilevalues' (%zu) "
+          "and `tilesll' (%zu) must be the same", __func__, nv, nt);
 
   /* Allocate the output array. */
   tofill=gal_data_alloc(NULL, type, block->ndim, block->dsize, block->wcs,
@@ -921,10 +920,9 @@ gal_tile_full_two_layers(gal_data_t *input,
   tl->totchannels = gal_dimension_total_size(ndim, tl->numchannels);
   for(i=0;i<ndim;++i)
     if(junk[i]!=tl->numchannels[i])
-      error(EXIT_FAILURE, 0, "the input and output number of channels in "
-            "`gal_tile_full_two_layers' don't match in dimension %zu, with "
-            "values of %zu and %zu respectively.", ndim-i,
-            tl->numchannels[i], junk[i]);
+      error(EXIT_FAILURE, 0, "%s: the input and output number of channels "
+            "don't match in dimension %zu: %zu and %zu respectively.",
+            __func__, ndim-i, tl->numchannels[i], junk[i]);
   free(junk);
   free(junk2);
 
@@ -1090,8 +1088,8 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
         {
           /* A small sanity check. */
           if(tl->permutation==NULL)
-            error(EXIT_FAILURE, 0, "no permutation defined for the input "
-                  "tessellation to `gal_tile_full_values_write'");
+            error(EXIT_FAILURE, 0, "%s: no permutation defined for the input "
+                  "tessellation", __func__);
 
           /* Writing tile values to disk is not done for checking, not for
              efficiency. So to be safe (allow the caller to work on
@@ -1129,8 +1127,8 @@ gal_tile_full_values_smooth(gal_data_t *tilevalues,
 
   /* Check if the width is odd. */
   if(width%2==0)
-    error(EXIT_FAILURE, 0, "%zu not acceptable as width to "
-          "`gal_tile_full_values_smooth'. It has to be an odd number", width);
+    error(EXIT_FAILURE, 0, "%s: %zu not acceptable as width. It has to be "
+          "an odd number", __func__, width);
 
 
   /* Prepare the kernel size along every dimension. */

@@ -345,9 +345,9 @@ eps_write_image(struct converttparams *p, FILE *fp)
     case 3: fprintf(fp, "/DeviceRGB setcolorspace\n");  break;
     case 4: fprintf(fp, "/DeviceCMYK setcolorspace\n"); break;
     default:
-      error(EXIT_FAILURE, 0, "a bug! In saveepsorpdf the number of channels "
-            "is not 1, 3 or 4. Please contact us so we can find the issue "
-            "and fix it");
+      error(EXIT_FAILURE, 0, "%s: a bug! The number of channels (%zu) is not "
+            "1, 3 or 4. Please contact us so we can find the issue and fix it",
+            __func__, p->numch);
     }
   fprintf(fp, "<<\n");
   fprintf(fp, "  /ImageType 1\n");
@@ -397,8 +397,8 @@ eps_write_eps_or_pdf(struct converttparams *p)
       epsfilename=gal_checkset_automatic_output(&p->cp, p->cp.output, ".ps");
     }
   else
-    error(EXIT_FAILURE, 0, "a bug! In `saveeps`, for outformat is "
-          "neither eps or pdf! Please contact us so we fix it");
+    error(EXIT_FAILURE, 0, "%s: a bug! code %d not recognized for "
+          "`p->outformat'", __func__, p->outformat);
 
 
   /* Open the output file and write the top comments. */

@@ -522,8 +522,8 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
     case TXT_FORMAT_TABLE: format_err="table"; comm_start="# Column "; break;
     case TXT_FORMAT_IMAGE: format_err="image"; comm_start="# Image ";  break;
     default:
-      error(EXIT_FAILURE, 0, "code %d not recognized in `txt_get_info'",
-            format);
+      error(EXIT_FAILURE, 0, "%s: code %d not recognized",
+            __func__, format);
     }
 
 
@@ -531,8 +531,8 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: could't open to read as a plain text %s",
-          filename, format_err);
+    error(EXIT_FAILURE, errno, "%s: could't open to read as a plain "
+          "text %s in %s", filename, format_err, __func__);
 
 
   /* Allocate the space necessary to keep each line as we parse it. Note
@@ -541,8 +541,8 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   errno=0;
   line=malloc(linelen*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for line in `txt_get_info'",
-          linelen*sizeof *line);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for line",
+          __func__, linelen*sizeof *line);
 
 
   /* Read the comments of the line for possible information about the
@@ -590,7 +590,7 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   errno=0;
   if(fclose(fp))
     error(EXIT_FAILURE, errno, "%s: couldn't close file after reading plain "
-          "text %s information", filename, format_err);
+          "text %s information in %s", filename, format_err, __func__);
 
 
   /* Return the array of column information. */
@@ -738,8 +738,8 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`txt_fill_columns'", data->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, data->type);
     }
 
   /* If a number couldn't be read properly, then report an error. */
@@ -830,8 +830,8 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "`txt_fill' only works for 1 and 2 "
-            "dimensional datasets");
+      error(EXIT_FAILURE, 0, "%s: currently only 1 and 2 dimensional "
+            "datasets acceptable", __func__);
     }
 }
 
@@ -855,8 +855,8 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: could't open to read as a text table",
-          filename);
+    error(EXIT_FAILURE, errno, "%s: could't open to read as a text table "
+          "in %s", filename, __func__);
 
   /* Allocate the space necessary to keep a copy of each line as we parse
      it. Note that `getline' is going to later `realloc' this space to fit
@@ -864,8 +864,8 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   errno=0;
   line=malloc(linelen*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `line' in `gal_txt_table_read'",
-          linelen*sizeof *line);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `line'",
+          __func__, linelen*sizeof *line);
 
   /* Allocate all the desired columns for output. We will be reading the
      text file line by line, and writing in the necessary values of each
@@ -891,9 +891,9 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
     /* This is an image. */
     case TXT_FORMAT_IMAGE:
       if(info->next)
-        error(EXIT_FAILURE, 0, "currently reading only one image (2d "
-              "array) from a text file is possible, the `info' input to "
-              "`gal_txt_read' has more than one element");
+        error(EXIT_FAILURE, 0, "%s: currently reading only one image (2d "
+              "array) from a text file is possible, the `info' input has "
+              "more than one element", __func__);
       ndim=2;
       maxcolnum=dsize[1];
       out=gal_data_alloc(NULL, info->type, ndim, dsize, NULL, 0, minmapsize,
@@ -903,8 +903,8 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
 
     /* Not recognized. */
     default:
-      error(EXIT_FAILURE, 0, "format code %d not recognized in "
-            "`gal_txt_read'", format);
+      error(EXIT_FAILURE, 0, "%s: format code %d not recognized",
+            __func__, format);
     }
 
   /* Allocate the space to keep the pointers to each token in the
@@ -915,8 +915,8 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   errno=0;
   tokens=malloc((maxcolnum+1)*sizeof *tokens);
   if(tokens==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `tokens' in "
-          "`gal_txt_table_read'", (maxcolnum+1)*sizeof *tokens);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `tokens'",
+          __func__, (maxcolnum+1)*sizeof *tokens);
 
   /* Read the data columns. */
   while( getline(&line, &linelen, fp) != -1 )
@@ -931,7 +931,7 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   errno=0;
   if(fclose(fp))
     error(EXIT_FAILURE, errno, "%s: couldn't close file after reading ASCII "
-          "table information", filename);
+          "table information in %s", filename, __func__);
   free(tokens);
   free(line);
 
@@ -1017,8 +1017,8 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
   errno=0;
   fmts=malloc(FMTS_COLS*num*sizeof *fmts);
   if(fmts==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for fmts in `make_fmts_for_printf'",
-          FMTS_COLS*num*sizeof *fmts);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for fmts",
+          __func__, FMTS_COLS*num*sizeof *fmts);
 
 
   /* Initialize the length to 0. */
@@ -1033,9 +1033,8 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
       fmts[ i*FMTS_COLS   ] = malloc(GAL_TXT_MAX_FMT_LENGTH*sizeof **fmts);
       fmts[ i*FMTS_COLS+1 ] = malloc(GAL_TXT_MAX_FMT_LENGTH*sizeof **fmts);
       if(fmts[i*FMTS_COLS]==NULL || fmts[i*FMTS_COLS+1]==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for fmts[%zu] or fmts[%zu] "
-              "in `make_fmts_for_printf' of txt.c",
-              GAL_TXT_MAX_FMT_LENGTH*sizeof **fmts,
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for fmts[%zu] "
+              "or fmts[%zu]", __func__, GAL_TXT_MAX_FMT_LENGTH*sizeof **fmts,
               i*FMTS_COLS, i*FMTS_COLS+1);
 
 
@@ -1126,8 +1125,8 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized for "
-            "col->type in `txt_print_value'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, type);
     }
 }
 
@@ -1154,7 +1153,7 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
   fp=fopen(filename, "w");
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
-          "table", filename);
+          "table by %s", filename, __func__);
 
 
   /* Write the comments if there were any. */
@@ -1240,9 +1239,9 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
 
   /* Currently only 1 and 2 dimension datasets are acceptable. */
   if( datall->ndim!=1 && datall->ndim!=2 )
-    error(EXIT_FAILURE, 0, "currently `gal_txt_write' only supports 1 and "
-          "2 dimensional datasets. The input dataset has %zu dimensions",
-          datall->ndim);
+    error(EXIT_FAILURE, 0, "%s: only 1 and 2 dimensional datasets are "
+          "currently supported. The input dataset has %zu dimensions",
+          __func__, datall->ndim);
 
 
   /* For a 2D dataset, we currently don't accept a list, we can only print
@@ -1265,9 +1264,9 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
       /* Check if the dimensionality and size is the same for all the
          elements. */
       if( datall!=data && gal_data_dsize_is_different(datall, data) )
-        error(EXIT_FAILURE, 0, "the input list of datasets to "
-              "`gal_txt_write' must have the same sizes (dimentionality "
-              "and length along each dimension).");
+        error(EXIT_FAILURE, 0, "%s: the input list of datasets must have the "
+              "same sizes (dimentionality and length along each dimension)",
+              __func__);
     }
 
 
@@ -1311,8 +1310,8 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
 
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! datall->ndim=%zu is not recognized "
-            "in `gal_txt_write'", datall->ndim);
+      error(EXIT_FAILURE, 0, "%s: a bug! datall->ndim=%zu is not recognized",
+            __func__, datall->ndim);
     }
 
 
@@ -1333,7 +1332,7 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
       errno=0;
       if(fclose(fp))
         error(EXIT_FAILURE, errno, "%s: couldn't close file after writing "
-              "of text table", filename);
+              "of text table in %s", filename, __func__);
     }
 
   /* Restore the next pointer for a 2D dataset. */

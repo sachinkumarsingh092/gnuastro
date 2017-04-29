@@ -186,8 +186,8 @@ gal_fits_bitpix_to_type(int bitpix)
     case FLOAT_IMG:                 return GAL_TYPE_FLOAT32;
     case DOUBLE_IMG:                return GAL_TYPE_FLOAT64;
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized in "
-            "gal_fits_bitpix_to_type", bitpix);
+      error(EXIT_FAILURE, 0, "%s: bitpix value of %d not recognized",
+            __func__, bitpix);
     }
   return 0;
 }
@@ -217,12 +217,12 @@ gal_fits_type_to_bitpix(uint8_t type)
     case GAL_TYPE_UINT64:
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
-      error(EXIT_FAILURE, 0, "type %s not recognized for FITS image BITPIX",
-            gal_type_to_string(type, 1));
+      error(EXIT_FAILURE, 0, "%s: type %s not recognized for FITS image "
+            "BITPIX", __func__, gal_type_to_string(type, 1));
 
     default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "gal_fits_type_to_bitpix", type);
+      error(EXIT_FAILURE, 0, "%s: type value of %d not recognized",
+            __func__, type);
     }
   return 0;
 }
@@ -257,19 +257,17 @@ gal_fits_type_to_bin_tform(uint8_t type)
 
     /* Not recognized by CFITSIO. */
     case GAL_TYPE_UINT64:
-      error(EXIT_FAILURE, 0, "type %s not recognized for FITS binary "
-            "table TFORM", gal_type_to_string(type, 1));
+      error(EXIT_FAILURE, 0, "%s: type %s not recognized for FITS binary "
+            "table TFORM", __func__, gal_type_to_string(type, 1));
       break;
 
     /* Wrong type code. */
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_fits_type_to_bin_tform'", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
-        "For some reason, control has reached to the end of the "
-        "`gal_fits_type_to_bin_tform'");
+  error(EXIT_FAILURE, 0, "%s: s bug! Please contact us so we can fix this. "
+        "Control must not reach the end of this function", __func__);
   return '\0';
 }
 
@@ -336,20 +334,20 @@ gal_fits_type_to_datatype(uint8_t type)
 
     /* Wrong type. */
     default:
-      error(EXIT_FAILURE, 0, "'%d' is not a recognized Gnuastro type. "
-            "It was given to `gal_fits_type_to_datatype'.", type);
+      error(EXIT_FAILURE, 0, "%s: type code %d is not a recognized",
+            __func__, type);
     }
 
   /* If control reaches, here, there was a problem with the host types. */
   if(w)
-    error(EXIT_FAILURE, 0, "this system doesn't have a %d byte integer "
-          "type, so type `%s' cannot be written to FITS", w,
+    error(EXIT_FAILURE, 0, "%s: this system doesn't have a %d byte integer "
+          "type, so type `%s' cannot be written to FITS", __func__, w,
           gal_type_to_string(type, 1));
   else
-    error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
-          "fix theh problem. Control must not have reached the end of "
-          "`gal_fits_type_to_datatype', for the given type `%s'",
-          PACKAGE_BUGREPORT, gal_type_to_string(type, 1));
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+          "fix the problem. Control must not have reached the end for the "
+          "given type `%s'", __func__, PACKAGE_BUGREPORT,
+          gal_type_to_string(type, 1));
   return -1;
 }
 
@@ -446,13 +444,13 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
 
     /* A bug! */
     default:
-      error(EXIT_FAILURE, 0, "'%d' is not a recognized CFITSIO datatype. "
-            "It was given to `gal_fits_datatype_to_type'.", datatype);
+      error(EXIT_FAILURE, 0, "%s: %d is not a recognized CFITSIO datatype",
+            __func__, datatype);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
-        "this. For some reason, control has reached to the end of the "
-        "`gal_fits_datatype_to_type' function in fits.c.", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix "
+        "this. Control must not have reached the end of this function.",
+        __func__, PACKAGE_BUGREPORT);
   return -1;
 }
 
@@ -776,9 +774,8 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
                                   : gal_data_malloc_array(tmp->type, 1) );
             valueptr=strarray[0]=malloc(FLEN_VALUE * sizeof *strarray[0]);
             if(strarray[0]==NULL)
-              error(EXIT_FAILURE, errno, "%zu bytes for strarray[0] in "
-                    "`gal_fits_read_keywords_fprt'",
-                    FLEN_VALUE * sizeof *strarray[0]);
+              error(EXIT_FAILURE, errno, "%s: %zu bytes for strarray[0]",
+                    __func__, FLEN_VALUE * sizeof *strarray[0]);
             break;
 
           default:
@@ -793,9 +790,8 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
             errno=0;
             tmp->comment=malloc(FLEN_COMMENT * sizeof *tmp->comment);
             if(tmp->comment==NULL)
-              error(EXIT_FAILURE, errno, "%zu bytes for tmp->comment in "
-                    "`gal_fits_read_keywords_fprt'",
-                    FLEN_COMMENT * sizeof *tmp->comment);
+              error(EXIT_FAILURE, errno, "%s: %zu bytes for tmp->comment",
+                    __func__, FLEN_COMMENT * sizeof *tmp->comment);
           }
         else
           tmp->comment=NULL;
@@ -812,9 +808,8 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
             errno=0;
             tmp->unit=malloc(FLEN_COMMENT * sizeof *tmp->unit);
             if(tmp->unit==NULL)
-              error(EXIT_FAILURE, errno, "%zu bytes for tmp->unit in "
-                    "`gal_fits_read_keywords_fprt'",
-                    FLEN_COMMENT * sizeof *tmp->unit);
+              error(EXIT_FAILURE, errno, "%s: %zu bytes for tmp->unit",
+                    __func__, FLEN_COMMENT * sizeof *tmp->unit);
             fits_read_key_unit(fptr, tmp->name, tmp->unit, &tmp->status);
 
             /* If the string is empty, free the space and set it to NULL. */
@@ -857,7 +852,7 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
   len=strlen(filename)+strlen(hdu)+4;
   ffname=malloc(len*sizeof *ffname);
   if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%zu characters", len);
+    error(EXIT_FAILURE, errno, "%s: %zu characters", __func__, len);
   sprintf(ffname, "%s[%s#]", filename, hdu);
 
   /* Open the FITS file: */
@@ -897,8 +892,7 @@ gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "linkedlist: new element in gal_fits_key_ll");
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -927,8 +921,7 @@ gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno,
-          "linkedlist: new element in gal_fits_key_ll");
+    error(EXIT_FAILURE, errno, "%s: allocation of new node", __func__);
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -977,7 +970,8 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
       errno=0;
       keyname=malloc(FLEN_KEYWORD);
       if(keyname==NULL)
-        error(EXIT_FAILURE, errno, "%d bytes", FLEN_KEYWORD);
+        error(EXIT_FAILURE, errno, "%s: %d bytes for `keyname'", __func__,
+              FLEN_KEYWORD);
       sprintf(keyname, "%s_%zu", keynamebase, numkey++);
 
       /* Set the keyword value: */
@@ -985,7 +979,8 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
       thislen=strlen(&filename[i]);
       value=malloc(maxlength);
       if(value==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes", thislen);
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes", __func__,
+              thislen);
       strncpy(value, &filename[i], maxlength);
 
       /* If the FROM string (=&filename[i]) in strncpy is shorter than
@@ -1010,9 +1005,9 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
                 break;
               }
           if(j==0)
-            error(EXIT_FAILURE, 0, "the filename `%sP has at least one "
+            error(EXIT_FAILURE, 0, "%s: the filename `%sP has at least one "
                   "span of %zu characters without a `/`. It cannot be "
-                  "written to the header of the output fits file",
+                  "written to the header of the output fits file", __func__,
                   filename, maxlength);
 
           /* Convert the last useful character and save the file name.*/
@@ -1379,10 +1374,10 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
   for(i=0;i<kernel->ndim;++i)
     check += kernel->dsize[i]%2;
   if(check!=kernel->ndim)
-    error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
+    error(EXIT_FAILURE, 0, "%s: the kernel image has to have an odd number "
           "of pixels in all dimensions (there has to be one element/pixel "
           "in the center). At least one of the dimensions of %s (hdu: %s) "
-          "doesn't have an odd number of pixels", filename, hdu);
+          "doesn't have an odd number of pixels", __func__, filename, hdu);
 
   /* If there are any NaN pixels, set them to zero and normalize it. A
      blank pixel in a kernel is going to make a completely blank output.*/
@@ -1499,8 +1494,8 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
       /* Convert the WCS information to text. */
       status=wcshdo(WCSHDO_safe, towrite->wcs, &nkeyrec, &wcsstr);
       if(status)
-        error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
-              wcs_errmsg[status]);
+        error(EXIT_FAILURE, 0, "%s: wcshdo ERROR %d: %s", __func__,
+              status, wcs_errmsg[status]);
       gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
     }
 
@@ -1582,8 +1577,8 @@ gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
 
   /* The data should not have any WCS structure for this function. */
   if(data->wcs)
-    error(EXIT_FAILURE, 0, "`gal_fits_write_img_wcs_string' can only "
-          "accept inputs with no WCS.");
+    error(EXIT_FAILURE, 0, "%s: input must not have WCS meta-data",
+          __func__);
 
   /* Write the data array into a FITS file and keep it open. */
   fptr=gal_fits_img_write_to_ptr(data, filename);
@@ -1671,21 +1666,21 @@ gal_fits_tab_type(fitsfile *fptr)
       else if(!strcmp(value, "BINTABLE"))
         return GAL_TABLE_FORMAT_BFITS;
       else
-        error(EXIT_FAILURE, 0, "The `XTENSION' keyword of this FITS file "
-              "doesn't have a standard value (`%s')", value);
+        error(EXIT_FAILURE, 0, "%s: the `XTENSION' keyword of this FITS "
+              "table (`%s') doesn't have a standard value", __func__, value);
     }
   else
     {
       if(status==KEY_NO_EXIST)
-        error(EXIT_FAILURE, 0, "the `gal_fits_table_type' function was "
-              "called on a FITS extension which is not a table.");
+        error(EXIT_FAILURE, 0, "%s: input fitsfile pointer isn't a table",
+              __func__);
       else
         gal_fits_io_error(status, NULL);
     }
 
-  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
-        "for some reason, the control of `gal_fits_table_type' has reached "
-        "the end of the function! This must not happen", PACKAGE_BUGREPORT);
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix it. "
+        "Control should not have reached the end of this function", __func__,
+        PACKAGE_BUGREPORT);
   return -1;
 }
 
@@ -1744,8 +1739,8 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
     default:
       error(EXIT_FAILURE, 0, "%s (hdu: %s): Format character `%c' in the "
-            "value (%s) of the keywork %s not recognized", filename, hdu,
-            tdisp[0], tdisp, keyname);
+            "value (%s) of the keywork %s not recognized in %s", filename, hdu,
+            tdisp[0], tdisp, keyname, __func__);
     }
 
   /* Parse the rest of the string to see if a width and precision are given
@@ -1758,7 +1753,7 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
       if(*tailptr!='\0')
         error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
               "`%s' keyword could not recognized (it doesn't finish after "
-              "the precision)", filename, hdu, tdisp, keyname);
+              "the precision) in %s", filename, hdu, tdisp, keyname, __func__);
       break;
 
     case '\0':     /* No precision given, use a default value.     */
@@ -1770,8 +1765,8 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
     default:
       error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
             "`%s' keyword could not recognized (it doesn't have a `.', or "
-            "finish, after the width)", filename, hdu, tdisp,
-            keyname);
+            "finish, after the width) in %s", filename, hdu, tdisp,
+            keyname, __func__);
     }
 
 
@@ -1861,13 +1856,13 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   errno=0;
   tscal=calloc(tfields, sizeof *tscal);
   if(tscal==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for tscal in "
-          "`gal_fits_table_info'", tfields*sizeof *tscal);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for tscal", __func__,
+          tfields*sizeof *tscal);
   errno=0;
   tzero=calloc(tfields, sizeof *tzero);
   if(tzero==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for tzero in "
-          "`gal_fits_table_info'", tfields*sizeof *tzero);
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for tzero", __func__,
+          tfields*sizeof *tzero);
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -1925,7 +1920,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                         error(EXIT_FAILURE, 0, "%s (hdu: %s): the value to "
                               "keyword `%s' (`%s') is not in `Aw' format "
                               "(for strings) as required by the FITS "
-                              "standard", filename, hdu, keyname, value);
+                              "standard in %s", filename, hdu, keyname, value,
+                              __func__);
                     }
                   allcols[index].disp_width=repeat;
                 }
@@ -1941,8 +1937,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               tscal[index]=strtol(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
-                      "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, value);
+                      "(`%s') couldn't be read as a number in %s", filename,
+                      hdu, keyname, value, __func__);
             }
         }
 
@@ -1955,8 +1951,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               tzero[index]=strtoll(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
-                      "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, value);
+                      "(`%s') couldn't be read as a number in %s", filename,
+                      hdu, keyname, value, __func__);
             }
         }
 
@@ -2076,8 +2072,8 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
             errno=0;
             strarr[i]=calloc(allcols[ind->v].disp_width+1, sizeof *strarr[i]);
             if(strarr[i]==NULL)
-              error(EXIT_FAILURE, errno, "%zu bytes for strarr[%zu] in "
-                    "`gal_fits_table_read'",
+              error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                    "strarr[%zu]", __func__,
                     (allcols[ind->v].disp_width+1) * sizeof *strarr[i], i);
           }
 
@@ -2129,9 +2125,8 @@ fits_string_fixed_alloc_size(gal_data_t *data)
       errno=0;
       tmp=calloc(maxlen+1, sizeof *strarr[i]);
       if(tmp==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for tmp in "
-              "`gal_data_fixed_alloc_size_for_string'",
-              maxlen+1*sizeof *strarr[i]);
+        error(EXIT_FAILURE, 0, "%s: %zu bytes for tmp", __func__,
+              (maxlen+1)*sizeof *strarr[i]);
 
       /* Put the old array into the newly allocated space. `tmp' was
          cleared (all values set to `\0', so we don't need to set the final
@@ -2167,18 +2162,18 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
   errno=0;
   tform=*outtform=malloc(numcols*sizeof *tform);
   if(tform==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for tform in "
-          "`fits_table_prepare_arrays'", numcols*sizeof *tform);
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for tform", __func__,
+          numcols*sizeof *tform);
   errno=0;
   ttype=*outttype=malloc(numcols*sizeof *ttype);
   if(ttype==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for ttype in "
-          "`fits_table_prepare_arrays'", numcols*sizeof *ttype);
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for ttype", __func__,
+          numcols*sizeof *ttype);
   errno=0;
   tunit=*outtunit=malloc(numcols*sizeof *tunit);
   if(tunit==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for tunit in "
-          "`fits_table_prepare_arrays'", numcols*sizeof *tunit);
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for tunit", __func__,
+          numcols*sizeof *tunit);
 
 
   /* Go over each column and fill in these arrays. */
@@ -2237,8 +2232,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
                 break;
 
               default:
-                error(EXIT_FAILURE, 0, "col->type code %d not recognized "
-                      "fits_table_prepare_arrays", col->type);
+                error(EXIT_FAILURE, 0, "%s: col->type code %d not recognized",
+                      __func__, col->type);
               }
           break;
 
@@ -2257,8 +2252,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
-                "`fits_table_prepare_arrays'", tabletype);
+          error(EXIT_FAILURE, 0, "%s: tabletype code %d not recognized",
+                __func__, tabletype);
         }
 
 
@@ -2328,8 +2323,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
-            "`fits_write_tnulls_tcomms'", tabletype);
+      error(EXIT_FAILURE, 0, "%s: tabletype code %d not recognized",
+            __func__, tabletype);
     }
 
   /* Write the comments if there is any. */
@@ -2369,8 +2364,8 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
     {
       if(numrows==-1) numrows=col->size;
       else if(col->size!=numrows)
-        error(EXIT_FAILURE, 0, "The number of records/rows in the input "
-              "columns to `gal_fits_table_write' are not equal");
+        error(EXIT_FAILURE, 0, "%s: the number of records/rows in the input "
+              "columns are not equal", __func__);
       ++numcols;
     }
 

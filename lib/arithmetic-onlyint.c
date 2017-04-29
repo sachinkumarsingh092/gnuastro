@@ -215,8 +215,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       BINOIN_OP_RT_LT_SET(>>, RT, LT);                             \
       break;                                                       \
     default:                                                       \
-      error(EXIT_FAILURE, 0, "operator code %d not recognized in " \
-            "`BINOIN_RT_LT_SET", operator);                        \
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",\
+            "BINOIN_RT_LT_SET", operator);                         \
     }
 
 
@@ -237,8 +237,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       BINOIN_LT_SET_RT_IS_UINT64(LT);                              \
       BINOIN_LT_SET_RT_IS_INT64(LT);                               \
     default:                                                       \
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "     \
-            "`BINOIN_LT_SET'", r->type);                           \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",    \
+            "BINOIN_LT_SET", r->type);                             \
     }
 
 
@@ -279,13 +279,13 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
   /* Simple sanity check on the input sizes and types */
   if( !( (flags & GAL_ARITHMETIC_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
-    error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
-          "same dimension/size", opstring);
+    error(EXIT_FAILURE, 0, "%s: the non-number inputs to %s don't have the "
+          "same dimension/size", __func__, opstring);
 
   if( lo->type==GAL_TYPE_FLOAT32 || lo->type==GAL_TYPE_FLOAT64
       || ro->type==GAL_TYPE_FLOAT32 || ro->type==GAL_TYPE_FLOAT64 )
-      error(EXIT_FAILURE, 0, "the %s operator can only work on integer "
-            "type operands", opstring);
+      error(EXIT_FAILURE, 0, "%s: the %s operator can only work on integer "
+            "type operands", __func__, opstring);
 
 
   /* Set the final output type (independent of which types are
@@ -362,8 +362,8 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
       BINOIN_LT_IS_UINT64;
       BINOIN_LT_IS_INT64;
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`arithmetic_onlyint_binary'", l->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, l->type);
     }
 
 
@@ -425,8 +425,8 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
     {
     case GAL_TYPE_FLOAT32:
     case GAL_TYPE_FLOAT64:
-      error(EXIT_FAILURE, 0, "the bitwise not (one's complement) "
-            "operator can only work on integer types");
+      error(EXIT_FAILURE, 0, "%s: bitwise not (one's complement) "
+            "operator can only work on integer types", __func__);
     }
 
   /* If we want inplace output, set the output pointer to the input
@@ -465,8 +465,8 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
       oi64=o->array;  do *oi64++ = ~(*ii64++);   while(ii64<ii64f);   break;
 
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "data_arithmetic_bitwise_not", in->type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, in->type);
     }
 
 

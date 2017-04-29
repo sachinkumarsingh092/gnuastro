@@ -335,12 +335,12 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
      anti-clickwise manner.) */
   errno=0; ipolygon=malloc(2*nvertices*sizeof *ipolygon);
   if(ipolygon==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for ipolygon in polygonmask "
-          "(crop.c)", 2*nvertices*sizeof *ipolygon);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for ipolygon",
+          __func__, 2*nvertices*sizeof *ipolygon);
   errno=0; ordinds=malloc(nvertices*sizeof *ordinds);
   if(ordinds==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for ordinds in polygonmask "
-          "(crop.c)", nvertices*sizeof *ordinds);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for ordinds",
+          __func__, nvertices*sizeof *ordinds);
 
 
   /* Find the order of the polygons and put the elements in the proper
@@ -368,10 +368,9 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
     case GAL_TYPE_FLOAT32:  POLYGON_MASK(float);    break;
     case GAL_TYPE_FLOAT64:  POLYGON_MASK(double);   break;
     default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
-            "can fix the problem. For some reason, an unrecognized "
-            "type value (%d) has been seen in polygonmask (crop.c)",
-            PACKAGE_BUGREPORT, type);
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s, so we "
+            "can fix the problem. Type code %d is not recognized",
+            __func__, PACKAGE_BUGREPORT, type);
     }
 
   /* Clean up: */
@@ -423,8 +422,8 @@ changezerotonan(void *array, size_t size, int type)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%d is not a recognized type in "
-            "`changezerotonan'", type);
+      error(EXIT_FAILURE, 0, "%s: %d is not a recognized type",
+            __func__, type);
     }
 }
 
@@ -527,7 +526,7 @@ cropflpixel(struct onecropparams *crp)
           if(wcss2p(p->imgs[crp->in_ind].wcs, ncoord, nelem, crp->world,
                     phi, theta, imgcrd, pixcrd, status) )
             if(status[0] || status[1])
-              error(EXIT_FAILURE, 0, "wcss2p error %d: %s",
+              error(EXIT_FAILURE, 0, "%s: wcss2p error %d: %s", __func__,
                     status[0] ? status[0] : status[1],
                     wcs_errmsg[status[0] ? status[0] : status[1]]);
           gal_box_border_from_center(pixcrd[0], pixcrd[1], p->iwidth, fpixel,
@@ -540,9 +539,9 @@ cropflpixel(struct onecropparams *crp)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! in cropflpixel (crop.c), "
-            "neither imgmode or wcsmode are set. Please contact us so "
-            "we can see how it got to this impossible place");
+      error(EXIT_FAILURE, 0, "%s: a bug! The domain (WCS or image) are not "
+            "set. Please contact us at %s so we can see how it got to this "
+            "impossible place", __func__, PACKAGE_BUGREPORT);
     }
 
   /* If the user only wants regions outside to the polygon, then set

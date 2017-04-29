@@ -244,9 +244,9 @@ interpolate_close_neighbors_on_thread(void *in_prm)
              interpolation. Normally, this loop should only be exited
              through the `currentnum>=numnearest' check above. */
           if(sQ==NULL)
-            error(EXIT_FAILURE, 0, "only %zu neighbors found while you had "
-                  "asked to use %zu neighbors for close neighbor "
-                  "interpolation", ngb_counter, prm->numneighbors);
+            error(EXIT_FAILURE, 0, "%s: only %zu neighbors found while "
+                  "you had asked to use %zu neighbors for close neighbor "
+                  "interpolation", __func__, ngb_counter, prm->numneighbors);
         }
 
       /* Calculate the median of the values and write it in the output. */
@@ -388,9 +388,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
       {
         /* A small sanity check. */
         if( gal_data_dsize_is_different(input, tin) )
-          error(EXIT_FAILURE, 0, "The other datasets in the list must "
-                "have the same dimension and size in "
-                "`gal_interpolate_close_neighbors'");
+          error(EXIT_FAILURE, 0, "%s: all datasets in the list must have "
+                "the same dimension and size", __func__);
 
         /* Allocate the output array for this node. */
         gal_list_data_add_alloc(&prm.out, NULL, tin->type, tin->ndim,

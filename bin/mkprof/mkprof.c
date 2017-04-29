@@ -75,8 +75,8 @@ builtqueue_addempty(struct builtqueue **bq)
   errno=0;
   tbq=malloc(sizeof *tbq);
   if(tbq==NULL)
-    error(EXIT_FAILURE, 0, "%zu byte element in builtqueue_addempty",
-          sizeof *tbq);
+    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `tbq'",
+          __func__, sizeof *tbq);
 
   /* Initialize some of the values. */
   tbq->img=NULL;
@@ -575,8 +575,8 @@ mkprof(struct mkprofparams *p)
   errno=0;
   mkp=malloc(nt*sizeof *mkp);
   if(mkp==NULL)
-    error(EXIT_FAILURE, errno,
-          "%zu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `mkp'",
+          __func__, (nt-1)*sizeof *mkp);
 
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
@@ -607,9 +607,10 @@ mkprof(struct mkprofparams *p)
 
       /* Initialize the condition variable and mutex. */
       err=pthread_mutex_init(&p->qlock, NULL);
-      if(err) error(EXIT_FAILURE, 0, "mutex not initialized");
+      if(err) error(EXIT_FAILURE, 0, "%s: mutex not initialized", __func__);
       err=pthread_cond_init(&p->qready, NULL);
-      if(err) error(EXIT_FAILURE, 0, "condition variable not initialized");
+      if(err) error(EXIT_FAILURE, 0, "%s: condition variable not initialized",
+                    __func__);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
@@ -623,7 +624,8 @@ mkprof(struct mkprofparams *p)
             mkp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, mkprof_build, &mkp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
+              error(EXIT_FAILURE, 0, "%s: can't create thread %zu",
+                    __func__, i);
           }
     }
 
