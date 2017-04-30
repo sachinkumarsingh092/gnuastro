@@ -148,7 +148,7 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl);
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
-                           char *filename, struct gal_fits_key_ll *keys,
+                           char *filename, gal_fits_list_key_t *keys,
                            char *program_string);
 
 gal_data_t *

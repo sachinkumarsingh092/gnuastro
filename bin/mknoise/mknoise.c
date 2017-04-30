@@ -55,7 +55,7 @@ void
 convertsaveoutput(struct mknoiseparams *p)
 {
   char keyname1[FLEN_KEYWORD];
-  struct gal_fits_key_ll *headers=NULL;
+  gal_fits_list_key_t *headers=NULL;
   char keyname2[FLEN_KEYWORD], keyname3[FLEN_KEYWORD];
   char keyname4[FLEN_KEYWORD], keyname5[FLEN_KEYWORD];
 
@@ -63,26 +63,24 @@ convertsaveoutput(struct mknoiseparams *p)
   /* Add the proper information to the header of the output: */
   gal_fits_key_write_filename("INF", p->inputname, &headers);
   strcpy(keyname1, "BCKGRND");
-  gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_FLOAT64, keyname1, 0,
-                             &p->background_mag, 0, "Background "
-                             "value (in magnitude) for noise.",
-                             0, NULL);
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname1, 0,
+                            &p->background_mag, 0, "Background "
+                            "value (in magnitude) for noise.",
+                            0, NULL);
   strcpy(keyname2, "BZRPNT");
-  gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_FLOAT64, keyname2, 0,
-                             &p->zeropoint, 0,
-                             "Zeropoint magnitude of image.", 0, NULL);
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname2, 0,
+                            &p->zeropoint, 0, "Zeropoint magnitude of image.",
+                            0, NULL);
   strcpy(keyname3, "STDADD");
-  gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_FLOAT64, keyname3, 0,
-                             &p->stdadd, 0,
-                             "Instrumental noise in units of flux.", 0, NULL);
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname3, 0,
+                            &p->stdadd, 0, "Instrumental noise in units of "
+                            "flux.", 0, NULL);
   strcpy(keyname4, "RNGTYPE");
-  gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_STRING, keyname4, 0,
-                             p->rng_type, 0,
-                             "Random number generator (by GSL) type.",
-                             0, NULL);
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, keyname4, 0,
+                            p->rng_type, 0, "Random number generator (by "
+                            "GSL) type.",  0, NULL);
   strcpy(keyname5, "RNGSEED");
-  gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_INT64, keyname5, 0,
-                             &p->rng_seed,
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_INT64, keyname5, 0, &p->rng_seed,
                              0, "Random number generator (by GSL) seed.",
                              0, NULL);
 

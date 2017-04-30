@@ -522,7 +522,7 @@ ui_check_options_and_arguments(struct statisticsparams *p)
                   "acceptable by CFITSIO");
 
           /* If its a table, make sure a column is also specified. */
-          p->hdu_type=gal_fits_hdu_type(p->inputname, p->cp.hdu);
+          p->hdu_type=gal_fits_hdu_format(p->inputname, p->cp.hdu);
           if(p->hdu_type==IMAGE_HDU)
             {
               if(p->column)

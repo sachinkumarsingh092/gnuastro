@@ -305,10 +305,10 @@ ui_check_options_and_arguments(struct fitsparams *p)
 /*****************       Preparations      ********************/
 /**************************************************************/
 /* The `--update' and `--write' options take multiple values for each
-   keyword, so here, we tokenize them and put them into a `gal_fits_key_ll'
-   list. */
+   keyword, so here, we tokenize them and put them into a
+   `gal_fits_list_key_t' list. */
 static void
-ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
+ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output)
 {
   long l, *lp;
   void *fvalue;
@@ -417,8 +417,8 @@ ui_fill_fits_headerll(gal_list_str_t *input, struct gal_fits_key_ll **output)
         }
 
 
-      gal_fits_key_add_to_ll(output, type, keyname, 0,
-                             fvalue, vfree, comment, 0, unit);
+      gal_fits_key_list_add(output, type, keyname, 0, fvalue, vfree,
+                            comment, 0, unit);
       free(original);
     }
 }

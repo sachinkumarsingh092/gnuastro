@@ -74,18 +74,18 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* To create a linked list of headers. */
-struct gal_fits_key_ll
+typedef struct gal_fits_list_key_t
 {
-  int                    kfree;   /* ==1, free keyword name.   */
-  int                    vfree;   /* ==1, free keyword value.  */
-  int                    cfree;   /* ==1, free comment.        */
-  uint8_t                 type;   /* Keyword value type.       */
-  char                *keyname;   /* Keyword Name.             */
-  void                  *value;   /* Keyword value.            */
-  char                *comment;   /* Keyword comment.          */
-  char                   *unit;   /* Keyword unit.             */
-  struct gal_fits_key_ll *next;   /* Pointer next keyword.     */
-};
+  int                        kfree;   /* ==1, free keyword name.   */
+  int                        vfree;   /* ==1, free keyword value.  */
+  int                        cfree;   /* ==1, free comment.        */
+  uint8_t                     type;   /* Keyword value type.       */
+  char                    *keyname;   /* Keyword Name.             */
+  void                      *value;   /* Keyword value.            */
+  char                    *comment;   /* Keyword comment.          */
+  char                       *unit;   /* Keyword unit.             */
+  struct gal_fits_list_key_t *next;   /* Pointer next keyword.     */
+} gal_fits_list_key_t;
 
 
 
@@ -110,11 +110,6 @@ gal_fits_name_is_fits(char *name);
 int
 gal_fits_suffix_is_fits(char *suffix);
 
-void
-gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
-                          char **othername, char *ohdu, int ohduset,
-                          char *type);
-
 char *
 gal_fits_name_save_as_string(char *filename, char *hdu);
 
@@ -123,7 +118,7 @@ gal_fits_name_save_as_string(char *filename, char *hdu);
 /*************************************************************
  **************           Type codes           ***************
  *************************************************************/
-int
+uint8_t
 gal_fits_bitpix_to_type(int bitpix);
 
 int
@@ -135,7 +130,7 @@ gal_fits_type_to_bin_tform(uint8_t type);
 int
 gal_fits_type_to_datatype(uint8_t type);
 
-int
+uint8_t
 gal_fits_datatype_to_type(int datatype, int is_table_column);
 
 
@@ -147,17 +142,17 @@ gal_fits_datatype_to_type(int datatype, int is_table_column);
 fitsfile *
 gal_fits_open_to_write(char *filename);
 
-void
-gal_fits_hdu_num(char *filename, int *numhdu);
+size_t
+gal_fits_hdu_num(char *filename);
 
 int
-gal_fits_hdu_type(char *filename, char *hdu);
+gal_fits_hdu_format(char *filename, char *hdu);
 
 fitsfile *
 gal_fits_hdu_open(char *filename, char *hdu, int iomode);
 
 fitsfile *
-gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1);
+gal_fits_hdu_open_format(char *filename, char *hdu, int img0_tab1);
 
 
 
@@ -177,27 +172,27 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
                   int readcomment, int readunit);
 
 void
-gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
-                       char *keyname, int kfree, void *value, int vfree,
-                       char *comment, int cfree, char *unit);
+gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
+                      char *keyname, int kfree, void *value, int vfree,
+                      char *comment, int cfree, char *unit);
 
 void
-gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
-                           char *keyname, int kfree, void *value, int vfree,
-                           char *comment, int cfree, char *unit);
+gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
+                          char *keyname, int kfree, void *value, int vfree,
+                          char *comment, int cfree, char *unit);
 
 void
 gal_fits_key_write_filename(char *keynamebase, char *filename,
-                            struct gal_fits_key_ll **list);
+                            gal_fits_list_key_t **list);
 
 void
 gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec);
 
 void
-gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist);
+gal_fits_key_write(fitsfile *fptr, gal_fits_list_key_t **keylist);
 
 void
-gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
                            char *program_string);
 
 
@@ -225,17 +220,17 @@ gal_fits_img_write_to_ptr(gal_data_t *data, char *filename);
 
 void
 gal_fits_img_write(gal_data_t *data, char *filename,
-                   struct gal_fits_key_ll *headers, char *program_string);
+                   gal_fits_list_key_t *headers, char *program_string);
 
 void
 gal_fits_img_write_to_type(gal_data_t *data, char *filename,
-                           struct gal_fits_key_ll *headers,
+                           gal_fits_list_key_t *headers,
                            char *program_string, int type);
 
 void
-gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
+gal_fits_img_write_corr_wcs_str(gal_data_t *input, char *filename,
                                 char *wcsheader, int nkeyrec, double *crpix,
-                                struct gal_fits_key_ll *headers,
+                                gal_fits_list_key_t *headers,
                                 char *program_string);
 
 
@@ -249,11 +244,11 @@ void
 gal_fits_tab_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 
 int
-gal_fits_tab_type(fitsfile *fptr);
+gal_fits_tab_format(fitsfile *fptr);
 
 gal_data_t *
 gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
-                    size_t *numrows, int *tabletype);
+                  size_t *numrows, int *tableformat);
 
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
@@ -262,7 +257,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tabletype, char *filename, int dontdelete);
+                   int tableformat, char *filename, int dontdelete);
 
 
 

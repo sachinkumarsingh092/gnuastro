@@ -694,7 +694,7 @@ onecrop(struct onecropparams *crp)
   int status=0, anynul=0;
   char basename[FLEN_KEYWORD];
   fitsfile *ifp=crp->infits, *ofp;
-  struct gal_fits_key_ll *headers=NULL;
+  gal_fits_list_key_t *headers=NULL;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
   long naxes[]={img->dsize[1], img->dsize[0]}, fpixel_i[2] , lpixel_i[2];
@@ -766,10 +766,9 @@ onecrop(struct onecropparams *crp)
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
               fpixel_i[1], lpixel_i[1]);
-      gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_STRING, regionkey,
-                                 0, region, 0,
-                                 "Range of pixels used for this output.", 0,
-                                 NULL);
+      gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, regionkey,
+                                0, region, 0, "Range of pixels used for "
+                                "this output.", 0, NULL);
       gal_fits_key_write(ofp, &headers);
 
       /* Free the allocated array. */

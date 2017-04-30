@@ -415,7 +415,7 @@ correct_wcs_save_output(struct warpparams *p)
   double *m=p->matrix->array, diff;
   char keyword[9*FLEN_KEYWORD];
   struct wcsprm *wcs=p->output->wcs;
-  struct gal_fits_key_ll *headers=NULL;
+  gal_fits_list_key_t *headers=NULL;
   double tpc[4], tcrpix[3], *pixelscale;
   double *crpix=wcs->crpix, *pc=wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
@@ -444,10 +444,9 @@ correct_wcs_save_output(struct warpparams *p)
   for(i=0;i<9;++i)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%zu_%zu", i/3+1, i%3+1);
-      gal_fits_key_add_to_ll_end(&headers, GAL_TYPE_FLOAT64,
-                                 &keyword[i*FLEN_KEYWORD], 0,
-                                 &m[i], 0, "Warp matrix element value", 0,
-                                 NULL);
+      gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64,
+                                &keyword[i*FLEN_KEYWORD], 0, &m[i], 0,
+                                "Warp matrix element value", 0, NULL);
     }
 
   /* Due to floating point errors extremely small values of PC matrix can

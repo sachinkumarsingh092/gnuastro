@@ -188,7 +188,7 @@ noisechisel_output_copy_input(struct noisechiselparams *p)
 static void
 noisechisel_output(struct noisechiselparams *p)
 {
-  struct gal_fits_key_ll *keys=NULL;
+  gal_fits_list_key_t *keys=NULL;
 
   /* Copy the input image into the first extension. */
   noisechisel_output_copy_input(p);
@@ -196,14 +196,14 @@ noisechisel_output(struct noisechiselparams *p)
 
   /* Write the object labels and useful information into it's header. */
   if(p->onlydetection==0)
-    gal_fits_key_add_to_ll(&keys, GAL_TYPE_STRING, "WCLUMPS", 0, "yes", 0,
-                           "Generate catalog with clumps?", 0, "bool");
-  gal_fits_key_add_to_ll(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
-                         &p->numobjects, 0, "Total number of labels "
-                         "(inclusive)", 0, "counter");
-  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
-                         0, "Minimum S/N of true pseudo-detections", 0,
-                         "ratio");
+    gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "WCLUMPS", 0, "yes", 0,
+                          "Generate catalog with clumps?", 0, "bool");
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                        &p->numobjects, 0, "Total number of labels "
+                        "(inclusive)", 0, "counter");
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
+                        0, "Minimum S/N of true pseudo-detections", 0,
+                        "ratio");
   p->olabel->name = p->onlydetection ? "DETECTIONS" : "OBJECTS";
   gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_STRING);
   p->olabel->name=NULL;
@@ -217,12 +217,12 @@ noisechisel_output(struct noisechiselparams *p)
   if(p->onlydetection==0)
     {
       p->clabel->name="CLUMPS";
-      gal_fits_key_add_to_ll(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
-                             &p->numclumps, 0, "Total number of clumps", 0,
-                             "counter");
-      gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
-                             &p->clumpsnthresh, 0,
-                             "Minimum S/N of true clumps", 0, "ratio");
+      gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                            &p->numclumps, 0, "Total number of clumps", 0,
+                            "counter");
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
+                            &p->clumpsnthresh, 0, "Minimum S/N of true clumps",
+                            0, "ratio");
       gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_STRING);
       p->clabel->name=NULL;
       keys=NULL;
@@ -239,15 +239,15 @@ noisechisel_output(struct noisechiselparams *p)
 
   /* Write the Sky standard deviation into the output. */
   p->std->name="SKY_STD";
-  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0,
-                         &p->maxstd, 0, "Maximum raw tile standard deviation",
-                         0, p->input->unit);
-  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0,
-                         &p->minstd, 0, "Minimum raw tile standard deviation",
-                         0, p->input->unit);
-  gal_fits_key_add_to_ll(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0,
-                         &p->medstd, 0, "Median raw tile standard deviation",
-                         0, p->input->unit);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0, &p->maxstd, 0,
+                        "Maximum raw tile standard deviation", 0,
+                        p->input->unit);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0, &p->minstd, 0,
+                        "Minimum raw tile standard deviation", 0,
+                        p->input->unit);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0, &p->medstd, 0,
+                        "Median raw tile standard deviation", 0,
+                        p->input->unit);
   gal_tile_full_values_write(p->std, &p->cp.tl, p->cp.output, keys,
                              PROGRAM_STRING);
   p->std->name=NULL;

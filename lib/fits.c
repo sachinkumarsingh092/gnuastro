@@ -171,7 +171,7 @@ gal_fits_name_save_as_string(char *filename, char *hdu)
 /*************************************************************
  **************           Type codes           ***************
  *************************************************************/
-int
+uint8_t
 gal_fits_bitpix_to_type(int bitpix)
 {
   switch(bitpix)
@@ -355,7 +355,7 @@ gal_fits_type_to_datatype(uint8_t type)
 
 
 
-int
+uint8_t
 gal_fits_datatype_to_type(int datatype, int is_table_column)
 {
   int inttype;
@@ -375,44 +375,44 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
     case TUSHORT:
       switch( sizeof(short) )
         {
-        case 2:           return GAL_TYPE_UINT16; break;
-        case 4:           return GAL_TYPE_UINT32; break;
-        case 8:           return GAL_TYPE_UINT64; break;
+        case 2:           return GAL_TYPE_UINT16;
+        case 4:           return GAL_TYPE_UINT32;
+        case 8:           return GAL_TYPE_UINT64;
         }
       break;
 
     case TSHORT:
       switch( sizeof(short) )
         {
-        case 2:           return GAL_TYPE_INT16;  break;
-        case 4:           return GAL_TYPE_INT32;  break;
-        case 8:           return GAL_TYPE_INT64;  break;
+        case 2:           return GAL_TYPE_INT16;
+        case 4:           return GAL_TYPE_INT32;
+        case 8:           return GAL_TYPE_INT64;
         }
       break;
 
     case TUINT:
       switch( sizeof(int) )
         {
-        case 2:           return GAL_TYPE_UINT16; break;
-        case 4:           return GAL_TYPE_UINT32; break;
-        case 8:           return GAL_TYPE_UINT64; break;
+        case 2:           return GAL_TYPE_UINT16;
+        case 4:           return GAL_TYPE_UINT32;
+        case 8:           return GAL_TYPE_UINT64;
         }
       break;
 
     case TINT:
       switch( sizeof(int) )
         {
-        case 2:           return GAL_TYPE_INT16;  break;
-        case 4:           return GAL_TYPE_INT32;  break;
-        case 8:           return GAL_TYPE_INT64;  break;
+        case 2:           return GAL_TYPE_INT16;
+        case 4:           return GAL_TYPE_INT32;
+        case 8:           return GAL_TYPE_INT64;
         }
       break;
 
     case TULONG:
       switch( sizeof(long) )
         {
-        case 4:           return GAL_TYPE_UINT32; break;
-        case 8:           return GAL_TYPE_UINT64; break;
+        case 4:           return GAL_TYPE_UINT32;
+        case 8:           return GAL_TYPE_UINT64;
         }
       break;
 
@@ -421,8 +421,8 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
       else
         switch( sizeof(long) )
           {
-          case 4:         return GAL_TYPE_INT32;  break;
-          case 8:         return GAL_TYPE_INT64;  break;
+          case 4:         return GAL_TYPE_INT32;
+          case 8:         return GAL_TYPE_INT64;
           }
       break;
 
@@ -451,7 +451,7 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix "
         "this. Control must not have reached the end of this function.",
         __func__, PACKAGE_BUGREPORT);
-  return -1;
+  return GAL_TYPE_INVALID;
 }
 
 
@@ -514,11 +514,11 @@ gal_fits_open_to_write(char *filename)
 
 
 
-void
-gal_fits_hdu_num(char *filename, int *numhdu)
+size_t
+gal_fits_hdu_num(char *filename)
 {
-  int status=0;
   fitsfile *fptr;
+  int num, status=0;
 
   /* We don't need to check for an error everytime, because we don't
      make any non CFITSIO usage of the output. It is necessary to
@@ -526,11 +526,43 @@ gal_fits_hdu_num(char *filename, int *numhdu)
      outputs. */
   fits_open_file(&fptr, filename, READONLY, &status);
 
-  fits_get_num_hdus(fptr, numhdu, &status);
+  fits_get_num_hdus(fptr, &num, &status);
 
   fits_close_file(fptr, &status);
 
   gal_fits_io_error(status, NULL);
+
+  return num;
+}
+
+
+
+
+
+/* Given the filename and HDU, this function will return the CFITSIO code
+   for the type of data it contains (table, or image). The CFITSIO codes
+   are:
+
+       IMAGE_HDU:    An image HDU.
+       ASCII_TBL:    An ASCII table HDU.
+       BINARY_TBL:   BINARY TABLE HDU.       */
+int
+gal_fits_hdu_format(char *filename, char *hdu)
+{
+  fitsfile *fptr;
+  int hdutype, status=0;
+
+  /* Open the HDU. */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
+
+  /* Check the type of the given HDU: */
+  if (fits_get_hdu_type(fptr, &hdutype, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Clean up and return.. */
+  if( fits_close_file(fptr, &status) )
+    gal_fits_io_error(status, NULL);
+  return hdutype;
 }
 
 
@@ -566,40 +598,10 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
 
 
 
-/* Given the filename and HDU, this function will return the CFITSIO code
-   for the type of data it contains (table, or image). The CFITSIO codes
-   are:
-
-       IMAGE_HDU:    An image HDU.
-       ASCII_TBL:    An ASCII table HDU.
-       BINARY_TBL:   BINARY TABLE HDU.       */
-int
-gal_fits_hdu_type(char *filename, char *hdu)
-{
-  fitsfile *fptr;
-  int hdutype, status=0;
-
-  /* Open the HDU. */
-  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
-
-  /* Check the type of the given HDU: */
-  if (fits_get_hdu_type(fptr, &hdutype, &status) )
-    gal_fits_io_error(status, NULL);
-
-  /* Clean up and return.. */
-  if( fits_close_file(fptr, &status) )
-    gal_fits_io_error(status, NULL);
-  return hdutype;
-}
-
-
-
-
-
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 fitsfile *
-gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1)
+gal_fits_hdu_open_format(char *filename, char *hdu, int img0_tab1)
 {
   fitsfile *fptr;
   int status=0, hdutype;
@@ -661,7 +663,7 @@ gal_fits_hdu_open_type(char *filename, char *hdu, unsigned char img0_tab1)
 /* CFITSIO doesn't remove the two single quotes around the string value, so
    the strings it reads are like: 'value ', or 'some_very_long_value'. To
    use the value, it is commonly necessary to remove the single quotes (and
-   possible extra spaces). This function fill modify the string in its own
+   possible extra spaces). This function will modify the string in its own
    allocated space. You can use this to later free the original string (if
    it was allocated). */
 void
@@ -882,11 +884,11 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
    NOTE FOR STRINGS: the value should be the pointer to the string its-self
    (char *), not a pointer to a pointer (char **). */
 void
-gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
-                       char *keyname, int kfree, void *value, int vfree,
-                       char *comment, int cfree, char *unit)
+gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
+                      char *keyname, int kfree, void *value, int vfree,
+                      char *comment, int cfree, char *unit)
 {
-  struct gal_fits_key_ll *newnode;
+  gal_fits_list_key_t *newnode;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
@@ -911,11 +913,11 @@ gal_fits_key_add_to_ll(struct gal_fits_key_ll **list, uint8_t type,
 
 
 void
-gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
-                           char *keyname, int kfree, void *value, int vfree,
-                           char *comment, int cfree, char *unit)
+gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
+                          char *keyname, int kfree, void *value, int vfree,
+                          char *comment, int cfree, char *unit)
 {
-  struct gal_fits_key_ll *newnode, *tmp;
+  gal_fits_list_key_t *newnode, *tmp;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
@@ -951,7 +953,7 @@ gal_fits_key_add_to_ll_end(struct gal_fits_key_ll **list, uint8_t type,
 
 void
 gal_fits_key_write_filename(char *keynamebase, char *filename,
-                            struct gal_fits_key_ll **list)
+                            gal_fits_list_key_t **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -989,8 +991,8 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
          length was copied. */
       if(value[maxlength-1]=='\0')
         {
-          gal_fits_key_add_to_ll_end(list, GAL_TYPE_STRING, keyname, 1,
-                                     value, 1, NULL, 0, NULL);
+          gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
+                                    value, 1, NULL, 0, NULL);
           break;
         }
       else
@@ -1011,8 +1013,8 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
                   filename, maxlength);
 
           /* Convert the last useful character and save the file name.*/
-          gal_fits_key_add_to_ll_end(list, TSTRING, keyname, 1,
-                                     value, 1, NULL, 0, NULL);
+          gal_fits_key_list_add_end(list, TSTRING, keyname, 1,
+                                    value, 1, NULL, 0, NULL);
           i+=j+1;
         }
     }
@@ -1056,14 +1058,14 @@ gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
 
 
 
-/* Write the keywords in the gal_fits_key_ll linked list to the FITS
-   file. Every keyword that is written is freed, that is why we need
-   the pointer to the linked list (to correct it after we finish). */
+/* Write the keywords in the gal_fits_list_key_t linked list to the FITS
+   file. Every keyword that is written is freed, that is why we need the
+   pointer to the linked list (to correct it after we finish). */
 void
-gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist)
+gal_fits_key_write(fitsfile *fptr, gal_fits_list_key_t **keylist)
 {
   int status=0;
-  struct gal_fits_key_ll *tmp, *ttmp;
+  gal_fits_list_key_t *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -1105,7 +1107,7 @@ gal_fits_key_write(fitsfile *fptr, struct gal_fits_key_ll **keylist)
 
 
 void
-gal_fits_key_write_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
                            char *program_name)
 {
   size_t i;
@@ -1260,7 +1262,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Check HDU for realistic conditions: */
-  fptr=gal_fits_hdu_open_type(filename, hdu, 0);
+  fptr=gal_fits_hdu_open_format(filename, hdu, 0);
 
 
   /* Get the info and allocate the data structure. */
@@ -1512,7 +1514,7 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
 
 void
 gal_fits_img_write(gal_data_t *data, char *filename,
-                   struct gal_fits_key_ll *headers, char *program_string)
+                   gal_fits_list_key_t *headers, char *program_string)
 {
   int status=0;
   fitsfile *fptr;
@@ -1534,8 +1536,8 @@ gal_fits_img_write(gal_data_t *data, char *filename,
 
 void
 gal_fits_img_write_to_type(gal_data_t *data, char *filename,
-                           struct gal_fits_key_ll *headers,
-                           char *program_string, int type)
+                           gal_fits_list_key_t *headers, char *program_string,
+                           int type)
 {
   /* If the input dataset is not the correct type, then convert it,
      otherwise, use the input data structure. */
@@ -1567,21 +1569,21 @@ gal_fits_img_write_to_type(gal_data_t *data, char *filename,
         writing FITS images in parallel, we can't write the header keywords
         in each thread.   */
 void
-gal_fits_img_write_corr_wcs_str(gal_data_t *data, char *filename,
+gal_fits_img_write_corr_wcs_str(gal_data_t *input, char *filename,
                                 char *wcsstr, int nkeyrec, double *crpix,
-                                struct gal_fits_key_ll *headers,
+                                gal_fits_list_key_t *headers,
                                 char *program_string)
 {
   int status=0;
   fitsfile *fptr;
 
   /* The data should not have any WCS structure for this function. */
-  if(data->wcs)
+  if(input->wcs)
     error(EXIT_FAILURE, 0, "%s: input must not have WCS meta-data",
           __func__);
 
   /* Write the data array into a FITS file and keep it open. */
-  fptr=gal_fits_img_write_to_ptr(data, filename);
+  fptr=gal_fits_img_write_to_ptr(input, filename);
 
   /* Write the WCS headers into the FITS file. */
   gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
@@ -1652,12 +1654,12 @@ gal_fits_tab_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
 
 
 int
-gal_fits_tab_type(fitsfile *fptr)
+gal_fits_tab_format(fitsfile *fitsptr)
 {
   int status=0;
   char value[FLEN_VALUE];
 
-  fits_read_key(fptr, TSTRING, "XTENSION", value, NULL, &status);
+  fits_read_key(fitsptr, TSTRING, "XTENSION", value, NULL, &status);
 
   if(status==0)
     {
@@ -1692,9 +1694,7 @@ gal_fits_tab_type(fitsfile *fptr)
    where `T' specifies the general format, `w' is the width to be given to
    this column and `p' is the precision. For integer types, percision is
    actually the minimum number of integers, for floats, it is the number of
-   decimal digits beyond the decimal point.
-
- */
+   decimal digits beyond the decimal point. */
 static void
 set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
                    char *keyname)
@@ -1826,7 +1826,7 @@ fits_correct_bin_table_int_types(gal_data_t *allcols, int tfields,
 /* See the descriptions of `gal_table_info'. */
 gal_data_t *
 gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
-                  size_t *numrows, int *tabletype)
+                  size_t *numrows, int *tableformat)
 {
   long repeat;
   int tfields;        /* The maximum number of fields in FITS is 999 */
@@ -1840,8 +1840,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
 
   /* Open the FITS file and get the basic information. */
-  fptr=gal_fits_hdu_open_type(filename, hdu, 1);
-  *tabletype=gal_fits_tab_type(fptr);
+  fptr=gal_fits_hdu_open_format(filename, hdu, 1);
+  *tableformat=gal_fits_tab_format(fptr);
   gal_fits_tab_size(fptr, numrows, numcols);
 
 
@@ -1901,7 +1901,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
             {
               /* The FITS standard's value to this option for FITS ASCII
                  and binary files differ. */
-              if(*tabletype==GAL_TABLE_FORMAT_AFITS)
+              if(*tableformat==GAL_TABLE_FORMAT_AFITS)
                 fits_ascii_tform(value, &datatype, NULL, NULL, &status);
               else
                 fits_binary_tform(value, &datatype, &repeat, NULL, &status);
@@ -1913,7 +1913,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                  number of bytes in both cases for printing later. */
               if( allcols[index].type==GAL_TYPE_STRING )
                 {
-                  if(*tabletype==GAL_TABLE_FORMAT_AFITS)
+                  if(*tableformat==GAL_TABLE_FORMAT_AFITS)
                     {
                       repeat=strtol(value+1, &tailptr, 0);
                       if(*tailptr!='\0')
@@ -2033,7 +2033,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 /* Read the column indexs given in the `indexll' linked list from a FITS
    table into a linked list of data structures, note that this is a
    low-level function, so the output data linked list is the inverse of the
-   input indexs linked list. You can use */
+   input indexs linked list. */
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                   gal_data_t *allcols, gal_list_sizet_t *indexll,
@@ -2049,7 +2049,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
   gal_list_sizet_t *ind;
 
   /* Open the FITS file */
-  fptr=gal_fits_hdu_open_type(filename, hdu, 1);
+  fptr=gal_fits_hdu_open_format(filename, hdu, 1);
 
   /* Pop each index and read/store the array. */
   for(ind=indexll; ind!=NULL; ind=ind->next)
@@ -2148,7 +2148,7 @@ fits_string_fixed_alloc_size(gal_data_t *data)
 
 
 static void
-fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
+fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
                           char ***outtform, char ***outttype,
                           char ***outtunit)
 {
@@ -2186,7 +2186,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
 
       /* FITS's TFORM depends on the type of FITS table, so work
          differently. */
-      switch(tabletype)
+      switch(tableformat)
         {
         /* FITS ASCII table. */
         case GAL_TABLE_FORMAT_AFITS:
@@ -2252,8 +2252,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "%s: tabletype code %d not recognized",
-                __func__, tabletype);
+          error(EXIT_FAILURE, 0, "%s: tableformat code %d not recognized",
+                __func__, tableformat);
         }
 
 
@@ -2271,7 +2271,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
    a binary table, only the non-floating point ones (even if they don't
    have NULL values) must have it. */
 static void
-fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
+fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
                        size_t colnum, char *tform)
 {
   void *blank;
@@ -2279,7 +2279,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
   char *c, *keyname, *bcomment;
 
   /* Write the NULL value */
-  switch(tabletype)
+  switch(tableformat)
     {
     case GAL_TABLE_FORMAT_AFITS:
 
@@ -2323,8 +2323,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s: tabletype code %d not recognized",
-            __func__, tabletype);
+      error(EXIT_FAILURE, 0, "%s: tableformat code %d not recognized",
+            __func__, tableformat);
     }
 
   /* Write the comments if there is any. */
@@ -2348,7 +2348,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
    table.*/
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tabletype, char *filename, int dontdelete)
+                   int tableformat, char *filename, int dontdelete)
 {
   void *blank;
   fitsfile *fptr;
@@ -2381,13 +2381,13 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
 
   /* prepare necessary arrays and if integer type columns have blank
      values, write the TNULLn keywords into the FITS file. */
-  fits_table_prepare_arrays(cols, numcols, tabletype,
+  fits_table_prepare_arrays(cols, numcols, tableformat,
                             &tform, &ttype, &tunit);
 
 
-  /* Make the FITS file pointer. Note that tabletype was checked in
+  /* Make the FITS file pointer. Note that tableformat was checked in
      `fits_table_prepare_arrays'. */
-  tbltype = tabletype==GAL_TABLE_FORMAT_AFITS ? ASCII_TBL : BINARY_TBL;
+  tbltype = tableformat==GAL_TABLE_FORMAT_AFITS ? ASCII_TBL : BINARY_TBL;
   fits_create_tbl(fptr, tbltype, numrows, numcols, ttype, tform, tunit,
                   "table", &status);
   gal_fits_io_error(status, NULL);
@@ -2400,13 +2400,13 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
     {
       /* Write the blank value into the header and return a pointer to
          it. Otherwise, */
-      fits_write_tnull_tcomm(fptr, col, tabletype, i+1, tform[i]);
+      fits_write_tnull_tcomm(fptr, col, tableformat, i+1, tform[i]);
 
       /* Set the blank pointer if its necessary, note that strings don't
          need a blank pointer in a FITS ASCII table.*/
       blank = ( gal_blank_present(col, 0)
                 ? gal_blank_alloc_write(col->type) : NULL );
-      if(tabletype==GAL_TABLE_FORMAT_AFITS && col->type==GAL_TYPE_STRING)
+      if(tableformat==GAL_TABLE_FORMAT_AFITS && col->type==GAL_TYPE_STRING)
         { if(blank) free(blank); blank=NULL; }
 
       /* Write the full column into the table. */

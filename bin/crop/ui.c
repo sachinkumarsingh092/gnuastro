@@ -675,7 +675,7 @@ ui_preparations(struct cropparams *p)
       status=0;
       img=&p->imgs[--input_counter];
       img->name=gal_list_str_pop(&p->inputs);
-      tmpfits=gal_fits_hdu_open_type(img->name, p->cp.hdu, 0);
+      tmpfits=gal_fits_hdu_open_format(img->name, p->cp.hdu, 0);
       gal_fits_img_info(tmpfits, &p->type, &img->ndim, &img->dsize);
       gal_wcs_read_from_fitsptr(tmpfits, &img->nwcs, &img->wcs,
                                 p->hstartwcs, p->hendwcs);

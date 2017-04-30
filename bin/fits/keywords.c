@@ -125,10 +125,10 @@ keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
 
 static void
 keywords_write_update(struct fitsparams *p, fitsfile **fptr,
-                    struct gal_fits_key_ll *keyll, int u1w2)
+                      gal_fits_list_key_t *keyll, int u1w2)
 {
   int status=0;
-  struct gal_fits_key_ll *tmp;
+  gal_fits_list_key_t *tmp;
 
   /* Open the FITS file if it hasn't been opened yet. */
   keywords_open(p, fptr, READWRITE);

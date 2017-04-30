@@ -70,10 +70,10 @@ struct fitsparams
   uint8_t     quitonerror;     /* Quit if an error occurs.        */
 
   /* Internal: */
-  int                            mode;  /* Operating on HDUs or keywords.  */
-  struct gal_fits_key_ll  *write_keys;  /* Keys to write in the header.    */
-  struct gal_fits_key_ll *update_keys;  /* Keys to update in the header.   */
-  time_t                      rawtime;  /* Starting time of the program.   */
+  int                         mode;  /* Operating on HDUs or keywords.  */
+  gal_fits_list_key_t  *write_keys;  /* Keys to write in the header.    */
+  gal_fits_list_key_t *update_keys;  /* Keys to update in the header.   */
+  time_t                   rawtime;  /* Starting time of the program.   */
 };
 
 #endif

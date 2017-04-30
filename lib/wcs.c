@@ -154,7 +154,7 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
   fitsfile *fptr;
 
   /* Check HDU for realistic conditions: */
-  fptr=gal_fits_hdu_open_type(filename, hdu, 0);
+  fptr=gal_fits_hdu_open_format(filename, hdu, 0);
 
   /* Read the WCS information: */
   gal_wcs_read_from_fitsptr(fptr, nwcs, wcs, hstartwcs, hendwcs);
