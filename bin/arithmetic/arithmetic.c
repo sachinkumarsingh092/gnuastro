@@ -152,7 +152,7 @@ reversepolish(struct imgarithparams *p)
          operation on them. */
       if(gal_fits_name_is_fits(token->v))
         add_operand(p, token->v, NULL);
-      else if( (d1=gal_data_string_to_number(token->v)) )
+      else if( (d1=gal_data_copy_string_to_number(token->v)) )
         add_operand(p, NULL, d1);
       else
         {

@@ -245,7 +245,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
             }
           else
             {
-              type=gal_type_from_string(typestr);
+              type=gal_type_from_name(typestr);
               if(type==GAL_TYPE_INVALID) return;
             }
         }
@@ -746,7 +746,7 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
   if(data->type!=GAL_TYPE_STRING && *tailptr!='\0')
     error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
                   "(`%s') couldn't be read as a `%s' number",
-                  colnum, token, gal_type_to_string(data->type, 1) );
+                  colnum, token, gal_type_name(data->type, 1) );
 }
 
 
@@ -1081,10 +1081,10 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
       if(data->type==GAL_TYPE_STRING)
-        sprintf(fmts[i*FMTS_COLS+1], "%s%d",
-                gal_type_to_string(data->type, 0), data->disp_width);
+        sprintf(fmts[i*FMTS_COLS+1], "%s%d", gal_type_name(data->type, 0),
+                data->disp_width);
       else
-        strcpy(fmts[i*FMTS_COLS+1], gal_type_to_string(data->type, 0));
+        strcpy(fmts[i*FMTS_COLS+1], gal_type_name(data->type, 0));
 
 
       /* Increment the column counter. */

@@ -403,7 +403,7 @@ gal_options_read_type(struct argp_option *option, char *arg,
       /* Note that `gal_data_type_as_string' returns a static string. But
          the output must be an allocated string so we can free it. */
       gal_checkset_allocate_copy(
-           gal_type_to_string( *(uint8_t *)(option->value), 1), &str);
+           gal_type_name( *(uint8_t *)(option->value), 1), &str);
       return str;
     }
   else
@@ -412,7 +412,7 @@ gal_options_read_type(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if ( (*(uint8_t *)(option->value) = gal_type_from_string(arg) )
+      if ( (*(uint8_t *)(option->value) = gal_type_from_name(arg) )
            == GAL_TYPE_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known "
@@ -916,7 +916,7 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
           if(option->set==GAL_OPTIONS_SET) return;
 
           /* Read the string argument into the value. */
-          if( gal_data_string_to_type(&option->value, arg, option->type) )
+          if( gal_type_from_string(&option->value, arg, option->type) )
             /* Fortunately `error_at_line' will behave like `error' when the
                filename is NULL (the option was read from a command-line). */
             error_at_line(EXIT_FAILURE, 0, filename, lineno,
@@ -952,8 +952,8 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
               "correct it. Options with no arguments, must have "
               "type `%s'. However, the `%s' option has type %s",
               __func__, PACKAGE_BUGREPORT,
-              gal_type_to_string(GAL_OPTIONS_NO_ARG_TYPE, 1),
-              option->name, gal_type_to_string(option->type, 1));
+              gal_type_name(GAL_OPTIONS_NO_ARG_TYPE, 1),
+              option->name, gal_type_name(option->type, 1));
     }
 
 
@@ -1010,7 +1010,7 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
              As a result, only when searching for options on the
              command-line, a second value to the same option will replace
              the first one. This will not happen in configuration files. */
-          if(options[i].set && gal_type_is_linked_list(options[i].type)==0)
+          if(options[i].set && gal_type_is_list(options[i].type)==0)
             options[i].set=GAL_OPTIONS_NOT_SET;
 
           /* Parse the value. */
@@ -1188,7 +1188,7 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
                  list. */
           if( options[i].flags==OPTION_HIDDEN
               || ( options[i].set
-                   && !gal_type_is_linked_list(options[i].type ) ) )
+                   && !gal_type_is_list(options[i].type ) ) )
             return 0;
 
           /* Read the value into the option and do a sanity check. */
@@ -1504,7 +1504,7 @@ options_print_any_type(struct argp_option *option, void *ptr, int type,
   /* Write the value into a string. */
   str = ( option->func
           ? option->func(option, NULL, NULL, (size_t)(-1), cp->program_struct)
-          : gal_data_write_to_string(ptr, type, 1) );
+          : gal_type_to_string(ptr, type, 1) );
 
   /* If only the width was desired, don't actually print the string, just
      return its length. Otherwise, print it. */
@@ -1538,7 +1538,7 @@ options_correct_max_lengths(struct argp_option *option, int *max_nlen,
 
   /* Get the length of the value and save its length length if its
      larger than the widest value. */
-  if(gal_type_is_linked_list(option->type))
+  if(gal_type_is_list(option->type))
     {
       /* A small sanity check. */
       if(option->type!=GAL_TYPE_STRLL)
@@ -1668,7 +1668,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
         && option_is_printable(&options[i]) )  /* Is relevant for printing.*/
       {
         /* Linked lists */
-        if(gal_type_is_linked_list(options[i].type))
+        if(gal_type_is_list(options[i].type))
           for(tmp=*(gal_list_str_t **)(options[i].value);
               tmp!=NULL; tmp=tmp->next)
             {

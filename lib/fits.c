@@ -218,7 +218,7 @@ gal_fits_type_to_bitpix(uint8_t type)
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "%s: type %s not recognized for FITS image "
-            "BITPIX", __func__, gal_type_to_string(type, 1));
+            "BITPIX", __func__, gal_type_name(type, 1));
 
     default:
       error(EXIT_FAILURE, 0, "%s: type value of %d not recognized",
@@ -258,7 +258,7 @@ gal_fits_type_to_bin_tform(uint8_t type)
     /* Not recognized by CFITSIO. */
     case GAL_TYPE_UINT64:
       error(EXIT_FAILURE, 0, "%s: type %s not recognized for FITS binary "
-            "table TFORM", __func__, gal_type_to_string(type, 1));
+            "table TFORM", __func__, gal_type_name(type, 1));
       break;
 
     /* Wrong type code. */
@@ -342,12 +342,12 @@ gal_fits_type_to_datatype(uint8_t type)
   if(w)
     error(EXIT_FAILURE, 0, "%s: this system doesn't have a %d byte integer "
           "type, so type `%s' cannot be written to FITS", __func__, w,
-          gal_type_to_string(type, 1));
+          gal_type_name(type, 1));
   else
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
           "fix the problem. Control must not have reached the end for the "
           "given type `%s'", __func__, PACKAGE_BUGREPORT,
-          gal_type_to_string(type, 1));
+          gal_type_name(type, 1));
   return -1;
 }
 

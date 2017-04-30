@@ -618,8 +618,7 @@ gal_convolve_spatial_correct_ch_edge(gal_data_t *tiles, gal_data_t *kernel,
     error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the same "
           "type as the block of the `tiles' input. The given types are `%s' "
           "and `%s' respectively", __func__,
-          gal_type_to_string(tocorrect->type, 1),
-          gal_type_to_string(block->type, 1));
+          gal_type_name(tocorrect->type, 1), gal_type_name(block->type, 1));
 
   /* Call the general function, which will do the correction. */
   gal_convolve_spatial_general(tiles, kernel, numthreads,

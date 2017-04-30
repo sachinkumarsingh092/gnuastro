@@ -244,7 +244,7 @@ ui_read_check_only_options(struct converttparams *p)
      is indeed smaller than fluxhigh. */
   if(p->fluxlowstr)
     {
-      p->fluxlow=gal_data_string_to_number(p->fluxlowstr);
+      p->fluxlow=gal_data_copy_string_to_number(p->fluxlowstr);
       if(p->fluxlow==NULL)
         error(EXIT_FAILURE, 0, "value to the `--fluxlow' (`-L', %s) "
               "couldn't be read as a number", p->fluxlowstr);
@@ -252,7 +252,7 @@ ui_read_check_only_options(struct converttparams *p)
 
   if(p->fluxhighstr)
     {
-      p->fluxhigh=gal_data_string_to_number(p->fluxhighstr);
+      p->fluxhigh=gal_data_copy_string_to_number(p->fluxhighstr);
       if(p->fluxhigh==NULL)
         error(EXIT_FAILURE, 0, "value to the `--fluxhigh' (`-H', %s) "
               "couldn't be read as a number", p->fluxhighstr);
@@ -337,7 +337,7 @@ ui_make_change_struct(char *arg)
         {
           /* Read the number and increment the counter. */
           ++counter;
-          data=gal_data_string_to_number(p);
+          data=gal_data_copy_string_to_number(p);
           if(data==NULL)
             error(EXIT_FAILURE, 0, "`%s' (input number %zu to the "
                   "`--change' option) couldn't be read as a number", p,

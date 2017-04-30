@@ -750,7 +750,7 @@ ui_read_columns(struct statisticsparams *p)
         case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, " read column number %zu has a %s type, "
                 "which is not currently supported by %s", counter,
-                gal_type_to_string(tmp->type, 1), PROGRAM_NAME);
+                gal_type_name(tmp->type, 1), PROGRAM_NAME);
         }
 
       /* Put the column into the proper pointer. */

@@ -139,7 +139,7 @@ fits_print_extension_info(struct fitsparams *p)
         {
         case IMAGE_HDU:
           gal_fits_img_info(fptr, &type, &ndim, &dsize);
-          tstr=gal_type_to_string(type , 1);
+          tstr=gal_type_name(type , 1);
           break;
 
         case ASCII_TBL:

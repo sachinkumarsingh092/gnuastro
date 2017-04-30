@@ -26,14 +26,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <float.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <gnuastro/type.h>
 #include <gnuastro/data.h>
+#include <gnuastro/list.h>
+#include <gnuastro-internal/checkset.h>
 
 
 
+
+
+
+/*************************************************************
+ **************         General info           ***************
+ *************************************************************/
 size_t
 gal_type_sizeof(uint8_t type)
 {
@@ -100,7 +110,7 @@ gal_type_sizeof(uint8_t type)
 
 
 char *
-gal_type_to_string(uint8_t type, int long_name)
+gal_type_name(uint8_t type, int long_name)
 {
   switch(type)
     {
@@ -167,7 +177,7 @@ gal_type_to_string(uint8_t type, int long_name)
 
 
 uint8_t
-gal_type_from_string(char *str)
+gal_type_from_name(char *str)
 {
   if(      !strcmp(str, "b")     || !strcmp(str, "bit") )
     return GAL_TYPE_BIT;
@@ -281,7 +291,7 @@ gal_type_max(uint8_t type, void *in)
    that work on both, it is convenient to simiplify the check with this
    function. */
 int
-gal_type_is_linked_list(uint8_t type)
+gal_type_is_list(uint8_t type)
 {
   return type==GAL_TYPE_STRLL;
 }
@@ -300,6 +310,24 @@ gal_type_out(int first_type, int second_type)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************         To/from string         ***************
+ *************************************************************/
 /* Write the bit (0 or 1) contents of `in' into a string ready for
    printing. `size' is used to determine the number of bytes to print. The
    output string will be dynamically allocated within this function. This
@@ -326,4 +354,250 @@ gal_type_bit_string(void *in, size_t size)
 
   /* Return the allocated and filled string. */
   return str;
+}
+
+
+
+
+
+/* Write the contents of memory that `ptr' points to as a string of type
+   `type'.*/
+#define TO_STRING(CTYPE, FMT) asprintf(&str, FMT, *(CTYPE *)ptr);
+char *
+gal_type_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
+{
+  char *c, *str=NULL;
+  switch(type)
+    {
+    /* For a string we might need to make sure it has no white space
+       characters, if it does, it can be printed it within quotation
+       signs. */
+    case GAL_TYPE_STRING:
+      if(quote_if_str_has_space)
+        {
+          c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
+          if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
+          else         asprintf(&str, "\"%s\" ", *(char **)ptr);
+        }
+      else
+        asprintf(&str, "%s", *(char **)ptr);
+      break;
+
+    case GAL_TYPE_UINT8:   TO_STRING( uint8_t,  "%"PRIu8  );  break;
+    case GAL_TYPE_INT8:    TO_STRING( int8_t,   "%"PRId8  );  break;
+    case GAL_TYPE_UINT16:  TO_STRING( uint16_t, "%"PRIu16 );  break;
+    case GAL_TYPE_INT16:   TO_STRING( int16_t,  "%"PRId16 );  break;
+    case GAL_TYPE_UINT32:  TO_STRING( uint32_t, "%"PRIu32 );  break;
+    case GAL_TYPE_INT32:   TO_STRING( int32_t,  "%"PRId32 );  break;
+    case GAL_TYPE_UINT64:  TO_STRING( uint64_t, "%"PRIu64 );  break;
+    case GAL_TYPE_INT64:   TO_STRING( int64_t,  "%"PRId64 );  break;
+    case GAL_TYPE_FLOAT32: TO_STRING( float,    "%.6g"    );  break;
+    case GAL_TYPE_FLOAT64: TO_STRING( double,   "%.10g"   );  break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, type);
+    }
+  return str;
+}
+
+
+
+
+
+/* Read a string as a given data type and put a the pointer to it in
+   *out. When the input `*out!=NULL', then it is assumed to be allocated
+   and the value will be simply put there. If `*out==NULL', then space will
+   be allocated for the given type and the string's value (in the given
+   type) will be stored there.
+
+   Note that when we are dealing with a string type, `*out' should be
+   interpretted as `char **' (one element in an array of pointers to
+   different strings). In other words, `out' should be `char ***'.
+
+   This function can be used to fill in arrays of numbers from strings (in
+   an already allocated data structure), or add nodes to a linked list. For
+   an array, you have to pass the pointer to the `i'th element where you
+   want the value to be stored, for example &(array[i]).
+
+   If parsing was successful, it will return a 0. If there was a problem,
+   it will return 1.  */
+int
+gal_type_from_string(void **out, char *string, uint8_t type)
+{
+  long l;
+  double d;
+  void *value;
+  char *tailptr;
+  int status=0, allocated=0;
+
+  /* If the output is NULL, then allocate the necessary space if we are not
+     dealing with a linked list. In a linked list, a NULL value is
+     meaningful (it is the end of the list). */
+  if( *out==NULL && !gal_type_is_list(type) )
+    {
+      allocated=1;
+      *out=gal_data_malloc_array(type, 1);
+    }
+  value=*out;
+
+  /* Read the string depending on the type. */
+  switch(type)
+    {
+
+    /* Linked lists, currently only string linked lists. */
+    case GAL_TYPE_STRLL:
+      gal_list_str_add( (struct gal_list_str_t **)out, string, 1);
+      break;
+
+    /* String, just allocate and copy the string and keep its pointer in
+       the place `*out' points to (for strings, `*out' is `char **'). */
+    case GAL_TYPE_STRING:
+      gal_checkset_allocate_copy(string, value);
+      break;
+
+    /* Floating point: Read it as a double or long, then put it in the
+       array. When the conversion can't be done (the string isn't a number
+       for example), then just assume no blank value was given. */
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
+      d=strtod(string, &tailptr);
+      if(*tailptr!='\0')
+        status=1;
+      else
+        {
+          if(type==GAL_TYPE_FLOAT32) *(float *) value=d;
+          else                            *(double *) value=d;
+        }
+      break;
+
+    /* Integers. */
+    default:
+      l=strtol(string, &tailptr, 0);
+      if(*tailptr!='\0')
+        status=1;
+      else
+        switch(type)
+          {
+          /* The signed values can easily be put in. */
+          case GAL_TYPE_INT8:         *(int8_t *)    value = l; break;
+          case GAL_TYPE_INT16:        *(int16_t *)   value = l; break;
+          case GAL_TYPE_INT32:        *(int32_t *)   value = l; break;
+          case GAL_TYPE_INT64:        *(int64_t *)   value = l; break;
+
+          /* For the unsigned types, the value has to be positive, so if
+             the input was negative, then just return a status of one and
+             don't store the value. */
+          default:
+            if(l<0)
+              status=1;
+            else
+              switch(type)
+                {
+                case GAL_TYPE_UINT8:  *(uint8_t *)   value=l;   break;
+                case GAL_TYPE_UINT16: *(uint16_t *)  value=l;   break;
+                case GAL_TYPE_UINT32: *(uint32_t *)  value=l;   break;
+                case GAL_TYPE_UINT64: *(uint64_t *)  value=l;   break;
+                default:
+                  error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                        __func__, type);
+                }
+          }
+    }
+
+  /* If reading was unsuccessful, then free the space if it was allocated,
+     then return the status, don't touch the pointer. */
+  if(status && allocated)
+    {
+      free(*out);
+      *out=NULL;
+    }
+  return status;
+}
+
+
+
+
+
+/* If the data structure was correctly created (the string was a number),
+   then return its pointer. Otherwise, return NULL. */
+void *
+gal_type_string_to_number(char *string, uint8_t *type)
+{
+  void *ptr, *out;
+  int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
+  char *tailptr, *cp;
+  uint8_t forcedfloat=0;
+
+  /* Define initial spaces to keep the value. */
+  uint8_t   u8;   int8_t   i8;      uint16_t u16;   int16_t i16;
+  uint32_t u32;   int32_t i32;      uint64_t u64;   int64_t i64;
+  float      f;   double    d;
+
+  /* First see if the number is a double (the most generic). */
+  d=strtod(string, &tailptr);
+  if(*tailptr=='f') { if(tailptr[1]=='\0') forcedfloat=1; else return NULL; }
+  else if (*tailptr!='\0')  return NULL;
+
+  /* See if the number is actually an integer: */
+  if( forcedfloat==0 && ceil(d) == d )
+    {
+      /* If the number is negative, put it in the signed types (based on
+         its value). If its zero or positive, then put it in the unsigned
+         types. */
+      if( d < 0 )
+        {
+          if     (d>INT8_MIN)    { i8=d;  ptr=&i8;  *type=GAL_TYPE_INT8;   }
+          else if(d>INT16_MIN)   { i16=d; ptr=&i16; *type=GAL_TYPE_INT16;  }
+          else if(d>INT32_MIN)   { i32=d; ptr=&i32; *type=GAL_TYPE_INT32;  }
+          else                   { i64=d; ptr=&i64; *type=GAL_TYPE_INT64;  }
+        }
+      else
+        {
+          if     (d<=UINT8_MAX)  { u8=d;  ptr=&u8;  *type=GAL_TYPE_UINT8;  }
+          else if(d<=UINT16_MAX) { u16=d; ptr=&u16; *type=GAL_TYPE_UINT16; }
+          else if(d<=UINT32_MAX) { u32=d; ptr=&u32; *type=GAL_TYPE_UINT32; }
+          else                   { u64=d; ptr=&u64; *type=GAL_TYPE_UINT64; }
+        }
+    }
+  else
+    {
+      /* The maximum number of decimal digits to store in float or double
+         precision floating point are:
+
+         float:  23 mantissa bits + 1 hidden bit: log(224)÷log(10) = 7.22
+         double: 52 mantissa bits + 1 hidden bit: log(253)÷log(10) = 15.95
+
+         FLT_DIG (at least 6 in ISO C) keeps the number of digits (not zero
+         before or after) that can be represented by a single precision
+         floating point number. If there are more digits, then we should
+         store the value as a double precision.
+
+         Note that the number can have non-digit characters that we don't
+         want, like: `.', `e', `E', `,'. */
+      for(cp=string;*cp!='\0';++cp)
+        if(isdigit(*cp) && *cp!='0' && fnz==-1)
+          fnz=cp-string;
+
+      /* In the previous loop, we went to the end of the string, so `cp'
+         now points to its `\0'. We just have to iterate backwards! */
+      for(;cp!=string;--cp)
+        if(isdigit(*cp) && *cp!='0')
+          {
+            lnz=cp-string;
+            break;
+          }
+
+      /* Calculate the number of decimal digits and decide if it the number
+         should be a float or a double. */
+      if( lnz-fnz < FLT_DIG || ( d<FLT_MAX && d>FLT_MIN ) )
+        { f=d; ptr=&f; *type=GAL_TYPE_FLOAT32; }
+      else
+        {      ptr=&d; *type=GAL_TYPE_FLOAT64; }
+    }
+
+  /* Allocate a one-element dataset, then copy the number into it. */
+  out=gal_data_malloc_array(*type, 1);
+  memcpy(out, ptr, gal_type_sizeof(*type));
+  return out;
 }

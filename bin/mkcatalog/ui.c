@@ -463,12 +463,12 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
         asprintf(&namestypes, "However, `%s' (hdu: %s) and `%s' (hdu: %s) "
                  "have types of `%s' and `%s' respectively", objectsfile,
                  p->objectshdu, clumpsfile, p->clumpshdu,
-                 gal_type_to_string(p->objects->type, 1),
-                 gal_type_to_string(p->clumps->type, 1) );
+                 gal_type_name(p->objects->type, 1),
+                 gal_type_name(p->clumps->type, 1) );
       else
         asprintf(&namestypes, "However, %s (hdu: %s) has a type of %s",
                  objectsfile, p->objectshdu,
-                 gal_type_to_string(p->objects->type, 1));
+                 gal_type_name(p->objects->type, 1));
       error(EXIT_FAILURE, 0, "labeled images (for objects or clumps) must "
             "have an integer datatype. %s.\n\n"
             "If you are sure the images contain only integer values but "

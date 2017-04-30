@@ -288,7 +288,7 @@ gal_blank_flag(gal_data_t *input)
         case GAL_TYPE_COMPLEX32:
         case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, "%s: %s type not yet supported",
-                __func__, gal_type_to_string(input->type, 1));
+                __func__, gal_type_name(input->type, 1));
 
           /* Bad input. */
         default:

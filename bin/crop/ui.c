@@ -713,9 +713,9 @@ ui_preparations(struct cropparams *p)
                   "information (press `SPACE' for going down and `q' to "
                   "return to the command-line):\n\n"
                   "    $ info Arithmetic\n",
-                  img->name, gal_type_to_string(p->type, 1),
-                  gal_type_to_string(firsttype, 1), img->name,
-                  gal_type_to_string(p->type, 1));
+                  img->name, gal_type_name(p->type, 1),
+                  gal_type_name(firsttype, 1), img->name,
+                  gal_type_name(p->type, 1));
         }
 
       /* In WCS mode, Check resolution and get the first pixel

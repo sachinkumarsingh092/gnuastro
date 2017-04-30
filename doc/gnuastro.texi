@@ -547,10 +547,10 @@ Gnuastro library
 
 Data container (@file{data.h})
 
-* Generic data container::
-* Dataset size and allocation::
-* Arrays of datasets::
-* Copying datasets::
+* Generic data container::      Definition of Gnuastro's generic container.
+* Dataset size and allocation::  Functions for size and allocation.
+* Arrays of datasets::          Functions to help with array of datasets.
+* Copying datasets::            Functions to copy a dataset to a new one.
 
 Linked lists (@file{linkedlist.h})
 
@@ -16788,20 +16788,24 @@ Return the number of bytes occurpied by @code{type}. Internally, this
 function uses C's @code{sizeof} operator to measure the size of each type.
 @end deftypefun
 
-@deftypefun {char *} gal_type_to_string (uint8_t @code{type}, int @code{long_name})
-Return a string that contains the name of the type. This can be used in
+@deftypefun {char *} gal_type_name (uint8_t @code{type}, int @code{long_name})
+Return a string that contains the name of @code{type}. This can be used in
 messages to the users when your function/program accepts many types. It can
-return two types of string identifiers (short like @code{f32} or long like
-@code{float32}). The output string is statically allocated, so it should
-not be freed. The strings it will return for each type are the identifiers
-of the types in @ref{Numeric data types}.
+return both short and long formats of the type names (for example
+@code{f32} and @code{float32}). If @code{long_name} is non-zero, the long
+format will be returned, otherwise the short name will be returned. The
+output string is statically allocated, so it should not be freed. This
+function is the inverse of the @code{gal_type_from_name} function. For the
+full list of names/strings that this function will return, see @ref{Numeric
+data types}.
 @end deftypefun
 
-@deftypefun uint8_t gal_type_from_string (char @code{*str})
+@deftypefun uint8_t gal_type_from_name (char @code{*str})
 Return the Gnuastro integer constant that corresponds to the string
-@code{str}. This is effectively the inverse of the
-@code{gal_type_to_string} function and accepts both the short and long
-formats of each type.
+@code{str}. This function is the inverse of the @code{gal_type_name}
+function and accepts both the short and long formats of each type. For the
+full list of names/strings that this function will return, see @ref{Numeric
+data types}.
 @end deftypefun
 
 @deftypefun void gal_type_min (uint8_t @code{type}, void @code{*in})
@@ -16836,7 +16840,7 @@ Note: Do not use the maximum value for a blank value of a general
 @ref{Library blank values} for the definition and usage of blank values.
 @end deftypefun
 
-@deftypefun int gal_type_is_linked_list (uint8_t @code{type})
+@deftypefun int gal_type_is_list (uint8_t @code{type})
 Return 1 if the type is a linked list and zero otherwise.
 @end deftypefun
 
@@ -16859,7 +16863,7 @@ free(bitstr);
 @end example
 
 @noindent
-It will produce:
+which will produce:
 @example
 2017: 11100001000001110000000000000000  (7E1)
 @end example
@@ -16871,6 +16875,66 @@ use @code{printf}'s @code{%x} or @code{%X} to print integers in hexadecimal
 format.
 @end deftypefun
 
+@deftypefun {char *} gal_type_to_string (void @code{*ptr}, uint8_t @code{type}, int @code{quote_if_str_has_space});
+Read the contents of the memory that @code{ptr} points to (assuming it has
+type @code{type} and print it into an allocated string which is returned.
+
+If the memory is a string of characters and @code{quote_if_str_has_space}
+is non-zero, the output string will have double-quotes around it if it
+contains space characters. Also, note that in this case, @code{ptr} must be
+a pointer to an array of characters (or @code{char **}), as in the example
+below (which will put @code{"sample string"} into @code{out}):
+
+@example
+char *out, *string="sample string"
+out = gal_type_to_string(&string, GAL_TYPE_STRING, 1);
+@end example
+@end deftypefun
+
+@deftypefun int gal_type_from_string (void @code{**out}, char @code{*string}, uint8_t @code{type})
+Read a string as a given data type and put a the pointer to it in
+@code{*out}. When @code{*out!=NULL}, then it is assumed to be already
+allocated and the value will be simply put the memory. If
+@code{*out==NULL}, then space will be allocated for the given type and the
+string will be read into that type.
+
+Note that when we are dealing with a string type, @code{*out} should be
+interpretted as @code{char **} (one element in an array of pointers to
+different strings). In other words, @code{out} should be @code{char ***}.
+
+This function can be used to fill in arrays of numbers from strings (in an
+already allocated data structure), or add nodes to a linked list (if the
+type is a list type). For an array, you have to pass the pointer to the
+@code{i}th element where you want the value to be stored, for example
+@code{&(array[i]}).
+
+If the string was successfully parsed to the requested type, this function
+will return a @code{0} (zero), otherwise it will return @code{1}
+(one). This output format will help you check the status of the conversion
+in a code like the example below:
+
+@example
+if( gal_type_from_string(&out, string, GAL_TYPE_FLOAT32) )
+  @{
+    fprintf(stderr, "%s couldn't be read as float32.\n", string);
+    exit(EXIT_FAILURE);
+  @}
+@end example
+@end deftypefun
+
+
+
+@deftypefun {void *} gal_type_string_to_number (char @code{*string}, uint8_t @code{*type})
+Read @code{string} into smallest type that can host the number, the
+allocated space for the number will be returned and the type of the number
+will be put into the memory that @code{type} points to. If @code{string}
+couldn't be read as a number, this function will return @code{NULL}.
+
+For the ranges acceptable by each type see @ref{Numeric data types}. For
+integers it is clear, for floating point types, this function will count
+the number of significant digits and determine if the given string is
+single or double precision as described in that section.
+@end deftypefun
 
 @node Library blank values, Library data container, Library data types, Gnuastro library
 @subsection Library blank values (@file{blank.h})
@@ -17041,10 +17105,10 @@ dataset, the name of the dataset and some comments. To deal with any
 generic dataset, Gnuastro defines the @code{gal_data_t} as input or output.
 
 @menu
-* Generic data container::
-* Dataset size and allocation::
-* Arrays of datasets::
-* Copying datasets::
+* Generic data container::      Definition of Gnuastro's generic container.
+* Dataset size and allocation::  Functions for size and allocation.
+* Arrays of datasets::          Functions to help with array of datasets.
+* Copying datasets::            Functions to copy a dataset to a new one.
 @end menu
 
 @node Generic data container, Dataset size and allocation, Library data container, Library data container
@@ -17520,9 +17584,59 @@ given datset into another. The new dataset can have a different type
 values will be written into it). In all these cases, if the input dataset
 is a tile, only the data within the tile are copied.
 
+In many of the functions here, it is possible to copy the dataset to a new
+numeric data type (see @ref{Numeric data types}. In such cases, Gnuastro's
+library is going to use the native conversion by C. So if you are
+converting to a smaller type, it is up to you to make sure that the values
+fit into the output type.
+
 @deftypefun {gal_data_t *} gal_data_copy (gal_data_t @code{*in})
-Return a new dataset that is a copy of @code{in}.
+Return a new dataset that is a copy of @code{in}, the main meta-data of the
+input is also copied into the output.
 @end deftypefun
+
+@deftypefun {gal_data_t *} gal_data_copy_to_new_type (gal_data_t @code{*in}, uint8_t @code{newtype})
+Return a copy of the dataset @code{in}, converted to @code{newtype}, see
+@ref{Library data types} for Gnuastro library's type identifiers. The
+returned dataset will have all meta-data accept their type equal to the
+input's metadata.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_data_copy_to_new_type_free (gal_data_t @code{*in}, uint8_t @code{newtype})
+Return a copy of the dataset @code{in} that is converted to @code{newtype}
+and free the input dataset. See @ref{Library data types} for Gnuastro
+library's type identifiers. The returned dataset will have all meta-data,
+except their type, equal to the input's metadata. This function is similar
+to @code{gal_data_copy_to_new_type}, except that it will free the input
+dataset.
+@end deftypefun
+
+@deftypefun {void} gal_data_copy_to_allocated (gal_data_t @code{*in}, gal_data_t @code{*out})
+Copy the contents of the array in @code{in} into the already allocated
+array in @code{out}. The types of the input and output may be different,
+type conversion will be done internally. When @code{in->size != out->size}
+this function will behave as follows:
+
+@table @code
+@item out->size < in->size
+This function won't re-allocate the necessary space, it will abort with an
+error, so please check before calling this function.
+
+@item out->size > in->size
+This function will write the values in @code{out->size} and
+@code{out->dsize} from the same values of @code{in}. So if you want to use
+a pre-allocated space/dataset multiple times with varying input sizes, be
+sure to reset @code{out->size} before every call to this function.
+@end table
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_data_copy_string_to_number (char @code{*string})
+Read @code{string} into the smallest type that can store the value (see
+@ref{Numeric data types}). This function is just a wrapper for the
+@code{gal_type_string_to_number}, but will put the value into a
+single-element dataset.
+@end deftypefun
+
 
 @node Linked lists, Table input output, Library data container, Gnuastro library
 @subsection Linked lists (@file{linkedlist.h})

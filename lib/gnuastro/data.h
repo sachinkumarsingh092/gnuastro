@@ -287,45 +287,17 @@ gal_data_array_free(gal_data_t *dataarr, size_t num, int free_array);
 gal_data_t *
 gal_data_copy(gal_data_t *in);
 
+gal_data_t *
+gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype);
+
+gal_data_t *
+gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t newtype);
+
 void
 gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out);
 
 gal_data_t *
-gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype);
-
-void
-gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
-                                       uint8_t newtype);
-
-gal_data_t *
-gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type);
-
-void
-gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr);
-
-
-
-
-
-/*************************************************************
- **************              Write             ***************
- *************************************************************/
-char *
-gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space);
-
-
-
-
-
-/*************************************************************
- **************              Read              ***************
- *************************************************************/
-gal_data_t *
-gal_data_string_to_number(char *string);
-
-int
-gal_data_string_to_type(void **out, char *string, uint8_t type);
-
+gal_data_copy_string_to_number(char *string);
 
 
 __END_C_DECLS    /* From C++ preparations */

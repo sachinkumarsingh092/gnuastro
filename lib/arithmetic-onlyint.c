@@ -315,7 +315,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
           "and `q' to return to the command-line):\n\n"
           "    $ info gnuastro \"Gnuastro configure options\"\n",
           gal_arithmetic_operator_string(operator),
-          gal_type_to_string(lo->type, 1), gal_type_to_string(ro->type, 1));
+          gal_type_name(lo->type, 1), gal_type_name(ro->type, 1));
 
   /* Set the output type. */
   otype=gal_type_out(l->type, r->type);

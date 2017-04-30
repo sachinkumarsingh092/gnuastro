@@ -237,8 +237,8 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
       if(allcols[i].unit && strlen(allcols[i].unit)>uw)
         uw=strlen(allcols[i].unit);
       if(allcols[i].type
-         && strlen(gal_type_to_string(allcols[i].type, 1))>tw)
-        tw=strlen(gal_type_to_string(allcols[i].type, 1));
+         && strlen(gal_type_name(allcols[i].type, 1))>tw)
+        tw=strlen(gal_type_name(allcols[i].type, 1));
     }
 
   /* We want one column space between the columns for readability, not the
@@ -262,7 +262,7 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
       printf("%-*zu%-*s%-*s%-*s%s\n", Nw, i+1,
              nw, name ? name : GAL_BLANK_STRING ,
              uw, unit ? unit : GAL_BLANK_STRING ,
-             tw, gal_type_to_string(allcols[i].type, 1),
+             tw, gal_type_name(allcols[i].type, 1),
              comment ? comment : GAL_BLANK_STRING);
     }
 
@@ -460,7 +460,7 @@ gal_table_read_blank(gal_data_t *col, char *blank)
      `gal_data_string_to_type' will return 0. In that case, we need to
      initialize the necessary paramters to read this data structure
      correctly. */
-  if( !gal_data_string_to_type(&colarr, blank, col->type) )
+  if( !gal_type_from_string(&colarr, blank, col->type) )
     {
       errno=0;
       col->dsize=malloc(sizeof *col->dsize);

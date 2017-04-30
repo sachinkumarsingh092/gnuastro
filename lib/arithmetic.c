@@ -238,7 +238,7 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
             "after it so it is directly read into the proper precision "
             "floating point number (based on the number of non-zero "
             "decimals it has)", gal_arithmetic_operator_string(operator),
-            numstr, gal_type_to_string(in->type, 1));
+            numstr, gal_type_name(in->type, 1));
     }
 }
 
@@ -615,7 +615,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
   if(cond->type!=GAL_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "%s: the condition operand must be an "
           "`uint8' type, but the given condition operand has a "
-          "`%s' type", __func__, gal_type_to_string(cond->type, 1));
+          "`%s' type", __func__, gal_type_name(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
@@ -1325,7 +1325,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
         }
       else
         {
-          typestring=gal_type_to_string(in->type, 1);
+          typestring=gal_type_name(in->type, 1);
           error(EXIT_FAILURE, 0, "The given %s type data given to "
                 "binary operators is not compiled for native operation "
                 "and no larger types are compiled either.\n\nThe "

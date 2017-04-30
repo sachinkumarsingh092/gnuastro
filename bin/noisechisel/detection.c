@@ -449,7 +449,7 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
   /* Sanity check. */
   if(p->input->type!=GAL_TYPE_FLOAT32)
     error(EXIT_FAILURE, 0, "%s: the input dataset must be float32 type, "
-          "it is %s", __func__, gal_type_to_string(p->input->type, 1));
+          "it is %s", __func__, gal_type_name(p->input->type, 1));
   if(!isnan(GAL_BLANK_FLOAT32))
     error(EXIT_FAILURE, 0, "%s: only a NaN value is recognized for blank "
           "floating point data types, the blank value is defined to be %f",

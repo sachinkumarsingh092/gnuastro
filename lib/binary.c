@@ -383,7 +383,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
       if( lab->type!=GAL_TYPE_INT32 )
         error(EXIT_FAILURE, 0, "%s: the `out' dataset must have `int32' type"
               "but the array you have given is `%s' type", __func__,
-              gal_type_to_string(lab->type, 1));
+              gal_type_name(lab->type, 1));
 
       /* Reset all its values to zero. */
       memset(lab->array, 0, lab->size * gal_type_sizeof(lab->type));
@@ -487,7 +487,7 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
   if(adjacency->type != GAL_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "%s: input must have type `uint8'. However, the "
           "input dataset has type of `%s'", __func__,
-          gal_type_to_string(adjacency->type, 1));
+          gal_type_name(adjacency->type, 1));
 
   if(adjacency->ndim != 2)
     error(EXIT_FAILURE, 0, "%s: input must be 2-dimensional (a matrix)."
@@ -673,7 +673,7 @@ gal_binary_fill_holes(gal_data_t *input)
   if( input->type != GAL_TYPE_UINT8 )
     error(EXIT_FAILURE, 0, "%s: input must have `uint8' type, but its "
           "input dataset has `%s' type", __func__,
-          gal_type_to_string(input->type, 1));
+          gal_type_name(input->type, 1));
 
 
   /* Make the inverse image. */

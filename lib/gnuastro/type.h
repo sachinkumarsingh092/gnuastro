@@ -103,16 +103,16 @@ enum gal_types
 
 
 /*************************************************************
- **************           Functions            ***************
+ **************         General info           ***************
  *************************************************************/
 size_t
 gal_type_sizeof(uint8_t type);
 
 char *
-gal_type_to_string(uint8_t type, int long_name);
+gal_type_name(uint8_t type, int long_name);
 
 uint8_t
-gal_type_from_string(char *str);
+gal_type_from_name(char *str);
 
 void
 gal_type_min(uint8_t type, void *in);
@@ -121,13 +121,33 @@ void
 gal_type_max(uint8_t type, void *in);
 
 int
-gal_type_is_linked_list(uint8_t type);
+gal_type_is_list(uint8_t type);
 
 int
 gal_type_out(int first_type, int second_type);
 
+
+
+
+
+/*************************************************************
+ **************         To/from string         ***************
+ *************************************************************/
+
 char *
 gal_type_bit_string(void *in, size_t size);
+
+char *
+gal_type_to_string(void *ptr, uint8_t type, int quote_if_str_has_space);
+
+int
+gal_type_from_string(void **out, char *string, uint8_t type);
+
+void *
+gal_type_string_to_number(char *string, uint8_t *type);
+
+
+
 
 
 __END_C_DECLS    /* From C++ preparations */

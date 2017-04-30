@@ -60,7 +60,9 @@ statistics_pull_out_element(gal_data_t *input, size_t index)
   size_t dsize=1;
   gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
-  gal_data_copy_element_same_type(input, index, out->array);
+  memcpy( out->array,
+          gal_data_ptr_increment(input->array, index, input->type),
+          gal_type_sizeof(input->type) );
   return out;
 }
 
@@ -187,7 +189,7 @@ statistics_print_one_row(struct statisticsparams *p)
         }
 
       /* Print the number. */
-      toprint=gal_data_write_to_string(out->array, out->type, 0);
+      toprint=gal_type_to_string(out->array, out->type, 0);
       printf("%s ", toprint);
       free(toprint);
 
@@ -767,14 +769,14 @@ print_basics(struct statisticsparams *p)
 
   /* Minimum: */
   tmp=gal_statistics_minimum(p->input);
-  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  str=gal_type_to_string(tmp->array, tmp->type, 0);
   printf("  %-*s %s\n", namewidth, "Minimum:", str);
   gal_data_free(tmp);
   free(str);
 
   /* Maximum: */
   tmp=gal_statistics_maximum(p->input);
-  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  str=gal_type_to_string(tmp->array, tmp->type, 0);
   printf("  %-*s %s\n", namewidth, "Maximum:", str);
   gal_data_free(tmp);
   free(str);
@@ -801,7 +803,7 @@ print_basics(struct statisticsparams *p)
 
   /* Find and print the median:  */
   tmp=gal_statistics_median(p->input, 0);
-  str=gal_data_write_to_string(tmp->array, tmp->type, 0);
+  str=gal_type_to_string(tmp->array, tmp->type, 0);
   printf("  %-*s %s\n", namewidth, "Median:", str);
   gal_data_free(tmp);
   free(str);

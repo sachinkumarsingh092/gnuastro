@@ -548,7 +548,7 @@ data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
     gal_blank_write(to, type);
   else
     error(EXIT_FAILURE, 0, "%s: `%s' couldn't be parsed as `%s' type",
-          __func__, string, gal_type_to_string(type, 1));
+          __func__, string, gal_type_name(type, 1));
 }
 
 
@@ -594,7 +594,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         case GAL_TYPE_COMPLEX32:
         case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, "%s: copying to %s type not currently "
-                "supported", __func__, gal_type_to_string(to->type, 1));
+                "supported", __func__, gal_type_name(to->type, 1));
           break;
 
         default:
@@ -607,7 +607,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
         gal_checkset_allocate_copy(strarr[i], &outstrarr[i]);
       else
         {
-          if( gal_data_string_to_type(&ptr, strarr[i], to->type) )
+          if( gal_type_from_string(&ptr, strarr[i], to->type) )
             data_copy_to_string_not_parsed(strarr[i], ptr, to->type);
         }
     }
@@ -699,7 +699,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "%s: copying to %s type not currently supported",
-            __func__, gal_type_to_string(from->type, 1));
+            __func__, gal_type_name(from->type, 1));
       break;
 
     default:
@@ -791,7 +791,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     case GAL_TYPE_COMPLEX64:                                            \
       error(EXIT_FAILURE, 0, "%s: copying from %s type to a numeric "   \
             "(real) type not supported", "COPY_OT_SET",                 \
-            gal_type_to_string(in->type, 1));                           \
+            gal_type_name(in->type, 1));                                \
       break;                                                            \
                                                                         \
     default:                                                            \
@@ -816,16 +816,6 @@ gal_data_copy(gal_data_t *in)
 
 
 
-/* Copy the input dataset into the already allocated space of out. */
-void
-gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
-{
-  gal_data_copy_to_new_type_to_allocated(in, out, out->type);
-}
-
-
-
-
 
 /* Copy a given data structure to a new one with any type (for the
    output). The input can be a tile, in which case the output will be a
@@ -841,10 +831,44 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
                      0, in->minmapsize, in->name, in->unit, in->comment);
 
   /* Fill in the output array: */
-  gal_data_copy_to_new_type_to_allocated(in, out, newtype);
+  gal_data_copy_to_allocated(in, out);
 
   /* Return the created array */
   return out;
+}
+
+
+
+
+
+/* Copy the input data structure into a new type and free the allocated
+   space. */
+gal_data_t *
+gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t newtype)
+{
+  gal_data_t *out, *iblock=gal_tile_block(in);
+
+  /* In a general application, it might happen that the type is equal with
+     the type of the input and the input isn't a tile. Since the job of
+     this function is to free the input dataset, and the user just wants
+     one dataset after this function finishes, we can safely just return
+     the input. */
+  if(newtype==iblock->type && in==iblock)
+    return in;
+  else
+    {
+      out=gal_data_copy_to_new_type(in, newtype);
+      if(iblock==in)
+        gal_data_free(in);
+      else
+        fprintf(stderr, "#####\nWarning from "
+                "`gal_data_copy_to_new_type_free'\n#####\n The input "
+                "dataset is a tile, not a contiguous (fully allocated) "
+                "patch of memory. So it has not been freed. Please use "
+                "`gal_data_copy_to_new_type' to avoid this warning.\n"
+                "#####");
+      return out;
+    }
 }
 
 
@@ -867,8 +891,7 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
           pre-allocated space with varying input sizes, be sure to reset
           `out->size' before every call to this function. */
 void
-gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
-                                       uint8_t newtype)
+gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
 {
   gal_data_t *iblock=gal_tile_block(in);
 
@@ -911,7 +934,7 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
     case GAL_TYPE_COMPLEX32:
     case GAL_TYPE_COMPLEX64:
       error(EXIT_FAILURE, 0, "%s: copying to %s type not yet supported",
-            __func__, gal_type_to_string(out->type, 1));
+            __func__, gal_type_name(out->type, 1));
       break;
 
     default:
@@ -931,344 +954,17 @@ gal_data_copy_to_new_type_to_allocated(gal_data_t *in, gal_data_t *out,
 
 
 
-/* Copy the input data structure into a new type and free the allocated
-   space. */
+/* Just a wrapper around `gal_type_from_string_auto', to return a
+   `gal_data_t' dataset hosting the allocated number. */
 gal_data_t *
-gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t type)
-{
-  gal_data_t *out, *iblock=gal_tile_block(in);
-
-  /* In a general application, it might happen that the type is equal with
-     the type of the input and the input isn't a tile. Since the job of
-     this function is to free the input dataset, and the user just wants
-     one dataset after this function finishes, we can safely just return
-     the input. */
-  if(type==iblock->type && in==iblock)
-    return in;
-  else
-    {
-      out=gal_data_copy_to_new_type(in, type);
-      if(iblock==in)
-        gal_data_free(in);
-      else
-        fprintf(stderr, "#####\nWarning from "
-                "`gal_data_copy_to_new_type_free'\n#####\n The input "
-                "dataset is a tile, not a contiguous (fully allocated) "
-                "patch of memory. So it has not been freed. Please use "
-                "`gal_data_copy_to_new_type' to avoid this warning.\n"
-                "#####");
-      return out;
-    }
-}
-
-
-
-
-
-/* Copy/read the element at `index' of the array in `data' into the space
-   pointed to by `ptr'. */
-#define COPY_ELEM(IT) {                                                 \
-    IT *restrict o=ptr, *restrict a=input->array; *o = a[index];        \
-}
-void
-gal_data_copy_element_same_type(gal_data_t *input, size_t index, void *ptr)
-{
-  /* Set the value. */
-  switch(input->type)
-    {
-    case GAL_TYPE_UINT8:     COPY_ELEM( uint8_t  );    break;
-    case GAL_TYPE_INT8:      COPY_ELEM( int8_t   );    break;
-    case GAL_TYPE_UINT16:    COPY_ELEM( uint16_t );    break;
-    case GAL_TYPE_INT16:     COPY_ELEM( int16_t  );    break;
-    case GAL_TYPE_UINT32:    COPY_ELEM( uint32_t );    break;
-    case GAL_TYPE_INT32:     COPY_ELEM( int32_t  );    break;
-    case GAL_TYPE_UINT64:    COPY_ELEM( uint64_t );    break;
-    case GAL_TYPE_INT64:     COPY_ELEM( int64_t  );    break;
-    case GAL_TYPE_FLOAT32:   COPY_ELEM( float    );    break;
-    case GAL_TYPE_FLOAT64:   COPY_ELEM( double   );    break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
-            input->type);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- **************              Write             ***************
- *************************************************************/
-#define WRITE_TO_STRING(CTYPE, FMT) asprintf(&str, FMT, *(CTYPE *)ptr);
-
-char *
-gal_data_write_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
-{
-  char *c, *str=NULL;
-  switch(type)
-    {
-    /* For a string we might need to make sure it has no white space
-       characters, if it does, it can be printed it within quotation
-       signs. */
-    case GAL_TYPE_STRING:
-      if(quote_if_str_has_space)
-        {
-          c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
-          if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
-          else         asprintf(&str, "\"%s\" ", *(char **)ptr);
-        }
-      else
-        asprintf(&str, "%s", *(char **)ptr);
-      break;
-
-    case GAL_TYPE_UINT8:   WRITE_TO_STRING( uint8_t,  "%"PRIu8  );  break;
-    case GAL_TYPE_INT8:    WRITE_TO_STRING( int8_t,   "%"PRId8  );  break;
-    case GAL_TYPE_UINT16:  WRITE_TO_STRING( uint16_t, "%"PRIu16 );  break;
-    case GAL_TYPE_INT16:   WRITE_TO_STRING( int16_t,  "%"PRId16 );  break;
-    case GAL_TYPE_UINT32:  WRITE_TO_STRING( uint32_t, "%"PRIu32 );  break;
-    case GAL_TYPE_INT32:   WRITE_TO_STRING( int32_t,  "%"PRId32 );  break;
-    case GAL_TYPE_UINT64:  WRITE_TO_STRING( uint64_t, "%"PRIu64 );  break;
-    case GAL_TYPE_INT64:   WRITE_TO_STRING( int64_t,  "%"PRId64 );  break;
-    case GAL_TYPE_FLOAT32: WRITE_TO_STRING( float,    "%.6g"    );  break;
-    case GAL_TYPE_FLOAT64: WRITE_TO_STRING( double,   "%.10g"   );  break;
-
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
-    }
-  return str;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- **************              Read              ***************
- *************************************************************/
-/* If the data structure was correctly created (the string was a number),
-   then return its pointer. Otherwise, return NULL. */
-gal_data_t *
-gal_data_string_to_number(char *string)
+gal_data_copy_string_to_number(char *string)
 {
   void *ptr;
-  gal_data_t *out;
-  int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
-  char *tailptr, *cp;
-  size_t dsize[1]={1};
-  uint8_t type, forcedfloat=0;
-
-  /* Define initial spaces to keep the value. */
-  uint8_t   u8;   int8_t   i8;      uint16_t u16;   int16_t i16;
-  uint32_t u32;   int32_t i32;      uint64_t u64;   int64_t i64;
-  float      f;   double    d;
-
-  /* First see if the number is a double (the most generic). */
-  d=strtod(string, &tailptr);
-  if(*tailptr=='f') { if(tailptr[1]=='\0') forcedfloat=1; else return NULL; }
-  else if (*tailptr!='\0')  return NULL;
-
-  /* See if the number is actually an integer: */
-  if( forcedfloat==0 && ceil(d) == d )
-    {
-      /* If the number is negative, put it in the signed types (based on
-         its value). If its zero or positive, then put it in the unsigned
-         types. */
-      if( d < 0 )
-        {
-          if     (d>INT8_MIN)    {i8=d;  ptr=&i8;  type=GAL_TYPE_INT8;}
-          else if(d>INT16_MIN)   {i16=d; ptr=&i16; type=GAL_TYPE_INT16;}
-          else if(d>INT32_MIN)   {i32=d; ptr=&i32; type=GAL_TYPE_INT32;}
-          else                   {i64=d; ptr=&i64; type=GAL_TYPE_INT64;}
-        }
-      else
-        {
-          if     (d<=UINT8_MAX)  {u8=d;  ptr=&u8;  type=GAL_TYPE_UINT8;}
-          else if(d<=UINT16_MAX) {u16=d; ptr=&u16; type=GAL_TYPE_UINT16;}
-          else if(d<=UINT32_MAX) {u32=d; ptr=&u32; type=GAL_TYPE_UINT32;}
-          else                   {u64=d; ptr=&u64; type=GAL_TYPE_UINT64;}
-        }
-    }
-  else
-    {
-      /* The maximum number of decimal digits to store in float or double
-         precision floating point are:
-
-         float:  23 mantissa bits + 1 hidden bit: log(224)÷log(10) = 7.22
-         double: 52 mantissa bits + 1 hidden bit: log(253)÷log(10) = 15.95
-
-         FLT_DIG (at least 6 in ISO C) keeps the number of digits (not zero
-         before or after) that can be represented by a single precision
-         floating point number. If there are more digits, then we should
-         store the value as a double precision.
-
-         Note that the number can have non-digit characters that we don't
-         want, like: `.', `e', `E', `,'. */
-      for(cp=string;*cp!='\0';++cp)
-        if(isdigit(*cp) && *cp!='0' && fnz==-1)
-          fnz=cp-string;
-
-      /* In the previous loop, we went to the end of the string, so `cp'
-         now points to its `\0'. We just have to iterate backwards! */
-      for(;cp!=string;--cp)
-        if(isdigit(*cp) && *cp!='0')
-          {
-            lnz=cp-string;
-            break;
-          }
-
-      /* Calculate the number of decimal digits and decide if it the number
-         should be a float or a double. */
-      if( lnz-fnz < FLT_DIG || ( d<FLT_MAX && d>FLT_MIN ) )
-        { f=d; ptr=&f; type=GAL_TYPE_FLOAT32; }
-      else
-        {      ptr=&d; type=GAL_TYPE_FLOAT64; }
-    }
-
-  /* Allocate a one-element dataset, then copy the number into it. */
-  out=gal_data_alloc(NULL, type, 1, dsize, NULL, 0, -1, NULL, NULL, NULL);
-  memcpy(out->array, ptr, gal_type_sizeof(type));
-  return out;
-}
-
-
-
-
-
-/* Read a string as a given data type and put a the pointer to it in
-   *out. When the input `*out!=NULL', then it is assumed to be allocated
-   and the value will be simply put there. If `*out==NULL', then space will
-   be allocated for the given type and the string's value (in the given
-   type) will be stored there.
-
-   Note that when we are dealing with a string type, `*out' should be
-   interpretted as `char **' (one element in an array of pointers to
-   different strings). In other words, `out' should be `char ***'.
-
-   This function can be used to fill in arrays of numbers from strings (in
-   an already allocated data structure), or add nodes to a linked list. For
-   an array, you have to pass the pointer to the `i'th element where you
-   want the value to be stored, for example &(array[i]).
-
-   If parsing was successful, it will return a 0. If there was a problem,
-   it will return 1.  */
-int
-gal_data_string_to_type(void **out, char *string, uint8_t type)
-{
-  long l;
-  double d;
-  void *value;
-  char *tailptr;
-  int status=0, allocated=0;
-
-  /* If the output is NULL, then allocate the necessary space if we are not
-     dealing with a linked list. In a linked list, a NULL value is
-     meaningful (it is the end of the list). */
-  if( *out==NULL && !gal_type_is_linked_list(type) )
-    {
-      allocated=1;
-      *out=gal_data_malloc_array(type, 1);
-    }
-  value=*out;
-
-  /* Read the string depending on the type. */
-  switch(type)
-    {
-
-    /* Linked lists, currently only string linked lists. */
-    case GAL_TYPE_STRLL:
-      gal_list_str_add( (struct gal_list_str_t **)out, string, 1);
-      break;
-
-    /* String, just allocate and copy the string and keep its pointer in
-       the place `*out' points to (for strings, `*out' is `char **'). */
-    case GAL_TYPE_STRING:
-      gal_checkset_allocate_copy(string, value);
-      break;
-
-    /* Floating point: Read it as a double or long, then put it in the
-       array. When the conversion can't be done (the string isn't a number
-       for example), then just assume no blank value was given. */
-    case GAL_TYPE_FLOAT32:
-    case GAL_TYPE_FLOAT64:
-      d=strtod(string, &tailptr);
-      if(*tailptr!='\0')
-        status=1;
-      else
-        {
-          if(type==GAL_TYPE_FLOAT32) *(float *) value=d;
-          else                            *(double *) value=d;
-        }
-      break;
-
-    /* Integers. */
-    default:
-      l=strtol(string, &tailptr, 0);
-      if(*tailptr!='\0')
-        status=1;
-      else
-        switch(type)
-          {
-          /* The signed values can easily be put in. */
-          case GAL_TYPE_INT8:         *(int8_t *)    value = l; break;
-          case GAL_TYPE_INT16:        *(int16_t *)   value = l; break;
-          case GAL_TYPE_INT32:        *(int32_t *)   value = l; break;
-          case GAL_TYPE_INT64:        *(int64_t *)   value = l; break;
-
-          /* For the unsigned types, the value has to be positive, so if
-             the input was negative, then just return a status of one and
-             don't store the value. */
-          default:
-            if(l<0)
-              status=1;
-            else
-              switch(type)
-                {
-                case GAL_TYPE_UINT8:  *(uint8_t *)   value=l;   break;
-                case GAL_TYPE_UINT16: *(uint16_t *)  value=l;   break;
-                case GAL_TYPE_UINT32: *(uint32_t *)  value=l;   break;
-                case GAL_TYPE_UINT64: *(uint64_t *)  value=l;   break;
-                default:
-                  error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-                        __func__, type);
-                }
-          }
-    }
-
-  /* If reading was unsuccessful, then free the space if it was allocated,
-     then return the status, don't touch the pointer. */
-  if(status && allocated)
-    {
-      free(*out);
-      *out=NULL;
-    }
-  return status;
+  uint8_t type;
+  size_t dsize=1;
+  ptr=gal_type_string_to_number(string, &type);
+  return ( ptr
+           ? gal_data_alloc(ptr, type, 1, &dsize, NULL, 0, -1,
+                            NULL, NULL, NULL)
+           : NULL );
 }

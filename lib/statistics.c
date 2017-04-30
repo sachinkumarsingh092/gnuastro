@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <float.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -320,8 +321,9 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
   /* Find the index of the quantile. */
   index=gal_statistics_quantile_index(nbs->size, quantile);
 
-  /* Read the value at this index into the output. */
-  gal_data_copy_element_same_type(nbs, index, out->array);
+  /* Write the value at this index into the output. */
+  memcpy(out->array, gal_data_ptr_increment(nbs->array, index, nbs->type),
+         gal_type_sizeof(nbs->type));
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
@@ -828,8 +830,8 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   size_t dsize=4, mdsize=1;
   struct statistics_mode_params p;
   int type=gal_tile_block(input)->type;
-  gal_data_t *mode=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
-                                  NULL, NULL, NULL);
+  gal_data_t *tmptype=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
+                                     NULL, NULL, NULL);
   gal_data_t *b_val=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
                                    NULL, NULL, NULL);
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
@@ -838,8 +840,9 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
   /* A small sanity check. */
   if(mirrordist<=0)
-    error(EXIT_FAILURE, 0, "%s: %f not acceptable as a value to `mirrordist'. "
-          "Only positive values can be given to it", __func__, mirrordist);
+    error(EXIT_FAILURE, 0, "%s: %f not acceptable as a value to "
+          "`mirrordist'. Only positive values can be given to it",
+          __func__, mirrordist);
 
 
   /* Make sure the input doesn't have blank values and is sorted.  */
@@ -879,15 +882,21 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
 
   /* Do the golden-section search iteration, read the mode value from the
-     input array and save it as the first element of the output dataset's
-     array, then free the `mode' structure. */
+     input array and save it in the `tmptype' data structure that has the
+     same type as the input. */
   modeindex = mode_golden_section(&p);
-  gal_data_copy_element_same_type(p.data, modeindex, mode->array);
-  mode=gal_data_copy_to_new_type_free(mode, GAL_TYPE_FLOAT64);
-  gal_data_copy_element_same_type(mode, 0, &oa[0]);
+  memcpy( tmptype->array,
+          gal_data_ptr_increment(p.data->array, modeindex, p.data->type),
+          gal_type_sizeof(p.data->type) );
 
 
-  /* Put in the rest of the values of the output structure. */
+  /* Convert the mode (which is in the same type as the input at this
+     stage) to float64. */
+  tmptype=gal_data_copy_to_new_type_free(tmptype, GAL_TYPE_FLOAT64);
+
+
+  /* Put the first three values into the output structure. */
+  oa[0] = *((double *)(tmptype->array));
   oa[1] = ((double)modeindex) / ((double)(p.data->size-1));
   oa[2] = mode_symmetricity(&p, modeindex, b_val->array);
 
@@ -897,7 +906,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   if(oa[2]>GAL_STATISTICS_MODE_GOOD_SYM)
     {
       b_val=gal_data_copy_to_new_type_free(b_val, GAL_TYPE_FLOAT64);
-      gal_data_copy_element_same_type(b_val, 0, &oa[3]);
+      oa[3] = *((double *)(b_val->array));
     }
   else oa[0]=oa[1]=oa[2]=oa[3]=NAN;
 
@@ -909,8 +918,8 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
   /* Clean up (if necessary), then return the output */
   if(p.data!=input) gal_data_free(p.data);
+  gal_data_free(tmptype);
   gal_data_free(b_val);
-  gal_data_free(mode);
   return out;
 }
 
