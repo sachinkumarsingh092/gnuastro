@@ -549,7 +549,7 @@ ui_prepare_wcs(struct mkprofparams *p)
   /* Initialize the structure (allocate all its internal arrays). */
   wcs->flag=-1;
   if( (status=wcsini(1, 2, wcs)) )
-    error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
+    error(EXIT_FAILURE, 0, "wcsini error %d: %s",
           status, wcs_errmsg[status]);
 
   /* Correct the CRPIX values based on oversampling and shifting. */
@@ -557,15 +557,16 @@ ui_prepare_wcs(struct mkprofparams *p)
   p->crpix[1] = p->crpix[1]*os + p->shift[1] - os/2;
 
   /* Fill in all the important WCS structure parameters. */
-  wcs->equinox=2000.0f;
-  wcs->crpix[0]=p->crpix[0];
-  wcs->crpix[1]=p->crpix[1];
-  wcs->crval[0]=p->crval[0];
-  wcs->crval[1]=p->crval[1];
-  wcs->pc[0]=-1.0f;
-  wcs->pc[3]=1.0f;
-  wcs->pc[1]=wcs->pc[2]=0.0f;
-  wcs->cdelt[0]=wcs->cdelt[1]=p->resolution/3600;
+  wcs->altlin   = 0x1;
+  wcs->equinox  = 2000.0f;
+  wcs->crpix[0] = p->crpix[0];
+  wcs->crpix[1] = p->crpix[1];
+  wcs->crval[0] = p->crval[0];
+  wcs->crval[1] = p->crval[1];
+  wcs->pc[0]    = -1.0f;
+  wcs->pc[3]    = 1.0f;
+  wcs->pc[1]    = wcs->pc[2]=0.0f;
+  wcs->cdelt[0] = wcs->cdelt[1]=p->resolution/3600;
   strcpy(wcs->cunit[0], "deg");
   strcpy(wcs->cunit[1], "deg");
   strcpy(wcs->ctype[0], "RA---TAN");

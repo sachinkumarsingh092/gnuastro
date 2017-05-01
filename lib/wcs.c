@@ -328,9 +328,8 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
   double *ps;
   size_t i, j;
 
-  /* The correction is only needed when the matrix is internally stored
-     as PCi_j. */
-  if(wcs->altlin & 1)
+  /* The correction is only needed when the PC matrix is filled. */
+  if(wcs->pc)
     {
       /* Get the pixel scale. */
       ps=gal_wcs_pixel_scale_deg(wcs);
