@@ -36,6 +36,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
+
+
+
 
 
 
@@ -43,182 +47,42 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /************************************************************************/
-/***************              Error messages              ***************/
+/***************         Information about a table        ***************/
 /************************************************************************/
-void
-gal_table_error_col_selection(char *filename, char *hdu, char *errorstring)
+/* Store the information of each column in a table (either as a text file
+   or as a FITS table) into an array of data structures with `numcols'
+   structures (one data structure for each column). The number of rows is
+   stored in `numrows'. The type of the table (e.g., ascii text file, or
+   FITS binary or ASCII table) will be put in `tableformat' (macros defined
+   in `gnuastro/table.h'.
+
+   Note that other than the character strings (column name, units and
+   comments), nothing in the data structure(s) will be allocated by this
+   function for the actual data (e.g., the `array' or `dsize' elements). */
+gal_data_t *
+gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
+               int *tableformat)
 {
-  char *c, *name, *command;
-
-  /* Set the proper pointers. */
+  /* Get the table format and size (number of columns and rows). */
   if(gal_fits_name_is_fits(filename))
+    return gal_fits_tab_info(filename, hdu, numcols, numrows, tableformat);
+  else
     {
-      asprintf(&name, "%s (hdu: %s)", filename, hdu);
-      c=hdu; while(*c!='\0') if(isspace(*c++)) break;
-      asprintf(&command, *c=='\0' ? "%s --hdu=%s" : "%s --hdu=\"%s\"",
-               filename, hdu);
+      *tableformat=GAL_TABLE_FORMAT_TXT;
+      return gal_txt_table_info(filename, numcols, numrows);
     }
-  else command=name=filename;
 
-  /* Abort with with the proper error. */
-  error(EXIT_FAILURE, 0, "%s: %s\n\nFor more information on selecting "
-        "columns in Gnuastro, please run the following command (press "
-        "`SPACE' to go down and `q' to return to the command-line):\n\n"
-        "    $ info gnuastro \"Selecting table columns\"\n\n"
-        "To define a better column selection criteria, you can see "
-        "the list of column meta-data in this table, with the following "
-        "command:\n\n"
-        "    $ asttable %s --info\n", name, errorstring, command);
+  /* Abort with an error if we get to this point. */
+  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we can fix "
+        "the problem. Control must not have reached the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return NULL;
 }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/************************************************************************/
-/***************                 Formats                  ***************/
-/************************************************************************/
-/* Return the type of desired table based on a standard string. */
-uint8_t
-gal_table_string_to_format(char *string)
-{
-  if(string)                    /* Its not NULL. */
-    {
-      if(!strcmp(string, "txt"))              return GAL_TABLE_FORMAT_TXT;
-      else if(!strcmp(string,"fits-ascii"))   return GAL_TABLE_FORMAT_AFITS;
-      else if(!strcmp(string, "fits-binary")) return GAL_TABLE_FORMAT_BFITS;
-      else                                    return GAL_TABLE_FORMAT_INVALID;
-    }
-  else                                        return GAL_TABLE_FORMAT_INVALID;
-}
-
-
-
-
-
-char *
-gal_table_format_as_string(uint8_t format)
-{
-  switch(format)
-    {
-    case GAL_TABLE_FORMAT_TXT:    return "txt";
-    case GAL_TABLE_FORMAT_AFITS:  return "fits-ascii";
-    case GAL_TABLE_FORMAT_BFITS:  return "fits-binary";
-    default:
-      error(EXIT_FAILURE, 0, "%s: code %d not recognized", __func__, format);
-      return NULL;
-    }
-}
-
-
-
-
-
-
-/* In programs, the `searchin' variable is much more easier to format in as
-   a description than an integer (which is what `gal_table_read_cols'
-   needs). This function will check the string value and give the
-   corresponding integer value.*/
-uint8_t
-gal_table_string_to_searchin(char *string)
-{
-  if(string)                    /* Its not NULL. */
-    {
-      if(!strcmp(string, "name"))          return GAL_TABLE_SEARCH_NAME;
-      else if(!strcmp(string, "unit"))     return GAL_TABLE_SEARCH_UNIT;
-      else if(!strcmp(string, "comment"))  return GAL_TABLE_SEARCH_COMMENT;
-      else                                 return GAL_TABLE_SEARCH_INVALID;
-    }
-  else                                     return GAL_TABLE_SEARCH_INVALID;
-}
-
-
-
-
-
-char *
-gal_table_searchin_as_string(uint8_t searchin)
-{
-  switch(searchin)
-    {
-    case GAL_TABLE_SEARCH_NAME:    return "name";
-    case GAL_TABLE_SEARCH_UNIT:    return "unit";
-    case GAL_TABLE_SEARCH_COMMENT: return "comment";
-    default:
-      error(EXIT_FAILURE, 0, "%s: code %d not recognized as a valid search "
-            "field", __func__, searchin);
-      return NULL;
-    }
-}
-
-
-
-
-
-/* For programs that output tables, the `--tableformat' option will be used
-   to specify what format the output table should be in. When the output
-   file is a FITS file, there are multiple formats, so to simplify the
-   coding in each program, this function will do a sanity check on the
-   value given to the `--tableformat' parameter. */
-void
-gal_table_check_fits_format(char *filename, int tableformat)
-{
-  if( filename && gal_fits_name_is_fits(filename) )
-    {
-      /* When `--tableformat' was not given. */
-      if(tableformat==GAL_TABLE_FORMAT_INVALID)
-        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but the "
-              "desired format of the FITS table has not been specified with "
-              "the `--tableformat' option. For FITS tables, this option can "
-              "take two values: `fits-ascii', or `fits-binary'", filename);
-
-      /* When `--tableformat' didn't have the correct value. */
-      if( tableformat != GAL_TABLE_FORMAT_AFITS
-          && tableformat != GAL_TABLE_FORMAT_BFITS )
-        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but "
-              "is not a recognized FITS table format. For FITS tables, "
-              "`--tableformat' can take two values: `fits-ascii', or "
-              "`fits-binary'", filename);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/************************************************************************/
-/***************          Printing information            ***************/
-/************************************************************************/
 void
 gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
 {
@@ -274,259 +138,6 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
 
 
 
-/* Fill in/adjust the basic information necessary to print a column. This
-   information can be used for printing a plain text file or for FITS ASCII
-   tables. The `fmt' and `lng' should point to pre-allocated arrays. The
-   best way is: `char fmt[2], lng[3];' in the same function calling this.
-
-   The width and precision, which are also necessary for printing, are
-   updated in the data structure's `disp_width' and `disp_precision'
-   elements.
-*/
-void
-gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
-                         char *lng)
-{
-  size_t j;
-  char **strarr;
-  int maxstrlen, width=0, precision=0;
-
-
-  /* First do a sanity check, so we can safly stop checking in the steps
-     below. */
-  switch(tableformat)
-    {
-    case GAL_TABLE_FORMAT_TXT:
-    case GAL_TABLE_FORMAT_AFITS:
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: tableformat code %d not recognized",
-            __func__, tableformat);
-    }
-
-
-
-  /* Set the formats and widths based on the type of the column. Initialize
-     the characters and blank pointer. The long prefix is not necessary for
-     most types, so just initialize it once up here.*/
-  fmt[0]=fmt[1]=lng[0]=lng[1]=lng[2]='\0';
-  switch(col->type)
-    {
-    case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "%s: printing of bit types is currently "
-            "not supported", __func__);
-      break;
-
-
-
-
-    case GAL_TYPE_STRING:
-
-      /* Set the basic information. */
-      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 's' : 'A';
-
-      /* Go through all the strings in the column and find the maximum
-         length to use as printing. If the user asked for a larger width
-         (through the data structure's disp_width element), then set
-         that. */
-      maxstrlen=0;
-      strarr=col->array;
-      for(j=0;j<col->size;++j)
-        maxstrlen = ( (int)strlen(strarr[j]) > maxstrlen
-                      ? (int)strlen(strarr[j]) : maxstrlen );
-      width = col->disp_width>maxstrlen ? col->disp_width : maxstrlen;
-      break;
-
-
-
-
-    case GAL_TYPE_UINT8:
-    case GAL_TYPE_UINT16:
-    case GAL_TYPE_UINT32:
-    case GAL_TYPE_UINT64:
-
-      /* For the FITS ASCII table, there is only one format for all
-         integers.  */
-      if(tableformat==GAL_TABLE_FORMAT_AFITS)
-        fmt[0]='I';
-      else
-        switch(col->disp_fmt)
-          {
-          case GAL_TABLE_DISPLAY_FMT_UDECIMAL: fmt[0]='u'; break;
-          case GAL_TABLE_DISPLAY_FMT_OCTAL:    fmt[0]='o'; break;
-          case GAL_TABLE_DISPLAY_FMT_HEX:      fmt[0]='X'; break;
-          default:                             fmt[0]='u';
-          }
-
-      /* If we have a long type, then make changes. */
-      if(col->type==GAL_TYPE_UINT64)
-        {
-          lng[0]='l';
-          width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
-                  : col->disp_width );
-        }
-      else width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
-                    : col->disp_width );
-      precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                  : col->disp_precision );
-      break;
-
-
-
-
-    case GAL_TYPE_INT8:
-    case GAL_TYPE_INT16:
-    case GAL_TYPE_INT32:
-      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
-      width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
-                : col->disp_width );
-      precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                    : col->disp_precision );
-      break;
-
-
-
-
-    case GAL_TYPE_INT64:
-      lng[0] = 'l';
-      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
-      width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
-              : col->disp_width );
-      precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                  : col->disp_precision );
-      break;
-
-
-
-    /* We need a default value (because in most cases, it won't be set. */
-    case GAL_TYPE_FLOAT32:
-    case GAL_TYPE_FLOAT64:
-      switch(col->disp_fmt)
-        {
-        case GAL_TABLE_DISPLAY_FMT_FLOAT:
-          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'f' : 'F'; break;
-        case GAL_TABLE_DISPLAY_FMT_EXP:
-          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'e' : 'E'; break;
-        case GAL_TABLE_DISPLAY_FMT_GENERAL:
-          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
-        default:
-          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
-        }
-      width = ( col->disp_width<=0
-                ? ( col->type==GAL_TYPE_FLOAT32
-                    ? GAL_TABLE_DEF_FLT_WIDTH
-                    : GAL_TABLE_DEF_DBL_WIDTH )
-                : col->disp_width );
-      precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
-                    : col->disp_precision );
-      break;
-
-
-
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, col->type);
-    }
-
-  /* Write the final width and precision into the column's data structure. */
-  col->disp_width=width;
-  col->disp_precision=precision;
-}
-
-
-
-
-
-/* Use the input `blank' string and the input column to put the blank value
-   in the column's array. This function should later be generalized into a
-   function to read a string into a given data type (see
-   `gal_data_string_to_array_elem'). It is only here temporarily. */
-void
-gal_table_read_blank(gal_data_t *col, char *blank)
-{
-  void *colarr=col->array;
-
-  /* If there is nothing to use as blank, then don't continue, note that
-     the column data structure was initialized to mean that there is no
-     blank value. */
-  if(blank==NULL) return;
-
-  /* Just for a sanity check, the ndim and array elements should be zero. */
-  if(col->ndim || col->array)
-    error(EXIT_FAILURE, 0, "%s: a bug! The number of dimensions, and the "
-          "`array' element of a column must be zero", __func__);
-
-  /* Read the blank value as the given type. If successful, then
-     `gal_data_string_to_type' will return 0. In that case, we need to
-     initialize the necessary paramters to read this data structure
-     correctly. */
-  if( !gal_type_from_string(&colarr, blank, col->type) )
-    {
-      errno=0;
-      col->dsize=malloc(sizeof *col->dsize);
-      if(col->dsize==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `col->dsize'",
-              __func__, sizeof *col->dsize);
-      col->dsize[0]=col->ndim=col->size=1;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/************************************************************************/
-/***************         Information about a table        ***************/
-/************************************************************************/
-/* Store the information of each column in a table (either as a text file
-   or as a FITS table) into an array of data structures with `numcols'
-   structures (one data structure for each column). The number of rows is
-   stored as the `size' element of each data structure. The type of the
-   table (e.g., ascii text file, or FITS binary or ASCII table) will be put
-   in `tableformat' (macros defined in `gnuastro/table.h'.
-
-   Note that other than the character strings (column name, units and
-   comments), nothing in the data structure(s) will be allocated by this
-   function for the actual data (e.g., the `array' or `dsize' elements). */
-gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
-               int *tableformat)
-{
-  /* Get the table format and size (number of columns and rows). */
-  if(gal_fits_name_is_fits(filename))
-    return gal_fits_tab_info(filename, hdu, numcols, numrows, tableformat);
-  else
-    {
-      *tableformat=GAL_TABLE_FORMAT_TXT;
-      return gal_txt_table_info(filename, numcols, numrows);
-    }
-
-  /* Abort with an error if we get to this point. */
-  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we can fix "
-        "the problem. Control must not have reached the end of this function",
-        __func__, PACKAGE_BUGREPORT);
-  return NULL;
-}
-
-
-
-
-
 
 
 
@@ -549,7 +160,7 @@ gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
 /* Function to print regular expression error. This is taken from the GNU C
    library manual, with small modifications to fit out style, */
 static void
-regexerrorexit(int errcode, regex_t *compiled, char *input)
+table_regexerrorexit(int errcode, regex_t *compiled, char *input)
 {
   char *regexerrbuf;
   size_t length = regerror (errcode, compiled, NULL, 0);
@@ -652,7 +263,7 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                                           ? RE_SYNTAX_AWK | REG_ICASE
                                           : RE_SYNTAX_AWK ) );
           if(regreturn)
-            regexerrorexit(regreturn, regex, str);
+            table_regexerrorexit(regreturn, regex, str);
 
 
           /* With the regex structure "compile"d you can go through all the
@@ -746,8 +357,8 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
       if(nummatch==0)
         {
           asprintf(&errorstring, "`%s' didn't match any of the column %ss.",
-                   tmp->v, gal_table_searchin_as_string(searchin));
-          gal_table_error_col_selection(filename, hdu, errorstring);
+                   tmp->v, gal_tableintern_searchin_as_string(searchin));
+          gal_tableintern_error_col_selection(filename, hdu, errorstring);
         }
     }
 
@@ -760,13 +371,13 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
 
 
 
-/* Read the specified columns in a text file (named `filename') into a
-   linked list of data structures. If the file is FITS, then `hdu' will
-   also be used, otherwise, `hdu' is ignored. The information to search for
-   columns should be specified by the `cols' linked list as string values
-   in each node of the list, the strings in each node can be a number, an
-   exact match to a column name, or a regular expression (in GNU AWK
-   format) enclosed in `/ /'. The `searchin' value comes from the
+/* Read the specified columns in a table (named `filename') into a linked
+   list of data structures. If the file is FITS, then `hdu' will also be
+   used, otherwise, `hdu' is ignored. The information to search for columns
+   should be specified by the `cols' linked list as string values in each
+   node of the list, the strings in each node can be a number, an exact
+   match to a column name, or a regular expression (in GNU AWK format)
+   enclosed in `/ /'. The `searchin' value comes from the
    `gal_table_where_to_search' enumerator and has to be one of its given
    types. If `cols' is NULL, then this function will read the full table.
 
@@ -886,7 +497,8 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
   /* Program name: this will be the top of the list (first line). We will
      need to set the allocation flag for this one, because program_string
      is usually statically allocated.*/
-  gal_list_str_add(comments, program_string, 1);
+  if(program_string)
+    gal_list_str_add(comments, program_string, 1);
 }
 
 

@@ -56,15 +56,39 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* `printf' default formattings. Note that the string type shouldn't have
    any precision and for the width,  */
-#define GAL_TABLE_DEF_STR_WIDTH       6
-#define GAL_TABLE_DEF_INT_WIDTH       6
-#define GAL_TABLE_DEF_LINT_WIDTH      10
-#define GAL_TABLE_DEF_FLT_WIDTH       13
-#define GAL_TABLE_DEF_DBL_WIDTH       18
+#define GAL_TABLE_DEF_WIDTH_STR       6
+#define GAL_TABLE_DEF_WIDTH_INT       6
+#define GAL_TABLE_DEF_WIDTH_LINT      10
+#define GAL_TABLE_DEF_WIDTH_FLT       13
+#define GAL_TABLE_DEF_WIDTH_DBL       18
 
-#define GAL_TABLE_DEF_INT_PRECISION   0
-#define GAL_TABLE_DEF_FLT_PRECISION   6
-#define GAL_TABLE_DEF_DBL_PRECISION   14
+#define GAL_TABLE_DEF_PRECISION_INT   0
+#define GAL_TABLE_DEF_PRECISION_FLT   6
+#define GAL_TABLE_DEF_PRECISION_DBL   14
+
+
+
+
+
+/* Particular display formats for different types: Integers or floating
+   point numbers can be printed in various display formats. The values here
+   are stored in `gal_data_t' when necessary to help in printing of the
+   data.*/
+enum gal_table_diplay_formats
+{
+  GAL_TABLE_DISPLAY_FMT_INVALID,        /* Invalid (=0 by C standard). */
+
+  GAL_TABLE_DISPLAY_FMT_STRING,         /* String/Character.           */
+  GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: signed decimal.   */
+  GAL_TABLE_DISPLAY_FMT_UDECIMAL,       /* Integers: unsigned decimal. */
+  GAL_TABLE_DISPLAY_FMT_OCTAL,          /* Integers: octal.            */
+  GAL_TABLE_DISPLAY_FMT_HEX,            /* Integers: hexadecimal.      */
+  GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
+  GAL_TABLE_DISPLAY_FMT_EXP,            /* Floats: as exponential.     */
+  GAL_TABLE_DISPLAY_FMT_GENERAL,        /* Floats: general (%g in C).  */
+};
+
+
 
 
 
@@ -97,81 +121,15 @@ enum gal_table_where_to_search
 
 
 
-
-
-/* Particular display formats for different types: Integers or floating
-   point numbers can be printed in various display formats. The values here
-   are stored in `gal_data_t' when necessary to help in printing of the
-   data.*/
-enum gal_table_diplay_formats
-{
-  GAL_TABLE_DISPLAY_FMT_INVALID,        /* Invalid (=0 by C standard). */
-
-  GAL_TABLE_DISPLAY_FMT_STRING,         /* String/Character.           */
-  GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: signed decimal.   */
-  GAL_TABLE_DISPLAY_FMT_UDECIMAL,       /* Integers: unsigned decimal. */
-  GAL_TABLE_DISPLAY_FMT_OCTAL,          /* Integers: octal.            */
-  GAL_TABLE_DISPLAY_FMT_HEX,            /* Integers: hexadecimal.      */
-  GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
-  GAL_TABLE_DISPLAY_FMT_EXP,            /* Floats: as exponential.     */
-  GAL_TABLE_DISPLAY_FMT_GENERAL,        /* Floats: general (%g in C).  */
-};
-
-
-
-
-
-/************************************************************************/
-/***************              Error messages              ***************/
-/************************************************************************/
-void
-gal_table_error_col_selection(char *filename, char *hdu, char *errorstring);
-
-
-
-
-/************************************************************************/
-/***************                 Formats                  ***************/
-/************************************************************************/
-uint8_t
-gal_table_string_to_format(char *string);
-
-char *
-gal_table_format_as_string(uint8_t format);
-
-uint8_t
-gal_table_string_to_searchin(char *string);
-
-char *
-gal_table_searchin_as_string(uint8_t searchin);
-
-void
-gal_table_check_fits_format(char *filename, int tableformat);
-
-
-
-/************************************************************************/
-/***************          Printing information            ***************/
-/************************************************************************/
-void
-gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
-
-void
-gal_table_col_print_info(gal_data_t *col, int tableformat,
-                         char *fmt, char *lng);
-
-void
-gal_table_read_blank(gal_data_t *col, char *blank);
-
-
-
-
 /************************************************************************/
 /***************         Information about a table        ***************/
 /************************************************************************/
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols,
                size_t *numrows, int *tableformat);
+
+void
+gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 
 
 

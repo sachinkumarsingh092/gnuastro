@@ -39,6 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 
 
 
@@ -442,7 +443,7 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
       /* Note that `gal_data_type_as_string' returns a static string. But
          the output must be an allocated string so we can free it. */
       gal_checkset_allocate_copy(
-        gal_table_searchin_as_string( *(uint8_t *)(option->value)), &str);
+        gal_tableintern_searchin_as_string( *(uint8_t *)(option->value)), &str);
       return str;
     }
   else
@@ -451,8 +452,8 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if( ( *(uint8_t *)(option->value)=gal_table_string_to_searchin(arg) )
-          == GAL_TABLE_SEARCH_INVALID )
+      if(( *(uint8_t *)(option->value)=gal_tableintern_string_to_searchin(arg))
+         == GAL_TABLE_SEARCH_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known table "
                       "search-in field (`name', `unit', or `comment').\n\n"
@@ -482,7 +483,7 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
       /* Note that `gal_data_type_as_string' returns a static string. But
          the output must be an allocated string so we can free it. */
       gal_checkset_allocate_copy(
-        gal_table_format_as_string( *(uint8_t *)(option->value)), &str);
+        gal_tableintern_format_as_string( *(uint8_t *)(option->value)), &str);
       return str;
     }
   else
@@ -491,7 +492,7 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if( (*(uint8_t *)(option->value) = gal_table_string_to_format(arg) )
+      if( (*(uint8_t *)(option->value) = gal_tableintern_string_to_format(arg) )
           ==GAL_TABLE_FORMAT_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known table "

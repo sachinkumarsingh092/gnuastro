@@ -53,8 +53,8 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                  \
   arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c data.c \
   fits.c git.c interpolate.c list.c options.c permutation.c polygon.c      \
-  qsort.c dimension.c statistics.c table.c threads.c tile.c timing.c txt.c \
-  type.c wcs.c
+  qsort.c dimension.c statistics.c table.c tableintern.c threads.c tile.c  \
+  timing.c txt.c type.c wcs.c
 
 
 
@@ -89,7 +89,8 @@ EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README   \
   $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-onlyint.h \
   $(internaldir)/checkset.h $(internaldir)/commonopts.h                  \
   $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h          \
-  $(internaldir)/options.h $(internaldir)/timing.h
+  $(internaldir)/options.h $(internaldir)/tableintern.h                  \
+  $(internaldir)/timing.h
 
 
 

@@ -18926,23 +18926,26 @@ error message informing the user of the problem.
 @deftypefun {gal_data_t *} gal_fits_tab_info (char @code{*filename}, char @code{*hdu}, size_t @code{*numcols}, size_t @code{*numrows}, int @code{*tableformat})
 Store the information of each column in @code{hdu} of @code{filename} into
 an array of data structures with @code{numcols} elements (one data
-structure for each column), see @ref{Arrays of datasets}. The number of
-rows is stored as the @code{size} element of each data structure. The
-format of the table (e.g., FITS binary or ASCII table) will be put in
-@code{tableformat} (macros defined in @ref{Table input output}).
+structure for each column) see @ref{Arrays of datasets}. The total number
+of rows in the table is also put into the memory that @code{numrows} points
+to. The format of the table (e.g., FITS binary or ASCII table) will be put
+in @code{tableformat} (macros defined in @ref{Table input output}).
 
 Note that other than the character strings (column name, units and
 comments), nothing in the data structure(s) will be allocated by this
 function for the actual data (e.g., the @code{array} or @code{dsize}
-elements). This function is just for column information.
+elements). This function is just for column information. This is a
+low-level function particular to reading tables in FITS format. It is
+recommended to use @code{gal_table_info} to be generic (see @ref{Table
+input output}).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, int @code{minmapsize})
 Read the columns given in the list @code{indexll} from a FITS table into a
 linked list of data structures, see @ref{List of size_t} and @ref{List of
 gal_data_t}. If the necessary space for each column is larger than
-@code{minmapsize}, don't keep it in the RAM, but in a file on memory, see
-the description under the same name in @ref{Generic data container}.
+@code{minmapsize}, don't keep it in the RAM, but in a file in the HDD/SSD,
+see the description under the same name in @ref{Generic data container}.
 
 Note that this is a low-level function, so the output data linked list is
 the inverse of the input indexs linked list. It is recommended to use
@@ -18965,10 +18968,268 @@ FITS file (see @ref{List of strings}.
 @node Text files, Table input output, FITS files, Gnuastro library
 @subsection Text files (@file{txt.h})
 
+FITS files are the primary data container in astronomy. FITS indeed as many
+useful features, but the most universal and portable format for data
+storage are plain text files. They can be viewed and edited on any text
+editor or even on the command-line. Therefore the functions in this section
+are defined to simplify reading from and writing to plain text
+files.
+
+Gnuastro defines a simple format for metadata of table columns in a plain
+text file that is discussed in @ref{Gnuastro text table format}. The
+functions to get information from, read from and write to plain text files
+also follow those conventions.
+
+
+@deffn Macro GAL_TXT_LINESTAT_INVALID
+@deffnx Macro GAL_TXT_LINESTAT_BLANK
+@deffnx Macro GAL_TXT_LINESTAT_COMMENT
+@deffnx Macro GAL_TXT_LINESTAT_DATAROW
+Status codes for lines in a plain text file that may be returned by
+@code{gal_txt_line_stat}). Lines which have a @key{#} character as their
+first non-white character are considered to be comments. Lines with nothing
+but white space characters are considered blank.
+@end deffn
+
+@deftypefun int gal_txt_line_stat (char @code{*line})
+Check the contents of @code{line} and see if it is a blank, comment, or
+data line. The returned values are the macros that start with
+@code{GAL_TXT_LINESTAT}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_txt_table_info (char @code{*filename}, size_t @code{*numcols}, size_t @code{*numrows})
+Store the information of each column in @code{filename} into an array of
+data structures with @code{numcols} elements (one data structure for each
+column) see @ref{Arrays of datasets}. The total number of rows in the table
+is also put into the memory that @code{numrows} points to.
+
+Note that other than the character strings (column name, units and
+comments), nothing in the data structure(s) will be allocated by this
+function for the actual data (e.g., the @code{array} or @code{dsize}
+elements). This function is just for column information. This is a
+low-level function particular to reading tables in FITS format. It is
+recommended to use @code{gal_table_info} which will allow getting
+information from a variety of table formats (see @ref{Table input output}).
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
+Read the columns given in the list @code{indexll} from a plain text table
+into a linked list of data structures, see @ref{List of size_t} and
+@ref{List of gal_data_t}. If the necessary space for each column is larger
+than @code{minmapsize}, don't keep it in the RAM, but in a file on the
+HDD/SSD, see the description under the same name in @ref{Generic data
+container}.
+
+Note that this is a low-level function, so the output data list is the
+inverse of the input indexs linked list. It is recommended to use
+@code{gal_table_read} for generic reading of tables in any format, see
+@ref{Table input output}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, size_t @code{minmapsize})
+Read the 2D plain text dataset in @code{filename} into a dataset and return
+the dataset. If the necessary space for the image is larger than
+@code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD,
+see the description under the same name in @ref{Generic data container}.
+@end deftypefun
+
+@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, int @code{dontdelete})
+Write @code{cols} in a plain text file @code{filename}. @code{cols} may
+have one or two dimensions which determines the output:
+
+@table @asis
+@item 1D
+@code{cols} is treated as a column and a list of datasets (see @ref{List of
+gal_data_t}): every node in the list is written as one column in a
+table.
+
+@item 2D
+@code{cols} is a two dimensional array, it cannot be treated as a list
+(only one 2D array can currently be written to a text file). So if
+@code{cols->next!=NULL} the next nodes in the list are ignored and will not
+be written.
+@end table
+
+If @code{filename} already exists and @code{dontdelete} is non-zero, then
+this function will abort with an error and will not write over the existing
+file. If @code{comments!=NULL}, a @code{#} will be put at the start of each
+node of the list of strings and will be written in the file before the
+column meta-data in @code{filename} (see @ref{List of strings}).
+
+Note that this is a low-level function for tables. It is recommended to use
+@code{gal_table_write} for generic writing of tables in a variety of
+formats, see @ref{Table input output}.
+@end deftypefun
+
+
 @node Table input output, Arithmetic on datasets, Text files, Gnuastro library
 @subsection Table input output (@file{table.h})
 
-Functions to read columns from/to tables.
+Tables are a collection of one dimensional datasets that are packed
+together into one file. They are the single most common format to store
+high-level (processed) information, hence they play a very important role
+in Gnuastro. For a more thorough introduction, please see Gnuastro's
+@ref{Table}. Gnuastro's Table program and all the other programs that can
+read and write into tables use the functions of this section.
+
+Currently only plain text (see @ref{Gnuastro text table format}) and FITS
+tables are supported by Gnuastro. However, the low-level table
+infra-structure is written such that for other formats are also possible
+and in future releases more formats will be supported, please let us know
+your priorities so they get higher priorities.
+
+@deffn  Macro GAL_TABLE_DEF_WIDTH_STR
+@deffnx Macro GAL_TABLE_DEF_WIDTH_INT
+@deffnx Macro GAL_TABLE_DEF_WIDTH_LINT
+@deffnx Macro GAL_TABLE_DEF_WIDTH_FLT
+@deffnx Macro GAL_TABLE_DEF_WIDTH_DBL
+@deffnx Macro GAL_TABLE_DEF_PRECISION_INT
+@deffnx Macro GAL_TABLE_DEF_PRECISION_FLT
+@deffnx Macro GAL_TABLE_DEF_PRECISION_DBL
+@cindex @code{printf}
+The default width and precision for generic types to use in writing numeric
+types into a text file (plain text and FITS ASCII tables). When the dataset
+doesn't have any pre-set width and precision (see @code{disp_width} and
+@code{disp_precision} in @ref{Generic data container}) these will be
+directly used in C's @code{printf} command to write the number as a string.
+@end deffn
+
+@deffn  Macro GAL_TABLE_DISPLAY_FMT_STRING
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_DECIMAL
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_UDECIMAL
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_OCTAL
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_HEX
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_FLOAT
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_EXP
+@deffnx Macro GAL_TABLE_DISPLAY_FMT_GENERAL
+The display format used in C's @code{printf} to display data of different
+types. The @code{_STRING} and @code{_DECIMAL} are unique for printing
+strings and signed integers, they are mainly here for
+completeness. However, unsigned integers and flating points can be
+displayed in multiple formats:
+
+@table @asis
+@item Unsigned integer
+For unsigned integers, it is possible to choose from @code{_UDECIMAL}
+(unsigned decimal), @code{_OCTAL} (octal notation, for example @code{125}
+in decimal will be displayed as @code{175}), and @code{_HEX} (hexadecimal
+notation, for example @code{125} in decimal will be displayed as
+@code{7D}).
+
+@item Floating point
+For floating point, it is possible to display the number in @code{_FLOAT}
+(floating point, for example @code{1500.345}), @code{_EXP} (exponential,
+for example @code{1.500345e+03}), or @code{_GENERAL} which is the best of
+the two for the given number.
+@end table
+@end deffn
+
+@deffn  Macro GAL_TABLE_FORMAT_INVALID
+@deffnx Macro GAL_TABLE_FORMAT_TXT
+@deffnx Macro GAL_TABLE_FORMAT_AFITS
+@deffnx Macro GAL_TABLE_FORMAT_BFITS
+All the current acceptable table formats to Gnuastro. The @code{AFITS} and
+@code{BFITS} represent FITS ASCII tables and FITS Binary tables. You can
+use these anywhere you see the @code{tableformat} variable.
+@end deffn
+
+@deffn  Macro GAL_TABLE_SEARCH_INVALID
+@deffnx Macro GAL_TABLE_SEARCH_NAME
+@deffnx Macro GAL_TABLE_SEARCH_UNIT
+@deffnx Macro GAL_TABLE_SEARCH_COMMENT
+When the desired column is not a number, these values determine if the
+string to match, or regular expression to search, be in the @emph{name},
+@emph{units} or @emph{comments} of the column meta data. These values
+should be used for the @code{searchin} variables of the functions.
+@end deffn
+
+@deftypefun {gal_data_t *} gal_table_info (char @code{*filename}, char @code{*hdu}, size_t @code{*numcols}, size_t @code{*numrows}, int @code{*tableformat})
+Store the information of each column in a table (either as a text file or
+as a FITS table) into an array of data structures with @code{numcols}
+structures (one data structure for each column). The number of rows is
+stored in the space that @code{numrows} points to. The format of the table
+(e.g., ascii text file, or FITS binary or ASCII table) will be put in
+@code{tableformat} (macros defined above). If the filename is not a FITS
+file, then @code{hdu} will not be used (can be @code{NULL}).
+
+Note that other than the character strings (column name, units and
+comments), nothing in the data structure(s) will be allocated by this
+function for the actual data (e.g., the `array' or `dsize' elements). This
+function is just for column information (meta-data), not column contents.
+@end deftypefun
+
+@deftypefun void gal_table_print_info (gal_data_t @code{*allcols}, size_t @code{numcols}, size_t @code{numrows})
+This program will print the column information for all the columns (output
+of @code{gal_table_info}). The output is in the same format as this command
+with Gnuastro Table program (see @ref{Table}):
+@example
+$ asttable --info table.fits
+@end example
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, int @code{minmapsize})
+Read the specified columns in a text file (named @code{filename}) into a
+linked list of data structures. If the file is FITS, then @code{hdu} will
+also be used, otherwise, @code{hdu} is ignored.
+
+@cindex AWK
+@cindex GNU AWK
+The information to search for columns should be specified by the
+@code{cols} list of strings (see @ref{List of strings}). The string in each
+node of the list may be a number, an exact match to a column name, or a
+regular expression (in GNU AWK format) enclosed in @code{/ /}. The
+@code{searchin} value must be one of the macros defined above. If
+@code{cols} is NULL, then this function will read the full table.
+
+The output is a linked list with the same order of the @code{cols}
+list. Note that one column node in the @code{cols} list might give multiple
+columns (for example from regular expressions), in this case, the order of
+output columns that correspond to that one input, are in order of the table
+(which column was read first).  So the first requested column is the first
+popped data structure and so on.
+@end deftypefun
+
+@cindex Git
+@deftypefun void gal_table_comments_add_intro (gal_list_str_t @code{**comments}, char @code{*program_string}, time_t @code{*rawtime})
+Add some basic information to the list of @code{comments}. This basic
+information includes the following information
+@itemize
+@item
+If the program is run in a Git version controlled directory, Git's
+description is printed (see description under @code{COMMIT} in @ref{Output
+headers}).
+@item
+The calendar time that is stored in @code{rawtime} (@code{time_t} is C's
+calendar time format defined in @file{time.h}). You can calculate the time
+in this format with the following expressions:
+@example
+time_t rawtime;
+time(&rawtime);
+@end example
+@item
+The name of your program in @code{program_string}. If it is @code{NULL},
+this line is ignored.
+@end itemize
+@end deftypefun
+
+@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, int @code{dontdelete})
+Write the @code{cols} list of datasets into a table in @code{filename} (see
+@ref{List of gal_data_t}). The format of the table can be determined with
+@code{tableformat} that accepts the macros defined above. If
+@code{comments!=NULL}, then the list of comments will also be printed into
+the output table. When the output table is a plain text file, each node's
+string will be printed after a @code{#} (so it can be considered as a
+comment). If @code{filename} already exists and @code{dontdelete} is not
+zero, this function will abort the program with an error.
+@end deftypefun
+
+@deftypefun void gal_table_write_log (gal_data_t @code{*logll}, char @code{*program_string}, time_t @code{*rawtime}, gal_list_str_t @code{*comments}, char @code{*filename}, int @code{dontdelete}, int @code{quiet})
+Write the @code{logll} list of datasets into a table in @code{filename}
+(see @ref{List of gal_data_t}). This function is just a wrapper around
+@code{gal_table_comments_add_intro} and @code{gal_table_write} (see
+above). If @code{quiet} is non-zero, this function will print a message
+saying that the @code{filename} has been created.
+@end deftypefun
 
 @node Arithmetic on datasets, Tessellation library, Table input output, Gnuastro library
 @subsection Arithmetic on datasets (@file{arithmetic.h})

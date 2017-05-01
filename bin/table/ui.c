@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -214,7 +215,7 @@ ui_read_check_only_options(struct tableparams *p)
 
   /* Check if the format of the output table is valid, given the type of
      the output. */
-  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+  gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
 }
 

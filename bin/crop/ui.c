@@ -38,6 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -552,10 +553,10 @@ ui_read_cols(struct cropparams *p)
 
       /* Print an error if there were too many columns. */
       if(toomanycols)
-        gal_table_error_col_selection(p->catname, p->cathdu, "too many "
-                                      "columns were selected by the given "
-                                      "values to the options ending in "
-                                      "`col'.");
+        gal_tableintern_error_col_selection(p->catname, p->cathdu, "too many "
+                                            "columns were selected by the "
+                                            "given values to the options "
+                                            "ending in `col'.");
 
       /* Sanity check and clean up.  Note that it might happen that the
          input structure is already freed. In that case, `corrtype' will be

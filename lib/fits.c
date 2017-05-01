@@ -41,6 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 
@@ -1758,8 +1759,8 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
     case '\0':     /* No precision given, use a default value.     */
       data->disp_precision = ( isanint
-                               ? GAL_TABLE_DEF_INT_PRECISION
-                               : GAL_TABLE_DEF_FLT_PRECISION );
+                               ? GAL_TABLE_DEF_PRECISION_INT
+                               : GAL_TABLE_DEF_PRECISION_FLT );
       break;
 
     default:
@@ -1999,7 +2000,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                         "blank value cannot be deduced", filename, hdu,
                         keyname, index+1);
               else
-                gal_table_read_blank(&allcols[index], value);
+                gal_tableintern_read_blank(&allcols[index], value);
             }
         }
 
@@ -2192,7 +2193,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
         case GAL_TABLE_FORMAT_AFITS:
 
             /* Fill the printing format. */
-            gal_table_col_print_info(col, GAL_TABLE_FORMAT_AFITS, fmt, lng);
+            gal_tableintern_col_print_info(col, GAL_TABLE_FORMAT_AFITS,
+                                           fmt, lng);
 
             /* We need to check if the blank value needs is larger than the
                expected width or not. Its initial width is set the output

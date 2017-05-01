@@ -36,7 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 
 #include <gnuastro-internal/checkset.h>
-
+#include <gnuastro-internal/tableintern.h>
 
 
 
@@ -267,7 +267,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */
-      gal_table_read_blank(*datall, txt_trim_space(blank));
+      gal_tableintern_read_blank(*datall, txt_trim_space(blank));
     }
 }
 
@@ -1054,7 +1054,7 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 
 
       /* Fill in the printing paramters. */
-      gal_table_col_print_info(data, GAL_TABLE_FORMAT_TXT, fmt, lng);
+      gal_tableintern_col_print_info(data, GAL_TABLE_FORMAT_TXT, fmt, lng);
 
 
       /* Adjust the width if a blank string was defined. */
@@ -1228,7 +1228,7 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
 
 void
-gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
+gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
               int dontdelete)
 {
   FILE *fp;
@@ -1238,32 +1238,32 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
 
 
   /* Currently only 1 and 2 dimension datasets are acceptable. */
-  if( datall->ndim!=1 && datall->ndim!=2 )
+  if( input->ndim!=1 && input->ndim!=2 )
     error(EXIT_FAILURE, 0, "%s: only 1 and 2 dimensional datasets are "
           "currently supported. The input dataset has %zu dimensions",
-          __func__, datall->ndim);
+          __func__, input->ndim);
 
 
   /* For a 2D dataset, we currently don't accept a list, we can only print
      one column. So keep the next pointer separately and restore it after
      the job of this function is finished. */
-  if(datall->ndim==2)
+  if(input->ndim==2)
     {
-      next2d=datall->next;
-      datall->next=NULL;
+      next2d=input->next;
+      input->next=NULL;
     }
 
 
   /* Find the number of columns, do a small sanity check, and get the
      maximum width of the name and unit string if they are present. */
-  for(data=datall;data!=NULL;data=data->next)
+  for(data=input;data!=NULL;data=data->next)
     {
       /* Count. */
       ++num;
 
       /* Check if the dimensionality and size is the same for all the
          elements. */
-      if( datall!=data && gal_data_dsize_is_different(datall, data) )
+      if( input!=data && gal_data_dsize_is_different(input, data) )
         error(EXIT_FAILURE, 0, "%s: the input list of datasets must have the "
               "same sizes (dimentionality and length along each dimension)",
               __func__);
@@ -1272,25 +1272,25 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
 
   /* Prepare the necessary formats for each column, then allocate the space
      for the full list and concatenate all the separate inputs into it. */
-  fmts=make_fmts_for_printf(datall, 1, &fmtlen);
+  fmts=make_fmts_for_printf(input, 1, &fmtlen);
 
 
   /* Set the output FILE pointer: if it isn't NULL, its an actual file,
      otherwise, its the standard output. */
   fp = ( filename
-         ? txt_open_file_write_info(datall, fmts, comment, filename,
+         ? txt_open_file_write_info(input, fmts, comment, filename,
                                     dontdelete)
          : stdout );
 
 
   /* Print the dataset */
-  switch(datall->ndim)
+  switch(input->ndim)
     {
     case 1:
-      for(i=0;i<datall->size;++i)                        /* Row.    */
+      for(i=0;i<input->size;++i)                        /* Row.    */
         {
           j=0;
-          for(data=datall;data!=NULL;data=data->next)    /* Column. */
+          for(data=input;data!=NULL;data=data->next)    /* Column. */
             txt_print_value(fp, data->array, data->type, i,
                             fmts[j++ * FMTS_COLS]);
           fprintf(fp, "\n");
@@ -1299,19 +1299,19 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
 
 
     case 2:
-      for(i=0;i<datall->dsize[0];++i)
+      for(i=0;i<input->dsize[0];++i)
         {
-          for(j=0;j<datall->dsize[1];++j)
-            txt_print_value(fp, datall->array, datall->type,
-                            i*datall->dsize[1]+j, fmts[0]);
+          for(j=0;j<input->dsize[1];++j)
+            txt_print_value(fp, input->array, input->type,
+                            i*input->dsize[1]+j, fmts[0]);
           fprintf(fp, "\n");
         }
       break;
 
 
     default:
-      error(EXIT_FAILURE, 0, "%s: a bug! datall->ndim=%zu is not recognized",
-            __func__, datall->ndim);
+      error(EXIT_FAILURE, 0, "%s: a bug! input->ndim=%zu is not recognized",
+            __func__, input->ndim);
     }
 
 
@@ -1336,5 +1336,5 @@ gal_txt_write(gal_data_t *datall, gal_list_str_t *comment, char *filename,
     }
 
   /* Restore the next pointer for a 2D dataset. */
-  if(datall->ndim==2) datall->next=next2d;
+  if(input->ndim==2) input->next=next2d;
 }

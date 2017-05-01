@@ -38,6 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -498,10 +499,10 @@ ui_read_cols(struct mkprofparams *p)
         /* If the index isn't recognized, then it is larger, showing that
            there was more than one match for the given criteria */
         default:
-          gal_table_error_col_selection(p->catname, p->cp.hdu, "too many "
-                                        "columns were selected by the given "
-                                        "values to the options ending in "
-                                        "`col'.");
+          gal_tableintern_error_col_selection(p->catname, p->cp.hdu, "too many "
+                                              "columns were selected by the "
+                                              "given values to the options "
+                                              "ending in `col'.");
         }
 
       /* Sanity check and clean up.  Note that it might happen that the

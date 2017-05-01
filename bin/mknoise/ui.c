@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -275,7 +276,7 @@ ui_preparations(struct mknoiseparams *p)
   /* If we are dealing with an input table, make sure the format of the
      output table is valid, given the type of the output. */
   if(p->input->ndim==1)
-    gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+    gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
 
   /* Set the output name: */

@@ -41,6 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -702,7 +703,7 @@ ui_preparations_outnames(struct mkcatalogparams *p)
     {
       /* Make sure the given output filename corresponds to the
          `tableformat' option. */
-      gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+      gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
       /* If a clumps image has been read, we have two outputs. */
       if(p->clumps)  ui_preparations_both_names(p, p->cp.output);

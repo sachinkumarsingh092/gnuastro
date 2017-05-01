@@ -1,5 +1,5 @@
 /*********************************************************************
-txt -- functions to deal with plain text files.
+tableintern -- Internalfunctions for table input and output.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,12 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_TXT_H__
-#define __GAL_TXT_H__
+#ifndef __GAL_TABLEINTERN_H__
+#define __GAL_TABLEINTERN_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
+#include <gnuastro/fits.h> /* Includes `gnuastro/data.h' and `fitsio.h' */
 #include <gnuastro/list.h>
 
 
@@ -52,48 +53,50 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Macros.*/
-#define GAL_TXT_DELIMITERS     " ,\t\f\v"
-#define GAL_TXT_MAX_FMT_LENGTH 20
+
+/************************************************************************/
+/***************              Error messages              ***************/
+/************************************************************************/
+void
+gal_tableintern_error_col_selection(char *filename, char *hdu,
+                                    char *errorstring);
 
 
 
 
+/************************************************************************/
+/***************                 Formats                  ***************/
+/************************************************************************/
+uint8_t
+gal_tableintern_string_to_format(char *string);
 
-/* Status of a line: */
-enum gal_txt_line_status_enums
-{
-  GAL_TXT_LINESTAT_INVALID,
+char *
+gal_tableintern_format_as_string(uint8_t tableformat);
 
-  GAL_TXT_LINESTAT_BLANK,
-  GAL_TXT_LINESTAT_COMMENT,
-  GAL_TXT_LINESTAT_DATAROW,
-};
+uint8_t
+gal_tableintern_string_to_searchin(char *string);
 
-
-
-
-
-/* Functions */
-int
-gal_txt_line_stat(char *line);
-
-gal_data_t *
-gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows);
-
-gal_data_t *
-gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   gal_list_sizet_t *indexll, size_t minmapsize);
-
-gal_data_t *
-gal_txt_image_read(char *filename, size_t minmapsize);
+char *
+gal_tableintern_searchin_as_string(uint8_t searchin);
 
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
-              int dontdelete);
+gal_tableintern_check_fits_format(char *filename, int tableformat);
+
+
+
+/************************************************************************/
+/***************          Printing information            ***************/
+/************************************************************************/
+void
+gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
+                               char *fmt, char *lng);
+
+void
+gal_tableintern_read_blank(gal_data_t *col, char *blank);
+
 
 
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_TXT_H__ */
+#endif           /* __GAL_TABLE_H__ */

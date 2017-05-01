@@ -41,6 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
 
 #include "main.h"
@@ -379,7 +380,7 @@ ui_read_check_only_options(struct statisticsparams *p)
 
   /* Check if the format of the output table is valid, given the type of
      the output. */
-  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
+  gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
 
   /* If in tile-mode, we must have at least one single valued option. */
@@ -763,11 +764,11 @@ ui_read_columns(struct statisticsparams *p)
 
       /* Print an error if there are too many columns: */
       if(toomanycols)
-        gal_table_error_col_selection(p->inputname, p->cp.hdu, "too many "
-                                      "columns were selected by the given "
-                                      "values to the `--column' and/or "
-                                      "`--refcol' options. Only one "
-                                      "is acceptable for each.");
+        gal_tableintern_error_col_selection(p->inputname, p->cp.hdu, "too many "
+                                            "columns were selected by the "
+                                            "given values to the `--column' "
+                                            "and/or `--refcol' options. Only "
+                                            "one is acceptable for each.");
     }
 
   /* Clean up. */
