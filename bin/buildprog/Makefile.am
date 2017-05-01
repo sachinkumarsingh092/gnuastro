@@ -21,21 +21,26 @@
 
 ## Pre-processer flags (for Gnulib's headers). Recall that the compiled
 ## Gnulib library was statically linked to (copied in) Gnuastro's library.
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+##
+## Buildprog will also need some system-specific information that is
+## gathered at compile time (for example the library installation directory
+## (LIBDIR) and the executive file suffix (EXEEXT).
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib                   \
+              -DLIBDIR=\"$(libdir)\" -DEXEEXT=\"$(EXEEXT)\"
 
 
 
 ## Program definition (name, linking, sources and headers)
-bin_PROGRAMS = astTEMPLATE
+bin_PROGRAMS = astbuildprog
 
-astTEMPLATE_LDADD = -lgnuastro
+astbuildprog_LDADD = -lgnuastro
 
-astTEMPLATE_SOURCES = main.c ui.c TEMPLATE.c
+astbuildprog_SOURCES = main.c ui.c buildprog.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h TEMPLATE.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h
 
 
 
 ## The configuration file (distribute and install).
 ## NOTE: the man page is created in doc/Makefile.am
-dist_sysconf_DATA = astTEMPLATE.conf
+dist_sysconf_DATA = astbuildprog.conf

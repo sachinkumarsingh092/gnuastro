@@ -50,6 +50,9 @@ License''.
 
 * bug-gnuastro: (gnuastro)Report a bug. How to report bugs
 
+* BuildProgram: (gnuastro)BuildProgram. Compile and run programs using Gnuastro's library.
+* astcompilerun: (gnuastro)Invoking astcompilerun. Options to BuildProgram.
+
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
 
@@ -515,15 +518,19 @@ CosmicCalculator
 Library
 
 * Review of library fundamentals::  Guide on libraries and linking.
+* BuildProgram::                Link and run source files using Gnuastro's library.
 * Gnuastro library::            Description of all library functions.
-* Library demo programs::
+* Library demo programs::       Demonstration for using libraries.
 
 Review of library fundamentals
 
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
 * Summary and example on libraries::  A summary and example on using libraries.
-* Automatic linking script::    Shell function for automatic linking.
+
+BuildProgram
+
+* Invoking astcompilerun::      Options and examples for using this program.
 
 Gnuastro library
 
@@ -531,6 +538,7 @@ Gnuastro library
 * Library data types::          Definitions and functions for types in Gnuastro.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
+* Dimensions::                  Dealing with coordinates and dimensions.
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
 * Text files::                  Functions to work on Text files.
@@ -4476,6 +4484,10 @@ specified by the @option{--searchin}). The FITS standard suggests to treat
 the column names as case insensitive, which is strongly recommended here
 also but is not enforced. This option is only relevant for programs that
 take table columns as input.
+
+This option is not relevant to @ref{BuildProgram}, hence in that program the
+short option @option{-I} is used for include directories, not to ignore
+case.
 
 @item -o STR
 @itemx --output=STR
@@ -15872,11 +15884,12 @@ program} to easily define your own programs(s).
 
 @menu
 * Review of library fundamentals::  Guide on libraries and linking.
+* BuildProgram::                Link and run source files using Gnuastro's library.
 * Gnuastro library::            Description of all library functions.
-* Library demo programs::
+* Library demo programs::       Demonstration for using libraries.
 @end menu
 
-@node Review of library fundamentals, Gnuastro library, Library, Library
+@node Review of library fundamentals, BuildProgram, Library, Library
 @section Review of library fundamentals
 
 Gnuastro's libraries are written in the C programming language. In @ref{Why
@@ -15911,7 +15924,6 @@ problems.
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
 * Summary and example on libraries::  A summary and example on using libraries.
-* Automatic linking script::    Shell function for automatic linking.
 @end menu
 
 @node Headers, Linking, Review of library fundamentals, Review of library fundamentals
@@ -16337,7 +16349,7 @@ the linker will complain and abort.
 
 
 
-@node Summary and example on libraries, Automatic linking script, Linking, Review of library fundamentals
+@node Summary and example on libraries,  , Linking, Review of library fundamentals
 @subsection Summary and example on libraries
 
 After the mostly abstract discussions of @ref{Headers} and @ref{Linking},
@@ -16420,89 +16432,130 @@ multiple CPU threads, you also need to add these libraries in the call to
 GCC: @option{-lgnuastro -lwcs -lcfitsio -lgsl -lgslcblas -pthread -lm}. In
 @ref{Gnuastro library}, where each function is documented, it is mentioned
 which libraries (if any) must also be linked when you call a function. If
-you feel all these linkings can be confusing, please have a look at
-@ref{Automatic linking script}.
+you feel all these linkings can be confusing, please consider Gnuastro's
+@ref{BuildProgram} program.
 
 
-@node Automatic linking script,  , Summary and example on libraries, Review of library fundamentals
-@subsection Automatic linking script
+@node BuildProgram, Gnuastro library, Review of library fundamentals, Library
+@section BuildProgram
 The number and order of libraries that are necessary for linking a program
 with Gnuastro library might be too confusing when you need to compile a
-small program for one particular job (with one source file). To solve this
-problem, please add the following lines to your @file{~/.bashrc} with a
-text editor and replace @code{PREFIX} with Gnuastro's installation
-directory (see @ref{Installation directory}, if you haven't changed it the
-installation directory explicity at installation, put @file{/usr/local} in
-place of @code{PREFIX}). Also copy the comments to help readability later.
-
-@example
-# Program-like function to compile and run (once) programs that use
-# the Gnuastro library. The general usage pattern is:
-#
-#     $ astcompilerun SOURCE  [ARGUMENTS]  [OTHER-LIBRARIES]
-#
-#
-#   SOURCE: the name of the `.c' source file without the `.c', for
-#      example, for `myprog.c', SOURCE would be `myprog'.
-#
-#   ARGUMENTS: [optional] any arguments to run the program with after
-#      compilation. If there are multiple arguments, put them in
-#      double quotes, for example "img1.fits img2.fits".
-#
-#   OTHER-LIBRARIES: [optional] if your program depends on any
-#      libraries other than Gnuastro's dependencies. For example
-#      if it needs libfirst and libsecond, use "-lfirst -lsecond".
-#
-# When there are no arguments and no libraries other than Gnuastro's
-# dependencies, you can simply run this command (when your source is
-# in `myprog.c'
-#
-#     $ astcompilerun myprog
-#
-function astcompilerun @{
-  echo "---- compilation command ----"
-  if libtool --mode=link gcc $1.c $3 PREFIX/lib/libgnuastro.la -o $1
-    then
-      echo "-----------------------------"
-      echo " \"$1\" created in this directory and will be run below."
-      echo " For later runs in this directory, run: \"\$ ./$1 $2\""
-      echo "-----------------------------"
-      ./$1 $2
-  fi
-@}
-@end example
+small program for one particular job (with one source file). BuildProgram
+will use the information gathered during configuring Gnuastro and link with
+all the appropriate libraries on your system. This will allow you to easily
+compile, link and run programs that use Gnuastro's library with one simple
+command and not worry about which libraries to link to, or the linking
+order.
 
 @cindex GNU Libtool
-This tiny shell function uses GNU Libtool to find the necessary libraries
-to link against. Libtool uses the same libraries that were checked when you
-configured Gnuastro to link your program. So in the future, if Gnuastro's
-prerequisite libraries change, you don't have to worry. Afterwards, when
-you want to compile a C program that uses Gnuastro library (for example
-@file{myprog.c}), just run the following command from the directory which
-contains the source file:
+BuildProgram uses GNU Libtool to find the necessary libraries to link
+against (GNU Libtool is the same program that builds all of Gnuastro's
+libraries and programs when you run @code{make}). So in the future, if
+Gnuastro's prerequisite libraries change or other libraries are added, you
+don't have to worry, you can just run BuildProgram and internal linking
+will be done correctly.
+
+@menu
+* Invoking astcompilerun::      Options and examples for using this program.
+@end menu
+
+@node Invoking astcompilerun,  , BuildProgram, BuildProgram
+@subsection Invoking BuildProgram
+
+BuildProgram will compile and link a C source program with Gnuastro's
+library and all its dependencies, greatly facilitating the compilation and
+running of small programs that use Gnuastro's library. The executable name
+is @file{astbuildprog} with the following general template:
 
 @example
-$ astcompilerun myprog
+$ astbuildprog [OPTION...] C_SOURCE_FILE
 @end example
+
 
 @noindent
-If your program needs to link with libraries other than those needed by
-Gnuastro, you can specify them as a second argument (within double quotes):
+One line examples:
 
 @example
-$ gnuastro-gcc myprog "-lfirst -lsecond"
+$ astbuildprog myprogram.c image.fits
+$ astbuildprog -Lother -Iother/dir myprogram.c
+$ astbuildprog myprogram.c --onlybuild image.fits catalog.txt
 @end example
 
-@noindent
-If your program can take arguments, then you can also include them
-afterwards.
+If BuildProgram is to run, it needs a C programming language source file as
+input. By default it will compile and link the program to build the a final
+executable file and run it. The built executable name can be set with the
+optional @option{--output} option. When no output name is set, BuildProgram
+will use Gnuastro's @ref{Automatic output}, and remove the suffix of the
+input and use that as the output name. For the full list of options that
+BuildProgram shares with other Gnuastro programs, see @ref{Common
+options}. You may also use Gnuastro's @ref{Configuration files} to specify
+other libraries/headers to use for special directories and not have to type
+them in every time.
 
-@example
-$ gnuastro-gcc myprog && ./myprog
-@end example
+The first argument is considered to be the C source file that must be
+compiled and linked. Any other arguments (non-option tokens on the
+command-line) will be passed onto the program when BuildProgram wants to
+run it. Recall that by default BuildProgram will run the program after
+building it. This behavior can be disabled with the @code{--onlybuild}
+option.
+
+@cindex GNU Make
+When the @option{--quiet} option (see @ref{Operating mode options}) is not
+called, BuildPrograms will print the compilation and running commands. Once
+your program grows and you break it up into multiple files (which are much
+more easily managed with Make), you can use the linking flags of the
+non-quiet output in your @code{Makefile}.
+
+@table @option
+@item -I STR
+@itemx --includedir=STR
+@cindex GNU CPP
+@cindex C Pre-Processor
+Directory to search for files that you @code{#include} in your C program.
+Note that headers relating to Gnuastro and its dependencies don't need this
+option. This is only necessary if you want to use other headers. It may be
+called multiple times and order matters. This directory will be searched
+before those of Gnuastro's build and also the system search
+directories. See @ref{Headers} for a thorough introduction.
+
+From the GNU C Pre-Processor manual: ``Add the directory @code{STR} to the
+list of directories to be searched for header files. Directories named by
+@option{-I} are searched before the standard system include directories.
+If the directory @code{STR} is a standard system include directory, the
+option is ignored to ensure that the default search order for system
+directories and the special treatment of system headers are not defeated''.
+
+@item -L STR
+@itemx --linkdir=STR
+@cindex GNU Libtool
+Directory to search for compiled libraries to link the program with. Note
+that all the directories that Gnuastro was built with will already be used
+by BuildProgram (GNU Libtool). This option is only necessary if your
+libraries are in other directories. Multiple calls to this option are
+possible and order matters. This directory will be searched before those of
+Gnuastro's build and also the system search directories. See @ref{Linking}
+for a thorough introduction.
+
+@item -l STR
+@itemx --linklib=STR
+Library to link with your program. Note that all the libraries that
+Gnuastro was built with will already be linked by BuildProgram (GNU
+Libtool). This option is only necessary if you want to link with other
+directories. Multiple calls to this option are possible and order
+matters. This library will be linked before Gnuastro's library or its
+dependencies. See @ref{Linking} for a thorough introduction.
+
+@item -b
+@itemx --onlybuild
+Only build the program, don't run it. By default, the built program is
+immediately run afterwards.
+@end table
 
 
-@node Gnuastro library, Library demo programs, Review of library fundamentals, Library
+
+
+
+@node Gnuastro library, Library demo programs, BuildProgram, Library
 @section Gnuastro library
 
 Gnuastro library's programming constructs (function declarations, macros,
@@ -16533,9 +16586,9 @@ library which depends on lower level libraries for some operations (see
 your program use functions from the dependencies, you will also need to
 link those dependencies after linking with Gnuastro. The outside libraries
 that need to be linked for such functions are mentioned following the
-function name. See @ref{Automatic linking script} for a small shell
-function to worry about the libraries to link against and let you focus on
-your exciting science.
+function name. See @ref{BuildProgram} for a small Gnuastro program that will
+take care of the libraries to link against and lets you focus on your
+exciting science.
 
 
 
@@ -16558,6 +16611,7 @@ documentation will correspond to your installed version.
 * Library data types::          Definitions and functions for types in Gnuastro.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
+* Dimensions::                  Dealing with coordinates and dimensions.
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
 * Text files::                  Functions to work on Text files.
@@ -17095,7 +17149,7 @@ return it. The space for the string is dynamically allocated so it must be
 freed after you are done with it.
 @end deftypefun
 
-@node Library data container, Linked lists, Library blank values, Gnuastro library
+@node Library data container, Dimensions, Library blank values, Gnuastro library
 @subsection Data container (@file{data.h})
 
 Astronomical datasets have various dimensions, for example 1D spectra or
@@ -17642,7 +17696,75 @@ single-element dataset.
 @end deftypefun
 
 
-@node Linked lists, FITS files, Library data container, Gnuastro library
+@node Dimensions, Linked lists, Library data container, Gnuastro library
+@subsection Dimensions (@file{dimension.h})
+
+An array is a contiguous region of memory.  Hence, at the lowest level,
+every element of an array just has one single-valued position: the number
+of elements that lie between it and the first element in the array. This is
+also known as the @emph{index} of the element within the
+array. Dimensionality is high-level abstraction (meta-data) that we project
+onto that contiguous patch of memory. When the array is interpreted as a
+one-dimensional dataset, this index is also the @emph{coordinate} of the
+element. But once we associate the patch of memory with a higher
+dimensionality, there must also be one coordinate for each dimension.
+
+The functions and macros in this section provide you with the tools to
+convert an index into a coordinate and vice-versa along with several other
+issues for example issues with the neighbors of an element in a
+multi-dimensional context.
+
+@deffn {Function-like macro} GAL_DIMENSION_NEIGHBOR_OP (@code{index}, @code{ndim}, @code{dsize}, @code{connectivity}, @code{dinc}, @code{operation})
+Parse the neighbors of the element located at @code{index} and do the
+requested operation on them. This is defined as a macro to allow easy
+definition of any operation on the neighbors of a given element without
+having to use loops within your source code (the loops are implemented by
+this macro). The input arguments to this function-like macro are described
+below:
+
+@table @code
+@item index
+Distance of this element from the first element in the array on a
+contiguous patch of memory (starting from 0), see the discussion above.
+@item ndim
+The number of dimensions associated with the contiugous patch of memory.
+@item dsize
+The full array size along each dimension. This must be an array and is
+assumed to have the same number elements as @code{ndim}. See the discussion
+under the same element in @ref{Generic data container}.
+@item connectivity
+Most distant neighbors to consider. Depending on the number of dimensions,
+different neighbros may be defined for each element. This function-like
+macro distinguish between these different neighbors with this argument. It
+has a value between @code{1} (one) and @code{ndim}. For example in a 2D
+dataset, 4-connected neighbors have a connectivity of @code{1} and
+8-connected neighbors have a connectivity of @code{2}. Note that this is
+inclusive, so in this example, a connectivity of @code{2} will also include
+connectivity @code{1} neighbors.
+@item dinc
+An array keeping the length necessary to increment along each
+dimension. You can make this array with the following function. Just don't
+forget to free the array after you are done with it:
+
+@example
+size_t *dinc=gal_dimension_increment(ndim, dsize);
+@end example
+
+@code{dinc} depends on @code{ndim} and @code{dsize}, but it must be defined
+outside this function-like macro since it involves allocation to help in
+preformance.
+
+@item operation
+Any C operation that you would like to do on the neighbor. This macro will
+provide you a @code{nind} variable that can be used as the index of the
+neighbor that is currently being studied. It is defined as `@code{size_t
+ndim;}'. Note that @code{operation} will be repeated the number of times
+there is a neighbor for this element.
+
+@end table
+@end deffn
+
+@node Linked lists, FITS files, Dimensions, Gnuastro library
 @subsection Linked lists (@file{list.h})
 
 @cindex Array
@@ -19887,10 +20009,10 @@ arcsec-squared.
 In this final section of @ref{Library}, we give some example Gnuastro
 programs to demonstrate various features in the library. All these programs
 have been tested and once Gnuastro is installed you can compile and run
-them with with the program-like shell function that is described in
-@ref{Automatic linking script}. If you don't have any FITS file to
-experiment on, you can use those that are generated by Gnuastro after
-@command{make check} in the @file{tests/} directory, see @ref{Quick start}.
+them with with Gnuastro's @ref{BuildProgram} program that will take care of
+linking issues. If you don't have any FITS file to experiment on, you can
+use those that are generated by Gnuastro after @command{make check} in the
+@file{tests/} directory, see @ref{Quick start}.
 
 
 @menu
@@ -19903,9 +20025,9 @@ experiment on, you can use those that are generated by Gnuastro after
 The following simple program demonstrates how to read a FITS image into
 memory and use the @code{void *array} pointer in of @ref{Generic data
 container}. For easy linking/compilation of this program along with a first
-run see @ref{Automatic linking script}. Before running, also change the
-@code{filename} and @code{hdu} variable values to specify an existing FITS
-file and/or extension/HDU.
+run see @ref{BuildProgram}. Before running, also change the @code{filename}
+and @code{hdu} variable values to specify an existing FITS file and/or
+extension/HDU.
 
 This is just intended to demonstrate how to use the @code{array} pointer of
 @code{gal_data_t}. Hence it doesn't do important sanity checks, for example
@@ -21498,6 +21620,13 @@ large and growing set of arithmetic, mathematical, and even statistical
 operators (for example @command{+}, @command{-}, @command{*}, @command{/},
 @command{sqrt}, @command{log}, @command{min}, @command{average},
 @command{median}).
+
+@item BuildProgram
+(@file{astbuildprog}, see @ref{BuildProgram}) Compile, link and run
+programs that depend on the Gnuastro library (see @ref{Gnuastro
+library}). This program will automatically link with the libraries that
+Gnuastro depends on, so there is no need to explicily mention them every
+time you are compiling a Gnuastro library dependent program.
 
 @item ConvertType
 (@file{astconvertt}, see @ref{ConvertType}) Convert astronomical data files

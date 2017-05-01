@@ -57,6 +57,11 @@ if COND_ARITHMETIC
   arithmetic/where.sh: noisechisel/noisechisel.sh.log
   arithmetic/or.sh: noisechisel/noisechisel.sh.log
 endif
+if COND_BUILDPROG
+  MAYBE_BUILDPROG_TESTS = buildprog/simpleio.sh
+
+  buildprog/simpleio.sh: mkprof/mosaic1.sh.log
+endif
 if COND_CONVERTT
   MAYBE_CONVERTT_TESTS = convertt/fitstotxt.sh convertt/fitstojpeg.sh	\
   convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh	\
@@ -206,12 +211,12 @@ lib/multithread.sh: mkprof/mosaic1.sh.log
 
 # Final Tests
 # ===========
-TESTS = prepconf.sh lib/versioncpp.sh lib/multithread.sh                \
-  $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_CONVERTT_TESTS)                     \
-  $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) $(MAYBE_CROP_TESTS)  \
-  $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS) $(MAYBE_MKNOISE_TESTS)   \
-  $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)                      \
-  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                  \
+TESTS = prepconf.sh lib/versioncpp.sh lib/multithread.sh                   \
+  $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_BUILDPROG_TESTS)                       \
+  $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
+  $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS)         \
+  $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)  \
+  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                     \
   $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
 
 

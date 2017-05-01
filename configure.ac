@@ -477,6 +477,12 @@ AC_ARG_ENABLE([arithmetic],
 	      [AS_IF([test "x$enable_arithmetic" != xno],
                      [enable_arithmetic=yes; ayes=true])],
               [enable_arithmetic=notset])
+AC_ARG_ENABLE([buildprog],
+              [AS_HELP_STRING([--enable-buildprog],
+                    [Install BuildProgram and other enabled programs.])],
+	      [AS_IF([test "x$enable_buildprog" != xno],
+                     [enable_buildprog=yes; ayes=true])],
+              [enable_buildprog=notset])
 AC_ARG_ENABLE([convertt],
               [AS_HELP_STRING([--enable-convertt],
                     [Install ConvertType and other enabled programs.])],
@@ -570,12 +576,14 @@ AC_ARG_ENABLE([warp],
 #    every "notset"  becomes yes.       fi
 # fi
 AS_IF([test $ayes = true ],
-      [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
+      [
+       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=no])
+       AS_IF([test $enable_buildprog = notset], [enable_buildprog=no])
+       AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=no])
        AS_IF([test $enable_crop = notset], [enable_crop=no])
        AS_IF([test $enable_fits = notset], [enable_fits=no])
-       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=no])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
@@ -586,12 +594,14 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_warp = notset], [enable_warp=no])
        ],
 
-      [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
+      [
+       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=yes])
+       AS_IF([test $enable_buildprog = notset], [enable_buildprog=yes])
+       AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=yes])
        AS_IF([test $enable_crop = notset], [enable_crop=yes])
        AS_IF([test $enable_fits = notset], [enable_fits=yes])
-       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=yes])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
@@ -609,6 +619,7 @@ AS_IF([test $ayes = true ],
 
 # Make the enable_package values available for the Makefile:
 AM_CONDITIONAL([COND_ARITHMETIC], [test $enable_arithmetic = yes])
+AM_CONDITIONAL([COND_BUILDPROG], [test $enable_buildprog = yes])
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_COSMICCAL], [test $enable_cosmiccal = yes])
@@ -642,6 +653,7 @@ AC_CONFIG_FILES([Makefile
                  bin/mknoise/Makefile
                  bin/convertt/Makefile
                  bin/convolve/Makefile
+                 bin/buildprog/Makefile
                  bin/cosmiccal/Makefile
            	 bin/mkcatalog/Makefile
                  bin/arithmetic/Makefile

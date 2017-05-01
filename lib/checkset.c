@@ -324,7 +324,7 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
 
   /* If there is actually a suffix, replace it with the (possibly) existing
      suffix. */
-  if(suffix[0]!='\0')
+  if(suffix)
     {
       /* Start from the end of the input array*/
       l=strlen(inname);

@@ -163,9 +163,7 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
                 that is defined by this macro and will have the index of
                 each neighbor. You can use this `nind' for any processing
                 that you like on the neighbor. Note that `op' will be
-                repeated the number of times there is a neighbor. If you
-                want to stop parsing the neighbors, set the `stop' variable
-                to 1.
+                repeated the number of times there is a neighbor.
 
 
    Implementation
