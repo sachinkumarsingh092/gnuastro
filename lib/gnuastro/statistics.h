@@ -104,11 +104,11 @@ gal_statistics_mean_std(gal_data_t *input);
 gal_data_t *
 gal_statistics_median(gal_data_t *input, int inplace);
 
+size_t
+gal_statistics_quantile_index(size_t size, double quantile);
+
 gal_data_t *
 gal_statistics_quantile(gal_data_t *input, double quantile, int inplace);
-
-size_t
-gal_statistics_quantile_index(size_t size, double quant);
 
 size_t
 gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
@@ -143,13 +143,13 @@ gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
  ****************************************************************/
 
 int
-gal_statistics_is_sorted(gal_data_t *data);
+gal_statistics_is_sorted(gal_data_t *input);
 
 void
-gal_statistics_sort_increasing(gal_data_t *data);
+gal_statistics_sort_increasing(gal_data_t *input);
 
 void
-gal_statistics_sort_decreasing(gal_data_t *data);
+gal_statistics_sort_decreasing(gal_data_t *input);
 
 gal_data_t *
 gal_statistics_no_blank_sorted(gal_data_t *input, int inplace);

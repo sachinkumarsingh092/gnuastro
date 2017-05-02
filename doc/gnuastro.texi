@@ -588,7 +588,8 @@ Multithreaded programming (@file{threads.h})
 
 Library demo programs
 
-* Library demo - reading a image::
+* Library demo - reading a image::  Read a FITS image into memory.
+* Library demo - inspecting neighbors::  Inspect the neighbors of a pixel.
 
 Developing
 
@@ -17714,13 +17715,69 @@ convert an index into a coordinate and vice-versa along with several other
 issues for example issues with the neighbors of an element in a
 multi-dimensional context.
 
+@deftypefun size_t gal_dimension_total_size (size_t @code{ndim}, size_t @code{*dsize})
+Return the total number of elements for a dataset with @code{ndim}
+dimensions that has @code{dsize} elements along each dimension.
+@end deftypefun
+
+@deftypefun {size_t *} gal_dimension_increment (size_t @code{ndim}, size_t @code{*dsize})
+Return an allocated array that has the number of elements necessary to
+increment an index along every dimension. For example along the fastest
+dimension (last element in the @code{dsize} and returned arrays), the value
+is @code{1} (one).
+@end deftypefun
+
+@deftypefun size_t gal_dimension_num_neighbors (size_t @code{ndim})
+The maximum number of neighbors (any connectivity) that a data element can
+have in @code{ndim} dimensions. Effectively, this function just returns
+@mymath{3^n-1} (where @mymath{n} is the number of dimensions).
+@end deftypefun
+
+@deffn {Function-like macro} GAL_DIMENSION_FLT_TO_INT (@code{FLT})
+Calculate the integer pixel position that the floating point @code{FLT}
+number belongs to. In the FITS format (and thus in Gnuastro), the center of
+each pixel is allocated on an integer (not it edge), so the pixel which
+hosts a floating point number cannot simply be found with internal type
+conversion.
+@end deffn
+
+@deftypefun void gal_dimension_add_coords (size_t @code{*c1}, size_t @code{*c2}, size_t @code{*out}, size_t @code{ndim})
+For every dimension, add the coordinates in @code{c1} with @code{c2} and
+put the result into @code{out}. In other words, for dimension @code{i} run
+@code{out[i]=c1[i]+c2[i];}. Hence @code{out} may be equal to any one of
+@code{c1} or @code{c2}.
+@end deftypefun
+
+@deftypefun size_t gal_dimension_coord_to_index (size_t @code{ndim}, size_t @code{*dsize}, size_t @code{*coord})
+Return the index (counting from zero) from the coordinates in @code{coord}
+(counting from zero) assuming the dataset has @code{ndim} elements and the
+size of the dataset along each dimension is in the @code{dsize} array.
+@end deftypefun
+
+@deftypefun void gal_dimension_index_to_coord (size_t @code{index}, size_t @code{ndim}, size_t @code{*dsize}, size_t @code{*coord})
+Fill in the @code{coord} array with the coordinates that correspond to
+@code{index} assuming the dataset has @code{ndim} elements and the size of
+the dataset along each dimension is in the @code{dsize} array. Note that
+both @code{index} and each value in @code{coord} are assumed to start from
+@code{0} (zero). Also that the space which @code{coord} points to must
+already be allocated before calling this function.
+@end deftypefun
+
+@deftypefun size_t gal_dimension_dist_manhattan (size_t @code{*a}, size_t @code{*b}, size_t @code{ndim})
+Return the manhattan distance (see
+@url{https://en.wikipedia.org/wiki/Taxicab_geometry, Wikipedia}) between
+the two coordinates @code{a} and @code{b} (each an array of @code{ndim}
+elements).
+@end deftypefun
+
 @deffn {Function-like macro} GAL_DIMENSION_NEIGHBOR_OP (@code{index}, @code{ndim}, @code{dsize}, @code{connectivity}, @code{dinc}, @code{operation})
 Parse the neighbors of the element located at @code{index} and do the
 requested operation on them. This is defined as a macro to allow easy
 definition of any operation on the neighbors of a given element without
 having to use loops within your source code (the loops are implemented by
-this macro). The input arguments to this function-like macro are described
-below:
+this macro). For an example of using this function, please see @ref{Library
+demo - inspecting neighbors}. The input arguments to this function-like
+macro are described below:
 
 @table @code
 @item index
@@ -17760,8 +17817,11 @@ provide you a @code{nind} variable that can be used as the index of the
 neighbor that is currently being studied. It is defined as `@code{size_t
 ndim;}'. Note that @code{operation} will be repeated the number of times
 there is a neighbor for this element.
-
 @end table
+
+This macro works fully within its own @code{@{@}} block and except for the
+@code{nind} variable that shows the neighbor's index, all the variables
+within this macro's block start with @code{gdn_}.
 @end deffn
 
 @node Linked lists, FITS files, Dimensions, Gnuastro library
@@ -19631,148 +19691,281 @@ The output will be: @code{2, 0, 1, 3}.
 @node Statistical operations, Multithreaded programming, Qsort functions, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
-This header includes a large variety of very basic statistical operators
-for various data types. Please note that we expect to greatly simplify the
-functions here for easier and more general usage in future
-releases. Ideally, they should be completely removed and the GNU Scientific
-Library's functions should be used. Since these functions are used in
-various parts of Gnuastro for multiple purposes, in this first library
-release (Gnuastro 0.2), there might be parallels, or non-homogeneous
-arguments. Such situations arise here because of the history of Gnuastro:
-the libraries grew out of the programs, so it will take a little while to
-correct.
+After reading a dataset into memory from a file or fully simulating it with
+another process, the most common processes that will be done on it are
+statistical operations to let you quantify different aspects of the
+data. the functions in this section describe Gnuastro's current set of
+tools for this job. All these functions can work on any numeric data type
+natively (see @ref{Numeric data types}) and can also work on tiles over a
+dataset. Hence the inputs and outputs are in Gnuastro's @ref{Generic data
+container}.
 
-@deffn Structure GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE
-The maximum number of times to try for @mymath{\sigma}-clipping (see
-@ref{Sigma clipping}).
+@deffn  Macro GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE
+The maximum number of clips, when @mymath{\sigma}-clipping should be done
+by convergence. If the clipping does not converge before making this many
+clips, all sigma-clipping outputs will be NaN.
 @end deffn
 
-@deftypefun void gal_statistics_set_bins (float @code{*sorted}, size_t @code{size}, size_t @code{numbins}, float @code{min}, float @code{max}, float @code{onebinvalue}, float @code{quant}, float @code{**obins})
-Given the input @code{sorted} array with @code{size} elements, a given
-number of @code{numbins}, an optional @code{min} and @code{max}, find the
-the bin starting points and keep them in @code{obins}. @code{obins} has two
-columns, and this function only fills the first column. The second will be
-filled by the histogram or cumulative distribution plots.
-
-If @code{onebinvalue} is NaN, then the bins above will be reported.
-However, if it is not NaN, all the bins will be shifted such that the lower
-value of one of the bins will be placed on this value of this variable (if
-it is in the range of the data). When @code{min==max}, the actual data
-range will be used. When @code{quant} is not zero (let's say it has the
-value @mymath{q}, for quantile) and @code{min==max} then the automatic
-range finder will use the values at the quantiles @mymath{q} and
-@mymath{1-q}.
-@end deftypefun
-
-@deftypefun void gal_statistics_histogram (float @code{*sorted}, size_t @code{size}, float @code{*bins}, size_t @code{numbins}, int @code{normhist}, int @code{maxhistone})
-Build the histogram of the data (@code{sorted}, with @code{size} elements)
-in the @code{bins} array which also contains the starting bin values and
-has @code{numbins} rows. See @code{gal_statistics_set_bins}.
-
-When @code{normhist} is non-zero, the histogram will be normalized so the
-sum of all the bin values is unity. When @code{maxhistone} is non-zero, the
-histogram is scaled such that the bin with the largest value gets a value
-of 1.
-@end deftypefun
-
-@deftypefun void gal_statistics_cumulative_fp (float @code{*sorted}, size_t @code{size}, float @code{*bins}, size_t @code{numbins}, int @code{normcfp})
-Build the cumulative frequency plot of the data (@code{sorted}, with
-@code{size} elements) in the @code{bins} array which also contains the
-starting bin values and has @code{numbins} rows. See
-@code{gal_statistics_set_bins}. When @code{normcfp} is non-zero, the
-cumulative frequency plot will be normalized so the last bin has a value of
-1.
-@end deftypefun
-
-@deftypefun void gal_statistics_save_hist (float @code{*sorted}, size_t @code{size}, size_t @code{numbins}, char @code{*filename}, char @code{*comment})
-Create a histogram of the data in @code{sorted} (and @code{size} elements)
-with @code{numbins} and save it into an ASCII text file named
-@file{filename} with a possible set of comments (pointed to by
-@code{comment} before he table.
-@end deftypefun
-
-@deftypefun size_t gal_statistics_index_from_quantile (size_t @code{size}, float @code{quant})
-Given the number of elements (@code{size}), return the index corresponding
-to the quantile @code{quant}.
-@end deftypefun
-
-@deftypefun int gal_statistics_sigma_clip_converge (float @code{*array}, int @code{o1_n0}, size_t @code{num_elem}, float @code{sigma_multiple}, float @code{accuracy}, float @code{*outave}, float @code{*outmed}, float @code{*outstd}, int @code{print})
-Calculate the @mymath{\sigma}-clipped (by convergence) average, median and
-standard deviation on the array @code{array} with @code{num_elem} elements
-(see @ref{Sigma clipping}). If @code{o1_n0==1}, then it is assumed that the
-input array is sorted. @code{sigma_multiple} is the multiple of
-@mymath{\sigma} used in the @mymath{\sigma}-clipping. If the
-@mymath{\sigma}-clipping did converge, then this function will return
-@code{0}, otherwise, it will return @code{1}. If @code{print} is non-zero,
-then the average, median and standard deviation of each step are printed.
-@end deftypefun
-
-@deftypefun int gal_statistics_sigma_clip_certain_num (float @code{*array}, int @code{o1_n0}, size_t @code{num_elem}, float @code{sigma_multiple}, size_t @code{numtimes}, float @code{*outave}, float @code{*outmed}, float @code{*outstd}, int @code{print})
-Calculate the @mymath{\sigma}-clipped (with a fixed number of times)
-average, median and standard deviation on the array @code{array} with
-@code{num_elem} elements (see @ref{Sigma clipping}). If @code{o1_n0==1},
-then it is assumed that the input array is sorted. @code{sigma_multiple} is
-the multiple of @mymath{\sigma} and @code{numtimes} is the number of times
-@mymath{\sigma}-clipping is done. If the @mymath{\sigma}-clipping was
-normally done, then this function will return @code{0}, otherwise, it will
-return @code{1}. If @code{print} is non-zero, then the average, median and
-standard deviation of each step are printed.
-@end deftypefun
-
-@deftypefun void gal_statistics_remove_outliers_flat_cdf (float @code{*sorted}, size_t @code{*outsize})
-Remove the outliers in a distribution based on the slope of the cumulative
-frequency plot (when it becomes too flat). Before this function,
-@code{outssize} will point to the number of elements in @code{sorted},
-after this function, it will be the number of elements that are not
-outliers.
-@end deftypefun
-
-@deffn Macro GAL_STATISTICS_MODE_LOW_QUANTILE
-The lower quantile used in calculating the mode.
+@deffn  Macro GAL_STATISTICS_MODE_GOOD_SYM
+The minimum acceptable symmetricity of the mode calculation. If the
+symmetricity of the derived mode is less than this value, all the returned
+values by @code{gal_statistics_mode} will have a value of NaN.
 @end deffn
 
-@deffn Macro GAL_STATISTICS_MODE_HIGH_QUANTILE
-The lower quantile used in calculating the mode.
+@deffn  Macro GAL_STATISTICS_SORTED_NOT
+@deffnx Macro GAL_STATISTICS_SORTED_INCREASING
+@deffnx Macro GAL_STATISTICS_SORTED_DECREASING
+Macros used to identify if the dataset is sorted and increasing, sorted and
+decreasing or not sorted.
 @end deffn
 
-@deffn Macro GAL_STATISTICS_MODE_SYM_GOOD
-The acceptable value for the mode calculation symmetry.
+@deffn  Macro GAL_STATISTICS_BINS_INVALID
+@deffnx Macro GAL_STATISTICS_BINS_REGULAR
+@deffnx Macro GAL_STATISTICS_BINS_IRREGULAR
+Macros used to identify if the regularity of the bins when defining bins.
 @end deffn
 
-@deffn Macro GAL_STATISTICS_MODE_LOW_QUANT_GOOD
-The lowest quantile that an acceptable mode can have.
-@end deffn
-
-@deffn Macro GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT
-Lower quantile for calculating the symmetricity.
-@end deffn
-
-@deffn Structure gal_statistics_mode_params
-The input parameters for the mode functions, this is mainly an internal
-structure and will become hidden in future releases.
-@end deffn
-
-@deftypefun void gal_statistics_mode_mirror_plots (float @code{*sorted}, size_t @code{size}, size_t @code{mirrorindex}, float @code{min}, float @code{max}, size_t @code{numbins}, char @code{*histsname}, char @code{*cfpsname}, float @code{mirrorplotdist})
-Create a mirror plot based on the index given by @code{mirrorindex}. The
-mode calculation function procedure is defined in Appendix C of Akhlaghi
-and Ichikawa (2015, ApJS 220, 1. arXiv:1505.01664).
+@cindex Number
+@deftypefun {gal_data_t *} gal_statistics_number (gal_data_t @code{*input})
+Return a single-element @code{uint64} dataset containing the number of
+non-blank elements in @code{input}.
 @end deftypefun
 
-@deftypefun float gal_statistics_mode_value_from_sym (float @code{*sorted}, size_t @code{size}, size_t @code{modeindex}, float @code{sym})
-It happens that you have the symmetricity and you want the flux value at
-that point, this function will do that job. The mode calculation function
-procedure is defined in Appendix C of Akhlaghi and Ichikawa (2015, ApJS
-220, 1. arXiv:1505.01664).
+@cindex Minimum
+@deftypefun {gal_data_t *} gal_statistics_minimum (gal_data_t @code{*input})
+Return a single-element dataset containing the minimum non-blank value in
+@code{input}. The numerical datatype of the output is the same as
+@code{input}.
 @end deftypefun
 
-@deftypefun void gal_statistics_mode_index_in_sorted (float @code{*sorted}, size_t @code{size}, float @code{errorstdm}, size_t @code{*modeindex}, float @code{*modesym})
-Find the quantile of the mode of a sorted distribution. The return value is
-either @code{0} (not accurate) or @code{1} (accurate). The mode calculation
-function procedure is defined in Appendix C of Akhlaghi and Ichikawa (2015,
-ApJS 220, 1. arXiv:1505.01664).
+@cindex Maximum
+@deftypefun {gal_data_t *} gal_statistics_maximum (gal_data_t @code{*input})
+Return a single-element dataset containing the maximum non-blank value in
+@code{input}. The numerical datatype of the output is the same as
+@code{input}.
+@end deftypefun
+
+@cindex Sum
+@deftypefun {gal_data_t *} gal_statistics_sum (gal_data_t @code{*input})
+Return a single-element (@code{double} or @code{float64}) dataset
+containing the sum of the non-blank values in @code{input}.
+@end deftypefun
+
+@cindex Mean
+@cindex Average
+@deftypefun {gal_data_t *} gal_statistics_mean (gal_data_t @code{*input})
+Return a single-element (@code{double} or @code{float64}) dataset
+containing the mean of the non-blank values in @code{input}.
+@end deftypefun
+
+@cindex Standard deviation
+@deftypefun {gal_data_t *} gal_statistics_std (gal_data_t @code{*input})
+Return a single-element (@code{double} or @code{float64}) dataset
+containing the standard deviation of the non-blank values in @code{input}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_mean_std (gal_data_t @code{*input})
+Return a two-element (@code{double} or @code{float64}) dataset containing
+the mean and standard deviation of the non-blank values in
+@code{input}. The first element of the returned dataset is the mean and the
+second is the standard deviation.
+
+This function will calculate both values in one pass over the
+dataset. Hence when both the mean and standard deviation of a dataset are
+necessary, this function is much more efficient than calling
+@code{gal_statistics_mean} and @code{gal_statistics_std} separately.
+@end deftypefun
+
+@cindex Median
+@deftypefun {gal_data_t *} gal_statistics_median (gal_data_t @code{*input}, int @code{inplace})
+Return a single-element dataset containing the median of the non-blank
+values in @code{input}. The numerical datatype of the output is the same as
+@code{input}.
+
+Calculating the median involves sorting the dataset and removing blank
+values, for better performance (and less memory usage), you can give a
+non-zero value to the @code{inplace} argument. In this case, the sorting
+and removal of blank elements will be done directly on the input
+dataset. However, after this function the original dataset may have changed
+(if it wasn't sorted or had blank values).
+@end deftypefun
+
+@cindex Quantile
+@deftypefun size_t gal_statistics_quantile_index (size_t @code{size}, double @code{quantile})
+Return the index of the element that has a quantile of @code{quantile}
+assuming the dataset has @code{size} elements.
+@end deftypefun
+
+@deftypefun size_t gal_statistics_quantile (gal_data_t @code{*input}, double @code{quantile}, int @code{inplace})
+Return a single-element dataset containing the value with in a quantile
+@code{quantile} of the non-blank values in @code{input}. The numerical
+datatype of the output is the same as @code{input}. See
+@code{gal_statistics_median} for a description of @code{inplace}.
+@end deftypefun
+
+@deftypefun size_t gal_statistics_quantile_function_index (gal_data_t @code{*input}, gal_data_t @code{*value}, int @code{inplace})
+Return the index of the quantile function (inverse quantile) of
+@code{input} at @code{value}. In other words, this function will return the
+index of the nearest element (of a sorted and non-blank) @code{input} to
+@code{value}. See @code{gal_statistics_median} for a description of
+@code{inplace}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_quantile_function (gal_data_t @code{*input}, gal_data_t @code{*value}, int @code{inplace})
+Return a single-element (@code{double} or @code{float64}) dataset
+containing the quantile function of the non-blank values in @code{input} at
+@code{value}. In other words, this function will return the quantile of
+@code{value} in @code{input}. See @code{gal_statistics_median} for a
+description of @code{inplace}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_mode (gal_data_t @code{*input}, float @code{mirrordist}, int @code{inplace})
+Return a four-element (@code{double} or @code{float64}) dataset that
+contains the mode of the @code{input} distribution. This function
+implements the non-parametric algorithm to find the mode that is described
+in Appendix C of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and
+Ichikawa [2015]}.
+
+In short it compares the actual distribution and its ``mirror
+distribution'' to find the mode. In order to be efficient, you can
+determine how far the comparison goes away from the mirror through the
+@code{mirrordist} parameter (think of it as a multiple of sigma/error). See
+@code{gal_statistics_median} for a description of @code{inplace}.
+
+The output array has the following elements (in the given order, note that
+counting in C starts from 0).
+@example
+array[0]: mode
+array[1]: mode quantile.
+array[2]: symmetricity.
+array[3]: value at the end of symmetricity.
+@end example
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_mode_mirror_plots (gal_data_t @code{*input}, gal_data_t @code{*value}, size_t @code{numbins}, int @code{inplace}, double @code{*mirror_val})
+Make a mirrored histogram and cumulative frequency plot (with
+@code{numbins}) with the mirror distribution of the @code{input} with a
+value at @code{value}.
+
+The output is a list of data structures (see @ref{List of gal_data_t}): the
+first is the bins with one bin at the mirror point, the second is the
+histogram with a maximum of one and the third is the cumulative frequency
+plot (with a maximum of one).
 @end deftypefun
 
 
+@deftypefun int gal_statistics_is_sorted (gal_data_t @code{*input})
+Return the respective sort macro (see above) for the @code{input} dataset.
+@end deftypefun
+
+@deftypefun void gal_statistics_sort_increasing (gal_data_t @code{*input})
+Sort the input dataset (in place) in an increasing order.
+@end deftypefun
+
+@deftypefun void gal_statistics_sort_decreasing (gal_data_t @code{*input})
+Sort the input dataset (in place) in a decreasing order.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_no_blank_sorted (gal_data_t @code{*input}, int @code{inplace})
+Remove all the blanks and sort the input dataset. If @code{inplace} is
+non-zero this will happen on the input dataset (and the output will be the
+same as the input). However, if @code{inplace} is zero, this function will
+allocate a new copy of the dataset that is sorted and has no blank values.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_statistics_regular_bins (gal_data_t @code{*input}, gal_data_t @code{*inrange}, size_t @code{numbins}, double @code{onebinstart})
+Generate an array of regularly spaced elements as a 1D array (column) of
+type @code{double} (i.e., @code{float64}, it has to be double to account
+for small differences on the bin edges). The input arguments are discribed
+below
+
+@table @code
+@item input
+The dataset you want to apply the bins to. This is only necessary if the
+range argument is not complete, see below. If @code{inrange} has all the
+necessary information, you can pass a @code{NULL} pointer for this.
+
+@item inrange
+This dataset keeps the desired range along each dimension of the input data
+structure, it has to be in @code{float} (i.e., @code{float32}) type.
+
+@itemize
+@item
+If you want the full range of the dataset (in any dimensions, then just set
+@code{inrange} to @code{NULL} and the range will be specified from the
+minimum and maximum value of the dataset (@code{input} cannot be
+@code{NULL} in this case).
+
+@item
+If there is one element for each dimension in range, then it is viewed as a
+quantile (Q), and the range will be: `Q to 1-Q'.
+
+@item
+If there are two elements for each dimension in range, then they are
+assumed to be your desired minimum and maximum values. When either of the
+two are NaN, the minimum and maximum will be calculated for it.
+@end itemize
+
+@item numbins
+The number of bins: must be larger than 0.
+
+@item onebinstart
+A desired value for onebinstart. Note that with this option, the bins won't
+start and end exactly on the given range values, it will be slightly
+shifted to accommodate this request.
+@end table
+@end deftypefun
+
+
+@deftypefun {gal_data_t *} gal_statistics_histogram (gal_data_t @code{*input}, gal_data_t @code{*bins}, int @code{normalize}, int @code{maxone})
+Make a histogram of all the elements in the given dataset with bin values
+that are defined in the @code{inbins} structure (see
+@code{gal_statistics_regular_bins}). @code{inbins} is not mandatory, if you
+pass a @code{NULL} pointer, the bins structure will be built within this
+function based on the @code{numbins} input. As a result, when you have
+already defined the bins, @code{numbins} is not used.
+@end deftypefun
+
+
+@deftypefun {gal_data_t *} gal_statistics_cfp (gal_data_t @code{*input}, gal_data_t @code{*bins}, int @code{normalize})
+Make a cumulative frequency plot (CFP) of all the elements in @code{input}
+with bin values that are defined in the @code{bins} structure (see
+@code{gal_statistics_regular_bins}).
+
+The CFP is built from the histogram: in each bin, the value is the sum of
+all previous bins in the histogram. Thus, if you have already calculated
+the histogram before calling this function, you can pass it onto this
+function as the data structure in @code{bins->next} (see @code{List of
+gal_data_t}). If @code{bin->next!=NULL}, then it is assumed to be the
+histogram. If it is @code{NULL}, then the histogram will be calculated
+internally and freed after the job is finished.
+
+When a histogram is given and it is normalized, the CFP will also be
+normalized (even if the normalized flag is not set here): note that a
+normalized CFP's maximum value is 1.
+@end deftypefun
+
+
+@deftypefun {gal_data_t *} gal_statistics_sigma_clip (gal_data_t @code{*input}, float @code{multip}, float @code{param}, int @code{inplace}, int @code{quiet})
+Apply @mymath{\sigma}-clipping on a given dataset and return a dataset that
+contains the results. For a description of @mymath{\sigma}-clipping see
+@ref{Sigma clipping}. @code{multip} is the multiple of the standard
+deviation (@mymath{\sigma} that is used to define outliers in each round of
+clipping.
+
+The role of @code{param} is determined based on its value. If @code{param}
+is larger than @code{1} (one), it must be an integer and will be
+interpretted as the number clips to do. If it is less than @code{1} (one),
+it is interpretted as the tollerance level to stop the iteration.
+
+The output dataset has the following elements:
+@example
+array[0]: Number of points used.
+array[1]: Median.
+array[2]: Mean.
+array[3]: Standard deviation.
+@end example
+@end deftypefun
 
 
 @node Multithreaded programming, World Coordinate System, Statistical operations, Gnuastro library
@@ -20016,10 +20209,11 @@ use those that are generated by Gnuastro after @command{make check} in the
 
 
 @menu
-* Library demo - reading a image::
+* Library demo - reading a image::  Read a FITS image into memory.
+* Library demo - inspecting neighbors::  Inspect the neighbors of a pixel.
 @end menu
 
-@node Library demo - reading a image,  , Library demo programs, Library demo programs
+@node Library demo - reading a image, Library demo - inspecting neighbors, Library demo programs, Library demo programs
 @subsection Library demo - reading a FITS image
 
 The following simple program demonstrates how to read a FITS image into
@@ -20080,7 +20274,50 @@ main(void)
 @end example
 
 
+@node Library demo - inspecting neighbors,  , Library demo - reading a image, Library demo programs
+@subsection Library demo - inspecting neighbors
 
+The following simple program shows ho you can inspect the neighbors of a
+pixel using the @code{GAL_DIMENSION_NEIGHBOR_OP} function-like macro that
+was introduced in @ref{Dimensions}. For easy linking/compilation of this
+program along with a first run see @ref{BuildProgram}. Before running, also
+change the @code{filename} and @code{hdu} variable values to specify an
+existing FITS file and/or extension/HDU.
+
+@example
+#include <stdio.h>
+#include <gnuastro/fits.h>
+#include <gnuastro/dimension.h>
+
+int
+main(void)
+@{
+  double sum;
+  float *array;
+  size_t i, num, *dinc;
+  gal_data_t *input=gal_fits_img_read_to_type("input.fits", "1",
+                                              GAL_TYPE_FLOAT32, -1);
+
+  /* To avoid the `void *' pointer and have `dinc'. */
+  array=input->array;
+  dinc=gal_dimension_increment(input->ndim, input->dsize);
+
+  /* Go over all the pixels. */
+  for(i=0;i<input->size;++i)
+    @{
+      num=0;
+      sum=0.0f;
+      GAL_DIMENSION_NEIGHBOR_OP( i, input->ndim, input->dsize,
+                                 input->ndim, dinc,
+                                 @{++num; sum+=array[nind];@} );
+      printf("%zu: num: %zu, sum: %f\n", i, num, sum);
+    @}
+
+  /* Clean up and return. */
+  gal_data_free(input);
+  return EXIT_SUCCESS;
+@}
+@end example
 
 
 

@@ -65,8 +65,8 @@ gal_dimension_num_neighbors(size_t ndim);
 /************************************************************************/
 /********************          Coordinates         **********************/
 /************************************************************************/
-#define GAL_DIMENSION_FLT_TO_INT(FLT) (FLT)-(int)(FLT) > 0.5f    \
-  ? (int)(FLT)+1 : (int)(FLT);
+#define GAL_DIMENSION_FLT_TO_INT(FLT) ( (FLT)-(int)(FLT) > 0.5f  \
+                                        ? (int)(FLT)+1 : (int)(FLT) )
 
 void
 gal_dimension_add_coords(size_t *c1, size_t *c2, size_t *out, size_t ndim);
@@ -75,7 +75,7 @@ size_t
 gal_dimension_coord_to_index(size_t ndim, size_t *dsize, size_t *coord);
 
 void
-gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
+gal_dimension_index_to_coord(size_t index, size_t ndim, size_t *dsize,
                              size_t *coord);
 
 

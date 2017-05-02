@@ -167,7 +167,7 @@ gal_dimension_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
    this is that this function will often be called with a loop and a single
    allocated space would be enough for the whole loop. */
 void
-gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
+gal_dimension_index_to_coord(size_t index, size_t ndim, size_t *dsize,
                              size_t *coord)
 {
   size_t d, *dinc;
@@ -180,13 +180,13 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
 
     /* One dimensional dataset. */
     case 1:
-      coord[0] = ind;
+      coord[0] = index;
       break;
 
     /* 2D dataset. */
     case 2:
-      coord[0] = ind / dsize[1];
-      coord[1] = ind % dsize[1];
+      coord[0] = index / dsize[1];
+      coord[1] = index % dsize[1];
       break;
 
     /* Higher dimensional datasets. */
@@ -201,11 +201,11 @@ gal_dimension_index_to_coord(size_t ind, size_t ndim, size_t *dsize,
       for(d=0;d<ndim;++d)
         {
           /* Set the coordinate value for this dimension. */
-          coord[d] = ind / dinc[d];
+          coord[d] = index / dinc[d];
 
           /* Replace the index with its remainder with the number of
              elements in all faster dimensions. */
-          ind  %= dinc[d];
+          index  %= dinc[d];
         }
 
       /* Clean up. */
