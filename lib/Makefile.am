@@ -85,12 +85,12 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
 internaldir=$(top_srcdir)/lib/gnuastro-internal
-EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README   \
-  $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-onlyint.h \
-  $(internaldir)/checkset.h $(internaldir)/commonopts.h                  \
-  $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h          \
-  $(internaldir)/options.h $(internaldir)/tableintern.h                  \
-  $(internaldir)/timing.h
+EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README    \
+  $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-internal.h \
+  $(internaldir)/arithmetic-onlyint.h $(internaldir)/checkset.h           \
+  $(internaldir)/commonopts.h $(internaldir)/config.h.in                  \
+  $(internaldir)/fixedstringmacros.h $(internaldir)/options.h             \
+  $(internaldir)/tableintern.h $(internaldir)/timing.h
 
 
 

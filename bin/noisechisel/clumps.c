@@ -965,8 +965,8 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
 
 
   /* Go over this tile and correct the values. */
-  GAL_TILE_PARSE_OPERATE({if(*i>0) *i=ninds[ *(int32_t *)i ];},
-                         tile, NULL, 0, 1);
+  GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 1,
+                          {if(*i>0) *i=ninds[ *(int32_t *)i ];} );
 
   /* Clean up. */
   gal_data_free(newinds);
@@ -1066,7 +1066,7 @@ clumps_find_make_sn_table(void *in_prm)
              used. */
           c=0;
           indarr=cltprm.indexs->array;
-          GAL_TILE_PO_OISET(int32_t, int, {
+          GAL_TILE_PO_OISET(int32_t, int, tile, NULL, 0, 1, {
               /* This pixel's index over all the image. */
               ind = (int32_t *)i - (int32_t *)(p->clabel->array);
               gal_dimension_index_to_coord(ind, ndim, dsize, icoord);
@@ -1106,7 +1106,7 @@ clumps_find_make_sn_table(void *in_prm)
                       }
                   */
                 }
-            }, tile, NULL, 0, 1);
+            });
 
           /* Correct the number of indexs. */
           cltprm.indexs->size=cltprm.indexs->dsize[0]=c;
@@ -1116,9 +1116,8 @@ clumps_find_make_sn_table(void *in_prm)
 
           /* Set all river pixels to CLUMPS_INIT (to be distinguishable
              from the detected regions). */
-          GAL_TILE_PO_OISET(int32_t, int,
-                            {if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;},
-                            tile, NULL, 0, 1);
+          GAL_TILE_PO_OISET( int32_t, int, tile, NULL, 0, 1,
+                             {if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;} );
 
           /* For a check, the step variable will be set. */
           if(clprm->step==1)

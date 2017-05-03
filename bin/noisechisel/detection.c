@@ -182,7 +182,7 @@ static void
 detection_write_in_large(gal_data_t *tile, gal_data_t *copy)
 {
   uint8_t *c=copy->array;
-  GAL_TILE_PARSE_OPERATE({*i=*c++;}, tile, NULL, 0, 0);
+  GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i=*c++;});
 }
 
 

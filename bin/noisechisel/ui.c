@@ -474,7 +474,7 @@ ui_prepare_kernel(struct noisechiselparams *p)
 static void
 ui_prepare_tiles(struct noisechiselparams *p)
 {
-  gal_data_t *check, *tile;
+  gal_data_t *check;
   struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
 
 
@@ -512,18 +512,13 @@ ui_prepare_tiles(struct noisechiselparams *p)
       }
 
 
-  /* If the input has blank elements, then go over all the tiles and set
-     their blank flag to 1 if they have blank values within
-     them. Afterwards, set the use-zero flag for the tiles in any case.*/
+  /* If the input has blank elements, then set teh appropriate flag for
+     each tile.*/
   if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
     {
-      gal_tile_full_blank_flag(tl->tiles,  p->cp.numthreads);
-      gal_tile_full_blank_flag(ltl->tiles, p->cp.numthreads);
+      gal_tile_block_blank_flag(tl->tiles,  p->cp.numthreads);
+      gal_tile_block_blank_flag(ltl->tiles, p->cp.numthreads);
     }
-  for(tile=tl->tiles;tile!=NULL;tile=tile->next)
-    tile->flag |= GAL_DATA_FLAG_BLANK_CH;
-  for(tile=ltl->tiles;tile!=NULL;tile=tile->next)
-    tile->flag |= GAL_DATA_FLAG_BLANK_CH;
 
 
   /* Make the tile check image if requested. */

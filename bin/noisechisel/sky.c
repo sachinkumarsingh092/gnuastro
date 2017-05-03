@@ -89,7 +89,7 @@ sky_mean_std_undetected(void *in_prm)
       bintile->size=tile->size;
       bintile->dsize=tile->dsize;
       bintile->array=gal_tile_block_relative_to_other(tile, p->binary);
-      GAL_TILE_PARSE_OPERATE({if(!*o) numsky++;}, tile, bintile, 1, 1);
+      GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {if(!*o) numsky++;});
 
       /* Only continue, if the fraction of Sky values are less than the
          requested fraction. */
@@ -97,14 +97,13 @@ sky_mean_std_undetected(void *in_prm)
         {
           /* Calculate the mean and STD over this tile. */
           s=s2=0.0f;
-          GAL_TILE_PARSE_OPERATE(
-                                 {
-                                   if(!*o)
-                                     {
-                                       s  += *i;
-                                       s2 += *i * *i;
-                                     }
-                                 }, tile, bintile, 1, 1);
+          GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {
+              if(!*o)
+                {
+                  s  += *i;
+                  s2 += *i * *i;
+                }
+            } );
           darr[0]=s/numsky;
           darr[1]=sqrt( (s2-s*s/numsky)/numsky );
 
@@ -251,7 +250,7 @@ sky_subtract(struct noisechiselparams *p)
       tile=&p->cp.tl.tiles[tid];
 
       /* First subtract the Sky value from the input image. */
-      GAL_TILE_PARSE_OPERATE({*i-=sky[tid];}, tile, NULL, 0, 0);
+      GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=sky[tid];});
 
       /* Change to the convolved image. */
       tarray=tile->array;
@@ -268,7 +267,7 @@ sky_subtract(struct noisechiselparams *p)
          the threshold have to be checked for a NaN which are by
          definition a very small fraction of the total pixels. And if
          there are NaN pixels in the image. */
-      GAL_TILE_PARSE_OPERATE({*i-=sky[tid];}, tile, NULL, 0, 0);
+      GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=sky[tid];});
 
       /* Revert back to the original block. */
       tile->array=tarray;

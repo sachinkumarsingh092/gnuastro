@@ -297,10 +297,10 @@ gal_tile_series_from_minmax(gal_data_t *block, size_t *minmax, size_t number)
    the block pointer and return the `dsize' element of lowest-level
    structure. */
 gal_data_t *
-gal_tile_block(gal_data_t *input)
+gal_tile_block(gal_data_t *tile)
 {
-  while(input->block!=NULL) input=input->block;
-  return input;
+  while(tile->block!=NULL) tile=tile->block;
+  return tile;
 }
 
 
@@ -308,9 +308,7 @@ gal_tile_block(gal_data_t *input)
 
 
 /* Return the increment necessary to start at the next series of contiguous
-   memory (fastest dimension) associated with a tile. See
-   `gal_tile_block_check_tiles' as one example application of this
-   function.
+   memory (fastest dimension) associated with a tile.
 
    1D and 2D cases are simple and need no extra explanation, but the case
    for higher dimensions can be alittle more complicated, So we will go
@@ -409,7 +407,7 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
         dimensionality of this array is irrelevant. Note that unlike
         `tiles', `tilevalues' must be an array.
 
-     `tiles': This will be parsed as a linked list (using the `next'
+     `tilesll': This will be parsed as a linked list (using the `next'
         element). Internally, it might be stored as an array, but this
         function doesn't care! The position of the tile over its block will
         be determined according to the `block' element and the pointer of
@@ -457,15 +455,16 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
         }
     }
 
-  /* Go over the tiles and write the values in. Note Recall that `tofill'
-     has the same type as `tilevalues'. So we are using memcopy. */
+  /* Go over the tiles and write the values in. Recall that `tofill' has
+     the same type as `tilevalues'. So we are using memcopy. */
   tile_ind=0;
   for(tile=tilesll; tile!=NULL; tile=tile->next)
     {
       /* Set the pointer to use as input. */
       in=gal_data_ptr_increment(tilevalues->array, tile_ind++, type);;
-      GAL_TILE_PARSE_OPERATE({memcpy(o, in, gal_type_sizeof(type));},
-                             tile, tofill, 1, 0);
+      GAL_TILE_PARSE_OPERATE( tile, tofill, 1, 0, {
+          memcpy(o, in, gal_type_sizeof(type));
+        } );
     }
 
   return tofill;
@@ -475,12 +474,9 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
 
 
 
-/* Make a copy of the memory block in integer type and fill it with the ID
-   of each tile, the non-filled areas have blank values. Finally, save the
-   final array into a FITS file, specified with `filename'. This is done
-   mainly for inspecting the positioning of tiles. We are using a signed
-   32-bit type because this is the standard FITS standard type for
-   integers. */
+/* Make a copy of the memory block and fill it with the index of each tile
+   in `tilesll' (counting from 0). The non-filled areas will have blank
+   values. The output dataset will have a type of `GAL_TYPE_INT32'. */
 gal_data_t *
 gal_tile_block_check_tiles(gal_data_t *tilesll)
 {
@@ -517,6 +513,45 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
                                 gal_data_ptr_dist(block->array,
                                                   tile->array, block->type),
                                 other->type);
+}
+
+
+
+
+
+/* To use within `gal_tile_full_blank_flag'. */
+static void *
+tile_block_blank_flag(void *in_prm)
+{
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  gal_data_t *tile_ll=(gal_data_t *)(tprm->params);
+
+  size_t i;
+  gal_data_t *tile;
+
+  /* Check all the tiles given to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
+    {
+      tile=&tile_ll[ tprm->indexs[i] ];
+      gal_blank_present(tile, 1);
+    }
+
+  /* Wait for all the other threads to finish. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
+/* Update the blank flag on the tiles within the list of input tiles. */
+void
+gal_tile_block_blank_flag(gal_data_t *tile_ll, size_t numthreads)
+{
+  /* Go over all the tiles and update their blank flag. */
+  gal_threads_spin_off(tile_block_blank_flag, tile_ll,
+                       gal_list_data_number(tile_ll), numthreads);
 }
 
 
@@ -663,6 +698,11 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
         though they have different `block' datasets (that then link to one
         allocated space).  See the `gal_tile_full_two_layers' below.
 
+     `firsttsize': The size of the first tile along every dimension. This
+        is only different from the regular tile size when `regular' is not
+        an exact multiple of `input''s length along every dimension. This
+        array is allocated internally by this function.
+
    Output
    ------
 
@@ -682,8 +722,7 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
            block in each dimension.
 
         2. parent-size (or `psize') which is the size of the parent in each
-           dimension (we don't want to go out of the paren't range).
-*/
+           dimension (we don't want to go out of the paren't range). */
 size_t *
 gal_tile_full(gal_data_t *input, size_t *regular,
               float remainderfrac, gal_data_t **out, size_t multiple,
@@ -970,50 +1009,7 @@ gal_tile_full_two_layers(gal_data_t *input,
    `permutation' element. If a permutation has already been defined for the
    tessellation, this function will not do anythin. If permutation won't be
    necessary, then this function will just return (the permutation must
-   have been initialized to NULL).
-
-
-   Theory
-   ------
-
-   When there is only one channel OR one dimension, the tiles are allocated
-   in memory in the same order that they represent the input data. However,
-   to make channel-independent processing possible in a generic way, the
-   tiles of each channel are allocated contiguously. So, when there is more
-   than one channel AND more than one dimension, the index of the tile does
-   not correspond to its position in the grid covering the input dataset.
-
-   The example below may help clarify: assume you have a 6x6 tessellation
-   with two channels in the horizontal and one in the vertical. On the left
-   you can see how the tile IDs correspond to the input dataset. NOTE how
-   `03' is on the second row, not on the first after `02'. On the right,
-   you can see how the tiles are stored in memory (and shown if you simply
-   write the array into a FITS file for example).
-
-           Corresponding to input                 In memory
-           ----------------------               --------------
-              15 16 17 33 34 35               30 31 32 33 34 35
-              12 13 14 30 31 32               24 25 26 27 28 29
-              09 10 11 27 28 29               18 19 20 21 22 23
-              06 07 08 24 25 26     <--       12 13 14 15 16 17
-              03 04 05 21 22 23               06 07 08 09 10 11
-              00 01 02 18 19 20               00 01 02 03 04 05
-
-   As a result, if your values are stored in same order as the tiles, and
-   you want them in over-all memory (for example to save as a FITS file),
-   you need to permute the values:
-
-      gal_permutation_apply(values, tl->permutation);
-
-   If you have values over-all and you want them in tile-order, you can
-   apply the inverse permutation:
-
-      gal_permutation_apply_inverse(values, tl->permutation);
-
-   Recall that this is the definition of permutation in this context:
-
-       permute:    IN_ALL[ i       ]   =   IN_MEMORY[ perm[i] ]
-       inverse:    IN_ALL[ perm[i] ]   =   IN_MEMORY[ i       ]         */
+   have been initialized to NULL). */
 void
 gal_tile_full_permutation(struct gal_tile_two_layer_params *tl)
 {
@@ -1213,45 +1209,6 @@ gal_tile_full_id_from_coord(struct gal_tile_two_layer_params *tl,
            + gal_dimension_coord_to_index(tl->ndim, tl->numtilesinch, tile) );
 }
 
-
-
-
-
-/* To use within `gal_tile_full_blank_bit'. */
-static void *
-tile_full_blank_flag(void *in_prm)
-{
-  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
-  gal_data_t *tile_ll=(gal_data_t *)(tprm->params);
-
-  size_t i;
-  gal_data_t *tile;
-
-  /* Check all the tiles given to this thread. */
-  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
-    {
-      tile=&tile_ll[ tprm->indexs[i] ];
-      if( gal_blank_present(tile, 0) )
-        tile->flag |= GAL_DATA_FLAG_HASBLANK;
-    }
-
-  /* Wait for all the other threads to finish. */
-  if(tprm->b) pthread_barrier_wait(tprm->b);
-  return NULL;
-}
-
-
-
-
-
-/* Update the blank flag on the tiles within the list of input tiles. */
-void
-gal_tile_full_blank_flag(gal_data_t *tile_ll, size_t numthreads)
-{
-  /* Go over all the tiles and update their blank flag. */
-  gal_threads_spin_off(tile_full_blank_flag, tile_ll,
-                       gal_list_data_number(tile_ll), numthreads);
-}
 
 
 

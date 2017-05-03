@@ -1,11 +1,11 @@
 /*********************************************************************
-data -- Structure and functions to represent/work with data
+Arithmetic -- Preform arithmetic operations on datasets.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -61,9 +61,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Arithmetic flags. */
-#define GAL_ARITHMETIC_INPLACE  1
-#define GAL_ARITHMETIC_FREE     2
-#define GAL_ARITHMETIC_NUMOK    4
+#define GAL_ARITHMETIC_INPLACE  0x1
+#define GAL_ARITHMETIC_FREE     0x2
+#define GAL_ARITHMETIC_NUMOK    0x4
 
 #define GAL_ARITHMETIC_FLAGS_ALL ( GAL_ARITHMETIC_INPLACE        \
                                    | GAL_ARITHMETIC_FREE         \
@@ -136,20 +136,8 @@ enum gal_arithmetic_operators
 
 
 
-
-int
-gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r);
-
-char *
-gal_arithmetic_operator_string(int operator);
-
-gal_data_t *
-gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags);
-
 gal_data_t *
 gal_arithmetic(int operator, unsigned char flags, ...);
-
-
 
 
 

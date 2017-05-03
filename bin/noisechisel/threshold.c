@@ -110,12 +110,12 @@ threshold_apply_on_thread(void *in_prm)
              will help in efficiency, because the compiler can move this
              check out of the loop and only check for NaN values when we
              know the tile has blank pixels. */
-          GAL_TILE_PO_OISET(float, uint8_t, {
+          GAL_TILE_PO_OISET(float, uint8_t, tile, p->binary, 1, 0, {
               *o = ( *i > value1[tid]
                      ? ( *i > value2[tid] ? THRESHOLD_NO_ERODE_VALUE : 1 )
                      : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
                          ? GAL_BLANK_UINT8 : 0 ) );
-            }, tile, p->binary, 1, 0);
+            });
 
           /* Revert the tile's pointers back to what they were. */
           if(p->conv) { tile->array=tarray; tile->block=tblock; }
@@ -127,12 +127,12 @@ threshold_apply_on_thread(void *in_prm)
 
           /* See the explanation above the same step in the quantile
              threshold for an explanation. */
-          GAL_TILE_PO_OISET(float, uint8_t, {
+          GAL_TILE_PO_OISET(float, uint8_t, tile, p->binary, 1, 0, {
               *o = ( ( *i - value1[tid] > p->dthresh * value2[tid] )
                      ? 1
                      : ( (tile->flag & GAL_DATA_FLAG_HASBLANK) && !(*i==*i)
                          ? GAL_BLANK_UINT8 : 0 ) );
-            }, tile, p->binary, 1, 0);
+            });
           break;
 
 

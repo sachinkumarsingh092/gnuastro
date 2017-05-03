@@ -84,6 +84,9 @@ dist_infognuastro_DATA = $(top_srcdir)/doc/gnuastro-figures/*
 if COND_ARITHMETIC
   MAYBE_ARITHMETIC_MAN = man/astarithmetic.1
 endif
+if COND_BUILDPROG
+  MAYBE_BUILDPROG_MAN = man/astbuildprog.1
+endif
 if COND_CONVERTT
   MAYBE_CONVERTT_MAN = man/astconvertt.1
 endif
@@ -123,11 +126,11 @@ endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE_MAN = man/astTEMPLATE.1
 #endif
-dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_CONVERTT_MAN)		\
-  $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) $(MAYBE_CROP_MAN)	\
-  $(MAYBE_FITS_MAN) $(MAYBE_WARP_MAN) $(MAYBE_MKCATALOG_MAN)		\
-  $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN) $(MAYBE_NOISECHISEL_MAN)	\
-  $(MAYBE_STATISTICS_MAN) $(MAYBE_TABLE_MAN)
+dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN)          \
+  $(MAYBE_CONVERTT_MAN) $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN)    \
+  $(MAYBE_CROP_MAN) $(MAYBE_FITS_MAN) $(MAYBE_WARP_MAN)                 \
+  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)       \
+  $(MAYBE_NOISECHISEL_MAN) $(MAYBE_STATISTICS_MAN) $(MAYBE_TABLE_MAN)
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't
@@ -148,6 +151,10 @@ ALLMANSDEP = $(top_srcdir)/lib/gnuastro-internal/options.h
 man/astarithmetic.1: $(top_srcdir)/bin/arithmetic/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "arithmetic operations on images and numbers" \
 	                  --libtool $(toputildir)/arithmetic/astarithmetic
+
+man/astbuildprog.1: $(top_srcdir)/bin/buildprog/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "compile, link with Gnuastro library and its dependencies, and run a C program"      \
+	                  --libtool $(toputildir)/convertt/astconvertt
 
 man/astconvertt.1: $(top_srcdir)/bin/convertt/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "convert known data types to each other"      \

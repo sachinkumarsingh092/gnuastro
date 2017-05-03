@@ -575,6 +575,14 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
     }
 
 
+  /* If there were no objects in the input, then inform the user with an
+     error (no catalog was built). */
+  if(p->numobjects==0)
+    error(EXIT_FAILURE, 0, "no object labels (non-zero pixels) in "
+          "%s (hdu %s). To make a catalog, labeled regions must be defined",
+          objectsfile, p->objectshdu);
+
+
   /* Read the keywords from the clumps image if necessary. */
   if(p->clumps)
     {
@@ -586,6 +594,16 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
       if(keys[1].status)
         error(EXIT_FAILURE, 0, "couldn't find NCLUMPS in the header of "
               "%s (hdu: %s).", p->clumpsfile, p->clumpshdu);
+    }
+
+
+  /* If there were no clumps, then free the clumps array and set it to
+     NULL, so for the rest of the processing, MakeCatalog things that no
+     clumps image was given. */
+  if(p->numclumps==0)
+    {
+      gal_data_free(p->clumps);
+      p->clumps=NULL;
     }
 
 
@@ -705,14 +723,18 @@ ui_preparations_outnames(struct mkcatalogparams *p)
          `tableformat' option. */
       gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
-      /* If a clumps image has been read, we have two outputs. */
-      if(p->clumps)  ui_preparations_both_names(p, p->cp.output);
-      else           p->objectsout=p->cp.output;
+      /* If a clumps image has been read (and there are any clumps in the
+         image), then we have two outputs. */
+      if(p->clumps)
+        ui_preparations_both_names(p, p->cp.output);
+      else
+        p->objectsout=p->cp.output;
     }
   else
     {
       /* Both clumps and object catalogs are necessary. */
-      if(p->clumps)  ui_preparations_both_names(p, p->inputname);
+      if(p->clumps)
+        ui_preparations_both_names(p, p->inputname);
 
       /* We only need one objects catalog. */
       else
@@ -784,13 +806,13 @@ ui_preparations(struct mkcatalogparams *p)
   ui_preparations_read_inputs(p);
 
 
-  /* Set the output filename(s). */
-  ui_preparations_outnames(p);
-
-
   /* Read the helper keywords from the inputs and if they aren't present
      then calculate the necessary parameters. */
   ui_preparations_read_keywords(p);
+
+
+  /* Set the output filename(s). */
+  ui_preparations_outnames(p);
 
 
   /* Allocate the output columns to fill up with the program. */

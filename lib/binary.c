@@ -626,8 +626,8 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
 
   /* Fill the central regions. */
   in=input->array;
-  GAL_TILE_PARSE_OPERATE({*i = *in==GAL_BLANK_UINT8 ? *in : !*in; ++in;},
-                         tile, NULL, 0, 0);
+  GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 0,
+                          {*i = *in==GAL_BLANK_UINT8 ? *in : !*in; ++in;} );
 
 
   /* Clean up and return. */
@@ -694,12 +694,12 @@ gal_binary_fill_holes(gal_data_t *input)
 
   /* The type of the tile is already known (it is `int32_t') and we have no
      output, so we'll just put `int' as a place-holder. In this way we can
-     avoid the switch statement of GAL_TILE_PARSE_OPERATE, and directly
-     use the workhorse macro `GAL_TILE_PO_OISET'. */
-  GAL_TILE_PO_OISET(int32_t, int, {
+     avoid the switch statement of GAL_TILE_PARSE_OPERATE, and directly use
+     the workhorse macro `GAL_TILE_PO_OISET'. */
+  GAL_TILE_PO_OISET(int32_t, int, tile, NULL, 0, 0, {
       *in = *i>1 && *i!=GAL_BLANK_INT32 ? 1 : *in;
       ++in;
-    }, tile, NULL, 0, 0);
+    });
 
 
   /* Clean up and return. */

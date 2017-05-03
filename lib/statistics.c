@@ -58,17 +58,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 gal_data_t *
 gal_statistics_number(gal_data_t *input)
 {
+  uint64_t counter=0;
   size_t dsize=1;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* If there is no blank values in the input, then the total number is
      just the size. */
-  if(gal_blank_present(input, 0))
-    { GAL_TILE_PARSE_OPERATE({++(*o);}, input, out, 0, 1) }
+  if(gal_blank_present(input, 0)) /* `{}' necessary for `else'. */
+    { GAL_TILE_PARSE_OPERATE(input, NULL, 0, 1, {++counter;}); }
   else
-    *((uint64_t *)(out->array)) = input->size;
+    counter = input->size;
 
+  /* Write the value into memory. */
+  *((uint64_t *)(out->array)) = counter;
   return out;
 }
 
@@ -91,7 +94,7 @@ gal_statistics_minimum(gal_data_t *input)
   gal_type_max(out->type, out->array);
 
   /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE({*o = *i < *o ? *i : *o; ++n;}, input, out, 0, 0);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 0, {*o = *i < *o ? *i : *o; ++n;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -116,7 +119,7 @@ gal_statistics_maximum(gal_data_t *input)
   gal_type_min(out->type, out->array);
 
   /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE({*o = *i > *o ? *i : *o; ++n;}, input, out, 0, 0);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 0, {*o = *i > *o ? *i : *o; ++n;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -139,7 +142,7 @@ gal_statistics_sum(gal_data_t *input)
 
   /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
      flag to 1, so it will be 0.0f. */
-  GAL_TILE_PARSE_OPERATE({++n; *o += *i;}, input, out, 0, 1);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -162,7 +165,7 @@ gal_statistics_mean(gal_data_t *input)
 
   /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
      flag to 1, so it will be 0.0f. */
-  GAL_TILE_PARSE_OPERATE({++n; *o += *i;}, input, out, 0, 1);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
   /* Above, we calculated the sum and number, so if there were any elements
      in the dataset (`n!=0'), divide the sum by the number, otherwise, put
@@ -187,7 +190,7 @@ gal_statistics_std(gal_data_t *input)
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the input. */
-  GAL_TILE_PARSE_OPERATE({++n; s += *i; s2 += *i * *i;}, input, out, 0, 1);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
 
   /* Write the standard deviation into the output. */
   *((double *)(out->array)) = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
@@ -210,7 +213,7 @@ gal_statistics_mean_std(gal_data_t *input)
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* Parse the input. */
-  GAL_TILE_PARSE_OPERATE({++n; s += *i; s2 += *i * *i;}, input, out, 0, 1);
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
 
   /* Write in the output values and return. */
   ((double *)(out->array))[0] = n ? s/n                  : GAL_BLANK_FLOAT64;

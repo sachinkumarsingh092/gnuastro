@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro-internal/arithmetic-binary.h>
 #include <gnuastro-internal/arithmetic-onlyint.h>
-
+#include <gnuastro-internal/arithmetic-internal.h>
 
 
 
@@ -1429,7 +1429,7 @@ gal_arithmetic(int operator, unsigned char flags, ...)
       break;
 
     case GAL_ARITHMETIC_OP_WHERE:
-      d1 = va_arg(va, gal_data_t *);    /* Output value/array.        */
+      d1 = va_arg(va, gal_data_t *);    /* To modify value/array.     */
       d2 = va_arg(va, gal_data_t *);    /* Condition (unsigned char). */
       d3 = va_arg(va, gal_data_t *);    /* If true value/array.       */
       arithmetic_where(flags, d1, d2, d3);

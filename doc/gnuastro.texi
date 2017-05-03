@@ -518,7 +518,7 @@ CosmicCalculator
 Library
 
 * Review of library fundamentals::  Guide on libraries and linking.
-* BuildProgram::                Link and run source files using Gnuastro's library.
+* BuildProgram::                Link and run source files with this library.
 * Gnuastro library::            Description of all library functions.
 * Library demo programs::       Demonstration for using libraries.
 
@@ -535,7 +535,7 @@ BuildProgram
 Gnuastro library
 
 * Configuration information::   General information about library config.
-* Library data types::          Definitions and functions for types in Gnuastro.
+* Library data types::          Definitions and functions for types.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
 * Dimensions::                  Dealing with coordinates and dimensions.
@@ -574,12 +574,17 @@ Linked lists (@file{list.h})
 
 FITS files (@file{fits.h})
 
-* FITS macros errors filenames::  General macros, errors and checking FITS names
+* FITS macros errors filenames::  General macros, errors and checking names.
 * CFITSIO and Gnuastro types::  Conversion between FITS and Gnuastro types.
 * FITS HDUs::                   Opening and getting information about HDUs.
 * FITS header keywords::        Reading and writing FITS header keywords.
 * FITS arrays::                 Reading and writing FITS images/arrays.
 * FITS tables::                 Reading and writing FITS tables.
+
+Tessellation library (@file{tile.h})
+
+* Independent tiles::           Work on or check independent tiles.
+* Tile grid::                   Cover a full dataset with non-overlapping tiles.
 
 Multithreaded programming (@file{threads.h})
 
@@ -8644,21 +8649,22 @@ condition. Three operands are required for @command{where}. The input
 format is demonstrated in this simplified example:
 
 @example
-$ astarithmetic modify.fits cond.fits if-true.fits where
+$ astarithmetic modify.fits binary.fits if-true.fits where
 @end example
 
-The value of any pixel in @file{out.fits} that corresponds to a non-zero
-pixel of @file{cond.fits} will be changed to the value of the same pixel in
-@file{if-true.fits} (or a fixed number). The third and second popped
-operands (@file{modify.fits} and @file{cond.fits} above, see @ref{Reverse
-polish notation}) have to have the same
+The value of any pixel in @file{modify.fits} that corresponds to a non-zero
+pixel of @file{binary.fits} will be changed to the value of the same pixel
+in @file{if-true.fits} (this may also be a number). The 3rd and 2nd popped
+operands (@file{modify.fits} and @file{binary.fits} respectively, see
+@ref{Reverse polish notation}) have to have the same
 dimensions/size. @file{if-true.fits} can be either a number, or have the
 same dimension/size as the other two.
 
-That @file{cond.fits} has to have @code{uint8} (or @code{unsigned char} in
-standard C) type (see @ref{Numeric data types} and the type conversion
-operators below). However, ommonly this is no problem because in most cases
-you won't be dealing with an actual FITS file of a conditional image. You
+The 2nd popped operand (@file{binary.fits}) has to have @code{uint8} (or
+@code{unsigned char} in standard C) type (see @ref{Numeric data types}). It
+is treated as a binary dataset (with only two values: zero and non-zero,
+hence the name @code{binary.fits} in this example).  However, commonly you
+won't be dealing with an actual FITS file of a condition/binary image. You
 will probably define the condition in the same run based on some other
 reference image and use the conditional and logical operators above to make
 a true/false (or one/zero) image for you internally. For example the case
@@ -8670,15 +8676,27 @@ $ astarithmetic in.fits reference.fits 100 gt new.fits where
 
 In the example above, any of the @file{in.fits} pixels that has a value in
 @file{reference.fits} greater than @command{100}, will be replaced with the
-corresponding pixel in @file{new.fits}. Finally, the input operands are
-read and used independently, so you can use the same file more than once as
-any of the operands.
+corresponding pixel in @file{new.fits}. Effectively the
+@code{reference.fits 100 gt} part created the condition/binary image which
+was added to the stack (in memory) and later used by @code{where}. The
+command above is thus equivalent to these two commands:
 
-When the first popped operand (@file{if-true.fits}) is a single number, it
-can be a NaN value (or any blank value, depending on its type) like the
-example below (see @ref{Blank pixels}). In this example, all the pixels in
-@file{reference.fits} that have a value greater than 100, will become blank
-in the natural data type of @file{in.fits}.
+@example
+$ astarithmetic reference.fits 100 gt --output=binary.fits
+$ astarithmetic in.fits binary.fits new.fits where
+@end example
+
+Finally, the input operands are read and used independently, so you can use
+the same file more than once as any of the operands.
+
+When the 1st popped operand to @code{where} (@file{if-true.fits}) is a
+single number, it may be a NaN value (or any blank value, depending on its
+type) like the example below (see @ref{Blank pixels}). When the number is
+blank, it will be converted to the blank value of the type of the 3rd
+popped operand (@code{in.fits}). Hence, in the example below, all the
+pixels in @file{reference.fits} that have a value greater than 100, will
+become blank in the natural data type of @file{in.fits} (even though NaN
+values are only defined for floating point types).
 
 @example
 $ astarithmetic in.fits reference.fits 100 gt nan where
@@ -15885,7 +15903,7 @@ program} to easily define your own programs(s).
 
 @menu
 * Review of library fundamentals::  Guide on libraries and linking.
-* BuildProgram::                Link and run source files using Gnuastro's library.
+* BuildProgram::                Link and run source files with this library.
 * Gnuastro library::            Description of all library functions.
 * Library demo programs::       Demonstration for using libraries.
 @end menu
@@ -16609,7 +16627,7 @@ documentation will correspond to your installed version.
 
 @menu
 * Configuration information::   General information about library config.
-* Library data types::          Definitions and functions for types in Gnuastro.
+* Library data types::          Definitions and functions for types.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
 * Dimensions::                  Dealing with coordinates and dimensions.
@@ -17428,70 +17446,9 @@ for more on these wonderful high-level constructs.
 Pointer to the start of the complete allocated block of memory. When this
 pointer is not @code{NULL}, the dataset is not treated as a contiguous
 patch of memory. Rather, it is seen as covering only a portion of the
-larger patch of memory that @code{block} points to.
-
-In many contexts, it is desirable to slice the dataset into subsets or
-tiles (not necessarily overlapping). In such a way that you can work on
-each tile independently. One method would be to copy that region to a
-separate allocated space, but in many contexts this isn't necessary and
-infact can be a big burden on CPU/Memory usage. The @code{block} pointer in
-@code{gal_data_t} is defined for such situations: where allocation is not
-necessary. You just want to read the data or write to it independently (or
-in coordination with) other regions of the dataset. Added with parallel
-processing, this can greatly improve the time/memory consumption.
-
-See the figure below for example: assume the @code{larger} dataset is a
-contiguous block of memory that you are interpretting as a 2D array. But
-you only want to work on the smaller @code{tile} region.
-
-@example
-                            larger
-              ---------------------------------
-              |                               |
-              |              tile             |
-              |           ----------          |
-              |           |        |          |
-              |           |_       |          |
-              |           |*|      |          |
-              |           ----------          |
-              |       tile->block = larger    |
-              |_                              |
-              |*|                             |
-              ---------------------------------
-@end example
-
-To use @code{gal_data_t}'s @code{block} concept, you allocate a
-@code{gal_data_t *tile} which is initialized with the pointer to the first
-element in the sub-array (as its @code{array} argument). Note that this is
-not necessarily the first element in the larger array. You can set the size
-of the tile along with the initialization as you please. Recall that, when
-given a non-@code{NULL} pointer as @code{array}, @code{gal_data_initialize}
-(and thus @code{gal_data_alloc}) do not allocate any space and just uses
-the given pointer for the new @code{array} element of the
-@code{gal_data_t}. So your @code{tile} data structure will not be pointing
-to a separately allocated space.
-
-After the allocation is done, you just point @code{tile->block} to the
-@code{larger} dataset which hosts the full block of memory. Gnuastro's
-library will check the @code{block} pointer of their input dataset to see
-how to deal with dimensions and increments so they can always remain within
-the tile, see @ref{Tessellation library}.
-
-Since the block structure is defined as a pointer, arbitrary levels of
-tesselation/griding are possible (@code{tile->block} may itself be a tile
-in an even larger allocated space). Therefore, just like a linked-list (see
-@ref{Linked lists}), it is important to have the @code{block} pointer of
-the largest dataset set to @code{NULL}. Normally, you won't have to worry
-about this, because @code{gal_data_initialize} (and thus
-@code{gal_data_alloc}) will set the @code{block} element to @code{NULL} by
-default (just remember not to change it). You can then only change the
-@code{block} element for the tiles you define over the allocated space.
-
-The functions in @ref{Tessellation library} are defined to help you most
-effectively use/check/define a tessellation or tiles. This approach to
-dealing with parts of a larger block was inspired from the way the GNU
-Scientific Library (GSL) does it in its ``Vectors and Matrices'' chapter.
-
+larger patch of memory that @code{block} points to. See @ref{Tessellation
+library} for a more thorough explanation and functions to help work with
+tiles that are created from this pointer.
 @end table
 
 
@@ -18638,7 +18595,7 @@ functions in your code along with those discussed here.
 
 
 @menu
-* FITS macros errors filenames::  General macros, errors and checking FITS names
+* FITS macros errors filenames::  General macros, errors and checking names.
 * CFITSIO and Gnuastro types::  Conversion between FITS and Gnuastro types.
 * FITS HDUs::                   Opening and getting information about HDUs.
 * FITS header keywords::        Reading and writing FITS header keywords.
@@ -19416,8 +19373,838 @@ saying that the @code{filename} has been created.
 @node Arithmetic on datasets, Tessellation library, Table input output, Gnuastro library
 @subsection Arithmetic on datasets (@file{arithmetic.h})
 
+When the dataset's type and other information are already known, any
+programming language (including C) provides some very good tools for
+various operations (including arithmetic operations like addition) on the
+dataset with a simple loop. However, as an author of a program, making
+assumptions about the type of data, its dimensionality and other basic
+characteristics will come with a large processing burdern.
+
+For example if you always read your data as double precision floating
+points for a simple operation like addition with an integer constant, you
+will be wasting a lot of CPU and memory when the input dataset is
+@code{int32} type for example (see @ref{Numeric data types}). This overhead
+may be small for small images, but as you scale your process up and work
+with hundred/thousands of files that can be very large, this overhead will
+take a significant portion of the processing power. The functions and
+macros in this section are designed precisely for this purpose: to allow
+you to do any of the defined operations on any dataset with no overhead (in
+the native type of the dataset).
+
+Gnuastro's Arithmetic program uses the functions and macros of this
+section, so please also have a look at the @ref{Arithmetic} program and in
+particular @ref{Arithmetic operators} for a better description of the
+operators discussed here.
+
+The main function of this library is @code{gal_arithmetic} that is
+described below. It can take an arbitrary number of arguments as operands
+(depending on the operator, similar to @code{printf}). Its first two
+arguments are integers specifying the flags and operator. So first we will
+review the constants for the recognized flags and operators and discuss
+them, then introduce the actual function.
+
+@deffn  Macro GAL_ARITHMETIC_INPLACE
+@deffnx Macro GAL_ARITHMETIC_FREE
+@deffnx Macro GAL_ARITHMETIC_NUMOK
+@deffnx Macro GAL_ARITHMETIC_FLAGS_ALL
+@cindex Bitwise Or
+Bit-wise flags to pass onto @code{gal_arithmetic} (see below). To pass
+multiple flags, use the bitwise-or operator, for example
+@code{GAL_ARITHMETIC_INPLACE |
+GAL_ARITHMETIC_FREE}. @code{GAL_ARITHMETIC_FLAGS_ALL} is a combination of
+all flags to shorten your code if you want all flags activated. Each flag
+is described below:
+@table @code
+@item GAL_ARITHMETIC_INPLACE
+Do the operation in-place (in the input dataset, thus modifying it) to
+improve CPU and memory usage. If this flag is used, after
+@code{gal_arithmetic} finishes, the input dataset will be modified. It is
+thus useful if you have no more need for the input after the operation.
+
+@item GAL_ARITHMETIC_FREE
+Free (all the) input dataset(s) after the operation is done. Hence the
+inputs are no longer usable after @code{gal_arithmetic}.
+
+@item GAL_ARITHMETIC_NUMOK
+It is acceptable to use a number and an array together. For example if you
+want to add all the pixels in an image with a single number you can pass
+this flag to avoid having to allocate a constant array the size of the
+image (with all the pixels having the same number).
+@end table
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_PLUS
+@deffnx Macro GAL_ARITHMETIC_OP_MINUS
+@deffnx Macro GAL_ARITHMETIC_OP_MULTIPLY
+@deffnx Macro GAL_ARITHMETIC_OP_DIVIDE
+@deffnx Macro GAL_ARITHMETIC_OP_LT
+@deffnx Macro GAL_ARITHMETIC_OP_LE
+@deffnx Macro GAL_ARITHMETIC_OP_GT
+@deffnx Macro GAL_ARITHMETIC_OP_GE
+@deffnx Macro GAL_ARITHMETIC_OP_EQ
+@deffnx Macro GAL_ARITHMETIC_OP_NE
+@deffnx Macro GAL_ARITHMETIC_OP_AND
+@deffnx Macro GAL_ARITHMETIC_OP_OR
+Binary operators (requiring two operands) that accept datasets of any
+recognized type (see @ref{Numeric data types}). When @code{gal_arithmetic}
+is called with any of these operators, it expects two datasets as
+arguments. For a full description of these operators with the same name,
+see @ref{Arithmetic operators}. The first dataset/operand will be put on
+the left of the operator and the second will be put on the right. The
+output type of the first four is determined from the input types (largest
+type of the inputs). The rest (which are all conditional operators) will
+output a binary @code{uint8_t} (or @code{unsigned char}) dataset with
+values of either @code{0} (zero) or @code{1} (one).
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_NOT
+The logical NOT operator. When @code{gal_arithmetic} is called with this
+operator, it only expects one operand (dataset), since this is a unary
+operator. The output is @code{uint8_t} (or @code{unsigned char}) dataset of
+the same size as the input. Any non-zero element in the input will be
+@code{0} (zero) in the output and any @code{0} (zero) will have a value of
+@code{1} (one).
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_ISBLANK
+A unary operator with output that is @code{1} for any element in the input
+that is blank, and @code{0} for any non-blank element. When
+@code{gal_arithmetic} is called with this operator, it will only expect one
+input dataset. The output dataset will have @code{uint8_t} (or
+@code{unsigned char}) type.
+
+@code{gal_arithmetic} with this operator is just a wrapper for the
+@code{gal_blank_flag} function of @ref{Library blank values} and this
+operator is just included for completeness in arithmetic operations. So in
+your program, it might be easier to just call @code{gal_blank_flag}.
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_WHERE
+The three-operand @emph{where} operator thoroughly discussed in
+@ref{Arithmetic operators}. When @code{gal_arithmetic} is called with this
+operator, it will only expect three input datasets: the first (which is the
+same as the returned dataset) is the array that will be modified. The
+second is the condition dataset (that must have a @code{uint8_t} or
+@code{unsigned char} type), and the third is the value to be used if
+condition is non-zero.
+
+As a result, note that the order of operands when calling
+@code{gal_arithmetic} with @code{GAL_ARITHMETIC_OP_WHERE} is the opposite
+of running Gnuastro's Arithmetic program with the @code{where} operator
+(see @ref{Arithmetic}). This is because the latter uses the reverse-Polish
+notation which isn't necessary when calling a function (see @ref{Reverse
+polish notation}).
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_SQRT
+@deffnx Macro GAL_ARITHMETIC_OP_LOG
+@deffnx Macro GAL_ARITHMETIC_OP_LOG10
+Unary operator functions for calculating the square root
+(@mymath{\sqrt{i}}), @mymath{ln(i)} and @mymath{log(i)} mathematic
+operators on each element of the input dataset. The output will have the
+same type as the input, so if your inputs are integer types be careful.
+
+If you want your output to be floating point but your input is an integer
+type, you can convert the input to a floating point type with
+@code{gal_data_copy_to_new_type} or
+@code{gal_data_copy_to_new_type_free}(see @ref{Copying datasets}).
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_MINVAL
+@deffnx Macro GAL_ARITHMETIC_OP_MAXVAL
+@deffnx Macro GAL_ARITHMETIC_OP_NUMVAL
+@deffnx Macro GAL_ARITHMETIC_OP_SUMVAL
+@deffnx Macro GAL_ARITHMETIC_OP_MEANVAL
+@deffnx Macro GAL_ARITHMETIC_OP_STDVAL
+@deffnx Macro GAL_ARITHMETIC_OP_MEDIANVAL
+Unary operand statistical operators that will return a single value for
+datasets of any size. These are just wrappers around similar functions in
+@ref{Statistical operations} and are included in @code{gal_arithmetic} only
+for completeness (to use easily in @ref{Arithmetic}). In your programs, it
+will probably be easier if you use those @code{gal_statistics_} functions
+directly.
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_ABS
+Unary operand absolute-value operator.
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_MIN
+@deffnx Macro GAL_ARITHMETIC_OP_MAX
+@deffnx Macro GAL_ARITHMETIC_OP_NUM
+@deffnx Macro GAL_ARITHMETIC_OP_SUM
+@deffnx Macro GAL_ARITHMETIC_OP_MEAN
+@deffnx Macro GAL_ARITHMETIC_OP_STD
+@deffnx Macro GAL_ARITHMETIC_OP_MEDIAN
+Multi-operand statistical operations. When @code{gal_arithmetic} is called
+with any of these operators, it will expect only a single operand that will
+be interpretted as a list of datasets (see @ref{List of gal_data_t}. The
+output will be a single dataset with each of its elements replaced by the
+respective statistical operation on the whole list. See the discussion
+under the @code{min} operator in @ref{Arithmetic operators}.
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_POW
+Binary operator to-power operator. When @code{gal_arithmetic} is called
+with any of these operators, it will expect two operands: rasing the first
+by the second. This operator only accepts floating point inputs and the
+output is also floating point.
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_BITAND
+@deffnx Macro GAL_ARITHMETIC_OP_BITOR
+@deffnx Macro GAL_ARITHMETIC_OP_BITXOR
+@deffnx Macro GAL_ARITHMETIC_OP_BITLSH
+@deffnx Macro GAL_ARITHMETIC_OP_BITRSH
+@deffnx Macro GAL_ARITHMETIC_OP_MODULO
+Binary integer-only operand operators. These operators are only defined on
+integer data types. When @code{gal_arithmetic} is called with any of these
+operators, it will expect two operands: the first is put on the left of the
+operator and the second on the right. The ones starting with @code{BIT} are
+the respective bit-wise operators in C and @code{MODULO} is the
+modulo/remainder operator. For a discussion on these operators, please see
+@ref{Arithmetic operators}.
+
+The output type is determined from the input types and C's internal
+conversions: it is strongly recommended that both inputs have the same type
+(any integer type), otherwise the bit-wise behavior will be determined by
+your compiler.
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_BITNOT
+The unary bit-wise NOT operator. When @code{gal_arithmetic} is called with
+any of these operators, it will expect one operand of an integer type and
+preform the bitwise-NOT operation on it. The output will have the same type
+as the input.
+@end deffn
+
+
+@deffn  Macro GAL_ARITHMETIC_OP_TO_UINT8
+@deffnx Macro GAL_ARITHMETIC_OP_TO_INT8
+@deffnx Macro GAL_ARITHMETIC_OP_TO_UINT16
+@deffnx Macro GAL_ARITHMETIC_OP_TO_INT16
+@deffnx Macro GAL_ARITHMETIC_OP_TO_UINT32
+@deffnx Macro GAL_ARITHMETIC_OP_TO_INT32
+@deffnx Macro GAL_ARITHMETIC_OP_TO_UINT64
+@deffnx Macro GAL_ARITHMETIC_OP_TO_INT64
+@deffnx Macro GAL_ARITHMETIC_OP_TO_FLOAT32
+@deffnx Macro GAL_ARITHMETIC_OP_TO_FLOAT64
+Unary type-conversion operators. When @code{gal_arithmetic} is called with
+any of these operators, it will expect one operand and convert it to the
+requested type. Note that with these operators, @code{gal_arithmetic} is
+just a wrapper over the @code{gal_data_copy_to_new_type} or
+@code{gal_data_copy_to_new_type_free} that are discussed in @code{Copying
+datasets}. It accepts these operators only for completeness and easy usage
+in @ref{Arithmetic}. So in your programs, it might be preferrable to
+directly use those functions.
+@end deffn
+
+
+@deftypefun {gal_data_t *} gal_arithmetic (int operator, unsigned char flags, ...)
+Do the arithmetic operation of @code{operator} on the given operands (the
+third argument and any further argument). Certain special conditions can
+also be specified with the @code{flag} operator. The acceptable values for
+@code{operator} are defined in the macros above.
+
+@code{gal_arithmetic} is a multi-argument function (like C's
+@code{printf}). In other words, the number of necessary arguments is not
+fixed and depends on the value to @code{operator}. Here are a few examples
+showing this variability:
+
+@example
+out_1=gal_arithmetic(GAL_ARITHMETIC_OP_LOG,   0, in_1);
+out_2=gal_arithmetic(GAL_ARITHMETIC_OP_PLUS,  0, in_1, in_2);
+out_3=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 0, in_1, in_2, in_3);
+@end example
+
+The number of necessary operands for each operator (and thus the number of
+necessary arguments to @code{gal_arithmetic}) are described above under
+each operator.
+@end deftypefun
+
 @node Tessellation library, Bounding box, Arithmetic on datasets, Gnuastro library
 @subsection Tessellation library (@file{tile.h})
+
+In many contexts, it is desirable to slice the dataset into subsets or
+tiles (overlapping or not). In such a way that you can work on each tile
+independently. One method would be to copy that region to a separate
+allocated space, but in many contexts this isn't necessary and infact can
+be a big burden on CPU/Memory usage. The @code{block} pointer in Gnuastro's
+@ref{Generic data container} is defined for such situations: where
+allocation is not necessary. You just want to read the data or write to it
+independently (or in coordination with) other regions of the dataset. Added
+with parallel processing, this can greatly improve the time/memory
+consumption.
+
+See the figure below for example: assume the @code{larger} dataset is a
+contiguous block of memory that you are interpretting as a 2D array. But
+you only want to work on the smaller @code{tile} region.
+
+@example
+                            larger
+              ---------------------------------
+              |                               |
+              |              tile             |
+              |           ----------          |
+              |           |        |          |
+              |           |_       |          |
+              |           |*|      |          |
+              |           ----------          |
+              |       tile->block = larger    |
+              |_                              |
+              |*|                             |
+              ---------------------------------
+@end example
+
+To use @code{gal_data_t}'s @code{block} concept, you allocate a
+@code{gal_data_t *tile} which is initialized with the pointer to the first
+element in the sub-array (as its @code{array} argument). Note that this is
+not necessarily the first element in the larger array. You can set the size
+of the tile along with the initialization as you please. Recall that, when
+given a non-@code{NULL} pointer as @code{array}, @code{gal_data_initialize}
+(and thus @code{gal_data_alloc}) do not allocate any space and just uses
+the given pointer for the new @code{array} element of the
+@code{gal_data_t}. So your @code{tile} data structure will not be pointing
+to a separately allocated space.
+
+After the allocation is done, you just point @code{tile->block} to the
+@code{larger} dataset which hosts the full block of memory. Where relevant,
+Gnuastro's library functions will check the @code{block} pointer of their
+input dataset to see how to deal with dimensions and increments so they can
+always remain within the tile. The tools introduced in this section are
+designed to help in defining and working with tiles that are created in
+this manner.
+
+Since the block structure is defined as a pointer, arbitrary levels of
+tesselation/griding are possible (@code{tile->block} may itself be a tile
+in an even larger allocated space). Therefore, just like a linked-list (see
+@ref{Linked lists}), it is important to have the @code{block} pointer of
+the largest (allocated) dataset set to @code{NULL}. Normally, you won't
+have to worry about this, because @code{gal_data_initialize} (and thus
+@code{gal_data_alloc}) will set the @code{block} element to @code{NULL} by
+default, just remember not to change it. You can then only change the
+@code{block} element for the tiles you define over the allocated space.
+
+Below, we will first review constructs for @ref{Independent tiles} and then
+define the current approach to fully tessellating a dataset (or covering
+every pixel/data-element with a non-overlapping tile grid in @ref{Tile
+grid}. This approach to dealing with parts of a larger block was inspired
+from a similarly named concept in the GNU Scientific Library (GSL), see its
+``Vectors and Matrices'' chapter for their implementation.
+
+
+
+@menu
+* Independent tiles::           Work on or check independent tiles.
+* Tile grid::                   Cover a full dataset with non-overlapping tiles.
+@end menu
+
+@node Independent tiles, Tile grid, Tessellation library, Tessellation library
+@subsubsection Independent tiles
+
+The most general application of tiles is to treat each independently, for
+example they may overlap, or they may not cover the full image. This
+section provides functions to help in checking/inspecting such tiles. In
+@ref{Tile grid} we will discuss functions that define/work-with a tile grid
+(where the tiles don't overlap and fully cover the input
+dataset). Therefore, the functions in this section are general and can be
+used for the tiles produced by that section also.
+
+@deftypefun void gal_tile_start_coord (gal_data_t @code{*tile}, size_t @code{*start_coord})
+Calculate the starting coordinates of a tile in its allocated block of
+memory and write them in the memory that @code{start_coord} points to
+(which must have @code{tile->ndim} elements).
+@end deftypefun
+
+@deftypefun void gal_tile_start_end_coord (gal_data_t @code{*tile}, size_t @code{*start_end}, int @code{rel_block})
+Put the starting and ending (end point is not inclusive) coordinates of
+@code{tile} into the @code{start_end} array. It is assumed that a space of
+@code{2*tile->ndim} has been already allocated (static or dynamic) for
+@code{start_end} before this function is called.
+
+@code{rel_block} (or relative-to-block) is only relevant when @code{tile}
+has an intermediate tile between it and the allocated space (like a
+channel, see @code{gal_tile_full_two_layers}). If it doesn't
+(@code{tile->block} points the allocated dataset), then the value to
+@code{rel_block} is irrelevant.
+
+When @code{tile->block} is its self a larger block and @code{rel_block} is
+set to 0, then the starting and ending positions will be based on the
+position within @code{tile->block}, not the allocated space.
+@end deftypefun
+
+@deftypefun {void *} gal_tile_start_end_ind_inclusive (gal_data_t @code{*tile}, gal_data_t @code{*work}, size_t @code{*start_end_inc})
+Put the indexs of the first/start and last/end pixels (inclusive) in a tile
+into the @code{start_end} array (that must have two elements). NOTE: this
+function stores the index of each point, not its coordinates. It will then
+return the pointer to the start of the tile in the @code{work} data
+structure (which doesn't have to be equal to @code{tile->block}.
+
+The outputs of this function are defined to make it easy to parse over an
+n-dimensional tile. For example, this function is one of the most important
+parts of the internal processing of in @code{GAL_TILE_PARSE_OPERATE}
+function-like macro that is described below.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tile_series_from_minmax (gal_data_t @code{*block}, size_t @code{*minmax}, size_t @code{number})
+Construct a list of tile(s) given coordinates of the minimum and maximum of
+each tile. The minimum and maximums are assumed to be inclusive. The
+returned pointer is an allocated @code{gal_data_t} array that can later be
+freed with @code{gal_data_array_free} (see @ref{Arrays of
+datasets}). Internally, each element of the output array points to the next
+element, so the output may also be treated as a list of datasets (see
+@ref{List of gal_data_t}) and passed onto the other functions described in
+this section.
+
+The array keeping the minmium and maximum coordinates for each tile must
+have the following format. So in total @code{minmax} must have
+@code{2*ndim*number} elements.
+
+@example
+| min0_d0 | min0_d1 | max0_d0 | max0_d1 | ...
+                ... | minN_d0 | minN_d1 | maxN_d0 | maxN_d1 |
+@end example
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tile_block (gal_data_t @code{*tile})
+Return the dataset that contains @code{tile}'s allocated block of
+memory. If tile is immediately defined as part of the allocated block, then
+this is equivalent to @code{tile->block}. However, it is possible to have
+multiple layers of tiles (where @code{tile->block} is itself a tile). So
+this function is the most generic way to get to the actual allocated
+dataset.
+@end deftypefun
+
+@deftypefun size_t gal_tile_block_increment (gal_data_t @code{*block}, size_t @code{*tsize}, size_t @code{num_increment}, size_t @code{*coord})
+Return the increment necessary to start at the next contiguous patch memory
+associated with a tile. @code{block} is the allocated block of memory and
+@code{tsize} is the size of the tile along every dimension. If @code{coord}
+is @code{NULL}, it is ignored. Otherwise, it will contain the coordinate of
+the start of the next contiguous patch of memory.
+
+This function is intended to be used in a loop and @code{num_increment} is
+the main variable to this function. For the first time you call this
+function, it should be @code{1}. In subsequent calls (while you are parsing
+a tile), it should be increased by one.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tile_block_write_const_value (gal_data_t @code{*tilevalues}, gal_data_t @code{*tilesll}, int @code{initialize})
+Write a constant value for each tile over the area it covers in an
+allocated dataset that is the size of @code{tile}'s allocated block of
+memory (found through @code{gal_tile_block} described above). The arguments
+to this function are:
+
+@table @code
+@item tilevalues
+This must be an array that has the same number of elements as the nodes in
+in @code{tilesll} and in the same order that `tilesll' elements are parsed
+(from top to bottom, see @ref{Linked lists}). As a result the
+dimensionality of this array is irrelevant, it will be parsed contiguously.
+
+@item tilesll
+The list of input tiles (see @ref{List of gal_data_t}). Internally, it
+might be stored as an array (for example the output of
+@code{gal_tile_series_from_minmax} described above), but this function
+doesn't care, it will parse the @code{next} elements to go to the next
+tile. This function will not pop-from or free the @code{tilesll}, it will
+only parse it from start to end.
+
+@item initialize
+Initialize the allocated space with blank values before writing in the
+constant values. This can be useful when the tiles don't cover the full
+allocated block.
+@end table
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tile_block_check_tiles (gal_data_t @code{*tilesll})
+Make a copy of the memory block and fill it with the index of each tile in
+@code{tilesll} (counting from 0). The non-filled areas will have blank
+values. The output dataset will have a type of @code{GAL_TYPE_INT32} (see
+@ref{Library data types}).
+
+This function can be used when you want to check the coverage of each tile
+over the allocated block of memory. It is just a wrapper over the
+@code{gal_tile_block_write_const_value}.
+@end deftypefun
+
+@deftypefun {void *} gal_tile_block_relative_to_other (gal_data_t @code{*tile}, gal_data_t @code{*other})
+Return the pointer corresponding to the start of the region covered by
+@code{tile} over the @code{other} dataset. See the examples in
+@code{GAL_TILE_PARSE_OPERATE} for some example applications of this
+function.
+@end deftypefun
+
+
+@deftypefun void gal_tile_block_blank_flag (gal_data_t @code{*tilell}, size_t @code{numthreads})
+Check if each tile in the list has blank values and update its @code{flag}
+to mark this check and its result (see @ref{Generic data container}). The
+operation will be done on @code{numthreads} threads.
+@end deftypefun
+
+
+@deffn {Function-like macro} GAL_TILE_PARSE_OPERATE (@code{IN}, @code{OTHER}, @code{PARSE_OTHER}, @code{CHECK_BLANK}, @code{OP})
+Parse over @code{IN} (which can be a tile or a fully allocated block of
+memory) and do the @code{OP} operation on it (can be any combination of C
+expresssions). If @code{OTHER!=NULL}, this macro will allow access to its
+element(s) and it can optionally be parsed while parsing over
+@code{IN}. You can use this to parse the same region over two arrays. The
+input arguments are (the expected types of each argument are also written
+here):
+
+@table @code
+@item IN (gal_data_t)
+Input dataset, this can be a tile or an allocated block of memory.
+
+@item OTHER (gal_data_t)
+Dataset (@code{gal_data_t}) to parse along with @code{IN}. It can be
+@code{NULL}. In that case, @code{o} (see description of @code{OP} below)
+will be @code{NULL} and should not be used. If @code{PARSE_OTHER} is zero,
+the size of this dataset is irrelevant. Otherwise, it has to have the same
+size as the allocated block of @code{IN}.
+
+@item PARSE_OTHER (int)
+Parse the other dataset along with the input. When this is non-zero and
+@code{OTHER!=NULL}, then the @code{o} pointer will be incremented to cover
+the @code{OTHER} tile at the same rate as @code{i}, see description of
+@code{OP} for @code{i} and @code{o}.
+
+@item CHECK_BLANK (int)
+If it is non-zero, then the input will be checked for blank values and
+@code{OP} will only be called when we are not on a blank element.
+
+@item OP
+Operator: this can be any number of C experssions. This macro is going to
+define a @code{itype *i} variable which will increment over each element of
+the input array/tile. @code{itype} will be replaced with the C type that
+corresponds to the type of @code{INPUT}. As an example, if @code{INPUT}'s
+type is @code{GAL_DATA_UINT16} or @code{GAL_DATA_FLOAT32}, @code{i} will be
+defined as @code{uint16} or @code{float} respectively.
+
+This function-like macro will also define an @code{otype *o} which you can
+use to access an element of the @code{OTHER} dataset (if
+@code{OTHER!=NULL}). @code{o} will correspond to the type of @code{OTHER}
+(similar to @code{itype} and @code{INPUT} discussed above). If
+@code{PARSE_OTHER} is non-zero, then @code{o} will also be incremented to
+the same index element but in the other array. You can use these along with
+any other variable you define before this macro to process the input and
+store it in the other.
+
+All variables within this function-like macro begin with @code{tpo_} except
+for the three variables listed above. So as long as you don't start the
+names of your variables with this prefix everything will be fine. Note that
+@code{i} (and possibly @code{o}) will be incremented once by this
+function-like macro, so don't increment them within @code{OP}. As a
+summary, the three variables you have access to within @code{OP} are:
+
+@table @code
+@item i
+Pointer to the element of @code{INPUT} that is being parsed with the proper
+type.
+
+@item o
+Pointer to the element of @code{OTHER} that is being parsed with the proper
+type. @code{o} can only be used if @code{OTHER!=NULL} and it will be
+parsed/incremented if @code{PARSE_OTHER} is non-zero.
+
+@item b
+Blank value in the type of @code{INPUT}.
+@end table
+@end table
+
+You can use a given tile (@code{tile} on a dataset that it was not
+initialized with (but has the same size, let's call it @code{new}) with the
+following steps:
+
+@example
+void *tarray;
+gal_data_t *tblock;
+
+/* `tile->block' must corrected AFTER `tile->array' */
+tarray      = tile->array;
+tblock      = tile->block;
+tile->array = gal_tile_block_relative_to_other(tile, new);
+tile->block = new;
+
+/* Parse and operate over this region of the `new' dataset. */
+GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, @{
+    YOUR_PROCESSING;
+  @});
+
+/* Reset `tile->block' and `tile->array'. */
+tile->array=tarray;
+tile->block=tblock;
+@end example
+
+You can work on the same region of another block in one run of this
+function-like macro. To do that, you can make a fake tile and pass that as
+the @code{OTHER} argument. Below is a demonstration, @code{tile} is the
+actual tile that you start with and @code{new} is the other block of
+allocated memory.
+
+@example
+size_t zero=0;
+gal_data_t *faketile;
+
+/* Allocate the fake tile, these can be done outside a loop
+ * (over many tiles). */
+faketile=gal_data_alloc(NULL, new->type, 1, &zero,
+                        NULL, 0, -1, NULL, NULL, NULL);
+free(faketile->array);               /* To keep things clean. */
+free(faketile->dsize);               /* To keep things clean. */
+faketile->block = new;
+faketile->ndim  = new->ndim;
+
+/* These can be done in a loop (over many tiles). */
+faketile->size  = tile->size;
+faketile->dsize = tile->dsize;
+faketile->array = gal_tile_block_relative_to_other(tile, new);
+
+// Do your processing....
+GAL_TILE_PARSE_OPERATE(tile, faketile, 1, 1, @{
+    YOUR_PROCESSING_EXPRESSIONS;
+  @});
+
+// Clean up.
+bintile->array=NULL;
+bintile->dsize=NULL;
+gal_data_free(bintile);
+@end example
+@end deffn
+
+
+
+@node Tile grid,  , Independent tiles, Tessellation library
+@subsubsection Tile grid
+
+One very useful application of tiles is to completely cover an input
+dataset with tiles. Such that you know every pixel/data-element of the
+input image is covered by only one tile. The constructs in this section
+allow easy definition of such a tile structure. They will create lists of
+tiles that are also usable by the general tools discussed in
+@ref{Independent tiles}.
+
+As discussed in @ref{Tessellation}, (mainly raw) astronomical images will
+mostly require two layers of tessellation, one for amplifier channels which
+all have the same size and another (smaller tile-size) tessellation over
+each channel. Hence, in this section we define a general structure to keep
+the main parameters of this two-layer tessellation and help in benefiting
+from it.
+
+@deftp {Type (C @code{struct})} gal_tile_two_layer_params
+This is the general structure to keep all the necessary parameters for a
+two-layer tessellation.
+
+@example
+struct gal_tile_two_layer_params
+@{
+  /* Inputs */
+  size_t             *tilesize;  /*******************************/
+  size_t          *numchannels;  /* These parameters have to be */
+  float          remainderfrac;  /* filled manually before      */
+  uint8_t           workoverch;  /* calling the functions in    */
+  uint8_t           checktiles;  /* this section.               */
+  uint8_t       oneelempertile;  /*******************************/
+
+  /* Internal parameters. */
+  size_t                  ndim;
+  size_t              tottiles;
+  size_t          tottilesinch;
+  size_t           totchannels;
+  size_t          *channelsize;
+  size_t             *numtiles;
+  size_t         *numtilesinch;
+  char          *tilecheckname;
+  size_t          *permutation;
+  size_t           *firsttsize;
+
+  /* Tile and channel arrays (which are also lists). */
+  gal_data_t            *tiles;
+  gal_data_t         *channels;
+@};
+@end example
+@end deftp
+
+@deftypefun {size_t *} gal_tile_full (gal_data_t @code{*input}, size_t @code{*regular}, float @code{remainderfrac}, gal_data_t @code{**out}, size_t @code{multiple}, size_t @code{**firsttsize})
+Cover the full dataset with (mostly) identical tiles and return the number
+of tiles created along each dimension. The regular tile size (along each
+dimension) is determined from the @code{regular} array. If @code{input}'s
+size is not an exact multiple of @code{regular} for each dimension, then
+the tiles touching the edges in that dimension will have a different size
+to fully cover every element of the input (depending on
+@code{remainderfrac}).
+
+The output is an array with the same dimensions as @code{input} which
+contains the number of tiles along each dimension.  See @ref{Tessellation}
+for a description of its application in Gnuastro's programs and
+@code{remainderfrac}, just note that this function defines only onelayer of
+tiles.
+
+This is a low-level function (independent of the
+@code{gal_tile_two_layer_params} strcuture defined above). If you want a
+two-layer tessellation, directly call @code{gal_tile_full_two_layers} that
+is described below. The input arguments to this function are:
+
+@table @code
+@item input
+The main dataset (allocated block) which you want to create a tessellation
+over (only used for its sizes). So @code{input} may be a tile also.
+
+@item regular
+The the size of the regular tiles along each of the input's dimensions. So
+it must have the same number of elements as the dimensions of @code{input}
+(or @code{input->ndim}).
+
+@item remainderfrac
+The significant fraction of the remainder space to see if it should be
+split into two and put on both sides of a dimension or not. This is thus
+only relevant @code{input} length along a dimension isn't an exact multiple
+of the regular tile size along that dimension. See @ref{Tessellation} for a
+more thorough discussion.
+
+@item out
+Pointer to the array of data structures that will keep all the tiles (see
+@ref{Arrays of datasets}). If @code{*out==NULL}, then the necessary space
+to keep all the tiles will be allocated. If not, then all the tile
+information will be filled from the dataset that @code{*out} points to, see
+@code{multiple} for more.
+
+@item multiple
+When @code{*out==NULL} (and thus will be allocated by this function),
+allocate space for @code{multiple} times the number of tiles needed. This
+can be very useful when you have several more identically sized
+@code{inputs}, and you want all their tiles to be allocated (and thus
+indexed) together, even though they have different @code{block} datasets
+(that then link to one allocated space). See the definition of channels in
+@ref{Tessellation} and @code{gal_tile_full_two_layers} below.
+
+@item firsttsize
+The size of the first tile along every dimension. This is only different
+from the regular tile size when @code{regular} is not an exact multiple of
+@code{input}'s length along every dimension. This array is allocated
+internally by this function.
+@end table
+@end deftypefun
+
+
+@deftypefun void gal_tile_full_sanity_check (char @code{*filename}, char @code{*hdu}, gal_data_t @code{*input}, struct gal_tile_two_layer_params @code{*tl})
+Make sure that the input parameters (in @code{tl}, short for two-layer)
+correspond to the input dataset. @code{filename} and @code{hdu} are only
+required for error messages. Also, allocate and fill the
+@code{tl->channelsize} array.
+@end deftypefun
+
+@deftypefun void gal_tile_full_two_layers (gal_data_t @code{*input}, struct gal_tile_two_layer_params @code{*tl})
+Create the two layered tessellation in @code{tl}.  The general set of steps
+you need to take to define the two-layered tessellation over an image can
+be seen in the example code below.
+
+@example
+gal_data_t *input;
+struct gal_tile_two_layer_params tl;
+char *filename="input.fits", *hdu="1";
+
+/* Set all the inputs shown in the structure definition. */
+...
+
+/* Read the input dataset. */
+input=gal_fits_img_read(filename, hdu, -1);
+
+/* Do a sanity check and preparations. */
+gal_tile_full_sanity_check(filename, hdu, input, &tl);
+
+/* Build the two-layer tessellation*/
+gal_tile_full_two_layers(input, &tl);
+
+/* `tl.tiles' and `tl.channels' are now a lists of tiles.*/
+@end example
+@end deftypefun
+
+
+@deftypefun void gal_tile_full_permutation (struct gal_tile_two_layer_params @code{*tl})
+Make a permutation to allow the conversion of tile location in memory to
+its location in the full input dataset and put it in
+@code{tl->permutation}. If a permutation has already been defined for the
+tessellation, this function will not do anything. If permutation won't be
+necessary (there is only one channel or one dimension), then this function
+will not do anything (@code{tl->permutation} must have been initialized to
+@code{NULL}).
+
+When there is only one channel OR one dimension, the tiles are allocated in
+memory in the same order that they represent the input data. However, to
+make channel-independent processing possible in a generic way, the tiles of
+each channel are allocated contiguously. So, when there is more than one
+channel AND more than one dimension, the index of the tile does not
+correspond to its position in the grid covering the input dataset.
+
+The example below may help clarify: assume you have a 6x6 tessellation with
+two channels in the horizontal and one in the vertical. On the left you can
+see how the tile IDs correspond to the input dataset. NOTE how `03' is on
+the second row, not on the first after `02'. On the right, you can see how
+the tiles are stored in memory (and shown if you simply write the array
+into a FITS file for example).
+
+@example
+   Corresponding to input               In memory
+   ----------------------             --------------
+     15 16 17 33 34 35               30 31 32 33 34 35
+     12 13 14 30 31 32               24 25 26 27 28 29
+     09 10 11 27 28 29               18 19 20 21 22 23
+     06 07 08 24 25 26      <--      12 13 14 15 16 17
+     03 04 05 21 22 23               06 07 08 09 10 11
+     00 01 02 18 19 20               00 01 02 03 04 05
+@end example
+
+As a result, if your values are stored in same order as the tiles, and you
+want them in over-all memory (for example to save as a FITS file), you need
+to permute the values:
+
+@example
+gal_permutation_apply(values, tl->permutation);
+@end example
+
+If you have values over-all and you want them in tile-order, you can apply
+the inverse permutation:
+
+@example
+gal_permutation_apply_inverse(values, tl->permutation);
+@end example
+
+Recall that this is the definition of permutation in this context:
+
+@example
+permute:    IN_ALL[ i       ]   =   IN_MEMORY[ perm[i] ]
+inverse:    IN_ALL[ perm[i] ]   =   IN_MEMORY[ i       ]
+@end example
+@end deftypefun
+
+@deftypefun void gal_tile_full_values_write (gal_data_t @code{*tilevalues}, struct gal_tile_two_layer_params @code{*tl}, char @code{*filename}, gal_fits_list_key_t @code{*keys}, char @code{*program_string})
+Write one value for each tile into a file. It is important to note that the
+values in @code{tilevalues} must be ordered in the same manner as the
+tiles, so @code{tilevalues->array[i]} is the value that should be given to
+@code{tl->tiles[i]}. The @code{tl->permutation} array must have been
+initialized before calling this function with
+@code{gal_tile_full_permutation}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tile_full_values_smooth (gal_data_t @code{*tilevalues}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{width}, size_t @code{numthreads})
+Smooth the given values with a flat kernel of the given @code{width}. This
+cannot be done manually because if @code{tl->workoverch==0}, tiles in
+different channels must not be mixed/smoothed. Also the tiles are
+contiguous within the channel, not within the image, see the description
+under @code{gal_tile_full_permutation}.
+@end deftypefun
+
+@deftypefun size_t gal_tile_full_id_from_coord (struct gal_tile_two_layer_params @code{*tl}, size_t @code{*coord})
+Return the ID of the tile that corresponds to the coordinates
+@code{coord}. Having this ID, you can use the @code{tl->tiles} array to get
+to the proper tile or read/write a value into an array that has one value
+per tile.
+@end deftypefun
+
+@deftypefun void gal_tile_full_free_contents (struct gal_tile_two_layer_params @code{*tl})
+Free all the allocated arrays within @code{tl}.
+@end deftypefun
+
 
 
 @node Bounding box, Git wrappers, Tessellation library, Gnuastro library

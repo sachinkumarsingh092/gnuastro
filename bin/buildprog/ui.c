@@ -65,8 +65,10 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will compile and run a "
   "depends on. Hence you do not have to worry about explicitly linking "
   "with CFITSIO for example if you want to work on a FITS file, or with "
   "GSL if you want to use GNU Scientific Library's functions. You can "
-  "optionally use the compiler `-I' and `-L' options to use other "
-  "include headers or link with other libraries respectively.\n"
+  "optionally use the standard compiler options `-I', `-L', and `-l'. "
+  "You can use these to specify non-standard directories to look for "
+  "headers, directories to look for compiled libraries, or libraries to "
+  "link with, respectively.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"

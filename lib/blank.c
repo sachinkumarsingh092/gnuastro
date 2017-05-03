@@ -105,7 +105,7 @@ gal_blank_alloc_write(uint8_t type)
 void
 gal_blank_initialize(gal_data_t *input)
 {
-  GAL_TILE_PARSE_OPERATE({*i=b;}, input, NULL, 0, 0);
+  GAL_TILE_PARSE_OPERATE(input, NULL, 0, 0, {*i=b;});
 }
 
 
