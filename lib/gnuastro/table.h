@@ -26,8 +26,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
-#include <gnuastro/fits.h> /* Includes `gnuastro/data.h' and `fitsio.h' */
 #include <gnuastro/list.h>
+#include <gnuastro/fits.h>
 
 
 

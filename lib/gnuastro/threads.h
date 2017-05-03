@@ -125,7 +125,7 @@ struct gal_threads_params
 };
 
 void
-gal_threads_spin_off(void *(*function)(void *), void *caller_params,
+gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
                      size_t numactions, size_t numthreads);
 
 

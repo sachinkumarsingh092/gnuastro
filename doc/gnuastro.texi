@@ -203,7 +203,7 @@ sub-component to a title is present.
 * Developing::                  The development environment.
 * Gnuastro programs list::      List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
-* GNU Free Documentation License::  Full FDL text.
+* GNU Free Doc. License::       GNU Free documentation license.
 * Index::                       Index of terms
 
 @detailmenu
@@ -535,6 +535,7 @@ BuildProgram
 Gnuastro library
 
 * Configuration information::   General information about library config.
+* Multithreaded programming::   Tools for easy multi-threaded operations.
 * Library data types::          Definitions and functions for types.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
@@ -546,12 +547,16 @@ Gnuastro library
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
 * Bounding box::                Finding the bounding box.
-* Git wrappers::                Wrappers for functions in libgit2.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
 * Statistical operations::      Functions for basic statistics.
-* Multithreaded programming::   Facilitating use of pthreads.
 * World Coordinate System::     Dealing with the world coordinate system.
+* Git wrappers::                Wrappers for functions in libgit2.
+
+Multithreaded programming (@file{threads.h})
+
+* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
+* Gnuastro's thread related functions::  Functions for managing threads.
 
 Data container (@file{data.h})
 
@@ -586,15 +591,12 @@ Tessellation library (@file{tile.h})
 * Independent tiles::           Work on or check independent tiles.
 * Tile grid::                   Cover a full dataset with non-overlapping tiles.
 
-Multithreaded programming (@file{threads.h})
-
-* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
-* Gnuastro's thread related functions::  Functions for managing threads.
-
 Library demo programs
 
 * Library demo - reading a image::  Read a FITS image into memory.
 * Library demo - inspecting neighbors::  Inspect the neighbors of a pixel.
+* Library demo - multi-threaded operation::  Doing an operation on threads.
+* Library demo - reading and writing table columns::  Simple Column I/O.
 
 Developing
 
@@ -649,9 +651,8 @@ to expect a fully familiar experience in the source code, building,
 installing and command-line user interaction that they have seen in all the
 other GNU software that they use. The official and always up to date
 version of this book (or manual) is freely available under @ref{GNU Free
-Documentation License} in various formats (pdf, html, plain text, info, and
-as its Texinfo source) at
-@url{http://www.gnu.org/software/gnuastro/manual/}.
+Doc. License} in various formats (pdf, html, plain text, info, and as its
+Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
 specified most of the topics in @ref{Installation} and @ref{Common program
@@ -16627,6 +16628,7 @@ documentation will correspond to your installed version.
 
 @menu
 * Configuration information::   General information about library config.
+* Multithreaded programming::   Tools for easy multi-threaded operations.
 * Library data types::          Definitions and functions for types.
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
@@ -16638,15 +16640,14 @@ documentation will correspond to your installed version.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
 * Bounding box::                Finding the bounding box.
-* Git wrappers::                Wrappers for functions in libgit2.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
 * Statistical operations::      Functions for basic statistics.
-* Multithreaded programming::   Facilitating use of pthreads.
 * World Coordinate System::     Dealing with the world coordinate system.
+* Git wrappers::                Wrappers for functions in libgit2.
 @end menu
 
-@node Configuration information, Library data types, Gnuastro library, Gnuastro library
+@node Configuration information, Multithreaded programming, Gnuastro library, Gnuastro library
 @subsection Configuration information (@file{config.h})
 
 The @file{gnuastro/config.h} header contains information about the full
@@ -16732,7 +16733,221 @@ with the expression `@code{sizeof size_t}' without having to include this
 header.
 @end deffn
 
-@node Library data types, Library blank values, Configuration information, Gnuastro library
+@node Multithreaded programming, Library data types, Configuration information, Gnuastro library
+@subsection Multithreaded programming (@file{threads.h})
+
+@cindex Multithreaded programming
+In recent years, newer CPUs don't have significantly higher frequencies any
+more. However, CPUs are being manufactured with more cores, enabling more
+than one operation (thread) at each instant. This can be very useful to
+speed up many aspects of processing and in particular image processing.
+
+Most of the programs in Gnuastro utilize multi-threaded programming for the
+CPU intensive processing steps. This can potentially lead to a significant
+decrease in the running time of a program, see @ref{A note on threads}. In
+terms of reading the code, you don't need to know anything about
+multi-threaded programming. You can simply follow the case where only one
+thread is to be used. In these cases, threads are not used and can be
+completely ignored.
+
+@cindex POSIX threads library
+@cindex Lawrence Livermore National Laboratory
+When the C language was defined (the K&R's book was written), using threads
+was not common, so C's threading capabilities aren't introduced
+there. Gnuastro uses POSIX threads for multi-threaded programming, defined
+in the @file{pthread.h} system wide header. There are various resources for
+learning to use POSIX threads. An excellent
+@url{https://computing.llnl.gov/tutorials/pthreads/, tutorial} is provided
+by the Lawrence Livermore National Laboratory, with abundant figures to
+better understand the concepts, it is a very good start.  The book
+`Advanced programming in the Unix environment'@footnote{Don't let the title
+scare you! The two chapters on Multi-threaded programming are very
+self-sufficient and don't need any more knowledge than K&R.}, by Richard
+Stevens and Stephen Rago, Addison-Wesley, 2013 (Third edition) also has two
+chapters explaining the POSIX thread constructs which can be very helpful.
+
+@cindex OpenMP
+An alternative to POSIX threads was OpenMP, but POSIX threads are low
+level, allowing much more control, while being easier to understand, see
+@ref{Why C}. All the situations where threads are used in Gnuastro
+currently are completely independent with no need of coordination between
+the threads.  Such problems are known as ``embarrassingly parallel''
+problems. They are some of the simplest problems to solve with threads and
+are also the ones that benefit most from them, see the LLNL
+introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
+
+One very useful POSIX thread concept is
+@code{pthread_barrier}. Unfortunately, it is only an optional feature in
+the POSIX standard, so some operating systems don't include it. Therefore
+in @ref{Implementation of pthread_barrier}, we introduce our own
+implementation. This is a rather technical section only necessary for more
+technical readers and you can safely ignore it. Following that, we describe
+the helper functions in this header that can greatly simplify writing a
+multi-threaded program, see @ref{Gnuastro's thread related functions} for
+more.
+
+@menu
+* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
+* Gnuastro's thread related functions::  Functions for managing threads.
+@end menu
+
+@node Implementation of pthread_barrier, Gnuastro's thread related functions, Multithreaded programming, Multithreaded programming
+@subsubsection Implementation of @code{pthread_barrier}
+@cindex POSIX threads
+@cindex pthread_barrier
+One optional feature of the POSIX Threads standard is the
+@code{pthread_barrier} concept. It is a very useful high-level construct
+that allows for independent threads to ``wait'' behind a ``barrier'' for
+the rest after they finish. Barriers can thus greatly simplify the code in
+a multi-threaded program, so they are heavily used in Gnuastro. However,
+since its an optional feature in the POSIX standard, some operating systems
+don't include it. So to make Gnuastro portable, we have written our own
+implementation of those @code{pthread_barrier} functions.
+
+At @command{./configure} time, Gnuastro will check if
+@code{pthread_barrier} constructs are available on your system or not. If
+@code{pthread_barrier} is not available, our internal implementation will
+be compiled into the Gnuastro library and the definitions and declarations
+below will be usable in your code with @code{#include
+<gnuastro/threads.h>}.
+
+@deffn Type pthread_barrierattr_t
+Type to specify the attributes of a POSIX threads barrier.
+@end deffn
+
+@deffn Type pthread_barrier_t
+Structure defining the POSIX threads barrier.
+@end deffn
+
+@deftypefun int pthread_barrier_init (pthread_barrier_t @code{*b}, pthread_barrierattr_t @code{*attr}, unsigned int @code{limit})
+Initialize the barrier @code{b}, with the attributes @code{attr} and total
+@code{limit} (a number of) threads that must wait behind it. This function
+must be called before spinning off threads.
+@end deftypefun
+
+@deftypefun int pthread_barrier_wait (pthread_barrier_t @code{*b})
+This function is called within each thread, just before it is ready to
+return. Once a thread's function hits this, it will ``wait'' until all the
+other functions are also finished.
+@end deftypefun
+
+@deftypefun int pthread_barrier_destroy (pthread_barrier_t @code{*b})
+Destroy all the information in the barrier structure. This should be called
+by the function that spinned-off the threads after all the threads have
+finished.
+
+@cartouche
+@noindent
+@strong{Destroy a barrier before re-using it:} It is very important to
+destroy the barrier before (possibly) reusing it. This destroy function not
+only destroys the internal structures, it also waits (in 1 microsecond
+intervals, so you will not notice!) until all the threads don't need the
+barrier structure any more. If you immediately start spinning off new
+threads with a not-destroyed barrier, then the internal structure of the
+remaining threads will get mixed with the new ones and you will get very
+strange and apparently random errors that are extremely hard to debug.
+@end cartouche
+@end deftypefun
+
+@node Gnuastro's thread related functions,  , Implementation of pthread_barrier, Multithreaded programming
+@subsubsection Gnuastro's thread related functions
+
+@cindex POSIX Threads
+The POSIX Threads functions offered in the C library are very low-level and
+offer a great range of control over the properties of the threads. So if
+you are interested in customizing your tools for complicated thread
+applications, it is strongly encouraged to get a nice familarity with
+them. Some resources were introduced in @ref{Multithreaded
+programming}.
+
+However, in many cases used in astronomical data analysis, you don't need
+communication between threads and each target operation can be done
+independently. Since such operations are very commen, Gnuastro provides the
+tools below to facilitate the creation and management of jobs without any
+paritcular knowledge of POSIX Threads for such operations. The most
+interesting high-level functions of this section are the
+@code{gal_threads_number} and @code{gal_threads_spin_off} that identify the
+number of threads on the system and spin-off threads. You can see a
+demonstration of using these functions in @ref{Library demo -
+multi-threaded operation}.
+
+@deftp {C @code{struct})} gal_threads_params
+Structure keeping the parameters of each thread. When each thread is
+created, a pointer to this structure is passed to it. The @code{params}
+element can be the pointer to a structure defined by the user which
+contains all the necessary parameters to pass onto the worker function. The
+rest of the elements within this structure are set internally by
+@code{gal_threads_spin_off} and are relevant to the worker function.
+@example
+struct gal_threads_params
+@{
+  size_t            id; /* Id of this thread.                  */
+  void         *params; /* User-identified pointer.            */
+  size_t       *indexs; /* Target indexs given to this thread. */
+  pthread_barrier_t *b; /* Barrier for all threads.            */
+@};
+@end example
+@end deftp
+
+@deftypefun size_t gal_threads_number ()
+Return the number of threads that the operating system has available for
+your program. This number is usually fixed for a single machine and doesn't
+change. So this function is useful when you want to run your program on
+different machines (with different CPUs).
+@end deftypefun
+
+@deftypefun void gal_threads_spin_off (void @code{*(*worker)(void *)}, void @code{*caller_params}, size_t @code{numactions}, size_t @code{numthreads})
+Distribute @code{numactions} jobs between @code{numthreads} threads and
+spin-off each thread by calling the @code{worker} function. The
+@code{caller_params} pointer will also be passed to @code{worker} as part
+of the @code{gal_threads_params} structure. For a fully working example of
+this function, please see @ref{Library demo - multi-threaded operation}.
+@end deftypefun
+
+@deftypefun void gal_threads_attr_barrier_init (pthread_attr_t @code{*attr}, pthread_barrier_t @code{*b}, size_t @code{limit})
+@cindex Detached threads
+This is a low-level function in case you don't want to use
+@code{gal_threads_spin_off}. It will initialize the general thread
+attribute @code{attr} and the barrier @code{b} with @code{limit} threads to
+wait behind the barrier. For maximum efficiency, the threads initialized
+with this function will be detached.  Therefore no communication is
+possible between these threads and in particular @code{pthread_join} won't
+work on these threads. You have to use the barrier constructs to wait for
+all threads to finish.
+@end deftypefun
+
+@deftypefun void gal_threads_dist_in_threads (size_t @code{numactions}, size_t @code{numthreads}, size_t @code{**outthrds}, size_t @code{*outthrdcols})
+This is a low-level function in case you don't want to use
+@code{gal_threads_spin_off}. Identify the ``index''es (starting from 0) of
+the actions to be done on each thread in the @code{outthrds}
+array. @code{outthrds} is treated as a 2D array with @code{numthreads} rows
+and @code{outthrdcols} columns. The indexs in each row, identify the
+actions that should be done by one thread. Please see the explanation below
+to understand the purpose of this operation.
+
+Let's assume you have @mymath{A} actions (where there is only one function
+and the input values differ for each action) and @mymath{T} threads
+available to the system with @mymath{A>T} (common values for these two
+would be @mymath{A>1000} and @mymath{T<10}). Spinning off a thread is not a
+cheap job and requires a significant number of CPU cycles. Therefore,
+creating @mymath{A} threads is not the best way to address such a
+problem. The most efficient way to manage the actions is such that only
+@mymath{T} threads are created, and each thread works on a list of actions
+identified for it in series (one after the other). This way your CPU will
+get all the actions done with minimal overhead.
+
+The purpose of this function is to do what we explained above: each row in
+the @code{outthrds} array contains the indexs of actions which must be done
+by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
+using @code{outthrds}, you don't have to know the number of columns. The
+@code{GAL_BLANK_SIZE_T} macro has a role very similar to a
+string's @code{\0}: every row finishes with this macro, so can easily stop
+parsing the indexes in the row when you confront it. Please see the example
+program in @file{tests/lib/multithread.c} for a demonstration.
+
+@end deftypefun
+
+@node Library data types, Library blank values, Multithreaded programming, Gnuastro library
 @subsection Library data types (@file{type.h})
 
 Data in astronomy can have many types, numeric (numbers) and strings
@@ -19208,8 +19423,10 @@ Tables are a collection of one dimensional datasets that are packed
 together into one file. They are the single most common format to store
 high-level (processed) information, hence they play a very important role
 in Gnuastro. For a more thorough introduction, please see Gnuastro's
-@ref{Table}. Gnuastro's Table program and all the other programs that can
-read and write into tables use the functions of this section.
+@ref{Table}. Gnuastro's Table program, and all the other programs that can
+read from and write into tables, use the functions of this section. For a
+simple demonstration of using the constructs introduced here, see
+@ref{Library demo - reading and writing table columns}.
 
 Currently only plain text (see @ref{Gnuastro text table format}) and FITS
 tables are supported by Gnuastro. However, the low-level table
@@ -19320,12 +19537,13 @@ regular expression (in GNU AWK format) enclosed in @code{/ /}. The
 @code{searchin} value must be one of the macros defined above. If
 @code{cols} is NULL, then this function will read the full table.
 
-The output is a linked list with the same order of the @code{cols}
-list. Note that one column node in the @code{cols} list might give multiple
-columns (for example from regular expressions), in this case, the order of
-output columns that correspond to that one input, are in order of the table
-(which column was read first).  So the first requested column is the first
-popped data structure and so on.
+The output is an individually allocated list of datasets (see @ref{List of
+gal_data_t}) with the same order of the @code{cols} list. Note that one
+column node in the @code{cols} list might give multiple columns (for
+example from regular expressions), in this case, the order of output
+columns that correspond to that one input, are in order of the table (which
+column was read first). So the first requested column is the first popped
+data structure and so on.
 @end deftypefun
 
 @cindex Git
@@ -20207,7 +20425,7 @@ Free all the allocated arrays within @code{tl}.
 
 
 
-@node Bounding box, Git wrappers, Tessellation library, Gnuastro library
+@node Bounding box, Polygons, Tessellation library, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporting a the bounding box of certain inputs are
@@ -20242,47 +20460,10 @@ last pixels of the overlap will be put in @code{fpixel_o} and
 
 
 
-@node Git wrappers, Polygons, Bounding box, Gnuastro library
-@subsection Git wrappers (@file{git.h})
-
-@cindex Git
-@cindex libgit2
-Git is one of the most common tools for version control and it can often be
-useful during development, for example see @code{COMMIT} keyword in
-@ref{Output headers}. The functions introduced here are described in the
-@file{gnuastro/git.h} header. At installation time, Gnuastro will also
-check for the existence of libgit2 and store the value in the
-@code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration
-information}. @file{gnuastro/git.h} includes @file{gnuastro/config.h}
-internally, so won't have to include both for this macro.
-
-@deftypefun {char *} gal_git_describe ( )
-When libgit2 is present and the program is called within a directory that
-is version controlled, then this function will return a string containing
-the commit description (similar to Gnuastro's unofficial version number,
-see @ref{Version numbering}). If there are uncommitted changes in the
-running directory, it will add a `@code{-dirty}' prefix to the
-description. When there is no tagged point in the previous commit, this
-function will return a uniquely abbreviated commit object as fallback. This
-function is used for generating the value of the @code{COMMIT} keyword in
-@ref{Output headers}. The output string is similar to the output of the
-following command:
-
-@example
-$ git describe --dirty --always
-@end example
-
-Space for the output string is allocated within this function, so after
-using the value you have to @code{free} the output string. If libgit2 is
-not installed or the program calling this function is not within a version
-controlled directory, then the output will be the @code{NULL} pointer.
-@end deftypefun
 
 
 
-
-
-@node Polygons, Qsort functions, Git wrappers, Gnuastro library
+@node Polygons, Qsort functions, Bounding box, Gnuastro library
 @subsection Polygons (@file{polygon.h})
 
 Polygons are commonly necessary in image processing. In Gnuastro, they are
@@ -20396,48 +20577,19 @@ both polygons have to be sorted in an anti-clock-wise manner.
 @subsection Qsort functions (@file{qsort.h})
 
 The C programming language comes with the @code{qsort} (Quick sort)
-function. By allowing you to define the sorting based on the data,
-@code{qsort} is a generic function which allows you to sort any kind of
-data structure. The functions here are all meant to be passed onto
-@code{qsort} for sorting the respective types of data in the respective
-manner. Because of this all these functions have the same two argument
-types.
+function. @code{qsort} is a generic function which allows you to sort any
+kind of data structure (not just a single number). To to define greater and
+smaller (for sorting), @code{qsort} needs another function, even for simple
+numerical types. To facilitate numerical sorting for Gnuastro's
+programs/libraries, Gnuastro defines a function for each type's increasing
+and decreasing function. You can pass these functions to @code{qsort} when
+your array has the respective type (see @ref{Numeric data types}).
 
 @deffn {Global variable} {gal_qsort_index_arr}
 Pointer to a floating point array (@code{float *}) to use as a reference in
 @code{gal_qsort_index_float_decreasing}, see the explanation there for
 more.
 @end deffn
-
-@deftypefun int gal_qsort_int_decreasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort an integer array in
-decreasing order.
-@end deftypefun
-
-@deftypefun int gal_qsort_int_increasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort an integer array in
-increasing order.
-@end deftypefun
-
-@deftypefun int gal_qsort_float_decreasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort a single precision
-floating point array in decreasing order.
-@end deftypefun
-
-@deftypefun int gal_qsort_float_increasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort a single precision
-floating point array in increasing order.
-@end deftypefun
-
-@deftypefun int gal_qsort_double_decreasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort a double precision
-floating point array in decreasing order.
-@end deftypefun
-
-@deftypefun int gal_qsort_double_increasing (const void @code{*a}, const void @code{*b})
-When passed to @code{qsort}, this function will sort a double precision
-floating point array in increasing order.
-@end deftypefun
 
 @deftypefun int gal_qsort_index_float_decreasing (const void @code{*a}, const void @code{*b})
 When passed to @code{qsort}, this function will sort a @code{size_t} array
@@ -20468,6 +20620,21 @@ The output will be: @code{2, 0, 1, 3}.
 @end deftypefun
 
 
+@deftypefun int gal_qsort_TYPE_increasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort an @code{TYPE} array
+in increasing order (first element will be the smallest). Please replace
+@code{TYPE} (in the function name) with one of the @ref{Numeric data
+types}, for example @code{gal_qsort_int32_increasing}, or
+@code{gal_qsort_float64_increasing}.
+@end deftypefun
+
+@deftypefun int gal_qsort_TYPE_decreasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort an @code{TYPE} array
+in decreasing order (first element will be the largest). Please replace
+@code{TYPE} (in the function name) with one of the @ref{Numeric data
+types}, for example @code{gal_qsort_int32_decreasing}, or
+@code{gal_qsort_float64_decreasing}.
+@end deftypefun
 
 
 
@@ -20475,7 +20642,9 @@ The output will be: @code{2, 0, 1, 3}.
 
 
 
-@node Statistical operations, Multithreaded programming, Qsort functions, Gnuastro library
+
+
+@node Statistical operations, World Coordinate System, Qsort functions, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
 After reading a dataset into memory from a file or fully simulating it with
@@ -20755,177 +20924,10 @@ array[3]: Standard deviation.
 @end deftypefun
 
 
-@node Multithreaded programming, World Coordinate System, Statistical operations, Gnuastro library
-@subsection Multithreaded programming (@file{threads.h})
-
-@cindex Multithreaded programming
-In modern times, newer CPU generations don't have significantly higher
-frequencies any more. However, CPUs are being manufactured with more cores,
-enabling more than one operation (thread) at each instant. This can be very
-useful to speed up many aspects of processing and in particular image
-processing.
-
-Most of the programs in Gnuastro utilize multi-threaded programming for the
-CPU intensive processing steps. This can potentially lead to a significant
-decrease in the running time of a program, see @ref{A note on threads}. In
-terms of reading the code, you don't need to know anything about
-multi-threaded programming. You can simply follow the case where only one
-thread is to be used. In these cases, threads are not used and can be
-completely ignored.
-
-@cindex POSIX threads library
-@cindex Lawrence Livermore National Laboratory
-At the time K&R's book was written, using threads was not common, so C's
-threading capabilities aren't introduced there. We use POSIX threads for
-multi-threaded programming, defined in the @file{pthread.h} system wide
-header. There are various resources for learning to use POSIX threads, the
-excellent tutorial from
-@url{https://computing.llnl.gov/tutorials/pthreads/, LLNL} is a very good
-start.  The book `Advanced programming in the Unix
-environment'@footnote{Don't let the title scare you! The two chapters on
-Multi-threaded programming are very self-sufficient and don't need any more
-knowledge than K&R.}, by Richard Stevens and Stephen Rago, Addison-Wesley,
-2013 (Third edition) also has two chapters explaining the POSIX thread
-constructs which can be very helpful.
-
-@cindex OpenMP
-An alternative to POSIX threads was OpenMP, but POSIX threads are low
-level, allowing much more control, while being easier to understand, see
-@ref{Why C}. All the situations where threads are used are completely
-independent with minimal need of coordination between the threads.  Such
-problems are known as ``embarrassingly parallel'' problems. They are some
-of the simplest problems to solve with threads and also the ones that
-benefit most from threads, see the LLNL
-introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
-
-One very useful POSIX thread concept is
-@code{pthread_barrier}. Unfortunately, it is only an optional feature in
-the POSIX standard, so some operating systems don't include it. Therefore
-in @ref{Implementation of pthread_barrier}, we introduce our own
-implementation. You can ignore this section if your system has this
-construct. Following that, we describe the helper functions in this header
-that can greatly simplify writing a multi-threaded program, see
-@ref{Gnuastro's thread related functions} for more.
-
-@menu
-* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
-* Gnuastro's thread related functions::  Functions for managing threads.
-@end menu
-
-@node Implementation of pthread_barrier, Gnuastro's thread related functions, Multithreaded programming, Multithreaded programming
-@subsubsection Implementation of @code{pthread_barrier}
-@cindex POSIX threads
-@cindex pthread_barrier
-One optional feature of the POSIX Threads standard is the
-@code{pthread_barrier} concept. It is a very useful high-level construct
-that allows for independent threads to ``wait'' behind a ``barrier'' for
-the rest after they finish. Barriers can thus greatly simplify the code in
-a multi-threaded program, so they are heavily used in Gnuastro. However,
-since its an optional feature in the POSIX standard, some operating systems
-don't include it. So to make Gnuastro portable, we have written our own
-implementation of those @code{pthread_barrier} functions.
-
-At @command{./configure} time, Gnuastro will check if
-@code{pthread_barrier} constructs are available on your system or not. If
-@code{pthread_barrier} is not available, our internal implementation will
-be compiled into the Gnuastro library and the definitions and declarations
-below will be usable in your code with @code{#include
-<gnuastro/threads.h>}.
-
-@deffn Type pthread_barrierattr_t
-Type to specify the attributes of a POSIX threads barrier.
-@end deffn
-
-@deffn Type pthread_barrier_t
-Structure defining the POSIX threads barrier.
-@end deffn
-
-@deftypefun int pthread_barrier_init (pthread_barrier_t @code{*b}, pthread_barrierattr_t @code{*attr}, unsigned int @code{limit})
-Initialize the barrier @code{b}, with the attributes @code{attr} and total
-@code{limit} (a number of) threads that must wait behind it. This function
-must be called before spinning off threads.
-@end deftypefun
-
-@deftypefun int pthread_barrier_wait (pthread_barrier_t @code{*b})
-This function is called within each thread, just before it is ready to
-return. Once a thread's function hits this, it will ``wait'' until all the
-other functions are also finished.
-@end deftypefun
-
-@deftypefun int pthread_barrier_destroy (pthread_barrier_t @code{*b})
-Destroy all the information in the barrier structure. This should be called
-by the function that spinned-off the threads after all the threads have
-finished.
-
-@cartouche
-@noindent
-@strong{Destroy a barrier before re-using it:} It is very important to
-destroy the barrier before (possibly) reusing it. This destroy function not
-only destroys the internal structures, it also waits (in 1 microsecond
-intervals, so you will not notice!) until all the threads don't need the
-barrier structure any more. If you immediately start spinning off new
-threads with a not-destroyed barrier, then the internal structure of the
-remaining threads will get mixed with the new ones and you will get very
-strange and apparently random errors that are extremely hard to debug.
-@end cartouche
-@end deftypefun
-
-@node Gnuastro's thread related functions,  , Implementation of pthread_barrier, Multithreaded programming
-@subsubsection Gnuastro's thread related functions
-
-These are some high-level functions in @file{gnuastro/threads.h} to
-facilitate programming in with POSIX threads. We have created a simple C
-program for testing these functions in @file{tests/lib/multithread.c}. This
-small program was compiled and run on your system when you ran
-@command{make check}. You can use it as a template to easily create small
-multi-threaded programs and efficiently use your powerful CPU.
-
-@deftypefun void gal_threads_attr_barrier_init (pthread_attr_t @code{*attr}, pthread_barrier_t @code{*b}, size_t @code{limit})
-@cindex Detached threads
-Initialize the general thread attribute @code{attr} and the barrier
-@code{b} with @code{limit} threads to wait behind the barrier. For maximum
-efficiency, the threads initialized with this function will be detached.
-Therefore no communication is possible between these threads and in
-particular @code{pthread_join} won't work on these threads. You have to use
-the barrier constructs to wait for all threads to finish.
-@end deftypefun
-
-@deftypefun void gal_threads_dist_in_threads (size_t @code{numactions}, size_t @code{numthreads}, size_t @code{**outthrds}, size_t @code{*outthrdcols})
-
-Identify the ``index''es (starting from 0) of the actions to be done on
-each thread in the @code{outthrds} array. @code{outthrds} is treated as a
-2D array with @code{numthreads} rows and @code{outthrdcols} columns. The
-indexs in each row, identify the actions that should be done by one
-thread. Please see the explanation below to understand the purpose of this
-operation.
-
-Let's assume you have @mymath{A} actions (where there is only one function
-and the input values differ for each action) and @mymath{T} threads
-available to the system with @mymath{A>T} (common values for these two
-would be @mymath{A>1000} and @mymath{T<10}). Spinning off a thread is not a
-cheap job and requires a significant number of CPU cycles. Therefore,
-creating @mymath{A} threads is not the best way to address such a
-problem. The most efficient way to manage the actions is such that only
-@mymath{T} threads are created, and each thread works on a list of actions
-identified for it in series (one after the other). This way your CPU will
-get all the actions done with minimal overhead.
-
-The purpose of this function is to do what we explained above: each row in
-the @code{outthrds} array contains the indexs of actions which must be done
-by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
-using @code{outthrds}, you don't have to know the number of columns. The
-@code{GAL_BLANK_SIZE_T} macro has a role very similar to a
-string's @code{\0}: every row finishes with this macro, so can easily stop
-parsing the indexes in the row when you confront it. Please see the example
-program in @file{tests/lib/multithread.c} for a demonstration.
-
-@end deftypefun
 
 
 
-
-
-@node World Coordinate System,  , Multithreaded programming, Gnuastro library
+@node World Coordinate System, Git wrappers, Statistical operations, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
 The FITS world coordinate system is a mechanism to give physical values to
@@ -20983,6 +20985,43 @@ Given the WCS structure @code{wcs} calculate the pixel area in
 arcsec-squared.
 @end deftypefun
 
+@node Git wrappers,  , World Coordinate System, Gnuastro library
+@subsection Git wrappers (@file{git.h})
+
+@cindex Git
+@cindex libgit2
+Git is one of the most common tools for version control and it can often be
+useful during development, for example see @code{COMMIT} keyword in
+@ref{Output headers}. The functions introduced here are described in the
+@file{gnuastro/git.h} header. At installation time, Gnuastro will also
+check for the existence of libgit2 and store the value in the
+@code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration
+information}. @file{gnuastro/git.h} includes @file{gnuastro/config.h}
+internally, so won't have to include both for this macro.
+
+@deftypefun {char *} gal_git_describe ( )
+When libgit2 is present and the program is called within a directory that
+is version controlled, then this function will return a string containing
+the commit description (similar to Gnuastro's unofficial version number,
+see @ref{Version numbering}). If there are uncommitted changes in the
+running directory, it will add a `@code{-dirty}' prefix to the
+description. When there is no tagged point in the previous commit, this
+function will return a uniquely abbreviated commit object as fallback. This
+function is used for generating the value of the @code{COMMIT} keyword in
+@ref{Output headers}. The output string is similar to the output of the
+following command:
+
+@example
+$ git describe --dirty --always
+@end example
+
+Space for the output string is allocated within this function, so after
+using the value you have to @code{free} the output string. If libgit2 is
+not installed or the program calling this function is not within a version
+controlled directory, then the output will be the @code{NULL} pointer.
+@end deftypefun
+
+
 @node Library demo programs,  , Gnuastro library, Library
 @section Library demo programs
 
@@ -20998,6 +21037,8 @@ use those that are generated by Gnuastro after @command{make check} in the
 @menu
 * Library demo - reading a image::  Read a FITS image into memory.
 * Library demo - inspecting neighbors::  Inspect the neighbors of a pixel.
+* Library demo - multi-threaded operation::  Doing an operation on threads.
+* Library demo - reading and writing table columns::  Simple Column I/O.
 @end menu
 
 @node Library demo - reading a image, Library demo - inspecting neighbors, Library demo programs, Library demo programs
@@ -21061,10 +21102,10 @@ main(void)
 @end example
 
 
-@node Library demo - inspecting neighbors,  , Library demo - reading a image, Library demo programs
+@node Library demo - inspecting neighbors, Library demo - multi-threaded operation, Library demo - reading a image, Library demo programs
 @subsection Library demo - inspecting neighbors
 
-The following simple program shows ho you can inspect the neighbors of a
+The following simple program shows how you can inspect the neighbors of a
 pixel using the @code{GAL_DIMENSION_NEIGHBOR_OP} function-like macro that
 was introduced in @ref{Dimensions}. For easy linking/compilation of this
 program along with a first run see @ref{BuildProgram}. Before running, also
@@ -21108,10 +21149,285 @@ main(void)
 
 
 
+@node Library demo - multi-threaded operation, Library demo - reading and writing table columns, Library demo - inspecting neighbors, Library demo programs
+@subsection Library demo - multi-threaded operation
+
+The following simple program shows how to use Gnuastro to simplify spinning
+off threads and distributing different jobs between the threads. The
+relevant thread-related functions are defined in @ref{Gnuastro's thread
+related functions}. For easy linking/compilation of this program, along
+with a first run, see Gnuastro's @ref{BuildProgram}. Before running, also
+change the @code{filename} and @code{hdu} variable values to specify an
+existing FITS file and/or extension/HDU.
+
+This is a very simple program to open a FITS image, distribute its pixels
+between different threads and print the value of each pixel and the thread
+it was assigned to. The actual operation is very simple (and would not
+usually be done with threads in a real-life program). It is intentially
+chosen to put more focus on the important steps in spinning of threads and
+how the worker function (which is called by each thread) can identify the
+job-IDs it should work on.
+
+For example, instead of an array of pixels, you can define an array of
+tiles or any other context-specific strcutures as separate targets. The
+important thing is that each action should have its own unique ID (counting
+from zero, as is done in an array in C). You can then follow the process
+below and use each thread to work on all the targets that are assigned to
+it. Recall that spinning-off threads is its self an expensive process and
+we don't want to spin-off one thread for each target (see the description
+of @code{gal_threads_dist_in_threads} in @ref{Gnuastro's thread related
+functions}.
+
+There are many (more complicated, real-world) examples of using
+@code{gal_threads_spin_off} in Gnuastro's actual source code, you can see
+them by searching for the @code{gal_threads_spin_off} function from the top
+source (after unpacking the tarball) directory (for example with this
+command):
+
+@example
+$ grep -r gal_threads_spin_off ./
+@end example
+
+@noindent
+The code of this demonstration program is shown below. This program was
+also built and run when you ran @code{make check} during the building of
+Gnuastro (@code{tests/lib/multithread.c}, so it is already tested for your
+system and you can safely use it as a guide.
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "gnuastro/fits.h"
+#include "gnuastro/threads.h"
+
+
+/* This structure can keep all information you want to pass onto the
+ * worker function on each thread. */
+struct params
+@{
+  gal_data_t *image;            /* Dataset to print values of. */
+@};
 
 
 
 
+/* This is the main worker function which will be called by the
+ * different threads. `gal_threads_params' is defined in
+ * `gnuastro/threads.h' and contains the pointer to the paramter we
+ * want. Note that the input argument and returned value of this
+ * function always must have `void *' type. */
+void *
+worker_on_thread(void *in_prm)
+@{
+  /* Low-level definitions to be done first. */
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct params *p=(struct params *)tprm->params;
+
+
+  /* Subsequent definitions. */
+  float *array=p->image->array;
+  size_t i, index, *dsize=p->image->dsize;
+
+
+  /* Go over all the actions(pixels in this case that were assigned
+   * to this thread. */
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
+    @{
+      /* For easy reading. */
+      index = tprm->indexs[i];
+
+
+      /* Print the information. */
+      printf("(%zu, %zu) on thread %zu: %g\n", index%dsize[1]+1,
+             index/dsize[1]+1, tprm->id, array[index]);
+    @}
+
+
+  /* Wait for all the other threads to finish, then return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+@}
+
+
+
+
+/* High-level function (called by the operating system). */
+int
+main(void)
+@{
+  struct params p;
+  char *filename="input.fits", *hdu="1";
+  size_t numthreads=gal_threads_number();
+
+
+  /* Read the image into memory as a float32 data type. We are using
+   * `-1' for `minmapsize' to ensure that the image is read into
+   * memory. */
+  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
+                                    -1);
+
+
+  /* Print some basic information before the actual contents: */
+  printf("Pixel values of %s (HDU: %s) on %zu threads.\n", filename,
+         hdu, numthreads);
+  printf("Used to check the compiled library's capability in opening "
+         "a FITS file, and also spinning-off threads.\n");
+
+
+  /* A small sanity check: this is only intended for 2D arrays (to
+   * print the coordinates of each pixel). */
+  if(p.image->ndim!=2)
+    @{
+      fprintf(stderr, "only 2D images are supported.");
+      exit(EXIT_FAILURE);
+    @}
+
+
+  /* Spin-off the threads and do the processing on each thread. */
+  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads);
+
+
+  /* Clean up and return. */
+  gal_data_free(p.image);
+  return EXIT_SUCCESS;
+@}
+@end example
+
+
+
+@node Library demo - reading and writing table columns,  , Library demo - multi-threaded operation, Library demo programs
+@subsection Library demo - reading and writing table columns
+
+Tables are some of the most common inputs to, and outputs of programs. This
+section contains a small program for reading and writing tables using the
+constructs described in @ref{Table input output}. For easy
+linking/compilation of this program, along with a first run, see Gnuastro's
+@ref{BuildProgram}. Before running, also set the following file and column
+names in the first two lines of @code{main}. The input and output names may
+be @file{.txt} and @file{.fits} tables, @code{gal_table_read} and
+@code{gal_table_write} will be able to write to both formats. For plain
+text tables see see @ref{Gnuastro text table format}.
+
+This example program reads three columns from a table. The first two
+columns are selected by their name (@code{NAME1} and @code{NAME2}) and the
+third is selected by its number: column 10 (counting from 1). Gnuastro's
+column selection is discussed in @ref{Selecting table columns}. The first
+and second columns can be any type, but this program will convert them to
+@code{int32_t} and @code{float} for its internal usage
+respectively. However, the third column must be double for this program. So
+if it isn't the program will abort with an error. Having the columns in
+memory, it will print them out along with their sum (just a simple
+application, you can do what ever you want at this stage). Reading the
+table finishes here.
+
+The rest of the program is a demonstration of writing a table. While
+parsing the rows, this program will change the first column (to be
+counters) and multiply the second by 10 (to the output may be
+different). Then it will define the order of the output columns by setting
+the @code{next} element (to create a @ref{List of gal_data_t}). Before
+writing, this function will also set names for the columns (units and
+comments can be defined in a similar manner). Writing the columns to a file
+is then done through a simple call to @code{gal_table_write}.
+
+The operations that are shows in this example program are not necessary all
+the time. For example, in many cases, you know the numerical data type of
+the column before writing the program (see @ref{Numeric data types}), so
+the type checkings and copyings won't be necessary.
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <gnuastro/table.h>
+
+int
+main(void)
+@{
+  /* File names and column names (which may also be numbers). */
+  char *c1_name="NAME1", *c2_name="NAME2", *c3_name="10";
+  char *inname="input.fits", *hdu="1", *outname="out.fits";
+
+  /* Internal parameters. */
+  float *array2;
+  double *array3;
+  int32_t *array1;
+  size_t i, counter=0;
+  gal_data_t *c1, *c2;
+  gal_data_t tmp, *col, *columns;
+  gal_list_str_t *column_ids=NULL;
+
+  /* Define the columns to read. */
+  gal_list_str_add(&column_ids, c1_name, 0);
+  gal_list_str_add(&column_ids, c2_name, 0);
+  gal_list_str_add(&column_ids, c3_name, 0);
+
+  /* The columns were added in reverse, so correct it. */
+  gal_list_str_reverse(&column_ids);
+
+  /* Read the desired columns. */
+  columns = gal_table_read(inname, hdu, column_ids,
+                           GAL_TABLE_SEARCH_NAME, 1, -1);
+
+  /* Go over the columns, we'll assume that you don't know their type
+   * a-priori, so we'll check  */
+  counter=1;
+  for(col=columns; col!=NULL; col=col->next)
+    switch(counter++)
+      @{
+      case 1:              /* First column: we want it as int32_t. */
+        c1=gal_data_copy_to_new_type(col, GAL_TYPE_INT32);
+        array1 = c1->array;
+        break;
+
+      case 2:              /* Second column: we want it as float.  */
+        c2=gal_data_copy_to_new_type(col, GAL_TYPE_FLOAT32);
+        array2 = c2->array;
+        break;
+
+      case 3:              /* Third column: it MUST be double.     */
+        if(col->type!=GAL_TYPE_FLOAT64)
+          @{
+            fprintf(stderr, "Column %s must be float64 type, it is "
+                    "%s", c3_name, gal_type_name(col->type, 1));
+            exit(EXIT_FAILURE);
+          @}
+        array3 = col->array;
+        break;
+      @}
+
+  /* As an example application we'll just print them out. In the
+   * meantime (just for a simple demonstration), change the first
+   * array value to the counter and multiply the second by 10. */
+  for(i=0;i<c1->size;++i)
+    @{
+      printf("%zu: %d + %f + %f = %f\n", i+1, array1[i], array2[i],
+             array3[i], array1[i]+array2[i]+array3[i]);
+      array1[i]  = i+1;
+      array2[i] *= 10;
+    @}
+
+  /* Link the first two columns as a list. */
+  c1->next = c2;
+  c2->next = NULL;
+
+  /* Set names for the columns and write them out. */
+  c1->name = "COUNTER";
+  c2->name = "VALUE";
+  gal_table_write(c1, NULL, GAL_TABLE_FORMAT_BFITS, outname, 1);
+
+  /* The names weren't allocated, so to avoid cleaning-up problems,
+   * we'll set them to NULL. */
+  c1->name = c2->name = NULL;
+
+  /* Clean up and return.  */
+  gal_data_free(c1);
+  gal_data_free(c2);
+  gal_list_data_free(columns);
+  gal_list_str_free(column_ids, 0); /* strings weren't allocated. */
+  return EXIT_SUCCESS;
+@}
+@end example
 
 
 
@@ -22723,7 +23039,7 @@ projective transformation or Homography can be applied to the input images.
 
 
 
-@node Other useful software, GNU Free Documentation License, Gnuastro programs list, Top
+@node Other useful software, GNU Free Doc. License, Gnuastro programs list, Top
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are
@@ -22994,8 +23310,8 @@ $ ./pgdemoXX
 
 
 
-@node GNU Free Documentation License, Index, Other useful software, Top
-@appendix GNU Free Documentation License
+@node GNU Free Doc. License, Index, Other useful software, Top
+@appendix GNU Free Doc. License
 
 @cindex GNU Free Documentation License
 @include fdl.texi
@@ -23005,7 +23321,7 @@ $ ./pgdemoXX
 
 
 @c Print the index and finish:
-@node Index,  , GNU Free Documentation License, Top
+@node Index,  , GNU Free Doc. License, Top
 @unnumbered Index: Macros, structures and functions
 All Gnuastro library's exported macros start with @code{GAL_}, and its
 exported structures and functions start with @code{gal_}. This abbreviation

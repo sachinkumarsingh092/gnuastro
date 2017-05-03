@@ -327,7 +327,7 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
       $ grep -r gal_threads_spin_off ./
 */
 void
-gal_threads_spin_off(void *(*function)(void *), void *caller_params,
+gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
                      size_t numactions, size_t numthreads)
 {
   int err;
@@ -359,8 +359,8 @@ gal_threads_spin_off(void *(*function)(void *), void *caller_params,
   gal_threads_dist_in_threads(numactions, numthreads, &indexs, &thrdcols);
 
   /* Do the job: when only one thread is necessary, there is no need to
-     spin off one thread, just call the function directly (spinning off
-     threads is expensive). This is for the generic thread spinner
+     spin off one thread, just call the workerfunction directly (spinning
+     off threads is expensive). This is for the generic thread spinner
      function, not this simple function where `numthreads' is a
      constant. */
   if(numthreads==1)
@@ -369,7 +369,7 @@ gal_threads_spin_off(void *(*function)(void *), void *caller_params,
       prm[0].b=NULL;
       prm[0].indexs=indexs;
       prm[0].params=caller_params;
-      function(&prm[0]);
+      worker(&prm[0]);
     }
   else
     {
@@ -388,7 +388,7 @@ gal_threads_spin_off(void *(*function)(void *), void *caller_params,
             prm[i].b=&b;
             prm[i].params=caller_params;
             prm[i].indexs=&indexs[i*thrdcols];
-            err=pthread_create(&t, &attr, function, &prm[i]);
+            err=pthread_create(&t, &attr, worker, &prm[i]);
             if(err)
               {
                 fprintf(stderr, "can't create thread %zu", i);
