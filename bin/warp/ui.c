@@ -350,8 +350,8 @@ ui_check_options_and_arguments(struct warpparams *p)
       p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
                                          GAL_TYPE_FLOAT64,
                                          p->cp.minmapsize);
-      gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
-                   p->hendwcs, &p->input->nwcs, &p->input->wcs);
+      p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
+                                 p->hendwcs, &p->input->nwcs);
     }
   else
     error(EXIT_FAILURE, 0, "no input file is specified");

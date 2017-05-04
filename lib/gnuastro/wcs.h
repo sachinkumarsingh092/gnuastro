@@ -55,13 +55,13 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /*************************************************************
  ***********               Read WCS                ***********
  *************************************************************/
-void
-gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
-                          size_t hstartwcs, size_t hendwcs);
+struct wcsprm *
+gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
+                     int *nwcs);
 
-void
+struct wcsprm *
 gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
-             size_t hendwcs, int *nwcs, struct wcsprm **wcs);
+             size_t hendwcs, int *nwcs);
 
 
 
@@ -71,7 +71,7 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 /**********              Utilities                 ************/
 /**************************************************************/
 struct wcsprm *
-gal_wcs_copy(struct wcsprm *in, size_t ndim);
+gal_wcs_copy(struct wcsprm *wcs);
 
 void
 gal_wcs_on_tile(gal_data_t *tile);
@@ -98,10 +98,6 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
 /**************************************************************/
 /**********              Conversion                ************/
 /**************************************************************/
-void
-gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
-                          size_t number, size_t width);
-
 void
 gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
                      double **x, double **y, size_t size);

@@ -38,7 +38,7 @@ gal_permutation_check(size_t *permutation, size_t size)
 {
   size_t i;
   for(i=0; i<size; ++i)
-    printf("out[ %-4zu ]    =     in [ %-4zu ]\n", i, permutation[i]);
+    printf("after[ %-5zu ]    =   before [ %-5zu ]\n", i, permutation[i]);
 }
 
 

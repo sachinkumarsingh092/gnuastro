@@ -542,6 +542,7 @@ Gnuastro library
 * Dimensions::                  Dealing with coordinates and dimensions.
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
+* World Coordinate System::     Dealing with the world coordinate system.
 * Text files::                  Functions to work on Text files.
 * Table input output::          Reading and writing table columns.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
@@ -549,8 +550,11 @@ Gnuastro library
 * Bounding box::                Finding the bounding box.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* Permutations::                Re-order (or permute) the values in a dataset.
 * Statistical operations::      Functions for basic statistics.
-* World Coordinate System::     Dealing with the world coordinate system.
+* Binary datasets::             Datasets that can only have values of 0 or 1.
+* Convolution functions::       Library functions to do convolution.
+* Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
 
 Multithreaded programming (@file{threads.h})
@@ -16635,6 +16639,7 @@ documentation will correspond to your installed version.
 * Dimensions::                  Dealing with coordinates and dimensions.
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
+* World Coordinate System::     Dealing with the world coordinate system.
 * Text files::                  Functions to work on Text files.
 * Table input output::          Reading and writing table columns.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
@@ -16642,8 +16647,11 @@ documentation will correspond to your installed version.
 * Bounding box::                Finding the bounding box.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* Permutations::                Re-order (or permute) the values in a dataset.
 * Statistical operations::      Functions for basic statistics.
-* World Coordinate System::     Dealing with the world coordinate system.
+* Binary datasets::             Datasets that can only have values of 0 or 1.
+* Convolution functions::       Library functions to do convolution.
+* Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
 @end menu
 
@@ -18784,7 +18792,7 @@ Free all the datasets in @code{list} along with all the allocated spaces in
 each.
 @end deftypefun
 
-@node FITS files, Text files, Linked lists, Gnuastro library
+@node FITS files, World Coordinate System, Linked lists, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -19319,7 +19327,148 @@ FITS file (see @ref{List of strings}.
 @end deftypefun
 
 
-@node Text files, Table input output, FITS files, Gnuastro library
+
+@node World Coordinate System, Text files, FITS files, Gnuastro library
+@subsection World Coordinate System (@file{wcs.h})
+
+The FITS standard defines the world coordinate system (WCS) as a mechanism
+to associate physical values to positions within a dataset. For example, it
+can be used to convert pixel coordinates in an image to celestial
+coordinates like the right ascension and declination. The functions in this
+section are mainly just wrappers over CFITSIO, WCSLIB and GSL library
+functions to help in common applications.
+
+
+@deftypefun {struct wcsprm *} gal_wcs_read_fitsptr (fitsfile @code{*fptr}, size_t @code{hstartwcs}, size_t @code{hendwcs}, int @code{*nwcs})
+[@strong{Not thread-safe}] Return the WCSLIB @code{wcsprm} structure that
+is read from the CFITSIO @code{fptr} pointer to an opened FITS file. Also
+put the number of coordinate representations found into the space that
+@code{nwcs} points to. To read the WCS structure directly from a filename,
+see @code{gal_wcs_read} below. After processing has finished, you can free
+the returned structure with WCSLIB's @code{wcsvfree} keyword:
+
+@example
+status = wcsvfree(&nwcs,&wcs);
+@end example
+
+If you don't want to search the full FITS header for WCS-related FITS
+keywords (for example due to conflicting keywords), but only a specific
+range of the header keywords you can use the @code{hstartwcs} and
+@code{hendwcs} arguments to specify the keyword number range (counting from
+zero). If @code{hendwcs} is larger than @code{hstartwcs}, then only
+keywords in the given range will be checked. Hence, to ignore this feature
+(and search the full FITS header), give both these arguments the same
+value.
+
+If the WCS information couldn't be read from the FITS file, this function
+will return a @code{NULL} pointer and put a zero in @code{nwcs}. A WCSLIB
+error message will also be printed in @code{stderr} if there was an error.
+
+This function is just a wrapper over WCSLIB's @code{wcspih} function which
+is not thread-safe. Therefore, be sure to not call this function
+simultaneously (over multiple threads).
+@end deftypefun
+
+@deftypefun {struct wcsprm *} gal_wcs_read (char @code{*filename}, char @code{*hdu}, size_t @code{hstartwcs}, size_t @code{hendwcs}, int @code{*nwcs})
+[@strong{Not thread-safe}] Return the WCSLIB structure that is read from
+the HDU/extension @code{hdu} of the file @code{filename}. Also put the
+number of coordinate representations found into the space that @code{nwcs}
+points to. Please see @code{gal_wcs_read_fitsptr} for more.
+@end deftypefun
+
+@deftypefun {struct wcsprm *} gal_wcs_copy (struct wcsprm @code{*wcs})
+Return a fully allocated (independent) copy of @code{wcs}.
+@end deftypefun
+
+@deftypefun void gal_wcs_on_tile (gal_data_t @code{*tile})
+Create a WCSLIB @code{wcsprm} structure for @code{tile} using WCS
+parameters of the tile's allocated block dataset, see @ref{Tessellation
+library} for the definition of tiles. If @code{tile} already has a WCS
+structure, this function won't do anything.
+
+In many cases, tiles are created for internal/low-level processing. Hence
+for preformance reasons, when creating the tiles they don't have any WCS
+structure. When needed, this function can be used to add a WCS structure to
+each tile tile by copying the WCS structure of its block and correcting the
+reference point's coordinates within the tile.
+@end deftypefun
+
+@deftypefun {double *} gal_wcs_warp_matrix (struct wcsprm @code{*wcs})
+Return the Warping matrix of the given WCS structure as an array of double
+precision floating points. This will be the final matrix, irrespective of
+the type of storage in the WCS structure. Recall that the FITS standard has
+several methods to store the matrix. The output is an allocated square
+matrix with each side equal to the number of dimensions.
+@end deftypefun
+
+@deftypefun void gal_wcs_decompose_pc_cdelt (struct wcsprm @code{*wcs})
+Decompose the @code{PCi_j} and @code{CDELTi} elements of
+@code{wcs}. According to the FITS standard, in the @code{PCi_j} WCS
+formalism, the rotation matrix elements @mymath{m_{ij}} are encoded in the
+@code{PCi_j} keywords and the scale factors are encoded in the
+@code{CDELTi} keywords. There is also another formalism (the @code{CDi_j}
+formalism) which merges the two into one matrix.
+
+However, WCSLIB's internal operations are apparently done in the
+@code{PCi_j} formalism. So its outputs are also all in that format by
+default. When the input is a @code{CDi_j}, WCSLIB will still read the
+matrix directly into the @code{PCi_j} matrix and the @code{CDELTi} values
+are set to @code{1} (one). This function is designed to correct such
+issues: after it is finished, the @code{CDELTi} values in @code{wcs} will
+correspond to the pixel scale, and the @code{PCi_j} will correction show
+the rotation.
+@end deftypefun
+
+@deftypefun double gal_wcs_angular_distance_deg (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})
+Return the angular distance (in degrees) between a point located at
+(@code{r1}, @code{d1}) to (@code{r2}, @code{d2}). All input coordinates are
+in degrees. The distance (along a great circle) on a sphere between two
+points is calculated with the equation below.
+
+@dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
+
+However, since the the pixel scales are usually very small numbers, this
+function won't use that direct formula. It will be use the
+@url{https://en.wikipedia.org/wiki/Haversine_formula, Haversine formula}
+which is better considering floating point errors:
+
+@dispmath{{\sin^2(d)\over 2}=\sin^2\left( {d_1-d_2\over 2} \right)+\cos(d_1)\cos(d_2)\sin^2\left( {r_1-r_2\over 2} \right)}
+@end deftypefun
+
+@deftypefun {double *} gal_wcs_pixel_scale_deg (struct wcsprm @code{*wcs})
+Return the pixel scale for each dimension of @code{wcs} in degrees. The
+output is an array of double precision floating point type with one element
+for each dimension.
+@end deftypefun
+
+@deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})
+Return the pixel area of @code{wcs} in arcsecond squared.
+@end deftypefun
+
+@deftypefun void gal_wcs_world_to_img (struct wcsprm @code{*wcs}, double @code{*ra}, double @code{*dec}, double @code{**x}, double @code{**y}, size_t @code{size})
+Convert the arrays of input world coordinates (@code{ra} and @code{dec})
+into arrays of image coordinates (@code{x} and @code{y}). Each is assumed
+to be a separate one-dimensional array of @code{size} elements. If
+@code{*x==NULL} or @code{*y==NULL}, then space will be allocated for them
+by this function, otherwise, it is assumed that they already contain the
+space necessary to write the values.
+
+If you don't need the input values after this conversion any more, you can
+pass the pointers of the @code{ra} and @code{dec} arrays and the outputs
+will be written into them. This can help to avoid extra allocations and
+freeing.
+@end deftypefun
+
+@deftypefun void gal_wcs_img_to_world (struct wcsprm @code{*wcs}, double @code{*x}, double @code{*y}, double @code{**ra}, double @code{**dec}, size_t @code{size})
+Convert the arrays of input image coordinates (@code{x} and @code{y}) into
+arrays of world coordinates (@code{ra} and @code{dec}). Each is assumed to
+be a separate one-dimensional array of @code{size} elements. See
+@code{gal_wcs_world_to_img} for more.
+@end deftypefun
+
+
+
+@node Text files, Table input output, World Coordinate System, Gnuastro library
 @subsection Text files (@file{txt.h})
 
 FITS files are the primary data container in astronomy. FITS indeed as many
@@ -20433,10 +20582,10 @@ declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
 
-@deftypefun void gal_box_ellipse_in_box (double @code{A}, double @code{B}, double @code{theta_rad}, long @code{*width})
+@deftypefun void gal_box_ellipse_in_box (double @code{a}, double @code{b}, double @code{theta_rad}, long @code{*width})
 Any ellipse can be enclosed into a rectangular box. The purpose of this
-function is to give the height and width of that box. @code{A} is the
-ellipse major axis, @code{B} is the minor axis, @code{theta_rad} is the
+function is to give the height and width of that box. @code{a} is the
+ellipse major axis, @code{b} is the minor axis, @code{theta_rad} is the
 position angle in radians. The @code{width} array will contain the output
 size in long integer type. @code{width[0]}, and @code{width[1]} are the
 number of pixels along the first and second FITS axis.
@@ -20573,7 +20722,7 @@ both polygons have to be sorted in an anti-clock-wise manner.
 
 
 
-@node Qsort functions, Statistical operations, Polygons, Gnuastro library
+@node Qsort functions, Permutations, Polygons, Gnuastro library
 @subsection Qsort functions (@file{qsort.h})
 
 The C programming language comes with the @code{qsort} (Quick sort)
@@ -20639,12 +20788,63 @@ types}, for example @code{gal_qsort_int32_decreasing}, or
 
 
 
+@node Permutations, Statistical operations, Qsort functions, Gnuastro library
+@subsection Permutations (@file{permutation.h})
+@cindex permutation
+Permutation is the technical name for re-ordering of values. The need for
+permutations occurs a lot during (mainly low-level) processing. To do
+permutation, you must provide two inputs: an array of values (that you want
+to re-order inplace) and a permutation array which contains the new index
+of each element (let's call it @code{perm}). The diagram below shows the
+input array before and after the re-ordering.
 
+@example
+permute:    AFTER[ i       ] = BEFORE[ perm[i] ]     i = 0 .. N-1
+inverse:    AFTER[ perm[i] ] = BEFORE[ i       ]     i = 0 .. N-1
+@end example
 
+@cindex GNU Scientific Library
+The functions here are a re-implementation of the GNU Scientific Library's
+@code{gsl_permute} function. The reason we didn't use that function was
+that it uses system-specific types (like @code{long} and @code{int}) which
+can have different widths on different systems, hence are not easily
+convertable to Gnuastro's fixed width types (see @ref{Numeric data
+types}). There is also a separate function for each type, heavily using
+macros to allow a @code{base} function to work on all the types. Thus it is
+hard to read/understand. Hence, Gnuastro contains a re-write of their steps
+in a new type-agnostic method which is a single function that can work on
+any type.
 
+As described in GSL's source code and manual, this implementation comes
+from Donald Knuth's @emph{Art of computer programming} book, in the
+"Sorting and Searching" chapter of Volume 3 (3rd ed). Exercise 10 of
+Section 5.2 defines the problem and in the answers, Knuth describes the
+solution. So if you are interested, please have a look there for more.
 
+We are in contact with the GSL developers and in the
+future@footnote{Gnuastro's @url{http://savannah.gnu.org/task/?14497, Task
+14497}. If this task is still ``postponed'' when you are reading this and
+you are interested to help, your help would be very welcome. Both Gnuastro
+and GSL developers are very busy, hence both would appreciate your help.}
+we will submit these implementations to GSL. If they are finally
+incorporated there, we will delete this section in future versions.
 
-@node Statistical operations, World Coordinate System, Qsort functions, Gnuastro library
+@deftypefun void gal_permutation_check (size_t @code{*permutation}, size_t @code{size})
+Print how @code{permutation} will re-order an array that has @code{size}
+elements for each element in one one line.
+@end deftypefun
+
+@deftypefun void gal_permutation_apply (gal_data_t @code{*input}, size_t @code{*permutation})
+Apply @code{permutation} on the @code{input} dataset (can have any type),
+see above for the definition of permutation.
+@end deftypefun
+
+@deftypefun void gal_permutation_apply_inverse (gal_data_t @code{*input}, size_t @code{*permutation})
+Apply the inverse of @code{permutation} on the @code{input} dataset (can
+have any type), see above for the definition of permutation.
+@end deftypefun
+
+@node Statistical operations, Binary datasets, Permutations, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
 After reading a dataset into memory from a file or fully simulating it with
@@ -20925,91 +21125,309 @@ array[3]: Standard deviation.
 
 
 
+@node Binary datasets, Convolution functions, Statistical operations, Gnuastro library
+@subsection Binary datasets (@file{binary.h})
+
+@cindex Thresholding
+@cindex Binary datasets
+@cindex Dataset: binary
+Binary datasets only have two (usable) values: 0 (also known as background)
+or 1 (also known as foreground). They are created after some binary
+classificataion is applied to the dataset. The most common is thresholding:
+in an image, pixels with a value above the threshold is commonly assigned a
+value of 1 and those that have a value less than the threshold are assigned
+a value of 0.
+
+@cindex Connectivity
+@cindex Immediate neighbors
+@cindex Neighbors, immediate
+Since there is only two values, in the processing of binary images, you are
+usually concered with the positioning of an element and its vicinity
+(neighbors). When a dataset has more than one dimension, multiple classes
+of immediate neighbors (that are touching the element) can be defined for
+each data-element. To separate these different classes of immediate
+neighbors, we define @emph{connectivity}.
+
+The classification is done by the distance from element center to the
+neighbor's center. The nearest immediate neighbors have a connectivity of
+1, the second nearest class of neighbors have a connectivity of 2 and so
+on. In total, the largest possible connectivity for data with @code{ndim}
+dimensions is @code{ndim}. For example in a 2D dataset, 4-connected
+neighbors (that share an edge and have a distance of 1 pixel) have a
+connectivity of 1. The other 4 neighbors that only share a vertice (with a
+distance of @mymath{\sqrt{2}} pixels) have a connectivity of
+2. Conventionally, the class of connectivity-2 neighbors also includes the
+connectivity 1 neighbors, so for example we call them 8-connected neighbors
+in 2D datasets.
+
+Ideally, one bit is sufficient for each element of a binary
+dataset. However, CPUs are not designed to work on individual bits, the
+smallest unit of memory addresses is a byte (containing 8 bits on modern
+CPUs). Therefore, in Gnuastro, the type used for binary dataset is
+@code{uint8_t} (see @ref{Numeric data types}). Although it does take
+8-times more memory, this choice offers much better performance and the
+some extra (useful) features.
+
+The advantage of using a full byte for each element of a binary dataset is
+that you can also have other values (that will be ignored in the
+processing). One such common ``other'' value in real datasets is a blank
+value (to mark regions that should not be processed because there is no
+data). The constant @code{GAL_BLANK_UINT8} value must be used in these
+cases (see @ref{Library blank values}). Another is some temporary value(s)
+that can be given to a processed pixel to avoid having another copy of the
+dataset as in @code{GAL_BINARY_TMP_VALUE} that is described below.
+
+@deffn Macro GAL_BINARY_TMP_VALUE
+The functions described below work on a @code{uint8_t} type dataset with
+values of 1 or 0 (no other pixel will be touched). However, in some cases,
+it is necessary to put temporary values in each element during the
+processing of the functions. This temporary value has a special meaning for
+the operation and will be operated on. So if your input datasets have
+values other than 0 and 1 that you don't want these functions to work on,
+be sure they are not equal to this macro's value. Note that this value is
+also different from @code{GAL_BLANK_UINT8}, so your input datasets may also
+contain blank elements.
+@end deffn
 
 
-@node World Coordinate System, Git wrappers, Statistical operations, Gnuastro library
-@subsection World Coordinate System (@file{wcs.h})
+@deftypefun {gal_data_t *} gal_binary_erode (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
+Do @code{num} erosions on the @code{connectivity}-connected neighbors of
+@code{input} (see above for the defintion of connectivity).
 
-The FITS world coordinate system is a mechanism to give physical values to
-the data points. In the case of images, it can be used to convert pixel
-images to celestial coordinates like the right ascension and
-declination. Gnuastro doesn't have any functions to actually do the
-transformations, the standard tool for doing this in astronomy is WCSLIB
-(see @ref{WCSLIB}). The functions introduced here are just wrappers around
-the lower-level functions provided by WCSLIB.
+If @code{inplace} is non-zero @emph{and} the input's type is
+@code{GAL_TYPE_UINT8}, then the erosion will be done within the input
+dataset and the returned pointer will be @code{input}. Otherwise,
+@code{input} is copied (and converted if necessary) to
+@code{GAL_TYPE_UINT8} and erosion will be done on this new dataset which
+will also be returned. This function will only work on the elements with a
+value of 1 or 0. It will leave all the rest unchanged.
 
-@deftypefun void gal_wcs_xy_array_to_radec (struct wcsprm @code{*wcs}, double @code{*xy}, double @code{*radec}, size_t @code{number}, size_t @code{stride})
-Convert the image coordinates @code{xy} (a two column array with
-@code{number} rows) to world coordinates @code{wcs} (also a two column
-array, which has to have been allocated prior to this function) using the
-conversion parameters in @code{wcs}. @code{stride} is the number of columns
-in a larger array, see below.
-
-It might happen that you have one array which contains both the image and
-world coordinates along with many more columns. @code{stride} is the width
-of that larger array. If such an array doesn't exist and @code{xy} and
-@code{radec} are separately allocated arrays with
-@mymath{2\times}@code{number} elements, then just set the value of
-@code{stride} to @code{2}.
+@cindex Erosion
+@cindex Mathematical morphology
+Erosion (inverse of dilation) is an operation in mathematical morphology
+where each foreground pixel that is touching a background pixel is flipped
+(changed to background). The @code{connectivity} value determines the
+definition of ``touching''. Erosion will thus decrease the area of the
+foregound regions by one layer of pixels.
 @end deftypefun
 
-@deftypefun void gal_wcs_radec_array_to_xy (struct wcsprm @code{*wcs}, double @code{*radec}, double @code{*xy}, size_t @code{number}, size_t @code{stride})
-Similar to @code{gal_wcs_xy_array_to_radec} but convert the world
-coordinates in @code{radec} to image coordinates in @code{xy}.
+@deftypefun {gal_data_t *} gal_binary_dilate (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
+Do @code{num} dilations on the @code{connectivity}-connected neighbors of
+@code{input} (see above for the defintion of connectivity). For more on
+@code{inplace} and the output, see @code{gal_binary_erode}.
+
+@cindex Dilation
+Dilation (inverse of erosion) is an operation in mathematical morphology
+where each background pixel that is touching a foreground pixel is flipped
+(changed to foreground). The @code{connectivity} value determines the
+definition of ``touching''. Dilation will thus increase the area of the
+foregound regions by one layer of pixels.
 @end deftypefun
 
-@deftypefun double gal_wcs_angular_distance_deg (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})
-Return the angular distance (in degrees) between a point located at
-(@code{r1}, @code{d1}) to (@code{r2}, @code{d2}). All input coordinates are
-in degrees. The distance (along a great circle) on a sphere between two
-points is calculated with the equation below. Since the pixel sides are
-usually very small, we won't be using the direct formula:
+@deftypefun {gal_data_t *} gal_binary_open (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
+Do @code{num} openings on the @code{connectivity}-connected neighbors of
+@code{input} (see above for the defintion of connectivity). For more on
+@code{inplace} and the output, see @code{gal_binary_erode}.
 
-@dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
-
-Here, we will be using the
-@url{https://en.wikipedia.org/wiki/Haversine_formula, Haversine formula}
-which is better considering floating point errors:
-
-@dispmath{{\sin^2(d)\over 2}=\sin^2\left( {d_1-d_2\over 2} \right)+\cos(d_1)\cos(d_2)\sin^2\left( {r_1-r_2\over 2} \right)}
+@cindex Opening (Mathematical morphology)
+Opening is an operation in mathematical morphology which is defined as
+erosion followed by dilation (see above for the definitions of erosion and
+dilation). Opening will thus remove the outer structure of the
+foreground. In this implementation, @code{num} erosions are going to be
+applied on the dataset, then @code{num} dilations.
 @end deftypefun
 
-@deftypefun void gal_wcs_pixel_scale_deg (struct wcsprm @code{*wcs}, double @code{*dx}, double @code{*dy})
-Return the pixel scale of the WCS structure @code{wcs} for the two image
-dimensions @code{dx} and @code{dy} in degrees. Here, the X-axis is the
-first FITS axis, or the horizontal axis when viewed in SAO ds9.
+
+@deftypefun size_t gal_binary_connected_components (gal_data_t @code{*binary}, gal_data_t @code{**out}, int @code{connectivity})
+@cindex Connected components
+@cindex Breadth first search
+Return the number of connected components in @code{binary} through the
+breadth first search algorithm (finding all pixels belonging to one
+component before going on to the next). Connection between two pixels is
+defined based on the value to @code{connectivity}. @code{out} is a dataset
+with the same size as @code{binary} with @code{GAL_TYPE_INT32} type. Every
+pixel in @code{out} will have the label of the connected component it
+belongs to. The labeling of connected components starts from 1, so a label
+of zero is given to the input's background pixels.
+
+When @code{*out!=NULL} (its space is already allocated), it will be cleared
+(to zero) at the start of this function. Otherwise, when @code{*out==NULL},
+the necessary dataset to keep the output will be allocated by this
+function.
+
+@code{binary} must have a type of @code{GAL_TYPE_UINT8}, otherwise this
+function will abort with an error. Other than blank pixels (with a value of
+@code{GAL_BLANK_UINT8} defined in @ref{Library blank values}), all other
+non-zero pixels in @code{binary} will be considered as foreground (and will
+be labeled). Blank pixels in the input will also be blank in the output.
 @end deftypefun
 
-@deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})
-Given the WCS structure @code{wcs} calculate the pixel area in
-arcsec-squared.
+@deftypefun {gal_data_t *} gal_binary_connected_adjacency_matrix (gal_data_t @code{*adjacency}, size_t @code{*numconnected})
+@cindex Adjacency matrix
+@cindex Matrix, adjacency
+Find the number of connected labels and new labels based on an an adjacency
+matrix (which must be binary array of type @code{GAL_TYPE_UINT8}). The
+returned dataset is a list of new labels for each old label. In other
+words, this function will find the objects that are connected (possibly
+through a third object) and in the output array, the respective elements
+for all input labels is going to have the same value. The total number of
+connected labels is put into the space that @code{numconnected} points to.
+
+An adjacency matrix defines connection between two labels. For example,
+let's assume we have 5 labels and we know that labels 1 and 5 are connected
+to label 3, but are not connected with each other. Also, labels 2 and 4 are
+not touching any other label. So in total we have 3 final labels: one
+combined object (merged from labels 1, 3, and 5) and the initial labels 2
+and 4. The input adjacency matrix would look like this (note the extra row
+and column for a label 0 which is ignored):
+
+@example
+            INPUT                             OUTPUT
+            =====                             ======
+          in_lab  1  2  3  4  5   |
+                                  |       numconnected = 3
+               0  0  0  0  0  0   |
+in_lab 1 -->   0  0  0  1  0  0   |
+in_lab 2 -->   0  0  0  0  0  0   |  Returned: new labels for the
+in_lab 3 -->   0  1  0  0  0  1   |       5 initial objects
+in_lab 4 -->   0  0  0  0  0  0   |   | 0 | 1 | 2 | 1 | 3 | 1 |
+in_lab 5 -->   0  0  0  1  0  0   |
+@end example
+
+Although the adjacency matrix as used here is symmetric, currently this
+function assumes that it is filled on both sides of the diagonal.
 @end deftypefun
 
-@node Git wrappers,  , World Coordinate System, Gnuastro library
+@deftypefun void gal_binary_fill_holes (gal_data_t @code{*input})
+Fill all the holes that are bounded within a 4-connected region of the
+binary @code{input} dataset. This function currently only works on a 2D
+dataset.
+@end deftypefun
+
+@node Convolution functions, Interpolation, Binary datasets, Gnuastro library
+@subsection Convolution functions (@file{convolve.h})
+
+Convolution is a very common operation during data analysis and is
+thoroughly described as part of Gnuastro's @ref{Convolve} program which is
+fully devoted to this job. Because of the complete introduction that was
+presented there, we will directly skip onto the currently available
+convolution functions in Gnuastro's library.
+
+As of this version, only spatial domain convolution is available in
+Gnuastro's libraries. We haven't had the time to liberate the frequency
+domain function convolution and de-convolution functions that are available
+in the Convolve program@footnote{Hence any help would be greatly
+appreciated.}.
+
+@deftypefun {gal_data_t *} gal_convolve_spatial (gal_data_t @code{*tiles}, gal_data_t @code{*kernel}, size_t @code{numthreads}, int @code{edgecorrection}, int @code{convoverch})
+Convolve each node of the list of @code{tiles} (see @ref{List of
+gal_data_t} and @ref{Tessellation library}) with @code{kernel} using
+@code{numthreads}. When @code{edgecorrection} is non-zero, it will correct
+for the edge dimming effects as discussed in @ref{Edges in the spatial
+domain}.
+
+To create a tessellation that fully covers an input image, you may use
+@code{gal_tile_full}, or @code{gal_tile_full_two_layers} to also define
+channels over your input dataset. These functions are discussed in
+@ref{Tile grid}. You may then pass the list of tiles to this function. This
+is the recommended way to call this function because spatial domain
+convolution is slow and breaking the job into many small tiles and working
+on simultaneously on several threads can greatly speed up the processing.
+
+If the tiles are defined within a channel (a larger tile), by default
+convolution will be done within the channel, so pixels on the edge of a
+channel will not be affected by their neighbors that are in another
+channel. See @ref{Tessellation} for the necessity of channels in
+astronomical data analysis. This behavior may be disabled when
+@code{convoverch} is non-zero. In this case, it will ignore channel borders
+(if they exist) and mix all pixels that cover the kernel within the
+dataset.
+@end deftypefun
+
+@deftypefun void gal_convolve_spatial_correct_ch_edge (gal_data_t @code{*tiles}, gal_data_t @code{*kernel}, size_t @code{numthreads}, int @code{edgecorrection}, gal_data_t @code{*tocorrect})
+Correct the edges of channels in an already convolved image when it was
+initially convolved with @code{gal_convolve_spatial} and
+@code{convoverch==0}. In that case, strong boundaries might exist on the
+channel edges. So if you later need to remove those boundaries at later
+steps of your processing, you can call this function. It will only do
+convolution on the tiles that are near the edge and were effected by the
+channel borders. Other pixels in the image will not be touched. Hence, it
+is much faster.
+@end deftypefun
+
+@node Interpolation, Git wrappers, Convolution functions, Gnuastro library
+@subsection Interpolation (@file{interpolate.h})
+
+During data anlysis, it often happens that parts of the data cannot be
+given a value. For example your image was saturated due to a very bright
+start and you have to mask that star's footprint. One other common
+situation in Gnuastro is when we do processing on tiles (for example to
+estimate the Sky value and its Standard deviation, see @ref{Sky
+value}). Some tiles must not be used for the estimation of the Sky value,
+for example because they cover a large galaxy. So we need to fill them in
+with blank values. But ultimately, we need a Sky value for every
+pixel. This job (assigning a value to blank element(s) based on their
+nearby neighbors with a value) is known as interpolation.
+
+There are many ways to do interpolation, but (mainly due to lack of time),
+currently Gnuastro only contains the (median of) nearest-neighbor
+method. The power of this method of interpolation is its non-parametric
+nature. The produced values are also always within the range of the known
+values and strong outliers do not get created. We will hopefully implement
+other methods too (wrappers around the GNU Scientific Library's very
+complete set of functions), but currently the developers are too busy. So
+if you do have the chance to help your contribution would be very welcome
+and appreciated.
+
+@deftypefun {gal_data_t *} gal_interpolate_close_neighbors (gal_data_t @code{*input}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numneighbors}, size_t @code{numthreads}, int @code{onlyblank}, int @code{aslinkedlist})
+Interpolate the values in the image using the median value of their
+@code{numneighbors} closest neighbors. If @code{onlyblank} is non-zero,
+then only blank elements will be interpolated and pixels that already have
+a value will be left untouched. This function is multi-threaded and will
+run on @code{numthreads} threads (see @code{gal_threads_number} in
+@ref{Multithreaded programming}).
+
+@code{tl} is Gnuastro's two later tessellation structure used to define
+tiles over an image and is fully described in @ref{Tile grid}. When
+@code{tl!=NULL}, then it is assumed that the @code{input->array} contains
+one value per tile and interpolation will respect certain tessellation
+properties, for example to not interpolate over channel borders.
+
+If several datasets have the same set of blank values, you don't need to
+call this function multiple times. When @code{aslinkedlist} is non-zero,
+then @code{input} will be seen as a @ref{List of gal_data_t} and for all
+the same neighbor position checking will be done for all the datasets in
+the list. Ofcourse, the values for each dataset will be different, so a
+different value will be written in the each dataset, but the neighbor
+checking that is the most CPU intensive part will only be done once.
+@end deftypefun
+
+
+@node Git wrappers,  , Interpolation, Gnuastro library
 @subsection Git wrappers (@file{git.h})
 
 @cindex Git
 @cindex libgit2
 Git is one of the most common tools for version control and it can often be
 useful during development, for example see @code{COMMIT} keyword in
-@ref{Output headers}. The functions introduced here are described in the
-@file{gnuastro/git.h} header. At installation time, Gnuastro will also
-check for the existence of libgit2 and store the value in the
-@code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration
-information}. @file{gnuastro/git.h} includes @file{gnuastro/config.h}
-internally, so won't have to include both for this macro.
+@ref{Output headers}. At installation time, Gnuastro will also check for
+the existence of libgit2, and store the value in the
+@code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration information} and
+@ref{Optional dependencies}. @file{gnuastro/git.h} includes
+@file{gnuastro/config.h} internally, so you won't have to include both for
+this macro.
 
 @deftypefun {char *} gal_git_describe ( )
 When libgit2 is present and the program is called within a directory that
-is version controlled, then this function will return a string containing
-the commit description (similar to Gnuastro's unofficial version number,
-see @ref{Version numbering}). If there are uncommitted changes in the
-running directory, it will add a `@code{-dirty}' prefix to the
-description. When there is no tagged point in the previous commit, this
-function will return a uniquely abbreviated commit object as fallback. This
-function is used for generating the value of the @code{COMMIT} keyword in
-@ref{Output headers}. The output string is similar to the output of the
-following command:
+is version controlled, this function will return a string containing the
+commit description (similar to Gnuastro's unofficial version number, see
+@ref{Version numbering}). If there are uncommitted changes in the running
+directory, it will add a `@code{-dirty}' prefix to the description. When
+there is no tagged point in the previous commit, this function will return
+a uniquely abbreviated commit object as fallback. This function is used for
+generating the value of the @code{COMMIT} keyword in @ref{Output
+headers}. The output string is similar to the output of the following
+command:
 
 @example
 $ git describe --dirty --always

@@ -77,7 +77,7 @@ detection_initial(struct noisechiselparams *p)
 
   /* Erode the image. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  gal_binary_erode(p->binary, p->erode, p->erodengb, 1);
+  gal_binary_erode(p->binary, p->erode, p->erodengb==4 ? 1 : 2, 1);
   if(!p->cp.quiet)
     {
       asprintf(&msg, "Eroded %zu time%s (%zu-connectivity).", p->erode,
@@ -100,7 +100,7 @@ detection_initial(struct noisechiselparams *p)
 
   /* Do the opening. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  gal_binary_open(p->binary, p->opening, p->openingngb, 1);
+  gal_binary_open(p->binary, p->opening, p->openingngb==4 ? 1 : 2, 1);
   if(!p->cp.quiet)
     {
       asprintf(&msg, "Opened (depth: %zu, %s connectivity).",
@@ -251,7 +251,7 @@ detection_fill_holes_open(void *in_prm)
         }
 
       /* Open all the regions. */
-      gal_binary_open(copy, 1, 4, 1);
+      gal_binary_open(copy, 1, 1, 1);
 
       /* Write the copied region back into the large input and AFTERWARDS,
          correct the tile's pointers, the pointers must not be corrected
@@ -956,7 +956,7 @@ detection(struct noisechiselparams *p)
   /* If the user asked for dilation, then apply it. */
   if(p->dilate)
     {
-      gal_binary_dilate(workbin, p->dilate, 8, 1);
+      gal_binary_dilate(workbin, p->dilate, p->input->ndim, 1);
       num_true_initial = gal_binary_connected_components(workbin, &p->olabel,
                                                          8);
     }

@@ -269,8 +269,7 @@ ui_preparations(struct mknoiseparams *p)
 
 
   /* Read the WSC structure. */
-  gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,
-               &p->input->wcs);
+  p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 
 
   /* If we are dealing with an input table, make sure the format of the

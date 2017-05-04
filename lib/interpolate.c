@@ -45,16 +45,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /********************      Nearest neighbor       ********************/
 /*********************************************************************/
-/* We want the flags to be powers of two so we can use bit-wise checks. */
+/* These are bit-flags, so we're using hexadecimal notation. */
 #define INTERPOLATE_FLAGS_NO       0
-#define INTERPOLATE_FLAGS_CHECKED  1<<0
-#define INTERPOLATE_FLAGS_BLANK    1<<1
+#define INTERPOLATE_FLAGS_CHECKED  0x1
+#define INTERPOLATE_FLAGS_BLANK    0x2
 
 
 
 
 
-/* Paramters for interpolation on threads. */
+/* Parameters for interpolation on threads. */
 struct interpolate_params
 {
   gal_data_t                    *input;

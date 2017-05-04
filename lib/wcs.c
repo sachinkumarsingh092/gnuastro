@@ -65,11 +65,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    ===================================
    Don't call this function within a thread or use a mutex.
 */
-void
-gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
-                          size_t hstartwcs, size_t hendwcs)
+struct wcsprm *
+gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
+                     int *nwcs)
 {
   /* Declaratins: */
+  struct wcsprm *wcs;
   int nkeys=0, status=0;
   char *fullheader, *to, *from;
   int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
@@ -111,28 +112,28 @@ gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
     }
 
   /* WCSlib function */
-  status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
+  status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, &wcs);
   if(status)
     {
       fprintf(stderr, "\n##################\n"
               "WCSLIB Warning: wcspih ERROR %d: %s.\n"
               "##################\n",
               status, wcs_errmsg[status]);
-      *wcs=NULL; *nwcs=0;
+      wcs=NULL; *nwcs=0;
     }
   if (fits_free_memory(fullheader, &status) )
     gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
                            "the memory used to keep all the headers");
 
   /* Set the internal structure: */
-  status=wcsset(*wcs);
+  status=wcsset(wcs);
   if(status)
     {
       fprintf(stderr, "\n##################\n"
               "WCSLIB Warning: wcsset ERROR %d: %s.\n"
               "##################\n",
             status, wcs_errmsg[status]);
-      *wcs=NULL; *nwcs=0;
+      wcs=NULL; *nwcs=0;
     }
 
   /* Initialize the wcsprm struct
@@ -140,28 +141,33 @@ gal_wcs_read_from_fitsptr(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
     error(EXIT_FAILURE, 0, "%s: wcsset ERROR %d: %s.\n", __func__,
           status, wcs_errmsg[status]);
   */
+
+  /* Return the WCS structure. */
+  return wcs;
 }
 
 
 
 
 
-void
+struct wcsprm *
 gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
-             size_t hendwcs, int *nwcs, struct wcsprm **wcs)
+             size_t hendwcs, int *nwcs)
 {
   int status=0;
   fitsfile *fptr;
+  struct wcsprm *wcs;
 
   /* Check HDU for realistic conditions: */
   fptr=gal_fits_hdu_open_format(filename, hdu, 0);
 
   /* Read the WCS information: */
-  gal_wcs_read_from_fitsptr(fptr, nwcs, wcs, hstartwcs, hendwcs);
+  wcs=gal_wcs_read_fitsptr(fptr, hstartwcs, hendwcs, nwcs);
 
-  /* Close the FITS file: */
+  /* Close the FITS file and return. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
+  return wcs;
 }
 
 
@@ -188,12 +194,12 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 /**************************************************************/
 /* Copy a given WSC structure into another one. */
 struct wcsprm *
-gal_wcs_copy(struct wcsprm *in, size_t ndim)
+gal_wcs_copy(struct wcsprm *wcs)
 {
   struct wcsprm *out;
 
   /* If the input WCS is NULL, return a NULL WCS. */
-  if(in)
+  if(wcs)
     {
       /* Allocate the output WCS structure. */
       errno=0;
@@ -206,10 +212,10 @@ gal_wcs_copy(struct wcsprm *in, size_t ndim)
          the first invokation, and only the first invokation, wcsprm::flag
          must be set to -1 to initialize memory management"*/
       out->flag=-1;
-      wcsini(1, ndim, out);
+      wcsini(1, wcs->naxis, out);
 
       /* Copy the input WCS to the output WSC structure. */
-      wcscopy(1, in, out);
+      wcscopy(1, wcs, out);
     }
   else
     out=NULL;
@@ -241,7 +247,7 @@ gal_wcs_on_tile(gal_data_t *tile)
   else
     {
       /* Copy the block's WCS into the tile. */
-      tile->wcs=gal_wcs_copy(block->wcs, block->ndim);
+      tile->wcs=gal_wcs_copy(block->wcs);
 
       /* Find the coordinates of the tile's starting index. */
       start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
@@ -444,10 +450,7 @@ gal_wcs_pixel_scale_deg(struct wcsprm *wcs)
 
 
 /* Report the arcsec^2 area of the pixels in the image based on the
-   WCS information in that image. We first use the angular distance of
-   two edges of one pixel in radians. Then the radians are multiplied
-   to give stradians and finally, the stradians are converted to
-   arcsec^2. */
+   WCS information in that image. */
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 {

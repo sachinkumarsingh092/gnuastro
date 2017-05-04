@@ -256,8 +256,8 @@ binary_erode_dilate(gal_data_t *input, size_t num, int connectivity,
       for(counter=0;counter<num;++counter)
         switch(connectivity)
           {
-          case 4: binary_erode_dilate_2d_4con(binary, d0e1); break;
-          case 8: binary_erode_dilate_2d_8con(binary, d0e1); break;
+          case 1: binary_erode_dilate_2d_4con(binary, d0e1); break;
+          case 2: binary_erode_dilate_2d_8con(binary, d0e1); break;
           default:
             error(EXIT_FAILURE, 0, "%s: %d not acceptable for connectivity "
                   "in a 2D dataset", __func__, connectivity);
@@ -340,14 +340,7 @@ gal_binary_open(gal_data_t *input, size_t num, int connectivity,
 /*********************************************************************/
 /*****************      Connected components      ********************/
 /*********************************************************************/
-/* Find the connected components in the input binary dataset `binary'
-   through the breadth first search algorithm. `binary' has to have an
-   `uint8' datatype and only zero and non-zero values in it will be
-   distinguished. The output dataset (which will contain a label on each
-   pixel) maybe already allocated (with type `int32'). If `*out!=NULL', the
-   labels will be reset to zero before the start and the labels will be
-   written into it. If `*out==NULL', the necessary dataset will be
-   allocated here and put into it. */
+/* Find connected components in an intput dataset. */
 size_t
 gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
                                 int connectivity)
@@ -456,23 +449,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
 /* Given an adjacency matrix (which should be binary), find the number of
    connected objects and return an array of new labels for each old
-   label. In other words, this function will find the objects that are
-   connected (possibly through a third object) and in the output array, the
-   respective elements for all these objects is going to have the same
-   value. The total number of connected labels is put into the place
-   pointed to by `numconnected'.
-
-   Labels begin from 1 (0 is kept for non-labeled regions usually). So if
-   you have 3 initial objects/labels, the input matrix to this function
-   should have a size of 4x4. The first (label 0) row and column are not
-   going to be parsed/checked.
-
-   The adjacency matrix needs to be completely filled (on both sides of the
-   diagonal) for this function.
-
-   If the input adjacency matrix has a size of `amsize * amsize', the
-   output will have a size of `amsize' with each index having a new label
-   in its place. */
+   label.  */
 gal_data_t *
 gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                                       size_t *numconnected)
@@ -527,7 +504,7 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                 /* Give it the new label. */
                 newlabs[p]=curlab;
 
-                /* Go over the adjacecny matrix row for this touching
+                /* Go over the adjacency matrix row for this touching
                    object and see if there are any not-yet-labeled objects
                    that are touching it. */
                 for(j=1;j<num;++j)

@@ -627,8 +627,7 @@ ui_prepare_canvas(struct mkprofparams *p)
       p->shift[0]=p->shift[1]=0;
 
       /* Read the WCS structure of the background image. */
-      gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->out->nwcs,
-                   &p->out->wcs);
+      p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->out->nwcs);
 
     }
   else

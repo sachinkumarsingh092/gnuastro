@@ -120,8 +120,7 @@ pop_operand(struct imgarithparams *p, char *operator)
       /* In case this is the first image that is read, then read the WCS
          information.*/
       if(p->popcounter==0)
-        gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs,
-                     &p->refdata.wcs);
+        p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
 
       /* Read the input image as a double type array. */
       data=gal_fits_img_read(filename, hdu, p->cp.minmapsize);

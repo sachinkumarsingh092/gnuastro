@@ -678,8 +678,8 @@ ui_preparations(struct cropparams *p)
       img->name=gal_list_str_pop(&p->inputs);
       tmpfits=gal_fits_hdu_open_format(img->name, p->cp.hdu, 0);
       gal_fits_img_info(tmpfits, &p->type, &img->ndim, &img->dsize);
-      gal_wcs_read_from_fitsptr(tmpfits, &img->nwcs, &img->wcs,
-                                p->hstartwcs, p->hendwcs);
+      img->wcs=gal_wcs_read_fitsptr(tmpfits, p->hstartwcs, p->hendwcs,
+                                    &img->nwcs);
       if(img->wcs)
         {
           gal_wcs_decompose_pc_cdelt(img->wcs);

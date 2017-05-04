@@ -266,7 +266,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
 
 
   /* Copy the WCS structure. */
-  data->wcs=gal_wcs_copy(wcs, ndim);
+  data->wcs=gal_wcs_copy(wcs);
 
 
   /* Allocate space for the dsize array, only if the data are to have any

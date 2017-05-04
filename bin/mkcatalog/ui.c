@@ -501,8 +501,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
           break;
         }
   if(readwcs)
-    gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs,
-                 &p->input->wcs);
+    p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 
 
   /* Clean up. */
