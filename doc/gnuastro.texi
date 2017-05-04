@@ -1640,13 +1640,13 @@ can't be modeled (like stars that are always a point) easily. So there
 is no better way to distinguish them than to visually inspect them and
 see if it is possible to classify these nebulae or not.
 
-Hubble has stored all the FITS images of the objects he wants to
-visually inspect in his @file{/mnt/data/images} directory. He has also
-stored his catalog of extra Galactic nebulae in
+Hubble has stored all the FITS images of the objects he wants to visually
+inspect in his @file{/mnt/data/images} directory. He has also stored his
+catalog of extra-galactic nebulae in
 @file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
-GNU/Linux system (including himself) only has read access to the
-contents of the @file{/mnt/data} directory. He has done this by
-running this command as root:
+GNU/Linux system (including himself) only has read access to the contents
+of the @file{/mnt/data} directory. He has done this by running this command
+as root:
 
 @example
 # chmod -R 755 /mnt/data
@@ -1685,19 +1685,16 @@ $ ls
 
 Hubble has multiple images in @file{/mnt/data/images}, some of his targets
 might be on the edges of an image and so several images need to be stitched
-to give a good view of them. Also his extra Galactic targets belong to
+to give a good view of them. Also his extra-galactic targets belong to
 various pointings in the sky, so they are not in one large
 image. Gnuastro's Crop is just the program he wants. The catalog in
 @file{extragalactic.txt} is a plain text file which stores the basic
-information of all his known 200 extra Galactic nebulae. In its second
+information of all his known 200 extra-galactic nebulae. In its second
 column it has each object's Right Ascension (the first column is a label he
 has given to each object) and in the third the object's declination.
-Having read the Gnuastro manual, he knows that all counting is done
-starting from zero, so the RA and Dec columns have number 1 and 2
-respectively.
 
 @example
-$ astcrop --racol=1 --deccol=2 /mnt/data/images/*.fits     \
+$ astcrop --racol=2 --deccol=3 /mnt/data/images/*.fits     \
              /mnt/data/catalogs/extragalactic.txt
 Crop started on Tue Jun  14 10:18:11 1932
   ---- ./4_crop.fits                  1 1
@@ -1716,11 +1713,11 @@ Crop finished in:  2.429401 (seconds)
 @cindex Asynchronous thread allocation
 @noindent
 Hubble already knows that thread allocation to the the CPU cores is
-asynchronous, so each time you run it the order of which job gets done
+asynchronous. Hence each time you run it, the order of which job gets done
 first differs. When using Crop the order of outputs is irrelevant since
 each crop is independent of the rest. This is why the crops are not
-necessarily created in the same input order. He is content with the default
-width of the outputs (which he inspected by running @code{$ astcrop
+necessarily created in the same input order. He is satisfied with the
+default width of the outputs (which he inspected by running @code{$ astcrop
 -P}). If he wanted a different width for the cropped images, he could do
 that with the @option{--wwidth} option which accepts a value in
 arc-seconds.  When he lists the contents of the directory again he finds
@@ -1732,38 +1729,36 @@ $ ls
 @end example
 
 @cindex GNU Parallel
-The FITS image format was not designed for viewing, but mainly for
-accurate storing of the data. So he chooses to convert the cropped
-images to a more common image format to view them more quickly and
-easily through standard image viewers (which load much faster than
-FITS image viewer). JPEG is one of the most recognized image formats
-that is supported by most image viewers. Fortunately Gnuastro has just
-such a tool to convert various types of file types to and from each
-other: ConvertType. Hubble has already heard of GNU Parallel from one
-of his colleagues at Mount Wilson Observatory. It allows multiple
-instances of a command to be run simultaneously on the system, so he
-uses it in conjunction with ConvertType to convert all the images to
-JPEG.
+The FITS image format was not designed for efficient/fast viewing, but
+mainly for accurate storing of the data. So he chooses to convert the
+cropped images to a more common image format to view them more quickly and
+easily through standard image viewers (which load much faster than FITS
+image viewer). JPEG is one of the most recognized image formats that is
+supported by most image viewers. Fortunately Gnuastro has just such a tool
+to convert various types of file types to and from each other:
+ConvertType. Hubble has already heard of GNU Parallel from one of his
+colleagues at Mount Wilson Observatory. It allows multiple instances of a
+command to be run simultaneously on the system, so he uses it in
+conjunction with ConvertType to convert all the images to JPEG.
 @example
 $ parallel astconvertt -ojpg ::: *_crop.fits
 @end example
 
 @pindex eog
 @cindex Eye of GNOME
-For his graphical user interface Hubble is using GNOME which is the
-default in most distributions in GNU/Linux. The basic image viewer in
-GNOME is the Eye of GNOME, which has the executable file name
-@command{eog} @footnote{Eye of GNOME is only available for users of
-the GNOME graphical desktop environment which is the default in most
-GNU/Linux distributions. If you use another graphical desktop
-environment, replace @command{eog} with any other image
-viewer.}. Since he has used it before, he knows that once it opens an
-image, he can use the @key{ENTER} or @key{SPACE} keys on the keyboard
-to go to the next image in the directory or the @key{Backspace} key to
-to go the previous image. So he opens the image of the first object
-with the command below and with his cup of coffee in his other hand,
-he flips through his targets very fast to get a good initial
-impression of the morphologies of these extra Galactic nebulae.
+For his graphical user interface Hubble is using GNOME which is the default
+in most distributions in GNU/Linux. The basic image viewer in GNOME is the
+Eye of GNOME, which has the executable file name @command{eog}
+@footnote{Eye of GNOME is only available for users of the GNOME graphical
+desktop environment which is the default in most GNU/Linux
+distributions. If you use another graphical desktop environment, replace
+@command{eog} with any other image viewer.}. Since he has used it before,
+he knows that once it opens an image, he can use the @key{ENTER} or
+@key{SPACE} keys on the keyboard to go to the next image in the directory
+or the @key{Backspace} key to to go the previous image. So he opens the
+image of the first object with the command below and with his cup of coffee
+in his other hand, he flips through his targets very fast to get a good
+initial impression of the morphologies of these extra-galactic nebulae.
 
 @example
 $ eog 1_crop.jpg
@@ -1783,16 +1778,15 @@ arms which he associates with code 2 and finally there seems to be a
 class of nebulae in between which appear to have a disk but no spiral
 arms, he gives them code 3.
 
-Now he wants to know how many of the nebulae in his extra Galactic
-sample are within each class. Repeating the same process above and
-writing the results on paper is very time consuming and prone to
-errors. Fortunately Hubble knows the basics of GNU Bash shell
-programming, so he writes the following short script with a loop to
-help him with the job. After all, computers are made for us to operate
-and knowing basic shell programming gives Hubble this ability to
-creatively operate the computer as he wants. So using GNU
-Emacs@footnote{This can be done with any text editor} (his favorite
-text editor) he puts the following text in a file named
+Now he wants to know how many of the nebulae in his extra-galactic sample
+are within each class. Repeating the same process above and writing the
+results on paper is very time consuming and prone to errors. Fortunately
+Hubble knows the basics of GNU Bash shell programming, so he writes the
+following short script with a loop to help him with the job. After all,
+computers are made for us to operate and knowing basic shell programming
+gives Hubble this ability to creatively operate the computer as he
+wants. So using GNU Emacs@footnote{This can be done with any text editor}
+(his favorite text editor) he puts the following text in a file named
 @file{classify.sh}.
 
 @example

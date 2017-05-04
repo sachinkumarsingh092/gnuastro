@@ -1,6 +1,276 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release 0.2.28 (library 1.0.0) (2016-10-23) [alpha]
+* Noteworthy changes in release 0.2.206 (library 1.0.0) (2017-05-05) [alpha]
+
+  This is a full re-write of Gnuastro. Most importantly, Gnuastro now has a
+  new generic data contaihtner (`gal_data_t'). This new container can now
+  deal natively with all standard numeric data types, work in RAM or
+  HDD/SSD, keep data in any dimensions and has enabled many other very
+  useful features. Some of the most prominent of the new features are
+  discussed below. It is strongly recommended to review the respective
+  section of the Gnuastro manual/book for a better feeling of all the new
+  features.
+
+  As discussed below, some program names have changed, if you have a
+  previous version of Gnuastro installed from source, it is recommended to
+  uninstall it first (with `make uninstall' using the corresponding
+  tarball), then install this new version. Building Gnuastro can be slow,
+  so please build in parallel with Make's `-j8' option (to build on 8
+  threads).
+
+** New programs or library features
+
+  Library functions that deal with datasets now use this generic data
+  container for inputs and outputs, significantly simplifying their
+  API. Nearly all library functions have been re-written with much more
+  clear names, argument lists and individual purpose. Major new library
+  features are:
+
+     -- `gal_table_read' and `gal_table_write' will read and write data to
+        plain text, FITS ASCII and FITS Binary formats.
+
+     -- `gal_fits_img_read' and `gal_fits_img_write' can read a FITS image
+        to memory or write a FITS image from memory.
+
+  Gnuastro now defines a simple comment line format to keep basic
+  information in a plain text table, see the "Gnuastro text table format"
+  section of the book. In short for every column, a comment line like below
+  can be used to give a name, units, comments, or a type to a column. This
+  allows a FITS binary table for eample to be written to plain text and
+  converted back to binary without loosing any information (except for very
+  small floating point errors if not enough decimals are printed).
+
+      # Column N: NAME [UNIT, TYPE, BLANK] COMMENT
+
+  The new Fits program replaces the old Header program. But besides
+  reading/checking FITS header keywords, it can now also work on FITS
+  extensions/HDUs. For example with no options, it will list all the HDUs
+  in a FITS file along with basic information. It can copy a whole HDU to
+  another file, or delete a HDU from a FITS file. To get the previous
+  behavior of listing all the keywords in a FITS HDU, you can run it with
+  the `-p' option.
+
+  All programs now write data into the second HDU of a FITS file to allow a
+  clean first HDU. Note that following CFITSIO, HDU counting still starts
+  from zero, so FITS images and tables written by Gnuastro in a new file
+  can always be accessed with the `--hdu=1' option (which is now the
+  default).
+
+  If any program is run within a Git version controlled directory, a
+  `COMMIT' header keyword will be added to the created FITS files, see the
+  "Output headers" section of the book for a discussion on the usefulness
+  of this new feature.
+
+  Gnuastro now has a new program called "BuildProgram" to easily compile,
+  link and run a C program you have written with Gnuastro's libraries
+  without having to worry about which libraries (Gnuastro dependencies)
+  your program needs. For example if your C source code is called
+  `myprog.c', you can compile, link and run it with this simple command and
+  let GNU Libtool worry about the linking.
+
+      $ astbuildprog myprog.c
+
+** Removed programs or library features
+
+  The following program names have been renamed:
+
+    ImageCrop       --> Crop
+    ImageWarp       --> Warp
+    ImageStatistics --> Statistics
+    Header          --> Fits
+
+  SubtractSky has been removed. The Statistics program now has tools to
+  estimate the Sky value and it can be subtracted with Arithmetic.
+
+** New features
+
+  All Gnuastro programs that read and write tables can now do so in plain
+  text table format or in FITS ASCII or FITS Binary tables. Depending on
+  the filename or with the new `--tableformat' common option to all
+  programs.
+
+  The option management system in all Gnuastro programs has been completely
+  re-written with many new features, some of the most important ones are
+  listed below. For developers, you will notice that there is no more usage
+  of macros and adding new options has become much more easier.
+
+     -- All programs will now also look for a `gnuastro.conf' configuration
+        file to keep common options for all programs in every directory.
+
+     -- The `--lastconfig' opion can be used on the command-line or in any
+        configuration file to stop parsing any further configuration files.
+
+     -- The `--config' option can now be used to identify any arbitrary
+        file to be parsed as a configuration file. Any file that is given
+        to this option is parsed immediately.
+
+     -- The `--printparams' option now also prints the short documentation
+        of each option (same description in `--help') after its value.
+
+  It is now possible to choose columns in tables based on column names as
+  well as column numbers. It is also possible to search for columns based
+  on searching in their units or comments. When using column numbers,
+  counting now starts from 1 (one), not 0 (as before). See the new
+  "Selecting table columns" section for more on these new features.
+
+  Where relevant, all programs now accept a `--type' option that you can
+  use to specify the numerical datatype of the output.
+
+  With the new common option `--minmapsize', you can specify a minimum size
+  of an array (in bytes) to store data in SSD/HDD and not in RAM. This can
+  be instrumental when you are dealing with large datasets, or even smaller
+  ones, but when your RAM is getting full.
+
+  Making a log file is now optional and users have to explicitly ask for it
+  with the `--log' option.
+
+  ImageWarp can now align the image with the celestial coordiates using the
+  `--align' option.
+
+  ImageWarp can now warp without an input matrix, using the following
+  options: `--shear', `--flip', `--project', `--rotate', `--scale',
+  `--translate'. Any number of these transformations (along with the
+  `--align' option) can be called at runtime and they will be applied in
+  the same order to create one warping matrix. By default the FITS
+  coordinates will also be corrected.
+
+  Arithmetic now does all its operations in the native data type of the
+  dataset. Until now, it would convert the data internally to double
+  precision floating point, do the requested operation and write the data
+  back in the proper type. So this new implementation is much more
+  efficient than the 0.2 version.
+
+  Arithmetic now accepts two new classes of operators: type conversion
+  operators to all standard types and integer-only operators (all C
+  bit-wise operators and the modulo operator).
+
+  Arithmetic does the binary operators (e.g., plus or multiply) also in the
+  native type of the input dataset. Doing so for all the different
+  combinations of types, greatly slows down the initial compilation of
+  Gnuastro (after running `make'). So for every type there is now a
+  `--enable-bin-op-*' configure time option. Only for a the binary
+  operators, when the dataset's type isn't compiled, it will be converted
+  to a compiled type and then converted back.
+
+  Convolve now has the `--minsharpspec' option to specify the minimum
+  spectrum value to use in deconvolution (matching PSFs).
+
+  MakeProfile can now accept the radial function of profiles as
+  human-readable strings instead of a code for each profile (which was very
+  cryptic, although codes are also still acceptable). For example in the
+  profile column you can now write `sersic' instead of the code `1'. Also
+  compared to the previous versions where the codes started from `0', not
+  they start from `1'.
+
+  Crop can now read the name of the crop based on a value in a given in a
+  table column. This allows your object's IDs to be directly used as the
+  crop's file name.
+
+  ConvertType can also print the input dataset to the command-line
+  (`stdout'). To use this feature set the output filename to `stdout'.
+
+  The Statistics program can now read table columns as well as images and
+  do basic operations on them. It can also only work on a certain range of
+  the data. Alternatively, you can define the range on another reference
+  column, but use values of the main column.
+
+  Statistics can also do all its single-valued measurements on a
+  tessellation (tile grid) over the input dataset.
+
+  Statistics now has features to estimate the Sky value on the image using
+  the mode's quantile similar to what NoiseChisel does to find its initial
+  threshold.
+
+  Statistics now has several new single valued calculations: `--quantile',
+  `--quantfunc' (quantile function), `--mode', `--modequant', `--modesym',
+  and `--modesymvalue'.
+
+  When in WCS mode, Crop can still only work on aligned images. However,
+  very small floating point errors in writing the WCS (for example 10e-13
+  degrees) are now acceptable. Until now these would cause Crop to complain
+  and abort.
+
+  NoiseChisel now has a new `--cleandilated' option to remove dilated
+  objects that have a low S/N (it is mainly useful on very clean or mock
+  images), for non-clean noise, it will result in a decrease of
+  completeness. With this new option, NoiseChisel will also print detection
+  S/N values when run with the `--checkdetsn' option.
+
+** Changes in behavior
+
+  When a 2 by 2 matrix is given to ImageWarp, the FITS pixel positions
+  (which define the center of a pixel as an integer) are automatically
+  implemented internally, see "Invoking ImageWarp" in the manual for more.
+
+  To select column(s) by regular expression searching, the name now has to
+  be put in `/ /' (similar to AWK). If a value isn't in `/ /', the programs
+  will only select a column with the exact match.
+
+  Crop's `--section' syntax is now inclusive in both bounds.
+
+  Mask image options have been removed from all programs. Instead, all
+  programs can work directly on data with blank values. So when some pixels
+  must be masked, the Arithmetic program's `where' operator can be used to
+  select special pixels and set them to blank. In particular bit-wise
+  operations are now also available in Arithmetic which can be used with
+  Arithmetic's `where' also. Managing all these different choices in every
+  program would only confuse the user (with too many options).
+
+  Crop only checks if the center of a crop is filled when the crop was
+  defined by its center (for example with `--ra' and `--dec'). The verbose
+  outputs of Crop are also not cryptic 0s or 1s. The are human readable
+  text.
+
+  Crop doesn't have the separate `--imgmode' and `--wcsmode' options any
+  more. There is now a single `--mode' option which accepts values of `img'
+  or `wcs'.
+
+  Convolve's old `--frequency' and `--spatial' options have been removed
+  and are replaced by `--domain' which accepts values of `frequency' and
+  `spatial'.
+
+  Convolve's old `--viewfreqsteps' was changed to `--checkfreqsteps' to fit
+  with the general style of such check images in all Gnuastro's programs.
+
+  Warp's old `--nowcscorrection' option has been given a more clear name of
+  `--keepwcs'. With this option, Warp will not apply the warp the input's
+  WCS structure.
+
+  Warp's old `--maxblankfrac' option has been changed to
+  `--coveredfrac'. Until now, Warp would only look for the fraction of
+  input blank/NaN pixel area over the output pixel. But this would be
+  useless on the edges of the image. So the new `--coveredfrac' option
+  takes the acceptable fraction of output pixel area that must be covered
+  by input pixels in order to give that output pixel a value. You can use
+  this to set edge pixels that are not fully covered in the new grid to
+  blank and have a flat warped image.
+
+  Warp's old `--nofitscorrect' option has been changed to
+  `--centeroncorner' to be more clear. The new option is now more general
+  than before and also works on warping with a matrix, not just on modular
+  warpings.
+
+  MakeProfiles' old `--inputascanvas' is now called `--clearcanvas'.
+
+  Until now, MakeProfiles would abort with an error when the input columns
+  had blank values. But for masking, it might happen that you set a blank
+  magnitude. So this check has now been removed when reading the magnitude
+  column.
+
+  Statistics will not make a histogram and cumulative frequency files, or
+  calculate sigma-clipped results by default (with no options). It will
+  just print some basic information.
+
+  NoiseChisel's default value of the `--minskyfrac' option (new name for
+  the old `--minbfrac') is now 0.7 as opposed to 0.5. This will allow much
+  better estimation of noise properties (by default). It may be slightly
+  too high for a crowded field, but the users can change it on the
+  command-line (or in a configuration file) for such datasets.
+
+  When NoiseChisel is run with any of the `--check' options, it will abort
+  after all the check images have been created. This is very useful for
+  checking your parameters until each step and not be distracted (or have
+  to wait) for later steps to finish.
 
 ** Bug fixes
 
@@ -14,63 +284,19 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Fixes in the documentation (sr #109170, bug #49419).
 
-** New programs, functions, or macros
+  Check for malloc returning valid pointer (bug #49459).
 
-  `gal_wcs_pixel_scale_deg'
-    Returns the pixel scale of the input WCS structure in degrees.
+  Segfault in mesh interpolation corrected (bug #49588).
 
-  `gal_wcs_angular_distance_deg'
-    This has replaced `gal_wcs_angular_distance'. That function would take
-    the angles in radians and also return its value in radians. Radians are
-    very inconvenient and uncommon in celestial coordinates, so its input
-    and output was modified to accept angles in degrees and also return the
-    angular distance in degrees.
+  Corrected bad status usage in calls to wcsp2s and wcss2p (bug #49752).
 
-  `gnuastro/git.h'
-    New header for wrappers on the Git library.
+  Strickter checking in Crop's polygon point list (bug #48978).
 
-  `gal_git_describe'
-    Bascially a wrapper on Git's describe functions to return the string
-    for easy inclusion.
+  Correction in alignment and getting pixel scale (bug #50072).
 
-  `gal_fits_datatype_size
-    Return the size (in bytes) of the given datatype.
+  Decomposing PCi_j and CDELTi matices in output WCS (bug #50073).
 
-  `GAL_GNUASTRO_HAVE_PTHREAD_BARRIER'
-    This is a new name for the old `GAL_GNUASTRO_PTHREAD_BARRIER' to
-    conform better with other such marcos.
-
-  `GAL_GNUASTRO_HAVE_LIBGIT2'
-    Has a value of 1 if the host system has the Git library (`libgit2').
-
-** Removed programs, functions, macros
-
-  `gal_wcs_angular_distance'
-    See the explanation above for `gal_wcs_angular_distance_deg'.
-
-  `GAL_GNUASTRO_PTHREAD_BARRIER'
-    See the explanation above for `GAL_GNUASTRO_HAVE_PTHREAD_BARRIER'.
-
-** New features
-
-  ImageWarp can now align the image with the celestial coordiates using the
-  `--align' option.
-
-  ImageWarp can now warp without an input matrix, using the following
-  options: `--shear', `--flip', `--project', `--rotate', `--scale',
-  `--translate'. Any number of these transformations (along with the
-  `--align' option) can be called at runtime and they will be applied in
-  the same order to create one warping matrix. By default the FITS
-  coordinates will also be corrected.
-
-** Changes in behavior
-
-  When a 2 by 2 matrix is given to ImageWarp, the FITS pixel positions
-  (which define the center of a pixel as an integer) are automatically
-  implemented internally, see "Invoking ImageWarp" in the manual for more.
-
-  `gal_fits_write_keys_version' will now also write the Git commit
-  description when the Git library is installed on the host system.
+  Using image naxes[n] when checkcenter is larger (bug #50099).
 
 
 * Noteworthy changes in release 0.2 (library 0.0.0) (2016-10-03) [stable]
