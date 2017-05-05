@@ -46,7 +46,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
-#include <gnuastro/linkedlist.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS

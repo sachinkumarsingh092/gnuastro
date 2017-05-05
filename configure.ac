@@ -93,18 +93,7 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
-# Generic flags for all subdirectories. Note that when order matters, we
-# want the user values to be set (and thus used) after the default
-# values. The "AM_" versions of these variables will be confined to the
-# particular Makefile, so we can't define them in the top Makefile.am.
-#
-# About the quotations: the commands here first go through Autoconf which
-# removes one later of quotations. So if `$' is not quoted, it will try to
-# evaluate it. We can't just quote the full right side, because we wand the
-# (possibly) user defined original values that are passed to configure. For
-# the -D value in CPPFLAGS, we want the quotation marks until gcc, which is
-# two layers away from this text: first Autoconf, then Make. So we need two
-# layers of quotations there.
+# Generic compiler flags for all subdirectories.
 CFLAGS="-Wall -O3 $CFLAGS"
 LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
 CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"

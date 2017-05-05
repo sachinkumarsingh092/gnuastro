@@ -41,7 +41,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <gnuastro/type.h>
-#include <gnuastro/linkedlist.h>
 
 
 

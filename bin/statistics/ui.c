@@ -35,7 +35,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/arithmetic.h>
-#include <gnuastro/linkedlist.h>
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>

@@ -29,8 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <pthread.h>
 
-#include <gnuastro/linkedlist.h>
-
 #include "main.h"
 #include "mkcatalog.h"
 

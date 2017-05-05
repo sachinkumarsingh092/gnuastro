@@ -33,7 +33,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/dimension.h>
-#include <gnuastro/linkedlist.h>
 
 
 

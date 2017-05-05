@@ -28,7 +28,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/linkedlist.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
