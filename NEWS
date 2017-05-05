@@ -23,8 +23,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Library functions that deal with datasets now use this generic data
   container for inputs and outputs, significantly simplifying their
   API. Nearly all library functions have been re-written with much more
-  clear names, argument lists and individual purpose. Major new library
-  features are:
+  clear names, argument lists and individual purpose. Some example library
+  functions are shown below, also see the "Library demos" section of the
+  book for some complete working example:
 
      -- `gal_table_read' and `gal_table_write' will read and write data to
         plain text, FITS ASCII and FITS Binary formats.
@@ -124,11 +125,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Making a log file is now optional and users have to explicitly ask for it
   with the `--log' option.
 
-  ImageWarp can now align the image with the celestial coordiates using the
+  Warp can now align the image with the celestial coordiates using the
   `--align' option.
 
-  ImageWarp can now warp without an input matrix, using the following
-  options: `--shear', `--flip', `--project', `--rotate', `--scale',
+  Warp can now warp without an input matrix, using the following options:
+  `--shear', `--flip', `--project', `--rotate', `--scale',
   `--translate'. Any number of these transformations (along with the
   `--align' option) can be called at runtime and they will be applied in
   the same order to create one warping matrix. By default the FITS
@@ -198,9 +199,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changes in behavior
 
-  When a 2 by 2 matrix is given to ImageWarp, the FITS pixel positions
-  (which define the center of a pixel as an integer) are automatically
-  implemented internally, see "Invoking ImageWarp" in the manual for more.
+  When a 2 by 2 matrix is given to Warp, the FITS pixel positions (which
+  define the center of a pixel as an integer) are automatically implemented
+  internally, see "Invoking Warp" in the manual for more.
 
   To select column(s) by regular expression searching, the name now has to
   be put in `/ /' (similar to AWK). If a value isn't in `/ /', the programs
@@ -212,9 +213,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   programs can work directly on data with blank values. So when some pixels
   must be masked, the Arithmetic program's `where' operator can be used to
   select special pixels and set them to blank. In particular bit-wise
-  operations are now also available in Arithmetic which can be used with
-  Arithmetic's `where' also. Managing all these different choices in every
-  program would only confuse the user (with too many options).
+  operations are now available in Arithmetic to use bit-mask
+  images. Managing all these different choices in every program would only
+  confuse the user (with too many options).
 
   Crop only checks if the center of a crop is filled when the crop was
   defined by its center (for example with `--ra' and `--dec'). The verbose
