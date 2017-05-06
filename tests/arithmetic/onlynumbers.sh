@@ -36,8 +36,7 @@ execname=../bin/$prog/ast$prog
 # types of dependencies:
 #
 #   - The executable was not made (for example due to a configure option).
-#
-if [ ! -f $execname ]; then exit 77; fi
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
 
 
 

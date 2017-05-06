@@ -41,7 +41,11 @@ cat=$topsrc/tests/$prog/ellipticalmasks.txt
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
+#
+#   - Catalog doesn't exist (problem in tarball release).
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 
 

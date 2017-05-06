@@ -42,9 +42,9 @@ execname=../bin/$prog/ast$prog
 #     data file failed).
 #
 #   - libjpeg was not present on the system.
-if [ ! -f $execname ] || [ ! -f $img ] || [ "x$haslibjpeg" != "xyes" ]; then
-    exit 77;
-fi
+if [ ! -f $execname           ];then echo "$execname not created.";exit 77;fi
+if [ ! -f $img                ];then echo "$img does not exist.";  exit 77;fi
+if [ "x$haslibjpeg" != "xyes" ];then echo "libjpeg not present.";  exit 77;fi
 
 
 

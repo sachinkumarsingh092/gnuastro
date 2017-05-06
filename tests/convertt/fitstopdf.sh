@@ -42,10 +42,12 @@ execname=../bin/$prog/ast$prog
 #     data file failed).
 #
 #   - Ghostscript was not present on the system.
-if [ ! -f $execname ] || [ ! -f $img ] || [ "x$hasghostscript" != "xyes" ]; then
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
+if [ "x$hasghostscript" != "xyes" ]; then
+    echo "Ghostscript 9.10 or above not present.";
     exit 77;
 fi
-
 
 
 

@@ -39,9 +39,10 @@ execname=../bin/$prog/ast$prog
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ]; then exit 77; fi
-for fn in $img; do if [ ! -f $fn ]; then exit 77; fi; done
-
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+for fn in $img; do
+    if [ ! -f $fn ]; then echo "$fn does not exist."; exit 77; fi;
+done
 
 
 

@@ -41,10 +41,11 @@ cat=$topsrc/tests/$prog/mkprofcat3.txt
 # If the dependencies of the test don't exist, then skip it. There are two
 # types of dependencies:
 #
-#   - The executable was not made (for example due to a configure option),
+#   - The executable was not made (for example due to a configure option)
 #
-if [ ! -f $execname ]; then exit 77; fi
-
+#   - Catalog doesn't exist (problem in tarball release).
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
 
 
 

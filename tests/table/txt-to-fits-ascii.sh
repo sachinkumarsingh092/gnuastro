@@ -40,7 +40,8 @@ table=$topsrc/tests/$prog/table.txt
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $table    ]; then echo "$table doesn't exist.";  exit 77; fi
 
 
 

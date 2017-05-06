@@ -46,7 +46,9 @@ img2=convolve_spatial_scaled.fits
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ] || [ ! -f $img1 ] || [ ! -f $img2 ]; then exit 77; fi
+if [ ! -f $execname ]; then echo "$execname doesn't exist."; exit 77; fi
+if [ ! -f $img1     ]; then echo "$img1 does not exist.";    exit 77; fi
+if [ ! -f $img2     ]; then echo "$img2 does not exist.";    exit 77; fi
 
 
 

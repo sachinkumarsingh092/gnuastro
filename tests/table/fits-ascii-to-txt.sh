@@ -23,8 +23,8 @@
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=table
-execname=../bin/$prog/ast$prog
 table=ascii-table.fits
+execname=../bin/$prog/ast$prog
 
 
 
@@ -40,7 +40,8 @@ table=ascii-table.fits
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $table    ]; then echo "$table doesn't exist.";  exit 77; fi
 
 
 
@@ -48,4 +49,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $table --output=from-ascii-table.txt -h1
+$execname $table --output=from-ascii-table.txt

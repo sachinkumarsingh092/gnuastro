@@ -36,8 +36,11 @@ execname=./multithread
 # If the actual executable wasn't built, then this is a hard error and must
 # be FAIL. But if the input doesn't exist, its not this test's fault. So
 # just SKIP this test.
-if [ ! -f $execname ]; then echo "$execname not built"; exit 99; fi;
-if [ ! -f $img      ]; then echo "$img not built";      exit 77; fi;
+if [ ! -f $execname ]; then
+    echo "$execname library program not compiled.";
+    exit 99;
+fi;
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi;
 
 
 
