@@ -38,7 +38,7 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  /* Read the image into memory as a float32 data type. */
+  /* Read the image into memory. */
   image=gal_fits_img_read(argv[1], argv[2], -1);
 
   /* Let the user know. */

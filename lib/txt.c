@@ -1040,17 +1040,9 @@ make_fmts_for_printf(gal_data_t *datall, int leftadjust, size_t *len)
 
       /* If we have a blank value, get the blank value as a string and
          adjust the width */
-      if(gal_blank_present(data, 0)==0)
-        fmts[i*FMTS_COLS+2]=NULL;
-      else
-        {
-          /* Set the blank value. */
-          if(data->type==GAL_TYPE_STRING)
-            gal_checkset_allocate_copy(GAL_BLANK_STRING,
-                                       &fmts[i*FMTS_COLS+2]);
-          else
-            fmts[i*FMTS_COLS+2]=gal_blank_as_string(data->type, 0);
-        }
+      fmts[ i*FMTS_COLS+2 ] = ( gal_blank_present(data, 0)
+                                ? gal_blank_as_string(data->type, 0)
+                                : NULL );
 
 
       /* Fill in the printing paramters. */
