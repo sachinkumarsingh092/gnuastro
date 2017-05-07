@@ -105,3 +105,66 @@ all the commits needed for this release have been completed.
 
  - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org' and
    Savannah news.
+
+
+
+
+
+
+
+
+
+
+Packaging in Debian
+===================
+
+Steps necessary to Package Gnuastro for Debian.
+
+ - If you don't already have the Git repository, clone it with this
+   command:
+
+     $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
+
+ - A `gnuastro' directory will be built, for the moment don't go in it,
+   we'll keep all out temporary files in this parent directory. Put a copy
+   of the tarball to be packaged in this directory and make a standard
+   symbolic link to it (IMPORTANT: the `dash' is changed to an `underscore'
+   and an `orig' is added), then go into the cloned directory.
+
+     $ ln -s gnuastro-XXXX.tar.gz gnuastro_XXXX.orig.tar.gz
+     $ cd gnuastro
+
+ - You need to checkout to the `upstream' branch, clean everything that was
+   in it and inject this release's raw package source files into it as
+   shown below. Note that we should run `rm -rf ./*', because the `.git'
+   hidden directory must stay.
+
+     $ git checkout upstream
+     $ rm *                     # To delete all the non-hidden files
+     $ rm .autom4te.cfg .dir-locals.el .git .tarball-version .version
+     $ rm -rf bin/ bootstrapped/ doc/ lib/ tests/
+     $ tar xf ../gnuastro_XXXX.orig.tar.gz --strip-components=1
+
+ - We now need to commit these into the `upstream' branch of the Git
+   history, tag it and run `pristine-tar' on it.
+
+     $ git add --all
+     $ git commit -m "Upstream Gnuastro XXXX"
+     $ git tag upstream/XXXX
+     $ pristine-tar commit ../gnuastro_XXXX.orig.tar.gz
+
+ - We are done with the `upstream' branch and can checkout `master':
+
+     $ git checkout master
+
+ - Update the ChangeLog (similar to previous entries):
+
+     $ emacs debian/changelog
+
+ - Update your version of `pbuilder':
+
+     $ sudo pbuilder update
+
+ - Run `pdebuild':
+
+     $ pdebuild
