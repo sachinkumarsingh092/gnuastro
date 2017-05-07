@@ -606,14 +606,14 @@ Developing
 
 * Why C::                       Why Gnuastro is designed in C.
 * Program design philosophy::   General ideas behind the package structure.
-* Gnuastro project webpage::    Central hub for Gnuastro activities.
-* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Coding conventions::          Gnuastro coding conventions.
 * Program source::              Conventions for the code.
 * Documentation::               Documentation is an integral part of Gnuastro.
 * Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
 * Developer's checklist::       Checklist to finalize your changes.
+* Gnuastro project webpage::    Central hub for Gnuastro activities.
+* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Contributing to Gnuastro::    Share your changes with all users.
 
 Program source
@@ -21859,33 +21859,33 @@ benefit, and the larger community if they are willing to share it. In
 short, we hope that at least from the software point of view, the
 ``obscurantist faith in the expert's special skill and in his personal
 knowledge and authority'' can be broken, see @ref{Science and its
-tools}. The following software architecture can be one of the most basic
-and easy to understand for any interested inquirer.
+tools}. With this aim in mind, Gnuastro was designed to to have a very
+basic, simple, and easy to understand architecture for any interested
+inquirer.
 
-In this chapter, first some general design choices are tackled in @ref{Why
-C} and @ref{Program design philosophy}. The project management webpage and
-mailing lists are explained in @ref{Gnuastro project webpage} and
-@ref{Developing mailing lists}. In @ref{Coding conventions}, Gnuastro's
-adopted coding conventions are discussed and is followed by @ref{Program
-source} which describes how to easily navigate the source files in each
-program and also contains a template program to easily add new
-programs. Some other general aspects are then discussed:
-@ref{Documentation}, @ref{Building and debugging}, @ref{Test scripts}, and
-@ref{Developer's checklist}. This chapter finishes with a full description
-of Gnuastro's work-flow in @ref{Contributing to Gnuastro}.
+This chapter starts with very general design choices, in particular
+@ref{Why C} and @ref{Program design philosophy}. It will then get a little
+more technical about the Gnuastro code and file/directory structure in
+@ref{Coding conventions} and @ref{Program source}. @ref{The TEMPLATE
+program} discusses a minimal (and working) template to help in creating new
+programs or easier learning of a program's internal structure. Some other
+general issues about documentation, building and debugging are then
+discussed. This chapter concludes with how you can learn about the
+development and get involved in @ref{Gnuastro project webpage},
+@ref{Developing mailing lists} and @ref{Contributing to Gnuastro}.
 
 
 @menu
 * Why C::                       Why Gnuastro is designed in C.
 * Program design philosophy::   General ideas behind the package structure.
-* Gnuastro project webpage::    Central hub for Gnuastro activities.
-* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Coding conventions::          Gnuastro coding conventions.
 * Program source::              Conventions for the code.
 * Documentation::               Documentation is an integral part of Gnuastro.
 * Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
 * Developer's checklist::       Checklist to finalize your changes.
+* Gnuastro project webpage::    Central hub for Gnuastro activities.
+* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Contributing to Gnuastro::    Share your changes with all users.
 @end menu
 
@@ -21897,14 +21897,17 @@ of Gnuastro's work-flow in @ref{Contributing to Gnuastro}.
 @cindex C programming language
 @cindex C++ programming language
 @cindex Python programming language
-Currently the programming language that is most commonly used in
-scientific applications is C++, and more recently Python. One of the
-main reasons behind this choice is that through the Object oriented
-programming paradigm, they offer a much higher level of
-abstraction. However, GNU Astronomy Utilities are written in the C
-programming language. The reasons can be summarized with simplicity,
-portability and speed. All three are very important in a scientific
-software.
+Currently the programming language that is most commonly used in scientific
+applications is C++@footnote{@url{https://isocpp.org/}},
+Python@footnote{@url{https://www.python.org/}}, and
+Julia@footnote{@url{https://julialang.org/}} (which is a newcomer but
+swiftly gaining ground). One of the main reasons behind this choice is
+their high-level abstractions. However, GNU Astronomy Utilities is fully
+written in the C programming
+language@footnote{@url{https://en.wikipedia.org/wiki/C_(programming_language)}}. The
+reasons can be summarized with simplicity, portability and
+efficiency/speed. All three are very important in a scientific software and
+we will discuss them below.
 
 @cindex ANSI C
 @cindex ISO C90
@@ -21929,37 +21932,40 @@ requirements.
 
 @cindex Object oriented programming
 In C++, inheriting objects in the object oriented programming paradigm and
-their internal functions make the code very easy to write for the
-programmer who is deeply invested in those objects and understands all
-their relations well. But it simultaneously makes reading the program for a
-first time reader (a curious scientist who wants to know only how a small
-step was done) extremely hard. Before understanding the methods, the
-scientist has to invest a lot of time in understanding those objects and
-their relations. But in C all variables can be given as the basic language
-types for example @code{int}s or @code{float}s and their pointers to define
+their internal functions make the code very easy to write for a programmer
+who is deeply invested in those objects and understands all their relations
+well. But it simultaneously makes reading the program for a first time
+reader (a curious scientist who wants to know only how a small step was
+done) extremely hard. Before understanding the methods, the scientist has
+to invest a lot of time and energy in understanding those objects and their
+relations. But in C, everything is done with basic language types for
+example @code{int}s or @code{float}s and their pointers to define
 arrays. So when an outside reader is only interested in one part of the
 program, that part is all they have to understand.
 
-Recently it is also becoming common to write scientific software in
-Python, or a combination of it with C or C++. Python is a high level
-scripting language which doesn't need compilation. It is very useful
-when you want to do something on the go and don't want to be halted by
-the troubles of compiling, linking, memory checking, etc. When the
-data sets are small and the job is temporary, this ability of Python
-is great and is highly encouraged. A very good example might be
-plotting, in which Python is undoubtedly one of the best.
+Recently it is also becoming common to write scientific software in Python,
+or a combination of it with C or C++. Python is a high level scripting
+language which doesn't need compilation. It is very useful when you want to
+do something on the go and don't want to be halted by the troubles of
+compiling, linking, memory checking, etc. When the datasets are small and
+the job is temporary, this ability of Python is great and is highly
+encouraged. A very good example might be plotting, in which Python is
+undoubtedly one of the best.
 
-But as the data sets increase in size and the processing becomes very
+But as the data sets increase in size and the processing becomes more
 complicated, the speed of Python scripts significantly decrease. So when
 the program doesn't change too often and is widely used in a large
-community mostly on large data sets (like astronomical images), using
+community, mostly on large data sets (like astronomical images), using
 Python will waste a lot of valuable research-hours. It is possible to wrap
-C or C++ functions with Python to fix the speed issue.
+C or C++ functions with Python to fix the speed issue. But this adds to
+complexity, because the interested scientist will now have to master two
+programming languages and their connection (which is not trival).
 
 Like C++, Python is object oriented, so as explained above, it needs a high
 level of experience with that particular program to fully understand its
 inner workings. To make things worse, since it is mainly for fast and on
-the go programming, it can undergo significant changes. One recent example
+the go programming@footnote{Note that Python is good for fast programming,
+not fast programs.}, it can undergo significant changes. One recent example
 is how Python 2.x and Python 3.x are not compatible. Lots of research teams
 that invested heavily in Python 2.x cannot benefit from Python 3.x or
 future versions any more. Some converters are available, but since they are
@@ -21970,18 +21976,17 @@ compatible their investments will be when Python 4.x or 5.x will come
 out. This stems from the core principles of Python, which are very useful
 when you look in the `on the go' basis as described before and not future
 usage. Future-proof code (as long as current operating systems will be
-used) will be written in C.
+used) is written in C.
 
 The portability of C is best demonstrated by the fact that both C++ and
 Python are part of the C-family of programming languages which also include
 Julia, Java, Perl, and many other languages. C libraries can be immediately
 included in C++, and it is easy to write wrappers for them in all C-family
 programming languages. This will allow other scientists to benefit from C
-libraries using any C-family language that they prefer. With version 0.2,
-Gnuastro's C library (see @ref{Gnuastro library}) is installed along with
-the programs and task
-13786@footnote{@url{http://savannah.gnu.org/task/?13786}} has been defined
-to add wrappers for higher level languages.
+libraries using any C-family language that they prefer. As a result,
+Gnuastro's library is already usable in C and C++, and wrappers will
+be@footnote{@url{http://savannah.gnu.org/task/?13786}} added for
+higher-level languages like Python, Julia and Java.
 
 @cindex Low level programming
 @cindex Programming, low level
@@ -21991,96 +21996,902 @@ abstractions provided by the higher-level languages (which also makes
 learning them harder for a newcomer) comes at the cost of speed. Since C is
 a low-level language@footnote{Low-level languages are those that directly
 operate the hardware like assembly languages. So C is actually a high-level
-language, but it can be considered one of the lowest-level, high-level
-languages.} (closer to the hardware), it is much less complex for both the
-human reader and the computer. The former was discussed above in simplicity
-and the latter helps in making the program run more efficiently
-(faster). This thus allows for a closer relation between the
-scientist/programmer (program) and the actual data/processing. The GNU
-coding standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
-encourage the use of C over all other languages when generality of usage
-and ``high speed'' is desired.
+language, but it can be considered one of the lowest-level languages among
+all high-level languages.} (closer to the hardware), it is much less
+complex for both the human reader @emph{and} the computer. The benefits of
+simplicity for a human were discussed above. Simplicity for the computer
+translates into more efficiently (faster) programs. This creates a much
+closer relation between the scientist/programmer (or their program) and the
+actual data and processing. The GNU coding
+standards@footnote{@url{http://www.gnu.org/prep/standards/}} also encourage
+the use of C over all other languages when generality of usage and ``high
+speed'' is desired.
 
 
 
 
 
-@node Program design philosophy, Gnuastro project webpage, Why C, Developing
+@node Program design philosophy, Coding conventions, Why C, Developing
 @section Program design philosophy
 
-The core processing functions of each program are written mostly with
-the basic ISO C90 standard. We do make lots of use of the GNU
-additions to the C language in the GNU C library, but these additional
-functions are mainly used in the user interface functions (reading
-your inputs and preparing them prior to or after the analysis). The
-actual algorithms, which most scientists would be more interested in,
-are much more closer to ISO C90. For this reason, the source files
-containing user interface code and those containing actual processing
-code are clearly separated, see @ref{Program source}. If anything
-particular to the GNU C library is used in the processing functions,
-it is explained in the comments in between the code.
+The core processing functions of each program (and all libraries) are
+written mostly with the basic ISO C90 standard. We do make lots of use of
+the GNU additions to the C language in the GNU C library, but these
+additional functions are mainly used in the user interface functions
+(reading your inputs and preparing them prior to or after the
+analysis). The actual algorithms, which most scientists would be more
+interested in, are much more closer to ISO C90. For this reason, program
+source files that deal with user interface issues and those doing the
+actual processing are clearly separated, see @ref{Program source}. If
+anything particular to the GNU C library is used in the processing
+functions, it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
-Similar to GNU Coreutils, all the Gnuastro programs provide very low
-level operations. This enables you to use the GNU Bash scripting
-language (which is the default in most GNU/Linux operating systems) or
-any other shell you might be using to operate on a large number of
-files or do very complex things through the creative combinations of
-these tools that the authors had never dreamed of. We have put a few
-simple examples in @ref{Tutorials}.
+Similar to GNU Coreutils, all the Gnuastro programs provide very low level
+operations. This enables you to use shell scripting languages (for example
+GNU Bash) to operate on a large number of files or do very complex things
+through the creative combinations of these tools that the authors had never
+dreamed of. We have put a few simple examples in @ref{Tutorials}.
 
+@cindex @LaTeX{}
 @cindex GNU Bash
 @cindex Python Matplotlib
 @cindex Matplotlib, Python
 @cindex PGFplots in @TeX{} or @LaTeX{}
-For example all the analysis output is provided as ASCII tables which
-you can feed into your favorite plotting program to inspect
-visually. Python's Matplotlib is very useful for fast plotting of the
-tables to immediately check your results. If you want to include the
-plots in a document, you can use the PGFplots package within @LaTeX{},
-no attempt is made to include such operations in Gnuastro. In short,
-Bash can act as a glue to connect the inputs and outputs of all these
-various Gnuastro programs (and other programs) in any fashion you
-please.
+For example all the analysis output can be saved as ASCII tables which can
+be fed into your favorite plotting program to inspect visually. Python's
+Matplotlib is very useful for fast plotting of the tables to immediately
+check your results. If you want to include the plots in a document, you can
+use the PGFplots package within @LaTeX{}, no attempt is made to include
+such operations in Gnuastro. In short, Bash can act as a glue to connect
+the inputs and outputs of all these various Gnuastro programs (and other
+programs) in any fashion you please. Ofcourse, Gnuastro's programs are just
+front-ends to the main workhorse (@ref{Gnuastro library}), allowing a user
+to create their own programs (for example with @ref{BuildProgram}). So once
+the functions within programs become mature enough, they will be moved
+within the libraries for more general applications.
 
-The advantage of this architecture is that the programs become small
-and transparent: the starting and finishing point of every program is
-clearly demarcated. For nearly all operations on a modern computer,
-the read/write speed is very insignificant compared to the actual
-processing a program does. Therefore the complexity which arises from
-sharing memory in a large application is simply not worth the speed
-gain. This basic design is influenced by Eric Raymond's ``The Art of
-Unix Programming''@footnote{Eric S. Raymond, 2004, @emph{The Art of
-Unix Programming}, Addison-Wesley Professional Computing Series.}
-which beautifully describes the design philosophy and practice which
-lead to the success of Unix-based operating
-systems@footnote{KISS principle: Keep It Simple, Stupid!}.
+The advantage of this architecture is that the programs become small and
+transparent: the starting and finishing point of every program is clearly
+demarcated. For nearly all operations on a modern computer, the read/write
+speed is very insignificant compared to the actual processing a program
+does. Therefore the complexity which arises from sharing memory in a large
+application is simply not worth the speed gain. Gnuastro's design is
+heavily influenced from Eric Raymond's ``The Art of Unix
+Programming''@footnote{Eric S. Raymond, 2004, @emph{The Art of Unix
+Programming}, Addison-Wesley Professional Computing Series.}  which
+beautifully describes the design philosophy and practice which lead to the
+success of Unix-based operating systems@footnote{KISS principle: Keep It
+Simple, Stupid!}.
 
 
 
-@node Gnuastro project webpage, Developing mailing lists, Program design philosophy, Developing
+
+
+@node Coding conventions, Program source, Program design philosophy, Developing
+@section Coding conventions
+
+@cindex GNU coding standards
+@cindex Gnuastro coding convention
+In Gnuastro, we try our best to follow the GNU coding standards. Added to
+those, Gnuastro defines the following conventions. It is very important for
+readability that the whole package follows the same convention.
+
+@itemize
+
+@item
+The code must be easy to read by eye. So when the order of several lines
+within a function does not matter (for example when defining variables at
+the start of a function). You should put the lines in the order of
+increasing length and group the variables with similar types such that this
+half-pyramid of declarations becomes most visible. If the reader is
+interested, a simple search will show them the variable they are interested
+in. However, this visual aid greatly helps in general inspections of the
+code and help the reader get a grip of the function's processing.
+
+@item
+When ever you see that the function cannot be fully displayed (vertically)
+in your monitor, this is a sign that it has probably become too long and
+should be broken up into multiple functions. 40 lines is usually a good
+reference. When the start and end of a function are clearly visible in one
+glance, the function is much more easier to understand. This is most
+important for low-level functions (which usually define a lot of
+variables). Low-level functions do most of the processing, they will also
+be the most interesting part of a program for an inquiring astronomer. This
+convention is less important for higher level functions that don't define
+too many variables and whose only purpose is to run the lower-level
+functions in a specific order and with checks.
+
+@cindex Optimization flag
+@cindex GNU Compiler Collection
+In general you can be very liberal in breaking up the functions into
+smaller parts, the GNU Compiler Collection (GCC) will automatically compile
+the functions as inline functions when the optimizations are turned on. So
+you don't have to worry about decreasing the speed. By default Gnuastro
+will compile with the @option{-O3} optimization flag.
+
+@cindex Buffers (Emacs)
+@cindex Emacs buffers
+@item
+All Gnuastro hand-written text files (C source code, Texinfo documentation
+source, and version control commit messages) should not exceed @strong{75}
+characters per line. Monitors today are certainly much wider, but with this
+limit, reading the functions becomes much more easier. Also for the
+developers, it allows multiple files (or multiple views of one file) to be
+displayed beside each other on wide monitors.
+
+Emacs's buffers are excellent for this capability, setting a buffer width
+of 80 with `@key{C-u 80 C-x 3}' will allow you to view and work on several
+files or different parts of one file using the wide monitors common
+today. Emacs buffers can also be used as a shell prompt and compile the
+program (with @key{M-x compile}), and 80 characters is the default width in
+most terminal emulators. If you use Emacs, Gnuastro sets the 75 character
+@command{fill-column} variable automatically for you, see cartouche below.
+
+For long comments you can use press @key{Alt-q} in Emacs to separate them
+into separate lines automatically. For long literal strings, you can use
+the fact that in C, two strings immediately after each other are
+concatenated, for example @code{"The first part, " "and the second part."}.
+Note the space character in the end of the first part. Since they are now
+separated, you can easily break a long literal string into several lines
+and adhere to the maximum 75 character line length policy.
+
+@cindex Header file
+@item
+The headers required by each source file (ending with @file{.c}) should be
+defined inside of it. All the headers a complete program needs should
+@emph{not} be stacked in another header to include in all source files (for
+example @file{main.h}). Although most `professional' programmers choose
+this single header method, Gnuastro is primarily written for
+professional/inquisitive astronomers (who are generally amateur
+programmers). The list of header files included provides valuable general
+information and helps the reader. @file{main.h} may only include the header
+file(s) that define types that the main program structure needs, see
+@file{main.h} in @ref{Program source}. Those particular header files that
+are included in @file{main.h} can of course be ignored (not included) in
+separate source files.
+
+@item
+The headers should be classified (by an empty line) into separate
+groups:
+
+@enumerate
+@cindex GNU C library
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
+@item
+@code{#include <config.h>}: This must be the first code line (not commented
+or blank) in each source file @emph{within Gnuastro}. It sets macros that
+the GNU Portability Library (Gnulib) will use for a unified environment
+(GNU C Library), even when the user is building on a system that doesn't
+use the GNU C library.
+
+@item
+The C library header files, for example @file{stdio.h}, @file{stdlib.h}, or
+@file{math.h}.
+@item
+Installed library header files, including Gnuastro's installed headers (for
+example @file{cfitsio.h} or @file{gsl/gsl_rng.h}, or
+@file{gnuastro/fits.h}).
+@item
+Gnuastro's internal headers (that are not installed), for example
+@file{gnuastro-internal/options.h}.
+@item
+For programs, the @file{main.h} file (which is needed by the next group of
+headers).
+@item
+That particular program's header files, for example @file{mkprof.h}, or
+@file{noisechisel.h}.
+@end enumerate
+
+@noindent
+As much as order does not matter when you include the header of each group,
+sort them by length, as described above.
+
+@item
+All function names, variables, etc should be in lower case.  Macros,
+constant global @code{enum}s should be in upper case.
+
+@item
+Naming of exported header files, functions, variables, macros, and library
+functions, we adopt similar conventions to those used by the GNU Scientific
+Library
+(GSL)@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
+In particular, in order to avoid clashes with the names of functions and
+variables coming from other libraries the name-space `@code{gal_}' is
+prefixed to them. GAL stands for @emph{G}NU @emph{A}stronomy
+@emph{L}ibrary.
+
+@item
+All installed header files should be in the @file{lib/gnuastro} directory
+(under the top Gnuastro source directory). After installation, they will be
+put in the @file{$prefix/include/gnuastro} directory (see @ref{Installation
+directory} for @file{$prefix}). Therefore with this convention Gnuastro's
+headers can be included in internal (to Gnuastro) and external (a library
+user) source files with the same line
+@example
+# include <gnuastro/headername.h>
+@end example
+Note that the GSL convention for header file names is
+@file{gsl_specialname.h}, so your include directive must be something like
+@code{#include <gsl/gsl_specialname.h>}, the header file names are not
+prefixed with a `@file{gal_}'. However, Gnuastro doesn't follow this
+guideline because of the repeated @code{gsl} in the include directive
+(which canbe confusing and cause bugs). All Gnuastro (and GSL) headers must
+be located within a unique directory and will not be mixed with other
+headers. Therefore the `@file{gsl_}' prefix to the header file names is
+redundant@footnote{For GSL, this prefix has an internal technical
+application: GSL's architecture mixes installed and not-installed headers
+in the same directory. This prefix is used to identify their installation
+status. Therefore this filename prefix in GSL a technical internal issue
+(for developers, not users).}.
+
+@item
+@cindex GNU coding standards
+All installed functions and variables should also include the base-name of
+the file in which they are defined as prefix, using underscores to separate
+words@footnote{The convention to use underscores to separate words, called
+``snake case'' (or ``snake_case''). This is also recommended by the GNU
+coding standards.}. The same applies to exported macros, but in upper case.
+For example in Gnuastro's top source directory, the prototype of function
+@code{gal_box_border_from_center} is in @file{lib/gnuastro/box.h}, and the
+macro @code{GAL_POLYGON_MAX_CORNERS} is defined in
+@code{lib/gnuastro/polygon.h}.
+
+This is necessary to give any user (who is not familiar with the library
+structure) the ability to follow the code of a function that is not in the
+program or library they are reading. This convention does make the function
+names longer (a little harder to write), but the extra documentation it
+provides convention plays an important role in Gnuastro and is worth the
+cost.
+
+@item
+@cindex GNU Emacs
+@cindex Trailing space
+There should be no trailing white space in a line. To do this
+automatically every time you save a file in Emacs, add the following
+line to your @file{~/.emacs} file.
+@example
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+@end example
+
+@item
+@cindex Tabs are evil
+There should be no tabs in the indentation@footnote{If you use Emacs,
+Gnuastro's @file{.dir-locals.el} file will automatically never use tabs for
+indentation. To make this a default in all your Emacs sessions, you can add
+the following line to your @file{~/.emacs} file: @command{(setq-default
+indent-tabs-mode nil)}}.
+
+@item
+@cindex GNU Emacs
+@cindex Function groups
+@cindex Groups of similar functions
+Individual, contextually similar, functions in a source file are separated
+by 5 blank lines to be easily seen to be related in a group when parsing
+the source code by eye. In Emacs you can use @key{CTRL-u 5 CTRL-o}.
+
+@item
+One group of contextually similar functions in a source file is separated
+from another with 20 blank lines. In Emacs you can use @key{CTRL-u 20
+CTRL-o}. Each group of functions has short descriptive title of the
+functions in that group. This title is surrounded by asterisks (@key{*}) to
+make it clearly distinguishable. Such contextual grouping and clear title
+are very important for easily understanding the code.
+
+@item
+Always read the comments before the patch of code under it. Similarly, try
+to add as many comments as you can regarding every patch of
+code. Effectively, we want someone to get a good feeling of the steps,
+without having to read the C code and only by reading the comments. This
+follows similar principles as
+@url{https://en.wikipedia.org/wiki/Literate_programming, Literate
+programming}.
+
+@end itemize
+
+The last two conventions are not common and might benefit from a short
+discussion here. With a good experience in advanced text editor operations,
+the last two are redundant for a professional developer. However, recall
+that Gnuastro aspires to be friendly to un-familiar, and un-experienced (in
+programming) eyes. In other words, as discussed in @ref{Science and its
+tools}, we want the code to appear welcoming to someone who is completely
+new to coding (and text editors) and only has a scientific curiosity.
+
+Newcomers to coding and development, who are curious enough to venture into
+the code, will probably not be using (or have any knowledge of) advanced
+text editors. They will see the raw code in the webpage or on a simple text
+editor (like Gedit) as plain text. Trying to learn and understand a file
+with dense functions that are all spaced with one or two blank lines can be
+very taunting for a newcomer. But when they scroll through the file and see
+clear titles and meaningful spaces for similar functions, we are helping
+them find and focus on the part they are most interested in sooner and
+easier.
+
+@cartouche
+@cindex GNU Emacs
+@noindent
+@strong{GNU Emacs, the recommended text editor:} GNU Emacs is an
+extensible and easily customizable text editor which many programmers
+rely on for developing due to its countless features. Among them, it
+allows specification of certain settings that are applied to a single
+file or to all files in a directory and its sub-directories. In order
+to harmonize code coming from different contributors, Gnuastro comes
+with a @file{.dir-locals.el} file which automatically configures Emacs
+to satisfy most of the coding conventions above when you are using it
+within Gnuastro's directories. Thus, Emacs users can readily start
+hacking into Gnuastro. If you are new to developing, we strongly
+recommend this editor. Emacs was the first project released by GNU and
+is still one of its flagship projects. Some resources can be found at:
+
+@table @asis
+@item Official manual
+At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is a
+great and very complete manual which is being improved for over 30 years
+and is the best starting point to learn it. It just requires a little
+patience and practice, but rest assured that you will be rewarded. If you
+install Emacs, you also have access to this manual on the command-line with
+the following command (see @ref{Info}).
+
+@example
+$ info emacs
+@end example
+
+@item A guided tour of emacs
+At @url{https://www.gnu.org/software/emacs/tour/}. A short visual tour
+of Emacs, officially maintained by the Emacs developers.
+
+@item Unofficial mini-manual
+At @url{https://tuhdo.github.io/emacs-tutor.html}. A shorter manual
+which contains nice animated images of using Emacs.
+
+@end table
+@end cartouche
+
+
+
+@node Program source, Documentation, Coding conventions, Developing
+@section Program source
+
+@cindex Source file navigation
+@cindex Navigating source files
+@cindex Program structure convention
+@cindex Convention for program source
+@cindex Gnuastro program structure convention
+Besides the fact that all the programs share some functions that were
+explained in @ref{Library}, everything else about each program is
+completely independent. Recall that Gnuastro is written for an active
+astronomer/scientist (not a passive one who just uses a software). It must
+thus be easily navigable. Hence there are fixed source files (that contain
+fixed operations) that must be present in all programs, these are discussed
+fully in @ref{Mandatory source code files}. To easily understand the
+explanations in this section you can use @ref{The TEMPLATE program} which
+contains the bare minimum code for one working program. This template can
+also be used to easily add new utilities: just copy and paste the directory
+and change @code{TEMPLATE} with your program's name.
+
+
+
+@menu
+* Mandatory source code files::  Description of files common to all programs.
+* The TEMPLATE program::        Template for easy creation of a new program.
+@end menu
+
+@node Mandatory source code files, The TEMPLATE program, Program source, Program source
+@subsection Mandatory source code files
+
+Some programs might need lots of source files and if there is no fixed
+convention, navigating them can become very hard for a new inquirer into
+the code. The following source files exist in every program's source
+directory (which is located in @file{bin/progname}). For small programs,
+these files are enough. Larger programs will need more files and developers
+are encouraged to define any number of new files. It is just important that
+the following list of files exist and do what is described here. When
+creating other source files, please choose filenames that are a complete
+single word: don't abbreviate (abbreviations are cryptic). For a minimal
+program containing all these files, see @ref{The TEMPLATE program}.
+
+@vtable @file
+
+@item main.c
+@cindex @code{main} function
+Each executable has a @code{main} function, which is located in
+@file{main.c}. Therefore this file in any program's source code will be the
+starting point. No actual processing functions must be defined in this
+file, the function(s) in this file are only meant to connect the most high
+level steps of each program. Generally, @code{main} will first call the top
+user interface function to read user input and make all the
+preparations. Then it will pass control to the top processing function for
+that program. The functions to do both these jobs must be defined in other
+source files.
+
+@item main.h
+@cindex Top root structure
+@cindex @code{prognameparams}
+@cindex Root parameter structure
+@cindex Main parameters C structure
+All the major parameters which will be used in the program must be stored
+in a structure which is defined in @file{main.h}. The name of this
+structure is usually @code{prognameparams}, for example @code{cropparams}
+or @code{noisechiselparams}. So @code{#include "main.h"} will be a staple
+in all the source codes of the program. It is also regularly the first (and
+only) argument most of the program's functions which greatly helps in
+readability.
+
+Keeping all the major parameters of a program in this structure has the
+major benefit that most functions will only need one argument: a pointer to
+this structure. This will significantly facilitate the job of the
+programmer, the inquirer and the computer. All the programs in Gnuastro are
+designed to be low-level, small and independent parts, so this structure
+should not get too large.
+
+@cindex @code{p}
+The main root structure of all programs contains atleast one instance of
+the @code{gal_options_common_params} structure. This structure will keep
+the values to all common options in Gnuastro's programs (see @ref{Common
+options}). This top root structure is conveniently called @code{p} (short
+for parameters) by all the functions in the programs and the common options
+parameters within it are called @code{cp}. With this convention any reader
+can immediately understand where to look for the definition of one
+parameter. For example you know that @code{p->cp->output} is in the common
+parameters while @code{p->threshold} is in the program's parameters.
+
+@cindex Structure de-reference operator
+@cindex Operator, structure de-reference
+With this basic root structure, source code of functions can potentially
+become full of structure de-reference operators (@command{->}) which can
+make the code very un-readable. In order to avoid this, whenever a
+structure element is used more than a couple of times in a function, a
+variable of the same type and with the same name (so it can be searched) as
+the desired structure element should be defined with the value of the root
+structure inside of it in definition time. Here is an example.
+
+@example
+char *hdu=p->cp.hdu;
+float threshold=p->threshold;
+@end example
+
+@item args.h
+@cindex GNU C library
+@cindex Argp argument parser
+The options particular to each program are defined in this file. Each
+option is defined by a block of parameters in @code{program_options}. These
+blocks are all you should modify in this file, leave the bottom group of
+definitions untouched. These are fed directly into the GNU C library's Argp
+facilities and it is recommended to have a look at that for better
+understand what is going on, although this is not required here.
+
+Each element of the block defining an option is described under
+@code{argp_option} in @code{bootstrapped/lib/argp.h} (from Gnuastro's top
+source file). Note that the last few elements of this structure are
+Gnuastro additions (not documented in the standard Argp manual). The values
+to these last elements are defined in @code{lib/gnuastro/type.h} and
+@code{lib/gnuastro-internal/options.h} (from Gnuastro's top source
+directory).
+
+@item ui.h
+Besides declaring the exported functions of @code{ui.c}, this header also
+keeps the ``key''s to every program-specific option. The first class of
+keys for the options that have a short-option version (single letter, see
+@ref{Options}). The character that is defined here is the option's short
+option name. The list of available alphabet characters can be seen in the
+comments. Recall that some common options also take some characters, for
+those, see @file{lib/gnuastro-internal/options.h}.
+
+The second group of options are those that don't have a short option
+alternative. Only the first in this group needs a value (@code{1000}), the
+rest will be given a value by C's @code{enum} definition, so the actual
+value is irrelevant and must never be used, always use the name.
+
+@item ui.c
+@cindex User interface functions
+@cindex Functions for user interface
+Everything related to reading the user input arguments and options,
+checking the configuration files and checking the consistency of the input
+parameters before the actual processing is run should be done in this
+file. Since most functions are the same, with only the internal checks and
+structure parameters differing. We recommend going through the @code{ui.c}
+of @ref{The TEMPLATE program}, or several other programs for a better
+understanding.
+
+The most high-level function in @file{ui.c} is named
+@code{ui_read_check_inputs_setup}. It accepts the raw command-line inputs
+and a pointer to the root structure for that program (see the explanation
+for @file{main.h}). This is the function that @code{main} calls. The basic
+idea of the functions in this file is that the processing functions should
+need a minimum number of such checks. With this convention an inquirer who
+only wants to understand only one part (mostly the processing part and not
+user input details and sanity checks) of the code can easily do so in the
+later files. It also makes all the errors related to input appear before
+the processing begins which is more convenient for the user.
+
+@item progname.c, progname.h
+@cindex Top processing source file
+The high-level processing functions in each program are in a file named
+@file{progname.c}, for example @file{crop.c} or @file{noisechisel.c}. The
+function within these files which @code{main} calls is also named after
+the program, for example
+
+@example
+void
+crop(struct cropparams *p)
+@end example
+
+@noindent
+or
+
+@example
+void
+noisechisel(struct noisechiselparams *p)
+@end example
+
+@noindent
+In this manner, if an inquirer is interested the processing steps, they can
+immediately come and check this file for the first processing step without
+having to go through @file{main.c} and @file{ui.c} first. In most
+situations, any failure in any step of the programs will result in an
+informative error message and an immediate abort in the program. So there
+is usually no need for return values. Under more complicated situations
+where a return value might be necessary, @code{void} will be replaced with
+an @code{int} in the examples above. This value must be directly returned
+by @code{main}, so it has to be an @code{int}.
+
+@item authors-cite.h
+@cindex Citation information
+This header file keeps the global variable for the program authors and its
+BibTeX record for citation. They are used in the outputs of the common
+options @option{--version} and @option{--cite}, see @ref{Operating mode
+options}.
+
+@end vtable
+
+@node The TEMPLATE program,  , Mandatory source code files, Program source
+@subsection The TEMPLATE program
+
+The extra creativity offered by libraries comes at a cost: you have to
+actually write your @code{main} function and get your hands dirty in
+managing user inputs: are all the necessary parameters given a value? is
+the input in the correct format? do the options and the inputs correspond?
+and many other similar checks. So when an operation has well-defined inputs
+and outputs and is commonly needed, it is much more worthwhile to simply do
+use all the great features that Gnuastro has already defined for such
+operations.
+
+To make it easier to learn/apply the internal program infra-structure
+discussed in @ref{Mandatory source code files}, Gnuastro ships with a
+template program when using the @ref{Version controlled source}. It is not
+available in the Gnuastro tarball so it doesn't confuse people using the
+tarball. The @file{bin/TEMPLATE} directory in Gnuastro's clone contains the
+bare-minimum files necessary to define a new program and all the necessary
+files/functions are pre-defined there. You can take the following steps if
+you want to add a new program to Gnuastro:
+
+@enumerate
+@item
+Select a name for your new program (for example @file{myprog}).
+
+@item
+Copy the @file{TEMPLATE} directory to a directory with your program's name:
+@example
+$ cp -R bin/TEMPLATE bin/myprog
+@end example
+
+@item
+Open @file{configure.ac} in the top Gnuastro source. This file manages the
+operations that are done when a user runs @file{./configure}. Going down
+the file, you will notice repetitive parts for each program. Copy one of
+those and correct the names of the copied program to your new program
+name. We follow alphabetic ordering here, so please place it
+correctly. There are multiple places where this has to be done, so be
+patient and go down to the bottom of the file. Ultimately add
+@file{bin/myprog/Makefile} to @code{AC_CONFIG_FILES}, only here the
+ordering depends on the length of the name.
+
+@item
+Open @file{Makefile.am} in the top Gnuastro source. Similar to the previous
+step, add your new program similar to all the other programs.
+
+@item
+Change @code{TEMPLATE} to @code{myprog} in the file names and contents of
+the files in the @file{bin/myprog/} directory.
+
+@item
+Run the following command to re-build the configuration and build system.
+@example
+$ autoreconf -f
+@end example
+Your new program will be built the next time you run @command{./configure}
+and @command{make}. You can now start adding your special
+checks/processing.
+@end enumerate
+
+
+
+
+
+
+
+@node Documentation, Building and debugging, Program source, Developing
+@section Documentation
+
+Documentation (this book) is an integral part of Gnuastro (see @ref{Science
+and its tools}).  Documentation is not considered a separate project and
+must be written by its developers. Users can make edits/corrections, but
+the initial writing must be by the developer. So, no change is considered
+valid for implementation unless the respective parts of the book have also
+been updated. The following procedure can be a good suggestion to take when
+you have a new idea and are about to start implementing it.
+
+The steps below are not a requirement, the important thing is that when you
+send the program to be included in Gnuastro, the book and the code have to
+both be fully up-to-date and compatible and the purpose should be very
+clearly explained. You can follow any path you choose to do this, the
+following path was what we have found to be most successful until now.
+
+@enumerate
+@item
+Edit the book and fully explain your desired change, such that your
+idea is completely embedded in the general context of the book with
+no sense of discontinuity for a first time reader. This will allow you
+to plan the idea much more accurately and in the general context of
+Gnuastro or a particular program. Later on, when you are coding, this
+general context will significantly help you as a road-map.
+
+A very important part of this process is the program introduction, which
+explains the purposes of the program. Before actually starting to code,
+explain your idea's purpose thoroughly in the start of the program section
+you wish to add or edit. While actually writing its purpose for a new
+reader, you will probably get some very valuable ideas that you hadn't
+thought of before. This has occurred several times during the creation of
+Gnuastro. If an introduction already exists, embed or blend your idea's
+purpose with the existing purposes. We emphasize that doing this is equally
+useful for you (as the programmer) as it is useful for the user
+(reader). Recall that the purpose of a program is very important, see
+@ref{Program design philosophy}.
+
+As you have already noticed for every program, it is very important that
+the basics of the science and technique be explained in separate
+subsections prior to the `Invoking Programname' subsection. If you are
+writing a new program or your addition to an existing program involves a
+new concept, also include such subsections and explain the concepts so a
+person completely unfamiliar with the concepts can get a general initial
+understanding. You don't have to go deep into the details, just enough to
+get an interested person (with absolutely no background) started. If you
+feel you can't do that, then you have probably not understood the concept
+yourself! If you feel you don't have the time, then think about yourself as
+the reader in one year: you will forget almost all the details, so now that
+you have done all the theoretical preparations, add a few more hours and
+document it, so next time you don't have to prepare as much. Have in mind
+that your only limitation in length is the fatigue of the reader after
+reading a long text, nothing else. So as long as you keep it
+relevant/interesting for the reader, there is no page number limit/cost!
+
+It might also help if you start discussing the usage of your idea in the
+`Invoking ProgramName' subsection (explaining the options and arguments you
+have in mind) at this stage too. Actually starting to write it here will
+really help you later when you are coding.
+
+@item
+After you have finished adding your initial intended plan to the book, then
+start coding your change or new program within the Gnuastro source
+files. While you are coding, you will notice that somethings should be
+different from what you wrote in the book (your initial plan). So correct
+them as you are actually coding, but don't worry too much about missing a
+few things (see the next step).
+
+@item
+After your work has been fully implemented, read the section documentation
+from teh start and see if you didn't miss any change in the coding and to
+see if the context is fairly continuous for a first time reader (who hasn't
+seen the book or had known Gnuastro before you made your change).
+@end enumerate
+
+
+
+
+
+
+
+
+
+@node Building and debugging, Test scripts, Documentation, Developing
+@section Building and debugging
+
+@cindex GNU Libtool
+@cindex GNU Autoconf
+@cindex GNU Automake
+@cindex GNU build system
+To build the various programs and libraries in Gnuastro, the GNU build
+system is used which defines the steps in @ref{Quick start}. It consists of
+GNU Autoconf, GNU Automake and GNU Libtool which are collectively known as
+GNU Autotools. They provide a very portable system to check the hosts
+environment and compile Gnuastro based on that. They also make installing
+everything in their standard places very easy for the programmer. Most of
+the small caps files that you see in the top source directory of the
+tarball are created by these three tools (see @ref{Version controlled
+source}). To facilitate the building and testing of your work during
+development, Gnuastro comes with two useful scripts:
+
+@table @file
+@cindex @file{tmpfs-config-make}
+@item tmpfs-config-make
+This is more fully described in @ref{Configure and build in RAM}. During
+development, you will usually run this command only once (at the start of
+your work).
+
+@cindex @file{tests/during-dev.sh}
+@item tests/during-dev.sh
+This script is designed to be run each time you make a change and want to
+test your work (with some possible input and output). The script itself is
+heavily commented and thoroughly describes the best way to use it, so we
+won't repeat it here.
+
+As a short summary: you specify the build directory, an output directory
+(for the built program to be run in, and also contains the inputs), the
+program's short name and the arguments and options that it should be run
+with. This script will then build Gnuastro, go to the output directory and
+run the built executable from there. One option for the output directory
+might be your desktop, so you can easily see the output files and delete
+them when you are finished. The main purpose of these scripts is to keep
+your source directory clean and facilitate your development.
+@end table
+
+@cindex Debugging
+@cindex Optimization
+By default all the programs are compiled with optimization flags for
+increased speed. A side effect of optimization is that valuable debugging
+information is lost. All the libraries are also linked as shared libraries
+by default. Shared libraries further complicate the debugging process and
+significantly slow down the compilation (the @command{make} command). So
+during development it is recommended to configure Gnuastro as follows:
+
+@example
+$ ./configure --disable-shared CFLAGS="-g -O0"
+@end example
+
+@noindent
+These options to configure are already included in
+@file{tmpfs-config-make}, you just have to un-comment them when you want to
+start developing or debugging.
+
+In order to understand the building process, you can go through the
+Autoconf, Automake and Libtool manuals, like all GNU manuals they provide
+both a great tutorial and technical documentation. The ``A small Hello
+World'' section in Automake's manual (in chapter 2) can be a good starting
+guide after you have read the separate introductions.
+
+
+
+
+
+@node Test scripts, Developer's checklist, Building and debugging, Developing
+@section Test scripts
+
+@cindex Test scripts
+@cindex Gnuastro test scripts
+As explained in @ref{Tests}, for every program some simple tests are
+written to check the various independent features of the program. All the
+tests are placed in the @file{tests/} directory. The
+@file{tests/prepconf.sh} script is the first `test' that will be run. It
+will copy all the configuration files from the various directories to a
+@file{tests/.gnuastro} directory (which it will make) so the various tests
+can set the default values. This script will also make sure the programs
+don't go searching for user and system wide configuration files to avoid
+the mixing of values with different Gnuastro version on the system.
+
+For each program, the tests are placed inside directories with the
+program name. Each test is written as a shell script. The last line of
+this script is the test which runs the program with certain
+parameters. The return value of this script determines the fate of the
+test, see the ``Support for test suites'' chapter of the Automake
+manual for a very nice and complete explanation. In every script, two
+variables are defined at first: @code{prog} and @code{execname}. The
+first specifies the program name and the second the location of the
+executable.
+
+@cindex Build tree
+@cindex Source tree
+@cindex @file{tmpfs-config-make}
+The most important thing to have in mind about all the test scripts is that
+they are run from inside the @file{tests/} directory in the ``build
+tree''. Which can be different from the directory they are stored in (known
+as the ``source tree''). The @file{tmpfs-config-make} script uses this
+feature (see @ref{Configure and build in RAM}). This distinction is made by
+GNU Autoconf and Automake (which configure, build and install Gnuastro) so
+that you can install the program even if you don't have write access to the
+directory keeping the source files. See the ``Parallel build trees (a.k.a
+VPATH builds)'' in the Automake manual for a nice explanation.
+
+Because of this, any necessary inputs that are distributed in the
+tarball@footnote{In many cases, the inputs of a test are outputs of
+previous tests, this doesn't apply to this class of inputs. Because all
+outputs of previous tests are in the ``build tree''.}, for example the
+catalogs necessary for checks in MakeProfiles and Crop, must be identified
+with the @command{$topsrc} prefix instead of @command{../} (for the top
+source directory that is unpacked). This @command{$topsrc} variable points
+to the source tree where the script can find the source data (it is defined
+in @file{tests/Makefile.am}). The executables and other test products were
+built in the build tree (where they are being run), so they don't need to
+be prefixed with that variable. This is also true for images or files that
+were produced by other tests.
+
+
+@node Developer's checklist, Gnuastro project webpage, Test scripts, Developing
+@section Developer's checklist
+This is a checklist of things to do after applying your changes/additions
+in Gnuastro:
+
+@enumerate
+
+@item
+If the change is non-trivial, write test(s) in the @file{tests/progname/}
+directory to test the change(s)/addition(s) you have made. Then add their
+file names to @file{tests/Makefile.am}.
+
+@item
+Run @command{$ make check} to make sure everything is working correctly.
+
+@item
+Make sure the documentation (this book) is completely up to date with your
+changes, see @ref{Documentation}.
+
+@item
+Commit the change to your issue branch (see @ref{Production workflow} and
+@ref{Forking tutorial}). Afterwards, run Autoreconf to generate the
+appropriate version number:
+
+@example
+$ autoreconf -f
+@end example
+
+@cindex Making a distribution package
+@item
+Finally, to make sure everything will be built, installed and checked
+correctly run (after re-configuring, and re-building). To greatly speed up
+the process, use multiple threads (8 in the example below, change it
+appropriately)
+
+@example
+$ make distcheck -j8
+@end example
+
+@noindent
+This command will create a distribution file (ending with @file{.tar.gz})
+and try to compile it in the most general cases, then it will run the tests
+on what it has built in its own mini-environment. If @command{$ make
+distcheck} finishes successfully, then you are safe to send your changes to
+us to implement or for your own purposes. See @ref{Production workflow} and
+@ref{Forking tutorial}.
+
+@end enumerate
+
+
+
+
+
+@node Gnuastro project webpage, Developing mailing lists, Developer's checklist, Developing
 @section Gnuastro project webpage
 
 @cindex Bug
 @cindex Issue
 @cindex Tracker
+@cindex GNU Savannah
 @cindex Report a bug
 @cindex Management hub
 @cindex Feature request
 @cindex Central management
 @url{https://savannah.gnu.org/projects/gnuastro/, Gnuastro's central
-management
-hub}@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}} is
-located on @url{https://savannah.gnu.org/, GNU
-Savannah}@footnote{@url{https://savannah.gnu.org/}}. It is the central
-software development management system for all GNU projects. Through
-this central hub, you can view the list of activities that the
-developers are engaged in, their activity on the version controlled
-source, and other things. Each defined activity in the development
-cycle is known as an `issue' (or `item'). An issue can be a bug (see
-@ref{Report a bug}), or a suggested feature (see @ref{Suggest new
-feature}) or an enhancement or generally any @emph{one} job that is to
-be done. In Savannah, issues are classified into three categories or
+management hub}@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}}
+is located on @url{https://savannah.gnu.org/, GNU
+Savannah}@footnote{@url{https://savannah.gnu.org/}}. Savannah is the
+central software development management system for many GNU
+projects. Through this central hub, you can view the list of activities
+that the developers are engaged in, their activity on the version
+controlled source, and other things. Each defined activity in the
+development cycle is known as an `issue' (or `item'). An issue can be a bug
+(see @ref{Report a bug}), or a suggested feature (see @ref{Suggest new
+feature}) or an enhancement or generally any @emph{one} job that is to be
+done. In Savannah, issues are classified into three categories or
 `tracker's:
 
 @table @asis
@@ -22156,7 +22967,7 @@ tutorial.
 @end cartouche
 
 
-@node Developing mailing lists, Coding conventions, Gnuastro project webpage, Developing
+@node Developing mailing lists, Contributing to Gnuastro, Gnuastro project webpage, Developing
 @section Developing mailing lists
 
 To keep the developers and interested users up to date with the activity
@@ -22202,774 +23013,10 @@ issue or task will state the respective ID so you can find it easily.
 
 
 
-@node Coding conventions, Program source, Developing mailing lists, Developing
-@section Coding conventions
 
-@cindex GNU coding standards
-@cindex Gnuastro coding convention
-Generally we try our best to follow the GNU coding standards, besides
-those the following conventions are adhered to until now. If new code
-is also added in the same manner, it would be much more easily
-readable by any interested astronomer (who will become familiar with
-it after reading once).
 
-@itemize
 
-@item
-It is very important that the code be easy to read by the eye. So when
-the order of several lines within a function does not matter (mostly
-when defining variables at the start of a function). You should put
-the lines in the order of increasing length and group the variables
-with similar types such that this half-pyramid of declarations becomes
-most visible. If the reader is interested, a simple search will show
-them the variable they are interested in. However, when looking
-through the functions or reading the separate steps of the functions,
-this `order' in the declarations will make reading the rest of the
-function steps much more easier and pleasant to the eye.
-
-@item
-When ever you see that the function cannot be fully displayed
-(vertically) in your monitor, this is a sign that it has become too
-long and should be broken up into multiple functions. 40 lines is
-usually a good reference. When the start and end of a function are
-clearly visible in one glance, the function is much more easier to
-understand. This is most important for low-level functions (which
-usually define a lot of variables). Low-level functions do most of the
-processing, they will also be the most interesting part of a program
-for an inquiring astronomer. This convention is less important for
-higher level functions that don't define too many variables and whose
-only purpose is to run the lower-level functions in a specific order
-and with checks.
-
-@cindex Optimization flag
-@cindex GNU Compiler Collection
-In general you can be very liberal in breaking up the functions into
-smaller parts, the GNU Compiler Collection (GCC) will automatically
-compile the functions as inline functions when the optimizations are
-turned on. So you don't have to worry about decreasing the speed. By
-default Gnuastro will compile with the @option{-O3} optimization flag.
-
-@cindex Buffers (Emacs)
-@cindex Emacs buffers
-@item
-All Gnuastro hand-written text files (C source code, Texinfo documentation
-source, and version control commit messages) should not exceed @strong{75}
-characters per line. Monitors today are certainly much wider, but with this
-limit, reading the functions becomes much more easier. Also for the
-developers, it allows multiple files (or multiple views of one file) to be
-displayed beside each other on wide monitors.
-
-Emacs's buffers are excellent for this capability, setting a buffer width
-of 80 with `@key{C-u 80 C-x 3}' will allow you to view and work on several
-files or different parts of one file using the wide monitors common
-today. Emacs buffers can also be used as a shell prompt and compile the
-program (with @key{M-x compile}), and 80 characters is the default width in
-most terminal emulators. If you use Emacs, Gnuastro sets the 75 character
-@command{fill-column} variable automatically for you, see cartouche below.
-
-For long comments you can use press @key{Alt-q} in Emacs to separate them
-into separate lines automatically. For long literal strings, you can use
-the fact that in C, two strings immediately after each other are
-concatenated, for example @code{"The first part, " "and the second part."}
-Note the space character in the end of the first part. Since they are now
-separated, you can easily break a long literal string into several lines
-and adhere to the maximum 75 character line length policy.
-
-@cindex Header file
-@item
-The headers required by each source file (ending with @file{.c})
-should be defined inside of it. All the headers a program needs should
-not be stacked in another header to include in all source files (for
-example @file{main.h}). Although most `professional' programmers
-choose the latter type, Gnuastro is primarily written for inquisitive
-astronomers (who are generally amateur programmers). This is very
-useful for readability by a first time reader. @file{main.h} may only
-include the header file(s) that define types that the main program
-structure needs, see @file{main.h} in @ref{Program source}. Those
-particular header files that are included in @file{main.h} can
-of course be ignored (not included) in separate source files.
-
-@item
-The headers should be classified (by an empty line) into separate
-groups:
-
-@enumerate
-@cindex Gnulib: GNU Portability Library
-@cindex GNU Portability Library (Gnulib)
-@item
-@code{#include <config.h>}: This must be the first code line (not
-commented or blank) in each source file. It sets macros that the GNU
-Portability Library (Gnulib) will use for the possible
-additions/modifications to C library headers.
-
-@cindex GNU C library
-@item
-The C library (or GNU C library) header files, for example
-@file{stdio.h} or @file{errno.h}.
-@item
-Installed library header files, including Gnuastro's installed headers (for
-example @file{cfitsio.h} or @file{gsl/gsl_rng.h}, or
-@file{gnuastro/fits.h}).
-@item
-Gnuastro's internal headers (that are not installed), for example
-@file{commonparams.h}, or Gnulib's headers (which are also not installed)
-like @file{nproc.h}.
-@item
-For programs, the @file{main.h} file (which is needed by the next group of
-headers).
-@item
-That particular program's header files, for example @file{mkprof.h}, or
-@file{noisechisel.h}.
-@end enumerate
-
-@noindent
-As much as order does not matter when you include the header of each
-group, sort them by length, see above.
-
-@item
-All function names, variables, etc should be in lower case.  Macros and
-pre-processor variables should be in upper case.
-
-@item
-Regarding naming of exported header files, functions, variables, macros,
-and library functions, we adopted similar conventions to those used by the
-GNU Scientific Library
-(GSL)@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
-In particular, in order to avoid clashes with the names of functions and
-variables coming from other libraries the name-space `@code{gal_}' is
-prefixed to them. GAL stands for @emph{G}NU @emph{A}stronomy
-@emph{L}ibrary. Ideally `@code{gnuastro_}' should have been used, but that
-is very long.
-
-@item
-All installed header files should be in the @file{lib/gnuastro} directory
-(under the top Gnuastro source directory). After installation, they will be
-put in the @file{$prefix/include/gnuastro} directory (see @ref{Installation
-directory} for @file{$prefix}). Therefore with this convention Gnuastro's
-headers can be included in internal (to Gnuastro) and external (a library
-user) source files with the same line
-@example
-# include <gnuastro/headername.h>
-@end example
-Note that unlike the GSL convention, the header file names are not prefixed
-with a `@file{gal_}'. If a user manually mixes the Gnuastro (or GSL)
-headers with other headers, compilation will break because the installed
-headers depend on each other (the @code{#include} directive, with the
-@file{gnuastro/} directory, above is present in the installed headers
-too). Therefore the `@file{gal_}' prefix to the file names is
-redundant@footnote{Note that this applies to GSL's header files too, for
-example see @file{eigen/gsl_eigen.h} in GSL's source files. GSL uses the
-@file{gsl_} filename prefix to separate the headers that will be installed
-from those that won't. Therefore this filename prefix a technical internal
-issue there, which we believe will only confuse the user who doesn't need
-to get involved with such issues.}.
-
-@item
-@cindex GNU coding standards
-All installed functions and variables should also include the base name of
-the file in which they are defined as prefix, using underscores to separate
-words@footnote{The convention to use underscores to separate words, called
-``snake case'' (or ``snake_case''). This is also recommended by the GNU
-coding standards.}. The same applies to exported macros, but in upper case.
-For example in Gnuastro's top source directory, the prototype of function
-@code{gal_box_border_from_center} is in @file{lib/gnuastro/box.h}, and the
-macro @code{GAL_POLYGON_MAX_CORNERS} is defined in
-@code{lib/gnuastro/polygon.h}. To find the header file in the installed
-directories, replace @file{lib/} with @file{$prefix/include/} (see
-@ref{Installation directory} for @file{$prefix}).
-
-This is necessary to give any user (who is not familiar with the library
-structure) the ability to follow the code of a function that is not in the
-program or library they are reading. This convention does make the function
-names longer (a little harder to write), but the extra documentation it
-provides convention plays an important role in Gnuastro and is worth the
-cost.
-
-@item
-@cindex GNU Emacs
-@cindex Trailing space
-There should be no trailing white space in a line. To do this
-automatically every time you save a file in Emacs, add the following
-line to your @file{~/.emacs} file.
-@example
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-@end example
-
-@item
-@cindex Tabs are evil
-There should be no tabs in the indentation@footnote{If you use Emacs,
-Gnuastro's @file{.dir-locals.el} file will automatically never use tabs for
-indentation. To make this a default in all your Emacs sessions, you can add
-the following line to your @file{~/.emacs} file: @command{(setq-default
-indent-tabs-mode nil)}}.
-
-@item
-@cindex GNU Emacs
-@cindex Function groups
-@cindex Groups of similar functions
-All similar functions are separated by 5 blank lines to be easily seen
-to be related in a group when parsing the source code by eye. In Emacs
-you can use @key{CTRL-u 5 CTRL-o}.
-
-@item
-One group of functions is separated from another with 20 blank
-lines. In Emacs you can use @key{CTRL-u 20 CTRL-o}. Each group of
-functions has short descriptive title of the functions in that
-group. This title is surrounded by asterisks (@key{*}) to make it
-clearly distinguishable. Such contextual grouping and clear title are
-very important for easily understanding the code.
-
-@end itemize
-
-
-The last two conventions are not common and might benefit from a short
-discussion here. With a good experience in advanced text editor
-operations, to some extent the last two are redundant for a
-professional developer. However, recall that Gnuastro aspires to be
-friendly to un-familiar, and un-experienced (in programming) eyes. In
-other words, as discussed in @ref{Science and its tools}, we want the
-code to appear welcoming to someone who is completely new to coding
-and only has a scientific curiosity.
-
-Newcomers to coding and development, who are curious enough to venture
-into the code, will not be using (or have any knowledge of) advanced
-text editors. They will see the raw code in the webpage or on a simple
-text editor (like Gedit) as plain text. Trying to learn and understand
-a file with dense functions that are all spaced with one or two blank
-lines can be very taunting for a newcomer. But when they scroll
-through the file and see clear titles and meaningful spaces for
-similar functions (less, meaningful density), we are helping them find and
-focus on the part they are most interested in sooner and easier.
-
-@cartouche
-@cindex GNU Emacs
-@noindent
-@strong{GNU Emacs, the recommended text editor:} GNU Emacs is an
-extensible and easily customizable text editor which many programmers
-rely on for developing due to its countless features. Among them, it
-allows specification of certain settings that are applied to a single
-file or to all files in a directory and its sub-directories. In order
-to harmonize code coming from different contributors, Gnuastro comes
-with a @file{.dir-locals.el} file which automatically configures Emacs
-to satisfy most of the coding conventions above when you are using it
-within Gnuastro's directories. Thus, Emacs users can readily start
-hacking into Gnuastro. If you are new to developing, we strongly
-recommend this editor. Emacs was the first project released by GNU and
-is still one of its flagship projects. Some resources can be found at:
-
-@table @asis
-@item Official manual
-At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is a
-great and very complete manual which is being improved for over 30 years
-and is the best starting point to learn it. It just requires a little
-patience and practice, but rest assured that you will be rewarded. If you
-install Emacs, you also have access to this manual on the command-line with
-the following command (see @ref{Info}).
-
-@example
-$ info emacs
-@end example
-
-@item A guided tour of emacs
-At @url{https://www.gnu.org/software/emacs/tour/}. A short visual tour
-of Emacs, officially maintained by the Emacs developers.
-
-@item Unofficial mini-manual
-At @url{https://tuhdo.github.io/emacs-tutor.html}. A shorter manual
-which contains nice animated images of using Emacs.
-
-@end table
-@end cartouche
-
-
-
-@node Program source, Documentation, Coding conventions, Developing
-@section Program source
-
-@cindex Source file navigation
-@cindex Navigating source files
-@cindex Program structure convention
-@cindex Convention for program source
-@cindex Gnuastro program structure convention
-Besides the fact that all the programs share some functions that were
-explained in @ref{Library}, everything else about each program is
-completely independent. In this section the conventions used in all the
-program sources are explained in @ref{Mandatory source code files}. To
-easily understand the explanations in this section you can use @ref{The
-TEMPLATE program} which contains the bare minimum code for one
-program. This template can also be used to easily add new utilities.
-
-
-
-@menu
-* Mandatory source code files::  Description of files common to all programs.
-* The TEMPLATE program::        Template for easy creation of a new program.
-@end menu
-
-@node Mandatory source code files, The TEMPLATE program, Program source, Program source
-@subsection Mandatory source code files
-
-Some programs might need lots of source files and if there is no fixed
-convention, navigating them can become very hard for a new inquirer
-into the code. The following source files exist in every program's
-source directory (which is located in @file{bin/progname}). For small
-programs, these files are enough. Larger programs will need more
-files. In general for writing other source files, please choose
-filenames that are descriptive.
-
-@vtable @file
-
-@item main.c
-@cindex @code{main} function
-Each executable has a @code{main} function, which is located in
-@file{main.c}. Therefore this file in any program's source code will
-be the starting point. No actual processing functions are to be
-defined in this file, the function(s) in this file are only meant to
-connect the most high level steps of each program. Generally,
-@code{main} will first call the top user interface function to read
-user input and make all the preparations. Then it will pass control to
-the top processing function for that program. The functions to do both
-these jobs must be defined in other source files.
-
-@item main.h
-@cindex Top root structure
-@cindex @code{prognameparams}
-@cindex Root parameter structure
-@cindex Main parameters C structure
-All the major parameters which will be used in the program must be
-stored in a structure which is defined in @file{main.h}. The name of
-this structure is usually @code{prognameparams}, for example
-@code{cropparams}. So @code{#include "main.h"} will be a staple in
-all the source codes of the program and most of the functions. Keeping
-all the major parameters of a program in this structure has the major
-benefit that most functions will only need one argument: a pointer to
-this structure. This will significantly facilitate the job of the
-programmer, the inquirer and the computer. All the programs in
-Gnuastro are designed to be low-level, small and independent parts, so
-this structure should not get too large.
-
-The main root structure of a program contains at least two other
-structures: a structure only keeping parameters for user interface
-functions, which is also defined in @file{main.h} and the
-@code{commonparams} structure which is defined in
-@file{lib/gnuastro/commonparams.h}@footnote{
-@file{lib/gnuastro/commonparams.h} is a program-specific header and not
-installed as part of the libraries.}. The main structure can become very
-large and since the programmer and inquirer often don't need to be confused
-with these parameters mixed with the actual processing parameters, they are
-conveniently defined in another structure which is named @code{uiparams}
-and is also defined in @file{main.h}. It could be defined in @file{ui.h}
-(see below) so the main functions remain completely ignorant to it, but its
-parameters might be needed for reporting input conditions, so it is
-included as part of the main program structure.
-
-@cindex @code{p}
-This top root structure is conveniently called @code{p} (short for
-parameters) by all the programs. The @code{uiparams} structure is
-called @code{up} (for user parameters) and the @code{commonparams}
-structure is called @code{cp}. With this convention any reader can
-immediately understand where to look for the definition of one
-parameter.
-
-@cindex Structure de-reference operator
-@cindex Operator, structure de-reference
-With this basic root structure, source code of functions can
-potentially become full of structure de-reference operators
-(@command{->}) which can make the code very un-readable. In order to
-avoid this, whenever a parameter is used more than a couple of times
-in a function, a parameter of the same type and with the same name (so
-it can be searched) as the desired parameter should be defined and put
-the value of the root structure inside of it in definition time. For
-example
-
-@example
-char *hdu=p->cp.hdu;
-int verb=p->cp.verb;
-@end example
-
-@item args.h
-@cindex Argp argument parser
-The argument parser structures (which are used by GNU C library's
-Argp) for each program are defined in @file{args.h}. They are separate
-global variables and function definitions that will be used by
-Argp. We recommend going through the appropriate section in GNU C
-library to understand their exact meaning, although they should be
-descriptive and understandable enough by looking at a few of the
-programs.
-
-@item ui.c, ui.h
-@cindex User interface functions
-@cindex Functions for user interface
-The user interface functions are also a unique set of functions in all
-the programs, so they are particularly named @file{ui.c} and
-@file{ui.h} in all the programs. Everything related to reading the
-user input arguments and options, checking the configuration files and
-checking the consistency of the input parameters before the actual
-program is run should be done in this file. Since most functions are
-the same, with only the internal checks and structure parameters
-differing, we recommend going through several of the examples and
-structuring your @file{ui.c} in a similar fashion with the rest of the
-programs.
-
-@cindex @code{setparams} function
-The most high-level function in @file{ui.c} is named @code{setparams}
-which accepts @code{int argc, char *argv[]} and a pointer to the root
-structure for that program, see the explanation for
-@file{main.h}. This is the function that @code{main} calls. The basic
-idea of the functions in this file is that the processing functions
-should need a minimum number of such checks. With this convention an
-inquirer who only wants to understand only one part (mostly the
-processing part and not user input details) of the code can easily do
-so. It also makes all the errors related to input appear before the
-processing begins which is more convenient for the user.
-
-@item progname.c
-@cindex Top processing source file
-The main processing functions in each program which keep the function(s)
-that @code{main()} will call are in a file named @file{progname.c}, for
-example @file{crop.c} or @file{noisechisel.c}. The function within these
-files which @code{main()} calls is also named after the program, for
-example
-
-@example
-void
-crop(struct cropparams *p)
-@end example
-
-@noindent
-or
-
-@example
-void
-noisechisel(struct noisechiselparams *p)
-@end example
-
-@noindent
-In this manner, if an inquirer is interested the processing steps,
-they can immediately come and check this file for the first processing
-step without having to go through @file{main.c} first. In most
-situations, any failure in any step of the programs will result in an
-informative error message and an immediate abort in the program. So
-there is no need for return values. Under more complicated situations
-where a return value might be necessary, @code{void} will be replaced
-with an @code{int} in the examples above.
-
-@item authors-cite.h
-@cindex Citation information
-This header file keeps the global variable for the program authors and its
-BibTeX record for citation. They are used in the outputs of the common
-options @option{--version} and @option{--cite}, see @ref{Operating mode
-options}.
-
-@end vtable
-
-@node The TEMPLATE program,  , Mandatory source code files, Program source
-@subsection The TEMPLATE program
-
-In the @code{Version controlled source}, the @file{bin/} directory contains
-the source code for each program in a separate sub-directory. The
-@file{bin/TEMPLATE} directory contains the bare-minimum files to create a
-new program. It can be used to understand the conventions described in
-@ref{Program source}, or to easily create a new program.
-
-The extra creativity offered by libraries comes at a cost: you have to
-actually write your @code{main} function in the programming language of
-your choice, and compile it before you can use it. You will also need to
-find a way to pass input and output information to the function. So when an
-operation has well-defined inputs and outputs and is commonly needed, it is
-much more worthwhile to simply do the work in a program (either by
-modifying an existing one or creating a new one), instead of the using
-underlying libraries every time. To define your new program based on this
-template, just take the following steps:
-
-@enumerate
-@item
-Select a name for your new program (for example @file{myprog}).
-
-@item
-Copy the @file{TEMPLATE} directory to a directory with your program's name:
-@example
-$ cp -R bin/TEMPLATE bin/myprog
-@end example
-
-@item
-Open @file{configure.ac} in the top Gnuastro source. This file manages the
-operations that are done when a user runs @file{./configure}. Going down
-the file, you will notice repetitive parts for each program. Copy one of
-those and correct the names of the copied program to your new program
-name. We follow alphabetic ordering here, so please place it
-correctly. There are multiple places where this has to be done, so be
-patient and go down to the bottom of the file. Ultimately add
-@file{bin/myprog/Makefile} to @code{AC_CONFIG_FILES}, only here the
-ordering depends on the length of the name.
-
-@item
-Open @file{Makefile.am} in the top Gnuastro source. Similar to the previous
-step, add your new program similar to all the other programs.
-
-@item
-Change @code{TEMPLATE} to @code{myprog} in the file names and contents of
-the files in the @file{bin/myprog/} directory.
-
-@item
-Run the following command to re-build the configuration and build system.
-@example
-$ autoreconf -f
-@end example
-Your new program will be built the next time you run @command{./configure}
-and @command{make}.
-@end enumerate
-
-
-
-
-
-
-
-@node Documentation, Building and debugging, Program source, Developing
-@section Documentation
-
-Documentation (this book) is an integral part of Gnuastro.
-Documentation is not considered a separate project. So, no change is
-considered valid for implementation unless the respective parts of the
-book have also been updated. The following procedure can be a good
-suggestion to take when you have a new idea and are about to start
-implementing it.
-
-The steps below are not a requirement, the important thing is that
-when you send the program to be included in Gnuastro, the book and
-the code have to both be fully up-to-date and compatible and the
-purpose should be very clearly explained. You can follow any path you
-choose to do this, the following path was what we found to be most
-successful during the initial design and implementation steps of
-Gnuastro.
-
-@enumerate
-@item
-Edit the book and fully explain your desired change, such that your
-idea is completely embedded in the general context of the book with
-no sense of discontinuity for a first time reader. This will allow you
-to plan the idea much more accurately and in the general context of
-Gnuastro or a particular program. Later on, when you are coding, this
-general context will significantly help you as a road-map.
-
-A very important part of this process is the program introduction, which
-explains the purposes of the program. Before actually starting to code,
-explain your idea's purpose thoroughly in the start of the program section
-you wish to add or edit. While actually writing its purpose for a new
-reader, you will probably get some very valuable ideas that you hadn't
-thought of before, this has occurred several times during the creation of
-Gnuastro. If an introduction already exists, embed or blend your idea's
-purpose with the existing purposes. We emphasize that doing this is equally
-useful for you (as the programmer) as it is useful for the user
-(reader). Recall that the purpose of a program is very important, see
-@ref{Program design philosophy}.
-
-As you have already noticed for every program, it is very important
-that the basics of the science and technique be explained in separate
-subsections prior to the `Invoking Programname' subsection. If you are
-writing a new program or your addition involves a new concept, also
-include such subsections and explain the concepts so a person
-completely unfamiliar with the concepts can get a general initial
-understanding. You don't have to go deep into the details, just enough
-to get an interested person (with absolutely no background)
-started. If you feel you can't do that, then you have probably not
-understood the concept yourself! Have in mind that your only
-limitation in length is the fatigue of the reader after reading a long
-text, nothing else.
-
-It might also help if you start implementing your idea in the
-`Invoking ProgramName' subsection (explaining the options and
-arguments you have in mind) at this stage too. Actually starting to
-write it here will really help you later when you are coding.
-
-@item
-After you have finished adding your initial intended plan to the
-book, then start coding your change or new program within the
-Gnuastro source files. While you are coding, you will notice that
-somethings should be different from what you wrote in the book (your
-initial plan). So correct them as you are actually coding.
-
-@item
-In the end, read the section in the book that you edited completely
-and see if you didn't miss any change in the coding and to see if the
-context is fairly continuous for a first time reader (who hasn't seen
-the book or had known of Gnuastro before you made your change).
-@end enumerate
-
-
-
-
-
-
-
-
-
-@node Building and debugging, Test scripts, Documentation, Developing
-@section Building and debugging
-
-@cindex GNU Libtool
-@cindex GNU Autoconf
-@cindex GNU Automake
-@cindex GNU build system
-To build the various programs and libraries in Gnuastro, the GNU build
-system is used which defines the steps in @ref{Quick start}. It consists of
-GNU Autoconf and GNU Automake and GNU Libtool which are collectively known
-as GNU Autotools. They provide a very portable system to check the
-environment a program is to be installed on prior to compiling and set the
-compilation conditions based on the particular user. They also make
-installing everything in their standard places very easy for the
-programmer. Most of the small caps files that you see in the top source
-directory of the tarball are created by these three tools (see @ref{Version
-controlled source}).
-
-@cindex @file{tmpfs-config-make}
-@cindex @file{tests/during-dev.sh}
-To facilitate the building and testing of your work during development,
-Gnuastro comes with two scripts: @file{tmpfs-config-make} and
-@file{tests/during-dev.sh}. The former is fully described in @ref{Configure
-and build in RAM}. During development, you would commonly run this command
-only once (at the start of your work). The latter is designed to be run
-each time you make a change and want to test your work (with some possible
-input and output). The script itself is heavily commented and thoroughly
-describes the best way to use it, so we won't repeat it here. As a summary:
-you specify the build directory, an output directory (for the built program
-to be run in and also contains the inputs), the program's short name and
-the arguments and options that it should be run with. This script will then
-build Gnuastro, go to the output directory and run the built executable
-from there. One option for the output directory might be your desktop, so
-you can easily see the output files and delete them when you are
-finished. The main purpose of these scripts is to keep your source
-directory clean and facilitate your development.
-
-@cindex Debugging
-@cindex Optimization
-By default all the programs are compiled with optimization flags for
-increased speed. A side effect of optimization is that valuable debugging
-information is lost. All the libraries are also linked as shared libraries
-by default. Shared libraries further complicate the debugging process and
-significantly slow down the compilation (the @command{make} command). So
-during development it is recommended to configure Gnuastro as follows:
-
-@example
-$ ./configure --disable-shared CFLAGS="-g -O0"
-@end example
-
-@noindent
-These options to configure are already included in
-@file{tmpfs-config-make}, you just have to un-comment them.
-
-In order to understand the building process, you can go through the
-Autoconf, Automake and Libtool manuals, like all GNU manuals they provide
-both a great tutorial and technical documentation. The ``A small Hello
-World'' section in Automake's manual (in chapter 2) can be a good starting
-guide after you have read the separate introductions.
-
-
-
-
-
-@node Test scripts, Developer's checklist, Building and debugging, Developing
-@section Test scripts
-
-@cindex Test scripts
-@cindex Gnuastro test scripts
-As explained in @ref{Tests}, for every program some simple tests are
-written to check the various independent features of the program. All the
-tests are placed in the @file{tests/} directory. There is one script
-(@file{prepconf.sh}) in this folder and several @file{Makefile}s. The
-script is the first `test' that will be run. It will copy all the
-configuration files from the various directories to a @file{.gnuastro}
-directory which it will make so the various tests can set the default
-values.
-
-For each program, the tests are placed inside directories with the
-program name. Each test is written as a shell script. The last line of
-this script is the test which runs the program with certain
-parameters. The return value of this script determines the fate of the
-test, see the ``Support for test suites'' chapter of the Automake
-manual for a very nice and complete explanation. In every script, two
-variables are defined at first: @code{prog} and @code{execname}. The
-first specifies the program name and the second the location of the
-executable.
-
-@cindex Build tree
-@cindex Source tree
-@cindex @file{tmpfs-config-make}
-The most important thing to have in mind about all the test scripts is that
-they are run from inside the @file{tests/} directory in the ``build
-tree''. Which can be different from the directory they are stored in (known
-as the ``source tree''). The @file{tmpfs-config-make} script uses this
-feature (see @ref{Configure and build in RAM}). This distinction is made by
-GNU Autoconf and Automake (which configure, build and install Gnuastro) so
-that you can install the program even if you don't have write access to the
-directory keeping the source files. See the ``Parallel build trees (a.k.a
-VPATH builds)'' in the Automake manual for a nice explanation.
-
-Because of this, any possible data that was not generated by other tests
-(and is thus in the build tree), for example the catalogs in Crop tests,
-has a @command{$topsrc} prefix instead of @command{../} for the build
-three. This @command{$topsrc} variable points to the source tree where the
-script can find the source data (it is defined in
-@file{tests/Makefile.am}). The executables and other test products were
-built in the build tree (where they are being run), so they don't need to
-be prefixed with that variable. This is also true for images or files that
-were produced by other tests.
-
-
-@node Developer's checklist, Contributing to Gnuastro, Test scripts, Developing
-@section Developer's checklist
-This is a checklist of things to do after applying your changes/additions
-in Gnuastro:
-
-@enumerate
-
-@item
-If the change is non-trivial, write test(s) in the @file{tests/progname/}
-directory to test the change(s)/addition(s) you have made. Then add their
-file names to @file{tests/Makefile.am}.
-
-@item
-Run @command{$ make check} to make sure everything is working correctly.
-
-@item
-Make sure the documentation (this book) is completely up to date with your
-changes, see @ref{Documentation}.
-
-@item
-Commit your change to your issue branch (see @ref{Production workflow} and
-@ref{Forking tutorial}) Afterwards, run Autoreconf to generate the
-appropriate version number:
-
-@example
-$ autoreconf -f
-@end example
-
-@cindex Making a distribution package
-@item
-Finally, to make sure everything will be built, installed and checked
-correctly run
-
-@example
-$ make distcheck
-@end example
-
-@noindent
-This command will create a distribution file (ending with @file{.tar.gz})
-and try to compile it in the most general cases, then it will run the tests
-on what it has built in its own mini-environment. If @command{$ make
-distcheck} finishes successfully, then you are safe to send your changes to
-us to implement or for your own purposes. See @ref{Production workflow} and
-@ref{Forking tutorial}.
-
-@end enumerate
-
-
-
-
-
-
-@node Contributing to Gnuastro,  , Developer's checklist, Developing
+@node Contributing to Gnuastro,  , Developing mailing lists, Developing
 @section Contributing to Gnuastro
 
 You have this great idea or have found a good fix to a problem which you
