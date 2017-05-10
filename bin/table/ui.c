@@ -314,18 +314,19 @@ ui_preparations(struct tableparams *p)
           exit(EXIT_SUCCESS);
         }
       else
-        for(i=1;i<=numcols;++i)
+        /* The user wants to read the column values, so put all the column
+           numbers into the list (as strings). Note that we will write the
+           column numbers into the list in reverse order. This way, they
+           are read/popped in the proper order. Recall that this is a
+           last-in-first-out list. */
+        for(i=numcols;i>0;--i)
           {
             asprintf(&tmp, "%zu", i);
             gal_list_str_add(&p->columns, tmp, 0);
           }
     }
 
-  /* Reverse the list of column search criteria that we are looking for
-     (since this is a last-in-first-out linked list, the order that
-     elements were added to the list is the reverse of the order that they
-     will be popped). */
-  gal_list_str_reverse(&p->columns);
+  /* Read in the table columns. */
   p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
                           cp->ignorecase, cp->minmapsize);
 
