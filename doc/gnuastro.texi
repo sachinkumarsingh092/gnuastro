@@ -14624,38 +14624,43 @@ Gnuastro's programs to make a complete simulated image of a mock galaxy.
 
 @node MakeProfiles catalog, MakeProfiles options, Invoking astmkprof, Invoking astmkprof
 @subsubsection MakeProfiles catalog
-The catalog is a text file table. Its columns can be ordered in any
-desired manner, you can specify which columns belong to which
-parameters using the set of options ending with @option{col}, for
-example @option{--xcol} or @option{--rcol}, see @ref{MakeProfiles
-options}.
+The catalog can be in the FITS ASCII, FITS binary format, or plain text
+formats (see @ref{Tables}). Its columns can be ordered in any desired
+manner, you can specify which columns belong to which parameters using the
+set of options ending with @option{col} in @ref{MakeProfiles options}. For
+example through the @option{--xcol} and @option{--rcol} options, you can
+specify the column that contains the X axis position of the profile center
+and the radial parameter for the profile. See @ref{Selecting table columns}
+for a thorough discussion on how to identify a column in the input catalog.
 
-The value for the profile center in the catalog (in the
-@option{--xcol} and @option{--ycol} columns) can be a floating point
-number so the profile center can be on any sub-pixel position. Note
-that pixel positions in the FITS standard start from 1 and an integer
-is the pixel center. So a 2D image actually starts from the position
-(0.5, 0.5). In MakeProfiles profile centers do not have to be in the
-image.  Even if only one pixel of the profile within the truncation
-radius is within the output image, that pixel is included in the
-image. Profiles that are completely out of the image will not be
-created. You can use the output log file to see which profiles were
-within the image.
+The value for the profile center in the catalog (in the @option{--xcol} and
+@option{--ycol} columns) can be a floating point number so the profile
+center can be on any sub-pixel position. Note that pixel positions in the
+FITS standard start from 1 and an integer is the pixel center. So a 2D
+image actually starts from the position (0.5, 0.5). When a
+@option{--background} image with WCS information is provided, you may also
+use RA and Dec to identify the center of each profile.
 
-If PSF profiles (Moffat or Gaussian) are in the catalog and the
-profiles are to be built in one image (when @option{--individual} is
+In MakeProfiles, profile centers do not have to be in (overlap with) the
+final image.  Even if only one pixel of the profile within the truncation
+radius overlaps with the final image size, the profile is built and
+included in the final image image. Profiles that are completely out of the
+image will not be created. You can use the output log file to see which
+profiles were within the image.
+
+If PSF profiles (Moffat or Gaussian, see @ref{PSF}) are in the catalog and
+the profiles are to be built in one image (when @option{--individual} is
 not used), it is assumed they are the PSF(s) you want to convolve your
-created image with. So by default, they will not be built in the
-output image but as separate files. The sum of pixels of these
-separate files will also be set to unity (1) so you are ready to
-convolve, see @ref{Convolution process}. As a summary, their position
-and magnitude will be ignored. This behaviour can be disabled with the
-@option{--psfinimg} option. If you want to create all the profiles
-separately (with @option{--individual}) and you want the sum of the
-PSF profile pixels to be unity, you have to set their magnitudes in
-the catalog to the zero-point magnitude and be sure that the central
-positions of the profiles don't have any fractional part (the PSF
-center has to be in the center of the pixel).
+created image with. So by default, they will not be built in the output
+image but as separate files. The sum of pixels of these separate files will
+also be set to unity (1) so you are ready to convolve, see @ref{Convolution
+process}. As a summary, the position and magnitude of PSF profile will be
+ignored. This behaviour can be disabled with the @option{--psfinimg}
+option. If you want to create all the profiles separately (with
+@option{--individual}) and you want the sum of the PSF profile pixels to be
+unity, you have to set their magnitudes in the catalog to the zero-point
+magnitude and be sure that the central positions of the profiles don't have
+any fractional part (the PSF center has to be in the center of the pixel).
 
 
 @node MakeProfiles options, MakeProfiles output, MakeProfiles catalog, Invoking astmkprof
