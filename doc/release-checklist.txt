@@ -126,23 +126,23 @@ Steps necessary to Package Gnuastro for Debian.
      $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
 
  - A `gnuastro' directory will be built, for the moment don't go in it,
-   we'll keep all out temporary files in this parent directory. Put a copy
-   of the tarball to be packaged in this directory and make a standard
+   we'll keep all temporary files in this parent directory. Put a copy of
+   the tarball to be packaged in this directory and make a standard
    symbolic link to it (IMPORTANT: the `dash' is changed to an `underscore'
    and an `orig' is added), then go into the cloned directory.
 
-     $ ln -s gnuastro-XXXX.tar.gz gnuastro_XXXX.orig.tar.gz
+     $ ln -s gnuastro-A.B.CCC-DDDD.tar.gz gnuastro_A.B.CCC.orig.tar.gz
      $ cd gnuastro
 
  - You need to checkout to the `upstream' branch, clean everything that was
-   in it and inject this release's raw package source files into it as
-   shown below. Note that we should run `rm -rf ./*', because the `.git'
-   hidden directory must stay.
+   in it and unpack this release's raw package source files into it as
+   shown below.
 
      $ git checkout upstream
-     $ rm *                     # To delete all the non-hidden files
-     $ rm .autom4te.cfg .dir-locals.el .git .tarball-version .version
-     $ rm -rf bin/ bootstrapped/ doc/ lib/ tests/
+     $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
+     $ rm -rf ./*                          # Delete every non-hidden file.
+     $ rm ./.*                             # Delete the hidden files.
+     $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
      $ tar xf ../gnuastro_XXXX.orig.tar.gz --strip-components=1
 
  - We now need to commit these into the `upstream' branch of the Git
@@ -157,6 +157,20 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ git checkout master
 
+ - Again, we need to clean everything that already exists here, except
+   `.git' and `debian':
+
+     $ mv debian ../gnuastro-tmp-debian    # We want to keep `debian'.
+     $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
+     $ rm -rf ./*                          # Delete non-hidden files and dirs.
+     $ rm ./.*                             # Delete the hidden files.
+     $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
+     $ mv ../gnuastro-tmp-debian debian    # Bring back the `debian' directory.
+
+ - Unpack the distribution tarball into the master branch too:
+
+     $ tar xf ../gnuastro_XXXX.orig.tar.gz --strip-components=1
+
  - Update the ChangeLog (similar to previous entries):
 
      $ emacs debian/changelog
@@ -165,6 +179,11 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ sudo pbuilder update
 
- - Run `pdebuild':
+ - Run `pdebuild' to build the package.
 
      $ pdebuild
+
+ - Run Lintian to check the build.
+
+     $ lintian -E -I --pedantic                                         \
+               /var/cache/pbuilder/result/gnuastro_XXXX-1_amd64.changes

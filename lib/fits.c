@@ -1740,7 +1740,7 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
     default:
       error(EXIT_FAILURE, 0, "%s (hdu: %s): Format character `%c' in the "
-            "value (%s) of the keywork %s not recognized in %s", filename, hdu,
+            "value (%s) of the keyword %s not recognized in %s", filename, hdu,
             tdisp[0], tdisp, keyname, __func__);
     }
 

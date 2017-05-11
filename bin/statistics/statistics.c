@@ -720,12 +720,12 @@ print_input_info(struct statisticsparams *p)
   /* Range. */
   str=NULL;
   if( !isnan(p->greaterequal) && !isnan(p->lessthan) )
-    asprintf(&str, "from (inclusive) %g, upto (exclusive) %g",
+    asprintf(&str, "from (inclusive) %g, up to (exclusive) %g",
              p->greaterequal, p->lessthan);
   else if( !isnan(p->greaterequal) )
     asprintf(&str, "from (inclusive) %g", p->greaterequal);
   else if( !isnan(p->lessthan) )
-    asprintf(&str, "upto (exclusive) %g", p->lessthan);
+    asprintf(&str, "up to (exclusive) %g", p->lessthan);
   if(str)
     {
       printf("Range: ");

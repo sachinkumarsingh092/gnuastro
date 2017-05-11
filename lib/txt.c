@@ -512,7 +512,7 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   size_t numtokens;
   int firstlinedone=0;
   gal_data_t *datall=NULL, *dataarr;
-  char *line, *format_err, *comm_start;
+  char *line, *format_err="empty", *comm_start;
   size_t linelen=10; /* `linelen' will be increased by `getline'. */
 
 
@@ -531,7 +531,7 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: could't open to read as a plain "
+    error(EXIT_FAILURE, errno, "%s: couldn't open to read as a plain "
           "text %s in %s", filename, format_err, __func__);
 
 
@@ -855,7 +855,7 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: could't open to read as a text table "
+    error(EXIT_FAILURE, errno, "%s: couldn't open to read as a text table "
           "in %s", filename, __func__);
 
   /* Allocate the space necessary to keep a copy of each line as we parse

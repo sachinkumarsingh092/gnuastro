@@ -232,7 +232,7 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
       error(EXIT_FAILURE, 0, "the %s operator can only accept single or "
             "double precision floating point numbers as its operand. The "
             "%s operand has type %s. You can use the `float' or `double' "
-            "operators before this operator to explicity convert to the "
+            "operators before this operator to explicitly convert to the "
             "desired precision floating point type. If the operand was "
             "originally a typed number (string of characters), add an `f' "
             "after it so it is directly read into the proper precision "

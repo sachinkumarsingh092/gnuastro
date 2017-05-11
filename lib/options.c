@@ -1724,7 +1724,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
       errno=0;
       fp=fopen(filename, "w");
       if(fp==NULL)
-        error(EXIT_FAILURE, errno, "%s: could't open to write "
+        error(EXIT_FAILURE, errno, "%s: couldn't open to write "
               "configuration file in %s", dirname, __func__);
 
       /* Print the basic information as comments in the file first. */
