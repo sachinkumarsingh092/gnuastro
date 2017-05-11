@@ -126,12 +126,18 @@ Steps necessary to Package Gnuastro for Debian.
      $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
 
  - A `gnuastro' directory will be built, for the moment don't go in it,
-   we'll keep all temporary files in this parent directory. Put a copy of
-   the tarball to be packaged in this directory and make a standard
-   symbolic link to it (IMPORTANT: the `dash' is changed to an `underscore'
-   and an `orig' is added), then go into the cloned directory.
+   we'll keep all temporary files in this parent directory. To keep things
+   clean, define Gnuastro's version as a variable (if this isn't a major
+   release, we won't use the last four or five characters that are the
+   first commit hash characters):
 
-     $ ln -s gnuastro-A.B.CCC-DDDD.tar.gz gnuastro_A.B.CCC.orig.tar.gz
+     $ export ver=A.B.CCC
+
+ - Put a copy of the tarball to be packaged in this directory and make a
+   standard symbolic link to it (IMPORTANT: the `dash' is changed to an
+   `underscore' and an `orig' is added), then go into the cloned directory.
+
+     $ ln -s gnuastro-$ver-XXXX.tar.gz gnuastro_$ver.orig.tar.gz
      $ cd gnuastro
 
  - You need to checkout to the `upstream' branch, clean everything that was
@@ -143,15 +149,15 @@ Steps necessary to Package Gnuastro for Debian.
      $ rm -rf ./*                          # Delete every non-hidden file.
      $ rm ./.*                             # Delete the hidden files.
      $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
-     $ tar xf ../gnuastro_XXXX.orig.tar.gz --strip-components=1
+     $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
  - We now need to commit these into the `upstream' branch of the Git
    history, tag it and run `pristine-tar' on it.
 
      $ git add --all
-     $ git commit -m "Upstream Gnuastro XXXX"
-     $ git tag upstream/XXXX
-     $ pristine-tar commit ../gnuastro_XXXX.orig.tar.gz
+     $ git commit -m "Upstream Gnuastro $ver"
+     $ git tag upstream/$ver
+     $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz
 
  - We are done with the `upstream' branch and can checkout `master':
 
@@ -169,7 +175,7 @@ Steps necessary to Package Gnuastro for Debian.
 
  - Unpack the distribution tarball into the master branch too:
 
-     $ tar xf ../gnuastro_XXXX.orig.tar.gz --strip-components=1
+     $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
  - Update the ChangeLog (similar to previous entries):
 
@@ -179,11 +185,19 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ sudo pbuilder update
 
- - Run `pdebuild' to build the package.
+ - Run `pdebuild' to build the package (it might need sudo password).
 
      $ pdebuild
 
  - Run Lintian to check the build.
 
      $ lintian -E -I --pedantic                                         \
-               /var/cache/pbuilder/result/gnuastro_XXXX-1_amd64.changes
+               /var/cache/pbuilder/result/gnuastro_$ver-1_amd64.changes
+
+ - Commit the contents of the new release, make sure everything except the
+   `debian' directory is commited (with `git status'):
+
+     $ git add -f bin/ bootstrapped/ doc/ lib/ tests/
+     $ git status                         # Commit anything that remains.
+
+ - Push all the changes to the repository and announce on Debian Astro.
