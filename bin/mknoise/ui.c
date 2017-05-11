@@ -65,7 +65,7 @@ args_doc[] = "ASTRdata";
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will add noise to all the "
   "pixels in an input dataset. The noise parameters can be specified with "
-  "the command line options. \n"
+  "the options below. \n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"

@@ -71,13 +71,15 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
   "`5 6 +', or to get the average of two images, you should write `a.fits "
   "b.fits + 2 /' (or more simply use the `average' operator with "
   "`a.fits b.fits average'). Please see the manual for more information. "
-  "\n\nThe operators/functions recognized by "PROGRAM_NAME" are: +, -, *, "
-  "/, abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average, "
-  "median, lt, le, gt, ge, eq, ne, and, or, not, isblank, and the full set "
-  "of bitwise operators, and numeric type conversion operators to all known "
-  "types. Please run `info gnuastro \"Arithmetic operators\"' for detailed "
-  "information on each operator. Note that multiplication should be quoted "
-  "(like \"*\", or '*') to avoid shell expansion.\n"
+  "\n\n"PROGRAM_NAME" recognizes a large collection of standard operators, "
+  "including basic arithmetic (e.g., +, -, *, /), mathematical (e.g., abs, "
+  "pow, sqrt, log), statistical (minvalue, min, max, average), comparison "
+  "(e.g., lt, le, gt), logical (e.g., and, or, not), the full set of bitwise "
+  "operators, and numeric type conversion operators to all known types. "
+  "Please run the command below for a complete list describing all "
+  "operators (press the `SPACE' keyboard key, or arrow keys, to go down "
+  "and `q' to return to the command-line):\n\n"
+  "     $ info gnuastro \"Arithmetic operators\"\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -221,7 +223,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-
 /* Sanity check on options AND arguments. If only option values are to be
    checked, use `ui_read_check_only_options'. */
 static void

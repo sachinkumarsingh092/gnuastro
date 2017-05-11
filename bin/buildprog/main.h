@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/options.h>
 
 /* Progarm names.  */
-#define PROGRAM_NAME   "Build"    /* Program full name.       */
-#define PROGRAM_EXEC   "astbuild" /* Program executable name. */
+#define PROGRAM_NAME   "BuildProgram"    /* Program full name.       */
+#define PROGRAM_EXEC   "astbuildprog"    /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 

@@ -67,14 +67,10 @@ static char
 args_doc[] = "ASTRdata";
 
 const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
-  "information, select columns, or convert tables. The inputs and outputs "
-  "can be plain text (with whitespace or comma as delimiters), FITS ascii, "
-  "or FITS binary tables. The output columns can either be selected by "
-  "number (counting from 1), name or using regular expressions. For regular "
-  "expressions, enclose the value to the `--column' (`-c') option in "
-  "slashes (`\\', as in `-c\\^mag\\'). To print the selected columns on the "
-  "command-line, don't specify an output file.\n"
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will convolve an input "
+  "image with a given spatial kernel (image) in the spatial domain (no "
+  "edge effects) or frequency domain. The latter suffers from edge effects, "
+  "but can be much faster.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"

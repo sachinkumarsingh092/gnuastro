@@ -63,7 +63,7 @@ args_doc[] = "ASTRdata";
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
   "information, select columns, or convert tables. The inputs and outputs "
-  "can be plain text (with whitespace or comma as delimiters), FITS ascii, "
+  "can be plain text (with white-space or comma as delimiters), FITS ascii, "
   "or FITS binary tables. The output columns can either be selected by "
   "number (counting from 1), name or using regular expressions. For regular "
   "expressions, enclose the value to the `--column' (`-c') option in "

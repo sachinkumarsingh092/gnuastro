@@ -52,13 +52,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "the full "PACKAGE_NAME" manual. In particular the first contains a " \
   "very comprehensive explanation of "PROGRAM_NAME"'s invocation and "  \
   "all the options.\n\n"                                                \
-  "     info "PROGRAM_EXEC"\n\n"                                        \
-  "     info "PROGRAM_NAME"\n\n"                                        \
-  "     info "PACKAGE_TARNAME"\n\n"                                     \
+  "     $ info "PROGRAM_EXEC"\n\n"                                      \
+  "     $ info "PROGRAM_NAME"\n\n"                                      \
+  "     $ info "PACKAGE_TARNAME"\n\n"                                   \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
   "For more information, please run:\n\n"                               \
-  "     info help-gnuastro\n\n"                                         \
+  "     $ info help-gnuastro\n\n"                                       \
   PROGRAM_NAME" options:"                                               \
 
 

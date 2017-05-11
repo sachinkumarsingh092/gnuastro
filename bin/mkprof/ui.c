@@ -70,7 +70,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a FITS image "
   "containing any number of mock astronomical profiles based on an input "
   "catalog. All the profiles will be built from the center outwards. First "
   "by Monte Carlo integration, then using the central pixel position. The "
-  "tolerance level specifies when to switch to a latter.\n"
+  "tolerance level specifies when the switch will occur.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"

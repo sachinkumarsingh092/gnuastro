@@ -59,8 +59,9 @@ static char
 args_doc[] = "ASTRdata";
 
 const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" view and manipulate (add, "
-  "delete, or modify) FITS extensions and header keywords. \n"
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" allows you to view and "
+  "manipulate (add, delete, or modify) FITS extensions (or HDUs) and FITS "
+  "header keywords within one extension.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
