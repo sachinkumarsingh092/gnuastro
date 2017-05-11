@@ -1493,13 +1493,14 @@ In this book we have the following conventions:
 @itemize
 
 @item
-All commands that are to be run on the shell (command-line) prompt as
-the user start with a @command{$}. In case they must be run as a
-super-user or system administrator, they will start with a
-@command{#}. If the command is in a separate line and next line
-@code{is also in the code type face}, but doesn't have any of the
-@command{$} or @command{#} signs, then it is the output of the command
-after it is run. As a user, you don't need to type those lines.
+All commands that are to be run on the shell (command-line) prompt as the
+user start with a @command{$}. In case they must be run as a super-user or
+system administrator, they will start with a single @command{#}. If the
+command is in a separate line and next line @code{is also in the code type
+face}, but doesn't have any of the @command{$} or @command{#} signs, then
+it is the output of the command after it is run. As a user, you don't need
+to type those lines. A line that starts with @command{##} is just a comment
+for explaning the command to a human reader and must not be typed.
 
 @item
 If the command becomes larger than the page width a @key{\} is
@@ -6602,12 +6603,25 @@ $ astfits [OPTION...] ASTRdata
 One line examples:
 
 @example
+## View general information about every extension:
 $ astfits image.fits
-$ astfits image.fits --printallkeys
-$ astfits image.fits --printallkeys | grep NAXIS
+
+## Print the header keywords in the second HDU (counting from 0):
+$ astfits image.fits -h1 --printallkeys
+
+## Only print header keywords that contain `NAXIS':
+$ astfits image.fits -h1 --printallkeys | grep NAXIS
+
+## Copy a HDU from input.fits to out.fits:
 $ astfits input.fits --copy=hdu-name --output=out.fits
+
+## Update the OLDKEY keyword value to 153.034:
 $ astfits --update=OLDKEY,153.034,"Old keyword comment"
+
+## Delete one COMMENT keyword and add a new one:
 $ astfits --delete=COMMENT --comment="Anything you like ;-)."
+
+## Write two new keywords with different values and comments:
 $ astfits --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
@@ -7224,9 +7238,16 @@ $ astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
 One line examples:
 
 @example
-$ astconvertt M31.fits --output=pdf
-$ astconvertt galaxy.jpg -ogalaxy.fits
+## Convert an image in FITS to PDF:
+$ astconvertt image.fits --output=pdf
+
+## Convert an image in JPEG to FITS:
+$ astconvertt image.jpg -ogalaxy.fits
+
+## Use three plain text 2D arrays to create an RGB JPEG output:
 $ astconvertt f1.txt f2.txt f3.fits -o.jpg
+
+## Use two images and one blank for an RGB EPS output:
 $ astconvertt M31_r.fits M31_g.fits blank -oeps
 @end example
 
@@ -7505,22 +7526,22 @@ $ asttable [OPTION...] InputFile
 One line examples:
 
 @example
-## Get the table column information (name, data type, or units)
+## Get the table column information (name, data type, or units):
 $ asttable bintab.fits --information
 
-## Only print those columns which have a name starting with "MAG_"
+## Only print those columns which have a name starting with "MAG_":
 $ asttable bintab.fits --column=/^MAG_/
 
-## Only print the 2nd column, and the third column multiplied by 5
+## Only print the 2nd column, and the third column multiplied by 5:
 $ asttable bintab.fits | awk '@{print $2, 5*$3@}'
 
-## Only print those rows with a value in the 10th column above 100000
+## Only print rows with a value in the 10th column above 100000:
 $ asttable bintab.fits | awk '$10>10e5 @{print@}'
 
-## Sort the output columns by the third column, save output
+## Sort the output columns by the third column, save output:
 $ asttable bintab.fits | 'sort -k3 > output.txt
 
-## Convert a plain text table to a binary FITS table
+## Convert a plain text table to a binary FITS table:
 $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 @end example
 
@@ -7902,10 +7923,20 @@ $ astcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
 One line examples:
 
 @example
-$ astcrop -I catalog.txt image.fits
-$ astcrop -W catalog.txt /mnt/data/COSMOS/*_drz.fits
+## Crop all objects in catalog.txt from image.fits:
+$ astcrop catalog.txt image.fits
+
+## Crop all options in catalog (with RA,DEC) from all the files
+## ending in `_drz.fits' in `/mnt/data/COSMOS/':
+$ astcrop --mode=wcs catalog.txt /mnt/data/COSMOS/*_drz.fits
+
+## Crop-out the outer 10 border pixels of input image:
 $ astcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
+
+## Crop region around RA and Dec of (189.16704, 62.218203):
 $ astcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
+
+## Crop region around pixel coordinate (568.342, 2091.719):
 $ astcrop --xc=568.342 --yc=2091.719 --iwidth=201 image.fits
 @end example
 
@@ -8830,13 +8861,26 @@ $ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
 One line examples:
 
 @example
-$ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
+## Calculate (10.32-3.84)^2.7 quietly (will just print 155.329):
+$ astarithmetic -q 10.32 3.84 - 2.7 pow
+
+## Inverse the input image (1/pixel):
 $ astarithmetic 1 image.fits / --out=inverse.fits
+
+## Multiply each pixel in image by -1:
 $ astarithmetic image.fits -1 "*" --out=negative.fits
+
+## Subtract extension 4 from extension 1 (counting from zero):
 $ astarithmetic image.fits image.fits - --out=skysub.fits           \
-                --hdu=0 --hdu=3
+                --hdu=1 --hdu=4
+
+## Add two images, then divide them by 2 (2 is read as floating point):
 $ astarithmetic image1.fits image2.fits + 2f / --out=average.fits
+
+## Use Arithmetic's average operator:
 $ astarithmetic image1.fits image2.fits average --out=average.fits
+
+## Calculate the median of three images in three separate extensions:
 $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
@@ -10227,9 +10271,14 @@ $ astconvolve [OPTION...] ASTRdata
 One line examples:
 
 @example
+## Convolve mockimg.fits with psf.fits:
 $ astconvolve --kernel=psf.fits mockimg.fits
-$ astconvolve observedimg.fits --domain=spatial
-$ astconvolve --kernel=sharperimage.fits --makekernel=10 \
+
+## Convolve in the spatial domain:
+$ astconvolve observedimg.fits --kernel=psf.fits --domain=spatial
+
+## Find the kernel to match sharper and blurry PSF images:
+$ astconvolve --kernel=sharperimage.fits --makekernel=10           \
               blurryimage.fits
 @end example
 
@@ -10762,10 +10811,19 @@ $ astwarp [OPTIONS...] InputImage
 One line examples:
 
 @example
+## Rotate and then scale input image:
 $ astwarp --rotate=37.92 --scale=0.8 image.fits
+
+## Scale, then translate the input image:
 $ astwarp --scale 8/3 --translate 2.1 image.fits
+
+## Align raw image with celestial coordinates:
 $ astwarp --align rawimage.fits --output=aligned.fits
+
+## Directly input a custom warping matrix (using fraction):
 $ astwarp --matrix=1/5,0,4/10,0,1/5,4/10,0,0,1 image.fits
+
+## Directly input a custom warping matrix, with final numbers:
 $ astwarp --matrix="0.7071,-0.7071,  0.7071,0.7071" image.fits
 @end example
 
@@ -11491,11 +11549,24 @@ $ aststatistics [OPTION ...] InputImage.fits
 One line examples:
 
 @example
+## Print some general statistics of input image:
 $ aststatistics image.fits
-$ aststatistics tab.fits -c/MAG/ --histogram
+
+## Print some general statistics of column named MAG_F160W:
 $ aststatistics catalog.fits -h1 --column=MAG_F160W
+
+## Make the histogram of the column named MAG_F160W:
+$ aststatistics table.fits -cMAG_F160W --histogram
+
+## Find the Sky value on image with a given kernel:
 $ aststatistics image.fits --sky --kernel=kernel.fits
-$ aststatistics cat.fits -cMAG -g26 -l27 --sigmaclip=3,0.2
+
+## Print Sigma-clipped results of records with a MAG_F160W
+## column value between 26 and 27:
+$ aststatistics cat.fits -cMAG_F160W -g26 -l27 --sigmaclip=3,0.2
+
+## Print the median value of all records in column MAG_F160W that
+## have a value larger than 3 in column PHOTO_Z:
 $ aststatistics tab.txt -rPHOTO_Z -g3 -cMAG_F160W --median
 @end example
 
@@ -12150,7 +12221,12 @@ $ astnoisechisel [OPTION ...] InputImage.fits
 One line examples:
 
 @example
+## Detect signal in input.fits:
 $ astnoisechisel input.fits
+
+## Detect signal assuming input has 4 channels along first dimension
+## and 1 along the second. Also set the regular tile size to 100 along
+## both dimensions:
 $ astnoisechisel --numchannels=4,1 --tilesize=100,100 input.fits
 @end example
 
@@ -13406,9 +13482,20 @@ $ astmkcatalog [OPTION ...] InputImage.fits
 One line examples:
 
 @example
-$ astmkcatalog -mdri input.fits
-$ astmkcatalog --output=cat input_labeled.fits
+## Create catalog with RA, Dec, Magnitude and Magnitude error,
+## `input.fits' is NoiseChisel's output:
+$ astmkcatalog --ra --dec --magnitude --magnitudeerr input.fits
+
+## Same catalog as above (using short options):
+$ asmkcatalog -rdmG input.fits
+
+## Write the catalog to a FITS table:
+$ astmkcatalog -mpQ --output=cat.fits input_labeled.fits
+
+## Read the columns to create from `columns.conf':
 $ astmkcatalog --config=columns.conf input_labeled.fits
+
+## Use different images for the objects and clumps inputs:
 $ astmkcatalog --objectsfile=K_labeled.fits --objectshdu=1    \
                --clumpsfile=K_labeled.fits --clumpshdu=2 i_band.fits
 @end example
@@ -14582,9 +14669,17 @@ $ astmkprof [OPTION ...] [BackgroundImage] Catalog
 One line examples:
 
 @example
-$ astmkprof --xcol=1 --ycol=2 catalog.txt
-$ astmkprof --background=img.fits catalog.txt
-$ astmkprof --racol=ra_center --ycol=dec_center catalog.txt
+## Make an image with profiles in catalog.txt (with default size):
+$ astmkprof catalog.txt
+
+## Make the profiles in catalog.txt over image.fits:
+$ astmkprof --background=image.fits catalog.txt
+
+## Make profiles in catalog, using RA and Dec in the given column:
+$ astmkprof --racol=RA_CENTER --ycol=DEC_CENTER catalog.txt
+
+## Make a 1500x1500 merged image (oversampled 500x500) image along
+## with an individual image for all the profiles in catalog:
 $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
 
@@ -15396,6 +15491,7 @@ $ astmknoise [OPTION ...] InputImage.fits
 One line examples:
 
 @example
+## Add noise to input image assuming background and instrumental noise:
 $ astmknoise --background=1000 --stdadd=20 mockimage.fits
 @end example
 
@@ -15779,9 +15875,15 @@ $ astcosmiccal [OPTION...] ...
 One line examples:
 
 @example
-$ astcosmiccal --onlyvolume -z 0.8
-$ astcosmiccal -l0.6964 -m0.3036 -z2.1
-$ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
+## Print basic cosmological properties at redshift 2.5:
+$ astcosmiccal -z2.5
+
+## Only print Comoving volume over 4pi stradian to z (Mpc^3):
+$ astcosmiccal --onlyvolume --redshift=0.8
+
+## Assume Lambda and matter density of 0.7 and 0.3 and print
+## basic cosmological parameters for redshift 2.1:
+$ astcosmiccal -l0.7 -m0.3 -z2.1
 @end example
 
 The input parameters can be given as command-line options or in the
@@ -16499,9 +16601,18 @@ $ astbuildprog [OPTION...] C_SOURCE_FILE
 One line examples:
 
 @example
+## Compile, link and run `myprogram.c':
+$ astbuildprog myprogram.c
+
+## Compile and link `myprogram.c', then run it with `image.fits'
+## as its argument:
 $ astbuildprog myprogram.c image.fits
+
+## Also look in other directories for headers and linking:
 $ astbuildprog -Lother -Iother/dir myprogram.c
-$ astbuildprog myprogram.c --onlybuild image.fits catalog.txt
+
+## Just build (compile and link) `myprogram.c', don't run it:
+$ astbuildprog --onlybuild myprogram.c
 @end example
 
 If BuildProgram is to run, it needs a C programming language source file as

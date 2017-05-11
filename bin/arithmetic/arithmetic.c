@@ -344,9 +344,9 @@ reversepolish(struct imgarithparams *p)
       /* To simplify the printing process, we will first change it to
          double, then use printf's `%g' to print it, so integers will be
          printed as an integer.  */
-      d2=gal_data_copy_to_new_type(d1, GAL_TYPE_FLOAT32);
+      d2=gal_data_copy_to_new_type(d1, GAL_TYPE_FLOAT64);
       printf("%g\n", *(double *)d2->array);
-      gal_data_free(d2);
+      if(d2!=d1) gal_data_free(d2);
     }
   else
     {

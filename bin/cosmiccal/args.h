@@ -101,7 +101,7 @@ struct argp_option program_options[] =
 
 
     {
-      "onlyvolumne",
+      "onlyvolume",
       UI_KEY_ONLYVOLUME,
       0,
       0,
