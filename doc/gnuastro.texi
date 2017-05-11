@@ -1546,12 +1546,14 @@ management of its version controlled source server there.
 @c `and' before the last name to a comma (','), then add " and Firstname
 @c Familyname'' after the last name.
 We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
-Yahya Sefidbakht, Francesco Montanari, and Ole Streicher for their useful
-and constructive comments and suggestions. Finally we should thank all the
-(sometimes anonymous) developers in various online forums which patiently
-answered all our small (but important) technical questions. All work on
-Gnuastro has been voluntary, but we are most grateful to the following
-institutions (in chronological order) for hosting us in our research:
+Yahya Sefidbakht, Francesco Montanari, Ole Streicher, Nicolas Bouché, Rosa
+Calvi, Lee Kelvin, Guillaume Mahler, William Pence, David Valls-Gabaud,
+Christopher Willmer, for their useful and constructive comments and
+suggestions. Finally we should thank all the (sometimes anonymous)
+developers in various online forums which patiently answered all our small
+(but important) technical questions. All work on Gnuastro has been
+voluntary, but we are most grateful to the following institutions (in
+chronological order) for hosting us in our research:
 
 @quotation
 Ministry of education, culture, sports, science and technology (MEXT), Japan.@*
