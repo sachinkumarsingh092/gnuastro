@@ -316,6 +316,7 @@ mkprof_build(void *inparam)
               fbq=NULL;
               mkp->ibq=NULL;
             }
+
           /* The mutex couldn't be locked and there are no more
              objects for this thread to build (giving a chance for
              this thread to add up its built profiles). So we have to
@@ -489,7 +490,7 @@ mkprof_write(struct mkprofparams *p)
       if(!p->cp.quiet)
         {
           asprintf(&jobname, "row %zu complete, %zu left to go",
-                  ibq->id, num-complete);
+                   ibq->id, num-complete);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
         }

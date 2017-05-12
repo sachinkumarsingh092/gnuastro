@@ -253,7 +253,7 @@ makepixbypix(struct mkonthread *mkp)
     { img[p]=1; return; }
 
   /* Allocate the byt array to not repeat completed pixels. */
-  byt = gal_data_malloc_array(GAL_TYPE_UINT8, is0*is1);
+  byt = gal_data_calloc_array(GAL_TYPE_UINT8, is0*is1);
 
   /* Start the queue: */
   byt[p]=1;
