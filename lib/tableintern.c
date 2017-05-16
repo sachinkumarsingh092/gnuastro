@@ -348,6 +348,7 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
     /* We need a default value (because in most cases, it won't be set. */
     case GAL_TYPE_FLOAT32:
     case GAL_TYPE_FLOAT64:
+      /* Set the format. */
       switch(col->disp_fmt)
         {
         case GAL_TABLE_DISPLAY_FMT_FLOAT:
@@ -359,13 +360,29 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
         default:
           fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         }
-      width = ( col->disp_width<=0
-                ? ( col->type==GAL_TYPE_FLOAT32
-                    ? GAL_TABLE_DEF_WIDTH_FLT
-                    : GAL_TABLE_DEF_WIDTH_DBL )
-                : col->disp_width );
-      precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_PRECISION_FLT
-                    : col->disp_precision );
+
+      /* Set the width and precision */
+      switch(col->type)
+        {
+        case GAL_TYPE_FLOAT32:
+          width     = ( col->disp_width<=0
+                        ? GAL_TABLE_DEF_WIDTH_FLT : col->disp_width );
+          precision = ( col->disp_precision<=0
+                        ? GAL_TABLE_DEF_PRECISION_FLT : col->disp_precision );
+          break;
+        case GAL_TYPE_FLOAT64:
+          width     = ( col->disp_width<=0
+                        ? GAL_TABLE_DEF_WIDTH_DBL : col->disp_width );
+
+          /* CFITSIO doesn't recognize the double precision defined here
+             for ASCII FITS tables. */
+          precision = ( col->disp_precision<=0
+                        ? ( tableformat==GAL_TABLE_FORMAT_TXT
+                            ? GAL_TABLE_DEF_PRECISION_DBL
+                            : GAL_TABLE_DEF_PRECISION_FLT )
+                        : col->disp_precision );
+          break;
+        }
       break;
 
 

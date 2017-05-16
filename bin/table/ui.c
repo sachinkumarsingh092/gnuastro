@@ -271,9 +271,9 @@ ui_preparations(struct tableparams *p)
   size_t i, numcols, numrows;
   struct gal_options_common_params *cp=&p->cp;
 
-  /* If there were no columns specified, we want the full set of
-     columns. */
-  if(p->columns==NULL)
+  /* If there were no columns specified or the user has asked for
+     information on the columns, we want the full set of columns. */
+  if(p->columns==NULL || p->information)
     {
       /* Read the table information for the number of columns and rows. */
       allcols=gal_table_info(p->filename, cp->hdu, &numcols,

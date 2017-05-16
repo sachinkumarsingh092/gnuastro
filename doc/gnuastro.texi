@@ -7571,14 +7571,22 @@ tools like AWK or sort, similar to the examples above.
 @item -i
 @itemx --information
 Only print the column information in the specified table on the
-command-line and exit. Each columns information (number, name, units, data
+command-line and exit. Each column's information (number, name, units, data
 type, and comments) will be printed as a row on the command-line. Note that
 the FITS standard only requires the data type (see @ref{Numeric data
-types}) and in plain text tables, no meta-data/information is
+types}), and in plain text tables, no meta-data/information is
 mandatory. Gnuastro has its own convention in the comments of a plain text
 table to store and transfer this information as described in @ref{Gnuastro
-text table format}. Note that if columns have been requested with the
-@option{--column} option (below), this option will be ignored if given.
+text table format}.
+
+This option will take precedence over the @option{--column} option, so when
+it is called along with requested columns, the latter will be ignored. This
+can be useful if you forget the identifier of a column after you have
+already typed some on the command-line. You can simply add a @option{-i}
+and run Table to see the whole list and remember. Then you can use the
+shell history (with the up arrow key on the keyboard), and retrieve the
+last command with all the previously typed columns present, delete
+@option{-i} and add the identifier you had forgot.
 
 @cindex AWK
 @cindex GNU AWK
