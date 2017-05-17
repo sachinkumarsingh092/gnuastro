@@ -290,7 +290,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
   detection_pseudo_sky_or_det(p, workbin->array, s0d1);
   if(p->detectionname)
     {
-      workbin->name="DTHRESH-ON-SKY";
+      workbin->name = s0d1 ? "DTHRESH-ON-DET" : "DTHRESH-ON-SKY";
       gal_fits_img_write(workbin, p->detectionname, NULL, PROGRAM_STRING);
       workbin->name=NULL;
     }
