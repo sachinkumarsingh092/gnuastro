@@ -833,7 +833,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
     int n, use;                                                         \
-    TYPE *pixs=gal_data_malloc_array(list->type, dnum);                 \
+    TYPE *pixs=gal_data_malloc_array(list->type, dnum, __func__, "pixs"); \
                                                                         \
     /* Loop over each pixel */                                          \
     do                                                                  \
@@ -981,7 +981,7 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 
   /* hasblank is used to see if a blank value should be checked for each
      list element or not. */
-  hasblank=gal_data_malloc_array(GAL_TYPE_UINT8, dnum);
+  hasblank=gal_data_malloc_array(GAL_TYPE_UINT8, dnum, __func__, "hasblank");
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     hasblank[i++]=gal_blank_present(tmp, 0);
 

@@ -337,7 +337,7 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
 {
   size_t i;
 
-  p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num);
+  p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num, __func__, "p->f");
   for(i=0;i<p->num;++i)
     {
       if( !strcmp("sersic", strarr[i]) )

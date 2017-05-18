@@ -198,7 +198,8 @@ eps_convert_to_bitstream(struct converttparams *p)
   for(channel=p->chll; channel!=NULL; channel=channel->next)
     {
       /* Allocate the array. */
-      bits=gal_data_malloc_array(GAL_TYPE_UINT8, bytesinimg);
+      bits=gal_data_malloc_array(GAL_TYPE_UINT8, bytesinimg, __func__,
+                                 "bits");
 
       /* Put the values in. */
       in=channel->array;

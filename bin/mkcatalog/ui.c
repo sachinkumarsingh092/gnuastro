@@ -624,9 +624,11 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
 
   int32_t *l, *lf, *start;
   size_t i, d, *min, *max, width=2*ndim;
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                       width*p->numobjects);
+                                       width*p->numobjects, __func__,
+                                       "minmax");
+  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                      "coord");
 
 
   /* Initialize the minimum and maximum position for each tile/object. So,

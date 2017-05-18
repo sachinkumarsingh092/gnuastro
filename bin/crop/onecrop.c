@@ -723,7 +723,7 @@ onecrop(struct onecropparams *crp)
          array. */
       status=0;
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=gal_data_malloc_array(p->type, cropsize);
+      array=gal_data_malloc_array(p->type, cropsize, __func__, "array");
       if(fits_read_subset(ifp, gal_fits_type_to_datatype(p->type),
                           fpixel_i, lpixel_i, inc, p->bitnul, array,
                           &anynul, &status))
@@ -843,7 +843,7 @@ iscenterfilled(struct onecropparams *crp)
   */
 
   /* Allocate the array and read in the pixels. */
-  array=gal_data_malloc_array(type, size);
+  array=gal_data_malloc_array(type, size, __func__, "array");
   if( fits_read_subset(ofp, gal_fits_type_to_datatype(type), fpixel, lpixel,
                        inc, p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);

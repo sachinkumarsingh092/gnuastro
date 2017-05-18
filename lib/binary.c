@@ -561,8 +561,10 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
   uint8_t *in;
   size_t i, startind;
   gal_data_t *inv, *tile;
-  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
-  size_t *startcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim);
+  size_t *startcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim,
+                                           __func__, "startcoord");
+  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim, __func__,
+                                      "dsize");
 
 
   /* Set the size of the padded inverse image and the coordinates of the

@@ -242,10 +242,12 @@ size_t
 gal_data_ptr_dist(void *earlier, void *later, uint8_t type);
 
 void *
-gal_data_malloc_array(uint8_t type, size_t size);
+gal_data_malloc_array(uint8_t type, size_t size, const char *funcname,
+                      const char *varname);
 
 void *
-gal_data_calloc_array(uint8_t type, size_t size);
+gal_data_calloc_array(uint8_t type, size_t size, const char *funcname,
+                      const char *varname);
 
 void
 gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,

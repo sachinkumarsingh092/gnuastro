@@ -87,7 +87,7 @@ gal_blank_alloc_write(uint8_t type)
   void *out;
 
   /* Allocate the space to keep the blank value. */
-  out=gal_data_malloc_array(type, 1);
+  out=gal_data_malloc_array(type, 1, __func__, "out");
 
   /* Put the blank value in the allcated space. */
   gal_blank_write(out, type);

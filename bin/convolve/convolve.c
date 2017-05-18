@@ -58,7 +58,8 @@ complextoreal(double *c, size_t size, int action, double **output)
   double *out, *o, *of;
 
   /* Allocate the space for the real array. */
-  *output=out=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  *output=out=gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__,
+                                    "output");
 
   /* Fill the real array with the derived value from the complex array. */
   of=(o=out)+size;
@@ -206,7 +207,8 @@ frequency_make_padded_complex(struct convolveparams *p)
 
 
   /* Allocate the space for the padded input image and fill it. */
-  pimg=p->pimg=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*ps0*ps1);
+  pimg=p->pimg=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*ps0*ps1, __func__,
+                                     "pimg");
   for(i=0;i<ps0;++i)
     {
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
@@ -220,7 +222,8 @@ frequency_make_padded_complex(struct convolveparams *p)
 
 
   /* Allocate the space for the padded Kernel and fill it. */
-  pker=p->pker=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*ps0*ps1);
+  pker=p->pker=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*ps0*ps1, __func__,
+                                     "pker");
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */

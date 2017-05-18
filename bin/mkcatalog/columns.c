@@ -62,8 +62,10 @@ columns_alloc_radec(struct mkcatalogparams *p)
               __func__, p->input->ndim * sizeof *p->rd_vo );
 
       /* Space for each dimension. */
-      p->rd_vo[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
-      p->rd_vo[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_vo[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                          __func__, "p->rd_vo[0]");
+      p->rd_vo[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                          __func__, "p->rd_vo[1]");
       if(p->clumps)
         {
           /* Allocate the space for all dimensions. */
@@ -74,8 +76,10 @@ columns_alloc_radec(struct mkcatalogparams *p)
                   __func__, p->input->ndim * sizeof *p->rd_vc );
 
           /* Space for each dimension. */
-          p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
-          p->rd_vc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+          p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
+                                            __func__, "p->rd_vc[0]");
+          p->rd_vc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
+                                            __func__, "p->rd_vc[0]");
         }
     }
 }
@@ -98,8 +102,10 @@ columns_alloc_georadec(struct mkcatalogparams *p)
               __func__, p->input->ndim * sizeof *p->rd_go );
 
       /* Space for each dimension. */
-      p->rd_go[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
-      p->rd_go[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_go[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                          __func__, "p->rd_go[0]");
+      p->rd_go[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                          __func__, "p->rd_go[1]");
       if(p->clumps)
         {
           /* Allocate the space for all dimensions. */
@@ -110,8 +116,10 @@ columns_alloc_georadec(struct mkcatalogparams *p)
                   __func__, p->input->ndim * sizeof *p->rd_gc );
 
           /* Space for each dimension. */
-          p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
-          p->rd_gc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps);
+          p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
+                                            __func__, "p->rd_gc[0]");
+          p->rd_gc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
+                                            __func__, "p->rd_vc[1]");
         }
     }
 }
@@ -134,8 +142,10 @@ columns_alloc_clumpsradec(struct mkcatalogparams *p)
               __func__, p->input->ndim * sizeof *p->rd_vcc );
 
       /* Space for each dimension. */
-      p->rd_vcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
-      p->rd_vcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_vcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                           __func__, "p->rd_vcc[0]");
+      p->rd_vcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                           __func__, "p->rd_vcc[1]");
     }
 }
 
@@ -157,8 +167,10 @@ columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
               __func__, p->input->ndim * sizeof *p->rd_gcc );
 
       /* Space for each dimension. */
-      p->rd_gcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
-      p->rd_gcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects);
+      p->rd_gcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                           __func__, "p->rd_gcc[0]");
+      p->rd_gcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
+                                           __func__, "p->rd_gcc[1]");
     }
 }
 
@@ -200,8 +212,10 @@ columns_define_alloc(struct mkcatalogparams *p)
      smaller domain of raw measurements. So to avoid having to calculate
      something multiple times, each parameter will flag the intermediate
      parameters it requires in these arrays. */
-  oiflag = p->oiflag = gal_data_malloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS);
-  ciflag = p->ciflag = gal_data_malloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS);
+  oiflag = p->oiflag = gal_data_malloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS,
+                                             __func__, "oiflag");
+  ciflag = p->ciflag = gal_data_malloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS,
+                                             __func__, "ciflag");
 
   /* Allocate the columns. */
   for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)

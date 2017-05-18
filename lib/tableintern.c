@@ -424,7 +424,8 @@ gal_tableintern_read_blank(gal_data_t *col, char *blank)
      correctly. */
   if( !gal_type_from_string((void **)(&col->array), blank, col->type) )
     {
-      col->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
+      col->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 1, __func__,
+                                       "col->dsize");
       col->dsize[0]=col->ndim=col->size=1;
     }
 }

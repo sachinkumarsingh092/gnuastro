@@ -416,7 +416,7 @@ ui_matrix_prepare_raw(struct warpparams *p)
   if(p->matrix->size==4)
     {
       /* Allocate the final matrix. */
-      final=gal_data_malloc_array(GAL_TYPE_FLOAT64, 9);
+      final=gal_data_malloc_array(GAL_TYPE_FLOAT64, 9, __func__, "final");
 
       /* Fill in the final 3x3 matrix from the 2x2 matrix. */
       final[0]=in[0];    final[1]=in[1];   final[2]=0.0f;
@@ -432,7 +432,8 @@ ui_matrix_prepare_raw(struct warpparams *p)
   /* Correct the dimensional information, because the matrix was read as a
      single dimensional list of numbers. */
   free(p->matrix->dsize);
-  dsize=p->matrix->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 2);
+  dsize=p->matrix->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 2, __func__,
+                                               "dsize");
   dsize[0]=dsize[1]=3;
   p->matrix->ndim=2;
 }
@@ -763,7 +764,8 @@ ui_matrix_finalize(struct warpparams *p)
      yet implemented. */
 
    /* Make the inverse matrix: */
-  inv=p->inverse=gal_data_malloc_array(GAL_TYPE_FLOAT64, 9);
+  inv=p->inverse=gal_data_malloc_array(GAL_TYPE_FLOAT64, 9, __func__,
+                                       "p->inverse");
   inv[0] = d[4]*d[8] - d[5]*d[7];
   inv[1] = d[2]*d[7] - d[1]*d[8];
   inv[2] = d[1]*d[5] - d[2]*d[4];

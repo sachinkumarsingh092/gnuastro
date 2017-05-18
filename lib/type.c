@@ -340,7 +340,7 @@ gal_type_bit_string(void *in, size_t size)
 {
   size_t i;
   char *byte=in;
-  char *str=gal_data_malloc_array(GAL_TYPE_UINT8, 8*size+1);
+  char *str=gal_data_malloc_array(GAL_TYPE_UINT8, 8*size+1, __func__, "str");
 
   /* Print the bits into the allocated string. This was inspired from
 
@@ -437,7 +437,7 @@ gal_type_from_string(void **out, char *string, uint8_t type)
   if( *out==NULL && !gal_type_is_list(type) )
     {
       allocated=1;
-      *out=gal_data_malloc_array(type, 1);
+      *out=gal_data_malloc_array(type, 1, __func__, "out");
     }
   value=*out;
 
@@ -597,7 +597,7 @@ gal_type_string_to_number(char *string, uint8_t *type)
     }
 
   /* Allocate a one-element dataset, then copy the number into it. */
-  out=gal_data_malloc_array(*type, 1);
+  out=gal_data_malloc_array(*type, 1, __func__, "out");
   memcpy(out, ptr, gal_type_sizeof(*type));
   return out;
 }

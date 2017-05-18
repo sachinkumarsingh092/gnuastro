@@ -579,7 +579,7 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       /* Write the values into an allocated size_t array and finish it with
          a `-1' so the total number can be found later.*/
       num=values->size;
-      array=gal_data_malloc_array(GAL_TYPE_SIZE_T, num+1);
+      array=gal_data_malloc_array(GAL_TYPE_SIZE_T, num+1, __func__, "array");
       for(i=0;i<num;++i) array[num-1-i]=v[i];
       array[num] = (size_t)(-1);
 

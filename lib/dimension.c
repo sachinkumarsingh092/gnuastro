@@ -55,7 +55,7 @@ size_t *
 gal_dimension_increment(size_t ndim, size_t *dsize)
 {
   int i;
-  size_t *out=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *out=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "out");
 
   /* Along the fastest dimension, it is 1. */
   out[ndim-1]=1;

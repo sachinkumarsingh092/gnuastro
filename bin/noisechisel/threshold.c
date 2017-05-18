@@ -471,7 +471,8 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
   /* Allocate temporary space for processing in each tile. */
   qprm.usage=gal_data_malloc_array(p->input->type,
-                                   cp->numthreads * p->maxtcontig);
+                                   cp->numthreads * p->maxtcontig,
+                                   __func__, "qprm.usage");
 
 
   /* Find the threshold on each tile, free the temporary processing space

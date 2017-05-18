@@ -704,7 +704,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
 
   /* Allocate the array to keep the neighbor labels of river pixels. */
-  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb);
+  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
 
   /* Go over all the pixels in this region. */
   af=(a=cltprm->indexs->array)+cltprm->indexs->size;
@@ -824,18 +824,23 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   cltprm->sn        = &cltprm->clprm->sn[ cltprm->id ];
   cltprm->sn->ndim  = 1;                        /* Depends on `cltprm->sn' */
   cltprm->sn->type  = GAL_TYPE_FLOAT32;
-  cltprm->sn->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
-  cltprm->sn->array = gal_data_malloc_array(cltprm->sn->type, tablen);
+  cltprm->sn->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1, __func__,
+                                            "cltprm->sn->dsize");
+  cltprm->sn->array = gal_data_malloc_array(cltprm->sn->type, tablen,
+                                            __func__, "cltprm->sn->array");
   cltprm->sn->size  = cltprm->sn->dsize[0] = tablen;       /* After dsize. */
   if( cltprm->clprm->snind )
     {
       cltprm->snind        = &cltprm->clprm->snind [ cltprm->id ];
       cltprm->snind->ndim  = 1;              /* Depends on `cltprm->snind' */
       cltprm->snind->type  = GAL_TYPE_INT32;
-      cltprm->snind->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
+      cltprm->snind->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1,
+                                                   __func__,
+                                                   "cltprm->snind->dsize");
       cltprm->snind->size  = cltprm->snind->dsize[0]=tablen;/* After dsize */
       cltprm->snind->array = gal_data_malloc_array(cltprm->snind->type,
-                                                   tablen);
+                                                   tablen, __func__,
+                                                   "cltprm->snind->array");
     }
   else cltprm->snind=NULL;
 
@@ -989,8 +994,10 @@ clumps_find_make_sn_table(void *in_prm)
   uint8_t *binary=p->binary->array;
   struct clumps_thread_params cltprm;
   size_t i, c, ind, tind, num, numsky, *indarr;
-  size_t *scoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *scoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "scoord");
+  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "icoord");
 
 
   /* Initialize the parameters for this thread. */
@@ -1372,7 +1379,8 @@ clumps_det_label_indexs(struct noisechiselparams *p)
 
   /* Find the area in each detected objects (to see how much space we need
      to allocate). */
-  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numdetections+1);
+  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numdetections+1, __func__,
+                              "areas");
   if(p->input->flag & GAL_DATA_FLAG_HASBLANK)
     {
       lf=(l=p->olabel->array)+p->olabel->size; /* Blank pixels have a      */
@@ -1429,7 +1437,8 @@ clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
   int32_t *l, *lf, curlab=1, *clabel=p->clabel->array;
   size_t i, *dinc=gal_dimension_increment(ndim, dsize);
   int32_t *newlabs=gal_data_malloc_array(GAL_TYPE_INT32,
-                                         cltprm->numinitclumps+1);
+                                         cltprm->numinitclumps+1, __func__,
+                                         "newlabs");
 
   /* Initialize the new labels with CLUMPS_INIT (so the diffuse area can be
      distinguished from the clumps). */

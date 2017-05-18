@@ -100,7 +100,7 @@ gal_permutation_apply(gal_data_t *input, size_t *permutation)
     {
       /* Necessary initializations. */
       width=gal_type_sizeof(input->type);
-      tmp=gal_data_malloc_array(input->type, 1);
+      tmp=gal_data_malloc_array(input->type, 1, __func__, "tmp");
 
       /* Do the permutation. */
       for(i=0;i<input->size;++i)
@@ -149,8 +149,8 @@ gal_permutation_apply_inverse(gal_data_t *input, size_t *permutation)
     {
       /* Initializations */
       width=gal_type_sizeof(input->type);
-      tmp=gal_data_malloc_array(input->type, 1);
-      ttmp=gal_data_malloc_array(input->type, 1);
+      tmp=gal_data_malloc_array(input->type, 1, __func__, "tmp");
+      ttmp=gal_data_malloc_array(input->type, 1, __func__, "ttmp");
 
       /* Re-order the values. */
       for(i=0;i<input->size;++i)

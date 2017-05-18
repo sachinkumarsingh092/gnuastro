@@ -240,7 +240,8 @@ gal_wcs_on_tile(gal_data_t *tile)
 {
   size_t i, start_ind, ndim=tile->ndim;
   gal_data_t *block=gal_tile_block(tile);
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                      "coord");
 
   /* If the tile already has a WCS structure, don't do anything. */
   if(tile->wcs) return;
@@ -511,12 +512,15 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   double *phi, *theta, *world, *pixcrd, *imgcrd;
 
   /* Allocate all the necessary arrays. */
-  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
-  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size   );
-  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
-  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
-  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
-  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
+  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
+  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
+  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "world");
+  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "imgcrd");
+  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "pixcrd");
 
   /* Write the values into the allocated contiguous array. */
   for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
@@ -535,8 +539,8 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   */
 
   /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
-  if(*y==NULL) *y=gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  if(*x==NULL) *x=gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__,"x");
+  if(*y==NULL) *y=gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__,"y");
 
   /* Put the values into the output arrays. */
   for(i=0;i<size;++i)
@@ -568,12 +572,15 @@ gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
   double *phi, *theta, *world, *pixcrd, *imgcrd;
 
   /* Allocate all the necessary arrays. */
-  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
-  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size   );
-  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size   );
-  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
-  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
-  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size );
+  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
+  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
+  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
+  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "world");
+  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "imgcrd");
+  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
+                                  "pixcrd");
 
   /* Write the values into the allocated contiguous array. */
   for(i=0;i<size;++i) { pixcrd[i*2]=x[i]; pixcrd[i*2+1]=y[i]; }
@@ -592,8 +599,10 @@ gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
   */
 
   /* Allocate the output arrays if they were not already allocated. */
-  if(*ra==NULL)  *ra  = gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
-  if(*dec==NULL) *dec = gal_data_malloc_array(GAL_TYPE_FLOAT64, size);
+  if(*ra==NULL)
+    *ra  = gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__, "ra");
+  if(*dec==NULL)
+    *dec = gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__, "dec");
 
   /* Put the values into the output arrays. */
   for(i=0;i<size;++i)

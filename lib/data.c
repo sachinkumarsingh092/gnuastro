@@ -127,15 +127,23 @@ gal_data_ptr_dist(void *earlier, void *later, uint8_t type)
    bytes each element needs will be determined internaly by this function
    using the datatype argument, so you don't have to worry about it. */
 void *
-gal_data_malloc_array(uint8_t type, size_t size)
+gal_data_malloc_array(uint8_t type, size_t size, const char *funcname,
+                      const char *varname)
 {
   void *array;
 
   errno=0;
   array=malloc( size * gal_type_sizeof(type) );
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "%s: array of %zu bytes", __func__,
-          size * gal_type_sizeof(type));
+    {
+      if(varname)
+        error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated "
+              "for variable `%s'", funcname ? funcname : __func__,
+              size * gal_type_sizeof(type), varname);
+      else
+        error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated",
+              funcname ? funcname : __func__, size * gal_type_sizeof(type));
+    }
 
   return array;
 }
@@ -145,15 +153,23 @@ gal_data_malloc_array(uint8_t type, size_t size)
 
 
 void *
-gal_data_calloc_array(uint8_t type, size_t size)
+gal_data_calloc_array(uint8_t type, size_t size, const char *funcname,
+                      const char *varname)
 {
   void *array;
 
   errno=0;
-  array=calloc( size,  gal_type_sizeof(type) );
+  array=calloc( size, gal_type_sizeof(type) );
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "%s: array of %zu bytes", __func__,
-          size * gal_type_sizeof(type));
+    {
+      if(varname)
+        error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated "
+              "for variable `%s'", funcname ? funcname : __func__,
+              size * gal_type_sizeof(type), varname);
+      else
+        error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated",
+              funcname ? funcname : __func__, size * gal_type_sizeof(type));
+    }
 
   return array;
 }
@@ -311,9 +327,11 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                 /* Allocate the space in RAM. */
                 data->array = ( clear
                                 ? gal_data_calloc_array(data->type,
-                                                        data->size)
+                                                        data->size, __func__,
+                                                        "data->array")
                                 : gal_data_malloc_array(data->type,
-                                                        data->size) );
+                                                        data->size, __func__,
+                                                        "data->array") );
             }
           else data->array=NULL; /* The given size was zero! */
         }

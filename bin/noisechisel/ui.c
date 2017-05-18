@@ -481,7 +481,8 @@ ui_prepare_tiles(struct noisechiselparams *p)
   /* Check the tile parameters for the small tile sizes and make the tile
      structure. We will also need the dimensions of the tile with the
      maximum required memory. */
-  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
+  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
+                                    __func__, "p->maxtsize");
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
   gal_tile_full_two_layers(p->input, tl);
   gal_tile_full_permutation(tl);
@@ -500,7 +501,8 @@ ui_prepare_tiles(struct noisechiselparams *p)
   ltl->workoverch     = tl->workoverch;
   ltl->checktiles     = tl->checktiles;
   ltl->oneelempertile = tl->oneelempertile;
-  p->maxltsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim);
+  p->maxltsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
+                                     __func__, "p->maxltsize");
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, ltl);
   gal_tile_full_two_layers(p->input, ltl);
   gal_tile_full_permutation(ltl);

@@ -124,8 +124,8 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
   int32_t *O, *C=NULL;
   size_t d, increment=0, num_increment=1;
   float ss, *I, *II, *SK, *ST, *input=p->input->array;
-  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
+  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
 
 
   /* Parse each contiguous patch of memory covered by this object. */
@@ -262,12 +262,12 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
   size_t nngb=gal_dimension_num_neighbors(ndim);
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   float ss, *I, *II, *SK, *ST, *input=p->input->array;
-  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
+  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
+  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
 
   /* Allocate array to keep the neighbor labels. */
-  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb);
+  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
 
   /* Parse each contiguous patch of memory covered by this object. */
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
@@ -464,8 +464,10 @@ mkcatalog_single_object(void *in_prm)
   pp.p               = p;
   pp.clumpstartindex = 0;
   pp.rng             = p->rng ? gsl_rng_clone(p->rng) : NULL;
-  pp.shift           = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  pp.oi              = gal_data_malloc_array(GAL_TYPE_FLOAT64, OCOL_NUMCOLS);
+  pp.shift           = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                             "pp.shift");
+  pp.oi              = gal_data_malloc_array(GAL_TYPE_FLOAT64, OCOL_NUMCOLS,
+                                             __func__, "pp.oi");
 
   /* If we have upper-limit mode, then allocate the container to keep the
      values to calculate the standard deviation. */
@@ -495,7 +497,8 @@ mkcatalog_single_object(void *in_prm)
         {
           /* Allocate space for the properties of each clump. */
           pp.ci = gal_data_calloc_array(GAL_TYPE_FLOAT64,
-                                        pp.clumpsinobj * CCOL_NUMCOLS);
+                                        pp.clumpsinobj * CCOL_NUMCOLS,
+                                        __func__, "pp.ci");
 
           /* Get the starting row of this object's clumps in the final
              catalog. This index is also necessary for the unique random

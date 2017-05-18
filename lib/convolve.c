@@ -457,8 +457,10 @@ convolve_spatial_on_thread(void *inparam)
   gal_data_t *block=cprm->block;
 
   size_t i;
+  size_t ndim=block->ndim;
   struct per_thread_spatial_prm *pprm=&cprm->pprm[tprm->id];
-  size_t ndim=block->ndim, *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T,ndim);
+  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T,ndim, __func__,
+                                      "dsize");
 
 
   /* Set all dsize values to 1 (the values within `overlap->dsize' will be
@@ -468,10 +470,16 @@ convolve_spatial_on_thread(void *inparam)
 
   /* Initialize/Allocate necessary items for this thread. */
   pprm->cprm           = cprm;
-  pprm->pix            = gal_data_malloc_array(GAL_TYPE_SIZE_T, 2*ndim);
-  pprm->host_start     = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  pprm->kernel_start   = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  pprm->overlap_start  = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  pprm->pix            = gal_data_malloc_array(GAL_TYPE_SIZE_T, 2*ndim,
+                                               __func__, "pprm->pix");
+  pprm->host_start     = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+                                               __func__, "pprm->host_start");
+  pprm->kernel_start   = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+                                               __func__,
+                                               "pprm->kernel_start");
+  pprm->overlap_start  = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+                                               __func__,
+                                               "pprm->overlap_start");
   pprm->overlap        = gal_data_alloc(NULL, block->type, ndim, dsize,
                                         NULL, 0, -1, NULL, NULL, NULL);
   free(dsize);

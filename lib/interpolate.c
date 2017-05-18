@@ -92,8 +92,10 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   size_t ngb_counter, dist, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
-  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
-  size_t *ncoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "icoord");
+  size_t *ncoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "ncoord");
   size_t size = (correct_index ? tl->tottilesinch : input->size);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
   uint8_t *fullflag=&prm->thread_flags[tprm->id*input->size], *flag=fullflag;
@@ -375,7 +377,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                          input->wcs, 0, input->minmapsize, NULL,
                          input->unit, NULL);
   gal_list_void_add(&prm.ngb_vals,
-                    gal_data_malloc_array(input->type, ngbvnum));
+                    gal_data_malloc_array(input->type, ngbvnum, __func__,
+                                          "prm.ngb_vals"));
 
 
   /* If we are given a list of datasets, make the necessary
@@ -398,7 +401,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
         /* Allocate the space for the neighbor values of this input. */
         gal_list_void_add(&prm.ngb_vals,
-                          gal_data_malloc_array(tin->type, ngbvnum));
+                          gal_data_malloc_array(tin->type, ngbvnum, __func__,
+                                                "prm.ngb_vals"));
       }
   gal_list_data_reverse(&prm.out);
   gal_list_void_reverse(&prm.ngb_vals);
@@ -407,7 +411,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   /* Allocate space for all the flag values of all the threads here (memory
      in each thread is limited) and this is cleaner. */
   prm.thread_flags=gal_data_malloc_array(GAL_TYPE_UINT8,
-                                         numthreads*input->size);
+                                         numthreads*input->size, __func__,
+                                         "prm.thread_flags");
 
 
   /* Spin off the threads. */

@@ -17829,20 +17829,27 @@ assuming each element has a type defined by @code{type} (for the type
 codes, see @ref{Library data types}).
 @end deftypefun
 
-@deftypefun {void *} gal_data_malloc_array (uint8_t @code{type}, size_t @code{size})
+@deftypefun {void *} gal_data_malloc_array (uint8_t @code{type}, size_t @code{size}, const char @code{*funcname}, const char @code{*varname})
 Allocate an array of type @code{type} with @code{size} elements in RAM (for
 the type codes, see @ref{Library data types}). This is effectively just a
 wrapper around C's @code{malloc} function but takes Gnuastro's integer type
 codes and will also abort with an error if there the allocation was not
 successful.
+
+@cindex C99
+When space cannot be allocated, this function will abort the program with a
+message containing the reason for the failure. @code{funcname} (name of the
+function calling this function) and @code{varname} (name of variable that
+needs this space) will be used in this error message if they are not
+@code{NULL}. In most modern compilers, you can use the generic
+@code{__func__} variable for @code{funcname}. In this way, you don't have
+to manually copy and paste the function name or worry about it changing
+later (@code{__func__} was standardized in C99).
 @end deftypefun
 
-@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size})
-Allocate and clear (initialize to zero) an array of type @code{type} with
-@code{size} elements in RAM (for the type codes, see @ref{Library data
-types}). This is effectively just a wrapper around C's @code{calloc}
-function but takes Gnuastro's integer type codes and will also abort with
-an error if there the allocation was not successful.
+@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size)}, const char @code{*funcname}, const char @code{*varname})
+Similar to @code{gal_data_malloc_array}, but the space is cleared (set to
+0) after allocation.
 @end deftypefun
 
 @deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})

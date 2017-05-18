@@ -52,9 +52,11 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
   float *I, *II, *start=input->array;
   size_t increment=0, num_increment=1;
   size_t i, d, *min, *max, width=2*ndim;
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
+  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                      "coord");
   size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                       width*pp->clumpsinobj);
+                                       width*pp->clumpsinobj, __func__,
+                                       "minmax");
 
   /* Initialize the minimum and maximum position for each tile/clump. So,
      we'll initialize the minimum coordinates to the maximum possible
@@ -160,8 +162,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   float *I, *II, *SK, *st_i, *st_sky;
   size_t d, tcounter=0, counter=0, se_inc[2];
   int32_t *O, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
-  size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim);
   size_t maxcount = p->upnum * MKCATALOG_UPPERLIMIT_STOP_MULTIP;
+  size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "rcoord");
 
   /* Initializations. */
   tarray=tile->array;
