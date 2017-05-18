@@ -79,7 +79,7 @@ columns_alloc_radec(struct mkcatalogparams *p)
           p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
                                             __func__, "p->rd_vc[0]");
           p->rd_vc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_vc[0]");
+                                            __func__, "p->rd_vc[1]");
         }
     }
 }
@@ -119,7 +119,7 @@ columns_alloc_georadec(struct mkcatalogparams *p)
           p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
                                             __func__, "p->rd_gc[0]");
           p->rd_gc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_vc[1]");
+                                            __func__, "p->rd_gc[1]");
         }
     }
 }
