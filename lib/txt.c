@@ -191,12 +191,12 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
           ++line;
         }
 
+
       /* Read the column number as an integer. If it can't be read as an
          integer, or is zero or negative then just return without adding
          anything to this line. */
       index=strtol(number, &tailptr, 0);
       if(*tailptr!='\0' || index<=0) return;
-
 
 
       /* If there was no name (the line is just `# Column N:'), then ignore
@@ -206,10 +206,12 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
       name=txt_trim_space(name);
       if(name==NULL) return;
 
+
       /* If this is a repeated index, ignore it. */
       for(tmp=*datall; tmp!=NULL; tmp=tmp->next)
         if(tmp->status==index)
           return;
+
 
       /* If there were brackets, then break it up. */
       if(inbrackets)
@@ -226,6 +228,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
               ++inbrackets;
             }
         }
+
 
       /* If `typestr' was given, then check if this is a standard type. If
          `typestr' wasn't specified, then the default double type code will
@@ -250,6 +253,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
             }
         }
 
+
       /* Add this column's information into the columns linked list. We
          will define the data structur's array to have zero dimensions (no
          array) by default. If there is a blank value its value will be put
@@ -259,11 +263,13 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
       gal_list_data_add_alloc(datall, NULL, type, 0, NULL, NULL, 0, -1, name,
                               txt_trim_space(unit), txt_trim_space(comment) );
 
+
       /* Put the number of this column into the status variable of the data
          structure. If the type is string, then also copy the width into
          the structure. */
       (*datall)->status=index;
       (*datall)->disp_width = type==GAL_TYPE_STRING ? strw : 0;
+
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */

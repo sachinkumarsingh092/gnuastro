@@ -408,8 +408,6 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
 void
 gal_tableintern_read_blank(gal_data_t *col, char *blank)
 {
-  void *colarr=col->array;
-
   /* If there is nothing to use as blank, then don't continue, note that
      the column data structure was initialized to mean that there is no
      blank value. */
@@ -424,13 +422,9 @@ gal_tableintern_read_blank(gal_data_t *col, char *blank)
      `gal_data_string_to_type' will return 0. In that case, we need to
      initialize the necessary paramters to read this data structure
      correctly. */
-  if( !gal_type_from_string(&colarr, blank, col->type) )
+  if( !gal_type_from_string((void **)(&col->array), blank, col->type) )
     {
-      errno=0;
-      col->dsize=malloc(sizeof *col->dsize);
-      if(col->dsize==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `col->dsize'",
-              __func__, sizeof *col->dsize);
+      col->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 1);
       col->dsize[0]=col->ndim=col->size=1;
     }
 }
