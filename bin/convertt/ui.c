@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
@@ -125,8 +126,8 @@ ui_initialize_options(struct converttparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Program specific non-zero values. */
-  p->quality             = UINT8_MAX;
   p->maxbyte             = UINT8_MAX;
+  p->quality             = GAL_BLANK_UINT8;
 
   /* Modify the common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -662,7 +663,7 @@ ui_set_output(struct converttparams *p)
             "again", PACKAGE_STRING, PACKAGE_STRING);
 #else
       /* Small sanity checks. */
-      if(p->quality == UINT8_MAX)
+      if(p->quality == GAL_BLANK_UINT8)
         error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary for "
               "jpeg outputs, but it has not been given");
       if(p->quality > 100)

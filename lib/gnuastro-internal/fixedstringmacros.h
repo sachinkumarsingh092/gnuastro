@@ -47,14 +47,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* This is fixed for all the packages. */
 #define GAL_STRINGS_MORE_HELP_INFO                                      \
   "\nFor more information, please run any of the "                      \
-  "following commands. They will respectively show you the `Invoking "  \
-  PROGRAM_NAME"' subsection, the complete `"PROGRAM_NAME"' section, or "\
-  "the full "PACKAGE_NAME" manual. In particular the first contains a " \
-  "very comprehensive explanation of "PROGRAM_NAME"'s invocation and "  \
-  "all the options.\n\n"                                                \
-  "     $ info "PROGRAM_EXEC"\n\n"                                      \
-  "     $ info "PROGRAM_NAME"\n\n"                                      \
-  "     $ info "PACKAGE_TARNAME"\n\n"                                   \
+  "following commands. In particular the second contains a very "       \
+  "comprehensive explanation of "PROGRAM_NAME"'s invocation: expected " \
+  "input(s), output(s), and a full description of all the options.\n\n"    \
+  "     All options and their values:         $ "PROGRAM_EXEC" -P\n"    \
+  "     Inputs/Outputs and options:           $ info "PROGRAM_EXEC"\n"  \
+  "     Full section in manual/book:          $ info "PROGRAM_NAME"\n"  \
+  "     Full Gnuastro manual/book:            $ info "PACKAGE_TARNAME"\n\n" \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
   "For more information, please run:\n\n"                               \
