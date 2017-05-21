@@ -37,7 +37,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Type for options that don't accept an argument/value. This macro is
    defined to help make the definition and processing of these options
    easier and less buggy. Please use this macro for such options. */
-#define GAL_OPTIONS_NO_ARG_TYPE GAL_TYPE_UINT8
+#define GAL_OPTIONS_NO_ARG_TYPE   GAL_TYPE_UINT8
+
+/* When printing the option names, values and comments, we want things to
+   be clean and readable (all the comments starting on one line for most,
+   ideally all, lines). But in some cases, option values can become too
+   long (for example the `--polygon' option in Crop, which takes many
+   coordinates). So simply using the maximum option length is going to make
+   the whole thing unreadable and we need to have a maximum so this rule
+   only applies to them. */
+#define GAL_OPTIONS_MAX_VALUE_LEN 10
 
 
 

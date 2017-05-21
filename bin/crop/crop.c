@@ -209,7 +209,7 @@ imgmodecrop(void *inparam)
       /* Set all the output parameters: */
       crp->out_ind=crp->indexs[i];
       crp->outfits=NULL;
-      crp->numimg=0;
+      crp->numimg=1;   /* In Image mode there is only one input image. */
       cropname(crp);
 
       /* Crop the image. */
@@ -298,7 +298,10 @@ wcsmodecrop(void *inparam)
             /* If a name isn't set yet, set it. */
             if(crp->name==NULL) cropname(crp);
 
-            /* Do the crop. */
+            /* Increment the number of images used (necessary for the
+               header keywords that are written in `onecrop'). Then do the
+               crop. */
+            ++crp->numimg;
             onecrop(crp);
 
             /* Close the file. */
@@ -308,16 +311,20 @@ wcsmodecrop(void *inparam)
           }
       while ( ++(crp->in_ind) < p->numin );
 
+
       /* Correct in_ind. The loop above went until `in_ind' is one more
          than the index for the last input image (that is how it exited the
          loop). But `crp->in_ind' is needed later, so correct it here. */
       --crp->in_ind;
 
+
       /* Check the final output: */
       if(crp->numimg)
         {
+          /* See if the center is filled. */
           crp->centerfilled=iscenterfilled(crp);
 
+          /* Write all the dependency versions and close the file. */
           gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )

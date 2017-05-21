@@ -1019,7 +1019,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
                   filename, maxlength);
 
           /* Convert the last useful character and save the file name.*/
-          gal_fits_key_list_add_end(list, TSTRING, keyname, 1,
+          gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
                                     value, 1, NULL, 0, NULL);
           i+=j+1;
         }
@@ -1076,7 +1076,7 @@ gal_fits_key_write(fitsfile *fptr, gal_fits_list_key_t **keylist)
   tmp=*keylist;
   while(tmp!=NULL)
     {
-      /* Write the information: */
+      /* Write the basic key value and comments. */
       if(tmp->value)
         {
           if( fits_update_key(fptr, gal_fits_type_to_datatype(tmp->type),
@@ -1089,8 +1089,10 @@ gal_fits_key_write(fitsfile *fptr, gal_fits_list_key_t **keylist)
           if(fits_update_key_null(fptr, tmp->keyname, tmp->comment, &status))
             gal_fits_io_error(status, NULL);
         }
-      if(tmp->unit && fits_write_key_unit(fptr, tmp->keyname,
-                                          tmp->unit, &status) )
+
+      /* Write the units if it was given. */
+      if( tmp->unit
+          && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
         gal_fits_io_error(status, NULL);
 
       /* Free the value pointer if desired: */
@@ -1105,6 +1107,7 @@ gal_fits_key_write(fitsfile *fptr, gal_fits_list_key_t **keylist)
       tmp=ttmp;
     }
 
+  /* Set it to NULL so it isn't mistakenly used later. */
   *keylist=NULL;
 }
 

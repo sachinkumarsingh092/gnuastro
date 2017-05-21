@@ -1600,8 +1600,10 @@ options_set_lengths(struct argp_option *poptions,
       options_correct_max_lengths(&coptions[i], &max_nlen, &max_vlen, cp);
 
   /* Save the final values in the output pointers. */
-  *namelen=max_nlen;
-  *valuelen=max_vlen;
+  *namelen  = max_nlen;
+  *valuelen = ( max_vlen < GAL_OPTIONS_MAX_VALUE_LEN
+                ? max_vlen
+                : GAL_OPTIONS_MAX_VALUE_LEN );
 }
 
 

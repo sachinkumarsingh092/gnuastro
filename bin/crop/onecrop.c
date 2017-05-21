@@ -729,6 +729,7 @@ onecrop(struct onecropparams *crp)
                           &anynul, &status))
         gal_fits_io_error(status, NULL);
 
+
       /* If we have a floating point or double image, pixels with zero
          value should actually be a NaN. Unless the user specificly
          asks for it, make the conversion.*/
@@ -761,7 +762,7 @@ onecrop(struct onecropparams *crp)
       /* A section has been added to the cropped image from this input
          image, so increment crp->imgcount and save the information of
          this image. */
-      sprintf(basename, "ICF%zu", ++crp->numimg);
+      sprintf(basename, "ICF%zu", crp->numimg);
       gal_fits_key_write_filename(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
@@ -771,6 +772,7 @@ onecrop(struct onecropparams *crp)
                                 "this output.", 0, NULL);
       gal_fits_key_write(ofp, &headers);
 
+
       /* Free the allocated array. */
       free(array);
     }
@@ -778,7 +780,7 @@ onecrop(struct onecropparams *crp)
     if(p->polygon && p->outpolygon==0 && p->mode==IMGCROP_MODE_WCS)
       free(crp->ipolygon);
 
-
+  /* The crop is complete. */
   return;
 }
 
