@@ -186,12 +186,15 @@ gal_data_mmap(gal_data_t *data, int clear)
   char *filename;
   size_t bsize=data->size*gal_type_sizeof(data->type);
 
+
   /* Check if the .gnuastro folder exists, write the file there. If it
      doesn't exist, then make the .gnuastro directory.*/
   gal_checkset_mkdir(".gnuastro");
 
+
   /* Set the filename */
   gal_checkset_allocate_copy("./.gnuastro/mmap_XXXXXX", &filename);
+
 
   /* Create a zero-sized file and keep its descriptor.  */
   errno=0;
@@ -222,13 +225,16 @@ gal_data_mmap(gal_data_t *data, int clear)
   data->array=mmap(NULL, bsize, PROT_READ | PROT_WRITE, MAP_SHARED,
                    filedes, 0);
 
+
   /* Close the file. */
   if( close(filedes) == -1 )
     error(EXIT_FAILURE, errno, "%s: %s couldn't be closed",
           __func__, filename);
 
+
   /* Keep the filename. */
   data->mmapname=filename;
+
 
   /* If it was supposed to be cleared, then clear the memory. */
   if(clear) memset(data->array, 0, bsize);
@@ -303,9 +309,9 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         {
           /* Do a small sanity check. */
           if(dsize[i]<=0)
-            error(EXIT_FAILURE, 0, "%s: the size of a dimension cannot be zero "
-                  "or negative. dsize[%zu], but has a value of %ld", __func__,
-                  i, dsize[i]);
+            error(EXIT_FAILURE, 0, "%s: the size of a dimension cannot be "
+                  "zero or negative. dsize[%zu], but has a value of %zu",
+                  __func__, i, dsize[i]);
 
           /* Write this dimension's size, also correct the total number of
              elements. */

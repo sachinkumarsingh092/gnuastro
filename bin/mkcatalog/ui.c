@@ -140,7 +140,6 @@ ui_initialize_options(struct mkcatalogparams *p,
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
-        case GAL_OPTIONS_KEY_MINMAPSIZE:
           cp->coptions[i].flags=OPTION_HIDDEN;
           cp->coptions[i].mandatory=GAL_OPTIONS_NOT_MANDATORY;
           break;

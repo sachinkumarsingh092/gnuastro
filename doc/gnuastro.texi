@@ -21261,9 +21261,9 @@ array[3]: Standard deviation.
 Binary datasets only have two (usable) values: 0 (also known as background)
 or 1 (also known as foreground). They are created after some binary
 classificataion is applied to the dataset. The most common is thresholding:
-in an image, pixels with a value above the threshold is commonly assigned a
-value of 1 and those that have a value less than the threshold are assigned
-a value of 0.
+for example in an image, pixels with a value above the threshold are given
+a value of 1 and those with a value less than the threshold are assigned a
+value of 0.
 
 @cindex Connectivity
 @cindex Immediate neighbors
@@ -21392,13 +21392,14 @@ be labeled). Blank pixels in the input will also be blank in the output.
 @deftypefun {gal_data_t *} gal_binary_connected_adjacency_matrix (gal_data_t @code{*adjacency}, size_t @code{*numconnected})
 @cindex Adjacency matrix
 @cindex Matrix, adjacency
-Find the number of connected labels and new labels based on an an adjacency
-matrix (which must be binary array of type @code{GAL_TYPE_UINT8}). The
-returned dataset is a list of new labels for each old label. In other
-words, this function will find the objects that are connected (possibly
-through a third object) and in the output array, the respective elements
-for all input labels is going to have the same value. The total number of
-connected labels is put into the space that @code{numconnected} points to.
+Find the number of connected labels and new labels based on an adjacency
+matrix, which must be a square binary array (type
+@code{GAL_TYPE_UINT8}). The returned dataset is a list of new labels for
+each old label. In other words, this function will find the objects that
+are connected (possibly through a third object) and in the output array,
+the respective elements for all input labels is going to have the same
+value. The total number of connected labels is put into the space that
+@code{numconnected} points to.
 
 An adjacency matrix defines connection between two labels. For example,
 let's assume we have 5 labels and we know that labels 1 and 5 are connected

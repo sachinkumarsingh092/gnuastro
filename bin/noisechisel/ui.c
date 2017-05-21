@@ -142,7 +142,7 @@ ui_initialize_options(struct noisechiselparams *p,
 
         case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-          cp->coptions[i].doc="Formats: `txt', `fits-ascii', `fits-binary'.";
+          cp->coptions[i].doc="`txt', `fits-ascii', `fits-binary'.";
           break;
         }
     }
