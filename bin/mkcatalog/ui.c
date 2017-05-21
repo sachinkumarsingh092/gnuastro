@@ -686,23 +686,43 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
    given). In both cases, the operations are the same, just the base name
    differs. So to keep things clean, we have defined this function. */
 static void
-ui_preparations_both_names(struct mkcatalogparams *p, char *basename)
+ui_preparations_both_names(struct mkcatalogparams *p)
 {
-  char *end, suffix[50];
+  char *basename;
+  char *end, *tend, suffix[50];
+  uint8_t keepinputdir=p->cp.keepinputdir;  /* See below. */
+
+  /* Set the type ending. */
+  if(p->cp.output)
+    {
+      /* When the user has specified a name, any possible directories in
+         that name must be respected. So we will keep the actual
+         `keepinputdir' value in a temporary variable, set it to 1 only for
+         this operation, then set it back to what it was. */
+      p->cp.keepinputdir=1;
+
+      /* Set the basic strings. */
+      basename = p->cp.output;
+      tend = gal_fits_name_is_fits(p->cp.output)     ? "fits" : "txt";
+    }
+  else
+    {
+      basename = p->inputname;
+      tend = p->cp.tableformat==GAL_TABLE_FORMAT_TXT ? "txt"  : "fits";
+    }
 
   /* Set the objects name */
   end="_o";
-  sprintf(suffix, "%s.%s", end,
-          p->cp.tableformat==GAL_TABLE_FORMAT_TXT ? "txt" : "fits");
-  p->objectsout=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                              suffix);
+  sprintf(suffix, "%s.%s", end, tend);
+  p->objectsout=gal_checkset_automatic_output(&p->cp, basename, suffix);
 
   /* Set the clumps name */
   end="_c";
-  sprintf(suffix, "%s.%s", end,
-          p->cp.tableformat==GAL_TABLE_FORMAT_TXT ? "txt" : "fits");
-  p->clumpsout=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                             suffix);
+  sprintf(suffix, "%s.%s", end, tend);
+  p->clumpsout=gal_checkset_automatic_output(&p->cp, basename, suffix);
+
+  /* Revert `keepinputdir' to what it was. */
+  if(p->cp.output) p->cp.keepinputdir=keepinputdir;
 }
 
 
@@ -722,18 +742,14 @@ ui_preparations_outnames(struct mkcatalogparams *p)
          `tableformat' option. */
       gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
 
-      /* If a clumps image has been read (and there are any clumps in the
-         image), then we have two outputs. */
-      if(p->clumps)
-        ui_preparations_both_names(p, p->cp.output);
-      else
-        p->objectsout=p->cp.output;
+      /* If a clumps image has been read, then we have two outputs. */
+      if(p->clumps) ui_preparations_both_names(p);
+      else          p->objectsout=p->cp.output;
     }
   else
     {
       /* Both clumps and object catalogs are necessary. */
-      if(p->clumps)
-        ui_preparations_both_names(p, p->inputname);
+      if(p->clumps) ui_preparations_both_names(p);
 
       /* We only need one objects catalog. */
       else

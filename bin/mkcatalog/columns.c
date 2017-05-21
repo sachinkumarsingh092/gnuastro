@@ -989,6 +989,7 @@ columns_sn(struct mkcatalogparams *p, double *row, int o0c1)
   std = MKC_RATIO( row[ o0c1 ? CCOL_SUMSTD : OCOL_SUMSTD ], Ni );
   var = (p->skysubtracted ? 2.0f : 1.0f) * std * std;
 
+
   /* Calculate the S/N. Note that when grown clumps are requested from
      NoiseChisel, some "clumps" will completely cover their objects and
      there will be no rivers. So if this is a clump, and the river area is
@@ -998,11 +999,13 @@ columns_sn(struct mkcatalogparams *p, double *row, int o0c1)
       /* If the Sky is already subtracted, the varience should be counted
          two times. */
       O   = row[ CCOL_RIV_SUM ] / row[ CCOL_RIV_NUM ];  /* Outside.  */
-      sn  = ( sqrt(Ni/p->cpscorr) * (I-O)
-              / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) );
+      sn  = ( (I-O)>0
+              ? ( sqrt(Ni/p->cpscorr) * (I-O)
+                  / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) )
+              : NAN );
     }
   else
-    sn  = sqrt(Ni/p->cpscorr) * I / sqrt( (I>0?I:-1*I) + var );
+    sn  = I>0 ? sqrt(Ni/p->cpscorr) * I / sqrt( (I>0?I:-1*I) + var ) : NAN;
 
   /* Return the derived value. */
   return sn;
@@ -1381,8 +1384,13 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_BRIGHTNESS:
-            /* Calculate the river flux over the clump area. */
-            tmp = ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ];
+            /* Calculate the river flux over the clump area. But only when
+               rivers are present. When grown clumps are requested, the
+               clumps can fully cover a detection (that has one or no
+               clumps). */
+            tmp = ( ci[ CCOL_RIV_NUM ]
+                    ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ]
+                    : 0 );
 
             /* Subtract it from the clump's brightness. */
             ((float *)colarr)[cind] = ci[ CCOL_SUM ] - tmp;
@@ -1393,7 +1401,9 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_MAGNITUDE: /* Similar: brightness for clumps */
-            tmp = ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ];
+            tmp = ( ci[ CCOL_RIV_NUM ]
+                    ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ]
+                    : 0 );
             ((float *)colarr)[cind] = MKC_MAG(ci[ CCOL_SUM ]-tmp);
             break;
 
@@ -1410,8 +1420,9 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_RIVERAVE:
-            ((float *)colarr)[cind] = ( ci[ CCOL_RIV_SUM]
-                                        / ci[ CCOL_RIV_NUM] );
+            ((float *)colarr)[cind] = ( ci[ CCOL_RIV_NUM]
+                                        ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM]
+                                        : NAN );
             break;
 
           case UI_KEY_RIVERNUM:
