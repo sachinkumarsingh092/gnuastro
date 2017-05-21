@@ -475,17 +475,6 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   while(++s<sf);
 
 
-  /* When a user just wants clumps and doesn't want multiple clumps to be
-     considered part of one object, they are going to set an impossibly
-     high `--gthresh', so no growth actually happens. In that case, we
-     don't need the allocated array of indexs. So just free it. */
-  if(ndiffuse==0)
-    {
-      free(cltprm->diffuseindexs->array);
-      cltprm->diffuseindexs->array=NULL;
-    }
-
-
   /* Correct the sizes of the `diffuseindexs' data structure. */
   cltprm->diffuseindexs->size = cltprm->diffuseindexs->dsize[0] = ndiffuse;
 }

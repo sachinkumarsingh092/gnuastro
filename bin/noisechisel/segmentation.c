@@ -100,13 +100,21 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
   int32_t *ngblabs=gal_data_malloc_array(GAL_TYPE_UINT32, nngb, __func__,
                                          "ngblabs");
 
+  /* If there aren't any diffuse pixels (when a large `--gthresh' was
+     given), then it is just necessary to set two constants. */
+  if(cltprm->diffuseindexs->size==0)
+    {
+      cltprm->clumptoobj=NULL;
+      cltprm->numobjects=cltprm->numtrueclumps;
+      return;
+    }
 
-  /* Go over all the still-unlabeled pixels and see which labels they
-     touch. In the process, get the average value of the river-pixel values
-     and put them in the respective adjacency matrix. Note that at this
-     point, the rivers are also part of the "diffuse" regions. So we don't
-     need to go over all the indexs of this object, only its diffuse
-     indexs. */
+  /* Go over all the still-unlabeled pixels (if they exist) and see which
+     labels they touch. In the process, get the average value of the
+     river-pixel values and put them in the respective adjacency
+     matrix. Note that at this point, the rivers are also part of the
+     "diffuse" regions. So we don't need to go over all the indexs of this
+     object, only its diffuse indexs. */
   sf=(s=cltprm->diffuseindexs->array)+cltprm->diffuseindexs->size;
   do
     /* We only want to work on pixels that have already been identified as
@@ -454,8 +462,8 @@ segmentation_on_threads(void *in_prm)
             }
 
 
-          /* Identify the objects within the grown clumps and correct the
-             grown clump labels into new object labels. */
+          /* Identify the objects in this detection using the grown clumps
+             and correct the grown clump labels into new object labels. */
           segmentation_relab_to_objects(&cltprm);
           if(clprm->step==4)
             {
@@ -484,10 +492,11 @@ segmentation_on_threads(void *in_prm)
 
 
           /* Correct the clump labels. Note that this is only necessary
-             when there is more than object over the detection. When there
-             is only one object over the full detection or if there is only
-             one clump, the existing clump labels are fine.  */
-          if(cltprm.numobjects>1)
+             when there is more than object over the detection or when
+             there were multiple clumps, but no ID conversion was necessary
+             (very high `--gthresh' values). In the latter case,
+             `clumptoobj' will be NULL.*/
+          if(cltprm.numobjects>1 && cltprm.clumptoobj)
             segmentation_relab_clumps_in_objects(&cltprm);
           gal_data_free(cltprm.clumptoobj);
           if(clprm->step==6) {continue;}
@@ -812,6 +821,7 @@ segmentation(struct noisechiselparams *p)
                         1);
     }
 
+
   /* If a check segmentation image was requested, then put in the
      inputs. */
   if(p->segmentationname)
@@ -823,6 +833,7 @@ segmentation(struct noisechiselparams *p)
                          PROGRAM_STRING);
       p->olabel->name=NULL;
     }
+
 
   /* Allocate the clump labels image. */
   p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
@@ -858,6 +869,7 @@ segmentation(struct noisechiselparams *p)
       gal_timing_report(&t1, msg, 1);
       free(msg);
     }
+
 
   /* If the user wanted to check the segmentation and hasn't called
      `continueaftercheck', then stop NoiseChisel. */
