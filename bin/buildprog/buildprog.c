@@ -71,7 +71,7 @@ buildprog(struct buildprogparams *p)
   /* Note that the first node of `sourceargs' is the acutal source and the
      rest are arguments to be run later. */
   int retval;
-  char *command;
+  char *command, *optimize, *warning;
   char *include   = buildprog_as_one_string("-I", p->include);
   char *linkdir   = buildprog_as_one_string("-L", p->linkdir);
   char *linklib   = buildprog_as_one_string("-l", p->linklib);
@@ -84,11 +84,23 @@ buildprog(struct buildprogparams *p)
       printf("---------------------------------\n");
     }
 
+  /* Compiler options with values: */
+  if(p->warning)   asprintf(&warning,  "-W%s", p->warning);
+  if(p->optimize)  asprintf(&optimize, "-O%s", p->optimize);
+
   /* Put the command to run into a string. */
-  asprintf(&command, "libtool %s --mode=link gcc %s %s %s %s "
-           "%s/libgnuastro.la -o %s", p->cp.quiet?"--quiet":"",
-           include?include:"", linkdir?linkdir:"", p->sourceargs->v,
-           linklib?linklib:"", LIBDIR, p->cp.output);
+  asprintf(&command, "libtool %s --mode=link gcc %s %s %s %s %s %s %s "
+           "%s/libgnuastro.la -o %s",
+           p->cp.quiet ? "--quiet" : "",
+           warning     ? warning   : "",
+           p->debug    ? "-g"      : "",
+           optimize    ? optimize  : "",
+           include     ? include   : "",
+           linkdir     ? linkdir   : "",
+           p->sourceargs->v,
+           linklib     ?linklib    : "",
+           LIBDIR,
+           p->cp.output);
 
   /* Compile (and link): */
   retval=system(command);
@@ -126,5 +138,7 @@ buildprog(struct buildprogparams *p)
   free(linkdir);
   free(linklib);
   free(command);
+  if(warning) free(warning);
+  if(optimize) free(optimize);
   return retval;
 }

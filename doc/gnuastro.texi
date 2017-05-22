@@ -16689,6 +16689,45 @@ directories. Multiple calls to this option are possible and order
 matters. This library will be linked before Gnuastro's library or its
 dependencies. See @ref{Linking} for a thorough introduction.
 
+@item -O INT
+@itemx --optimize=INT
+@cindex Optimization
+@cindex GNU Compiler Collection
+Compiler optimization level: 0 (for no optimization, good debugging), 1, 2,
+3 (for the highest level of optimizations). From the GNU Compiler
+Collection (GCC) manual: ``Without any optimization option, the compiler's
+goal is to reduce the cost of compilation and to make debugging produce the
+expected results.  Statements are independent: if you stop the program with
+a breakpoint between statements, you can then assign a new value to any
+variable or change the program counter to any other statement in the
+function and get exactly the results you expect from the source
+code. Turning on optimization flags makes the compiler attempt to improve
+the performance and/or code size at the expense of compilation time and
+possibly the ability to debug the program.'' See there for the full list of
+acceptable values to this option (also standard among other compilers).
+
+@item -g
+@itemx --debug
+@cindex Debug
+Emit extra information in the compiled binary for use by a debugger. When
+calling this option, it is best to explicitly disable optimization with
+@option{-O0}. To combine both options you can run @option{-gO0} (see
+@ref{Options} for how short options can be merged into one).
+
+@item -W STR
+@itemx --warning=STR
+Print compiler warnings on command-line during compilation. ``Warnings are
+diagnostic messages that report constructions that are not inherently
+erroneous but that are risky or suggest there may have been an error.''
+(from the GCC manual). It is always recommended to compile your programs
+with warnings enabled.
+
+All compiler warning options that start with @option{W} are usable by this
+option in BuildProgram also, see your compiler's manual for the full
+list. Some of the most common values to this option are: @option{pedantic}
+(Warnings related to standard C), @option{all} (all issues the compiler
+confronts).
+
 @item -b
 @itemx --onlybuild
 Only build the program, don't run it. By default, the built program is

@@ -48,6 +48,10 @@ struct buildprogparams
   gal_list_str_t     *include;    /* Libraries to link against.         */
   gal_list_str_t     *linkdir;    /* Libraries to link against.         */
   gal_list_str_t     *linklib;    /* Libraries to link against.         */
+
+  char              *optimize;    /* Optimization level.                */
+  char                 *debug;    /* Keep debugging information.        */
+  char               *warning;    /* Compiler warnings.                 */
   uint8_t           onlybuild;    /* Don't run the compiled program.    */
 
   /* Output: */

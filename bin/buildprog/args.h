@@ -75,6 +75,45 @@ struct argp_option program_options[] =
 
 
     {
+      "debug",
+      UI_KEY_DEBUG,
+      0,
+      0,
+      "Debugging information in compiled binary.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->debug,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "optimize",
+      UI_KEY_OPTIMIZE,
+      "INT",
+      0,
+      "Optimization level: 0, 1, 2, 3.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->optimize,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "warning",
+      UI_KEY_WARNING,
+      "STR",
+      0,
+      "Compilation warnings on command-line.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->warning,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "onlybuild",
       UI_KEY_ONLYBUILD,
       0,
