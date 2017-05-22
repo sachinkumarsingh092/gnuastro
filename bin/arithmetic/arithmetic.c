@@ -151,9 +151,9 @@ reversepolish(struct imgarithparams *p)
          list. Otherwise, pull out two members and do the specified
          operation on them. */
       if(gal_fits_name_is_fits(token->v))
-        add_operand(p, token->v, NULL);
+        operands_add(p, token->v, NULL);
       else if( (d1=gal_data_copy_string_to_number(token->v)) )
-        add_operand(p, NULL, d1);
+        operands_add(p, NULL, d1);
       else
         {
 
@@ -287,18 +287,18 @@ reversepolish(struct imgarithparams *p)
           switch(nop)
             {
             case 1:
-              d1=pop_operand(p, token->v);
+              d1=operands_pop(p, token->v);
               break;
 
             case 2:
-              d2=pop_operand(p, token->v);
-              d1=pop_operand(p, token->v);
+              d2=operands_pop(p, token->v);
+              d1=operands_pop(p, token->v);
               break;
 
             case 3:
-              d3=pop_operand(p, token->v);
-              d2=pop_operand(p, token->v);
-              d1=pop_operand(p, token->v);
+              d3=operands_pop(p, token->v);
+              d2=operands_pop(p, token->v);
+              d1=operands_pop(p, token->v);
               break;
 
             case -1:
@@ -307,10 +307,10 @@ reversepolish(struct imgarithparams *p)
                  number, we will use that to construct a linked list of any
                  number of operands within the single `d1' pointer. */
               d1=NULL;
-              numop=set_number_of_operands(p, pop_operand(p, token->v),
+              numop=set_number_of_operands(p, operands_pop(p, token->v),
                                            token->v);
               for(i=0;i<numop;++i)
-                gal_list_data_add(&d1, pop_operand(p, token->v));
+                gal_list_data_add(&d1, operands_pop(p, token->v));
               break;
 
             default:
@@ -323,7 +323,7 @@ reversepolish(struct imgarithparams *p)
              arguments it uses depend on the operator. So when the operator
              doesn't need three operands, the extra arguments will be
              ignored. */
-          add_operand(p, NULL, gal_arithmetic(op, flags, d1, d2, d3));
+          operands_add(p, NULL, gal_arithmetic(op, flags, d1, d2, d3));
         }
     }
 

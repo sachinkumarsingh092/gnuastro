@@ -42,7 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 size_t
-num_operands(struct imgarithparams *p)
+operands_num(struct imgarithparams *p)
 {
   size_t counter=0;
   struct operand *tmp=NULL;
@@ -56,7 +56,7 @@ num_operands(struct imgarithparams *p)
 
 
 void
-add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
+operands_add(struct imgarithparams *p, char *filename, gal_data_t *data)
 {
   struct operand *newnode;
 
@@ -96,7 +96,7 @@ add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
 
 
 gal_data_t *
-pop_operand(struct imgarithparams *p, char *operator)
+operands_pop(struct imgarithparams *p, char *operator)
 {
   size_t i;
   gal_data_t *data;
@@ -155,14 +155,14 @@ pop_operand(struct imgarithparams *p, char *operator)
             p->refdata.dsize[i]=data->dsize[i];
         }
 
+      /* Report the read image if desired: */
+      if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
+
       /* Free the HDU string: */
       free(hdu);
 
       /* Add to the number of popped FITS images: */
       ++p->popcounter;
-
-      /* Report the read image if desired: */
-      if(!p->cp.quiet) printf(" - %s is read.\n", filename);
     }
   else
     data=operands->data;

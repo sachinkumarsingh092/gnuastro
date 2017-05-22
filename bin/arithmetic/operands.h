@@ -24,13 +24,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define OPERANDS_H
 
 size_t
-num_operands(struct imgarithparams *p);
+operands_num(struct imgarithparams *p);
 
 void
-add_operand(struct imgarithparams *p, char *filename, gal_data_t *data);
+operands_add(struct imgarithparams *p, char *filename, gal_data_t *data);
 
 gal_data_t *
-pop_operand(struct imgarithparams *p, char *operator);
+operands_pop(struct imgarithparams *p, char *operator);
 
 
 #endif

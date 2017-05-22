@@ -10811,7 +10811,9 @@ applications, see @ref{PSF}.
 @node Invoking astwarp,  , Resampling, Warp
 @subsection Invoking Warp
 
-The general template for invoking Warp is:
+Warp an input dataset into a new grid. Any homographic warp (for example
+scaling, rotation, translation, projection) is acceptable, see @ref{Warping
+basics} for the definitions. The general template for invoking Warp is:
 
 @example
 $ astwarp [OPTIONS...] InputImage
