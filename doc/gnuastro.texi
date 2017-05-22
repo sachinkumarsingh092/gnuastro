@@ -16614,6 +16614,9 @@ One line examples:
 ## Compile, link and run `myprogram.c':
 $ astbuildprog myprogram.c
 
+## Similar to previous, but with optimization and compiler warnings:
+$ astbuildprog -Wall -O2 myprogram.c
+
 ## Compile and link `myprogram.c', then run it with `image.fits'
 ## as its argument:
 $ astbuildprog myprogram.c image.fits
@@ -16703,8 +16706,8 @@ variable or change the program counter to any other statement in the
 function and get exactly the results you expect from the source
 code. Turning on optimization flags makes the compiler attempt to improve
 the performance and/or code size at the expense of compilation time and
-possibly the ability to debug the program.'' See there for the full list of
-acceptable values to this option (also standard among other compilers).
+possibly the ability to debug the program.'' See your compiler's manual for
+the full list of acceptable values to this option.
 
 @item -g
 @itemx --debug

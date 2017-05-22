@@ -71,7 +71,7 @@ buildprog(struct buildprogparams *p)
   /* Note that the first node of `sourceargs' is the acutal source and the
      rest are arguments to be run later. */
   int retval;
-  char *command, *optimize, *warning;
+  char *command, *optimize=NULL, *warning=NULL;
   char *include   = buildprog_as_one_string("-I", p->include);
   char *linkdir   = buildprog_as_one_string("-L", p->linkdir);
   char *linklib   = buildprog_as_one_string("-l", p->linklib);
