@@ -51,7 +51,7 @@ License''.
 * bug-gnuastro: (gnuastro)Report a bug. How to report bugs
 
 * BuildProgram: (gnuastro)BuildProgram. Compile and run programs using Gnuastro's library.
-* astcompilerun: (gnuastro)Invoking astcompilerun. Options to BuildProgram.
+* astbuildprog: (gnuastro)Invoking astbuildprog. Options to BuildProgram.
 
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
@@ -530,7 +530,7 @@ Review of library fundamentals
 
 BuildProgram
 
-* Invoking astcompilerun::      Options and examples for using this program.
+* Invoking astbuildprog::       Options and examples for using this program.
 
 Gnuastro library
 
@@ -16591,10 +16591,10 @@ don't have to worry, you can just run BuildProgram and internal linking
 will be done correctly.
 
 @menu
-* Invoking astcompilerun::      Options and examples for using this program.
+* Invoking astbuildprog::       Options and examples for using this program.
 @end menu
 
-@node Invoking astcompilerun,  , BuildProgram, BuildProgram
+@node Invoking astbuildprog,  , BuildProgram, BuildProgram
 @subsection Invoking BuildProgram
 
 BuildProgram will compile and link a C source program with Gnuastro's

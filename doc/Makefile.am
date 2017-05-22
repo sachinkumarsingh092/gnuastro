@@ -154,7 +154,7 @@ man/astarithmetic.1: $(top_srcdir)/bin/arithmetic/args.h  $(ALLMANSDEP)
 
 man/astbuildprog.1: $(top_srcdir)/bin/buildprog/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "compile, link with Gnuastro library and its dependencies, and run a C program"      \
-	                  --libtool $(toputildir)/convertt/astconvertt
+	                  --libtool $(toputildir)/buildprog/astbuildprog
 
 man/astconvertt.1: $(top_srcdir)/bin/convertt/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "convert known data types to each other"      \
