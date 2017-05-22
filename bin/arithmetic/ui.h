@@ -24,9 +24,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 void
-ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[], struct arithmeticparams *p);
 
 void
-freeandreport(struct imgarithparams *p, struct timeval *t1);
+freeandreport(struct arithmeticparams *p, struct timeval *t1);
 
 #endif

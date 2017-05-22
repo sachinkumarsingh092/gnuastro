@@ -8480,20 +8480,9 @@ Addition, so ``@command{4 5 +}'' is equivalent to @mymath{4+5}.
 @item -
 Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
 
-@item *
-Multiplication, so ``@command{4 5 "*"}'' is equivalent to
-@mymath{4\times5}. On the command-line or in scripts, be sure to quote
-the multiplication sign (for example @command{"*"}).
-
-@cartouche
-@noindent
-@strong{Important reminder for multiplication:} please quote the
-@command{*} sign (for example, @command{"*"} or
-@command{'*'}). Without quotation, the shell will replace @command{*}
-with a list of all the files in your working directory which can
-produce unpredictable outputs. In any case, the input images are not
-affected, they are only read.
-@end cartouche
+@item x
+Multiplication, so ``@command{4 5 x}'' is equivalent to
+@mymath{4\times5}.
 
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
@@ -8878,7 +8867,7 @@ $ astarithmetic -q 10.32 3.84 - 2.7 pow
 $ astarithmetic 1 image.fits / --out=inverse.fits
 
 ## Multiply each pixel in image by -1:
-$ astarithmetic image.fits -1 "*" --out=negative.fits
+$ astarithmetic image.fits -1 x --out=negative.fits
 
 ## Subtract extension 4 from extension 1 (counting from zero):
 $ astarithmetic image.fits image.fits - --out=skysub.fits           \

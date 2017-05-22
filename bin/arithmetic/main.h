@@ -62,7 +62,7 @@ struct operand
 
 
 
-struct imgarithparams
+struct arithmeticparams
 {
   /* Other structures: */
   struct gal_options_common_params cp;  /* Common parameters.           */

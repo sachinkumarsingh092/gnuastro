@@ -235,48 +235,48 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Left and right types set, choose what to do based on operator. */
-#define BINARY_RT_LT_SET(RT, LT)                                   \
-  switch(operator)                                                 \
-    {                                                              \
-    case GAL_ARITHMETIC_OP_PLUS:                                   \
-      BINARY_OP_RT_LT_SET(+, RT, LT);                              \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_MINUS:                                  \
-      BINARY_OP_RT_LT_SET(-, RT, LT);                              \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_MULTIPLY:                               \
-      BINARY_OP_RT_LT_SET(*, RT, LT);                              \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_DIVIDE:                                 \
-      BINARY_OP_RT_LT_SET(/, RT, LT);                              \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_LT:                                     \
-      BINARY_OP_OT_RT_LT_SET(<, uint8_t, RT, LT);                  \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_LE:                                     \
-      BINARY_OP_OT_RT_LT_SET(<=, uint8_t, RT, LT);                 \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_GT:                                     \
-      BINARY_OP_OT_RT_LT_SET(>, uint8_t, RT, LT);                  \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_GE:                                     \
-      BINARY_OP_OT_RT_LT_SET(>=, uint8_t, RT, LT);                 \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_EQ:                                     \
-      BINARY_OP_OT_RT_LT_SET(==, uint8_t, RT, LT);                 \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_NE:                                     \
-      BINARY_OP_OT_RT_LT_SET(!=, uint8_t, RT, LT);                 \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_AND:                                    \
-      BINARY_OP_INCR_OT_RT_LT_SET(&&, uint8_t, RT, LT);            \
-      break;                                                       \
-    case GAL_ARITHMETIC_OP_OR:                                     \
-      BINARY_OP_INCR_OT_RT_LT_SET(||, uint8_t, RT, LT);            \
-      break;                                                       \
-    default:                                                       \
-      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",\
-            "BINARY_RT_LT_SET", operator);                         \
+#define BINARY_RT_LT_SET(RT, LT)                                    \
+  switch(operator)                                                  \
+    {                                                               \
+    case GAL_ARITHMETIC_OP_PLUS:                                    \
+      BINARY_OP_RT_LT_SET(          +, RT, LT);                     \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_MINUS:                                   \
+      BINARY_OP_RT_LT_SET(          -, RT, LT);                     \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_MULTIPLY:                                \
+      BINARY_OP_RT_LT_SET(          *, RT, LT);                     \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_DIVIDE:                                  \
+      BINARY_OP_RT_LT_SET(          /, RT, LT);                     \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_LT:                                      \
+      BINARY_OP_OT_RT_LT_SET(       <, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_LE:                                      \
+      BINARY_OP_OT_RT_LT_SET(      <=, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_GT:                                      \
+      BINARY_OP_OT_RT_LT_SET(       >, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_GE:                                      \
+      BINARY_OP_OT_RT_LT_SET(      >=, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_EQ:                                      \
+      BINARY_OP_OT_RT_LT_SET(      ==, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_NE:                                      \
+      BINARY_OP_OT_RT_LT_SET(      !=, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_AND:                                     \
+      BINARY_OP_INCR_OT_RT_LT_SET( &&, uint8_t, RT, LT);            \
+      break;                                                        \
+    case GAL_ARITHMETIC_OP_OR:                                      \
+      BINARY_OP_INCR_OT_RT_LT_SET( ||, uint8_t, RT, LT);            \
+      break;                                                        \
+    default:                                                        \
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized", \
+            "BINARY_RT_LT_SET", operator);                          \
     }
 
 

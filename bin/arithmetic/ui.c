@@ -72,7 +72,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
   "b.fits + 2 /' (or more simply use the `average' operator with "
   "`a.fits b.fits average'). Please see the manual for more information. "
   "\n\n"PROGRAM_NAME" recognizes a large collection of standard operators, "
-  "including basic arithmetic (e.g., +, -, *, /), mathematical (e.g., abs, "
+  "including basic arithmetic (e.g., +, -, x, /), mathematical (e.g., abs, "
   "pow, sqrt, log), statistical (minvalue, min, max, average), comparison "
   "(e.g., lt, le, gt), logical (e.g., and, or, not), the full set of bitwise "
   "operators, and numeric type conversion operators to all known types. "
@@ -108,7 +108,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
 static void
-ui_initialize_options(struct imgarithparams *p,
+ui_initialize_options(struct arithmeticparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
@@ -166,7 +166,7 @@ ui_initialize_options(struct imgarithparams *p,
 error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
-  struct imgarithparams *p = state->input;
+  struct arithmeticparams *p = state->input;
 
   /* Pass `gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
@@ -226,7 +226,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /* Sanity check on options AND arguments. If only option values are to be
    checked, use `ui_read_check_only_options'. */
 static void
-ui_check_options_and_arguments(struct imgarithparams *p)
+ui_check_options_and_arguments(struct arithmeticparams *p)
 {
   int output_checked=0;
   size_t numfits=0, numhdus=0;
@@ -305,7 +305,7 @@ ui_check_options_and_arguments(struct imgarithparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct arithmeticparams *p)
 {
   size_t i;
   struct gal_options_common_params *cp=&p->cp;
@@ -380,7 +380,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct imgarithparams *p, struct timeval *t1)
+freeandreport(struct arithmeticparams *p, struct timeval *t1)
 {
   free(p->cp.output);
 

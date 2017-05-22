@@ -44,4 +44,4 @@ if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
 
 # Actual test script
 # ==================
-$execname -1 3.45 "*"
+$execname -1 3.45 x

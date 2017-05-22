@@ -59,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     CTYPE a=*(CTYPE *)(data->array); if(a>0) return a;    }
 
 static size_t
-set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
+set_number_of_operands(struct arithmeticparams *p, gal_data_t *data,
                        char *token_string)
 {
   /* Check if its a number. */
@@ -129,7 +129,7 @@ set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
    NOTE that in ui.c, the input linked list of tokens was ordered to
    have the same order as what the user provided. */
 void
-reversepolish(struct imgarithparams *p)
+reversepolish(struct arithmeticparams *p)
 {
   int op=0, nop=0;
   unsigned int numop, i;
@@ -163,7 +163,7 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_ARITHMETIC_OP_PLUS;          nop=2;  }
           else if (!strcmp(token->v, "-" ))
             { op=GAL_ARITHMETIC_OP_MINUS;         nop=2;  }
-          else if (!strcmp(token->v, "*" ))
+          else if (!strcmp(token->v, "x" ))
             { op=GAL_ARITHMETIC_OP_MULTIPLY;      nop=2;  }
           else if (!strcmp(token->v, "/" ))
             { op=GAL_ARITHMETIC_OP_DIVIDE;        nop=2;  }
@@ -220,7 +220,7 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "gt" ))
             { op=GAL_ARITHMETIC_OP_GT;            nop=2;  }
           else if (!strcmp(token->v, "ge"))
-            { op=GAL_ARITHMETIC_OP_LE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_GE;            nop=2;  }
           else if (!strcmp(token->v, "eq"))
             { op=GAL_ARITHMETIC_OP_EQ;            nop=2;  }
           else if (!strcmp(token->v, "ne"))
@@ -393,7 +393,7 @@ reversepolish(struct imgarithparams *p)
 /*************             Top function            *************/
 /***************************************************************/
 void
-imgarith(struct imgarithparams *p)
+imgarith(struct arithmeticparams *p)
 {
   /* Parse the arguments */
   reversepolish(p);

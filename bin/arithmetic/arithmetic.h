@@ -24,6 +24,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define IMGARITH_H
 
 void
-imgarith(struct imgarithparams *p);
+imgarith(struct arithmeticparams *p);
 
 #endif
