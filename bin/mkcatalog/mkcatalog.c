@@ -665,11 +665,14 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
      FITS, this will be automatically included). */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT && gal_git_describe())
     {
-      asprintf(&str, "# Directory commit %s\n", gal_git_describe());
+      asprintf(&str, "Working directory commit %s", gal_git_describe());
       gal_list_str_add(&comments, str, 0);
     }
 
+  /* Write the date. However, `ctime' is going to put a new-line character
+     in the end of its string, so we are going to remove it manually. */
   asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
+  str[strlen(str)-1]='\0';
   gal_list_str_add(&comments, str, 0);
 
 
@@ -797,9 +800,6 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
-      asprintf(&str, "-------------------------------------------\n");
-      gal_list_str_add(&comments, str, 0);
-
       asprintf(&str, "--------- Table columns ---------");
       gal_list_str_add(&comments, str, 0);
     }

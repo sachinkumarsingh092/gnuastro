@@ -327,9 +327,8 @@ ui_check_options_and_arguments(struct mkcatalogparams *p)
 static void
 ui_preparations_read_inputs(struct mkcatalogparams *p)
 {
-  size_t one;
-  gal_list_i32_t *tmp;
-  int readclumps=0, readwcs=0;
+  size_t one=1;
+  int readclumps=0;
   char *namestypes, **strarr=NULL;
   gal_data_t *zero, *key=gal_data_array_calloc(1);
   char *skyfile=p->skyfile ? p->skyfile : p->inputname;
@@ -481,25 +480,10 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
     p->clumps=gal_data_copy_to_new_type_free(p->clumps, GAL_TYPE_INT32);
 
 
-  /* If any WCS related parameter is requested then read the input's WCS
-     structure. */
-  for(tmp=p->columnids; tmp!=NULL; tmp=tmp->next)
-    if(readwcs==0)
-      switch(tmp->v)
-        {
-        case UI_KEY_RA:
-        case UI_KEY_DEC:
-        case UI_KEY_GEORA:
-        case UI_KEY_GEODEC:
-        case UI_KEY_CLUMPSRA:
-        case UI_KEY_CLUMPSDEC:
-        case UI_KEY_CLUMPSGEORA:
-        case UI_KEY_CLUMPSGEODEC:
-          readwcs=1;
-          break;
-        }
-  if(readwcs)
-    p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
+  /* Read the WCS structure of the input dataset. Even if no WCS-related
+     columns are requested, we still need it to report the pixel area of
+     the input dataset. */
+  p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 
 
   /* Clean up. */
@@ -738,9 +722,16 @@ ui_preparations_outnames(struct mkcatalogparams *p)
   /* Set the output filename */
   if(p->cp.output)
     {
-      /* Make sure the given output filename corresponds to the
-         `tableformat' option. */
-      gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
+      /* If the output name is a FITS file, then
+         `gal_tableintern_check_fits_format' will see if the tableformat
+         corresponds to a FITS table or not. If the output name isn't a
+         FITS file then the current value of `p->cp.tableformat' is
+         irrelevant and it must be set to text. We use this value in the
+         end to determine specific features. */
+      if( gal_fits_name_is_fits(p->cp.output) )
+        gal_tableintern_check_fits_format(p->cp.output, p->cp.tableformat);
+      else
+        p->cp.tableformat=GAL_TABLE_FORMAT_TXT;
 
       /* If a clumps image has been read, then we have two outputs. */
       if(p->clumps) ui_preparations_both_names(p);

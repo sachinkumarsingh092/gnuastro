@@ -442,7 +442,8 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
       /* Note that `gal_data_type_as_string' returns a static string. But
          the output must be an allocated string so we can free it. */
       gal_checkset_allocate_copy(
-        gal_tableintern_searchin_as_string( *(uint8_t *)(option->value)), &str);
+        gal_tableintern_searchin_as_string( *(uint8_t *)(option->value)),
+        &str);
       return str;
     }
   else
@@ -451,7 +452,7 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if(( *(uint8_t *)(option->value)=gal_tableintern_string_to_searchin(arg))
+      if((*(uint8_t *)(option->value)=gal_tableintern_string_to_searchin(arg))
          == GAL_TABLE_SEARCH_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known table "
@@ -491,7 +492,7 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
       if(option->set) return NULL;
 
       /* Read the value. */
-      if( (*(uint8_t *)(option->value) = gal_tableintern_string_to_format(arg) )
+      if( (*(uint8_t *)(option->value)=gal_tableintern_string_to_format(arg) )
           ==GAL_TABLE_FORMAT_INVALID )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`%s' option) couldn't be recognized as a known table "
@@ -897,9 +898,10 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
         }
 
       /* Call the function to parse the value, flag the option as set and
-         return. */
+         return (except for the `--config' option, which must always be
+         unset). */
       option->func(option, arg, filename, lineno, topass);
-      option->set=GAL_OPTIONS_SET;
+      if(option->key!=GAL_OPTIONS_KEY_CONFIG) option->set=GAL_OPTIONS_SET;
       return;
     }
 
