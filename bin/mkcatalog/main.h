@@ -146,7 +146,8 @@ struct mkcatalogparams
   float             zeropoint;  /* Zero-point magnitude of object.      */
   uint8_t       skysubtracted;  /* If image is already sky subtracted.  */
   float             threshold;  /* Only use values above this threshold.*/
-  float               nsigmag;  /* Multiple of STD to report magnitude. */
+  float           sfmagnsigma;  /* Surface brightness multiple of sigma.*/
+  float             sfmagarea;  /* Surface brightness area (arcsec^2).  */
 
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */

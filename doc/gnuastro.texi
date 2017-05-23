@@ -13019,15 +13019,17 @@ transformations on the labeled image.
 @cindex Object magnitude limit
 @cindex Limit, object/clump magnitude
 @cindex Magnitude, object/clump detection limit
-A meaningful scientific analysis requires knowledge of the limits of your
-dataset and detection/measurement tools: different datasets (images in the
-case of MakeCatalog) have different noise properties and different
-detection methods (or one method that is run with a different set of
-parameters) will have different abilities to detect or measure certain
-kinds of objects and their properties in an image. Therefore quantifying
-the target detection and measurement limitations with the particular
-dataaset and analysis tools will be the most crutial aspect of any
-analysis.
+No measurement on a real dataset can be perfect: you can only reach a
+certain level/limit of accuracy. Therefore, a meaningful (scientific)
+analysis requires an understanding of these limits for the dataset and your
+analysis tools: different datasets (images in the case of MakeCatalog) have
+different noise properties and different detection methods (one
+method/algorith/software that is run with a different set of parameters is
+considered as a different detection method) will have different abilities
+to detect or measure certain kinds of signal (astronomical objects) and
+their properties in an image. Hence, quantifying the detection and
+measurement limitations with a particular dataset and analysis tool is the
+most crucial/critical aspect of any high-level analysis.
 
 In this section we discuss some of the most general limits that are very
 important in any astronomical data analysis and how MakeCatalog makes it
@@ -13039,29 +13041,32 @@ measurements discussed here are defined in units of magnitudes.
 
 @table @asis
 
-@item Dataset's depth
-As we make more observations on one region of the sky and add the images
-over each other, we are able to decrease the standard deviation of the
-noise in each pixel@footnote{This is true for any noisy data, not just
-astronomical images}. Qualitatively, this decrease manifests its self by
-making fainter (per pixel) parts of the objects in the image more
-visible. Quantitatively, it increases the Signal to noise ratio, since the
-signal is fixed but the noise is decreased. It is very important to have in
-mind that here, noise is defined per pixel (or in the units of our data
-measurement), not per object.
+@item Surface brightness limit (of whole dataset)
+@cindex Surface brightness
+As we make more observations on one region of the sky, and add the
+observations into one dataset, we are able to decrease the standard
+deviation of the noise in each pixel@footnote{This is true for any noisy
+data, not just astronomical images}. Qualitatively, this decrease manifests
+its self by making fainter (per pixel) parts of the objects in the image
+more visible. Technically, this is known as surface
+brightness. Quantitatively, it increases the Signal to noise ratio, since
+the signal increases faster than noise with more data. It is very important
+to have in mind that here, noise is defined per pixel (or in the units of
+our data measurement), not per object.
 
 You can think of the noise as muddy water that is completely covering a
 flat ground@footnote{The ground is the sky value in this analogy, see
 @ref{Sky value}. Note that this analogy only holds for a flat sky value
 across the surface of the image or ground.} with some regions higher than
-the others@footnote{The peaks are (parts of) astronomical objects in this
-analogy.} in it. In this analogy, height is brightness. Let's assume that
-in your first observation the muddy water has just been stirred and you
-can't see anything through it. As you wait and make more observations, the
-mud settles down and the @emph{depth} of the transparent water increases as
-you wait. The summits of hills begin to appear. As the depth of clear water
-increases, the parts of the hills with lower heights (less surface
-brightness) can be seen more clearly.
+the others@footnote{The peaks are the brightest parts of astronomical
+objects in this analogy.} in it. In this analogy, height (from the ground)
+is @emph{surface brightness}. Let's assume that in your first observation
+the muddy water has just been stirred and you can't see anything through
+it. As you wait and make more observations, the mud settles down and the
+@emph{depth} of the transparent water increases, making the summits of
+hills visible. As the depth of clear water increases, the parts of the
+hills with lower heights (less parts with lower surface brightness) can be
+seen more clearly.
 
 @cindex Data's depth
 The outputs of NoiseChisel include the Sky standard deviation
@@ -13075,8 +13080,11 @@ On different instruments pixels have different physical sizes (for example
 in micro-meters, or spatial angle over the sky), nevertheless, a pixel is
 our unit of data collection. In other words, while quantifying the noise,
 the physical or projected size of the pixels is irrelevant. We thus define
-the @emph{depth} of each data-set (or image) as the magnitude of
-@mymath{\sigma_m}.
+the Surface brightness limit or @emph{depth}, in units of magnitude/pixel,
+of a data-set, with zeropoint magnitude @mymath{z}, with the @mymath{n}th
+multiple of @mymath{\sigma_m} as (see @ref{Flux Brightness and magnitude}):
+
+@dispmath{SB_{\rm Pixel}=-2.5\times\log_{10}{(n\sigma_m)}+z}
 
 @cindex XDF
 @cindex CANDELS
@@ -13086,20 +13094,79 @@ small (@mymath{\sim4} arcmin@mymath{^2}). On the other hand, the CANDELS
 survey, is one of the widest multi-color surveys covering several fields
 (about 720 arcmin@mymath{^2}) but its deepest fields have only 9 orbits
 observation. The depth of the XDF and CANDELS-deep surveys in the near
-infrared WFC3/F160W filter are respectively 34.40 and 32.45 magnitudes. In
-a single orbit image, this same field has a depth of 31.32. Recall that a
-larger magnitude corresponds to less brightness, see @ref{Flux Brightness
-and magnitude}.
+infrared WFC3/F160W filter are respectively 34.40 and 32.45
+magnitudes/pixel. In a single orbit image, this same field has a depth of
+31.32. Recall that a larger magnitude corresponds to less brightness.
 
-@item Target magnitude measurement error
+The low-level magnitude/pixel measurement above is only useful when all the
+datasets you want to use belong to one instrument (telescope and
+camera). However, you will often find yourself using datasets from various
+instruments with different pixel scales (projected pixel sizes). If we know
+the pixel scale, we can obtain a more easily comparable surface brightness
+limit in units of: magnitude/arcsec@mymath{^2}. Let's assume that the
+dataset has a zeropoint value of @mymath{z}, and every pixel is @mymath{p}
+arcsec@mymath{^2} (so @mymath{A/p} is the number of pixels that cover an
+area of @mymath{A} arcsec@mymath{^2}). If the @mymath{n}th multiple of
+@mymath{\sigma_m} is desired, then the surface brightness (in units of
+magnitudes per A arcsec@mymath{^2}) is@footnote{If we have @mymath{N}
+datasets, each with noise @mymath{\sigma}, the noise of a combined dataset
+will increase as @mymath{\sqrt{N}\sigma}.}:
+
+@dispmath{SB_{\rm Projected}=-2.5\times\log_{10}{\left(n\sigma_m\sqrt{A\over
+p}\right)+z}}
+
+Note that this is an extrapolation of the actually measured value of
+@mymath{\sigma_m} (which was per pixel). So it should be used with extreme
+care (for example the dataset must have an approximately flat depth). For
+each detection over the dataset, you can estimate an upper-limit magnitude
+which actually uses the detection's area/footprint. It doesn't extrapolate
+and even accounts for correlated noise features. Therefore, the upper-limit
+magnitude is a much better measure of your dataset's surface brightness
+limit for each particular object.
+
+MakeCatalog will calculate the input dataset's @mymath{SB_{\rm Pixel}} and
+@mymath{SB_{\rm Projected}} and write them as comments/meta-data in the
+output catalog(s). Just note that @mymath{SB_{\rm Projected}} is only
+calculated if the input has World Coordinate System (WCS).
+
+@item Completeness limit (of each detection)
+@cindex Completeness
+As the surface brightness of the objects decreases, the ability to detect
+them will also decrease. An important statistic is thus the fraction of
+objects of similar morphology and brightness that will be identified with
+our detection algorithm/parameters in the given image. This fraction is
+known as completeness. For brighter objects, completeness is 1: all bright
+objects that might exist over the image will be detected. However, as we
+go to lower surface brightness objects, we fail to detect some and
+gradually we are not able to detect anything any more. For a given profile,
+the magnitude where the completeness drops below a certain level usually
+above @mymath{90\%} is known as the completeness limit.
+
+@cindex Purity
+@cindex False detections
+@cindex Detections false
+Another important parameter in measuring completeness is purity: the
+fraction of true detections to all true detections. In effect purity is the
+measure of contamination by false detections: the higher the purity, the
+lower the contamination. Completeness and purity are anti-correlated: if we
+can allow a large number of false detections (that we might be able to
+remove by other means), we can significantly increase the completeness
+limit.
+
+One traditional way to measure the completeness and purity of a given
+sample is by embedding mock profiles in regions of the image with no
+detection. However in such a study we must be really careful to choose
+model profiles as similar to the target of interest as possible.
+
+@item Magnitude measurement error (of each detection)
 Any measurement has an error and this includes the derived magnitude for an
 object. Note that this value is only meaningful when the object's magnitude
 is brighter than the upper-limit magnitude (see the next items in this
 list). As discussed in @ref{Flux Brightness and magnitude}, the magnitude
 (@mymath{M}) of an object with brightness @mymath{B} and Zeropoint
-magnitude @mymath{Z} can be written as:
+magnitude @mymath{z} can be written as:
 
-@dispmath{M=-2.5\log(B)+Z}
+@dispmath{M=-2.5\log_{10}(B)+z}
 
 @noindent
 Calculating the derivative with respect to @mymath{B}, we get:
@@ -13125,7 +13192,7 @@ objects (see @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
 [2015]}), but this single equation can be used to estimate the measured
 magnitude error afterwards for any type of target.
 
-@item Target's upper limit magnitude
+@item Upper limit magnitude (of each detection)
 Due to the noisy nature of data, it is possible to get arbitrarily low
 values for a faint object's brightness (or arbitrarily high
 magnitudes). Given the scatter caused by the noise, such small values are
@@ -13171,35 +13238,6 @@ and thus magnitude. Also the image correlated noise might actually create
 certain patters, so the shape of the object can also affect the result. So
 in MakeCatalog, the upper limit magnitude is found for each object in the
 image separately. Not one value for the whole image.
-
-@item Object's completeness limit
-@cindex Completeness
-As the surface brightness of the objects decreases, the ability to detect
-them will also decrease. An important statistic is thus the fraction of
-objects of similar morphology and brightness that will be identified with
-our detection algorithm/parameters in the given image. This fraction is
-known as completeness. For brighter objects, completeness is 1: all bright
-objects that might exist over the image will be detected. However, as we
-go to lower surface brightness objects, we fail to detect some and
-gradually we are not able to detect anything any more. For a given profile,
-the magnitude where the completeness drops below a certain level usually
-above @mymath{90\%} is known as the completeness limit.
-
-@cindex Purity
-@cindex False detections
-@cindex Detections false
-Another important parameter in measuring completeness is purity: the
-fraction of true detections to all true detections. In effect purity is the
-measure of contamination by false detections: the higher the purity, the
-lower the contamination. Completeness and purity are anti-correlated: if we
-can allow a large number of false detections (that we might be able to
-remove by other means), we can significantly increase the completeness
-limit.
-
-One traditional way to measure the completeness and purity of a given
-sample is by embedding mock profiles in regions of the image with no
-detection. However in such a study we must be really careful to choose
-model profiles as similar to the target of interest as possible.
 
 @end table
 

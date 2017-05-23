@@ -180,15 +180,28 @@ struct argp_option program_options[] =
 
     /* Output. */
     {
-      "nsigmag",
-      UI_KEY_NSIGMAG,
+      "sfmagnsigma",
+      UI_KEY_SFMAGNSIGMA,
       "FLT",
       0,
-      "Multiple of Sky STD to report magnitude of.",
+      "Surface brightness multiple of Sky STD.",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &p->nsigmag,
+      &p->sfmagnsigma,
       GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sfmagarea",
+      UI_KEY_SFMAGAREA,
+      "FLT",
+      0,
+      "Surface brightness area (in arcseconds^2).",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->sfmagarea,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

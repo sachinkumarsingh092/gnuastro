@@ -650,15 +650,17 @@ static gal_list_str_t *
 mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                              char *ObjClump)
 {
-  char *str;
   float snlim;
+  char *str, *tstr;
+  double pixarea=NAN;
   gal_list_str_t *comments=NULL;
   char *skyfile=p->skyfile ? p->skyfile : p->inputname;
   char *stdfile=p->stdfile ? p->stdfile : p->inputname;
   char *clumpsfile=p->clumpsfile ? p->clumpsfile : p->inputname;
   char *objectsfile=p->objectsfile ? p->objectsfile : p->inputname;
 
-  asprintf(&str, "%s %s catalog.", PROGRAM_STRING, o0c1 ? "object" : "clump");
+  asprintf(&str, "%s catalog of %s", o0c1 ? "Object" : "Clump",
+           PROGRAM_STRING);
   gal_list_str_add(&comments, str, 0);
 
   /* If in a Git controlled directory and output isn't a FITS file (in
@@ -715,8 +717,8 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
 
   if(p->input->wcs)
     {
-      asprintf(&str, "Pixel area (arcsec^2): %g",
-               gal_wcs_pixel_area_arcsec2(p->input->wcs));
+      pixarea=gal_wcs_pixel_area_arcsec2(p->input->wcs);
+      asprintf(&str, "Pixel area (arcsec^2): %g", pixarea);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -726,10 +728,39 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
-  if( !isnan(p->zeropoint) )
+  /* Print surface brightness limits. */
+  if( !isnan(p->zeropoint) &&  !isnan(p->sfmagnsigma) )
     {
-      asprintf(&str, "Pixel %g sigma surface brightness (magnitude): %.3f",
-               p->nsigmag, -2.5f*log10(p->nsigmag*p->medstd)+p->zeropoint);
+      /* Per pixel. */
+      asprintf(&str, "%g sigma surface brightness (magnitude/pixel): %.3f",
+               p->sfmagnsigma, ( -2.5f
+                                 *log10( p->sfmagnsigma
+                                         * p->medstd )
+                                 + p->zeropoint ) );
+      gal_list_str_add(&comments, str, 0);
+
+      /* Per given area: a pixel area could be measured (a WCS was given),
+         then also estimate the surface brightness over one
+         arcsecond^2. From the pixel area, we know how many pixels are
+         necessary to cover one arcsecond^2. We also know that as the
+         number of samples (pixels) increases (to N), the noise increases
+         by sqrt(N). */
+      if(!isnan(pixarea) && !isnan(p->sfmagarea))
+        {
+          if(p->sfmagarea==1.0f) tstr=NULL;
+          else                   asprintf(&tstr, "%g-", p->sfmagarea);
+          asprintf(&str, "%g sigma surface brightness (magnitude/%sarcsec^2): "
+                   "%.3f", p->sfmagnsigma, tstr ? tstr : "",
+                   ( -2.5f * log10( p->sfmagnsigma
+                                    * p->medstd
+                                    * sqrt( p->sfmagarea / pixarea) )
+                     + p->zeropoint ) );
+          gal_list_str_add(&comments, str, 0);
+        }
+
+      /* Notice: */
+      asprintf(&str, "Pixel STD for surface brightness calculation%s: %f",
+               (!isnan(pixarea) && !isnan(p->sfmagarea))?"s":"", p->medstd);
       gal_list_str_add(&comments, str, 0);
     }
 

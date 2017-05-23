@@ -123,7 +123,8 @@ ui_initialize_options(struct mkcatalogparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Specific to this program. */
-  p->nsigmag             = NAN;
+  p->sfmagnsigma         = NAN;
+  p->sfmagarea           = NAN;
   p->upnsigma            = NAN;
   p->zeropoint           = NAN;
   p->threshold           = NAN;
