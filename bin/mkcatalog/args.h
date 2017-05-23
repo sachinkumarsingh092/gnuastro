@@ -404,6 +404,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "weightarea",
+      UI_KEY_WEIGHTAREA,
+      0,
+      0,
+      "Area used for flux weighted positions.",
+      ARGS_GROUP_COLUMNS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "x",
       UI_KEY_X,
       0,

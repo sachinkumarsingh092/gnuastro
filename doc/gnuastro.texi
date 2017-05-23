@@ -9067,28 +9067,26 @@ important operation.
 @cindex Cosmic rays
 @cindex Pixel mixing
 @cindex Mixing pixel values
-Convolution of an image will generally result in blurring the image
-because it mixes pixel values. In other words, if the image has sharp
-differences in neighboring pixel values@footnote{In astronomy, the
-only major time we confront such sharp borders in signal are cosmic
-rays. All other sources of signal in an image are already blurred by
-the atmosphere or the optics of the instrument.}, those sharp
-differences will become smoother. This has very good consequences in
-detection of signal in noise for example. In an actual observed image,
-the variation in neighboring pixel values due to noise can be very
-high. But after convolution, those variations will decrease and we
-have a better hope in detecting the possible underlying
+Convolution of an image will generally result in blurring the image because
+it mixes pixel values. In other words, if the image has sharp differences
+in neighboring pixel values@footnote{In astronomy, the only major time we
+confront such sharp borders in signal are cosmic rays. All other sources of
+signal in an image are already blurred by the atmosphere or the optics of
+the instrument.}, those sharp differences will become smoother. This has
+very good consequences in detection of signal in noise for example. In an
+actual observed image, the variation in neighboring pixel values due to
+noise can be very high. But after convolution, those variations will
+decrease and we have a better hope in detecting the possible underlying
 signal. Another case where convolution is extensively used is in mock
-images and modeling in general, convolution can be used to simulate
-the effect of the atmosphere or the optical system on the mock
-profiles that we create, see @ref{PSF}. Convolution is a very
-interesting and important topic in any form of signal analysis
-(including astronomical observations). So we have
-thoroughly@footnote{A mathematical will certainly consider this
-explanation is incomplete and inaccurate. However this text is written
-for an understanding on the operations that are done on a real (not
-complex, discrete and noisy) astronomical image, not any general form
-of abstract function} explained the concepts behind it in the
+images and modeling in general, convolution can be used to simulate the
+effect of the atmosphere or the optical system on the mock profiles that we
+create, see @ref{PSF}. Convolution is a very interesting and important
+topic in any form of signal analysis (including astronomical
+observations). So we have thoroughly@footnote{A mathematician will
+certainly consider this explanation is incomplete and inaccurate. However
+this text is written for an understanding on the operations that are done
+on a real (not complex, discrete and noisy) astronomical image, not any
+general form of abstract function} explained the concepts behind it in the
 following sub-sections.
 
 @menu
@@ -13862,10 +13860,15 @@ if only object catalogs are required, it has the same effect as
 
 @item -a
 @itemx --area
-The area (number of pixels) in any clump or object.
+The raw area (number of pixels) in any clump or object independed of what
+pixel it lies over (if it is NaN/blank or unused for example).
 
 @item --clumpsarea
 [Objects] The total area of all the clumps in this object.
+
+@item --weightarea
+The area (number of pixels) used in the flux weighted position
+calculations.
 
 @item -x
 @itemx --x
@@ -13874,8 +13877,9 @@ axis (horizontal when viewed in SAO ds9), see @mymath{\overline{x}} in
 @ref{Measuring elliptical parameters}. The weight has to have a positive
 value (pixel value larger than the Sky value) to be meaningful! Specially
 when doing matched photometry, this might not happen: no pixel value might
-be above the Sky value. In such cases, you can use the geometric center,
-see @option{--geox}.
+be above the Sky value. For such detections, the geometric center will be
+reported in this column (see @option{--geox}). You can use
+@option{--weightarea} to see which was used.
 
 @item -y
 @itemx --y

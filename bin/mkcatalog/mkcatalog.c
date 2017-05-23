@@ -142,78 +142,80 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
       /* Parse the tile. */
       do
         {
-          /* If this pixel belongs to the requested object and isn't
-             NAN, then do the processing. `hasblank' is constant, so
-             when the input doesn't have any blank values, the `isnan'
-             will never be checked. */
-          if( *O==pp->object && !( p->hasblank && isnan(*I) ) )
+          /* If this pixel belongs to the requested object then do the
+             processing.  */
+          if( *O==pp->object )
             {
-
-              /* Total area (independent of threshold). */
-              ++oi[ OCOL_NUMALL ];
-
-              /* Sky subtracted value. */
-              ss = *I - *SK;
-
               /* Get the number of clumps in this object: the largest clump
                  ID over each object. */
               if( p->clumps && *C>0 )
                 pp->clumpsinobj = *C > pp->clumpsinobj ? *C : pp->clumpsinobj;
 
-              /* Only continue if the pixel is above the threshold.
+
+              /* Get the coordinates of this point. */
+              gal_dimension_index_to_coord(I-input, ndim, dsize, c);
+
+
+              /* Calculate the shifted coordinates for second order
+                 calculations. The coordinate is incremented because from
+                 now on, the positions are in the FITS standard (starting
+                 from one).
+
+                 IMPORTANT NOTE: this is a postfix increment, so after the
+                 expression (difference) is evaluated, the coordinate is
+                 going to change. This is necessary because `shift' is also
+                 starting from zero.  */
+              for(d=0;d<ndim;++d) sc[d] = c[d] - pp->shift[d];
+
+
+              /* Do the general geometric (independent of pixel value)
+                 calculations. */
+              oi[ OCOL_NUMALL ]++;
+              oi[ OCOL_GX     ] += c[1]+1;
+              oi[ OCOL_GY     ] += c[0]+1;
+              oi[ OCOL_GXX    ] += sc[1] * sc[1];
+              oi[ OCOL_GYY    ] += sc[0] * sc[0];
+              oi[ OCOL_GXY    ] += sc[1] * sc[0];
+              if(p->clumps && *C>0)
+                {
+                  oi[ OCOL_C_GX    ] += c[1]+1;
+                  oi[ OCOL_C_GY    ] += c[0]+1;
+                }
+
+
+              /* Start the pixel value related parameters.
 
                  ABOUT THE CHECK: The reason this condition is given
                  like this is that the `threshold' value is optional
-                 and we don't want to do multiple checks. The basic
-                 idea is this: when the user doesn't want any
+                 and we don't want to do multiple checks.
+
+                 The basic idea is this: when the user doesn't want any
                  thresholds applied, then `p->threshold==NAN' and any
-                 conditional that involves a NaN will fail, so its
-                 logical negation will be positive and the calculations
-                 below will be done. However, if the user does specify
-                 a threhold and the pixel is above the threshold, then
-                 (`ss < p->threshold * *ST') will be false and its
-                 logical negation will be positive, so the pixel will
-                 be included. */
-              if( !( ss < p->threshold * *ST ) )
+                 conditional that involves a NaN will fail, so its logical
+                 negation will be positive and the calculations below will
+                 be done. However, if the user does specify a threhold and
+                 the pixel is above the threshold, then (`ss < p->threshold
+                 * *ST') will be false and its logical negation will be
+                 positive, so the pixel will be included. */
+              if( !( p->hasblank && isnan(*I) )
+                  && !( (ss = *I - *SK) < p->threshold * *ST ) )
                 {
-                  /* Sum of the Sky and its STD value. */
+                  /* General flux summations. */
+                  oi[ OCOL_NUM    ]++;
+                  oi[ OCOL_SUM    ] += ss;
                   oi[ OCOL_SUMSKY ] += *SK;
                   oi[ OCOL_SUMSTD ] += *ST;
-
-                  /* Get the coordinates of this point. */
-                  gal_dimension_index_to_coord(I-input, ndim, dsize, c);
-
-                  /* Calculate the shifted coordinates for second order
-                     calculations. The coordinate is incremented
-                     because from now on, the positions are in the FITS
-                     standard (starting from one).
-
-                     IMPORTANT NOTE: this is a postfix increment, so after
-                     the expression (difference) is evaluated, the
-                     coordinate is going to change. This is necessary
-                     because `shift' is also starting from zero.    */
-                  for(d=0;d<ndim;++d) sc[d] = c[d] - pp->shift[d];
-
-                  /* Geometric positions and total number. */
-                  ++oi[ OCOL_NUM ];
-                  oi[ OCOL_SUM   ] += ss;
-                  oi[ OCOL_GX    ] += c[1]+1;
-                  oi[ OCOL_GY    ] += c[0]+1;
-                  oi[ OCOL_GXX   ] += sc[1] * sc[1];
-                  oi[ OCOL_GYY   ] += sc[0] * sc[0];
-                  oi[ OCOL_GXY   ] += sc[1] * sc[0];
                   if(p->clumps && *C>0)
                     {
-                      ++oi[ OCOL_C_NUM ];
-                      oi[ OCOL_C_SUM   ] += ss;
-                      oi[ OCOL_C_GX    ] += c[1]+1;
-                      oi[ OCOL_C_GY    ] += c[0]+1;
+                      oi[ OCOL_C_NUM ]++;
+                      oi[ OCOL_C_SUM ] += ss;
                     }
 
                   /* For flux weighted centers, we can only use positive
                      values, so do those measurements here. */
                   if( ss > 0.0f )
                     {
+                      oi[ OCOL_NUMPOS ]++;
                       oi[ OCOL_SUMPOS ] += ss;
                       oi[ OCOL_VX     ] += ss * c[1]+1;
                       oi[ OCOL_VY     ] += ss * c[0]+1;
@@ -222,6 +224,7 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                       oi[ OCOL_VXY    ] += ss * sc[1] * sc[0];
                       if(p->clumps && *C>0)
                         {
+                          oi[ OCOL_C_NUMPOS ]++;
                           oi[ OCOL_C_SUMPOS ] += ss;
                           oi[ OCOL_C_VX     ] += ss * (c[1]+1);
                           oi[ OCOL_C_VY     ] += ss * (c[0]+1);
@@ -287,46 +290,43 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
              isn't NAN, then do the processing. `hasblank' is constant, so
              when the input doesn't have any blank values, the `isnan' will
              never be checked. */
-          if( *O==pp->object && !( p->hasblank && isnan(*I) ) )
+          if( *O==pp->object )
             {
               /* We are on a clump. */
               if(p->clumps && *C>0)
                 {
                   /* Pointer to make things easier. Note that the clump
-                     counters start from 1, but the array indexs from 0.*/
+                     labels start from 1, but the array indexs from 0.*/
                   ci=&pp->ci[ (*C-1) * CCOL_NUMCOLS ];
 
-                  /* Total area (independent of threshold). */
-                  ++ci[ CCOL_NUMALL ];
+                  /* Get the coordinates of this point. */
+                  gal_dimension_index_to_coord(I-input, ndim, dsize, c);
 
-                  /* Sky subtracted value. */
-                  ss = *I - *SK;
+                  /* Shifted coordinates for second order moments, see
+                     explanations in the first pass.*/
+                  for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
+
+                  /* Geometric measurements (independent of pixel value). */
+                  ci[ CCOL_NUMALL ]++;
+                  ci[ CCOL_GX     ] += c[1];
+                  ci[ CCOL_GY     ] += c[0];
+                  ci[ CCOL_GXX    ] += sc[1] * sc[1];
+                  ci[ CCOL_GYY    ] += sc[0] * sc[0];
+                  ci[ CCOL_GXY    ] += sc[1] * sc[0];
 
                   /* Only use pixels above the threshold, see explanations in
                      first pass for an explanation. */
-                  if( !( ss < p->threshold * *ST ) )
+                  if( !( p->hasblank && isnan(*I) )
+                      && !( (ss = *I - *SK) < p->threshold * *ST ) )
                     {
-                      /* Sum of the Sky and its STD value. */
+                      /* Fill in the necessary information. */
+                      ci[ CCOL_NUM    ]++;
+                      ci[ CCOL_SUM    ] += ss;
                       ci[ CCOL_SUMSKY ] += *SK;
                       ci[ CCOL_SUMSTD ] += *ST;
-
-                      /* Get the coordinates of this point. */
-                      gal_dimension_index_to_coord(I-input, ndim, dsize, c);
-
-                      /* Shifted coordinates for second order moments, see
-                         explanations in the first pass.*/
-                      for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
-
-                      /* Fill in the necessary information. */
-                      ++ci[ CCOL_NUM ];
-                      ci[ CCOL_SUM   ] += ss;
-                      ci[ CCOL_GX    ] += c[1];
-                      ci[ CCOL_GY    ] += c[0];
-                      ci[ CCOL_GXX   ] += sc[1] * sc[1];
-                      ci[ CCOL_GYY   ] += sc[0] * sc[0];
-                      ci[ CCOL_GXY   ] += sc[1] * sc[0];
                       if( ss > 0.0f )
                         {
+                          ci[ CCOL_NUMPOS ]++;
                           ci[ CCOL_SUMPOS ] += ss;
                           ci[ CCOL_VX     ] += ss * c[1];
                           ci[ CCOL_VY     ] += ss * c[0];

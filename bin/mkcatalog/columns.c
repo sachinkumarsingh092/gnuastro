@@ -288,8 +288,8 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = 0;
           disp_width     = 5;
           disp_precision = 0;
-          oiflag[ OCOL_NUM ] = 1;
-          ciflag[ CCOL_NUM ] = 1;
+          oiflag[ OCOL_NUMALL ] = 1;
+          ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_CLUMPSAREA:
@@ -303,6 +303,20 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 5;
           disp_precision = 0;
           oiflag[ OCOL_C_NUM ] = 1;
+          break;
+
+        case UI_KEY_WEIGHTAREA:
+          name           = "WEIGHT_AREA";
+          unit           = "counter";
+          ocomment       = "Area used for flux-weighted positions.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 5;
+          disp_precision = 0;
+          oiflag[ OCOL_NUMPOS ] = 1;
+          ciflag[ CCOL_NUMPOS ] = 1;
           break;
 
         case UI_KEY_X:
@@ -1055,7 +1069,7 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
     case UI_KEY_GEOPOSITIONANGLE:
 
       /* Denominator (to be divided). */
-      denom = row[ o0c1 ? CCOL_NUM : OCOL_NUM ];
+      denom = row[ o0c1 ? CCOL_NUMALL : OCOL_NUMALL ];
 
       /* First order. */
       x  = MKC_RATIO( row[ o0c1 ? CCOL_GX  : OCOL_GX  ], denom );
@@ -1147,6 +1161,10 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
    write them into the output columns. The list of columns here is in the
    same order as `columns_alloc_set_out_cols', see there for the type of
    each column. */
+#define POS_V_G(ARRAY, SUMPOS_COL, NUMALL_COL, V_COL, G_COL)            \
+  ( (ARRAY)[ SUMPOS_COL ]>0                                             \
+    ? MKC_RATIO( (ARRAY)[ V_COL ], (ARRAY)[ SUMPOS_COL ] )              \
+    : MKC_RATIO( (ARRAY)[ G_COL ], (ARRAY)[ NUMALL_COL ] ) )
 void
 columns_fill(struct mkcatalog_passparams *pp)
 {
@@ -1179,69 +1197,81 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_AREA:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUM];
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMALL];
           break;
 
         case UI_KEY_CLUMPSAREA:
-          ((int32_t *)colarr)[oind] = oi[OCOL_C_NUM];
+          ((int32_t *)colarr)[oind] = oi[OCOL_C_NUMALL];
+          break;
+
+        case UI_KEY_WEIGHTAREA:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMPOS];
           break;
 
         case UI_KEY_X:
-          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_VX], oi[OCOL_SUMPOS] );
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+                                            OCOL_VX, OCOL_GX);
           break;
 
         case UI_KEY_Y:
-          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_VY], oi[OCOL_SUMPOS] );
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+                                            OCOL_VY, OCOL_GY);
           break;
 
         case UI_KEY_GEOX:
-          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUM] );
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUMALL] );
           break;
 
         case UI_KEY_GEOY:
-          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUM] );
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUMALL] );
           break;
 
         case UI_KEY_CLUMPSX:
-          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_VX],
-                                               oi[OCOL_C_SUMPOS] );
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+                                            OCOL_C_VX, OCOL_C_GX);
           break;
 
         case UI_KEY_CLUMPSY:
-          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_VY],
-                                              oi[OCOL_C_SUMPOS] );
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+                                            OCOL_C_VY, OCOL_C_GY);
           break;
 
         case UI_KEY_CLUMPSGEOX:
-          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_GX], oi[OCOL_C_NUM]);
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_GX],
+                                               oi[OCOL_C_NUMALL] );
           break;
 
         case UI_KEY_CLUMPSGEOY:
-          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_C_GY], oi[OCOL_C_NUM]);
+          ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_GY],
+                                               oi[OCOL_C_NUMALL] );
           break;
 
         case UI_KEY_RA:
         case UI_KEY_DEC:
-          p->rd_vo[0][oind] = MKC_RATIO( oi[OCOL_VX], oi[OCOL_SUMPOS] );
-          p->rd_vo[1][oind] = MKC_RATIO( oi[OCOL_VY], oi[OCOL_SUMPOS] );
+          p->rd_vo[0][oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+                                      OCOL_VX, OCOL_GX);
+          p->rd_vo[1][oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+                                      OCOL_VY, OCOL_GY);
           break;
 
         case UI_KEY_GEORA:
         case UI_KEY_GEODEC:
-          p->rd_go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUM] );
-          p->rd_go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUM] );
+          p->rd_go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUMALL] );
+          p->rd_go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUMALL] );
           break;
 
         case UI_KEY_CLUMPSRA:
         case UI_KEY_CLUMPSDEC:
-          p->rd_vcc[0][oind] = MKC_RATIO( oi[OCOL_C_VX], oi[OCOL_C_SUMPOS] );
-          p->rd_vcc[1][oind] = MKC_RATIO( oi[OCOL_C_VY], oi[OCOL_C_SUMPOS] );
+          p->rd_vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+                                       OCOL_C_VX, OCOL_C_GX);
+          p->rd_vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+                                       OCOL_C_VY, OCOL_C_GY);
           break;
 
         case UI_KEY_CLUMPSGEORA:
         case UI_KEY_CLUMPSGEODEC:
-          p->rd_gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUM] );
-          p->rd_gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUM] );
+          p->rd_gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUMALL] );
+          p->rd_gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUMALL] );
           break;
 
         case UI_KEY_BRIGHTNESS:
@@ -1350,37 +1380,45 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_AREA:
-            ((int32_t *)colarr)[cind]=ci[CCOL_NUM];
+            ((int32_t *)colarr)[cind]=ci[CCOL_NUMALL];
+            break;
+
+          case UI_KEY_WEIGHTAREA:
+            ((int32_t *)colarr)[cind]=ci[CCOL_NUMPOS];
             break;
 
           case UI_KEY_X:
-            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_VX],
-                                                 ci[CCOL_SUMPOS] );
+            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+                                              CCOL_VX, CCOL_GX);
             break;
 
           case UI_KEY_Y:
-            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_VY],
-                                                 ci[CCOL_SUMPOS] );
+            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+                                              CCOL_VY, CCOL_GY);
             break;
 
           case UI_KEY_GEOX:
-            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUM] );
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GX],
+                                                 ci[CCOL_NUMALL] );
             break;
 
           case UI_KEY_GEOY:
-            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUM] );
+            ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GY],
+                                                 ci[CCOL_NUMALL] );
             break;
 
           case UI_KEY_RA:
           case UI_KEY_DEC:
-            p->rd_vc[0][cind] = MKC_RATIO( ci[CCOL_VX], ci[CCOL_SUMPOS] );
-            p->rd_vc[1][cind] = MKC_RATIO( ci[CCOL_VY], ci[CCOL_SUMPOS] );
+            p->rd_vc[0][cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+                                        CCOL_VX, CCOL_GX);
+            p->rd_vc[1][cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+                                        CCOL_VY, CCOL_GY);
             break;
 
           case UI_KEY_GEORA:
           case UI_KEY_GEODEC:
-            p->rd_gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUM] );
-            p->rd_gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUM] );
+            p->rd_gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUMALL] );
+            p->rd_gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUMALL] );
             break;
 
           case UI_KEY_BRIGHTNESS:

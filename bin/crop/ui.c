@@ -291,7 +291,7 @@ ui_read_check_only_options(struct cropparams *p)
   switch(checksum)
     {
     case 0:
-      error(EXIT_FAILURE, 0, "no crop definition, you can use any of the "
+      error(EXIT_FAILURE, 0, "no crop definition. You can use any of the "
             "following options to define the crop(s): (`--xc', `--yc'), "
             "(`--ra', `--dec'), `--catalog', `--section', `--polygon'. "
             "Please run this command for more information:\n\n"

@@ -747,7 +747,7 @@ ui_preparations_outnames(struct mkcatalogparams *p)
       else
         {
           suffix = ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                     ? ".txt" : ".fits" );
+                     ? "._cat.txt" : "_cat.fits" );
           p->objectsout=gal_checkset_automatic_output(&p->cp, p->inputname,
                                                       suffix);
         }

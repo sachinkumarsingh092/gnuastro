@@ -79,6 +79,7 @@ enum option_keys_enum
   UI_KEY_OBJID,                         /* Catalog columns. */
   UI_KEY_IDINHOSTOBJ,
   UI_KEY_CLUMPSAREA,
+  UI_KEY_WEIGHTAREA,
   UI_KEY_GEOX,
   UI_KEY_GEOY,
   UI_KEY_CLUMPSX,

@@ -79,12 +79,14 @@ enum objectcols
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
     OCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
     OCOL_SUMPOS,         /* Sum of positive image pixels.             */
+    OCOL_NUMPOS,         /* Number of positive pixels used for wht.   */
     OCOL_GX,             /* Geometric center of object in X.          */
     OCOL_GY,             /* Geometric center of object in Y.          */
     OCOL_GXX,            /* Second order geometric variable: X*X.     */
     OCOL_GYY,            /* Second order geometric variable: Y*Y.     */
     OCOL_GXY,            /* Second order geometric variable: X*Y.     */
     OCOL_UPPERLIMIT_B,   /* Upper limit magnitude.                    */
+    OCOL_C_NUMALL,       /* Value independent no. of pixels in clumps.*/
     OCOL_C_NUM,          /* Area of clumps in this object.            */
     OCOL_C_SUM,          /* Brightness  in object clumps.             */
     OCOL_C_VX,           /* Sum of (value-sky)*x on clumps.           */
@@ -92,6 +94,7 @@ enum objectcols
     OCOL_C_GX,           /* Geometric center of clumps in object X.   */
     OCOL_C_GY,           /* Geometric center of clumps in object Y.   */
     OCOL_C_SUMPOS,       /* Sum of positive image pixels for wht.     */
+    OCOL_C_NUMPOS,       /* Num of positive image pixels for wht.     */
 
     OCOL_NUMCOLS,        /* SHOULD BE LAST: total number of columns.  */
   };
@@ -111,6 +114,7 @@ enum clumpcols
     CCOL_SUMSKY,         /* Sum of sky value on this object.          */
     CCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
     CCOL_SUMPOS,         /* Sum of positive image pixels for wht.     */
+    CCOL_NUMPOS,         /* Num of positive image pixels for wht.     */
     CCOL_GX,             /* Geometric center of clump in X.           */
     CCOL_GY,             /* Geometric center of clump in Y.           */
     CCOL_GXX,            /* Second order geometric moment.            */
