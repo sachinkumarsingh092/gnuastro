@@ -756,6 +756,10 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                                     * sqrt( p->sfmagarea / pixarea) )
                      + p->zeropoint ) );
           gal_list_str_add(&comments, str, 0);
+          if (tstr) {
+            free(tstr);
+            tstr = NULL;
+          }
         }
 
       /* Notice: */
