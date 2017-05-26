@@ -739,14 +739,16 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                                  + p->zeropoint ) );
       gal_list_str_add(&comments, str, 0);
 
-      /* Per given area: a pixel area could be measured (a WCS was given),
-         then also estimate the surface brightness over one
+      /* Per requested projected area: if a pixel area could be measured (a
+         WCS was given), then also estimate the surface brightness over one
          arcsecond^2. From the pixel area, we know how many pixels are
-         necessary to cover one arcsecond^2. We also know that as the
-         number of samples (pixels) increases (to N), the noise increases
-         by sqrt(N). */
+         necessary to fill the requested projected area (in
+         arcsecond^2). We also know that as the number of samples (pixels)
+         increases (to N), the noise increases by sqrt(N), see the full
+         discussion in the book. */
       if(!isnan(pixarea) && !isnan(p->sfmagarea))
         {
+          /* Prepare the comment/information. */
           if(p->sfmagarea==1.0f) tstr=NULL;
           else                   asprintf(&tstr, "%g-", p->sfmagarea);
           asprintf(&str, "%g sigma surface brightness (magnitude/%sarcsec^2): "
@@ -755,11 +757,16 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                                     * p->medstd
                                     * sqrt( p->sfmagarea / pixarea) )
                      + p->zeropoint ) );
+
+          /* Add the final string/line to the catalog comments. */
           gal_list_str_add(&comments, str, 0);
-          if (tstr) {
-            free(tstr);
-            tstr = NULL;
-          }
+
+          /* Clean up (if necessary). */
+          if (tstr)
+            {
+              free(tstr);
+              tstr=NULL;
+            }
         }
 
       /* Notice: */
