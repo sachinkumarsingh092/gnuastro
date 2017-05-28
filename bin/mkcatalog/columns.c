@@ -437,7 +437,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 13;
           disp_precision = 7;
-          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_C_VX ] = 1;
           oiflag[ OCOL_C_VY ] = 1;
           columns_alloc_radec(p);
           break;
@@ -452,7 +452,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 13;
           disp_precision = 7;
-          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_C_VX ] = 1;
           oiflag[ OCOL_C_VY ] = 1;
           columns_alloc_radec(p);
           break;
