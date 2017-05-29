@@ -463,10 +463,12 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
   tile_ind=0;
   for(tile=tilesll; tile!=NULL; tile=tile->next)
     {
-      /* Set the pointer to use as input. */
+      /* Set the pointer to use as input. The `if(o)' statement is set
+         because GCC 7.1.1 complained about the possiblity of the first
+         argument of `memcpy' being NULL. */
       in=gal_data_ptr_increment(tilevalues->array, tile_ind++, type);;
       GAL_TILE_PARSE_OPERATE( tile, tofill, 1, 0, {
-          memcpy(o, in, gal_type_sizeof(type));
+          if(o) memcpy(o, in, gal_type_sizeof(type));
         } );
     }
 

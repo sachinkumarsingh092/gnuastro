@@ -240,9 +240,9 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
         /* tile, we need to increment to the next contiguous patch   */ \
         /* of memory to continue parsing this tile. */                  \
         tpo_increment += ( IN==tpo_iblock ? tpo_iblock->size            \
-                       : gal_tile_block_increment(tpo_iblock, IN->dsize, \
-                                                  tpo_num_increment++,  \
-                                                  NULL) );              \
+                      : gal_tile_block_increment(tpo_iblock, IN->dsize, \
+                                                 tpo_num_increment++,   \
+                                                 NULL) );               \
       }                                                                 \
                                                                         \
     /* This is done in case the caller doesn't need `o' to avoid */     \
