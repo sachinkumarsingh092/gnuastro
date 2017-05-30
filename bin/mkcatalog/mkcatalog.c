@@ -165,21 +165,21 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                  expression (difference) is evaluated, the coordinate is
                  going to change. This is necessary because `shift' is also
                  starting from zero.  */
-              for(d=0;d<ndim;++d) sc[d] = c[d] - pp->shift[d];
+              for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
 
 
               /* Do the general geometric (independent of pixel value)
                  calculations. */
               oi[ OCOL_NUMALL ]++;
-              oi[ OCOL_GX     ] += c[1]+1;
-              oi[ OCOL_GY     ] += c[0]+1;
+              oi[ OCOL_GX     ] += c[1];
+              oi[ OCOL_GY     ] += c[0];
               oi[ OCOL_GXX    ] += sc[1] * sc[1];
               oi[ OCOL_GYY    ] += sc[0] * sc[0];
               oi[ OCOL_GXY    ] += sc[1] * sc[0];
               if(p->clumps && *C>0)
                 {
-                  oi[ OCOL_C_GX    ] += c[1]+1;
-                  oi[ OCOL_C_GY    ] += c[0]+1;
+                  oi[ OCOL_C_GX    ] += c[1];
+                  oi[ OCOL_C_GY    ] += c[0];
                 }
 
 
@@ -217,8 +217,8 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                     {
                       oi[ OCOL_NUMPOS ]++;
                       oi[ OCOL_SUMPOS ] += ss;
-                      oi[ OCOL_VX     ] += ss * c[1]+1;
-                      oi[ OCOL_VY     ] += ss * c[0]+1;
+                      oi[ OCOL_VX     ] += ss * c[1];
+                      oi[ OCOL_VY     ] += ss * c[0];
                       oi[ OCOL_VXX    ] += ss * sc[1] * sc[1];
                       oi[ OCOL_VYY    ] += ss * sc[0] * sc[0];
                       oi[ OCOL_VXY    ] += ss * sc[1] * sc[0];
@@ -226,8 +226,8 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                         {
                           oi[ OCOL_C_NUMPOS ]++;
                           oi[ OCOL_C_SUMPOS ] += ss;
-                          oi[ OCOL_C_VX     ] += ss * (c[1]+1);
-                          oi[ OCOL_C_VY     ] += ss * (c[0]+1);
+                          oi[ OCOL_C_VX     ] += ss * c[1];
+                          oi[ OCOL_C_VY     ] += ss * c[0];
                         }
                     }
                 }
