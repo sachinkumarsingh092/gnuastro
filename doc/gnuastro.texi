@@ -6537,31 +6537,32 @@ and the table/catalog of objects and their measured properties in that
 image. Another example can be multiple images of one patch of sky in
 different colors (filters).
 
-The extensions can be completely independent, to keep some information
-(meta-data) about the group of extensions in the FITS file, the community
-has adopted the following convension: put no data in the first extension,
-so it is just meta-data). Meta-data regarding the whole file (grouping of
-extensions) can then be put there. All of Gnuastro's programs also follow
-this convention: the main dataset (image or table) is in the second
+As discussed above, the extensions in a FITS file can be completely
+independent. To keep some information (meta-data) about the group of
+extensions in the FITS file, the community has adopted the following
+convension: put no data in the first extension, so it is just
+meta-data. This extension can thus be used to store Meta-data regarding the
+whole file (grouping of extensions). Subsequent extensions may contain data
+along with their own separate meta-data. All of Gnuastro's programs also
+follow this convention: the main dataset (image or table) is in the second
 extension. See the example list of extension properties in @ref{Invoking
 astfits}.
 
-While your data (image or table) may contain information about some
-galaxies for example, the meta-data contain information about the data, for
-example which region of the sky it corresponds to, the units of the data,
-what telescope, camera, and filter the data were taken with and which
-software the data were prepared with, or at which date. Hence without the
-meta-data, the raw dataset is practically just a collection of numbers and
-really hard to understand. It is thus strongly encouraged to supplement
-your data (at any level of processing) with as much meta-data about your
-processing/science as possible.
+The meta-data contain information about the data, for example which region
+of the sky an image corresponds to, the units of the data, what telescope,
+camera, and filter the data were taken with, the software that produced it,
+or it observation or processing date. Hence without the meta-data, the raw
+dataset is practically just a collection of numbers and really hard to
+understand, or connect with the real world (other datasets). It is thus
+strongly encouraged to supplement your data (at any level of processing)
+with as much meta-data about your processing/science as possible.
 
 The meta-data of a FITS file is in ASCII format, which can be easily viewed
 or edited with a text editor or on the command-line. Each meta-data element
 (known as a keyword generally) is composed of a name, value, units and
-comments (the last two are optional), for example these are three FITS
-meta-data keywords for specifying the world coordinate system (WCS, or its
-location in the sky) of a dataset:
+comments (the last two are optional). For example below you can see three
+FITS meta-data keywords for specifying the world coordinate system (WCS, or
+its location in the sky) of a dataset:
 
 @example
 LATPOLE =           -27.805089 / [deg] Native latitude of celestial pole
@@ -6580,10 +6581,10 @@ processor.
 
 Gnuastro's Fits program was designed to allow easy manipulation of FITS
 extensions and meta-data keywords on the command-line while conforming
-fully with the FITS standard. For example you can copy, remove, or cut
-(copy and remove) HDUs (extensions containing data and metadata) from one
-FITS file to another. It also has features to print all the keywords in a
-HDU, or modify the keywords, add new kewords or delete some others.
+fully with the FITS standard. For example you can copy or cut (copy and
+remove) HDUs/extensions from one FITS file to another, or completely delete
+them. It also has features to delete, add, or edit meta-data keywords
+within one HDU.
 
 @menu
 * Invoking astfits::            Arguments and options to Header.

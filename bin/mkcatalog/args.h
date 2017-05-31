@@ -125,7 +125,7 @@ struct argp_option program_options[] =
     },
     {
       "stdhdu",
-      UI_KEY_SKYHDU,
+      UI_KEY_STDHDU,
       "STR",
       0,
       "Sky image extension name or number.",
