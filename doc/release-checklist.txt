@@ -126,10 +126,14 @@ Steps necessary to Package Gnuastro for Debian.
      $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
 
  - A `gnuastro' directory will be built, for the moment don't go in it,
-   we'll keep all temporary files in this parent directory. To keep things
-   clean, define Gnuastro's version as a variable (if this isn't a major
-   release, we won't use the last four or five characters that are the
-   first commit hash characters):
+   we'll keep all temporary files in this parent directory. Clean any
+   existing ones (if this process was done earlier):
+
+     $ rm -f gnuastro_* gnuastro-*
+
+ - To keep things clean, define Gnuastro's version as a variable (if this
+   isn't a major release, we won't use the last four or five characters
+   that are the first commit hash characters):
 
      $ export ver=A.B.CCC
 
@@ -146,8 +150,7 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ git checkout upstream
      $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
-     $ rm -rf ./*                          # Delete every non-hidden file.
-     $ rm ./.*                             # Delete the hidden files.
+     $ rm -rf ./* ./.*                     # Delete everything.
      $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
@@ -159,7 +162,8 @@ Steps necessary to Package Gnuastro for Debian.
      $ git tag upstream/$ver
      $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz
 
- - We are done with the `upstream' branch and can checkout `master':
+ - We are done with the `upstream' and `pristine-tar' branches and can
+   checkout `master':
 
      $ git checkout master
 
@@ -168,8 +172,7 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ mv debian ../gnuastro-tmp-debian    # We want to keep `debian'.
      $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
-     $ rm -rf ./*                          # Delete non-hidden files and dirs.
-     $ rm ./.*                             # Delete the hidden files.
+     $ rm -rf ./* ./.*                     # Delete everything.
      $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
      $ mv ../gnuastro-tmp-debian debian    # Bring back the `debian' directory.
 
