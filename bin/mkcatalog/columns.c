@@ -315,8 +315,8 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = 0;
           disp_width     = 5;
           disp_precision = 0;
-          oiflag[ OCOL_NUMPOS ] = 1;
-          ciflag[ CCOL_NUMPOS ] = 1;
+          oiflag[ OCOL_NUMWHT ] = 1;
+          ciflag[ CCOL_NUMWHT ] = 1;
           break;
 
         case UI_KEY_X:
@@ -1048,7 +1048,7 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
     case UI_KEY_POSITIONANGLE:
 
       /* Denominator (to be divided). */
-      denom = row[ o0c1 ? CCOL_SUMPOS : OCOL_SUMPOS ];
+      denom = row[ o0c1 ? CCOL_SUMWHT : OCOL_SUMWHT ];
 
       /* First order. */
       x  = MKC_RATIO( row[ o0c1 ? CCOL_VX     : OCOL_VX     ], denom );
@@ -1161,9 +1161,9 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
    write them into the output columns. The list of columns here is in the
    same order as `columns_alloc_set_out_cols', see there for the type of
    each column. */
-#define POS_V_G(ARRAY, SUMPOS_COL, NUMALL_COL, V_COL, G_COL)            \
-  ( (ARRAY)[ SUMPOS_COL ]>0                                             \
-    ? MKC_RATIO( (ARRAY)[ V_COL ], (ARRAY)[ SUMPOS_COL ] )              \
+#define POS_V_G(ARRAY, SUMWHT_COL, NUMALL_COL, V_COL, G_COL)            \
+  ( (ARRAY)[ SUMWHT_COL ]>0                                             \
+    ? MKC_RATIO( (ARRAY)[ V_COL ], (ARRAY)[ SUMWHT_COL ] )              \
     : MKC_RATIO( (ARRAY)[ G_COL ], (ARRAY)[ NUMALL_COL ] ) )
 void
 columns_fill(struct mkcatalog_passparams *pp)
@@ -1205,16 +1205,16 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_WEIGHTAREA:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMPOS];
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMWHT];
           break;
 
         case UI_KEY_X:
-          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                             OCOL_VX, OCOL_GX);
           break;
 
         case UI_KEY_Y:
-          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                             OCOL_VY, OCOL_GY);
           break;
 
@@ -1227,12 +1227,12 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_CLUMPSX:
-          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                             OCOL_C_VX, OCOL_C_GX);
           break;
 
         case UI_KEY_CLUMPSY:
-          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+          ((float *)colarr)[oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                             OCOL_C_VY, OCOL_C_GY);
           break;
 
@@ -1248,9 +1248,9 @@ columns_fill(struct mkcatalog_passparams *pp)
 
         case UI_KEY_RA:
         case UI_KEY_DEC:
-          p->rd_vo[0][oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+          p->rd_vo[0][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                       OCOL_VX, OCOL_GX);
-          p->rd_vo[1][oind] = POS_V_G(oi, OCOL_SUMPOS, OCOL_NUMALL,
+          p->rd_vo[1][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                       OCOL_VY, OCOL_GY);
           break;
 
@@ -1262,9 +1262,9 @@ columns_fill(struct mkcatalog_passparams *pp)
 
         case UI_KEY_CLUMPSRA:
         case UI_KEY_CLUMPSDEC:
-          p->rd_vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+          p->rd_vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                        OCOL_C_VX, OCOL_C_GX);
-          p->rd_vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMPOS, OCOL_C_NUMALL,
+          p->rd_vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                        OCOL_C_VY, OCOL_C_GY);
           break;
 
@@ -1275,11 +1275,11 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_BRIGHTNESS:
-          ((float *)colarr)[oind] = oi[ OCOL_SUM ];
+          ((float *)colarr)[oind] = oi[ OCOL_NUM ]>0.0f ? oi[ OCOL_SUM ] : NAN;
           break;
 
         case UI_KEY_CLUMPSBRIGHTNESS:
-          ((float *)colarr)[oind] = oi[ OCOL_C_SUM ];
+          ((float *)colarr)[oind] = oi[ OCOL_C_NUM ]>0.0f ?oi[ OCOL_C_SUM ]:NAN;
           break;
 
         case UI_KEY_MAGNITUDE:
@@ -1384,16 +1384,16 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_WEIGHTAREA:
-            ((int32_t *)colarr)[cind]=ci[CCOL_NUMPOS];
+            ((int32_t *)colarr)[cind]=ci[CCOL_NUMWHT];
             break;
 
           case UI_KEY_X:
-            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                               CCOL_VX, CCOL_GX);
             break;
 
           case UI_KEY_Y:
-            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+            ((float *)colarr)[cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                               CCOL_VY, CCOL_GY);
             break;
 
@@ -1409,9 +1409,9 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_RA:
           case UI_KEY_DEC:
-            p->rd_vc[0][cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+            p->rd_vc[0][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                         CCOL_VX, CCOL_GX);
-            p->rd_vc[1][cind] = POS_V_G(ci, CCOL_SUMPOS, CCOL_NUMALL,
+            p->rd_vc[1][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                         CCOL_VY, CCOL_GY);
             break;
 
@@ -1426,16 +1426,17 @@ columns_fill(struct mkcatalog_passparams *pp)
                rivers are present. When grown clumps are requested, the
                clumps can fully cover a detection (that has one or no
                clumps). */
-            tmp = ( ci[ CCOL_RIV_NUM ]
+            tmp = ( ci[ CCOL_RIV_NUM ]>0.0f
                     ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ]
                     : 0 );
 
             /* Subtract it from the clump's brightness. */
-            ((float *)colarr)[cind] = ci[ CCOL_SUM ] - tmp;
+            ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
+                                        ? (ci[ CCOL_SUM ] - tmp) : NAN );
             break;
 
           case UI_KEY_NORIVERBRIGHTNESS:
-            ((float *)colarr)[cind] = ci[ CCOL_SUM ];
+            ((float *)colarr)[cind] = ci[ CCOL_NUM ]>0.0f ? ci[ CCOL_SUM ]:NAN;
             break;
 
           case UI_KEY_MAGNITUDE: /* Similar: brightness for clumps */

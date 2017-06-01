@@ -78,8 +78,8 @@ enum objectcols
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
     OCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
-    OCOL_SUMPOS,         /* Sum of positive image pixels.             */
-    OCOL_NUMPOS,         /* Number of positive pixels used for wht.   */
+    OCOL_SUMWHT,         /* Sum of positive image pixels.             */
+    OCOL_NUMWHT,         /* Number of positive pixels used for wht.   */
     OCOL_GX,             /* Geometric center of object in X.          */
     OCOL_GY,             /* Geometric center of object in Y.          */
     OCOL_GXX,            /* Second order geometric variable: X*X.     */
@@ -93,8 +93,8 @@ enum objectcols
     OCOL_C_VY,           /* Sum of (value-sky)*y on obj. clumps.      */
     OCOL_C_GX,           /* Geometric center of clumps in object X.   */
     OCOL_C_GY,           /* Geometric center of clumps in object Y.   */
-    OCOL_C_SUMPOS,       /* Sum of positive image pixels for wht.     */
-    OCOL_C_NUMPOS,       /* Num of positive image pixels for wht.     */
+    OCOL_C_SUMWHT,       /* Sum of positive image pixels for wht.     */
+    OCOL_C_NUMWHT,       /* Num of positive image pixels for wht.     */
 
     OCOL_NUMCOLS,        /* SHOULD BE LAST: total number of columns.  */
   };
@@ -113,8 +113,8 @@ enum clumpcols
     CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
     CCOL_SUMSKY,         /* Sum of sky value on this object.          */
     CCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
-    CCOL_SUMPOS,         /* Sum of positive image pixels for wht.     */
-    CCOL_NUMPOS,         /* Num of positive image pixels for wht.     */
+    CCOL_SUMWHT,         /* Sum of positive image pixels for wht.     */
+    CCOL_NUMWHT,         /* Num of positive image pixels for wht.     */
     CCOL_GX,             /* Geometric center of clump in X.           */
     CCOL_GY,             /* Geometric center of clump in Y.           */
     CCOL_GXX,            /* Second order geometric moment.            */

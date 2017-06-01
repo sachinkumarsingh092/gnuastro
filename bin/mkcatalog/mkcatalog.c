@@ -215,8 +215,8 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                      values, so do those measurements here. */
                   if( ss > 0.0f )
                     {
-                      oi[ OCOL_NUMPOS ]++;
-                      oi[ OCOL_SUMPOS ] += ss;
+                      oi[ OCOL_NUMWHT ]++;
+                      oi[ OCOL_SUMWHT ] += ss;
                       oi[ OCOL_VX     ] += ss * c[1];
                       oi[ OCOL_VY     ] += ss * c[0];
                       oi[ OCOL_VXX    ] += ss * sc[1] * sc[1];
@@ -224,8 +224,8 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                       oi[ OCOL_VXY    ] += ss * sc[1] * sc[0];
                       if(p->clumps && *C>0)
                         {
-                          oi[ OCOL_C_NUMPOS ]++;
-                          oi[ OCOL_C_SUMPOS ] += ss;
+                          oi[ OCOL_C_NUMWHT ]++;
+                          oi[ OCOL_C_SUMWHT ] += ss;
                           oi[ OCOL_C_VX     ] += ss * c[1];
                           oi[ OCOL_C_VY     ] += ss * c[0];
                         }
@@ -326,8 +326,8 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
                       ci[ CCOL_SUMSTD ] += *ST;
                       if( ss > 0.0f )
                         {
-                          ci[ CCOL_NUMPOS ]++;
-                          ci[ CCOL_SUMPOS ] += ss;
+                          ci[ CCOL_NUMWHT ]++;
+                          ci[ CCOL_SUMWHT ] += ss;
                           ci[ CCOL_VX     ] += ss * c[1];
                           ci[ CCOL_VY     ] += ss * c[0];
                           ci[ CCOL_VXX    ] += ss * sc[1] * sc[1];
