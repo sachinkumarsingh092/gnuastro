@@ -1,6 +1,6 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release 0.2.206 (library 1.0.0) (2017-05-05) [alpha]
+* Noteworthy changes in release 0.3 (library 1.0.0) (2017-06-01) [stable]
 
   This is a full re-write of Gnuastro. Most importantly, Gnuastro now has a
   new generic data contaihtner (`gal_data_t'). This new container can now
@@ -62,14 +62,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   "Output headers" section of the book for a discussion on the usefulness
   of this new feature.
 
-  Gnuastro now has a new program called "BuildProgram" to easily compile,
-  link and run a C program you have written with Gnuastro's libraries
-  without having to worry about which libraries (Gnuastro dependencies)
-  your program needs. For example if your C source code is called
-  `myprog.c', you can compile, link and run it with this simple command and
-  let GNU Libtool worry about the linking.
-
-      $ astbuildprog myprog.c
+  BuildProgram: a new program to easily compile, link and run a C program
+  you have written with Gnuastro's libraries without having to worry about
+  which libraries (Gnuastro dependencies) your program needs. Debugging
+  (`-g'), optimizations (`-O'), warnings (`-W'), include search path
+  (`-I'), link search path (`-L'), and linked libraries (`-l') compiler
+  options are also supported. BuildProgram will greatly facilitate the easy
+  usage of Gnuastro's libraries.
 
 ** Removed programs or library features
 
@@ -125,89 +124,87 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Making a log file is now optional and users have to explicitly ask for it
   with the `--log' option.
 
-  Warp can now align the image with the celestial coordiates using the
-  `--align' option.
+  Slower building of Gnuastro: Binary operators (e.g., plus or multiply)
+  are now done in the native type of the input dataset. Doing so for all
+  the different combinations of types, greatly slows down the initial
+  compilation of Gnuastro (after running `make'). So for every type there
+  is now a `--enable-bin-op-*' configure time option. When the dataset's
+  type isn't compiled (only for the binary operators), it will be converted
+  to a compiled type and then converted back in the end.
 
-  Warp can now warp without an input matrix, using the following options:
-  `--shear', `--flip', `--project', `--rotate', `--scale',
-  `--translate'. Any number of these transformations (along with the
-  `--align' option) can be called at runtime and they will be applied in
-  the same order to create one warping matrix. By default the FITS
-  coordinates will also be corrected.
-
-  Arithmetic now does all its operations in the native data type of the
+  Arithmetic: all operations are done in the native data type of the
   dataset. Until now, it would convert the data internally to double
   precision floating point, do the requested operation and write the data
   back in the proper type. So this new implementation is much more
-  efficient than the 0.2 version.
+  efficient.
 
-  Arithmetic now accepts two new classes of operators: type conversion
-  operators to all standard types and integer-only operators (all C
-  bit-wise operators and the modulo operator).
+  Arithmetic: two new classes of operators: type conversion operators to
+  all standard types and integer-only operators (all C bit-wise operators
+  and the modulo operator).
 
-  Arithmetic does the binary operators (e.g., plus or multiply) also in the
-  native type of the input dataset. Doing so for all the different
-  combinations of types, greatly slows down the initial compilation of
-  Gnuastro (after running `make'). So for every type there is now a
-  `--enable-bin-op-*' configure time option. Only for a the binary
-  operators, when the dataset's type isn't compiled, it will be converted
-  to a compiled type and then converted back.
+  ConvertType: can also print the input dataset to the command-line
+  (`stdout'). To use this feature set the output filename to `stdout'.
 
   Convolve now has the `--minsharpspec' option to specify the minimum
   spectrum value to use in deconvolution (matching PSFs).
 
-  MakeProfile can now accept the radial function of profiles as
-  human-readable strings instead of a code for each profile (which was very
-  cryptic, although codes are also still acceptable). For example in the
-  profile column you can now write `sersic' instead of the code `1'. Also
-  compared to the previous versions where the codes started from `0', not
-  they start from `1'.
-
-  Crop can now read the name of the crop based on a value in a given in a
-  table column. This allows your object's IDs to be directly used as the
-  crop's file name.
-
-  ConvertType can also print the input dataset to the command-line
-  (`stdout'). To use this feature set the output filename to `stdout'.
-
-  The Statistics program can now read table columns as well as images and
-  do basic operations on them. It can also only work on a certain range of
-  the data. Alternatively, you can define the range on another reference
-  column, but use values of the main column.
-
-  Statistics can also do all its single-valued measurements on a
-  tessellation (tile grid) over the input dataset.
-
-  Statistics now has features to estimate the Sky value on the image using
-  the mode's quantile similar to what NoiseChisel does to find its initial
-  threshold.
-
-  Statistics now has several new single valued calculations: `--quantile',
-  `--quantfunc' (quantile function), `--mode', `--modequant', `--modesym',
-  and `--modesymvalue'.
-
-  When in WCS mode, Crop can still only work on aligned images. However,
+  Crop: when in WCS mode it can still only work on aligned images. However,
   very small floating point errors in writing the WCS (for example 10e-13
   degrees) are now acceptable. Until now these would cause Crop to complain
   and abort.
 
-  NoiseChisel now has a new `--cleandilated' option to remove dilated
-  objects that have a low S/N (it is mainly useful on very clean or mock
-  images), for non-clean noise, it will result in a decrease of
-  completeness. With this new option, NoiseChisel will also print detection
-  S/N values when run with the `--checkdetsn' option.
+  Crop: the name of the crop can be pre-determined based on the values in a
+  given in a table column. This allows your object's IDs to be directly
+  used as the crop's file name for example.
+
+  MakeCatalog now also reports the surface brightness in
+  mag/arcsec^2. Until now, MakeCatalog would only print the dataset's
+  surface brightness in units of magnitudes/pixel. But that is not nicely
+  comparable to other datasets. Hence, using a simple calculation (from the
+  pixel projected size, fully derived in the book), it now also reports the
+  surface brightness in magnitudes/arcsec^2 also.
+
+  MakeProfiles: Profile codes now start from `1' (until now they started
+  from `0').
+
+  MakeProfiles: now accepts the radial function of profiles as
+  human-readable strings instead of a code for each profile (which was very
+  cryptic, although codes are also still acceptable). For example in the
+  profile column you can now write `sersic' instead of the code `1'.
+
+  NoiseChisel: the new `--cleandilated' option will remove dilated objects
+  that have a low S/N (it is mainly useful on very clean or mock images).
+  For non-clean noise, it will result in a decrease of completeness. With
+  this new option, NoiseChisel will also print detection S/N values when
+  run with the `--checkdetsn' option.
+
+  Statistics: now reads table columns as well as images and does basic
+  operations on them. It can also only work on a certain range of the data
+  (instead of the whole set). Alternatively, you can define the range on
+  another reference column, but use values of the main column.
+
+  Statistics: all its single-valued measurements can now be done on a
+  tessellation (tile grid) over the input dataset.
+
+  Statistics: can now estimate the Sky value on the input dataset using the
+  mode's quantile similar to what NoiseChisel does to find its initial
+  threshold.
+
+  Statistics: has several new single valued calculations: `--quantile',
+  `--quantfunc' (quantile function), `--mode', `--modequant', `--modesym',
+  and `--modesymvalue'.
+
+  Warp: align the image with the celestial coordiates using the `--align'
+  option.
+
+  Warp: standard modular warpings can now be requested without an input
+  matrix, using the following options: `--shear', `--flip', `--project',
+  `--rotate', `--scale', `--translate'. Any number of these transformations
+  (along with the `--align' option) can be called on the command-line and
+  they will be applied in the same order to create one warping matrix. By
+  default the WCS will also be corrected.
 
 ** Changes in behavior
-
-  When a 2 by 2 matrix is given to Warp, the FITS pixel positions (which
-  define the center of a pixel as an integer) are automatically implemented
-  internally, see "Invoking Warp" in the manual for more.
-
-  To select column(s) by regular expression searching, the name now has to
-  be put in `/ /' (similar to AWK). If a value isn't in `/ /', the programs
-  will only select a column with the exact match.
-
-  Crop's `--section' syntax is now inclusive in both bounds.
 
   Mask image options have been removed from all programs. Instead, all
   programs can work directly on data with blank values. So when some pixels
@@ -217,27 +214,77 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   images. Managing all these different choices in every program would only
   confuse the user (with too many options).
 
-  Crop only checks if the center of a crop is filled when the crop was
+  Arithmetic: the `x' letter is now used to represent the multiplication
+  operator. Previously it was `*' which needed quotation and was thus very
+  inconvenient.
+
+  Convolve: the old `--frequency' and `--spatial' options have been removed
+  and are replaced by `--domain' which accepts values of `frequency' and
+  `spatial'.
+
+  Convolve: the old `--viewfreqsteps' was changed to `--checkfreqsteps' to
+  fit with the general style of such check images in all Gnuastro's
+  programs.
+
+  Crop: `--section' syntax is now inclusive in both bounds.
+
+  Crop: only checks if the center of a crop is filled when the crop was
   defined by its center (for example with `--ra' and `--dec'). The verbose
   outputs of Crop are also not cryptic 0s or 1s. The are human readable
   text.
 
-  Crop doesn't have the separate `--imgmode' and `--wcsmode' options any
+  Crop: doesn't have separate `--imgmode' and `--wcsmode' options any
   more. There is now a single `--mode' option which accepts values of `img'
   or `wcs'.
 
-  Convolve's old `--frequency' and `--spatial' options have been removed
-  and are replaced by `--domain' which accepts values of `frequency' and
-  `spatial'.
+  MakeProfiles: the old `--inputascanvas' is now called `--clearcanvas'.
 
-  Convolve's old `--viewfreqsteps' was changed to `--checkfreqsteps' to fit
-  with the general style of such check images in all Gnuastro's programs.
+  MakeProfiles: until now, it would abort with an error when the input
+  columns had blank values. But for masking, it might happen that you set a
+  blank magnitude. So this check has now been removed when reading the
+  magnitude column.
 
-  Warp's old `--nowcscorrection' option has been given a more clear name of
-  `--keepwcs'. With this option, Warp will not apply the warp the input's
-  WCS structure.
+  NoiseChisel: default value of the `--minskyfrac' option (new name for the
+  old `--minbfrac') is now 0.7 as opposed to 0.5. This will allow much
+  better estimation of noise properties (by default). It may be slightly
+  too high for a crowded field, but the users can change it on the
+  command-line (or in a configuration file) for such datasets.
 
-  Warp's old `--maxblankfrac' option has been changed to
+  NoiseChisel: when it is run with any of the `--check' options, it will
+  abort after all the check images have been created. This is very useful
+  for checking your parameters until each step and not be distracted (or
+  have to wait) for later steps to finish.
+
+  Statistics: will not make a histogram and cumulative frequency files, or
+  calculate sigma-clipped results by default (with no options). It will
+  just print some basic information.
+
+  Table: Previously, if a column was requested, the `-i' option would be
+  ignored. But it often happens that the users forget a column name after
+  already typing several of their desired columns. So the opposite behavior
+  is preferred. Because when more than a couple of columns are needed, you
+  will probably forget the column identifiers of the last few and having to
+  retype everything is very frustrating. Something like how `--help' takes
+  precedence over all other options.
+
+  Table: to select column(s) by regular expression searching, the name now
+  has to be put in `/ /' (similar to AWK). If a value isn't in `/ /', the
+  programs will only select a column with the exact match.
+
+  Warp: when a 2 by 2 matrix is given, the FITS pixel positions (which
+  define the center of a pixel as an integer) are automatically implemented
+  internally, see "Invoking Warp" in the manual for more.
+
+  Warp: the old `--nofitscorrect' option has been changed to
+  `--centeroncorner' to be more clear. The new option is now more general
+  than before and also works on warping with a matrix, not just on modular
+  warpings.
+
+  Warp: the old `--nowcscorrection' option has been given a more clear name
+  of `--keepwcs'. With this option, Warp will not apply the warp the
+  input's WCS structure.
+
+  Warp: the old `--maxblankfrac' option has been changed to
   `--coveredfrac'. Until now, Warp would only look for the fraction of
   input blank/NaN pixel area over the output pixel. But this would be
   useless on the edges of the image. So the new `--coveredfrac' option
@@ -245,33 +292,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   by input pixels in order to give that output pixel a value. You can use
   this to set edge pixels that are not fully covered in the new grid to
   blank and have a flat warped image.
-
-  Warp's old `--nofitscorrect' option has been changed to
-  `--centeroncorner' to be more clear. The new option is now more general
-  than before and also works on warping with a matrix, not just on modular
-  warpings.
-
-  MakeProfiles' old `--inputascanvas' is now called `--clearcanvas'.
-
-  Until now, MakeProfiles would abort with an error when the input columns
-  had blank values. But for masking, it might happen that you set a blank
-  magnitude. So this check has now been removed when reading the magnitude
-  column.
-
-  Statistics will not make a histogram and cumulative frequency files, or
-  calculate sigma-clipped results by default (with no options). It will
-  just print some basic information.
-
-  NoiseChisel's default value of the `--minskyfrac' option (new name for
-  the old `--minbfrac') is now 0.7 as opposed to 0.5. This will allow much
-  better estimation of noise properties (by default). It may be slightly
-  too high for a crowded field, but the users can change it on the
-  command-line (or in a configuration file) for such datasets.
-
-  When NoiseChisel is run with any of the `--check' options, it will abort
-  after all the check images have been created. This is very useful for
-  checking your parameters until each step and not be distracted (or have
-  to wait) for later steps to finish.
 
 ** Bug fixes
 
@@ -298,6 +318,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Decomposing PCi_j and CDELTi matices in output WCS (bug #50073).
 
   Using image naxes[n] when checkcenter is larger (bug #50099).
+
+  Memory leak in MakeCatalog corrected (bug #51118).
+
+  Fix copy-paste error in MakeCatalog flag arrays (bug #51130).
+
+
+
 
 
 * Noteworthy changes in release 0.2 (library 0.0.0) (2016-10-03) [stable]
@@ -382,6 +409,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   The `--envseed' option (to read random number generator type and seed
   from the environment) to MakeProfiles and MakeNoise can also be given in
   the configuration files.
+
+
+
 
 
 * Noteworthy changes in release 0.1 (2016-05-30) [stable]
