@@ -261,7 +261,7 @@ Downloading the source
 
 Version controlled source
 
-* Bootstrapping::               Adding all the automaticly generated files.
+* Bootstrapping::               Adding all the automatically generated files.
 * Synchronizing::               Keep your local clone up to date.
 
 Build and install
@@ -1500,7 +1500,7 @@ command is in a separate line and next line @code{is also in the code type
 face}, but doesn't have any of the @command{$} or @command{#} signs, then
 it is the output of the command after it is run. As a user, you don't need
 to type those lines. A line that starts with @command{##} is just a comment
-for explaning the command to a human reader and must not be typed.
+for explaining the command to a human reader and must not be typed.
 
 @item
 If the command becomes larger than the page width a @key{\} is
@@ -2316,7 +2316,7 @@ the following URL:
 @url{http://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz}
 
 @noindent
-@ref{Quick start} discribes the commands necessary to configure, build, and
+@ref{Quick start} describes the commands necessary to configure, build, and
 install Gnuastro on your system. This chapter will be useful in cases where
 the simple procedure above is not sufficient, for example your system lacks
 a mandatory/optional dependency (in other words, you can't pass the
@@ -2941,7 +2941,7 @@ with the main repository see @ref{Synchronizing}.
 
 
 @menu
-* Bootstrapping::               Adding all the automaticly generated files.
+* Bootstrapping::               Adding all the automatically generated files.
 * Synchronizing::               Keep your local clone up to date.
 @end menu
 
@@ -4127,7 +4127,7 @@ command-line.
 
 All the programs in Gnuastro are customized through the standard GNU style
 command-line options. Thus, we'll start by defining this general style that
-is very common in many command-line tools on unix-like operating
+is very common in many command-line tools on Unix-like operating
 systems. Finally, the options that are common to all the programs in
 Gnuastro are discussed.
 
@@ -4174,7 +4174,7 @@ commonly the input file names containing your data. Options start with one
 or two hyphens, followed by an identifier for the option (the option's
 name) and its value (see @ref{Options}). Through options you tell the
 program how to interpret the data. In this example, we are running
-@ref{Crop} to crop a region of width 10 arcseconds centered at the given RA
+@ref{Crop} to crop a region of width 10 arc-seconds centered at the given RA
 and Dec from the input Hubble Ultra-Deep Field (UDF) FITS image. So options
 come with an identifier (the option name which is separate from their
 value).
@@ -4620,7 +4620,7 @@ going to have the (same) size of one data-element. Hence, in such cases,
 the image proportions are going to be slightly different with this
 option.
 
-If your input image is not exaclty divisible by the tile size and you want
+If your input image is not exactly divisible by the tile size and you want
 one value per tile for some higher-level processing, all is not lost
 though. You can see how many pixels were within each tile (for example to
 weight the values or discard some for later processing) with Gnuastro's
@@ -4791,7 +4791,7 @@ wide}. Like all on/off options, on the command-line, this option doesn't
 take any values. But in a configuration file, it takes the values of
 @option{0} or @option{1}, see @ref{Configuration file format}. If it is
 present in a configuration file with a value of @option{0}, then all later
-occurances of this option will be ignored.
+occurrences of this option will be ignored.
 
 
 @item --onlyversion=STR
@@ -4799,7 +4799,7 @@ Only run the program if Gnuastro's version is exactly equal to @option{STR}
 (see @ref{Version numbering}). Note that it is not compared as a number,
 but as a string of characters, so @option{0}, or @option{0.0} and
 @option{0.00} are different. If the running Gnuastro version is different,
-then thiss option will report an error and abort as soon as it is
+then this option will report an error and abort as soon as it is
 confronted on the command-line or in a configuration file. If the running
 Gnuastro version is the same as @option{STR}, then the program will run as
 if this option was not called.
@@ -5286,7 +5286,7 @@ building your final output and updating it efficiently when the inputs
 change. It is the most common infra-structure to build software
 today.
 
-Scientific research methodology is very similar to software developement:
+Scientific research methodology is very similar to software development:
 you start by testing a hypothesis on a small sample of objects/targets with
 a simple set of steps. As you are able to get promising results, you
 improve the method and use it on a larger, more general, sample. In the
@@ -5344,7 +5344,7 @@ At the lowest level, the computer stores everything in terms of @code{1} or
 @code{0}. For example, each program in Gnuastro, or each astronomical image
 you take with the telescope is actually a string of millions of these zeros
 and ones. The space required to keep a zero or one is the smallest unit of
-storage, and is known as a @emph{bit}. However, nderstanding and
+storage, and is known as a @emph{bit}. However, understanding and
 manipulating this string of bits is extremely hard for most
 people. Therefore, we define packages of these bits along with a standard
 on how to interpret the bits in each package as a @emph{type}.
@@ -5441,7 +5441,7 @@ are inclusive.
 32-bit (single-precision) floating point types. The maximum (minimum is its
 negative) possible value is
 @mymath{3.402823\times10^{38}}. Single-precision floating points can
-accurately represent a floating point number upto @mymath{\sim7.2}
+accurately represent a floating point number up to @mymath{\sim7.2}
 significant decimals. Given the heavy noise in astronomical data, this is
 usually more than sufficient for storing results.
 
@@ -5491,7 +5491,7 @@ As a summary, for each labeled region (or, galaxy) we have one @emph{row}
 and for each measured property we have one @emph{column}. This high-level
 structure is usually the first step for higher-level analysis, for example
 finding the stellar mass or photometric redshift from magnitudes in
-multiple colors. Thus, tables are not just outputs of programs, infact it
+multiple colors. Thus, tables are not just outputs of programs, in fact it
 is much more common for tables to be inputs of programs. For example, to
 make a mock galaxy image, you need to feed in the properties of each galaxy
 into @ref{MakeProfiles} for it do the inverse of the process above and make
@@ -5529,7 +5529,7 @@ table. They are thoroughly discussed in @ref{Selecting table columns}.
 @subsection Recognized table formats
 
 The list of table formats that Gnuastro can currently read from and write
-to are decribed below. Each has their own advantage and disadvantages, so a
+to are described below. Each has their own advantage and disadvantages, so a
 short review of the format is also provided to help you make the best
 choice based on how you want to define your input tables or later use your
 output tables.
@@ -5582,7 +5582,7 @@ file. In such cases, you can also consider header keywords (see
 The FITS binary table is the FITS standard's solution to the issues
 discussed with keeping numbers in ASCII format as described under the FITS
 ASCII table title above. Only columns defined as a string type (a string of
-ASCII characters) are readable in a text editor. The protability problem
+ASCII characters) are readable in a text editor. The portability problem
 with binary formats discussed above is mostly solved thanks to the
 portability of CFITSIO (see @ref{CFITSIO}) and the very long history of the
 FITS format which has been widely used since the 1970s.
@@ -5635,8 +5635,8 @@ of columns.
 
 The columns don't have to be exactly under each other and the rows can be
 arbitrarily long with different lengths. For example the following contents
-in a file would be interpretted as a table with 4 columns and 2 rows, with
-each element interpretted as a @code{double} type (see @ref{Numeric data
+in a file would be interpreted as a table with 4 columns and 2 rows, with
+each element interpreted as a @code{double} type (see @ref{Numeric data
 types}).
 
 @example
@@ -5669,7 +5669,7 @@ includes non-numerical characters. In the absence of any information, only
 numbers can be read robustly. Assuming we read columns with non-numerical
 characters as string, there would still be the problem that the strings
 might contain space (or any delimiter) character for some rows. So, each
-`word' in the string will be interpretted as a column and the program will
+`word' in the string will be interpreted as a column and the program will
 abort with an error that the rows don't have the same number of columns.
 
 To correct for these limitations, Gnuastro defines the following convention
@@ -5681,7 +5681,7 @@ When the first non-white character in a line is @key{#}, or there are no
 non-white characters in it, then the line will not be considered as a row
 of data in the table (this is a pretty standard convention in many
 programs, and higher level languages). In the former case, the line is
-interpretted as a @emph{comment}. If the comment line starts with `@code{#
+interpreted as a @emph{comment}. If the comment line starts with `@code{#
 Column N:}', then it is assumed to contain information about column
 @code{N} (a number, counting from 1). Comment lines that don't start with
 this pattern are ignored and you can use them to include any further
@@ -5695,13 +5695,13 @@ information comment is assumed to have the following format:
 @cindex NaN
 @noindent
 Any sequence of characters between `@key{:}' and `@key{[}' will be
-interpretted as the column name (so it can contain anything except the
+interpreted as the column name (so it can contain anything except the
 `@key{[}' character). Anything between the `@key{]}' and the end of the
 line is defined as a comment. Within the brackets, anything before the
 first `@key{,}' is the units (physical units, for example km/s, or erg/s),
 anything before the second `@key{,}' is the short type identifier (see
 below, and @ref{Numeric data types}). Finally (still within the brackets),
-any non-white characters after the second `@key{,}' are interpretted as the
+any non-white characters after the second `@key{,}' are interpreted as the
 blank value for that column (see @ref{Blank pixels}). Note that blank
 values will be stored in the same type as the column, not as a
 string@footnote{For floating point types, the @code{nan}, or @code{inf}
@@ -5734,7 +5734,7 @@ optional and the column information comments don't have to be in order. In
 other words, the information for column @mymath{N+m} (@mymath{m>0}) can be
 given before column @mymath{N}. Also, you don't have to specify information
 for all columns. Those columns that don't have this information will be
-interpretted with the default settings (like the case above: values are
+interpreted with the default settings (like the case above: values are
 double precision floating point, and the column has no name, unit, or
 comment). So these lines are all acceptable for any table (the first one,
 with nothing but the column number is redundant):
@@ -5757,7 +5757,7 @@ recognized identifiers) described in @ref{Numeric data types}.
 `@code{strN}': for strings. The @code{N} value identifies the length of the
 string (how many characters it has). The start of the string on each row is
 the first non-delimiter character of the column that has the string
-type. The next @code{N} characters will be interpretted as a string and all
+type. The next @code{N} characters will be interpreted as a string and all
 leading and trailing white space will be removed.
 
 If the next column's characters, are closer than @code{N} characters to the
@@ -5838,7 +5838,7 @@ number), or string (metadata match/search) format.
 If the value can be parsed as a positive integer, it will be seen as the
 low-level column number. Note that column counting starts from 1, so if you
 ask for column 0, the respective program will abort with an error. When the
-value can't be interpretted as an a integer number, it will be seen as a
+value can't be interpreted as an a integer number, it will be seen as a
 string of characters which will be used to match/search in the table's
 meta-data. The meta-data field which the value will be compared with can be
 selected through the @option{--searchin} option, see @ref{Input output
@@ -5859,7 +5859,7 @@ reviewing this chapter for greatly improving the quality of your work in
 many cases, not just for searching column meta-data in Gnuastro.
 
 @item
-When the string isn't inclosed between `@key{/}'s, any column that exactly
+When the string isn't enclosed between `@key{/}'s, any column that exactly
 matches the given value in the given field will be selected.
 @end itemize
 
@@ -5880,7 +5880,7 @@ It is sometimes necessary to classify the elements in a dataset (for
 example pixels in an image) into a grid of individual, non-overlapping
 tiles. For example when background sky gradients are present in an image,
 you can define a tile grid over the image. When the tile sizes are set
-properly, the background's variation over each tile will be negligble,
+properly, the background's variation over each tile will be negligible,
 allowing you to measure (and subtract) it. In other cases (for example
 spatial domain convolution in Gnuastro, see @ref{Convolve}), it might
 simply be for speed of processing: each tile can be processed independently
@@ -5891,7 +5891,7 @@ tessellation}.
 The size of the regular tiles (in units of data-elements, or pixels in an
 image) can be defined with the @option{--tilesize} option. It takes
 multiple numbers (separated by a comma) which will be the length along the
-respective dimension (in Fortran/FITS dimension order). Divisions are also
+respective dimension (in FORTRAN/FITS dimension order). Divisions are also
 acceptable, but must result in an integer. For example
 @option{--tilesize=30,40} can be used for an image (a 2D dataset). The
 regular tile size along the first FITS axis (horizontal when viewed in SAO
@@ -5930,7 +5930,7 @@ statistics).
 @cindex Subaru Telescope
 @cindex Hyper Suprime-Cam
 @cindex Hubble Space Telescope
-For raw image processing, a single tesselation/grid is not sufficient. Raw
+For raw image processing, a single tessellation/grid is not sufficient. Raw
 images are the unprocessed outputs of the camera detectors. Modern
 detectors usually have multiple readout channels each with its own
 amplifier. For example the Hubble Space Telescope Advanced Camera for
@@ -5951,17 +5951,17 @@ systematic biases will then propagate to all subsequent measurements we do
 on the data (for example photometry and subsequent stellar mass and star
 formation rate measurements in the case of galaxies).
 
-Therefore an accurate analysis requires a two layer tesselation: the top
+Therefore an accurate analysis requires a two layer tessellation: the top
 layer contains larger tiles, each covering one amplifier channel. For
 clarity we'll call these larger tiles ``channels''. The number of channels
 along each dimension is defined through the @option{--numchannels}. Each
 channel is then covered by its own individual smaller tessellation (with
 tile sizes determined by the @option{--tilesize} option). This will allow
-independent analyis of two adjacent pixels from different channels if
+independent analysis of two adjacent pixels from different channels if
 necessary. If the image is processed or the detector only has one
 amplifier, you can set the number of channels in both dimension to 1.
 
-The final tesselation can be inspected on the image with the
+The final tessellation can be inspected on the image with the
 @option{--checktiles} option that is available to all programs which use
 tessellation for localized operations. When this option is called, a FITS
 file with a @file{_tiled.fits} suffix will be created along with the
@@ -6460,7 +6460,7 @@ END
 The most low-level and basic property of a dataset is how it is stored. To
 process, archive and transmit the data, you need a container to store it
 first. From the start of the computer age, different formats have been
-defined to store data, optimized for pariticular applications. One
+defined to store data, optimized for particular applications. One
 format/container can never be useful for all applications: the storage
 defines the application and vice-versa. In astronomy, the Flexible Image
 Transport System (FITS) standard has become the most common format of data
@@ -6488,7 +6488,7 @@ unlike images (where all elements/pixels have one data type), tables
 contain multiple columns and each column can have different properties:
 independent data types (see @ref{Numeric data types}) and meta-data. In
 practice, each column can be viewed as a separate container that is grouped
-with others in the table. The only shared property of the colums in a table
+with others in the table. The only shared property of the columns in a table
 is thus the number of elements they contain. To allow easy
 inspection/manipulation of table columns, Gnuastro has the Table program
 (see @ref{Table}). It can be used to select certain table columns in a FITS
@@ -6540,7 +6540,7 @@ different colors (filters).
 As discussed above, the extensions in a FITS file can be completely
 independent. To keep some information (meta-data) about the group of
 extensions in the FITS file, the community has adopted the following
-convension: put no data in the first extension, so it is just
+convention: put no data in the first extension, so it is just
 meta-data. This extension can thus be used to store Meta-data regarding the
 whole file (grouping of extensions). Subsequent extensions may contain data
 along with their own separate meta-data. All of Gnuastro's programs also
@@ -6638,7 +6638,7 @@ columns). You can use this to get a general idea of the contents of the
 FITS file and what HDU to use for further processing, either with the Fits
 program or any other Gnuastro program.
 
-Here is one example of information about a FITS file with four exensions:
+Here is one example of information about a FITS file with four extensions:
 the first extension has no data, it is a purely meta-data HDU (commonly
 used to keep meta-data about the whole file, or grouping of extensions, see
 @ref{Fits}). The second extension is an image with name @code{IMAGE} and
@@ -7019,7 +7019,7 @@ formats. Its major advantage is the compression algorithm that is
 defined by the standard. Like the FITS standard, this is a raster
 graphics format, which means that it is pixelated.
 
-A JPEG file can have 1 (for grayscale), 3 (for RGB) and 4 (for CMYK)
+A JPEG file can have 1 (for gray-scale), 3 (for RGB) and 4 (for CMYK)
 color channels. If you only want to convert one JPEG image into other
 formats, there is no problem, however, if you want to use it in
 combination with other input files, make sure that the final number of
@@ -7082,7 +7082,7 @@ explained below) is a binary image or only has two colors of black and
 white (in segmentation maps for example), then PostScript has another
 great advantage compared to other formats. It allows for 1 bit pixels
 (pixels with a value of 0 or 1), this can decrease the output file
-size by 8 times. So if a grayscale image is binary, ConvertType will
+size by 8 times. So if a gray-scale image is binary, ConvertType will
 exploit this property in the EPS and PDF (see below) outputs.
 
 @cindex Suffixes, EPS format
@@ -7126,7 +7126,7 @@ output. Just note that when the suffix is not recognized, automatic output
 will not be preformed.
 
 The basic input/output on plain text images is very similar to how tables
-are read/written as discribed in @ref{Gnuastro text table format}. Simply
+are read/written as described in @ref{Gnuastro text table format}. Simply
 put, the restrictions are very loose, and there is a convention to define a
 name, units, data type (see @ref{Numeric data types}), and comments for the
 data in a commented line. The only difference is that as a table, a text
@@ -7163,12 +7163,12 @@ comment line). To print to the standard output, set the output name to
 @cindex Grayscale
 @cindex Colorspace
 @cindex Primary colors
-@cindex Colorspace, grayscale
+@cindex Colorspace, gray-scale
 An image is a two dimensional array of 2 dimensional elements called
 pixels. If each pixel only has one value, the image is known as a
-grayscale image and no color is defined. The range of values in the
+gray-scale image and no color is defined. The range of values in the
 image can be interpreted as shades of any color, it is customary to
-use shades of black or grayscale. However, to produce the color
+use shades of black or gray-scale. However, to produce the color
 spectrum in the digital world, several primary colors must be
 mixed. Therefore in a color image, each pixel has several values
 depending on how many primary colors were chosen. For example on the
@@ -7185,10 +7185,10 @@ to the intrinsic faintness of most of the targets, the collecting area
 of the pixel is very important for us. Hence the full area of the
 pixel is used and one value is stored for that pixel in the end. One
 color filter is used for the whole image. Thus a FITS image is
-inherently a grayscale image and no color can be defined for it.
+inherently a gray-scale image and no color can be defined for it.
 
 @cindex Colorspace, transformation
-One way to represent a grayscale image in different color spaces is to
+One way to represent a gray-scale image in different color spaces is to
 use the same proportions of the primary colors in each pixel. This is
 the common way most FITS image converters work: they fill all the
 channels with the same values. The downside is two fold:
@@ -7218,7 +7218,7 @@ The JPEG and EPS standards set two sizes for the number of bits in
 each channel: 8-bit and 12-bit. The former is by far the most common
 and is what is used in ConvertType. Therefore, each channel should
 have values between 0 to @math{2^8-1=255}. From this we see how each
-pixel in a grayscale image is one byte (8 bits) long, in an RGB image,
+pixel in a gray-scale image is one byte (8 bits) long, in an RGB image,
 it is 3bytes long and in CMYK it is 4bytes long. But thanks to the
 JPEG compression algorithms, when all the pixels of one channel have
 the same value, that channel is compressed to one pixel. Therefore a
@@ -7267,7 +7267,7 @@ input file(s) the number of color channels in all the inputs will be
 used to define which color space is being used for the outputs and how
 each color channel is interpreted. Note that one file might have more
 than one color channel (for example in the JPEG format). If there is
-one color channel the output is grayscale, if three input color
+one color channel the output is gray-scale, if three input color
 channels are given they are respectively considered to be the red,
 green and blue color channels and if there are four color channels
 they are respectively considered to be cyan, magenta, yellow and
@@ -7360,7 +7360,7 @@ compression ratio (nearly 40 percent) compared to Hexadecimal encoding.
 @cindex Quality of compression in JPEG
 The quality (compression) of the output JPEG file with values from 0 to 100
 (inclusive). For other formats the value to this option is ignored. Note
-that only in grayscale (when one input color channel is given) will this
+that only in gray-scale (when one input color channel is given) will this
 actually be the exact quality (each pixel will correspond to one input
 value). If it is in color mode, some degradation will occur. While the JPEG
 standard does support loss-less graphics, it is not commonly supported.
@@ -7450,7 +7450,7 @@ For 8-bit output types (JPEG, EPS, and PDF for example) the final value
 that is stored is inverted so white becomes black and vice versa. The
 reason for this is that astronomical images usually have a very large area
 of blank sky in them. The result will be that a large are of the image will
-be black. Note that this behaviour is ideal for grayscale images, if you
+be black. Note that this behavior is ideal for gray-scale images, if you
 want a color image, the colors are going to be mixed up.
 
 @end table
@@ -7485,7 +7485,7 @@ within a FITS file. The acceptable table formats are fully described in
 @cindex AWK
 @cindex GNU AWK
 Binary tables are not easily readable by human eyes. There is no
-fixed/unified standard on how the zero and ones should be interpretted. The
+fixed/unified standard on how the zero and ones should be interpreted. The
 Unix-like operating systems have flourished because of a simple fact:
 communication between the various tools is based on human readable
 characters@footnote{In ``The art of Unix programming'', Eric Raymond makes
@@ -7594,7 +7594,7 @@ last command with all the previously typed columns present, delete
 @item -c STR/INT
 @itemx --column=STR/INT
 Specify the columns to output, see @ref{Selecting table columns} for a
-thorough explanation on how the value to this option is interpretted. To
+thorough explanation on how the value to this option is interpreted. To
 select several output columns, this option can also be called any number
 times in one call to Table. The order of the output columns will be the
 same call order on the command-line.
@@ -7816,7 +7816,7 @@ input image with these coordinates, see @ref{Warp}.
 As a summary, if you don't specify a catalog, you have to define the
 cropped region manually on the command-line. Other than the
 @option{--polygon} option, the other methods to define a single crop are
-uniqe to each mode, so the mode (@option{--mode}) will be ignored. When
+unique to each mode, so the mode (@option{--mode}) will be ignored. When
 using a catalog to define the crop centers, if the columns to only one mode
 are given (for example only @option{--xcol} and @option{--ycol}, not the
 WCS columns) then the mode is irrelevant. However, when all image and WCS
@@ -8102,11 +8102,11 @@ modes, see @ref{Crop modes}. The cropped image will be the size of the
 rectangular region that completely encompasses the polygon. By default all
 the pixels that are outside of the polygon will be set as blank values (see
 @ref{Blank pixels}). However, if @option{--outpolygon} is called all pixels
-interal to the vertices will be set to blank.
+internal to the vertices will be set to blank.
 
 The syntax for the polygon vertices is similar to, and simpler than, that
 for @option{--section}. In short, the dimensions of each coordinate are
-separated by a comma (@key{,}) and each vertice is separated by a colon
+separated by a comma (@key{,}) and each vertex is separated by a colon
 (@key{:}). You can define as many vertices as you like. If you would like
 to use space characters between the dimensions and vertices to make them
 more human-readable, then you have to put the value to this option in
@@ -8141,7 +8141,7 @@ $ astcrop --mode=wcs desired-filter-image(s).fits           \
 @cindex SAO ds9
 In other cases, you have an image and want to define the polygon yourself
 (it isn't already published like the example above). As the number of
-vertices increases, checking the vertice coordinates on a FITS viewer (for
+vertices increases, checking the vertex coordinates on a FITS viewer (for
 example SAO ds9) and typing them in one by one can be very tedious and
 prone to typo errors.
 
@@ -8152,7 +8152,7 @@ with @clicksequence{Region@click{}Shape@click{}Polygon}. Click on the
 approximate center of the region you want and a small square will
 appear. By clicking on the vertices of the square you can shrink or expand
 it, clicking and dragging anywhere on the edges will enable you to define a
-new vertice. After the region has been nicely defined, save it as a file
+new vertex. After the region has been nicely defined, save it as a file
 with @clicksequence{Region@click{}Save Regions}. You can then select the
 name and address of the output file, keep the format as @command{REG} and
 press ``OK''. In the next window, keep format as ``ds9'' and ``Coordinate
@@ -8307,7 +8307,7 @@ were created, see @ref{Crop modes}:
 @item
 When a catalog is given, the value of the @option{--output} (see
 @ref{Common options}) will be read as the directory to store the output
-cropped images. Hence if it doesn't alread exist, Crop will abort with an
+cropped images. Hence if it doesn't already exist, Crop will abort with an
 error of a ``No such file or directory'' error. The crop file names will
 consist of two parts: a variable part (the row number of each target
 starting from 1) along with a fixed string which you can set with the
@@ -8388,7 +8388,7 @@ using Warp for example, see @ref{Warp}), the images are co-added (the
 output pixel grid is the average of the pixels of the individual input
 images). Arithmetic is Gnuastro's program for such operations on your
 datasets directly from the command-line. It currently uses the reverse
-polish or postfix notation, see @ref{Reverse polish notation} and will work
+polish or post-fix notation, see @ref{Reverse polish notation} and will work
 on the native data types of the input images/data to reduce CPU and RAM
 resources, see @ref{Numeric data types}. For more information on how to run
 Arithmetic, please see @ref{Invoking astarithmetic}.
@@ -8403,7 +8403,7 @@ Arithmetic, please see @ref{Invoking astarithmetic}.
 @node Reverse polish notation, Arithmetic operators, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
-@cindex Postfix notation
+@cindex Post-fix notation
 @cindex Reverse Polish Notation
 The most common notation for arithmetic operations is the
 @url{https://en.wikipedia.org/wiki/Infix_notation, infix notation} where
@@ -8414,13 +8414,13 @@ which can complicate the implementation of the code. In the near future we
 do plan to adopt this
 notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}}, but
 for the time being (due to time constraints on the developers), Arithmetic
-uses the postfix or
+uses the post-fix or
 @url{https://en.wikipedia.org/wiki/Reverse_Polish_notation, reverse polish
 notation}. The Wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary here for
 self-sufficiency.
 
-In the postfix notation, the operator is placed after the operands, as we
+In the post-fix notation, the operator is placed after the operands, as we
 will see below this removes the need to define parenthesis for most
 ordinary operators. For example, instead of writing @command{5+6}, we write
 @command{5 6 +}. To easily understand how this notation works, you can
@@ -8452,7 +8452,7 @@ In the Arithmetic program, the operands can be FITS images or numbers. As
 you can see, very complicated procedures can be created without the need
 for parenthesis or worrying about precedence. Even functions which take an
 arbitrary number of arguments can be defined in this notation. This is a
-very powerfull notation and is used in languages like Postscript
+very powerful notation and is used in languages like Postscript
 @footnote{See the EPS and PDF part of @ref{Recognized file formats} for a
 little more on the Postscript language.}  (the programming language in
 Postscript and compiled into PDF files) uses this notation.
@@ -8740,7 +8740,7 @@ numbers can be written as bit strings on the command-line): @code{00101000
 only work on integer type datasets.
 
 @item bitor
-Bitwise inclusive OR operator: The bits where atleast one of the two popped
+Bitwise inclusive OR operator: The bits where at least one of the two popped
 operands has a 1 value get a value of 1, the others 0. For example
 (assuming numbers can be written as bit strings on the command-line):
 @code{00101000 00100010 bitand} will give @code{00101010}. Note that the
@@ -8942,13 +8942,14 @@ force a number to be read as float, add a @code{f} after it, so
 polish notation}).
 
 Unless otherwise stated (in @ref{Arithmetic operators}), the operators can
-deal with multiple datatypes. For example in ``@command{a.fits b.fits +}'',
-the image types can be @code{long} and @code{float}. In such cases, C's
-internal type conversion will be used. The output type will be set to the
-higher-ranking type of the two inputs. Unsigned integer types have smaller
-ranking than their signed counterparts and floating point types have higher
-ranking than the integer types. So the internal C type conversions done in
-the example above are equivalent to this piece of C:
+deal with numeric multiple data types (see @ref{Numeric data types}). For
+example in ``@command{a.fits b.fits +}'', the image types can be
+@code{long} and @code{float}. In such cases, C's internal type conversion
+will be used. The output type will be set to the higher-ranking type of the
+two inputs. Unsigned integer types have smaller ranking than their signed
+counterparts and floating point types have higher ranking than the integer
+types. So the internal C type conversions done in the example above are
+equivalent to this piece of C:
 
 @example
 size_t i;
@@ -8963,7 +8964,7 @@ processing and also requires less RAM (when using very large
 images). However this great advantage comes at the cost of preparing for
 all the combinations of types while building/compiling Gnuastro. With the
 full list of CFITSIO types, compilation can take roughly half an
-hour. However, some types are not too common, therfore Gnuastro comes with
+hour. However, some types are not too common, therefore Gnuastro comes with
 a set of configure time options letting you enable certain types for native
 compilation. You can see the full list of @option{--enable-bin-op-XXXX}
 options in @ref{Gnuastro configure options}.
@@ -9390,7 +9391,7 @@ displayed as vectors on a plane. Euler's identity might seem counter
 intuitive at first, so we will try to explain it geometrically (for deeper
 physical insight). On the real-imaginary 2D plane (like the left hand plot
 in each box of @ref{iandtime}), multiplying a number by @mymath{i} can be
-interpretted as rotating the point by @mymath{90} degrees (for example the
+interpreted as rotating the point by @mymath{90} degrees (for example the
 value @mymath{3} on the real axis becomes @mymath{3i} on the imaginary
 axis). On the other hand,
 @mymath{e\equiv\lim_{n\rightarrow\infty}(1+{1\over n})^n}, therefore,
@@ -9416,7 +9417,7 @@ Wikipedia}. We see that @mymath{\lim_{m\rightarrow\infty}a(\pi)=-1}, while
 @mymath{-1}, however the distance of the polygon points traversed as
 @mymath{m\rightarrow\infty} is half the circumference of a circle or
 @mymath{\pi}, showing how @mymath{v} in the equation above can be
-interpretted as an angle in units of radians and therefore how
+interpreted as an angle in units of radians and therefore how
 @mymath{a(v)=cos(v)} and @mymath{b(v)=sin(v)}.
 
 Since @mymath{e^{iv}} is periodic (let's assume with a period of
@@ -10054,14 +10055,14 @@ dimension a different value should be used.
 \displaystyle\sum_{k=-\infty}^{\infty}
 \delta(l-jP, m-kP) }
 
-The Two dimensional Sampling theorem (see @ref{Sampling theorem}) is
-thus very easily derived as before since the frequencies in each
-dimension are independent. Let's take @mymath{\nu_m} as the maximum
-frequency along the second dimension. Therefore the two dimensional
-sampling theorem says that a 2D band-limited function can be recovered
-when the following conditions hold@footnote{If the pixels are not a
-square, then each dimension has to use the respective pixel size, but
-since most imagers have square pixels, we assume so here too}:
+The Two dimensional Sampling theorem (see @ref{Sampling theorem}) is thus
+very easily derived as before since the frequencies in each dimension are
+independent. Let's take @mymath{\nu_m} as the maximum frequency along the
+second dimension. Therefore the two dimensional sampling theorem says that
+a 2D band-limited function can be recovered when the following conditions
+hold@footnote{If the pixels are not a square, then each dimension has to
+use the respective pixel size, but since most detectors have square pixels,
+we assume so here too}:
 
 @dispmath{ {2\pi\over P} > 2\omega_m \quad\quad\quad {\rm and}
 \quad\quad\quad {2\pi\over P} > 2\nu_m}
@@ -10433,7 +10434,7 @@ Image warping is the process of mapping the pixels of one image onto a new
 pixel grid. This process is sometimes known as transformation, however
 following the discussion of Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
-Warping}, Master's thesis at University of California, Berkely.} we will
+Warping}, Master's thesis at University of California, Berkeley.} we will
 not be using that term because it can be confused with only pixel value or
 flux transformations. Here we specifically mean the pixel grid
 transformation which is better conveyed with `warp'.
@@ -10652,18 +10653,18 @@ So the output coordinates can be calculated from:
 @dispmath{x={x' \over w}={au+bv+c \over gu+hv+1}\quad\quad\quad\quad
           y={y' \over w}={du+ev+f \over gu+hv+1}}
 
-Thus with homography we can change the sizes of the output pixels on
+Thus with Homography we can change the sizes of the output pixels on
 the input plane, giving a `perspective'-like visual impression. This
 can be quantitatively seen in the two equations above. When
 @mymath{g=h=0}, the denominator is independent of @mymath{u} or
 @mymath{v} and thus we have spatial invariance. Homography preserves
-lines at all orientations. A very useful fact about homography is that
-its inverse is also a homography. These two properties play a very
+lines at all orientations. A very useful fact about Homography is that
+its inverse is also a Homography. These two properties play a very
 important role in the implementation of this transformation. A short
 but instructive and illustrated review of affine, projective and also
 bi-linear mappings is provided in Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
-Warping}, Master's thesis at University of California, Berkely. Note
+Warping}, Master's thesis at University of California, Berkeley. Note
 that since points are defined as row vectors there, the matrix is the
 transpose of the one discussed here.}.
 
@@ -10856,9 +10857,9 @@ below.
 
 The values to the warping options (modular warpings as well as
 @option{--matrix}), are a sequence of at least one number. Each number in
-this seqence is separated from the next by a comma (@key{,}). Each number
+this sequence is separated from the next by a comma (@key{,}). Each number
 can also be written as a single fraction (with a forward-slash @key{/}
-between the numerator and denomiator). Space and Tab characters are
+between the numerator and denominator). Space and Tab characters are
 permitted between any two numbers, just don't forget to quote the whole
 value. Otherwise, the value will not be fully passed onto the option. See
 the examples above as a demonstration.
@@ -10867,12 +10868,12 @@ the examples above as a demonstration.
 Based on the FITS standard, integer values are assigned to the center of a
 pixel and the coordinate [1.0, 1.0] is the center of the first pixel
 (bottom left of the image when viewed in SAO ds9). So the coordinate center
-[0.0, 0.0] is half a pixel away (in each axis) from the bottom left vertice
+[0.0, 0.0] is half a pixel away (in each axis) from the bottom left vertex
 of the first pixel. The resampling that is done in Warp (see
-@ref{Resampling}) is done on the coordinate axises and thus directly
+@ref{Resampling}) is done on the coordinate axes and thus directly
 depends on the coordinate center. In some situations this if fine, for
 example when rotating/aligning a real image, all the edge pixels will be
-similiarly affected. But in other situations (for example when scaling an
+similarly affected. But in other situations (for example when scaling an
 over-sampled mock image to its intended resolution, this is not desired:
 you want the center of the coordinates to be on the corner of the pixel. In
 such cases, you can use the @option{--centeroncorner} option which will
@@ -10951,7 +10952,7 @@ command-line or in configuration files) as a fraction.
 @itemx --project=FLT[,FLT]
 Apply a projection to the input image by the given values(s): @mymath{g}
 and @mymath{h} in @ref{Warping basics}. If only one value is given, then
-projection will apply to both axises with the given value. When two values
+projection will apply to both axes with the given value. When two values
 are given (separated by a comma), the first will be used to project the
 first axis and the second will be used for the second axis. If you only
 need to project along one axis, use @option{0} for the axis that must be
@@ -10971,7 +10972,7 @@ into a 3 by 3 matrix (see @ref{Warping basics}).
 The determinant of the matrix has to be non-zero and it must not
 contain any non-number values (for example infinities or NaNs). The
 elements of the matrix have to be written row by row. So for the
-general homography matrix of @ref{Warping basics}, it should be called
+general Homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
 The raw matrix takes precedence over all the modular warping options listed
@@ -11014,7 +11015,7 @@ acceptable covered fraction of such pixels (any value between 0 and 1). If
 you only want output pixels that are fully covered by the input image area
 (and are not blank), then you can set
 @option{--coveredfrac=1}. Alternatively, a value of @code{0} will keep
-output pixels that are even infinitesmially covered by the input(so the sum
+output pixels that are even infinitesimally covered by the input(so the sum
 of the pixels in the input and output images will be the same).
 
 @end table
@@ -11042,7 +11043,7 @@ of the pixels in the input and output images will be the same).
 @chapter Data analysis
 
 Astronomical datasets (images or tables) contain very valuable information,
-the tools in this section can help in analysing, extracting, and
+the tools in this section can help in analyzing, extracting, and
 quantifying that information. For example getting general or specific
 statistics of the dataset (with @ref{Statistics}), detecting signal within
 a noisy dataset (with @ref{NoiseChisel}), or creating a catalog from an
@@ -11071,7 +11072,7 @@ and we want to see how accurate it was, one method is to calculate the
 average of the undetected pixels and see how reasonable it is (if detection
 is done correctly, the average of undetected pixels should be approximately
 equal to the background value, see @ref{Sky value}). In a table, you might
-have calcuated the magnitudes of a certain class of objects and want to get
+have calculated the magnitudes of a certain class of objects and want to get
 some general characteristics of the distribution immediately on the
 command-line (very fast!), to possibly change some parameters. The
 Statistics program is designed for such situations.
@@ -11140,7 +11141,7 @@ a certain number of points (intervals) in the input range rather than the
 whole dataset, so you should determine the number of bins you want when
 asking for a cumulative frequency plot. In Gnuastro (and thus the
 Statistics program), the number reported for each bin is the total number
-of datapoints until the larger interval value for that bin. You can see an
+of data points until the larger interval value for that bin. You can see an
 example histogram and cumulative frequency plot of a single dataset under
 the @option{--asciihist} and @option{--asciicfp} options of @ref{Invoking
 aststatistics}.
@@ -11246,7 +11247,7 @@ appear to have a clear high signal to noise cutoff at all. Therefore
 @mymath{\sigma}-clipping will not be useful in removing their effect on the
 data.
 
-To guage if @mymath{\sigma}-clipping will be useful for your dataset, look
+To gauge if @mymath{\sigma}-clipping will be useful for your dataset, look
 at the histogram (see @ref{Histogram and Cumulative Frequency Plot}). The
 ASCII histogram that is printed on the command-line with
 @option{--asciihist} is good enough in most cases.
@@ -11505,7 +11506,7 @@ deviation.
 
 @cindex Cosmic rays
 The mean value of the tiles that have an approximately equal mode and
-median will be the Sky value. However there is one final hudle:
+median will be the Sky value. However there is one final hurdle:
 astronomical datasets are commonly plagued with Cosmic rays. Images of
 Cosmic rays aren't smoothed by the atmosphere or telescope aperture, so
 they have sharp boundaries. Also, since they don't occupy too many pixels,
@@ -11653,7 +11654,7 @@ When no operation is requested, Statistics will print some general basic
 properties of the input dataset on the command-line like the example below
 (ran on one of the output images of @command{make check}@footnote{You can
 try it by running the command in the @file{tests} directory, open the image
-with a FITS viewer and have a look at it to get a sence of how these
+with a FITS viewer and have a look at it to get a sense of how these
 statistics relate to the input image/dataset.}). This default behavior is
 designed to help give you a general feeling of how the data are distributed
 and help in narrowing down your analysis.
@@ -11693,7 +11694,7 @@ Histogram:
 
 Gnuastro's Statistics is a very general purpose program, so to be able to
 easily understand this diversity in its operations (and how to possibly run
-them together), we'll devided the operations into two types: those that
+them together), we'll divided the operations into two types: those that
 don't respect the position of the elements and those that do (by
 tessellating the input on a tile grid, see @ref{Tessellation}). The former
 treat the whole dataset as one and can re-arrange all the elements (for
@@ -11922,7 +11923,7 @@ option. The mirror distribution is fully described in Appendix C of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} and
 currently it is only used to calculate the mode (see @option{--mode}).
 
-Just note that the mirror distribtution is a discrete distribution like the
+Just note that the mirror distribution is a discrete distribution like the
 input, so while you may give any number as the value to this option, the
 actual mirror value is the closest number in the input dataset to this
 value. If the two numbers are different, Statistics will warn you of the
@@ -11999,7 +12000,7 @@ be ignored.
 
 
 All the options described until now were from the first class of operations
-discusssed above: those that treat the whole dataset as one. However. It
+discussed above: those that treat the whole dataset as one. However. It
 often happens that the relative position of the dataset elements over the
 dataset is significant. For example you don't want one median value for the
 whole input image, you want to know how the median changes over the
@@ -12012,7 +12013,7 @@ along with the options above in one run of Statistics.
 @item -t
 @itemx --ontile
 Do the respective single-valued calculation over one tile of the input
-dataset, not the whole dataset. This option must be called with atleast one
+dataset, not the whole dataset. This option must be called with at least one
 of the single valued options discussed above (for example @option{--mean}
 or @option{--quantile}). The output will be a file in the same format as
 the input. If the @option{--oneelempertile} option is called, then one
@@ -12068,7 +12069,7 @@ value can either be written as a single number or as a fraction of two
 numbers (for example @code{3,1/10}). The first value to this option is the
 multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
 section). The second value is the exit criteria. If it is less than 1, then
-it is interpretted as tolerance and if it is larger than one it is a
+it is interpreted as tolerance and if it is larger than one it is a
 specific number. Hence, in the latter case the value must be an integer.
 
 @item --smoothwidth=INT
@@ -12141,7 +12142,7 @@ The name of NoiseChisel is derived from the first thing it does after
 thresholding the dataset: to erode it. In mathematical morphology, erosion
 on pixels can be pictured as carving off boundary pixels. Hence, what
 NoiseChisel does is similar to what a wood chisel or stone chisel do. It is
-just not a hardware, but a software. Infact looking at it as a chisel and
+just not a hardware, but a software. In fact looking at it as a chisel and
 your dataset as a solid cube of rock will greatly help in best using it:
 with NoiseChisel you literally carve the galaxies/stars/comets out of the
 noise. Try running it with the @option{--checkdetection} option to see each
@@ -12270,7 +12271,7 @@ on different threads. The tessellation related options are discussed in
 (with everything between them identical except the tile sizes): a
 fine-grained one with smaller tiles (mainly used in detection) and a more
 larger tiled one which is used for multi-threaded processing. The common
-Tessellation options discribed in @ref{Processing options} define all
+Tessellation options described in @ref{Processing options} define all
 parameters of both tessellations, only the large tile size for the latter
 tessellation is set through the @option{--largetilesize} option. To inspect
 the tessellations on your input dataset, run NoiseChisel with
@@ -12280,7 +12281,7 @@ the tessellations on your input dataset, run NoiseChisel with
 @noindent
 @strong{Usage TIP:} Frequently use the options starting with
 @option{--check}. Depending on what you want to detect in the data, you can
-often play with the paramters/options for a better result than the default
+often play with the parameters/options for a better result than the default
 parameters. You can start with @option{--checkdetection} and
 @option{--checksegmentation} for the main steps. For their full list please
 run:
@@ -12443,7 +12444,7 @@ any of the NoiseChisel options that start with @option{--check},
 NoiseChisel will abort once all the desired check file(s) is (are)
 completed. If you call the @option{--continueaftercheck} option, you can
 disable this behavior and ask NoiseChisel to continue with the rest of the
-processing after completeting the check file(s).
+processing after completing the check file(s).
 
 @end table
 
@@ -12577,7 +12578,7 @@ value can either be written as a single number or as a fraction of two
 numbers (for example @code{3,1/10}). The first value to this option is the
 multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
 section). The second value is the exit criteria. If it is less than 1, then
-it is interpretted as tolerance and if it is larger than one it is assumed
+it is interpreted as tolerance and if it is larger than one it is assumed
 to be the fixed number of iterations. Hence, in the latter case the value
 must be an integer.
 
@@ -12596,7 +12597,7 @@ only one pixel will be used for each tile (see @ref{Processing options}).
 The detection threshold: a multiple of the initial sky standard deviation
 added with the initial sky approximation (which you can inspect with
 @option{--checkdetsky}). This flux threshold is applied to the initially
-undetected regions on the unconvolved image. The background pixels that are
+undetected regions on the un-convolved image. The background pixels that are
 completely engulfed in a 4-connected foreground region are converted to
 background (holes are filled) and one opening (depth of 1) is applied over
 both the initially detected and undetected regions. The Signal to noise
@@ -12873,10 +12874,10 @@ an image is a 2D dataset). Each data-element (pixel) just has two
 properties: its position (relative to the rest) and its value. The entire
 input dataset (a large image for example) is rarely treated as a singular
 entity for higher-level analysis@footnote{In low-level
-reduction/preparation of a dataset, you do infact treat a whole image as a
+reduction/preparation of a dataset, you do in fact treat a whole image as a
 single entity. You can derive the over-all properties of all the pixels in
 a dataset with Gnuastro's Statistics program (see @ref{Statistics})}. You
-want to know the properties of the scientifically intresting targets that
+want to know the properties of the scientifically interesting targets that
 are embedded in it. For example the magnitudes, positions and elliptical
 properties of the galaxies that are in the image. MakeCatalog is Gnuastro's
 program to derive higher-level information for @emph{pre-defined} regions
@@ -12911,7 +12912,7 @@ words, the number of rows of the output catalog will be determined from the
 labeled image.
 
 The labeled image maybe created with any tool@footnote{For example, you can
-even use a graphic user interfase image editing tool like the GNU Image
+even use a graphic user interface image editing tool like the GNU Image
 Manipulation Program (or GIMP) and use Gnuastro's ConvertType to convert it
 to a FITS file.}. Within Gnuastro you can use these two solutions depending
 on a-priori/parametric knowledge of the targets you want to study:
@@ -12925,7 +12926,7 @@ generate a labeled image from another catalog. This is also known as
 aperture photometry (the apertures are defined a-priori).
 
 @item
-When the shape of your targets cannot be parametrized accurately (for
+When the shape of your targets cannot be parameterized accurately (for
 example galaxies), or if you don't know the number/shape of the targets in
 the image, you can use Gnuastro's NoiseChisel program to detect and segment
 (make labeled images of) the @emph{objects} and @emph{clumps} in the input
@@ -13247,7 +13248,7 @@ image separately. Not one value for the whole image.
 @subsection Measuring elliptical parameters
 
 The shape or morphology of a target is one of the most commonly desired
-paramters of a target. Here, we will review the derivation of the most
+parameters of a target. Here, we will review the derivation of the most
 basic/simple morphological parameters are estimated: the elliptical
 parameters for a set of labeled pixels. The elliptical parameters are: the
 (semi-)major axis, the (semi-)minor axis and the position angle along with
@@ -13346,7 +13347,7 @@ If an elliptical profile's major axis exactly lies along the @mymath{x}
 axis, then @mymath{\overline{x^2}} will be directly proportional with the
 profile's major axis, @mymath{\overline{y^2}} with its minor axis and
 @mymath{\overline{xy}=0}. However, in reality we are not that lucky and
-(assuming galaxies can be parametrized as an ellipse) the major axis of
+(assuming galaxies can be parameterized as an ellipse) the major axis of
 galaxies can be in any direction on the image (in fact this is one of the
 core principles behind weak-lensing by shear estimation). So the purpose of
 the remainder of this section is to define a strategy to measure the
@@ -13453,7 +13454,7 @@ near conceptually similar options.
 The @code{objectcols} and @code{clumpcols} enumerated variables
 (@code{enum}) define the raw/internal calculation columns. If your new
 column requires new raw calculations, add a row to the respective list. If
-your calculation requires any other settings paramters, you should add a
+your calculation requires any other settings parameters, you should add a
 variable to the @code{mkcatalogparams} structure.
 
 @item ui.h
@@ -13478,7 +13479,7 @@ sanity checks and preparations for it here. Otherwise, you can ignore this
 file.
 
 @item columns.c
-This file will contain the main defintion and high-level calculation of
+This file will contain the main definition and high-level calculation of
 your new column through the @code{columns_define_alloc} and
 @code{columns_fill} functions. In the first, you specify the basic
 information about the column: its name, units, comments, type (see
@@ -13610,7 +13611,7 @@ $ awk '!/^#/' out_c.txt | sort -g -k1,1 -k2,2
 @subsubsection MakeCatalog input files
 
 MakeCatalog needs multiple images as input: a values image, one (or two)
-labeled images and Sky and Sky standandard deviation images. The options
+labeled images and Sky and Sky standard deviation images. The options
 described in this section allow you to identify them. If you use the
 default output of NoiseChisel (see @ref{NoiseChisel output}) you don't have
 to worry about any of these options and just give NoiseChisel's output file
@@ -13628,7 +13629,7 @@ specify the extension/HDU with the @option{--objectshdu} option.
 The HDU/extension of the object labels image. Only pixels with values above
 zero will be considered. The objects label image has to be an integer data
 type (see @ref{Numeric data types}) and only pixels with a value larger
-than zero will be used. If this extension contains teh @code{WCLUMPS}
+than zero will be used. If this extension contains the @code{WCLUMPS}
 keyword with a value of @code{yes}, @code{1}, or @code{y} (not case
 sensitive), then MakeCatalog will also build a clumps catalog, see
 @ref{Invoking astmkcatalog}.
@@ -13668,7 +13669,7 @@ The HDU of the Sky value standard deviation image.
 @subsubsection MakeCatalog general settings
 
 Some of the columns require particular settings (for example the zero point
-magnitdue for measuring magnitudes), the options in this section can be
+magnitude for measuring magnitudes), the options in this section can be
 used for such configurations.
 
 @table @option
@@ -13714,7 +13715,7 @@ any lower-level configuration file and you want to ignore that value
 for this particular run or in a higher-level configuration file, then
 set it to NaN, for example @option{--threshold=nan}. Gnuastro uses the
 C library's @code{strtod} function to read floats, which is not
-case-sensative in reading NaN values. But to be consistent, it is good
+case-sensitive in reading NaN values. But to be consistent, it is good
 practice to only use @option{nan}.
 
 @item --nsigmag=FLT
@@ -13790,7 +13791,7 @@ The extension in the file specified by @option{--upmask}.
 
 @item --upnum=INT
 The number of random samples to take for all the objects. A larger value to
-this option will give a more accurate result (assymptotically), but it will
+this option will give a more accurate result (asymptotically), but it will
 also slow down the process. When a randomly positioned sample overlaps with
 a detected/masked pixel it is not counted and another random position is
 found until the object completely lies over an undetected region. So you
@@ -13809,9 +13810,9 @@ upper-limit magnitude, it will first be @mymath{\sigma}-clipped (see
 @ref{Sigma clipping}) to avoid outliers in the distribution (mainly the
 faint undetected wings of bright/large objects in the image). This option
 takes two values: the first is the multiple of @mymath{\sigma}, and the
-second is theh termination criteria. If the latter is larger than 1, it is
+second is the termination criteria. If the latter is larger than 1, it is
 read as an integer number and will be the number of times to clip. If it is
-smaller than 1, it is interpretted as the tollerance level to stop
+smaller than 1, it is interpretted as the tolerance level to stop
 clipping. See @ref{Sigma clipping} for a complete explanation.
 
 @item --upnsigma=FLT
@@ -13861,7 +13862,7 @@ if only object catalogs are required, it has the same effect as
 
 @item -a
 @itemx --area
-The raw area (number of pixels) in any clump or object independed of what
+The raw area (number of pixels) in any clump or object independent of what
 pixel it lies over (if it is NaN/blank or unused for example).
 
 @item --clumpsarea
@@ -14544,7 +14545,7 @@ the atmospheric and instrument PSF in a continuous space and then it
 is sampled on the discrete pixels of the camera.
 
 @cindex PSF over-sample
-In order to more accurately simulate this process, the unconvolved
+In order to more accurately simulate this process, the un-convolved
 image and the PSF are created on a finer pixel grid. In other words,
 the output image is a certain odd-integer multiple of the desired
 size, we can call this `oversampling'. The user can specify this
@@ -14739,15 +14740,15 @@ $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 If mock images are to be made, a catalog (which stores the parameters for
 each mock profile) is mandatory. The catalog can be in the FITS ASCII, FITS
 binary format, or plain text formats (see @ref{Tables}). The
-columns related to each paramter can be determined both by number, or by
+columns related to each parameter can be determined both by number, or by
 match/search criteria using the column names, units, or comments. with the
 options ending in @option{col}, see below. Without any file given to the
-@option{--background} option, Makeprofiles will make the fully zero-valued
+@option{--background} option, MakeProfiles will make the fully zero-valued
 image and build the profiles on that (its size can be set with the
-@option{--naxis1} and @option{--naxis2} options, and its main WCS paramters
+@option{--naxis1} and @option{--naxis2} options, and its main WCS parameters
 can also be defined). Besides the main image containing all the profiles it
 is also possible to build on individual images (only enclosing one full
-profile to its trucation radius) with the @option{--individual}.
+profile to its truncation radius) with the @option{--individual}.
 
 If a data image file (see @ref{Arguments}) is given, the pixels of
 that image are used as the background value for every pixel. The flux
@@ -14802,7 +14803,7 @@ created image with. So by default, they will not be built in the output
 image but as separate files. The sum of pixels of these separate files will
 also be set to unity (1) so you are ready to convolve, see @ref{Convolution
 process}. As a summary, the position and magnitude of PSF profile will be
-ignored. This behaviour can be disabled with the @option{--psfinimg}
+ignored. This behavior can be disabled with the @option{--psfinimg}
 option. If you want to create all the profiles separately (with
 @option{--individual}) and you want the sum of the PSF profile pixels to be
 unity, you have to set their magnitudes in the catalog to the zero-point
@@ -15682,19 +15683,19 @@ the very basic concepts thoroughly for an easy transition to a
 universe we cannot visualize any more (a curved 3D space in 4D).
 
 To start, let's assume a static (not expanding or shrinking), flat 2D
-surface similar to @ref{flatplane} and that our 2D friend is observing
-its universe from point @mymath{A}. One of the most basic ways to
-parametrize this space is through the Cartesian coordinates
-(@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axes of
-these two coordinates are plotted. An infinitesimal change in the
-direction of each axis is written as @mymath{dx} and @mymath{dy}. For
-each point, the infinitesimal changes are parallel with the respective
-axes and are not shown for clarity. Another very useful way of
-parametrizing this space is through polar coordinates. For each point,
-we define a radius (@mymath{r}) and angle (@mymath{\phi}) from a fixed
-(but arbitrary) reference axis. In @ref{flatplane} the infinitesimal
-changes for each polar coordinate are plotted for a random point and a
-dashed circle is shown for all points with the same radius.
+surface similar to @ref{flatplane} and that our 2D friend is observing its
+universe from point @mymath{A}. One of the most basic ways to parametrize
+this space is through the Cartesian coordinates (@mymath{x},
+@mymath{y}). In @ref{flatplane}, the basic axes of these two coordinates
+are plotted. An infinitesimal change in the direction of each axis is
+written as @mymath{dx} and @mymath{dy}. For each point, the infinitesimal
+changes are parallel with the respective axes and are not shown for
+clarity. Another very useful way of parameterizing this space is through
+polar coordinates. For each point, we define a radius (@mymath{r}) and
+angle (@mymath{\phi}) from a fixed (but arbitrary) reference axis. In
+@ref{flatplane} the infinitesimal changes for each polar coordinate are
+plotted for a random point and a dashed circle is shown for all points with
+the same radius.
 
 @float Figure,flatplane
 @center@image{gnuastro-figures/flatplane, 10cm, , }
@@ -15703,21 +15704,23 @@ dashed circle is shown for all points with the same radius.
 plane.}
 @end float
 
-Assuming a certain position, which can be parametrized as
-@mymath{(x,y)}, or @mymath{(r,\phi)}, a general infinitesimal change
-change in its position will place it in the coordinates
-@mymath{(x+dx,y+dy)} and @mymath{(r+dr,\phi+d\phi)}. The distance (on
-the flat 2D surface) that is covered by this infinitesimal change in
-the static universe (@mymath{ds_s}, the subscript signifies the static
-nature of this universe) can be written as
-@dispmath{ds_s=dx^2+dy^2=dr^2+r^2d\phi^2}The main question is this:
-how can our 2D friend incorporate the (possible) curvature in its
-universe when it is calculating distances? The universe it lives in
-might equally be a locally flat but globally curved surface like
-@ref{sphericalplane}. The answer to this question but for a 3D being
-(us) is the whole purpose to this discussion. So here we want to give
-our 2D friend (and later, ourselves) the tools to measure distances if
-the space (that hosts the objects) is curved.
+Assuming a certain position, which can be parameterized as @mymath{(x,y)},
+or @mymath{(r,\phi)}, a general infinitesimal change change in its position
+will place it in the coordinates @mymath{(x+dx,y+dy)} and
+@mymath{(r+dr,\phi+d\phi)}. The distance (on the flat 2D surface) that is
+covered by this infinitesimal change in the static universe (@mymath{ds_s},
+the subscript signifies the static nature of this universe) can be written
+as:
+
+@dispmath{ds_s=dx^2+dy^2=dr^2+r^2d\phi^2}
+
+The main question is this: how can our 2D friend incorporate the (possible)
+curvature in its universe when it is calculating distances? The universe it
+lives in might equally be a locally flat but globally curved surface like
+@ref{sphericalplane}. The answer to this question but for a 3D being (us)
+is the whole purpose to this discussion. So here we want to give our 2D
+friend (and later, ourselves) the tools to measure distances if the space
+(that hosts the objects) is curved.
 
 @ref{sphericalplane} assumes a spherical shell with radius @mymath{R}
 as the curved 2D plane for simplicity. The spherical shell is tangent
@@ -16415,7 +16418,7 @@ It should be around 4.2 Megabytes with this static linking. If you
 configure and build Gnuastro again with shared libraries enabled (which is
 the default), you will notice that it is roughly 100 Kilobytes! This huge
 difference would have been very significant in the old days, but with the
-roughly Terabyte storages commonly in use today, it is
+roughly Terabyte storage drives commonly in use today, it is
 negligible. Fortunately, output file size is not the only benefit of
 dynamic linking: since it links to the libraries at run-time (rather than
 build-time), you don't have to re-build a higher-level program or library
@@ -16743,7 +16746,7 @@ Compiler optimization level: 0 (for no optimization, good debugging), 1, 2,
 Collection (GCC) manual: ``Without any optimization option, the compiler's
 goal is to reduce the cost of compilation and to make debugging produce the
 expected results.  Statements are independent: if you stop the program with
-a breakpoint between statements, you can then assign a new value to any
+a break point between statements, you can then assign a new value to any
 variable or change the program counter to any other statement in the
 function and get exactly the results you expect from the source
 code. Turning on optimization flags makes the compiler attempt to improve
@@ -16826,7 +16829,7 @@ exciting science.
 initially created to be a collection of command-line programs. However, as
 the programs and their the shared functions grew, internal (not installed)
 libraries were added. Since the 0.2 release, the libraries are
-installable. Hence the libraries are currently under heavy development and
+install-able. Hence the libraries are currently under heavy development and
 will significantly evolve between releases and will become more mature and
 stable in due time. It will stabilize with the removal of this
 notice. Check the @file{NEWS} file for interface changes. If you use the
@@ -16926,9 +16929,9 @@ of @code{1}, otherwise it will have a value of @code{0}. see
 @deffnx Macro GAL_CONFIG_BIN_OP_INT64
 @deffnx Macro GAL_CONFIG_BIN_OP_FLOAT32
 @deffnx Macro GAL_CONFIG_BIN_OP_FLOAT64
-If biniary arithmetic operators were configured for any type, the
-respective macro will have a value of @code{1} (one), otherwise its value
-will be @code{0} (zero). Please see the similar configure-time options in
+If binary arithmetic operators were configured for any type, the respective
+macro will have a value of @code{1} (one), otherwise its value will be
+@code{0} (zero). Please see the similar configure-time options in
 @ref{Gnuastro configure options} for a thorough explanation. These are only
 relevant for you if you intend to use the binary operators of
 @ref{Arithmetic on datasets}
@@ -17068,15 +17071,15 @@ strange and apparently random errors that are extremely hard to debug.
 The POSIX Threads functions offered in the C library are very low-level and
 offer a great range of control over the properties of the threads. So if
 you are interested in customizing your tools for complicated thread
-applications, it is strongly encouraged to get a nice familarity with
+applications, it is strongly encouraged to get a nice familiarity with
 them. Some resources were introduced in @ref{Multithreaded
 programming}.
 
 However, in many cases used in astronomical data analysis, you don't need
 communication between threads and each target operation can be done
-independently. Since such operations are very commen, Gnuastro provides the
+independently. Since such operations are very common, Gnuastro provides the
 tools below to facilitate the creation and management of jobs without any
-paritcular knowledge of POSIX Threads for such operations. The most
+particular knowledge of POSIX Threads for such operations. The most
 interesting high-level functions of this section are the
 @code{gal_threads_number} and @code{gal_threads_spin_off} that identify the
 number of threads on the system and spin-off threads. You can see a
@@ -17288,7 +17291,7 @@ above easier. In the functions below, the constants above can be used for
 the @code{type} input argument.
 
 @deftypefun size_t gal_type_sizeof (uint8_t @code{type})
-Return the number of bytes occurpied by @code{type}. Internally, this
+Return the number of bytes occupied by @code{type}. Internally, this
 function uses C's @code{sizeof} operator to measure the size of each type.
 @end deftypefun
 
@@ -17373,7 +17376,7 @@ which will produce:
 @end example
 
 As the example above shows, the bit-string is not the most efficient way to
-inspect bits. If you are familiar with hexademical notation, it is much
+inspect bits. If you are familiar with hexadecimal notation, it is much
 more compact, see @url{https://en.wikipedia.org/wiki/Hexadecimal}. You can
 use @code{printf}'s @code{%x} or @code{%X} to print integers in hexadecimal
 format.
@@ -17524,7 +17527,7 @@ value).
 @end deffn
 
 @deffn {Global integer}  GAL_BLANK_STRING
-Blank value for string types (this is itsself a string, it isn't the
+Blank value for string types (this is itself a string, it isn't the
 @code{NULL} pointer).
 @end deffn
 
@@ -17623,7 +17626,7 @@ types, units and higher-level structures), Gnuastro defines the
 @code{gal_data_t} type which is the input/output container of choice for
 many of Gnuastro library's functions. It is defined in
 @file{gnuastro/data.h}. If you will be using (`@code{# include}'ing) those
-libraries, you don't need to include this header explicity, it is already
+libraries, you don't need to include this header explicitly, it is already
 included by any library header that uses @code{gal_data_t}.
 
 @deftp {Type (C @code{struct})} gal_data_t
@@ -17699,7 +17702,7 @@ variable, please see @ref{Library data types}.
 The dataset's number of dimensions.
 
 
-@cindex Fortran
+@cindex FORTRAN
 @cindex FITS standard
 @cindex Standard, FITS
 @item size_t *dsize
@@ -17715,7 +17718,7 @@ It is important to remember that C's row-major ordering is the opposite of
 the FITS standard which is in column-major order: in the FITS standard the
 fastest dimension's size is specified by @code{NAXIS1}, and slower
 dimensions follow. The FITS standard was defined mainly based on the
-Fortran language which is the opposite of C's approach to multi-dimensional
+FORTRAN language which is the opposite of C's approach to multi-dimensional
 arrays (and also starts counting from 1 not 0). Hence if a FITS image has
 @code{NAXIS1==20} and @code{NAXIS2==50}, the @code{dsize} array must be
 filled with @code{dsize[0]==50} and @code{dsize[1]==20}.
@@ -17728,9 +17731,9 @@ an increment along that dimension becomes larger.
 @item size_t size
 The total number of elements in the dataset. This is actually a
 multiplication of all the values in the @code{dsize} array, so it is not an
-indepenent parameter. However, low-level operations with the dataset
+independent parameter. However, low-level operations with the dataset
 (irrespective of its dimensionality) commonly need this number, so this
-element is designed to avoid calculating it everytime.
+element is designed to avoid calculating it every time.
 
 @item char *mmapname
 Name of file hosting the @code{mmap}'d contents of @code{array}. If the
@@ -17747,7 +17750,7 @@ will be deleted.
 The minimum size of an array (in bytes) to store the contents of
 @code{array} as a file (on the non-volatile HDD/SSD), not in RAM. This can
 be very useful for large datasets which can be very memory intensive and
-the user's hardware RAM might not be sufficent to keep/process it. A random
+the user's hardware RAM might not be sufficient to keep/process it. A random
 filename is assigned to the array which is available in the @code{mmapname}
 element of @code{gal_data_t} (above), see there for more.
 
@@ -17763,7 +17766,7 @@ you will need for a given input). For example your processing might involve
 a copy of the the input (possibly to a wider data type which takes more
 bytes for each element), so take all such issues into
 consideration. @code{minmapsize} is actually stored in each
-@code{gal_data_t}, so it can be passed on to derivate datasets.
+@code{gal_data_t}, so it can be passed on to subsequent/derived datasets.
 
 @item nwcs
 The number of WCS coordinate representations (for WCSLIB).
@@ -17771,7 +17774,7 @@ The number of WCS coordinate representations (for WCSLIB).
 @item struct wcsprm *wcs
 The main WCSLIB structure keeping all the relevant information necessary
 for WCSLIB to do its processing and convert data-set positions into
-real-world positions. When it is given a @code{NULL} value, all posssible
+real-world positions. When it is given a @code{NULL} value, all possible
 WCS calculations/measurements will be ignored.
 
 @item uint8_t flag
@@ -17786,7 +17789,7 @@ these flags. The currently recognized bits are stored in these macros:
 @cindex Blank data
 @item GAL_DATA_FLAG_BLANK_CH
 Marking that the dataset has been checked for blank values. Therefore, the
-value of the bit in @code{GAL_DATA_FLAG_HASBLANK} is relibable. Without
+value of the bit in @code{GAL_DATA_FLAG_HASBLANK} is reliable. Without
 this bit, when a dataset doesn't have any blank values (and this has been
 checked), the @code{GAL_DATA_FLAG_HASBLANK} bit will be zero so a checker
 has no way to know if this zero is real or if no check has been done yet.
@@ -17989,7 +17992,7 @@ actual data structure.
 Gnuastro's generic data container (@code{gal_data_t}) is a very versatile
 structure that can be used in many higher-level contexts. One such
 higher-level construct is an array of @code{gal_data_t} structures to
-simplify the allocation (and later clearning) of several @code{gal_data_t}s
+simplify the allocation (and later cleaning) of several @code{gal_data_t}s
 that are related.
 
 For example, each column in a table is usually represented by one
@@ -18029,7 +18032,7 @@ container}.
 @subsubsection Copying datasets
 
 The functions in this section describes Gnuastro's facilities to copy a
-given datset into another. The new dataset can have a different type
+given dataset into another. The new dataset can have a different type
 (including a string), it can be already allocated (in which case only the
 values will be written into it). In all these cases, if the input dataset
 is a tile, only the data within the tile are copied.
@@ -18175,14 +18178,14 @@ macro are described below:
 Distance of this element from the first element in the array on a
 contiguous patch of memory (starting from 0), see the discussion above.
 @item ndim
-The number of dimensions associated with the contiugous patch of memory.
+The number of dimensions associated with the contiguous patch of memory.
 @item dsize
 The full array size along each dimension. This must be an array and is
 assumed to have the same number elements as @code{ndim}. See the discussion
 under the same element in @ref{Generic data container}.
 @item connectivity
 Most distant neighbors to consider. Depending on the number of dimensions,
-different neighbros may be defined for each element. This function-like
+different neighbors may be defined for each element. This function-like
 macro distinguish between these different neighbors with this argument. It
 has a value between @code{1} (one) and @code{ndim}. For example in a 2D
 dataset, 4-connected neighbors have a connectivity of @code{1} and
@@ -18200,7 +18203,7 @@ size_t *dinc=gal_dimension_increment(ndim, dsize);
 
 @code{dinc} depends on @code{ndim} and @code{dsize}, but it must be defined
 outside this function-like macro since it involves allocation to help in
-preformance.
+performance.
 
 @item operation
 Any C operation that you would like to do on the neighbor. This macro will
@@ -18241,7 +18244,7 @@ data-container of choice in such situations. As in a chain, each
 along with pointer(s) to its immediate neighbor(s). Below, you can see one
 simple linked list node structure along with an ASCII art schematic of how
 we can use the @code{next} pointer to add any number of elements to the
-list that we want. By convension, a list is terminated when @code{next} is
+list that we want. By convention, a list is terminated when @code{next} is
 the @code{NULL} pointer.
 
 @c The second and last lines lines are pushed line space forward, because
@@ -18404,7 +18407,7 @@ negative integers. The are generally useful in many contexts, for example
 when you want to keep the order of a series of states (each state stored as
 a given number in an @code{enum} for example). On many modern systems,
 @code{int32_t} is just an alias for @code{int}, so you can use them
-interchably. To make sure, check the size of @code{int} on your system:
+interchangeably. To make sure, check the size of @code{int} on your system:
 
 @deftp {Type (C @code{struct})} gal_list_i32_t
 A single node in a list containing a 32-bit signed integer (see
@@ -18677,7 +18680,7 @@ until 15.9 decimals and consume 8 bytes (64-bits) of memory, see
 @ref{Numeric data types}. This level of precision makes them very good for
 serious processing in the middle of a program's execution: in many cases,
 the propagation of errors will still be insignificant compared to actual
-obervational errors in a data set. But since they consume 8 bytes and more
+observational errors in a data set. But since they consume 8 bytes and more
 CPU processing power, they are often not the best choice for storing and
 transferring of data.
 
@@ -18769,12 +18772,12 @@ in memory actually contains). However, @code{void *} is just a raw address
 (pointer), it contains no information on the contents it points to.
 
 These properties make the @code{void *} very useful when you want to treat
-the contents of an address in differnt ways. You can use the @code{void *}
+the contents of an address in different ways. You can use the @code{void *}
 list defined in this section and its function on any kind of data: for
 example you can use it to keep a list of custom data structures that you
 have built for your own separate program. Each node in the list can keep
-anything and this gives you great versatily. But in using @code{void *},
-please beware that ``with great power comes great responsibilty''.
+anything and this gives you great versatility. But in using @code{void *},
+please beware that ``with great power comes great responsibility''.
 
 
 @deftp {Type (C @code{struct})} gal_list_void_t
@@ -18869,12 +18872,12 @@ this function, @code{list} will point to the next node (which has a larger
 @end deftypefun
 
 @deftypefun void gal_list_osizet_to_sizet_free (gal_list_osizet_t @code{*in}, gal_list_sizet_t @code{**out})
-Convert the orderd list of @code{size_t}s into an ordinary @code{size_t}
+Convert the ordered list of @code{size_t}s into an ordinary @code{size_t}
 linked list. This can be useful when all the elements have been added and
 you just need to pop-out elements and don't care about the sorting values
 any more. After the conversion is done, this function will free the input
 list. Note that the @code{out} list doesn't have to be empty. If it already
-contains some nodes, the new nodes will be added ontop of them.
+contains some nodes, the new nodes will be added on top of them.
 @end deftypefun
 
 
@@ -19096,7 +19099,7 @@ One important issue to consider is that CFITSIO's types are not fixed width
 systems). However, Gnuastro's types are defined by their width. These
 functions will use information on the host system to do the proper
 conversion, so it strongly recommended to use these functions for
-portability of your code and not to assume a fixed correspondance between
+portability of your code and not to assume a fixed correspondence between
 CFITSIO and Gnuastro's types.
 
 @deftypefun uint8_t gal_fits_bitpix_to_type (int @code{bitpix})
@@ -19225,7 +19228,7 @@ typedef struct gal_fits_list_key_t
 @end deftp
 
 @deftypefun void gal_fits_key_clean_str_value (char @code{*string})
-Remove the sigle quotes and possible extra spaces around the keyword values
+Remove the single quotes and possible extra spaces around the keyword values
 that CFITSIO returns when reading a string keyword. CFITSIO doesn't remove
 the two single quotes around the string value of a keyword. Hence the
 strings it reads are like: @code{'value '}, or
@@ -19297,7 +19300,7 @@ str    = strarray[0];
 
 If CFITSIO is unable to read a keyword for any reason the @code{status}
 element of the respective @code{gal_data_t} will be non-zero. If it is
-zero, then the keyword was found and succesfully read. Otherwise, it is a
+zero, then the keyword was found and successfully read. Otherwise, it is a
 CFITSIO status value. You can use CFITSIO's error reporting tools or
 @code{gal_fits_io_error} (see @ref{FITS macros errors filenames}) for
 reporting the reason of the failure. A tip: when the keyword doesn't exist,
@@ -19598,7 +19601,7 @@ library} for the definition of tiles. If @code{tile} already has a WCS
 structure, this function won't do anything.
 
 In many cases, tiles are created for internal/low-level processing. Hence
-for preformance reasons, when creating the tiles they don't have any WCS
+for performance reasons, when creating the tiles they don't have any WCS
 structure. When needed, this function can be used to add a WCS structure to
 each tile tile by copying the WCS structure of its block and correcting the
 reference point's coordinates within the tile.
@@ -19821,7 +19824,7 @@ directly used in C's @code{printf} command to write the number as a string.
 The display format used in C's @code{printf} to display data of different
 types. The @code{_STRING} and @code{_DECIMAL} are unique for printing
 strings and signed integers, they are mainly here for
-completeness. However, unsigned integers and flating points can be
+completeness. However, unsigned integers and floating points can be
 displayed in multiple formats:
 
 @table @asis
@@ -19956,7 +19959,7 @@ programming language (including C) provides some very good tools for
 various operations (including arithmetic operations like addition) on the
 dataset with a simple loop. However, as an author of a program, making
 assumptions about the type of data, its dimensionality and other basic
-characteristics will come with a large processing burdern.
+characteristics will come with a large processing burden.
 
 For example if you always read your data as double precision floating
 points for a simple operation like addition with an integer constant, you
@@ -20124,7 +20127,7 @@ under the @code{min} operator in @ref{Arithmetic operators}.
 
 @deffn Macro GAL_ARITHMETIC_OP_POW
 Binary operator to-power operator. When @code{gal_arithmetic} is called
-with any of these operators, it will expect two operands: rasing the first
+with any of these operators, it will expect two operands: raising the first
 by the second. This operator only accepts floating point inputs and the
 output is also floating point.
 @end deffn
@@ -20173,7 +20176,7 @@ requested type. Note that with these operators, @code{gal_arithmetic} is
 just a wrapper over the @code{gal_data_copy_to_new_type} or
 @code{gal_data_copy_to_new_type_free} that are discussed in @code{Copying
 datasets}. It accepts these operators only for completeness and easy usage
-in @ref{Arithmetic}. So in your programs, it might be preferrable to
+in @ref{Arithmetic}. So in your programs, it might be preferable to
 directly use those functions.
 @end deffn
 
@@ -20206,7 +20209,7 @@ each operator.
 In many contexts, it is desirable to slice the dataset into subsets or
 tiles (overlapping or not). In such a way that you can work on each tile
 independently. One method would be to copy that region to a separate
-allocated space, but in many contexts this isn't necessary and infact can
+allocated space, but in many contexts this isn't necessary and in fact can
 be a big burden on CPU/Memory usage. The @code{block} pointer in Gnuastro's
 @ref{Generic data container} is defined for such situations: where
 allocation is not necessary. You just want to read the data or write to it
@@ -20215,7 +20218,7 @@ with parallel processing, this can greatly improve the time/memory
 consumption.
 
 See the figure below for example: assume the @code{larger} dataset is a
-contiguous block of memory that you are interpretting as a 2D array. But
+contiguous block of memory that you are interpreting as a 2D array. But
 you only want to work on the smaller @code{tile} region.
 
 @example
@@ -20254,7 +20257,7 @@ designed to help in defining and working with tiles that are created in
 this manner.
 
 Since the block structure is defined as a pointer, arbitrary levels of
-tesselation/griding are possible (@code{tile->block} may itself be a tile
+tessellation/grid-ing are possible (@code{tile->block} may itself be a tile
 in an even larger allocated space). Therefore, just like a linked-list (see
 @ref{Linked lists}), it is important to have the @code{block} pointer of
 the largest (allocated) dataset set to @code{NULL}. Normally, you won't
@@ -20334,7 +20337,7 @@ element, so the output may also be treated as a list of datasets (see
 @ref{List of gal_data_t}) and passed onto the other functions described in
 this section.
 
-The array keeping the minmium and maximum coordinates for each tile must
+The array keeping the minimum and maximum coordinates for each tile must
 have the following format. So in total @code{minmax} must have
 @code{2*ndim*number} elements.
 
@@ -20423,7 +20426,7 @@ operation will be done on @code{numthreads} threads.
 @deffn {Function-like macro} GAL_TILE_PARSE_OPERATE (@code{IN}, @code{OTHER}, @code{PARSE_OTHER}, @code{CHECK_BLANK}, @code{OP})
 Parse over @code{IN} (which can be a tile or a fully allocated block of
 memory) and do the @code{OP} operation on it (can be any combination of C
-expresssions). If @code{OTHER!=NULL}, this macro will allow access to its
+expressions). If @code{OTHER!=NULL}, this macro will allow access to its
 element(s) and it can optionally be parsed while parsing over
 @code{IN}. You can use this to parse the same region over two arrays. The
 input arguments are (the expected types of each argument are also written
@@ -20451,7 +20454,7 @@ If it is non-zero, then the input will be checked for blank values and
 @code{OP} will only be called when we are not on a blank element.
 
 @item OP
-Operator: this can be any number of C experssions. This macro is going to
+Operator: this can be any number of C expressions. This macro is going to
 define a @code{itype *i} variable which will increment over each element of
 the input array/tile. @code{itype} will be replaced with the C type that
 corresponds to the type of @code{INPUT}. As an example, if @code{INPUT}'s
@@ -20614,11 +20617,11 @@ to fully cover every element of the input (depending on
 The output is an array with the same dimensions as @code{input} which
 contains the number of tiles along each dimension.  See @ref{Tessellation}
 for a description of its application in Gnuastro's programs and
-@code{remainderfrac}, just note that this function defines only onelayer of
+@code{remainderfrac}, just note that this function defines only one layer of
 tiles.
 
 This is a low-level function (independent of the
-@code{gal_tile_two_layer_params} strcuture defined above). If you want a
+@code{gal_tile_two_layer_params} structure defined above). If you want a
 two-layer tessellation, directly call @code{gal_tile_full_two_layers} that
 is described below. The input arguments to this function are:
 
@@ -20896,7 +20899,7 @@ exist!
 @end example
 
 This is because we are always going to be calculating the area of the
-overlap between a quadrilateral and the pixel grid or the quadrilaterral
+overlap between a quadrilateral and the pixel grid or the quadrilateral
 its self.
 
 The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no
@@ -21005,7 +21008,7 @@ types}, for example @code{gal_qsort_int32_decreasing}, or
 Permutation is the technical name for re-ordering of values. The need for
 permutations occurs a lot during (mainly low-level) processing. To do
 permutation, you must provide two inputs: an array of values (that you want
-to re-order inplace) and a permutation array which contains the new index
+to re-order in place) and a permutation array which contains the new index
 of each element (let's call it @code{perm}). The diagram below shows the
 input array before and after the re-ordering.
 
@@ -21019,7 +21022,7 @@ The functions here are a re-implementation of the GNU Scientific Library's
 @code{gsl_permute} function. The reason we didn't use that function was
 that it uses system-specific types (like @code{long} and @code{int}) which
 can have different widths on different systems, hence are not easily
-convertable to Gnuastro's fixed width types (see @ref{Numeric data
+convertible to Gnuastro's fixed width types (see @ref{Numeric data
 types}). There is also a separate function for each type, heavily using
 macros to allow a @code{base} function to work on all the types. Thus it is
 hard to read/understand. Hence, Gnuastro contains a re-write of their steps
@@ -21243,7 +21246,7 @@ allocate a new copy of the dataset that is sorted and has no blank values.
 @deftypefun {gal_data_t *} gal_statistics_regular_bins (gal_data_t @code{*input}, gal_data_t @code{*inrange}, size_t @code{numbins}, double @code{onebinstart})
 Generate an array of regularly spaced elements as a 1D array (column) of
 type @code{double} (i.e., @code{float64}, it has to be double to account
-for small differences on the bin edges). The input arguments are discribed
+for small differences on the bin edges). The input arguments are described
 below
 
 @table @code
@@ -21323,7 +21326,7 @@ clipping.
 The role of @code{param} is determined based on its value. If @code{param}
 is larger than @code{1} (one), it must be an integer and will be
 interpretted as the number clips to do. If it is less than @code{1} (one),
-it is interpretted as the tollerance level to stop the iteration.
+it is interpretted as the tolerance level to stop the iteration.
 
 The output dataset has the following elements:
 @example
@@ -21344,7 +21347,7 @@ array[3]: Standard deviation.
 @cindex Dataset: binary
 Binary datasets only have two (usable) values: 0 (also known as background)
 or 1 (also known as foreground). They are created after some binary
-classificataion is applied to the dataset. The most common is thresholding:
+classification is applied to the dataset. The most common is thresholding:
 for example in an image, pixels with a value above the threshold are given
 a value of 1 and those with a value less than the threshold are assigned a
 value of 0.
@@ -21353,7 +21356,7 @@ value of 0.
 @cindex Immediate neighbors
 @cindex Neighbors, immediate
 Since there is only two values, in the processing of binary images, you are
-usually concered with the positioning of an element and its vicinity
+usually concerned with the positioning of an element and its vicinity
 (neighbors). When a dataset has more than one dimension, multiple classes
 of immediate neighbors (that are touching the element) can be defined for
 each data-element. To separate these different classes of immediate
@@ -21403,7 +21406,7 @@ contain blank elements.
 
 @deftypefun {gal_data_t *} gal_binary_erode (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
 Do @code{num} erosions on the @code{connectivity}-connected neighbors of
-@code{input} (see above for the defintion of connectivity).
+@code{input} (see above for the definition of connectivity).
 
 If @code{inplace} is non-zero @emph{and} the input's type is
 @code{GAL_TYPE_UINT8}, then the erosion will be done within the input
@@ -21419,12 +21422,12 @@ Erosion (inverse of dilation) is an operation in mathematical morphology
 where each foreground pixel that is touching a background pixel is flipped
 (changed to background). The @code{connectivity} value determines the
 definition of ``touching''. Erosion will thus decrease the area of the
-foregound regions by one layer of pixels.
+foreground regions by one layer of pixels.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_binary_dilate (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
 Do @code{num} dilations on the @code{connectivity}-connected neighbors of
-@code{input} (see above for the defintion of connectivity). For more on
+@code{input} (see above for the definition of connectivity). For more on
 @code{inplace} and the output, see @code{gal_binary_erode}.
 
 @cindex Dilation
@@ -21432,12 +21435,12 @@ Dilation (inverse of erosion) is an operation in mathematical morphology
 where each background pixel that is touching a foreground pixel is flipped
 (changed to foreground). The @code{connectivity} value determines the
 definition of ``touching''. Dilation will thus increase the area of the
-foregound regions by one layer of pixels.
+foreground regions by one layer of pixels.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_binary_open (gal_data_t @code{*input}, size_t @code{num}, int @code{connectivity}, int @code{inplace})
 Do @code{num} openings on the @code{connectivity}-connected neighbors of
-@code{input} (see above for the defintion of connectivity). For more on
+@code{input} (see above for the definition of connectivity). For more on
 @code{inplace} and the output, see @code{gal_binary_erode}.
 
 @cindex Opening (Mathematical morphology)
@@ -21570,7 +21573,7 @@ is much faster.
 @node Interpolation, Git wrappers, Convolution functions, Gnuastro library
 @subsection Interpolation (@file{interpolate.h})
 
-During data anlysis, it often happens that parts of the data cannot be
+During data analysis, it often happens that parts of the data cannot be
 given a value. For example your image was saturated due to a very bright
 start and you have to mask that star's footprint. One other common
 situation in Gnuastro is when we do processing on tiles (for example to
@@ -21609,7 +21612,7 @@ If several datasets have the same set of blank values, you don't need to
 call this function multiple times. When @code{aslinkedlist} is non-zero,
 then @code{input} will be seen as a @ref{List of gal_data_t} and for all
 the same neighbor position checking will be done for all the datasets in
-the list. Ofcourse, the values for each dataset will be different, so a
+the list. Of course, the values for each dataset will be different, so a
 different value will be written in the each dataset, but the neighbor
 checking that is the most CPU intensive part will only be done once.
 @end deftypefun
@@ -21739,8 +21742,9 @@ The following simple program shows how you can inspect the neighbors of a
 pixel using the @code{GAL_DIMENSION_NEIGHBOR_OP} function-like macro that
 was introduced in @ref{Dimensions}. For easy linking/compilation of this
 program along with a first run see @ref{BuildProgram}. Before running, also
-change the @code{filename} and @code{hdu} variable values to specify an
-existing FITS file and/or extension/HDU.
+change the file name and HDU (first and second arguments to
+@code{gal_fits_img_read_to_type}) to specify an existing FITS file and/or
+extension/HDU.
 
 @example
 #include <stdio.h>
@@ -21793,13 +21797,13 @@ existing FITS file and/or extension/HDU.
 This is a very simple program to open a FITS image, distribute its pixels
 between different threads and print the value of each pixel and the thread
 it was assigned to. The actual operation is very simple (and would not
-usually be done with threads in a real-life program). It is intentially
+usually be done with threads in a real-life program). It is intentionally
 chosen to put more focus on the important steps in spinning of threads and
 how the worker function (which is called by each thread) can identify the
 job-IDs it should work on.
 
 For example, instead of an array of pixels, you can define an array of
-tiles or any other context-specific strcutures as separate targets. The
+tiles or any other context-specific structures as separate targets. The
 important thing is that each action should have its own unique ID (counting
 from zero, as is done in an array in C). You can then follow the process
 below and use each thread to work on all the targets that are assigned to
@@ -21844,7 +21848,7 @@ struct params
 
 /* This is the main worker function which will be called by the
  * different threads. `gal_threads_params' is defined in
- * `gnuastro/threads.h' and contains the pointer to the paramter we
+ * `gnuastro/threads.h' and contains the pointer to the parameter we
  * want. Note that the input argument and returned value of this
  * function always must have `void *' type. */
 void *
@@ -21860,7 +21864,7 @@ worker_on_thread(void *in_prm)
   size_t i, index, *dsize=p->image->dsize;
 
 
-  /* Go over all the actions(pixels in this case that were assigned
+  /* Go over all the actions (pixels in this case) that were assigned
    * to this thread. */
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     @{
@@ -21963,7 +21967,7 @@ is then done through a simple call to @code{gal_table_write}.
 The operations that are shows in this example program are not necessary all
 the time. For example, in many cases, you know the numerical data type of
 the column before writing the program (see @ref{Numeric data types}), so
-the type checkings and copyings won't be necessary.
+type checking and copying won't be necessary.
 
 @example
 #include <stdio.h>
@@ -22177,7 +22181,7 @@ community, mostly on large data sets (like astronomical images), using
 Python will waste a lot of valuable research-hours. It is possible to wrap
 C or C++ functions with Python to fix the speed issue. But this adds to
 complexity, because the interested scientist will now have to master two
-programming languages and their connection (which is not trival).
+programming languages and their connection (which is not trivial).
 
 Like C++, Python is object oriented, so as explained above, it needs a high
 level of experience with that particular program to fully understand its
@@ -22263,7 +22267,7 @@ check your results. If you want to include the plots in a document, you can
 use the PGFplots package within @LaTeX{}, no attempt is made to include
 such operations in Gnuastro. In short, Bash can act as a glue to connect
 the inputs and outputs of all these various Gnuastro programs (and other
-programs) in any fashion you please. Ofcourse, Gnuastro's programs are just
+programs) in any fashion you please. Of course, Gnuastro's programs are just
 front-ends to the main workhorse (@ref{Gnuastro library}), allowing a user
 to create their own programs (for example with @ref{BuildProgram}). So once
 the functions within programs become mature enough, they will be moved
@@ -22435,7 +22439,7 @@ Note that the GSL convention for header file names is
 @code{#include <gsl/gsl_specialname.h>}, the header file names are not
 prefixed with a `@file{gal_}'. However, Gnuastro doesn't follow this
 guideline because of the repeated @code{gsl} in the include directive
-(which canbe confusing and cause bugs). All Gnuastro (and GSL) headers must
+(which can be confusing and cause bugs). All Gnuastro (and GSL) headers must
 be located within a unique directory and will not be mixed with other
 headers. Therefore the `@file{gsl_}' prefix to the header file names is
 redundant@footnote{For GSL, this prefix has an internal technical
@@ -22644,7 +22648,7 @@ designed to be low-level, small and independent parts, so this structure
 should not get too large.
 
 @cindex @code{p}
-The main root structure of all programs contains atleast one instance of
+The main root structure of all programs contains at least one instance of
 the @code{gal_options_common_params} structure. This structure will keep
 the values to all common options in Gnuastro's programs (see @ref{Common
 options}). This top root structure is conveniently called @code{p} (short
@@ -22899,7 +22903,7 @@ few things (see the next step).
 
 @item
 After your work has been fully implemented, read the section documentation
-from teh start and see if you didn't miss any change in the coding and to
+from the start and see if you didn't miss any change in the coding and to
 see if the context is fairly continuous for a first time reader (who hasn't
 seen the book or had known Gnuastro before you made your change).
 @end enumerate
@@ -23465,7 +23469,7 @@ as an author in Gnuastro: in the @file{AUTHORS} file and at the start of
 the PDF book. These author lists are created automatically from the version
 controlled source.
 
-To receive full acknowledgement when submitting a patch, is thus advised to
+To receive full acknowledgment when submitting a patch, is thus advised to
 use Git's @code{format-patch} tool. See Pro Git's
 @url{https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#Public-Project-over-Email,
 Public project over email} section for a nice explanation. If you would
@@ -23642,7 +23646,7 @@ operators (for example @command{+}, @command{-}, @command{*}, @command{/},
 (@file{astbuildprog}, see @ref{BuildProgram}) Compile, link and run
 programs that depend on the Gnuastro library (see @ref{Gnuastro
 library}). This program will automatically link with the libraries that
-Gnuastro depends on, so there is no need to explicily mention them every
+Gnuastro depends on, so there is no need to explicitly mention them every
 time you are compiling a Gnuastro library dependent program.
 
 @item ConvertType
@@ -23766,8 +23770,8 @@ export XPA_METHOD=local
 @node Viewing multiextension FITS,  , SAO ds9, SAO ds9
 @subsection Viewing multiextension FITS images
 
-@cindex Multiextention FITS
-@cindex Opening multiextention FITS
+@cindex Multiextension FITS
+@cindex Opening multiextension FITS
 The FITS definition allows for multiple extensions inside a FITS file,
 each extension can have a completely independent data set inside of
 it. If you ordinarily open a multi-extension FITS file with SAO ds9,

@@ -71,6 +71,7 @@ AUTHORS
 snippet
 astcrop
 astwarp
+astfits
 .version
 config.h
 stamp-h1
@@ -99,6 +100,7 @@ config.guess
 version.texi
 authors.texi
 doc/fdl.texi
+astbuildprog
 config.status
 doc/stamp-vti
 astarithmetic

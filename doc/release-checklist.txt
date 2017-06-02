@@ -11,6 +11,7 @@ all the commits needed for this release have been completed.
    in `configure.ac'). See the `Updating library version information'
    section of the GNU Libtool manual as a guide.
 
+ - Run a spell-check (in emacs with `M-x ispell') on the whole book.
 
  - Update the NEWS file (use `git log --reverse gnuastro_vA.B..HEAD').
 
@@ -75,6 +76,21 @@ all the commits needed for this release have been completed.
                --replace --symlink-regex                                   \
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
+ - [ALPHA]: Now that you have the release number, update the link on the
+   main HTML on the webpage (`gnuastro-top.html').
+
+ - Build the manual in all the formats and upload everything. Note that you
+   will need to configure Gnuastro in the main source directory to build
+   the full webpage with this script.
+
+       $ ./configure
+       $ cd doc
+       $ ./forwebpage /path/to/local/copy/of/webpage
+
+ - Push all the changes and tag to the main repo:
+
+    $ git push --follow-tags
+
  - Prepare the announcement, this command will calculate the checksums and
    also make the links ready. You just have to add a starting and ending
    similar to previous announcements in a text editor. In the `XXXX', put
@@ -86,22 +102,11 @@ all the commits needed for this release have been completed.
               --url-directory=http://XXXX.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
- - [ALPHA]: Now that you have the release number, update the link on the
-   main HTML.
+ - After finishing the announcement (adding an intro and NEWS file), run a
+   spell-check on it.
 
- - Build the manual in all the formats and upload everything. Note that you
-   will need to configure Gnuastro in the main source directory to build
-   the full webpage with this script.
-
-       $ ./configure
-       $ cd doc
-       $ ./forwebpage /path/to/local/copy/of/webpage
-
-
- - Push all the changes and tag to the main repo:
-
-    $ git push --follow-tags
-
+ - IMPORTANT: double check the changes in the list of authors and the list
+   in THANKS and make sure everyone's contribution is correctly included.
 
  - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org' and
    Savannah news.
