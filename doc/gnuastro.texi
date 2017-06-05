@@ -50,6 +50,9 @@ License''.
 
 * bug-gnuastro: (gnuastro)Report a bug. How to report bugs
 
+* Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
+* astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
+
 * BuildProgram: (gnuastro)BuildProgram. Compile and run programs using Gnuastro's library.
 * astbuildprog: (gnuastro)Invoking astbuildprog. Options to BuildProgram.
 
@@ -68,17 +71,11 @@ License''.
 * Fits: (gnuastro)Fits. View and manipulate FITS extensions and keywords.
 * astfits: (gnuastro)Invoking astfits. Options to Fits.
 
-* Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
-* astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
-
-* Statistics: (gnuastro)Statistics. Get image Statistics.
-* aststatistics: (gnuastro)Invoking aststatistics. Options to Statistics.
-
 * MakeCatalog: (gnuastro)MakeCatalog. Make a catalog from labeled image.
 * astmkcatalog: (gnuastro)Invoking astmkcatalog. Options to MakeCatalog.
 
 * MakeNoise: (gnuastro)MakeNoise. Make (add) noise to an image.
-* astmknoise: (gnuastro)Invoking astmkprof. Options to MakeNoise.
+* astmknoise: (gnuastro)Invoking astmknoise. Options to MakeNoise.
 
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
@@ -86,8 +83,8 @@ License''.
 * NoiseChisel: (gnuastro)NoiseChisel. Detect signal in noise.
 * astnoisechisel: (gnuastro)Invoking astnoisechisel. Options to NoiseChisel.
 
-* SubtractSky: (gnuastro)SubtractSky. Find and subtract the sky value.
-* astsubtractsky: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
+* Statistics: (gnuastro)Statistics. Get image Statistics.
+* aststatistics: (gnuastro)Invoking aststatistics. Options to Statistics.
 
 * Table: (gnuastro)Table. Read and write FITS binary or ASCII tables.
 * asttable: (gnuastro)Invoking asttable. Options to Table.
@@ -15288,24 +15285,25 @@ positive values, for example we can't count @mymath{3.2} or
 is also a discrete distribution, only applying to whole positive
 integers.
 
-Let's assume the mean value of counting something is known. In this
-case, the number of electrons that are produced by photons in the
-CCD. Let's call this mean @mymath{\lambda}.  Let's take @mymath{k} to
-represent the result of counting in one particular time we attempt to
-count. The probability density function of @mymath{k} can be written
-as:
+@cindex Probability density function
+Let's assume the mean value of counting something is known. In this case,
+we are counting the number of electrons that are produced by photons in a
+detector (for example CCD) pixel. Let's call this mean
+@mymath{\lambda}. Furthermore, let's take @mymath{k} to represent the
+result of one particular counting attempt. The probability density function
+of @mymath{k} can be written as:
 
 @cindex Poisson distribution
 @dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in @{0, 1, 2,
 3, \dots @}}
 
 @cindex Skewed Poisson distribution
-Because the Poisson distribution is only applicable to positive
-values, it is by nature very skewed when @mymath{\lambda} is near
-zero. One qualitative way to imagine it is that there simply aren't
-enough integers smaller than @mymath{\lambda}, than there are larger
-integers. Therefore to accommodate all possibilities, it has to be
-skewed when @mymath{\lambda} is small.
+Because the Poisson distribution is only applicable to positive values,
+naturally it is very skewed when @mymath{\lambda} is near zero. One
+qualitative way to explain it is that there simply aren't enough integers
+smaller than @mymath{\lambda}, than integers that are larger than
+it. Therefore to accommodate all possibilities, it has to be skewed when
+@mymath{\lambda} is small.
 
 @cindex Compare Poisson and Gaussian
 But as @mymath{\lambda} becomes larger and larger, the distribution
