@@ -289,6 +289,13 @@ gal_statistics_quantile_index(size_t size, double quantile)
 {
   double floatindex;
 
+  /* Some sanity checks. */
+  if(size==0)
+    {
+      error(0, 0, "%s: `size' is 0. The quantile is not defined for "
+              "a zero-sized array\n", __func__);
+      return GAL_BLANK_SIZE_T;
+    }
   if(quantile<0.0f || quantile>1.0f)
     error(EXIT_FAILURE, 0, "%s: the input quantile should be between 0.0 "
           "and 1.0 (inclusive). You have asked for %g", __func__, quantile);
@@ -316,6 +323,7 @@ gal_statistics_quantile_index(size_t size, double quantile)
 gal_data_t *
 gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
 {
+  void *blank;
   size_t dsize=1, index;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize,
@@ -325,8 +333,15 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
   index=gal_statistics_quantile_index(nbs->size, quantile);
 
   /* Write the value at this index into the output. */
-  memcpy(out->array, gal_data_ptr_increment(nbs->array, index, nbs->type),
-         gal_type_sizeof(nbs->type));
+  if(index==GAL_BLANK_SIZE_T)
+    {
+      blank=gal_data_malloc_array(nbs->type, 1, __func__, "blank");
+      memcpy(out->array, blank, gal_type_sizeof(nbs->type));
+      free(blank);
+    }
+  else
+    memcpy(out->array, gal_data_ptr_increment(nbs->array, index, nbs->type),
+           gal_type_sizeof(nbs->type));
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
