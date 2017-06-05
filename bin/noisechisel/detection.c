@@ -697,6 +697,15 @@ detection_pseudo_real(struct noisechiselparams *p)
   sn=detection_sn(p, worklab, numpseudo, 0, "PSEUDOS-FOR-SN");
 
 
+  /* A small sanity check */
+  if(sn->size==0)
+    error(EXIT_FAILURE, 0, "no pseudo-detections could be found over the "
+          "sky region to estimate an S/N. Please adjust parameters like "
+          "`--dthresh', `--detsnminarea', or make sure that there actually "
+          "is sufficient sky area after initial detection. You can use "
+          "`--checkdetection' to see every step until this point");
+
+
   /* Get the S/N quantile and report it if we are in non-quiet mode. */
   quant=gal_statistics_quantile(sn, p->detquant, 1);
   p->detsnthresh = *((float *)(quant->array));
