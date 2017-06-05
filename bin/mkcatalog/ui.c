@@ -513,6 +513,7 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
   keys[0].array=&p->minstd;                 keys[1].array=&p->medstd;
   gal_fits_key_read(stdfile, p->stdhdu, keys, 0, 0);
 
+
   /* If the two keywords couldn't be read, calculate them. */
   if(keys[0].status)
     {
@@ -548,11 +549,11 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
   keys[0].type=GAL_TYPE_FLOAT32;            keys[1].type=GAL_TYPE_SIZE_T;
   keys[0].array=&p->detsn;                  keys[1].array=&p->numobjects;
   gal_fits_key_read(objectsfile, p->objectshdu, keys, 0, 0);
-  if(keys[0].status) p->detsn=NAN;
-  if(keys[1].status)
+  if(keys[0].status) p->detsn=NAN;         /* When `status!=0', then    */
+  if(keys[1].status)                       /* the key couldn't be read. */
     {
       tmp=gal_statistics_maximum(p->objects);
-      p->numobjects=*((int32_t *)(tmp->array)); /* objects is in int32_t. */
+      p->numobjects=*((int32_t *)(tmp->array)); /*numobjects is in int32_t.*/
       gal_data_free(tmp);
     }
 

@@ -45,6 +45,7 @@ License''.
 @dircategory Astronomy
 @direntry
 * Gnuastro: (gnuastro).       GNU Astronomy Utilities.
+* libgnuastro: (gnuastro)Gnuastro library. Full Gnuastro library doc.
 
 * help-gnuastro: (gnuastro)help-gnuastro mailing list. Getting help.
 

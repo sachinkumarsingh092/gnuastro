@@ -298,6 +298,8 @@ noisechisel(struct noisechiselparams *p)
       /* Do the segmentation. */
       segmentation(p);
     }
+  else
+    p->numobjects=p->numdetections;
 
   /* Write the output. */
   noisechisel_output(p);
