@@ -308,6 +308,11 @@ ui_check_options_and_arguments(struct mkprofparams *p)
       free(tmpname);
     }
   p->basename=gal_checkset_not_dir_part(p->mergedimgname);
+
+  /* If a merged image is requested, then delete it if it exists. */
+  if(p->nomerged==0)
+    gal_checkset_check_remove_file(p->mergedimgname, p->cp.keep,
+                                   p->cp.dontdelete);
 }
 
 
