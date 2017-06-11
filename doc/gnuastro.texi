@@ -6703,7 +6703,7 @@ and then @option{--remove} (on all specified HDUs).
 The @option{--copy} and @option{--cut} options need an output FITS file
 (specified with the @option{--output} option). If the output file exists,
 then the specified HDU will be copied following the last extension of the
-output file (its existing in it HDUs will be untouched). Thus after Fits
+output file (the existing HDUs in it will be untouched). Thus, after Fits
 finishes, the copied HDU will be the last HDU of the output file. If no
 output file name is given, then automatic output will be used to store the
 HDUs given to this option (see @ref{Automatic output}).
@@ -6721,7 +6721,14 @@ output file, see explanations above.
 
 @item -R STR
 @itemx --remove=STR
-Remove the specified HDU from the input file.
+Remove the specified HDU from the input file. From CFITSIO: ``In the case
+of deleting the primary array (the first HDU in the file) then [it] will be
+replaced by a null primary array containing the minimum set of required
+keywords and no data.''. So in practice, any existing data (array) and
+meta-data in the first extension will be removed, but the number of
+extensions in the file won't change. This is because of the unique position
+the first FITS extension has in the FITS standard (for example it cannot be
+used to store tables).
 
 @end table
 
@@ -22410,13 +22417,13 @@ As much as order does not matter when you include the header of each group,
 sort them by length, as described above.
 
 @item
-All function names, variables, etc should be in lower case.  Macros,
+All function names, variables, etc should be in lower case.  Macros and
 constant global @code{enum}s should be in upper case.
 
 @item
-Naming of exported header files, functions, variables, macros, and library
-functions, we adopt similar conventions to those used by the GNU Scientific
-Library
+For the naming of exported header files, functions, variables, macros, and
+library functions, we adopt similar conventions to those used by the GNU
+Scientific Library
 (GSL)@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
 In particular, in order to avoid clashes with the names of functions and
 variables coming from other libraries the name-space `@code{gal_}' is
@@ -22434,18 +22441,17 @@ user) source files with the same line
 # include <gnuastro/headername.h>
 @end example
 Note that the GSL convention for header file names is
-@file{gsl_specialname.h}, so your include directive must be something like
-@code{#include <gsl/gsl_specialname.h>}, the header file names are not
-prefixed with a `@file{gal_}'. However, Gnuastro doesn't follow this
-guideline because of the repeated @code{gsl} in the include directive
-(which can be confusing and cause bugs). All Gnuastro (and GSL) headers must
-be located within a unique directory and will not be mixed with other
-headers. Therefore the `@file{gsl_}' prefix to the header file names is
-redundant@footnote{For GSL, this prefix has an internal technical
-application: GSL's architecture mixes installed and not-installed headers
-in the same directory. This prefix is used to identify their installation
-status. Therefore this filename prefix in GSL a technical internal issue
-(for developers, not users).}.
+@file{gsl_specialname.h}, so your include directive for a GSL header must
+be something like @code{#include <gsl/gsl_specialname.h>}. Gnuastro doesn't
+follow this GSL guideline because of the repeated @code{gsl} in the include
+directive. It can be confusing and cause bugs for beginners. All Gnuastro
+(and GSL) headers must be located within a unique directory and will not be
+mixed with other headers. Therefore the `@file{gsl_}' prefix to the header
+file names is redundant@footnote{For GSL, this prefix has an internal
+technical application: GSL's architecture mixes installed and not-installed
+headers in the same directory. This prefix is used to identify their
+installation status. Therefore this filename prefix in GSL a technical
+internal issue (for developers, not users).}.
 
 @item
 @cindex GNU coding standards
@@ -22460,11 +22466,10 @@ macro @code{GAL_POLYGON_MAX_CORNERS} is defined in
 @code{lib/gnuastro/polygon.h}.
 
 This is necessary to give any user (who is not familiar with the library
-structure) the ability to follow the code of a function that is not in the
-program or library they are reading. This convention does make the function
-names longer (a little harder to write), but the extra documentation it
-provides convention plays an important role in Gnuastro and is worth the
-cost.
+structure) the ability to follow the code. This convention does make the
+function names longer (a little harder to write), but the extra
+documentation it provides plays an important role in Gnuastro and is worth
+the cost.
 
 @item
 @cindex GNU Emacs

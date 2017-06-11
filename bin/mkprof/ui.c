@@ -920,7 +920,7 @@ ui_print_intro(struct mkprofparams *p)
   free(jobname);
   if(p->envseed)
     {
-      asprintf(&jobname, "RNG seed for all profiles: %zu",
+      asprintf(&jobname, "RNG seed for all profiles: %lu",
                gsl_rng_default_seed);
       gal_timing_report(NULL, jobname, 1);
       free(jobname);

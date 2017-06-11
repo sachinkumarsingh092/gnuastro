@@ -315,7 +315,7 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                  counting from 1, not 0!) */
               if(tlong>numcols)
                 error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
-                      "have asked for column number %zu",
+                      "have asked for column number %ld",
                       gal_fits_name_save_as_string(filename, hdu),
                       numcols, tlong);
 

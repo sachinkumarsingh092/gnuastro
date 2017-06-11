@@ -739,7 +739,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     OT ob, *restrict o=out->array;                                      \
     size_t increment=0, num_increment=1;                                \
     size_t mclen=0, contig_len=in->dsize[in->ndim-1];                   \
-    IT ib, *ist, *restrict i=in->array, *f=i+in->size;                  \
+    IT ib, *ist=NULL, *restrict i=in->array, *f=i+in->size;             \
     size_t s_e_ind[2]={0,iblock->size-1}; /* -1: this is INCLUSIVE */   \
                                                                         \
     /* If we are on a tile, the default values need to change. */       \
