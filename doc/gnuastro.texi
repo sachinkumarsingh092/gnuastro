@@ -3319,7 +3319,7 @@ Gnuastro. Recall that in practice this only affects the @ref{Arithmetic}
 program and the @code{gal_arithmetic} library binary operators, nothing
 else. This option is strongly recommended when you are building Gnuastro to
 be included in a package manager of a GNU/Linux distribution (or other
-operating system).
+operating systems).
 
 @item --enable-gnulibcheck
 @cindex GNU C library
@@ -16743,8 +16743,8 @@ directories. Multiple calls to this option are possible and order
 matters. This library will be linked before Gnuastro's library or its
 dependencies. See @ref{Linking} for a thorough introduction.
 
-@item -O INT
-@itemx --optimize=INT
+@item -O INT/STR
+@itemx --optimize=INT/STR
 @cindex Optimization
 @cindex GNU Compiler Collection
 Compiler optimization level: 0 (for no optimization, good debugging), 1, 2,
@@ -16757,8 +16757,8 @@ variable or change the program counter to any other statement in the
 function and get exactly the results you expect from the source
 code. Turning on optimization flags makes the compiler attempt to improve
 the performance and/or code size at the expense of compilation time and
-possibly the ability to debug the program.'' See your compiler's manual for
-the full list of acceptable values to this option.
+possibly the ability to debug the program.'' Please see your compiler's
+manual for the full list of acceptable values to this option.
 
 @item -g
 @itemx --debug
@@ -16779,7 +16779,7 @@ with warnings enabled.
 All compiler warning options that start with @option{W} are usable by this
 option in BuildProgram also, see your compiler's manual for the full
 list. Some of the most common values to this option are: @option{pedantic}
-(Warnings related to standard C), @option{all} (all issues the compiler
+(Warnings related to standard C) and @option{all} (all issues the compiler
 confronts).
 
 @item -b
