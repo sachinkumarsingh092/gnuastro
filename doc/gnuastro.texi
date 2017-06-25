@@ -4251,6 +4251,9 @@ can accept specific formats, for example @ref{ConvertType} also accepts
 @file{.fits}: The standard file name ending of a FITS image.
 
 @item
+@file{.fit}: Alternative (3 character) FITS suffix.
+
+@item
 @file{.fits.Z}: A FITS image compressed with @command{compress}.
 
 @item
@@ -19068,8 +19071,9 @@ default string after the CFITSIO error.
 @deftypefun int gal_fits_name_is_fits (char @code{*name})
 If the @code{name} is an acceptable CFITSIO FITS filename return @code{1}
 (one), otherwise return @code{0} (zero). The currently acceptable FITS
-suffixes are @file{.fits}, @file{.fits.gz}, @file{.fits.Z}, @file{.imh},
-@file{.fits.fz}. IMH is the IRAF format which is acceptable to CFITSIO.
+suffixes are @file{.fits}, @file{.fit}, @file{.fits.gz}, @file{.fits.Z},
+@file{.imh}, @file{.fits.fz}. IMH is the IRAF format which is acceptable to
+CFITSIO.
 @end deftypefun
 
 @deftypefun int gal_fits_suffix_is_fits (char @code{*suffix})

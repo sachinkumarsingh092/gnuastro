@@ -102,7 +102,8 @@ gal_fits_name_is_fits(char *name)
 {
   size_t len;
   len=strlen(name);
-  if ( ( len>=4 && strcmp(&name[len-4], "fits") == 0 )
+  if ( ( len>=3 && strcmp(&name[len-3], "fit") == 0 )
+       || ( len>=4 && strcmp(&name[len-4], "fits") == 0 )
        || ( len>=7 && strcmp(&name[len-7], "fits.gz") == 0 )
        || ( len>=6 && strcmp(&name[len-6], "fits.Z") == 0 )
        || ( len>=3 && strcmp(&name[len-3], "imh") == 0 )
@@ -123,10 +124,11 @@ gal_fits_name_is_fits(char *name)
 int
 gal_fits_suffix_is_fits(char *suffix)
 {
-  if (strcmp(suffix, "fits") == 0 || strcmp(suffix, ".fits") == 0
+  if (strcmp(suffix, "fit") == 0        || strcmp(suffix, ".fit") == 0
+      || strcmp(suffix, "fits") == 0    || strcmp(suffix, ".fits") == 0
       || strcmp(suffix, "fits.gz") == 0 || strcmp(suffix, ".fits.gz") == 0
-      || strcmp(suffix, "fits.Z") == 0 || strcmp(suffix, ".fits.Z") == 0
-      || strcmp(suffix, "imh") == 0 || strcmp(suffix, ".imh") == 0
+      || strcmp(suffix, "fits.Z") == 0  || strcmp(suffix, ".fits.Z") == 0
+      || strcmp(suffix, "imh") == 0     || strcmp(suffix, ".imh") == 0
       || strcmp(suffix, "fits.fz") == 0 || strcmp(suffix, ".fits.fz") == 0)
    return 1;
  else
