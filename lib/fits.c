@@ -498,9 +498,11 @@ fits_type_correct(int *type, double bscale, double bzero)
         {*type = GAL_TYPE_UINT64; tofloat=0;}
       break;
 
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
-            *type);
+    /* For the other types (when `BSCALE=1.0f'), currently no correction is
+       necessary, maybe later we can check if the scales are integers and
+       set the integer output type to the smallest type that can allow the
+       scaled values. */
+    default: tofloat=0;
     }
 
   /* If the type must be a float, then do the conversion. */
