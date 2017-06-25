@@ -191,7 +191,10 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
- - Update the ChangeLog (similar to previous entries):
+ - Update the ChangeLog (similar to previous entries).
+
+   IMPORTANT: if this is not a final release (just for making sure Gnuastro
+   builds on all systems), change `unstable' to `experimental'.
 
      $ emacs debian/changelog
 
