@@ -19328,7 +19328,7 @@ filename and HDU as input instead of an already opened CFITSIO
 
 
 @deftypefun void gal_fits_key_list_add (gal_fits_list_key_t @code{**list}, uint8_t @code{type}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit})
-Add on keyword to the top of list of header keywords that need to be
+Add a keyword to the top of list of header keywords that need to be
 written into a FITS file. In the end, the keywords will have to be freed,
 so it is important to know before hand if they were allocated or not (hence
 the presence of the arguments ending in @code{free}). If the space for the
@@ -19394,10 +19394,13 @@ formats that is stored in FITS files. Only one image may be stored in each
 FITS HDU/extension. The functions described here can be used to get the
 information of, read, or write images in FITS files.
 
-@deftypefun void gal_fits_img_info (fitsfile @code{*fptr}, int @code{*type}, size_t @code{*ndim}, size_t @code{**dsize})
+@deftypefun void gal_fits_img_info (fitsfile @code{*fptr}, int @code{*type}, size_t @code{*ndim}, size_t @code{**dsize}, char @code{**name}, char @code{**unit})
 Read the type (see @ref{Library data types}), number of dimensions, and
-size of the array along each dimension of the CFITSIO @code{fitsfile} into
-the @code{type}, @code{ndim}, and @code{dsize} pointers respectively.
+size along each dimension of the CFITSIO @code{fitsfile} into the
+@code{type}, @code{ndim}, and @code{dsize} pointers respectively. If
+@code{name} and @code{unit} are not @code{NULL} (point to a @code{char *}),
+then if the image has a name and units, the respective string will be put
+in these pointers.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize})

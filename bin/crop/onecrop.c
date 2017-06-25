@@ -822,7 +822,7 @@ iscenterfilled(struct onecropparams *crp)
   if(checkcenter==0) return GAL_BLANK_UINT8;
 
   /* Get the final size of the output image. */
-  gal_fits_img_info(ofp, &type, &ndim, &dsize);
+  gal_fits_img_info(ofp, &type, &ndim, &dsize, NULL, NULL);
   naxes[0]=dsize[1];
   naxes[1]=dsize[0];
 

@@ -202,7 +202,8 @@ gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
  ******************     Array functions      *****************
  *************************************************************/
 void
-gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize);
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
+                  char **name, char **unit);
 
 gal_data_t *
 gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);

@@ -459,6 +459,53 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
 
 
 
+/* When there is a BZERO or TZERO and BSCALE or TSCALE keywords, then the
+   type that must be used to store the actual values of the pixels may be
+   different from the type from BITPIX. This function does the necessary
+   corrections.*/
+void
+fits_type_correct(int *type, double bscale, double bzero)
+{
+  int tofloat=1;
+
+  /* Work based on type, for the default conversions defined by CFITSIO,
+     make the proper correction, otherwise set the type to float. */
+  if(bscale==1.0f)
+    switch(*type)
+      {
+      case GAL_TYPE_UINT8:
+        if(bzero == -128.0f)  { *type = GAL_TYPE_INT8;   tofloat=0; }
+        break;
+
+    case GAL_TYPE_INT16:
+      /* Defined by the FITS standard: */
+      if(bzero == 32768)      { *type = GAL_TYPE_UINT16; tofloat=0; }
+      break;
+
+    case GAL_TYPE_INT32:
+      /* Defined by the FITS standard: */
+      if(bzero == 2147483648) { *type = GAL_TYPE_UINT32; tofloat=0; }
+      break;
+
+    case GAL_TYPE_INT64:
+      /* Defined by the FITS standard: */
+      if(bzero == 9223372036854775808.0f)
+        {*type = GAL_TYPE_UINT64; tofloat=0;}
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            *type);
+    }
+
+  /* If the type must be a float, then do the conversion. */
+  if(tofloat) *type=GAL_TYPE_FLOAT32;
+}
+
+
+
+
+
 
 
 
@@ -1226,14 +1273,19 @@ gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
 
 /* Note that the FITS standard defines any array as an `image',
    irrespective of how many dimensions it has. This function will return
-   the Gnuastro-type and also the number of dimensions and size along each
-   dimension of the image. Note that `*dsize' will be allocated here, so it
-   must not point to any already allocated space. */
+   the Gnuastro-type, the number of dimensions and size along each
+   dimension of the image along with its name and units if necessary (not
+   NULL). Note that `*dsize' will be allocated here, so it must not point
+   to any already allocated space. */
 void
-gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
+                  char **name, char **unit)
 {
-  size_t i;
+  char **str;
+  size_t i, dsize_key=1;
   int bitpix, status=0, naxis;
+  double bzero=NAN, bscale=NAN;
+  gal_data_t *key, *keysll=NULL;
   long naxes[GAL_FITS_MAX_NDIM];
 
   /* Get the BITPIX, number of dimensions and size of each dimension. */
@@ -1245,11 +1297,57 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
   /* Convert bitpix to Gnuastro's known types. */
   *type=gal_fits_bitpix_to_type(bitpix);
 
+  /* Define the names of the possibly existing important keywords about the
+     dataset. We are defining these in the opposite order to be read by
+     CFITSIO. The way Gnuastro writes the FITS keywords, the output will
+     first have `BZERO', then `BSCALE', then `EXTNAME', then, `BUNIT'.*/
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
+                          NULL, 0, -1, "BUNIT", NULL, NULL);
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
+                          NULL, 0, -1, "EXTNAME", NULL, NULL);
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_FLOAT64, 1, &dsize_key,
+                          NULL, 0, -1, "BSCALE", NULL, NULL);
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_FLOAT64, 1, &dsize_key,
+                          NULL, 0, -1, "BZERO", NULL, NULL);
+  gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
+
+
+  /* Read the special keywords. */
+  i=1;
+  for(key=keysll;key!=NULL;key=key->next)
+    {
+      /* Recall that the order is the opposite (this is a last-in-first-out
+         list. */
+      if(key->status==0)
+        {
+        switch(i)
+          {
+          case 4: if(unit) {str = key->array; *unit = *str;}   break;
+          case 3: if(name) {str = key->array; *name = *str;}   break;
+          case 2: bscale = *(double *)(key->array);    break;
+          case 1: bzero  = *(double *)(key->array);    break;
+          default:
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                  "fix the problem. For some reason, there are more "
+                  "keywords requested ", __func__, PACKAGE_BUGREPORT);
+          }
+        }
+      ++i;
+    }
+
+  if( !isnan(bscale) || !isnan(bzero) )
+    fits_type_correct(type, bscale, bzero);
+
+
   /* Allocate the array to keep the dimension size and fill it in, note
      that its order is the opposite of naxes. */
   *dsize=gal_data_malloc_array(GAL_TYPE_INT64, *ndim, __func__, "dsize");
   for(i=0; i<*ndim; ++i)
     (*dsize)[i]=naxes[*ndim-1-i];
+
+
+  /* Clean up. */
+  gal_list_data_free(keysll);
 }
 
 
@@ -1261,13 +1359,12 @@ gal_data_t *
 gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 {
   void *blank;
-  int anyblank;
   long *fpixel;
   fitsfile *fptr;
-  int status=0, type;
-  gal_data_t *img, *keysll=NULL;
-  char **str, *name=NULL, *unit=NULL;
-  size_t i, ndim, *dsize, dsize_key=1;
+  gal_data_t *img;
+  size_t i, ndim, *dsize;
+  char *name=NULL, *unit=NULL;
+  int status=0, type, anyblank;
 
 
   /* Check HDU for realistic conditions: */
@@ -1275,7 +1372,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Get the info and allocate the data structure. */
-  gal_fits_img_info(fptr, &type, &ndim, &dsize);
+  gal_fits_img_info(fptr, &type, &ndim, &dsize, &name, &unit);
 
 
   /* Check if there is any dimensions (the first header can sometimes have
@@ -1290,30 +1387,20 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
           hdu);
 
 
-  /* Set the fpixel array (first pixel in all dimensions): */
+  /* Set the fpixel array (first pixel in all dimensions). Note that the
+     `long' type will not be larger than 64-bits, so, we'll just assume it
+     is 64-bits for space allocation. On 32-bit systems, this won't be a
+     problem, the space will be written/read as 32-bit `long' any way,
+     we'll just have a few empty bytes that will be freed anyway at the end
+     of this function. */
   fpixel=gal_data_malloc_array(GAL_TYPE_INT64, ndim, __func__, "fpixel");
   for(i=0;i<ndim;++i) fpixel[i]=1;
-
-
-  /* Read the possibly existing useful keywords. Note that the values are
-     in allocated strings in the keys[i] data structures. Note that we need
-     the linked list of keys to keep the `name' and `unit' pointers. We can
-     free the linked list after `gal_data_alloc' has read/copied the
-     values.*/
-  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                          NULL, 0, -1, "EXTNAME", NULL, NULL);
-  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                          NULL, 0, -1, "BUNIT", NULL, NULL);
-  gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
-  if(keysll->status==0)       {str=keysll->array;       unit=*str; }
-  if(keysll->next->status==0) {str=keysll->next->array; name=*str; }
 
 
   /* Allocate the space for the array and for the blank values. */
   img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
   blank=gal_blank_alloc_write(type);
-  gal_list_data_free(keysll);
   free(dsize);
 
 
@@ -1426,32 +1513,97 @@ fitsfile *
 gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
 {
   void *blank;
-  char *wcsstr;
+  int64_t *i64;
   fitsfile *fptr;
+  uint64_t *u64, *u64f;
   long fpixel=1, *naxes;
   size_t i, ndim=input->ndim;
-  gal_data_t *towrite, *block=gal_tile_block(input);
-  int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(block->type);
+  int nkeyrec, hasblank, status=0, datatype=0;
+  char *wcsstr, *u64key;
+  gal_data_t *i64data, *towrite, *block=gal_tile_block(input);
 
   /* If the input is a tile (isn't a contiguous region of memory), then
      copy it into a contiguous region. */
   towrite = input==block ? input : gal_data_copy(input);
+  hasblank=gal_blank_present(towrite, 0);
 
   /* Allocate the naxis area. */
   naxes=gal_data_malloc_array( ( sizeof(long)==8
                                  ? GAL_TYPE_INT64
                                  : GAL_TYPE_INT32 ), ndim, __func__, "naxes");
 
+
   /* Open the file for writing */
   fptr=gal_fits_open_to_write(filename);
+
 
   /* Fill the `naxes' array (in opposite order, and `long' type): */
   for(i=0;i<ndim;++i) naxes[ndim-1-i]=towrite->dsize[i];
 
-  /* Create the FITS file. */
-  fits_create_img(fptr, gal_fits_type_to_bitpix(towrite->type),
-                  ndim, naxes, &status);
-  gal_fits_io_error(status, NULL);
+
+  /* Create the FITS file. Unfortunately CFITSIO doesn't have a macro for
+     UINT64, TLONGLONG is only for (signed) INT64. So if the dataset has
+     that type, we'll have to convert it to `INT64' and in the mean-time
+     shift its zero, we will then have to write the BZERO and BSCALE
+     keywords accordingly. */
+  if(block->type==GAL_TYPE_UINT64)
+    {
+      /* Allocate the necessary space. */
+      i64data=gal_data_alloc(NULL, GAL_TYPE_INT64, ndim, towrite->dsize,
+                             NULL, 0, block->minmapsize, NULL, NULL, NULL);
+
+      /* Copy the values while making the conversion. */
+      i64=i64data->array;
+      u64f=(u64=towrite->array)+towrite->size;
+      if(hasblank)
+        {
+          do *i64++ = ( *u64==GAL_BLANK_UINT64
+                        ? GAL_BLANK_INT64
+                        : (*u64 + INT64_MIN) );
+          while(++u64<u64f);
+        }
+      else
+        do *i64++ = (*u64 + INT64_MIN); while(++u64<u64f);
+
+      /* We can now use CFITSIO's signed-int64 type macros. */
+      datatype=TLONGLONG;
+      fits_create_img(fptr, LONGLONG_IMG, ndim, naxes, &status);
+      gal_fits_io_error(status, NULL);
+
+
+      /* Write the image into the file. */
+      fits_write_img(fptr, datatype, fpixel, i64data->size, i64data->array,
+                     &status);
+      gal_fits_io_error(status, NULL);
+
+
+      /* We need to write the BZERO and BSCALE keywords manually. VERY
+         IMPORTANT: this has to be done after writing the array. We cannot
+         write this huge integer as a variable, so we'll simply write the
+         full record/card. It is just important that the string be larger
+         than 80 characters, CFITSIO will trim the rest of the string. */
+      u64key="BZERO   =  9223372036854775808 / Offset of data                                         ";
+      fits_write_record(fptr, u64key, &status);
+      u64key="BSCALE  =                    1 / Default scaling factor                                 ";
+      fits_write_record(fptr, u64key, &status);
+      gal_fits_io_error(status, NULL);
+    }
+  else
+    {
+      /* Set the datatype */
+      datatype=gal_fits_type_to_datatype(block->type);
+
+      /* Create the FITS file. */
+      fits_create_img(fptr, gal_fits_type_to_bitpix(towrite->type),
+                      ndim, naxes, &status);
+      gal_fits_io_error(status, NULL);
+
+      /* Write the image into the file. */
+      fits_write_img(fptr, datatype, fpixel, towrite->size, towrite->array,
+                     &status);
+      gal_fits_io_error(status, NULL);
+    }
+
 
   /* Remove the two comment lines put by CFITSIO. Note that in some cases,
      it might not exist. When this happens, the status value will be
@@ -1461,13 +1613,10 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   fits_delete_key(fptr, "COMMENT", &status);
   status=0;
 
-  /* Write the image into the file. */
-  fits_write_img(fptr, datatype, fpixel, towrite->size, towrite->array,
-                 &status);
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
      dealing with integer types. */
-  if(gal_blank_present(towrite, 0))
+  if(hasblank)
     switch(towrite->type)
       {
       case GAL_TYPE_FLOAT32:
@@ -1484,13 +1633,16 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
         free(blank);
       }
 
+
   /* Write the extension name to the header. */
   if(towrite->name)
     fits_write_key(fptr, TSTRING, "EXTNAME", towrite->name, "", &status);
 
+
   /* Write the units to the header. */
   if(towrite->unit)
     fits_write_key(fptr, TSTRING, "BUNIT", towrite->unit, "", &status);
+
 
   /* Write comments if they exist. */
   if(towrite->comment)

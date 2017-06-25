@@ -138,7 +138,7 @@ fits_print_extension_info(struct fitsparams *p)
       switch(hdutype)
         {
         case IMAGE_HDU:
-          gal_fits_img_info(fptr, &type, &ndim, &dsize);
+          gal_fits_img_info(fptr, &type, &ndim, &dsize, NULL, NULL);
           tstr=gal_type_name(type , 1);
           break;
 
