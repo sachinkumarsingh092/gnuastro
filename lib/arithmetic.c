@@ -1517,7 +1517,7 @@ gal_arithmetic(int operator, unsigned char flags, ...)
       break;
 
 
-    /* When operator is not recognized. */
+    /* When the operator is not recognized. */
     default:
       error(EXIT_FAILURE, 0, "%s: the argument \"%d\" could not be "
             "interpretted as an operator", __func__, operator);

@@ -368,19 +368,6 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
     }
 
 
-  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
-     (copies of the orignal operands but in a compiled type, not
-     necessarily the original `lo' and `ro' data structures). So we need to
-     to get the final type based on the original operands and check if the
-     final output needs changing. */
-  if( o->type != final_otype )
-    {
-      tmp_o=gal_data_copy_to_new_type(o, final_otype);
-      gal_data_free(o);
-      o=tmp_o;
-    }
-
-
   /* Clean up. Note that if the input arrays can be freed, and any of right
      or left arrays needed conversion, `BINOIN_CONVERT_TO_COMPILED_TYPE'
      has already freed the input arrays, so only `r' and `l' need
@@ -399,6 +386,24 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
       if(l!=lo)           gal_data_free(l);
       if(r!=ro)           gal_data_free(r);
     }
+
+
+  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
+     (copies of the orignal operands but in a compiled type, not
+     necessarily the original `lo' and `ro' data structures). So we need to
+     to get the final type based on the original operands and check if the
+     final output needs changing.
+
+     IMPORTANT: This has to be done after (possibly) freeing the left and
+     right operands because this step can change the `o' pointer which
+     they may depend on (when working in-place). */
+  if( o->type != final_otype )
+    {
+      tmp_o=gal_data_copy_to_new_type(o, final_otype);
+      gal_data_free(o);
+      o=tmp_o;
+    }
+
 
   /* Return */
   return o;

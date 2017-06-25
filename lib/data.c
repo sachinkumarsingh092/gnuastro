@@ -409,11 +409,11 @@ gal_data_free_contents(gal_data_t *data)
           "`gal_data_free_contents' was a NULL pointer", __func__);
 
   /* Free all the possible allocations. */
-  if(data->name)    { free(data->name);    data->name=NULL;    }
-  if(data->unit)    { free(data->unit);    data->unit=NULL;    }
-  if(data->dsize)   { free(data->dsize);   data->dsize=NULL;   }
-  if(data->wcs)     { wcsfree(data->wcs);  data->wcs=NULL;     }
-  if(data->comment) { free(data->comment); data->comment=NULL; }
+  if(data->name)    { free(data->name);    data->name    = NULL; }
+  if(data->unit)    { free(data->unit);    data->unit    = NULL; }
+  if(data->dsize)   { free(data->dsize);   data->dsize   = NULL; }
+  if(data->wcs)     { wcsfree(data->wcs);  data->wcs     = NULL; }
+  if(data->comment) { free(data->comment); data->comment = NULL; }
 
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the

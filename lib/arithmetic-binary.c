@@ -359,6 +359,7 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
   l=gal_arithmetic_convert_to_compiled_type(lo, flags);
   r=gal_arithmetic_convert_to_compiled_type(ro, flags);
 
+
   /* Set the output type. For the comparison operators, the output type is
      either 0 or 1, so we will set the output type to `unsigned char' for
      efficient memory and CPU usage. Since the number of operators without
@@ -366,6 +367,7 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
      will set the output type to `unsigned char', and if any of the other
      operatrs are given, it will be chosen based on the input types.*/
   otype=gal_arithmetic_binary_out_type(operator, l, r);
+
 
   /* Set the output sizes. */
   minmapsize = ( l->minmapsize < r->minmapsize
@@ -415,19 +417,6 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
     }
 
 
-  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
-     (copies of the orignal operands but in a compiled type, not
-     necessarily the original `lo' and `ro' data structures). So we need to
-     to get the final type based on the original operands and check if the
-     final output needs changing. */
-  if( o->type != final_otype )
-    {
-      tmp_o=gal_data_copy_to_new_type(o, final_otype);
-      gal_data_free(o);
-      o=tmp_o;
-    }
-
-
   /* Clean up. Note that if the input arrays can be freed, and any of right
      or left arrays needed conversion, `BINARY_CONVERT_TO_COMPILED_TYPE'
      has already freed the input arrays, so only `r' and `l' need
@@ -445,6 +434,23 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
     {
       if(l!=lo)           gal_data_free(l);
       if(r!=ro)           gal_data_free(r);
+    }
+
+
+  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
+     (copies of the orignal operands but in a compiled type, not
+     necessarily the original `lo' and `ro' data structures). So we need to
+     to get the final type based on the original operands and check if the
+     final output needs changing.
+
+     IMPORTANT: This has to be done after (possibly) freeing the left and
+     right operands because this step can change the `o' pointer which
+     they may depend on (when working in-place). */
+  if( o->type != final_otype )
+    {
+      tmp_o=gal_data_copy_to_new_type(o, final_otype);
+      gal_data_free(o);
+      o=tmp_o;
     }
 
   /* Return */
