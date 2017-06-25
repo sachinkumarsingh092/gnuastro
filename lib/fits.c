@@ -308,17 +308,22 @@ gal_fits_type_to_datatype(uint8_t type)
       else if( sizeof(int)      == w )   return TINT;
       break;
 
+    /* On 32-bit systems, the length of `int' and `long' are both
+       32-bits. But CFITSIO's LONG type is preferred because it is designed
+       to be 32-bit. Its `INT' type is not clearly defined and caused
+       problems when reading keywords.*/
     case GAL_TYPE_UINT32:
       w=4;
-      if     ( sizeof(int)      == w )   return TUINT;
-      else if( sizeof(long)     == w )   return TULONG;
+      if     ( sizeof(long)     == w )   return TULONG;
+      else if( sizeof(int)      == w )   return TUINT;
       else if( sizeof(short)    == w )   return TUSHORT;
       break;
 
+    /* Similar to UINT32 above. */
     case GAL_TYPE_INT32:
       w=4;
-      if     ( sizeof(int)      == w )   return TINT;
-      else if( sizeof(long)     == w )   return TLONG;
+      if     ( sizeof(long)     == w )   return TLONG;
+      else if( sizeof(int)      == w )   return TINT;
       else if( sizeof(short)    == w )   return TSHORT;
       break;
 
@@ -1322,8 +1327,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
         {
         switch(i)
           {
-          case 4: if(unit) {str = key->array; *unit = *str;}   break;
-          case 3: if(name) {str = key->array; *name = *str;}   break;
+          case 4: if(unit) {str = key->array; *unit = *str; *str=NULL;} break;
+          case 3: if(name) {str = key->array; *name = *str; *str=NULL;} break;
           case 2: bscale = *(double *)(key->array);    break;
           case 1: bzero  = *(double *)(key->array);    break;
           default:

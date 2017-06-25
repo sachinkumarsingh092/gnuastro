@@ -195,16 +195,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct cosmiccalparams *p)
 {
-  /* Check if the density fractions add up to 1. */
-  if( (p->olambda + p->omatter + p->oradiation) != 1.0f )
-    error(EXIT_FAILURE, 0, "sum of fractional densities is not 1, but %f. "
+  double sum=p->olambda + p->omatter + p->oradiation;
+
+  /* Check if the density fractions add up to 1 (within floating point
+     error). */
+  if( sum > (1+1e-8) || sum < (1-1e-8) )
+    error(EXIT_FAILURE, 0, "sum of fractional densities is not 1, but %.8f. "
           "The cosmological constant (`olambda'), matter (`omatter') "
-          "and radiation (`oradiation') densities are given as %f, %f, %f",
-          p->olambda + p->omatter + p->oradiation, p->olambda, p->omatter,
-          p->oradiation);
+          "and radiation (`oradiation') densities are given as %.8f, %.8f, "
+          "%.8f", sum, p->olambda, p->omatter, p->oradiation);
 
   /* The curvature fractional density: */
-  p->ocurv=1-(p->olambda+p->omatter+p->oradiation);
+  p->ocurv=1-sum;
 
   /* Convert H0 from km/sec/Mpc to 1/sec: */
   p->H0s=p->H0/1000/GSL_CONST_MKSA_PARSEC;

@@ -500,6 +500,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 static void
 ui_preparations_read_keywords(struct mkcatalogparams *p)
 {
+  char *msg;
   gal_data_t *tmp;
   gal_data_t *keys=gal_data_array_calloc(2);
   char *stdfile=p->stdfile ? p->stdfile : p->inputname;
@@ -575,8 +576,11 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
       gal_fits_key_read(clumpsfile, p->clumpshdu, keys, 0, 0);
       if(keys[0].status) p->clumpsn=NAN;
       if(keys[1].status)
-        error(EXIT_FAILURE, 0, "couldn't find NCLUMPS in the header of "
-              "%s (hdu: %s).", p->clumpsfile, p->clumpshdu);
+        {
+          asprintf(&msg, "couldn't find/read NUMLABS in the header of "
+                   "%s (hdu: %s), see error above", clumpsfile, p->clumpshdu);
+          gal_fits_io_error(keys[1].status, msg);
+        }
     }
 
 

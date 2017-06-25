@@ -49,4 +49,4 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img 6 eq $img 3 eq or -h1 -h1 --output=or.fits
+$execname $img 6 eq $img 3 eq or -h2 -h2 --output=or.fits

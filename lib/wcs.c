@@ -70,8 +70,8 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
                      int *nwcs)
 {
   /* Declaratins: */
-  struct wcsprm *wcs;
   int nkeys=0, status=0;
+  struct wcsprm *wcs=NULL;
   char *fullheader, *to, *from;
   int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
   int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
@@ -111,7 +111,8 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
       /*******************************************************/
     }
 
-  /* WCSlib function */
+
+  /* WCSlib function to parse the FITS headers. */
   status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, &wcs);
   if(status)
     {
@@ -125,22 +126,45 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
     gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
                            "the memory used to keep all the headers");
 
+
   /* Set the internal structure: */
-  status=wcsset(wcs);
-  if(status)
+  if(wcs)
     {
-      fprintf(stderr, "\n##################\n"
-              "WCSLIB Warning: wcsset ERROR %d: %s.\n"
-              "##################\n",
-            status, wcs_errmsg[status]);
-      wcs=NULL; *nwcs=0;
+      /* CTYPE is a mandatory WCS keyword, so if it hasn't been given (its
+         '\0'), then the headers didn't have a WCS structure. However,
+         WCSLIB still fills in the basic information (for example the
+         dimensionality of the dataset). */
+      if(wcs->ctype[0][0]=='\0')
+        {
+          wcsfree(wcs);
+          wcs=NULL;
+          *nwcs=0;
+        }
+      else
+        {
+          /* Set the WCS structure. */
+          status=wcsset(wcs);
+          if(status)
+            {
+              fprintf(stderr, "\n##################\n"
+                      "WCSLIB Warning: wcsset ERROR %d: %s.\n"
+                      "##################\n",
+                      status, wcs_errmsg[status]);
+              wcsfree(wcs);
+              wcs=NULL;
+              *nwcs=0;
+            }
+          else
+            /* A correctly useful WCS is present. When no PC matrix
+               elements were present in the header, the default PC matrix
+               (a unity matrix) is used. In this case WCSLIB doesn't set
+               `altlin' (and gives it a value of 0). In Gnuastro, later on,
+               we might need to know the type of the matrix used, so in
+               such a case, we will set `altlin' to 1. */
+            if(wcs->altlin==0) wcs->altlin=1;
+        }
     }
 
-  /* Initialize the wcsprm struct
-  if ((status = wcsset(*wcs)))
-    error(EXIT_FAILURE, 0, "%s: wcsset ERROR %d: %s.\n", __func__,
-          status, wcs_errmsg[status]);
-  */
 
   /* Return the WCS structure. */
   return wcs;
@@ -294,13 +318,13 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
           __func__, size*sizeof *out);
 
   /* Fill in the array. */
-  if(wcs->altlin & 0x1)        /* Has a PCi_j array. */
+  if(wcs->altlin & 0x1)          /* Has a PCi_j array. */
     {
       for(i=0;i<wcs->naxis;++i)
         for(j=0;j<wcs->naxis;++j)
           out[i*wcs->naxis+j] = wcs->cdelt[i] * wcs->pc[i*wcs->naxis+j];
     }
-  else if(wcs->altlin & 0x2)     /* Has CDi_j array */
+  else if(wcs->altlin & 0x2)     /* Has CDi_j array.   */
     {
       for(i=0;i<size;++i)
         out[i]=wcs->cd[i];
