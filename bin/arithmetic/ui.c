@@ -272,14 +272,21 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
         token->v[0]='-';
     }
 
-  /* Count the number of HDU values and check if its not less than the
-     number of input FITS images. */
-  for(hdu=p->hdus; hdu!=NULL; hdu=hdu->next) ++numhdus;
-  if(numhdus<numfits)
-    error(EXIT_FAILURE, 0, "not enough HDUs. There are %zu input FITS "
-          "files, but only %zu HDUs. You can use the `--hdu' (`-h') option "
-          "to specify the number or name of a HDU for each FITS file",
-          numfits, numhdus);
+  /* Count the number of HDU values (if globalhdu isn't given) and check if
+     its not less than the number of input FITS images. */
+  if(p->globalhdu)
+    { if(p->hdus) { gal_list_str_free(p->hdus, 1); p->hdus=NULL; }; }
+  else
+    {
+      for(hdu=p->hdus; hdu!=NULL; hdu=hdu->next) ++numhdus;
+      if(numhdus<numfits)
+        error(EXIT_FAILURE, 0, "not enough HDUs. There are %zu input FITS "
+              "files, so the `--hdu' (`-h') option must be called %zu "
+              "times (once for each FITS file). If the HDU value is the "
+              "same for all the files, you may use `--globalhdu' (`-g') to "
+              "specify a single HDU to be used for any number of input "
+              "files", numfits, numfits);
+    }
 }
 
 
@@ -382,7 +389,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct arithmeticparams *p)
 void
 freeandreport(struct arithmeticparams *p, struct timeval *t1)
 {
+  /* Free the simple strings. */
   free(p->cp.output);
+  if(p->globalhdu) free(p->globalhdu);
 
   /* If there are any remaining HDUs in the hdus linked list, then
      free them. */

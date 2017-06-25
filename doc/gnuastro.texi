@@ -8934,6 +8934,13 @@ extra HDUs in the configuration files and by default several HDUs with
 a value of @option{0} are kept in the system-wide configuration file
 when you install Gnuastro.
 
+@item -g INT/STR
+@itemx --globalhdu INT/STR
+Use the value to this option as the HDU of all input FITS files. This
+option is very convenient when you have many input files and the dataset of
+interest is in the same HDU of all the files. When this option is called,
+any values given to the @option{--hdu} option (explained above) are ignored
+and will not be used.
 @end table
 
 Arithmetic accepts two kinds of input: images and numbers. Images are

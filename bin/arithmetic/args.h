@@ -28,6 +28,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Definition of program-specific options. */
 struct argp_option program_options[] =
   {
+    {
+      "globalhdu",
+      UI_KEY_GLOBALHDU,
+      "STR",
+      0,
+      "Use this HDU for all inputs, ignore `--hdu'.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->globalhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
     {0}
   };
 

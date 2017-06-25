@@ -79,7 +79,10 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
       if(filename != NULL && gal_fits_name_is_fits(filename))
         {
           /* Set the HDU for this filename. */
-          newnode->hdu=gal_list_str_pop(&p->hdus);
+          if(p->globalhdu)
+            gal_checkset_allocate_copy(p->globalhdu, &newnode->hdu);
+          else
+            newnode->hdu=gal_list_str_pop(&p->hdus);
 
           /* Increment the FITS counter. */
           ++p->addcounter;
