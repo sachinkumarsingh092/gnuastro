@@ -673,18 +673,23 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 /***********************************************************************/
 #define MULTIOPERAND_MIN(TYPE) {                                        \
     TYPE p, max;                                                        \
+    size_t n, j=0;                                                      \
     gal_type_max(list->type, &max);                                     \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
+        n=0;                                                            \
         p=max;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {   /* Only for integer types, does b==b. */                  \
-            if(hasblank[i] && b==b)                                     \
-              { if( *a[i] != b ) p = *a[i] < p ? *a[i] : p;             \
-                else             p = *a[i] < p ? *a[i] : p; }           \
-            ++a[i];                                                     \
+          {   /* Only for integer types, b==b. */                       \
+            if( hasblank[i] && b==b)                                    \
+              {                                                         \
+                if( a[i][j] != b )                                      \
+                  { p = a[i][j] < p ? a[i][j] : p; ++n; }               \
+              }                                                         \
+            else { p = a[i][j] < p ? a[i][j] : p; ++n; }                \
           }                                                             \
-        *o++=p;                                                         \
+        *o++ = n ? p : b;  /* No usable elements: set to blank. */      \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -695,18 +700,23 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_MAX(TYPE) {                                        \
     TYPE p, min;                                                        \
+    size_t n, j=0;                                                      \
     gal_type_min(list->type, &min);                                     \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
+        n=0;                                                            \
         p=min;                                                          \
         for(i=0;i<dnum;++i)  /* Loop over each array. */                \
-          {   /* Only for integer types, does b==b. */                  \
-            if(hasblank[i] && b==b)                                     \
-              { if( *a[i] != b ) p = *a[i] > p ? *a[i] : p;             \
-                else             p = *a[i] > p ? *a[i] : p; }           \
-            ++a[i];                                                     \
+          {   /* Only for integer types, b==b. */                       \
+            if( hasblank[i] && b==b)                                    \
+              {                                                         \
+                if( a[i][j] != b )                                      \
+                  { p = a[i][j] > p ? a[i][j] : p; ++n; }               \
+              }                                                         \
+            else { p = a[i][j] > p ? a[i][j] : p; ++n; }                \
           }                                                             \
-        *o++=p;                                                         \
+        *o++ = n ? p : b;  /* No usable elements: set to blank. */      \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -716,7 +726,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_NUM {                                              \
-    int n, use;                                                         \
+    int use;                                                            \
+    size_t n, j=0;                                                      \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
@@ -725,14 +736,15 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
               use = ( b==b                                              \
-                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                      ? ( a[i][j]!=b       ? 1 : 0 )      /* Integer */ \
+                      : ( a[i][j]==a[i][j] ? 1 : 0 ) );   /* Float   */ \
             else use=1;                                                 \
                                                                         \
-            /* a[i] must be incremented to next pixel in any case. */   \
-            if(use) ++n; else ++a[i];                                   \
+            /* Increment counter if necessary. */                       \
+            if(use) ++n;                                                \
           }                                                             \
         *o++ = n;                                                       \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -742,8 +754,9 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_SUM {                                              \
+    int use;                                                            \
     double sum;                                                         \
-    int n, use;                                                         \
+    size_t n, j=0;                                                      \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
@@ -753,14 +766,15 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
               use = ( b==b                                              \
-                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                      ? ( a[i][j]!=b     ? 1 : 0 )       /* Integer */  \
+                      : ( a[i][j]==*a[i] ? 1 : 0 ) );    /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* a[i] must be incremented to next pixel in any case. */   \
-            if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
+            /* Use in sum if necessary. */                              \
+            if(use) { sum += a[i][j]; ++n; }                            \
           }                                                             \
         *o++ = n ? sum : b;                                             \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -770,8 +784,9 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_MEAN {                                             \
+    int use;                                                            \
     double sum;                                                         \
-    int n, use;                                                         \
+    size_t n, j=0;                                                      \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
         n=0;                                                            \
@@ -781,14 +796,15 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
               use = ( b==b                                              \
-                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                      ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
+                      : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* a[i] must be incremented to next pixel in any case. */   \
-            if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
+            /* Use in median if necessary. */                           \
+            if(use) { sum += a[i][j]; ++n; }                            \
           }                                                             \
         *o++ = n ? sum/n : b;                                           \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -798,7 +814,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_STD {                                              \
-    int n, use;                                                         \
+    int use;                                                            \
+    size_t n, j=0;                                                      \
     double sum, sum2;                                                   \
     do    /* Loop over each pixel */                                    \
       {                                                                 \
@@ -809,20 +826,20 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
               use = ( b==b                                              \
-                      ? ( *a[i]!=b     ? 1 : 0 )          /* Integer */ \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                      ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
+                      : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* a[i] must be incremented to next pixel in any case. */   \
+            /* Use pixel value if necessary. */                         \
             if(use)                                                     \
               {                                                         \
-                sum2  = *a[i] * *a[i];                                  \
-                sum  += *a[i]++;                                        \
+                sum2 += a[i][j] * a[i][j];                              \
+                sum  += a[i][j];                                        \
                 ++n;                                                    \
               }                                                         \
-            else ++a[i];                                                \
           }                                                             \
         *o++ = n ? sqrt( (sum2-sum*sum/n)/n ) : b;                      \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
   }
@@ -832,12 +849,14 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
-    int n, use;                                                         \
+    int use;                                                            \
+    size_t n, j=0;                                                      \
     TYPE *pixs=gal_data_malloc_array(list->type, dnum, __func__, "pixs"); \
                                                                         \
     /* Loop over each pixel */                                          \
     do                                                                  \
       {                                                                 \
+        /* Initialize. */                                               \
         n=0;                                                            \
                                                                         \
         /* Loop over each array. */                                     \
@@ -846,12 +865,12 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
             /* Only integers and non-NaN floats: v==v is 1. */          \
             if(hasblank[i])                                             \
               use = ( b==b                                              \
-                      ? ( *a[i]!=b     ? 1 : 0 )        /* Integer */   \
-                      : ( *a[i]==*a[i] ? 1 : 0 ) );     /* Float   */   \
+                      ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
+                      : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
             /* a[i] must be incremented to next pixel in any case. */   \
-            if(use) pixs[n++]=*a[i]++; else ++a[i];                     \
+            if(use) pixs[n++]=a[i][j]; else ++a[i];                     \
           }                                                             \
                                                                         \
         /* Sort all the values for this pixel and return the median. */ \
@@ -862,6 +881,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
           }                                                             \
         else                                                            \
           *o++=b;                                                       \
+        ++j;                                                            \
       }                                                                 \
     while(o<of);                                                        \
                                                                         \
@@ -874,7 +894,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
-    TYPE b, **a, *o=out->array, *of=out->array+out->size;               \
+    TYPE b, **a, *o=out->array, *of=o+out->size;                        \
+    size_t i=0;  /* Different from the `i' in the main function. */     \
                                                                         \
     /* Allocate space to keep the pointers to the arrays of each. */    \
     /* Input data structure. The operators will increment these */      \

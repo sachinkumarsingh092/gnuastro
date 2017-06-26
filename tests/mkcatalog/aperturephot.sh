@@ -53,4 +53,4 @@ if [ ! -f $objimg   ]; then echo "$objimg does not exist";  exit 77; fi
 # ==================
 $execname $img --objectsfile=$objimg --objectshdu=1 \
           --output=aperturephot.txt                 \
-          --ids --x --y --ra --dec --magnitude --sn
+          --objid --x --y --ra --dec --magnitude --sn
