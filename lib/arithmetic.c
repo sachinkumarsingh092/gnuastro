@@ -800,7 +800,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* Use in median if necessary. */                           \
+            /* Calculate the mean if necessary. */                      \
             if(use) { sum += a[i][j]; ++n; }                            \
           }                                                             \
         *o++ = n ? sum/n : b;                                           \
@@ -830,7 +830,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* Use pixel value if necessary. */                         \
+            /* Calculate the necessary parameters if necessary. */      \
             if(use)                                                     \
               {                                                         \
                 sum2 += a[i][j] * a[i][j];                              \
@@ -869,8 +869,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
             else use=1;                                                 \
                                                                         \
-            /* a[i] must be incremented to next pixel in any case. */   \
-            if(use) pixs[n++]=a[i][j]; else ++a[i];                     \
+            /* Put the value into the array of values. */               \
+            if(use) pixs[n++]=a[i][j];                                  \
           }                                                             \
                                                                         \
         /* Sort all the values for this pixel and return the median. */ \
