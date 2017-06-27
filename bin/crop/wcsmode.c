@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 #include <float.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include <gnuastro/wcs.h>
@@ -42,17 +43,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
 /*******************************************************************/
 /****************        Check for ui.c        *********************/
 /*******************************************************************/
 /* This function is called from ui.c. Its job is to check the WCS
    values of this  */
 void
-wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
+wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 {
-  double twidth, *pixscale;
+  double *pixscale;
   struct wcsprm *wcs=img->wcs;
-  int i, status[4]={0,0,0,0}, ncoord=4, nelem=2;
+  int i, status[4]={0,0,0,0}, ncorners=4;
+  size_t *dsize=img->dsize, ndim=img->ndim;
   double imgcrd[8], phi[4], theta[4], pixcrd[8];
 
 
@@ -81,93 +85,91 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
           img->name, p->cp.hdu);
 
 
-  /* Check the image resolution (if the pixels are actually a square), then
-     compare the resolution with the other input images. Due to floating
-     point errors, some very small differences might exist in the pixel
-     scale, so break out with an error only if the pixel scales are more
-     different than 1e-6. */
-  pixscale=gal_wcs_pixel_scale_deg(wcs);
+  /* Check the nature of the coordinates, currently we can only support RA
+     and Dec, other modes haven't been checked. */
+  if( strcmp(wcs->ctype[0], "RA---TAN")
+      || strcmp(wcs->ctype[1], "DEC--TAN") )
+    error(EXIT_FAILURE, 0, "currently the only WCS types usable are "
+          "`RA---TAN' and `DEC--TAN' for the first and second axises "
+          "respectively. The WCS types of `%s' (hdu %s) are `%s' and `%s' "
+          "respectively", img->name, p->cp.hdu, wcs->ctype[0], wcs->ctype[1]);
+
+
+  /* Check if the pixels are actually a square, then compare the resolution
+     with the other input images. Due to floating point errors, some very
+     small differences might exist in the pixel scale, so break out with an
+     error only if the pixel scales are more different than 1e-6. */
+  pixscale=gal_wcs_pixel_scale(wcs);
   if( fabs(pixscale[0]-pixscale[1])/pixscale[0] > 1e-6 )
     error(EXIT_FAILURE, 0, "%s: HDU %s: The pixel scale along "
           "the two image axises is not the same. The first axis "
           "is %.15g deg/pixel, while the second is %.15g",
           img->name, p->cp.hdu, pixscale[1], pixscale[0]);
-  if(p->res==0.0f)
+  if(p->pixscale)
     {
-      /* Set the resolution of the image. */
-      p->res=pixscale[0];
+      for(i=0;i<ndim;++i)
+        if(p->pixscale[i] != pixscale[i])
+          error(EXIT_FAILURE, 0, "%s (hdu %s): has resolution of %g along "
+                "dimension %d. However, previously checked input(s) had "
+                "a resolution of %g in this dimension", img->name, p->cp.hdu,
+                pixscale[i], i+1, p->pixscale[i]);
       free(pixscale);
-
-      /* Set the widths such that iwidth and wwidth are exactly the same
-         (within their different units ofcourse). Also make sure that the
-         image size is an odd number (so the central pixel is in the
-         center). */
-      p->wwidth/=3600;                 /* Convert the width to degrees. */
-      twidth=p->wwidth/p->res;
-      if(twidth<3)
-        error(EXIT_FAILURE, 0, "--wwidth = %f (arcseconds) translates "
-              "to %.0f pixels in scale of input image(s). This is probably "
-              "not what you want", p->wwidth*3600, twidth);
-      p->iwidth[0] = (twidth-(long)twidth)>0.5 ? twidth+1 : twidth;
-      if(p->iwidth[0]%2==0)
-        {
-          p->iwidth[0]+=1;
-          p->wwidth+=p->res;
-        }
-      p->iwidth[1]=p->iwidth[0];
     }
   else
-    {
-      if(p->res!=pixscale[0])
-        error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
-              "this image is %f arcseconds/pixel while the "
-              "previously checked input image(s) had a resolution "
-              "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
-              3600*p->res);
-      free(pixscale);
-    }
+    p->pixscale=pixscale;
 
 
-  /* Get the coordinates of the first pixel in the image. Note that `dsize'
-     is in C axises, while pixcrd is in FITS axises. */
-  pixcrd[0]=1;               pixcrd[1]=1;
-  pixcrd[2]=img->dsize[1];   pixcrd[3]=1;
-  pixcrd[4]=1;               pixcrd[5]=img->dsize[0];
-  pixcrd[6]=img->dsize[1];   pixcrd[7]=img->dsize[0];
-  wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta,
+  /* Set the coordinates of the dataset's corners. Note that `dsize' is in
+     C order, while pixcrd is in FITS order.*/
+  pixcrd[0] = 1;          pixcrd[1] = 1;
+  pixcrd[2] = dsize[1];   pixcrd[3] = 1;
+  pixcrd[4] = 1;          pixcrd[5] = dsize[0];
+  pixcrd[6] = dsize[1];   pixcrd[7] = dsize[0];
+
+
+  /* Get the coordinates of the corners of the dataset in WCS.  */
+  wcsp2s(wcs, ncorners, ndim, pixcrd, imgcrd, phi, theta,
          img->corners, status);
 
+
   /* Check if there was no error in the conversion. */
-  for(i=0;i<4;++i)
+  for(i=0;i<ncorners;++i)
     if(status[i])
       error(EXIT_FAILURE, 0, "wcsp2s ERROR %d in row %d of pixcrd: %s",
             i, status[i], wcs_errmsg[status[i]]);
 
 
-  /* Fill in the size of the image in celestial degrees from the first
-     pixel in the image. Note that `dsize' is in C axises, while pixcrd is
-     in FITS axises. */
-  img->sized[0]=img->dsize[1]*p->res/cos(img->corners[1]*M_PI/180);
-  img->sized[1]=img->dsize[0]*p->res;
+  /* Fill in the size of the dataset in WCS from the first pixel in the
+     image. Note that `dsize' is in C axises, while the `pixscale',
+     `corners' and `sized' are in FITS axises. */
+  img->sized[0] = ( img->dsize[1] * p->pixscale[0]
+                    / cos( img->corners[1] * M_PI / 180 ) );
+  img->sized[1] = img->dsize[0] * p->pixscale[1];
 
 
-  /* In case the image crosses the equator, we will calculate these
-     values here so later on, we don't have to calculate them on every
-     check. See the explanation above radecoverlap.*/
-  if( img->corners[1]*(img->corners[1]+img->sized[1]) < 0 )
+  /* In case the image crosses the equator, we will calculate these values
+     here so later on, we don't have to calculate them on every check. See
+     the explanation above `point_in_dataset'.
+
+     Note that in both 2D and 3D data, the declination is in the second
+     coordinate (index 1). */
+  if( img->corners[1] * (img->corners[1]+img->sized[1]) < 0 )
     {
-      /* re in the explanations. */
+      /* re in the comments above `point_in_dataset'. */
       img->equatorcorr[0]=img->corners[0]
         -0.5*img->sized[0]*(1-cos(img->corners[1]*M_PI/180));
 
-      /* sre in the explanations. */
+      /* sre in the comments above `point_in_dataset'. */
       img->equatorcorr[1]=img->sized[0]*cos(img->corners[1]*M_PI/180);
     }
 
 
   /* Just to check:
-  printf("\n\n%s:\n(%.10f, %.10f)\n(%.10f, %.10f)"
-         "\n(%.10f, %.10f)\n(%.10f, %.10f)\n\n", img->name,
+  printf("\n\n%s:\n", img->name);
+  printf("(%.10f, %.10f)\n"
+         "(%.10f, %.10f)\n"
+         "(%.10f, %.10f)\n"
+         "(%.10f, %.10f)\n\n",
          img->corners[0], img->corners[1],
          img->corners[2], img->corners[3],
          img->corners[4], img->corners[5],
@@ -200,19 +202,21 @@ wcs_check_prepare(struct cropparams *p, struct inputimgs *img)
 /*******************************************************************/
 /* Set the four sides around the point of interest in RA and Dec.
 
-   NOTE: In this format we are working on here (where the image is
-   aligned with the celestial coordinates), the declination is
-   measured on a great circle, while the right ascension is not. So we
-   have to consider the
+   NOTE: When the image is aligned with the celestial coordinates (current
+   working paradigm), the declination is measured on a great circle, while
+   the right ascension is not. So we have to consider this in calculating
+   the difference in RA.
 */
 void
-setcsides(struct onecropparams *crp)
+wcsmode_crop_corners(struct onecropparams *crp)
 {
-  size_t i;
-  double h, hr, r, d, dr;        /* The second r is for radians. */
   struct cropparams *p=crp->p;
+
+  size_t i, ndim=p->imgs->ndim;
   double minra=FLT_MAX, mindec=FLT_MAX;
   double maxra=-FLT_MAX, maxdec=-FLT_MAX;
+  double r, d, dr, h[MAXDIM], hr[MAXDIM];
+  size_t rmini=-1, rmaxi=-1, dmini=-1, dmaxi=-1;
 
   /* Set the four corners of the WCS region. */
   if(p->polygon)
@@ -234,58 +238,75 @@ setcsides(struct onecropparams *crp)
     }
   else
     {
-      if(p->catname)
-        {
-          r=crp->world[0]=p->c1[crp->out_ind];
-          d=crp->world[1]=p->c2[crp->out_ind];
-        }
-      else
-        {
-          r=crp->world[0]=p->ra;
-          d=crp->world[1]=p->dec;
-        }
+      /* Set the RA and Dec to use as center. */
+      r=crp->world[0]=p->centercoords[0][crp->out_ind];
+      d=crp->world[1]=p->centercoords[1][crp->out_ind];
 
-      h=p->wwidth/2;
+
+      /* Calculate the declination in radians for easy readability. */
       dr=d*M_PI/180;
-      hr=h*M_PI/180;
 
-      /* Set the four corners of this crop. */
-      crp->corners[0] = r+h/cos(dr-hr);  crp->corners[1] = d-h; /* Bt Lf */
-      crp->corners[2] = r-h/cos(dr-hr);  crp->corners[3] = d-h; /* Bt Rt */
-      crp->corners[4] = r+h/cos(dr+hr);  crp->corners[5] = d+h; /* Tp Lf */
-      crp->corners[6] = r-h/cos(dr+hr);  crp->corners[7] = d+h; /* Tp Rt */
+      /* Set the half width in each dimension. For the angular dimensions,
+         also calculate it in radians. */
+      hr[0] = ( h[0] = ((double *)(p->width->array))[0] / 2 ) * M_PI / 180;
+      hr[1] = ( h[1] = ((double *)(p->width->array))[1] / 2 ) * M_PI / 180;
+
+      /* Set the corners of this crop. */
+      crp->corners[0] = r+h[0]/cos(dr-hr[1]);
+      crp->corners[1] = d-h[1];                   /* Bottom left.  */
+
+      crp->corners[2] = r-h[0]/cos(dr-hr[1]);
+      crp->corners[3] = d-h[1];                   /* Bottom Right. */
+
+      crp->corners[4] = r+h[0]/cos(dr+hr[1]);
+      crp->corners[5] = d+h[1];                   /* Top Left.     */
+
+      crp->corners[6] = r-h[0]/cos(dr+hr[1]);
+      crp->corners[7] = d+h[1];                   /* Top Right.    */
     }
 
-  /* Set the bottom width and height of the crop in degrees. Note that
-     the width changes as the height changes, so here we want the
-     height and the lowest declination. Note that on the bottom edge,
-     corners[0] is the maximum RA and corners[2] is the minimum RA.
-     For all the region, corners[5] is one of the maximum declinations
-     and corners[3] is one of the the minimum declinations.*/
-  crp->sized[0]=( (crp->corners[0]-crp->corners[2])
-                  / cos(crp->corners[1]*M_PI/180) );
-  crp->sized[1]=crp->corners[5]-crp->corners[3];
+  /* Set the bottom width and height of the crop in degrees. Note that the
+     width changes as the height changes, so here we want the height and
+     the lowest declination. Note that in 2D on the bottom edge, corners[0]
+     is the maximum RA and corners[2] is the minimum RA.  For all the 2D
+     region, corners[5] is one of the maximum declinations and corners[1]
+     is one of the the minimum declinations.
+
+     North and south hemispheres are no problem: When using the center,
+     they are set properly (in any hemisphere) and for a polygon, the
+     minimums and maximums are automatically found. */
+  rmini = ndim;                 /* First element in second corner. */
+  rmaxi = 0;                    /* First element.                  */
+  dmini = 1;                    /* Second element.                 */
+  dmaxi = 5;                    /* Second element in third corner. */
+  crp->sized[0]=( (crp->corners[rmaxi]-crp->corners[rmini])
+                  / cos(crp->corners[dmini]*M_PI/180) );
+  crp->sized[1]=crp->corners[dmaxi]-crp->corners[dmini];
+
 
   /* In case the crop crosses the equator, then we need these two
-     corrections. See the complete explanations below. */
+     corrections. See the complete explanations above `point_in_dataset'. */
   if(crp->corners[1]*(crp->corners[1]+crp->sized[1]) < 0 )
     {
-      /* re in the explanations. */
+      /* re in the explanations above `point_in_dataset'. */
       crp->equatorcorr[0]=crp->corners[0]
         -0.5*crp->sized[0]*(1-cos(crp->corners[1]*M_PI/180));
 
-      /* sre in the explanations. */
+      /* sre in the explanations above `point_in_dataset'. */
       crp->equatorcorr[1]=crp->sized[0]*cos(crp->corners[1]*M_PI/180);
     }
 
   /* Just to check:
-  printf("\n\nCorner 1: (%.10f, %.10f)\n"
-         "Corner 2: (%.10f, %.10f)\nCorner 3: (%.10f, %.10f)\n"
-         "Corner 4: (%.10f, %.10f)\n\n",
+  printf("\n\n%g, %g:\n", r, d);
+  printf("\t(%.10f, %.10f)\n"
+         "\t(%.10f, %.10f)\n"
+         "\t(%.10f, %.10f)\n"
+         "\t(%.10f, %.10f)\n\n",
          crp->corners[0], crp->corners[1],
          crp->corners[2], crp->corners[3],
          crp->corners[4], crp->corners[5],
          crp->corners[6], crp->corners[7]);
+  exit(0);
   */
 }
 
@@ -434,21 +455,29 @@ fillcrpipolygon(struct onecropparams *crp)
    (South) equations of above as before and for those points that have
    a positive declination,  we use the North formula  but replacing r1
    with re, d1 with 0 and sr with sre.
-*/
-/*
-   p[2]: RA and Dec of a point (rp and dp above).
-   i[2]: RA and Dec of first point in image. (r1 and d1 above).
-   s[2]: Size of the image in degrees (sr and sd above).
-   c[2]: Corrections if equator is passed, (se and sre above).
-*/
-int
-radecinimg(double *p, double *i, double *s, double *c)
+
+
+   INPUTS
+   ------
+   p[]: Point coordinates (rp and dp above).
+   i[]: Coordinates of first pixel in image. (r1 and d1 above).
+   s[]: Size/width of box (sr and sd above).
+   c[]: Corrections if equator is passed, (se and sre above).
+
+
+   IMPORTANT: It is assumed that the dimensions are ordered with:
+
+      0: RA
+      1: Dec
+      2: Third dimension (independent of RA and Dec).          */
+static int
+point_in_dataset(double *p, double *i, double *s, double *c, size_t ndim)
 {
   double n;
 
-  /* First check the declination. If it is not in range, you can
-     safely return 0.*/
-  if(p[1]>=i[1]  && p[1]<=i[1]+s[1])
+  /* In the RA and Dec checks, first check the declination. If it is not in
+     range, you can safely return 0. */
+  if(p[1]>=i[1] && p[1]<=i[1]+s[1])
     {
       if(p[1]<=0)            /* Point is in southern hemisphere, it     */
         {                    /* doesn't matter if image passes equator! */
@@ -472,6 +501,7 @@ radecinimg(double *p, double *i, double *s, double *c)
             }
         }
     }
+
   return 0;
 }
 
@@ -491,21 +521,25 @@ radecinimg(double *p, double *i, double *s, double *c)
    there is an overlap (the survey image is completely within the crop
    box). So we have to check both.  */
 int
-radecoverlap(struct onecropparams *crp)
+wcsmode_overlap(struct onecropparams *crp)
 {
   double *d, *fd;
   double *i, *s, *c;                /* for clear viewing. */
   struct cropparams *p=crp->p;
+  size_t ndim=crp->p->imgs->ndim;
 
-  /* First check if the four sides of the crop box are in the image.*/
-  fd=(d=crp->corners)+8;
+  /* First check if the corners of the crop are in the image.*/
   s=p->imgs[crp->in_ind].sized;
   i=p->imgs[crp->in_ind].corners;
   c=p->imgs[crp->in_ind].equatorcorr;
+  fd=(d=crp->corners) + 8;
   do
     {
-      if( radecinimg(d, i, s, c) ) return 1;
-      d+=2;
+      /* As long as one of the crop corners are in the image, we know there
+         is overlap and can return a true value. We don't need to check all
+         corners. */
+      if( point_in_dataset(d, i, s, c, ndim) ) return 1;
+      d+=ndim;
     }
   while(d<fd);
 
@@ -514,13 +548,14 @@ radecoverlap(struct onecropparams *crp)
   s=crp->sized;
   i=crp->corners;
   c=crp->equatorcorr;
-  fd=(d=p->imgs[crp->in_ind].corners)+8;
+  fd=(d=p->imgs[crp->in_ind].corners) + 8;
   do
     {
-      if( radecinimg(d, i, s, c) ) return 1;
-      d+=2;
+      if( point_in_dataset(d, i, s, c, ndim) ) return 1;
+      d+=ndim;
     }
   while(d<fd);
 
+  /* If control reaches here, there was no overlap. */
   return 0;
 }

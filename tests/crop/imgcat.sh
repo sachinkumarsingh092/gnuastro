@@ -54,5 +54,6 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 cat=$topsrc/tests/$prog/cat.txt
-$execname $img --catalog=$cat --mode=img --suffix=_imgcat.fits --numthreads=1 \
-          --zeroisnotblank --xcol=X_CENTER --ycol=Y_CENTER --namecol=NAME
+$execname $img --catalog=$cat --suffix=_imgcat.fits --numthreads=1      \
+          --zeroisnotblank --coordcol=X_CENTER --coordcol=Y_CENTER      \
+          --namecol=NAME --mode=img --width=201

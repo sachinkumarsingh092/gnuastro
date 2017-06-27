@@ -55,5 +55,6 @@ done
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 cat=$topsrc/tests/$prog/cat.txt
-$execname $img --catalog=$cat --mode=wcs --suffix=_wcscat.fits        \
-          --zeroisnotblank --racol=4 --deccol=DEC_CENTER --numthreads=1
+$execname $img --catalog=$cat --suffix=_wcscat.fits            \
+          --zeroisnotblank --coordcol=4 --coordcol=DEC_CENTER  \
+          --numthreads=1 --mode=wcs --width=3/3600

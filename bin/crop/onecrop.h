@@ -52,7 +52,7 @@ struct onecropparams
   /* For log */
   char             *name;  /* Filename of crop.                        */
   size_t          numimg;  /* Number of images used to make this crop. */
-  unsigned char centerfilled;   /* ==1 if the center is filled.        */
+  unsigned char centerfilled; /* ==1 if the center is filled.          */
 
   /* Thread parameters. */
   size_t         *indexs;  /* Indexs to be used in this thread.        */
@@ -60,19 +60,16 @@ struct onecropparams
 };
 
 void
-crop_polygonparser(struct cropparams *p);
+onecrop_parse_polygon(struct cropparams *p);
 
 void
-cropname(struct onecropparams *crp);
-
-void
-cropflpixel(struct onecropparams *crp);
+onecrop_name(struct onecropparams *crp);
 
 void
 onecrop(struct onecropparams *crp);
 
 int
-iscenterfilled(struct onecropparams *crp);
+onecrop_center_filled(struct onecropparams *crp);
 
 void
 crop_print_log(struct onecropparams *p);

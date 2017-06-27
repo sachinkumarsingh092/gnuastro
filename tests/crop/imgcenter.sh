@@ -1,4 +1,4 @@
-# Crop a box based on --xc and --yc.
+# Make a single crop with center defined in Image mode.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -53,4 +53,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
-$execname $img --xc=251 --yc=251 --output=crop_xcyc.fits --numthreads=1
+$execname $img --center=251,251 --output=crop_imgcenter.fits    \
+          --numthreads=1 --mode=img --width=201

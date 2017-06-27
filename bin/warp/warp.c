@@ -455,7 +455,7 @@ correct_wcs_save_output(struct warpparams *p)
      signs are usually different.*/
   if( wcs->pc[1]<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
   if( wcs->pc[2]<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
-  pixelscale=gal_wcs_pixel_scale_deg(wcs);
+  pixelscale=gal_wcs_pixel_scale(wcs);
   diff=fabs(wcs->pc[0])-fabs(wcs->pc[3]);
   if( fabs(diff/pixelscale[0])<RELATIVEFLTERROR )
     wcs->pc[3] =  ( (wcs->pc[3] < 0.0f ? -1.0f : 1.0f) * fabs(wcs->pc[0]) );

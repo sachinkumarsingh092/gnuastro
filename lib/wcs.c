@@ -363,7 +363,7 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
   if(wcs->pc)
     {
       /* Get the pixel scale. */
-      ps=gal_wcs_pixel_scale_deg(wcs);
+      ps=gal_wcs_pixel_scale(wcs);
 
       /* The PC matrix and the CDELT elements might both contain scale
          elements (during processing the scalings might be added only to PC
@@ -431,9 +431,9 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 
 
 
-/* Return the pixel scale of the image in both dimentions in degrees. */
+/* Return the pixel scale of the dataset in units of the WCS. */
 double *
-gal_wcs_pixel_scale_deg(struct wcsprm *wcs)
+gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
   gsl_vector S;
   gsl_matrix A, V;
@@ -490,7 +490,7 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
           "The input WCS has %d dimensions", __func__, wcs->naxis);
 
   /* Get the pixel scales along each axis in degrees, then multiply. */
-  pixscale=gal_wcs_pixel_scale_deg(wcs);
+  pixscale=gal_wcs_pixel_scale(wcs);
 
   /* Clean up and return the result. */
   out = pixscale[0] * pixscale[1] * 3600.0f * 3600.0f;

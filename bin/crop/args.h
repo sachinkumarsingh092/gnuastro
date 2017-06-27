@@ -32,6 +32,20 @@ struct argp_option program_options[] =
   {
     /* Input. */
     {
+      "mode",
+      UI_KEY_MODE,
+      "STR",
+      0,
+      "Coordinate mode `img' or `wcs'",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->mode,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_coordinate_mode
+    },
+    {
       "hstartwcs",
       UI_KEY_HSTARTWCS,
       "INT",
@@ -108,7 +122,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Crop by center (general settings)",
+      "Crop by center",
       ARGS_GROUP_CENTER_GENERAL
     },
     {
@@ -125,92 +139,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "iwidth",
-      UI_KEY_IWIDTH,
-      "INT",
+      "width",
+      UI_KEY_WIDTH,
+      "FLT[,...]",
       0,
-      "Width (pixels) when crop defined by X,Y.",
+      "Width when crop is defined by its center.",
       ARGS_GROUP_CENTER_GENERAL,
-      &p->iwidthin,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0_ODD,
+      &p->width,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_width_and_center
     },
     {
-      "wwidth",
-      UI_KEY_WWIDTH,
-      "FLT",
+      "center",
+      UI_KEY_CENTER,
+      "FLT[,...]",
       0,
-      "Width (arcseconds) for crops defined by RA,Dec.",
+      "Central coordinates of a single crop.",
       ARGS_GROUP_CENTER_GENERAL,
-      &p->wwidth,
-      GAL_TYPE_FLOAT64,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Crop by center (single crop)",
-      ARGS_GROUP_CENTER_SINGLE
-    },
-    {
-      "ra",
-      UI_KEY_RA,
-      "FLT",
-      0,
-      "Right ascension of one crop box center.",
-      ARGS_GROUP_CENTER_SINGLE,
-      &p->ra,
-      GAL_TYPE_FLOAT64,
+      &p->center,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "dec",
-      UI_KEY_DEC,
-      "FLT",
-      0,
-      "Declination of one crop box center.",
-      ARGS_GROUP_CENTER_SINGLE,
-      &p->dec,
-      GAL_TYPE_FLOAT64,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "xc",
-      UI_KEY_XC,
-      "FLT",
-      0,
-      "First axis position of one crop box center.",
-      ARGS_GROUP_CENTER_SINGLE,
-      &p->xc,
-      GAL_TYPE_FLOAT64,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "yc",
-      UI_KEY_YC,
-      "FLT",
-      0,
-      "Second axis position of one crop box center.",
-      ARGS_GROUP_CENTER_SINGLE,
-      &p->yc,
-      GAL_TYPE_FLOAT64,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_width_and_center
     },
 
 
@@ -221,7 +175,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Crop by center (catalog)",
+      "Crop by center (when a catalog is given)",
       ARGS_GROUP_CENTER_CATALOG
     },
     {
@@ -264,53 +218,14 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "racol",
-      UI_KEY_RACOL,
+      "coordcol",
+      UI_KEY_COORDCOL,
       "STR/INT",
       0,
-      "Column number/info of Right Ascension (RA).",
+      "Column no./info containing coordinates.",
       ARGS_GROUP_CENTER_CATALOG,
-      &p->racol,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "deccol",
-      UI_KEY_DECCOL,
-      "STR/INT",
-      0,
-      "Column number/info of Declination.",
-      ARGS_GROUP_CENTER_CATALOG,
-      &p->deccol,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "xcol",
-      UI_KEY_XCOL,
-      "STR/INT",
-      0,
-      "Column number/info of X (first FITS axis).",
-      ARGS_GROUP_CENTER_CATALOG,
-      &p->xcol,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "ycol",
-      UI_KEY_YCOL,
-      "STR/INT",
-      0,
-      "Column number/info of Y (second FITS axis).",
-      ARGS_GROUP_CENTER_CATALOG,
-      &p->ycol,
-      GAL_TYPE_STRING,
+      &p->coordcol,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -371,19 +286,6 @@ struct argp_option program_options[] =
 
 
     /* Operating mode */
-    {
-      "mode",
-      UI_KEY_MODE,
-      "STR",
-      0,
-      "Coordinate mode `img' or `wcs'",
-      GAL_OPTIONS_GROUP_OPERATING_MODE,
-      &p->modestr,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
 

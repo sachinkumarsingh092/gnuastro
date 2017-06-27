@@ -218,6 +218,7 @@ mkprof_build(void *inparam)
 
   size_t i, id;
   int lockresult;
+  double center[2];
   long lpixel_o[2];
   pthread_mutex_t *qlock=&p->qlock;
   struct builtqueue *ibq, *fbq=NULL;
@@ -252,13 +253,15 @@ mkprof_build(void *inparam)
 
       /* Get the overlapping pixels using the starting points (NOT
          oversampled). */
-      gal_box_border_from_center(p->x[id], p->y[id], mkp->width,
+      center[0]=p->x[id];
+      center[1]=p->y[id];
+      gal_box_border_from_center(center, 2, mkp->width,
                                  ibq->fpixel_i, ibq->lpixel_i);
       mkp->fpixel_i[0]=ibq->fpixel_i[0];
       mkp->fpixel_i[1]=ibq->fpixel_i[1];
       ibq->overlaps = gal_box_overlap(mkp->onaxes, ibq->fpixel_i,
                                       ibq->lpixel_i, ibq->fpixel_o,
-                                      lpixel_o);
+                                      lpixel_o, 2);
 
 
       /* Build the profile if necessary, After this, the width is

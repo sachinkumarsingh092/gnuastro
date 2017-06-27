@@ -2521,7 +2521,7 @@ you have downloaded
 $ tar xf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
-$ make -j8                         # Replace 8 with no. CPU threads.
+$ make
 $ make utils
 $ ./testprog > testprog.lis
 $ diff testprog.lis testprog.out    # Should have no output
@@ -2565,8 +2565,8 @@ downloaded @url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
 @example
 $ tar xf wcslib.tar.bz2
 $ cd wcslib-X.X                    # Replace X.X with version number
-$ ./configure --without-pgplot LIBS="-pthread -lm"
-$ make -j8                         # Replace 8 with no. CPU threads.
+$ ./configure --without-pgplot LIBS="-pthread -lm" --disable-fortran
+$ make
 $ make check
 $ sudo make install
 @end example
@@ -7700,55 +7700,67 @@ image, see @ref{Crop section syntax}.
 
 @node Crop modes, Crop section syntax, Crop, Crop
 @subsection Crop modes
-In order to be comprehensive, intuitive, and easy to use, Crop has two ways
-to define crop region: 1) From its center and (square) side length, for
-example to generate postage stamps of a given catalog. 2) The vertices of
-the crop region, this can be useful for larger crops over many targets, for
-example to crop out a uniformly deep, or contiguous, region of a large
-survey. Irrespective of how the crop region is defined, both Image/pixel,
-and World coordinate system (WCS) coordinates are acceptable and all
-coordinates are read as floating point numbers (not integers, except for
-the @option{--section} option, see below). The coordinate standards used
-are the main modes of Crop. Here, the different ways to specify the crop
-region are discussed within each standard. For the full list options,
-please see @ref{Invoking astcrop}.
+In order to be comprehensive, intuitive, and easy to use, there are two
+ways to define the crop:
+
+@enumerate
+@item
+From its center and side length. For example if you already know the
+coordinates of an object and want to inspect it in an image or to generate
+postage stamps of a catalog containing many such coordinates.
+
+@item
+The vertices of the crop region, this can be useful for larger crops over
+many targets, for example to crop out a uniformly deep, or contiguous,
+region of a large survey.
+@end enumerate
+
+Irrespective of how the crop region is defined, the coordinates to define
+the crop can be in Image (pixel) or World Coordinate System (WCS)
+standards. All coordinates are read as floating point numbers (not
+integers, except for the @option{--section} option, see below). By setting
+the @emph{mode} in Crop, you define the standard that the given coordinates
+must be interpretted. Here, the different ways to specify the crop region
+are discussed within each standard. For the full list options, please see
+@ref{Invoking astcrop}.
 
 When the crop is defined by its center, the respective (integer) central
 pixel position will be found internally according to the FITS standard. To
 have this pixel positioned in the center of the cropped region, the final
-cropped region must have (in Image mode), or will have (in WCS mode) an add
-number of pixels. Furthermore, when the crop is defined as by its center,
-Crop allows you to only keep crops what don't have any blank pixels in the
-vicinity of their center (your primary target). This can be very convenient
-when your input catalog/coordinates originated from another survey/filter
-which is not fully covered by your input image, to learn more about this
-feature, please see the description of the @option{--checkcenter} option in
-@ref{Invoking astcrop}.
+cropped region will have an add number of pixels (even if you give an even
+number to @option{--width} in image mode).
+
+Furthermore, when the crop is defined as by its center, Crop allows you to
+only keep crops what don't have any blank pixels in the vicinity of their
+center (your primary target). This can be very convenient when your input
+catalog/coordinates originated from another survey/filter which is not
+fully covered by your input image, to learn more about this feature, please
+see the description of the @option{--checkcenter} option in @ref{Invoking
+astcrop}.
 
 @table @asis
 @item Image coordinates
-In image mode, Crop uses the pixel coordinates/positions (instead of world
-coordinates). In image mode, only one image may be input. The crop(s) can
-be defined in multiple ways as listed below.
+In image mode (@option{--mode=img}), Crop interprets the pixel coordinates
+and widths in units of the input data-elements (for example pixels in an
+image, not world coordinates). In image mode, only one image may be
+input. The output crop(s) can be defined in multiple ways as listed below.
 
 @table @asis
 @item Center of multiple crops (in a catalog)
-The center of (possibly multiple) crops are read from a text file. A
-catalog can also contain WCS coordinates, so @option{--mode=img} is
-necessary to avoid ambiguity when all columns are specified. The
-@option{--xcol} and @option{--ycol} columns in the catalog are interpreted
-as the center of a square crop with a width of @option{--iwidth} pixels (an
-odd number). The columns can contain any floating point value. The value to
-@option{--output} option is seen as a directory which will host (the
-possibly multiple) separate crop files, see @ref{Crop output} for more. For
-a tutorial using this feature, please see @ref{Hubble visually checks and
-classifies his catalog}.
+The center of (possibly multiple) crops are read from a text file. In this
+mode, the columns identified with the @option{--coordcol} option are
+interpreted as the center of a crop with a width of @option{--width} pixels
+along each dimension. The columns can contain any floating point value. The
+value to @option{--output} option is seen as a directory which will host
+(the possibly multiple) separate crop files, see @ref{Crop output} for
+more. For a tutorial using this feature, please see @ref{Hubble visually
+checks and classifies his catalog}.
 
 @item Center of a single crop (on the command-line)
-The center of the crop is given on the command-line with the @option{--xc}
-and @option{--yc} options. The crop width is specified by the
-@option{--iwidth} option. The given coordinates can be any floating point
-and the width has to be an odd integer, see the explanations above.
+The center of the crop is given on the command-line with the
+@option{--center} option. The crop width is specified by the
+@option{--width} option along each dimension. The given coordinates and
+width can be any floating point number.
 
 @item Vertices of a single crop
 In Image mode there are two options to define the vertices of a region to
@@ -7760,17 +7772,17 @@ section syntax} for a full description of this method.
 The latter option (@option{--polygon}) is a higher-level method to define
 any convex polygon (with any number of vertices) with floating point
 values. Please see the description of this option in @ref{Invoking astcrop}
-for its syntax. It is available in both Image and WCS modes, hence, to read
-the vertices as pixel coordinates, @option{--mode=img} has to be called.
+for its syntax.
 @end table
 
 @item WCS coordinates
-Use the World Coordinate System (WCS) information to define the crop, not
-pixel coordinates. In this mode, the width (@option{--wwidth}) is read in
-units of arc-seconds and multiple images (tiles in a survey) can be
-input. When the cropped region (defined by center or vertices) overlaps
-with multiple of the input images/tiles, the overlapping regions will be
-taken from the respective input (they will be stitched in the crop).
+In WCS mode (@option{--mode=wcs}), the coordinates and widths are
+interpretted using the World Coordinate System (WCS, that must accompany
+the dataset), not pixel coordinates. In WCS mode, Crop accepts multiple
+datasets as input. When the cropped region (defined by its center or
+vertices) overlaps with multiple of the input images/tiles, the overlapping
+regions will be taken from the respective input (they will be stitched when
+necessary for each output crop).
 
 In this mode, the input images do not necessarily have to be the same size,
 they just need to have the same orientation and pixel resolution. Currently
@@ -7790,23 +7802,22 @@ listed below.
 @table @asis
 
 @item Center of multiple crops (in a catalog)
-Similar to catalog inputs in Image mode (above), but @option{--mode=wcs}
-has to be activated to avoid ambiguity. The central RA and Dec value for
-each crop will be read from the @option{--racol} and @option{--deccol}
-columns of the input catalog. The square cropped box will have an odd
-number of pixels.
+Similar to catalog inputs in Image mode (above), except that the values
+along each dimension are assumed to have the same units as the dataset's
+WCS information. For example, the central RA and Dec value for each crop
+will be read from the first and second calls to the @option{--coordcol}
+option. The width of the cropped box (in units of the WCS, or degrees in RA
+and Dec mode) must be specified with the @option{--width} option.
 
 @item Center of a single crop (on the command-line)
-You can specify the center of only one crop box with the @option{--ra} and
-@option{--dec} options. If it exists in the input images, it will be
-cropped similar to the catalog mode.
+You can specify the center of only one crop box with the @option{--center}
+option. If it exists in the input images, it will be cropped similar to the
+catalog mode, see above also for @code{--width}.
 
 @item Vertices of a single crop
 The @option{--polygon} option is a high-level method to define any convex
 polygon (with any number of vertices). Please see the description of this
-option in @ref{Invoking astcrop} for its syntax. It is available in both
-Image and WCS modes, hence, to read the vertices as RA and Dec coordinates,
-@option{--mode=wcs} has to be called/activated.
+option in @ref{Invoking astcrop} for its syntax.
 @end table
 
 @cartouche
@@ -7822,16 +7833,9 @@ input image with these coordinates, see @ref{Warp}.
 @end table
 
 As a summary, if you don't specify a catalog, you have to define the
-cropped region manually on the command-line. Other than the
-@option{--polygon} option, the other methods to define a single crop are
-unique to each mode, so the mode (@option{--mode}) will be ignored. When
-using a catalog to define the crop centers, if the columns to only one mode
-are given (for example only @option{--xcol} and @option{--ycol}, not the
-WCS columns) then the mode is irrelevant. However, when all image and WCS
-mode columns are given, @option{--mode} is mandatory (you can keep the
-columns in a configuration file and simply set the mode, see
-@ref{Configuration files} and @ref{Selecting table columns}). When using
-@option{--polygon} the mode is mandatory to interpret the values correctly.
+cropped region manually on the command-line.  In any case the mode is
+mandatory for Crop to be able to interpret the values given as coordinates
+or widths.
 
 
 @node Crop section syntax, Blank pixels, Crop modes, Crop
@@ -7942,32 +7946,32 @@ $ astcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
 One line examples:
 
 @example
-## Crop all objects in catalog.txt from image.fits:
-$ astcrop catalog.txt image.fits
+## Crop all objects in cat.txt from image.fits:
+$ astcrop --catalog=cat.txt image.fits
 
 ## Crop all options in catalog (with RA,DEC) from all the files
 ## ending in `_drz.fits' in `/mnt/data/COSMOS/':
-$ astcrop --mode=wcs catalog.txt /mnt/data/COSMOS/*_drz.fits
+$ astcrop --mode=wcs --catalog=cat.txt /mnt/data/COSMOS/*_drz.fits
 
-## Crop-out the outer 10 border pixels of input image:
+## Crop the outer 10 border pixels of the input image:
 $ astcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
 
 ## Crop region around RA and Dec of (189.16704, 62.218203):
-$ astcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
+$ astcrop --mode=wcs --center=189.16704,62.218203 goodsnorth.fits
 
 ## Crop region around pixel coordinate (568.342, 2091.719):
-$ astcrop --xc=568.342 --yc=2091.719 --iwidth=201 image.fits
+$ astcrop --mode=img --center=568.342,2091.719 --width=201 image.fits
 @end example
 
 @noindent
 Crop has one mandatory argument which is the input image name(s), shown
 above with @file{ASTRdata ...}. You can use shell expansions, for example
 @command{*} for this if you have lots of images in WCS mode. If the crop
-box centers are in a catalog, you also have to provide the catalog name as
-an argument. Alternatively, you have to provide the crop box parameters
-with command-line options. See @ref{Crop output} for how the output file
-name(s) can be specified. For the full list of general options to all
-Gnuastro programs (including Crop), please see @ref{Common options}.
+box centers are in a catalog, you can use the @option{--catalog} option. In
+other cases, you have to provide the single cropped output parameters must
+be given with command-line options. See @ref{Crop output} for how the
+output file name(s) can be specified. For the full list of general options
+to all Gnuastro programs (including Crop), please see @ref{Common options}.
 
 Floating point numbers can be used to specify the crop region (except the
 @option{--section} option, see @ref{Crop section syntax}). In such cases,
@@ -7975,11 +7979,10 @@ the floating point values will be used to find the desired integer pixel
 indices based on the FITS standard. Hence, Crop ultimately doesn't do any
 sub-pixel cropping (in other words, it doesn't change pixel values). If you
 need such crops, you can use @ref{Warp} to first warp the image to the a
-new pixel grid where your initial floating points can be seen as integers,
-then crop from that with Crop. For example, let's say you want a crop from
-pixels 12.982 to 80.982 along the first dimension. You should first
-translate the image by @mymath{-0.482} (note that the edge of a pixel is at
-integer multiples of @mymath{0.5}). So you should run Warp with
+new pixel grid, then crop from that. For example, let's assume you want a
+crop from pixels 12.982 to 80.982 along the first dimension. You should
+first translate the image by @mymath{-0.482} (note that the edge of a pixel
+is at integer multiples of @mymath{0.5}). So you should run Warp with
 @option{--translate=-0.482,0} and then crop the warped image with
 @option{--section=13:81}.
 
@@ -7992,12 +7995,12 @@ for more.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, Crop will run in parallel unless you set
-@option{--numthreads=1}, see @ref{Multi-threaded operations}. Note that when
-multiple threads are being used, in verbose mode, the outputs will not be
-in order. This is because the threads are asynchronous and thus not started
-in order. This has no effect on the output, see @ref{Hubble visually checks
-and classifies his catalog} for a tutorial on effectively using this
-feature.
+@option{--numthreads=1}, see @ref{Multi-threaded operations}. Note that
+when multiple outputs are created with threads, the outputs will not be
+created in the same order. This is because the threads are asynchronous and
+thus not started in order. This has no effect on each output, see
+@ref{Hubble visually checks and classifies his catalog} for a tutorial on
+effectively using this feature.
 
 @menu
 * Crop options::                A list of all the options with explanation.
@@ -8020,14 +8023,6 @@ the curved nature of the WCS coordinates have to be considered. For
 example, when using @option{--section}, the right ascension of the bottom
 left and top left corners will not be equal. If you only want regions
 within a given right ascension, use @option{--polygon} in WCS mode.
-
-@cartouche
-@noindent
-@strong{NOTE:} The coordinates are in the FITS format. So the first
-axis is the horizontal axis when viewed in SAO ds9 and the second axis
-is the vertical. Also in the FITS standard, counting begins from 1
-(one) not 0 (zero).
-@end cartouche
 
 @noindent
 Input image parameters:
@@ -8064,41 +8059,32 @@ coordinate system on the input images. See @option{--hstartwcs}
 Crop box parameters:
 @table @option
 
-@item -x FLT
-@itemx --xc=FLT
-X axis (first image axis, horizontal when viewed in SAO ds9) position of
-crop box center. Along with @option{--yc}, this only produces one crop in
-each run. The width of the square crop (in pixels) is the value to
-@option{--iwidth}.
+@item -c FLT[,FLT[,...]]
+@itemx --center=FLT[,FLT[,...]]
+The central position of the crop in the input image. The positions along
+each dimension must be separated by a comma (@key{,}) and fractions are
+also acceptable. The number of values given to this option must be the same
+as the dimensions of the input dataset. The width of the crop should be set
+with @code{--width}. The units of the coordinates are read based on the
+value to the @option{--mode} option, see below.
 
-@item -y FLT
-@itemx --yc=FLT
-Y axis (second image axis, vertical when viewed in SAO ds9) position of
-crop box center. See @option{--xc}.
+@item -w FLT[,FLT[,...]]
+@itemx --width=FLT[,FLT[,...]]
+Width of the cropped region about its center. @option{--width} may take
+either a single value (to be used for all dimensions) or multiple values (a
+specific value for each dimension). If in WCS mode, value(s) given to this
+option will be read in the same units as the dataset's WCS information
+along this dimension. The final output will have an odd number of pixels to
+allow easy identification of the pixel which keeps your requested
+coordinate (from @option{--center} or @option{--catalog}).
 
-@item -r FLT
-@itemx --ra=FLT
-Right Ascension of crop box center. Along with @option{--dec}, this only
-produces one crop in each run. The width of the square crop (in arcseconds)
-is the value to @option{--wwidth}.
+The @code{--width} option also accepts fractions. For example if you want
+the width of your crop to be 3 by 5 arcseconds along RA and Dec
+respectively, you can call it with: @option{--width=3/3600,5/3600}.
 
-@item -d FLT
-@itemx --dec=FLT
-Declination of crop box center. see @option{--ra}.
-
-@item -a INT
-@itemx --iwidth=INT
-Width of the cropped region in units of pixels when the crop is defined by
-its center in Image mode (see @ref{Crop modes}). In order for the chosen
-central pixel to be in the center of the cropped image, this option only
-accepts an odd number (an error will be given if its even). If you want an
-even sided crop, you can run Crop afterwards with
+If you want an even sided crop, you can run Crop afterwards with
 @option{--section=":*-1,:*-1"} or @option{--section=2:,2:} (depending on
 which side you don't need), see @ref{Crop section syntax}.
-
-@item -w FLT
-@itemx --wwidth=FLT
-The width of the crop box in WCS mode in units of arc-seconds.
 
 @item -l STR
 @itemx --polygon=STR
@@ -8195,31 +8181,12 @@ Section of the input image which you want to be cropped. See @ref{Crop
 section syntax} for a complete explanation on the syntax required for this
 input.
 
-@item -i STR/INT
-@itemx --xcol=STR/INT
-Column selection for the first FITS axis position of the box center in a
-catalog. In SAO ds9, the first FITS axis is the horizontal axis. The value
-can be either the column number (starting from 1), or a match/search in the
-table meta-data, see @ref{Selecting table columns}.
-
-@item -j STR/INT
-@itemx --ycol=STR/INT
-Column selection for the second FITS axis position of the box center. In
-SAO ds9, the second FITS axis is the vertical axis. The value can be either
-the column number (starting from 1), or a match/search in the table
-meta-data, see @ref{Selecting table columns}.
-
-@item -f STR/INT
-@itemx --racol=STR/INT
-Column selection for Right Ascension (RA) in the input catalog. The value
-can be either the column number (starting from 1), or a match/search in the
-table meta-data, see @ref{Selecting table columns}.
-
-@item -g STR/INT
-@itemx --deccol=STR/INT
-Column selection of declination in the input catalog. The value can be
-either the column number (starting from 1), or a match/search in the table
-meta-data, see @ref{Selecting table columns}.
+@item -x STR/INT
+@itemx --coordcol=STR/INT
+The column in a catalog to read as a coordinate. This option must be called
+multiple times depending on the number of dimensions in the input
+dataset. The value can be either the column number (starting from 1), or a
+match/search in the table meta-data, see @ref{Selecting table columns}.
 
 @item -n STR/INT
 @item --namecol=STR/INT
@@ -8308,18 +8275,21 @@ image or WCS. The value must either be @option{img} or @option{wcs}, see
 @node Crop output,  , Crop options, Invoking astcrop
 @subsubsection Crop output
 
-The value given to @option{--output} option will depend on how many crops
-were created, see @ref{Crop modes}:
+The string given to @option{--output} option will be interpretted depending
+on how many crops were requested, see @ref{Crop modes}:
 
 @itemize
 @item
 When a catalog is given, the value of the @option{--output} (see
 @ref{Common options}) will be read as the directory to store the output
 cropped images. Hence if it doesn't already exist, Crop will abort with an
-error of a ``No such file or directory'' error. The crop file names will
-consist of two parts: a variable part (the row number of each target
-starting from 1) along with a fixed string which you can set with the
-@option{--suffix} option.
+error of a ``No such file or directory'' error.
+
+The crop file names will consist of two parts: a variable part (the row
+number of each target starting from 1) along with a fixed string which you
+can set with the @option{--suffix} option. Optionally, you may also use the
+@option{--namecol} option to define a column in the input catalog to use as
+the file name instead of numbers.
 
 @item
 When only one crop is desired, the value to @option{--output} will be read
@@ -8341,9 +8311,11 @@ range from that input image in the same syntax as @ref{Crop section
 syntax}. So this string can be directly given to the @option{--section}
 option later.
 
-Once done, a log file will be created in the current directory named
-@file{astcrop.log}. This file will have three columns and the same
-number of rows as the number of cropped images.
+Once done, a log file can be created in the current directory with the
+@code{--log} option. This file will have three columns and the same number
+of rows as the number of cropped images. There are also comments on the top
+of the log file explaining basic information about the run and descriptions
+for the columns. A short description of the columns is also given below:
 
 @enumerate
 @item
@@ -8357,14 +8329,6 @@ defined by its center (see @ref{Crop modes}), or @option{--checkcenter} was
 given a value of 0 (see @ref{Invoking astcrop}), the center will not be
 checked and this column will be given a value of @code{-1}.
 @end enumerate
-
-There are also comments on the top of the log file explaining basic
-information about the run and descriptions for the columns. If the log file
-cannot be created (for example you don't have write permission in the
-directory you are running Crop in) or you have specifically asked for no
-log file (with the @option{--nolog} option), then a log file will not be
-created (unless @option{--individual} is called).
-
 
 
 
@@ -19669,7 +19633,7 @@ which is better considering floating point errors:
 @dispmath{{\sin^2(d)\over 2}=\sin^2\left( {d_1-d_2\over 2} \right)+\cos(d_1)\cos(d_2)\sin^2\left( {r_1-r_2\over 2} \right)}
 @end deftypefun
 
-@deftypefun {double *} gal_wcs_pixel_scale_deg (struct wcsprm @code{*wcs})
+@deftypefun {double *} gal_wcs_pixel_scale (struct wcsprm @code{*wcs})
 Return the pixel scale for each dimension of @code{wcs} in degrees. The
 output is an array of double precision floating point type with one element
 for each dimension.

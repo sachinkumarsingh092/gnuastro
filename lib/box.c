@@ -24,6 +24,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
 #include <gnuastro/box.h>
@@ -86,31 +88,43 @@ gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width)
 
 
 /* We have the central pixel and box size of the crop box, find the
-   starting and ending pixels: */
+   starting (first) and ending (last) pixels: */
 void
-gal_box_border_from_center(double xc, double yc, long *width,
+gal_box_border_from_center(double *center, size_t ndim, long *width,
                            long *fpixel, long *lpixel)
 {
-  long lxc, lyc;
+  size_t i;
+  long tmp;
   double intpart;
 
-  /* Round the double values in a the long values: */
-  lxc=xc;
-  if (fabs(modf(xc, &intpart))>=0.5)
-    ++lxc;
-  lyc=yc;
-  if (fabs(modf(yc, &intpart))>=0.5)
-    ++lyc;
+  /* Go over the dimensions. */
+  for(i=0;i<ndim;++i)
+    {
+      /* When the decimal fraction of the center (in floating point) is
+         larger than 0.5, then it is must be incremented. */
+      tmp = center[i] + ( fabs(modf(center[i], &intpart))>=0.5 ? 1 : 0 );
 
-  /* Set the initial values for the actual image: */
-  fpixel[0]=lxc-width[0]/2;      fpixel[1]=lyc-width[1]/2;
-  lpixel[0]=lxc+width[0]/2;      lpixel[1]=lyc+width[1]/2;
-  /*
-  printf("\n\nCenter is on: %ld, %ld\n", lxc, lyc);
-  printf("Starting and ending pixels: (%ld, %ld) -- (%ld, %ld)\n\n\n",
-         fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+      /* Set the first and last pixels in this dimension. */
+      fpixel[i]=tmp-width[i]/2;
+      lpixel[i]=tmp+width[i]/2;
+    }
+
+  /* For a check:
+  if(ndim==2)
+    {
+      printf("center: %g, %g\n", center[0], center[1]);
+      printf("fpixel: %ld, %ld\n", fpixel[0], fpixel[1]);
+      printf("lpixel: %ld, %ld\n", lpixel[0], lpixel[1]);
+    }
+  else if(ndim==3)
+    {
+      printf("center: %g, %g, %g\n", center[0], center[1], center[2]);
+      printf("fpixel: %ld, %ld, %ld\n", fpixel[0], fpixel[1], fpixel[2]);
+      printf("lpixel: %ld, %ld, %ld\n", lpixel[0], lpixel[1], lpixel[2]);
+    }
   */
 }
+
 
 
 
@@ -167,7 +181,7 @@ gal_box_border_from_center(double xc, double yc, long *width,
            -----------------------------
 
 
-   So in short the arrays we are dealing with here are:
+   So, in short the arrays we are dealing with here are:
 
    fpixel_i:    Coordinates of the first pixel in input image.
    lpixel_i:    Coordinates of the last pixel in input image.
@@ -188,80 +202,85 @@ gal_box_border_from_center(double xc, double yc, long *width,
 */
 int
 gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
-                long *fpixel_o, long *lpixel_o)
+                long *fpixel_o, long *lpixel_o, size_t ndim)
 {
-  long width[2];
+  size_t i;
+  long width;
 
   /* In case you want to see how things are going:
-  printf("\n\nImage size: [%ld,  %ld]\n", naxes[0], naxes[1]);
-  printf("fpixel_i -- lpixel_i: (%ld, %ld) -- (%ld, %ld)\n\n", fpixel_i[0],
-         fpixel_i[1], lpixel_i[0], lpixel_i[1]);
+  printf("\n\nImage size: [");
+  for(i=0;i<ndim;++i) {printf("%ld, ", naxes[i]);} printf("\b\b]\n");
+  printf("fpixel_i -- lpixel_i: (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", fpixel_i[i]);} printf("\b\b) -- (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", lpixel_i[i]);} printf("\b\b)\n");
   */
 
-  width[0]=lpixel_i[0]-fpixel_i[0]+1;
-  width[1]=lpixel_i[1]-fpixel_i[1]+1;
-
-  /* Set the initial values for the cropped array: */
-  fpixel_o[0]=1;          fpixel_o[1]=1;
-  lpixel_o[0]=width[0];   lpixel_o[1]=width[1];
-
-
-  /* Check the four corners to see if they should be adjusted: To
-     understand the first, look at this, suppose | separates pixels
-     and the * shows where the image actually begins.
-
-     |-2|-1| 0* 1| 2| 3| 4|        (survey image)
-     *1 | 2| 3| 4| 5| 6| 7|        (crop image)
-
-     So when fpixel_i is negative, e.g., fpixel_i=-2, then the index
-     of the pixel in the cropped image we want to begin with, that
-     corresponds to 1 in the survey image is: fpixel_o= 4 = 2 +
-     -1*fpixel_i.*/
-  if(fpixel_i[0]<1)
+  /* Do the calculations for each dimension: */
+  for(i=0;i<ndim;++i)
     {
-      fpixel_o[0]=-1*fpixel_i[0]+2;
-      fpixel_i[0]=1;
-    }
-  if(fpixel_i[1]<1)
-    {
-      fpixel_o[1]=-1*fpixel_i[1]+2;
-      fpixel_i[1]=1;
-    }
+      /* Set the width and initialize the overlap values. */
+      fpixel_o[i] = 1;
+      lpixel_o[i] = width = lpixel_i[i] - fpixel_i[i] + 1;
 
 
-  /*The same principle applies to the end of an image. Take "s"
-    is the maximum size along a specific axis in the survey image
-    and "c" is the size along the same axis on the cropped image.
-    Assume the the cropped region's last pixel in that axis will
-    be 2 pixels larger than s:
+      /* Check the four corners to see if they should be adjusted: To
+         understand the first, look at this, suppose | separates pixels and
+         the * shows where the image actually begins.
 
-    |s-1|   s* s+1| s+2|           (survey image)
-    |c-3| c-2| c-1|   c*           (crop image)
+             |-2|-1| 0* 1| 2| 3| 4|        ( input image )
+             *1 | 2| 3| 4| 5| 6| 7|        ( crop image  )
 
-    So you see that if the outer pixel is n pixels away then in
-    the cropped image we should only fill upto c-n.*/
-  if (lpixel_i[0]>naxes[0])
-    {
-      lpixel_o[0]=width[0]-(lpixel_i[0]-naxes[0]);
-      lpixel_i[0]=naxes[0];
-    }
-  if (lpixel_i[1]>naxes[1])
-    {
-      lpixel_o[1]=width[1]-(lpixel_i[1]-naxes[1]);
-      lpixel_i[1]=naxes[1];
+         So when fpixel_i is negative, e.g., fpixel_i=-2, then the index of
+         the pixel in the cropped image we want to begin with, that
+         corresponds to 1 in the survey image is:
+
+             fpixel_o = 4 = 2 + -1*fpixel_i
+      */
+      if(fpixel_i[i]<1)
+        {
+          fpixel_o[i] = -1*fpixel_i[i]+2;
+          fpixel_i[i] = 1;
+        }
+
+
+      /*The same principle applies to the end of an image. Take "s" is the
+        maximum size along a specific axis in the survey image and "c" is
+        the size along the same axis on the cropped image.  Assume the the
+        cropped region's last pixel in that axis will be 2 pixels larger
+        than s:
+
+             |s-1|   s* s+1| s+2|           (survey image)
+             |c-3| c-2| c-1|   c*           (crop image)
+
+        So you see that if the outer pixel is n pixels away then in the
+        cropped image we should only fill upto c-n.*/
+      if(lpixel_i[i]>naxes[i])
+        {
+          lpixel_o[i] = width - (lpixel_i[i]-naxes[i]);
+          lpixel_i[i] = naxes[i];
+        }
     }
 
-  /* In case you wish to see the results.
+  /* In case you want to see the results.
   printf("\nAfter correction:\n");
-  printf("Input image: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
-         fpixel_i[1], lpixel_i[0], lpixel_i[1]);
-  printf("output image:(%ld, %ld) -- (%ld, %ld)\n\n\n", fpixel_o[0],
-         fpixel_o[1], lpixel_o[0], lpixel_o[1]);
+  printf("Input image: (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", fpixel_i[i]);} printf("\b\b) -- (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", lpixel_i[i]);} printf("\b\b)\n");
+  printf("output image: (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", fpixel_o[i]);} printf("\b\b) -- (");
+  for(i=0;i<ndim;++i) {printf("%ld, ", lpixel_o[i]);} printf("\b\b)\n");
   */
 
-  if(fpixel_i[0]>naxes[0] || fpixel_i[1]>naxes[1]
-     || lpixel_i[0]<1 || lpixel_i[1]<1)
-    return 0;
-  else
-    return 1;
+
+  /* If the first image pixel in every dimension is larger than the input
+     image's width or the last image pixel is before the input image, then
+     there is no overlap and we must return 0. */
+  for(i=0;i<ndim;++i)
+    if( fpixel_i[i]>naxes[i] || lpixel_i[i]<1 )
+      return 0;
+
+
+  /* The first and last image pixels are within the image, so there is
+     overlap. */
+  return 1;
 }

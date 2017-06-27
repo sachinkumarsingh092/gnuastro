@@ -24,15 +24,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define WCSMODE_H
 
 void
-wcs_check_prepare(struct cropparams *p, struct inputimgs *img);
+wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img);
 
 void
-setcsides(struct onecropparams *crp);
+wcsmode_crop_corners(struct onecropparams *crp);
 
 void
 fillcrpipolygon(struct onecropparams *crp);
 
 int
-radecoverlap(struct onecropparams *crp);
+wcsmode_overlap(struct onecropparams *crp);
 
 #endif

@@ -1,5 +1,56 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
+* Noteworthy changes in release 0.3.XXX (library 2.0.0) (YYYY-MM-DD) [stable]
+
+** New features
+
+  `.fit' suffix is now also recognized as a FITS file extension in all
+  programs and libraries.
+
+  Arithmetic: now has a new `--globalhdu' (`-g') option which can be used
+  once for all the input images.
+
+** Removed features
+
+** Changed features
+
+  Crop: The new `--center' option is now used to define the center of a
+  single crop. Hence the old `--ra', `--dec', `--xc', `--yc' have been
+  removed. This new option can take multiple values (one value for each
+  dimension). Fractions are also acceptable.
+
+  Crop: The new `--width' option is now used to define the width of a
+  single crop. Hence the old `--iwidth', `--wwidth' were removed. The units
+  to interpret the value to the option are specified by the `--mode'
+  option. With the new `--width' option it is also possible to define a
+  non-square crop (different widths along each dimension). In WCS mode, its
+  units are no longer arcseconds but are the same units of the WCS (degrees
+  for angles). `--width' can also accept fractions. So to set a width of 5
+  arcseconds, you can give it a value of `5/3600' for the angular
+  dimensions.
+
+  Crop: The new `--coordcol' option is now used to determine the catalog
+  columns that define coordinates. Hence the old `--racol', `--deccol',
+  `--xcol', and `--ycol' have been removed. This new option can be called
+  multiple times and the order of its calling will be used for the column
+  containing the center in the respective dimension (in FITS format).
+
+  `gal_fits_img_info' now also returns the name and units of the dataset
+  (if they aren't NULL). So it takes two extra arguments.
+
+  `gal_box_overlap' now works on data of any dimensionality and thus also
+  needs the number of dimensions (elements in each input array).
+
+  `gal_box_border_from_center' now accepts an array of coordinates as one
+  argument and the number of dimensions as another. This allows it to work
+  on any dimensionality.
+
+  `gal_wcs_pixel_scale' now replaces the old `gal_wcs_pixel_scale_deg',
+  since it doesn't only apply to degrees. The pixel scale units are defined
+  by the units of the WCS.
+
+** Bug fixes
+
 * Noteworthy changes in release 0.3 (library 1.0.0) (2017-06-01) [stable]
 
   This is a full re-write of Gnuastro. Most importantly, Gnuastro now has a

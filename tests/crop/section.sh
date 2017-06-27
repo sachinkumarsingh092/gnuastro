@@ -53,4 +53,4 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 $execname $img --section=-10:*+10,:250 --output=crop_section.fits \
-          --numthreads=1
+          --numthreads=1 --mode=img

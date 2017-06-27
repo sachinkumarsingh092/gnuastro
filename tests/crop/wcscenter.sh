@@ -1,4 +1,4 @@
-# Crop a box based on the --ra and --dec options.
+# Crop a box based on center in WCS coordinates.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -49,5 +49,5 @@ done
 
 # Actual test script
 # ==================
-$execname $img --ra=0.99917157 --dec=1.0008283 --wwidth=0.3 \
-          --output=crop_radec.fits
+$execname $img --center=0.99917157,1.0008283 --output=crop_wcscenter.fits \
+          --mode=wcs --width=0.3/3600

@@ -1,4 +1,5 @@
-# Crop a box based on --xc and --yc, with no blank pixels.
+# Crop a region defined by its center in image coordinates, with no blank
+# pixels.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -53,5 +54,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
-$execname $img --xc=500 --yc=500 --noblank --output=crop_xcycnb.fits \
-          --numthreads=1
+$execname $img --center=500,500 --noblank --numthreads=1              \
+          --output=crop_imgcenternoblank.fits --mode=img --width=201

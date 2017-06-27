@@ -195,7 +195,7 @@ gal_blank_present(gal_data_t *input, int updateflag)
         error(EXIT_FAILURE, 0, "%s: tile mode is currently not supported for "
               "strings", __func__);
       strf = (str=input->array) + input->size;
-      do if(!strcmp(*str++,GAL_BLANK_STRING)) return 1; while(str<strf);
+      do if(!strcmp(*str,GAL_BLANK_STRING)) return 1; while(++str<strf);
       break;
 
     /* Complex types */

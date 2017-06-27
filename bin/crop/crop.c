@@ -52,7 +52,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    truncated. In the log-file there is no truncation, therefore the log
    file should be used for checking the outputs, not the outputs printed on
    the screen. */
-void
+static void
 crop_verbose_info(struct onecropparams *crp)
 {
   char *filestatus, *msg;
@@ -84,7 +84,7 @@ crop_verbose_info(struct onecropparams *crp)
 
 
 /* Print final statistics in verbose mode. */
-void
+static void
 crop_verbose_final(struct cropparams *p)
 {
   char *msg;
@@ -149,7 +149,7 @@ crop_verbose_final(struct cropparams *p)
 
 
 
-void
+static void
 crop_write_to_log(struct onecropparams *crp)
 {
   char **strarr;
@@ -185,8 +185,8 @@ crop_write_to_log(struct onecropparams *crp)
 
 
 
-void *
-imgmodecrop(void *inparam)
+static void *
+crop_mode_img(void *inparam)
 {
   struct onecropparams *crp=(struct onecropparams *)inparam;
   struct cropparams *p=crp->p;
@@ -210,7 +210,7 @@ imgmodecrop(void *inparam)
       crp->out_ind=crp->indexs[i];
       crp->outfits=NULL;
       crp->numimg=1;   /* In Image mode there is only one input image. */
-      cropname(crp);
+      onecrop_name(crp);
 
       /* Crop the image. */
       onecrop(crp);
@@ -219,7 +219,7 @@ imgmodecrop(void *inparam)
       if(crp->numimg)
         {
           /* Check if the center of the crop is filled or not. */
-          crp->centerfilled=iscenterfilled(crp);
+          crp->centerfilled=onecrop_center_filled(crp);
 
           /* Add the final headers and close output FITS image: */
           gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
@@ -261,8 +261,8 @@ imgmodecrop(void *inparam)
 
 
 
-void *
-wcsmodecrop(void *inparam)
+static void *
+crop_mode_wcs(void *inparam)
 {
   struct onecropparams *crp=(struct onecropparams *)inparam;
   struct cropparams *p=crp->p;
@@ -282,21 +282,21 @@ wcsmodecrop(void *inparam)
 
 
       /* Set the sides of the crop in RA and Dec */
-      setcsides(crp);
+      wcsmode_crop_corners(crp);
 
 
       /* Go over all the images to see if this target is within their
          range or not. */
       crp->in_ind=0;
       do
-        if(radecoverlap(crp))
+        if(wcsmode_overlap(crp))
           {
             /* Open the input FITS file. */
             crp->infits=gal_fits_hdu_open_format(p->imgs[crp->in_ind].name,
                                                  p->cp.hdu, 0);
 
             /* If a name isn't set yet, set it. */
-            if(crp->name==NULL) cropname(crp);
+            if(crp->name==NULL) onecrop_name(crp);
 
             /* Increment the number of images used (necessary for the
                header keywords that are written in `onecrop'). Then do the
@@ -322,7 +322,7 @@ wcsmodecrop(void *inparam)
       if(crp->numimg)
         {
           /* See if the center is filled. */
-          crp->centerfilled=iscenterfilled(crp);
+          crp->centerfilled=onecrop_center_filled(crp);
 
           /* Write all the dependency versions and close the file. */
           gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
@@ -340,7 +340,7 @@ wcsmodecrop(void *inparam)
         }
       else
         {
-          cropname(crp);
+          onecrop_name(crp);
           crp->centerfilled=0;
         }
 
@@ -399,7 +399,7 @@ crop(struct cropparams *p)
 
 
   /* Set the function to run: */
-  modefunction = p->mode==IMGCROP_MODE_IMG ? &imgmodecrop : &wcsmodecrop;
+  modefunction = p->mode==IMGCROP_MODE_IMG ? &crop_mode_img : &crop_mode_wcs;
 
 
   /* Allocate the array of structures to keep the thread and parameters for

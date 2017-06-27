@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   e k m t u v
+   a d e f g i j k m r t u v y
    A B E G H J L Q R W X Y
 */
 enum option_keys_enum
@@ -37,23 +37,15 @@ enum option_keys_enum
   /* With short-option version. */
   UI_KEY_CATALOG        = 'C',
   UI_KEY_NOBLANK        = 'b',
-  UI_KEY_CHECKCENTER    = 'c',
   UI_KEY_SUFFIX         = 'p',
   UI_KEY_NAMECOL        = 'n',
-  UI_KEY_RACOL          = 'f',
-  UI_KEY_DECCOL         = 'g',
-  UI_KEY_RA             = 'r',
-  UI_KEY_DEC            = 'd',
-  UI_KEY_XCOL           = 'i',
-  UI_KEY_YCOL           = 'j',
-  UI_KEY_XC             = 'x',
-  UI_KEY_YC             = 'y',
-  UI_KEY_IWIDTH         = 'a',
-  UI_KEY_WWIDTH         = 'w',
   UI_KEY_SECTION        = 's',
   UI_KEY_POLYGON        = 'l',
   UI_KEY_ZEROISNOTBLANK = 'z',
   UI_KEY_MODE           = 'O',
+  UI_KEY_WIDTH          = 'w',
+  UI_KEY_CENTER         = 'c',
+  UI_KEY_COORDCOL       = 'x',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
@@ -61,7 +53,11 @@ enum option_keys_enum
   UI_KEY_HSTARTWCS,
   UI_KEY_HENDWCS,
   UI_KEY_OUTPOLYGON,
+  UI_KEY_CHECKCENTER,
 };
+
+
+
 
 
 

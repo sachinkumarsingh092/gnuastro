@@ -514,7 +514,6 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
    element of the option. The last element of the array is `-1' to allow
    finding the number of elements within it later (similar to a string
    which terminates with a '\0' element). */
-#define PARSE_SIZES_STATICSTR_LEN 2000
 void *
 gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
                                 char *filename, size_t lineno, void *junk)
@@ -523,7 +522,7 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
   double *v;
   gal_data_t *values;
   size_t nc, num, *array;
-  char *str, sstr[PARSE_SIZES_STATICSTR_LEN];
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
 
   /* We want to print the stored values. */
   if(lineno==-1)
@@ -537,12 +536,12 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       nc=0;
       for(i=num-1;i>=0;--i)
         {
-          if( nc > PARSE_SIZES_STATICSTR_LEN-100 )
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
             error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
                   "can address the problem. The number of necessary "
                   "characters in the statically allocated string has become "
                   "too close to %d", __func__, PACKAGE_BUGREPORT,
-                  PARSE_SIZES_STATICSTR_LEN);
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
           nc += sprintf(sstr+nc, "%zu,", array[i]);
         }
       sstr[nc-1]='\0';
@@ -567,14 +566,17 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       for(i=0;i<values->size;++i)
         {
           if(v[i]<0)
-            error(EXIT_FAILURE, 0, "the given value in `%s' (%g) is not 0 "
-                  "or positive. The values to the `--%s' option must be "
-                  "positive", arg, v[i], option->name);
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the given "
+                          "value in `%s' (%g) is not 0 or positive. The "
+                          "values to the `--%s' option must be positive",
+                          arg, v[i], option->name);
+
 
           if(ceil(v[i]) != v[i])
-            error(EXIT_FAILURE, 0, "the given value in `%s' (%g) is not an "
-                  "integer. The values to the `--%s' option must be "
-                  "integers", arg, v[i], option->name);
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the given "
+                          "value in `%s' (%g) is not an integer. The "
+                          "values to the `--%s' option must be integers",
+                          arg, v[i], option->name);
         }
 
       /* Write the values into an allocated size_t array and finish it with

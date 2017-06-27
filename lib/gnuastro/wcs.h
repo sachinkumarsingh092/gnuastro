@@ -86,7 +86,7 @@ double
 gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2);
 
 double *
-gal_wcs_pixel_scale_deg(struct wcsprm *wcs);
+gal_wcs_pixel_scale(struct wcsprm *wcs);
 
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);

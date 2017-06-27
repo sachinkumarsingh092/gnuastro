@@ -55,12 +55,12 @@ void
 gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width);
 
 void
-gal_box_border_from_center(double xc, double yc, long *width,
+gal_box_border_from_center(double *center, size_t ndim, long *width,
                            long *fpixel, long *lpixel);
 
 int
 gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
-                long *fpixel_o, long *lpixel_o);
+                long *fpixel_o, long *lpixel_o, size_t ndim);
 
 
 

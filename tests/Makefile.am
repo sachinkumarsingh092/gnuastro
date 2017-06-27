@@ -87,18 +87,18 @@ if COND_COSMICCAL
   cosmiccal/simpletest.sh: prepconf.sh.log
 endif
 if COND_CROP
-  MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/xcyc.sh		\
-  crop/xcycnoblank.sh crop/section.sh crop/radec.sh crop/imgpolygon.sh	\
-  crop/imgoutpolygon.sh crop/wcspolygon.sh
+  MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/imgcenter.sh	\
+  crop/imgcenternoblank.sh crop/section.sh crop/wcscenter.sh		\
+  crop/imgpolygon.sh crop/imgoutpolygon.sh crop/wcspolygon.sh
 
   crop/imgcat.sh: mkprof/mosaic1.sh.log
   crop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
                   mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-  crop/xcyc.sh: mkprof/mosaic1.sh.log
-  crop/xcycnoblank.sh: mkprof/mosaic1.sh.log
+  crop/imgcenter.sh: mkprof/mosaic1.sh.log
+  crop/imgcenternoblank.sh: mkprof/mosaic1.sh.log
   crop/section.sh: mkprof/mosaic1.sh.log
-  crop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
-                 mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+  crop/wcscenter.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
+                     mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
   crop/imgpolygon.sh: mkprof/mosaic1.sh.log
   crop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
   crop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
