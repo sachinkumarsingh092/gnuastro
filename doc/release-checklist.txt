@@ -125,20 +125,21 @@ Packaging in Debian
 
 Steps necessary to Package Gnuastro for Debian.
 
- - If you don't already have the Git repository, clone it with this
-   command:
+ - If you don't already have the Git repository, clone it with the
+   following command. A `gnuastro' directory will be built, for the moment
+   don't go in it.
 
      $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
 
- - Pull any possible changes that already exist:
+ - If a Git directory exists, then pull any possible changes that already
+   exist:
 
      $ cd gnuastro
      $ git pull
      $ cd ..
 
- - A `gnuastro' directory will be built, for the moment don't go in it,
-   we'll keep all temporary files in this parent directory. Clean any
-   existing ones (if this process was done earlier):
+ - Clean any existing files (if this process was already done for an
+   earlier version):
 
      $ rm -f gnuastro_* gnuastro-*
 
@@ -202,6 +203,13 @@ Steps necessary to Package Gnuastro for Debian.
    https://www.debian.org/doc/debian-policy/ and update debian/control:
 
      $ emacs debian/control
+
+ - If the soname of the shared libraries has changed:
+
+     - Rename the file `debain/libgnuastroX.install' (set `X' to the new
+       soname).
+
+     - In `debian control, change all the old sonames to the new value.
 
  - Update your version of `pbuilder':
 
