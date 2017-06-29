@@ -573,7 +573,7 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
   long naxes[MAXDIM];
   char *outname=crp->name;
   char cpname[FLEN_KEYWORD];
-  int status, type=crp->p->type;
+  int status=0, type=crp->p->type;
   size_t i, ndim=crp->p->imgs->ndim;
   char *cp, *cpf, blankrec[80], titlerec[80];
   char startblank[]="                      / ";

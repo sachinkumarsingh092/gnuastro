@@ -16959,11 +16959,12 @@ relevant for you if you intend to use the binary operators of
 @cindex 64-bit
 @cindex bit-32
 @cindex bit-64
-@deffn Macro GAL_CONFIG_SIZEOF_SIZE_T
-The size of (number of bytes in) the system's @code{size_t} type. Its value
-is either 4 or 8 for 32-bit and 64-bit systems. You can also get this value
-with the expression `@code{sizeof size_t}' without having to include this
-header.
+@deffn Macro GAL_CONFIG_SIZEOF_LONG
+@deffnx Macro GAL_CONFIG_SIZEOF_SIZE_T
+The size of (number of bytes in) the system's @code{long} and @code{size_t}
+types. Their values are commonly either 4 or 8 for 32-bit and 64-bit
+systems. You can also get this value with the expression `@code{sizeof
+size_t}' for example without having to include this header.
 @end deffn
 
 @node Multithreaded programming, Library data types, Configuration information, Gnuastro library
@@ -17270,6 +17271,11 @@ Identifier for a signed, 64-bit integer type: @code{int64_t} (from
 Identifier for a @code{size_t} type. This is just an alias to
 @code{uint32}, or @code{uint64} types for 32-bit, or 64-bit systems
 respectively.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_LONG
+Identifier for a @code{long} type. This is just an alias to @code{int32},
+or @code{int64} types for 32-bit, or 64-bit systems respectively.
 @end deffn
 
 @deffn {Global integer}  GAL_TYPE_FLOAT32

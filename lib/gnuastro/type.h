@@ -88,15 +88,30 @@ enum gal_types
   GAL_TYPE_STRLL,           /* Linked list of strings.                 */
 };
 
-/* `size_t' is 4 and 8 bytes on 32 and 64 bit systems respectively. In both
-   cases, the standard defines `size_t' to be unsigned. During
-   `./configure' the sizeof size_t was found and is stored in
-   `GAL_CONFIG_SIZEOF_SIZE_T'. */
+
+
+/* Define system specific types. For example `size_t' is 4 and 8 bytes on
+   32 and 64 bit systems respectively. In both cases, the standard defines
+   `size_t' to be unsigned. A similar case exists for `long', but it is
+   signed. During `./configure' the sizeof `size_t' and `long' were found
+   and are used to define an alias for these system specific types.
+
+   Note: we are not using `else'. This is done because by any chance, if
+   the length of these types is not what is expected (4 or 8), then the
+   aliases are not defined and the compiler will crash. */
 #if GAL_CONFIG_SIZEOF_SIZE_T == 4
 #define GAL_TYPE_SIZE_T GAL_TYPE_UINT32
-#else
+#elif GAL_CONFIG_SIZEOF_SIZE_T == 8
 #define GAL_TYPE_SIZE_T GAL_TYPE_UINT64
 #endif
+
+#if GAL_CONFIG_SIZEOF_LONG == 4
+#define GAL_TYPE_LONG GAL_TYPE_INT32
+#elif GAL_CONFIG_SIZEOF_LONG == 8
+#define GAL_TYPE_LONG GAL_TYPE_INT64
+#endif
+
+
 
 
 

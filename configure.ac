@@ -121,11 +121,15 @@ AC_FUNC_MALLOC
 
 
 
-# Check the size of `size_t'.
+# Check the size of necessary system specific types.
 AC_CHECK_SIZEOF([size_t])
 AC_SUBST(SIZEOF_SIZE_T, [$ac_cv_sizeof_size_t])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_SIZE_T], [$ac_cv_sizeof_size_t],
                    [On 32bit will be 4, on 64 bit, will be 8])
+AC_CHECK_SIZEOF([long])
+AC_SUBST(SIZEOF_LONG, [$ac_cv_sizeof_long])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_LONG], [$ac_cv_sizeof_long],
+                   [Depends on bit length of system.])
 
 
 

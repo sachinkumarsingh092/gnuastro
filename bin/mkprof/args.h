@@ -96,7 +96,7 @@ struct argp_option program_options[] =
       "Number of pixels along first FITS axis.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->naxes[0],
-      GAL_TYPE_UINT64,
+      GAL_TYPE_LONG,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -109,7 +109,7 @@ struct argp_option program_options[] =
       "Number of pixels along second FITS axis.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->naxes[1],
-      GAL_TYPE_INT64,
+      GAL_TYPE_LONG,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -223,7 +223,7 @@ struct argp_option program_options[] =
       "Shift profile centers and enlarge image, X axis.",
       ARGS_GROUP_PROFILES,
       &p->shift[0],
-      GAL_TYPE_INT64,
+      GAL_TYPE_LONG,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -236,7 +236,7 @@ struct argp_option program_options[] =
       "Shift profile centers and enlarge image, Y axis.",
       ARGS_GROUP_PROFILES,
       &p->shift[1],
-      GAL_TYPE_INT64,
+      GAL_TYPE_LONG,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET

@@ -53,6 +53,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAL_CONFIG_BIN_OP_FLOAT32       @HAVE_BIN_OP_FLOAT32@
 #define GAL_CONFIG_BIN_OP_FLOAT64       @HAVE_BIN_OP_FLOAT64@
 
+#define GAL_CONFIG_SIZEOF_LONG          @SIZEOF_LONG@
 #define GAL_CONFIG_SIZEOF_SIZE_T        @SIZEOF_SIZE_T@
 
 
