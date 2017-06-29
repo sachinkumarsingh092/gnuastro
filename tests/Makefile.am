@@ -234,7 +234,7 @@ EXTRA_DIST = $(TESTS) during-dev.sh buildprog/simpleio.c crop/cat.txt     \
 
 
 # Files that must be cleaned with `make clean'.
-CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps
+CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps simpleio
 
 
 
