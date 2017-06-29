@@ -108,6 +108,7 @@ struct mkprofparams
   char             *backhdu;  /* HDU of background image.                 */
   long             naxes[2];  /* Size of the output image.                */
   uint8_t       clearcanvas;  /* Pixels in background image set to zero.  */
+  gal_data_t        *kernel;  /* Parameters to define a kernel.           */
   uint8_t        oversample;  /* Oversampling scale.                      */
   uint8_t          psfinimg;  /* ==1: Build PSF profiles in image.        */
   uint8_t        individual;  /* ==1: Build all catalog separately.       */
@@ -150,7 +151,7 @@ struct mkprofparams
   size_t                num;  /* The number of profiles.                  */
   double                 *x;  /* X axis position of profile center.       */
   double                 *y;  /* Y axis position of profile center.       */
-  int                    *f;  /* Profile function code.                   */
+  uint8_t                *f;  /* Profile function code.                   */
   float                  *r;  /* Radius of profile.                       */
   float                  *n;  /* Index of profile.                        */
   float                  *p;  /* Position angle of profile                */

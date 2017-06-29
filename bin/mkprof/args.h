@@ -69,6 +69,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "kernel",
+      UI_KEY_KERNEL,
+      "STR",
+      0,
+      "Parameters to only build one kernel.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->kernel,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_kernel
+    },
 
 
 

@@ -63,7 +63,7 @@ const char *
 argp_program_bug_address = PACKAGE_BUGREPORT;
 
 static char
-args_doc[] = "[BackgroundImage] Catalog";
+args_doc[] = "[Options] [Catalog]";
 
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a FITS image "
@@ -109,6 +109,71 @@ enum program_args_groups
 /**************************************************************/
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
+static int
+ui_profile_name_read(char *string, size_t row)
+{
+  if( !strcmp("sersic", string) )
+    return PROFILE_SERSIC;
+
+  else if ( !strcmp("moffat", string) )
+    return PROFILE_MOFFAT;
+
+  else if ( !strcmp("gaussian", string) )
+    return PROFILE_GAUSSIAN;
+
+  else if ( !strcmp("point", string) )
+    return PROFILE_POINT;
+
+  else if ( !strcmp("flat", string) )
+    return PROFILE_FLAT;
+
+  else if ( !strcmp("circum", string) )
+    return PROFILE_CIRCUMFERENCE;
+
+  else if ( !strcmp(GAL_BLANK_STRING, string) )
+    error(EXIT_FAILURE, 0, "atleast one profile function is blank");
+
+  else
+    {
+      if(row)
+        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
+              "name in row %zu", string, row);
+      else
+        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
+              "name in values to `--kernel' option", string);
+    }
+
+  return PROFILE_INVALID;
+}
+
+
+
+
+
+static char *
+ui_profile_name_write(int profile_code)
+{
+  switch(profile_code)
+    {
+    case PROFILE_SERSIC:         return "sersic";
+    case PROFILE_MOFFAT:         return "moffat";
+    case PROFILE_GAUSSIAN:       return "gaussian";
+    case PROFILE_POINT:          return "point";
+    case PROFILE_FLAT:           return "flat";
+    case PROFILE_CIRCUMFERENCE:  return "circum";
+    default:
+      error(EXIT_FAILURE, 0, "%s: %d not recognized as a profile code",
+            __func__, profile_code);
+    }
+
+  return NULL;
+}
+
+
+
+
+
+
 static void
 ui_initialize_options(struct mkprofparams *p,
                       struct argp_option *program_options,
@@ -211,6 +276,116 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
 
+/* Parse the kernel properties, the format is like this:
+
+     PROFILE_NAME,PARAM_1,PARAM_2,PARAM_3,...,PARAM_N       */
+void *
+ui_parse_kernel(struct argp_option *option, char *arg,
+                char *filename, size_t lineno, void *junk)
+{
+  long profcode;
+  double *darray;
+  gal_data_t *kernel;
+  size_t i, nc, numneeded=0;
+  char *c, *profile, *tailptr;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the value pointer to kernel. */
+      kernel=*(gal_data_t **)(option->value);
+      darray = kernel->array;
+
+      /* First write the profile function code into the output string. */
+      nc=0;
+      nc += sprintf(sstr+nc, "%s,", ui_profile_name_write(kernel->status));
+
+      /* Write the values into a string. */
+      for(i=0;i<kernel->size;++i)
+        {
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+          nc += sprintf(sstr+nc, "%g,", darray[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+  else
+    {
+      /* The first part of `arg' (before the first comma) is not
+         necessarily a number. So we need to separate the first part from
+         the rest.*/
+      c=arg;while(*c!='\0' && *c!=',') ++c;
+      profile=arg;
+      arg = (*c=='\0') ? NULL : c+1;  /* `point' doesn't need any numbers. */
+      *c='\0';
+
+      /* Read the parameters. */
+      kernel=gal_options_parse_list_of_numbers(arg, filename, lineno);
+      *(gal_data_t **)(option->value) = kernel;
+
+      /* Write the profile type code into `kernel->status'. If it starts
+         with a digit, then the user might have given the code of the
+         profile directly. In that case, parse the number. Otherwise,
+         let `ui_profile_name_read' find the value. */
+      if( isdigit(*profile) )
+        {
+          profcode=strtol(profile, &tailptr, 0);
+          if(*tailptr!='\0')
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' "
+                          "couldn't be read as a profile code", profile);
+          if(profcode<=0 || profcode>=PROFILE_MAXIMUM_CODE)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' "
+                          "isn't a valid profile code. Please run with "
+                          "`--help' and see the acceptable codes in "
+                          "explanation of the `--fcol' option", profile);
+          kernel->status=profcode;
+        }
+      else
+        kernel->status=ui_profile_name_read(profile, 0);
+
+      /* Make sure the number of parameters conforms with the profile. */
+      switch(kernel->status)
+        {
+        case PROFILE_SERSIC:        numneeded=3;     break;
+        case PROFILE_MOFFAT:        numneeded=3;     break;
+        case PROFILE_GAUSSIAN:      numneeded=2;     break;
+        case PROFILE_POINT:         numneeded=0;     break;
+        case PROFILE_FLAT:          numneeded=1;     break;
+        case PROFILE_CIRCUMFERENCE: numneeded=1;     break;
+        default:
+          error_at_line(EXIT_FAILURE, 0, filename, lineno, "%s: a bug! "
+                        "Please contact us at %s to correct the issue. "
+                        "Profile code %d is not recognized", __func__,
+                        PACKAGE_BUGREPORT, kernel->status);
+        }
+
+      /* Make sure the number of parameters given are the same number that
+         are needed. */
+      if( kernel->size != numneeded )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "as a kernel, a "
+                      "`%s' profile needs %zu parameters, but %zu is given",
+                      ui_profile_name_write(kernel->status), numneeded,
+                      kernel->size);
+
+      /* Our job is done, return NULL. */
+      return NULL;
+    }
+}
+
+
+
+
+
 
 
 
@@ -245,16 +420,20 @@ ui_read_check_only_options(struct mkprofparams *p)
      neighter coordinates are specified there is no problem, the user might
      have input the other coordinate standard. We'll also check for that
      after this.*/
-  if( ((p->xcol==NULL) + (p->ycol==NULL)) == 1 )
-    error(EXIT_FAILURE, 0, "only `%s' has been given, please also specify "
-          "a column for the position along the %s axis with the `%s' option",
-          p->xcol?"xcol":"ycol", p->xcol?"Y":"X", p->xcol?"ycol":"xcol");
+  if(p->kernel==NULL)
+    {
+      if( ((p->xcol==NULL) + (p->ycol==NULL)) == 1 )
+        error(EXIT_FAILURE, 0, "only `%s' has been given, please also "
+              "specify a column for the position along the %s axis with "
+              "the `%s' option", p->xcol?"xcol":"ycol", p->xcol?"Y":"X",
+              p->xcol?"ycol":"xcol");
 
-  if( ((p->racol==NULL) + (p->deccol==NULL)) == 1 )
-    error(EXIT_FAILURE, 0, "only `%s' has been given, please also specify "
-          "a column for the position along the %s axis with the `%s' option",
-          p->racol?"racol":"deccol", p->racol?"Dec":"RA",
-          p->xcol?"deccol":"racol");
+      if( ((p->racol==NULL) + (p->deccol==NULL)) == 1 )
+        error(EXIT_FAILURE, 0, "only `%s' has been given, please also "
+              "specify a column for the position along the %s axis with "
+              "the `%s' option", p->racol?"racol":"deccol",
+              p->racol?"Dec":"RA", p->xcol?"deccol":"racol");
+    }
 }
 
 
@@ -269,19 +448,31 @@ ui_check_options_and_arguments(struct mkprofparams *p)
   int d0f1;
   char *tmpname;
 
-  /* Make sure an input catalog is given, and if it is FITS, that the HDU
-     is also provided. */
-  if(p->catname)
+  /* If no kernel is given, make sure an input catalog is given, and if it
+     is FITS, that the HDU is also provided. When a kernel option, we will
+     set a fiducial catalog name called `kernel.txt' to automatic output
+     filename generation. */
+  if(p->kernel)
     {
-      if( gal_fits_name_is_fits(p->catname) && p->cp.hdu==NULL)
-        error(EXIT_FAILURE, 0, "no `hdu' specified for the input FITS table "
-              "'%s', to ", p->catname);
+      if(p->catname)
+        error(EXIT_FAILURE, 0, "`--kernel' cannot be called with an input "
+              "catalog (`%s'). The parameters necessary to build a single "
+              "kernel output should be given to `--kernel', not in a "
+              "catalog", p->catname);
+      p->catname="kernel.option";
     }
   else
     {
-      error(EXIT_FAILURE, 0, "no input catalog provided. To build profiles, "
-            "you need to give a catalog/table containing the information of "
-            "the profiles");
+      if(p->catname)
+        {
+          if( gal_fits_name_is_fits(p->catname) && p->cp.hdu==NULL)
+            error(EXIT_FAILURE, 0, "no `hdu' specified for the input FITS "
+                  "table '%s', to ", p->catname);
+        }
+      else
+        error(EXIT_FAILURE, 0, "no input catalog provided. To build "
+              "profiles, you need to give a catalog/table containing "
+              "the information of the profiles");
     }
 
 
@@ -309,8 +500,10 @@ ui_check_options_and_arguments(struct mkprofparams *p)
     }
   p->basename=gal_checkset_not_dir_part(p->mergedimgname);
 
-  /* If a merged image is requested, then delete it if it exists. */
-  if(p->nomerged==0)
+
+  /* If a merged image is requested (or `--kernel' the option is called),
+     then delete the final filename if it exists. */
+  if(p->nomerged==0 && p->kernel)
     gal_checkset_check_remove_file(p->mergedimgname, p->cp.keep,
                                    p->cp.dontdelete);
 }
@@ -338,50 +531,11 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
-ui_read_profile_function(struct mkprofparams *p, char **strarr)
-{
-  size_t i;
-
-  p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num, __func__, "p->f");
-  for(i=0;i<p->num;++i)
-    {
-      if( !strcmp("sersic", strarr[i]) )
-        p->f[i]=PROFILE_SERSIC;
-
-      else if ( !strcmp("moffat", strarr[i]) )
-        p->f[i]=PROFILE_MOFFAT;
-
-      else if ( !strcmp("gaussian", strarr[i]) )
-        p->f[i]=PROFILE_GAUSSIAN;
-
-      else if ( !strcmp("point", strarr[i]) )
-        p->f[i]=PROFILE_POINT;
-
-      else if ( !strcmp("flat", strarr[i]) )
-        p->f[i]=PROFILE_FLAT;
-
-      else if ( !strcmp("circum", strarr[i]) )
-        p->f[i]=PROFILE_CIRCUMFERENCE;
-
-      else if ( !strcmp(GAL_BLANK_STRING, strarr[i]) )
-        error(EXIT_FAILURE, 0, "profile function column has blank values. "
-              "Input columns cannot contain blank values");
-      else
-        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
-              "name in row %zu", strarr[i], i);
-    }
-}
-
-
-
-
-
-static void
 ui_read_cols(struct mkprofparams *p)
 {
   int checkblank;
-  char *colname=NULL;
   size_t counter=0, i;
+  char *colname=NULL, **strarr;
   gal_list_str_t *colstrs=NULL;
   gal_data_t *cols, *tmp, *corrtype=NULL;
   char *ax1col=p->racol?p->racol:p->xcol;
@@ -436,7 +590,11 @@ ui_read_cols(struct mkprofparams *p)
         case 7:
           if(tmp->type==GAL_TYPE_STRING)
             {
-              ui_read_profile_function(p, tmp->array);
+              p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num,
+                                         __func__, "p->f");
+              strarr=tmp->array;
+              for(i=0;i<p->num;++i)
+                p->f[i]=ui_profile_name_read(strarr[i], i+1);
               gal_data_free(tmp);
               corrtype=NULL;
             }
@@ -503,10 +661,10 @@ ui_read_cols(struct mkprofparams *p)
         /* If the index isn't recognized, then it is larger, showing that
            there was more than one match for the given criteria */
         default:
-          gal_tableintern_error_col_selection(p->catname, p->cp.hdu, "too many "
-                                              "columns were selected by the "
-                                              "given values to the options "
-                                              "ending in `col'.");
+          gal_tableintern_error_col_selection(p->catname, p->cp.hdu, "too "
+                                              "many columns were selected "
+                                              "by the given values to the "
+                                              "options ending in `col'.");
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
@@ -528,6 +686,61 @@ ui_read_cols(struct mkprofparams *p)
           gal_data_free(corrtype);
         }
     }
+}
+
+
+
+
+
+/* It is possible to define the internal catalog through a catalog or the
+   `--kernel' option. This function will do the job. */
+static void
+ui_prepare_columns(struct mkprofparams *p)
+{
+  float r, n, t;
+  double *karr;
+
+  /* If the kernel option was called, then we need to build a series of
+     single element columns to create an internal catalog. */
+  if(p->kernel)
+    {
+      /* Number of profiles to be built. */
+      p->num=1;
+
+      /* Allocate the necessary columns. */
+      p->x=gal_data_malloc_array(GAL_TYPE_FLOAT64, 1, __func__, "p->x");
+      p->y=gal_data_malloc_array(GAL_TYPE_FLOAT64, 1, __func__, "p->y");
+      p->f=gal_data_malloc_array(GAL_TYPE_UINT8,   1, __func__, "p->f");
+      p->r=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->r");
+      p->n=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->n");
+      p->p=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->p");
+      p->q=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->q");
+      p->m=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->m");
+      p->t=gal_data_malloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->t");
+
+      /* Set the values that need special consideration. */
+      if(p->kernel->size)
+        {
+          karr=p->kernel->array;
+          r = karr[0];
+          n = p->kernel->size==2 ? 0.0f : karr[1];
+          t = p->kernel->size==1 ? 1.0f : karr[ p->kernel->size - 1 ];
+        }
+      else r=n=t=0.0f;
+
+      /* Fill the allocated spaces. */
+      p->x[0] = 0.0f;
+      p->y[0] = 0.0f;
+      p->f[0] = p->kernel->status;
+      p->r[0] = r;
+      p->n[0] = n;
+      p->p[0] = 0.0f;
+      p->q[0] = 1.0f;
+      p->m[0] = 0.0f;
+      p->t[0] = t;
+    }
+  else
+    ui_read_cols(p);
 }
 
 
@@ -600,6 +813,11 @@ ui_prepare_canvas(struct mkprofparams *p)
      image to build the profiles over. */
   if(p->backname)
     {
+      /* Make sure the kernel option is not called. */
+      if(p->kernel)
+        error(EXIT_FAILURE, 0, "the `--kernel' and `--background' options "
+              "cannot be called together");
+
       /* Small sanity check. */
       if(p->backhdu==NULL)
         error(EXIT_FAILURE, 0, "no hdu specified for the background image "
@@ -636,7 +854,6 @@ ui_prepare_canvas(struct mkprofparams *p)
     }
   else
     {
-
       /* If any of xshift or yshift is non-zero, the other should be too!
          Note that conditional operators return 1 if true and 0 if false,
          so if one is non-zero while the other is zero, then sum will be
@@ -800,6 +1017,7 @@ ui_finalize_coordinates(struct mkprofparams *p)
 
 
 
+
 /* Add all the columns of the log file. Just note that since this is a
    linked list, we have to add them in the opposite order. */
 static void
@@ -849,9 +1067,17 @@ ui_make_log(struct mkprofparams *p)
 static void
 ui_preparations(struct mkprofparams *p)
 {
+  /* If the kernel option was given, some parameters need to be
+     over-written: */
+  if(p->kernel)
+    {
+      p->nomerged=1;
+      p->psfinimg=0;
+      p->individual=1;
+    }
 
   /* Read in all the columns. */
-  ui_read_cols(p);
+  ui_prepare_columns(p);
 
   /* Prepare the output canvas. */
   ui_prepare_canvas(p);
@@ -898,8 +1124,12 @@ ui_print_intro(struct mkprofparams *p)
 
   printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
 
-  asprintf(&jobname, "%zu profile%sread from %s", p->num,
-           p->num>1?"s ":" ", p->catname);
+  if(p->kernel)
+    asprintf(&jobname, "Building one %s kernel",
+             ui_profile_name_write(p->kernel->status));
+  else
+    asprintf(&jobname, "%zu profile%sread from %s", p->num,
+             p->num>1?"s ":" ", p->catname);
   gal_timing_report(NULL, jobname, 1);
   free(jobname);
 
@@ -926,9 +1156,12 @@ ui_print_intro(struct mkprofparams *p)
       free(jobname);
     }
 
-  asprintf(&jobname, "Using %zu threads.", p->cp.numthreads);
-  gal_timing_report(NULL, jobname, 1);
-  free(jobname);
+  if(p->kernel==NULL)
+    {
+      asprintf(&jobname, "Using %zu threads.", p->cp.numthreads);
+      gal_timing_report(NULL, jobname, 1);
+      free(jobname);
+    }
 }
 
 

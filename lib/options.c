@@ -175,9 +175,8 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
      (largest size_t number), so the values are kept in memory. */
   size_t minmapsize=-1;
 
-
   /* Go through the input character by character. */
-  while(*c!='\0')
+  while(string && *c!='\0')
     {
       switch(*c)
         {
@@ -208,6 +207,13 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
                           "only be between two numbers and used for "
                           "division. But you have given `%s'", string);
           ++c;
+          break;
+
+        /* Extra dot is an error (cases like 2.5.5). Valid `.'s will be
+           read by `strtod'. */
+        case '.':
+          error_at_line(EXIT_FAILURE, 0, filename, lineno, "extra `.' in "
+                        "`%s'", string);
           break;
 
         /* Read the number. */
@@ -247,11 +253,26 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
 
   /* Allocate the output data structure and fill it up. */
-  i=num;
-  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
-                     minmapsize, NULL, NULL, NULL);
-  for(tdll=list;tdll!=NULL;tdll=tdll->next)
-    ((double *)(out->array))[--i]=tdll->v;
+  if(num)
+    {
+      i=num;
+      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      for(tdll=list;tdll!=NULL;tdll=tdll->next)
+        ((double *)(out->array))[--i]=tdll->v;
+    }
+  else
+    {
+      /* It is not possible to allocate a dataset with a size of 0 along
+         any dimension (in C it's possible, but conceptually it isn't). So,
+         we'll allocate space for one element, then free it. */
+      i=1;
+      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &i, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      out->size=out->dsize[0]=0;
+      free(out->array);
+      out->array=NULL;
+    }
 
 
   /* Clean up and return. */

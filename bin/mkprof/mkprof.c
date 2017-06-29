@@ -126,13 +126,23 @@ saveindividual(struct mkonthread *mkp)
   /* Note that `width' is in FITS format, not C. */
   size_t dsize[2]={mkp->width[1], mkp->width[0]};
 
-  /* Write the name and remove a similarly named file. */
-  asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
-  gal_checkset_check_remove_file(filename, 0, p->cp.dontdelete);
+
+  /* Write the name and remove a similarly named file when the `--kernel'
+     option wasn't called. If `--kernel' is called, then we should just use
+     the final merged filename. */
+  if(p->kernel)
+    filename=p->mergedimgname;
+  else
+    {
+      asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
+      gal_checkset_check_remove_file(filename, 0, p->cp.dontdelete);
+    }
+
 
   /* Put the array into a data structure */
   data=gal_data_alloc(ibq->img, GAL_TYPE_FLOAT32, 2, dsize, NULL, 0,
                       p->cp.minmapsize, "MockImage", "Brightness", NULL);
+
 
   /* Write the array to file (a separately built PSF doesn't need WCS
      coordinates). */
@@ -151,6 +161,7 @@ saveindividual(struct mkonthread *mkp)
     }
   ibq->indivcreated=1;
 
+
   /* Report if in verbose mode. */
   if(!p->cp.quiet)
     {
@@ -158,7 +169,9 @@ saveindividual(struct mkonthread *mkp)
       gal_timing_report(NULL, jobname, 2);
       free(jobname);
     }
-  free(filename);
+
+  /* Clean up. */
+  if(p->kernel==NULL) free(filename);
 }
 
 
@@ -490,10 +503,10 @@ mkprof_write(struct mkprofparams *p)
 
       /* Report if in verbose mode. */
       ++complete;
-      if(!p->cp.quiet)
+      if(!p->cp.quiet && p->num>1)
         {
           asprintf(&jobname, "row %zu complete, %zu left to go",
-                   ibq->id, num-complete);
+                   ibq->id+1, num-complete);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
         }

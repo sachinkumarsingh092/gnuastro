@@ -70,7 +70,7 @@
 # space characters in them, quote the full value
 numjobs=8
 builddir=build
-outdir=~/desktop
+outdir=
 
 
 # Set the utility name, along with its arguments and options. NOTE, for
@@ -80,9 +80,9 @@ outdir=~/desktop
 # script, and once for the utility. In such cases it might be easier to
 # just add the argument/option to the final script that runs the utility
 # rather than these variables.
-utilname=crop
-arguments=/home/mohammad/documents/personal/research/software/local/c/gnuastro/build/tests/mkprofcat1.fits
-options="--section=-10:*+10,:250 --output=crop_section.fits --numthreads=1 --mode=img -h0"
+utilname=
+arguments=
+options=
 
 
 

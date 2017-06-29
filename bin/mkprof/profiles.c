@@ -41,9 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /****************************************************************
  *****************         Profiles:         ********************
  ****************************************************************/
-/* The Gaussian function at a point: junk is only used here to make it
-   conform to the general format of functions in this file: like
-   Sersic(). */
+/* The Gaussian function at a point. */
 double
 Gaussian(struct mkonthread *mkp)
 {

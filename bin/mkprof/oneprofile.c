@@ -412,7 +412,7 @@ oneprof_set_prof_params(struct mkonthread *mkp)
   mkp->s          = sin( (90-p->p[id]) * DEGREESTORADIANS );
   mkp->q          = p->q[id];
   mkp->brightness = pow( 10, (p->zeropoint - p->m[id]) / 2.5f );
-  mkp->ibq->ispsf = oneprofile_ispsf(p->f[id]);
+  mkp->ibq->ispsf = p->kernel ? 1 : oneprofile_ispsf(p->f[id]);
   mkp->func       = mkp->ibq->func = p->f[id];
 
 

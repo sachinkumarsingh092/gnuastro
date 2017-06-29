@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Available letters (-V which is used by GNU is also removed):
 
    a b d g j l n u v
-   A E G H J L O Q W
+   A G H J L O Q W
 */
 enum option_keys_enum
 {
@@ -42,6 +42,7 @@ enum option_keys_enum
   UI_KEY_NAXIS1          = 'x',
   UI_KEY_NAXIS2          = 'y',
   UI_KEY_CLEARCANVAS     = 'C',
+  UI_KEY_KERNEL          = 'E',
   UI_KEY_OVERSAMPLE      = 's',
   UI_KEY_INDIVIDUAL      = 'i',
   UI_KEY_NOMERGED        = 'm',
