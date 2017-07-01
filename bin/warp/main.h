@@ -55,6 +55,8 @@ struct warpparams
   gal_data_t      *matrix;  /* Warp/Transformation matrix.               */
   gal_data_t   *modularll;  /* List of modular warpings.                 */
   double         *inverse;  /* Inverse of the input matrix.              */
+  double     *inwcsmatrix;  /* Input WCS matrix.                         */
+  double      *pixelscale;  /* Pixel scale of input image.               */
   time_t          rawtime;  /* Starting time of the program.             */
   size_t       extinds[4];  /* Indexs of the minimum and maximum values. */
   size_t       ordinds[4];  /* Indexs of anticlockwise vertices.         */

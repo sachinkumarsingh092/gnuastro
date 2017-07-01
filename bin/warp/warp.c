@@ -111,8 +111,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************************************************************/
 /**************      Processing function      ******************/
 /***************************************************************/
-void *
-warponthread(void *inparam)
+static void *
+warp_onthread(void *inparam)
 {
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct warpparams *p=iwp->p;
@@ -291,8 +291,8 @@ warponthread(void *inparam)
    array to the input array. The order is fixed for all the pixels in
    the image altough the scale might change.
 */
-void
-warppreparations(struct warpparams *p)
+static void
+warp_preparations(struct warpparams *p)
 {
   double is0=p->input->dsize[0], is1=p->input->dsize[1];
 
@@ -376,8 +376,6 @@ warppreparations(struct warpparams *p)
   p->opixarea=gal_polygon_area(forarea, 4);
 
 
-
-
   /* Find which index after transformation will have the minimum and
      maximum positions along the two axises. We can't use the starting
      loop because that is based on the input image which can be
@@ -405,38 +403,47 @@ warppreparations(struct warpparams *p)
 
 
 /* Correct the WCS coordinates (Multiply the 2x2 PC matrix of the WCS
-   structure by the INVERSE of the transform in 2x2 form that has been
-   converted from homogeneous coordinates). Then Multiply the crpix
-   array with the ACTUAL transformation matrix. */
+   structure by the INVERSE of the transform in 2x2). Then Multiply the
+   crpix array with the ACTUAL transformation matrix. */
 void
 correct_wcs_save_output(struct warpparams *p)
 {
   size_t i;
-  double *m=p->matrix->array, diff;
+  double tcrpix[3];
   char keyword[9*FLEN_KEYWORD];
+  double *m=p->matrix->array, diff;
   struct wcsprm *wcs=p->output->wcs;
   gal_fits_list_key_t *headers=NULL;
-  double tpc[4], tcrpix[3], *pixelscale;
-  double *crpix=wcs->crpix, *pc=wcs->pc;
+  double *crpix=wcs->crpix, *w=p->inwcsmatrix;
+
+  /* `tinv' is the 2 by 2 inverse matrix. Recall that `p->inverse' is 3 by
+     3 to account for homogeneous coordinates. */
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
 
+  /* Make the WCS corrections if necessary. */
   if(p->keepwcs==0 && wcs)
     {
-      /* Correct the PC matrix: */
-      tpc[0]=pc[0]*tinv[0]+pc[1]*tinv[2];
-      tpc[1]=pc[0]*tinv[1]+pc[1]*tinv[3];
-      tpc[2]=pc[2]*tinv[0]+pc[3]*tinv[2];
-      tpc[3]=pc[2]*tinv[1]+pc[3]*tinv[3];
-      pc[0]=tpc[0]; pc[1]=tpc[1]; pc[2]=tpc[2]; pc[3]=tpc[3];
+      /* Correct the input WCS matrix. Since we are re-writing the PC
+         matrix from the full rotation matrix (including pixel scale),
+         we'll also have to set the CDELT fields to 1. Just to be sure that
+         the PC matrix is used in the end by WCSLIB, we'll also set altlin
+         to 1.*/
+      wcs->altlin=1;
+      wcs->cdelt[0] = wcs->cdelt[1] = 1.0f;
+      wcs->pc[0] = w[0]*tinv[0] + w[1]*tinv[2];
+      wcs->pc[1] = w[0]*tinv[1] + w[1]*tinv[3];
+      wcs->pc[2] = w[2]*tinv[0] + w[3]*tinv[2];
+      wcs->pc[3] = w[2]*tinv[1] + w[3]*tinv[3];
 
       /* Correct the CRPIX point. The +1 in the end of the last two
          lines is because FITS counts from 1. */
-      tcrpix[0]=m[0]*crpix[0]+m[1]*crpix[1]+m[2];
-      tcrpix[1]=m[3]*crpix[0]+m[4]*crpix[1]+m[5];
-      tcrpix[2]=m[6]*crpix[0]+m[7]*crpix[1]+m[8];
-      crpix[0]=tcrpix[0]/tcrpix[2]-p->outfpixval[0]+1;
-      crpix[1]=tcrpix[1]/tcrpix[2]-p->outfpixval[1]+1;
+      tcrpix[0] = m[0]*crpix[0]+m[1]*crpix[1]+m[2];
+      tcrpix[1] = m[3]*crpix[0]+m[4]*crpix[1]+m[5];
+      tcrpix[2] = m[6]*crpix[0]+m[7]*crpix[1]+m[8];
+
+      crpix[0] = tcrpix[0]/tcrpix[2] - p->outfpixval[0] + 1;
+      crpix[1] = tcrpix[1]/tcrpix[2] - p->outfpixval[1] + 1;
     }
 
   /* Add the appropriate headers: */
@@ -453,20 +460,16 @@ correct_wcs_save_output(struct warpparams *p)
      be set to zero and extremely small differences between PC1_1 and PC2_2
      can be ignored. The reason for all the `fabs' functions is because the
      signs are usually different.*/
-  if( wcs->pc[1]<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
-  if( wcs->pc[2]<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
-  pixelscale=gal_wcs_pixel_scale(wcs);
+  if( fabs(wcs->pc[1])<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
+  if( fabs(wcs->pc[2])<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
   diff=fabs(wcs->pc[0])-fabs(wcs->pc[3]);
-  if( fabs(diff/pixelscale[0])<RELATIVEFLTERROR )
+  if( fabs(diff/p->pixelscale[0])<RELATIVEFLTERROR )
     wcs->pc[3] =  ( (wcs->pc[3] < 0.0f ? -1.0f : 1.0f) * fabs(wcs->pc[0]) );
 
   /* Save the output into the proper type and write it. */
   if(p->cp.type!=p->output->type)
     p->output=gal_data_copy_to_new_type_free(p->output, p->cp.type);
   gal_fits_img_write(p->output, p->cp.output, headers, PROGRAM_STRING);
-
-  /* Clean up. */
-  free(pixelscale);
 }
 
 
@@ -512,7 +515,7 @@ warp(struct warpparams *p)
 
 
   /* Prepare the output array and all the necessary things: */
-  warppreparations(p);
+  warp_preparations(p);
 
 
   /* Distribute the output pixels into the threads: */
@@ -524,7 +527,7 @@ warp(struct warpparams *p)
     {
       iwp[0].p=p;
       iwp[0].indexs=indexs;
-      warponthread(&iwp[0]);
+      warp_onthread(&iwp[0]);
     }
   else
     {
@@ -543,7 +546,7 @@ warp(struct warpparams *p)
             iwp[i].p=p;
             iwp[i].b=&b;
             iwp[i].indexs=&indexs[i*thrdcols];
-            err=pthread_create(&t, &attr, warponthread, &iwp[i]);
+            err=pthread_create(&t, &attr, warp_onthread, &iwp[i]);
             if(err)
               error(EXIT_FAILURE, 0, "%s: can't create thread %zu",
                     __func__, i);

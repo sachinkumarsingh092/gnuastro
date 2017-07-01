@@ -14188,57 +14188,65 @@ familiar with these concepts.
 @subsubsection Defining an ellipse
 
 @cindex Ellipse
+@cindex Axis ratio
+@cindex Position angle
 The PSF, see @ref{PSF}, and galaxy radial profiles are generally defined on
 an ellipse so in this section first defining an ellipse on a pixelated 2D
 surface is discussed. Labeling the major axis of an ellipse @mymath{a}, and
-its minor axis with @mymath{b}, the axis ratio is defined as:
+its minor axis with @mymath{b}, the @emph{axis ratio} is defined as:
 @mymath{q\equiv b/a}. The major axis of an ellipse can be aligned in any
 direction, therefore the angle of the major axis with respect to the
-horizontal axis of the image is defined to be the position angle of the
-ellipse and in this book, we show it with @mymath{\theta}.
+horizontal axis of the image is defined to be the @emph{position angle} of
+the ellipse and in this book, we show it with @mymath{\theta}.
 
 @cindex Radial profile on ellipse
-Our aim is to put a radial profile of any functional form
-@mymath{f(r)} over an ellipse. Let's define the radial distance
-@mymath{r_{el}} as the distance on the major axis to the center of the
-ellipse which is located at @mymath{x_c} and @mymath{y_c}. We want to
-find the elliptical distance of a point located at @mymath{(i,j)}, in
-the image coordinate system, from the center of the ellipse. First the
-coordinate system is rotated by @mymath{\theta} to get the new rotated
-coordinates of that point @mymath{(i_r,j_r)}:
+Our aim is to put a radial profile of any functional form @mymath{f(r)}
+over an ellipse. Hence we need to associate a radius/distance to every
+point in space. Let's define the radial distance @mymath{r_{el}} as the
+distance on the major axis to the center of an ellipse which is located at
+@mymath{i_c} and @mymath{i_c} (in other words @mymath{r_{el}\equiv{a}}). We
+want to find @mymath{r_{el}} of a point located at @mymath{(i,j)} (in the
+image coordinate system) from the center of the ellipse with axis ratio
+@mymath{q} and position angle @mymath{\theta}. First the coordinate system
+is rotated@footnote{Do not confuse this with the rotation matrix of
+@ref{Warping basics}. In that equation, the point is rotated, here the
+coordinates are rotated and the point is fixed.} by @mymath{\theta} to get
+the new rotated coordinates of that point @mymath{(i_r,j_r)}:
 
-@dispmath{i_r(i,j)=(i_c-i)\cos(\theta)+(j_c-j)\sin(\theta)}
-@dispmath{j_r(i,j)=(j_c-j)\cos(\theta)-(i_c-i)\sin(\theta)}
+@dispmath{i_r(i,j)=+(i_c-i)\cos(\theta)+(j_c-j)\sin(\theta)}
+@dispmath{j_r(i,j)=-(i_c-i)\sin(\theta)+(j_c-j)\cos(\theta)}
 
 @cindex Elliptical distance
-@noindent The elliptical distance of a point located at @mymath{(i,j)}
-can now be defined as: @mymath{r_{el}^2=\sqrt{i_r^2+j_r^2/q^2} }. To
-place the radial profiles explained below over an ellipse,
-@mymath{f(r_{el}(i,j))} is calculated based on the functional radial
-profile desired.
+@noindent Recall that an ellipse is defined by @mymath{(i_r/a)^2+(j_r/b)^2=1}
+and that we defined @mymath{r_{el}\equiv{a}}. Hence, multiplying all
+elements of the the ellipse definition with @mymath{r_{el}^2} we get the
+elliptical distance at this point point located:
+@mymath{r_{el}=\sqrt{i_r^2+j_r^2/q^2} }. To place the radial profiles
+explained below over an ellipse, @mymath{f(r_{el})} is calculated based on
+the functional radial profile desired.
 
 @cindex Breadth first search
 @cindex Inside-out construction
 @cindex Making profiles pixel by pixel
 @cindex Pixel by pixel making of profiles
-The way MakeProfiles builds the profile is that the nearest pixel in the
-image to the given profile center is found and the profile value is
-calculated for it, see @ref{Sampling from a function}. The next pixel
-which the profile value is calculated on is the next nearest neighbor
-of the initial pixel to the profile center (as defined by
-@mymath{r_{el}}). This is done fairly efficiently using a breadth
-first parsing
+MakeProfiles builds the profile starting from the nearest pixel in the
+image to the given profile center. The profile value is calculated for that
+central pixel using monte carlo integration, see @ref{Sampling from a
+function}. The next pixel is the next nearest neighbor to the central pixel
+as defined by @mymath{r_{el}}. This process goes on until the profile is
+fully built upto the trunctation radius. This is done fairly efficiently
+using a breadth first parsing
 strategy@footnote{@url{http://en.wikipedia.org/wiki/Breadth-first_search}}
 which is implemented through an ordered linked list.
 
-Using this approach, we only go over one layer of pixels on the
-circumference of the profile to build the profile. Not one more extra
-pixel has to be checked. Another consequence of this strategy is that
-extending MakeProfiles to three dimensions becomes very simple: only
-the neighbors of each pixel have to be changed. Everything else after
-that (when the pixel index and its radial profile have entered the
-linked list) is the same, no matter the number of dimensions we are
-dealing with.
+Using this approach, we build the profile by expanding the
+circumference. Not one more extra pixel has to be checked (the calculation
+of @mymath{r_{el}} from above is not cheap in CPU terms). Another
+consequence of this strategy is that extending MakeProfiles to three
+dimensions becomes very simple: only the neighbors of each pixel have to be
+changed. Everything else after that (when the pixel index and its radial
+profile have entered the linked list) is the same, no matter the number of
+dimensions we are dealing with.
 
 
 

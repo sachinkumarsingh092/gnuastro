@@ -351,6 +351,11 @@ ui_check_options_and_arguments(struct warpparams *p)
                                          p->cp.minmapsize);
       p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
                                  p->hendwcs, &p->input->nwcs);
+      if(p->input->wcs)
+        {
+          p->pixelscale=gal_wcs_pixel_scale(p->input->wcs);
+          p->inwcsmatrix=gal_wcs_warp_matrix(p->input->wcs);
+        }
     }
   else
     error(EXIT_FAILURE, 0, "no input file is specified");
@@ -447,7 +452,7 @@ ui_matrix_prepare_raw(struct warpparams *p)
 static void
 ui_matrix_make_align(struct warpparams *p, double *tmatrix)
 {
-  double A, *w, *ps, amatrix[4];
+  double A, *w, *P, x[4];
 
   /* Make sure the input image had a WCS structure. */
   if(p->input->wcs==NULL)
@@ -462,88 +467,83 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
           p->inputname, p->cp.hdu, p->input->wcs->naxis);
 
 
-  /* Find the pixel scale along the two dimensions. Note that we will be
-     using the scale along the image X axis for both values. */
-  w=gal_wcs_warp_matrix(p->input->wcs);
-  ps=gal_wcs_pixel_scale(p->input->wcs);
+  /* For help in reading, use aliases for the WCS matrix and pixel scale.*/
+  P=p->pixelscale;
+  w=p->inwcsmatrix;
 
 
   /* Lets call the given WCS orientation `W', the rotation matrix we want
-     to find as `X' and the final (aligned matrix) to have just one useful
-     value: `a' (which is the pixel scale):
+     to find as `X' and the final (aligned matrix) `P' (which is the pixel
+     scale):
 
-        x0  x1       w0  w1      -a  0
-        x2  x3   *   w2  w3   =   0  a
+        x0  x1       w0  w1      -P0   0
+        x2  x3   *   w2  w3   =   0    P1
 
      Let's open up the matrix multiplication, so we can find the `X'
      elements as function of the `W' elements and `a'.
 
-        x0*w0 + x1*w2 = -a                                         (1)
+        x0*w0 + x1*w2 = -P0                                        (1)
         x0*w1 + x1*w3 =  0                                         (2)
         x2*w0 + x3*w2 =  0                                         (3)
-        x2*w1 + x3*w3 =  a                                         (4)
+        x2*w1 + x3*w3 =  P1                                        (4)
 
      Let's bring the X with the smaller index in each equation to the left
      side:
 
-        x0 = (-w2/w0)*x1 - a/w0                                    (5)
+        x0 = (-w2/w0)*x1 - P0/w0                                   (5)
         x0 = (-w3/w1)*x1                                           (6)
         x2 = (-w2/w0)*x3                                           (7)
-        x2 = (-w3/w1)*x3 + a/w1                                    (8)
+        x2 = (-w3/w1)*x3 + P1/w1                                   (8)
 
     Using (5) and (6) we can find x0 and x1, by first eliminating x0:
 
-       (-w2/w0)*x1 - a/w0 = (-w3/w1)*x1 -> (w3/w1 - w2/w0) * x1 = a/w0
+       (-w2/w0)*x1 - P0/w0 = (-w3/w1)*x1  ->  (w3/w1 - w2/w0) * x1 = P0/w0
 
     For easy reading/writing, let's define: A = (w3/w1 - w2/w0)
 
-       --> x1 = a / w0 / A
+       --> x1 = P0 / w0 / A
        --> x0 = -1 * x1 * w3 / w1
 
     Similar to the above, we can find x2 and x3 from (7) and (8):
 
-       (-w2/w0)*x3 = (-w3/w1)*x3 + a/w1 -> (w3/w1 - w2/w0) * x3 = a/w1
+       (-w2/w0)*x3 = (-w3/w1)*x3 + P1/w1  ->  (w3/w1 - w2/w0) * x3 = P1/w1
 
-       --> x3 = a / w1 / A
+       --> x3 = P1 / w1 / A
        --> x2 = -1 * x3 * w2 / w0
 
-    Note that when the image is already aligned, a unity matrix should be
-    output.
-   */
+    Note that when the image is already aligned (off-diagonals are zero),
+    only the signs of the diagonal elements matter. */
   if( w[1]==0.0f && w[2]==0.0f )
     {
-      amatrix[0]=1.0f;   amatrix[1]=0.0f;
-      amatrix[2]=0.0f;   amatrix[3]=1.0f;
+      x[0] = w[0]<0 ? 1.0f : -1.0f;  /* Has to be negative. */
+      x[1] = 0.0f;
+      x[2] = 0.0f;
+      x[3] = w[3]>0 ? 1.0f : 1.0f;   /* Has to be positive. */
     }
   else
     {
       A = (w[3]/w[1]) - (w[2]/w[0]);
-      amatrix[1] = ps[0] / w[0] / A;
-      amatrix[3] = ps[0] / w[1] / A;
-      amatrix[0] = -1 * amatrix[1] * w[3] / w[1];
-      amatrix[2] = -1 * amatrix[3] * w[2] / w[0];
+      x[1] = P[0] / w[0] / A;
+      x[3] = P[1] / w[1] / A;
+      x[0] = -1 * x[1] * w[3] / w[1];
+      x[2] = -1 * x[3] * w[2] / w[0];
     }
 
-
   /* For a check:
-  printf("ps: %e\n", ps);
+  printf("ps: (%e, %e)\n", P[0], P[1]);
   printf("w:\n");
   printf("  %.8e    %.8e\n", w[0], w[1]);
   printf("  %.8e    %.8e\n", w[2], w[3]);
   printf("x:\n");
-  printf("  %.8e    %.8e\n", amatrix[0], amatrix[1]);
-  printf("  %.8e    %.8e\n", amatrix[2], amatrix[3]);
+  printf("  %.8e    %.8e\n", x[0], x[1]);
+  printf("  %.8e    %.8e\n", x[2], x[3]);
   exit(0);
   */
 
   /* Put the matrix elements into the output array: */
-  tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
-  tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
-  tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
-
-  /* Clean up. */
-  free(w);
-  free(ps);
+  tmatrix[0]=x[0];  tmatrix[1]=x[1]; tmatrix[2]=0.0f;
+  tmatrix[3]=x[2];  tmatrix[4]=x[3]; tmatrix[5]=0.0f;
+  tmatrix[6]=0.0f;  tmatrix[7]=0.0f; tmatrix[8]=1.0f;
 }
 
 
@@ -584,7 +584,7 @@ ui_matrix_from_modular(struct warpparams *p)
 {
   gal_data_t *pop;
   size_t dsize[]={3,3};
-  double s, c, v1, v2, *final, module[9];
+  double s, c, v1, v2, *final, module[9]={1,0,0,  0,1,0,  0,0,1};
 
   /* Reverse the list of modular warpings to be in the same order as the
      user specified.*/
@@ -622,9 +622,9 @@ ui_matrix_from_modular(struct warpparams *p)
         case UI_KEY_ROTATE:
           s = sin( v1 * M_PI / 180 );
           c = cos( v1 * M_PI / 180 );
-          module[0]=c;          module[1]=s;      module[2]=0.0f;
-          module[3]=-1.0f*s;    module[4]=c;      module[5]=0.0f;
-          module[6]=0.0f;       module[7]=0.0f;   module[8]=1.0f;
+          module[0]=c;          module[1]=-1.0f*s;  module[2]=0.0f;
+          module[3]=s;          module[4]=c;        module[5]=0.0f;
+          module[6]=0.0f;       module[7]=0.0f;     module[8]=1.0f;
           break;
 
         case UI_KEY_SCALE:
@@ -758,10 +758,10 @@ ui_matrix_finalize(struct warpparams *p)
     error(EXIT_FAILURE, 0, "the determinant of the given matrix "
           "is zero");
 
-  /* Check if the transformation is spatially invariant, in other words, if
-     it differs between differet regions of the output. If it doesn't we
-     can use this information for a more efficient processing. This is not
-     yet implemented. */
+  /* Note yet implemented: Check if the transformation is spatially
+     invariant, in other words, if it differs between differet regions of
+     the output. If it doesn't we can use this information for a more
+     efficient processing. */
 
    /* Make the inverse matrix: */
   inv=p->inverse=gal_data_malloc_array(GAL_TYPE_FLOAT64, 9, __func__,
@@ -993,6 +993,8 @@ ui_free_report(struct warpparams *p, struct timeval *t1)
   free(p->cp.output);
   gal_data_free(p->input);
   gal_data_free(p->matrix);
+  if(p->pixelscale) free(p->pixelscale);
+  if(p->inwcsmatrix) free(p->inwcsmatrix);
 
   /* Report how long the operation took. */
   if(!p->cp.quiet)
