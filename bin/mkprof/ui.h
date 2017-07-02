@@ -31,16 +31,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
    Available letters (-V which is used by GNU is also removed):
 
-   a b d g j l n u v
-   A G H J L O Q W
+   a b d g j l n u v y
+   A G H J L O Q W Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
   UI_KEY_BACKGROUND      = 'k',
   UI_KEY_BACKHDU         = 'B',
-  UI_KEY_NAXIS1          = 'x',
-  UI_KEY_NAXIS2          = 'y',
+  UI_KEY_NAXIS           = 'x',
   UI_KEY_CLEARCANVAS     = 'C',
   UI_KEY_KERNEL          = 'E',
   UI_KEY_OVERSAMPLE      = 's',
@@ -49,8 +48,7 @@ enum option_keys_enum
   UI_KEY_NUMRANDOM       = 'r',
   UI_KEY_TOLERANCE       = 't',
   UI_KEY_TUNITINP        = 'p',
-  UI_KEY_XSHIFT          = 'X',
-  UI_KEY_YSHIFT          = 'Y',
+  UI_KEY_SHIFT           = 'X',
   UI_KEY_PREPFORCONV     = 'c',
   UI_KEY_ZEROPOINT       = 'z',
   UI_KEY_CIRCUMWIDTH     = 'w',
@@ -61,10 +59,8 @@ enum option_keys_enum
   /* Only with long version. */
   UI_KEY_PSFINIMG        = 1000,
   UI_KEY_MAGATPEAK,
-  UI_KEY_XCOL,
-  UI_KEY_YCOL,
-  UI_KEY_RACOL,
-  UI_KEY_DECCOL,
+  UI_KEY_MODE,
+  UI_KEY_CCOL,
   UI_KEY_FCOL,
   UI_KEY_RCOL,
   UI_KEY_NCOL,
@@ -72,11 +68,12 @@ enum option_keys_enum
   UI_KEY_QCOL,
   UI_KEY_MCOL,
   UI_KEY_TCOL,
-  UI_KEY_CRPIX1,
-  UI_KEY_CRPIX2,
-  UI_KEY_CRVAL1,
-  UI_KEY_CRVAL2,
-  UI_KEY_RESOLUTION,
+  UI_KEY_CRPIX,
+  UI_KEY_CRVAL,
+  UI_KEY_CDELT,
+  UI_KEY_PC,
+  UI_KEY_CUNIT,
+  UI_KEY_CTYPE,
 };
 
 

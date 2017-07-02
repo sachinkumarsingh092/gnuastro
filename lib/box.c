@@ -62,8 +62,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
    Once you find the "t", put it in (2) for the respective coordinate
    and you will find the distance (about the center of the ellipse
-   that encloses the whole ellipse.
-*/
+   that encloses the whole ellipse. */
 void
 gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width)
 {

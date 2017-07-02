@@ -236,11 +236,6 @@ gal_options_add_to_not_given(struct gal_options_common_params *cp,
 void
 gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
 
-gal_data_t *
-gal_options_parse_list_of_numbers(char *string, char *filename,
-                                  size_t lineno);
-
-
 
 
 /**********************************************************************/
@@ -265,6 +260,18 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
 void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
                              char *filename, size_t lineno, void *junk);
+
+gal_data_t *
+gal_options_parse_list_of_numbers(char *string, char *filename,
+                                  size_t lineno);
+
+gal_data_t *
+gal_options_parse_csv_strings_raw(char *string, char *filename,
+                                  size_t lineno);
+
+void *
+gal_options_parse_csv_strings(struct argp_option *option, char *arg,
+                              char *filename, size_t lineno, void *junk);
 
 void *
 gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,

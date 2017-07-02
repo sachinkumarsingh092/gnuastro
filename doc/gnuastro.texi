@@ -14872,22 +14872,24 @@ reading the input, so nothing will happen to your input file).
 
 @item -B STR/INT
 @itemx --backhdu=STR/INT
-The header data unit (HDU) of the file given to
+The header data unit (HDU) of the file given to @option{--background}.
 
-@item -x INT
-@itemx --naxis1=INT
-The number of pixels in the output image along the first FITS axis
-(horizontal when viewed in SAO ds9). This is before over-sampling. For
-example if you call MakeProfiles with @option{--naxis1=100 --oversample=5}
-(assuming no shift due for later convolution), then the final image size
-along the first axis will be 500. If a background image is specified, any
-possible value to this option is ignored.
+@item -x INT,INT
+@itemx --naxis=INT,INT
+The number of pixels along each dimension axis of the output in FITS
+order. This is before over-sampling. For example if you call MakeProfiles
+with @option{--naxis=100,150 --oversample=5} (assuming no shift due for
+later convolution), then the final image size along the first axis will be
+500 by 750 pixels. Fractions are acceptable as values for each dimension,
+however, they must reduce to an integer, so @option{--naxis=150/3,300/3} is
+acceptable but @option{--naxis=150/4,300/4} is not.
 
-@item -y INT
-@itemx --naxis2=INT
-The number of pixels in the output image along the second FITS axis
-(vertical when viewed in SAO ds9), see the explanation for
-@option{--naxis1}.
+When viewing a FITS image in DS9, the first FITS dimension is in the
+horizontal direction and the second is vertical. As an example, the image
+created with the example above will have 500 pixels horizontally and 750
+pixels vertically.
+
+If a background image is specified, this option is ignored.
 
 @item -s INT
 @itemx --oversample=INT
@@ -14972,18 +14974,14 @@ default, the truncation column is considered to be in units of the
 radial parameters of the profile (@option{--rcol}). Read it as
 `t-unit-in-p' for `truncation unit in pixels'.
 
-@item -X INT
-@itemx --xshift=INT
-Shift all the profiles and enlarge the image along the first FITS axis, see
-@mymath{n} in @ref{If convolving afterwards}. This is useful when you want
-to convolve the image afterwards. If you are using an external PSF, be sure
-to oversample it to the same scale used for creating the mock images. If a
-background image is specified, any possible value to this option is
-ignored.
-
-@item -Y INT
-@itemx --yshift=INT
-Similar to @option{--xshift} for the second FITS axis.
+@item -X INT,INT
+@itemx --shift=INT,INT
+Shift all the profiles and enlarge the image along each dimension. To
+better understand this option, please see @mymath{n} in @ref{If convolving
+afterwards}. This is useful when you want to convolve the image
+afterwards. If you are using an external PSF, be sure to oversample it to
+the same scale used for creating the mock images. If a background image is
+specified, any possible value to this option is ignored.
 
 @item -c
 @itemx --prepforconv
@@ -15050,7 +15048,7 @@ profile. However, when using flat profiles with the
 @code{0.0} value as the flat profile's pixel value.
 
 @item -C
-@item --clearcanvas
+@itemx --clearcanvas
 When an input image is specified (with the @option{--background} option,
 set all its pixels to 0.0 immediately after reading it into
 memory. Effectively, this will allow you to use all its properties
@@ -15080,6 +15078,19 @@ Catalog: The value to all of these options is considered to be a
 column number, where counting starts from zero.
 
 @table @option
+
+@item --mode=STR
+Interpret the center position columns in image or WCS coordinates. This
+option thus accepts only two values: @option{img} and @option{wcs}. It is
+mandatory when a catalog is being used.
+
+@item --ccol=STR/INT
+Center coordinate column for each dimension. This option must be called two
+times to define the center coordinates in an image. For example
+@option{--ccol=RA} and @option{--ccol=DEC} (along with @option{--mode=wcs})
+will inform MakeProfiles to look into the catalog columns named @option{RA}
+and @option{DEC} for the Right Ascension and Declination of the profile
+centers.
 
 @item --fcol=INT/STR
 The functional form of the profile with one of the values below depending
@@ -15112,27 +15123,6 @@ value will be used for all pixels between the truncation radius
 (@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
 @option{--circumwidth}).
 @end itemize
-
-@item --xcol=STR/INT
-The center of the profiles along the first FITS axis (horizontal when
-viewed in SAO ds9). See the explanations for @option{--racol} for
-precedence when both image and WCS coordinate columns are given.
-
-@item --ycol=STR/INT
-The center of the profiles along the second FITS axis (vertical when viewed
-in SAO ds9). Similar to @option{--xcol}.
-
-@item --racol=STR/INT
-The profile center's right ascension. Along with @option{--deccol}, these
-WCS coordinate columns are not mandatory. If they are not given, the
-@option{--xcol} and @option{--ycol} options will be used to specify the
-profile's central position and vice-versa. However, if image coordinate
-columns (@option{--xcol} and @option{--ycol}) and WCS coordinate columns
-(@option{--racol} and @option{--deccol}) are given, the WCS coordinate
-columns take precedence and image coordinate columns will be ignored.
-
-@item --deccol=STR/INT
-The profile center's declination. Similar to @option{--racol}.
 
 @item --rcol=STR/INT
 The radius parameter of the profiles. Effective radius (@mymath{r_e}) if
@@ -15198,26 +15188,57 @@ your catalog.
 @end table
 
 @noindent
-WCS:
+The options below can be used to define the world coordinate system (WCS)
+properties of the MakeProfiles outputs. The option names are delibarately
+chosen to be the same as the FITS standard WCS keywords. See Section 8 of
+@url{https://doi.org/10.1051/0004-6361/201015362, Pence et al [2010]} for a
+short introduction to WCS in the FITS standard@footnote{The world
+coordinate standard in FITS is a very beatiful and powerful concept to
+link/associate datasets with the outside world (other datasets). The
+description in the FITS standard (link above) only touches the tip of the
+ice-burg. To learn more please see
+@url{https://doi.org/10.1051/0004-6361:20021326, Greisen and Calabretta
+[2002]}, @url{https://doi.org/10.1051/0004-6361:20021327, Calabretta and
+Greisen [2002]}, @url{https://doi.org/10.1051/0004-6361:20053818, Greisen
+et al. [2006]}, and
+@url{http://www.atnf.csiro.au/people/mcalabre/WCS/dcs_20040422.pdf,
+Calabretta et al.}}.
+
+If you look into the headers of a FITS image with WCS for example you will
+see all these names but in uppercase and with numbers to represent the
+dimensions, for example @code{CRPIX1} and @code{PC2_1}. You can see the
+FITS headers with Gnuastro's @ref{Fits} program using a command like this:
+@command{$ astfits -p image.fits}.
 
 @table @option
 
-@item --crpix1=FLT
-The pixel coordinates of the WCS reference point on the first (horizontal)
-FITS axis (counting from 1).
+@item --crpix=FLT,FLT
+The pixel coordinates of the WCS reference point. Fractions are acceptable
+for the values of this option.
 
-@item --crpix2=FLT
-The pixel coordinates of the WCS reference point on the second (vertical)
-FITS axis (counting from 1).
+@item --crval=FLT,FLT
+The WCS coordinates of the Reference point. Fractions are acceptable for
+the values of this option.
 
-@item --crval1=FLT
-The Right Ascension (RA) of the reference point.
+@item --cdelt=FLT,FLT
+The resolution (size of one data-unit or pixel in WCS units) of the
+non-oversampled dataset. Fractions are acceptable for the values of this
+option.
 
-@item --crval2=FLT
-The Declination of the reference point.
+@item --pc=FLT,FLT,FLT,FLT
+The PC matrix of the WCS rotation, see the FITS standard (link above) to
+better understand the PC matrix.
 
-@item --resolution=FLT
-The resolution of the non-oversampled image in units of arcseconds/pixel.
+@item --cunit=STR,STR
+The units of each WCS axis, for example @code{deg}. Note that these values
+are part of the FITS standard (link above). MakeProfiles won't complain if
+you use non-standard values, but later usage of them might cause trouble.
+
+@item --ctype=STR,STR
+The type of each WCS axis, for example @code{RA---TAN} and
+@code{DEC--TAN}. Note that these values are part of the FITS standard (link
+above). MakeProfiles won't complain if you use non-standard values, but
+later usage of them might cause trouble.
 
 @end table
 
@@ -17994,6 +18015,11 @@ example). If the given pointer is not the start of an allocated block of
 memory or it is used in multiple datasets, be sure to set it to @code{NULL}
 (with @code{data->array=NULL}) before cleaning up with
 @code{gal_data_free_contents}.
+
+@code{ndim} may be zero. In this case no allocation will occur,
+@code{data->array} and @code{data->dsize} will be set to @code{NULL} and
+@code{data->size} will be zero. However (when necessary) @code{dsize} must
+not have any zero values (a dimension of length zero is not defined).
 @end deftypefun
 
 @deftypefun {void *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})

@@ -1764,10 +1764,10 @@ gal_fits_img_write_corr_wcs_str(gal_data_t *input, char *filename,
      original version, we just want to change the copied version. */
   if(crpix)
     {
-      fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0],
-                      NULL, &status);
-      fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1],
-                      NULL, &status);
+      fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0], NULL, &status);
+      fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1], NULL, &status);
+      if(input->ndim==3)
+        fits_update_key(fptr, TDOUBLE, "CRPIX3", &crpix[2], NULL, &status);
       gal_fits_io_error(status, NULL);
     }
 

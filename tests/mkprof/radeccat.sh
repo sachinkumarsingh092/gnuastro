@@ -48,4 +48,4 @@ if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat --racol=RA --deccol=Dec --naxis1=100 --naxis2=100
+$execname $cat --ccol=RA --ccol=Dec --mode=wcs --naxis=100,100

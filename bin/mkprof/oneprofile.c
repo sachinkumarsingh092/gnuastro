@@ -406,8 +406,8 @@ oneprof_set_prof_params(struct mkonthread *mkp)
   size_t id=mkp->ibq->id;
 
   /* Fill in the profile independant parameters. */
-  p->x[id]       += p->shift[0]/p->oversample; /* Shifts were multiplied by */
-  p->y[id]       += p->shift[1]/p->oversample; /* `p->oversample' before.   */
+  p->x[id]       += p->shift[1]/p->oversample; /* Shifts were multiplied by */
+  p->y[id]       += p->shift[0]/p->oversample; /* `p->oversample' before.   */
   mkp->c          = cos( (90-p->p[id]) * DEGREESTORADIANS );
   mkp->s          = sin( (90-p->p[id]) * DEGREESTORADIANS );
   mkp->q          = p->q[id];
@@ -562,7 +562,7 @@ oneprofile_make(struct mkonthread *mkp)
 
 
   /* From this point on, the widths are the actual pixel
-     widths (with onversampling). */
+     widths (with oversampling). */
   mkp->width[0] *= os;
   mkp->width[1] *= os;
   mkp->ibq->imgwidth=mkp->width[0];

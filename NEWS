@@ -14,6 +14,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   the need to define a catalog. With this option, a catalog (or
   accompanying background image) must not be given.
 
+  MakeProfiles: the new `--pc', `--cunit' and `--ctype' options can be used
+  to specify the PC matrix, CUNIT and CTYPE world coordinate system
+  keywords of the output FITS file.
+
 ** Removed features
 
 ** Changed features
@@ -39,6 +43,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   multiple times and the order of its calling will be used for the column
   containing the center in the respective dimension (in FITS format).
 
+  MakeProfiles: The new `--naxis' and `--shift' options can take multiple
+  values for each dimension (separated by a comma). This replaces the old
+  `--naxis1', `--naxis2' and `--xshift' and `--yshift' options.
+
+  MakeProfiles: The new `--ccol' option can take the center coordinate
+  columns of the catalog (in multiple calls) and the new `--mode' option is
+  used to identify what standard to interpret them in (image or
+  WCS). Together, these replace the old `--xcol', `--ycol', `--racol' and
+  `--deccol'.
+
+  MakeProfiles: The new `--crpix', `--crval' and `--cdelt' options now
+  accept multiple values separated by a comma. So they replace the old
+  `--crpix1', `--crpix2', `--crval1', `--crval2' and `--resolution'
+  options.
+
   `gal_fits_img_info' now also returns the name and units of the dataset
   (if they aren't NULL). So it takes two extra arguments.
 
@@ -56,6 +75,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Bug fixes
 
   MakeProfiles long options on 32bit big endian systems (bug #51341).
+
+  Pure rotation around pixel coordinate (0,0) (bug #51353).
+
 
 
 

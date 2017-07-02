@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
@@ -149,135 +150,6 @@ options_get_home()
   if(home==NULL)
     error(EXIT_FAILURE, 0, "HOME environment variable not defined");
   return home;
-}
-
-
-
-
-
-/* The input to this function is a string of any number of numbers
-   separated by a comma (`,') and possibly containing fractions, for
-   example: `1,2/3, 4.95'. The output `gal_data_t' contains the array of
-   given values in `double' type. You can read the number from its `size'
-   element. */
-gal_data_t *
-gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
-{
-  size_t i, num=0;
-  gal_data_t *out;
-  char *c=string, *tailptr;
-  gal_list_f64_t *list=NULL, *tdll;
-  double numerator=NAN, denominator=NAN, tmp;
-
-
-  /* The nature of the arrays/numbers read here is very small, so since
-     `p->cp.minmapsize' might not have been read yet, we will set it to -1
-     (largest size_t number), so the values are kept in memory. */
-  size_t minmapsize=-1;
-
-  /* Go through the input character by character. */
-  while(string && *c!='\0')
-    {
-      switch(*c)
-        {
-
-        /* Ignore space or tab. */
-        case ' ':
-        case '\t':
-          ++c;
-          break;
-
-        /* Comma marks the transition to the next number. */
-        case ',':
-          if(isnan(numerator))
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
-                          "must be given before `,'. You have given: `%s'",
-                          string);
-          gal_list_f64_add(&list, isnan(denominator)
-                           ? numerator : numerator/denominator);
-          numerator=denominator=NAN;
-          ++num;
-          ++c;
-          break;
-
-        /* Divide two numbers. */
-        case '/':
-          if( isnan(numerator) || !isnan(denominator) )
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`/' must "
-                          "only be between two numbers and used for "
-                          "division. But you have given `%s'", string);
-          ++c;
-          break;
-
-        /* Extra dot is an error (cases like 2.5.5). Valid `.'s will be
-           read by `strtod'. */
-        case '.':
-          error_at_line(EXIT_FAILURE, 0, filename, lineno, "extra `.' in "
-                        "`%s'", string);
-          break;
-
-        /* Read the number. */
-        default:
-
-          /* Parse the string. */
-          tmp=strtod(c, &tailptr);
-          if(tailptr==c)
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first "
-                          "part of `%s' couldn't be read as a number. This "
-                          "was part of `%s'", c, string);
-
-          /* See if the number should be put in the numerator or
-             denominator. */
-          if(isnan(numerator)) numerator=tmp;
-          else
-            {
-              if(isnan(denominator)) denominator=tmp;
-              else error_at_line(EXIT_FAILURE, 0, filename, lineno, "more "
-                                 "than two numbers in each element.");
-            }
-
-          /* Set `c' to tailptr. */
-          c=tailptr;
-        }
-    }
-
-
-  /* If the last number wasn't finished by a `,', add the read value to the
-     list */
-  if( !isnan(numerator) )
-    {
-      ++num;
-      gal_list_f64_add(&list, isnan(denominator)
-                       ? numerator : numerator/denominator);
-    }
-
-
-  /* Allocate the output data structure and fill it up. */
-  if(num)
-    {
-      i=num;
-      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
-      for(tdll=list;tdll!=NULL;tdll=tdll->next)
-        ((double *)(out->array))[--i]=tdll->v;
-    }
-  else
-    {
-      /* It is not possible to allocate a dataset with a size of 0 along
-         any dimension (in C it's possible, but conceptually it isn't). So,
-         we'll allocate space for one element, then free it. */
-      i=1;
-      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &i, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
-      out->size=out->dsize[0]=0;
-      free(out->array);
-      out->array=NULL;
-    }
-
-
-  /* Clean up and return. */
-  gal_list_f64_free(list);
-  return out;
 }
 
 
@@ -530,11 +402,284 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
 
 
 
+/* The input to this function is a string of any number of numbers
+   separated by a comma (`,') and possibly containing fractions, for
+   example: `1,2/3, 4.95'. The output `gal_data_t' contains the array of
+   given values in `double' type. You can read the number from its `size'
+   element. */
+gal_data_t *
+gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
+{
+  size_t i, num=0;
+  gal_data_t *out;
+  char *c=string, *tailptr;
+  gal_list_f64_t *list=NULL, *tdll;
+  double numerator=NAN, denominator=NAN, tmp;
+
+
+  /* The nature of the arrays/numbers read here is very small, so since
+     `p->cp.minmapsize' might not have been read yet, we will set it to -1
+     (largest size_t number), so the values are kept in memory. */
+  size_t minmapsize=-1;
+
+  /* Go through the input character by character. */
+  while(string && *c!='\0')
+    {
+      switch(*c)
+        {
+
+        /* Ignore space or tab. */
+        case ' ':
+        case '\t':
+          ++c;
+          break;
+
+        /* Comma marks the transition to the next number. */
+        case ',':
+          if(isnan(numerator))
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
+                          "must be given before `,'. You have given: `%s'",
+                          string);
+          gal_list_f64_add(&list, isnan(denominator)
+                           ? numerator : numerator/denominator);
+          numerator=denominator=NAN;
+          ++num;
+          ++c;
+          break;
+
+        /* Divide two numbers. */
+        case '/':
+          if( isnan(numerator) || !isnan(denominator) )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`/' must "
+                          "only be between two numbers and used for "
+                          "division. But you have given `%s'", string);
+          ++c;
+          break;
+
+        /* Extra dot is an error (cases like 2.5.5). Valid `.'s will be
+           read by `strtod'. */
+        case '.':
+          error_at_line(EXIT_FAILURE, 0, filename, lineno, "extra `.' in "
+                        "`%s'", string);
+          break;
+
+        /* Read the number. */
+        default:
+
+          /* Parse the string. */
+          tmp=strtod(c, &tailptr);
+          if(tailptr==c)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the first "
+                          "part of `%s' couldn't be read as a number. This "
+                          "was part of `%s'", c, string);
+
+          /* See if the number should be put in the numerator or
+             denominator. */
+          if(isnan(numerator)) numerator=tmp;
+          else
+            {
+              if(isnan(denominator)) denominator=tmp;
+              else error_at_line(EXIT_FAILURE, 0, filename, lineno, "more "
+                                 "than two numbers in each element.");
+            }
+
+          /* Set `c' to tailptr. */
+          c=tailptr;
+        }
+    }
+
+
+  /* If the last number wasn't finished by a `,', add the read value to the
+     list */
+  if( !isnan(numerator) )
+    {
+      ++num;
+      gal_list_f64_add(&list, isnan(denominator)
+                       ? numerator : numerator/denominator);
+    }
+
+
+  /* Allocate the output data structure and fill it up. */
+  if(num)
+    {
+      i=num;
+      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      for(tdll=list;tdll!=NULL;tdll=tdll->next)
+        ((double *)(out->array))[--i]=tdll->v;
+    }
+  else
+    {
+      /* It is not possible to allocate a dataset with a size of 0 along
+         any dimension (in C it's possible, but conceptually it isn't). So,
+         we'll allocate space for one element, then free it. */
+      i=1;
+      out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &i, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      out->size=out->dsize[0]=0;
+      free(out->array);
+      out->array=NULL;
+    }
+
+
+  /* Clean up and return. */
+  gal_list_f64_free(list);
+  return out;
+}
+
+
+
+
+
+/* The input to this function is a string of any number of strings
+   separated by a comma (`,') for example: `a,abc,abcd'. The output
+   `gal_data_t' contains the array of given strings. You can read the
+   number of inputs from its `size' element. */
+gal_data_t *
+gal_options_parse_csv_strings_raw(char *string, char *filename, size_t lineno)
+{
+  size_t i, num;
+  gal_data_t *out;
+  char *c=string, *str=NULL;
+  gal_list_str_t *list=NULL, *tstrll=NULL;
+
+
+  /* The nature of the arrays/numbers read here is very small, so since
+     `p->cp.minmapsize' might not have been read yet, we will set it to -1
+     (largest size_t number), so the values are kept in memory. */
+  size_t minmapsize=-1;
+
+
+  /* Go through the input character by character. */
+  while(string && *c!='\0')
+    {
+      switch(*c)
+        {
+        /* Comma marks the transition to the next string. */
+        case ',':
+          if(str==NULL)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a string "
+                          "must exist before the first `,'. You have "
+                          "given: `%s'", string);
+          *c='\0';
+          gal_list_str_add(&list, str, 1);
+          str=NULL;  /* Mark that the next character is the start */
+          break;
+
+        /* If the character isn't a coma, it is either in the middle of a
+           string at the start of it. If `str==NULL', then it is at the
+           start. */
+        default: if(str==NULL) str=c;
+        }
+
+      /* Increment C. */
+      ++c;
+    }
+
+
+  /* If the last element wasn't a comma, the last string hasn't been added
+     to the list yet. */
+  if(str) gal_list_str_add(&list, str, 1);
+
+
+  /* Allocate the output data structure and fill it up. */
+  if(list)
+    {
+      i=num=gal_list_str_number(list);
+      out=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &num, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      for(tstrll=list;tstrll!=NULL;tstrll=tstrll->next)
+        ((char **)(out->array))[--i]=tstrll->v;
+    }
+  else
+    {
+      /* It is not possible to allocate a dataset with a size of 0 along
+         any dimension (in C it's possible, but conceptually it isn't). So,
+         we'll allocate space for one element, then free it. */
+      i=1;
+      out=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &i, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+      out->size=out->dsize[0]=0;
+      free(out->array);
+      out->array=NULL;
+    }
+
+
+  /* Clean up and return. Note that we don't want to free the space of
+     each string becuse it has been passed  */
+  gal_list_str_free(list, 0);
+  return out;
+}
+
+
+
+
+
+/* `arg' is the value given to an option. It contains multiple strings
+   separated by a comma (`,'). This function will parse `arg' and make a
+   `gal_data_t' that contains all the strings separately. The output
+   `gal_data_t' will be put in `option->value'. */
+void *
+gal_options_parse_csv_strings(struct argp_option *option, char *arg,
+                              char *filename, size_t lineno, void *junk)
+{
+  int i;
+  size_t nc;
+  char **strarr;
+  gal_data_t *values;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the pointer to the values dataset. */
+      values = *(gal_data_t **)(option->value);
+
+      /* Write each string into the output string */
+      nc=0;
+      strarr=values->array;
+      for(i=0;i<values->size;++i)
+        {
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+          nc += sprintf(sstr+nc, "%s,", strarr[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+
+  /* We want to read the user's string. */
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
+
+      /* Read the values. */
+      values=gal_options_parse_csv_strings_raw(arg, filename, lineno);
+
+      /* Put the values into the option. */
+      *(gal_data_t **)(option->value) = values;
+      return NULL;
+    }
+}
+
+
+
+
+
 /* Parse the given string into a series of size values (integers, stored as
    an array of size_t). The ouput array will be stored in the `value'
-   element of the option. The last element of the array is `-1' to allow
-   finding the number of elements within it later (similar to a string
-   which terminates with a '\0' element). */
+   element of the option. The last element of the array is
+   `GAL_BLANK_SIZE_T' to allow finding the number of elements within it
+   later (similar to a string which terminates with a '\0' element). */
 void *
 gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
                                 char *filename, size_t lineno, void *junk)
@@ -587,14 +732,14 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       for(i=0;i<values->size;++i)
         {
           if(v[i]<0)
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the given "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a given "
                           "value in `%s' (%g) is not 0 or positive. The "
                           "values to the `--%s' option must be positive",
                           arg, v[i], option->name);
 
 
           if(ceil(v[i]) != v[i])
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the given "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "a given "
                           "value in `%s' (%g) is not an integer. The "
                           "values to the `--%s' option must be integers",
                           arg, v[i], option->name);
@@ -605,7 +750,7 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       num=values->size;
       array=gal_data_malloc_array(GAL_TYPE_SIZE_T, num+1, __func__, "array");
       for(i=0;i<num;++i) array[num-1-i]=v[i];
-      array[num] = (size_t)(-1);
+      array[num] = GAL_BLANK_SIZE_T;
 
       /* Put the array of size_t into the option, clean up and return.*/
       *(size_t **)(option->value) = array;

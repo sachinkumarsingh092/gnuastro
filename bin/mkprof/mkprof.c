@@ -117,9 +117,10 @@ saveindividual(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 
-  double crpix[2];
+  double *crpix;
   gal_data_t *data;
   long os=p->oversample;
+  size_t i, ndim=p->out->ndim;
   struct builtqueue *ibq=mkp->ibq;
   char *filename, *jobname, *outdir=p->outdir;
 
@@ -150,9 +151,11 @@ saveindividual(struct mkonthread *mkp)
     gal_fits_img_write(data, filename, NULL, PROGRAM_STRING);
   else
     {
-      /* Save the correct CRPIX values: */
-      crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
-      crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
+      /* Allocate space for the corrected crpix and fill it in. Both
+         `crpix' and `fpixel_i' are in FITS order. */
+      crpix=gal_data_malloc_array(GAL_TYPE_FLOAT64, ndim, __func__, "crpix");
+      for(i=0;i<ndim;++i)
+        crpix[0] = ((double *)(p->crpix->array))[0] - os*(mkp->fpixel_i[0]-1);
 
       /* Write the image. */
       gal_fits_img_write_corr_wcs_str(data, filename, p->wcsheader,
@@ -169,6 +172,7 @@ saveindividual(struct mkonthread *mkp)
       gal_timing_report(NULL, jobname, 2);
       free(jobname);
     }
+
 
   /* Clean up. */
   if(p->kernel==NULL) free(filename);
@@ -264,11 +268,12 @@ mkprof_build(void *inparam)
                                p->p[id]*DEGREESTORADIANS, mkp->width);
 
 
+
       /* Get the overlapping pixels using the starting points (NOT
          oversampled). */
       center[0]=p->x[id];
       center[1]=p->y[id];
-      gal_box_border_from_center(center, 2, mkp->width,
+      gal_box_border_from_center(center, p->out->ndim, mkp->width,
                                  ibq->fpixel_i, ibq->lpixel_i);
       mkp->fpixel_i[0]=ibq->fpixel_i[0];
       mkp->fpixel_i[1]=ibq->fpixel_i[1];
@@ -391,10 +396,11 @@ mkprof_write(struct mkprofparams *p)
   long os=p->oversample;
   int replace=p->replace;
   gal_data_t *out=p->out, *log;
+  size_t i, j, iw, jw, ii, jj, ow;
+  size_t w=p->dsize[ out->ndim - 1];         /* Number of rows. */
   struct builtqueue *ibq=NULL, *tbq;
   float *to, *from, *colend, *rowend;
   size_t complete=0, num=p->num, clog;
-  size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
 
 
   /* Write each image into the output array. */
@@ -428,16 +434,19 @@ mkprof_write(struct mkprofparams *p)
           i  = os * (ibq->fpixel_i[1]-1);
           j  = os * (ibq->fpixel_i[0]-1);
 
+
           /* Set the starting and ending points in the overlapping
              image. Note that oversampling has already been taken
-             into account in ibq->width. */
+             into account in ibq->imgwidth. */
           ow = ibq->imgwidth;
           ii = os * (ibq->fpixel_o[1]-1);
           jj = os * (ibq->fpixel_o[0]-1);
 
+
           /* Find the width of the overlapping region: */
           iw = os*(ibq->lpixel_i[1]-ibq->fpixel_i[1]+1);
           jw = os*(ibq->lpixel_i[0]-ibq->fpixel_i[0]+1);
+
 
           /* Write the overlap to the actual image. Instead of writing
              two for loops and summing all the row and column indexs
@@ -580,10 +589,10 @@ mkprof(struct mkprofparams *p)
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct mkonthread *mkp;
-  size_t i, *indexs, thrdcols;
   gal_list_str_t *comments=NULL;
-  size_t nt=p->cp.numthreads, nb;
-  long onaxes[2], os=p->oversample;
+  long *onaxes, os=p->oversample;
+  size_t i, fi, *indexs, thrdcols;
+  size_t nb, ndim=p->out->ndim, nt=p->cp.numthreads;
 
 
   /* Allocate the arrays to keep the thread and parameters for each
@@ -595,14 +604,22 @@ mkprof(struct mkprofparams *p)
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `mkp'",
           __func__, (nt-1)*sizeof *mkp);
 
+
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
      for building. */
   gal_threads_dist_in_threads(p->num, nt, &indexs, &thrdcols);
 
-  /* onaxes are sides of the image without over-sampling. */
-  onaxes[0] = (p->naxes[0]-2*p->shift[0])/os + 2*p->shift[0]/os;
-  onaxes[1] = (p->naxes[1]-2*p->shift[1])/os + 2*p->shift[1]/os;
+
+  /* onaxes are sides of the image without over-sampling in FITS order. */
+  onaxes=gal_data_malloc_array(GAL_TYPE_LONG, ndim, __func__, "onaxes");
+  for(fi=0; fi < ndim; ++fi)
+    {
+      i=ndim-fi-1;
+      onaxes[fi] = ( ( p->dsize[i] - 2 * p->shift[i] ) / os
+                     + 2 * p->shift[i]/os );
+    }
+
 
   /* Build the profiles: */
   if(nt==1)
@@ -646,8 +663,10 @@ mkprof(struct mkprofparams *p)
           }
     }
 
+
   /* Write the created arrays into the image. */
   mkprof_write(p);
+
 
   /* Write the log file. */
   if(p->cp.log)
@@ -658,6 +677,7 @@ mkprof(struct mkprofparams *p)
                           LOGFILENAME, p->cp.dontdelete, p->cp.quiet);
       gal_list_str_free(comments, 1);
     }
+
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy
      the attribute and barrier. */
@@ -670,7 +690,9 @@ mkprof(struct mkprofparams *p)
       pthread_mutex_destroy(&p->qlock);
     }
 
-  /* Free the allocated spaces. */
+
+  /* Clean up. */
   free(mkp);
   free(indexs);
+  free(onaxes);
 }

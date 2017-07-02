@@ -43,6 +43,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define DEGREESTORADIANS   M_PI/180.0f
 
 
+/* Modes to interpret coordinates. */
+enum coord_modes
+{
+  MKPROF_MODE_INVALID,          /* For sanity checks.     */
+
+  MKPROF_MODE_IMG,              /* Use image coordinates. */
+  MKPROF_MODE_WCS,              /* Use WCS coordinates.   */
+};
+
+
 
 /* Types of profiles. */
 enum profile_types
@@ -106,7 +116,7 @@ struct mkprofparams
   char            *backname;  /* Name of background image file name.      */
   char             *catname;  /* Name of catalog of parameters.           */
   char             *backhdu;  /* HDU of background image.                 */
-  long             naxes[2];  /* Size of the output image.                */
+  size_t             *dsize;  /* Size of the output image.                */
   uint8_t       clearcanvas;  /* Pixels in background image set to zero.  */
   gal_data_t        *kernel;  /* Parameters to define a kernel.           */
   uint8_t        oversample;  /* Oversampling scale.                      */
@@ -117,17 +127,15 @@ struct mkprofparams
   size_t          numrandom;  /* Number of radom points for integration.  */
   float           tolerance;  /* Accuracy to stop integration.            */
   uint8_t          tunitinp;  /* ==1: Truncation is in pixels, not radial.*/
-  long             shift[2];  /* Shift along axeses position of profiles. */
+  size_t             *shift;  /* Shift along axeses position of profiles. */
   uint8_t       prepforconv;  /* Shift and expand by size of first psf.   */
   float           zeropoint;  /* Magnitude of zero point flux.            */
   double        circumwidth;  /* Width of circumference (inward).         */
   uint8_t           replace;  /* Replace overlaping profile pixel values. */
   uint8_t         magatpeak;  /* Mag only for peak pixel, not all profile.*/
   uint8_t           envseed;  /* Use GSL_RNG_SEED for random seed.        */
-  char                *xcol;  /* X column of profile center.              */
-  char                *ycol;  /* Y column of profile center.              */
-  char               *racol;  /* RA column of profile center.             */
-  char              *deccol;  /* Dec column of profile center.            */
+  uint8_t              mode;  /* Coordinates in WCS or image standard.    */
+  gal_list_str_t      *ccol;  /* Columns that keep coordinates.           */
   char                *fcol;  /* Column specifying profile function.      */
   char                *rcol;  /* Effective radius of profile.             */
   char                *ncol;  /* Sersic index column of profile.          */
@@ -136,9 +144,12 @@ struct mkprofparams
   char                *mcol;  /* Magnitude column.                        */
   char                *tcol;  /* Truncation of the profiles.              */
   uint8_t       mforflatpix;  /* mcol is flat pixel value (f is 4 or 5).  */
-  double           crpix[2];  /* CRPIX FITS header keywords.              */
-  double           crval[2];  /* CRVAL FITS header keywords.              */
-  double         resolution;  /* For CDELTi FITS header keywords.         */
+  gal_data_t         *crpix;  /* CRPIX FITS header keywords.              */
+  gal_data_t         *crval;  /* CRVAL FITS header keywords.              */
+  gal_data_t         *cdelt;  /* For CDELTi FITS header keywords.         */
+  gal_data_t            *pc;  /* WCS PC matrix.                           */
+  gal_data_t         *cunit;  /* Units of each coordinate.                */
+  gal_data_t         *ctype;  /* Type of the coordinates.                 */
 
 
   /* Output */

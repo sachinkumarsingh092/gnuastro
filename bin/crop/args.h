@@ -36,7 +36,7 @@ struct argp_option program_options[] =
       UI_KEY_MODE,
       "STR",
       0,
-      "Coordinate mode `img' or `wcs'",
+      "Coordinate mode `img' or `wcs'.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->mode,
       GAL_TYPE_STRING,

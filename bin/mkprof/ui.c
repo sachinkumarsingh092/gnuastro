@@ -386,6 +386,94 @@ ui_parse_kernel(struct argp_option *option, char *arg,
 
 
 
+/* Parse options with values of a list of numbers. */
+void *
+ui_parse_numbers(struct argp_option *option, char *arg,
+                 char *filename, size_t lineno, void *junk)
+{
+  int i;
+  size_t nc;
+  double *darr;
+  gal_data_t *values;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the pointer to the values dataset. */
+      values = *(gal_data_t **)(option->value);
+
+      /* Write each string into the output string */
+      nc=0;
+      darr=values->array;
+      for(i=0;i<values->size;++i)
+        {
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+          nc += sprintf(sstr+nc, "%g,", darr[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+
+  /* We want to read the user's string. */
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
+
+      /* Read the values. */
+      values=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+      /* Put the values into the option. */
+      *(gal_data_t **)(option->value) = values;
+      return NULL;
+    }
+}
+
+
+
+
+
+/* Parse the mode to interpret the given coordinates. */
+void *
+ui_parse_coordinate_mode(struct argp_option *option, char *arg,
+                         char *filename, size_t lineno, void *junk)
+{
+  char *outstr;
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      gal_checkset_allocate_copy( *(int *)(option->value)==MKPROF_MODE_IMG
+                                  ? "img" : "wcs", &outstr );
+      return outstr;
+    }
+  else
+    {
+      if      (!strcmp(arg, "img")) *(int *)(option->value)=MKPROF_MODE_IMG;
+      else if (!strcmp(arg, "wcs")) *(int *)(option->value)=MKPROF_MODE_WCS;
+      else
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                      "`--mode') not recognized as a coordinate standard "
+                      "mode. Recognized values are `img' and `wcs'. This "
+                      "option is necessary to identify the nature of your "
+                      "input coordinates", arg);
+      return NULL;
+    }
+}
+
+
+
+
 
 
 
@@ -409,6 +497,8 @@ ui_parse_kernel(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct mkprofparams *p)
 {
+  size_t i;
+
   /* When a no-merged image is to be created, type is necessary. */
   if( p->cp.type==GAL_TYPE_INVALID && p->nomerged==0)
     error(EXIT_FAILURE, 0, "an output type `--type' is necessary when a "
@@ -422,18 +512,20 @@ ui_read_check_only_options(struct mkprofparams *p)
      after this.*/
   if(p->kernel==NULL)
     {
-      if( ((p->xcol==NULL) + (p->ycol==NULL)) == 1 )
-        error(EXIT_FAILURE, 0, "only `%s' has been given, please also "
-              "specify a column for the position along the %s axis with "
-              "the `%s' option", p->xcol?"xcol":"ycol", p->xcol?"Y":"X",
-              p->xcol?"ycol":"xcol");
-
-      if( ((p->racol==NULL) + (p->deccol==NULL)) == 1 )
-        error(EXIT_FAILURE, 0, "only `%s' has been given, please also "
-              "specify a column for the position along the %s axis with "
-              "the `%s' option", p->racol?"racol":"deccol",
-              p->racol?"Dec":"RA", p->xcol?"deccol":"racol");
+      if(p->mode==0)
+        error(EXIT_FAILURE, 0, "the `--mode' option is necessary when "
+              "building profiles from a catalog. It can take two values: "
+              "`img' or `wcs' which specify how to interpret the "
+              "coordinate columns");
     }
+
+  /* Make sure no zero value is given for the `--naxis' option (only when
+     it is necessary). */
+  if(p->dsize && p->backname==NULL)
+    for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i)
+      if(p->dsize[i]==0)
+        error(EXIT_FAILURE, 0, "values to `--naxes' option must not be "
+              "zero");
 }
 
 
@@ -534,16 +626,21 @@ static void
 ui_read_cols(struct mkprofparams *p)
 {
   int checkblank;
-  size_t counter=0, i;
   char *colname=NULL, **strarr;
-  gal_list_str_t *colstrs=NULL;
+  gal_list_str_t *colstrs=NULL, *ccol;
   gal_data_t *cols, *tmp, *corrtype=NULL;
-  char *ax1col=p->racol?p->racol:p->xcol;
-  char *ax2col=p->deccol?p->deccol:p->ycol;
+  size_t i, counter=0, coordcounter=0, ndim=p->out->ndim;
 
-  /* Specify the order of columns. */
-  gal_list_str_add(&colstrs, ax1col, 0);
-  gal_list_str_add(&colstrs, ax2col, 0);
+  /* Make sure the number of coordinate columns and number of dimensions in
+     outputs are the same. There is no problem if it is more than
+     `ndim'. In that case, the last values (possibly in configuration
+     files) will be ignored.*/
+  if( gal_list_str_number(p->ccol) < ndim )
+    error(EXIT_FAILURE, 0, "%zu coordinate columns (calls to `--coordcol') "
+          "given but output has %zu dimensions",
+          gal_list_str_number(p->ccol), p->out->ndim);
+
+  /* Put the columns a specific order to read. */
   gal_list_str_add(&colstrs, p->fcol, 0);
   gal_list_str_add(&colstrs, p->rcol, 0);
   gal_list_str_add(&colstrs, p->ncol, 0);
@@ -551,6 +648,19 @@ ui_read_cols(struct mkprofparams *p)
   gal_list_str_add(&colstrs, p->qcol, 0);
   gal_list_str_add(&colstrs, p->mcol, 0);
   gal_list_str_add(&colstrs, p->tcol, 0);
+
+  /* The coordinate columns might be different, So we'll add them to the
+     end (top of the list). */
+  ccol=p->ccol;
+  for(i=0;i<ndim;++i)
+    {
+      gal_list_str_add(&colstrs, ccol->v, 0);
+      ccol=ccol->next;
+    }
+
+  /* Reverse the order to make the column orders correspond to how we added
+     them here and avoid possible bugs. */
+  gal_list_str_reverse(&colstrs);
 
   /* Read the desired columns from the file. */
   cols=gal_table_read(p->catname, p->cp.hdu, colstrs, p->cp.searchin,
@@ -575,19 +685,7 @@ ui_read_cols(struct mkprofparams *p)
          values into the `x' and `y' arrays even if they are RA/Dec. */
       switch(++counter)
         {
-        case 9:
-          colname="first axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-          p->x=corrtype->array;
-          break;
-
-        case 8:
-          colname="second axis position";
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-          p->y=corrtype->array;
-          break;
-
-        case 7:
+        case 1:
           if(tmp->type==GAL_TYPE_STRING)
             {
               p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num,
@@ -621,13 +719,13 @@ ui_read_cols(struct mkprofparams *p)
             }
           break;
 
-        case 6:
+        case 2:
           colname="radius (`rcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->r=corrtype->array;
           break;
 
-        case 5:
+        case 3:
           colname="index (`ncol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->n=corrtype->array;
@@ -639,23 +737,37 @@ ui_read_cols(struct mkprofparams *p)
           p->p=corrtype->array;
           break;
 
-        case 3:
+        case 5:
           colname="axis ratio (`qcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->q=corrtype->array;
           break;
 
-        case 2:
+        case 6:
           colname="magnitude (`mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->m=corrtype->array;
           checkblank=0;          /* Magnitude can be NaN: to mask regions. */
           break;
 
-        case 1:
+        case 7:
           colname="truncation (`tcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->t=corrtype->array;
+          break;
+
+        case 8:
+        case 9:
+          ++coordcounter;
+          colname = ( counter==8
+                      ? "first coordinate column (`--coordcol')"
+                      : "second coordinate column (`--coordcol')" );
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
+          switch(counter)
+            {
+            case 8: p->x=corrtype->array; break;
+            case 9: p->y=corrtype->array; break;
+            }
           break;
 
         /* If the index isn't recognized, then it is larger, showing that
@@ -747,15 +859,99 @@ ui_prepare_columns(struct mkprofparams *p)
 
 
 
+/* To keep things clean, we'll do the WCS sanity checks in this small
+   function. If everything is ok, this function will return 0 (so an if
+   condition won't be executed). If any of the necessary inputs aren't
+   given, it will return 1. */
+static int
+ui_wcs_sanity_check(struct mkprofparams *p)
+{
+  size_t ndim=p->out->ndim;
+
+  if(p->crpix)
+    {
+      if(p->crpix->size!=ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--crpix'. This must be "
+              "the same as the output dimension (%zu)", p->crpix->size, ndim);
+      return 0;
+    }
+  else return 1;
+
+  if(p->crval)
+    {
+      if(p->crval->size!=ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--crval'. This must be "
+              "the same as the output dimension (%zu)", p->crval->size, ndim);
+      return 0;
+    }
+  else return 1;
+
+  if(p->cdelt)
+    {
+      if(p->cdelt->size!=ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--cdelt'. This must be "
+              "the same as the output dimension (%zu)", p->cdelt->size, ndim);
+      return 0;
+    }
+  else return 1;
+
+  if(p->pc)
+    {
+      if(p->pc->size!=ndim*ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--pc'. This must be "
+              "the square as the output dimension (%zu)", p->pc->size,
+              ndim*ndim);
+      return 0;
+    }
+  else return 1;
+
+  if(p->cunit)
+    {
+      if(p->cunit->size!=ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--cunit'. This must be "
+              "the same as the output dimension (%zu)", p->cunit->size, ndim);
+      return 0;
+    }
+  else return 1;
+
+  if(p->ctype)
+    {
+      if(p->ctype->size!=ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--ctype'. This must be "
+              "the same as the output dimension (%zu)", p->ctype->size, ndim);
+      return 0;
+    }
+  else return 1;
+}
+
+
+
+
+
 static void
 ui_prepare_wcs(struct mkprofparams *p)
 {
   int status;
   struct wcsprm *wcs;
-  long os=p->oversample;
+  char **cunit, **ctype;
+  size_t i, ndim=p->out->ndim;
+  double *crpix, *crval, *cdelt, *pc;
+
 
   /* If the WCS structure is already set, then return. */
   if(p->out->wcs) return;
+
+
+  /* Check and initialize the WCS information. If any of the necessary WCS
+     parameters are missing, then don't build any WCS. */
+  if( ui_wcs_sanity_check(p) ) return;
+  crpix = p->crpix->array;
+  crval = p->crval->array;
+  cdelt = p->cdelt->array;
+  pc    = p->pc->array;
+  cunit = p->cunit->array;
+  ctype = p->ctype->array;
+
 
   /* Allocate the memory necessary for the wcsprm structure. */
   errno=0;
@@ -763,31 +959,32 @@ ui_prepare_wcs(struct mkprofparams *p)
   if(wcs==NULL)
     error(EXIT_FAILURE, errno, "%zu for wcs in preparewcs", sizeof *wcs);
 
+
   /* Initialize the structure (allocate all its internal arrays). */
   wcs->flag=-1;
-  if( (status=wcsini(1, 2, wcs)) )
+  if( (status=wcsini(1, ndim, wcs)) )
     error(EXIT_FAILURE, 0, "wcsini error %d: %s",
           status, wcs_errmsg[status]);
 
-  /* Correct the CRPIX values based on oversampling and shifting. */
-  p->crpix[0] = p->crpix[0]*os + p->shift[0] - os/2;
-  p->crpix[1] = p->crpix[1]*os + p->shift[1] - os/2;
 
   /* Fill in all the important WCS structure parameters. */
   wcs->altlin   = 0x1;
   wcs->equinox  = 2000.0f;
-  wcs->crpix[0] = p->crpix[0];
-  wcs->crpix[1] = p->crpix[1];
-  wcs->crval[0] = p->crval[0];
-  wcs->crval[1] = p->crval[1];
-  wcs->pc[0]    = -1.0f;
-  wcs->pc[3]    = 1.0f;
-  wcs->pc[1]    = wcs->pc[2]=0.0f;
-  wcs->cdelt[0] = wcs->cdelt[1]=p->resolution/3600;
-  strcpy(wcs->cunit[0], "deg");
-  strcpy(wcs->cunit[1], "deg");
-  strcpy(wcs->ctype[0], "RA---TAN");
-  strcpy(wcs->ctype[1], "DEC--TAN");
+  for(i=0;i<ndim;++i)
+    {
+      /* IMPORTANT: At this point, we don't want the WCS to be over-sampled
+         because if the user has given RA and Dec for the profiles, they
+         need to be converted to non-oversampled and shifted image
+         coordinates. After the conversion (in `ui_finalize_coordinates')
+         we are going to correct for the oversampling in the WCS.*/
+      wcs->crpix[i] = crpix[i];
+      wcs->crval[i] = crval[i];
+      wcs->cdelt[i] = cdelt[i];
+      strcpy(wcs->cunit[i], cunit[i]);
+      strcpy(wcs->ctype[i], ctype[i]);
+    }
+  for(i=0;i<ndim*ndim;++i) wcs->pc[i]=pc[i];
+
 
   /* Set up the wcs structure with the constants defined above. */
   status=wcsset(wcs);
@@ -803,11 +1000,11 @@ ui_prepare_wcs(struct mkprofparams *p)
 static void
 ui_prepare_canvas(struct mkprofparams *p)
 {
-  int status=0;
   float *f, *ff;
   double truncr;
   long width[2]={1,1};
-  size_t i, ndim, dsize[2];
+  int status=0, setshift=0;
+  size_t i, ndim, nshift=0, *dsize=NULL;
 
   /* If a background image is specified, then use that as the output
      image to build the profiles over. */
@@ -825,7 +1022,8 @@ ui_prepare_canvas(struct mkprofparams *p)
 
       /* Read in the background image and its coordinates, note that when
          no merged image is desired, we just need the WCS information of
-         the background image. */
+         the background image. So `ndim==0' and what `dsize' points to is
+         irrelevant. */
       if(p->nomerged)
         p->out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 0, dsize, NULL,
                               1, p->cp.minmapsize, NULL, NULL, NULL);
@@ -835,8 +1033,19 @@ ui_prepare_canvas(struct mkprofparams *p)
           p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
                                            GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
-          p->naxes[0]=p->out->dsize[1];
-          p->naxes[1]=p->out->dsize[0];
+          ndim=p->out->ndim;
+
+          /* Currently this only works on 2D images. */
+          if(p->out->ndim!=2)
+            error(EXIT_FAILURE, 0, "currently only works on 2D images");
+
+          /* If p->dsize was given as an option, free it. */
+          if( p->dsize ) free(p->dsize);
+
+          /* Write the size of the background image into `dsize'. */
+          p->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->out->ndim,
+                                         __func__, "p->dsize");
+          for(i=0;i<p->out->ndim;++i) p->dsize[i] = p->out->dsize[i];
 
           /* Set all pixels to zero if the user wanted a clear canvas. */
           if(p->clearcanvas)
@@ -846,7 +1055,9 @@ ui_prepare_canvas(struct mkprofparams *p)
       /* When a background image is specified, oversample must be 1 and
          there is no shifts. */
       p->oversample=1;
-      p->shift[0]=p->shift[1]=0;
+      if(p->shift) free(p->shift);
+      p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->out->ndim,
+                                     __func__, "p->shift (1)");
 
       /* Read the WCS structure of the background image. */
       p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->out->nwcs);
@@ -854,13 +1065,31 @@ ui_prepare_canvas(struct mkprofparams *p)
     }
   else
     {
-      /* If any of xshift or yshift is non-zero, the other should be too!
-         Note that conditional operators return 1 if true and 0 if false,
-         so if one is non-zero while the other is zero, then sum will be
-         1. Otherwise the sum will either be 0 or 2.*/
-      switch ( (p->shift[0]!=0) + (p->shift[1]!=0) )
+      /* Get the number of dimensions. */
+      ndim=0; for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i) ++ndim;
+      if(ndim!=2)
+        error(EXIT_FAILURE, 0, "currently only 2D images are usable, you "
+              "have provided %zu values for `--naxis'", ndim);
+
+
+      /* If any of the shift elements are zero, the others should be too!*/
+      if(p->shift && p->shift[0] && p->shift[1])
         {
-        case 0:
+          /* Multiply the shift by the over-sample. */
+          for(i=0;p->shift[i]!=GAL_BLANK_SIZE_T;++i)
+            {
+              ++nshift;
+              p->shift[i] *= p->oversample;
+            }
+
+          /* Make sure it has the same number of elements as naxis. */
+          if(ndim!=nshift)
+            error(EXIT_FAILURE, 0, "%zu and %zu elements given to `--ndim' "
+                  "and `--shift' respectively. These two numbers must be the "
+                  "same", ndim, nshift);
+        }
+      else
+        {
           /* `prepforconv' is only valid when xshift and yshift are both
              zero. Also, a PSF profile should exist in the image. */
           if(p->prepforconv)
@@ -872,57 +1101,55 @@ ui_prepare_canvas(struct mkprofparams *p)
                     /* Calculate the size of the box holding the PSF. Note:
 
                        - For the Moffat and Gaussian profiles, the radius
-                       columns is actually the FWHM which is actually the
+                       column is actually the FWHM which is actually the
                        diameter, not radius. So we have to divide it by
                        half.
 
                        - encloseellipse outputs the total width, we only want
                        half of it for the shift. */
+                    setshift=1;
                     truncr = p->tunitinp ? p->t[i] : p->t[i] * p->r[i]/2;
                     gal_box_ellipse_in_box(truncr, p->q[i]*truncr,
                                            p->p[i]*DEGREESTORADIANS, width);
-                    p->shift[0]  = (width[0]/2)*p->oversample;
-                    p->shift[1]  = (width[1]/2)*p->oversample;
                   }
+
+              /* Either set the shifts to zero or to the values set from
+                 the PSF. Note that the user might have given any number of
+                 shifts (from zero). So, we'll just free it and reset
+                 it. */
+              if(p->shift) free(p->shift);
+              p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->out->ndim,
+                                             __func__, "p->shift (2)");
+              if(setshift)
+                {
+                  p->shift[0]  = (width[0]/2)*p->oversample;
+                  p->shift[1]  = (width[1]/2)*p->oversample;
+                }
             }
-          break;
-
-        case 1:
-          error(EXIT_FAILURE, 0, "at least one of `--xshift` (`-X`) or "
-                "`--yshift` (`-Y`) are zero, they must either both be zero "
-                "or both given a positive value");
-          break;
-
-        case 2:
-          p->shift[0] *= p->oversample;
-          p->shift[1] *= p->oversample;
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "a bug in ui_prepare_canvas! In checks "
-                "for shifts. Please contact us at %s so we can fix it",
-                PACKAGE_BUGREPORT);
         }
 
+      /* If shift has not been set until now, set it. */
+      if(p->shift==NULL)
+        p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "p->shift (3)");
+
       /* Prepare the sizes of the final merged image (if it is to be
-         made). */
+         made). Note that even if we don't want a merged image, we still
+         need its WCS structure. */
       if(p->nomerged)
         ndim=0;
       else
         {
-          /* Sanity check */
-          if(p->naxes[0]==0 || p->naxes[1]==0)
-            error(EXIT_FAILURE, 0, "No final merged image size is specified, "
-                  "please use the `--naxis1', and `--naxis2' options to "
-                  "specify the respective sizes");
+          ndim=0;
+          for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i)
+            {
+              /* Count the number of dimensions. */
+              ++ndim;
 
-          /* Set the final merged image size. Note that even if we don't
-             want a merged image, we still need its WCS structure.*/
-          p->naxes[0] = (p->naxes[0] * p->oversample) + (2 * p->shift[0]);
-          p->naxes[1] = (p->naxes[1] * p->oversample) + (2 * p->shift[1]);
-          dsize[0]    = p->naxes[1];
-          dsize[1]    = p->naxes[0];
-          ndim        = 2;
+              /* Correct dsize. */
+              p->dsize[i] = (p->dsize[i]*p->oversample) + (2*p->shift[i]);
+            }
+          dsize = p->dsize;
         }
 
       /* Make the output structure. */
@@ -969,13 +1196,15 @@ ui_prepare_canvas(struct mkprofparams *p)
 static void
 ui_finalize_coordinates(struct mkprofparams *p)
 {
-  size_t i;
   double *x=NULL, *y=NULL;
+  uint8_t os=p->oversample;
+  size_t i, ndim=p->out->ndim;
+  double *cdelt=p->out->wcs->cdelt, *crpix=p->out->wcs->crpix;
 
   /* When the user specified RA and Dec columns, the respective values
      where stored in the `p->x' and `p->y' arrays. So before proceeding, we
      need to change them into actual image coordinates. */
-  if(p->racol)
+  if(p->mode==MKPROF_MODE_WCS)
     {
       /* Note that we read the RA and Dec columns into the `p->x' and `p->y'
          arrays temporarily before. Here, we will convert them, free the old
@@ -997,15 +1226,18 @@ ui_finalize_coordinates(struct mkprofparams *p)
       p->y=y;
     }
 
-
   /* Correct the WCS scale. Note that when the WCS is read from a
      background image, oversample is set to 1. This is done here because
      the conversion of WCS to pixel coordinates needs to be done with the
-     non-over-sampled image. */
-  p->out->wcs->cdelt[0] /= p->oversample;
-  p->out->wcs->cdelt[1] /= p->oversample;
-
-
+     non-over-sampled image.*/
+  for(i=0;i<p->out->ndim;++i)
+    {
+      /* Oversampling has already been applied in `p->shift'. Also note
+         that shift is in the C dimension ordring, while crpix is in FITS
+         ordering. */
+      crpix[i]  = crpix[i]*os + p->shift[ndim-i-1] - os/2;
+      cdelt[i] /= os;
+    }
 
   /* For a sanity check:
   printf("\nui_finalize_coordinates sanity check:\n");
@@ -1076,11 +1308,11 @@ ui_preparations(struct mkprofparams *p)
       p->individual=1;
     }
 
-  /* Read in all the columns. */
-  ui_prepare_columns(p);
-
   /* Prepare the output canvas. */
   ui_prepare_canvas(p);
+
+  /* Read in all the columns. */
+  ui_prepare_columns(p);
 
   /* Read the (possible) RA/Dec inputs into X and Y for the builder.*/
   ui_finalize_coordinates(p);
