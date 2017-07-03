@@ -1938,8 +1938,8 @@ $ astmkprof -P
 [[[ ... Truncated lines ... ]]]
 
 # Columns, by info (see `--searchin'), or number (starting from 1):
- xcol         2           # Center along first FITS axis (horizontal).
- ycol         3           # Center along second FITS axis (vertical).
+ ccol         2           # Center along first FITS axis (horizontal).
+ ccol         3           # Center along second FITS axis (vertical).
  fcol         4           # sersic (1), moffat (2), gaussian (3),
                           # point (4), flat (5), circumference (6).
  rcol         5           # Effective radius or FWHM in pixels.
@@ -2015,8 +2015,7 @@ necessary parameters and runs MakeProfiles with the following command:
 
 @example
 
-$ astmkprof --prepforconv --naxis1=500 --naxis2=500         \
-            --zeropoint=18.0 cat.txt
+$ astmkprof --prepforconv --naxis=500,500 --zeropoint=18.0 cat.txt
 MakeProfiles started on Sat Oct  6 16:26:56 953
   - 6 profiles read from cat.txt
   - Random number generator (RNG) type: mt19937
@@ -2182,8 +2181,7 @@ base=cat
 rm out.fits
 
 # Run MakeProfiles to create an oversampled FITS image.
-astmkprof --prepforconv --naxis1=500 --naxis2=500                \
-          --zeropoint=18.0 "$base".txt
+astmkprof --prepforconv --naxis=500,500 --zeropoint=18.0 "$base".txt
 
 # Convolve the created image with the kernel.
 astconvolve --kernel=0_"$base".fits "$base".fits
@@ -14718,11 +14716,11 @@ $ astmkprof --background=image.fits catalog.txt
 $ astmkprof --kernel=moffat,2.8,5 --oversample=1
 
 ## Make profiles in catalog, using RA and Dec in the given column:
-$ astmkprof --racol=RA_CENTER --ycol=DEC_CENTER catalog.txt
+$ astmkprof --ccol=RA_CENTER --ccol=DEC_CENTER --mode=wcs catalog.txt
 
 ## Make a 1500x1500 merged image (oversampled 500x500) image along
 ## with an individual image for all the profiles in catalog:
-$ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
+$ astmkprof --individual --oversample 3 --naxis=500,500 catalog.txt
 @end example
 
 @noindent
@@ -15209,6 +15207,10 @@ see all these names but in uppercase and with numbers to represent the
 dimensions, for example @code{CRPIX1} and @code{PC2_1}. You can see the
 FITS headers with Gnuastro's @ref{Fits} program using a command like this:
 @command{$ astfits -p image.fits}.
+
+If the values given to all of these options does not correspond to the
+dimensionality of the output dataset, then no WCS information will be
+added.
 
 @table @option
 

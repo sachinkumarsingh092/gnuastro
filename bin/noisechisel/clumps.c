@@ -107,6 +107,10 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
   **********************************************/
 
 
+  /* If the size of the indexs is zero, then this function is pointless. */
+  if(indexs->size==0) { cltprm->numinitclumps=0; return; }
+
+
   /* Sort the given indexs based on their flux (`gal_qsort_index_arr' is
      defined as static in `gnuastro/qsort.h') */
   gal_qsort_index_arr=p->conv->array;
@@ -146,10 +150,10 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
 
             /* A small sanity check. */
             if(Q!=NULL || cleanup!=NULL)
-              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
-                    "can fix this problem. `Q' and `cleanup' should be NULL "
-                    "but while checking the equal flux regions they aren't",
-                    __func__, PACKAGE_BUGREPORT);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
+                    "we can fix this problem. `Q' and `cleanup' should be "
+                    "NULL but while checking the equal flux regions they "
+                    "aren't", __func__, PACKAGE_BUGREPORT);
 
             /* Add this pixel to a queue. */
             gal_list_sizet_add(&Q, *a);
@@ -808,6 +812,10 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   size_t i, ind, counter=0, infodsize[2]={tablen, INFO_NCOLS};
 
 
+  /* If there were no initial clumps, then ignore this function. */
+  if(cltprm->numinitclumps==0) { cltprm->sn=NULL; return; }
+
+
   /* Allocate the arrays to keep the final S/N table (and possibly S/N
      index) for this object or tile. */
   cltprm->sn        = &cltprm->clprm->sn[ cltprm->id ];
@@ -920,8 +928,8 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
 
   /* A small sanity check. */
   if(gal_tile_block(tile)!=p->clabel)
-    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address the "
-          "problem. `tile->block' must point to the `clabel' dataset",
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "
+          "the problem. `tile->block' must point to the `clabel' dataset",
           __func__, PACKAGE_BUGREPORT);
 
 
@@ -1001,12 +1009,14 @@ clumps_find_make_sn_table(void *in_prm)
       cltprm.id = tind  = tprm->indexs[i];
       tile = &p->ltl.tiles[tind];
 
+
       /* Change the tile's pointers to the binary image (which has 1 for
          detected pixels and 0 for un-detected regions). */
       tarray=tile->array;
       tblock=tile->block;
       tile->array = gal_tile_block_relative_to_other(tile, p->binary);
       tile->block = p->binary;
+
 
       /* Get the number of usable elements in this tile (note that tiles
          can have blank pixels), so we can't simply use `tile->size'. */
@@ -1018,11 +1028,13 @@ clumps_find_make_sn_table(void *in_prm)
         }
       else num=tile->size;
 
+
       /* Find the number of detected pixels over this tile. Since this is
          the binary image, this is just the sum of all the pixels. */
       tmp=gal_statistics_sum(tile);
       numdet=*((double *)(tmp->array));
       gal_data_free(tmp);
+
 
       /* See if this tile should be used or not (has enough undetected
          pixels). Note that it might happen that some tiles are fully
@@ -1043,6 +1055,7 @@ clumps_find_make_sn_table(void *in_prm)
           tile->array = gal_tile_block_relative_to_other(tile, p->clabel);
           tile->block = p->clabel;
 
+
           /* We need to set all the pixels on the edge of the tile to
              rivers and not include them in the list of indexs to set
              clumps. To do that, we need this tile's starting
@@ -1051,6 +1064,7 @@ clumps_find_make_sn_table(void *in_prm)
                                                          tile->array,
                                                          p->clabel->type),
                                        ndim, dsize, scoord);
+
 
           /* Add the index of every sky element to the array of
              indexs. Note that since we know the array is always of type
@@ -1103,29 +1117,36 @@ clumps_find_make_sn_table(void *in_prm)
                 }
             });
 
+
           /* Correct the number of indexs. */
           cltprm.indexs->size=cltprm.indexs->dsize[0]=c;
 
+
           /* Generate the clumps over this region. */
           clumps_oversegment(&cltprm);
+
 
           /* Set all river pixels to CLUMPS_INIT (to be distinguishable
              from the detected regions). */
           GAL_TILE_PO_OISET( int32_t, int, tile, NULL, 0, 1,
                              {if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;} );
 
+
           /* For a check, the step variable will be set. */
           if(clprm->step==1)
             { gal_data_free(cltprm.indexs); continue; }
 
+
           /* Make the clump S/N table. */
           clumps_make_sn_table(&cltprm);
+
 
           /* If the user wanted to check the steps, remove the clumps that
              weren't used from the `clabel' image (they have been already
              excluded from the table). */
           if(cltprm.snind)
             clumps_correct_sky_labels_for_check(&cltprm, tile);
+
 
           /* Clean up. */
           gal_data_free(cltprm.indexs);
@@ -1255,9 +1276,10 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
   else
     {
       clprm.step=0;
-      gal_threads_spin_off(clumps_find_make_sn_table, &clprm, p->ltl.tottiles,
-                           p->cp.numthreads);
+      gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
+                           p->ltl.tottiles, p->cp.numthreads);
     }
+
 
   /* Destroy the mutex if it was initialized. */
   if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )
