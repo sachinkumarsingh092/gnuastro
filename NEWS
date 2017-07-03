@@ -78,7 +78,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Pure rotation around pixel coordinate (0,0) (bug #51353).
 
-
+  NoiseChisel segfault when no usable region for sky clumps (bug #51372).
 
 
 
