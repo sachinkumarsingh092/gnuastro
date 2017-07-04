@@ -437,8 +437,8 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 double *
 gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
-  double *a;
   gsl_vector S;
+  double *a, *out;
   int permute_set;
   gsl_matrix A, V;
   size_t i, j, n=wcs->naxis;
@@ -504,7 +504,10 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   free(a);
   free(v);
   free(permutation);
-  return pixscale->array;
+  out=pixscale->array;
+  pixscale->array=NULL;
+  gal_data_free(pixscale);
+  return out;
 }
 
 
