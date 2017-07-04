@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/permutation.h>
 
 
 
@@ -432,42 +433,78 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 
 
 /* Return the pixel scale of the dataset in units of the WCS. */
+/* Return the pixel scale of the dataset in units of the WCS. */
 double *
 gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
+  double *a;
   gsl_vector S;
+  int permute_set;
   gsl_matrix A, V;
-  size_t n=wcs->naxis;
-  double *a, *v, *pixscale;
+  size_t i, j, n=wcs->naxis;
+  double *v=gal_data_malloc_array(GAL_TYPE_FLOAT64, n*n, __func__, "v");
+  size_t *permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, n, __func__,
+                                            "permutation");
+  gal_data_t *pixscale=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &n, NULL,
+                                      0, -1, NULL, NULL, NULL);
 
-  /* Allocate space for the `v' and `pixscale' arrays. */
-  errno=0; v=malloc(n*n*sizeof *v);
-  if(v==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `v'",
-          __func__, n*n*sizeof *v);
-  errno=0; pixscale=malloc(n*sizeof *pixscale);
-  if(pixscale==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `pixscale'",
-          __func__, n*sizeof *pixscale);
 
-  /* Write the full matrix into an array, irrespective of what type it was
-     stored in the wcsprm structure (`PCi_j' style or `CDi_j' style). */
+  /* Write the full WCS rotation matrix into an array, irrespective of what
+     style it was stored in the wcsprm structure (`PCi_j' style or `CDi_j'
+     style). */
   a=gal_wcs_warp_matrix(wcs);
 
+
   /* Fill in the necessary GSL vector and Matrix structures. */
-  S.size=n;     S.stride=1;                S.data=pixscale;
+  S.size=n;     S.stride=1;                S.data=pixscale->array;
   V.size1=n;    V.size2=n;    V.tda=n;     V.data=v;
   A.size1=n;    A.size2=n;    A.tda=n;     A.data=a;
 
+
   /* Run GSL's Singular Value Decomposition, using one-sided Jacobi
      orthogonalization which computes the singular (scale) values to a
-     higher relative accuracy.*/
+     higher relative accuracy. */
   gsl_linalg_SV_decomp_jacobi(&A, &V, &S);
+
+
+  /* The raw pixel scale array produced from the singular value
+     decomposition above is ordered based on values, not the input. So when
+     the pixel scales in all the dimensions aren't the same (for example in
+     IFU datacubes), the order of the values in `pixelscale' will not
+     necessarily correspond to the input's dimensions.
+
+     To correct the order, we can use the `V' matrix to find the original
+     position of the pixel scale values and then use permutation to
+     re-order it correspondingly. This works when there is only one
+     non-zero element in each row of `V'. */
+  for(i=0;i<n;++i)
+    {
+      permute_set=0;
+      for(j=0;j<n;++j)
+        if(v[i*n+j])
+          {
+            /* Only works when each row only has one non-zero value. */
+            if(permute_set)
+              error(EXIT_FAILURE, 0, "%s: not able to find the proper "
+                    "permutation for given rotation matrix", __func__);
+            else
+              {
+                permutation[i]=j;
+                permute_set=1;
+              }
+          }
+    }
+
+
+  /* Apply the permutation described above. */
+  gal_permutation_apply(pixscale, permutation);
+
 
   /* Clean up and return. */
   free(a);
   free(v);
-  return pixscale;
+  free(permutation);
+  return pixscale->array;
 }
 
 

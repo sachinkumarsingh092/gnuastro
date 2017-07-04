@@ -80,6 +80,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel segfault when no usable region for sky clumps (bug #51372).
 
+  Pixel scale measurement when dimension scale isn't equal or doesn't
+  decrease (bug #51385).
+
 
 
 
