@@ -192,11 +192,14 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
- - Update the ChangeLog (similar to previous entries).
+ - Update the ChangeLog. But first get all the changes in this version from
+   the NEWS file.
 
-   IMPORTANT: if this is not a final release (just for making sure Gnuastro
-   builds on all systems), change `unstable' to `experimental'.
+   IMPORTANT: An official release should have `unstable' after the
+   version. But if you just want to making sure Gnuastro builds on all
+   systems, it should be `experimental'.
 
+     $ git diff NEWS
      $ emacs debian/changelog
 
  - Check the current Debian policy version at
@@ -215,9 +218,9 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ sudo pbuilder update
 
- - Run `pdebuild' to build the package (it might need sudo password).
+ - Run `pdebuild' to build the package (needs sudo).
 
-     $ pdebuild
+     $ sudo pdebuild
 
  - Run Lintian to check the build.
 

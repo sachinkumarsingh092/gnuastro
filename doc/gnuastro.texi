@@ -17739,7 +17739,7 @@ it, please see @ref{Library demo - reading a image} for a demonstration.
 @cindex C: @code{restrict}
 The @code{restrict} keyword was formally introduced in C99 and is used to
 tell the compiler that at any moment only this pointer will modify what it
-points to (the a pixel in an image for example)@footnote{Also see
+points to (a pixel in an image for example)@footnote{Also see
 @url{https://en.wikipedia.org/wiki/Restrict}.}. This extra piece of
 information can greatly help in compiler optimizations and thus the running
 time of the program. But older compilers might not have this capability, so
@@ -17920,9 +17920,9 @@ acceptable values to this element are defined in @ref{Table input
 output}. Based on C's @code{printf} standards.
 
 @item gal_data_t *next
-Through this pointer, you can link a @code{gal_data_t} with other datasets
-related datasets, for example the different columns in a dataset each have
-one @code{gal_data_t} associate with them and they are linked to each other
+Through this pointer, you can link a @code{gal_data_t} with other related
+datasets, for example the different columns in a dataset each have one
+@code{gal_data_t} associate with them and they are linked to each other
 using this element. There are several functions described below to
 facilitate using @code{gal_data_t} as a linked list. See @ref{Linked lists}
 for more on these wonderful high-level constructs.
@@ -20556,7 +20556,7 @@ Blank value in the type of @code{INPUT}.
 @end table
 @end table
 
-You can use a given tile (@code{tile} on a dataset that it was not
+You can use a given tile (@code{tile}) on a dataset that it was not
 initialized with (but has the same size, let's call it @code{new}) with the
 following steps:
 

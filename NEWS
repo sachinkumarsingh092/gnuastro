@@ -83,7 +83,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Pixel scale measurement when dimension scale isn't equal or doesn't
   decrease (bug #51385).
 
-  Inproper types for function code in MakeProfiles (bug #51467).
+  Improper types for function code in MakeProfiles (bug #51467).
 
 
 
