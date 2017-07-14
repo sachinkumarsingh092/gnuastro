@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "mkprof.h"
 
 int
-oneprofile_ispsf(int fcolvalue);
+oneprofile_ispsf(uint8_t fcolvalue);
 
 void
 oneprof_set_prof_params(struct mkonthread *mkp);

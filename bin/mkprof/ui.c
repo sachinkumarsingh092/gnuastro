@@ -109,7 +109,7 @@ enum program_args_groups
 /**************************************************************/
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
-static int
+static uint8_t
 ui_profile_name_read(char *string, size_t row)
 {
   if( !strcmp("sersic", string) )
@@ -688,7 +688,7 @@ ui_read_cols(struct mkprofparams *p)
         case 1:
           if(tmp->type==GAL_TYPE_STRING)
             {
-              p->f=gal_data_malloc_array(GAL_TYPE_INT32, p->num,
+              p->f=gal_data_malloc_array(GAL_TYPE_UINT8, p->num,
                                          __func__, "p->f");
               strarr=tmp->array;
               for(i=0;i<p->num;++i)
@@ -700,14 +700,14 @@ ui_read_cols(struct mkprofparams *p)
             {
               /* Read the user's profile codes. */
               colname="profile function code (`fcol')";
-              corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_INT32);
+              corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_UINT8);
               p->f=corrtype->array;
 
               /* Check if they are in the correct range. */
               for(i=0;i<p->num;++i)
                 if(p->f[i]<=PROFILE_INVALID || p->f[i]>=PROFILE_MAXIMUM_CODE)
                   error(EXIT_FAILURE, 0, "%s: table row %zu, the function "
-                        "code is %d. It should be >%d and <%d. Please run "
+                        "code is %u. It should be >%d and <%d. Please run "
                         "again with `--help' and check the acceptable "
                         "codes.\n\nAlternatively, you can use alphabetic "
                         "strings to specify the profile functions, see the "

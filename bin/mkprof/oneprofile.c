@@ -386,7 +386,7 @@ makepixbypix(struct mkonthread *mkp)
 /************        Set profile parameters       *************/
 /**************************************************************/
 int
-oneprofile_ispsf(int fcode)
+oneprofile_ispsf(uint8_t fcode)
 {
   return fcode==PROFILE_MOFFAT || fcode==PROFILE_GAUSSIAN;
 }
@@ -510,7 +510,7 @@ oneprof_set_prof_params(struct mkonthread *mkp)
 
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can correct "
-            "this problem. The profile code %d is not recognized.", __func__,
+            "this problem. The profile code %u is not recognized.", __func__,
             mkp->func);
     }
 }

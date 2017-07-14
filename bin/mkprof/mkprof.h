@@ -48,7 +48,7 @@ struct mkonthread
   long           width[2];   /* Enclosing box in FITS axes, not C.    */
   float          peakflux;   /* Flux at profile peak.                 */
   float        brightness;   /* The brightness of the profile.        */
-  int                func;   /* Radial function of the profile.       */
+  uint8_t            func;   /* Radial function of the profile.       */
   long            *onaxes;   /* Sides of the unover-sampled image.    */
   long        fpixel_i[2];   /* fpixel_i before running overlap.      */
   int          correction;   /* ==1: correct the pixels afterwards.   */
