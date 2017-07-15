@@ -453,14 +453,14 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
   /* We want to print the stored values. */
   if(lineno==-1)
     {
-      gal_checkset_allocate_copy( *(int *)(option->value)==MKPROF_MODE_IMG
+      gal_checkset_allocate_copy( *(uint8_t *)(option->value)==MKPROF_MODE_IMG
                                   ? "img" : "wcs", &outstr );
       return outstr;
     }
   else
     {
-      if      (!strcmp(arg, "img")) *(int *)(option->value)=MKPROF_MODE_IMG;
-      else if (!strcmp(arg, "wcs")) *(int *)(option->value)=MKPROF_MODE_WCS;
+      if      (!strcmp(arg, "img")) *(uint8_t *)(option->value)=MKPROF_MODE_IMG;
+      else if (!strcmp(arg, "wcs")) *(uint8_t *)(option->value)=MKPROF_MODE_WCS;
       else
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
                       "`--mode') not recognized as a coordinate standard "

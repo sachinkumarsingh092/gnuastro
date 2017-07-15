@@ -85,6 +85,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Improper types for function code in MakeProfiles (bug #51467).
 
+  Crashes on 32-bit and big-endian systems (bug #51476).
+
+
 
 
 
