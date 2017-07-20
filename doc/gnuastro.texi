@@ -488,8 +488,9 @@ Modeling basics
 Invoking MakeProfiles
 
 * MakeProfiles catalog::        Required catalog properties.
-* MakeProfiles options::        Full list of MakeProfiles options.
-* MakeProfiles output::         The generated outputs.
+* MakeProfiles profile settings::  Configuration parameters for all profiles.
+* MakeProfiles output dataset::  The canvas/dataset to build profiles over.
+* MakeProfiles log file::       A description of the optional log file.
 
 MakeNoise
 
@@ -1540,18 +1541,19 @@ suggestions during the GNU evaluation process. Bob Proulx from Savannah,
 has kindly supported Gnuastro's project webpage on Savannah and the
 management of its version controlled source server there.
 
-@c To the developers: if you would like to thank someone, please change the
-@c `and' before the last name to a comma (','), then add " and Firstname
-@c Familyname'' after the last name.
-We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
-Yahya Sefidbakht, Francesco Montanari, Ole Streicher, Nicolas Bouché, Rosa
-Calvi, Lee Kelvin, Guillaume Mahler, William Pence, David Valls-Gabaud,
-Christopher Willmer, for their useful and constructive comments and
-suggestions. Finally we should thank all the (sometimes anonymous)
-developers in various online forums which patiently answered all our small
-(but important) technical questions. All work on Gnuastro has been
-voluntary, but we are most grateful to the following institutions (in
-chronological order) for hosting us in our research:
+@c To the developers: please keep this in the same order as the THANKS file
+@c (alphabetical, except for the names in the paragraph above).
+We would also like to gratefully thank (in alphabetical order) Roland
+Bacon, Nicolas Bouché, Adrian Bunk, Rosa Calvi, Antonio Diaz Diaz, Raúl
+Infante Sainz, Lee Kelvin, Mohammad-Reza Khellat, Alan Lefor, Guillaume
+Mahler, Francesco Montanari, William Pence, Yahya Sefidbakht, Ole
+Streicher, Ignacio Trujillo, David Valls-Gabaud and Christopher Willmer for
+their useful and constructive comments and suggestions. Finally we should
+thank all the (sometimes anonymous) people in various online forums which
+patiently answered all our small (but important) technical questions. All
+work on Gnuastro has been voluntary, but we are most grateful to the
+following institutions (in chronological order) for hosting us in our
+research:
 
 @quotation
 Ministry of education, culture, sports, science and technology (MEXT), Japan.@*
@@ -1931,8 +1933,7 @@ $ astmkprof -P
 
 # Output:
  type         float32     # Type of output: e.g., int16, float32, etc...
- naxis1       1000        # Number of pixels along first FITS axis.
- naxis2       1000        # Number of pixels along second FITS axis.
+ naxis        1000,1000   # Number of pixels along first FITS axis.
  oversample   5           # Scale of oversampling (>0 and odd).
 
 [[[ ... Truncated lines ... ]]]
@@ -8931,7 +8932,7 @@ equivalent to this piece of C:
 @example
 size_t i;
 long a[100];
-float b[100], out;
+float b[100], out[100];
 for(i=0;i<100;++i) out[i]=a[i]+b[i];
 @end example
 
@@ -10653,12 +10654,12 @@ transpose of the one discussed here.}.
 @cindex Multiplication, matrix
 @cindex Non-commutative operations
 @cindex Operations, non-commutative
-In @ref{Warping basics} we saw how one basic warping/transformation
-can be represented with a 3 by 3 matrix. To make more complex warpings
-these matrices have to be multiplied through matrix
-multiplication. However matrix multiplication is not commutative, so
-the order of the set of matrices you use for the multiplication is
-going to be very important.
+In @ref{Warping basics} we saw how a basic warp/transformation can be
+represented with a matrix. To make more complex warpings (for example to
+define a translation, rotation and scale as one warp) the individual
+matrices have to be multiplied through matrix multiplication. However
+matrix multiplication is not commutative, so the order of the set of
+matrices you use for the multiplication is going to be very important.
 
 The first warping should be placed as the left-most matrix. The second
 warping to the right of that and so on. The second transformation is
@@ -14206,20 +14207,21 @@ distance on the major axis to the center of an ellipse which is located at
 want to find @mymath{r_{el}} of a point located at @mymath{(i,j)} (in the
 image coordinate system) from the center of the ellipse with axis ratio
 @mymath{q} and position angle @mymath{\theta}. First the coordinate system
-is rotated@footnote{Do not confuse this with the rotation matrix of
-@ref{Warping basics}. In that equation, the point is rotated, here the
-coordinates are rotated and the point is fixed.} by @mymath{\theta} to get
-the new rotated coordinates of that point @mymath{(i_r,j_r)}:
+is rotated@footnote{Do not confuse the signs of @mymath{sin} with the
+rotation matrix defined in @ref{Warping basics}. In that equation, the
+point is rotated, here the coordinates are rotated and the point is fixed.}
+by @mymath{\theta} to get the new rotated coordinates of that point
+@mymath{(i_r,j_r)}:
 
-@dispmath{i_r(i,j)=+(i_c-i)\cos(\theta)+(j_c-j)\sin(\theta)}
-@dispmath{j_r(i,j)=-(i_c-i)\sin(\theta)+(j_c-j)\cos(\theta)}
+@dispmath{i_r(i,j)=+(i_c-i)\cos\theta+(j_c-j)\sin\theta}
+@dispmath{j_r(i,j)=-(i_c-i)\sin\theta+(j_c-j)\cos\theta}
 
 @cindex Elliptical distance
 @noindent Recall that an ellipse is defined by @mymath{(i_r/a)^2+(j_r/b)^2=1}
 and that we defined @mymath{r_{el}\equiv{a}}. Hence, multiplying all
 elements of the the ellipse definition with @mymath{r_{el}^2} we get the
 elliptical distance at this point point located:
-@mymath{r_{el}=\sqrt{i_r^2+j_r^2/q^2} }. To place the radial profiles
+@mymath{r_{el}=\sqrt{i_r^2+(j_r/q)^2}}. To place the radial profiles
 explained below over an ellipse, @mymath{f(r_{el})} is calculated based on
 the functional radial profile desired.
 
@@ -14227,13 +14229,13 @@ the functional radial profile desired.
 @cindex Inside-out construction
 @cindex Making profiles pixel by pixel
 @cindex Pixel by pixel making of profiles
-MakeProfiles builds the profile starting from the nearest pixel in the
-image to the given profile center. The profile value is calculated for that
-central pixel using monte carlo integration, see @ref{Sampling from a
-function}. The next pixel is the next nearest neighbor to the central pixel
-as defined by @mymath{r_{el}}. This process goes on until the profile is
-fully built upto the trunctation radius. This is done fairly efficiently
-using a breadth first parsing
+MakeProfiles builds the profile starting from the nearest element (pixel in
+an image) in the dataset to the profile center. The profile value is
+calculated for that central pixel using monte carlo integration, see
+@ref{Sampling from a function}. The next pixel is the next nearest neighbor
+to the central pixel as defined by @mymath{r_{el}}. This process goes on
+until the profile is fully built upto the trunctation radius. This is done
+fairly efficiently using a breadth first parsing
 strategy@footnote{@url{http://en.wikipedia.org/wiki/Breadth-first_search}}
 which is implemented through an ordered linked list.
 
@@ -14481,15 +14483,15 @@ Carlo integration and only use the central pixel value.
 @cindex Inside-out construction
 The ordering of the pixels in this inside-out construction is based on
 @mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see
-@ref{Defining an ellipse}. When the axis ratios are large (near one)
-this is fine. But when they are small and the object is highly
-elliptical, it might seem more reasonable to follow @mymath{r_{el}}
-not @mymath{r}. The problem is that the gradient is stronger in pixels
-with smaller @mymath{r} (and larger @mymath{r_{el}}) than those with
-smaller @mymath{r_{el}}. In other words, the gradient is strongest
-along the minor axis. So if the next pixel is chosen based on
-@mymath{r_{el}}, the tolerance level will be reached sooner and lots
-of pixels with large fractional differences will be missed.
+@ref{Defining an ellipse}. When the axis ratios are large (near one) this
+is fine. But when they are small and the object is highly elliptical, it
+might seem more reasonable to follow @mymath{r_{el}} not @mymath{r}. The
+problem is that the gradient is stronger in pixels with smaller @mymath{r}
+(and larger @mymath{r_{el}}) than those with smaller @mymath{r_{el}}. In
+other words, the gradient is strongest along the minor axis. So if the next
+pixel is chosen based on @mymath{r_{el}}, the tolerance level will be
+reached sooner and lots of pixels with large fractional differences will be
+missed.
 
 Monte Carlo integration uses a random number of points. Thus,
 every time you run it, by default, you will get a different
@@ -14694,9 +14696,9 @@ array and the output image are kept and added to the output array.
 @node Invoking astmkprof,  , Profile magnitude, MakeProfiles
 @subsection Invoking MakeProfiles
 
-MakeProfiles will make any number of profiles specified in a catalog
-either individually or in one image. The executable name is
-@file{astmkprof} with the following general template
+MakeProfiles will make any number of profiles specified in a catalog either
+individually or in one image. The executable name is @file{astmkprof} with
+the following general template
 
 @example
 $ astmkprof [OPTION ...] [Catalog]
@@ -14725,28 +14727,40 @@ $ astmkprof --individual --oversample 3 --naxis=500,500 catalog.txt
 
 @noindent
 The parameters of the mock profiles can either be given through a catalog
-(which stores the parameters of many mock profiles), or the
-@option{--kernel} option (see @ref{MakeProfiles options}). The catalog can
-be in the FITS ASCII, FITS binary format, or plain text formats (see
-@ref{Tables}). The columns related to each parameter can be determined both
-by number, or by match/search criteria using the column names, units, or
-comments. with the options ending in @option{col}, see below.
+(which stores the parameters of many mock profiles, see @ref{MakeProfiles
+catalog}), or the @option{--kernel} option (see @ref{MakeProfiles output
+dataset}). The catalog can be in the FITS ASCII, FITS binary format, or
+plain text formats (see @ref{Tables}). The columns related to each
+parameter can be determined both by number, or by match/search criteria
+using the column names, units, or comments. with the options ending in
+@option{col}, see below.
 
 Without any file given to the @option{--background} option, MakeProfiles
 will make a zero-valued image and build the profiles on that (its size and
-main WCS parameters can also be defined through the options). Besides the
-main/merged image containing all the profiles in the catalog, it is also
-possible to build individual images for each profile (only enclosing one
-full profile to its truncation radius) with the @option{--individual}
-option.
+main WCS parameters can also be defined through the options described in
+@ref{MakeProfiles output dataset}). Besides the main/merged image
+containing all the profiles in the catalog, it is also possible to build
+individual images for each profile (only enclosing one full profile to its
+truncation radius) with the @option{--individual} option.
 
 If an image is given to the @option{--background} option, the pixels of
 that image are used as the background value for every pixel. The flux value
 of each profile pixel will be added to the pixel in that background
 value. In this case, the values to all options relating to the output size
 and WCS will be ignored if specified (for example @option{--oversample},
-@option{--naxis1}, @option{--naxis2} and @option{--prepforconv}) on the
-command-line or in the configuration files.
+@option{--naxis} and @option{--prepforconv}) on the command-line or in the
+configuration files.
+
+The sections below discuss the options specific to MakeProfiles based on
+context: the input catalog settings which can have many rows for different
+profiles are discussed in @ref{MakeProfiles catalog}, in @ref{MakeProfiles
+profile settings}, we discuss how you can set general profile settings
+(that are the same for all the profiles in the catalog). Finally
+@ref{MakeProfiles output dataset} and @ref{MakeProfiles log file} discuss
+the outputs of MakeProfiles and how you can configure them. Besides these,
+MakeProfiles also supports all the common Gnuastro program options that are
+discussed in @ref{Common options}, so please flip through them is well for
+a more comfortable usage.
 
 Please see @ref{Sufi simulates a detection} for a very complete tutorial
 explaining how one could use MakeProfiles in conjunction with other
@@ -14754,35 +14768,40 @@ Gnuastro's programs to make a complete simulated image of a mock galaxy.
 
 @menu
 * MakeProfiles catalog::        Required catalog properties.
-* MakeProfiles options::        Full list of MakeProfiles options.
-* MakeProfiles output::         The generated outputs.
+* MakeProfiles profile settings::  Configuration parameters for all profiles.
+* MakeProfiles output dataset::  The canvas/dataset to build profiles over.
+* MakeProfiles log file::       A description of the optional log file.
 @end menu
 
-@node MakeProfiles catalog, MakeProfiles options, Invoking astmkprof, Invoking astmkprof
+@node MakeProfiles catalog, MakeProfiles profile settings, Invoking astmkprof, Invoking astmkprof
 @subsubsection MakeProfiles catalog
-The catalog can be in the FITS ASCII, FITS binary format, or plain text
-formats (see @ref{Tables}). Its columns can be ordered in any desired
-manner, you can specify which columns belong to which parameters using the
-set of options ending with @option{col} in @ref{MakeProfiles options}. For
-example through the @option{--xcol} and @option{--rcol} options, you can
-specify the column that contains the X axis position of the profile center
-and the radial parameter for the profile. See @ref{Selecting table columns}
-for a thorough discussion on how to identify a column in the input catalog.
+The catalog containing information about each profile can be in the FITS
+ASCII, FITS binary, or plain text formats (see @ref{Tables}). Its columns
+can be ordered in any desired manner. You can specify which columns belong
+to which parameters using the set of options discussed below. For example
+through the @option{--rcol} and @option{--tcol} options, you can specify
+the column that contains the radial parameter for each profile and its
+truncation respectively. See @ref{Selecting table columns} for a thorough
+discussion on the values to these options.
 
-The value for the profile center in the catalog (in the @option{--xcol} and
-@option{--ycol} columns) can be a floating point number so the profile
-center can be on any sub-pixel position. Note that pixel positions in the
-FITS standard start from 1 and an integer is the pixel center. So a 2D
-image actually starts from the position (0.5, 0.5). When a
-@option{--background} image with WCS information is provided, you may also
-use RA and Dec to identify the center of each profile.
+The value for the profile center in the catalog (the @option{--ccol}
+option) can be a floating point number so the profile center can be on any
+sub-pixel position. Note that pixel positions in the FITS standard start
+from 1 and an integer is the pixel center. So a 2D image actually starts
+from the position (0.5, 0.5), which is the bottom-left corner of the first
+pixel. When a @option{--background} image with WCS information is provided
+or you specify the WCS parameters with the respective options, you may also
+use RA and Dec to identify the center of each profile (see the
+@option{--mode} option below).
 
 In MakeProfiles, profile centers do not have to be in (overlap with) the
 final image.  Even if only one pixel of the profile within the truncation
 radius overlaps with the final image size, the profile is built and
 included in the final image image. Profiles that are completely out of the
-image will not be created. You can use the output log file to see which
-profiles were within the image.
+image will not be created (unless you explicity ask for it with the
+@option{--individual} option). You can use the output log file (created
+with @option{--log} to see which profiles were within the image, see
+@ref{Common options}.
 
 If PSF profiles (Moffat or Gaussian, see @ref{PSF}) are in the catalog and
 the profiles are to be built in one image (when @option{--individual} is
@@ -14798,19 +14817,292 @@ unity, you have to set their magnitudes in the catalog to the zero-point
 magnitude and be sure that the central positions of the profiles don't have
 any fractional part (the PSF center has to be in the center of the pixel).
 
-
-@node MakeProfiles options, MakeProfiles output, MakeProfiles catalog, Invoking astmkprof
-@subsubsection MakeProfiles options
-The common options that are shared by Gnuastro programs, are fully
-explained in @ref{Common options} and are not repeated here. Since
-there are no image inputs, the@option{--hdu} option is ignored. The
-options can be classified into the following categories: Output,
-Profiles, Catalog and WCS. Below each one is reviewed.
-
-@noindent
-Output:
+The list of options directly related to the input catalog columns is shown
+below.
 
 @table @option
+
+@item --ccol=STR/INT
+Center coordinate column for each dimension. This option must be called two
+times to define the center coordinates in an image. For example
+@option{--ccol=RA} and @option{--ccol=DEC} (along with @option{--mode=wcs})
+will inform MakeProfiles to look into the catalog columns named @option{RA}
+and @option{DEC} for the Right Ascension and Declination of the profile
+centers.
+
+@item --fcol=INT/STR
+The functional form of the profile with one of the values below depending
+on the desired profile. The column can contain either the numeric codes
+(for example `@code{1}') or string characters (for example
+`@code{sersic}'). The numeric codes are easier to use in scripts which
+generate catalogs with hundreds or thousands of profiles.
+
+The string format can be easier when the catalog is to be written/checked
+by hand/eye before running MakeProfiles. It is much more readable and
+provides a level of documentation. All Gnuastro's recognized table formats
+(see @ref{Recognized table formats}) accept string type columns. To have
+string columns in a plain text table/catalog, see @ref{Gnuastro text table
+format}.
+
+@itemize
+@item
+S@'ersic profile with `@code{sersic}' or `@code{1}'.
+@item
+Moffat profile with `@code{moffat}' or `@code{2}'.
+@item
+Gaussian profile with `@code{gaussian}' or `@code{3}'.
+@item
+Point source with `@code{point}' or `@code{4}'.
+@item
+Flat profile with `@code{flat}' or `@code{5}'.
+@item
+Circumference profile with `@code{circum}' or `@code{6}'. A fixed
+value will be used for all pixels between the truncation radius
+(@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
+@option{--circumwidth}).
+@end itemize
+
+@item --rcol=STR/INT
+The radius parameter of the profiles. Effective radius (@mymath{r_e}) if
+S@'ersic, FWHM if Moffat or Gaussian.
+
+@item --ncol=STR/INT
+The S@'ersic index (@mymath{n}) or Moffat @mymath{\beta}.
+
+@item --pcol=STR/INT
+The position angle (in degrees) of the profiles relative to the first FITS
+axis (horizontal when viewed in SAO ds9).
+
+@item --qcol=STR/INT
+The axis ratio of the profiles (minor axis divided by the major axis in a
+2D ellipse).
+
+@item --mcol=STR/INT
+The total pixelated magnitude of the profile within the truncation radius,
+see @ref{Profile magnitude}.
+
+@item --tcol=STR/INT
+The truncation radius of this profile. By default it is in units of the
+radial parameter of the profile (the value in the @option{--rcol} of the
+catalog). If @option{--tunitinp} is given, this value is interpreted in
+units of pixels (prior to oversampling) irrespective of the profile.
+
+@end table
+
+@node MakeProfiles profile settings, MakeProfiles output dataset, MakeProfiles catalog, Invoking astmkprof
+@subsubsection MakeProfiles profile settings
+
+The profile parameters that differ between each created profile are
+specified through the columns in the input catalog and described in
+@ref{MakeProfiles catalog}. Besides those there are general settings for
+some profiles that don't differ between one profile and another, they are a
+property of the general process. For example how many random points to use
+in the monte-carlo integration, this value is fixed for all the
+profiles. The options described in this section are for configuring such
+properties.
+
+@table @option
+
+@item --mode=STR
+Interpret the center position columns (@option{--ccol} in @ref{MakeProfiles
+catalog}) in image or WCS coordinates. This option thus accepts only two
+values: @option{img} and @option{wcs}. It is mandatory when a catalog is
+being used as input.
+
+@item -r
+@itemx --numrandom
+The number of random points used in the central regions of the
+profile, see @ref{Sampling from a function}.
+
+@item -e
+@itemx --envseed
+Use the value to the @code{GSL_RNG_SEED} environment variable to
+generate the random Monte Carlo sampling distribution, see
+@ref{Sampling from a function} and @ref{Generating random
+numbers}.
+
+@item -t FLT
+@itemx --tolerance=FLT
+The tolerance to switch from Monte Carlo integration to the central pixel
+value, see @ref{Sampling from a function}.
+
+@item -p
+@itemx --tunitinp
+The truncation column of the catalog is in units of pixels. By
+default, the truncation column is considered to be in units of the
+radial parameters of the profile (@option{--rcol}). Read it as
+`t-unit-in-p' for `truncation unit in pixels'.
+
+@item -f
+@itemx --mforflatpix
+When making fixed value profiles (flat and circumference, see
+`@option{--fcol}'), don't use the value in the column specified by
+`@option{--mcol}' as the magnitude. Instead use it as the exact value that
+all the pixels of these profiles should have. This option is irrelevant for
+other types of profiles. This option is very useful for creating masks, or
+labeled regions in an image. Any integer, or floating point value can used
+in this column with this option, including @code{NaN} (or `@code{nan}', or
+`@code{NAN}', case is irrelevant), and infinities (@code{inf}, @code{-inf},
+or @code{+inf}).
+
+For example, with this option if you set the value in the magnitude column
+(@option{--mcol}) to @code{NaN}, you can create an elliptical or circular
+mask over an image (which can be given as the argument), see @ref{Blank
+pixels}. Another useful application of this option is to create labeled
+elliptical or circular apertures in an image. To do this, set the value in
+the magnitude column to the label you want for this profile. This labeled
+image can then be used in combination with NoiseChisel's output (see
+@ref{NoiseChisel output}) to do aperture photometry with MakeCatalog (see
+@ref{MakeCatalog}).
+
+Alternatively, if you want to mark regions of the image (for example with
+an elliptical circumference) and you don't want to use NaN values (as
+explained above) for some technical reason, you can get the minimum or
+maximum value in the image @footnote{The minimum will give a better result,
+because the maximum can be too high compared to most pixels in the image,
+making it harder to display.} using Arithmetic (see @ref{Arithmetic}), then
+use that value in the magnitude column along with this option for all the
+profiles.
+
+Please note that when using MakeProfiles on an already existing image, you
+have to set `@option{--oversample=1}'. Otherwise all the profiles will be
+scaled up based on the oversampling scale in your configuration files (see
+@ref{Configuration files}) unless you have accounted for oversampling in
+your catalog.
+
+@item --magatpeak
+The magnitude column in the catalog (see @ref{MakeProfiles catalog})
+will be used to find the brightness only for the peak profile pixel,
+not the full profile. Note that this is the flux of the profile's peak
+pixel in the final output of MakeProfiles. So beware of the
+oversampling, see @ref{Oversampling}.
+
+This option can be useful if you want to check a mock profile's total
+magnitude at various truncation radii. Without this option, no matter
+what the truncation radius is, the total magnitude will be the same as
+that given in the catalog. But with this option, the total magnitude
+will become brighter as you increase the truncation radius.
+
+In sharper profiles, sometimes the accuracy of measuring the peak
+profile flux is more than the overall object brightness. In such
+cases, with this option, the final profile will be built such that its
+peak has the given magnitude, not the total profile.
+
+@cartouche
+@strong{CAUTION:} If you want to use this option for comparing with
+observations, please note that MakeProfiles does not do convolution. Unless
+you have de-convolved your data, your images are convolved with the
+instrument and atmospheric PSF, see @ref{PSF}. Particularly in sharper
+profiles, the flux in the peak pixel is strongly decreased after
+convolution. Also note that in such cases, besides de-convolution, you will
+have to set @option{--oversample=1} otherwise after resampling your profile
+with Warp (see @ref{Warp}), the peak flux will be different.
+@end cartouche
+
+@item -X INT,INT
+@itemx --shift=INT,INT
+Shift all the profiles and enlarge the image along each dimension. To
+better understand this option, please see @mymath{n} in @ref{If convolving
+afterwards}. This is useful when you want to convolve the image
+afterwards. If you are using an external PSF, be sure to oversample it to
+the same scale used for creating the mock images. If a background image is
+specified, any possible value to this option is ignored.
+
+@item -c
+@itemx --prepforconv
+Shift all the profiles and enlarge the image based on half the width
+of the first Moffat or Gaussian profile in the catalog, considering
+any possible oversampling see @ref{If convolving
+afterwards}. @option{--prepforconv} is only checked and possibly
+activated if @option{--xshift} and @option{--yshift} are both zero
+(after reading the command-line and configuration files). If a
+background image is specified, any possible value to this option is
+ignored.
+
+@item -z FLT
+@itemx --zeropoint=FLT
+The zero-point magnitude of the image.
+
+@item -w FLT
+@itemx --circumwidth=FLT
+The width of the circumference if the profile is to be an elliptical
+circumference or annulus. See the explanations for this type of profile in
+@option{--fcol}.
+
+@item -R
+@itemx --replace
+Do not add the pixels of each profile over the background (possibly crowded
+by other profiles), replace them. By default, when two profiles overlap,
+the final pixel value is the sum of all the profiles that overlap on that
+pixel. When this option is given, the pixels are not added but replaced by
+the newer profile's pixel and any value under it is lost.
+
+@cindex CPU threads
+@cindex Threads, CPU
+When order matters, make sure to use this function with
+`@option{--numthreads=1}'. When multiple threads are used, the separate
+profiles are built asynchronously and not in order. Since order does not
+matter in an addition, this causes no problems by default but has to be
+considered when this option is given. Using multiple threads is no problem
+if the profiles are to be used as a mask with a blank or fixed value (see
+`@option{--mforflatpix}') since all their pixel values are the same.
+
+Note that only non-zero pixels are replaced. With radial profiles (for
+example S@'ersic or Moffat) only values above zero will be part of the
+profile. However, when using flat profiles with the
+`@option{--mforflatpix}' option, you should be careful not to give a
+@code{0.0} value as the flat profile's pixel value.
+
+@end table
+
+@node MakeProfiles output dataset, MakeProfiles log file, MakeProfiles profile settings, Invoking astmkprof
+@subsubsection MakeProfiles output dataset
+MakeProfiles takes an input catalog uses basic properties that are defined
+there to build a dataset, for example a 2D image containing the profiles in
+the catalog. In @ref{MakeProfiles catalog} and @ref{MakeProfiles profile
+settings}, the catalog and profile settings were discussed. The options of
+this section, allow you to configure the output dataset (or the canvas that
+will host the built profiles).
+
+@table @option
+
+@item -k STR
+@itemx --background=STR
+A background image FITS file to build the profiles on. The extension that
+contains the image should be specified with the @option{--backhdu} option,
+see below. When a background image is specified, it will be used to derive
+all the information about the output image. Hence, the following options
+will be ignored: @option{--naxis}, @option{--oversample}, @option{--crpix},
+@option{--crval} (generally, all other WCS related parameters) and the
+output's data type (see @option{--type} in @ref{Input output options}).
+
+The image will act like a canvas to build the profiles on: profile pixel
+values will be summed with the background image pixel values. With the
+@option{--replace} option you can disable this behavior and replace the
+profile pixels with the background pixels. If you want to use all the image
+information above, except for the pixel values (you want to have a blank
+canvas to build the profiles on, based on an input image), you can call
+@option{--clearcanvas}, to set all the input image's pixels to zero before
+starting to build the profiles over it (this is done in memory after
+reading the input, so nothing will happen to your input file).
+
+@item -B STR/INT
+@itemx --backhdu=STR/INT
+The header data unit (HDU) of the file given to @option{--background}.
+
+@item -C
+@itemx --clearcanvas
+When an input image is specified (with the @option{--background} option,
+set all its pixels to 0.0 immediately after reading it into
+memory. Effectively, this will allow you to use all its properties
+(described under the @option{--background} option), without having to worry
+about the pixel values.
+
+@option{--clearcanvas} can come in handy in many situations, for example if
+you want to create a labeled image (segmentation map) for creating a
+catalog (see @ref{MakeCatalog}). In other cases, you might have modeled the
+objects in an image and want to create them on the same frame, but without
+the original pixel values.
 
 @item -E STR/INT,FLT[,FLT,[...]]
 @itemx --kernel=STR/INT,FLT[,FLT,[...]]
@@ -14845,32 +15137,6 @@ truncated at 5 times the FWHM.
 @item --kernel=gaussian,2,3
 A Gaussian kernel with FWHM of 2 pixels and truncated at 3 times the FWHM.
 @end table
-
-
-@item -k STR
-@itemx --background=STR
-A background image FITS file to build the profiles on. The extension that
-contains the image should be specified with the @option{--backhdu} option,
-see below. When a background image is specified, it will be used to derive
-all the information about the output image. Hence, the following options
-will be ignored: @option{--naxis1}, @option{--naxis2}, @option{--crpix1},
-@option{--crpix2}, @option{--crval1}, @option{--crval2},
-@option{--resolution}, @option{--oversample}, and data type (see
-@option{--type} in @ref{Input output options}).
-
-The image will act like a canvas to build the profiles on: profile pixel
-values will be summed with the background image pixel values. With the
-@option{--replace} option you can disable this behavior and replace the
-profile pixels with the background pixels. If you want to use all the image
-information above, except for the pixel values (you want to have a blank
-canvas to build the profiles on, based on an input image), you can call
-@option{--clearcanvas}, to set all the input image's pixels to zero before
-starting to build the profiles over it (this is done in memory after
-reading the input, so nothing will happen to your input file).
-
-@item -B STR/INT
-@itemx --backhdu=STR/INT
-The header data unit (HDU) of the file given to @option{--background}.
 
 @item -x INT,INT
 @itemx --naxis=INT,INT
@@ -14937,253 +15203,12 @@ number position: The center of a pixel has fractional value
 
 @item -m
 @itemx --nomerged
-Don't make a merged image. By default after making the profiles, they
-are added to a final image with sides of @option{--naxis1} and
-@option{--naxis2} if they overlap with it.
+Don't make a merged image. By default after making the profiles, they are
+added to a final image with side lengths specified by @option{--naxis}if
+they overlap with it.
 
 @end table
 
-@noindent
-Profiles:
-
-@table @option
-
-@item -r
-@itemx --numrandom
-The number of random points used in the central regions of the
-profile, see @ref{Sampling from a function}.
-
-@item -e
-@itemx --envseed
-Use the value to the @code{GSL_RNG_SEED} environment variable to
-generate the random Monte Carlo sampling distribution, see
-@ref{Sampling from a function} and @ref{Generating random
-numbers}.
-
-@item -t FLT
-@itemx --tolerance=FLT
-The tolerance to switch from Monte Carlo integration to the central pixel
-value, see @ref{Sampling from a function}.
-
-@item -p
-@itemx --tunitinp
-The truncation column of the catalog is in units of pixels. By
-default, the truncation column is considered to be in units of the
-radial parameters of the profile (@option{--rcol}). Read it as
-`t-unit-in-p' for `truncation unit in pixels'.
-
-@item -X INT,INT
-@itemx --shift=INT,INT
-Shift all the profiles and enlarge the image along each dimension. To
-better understand this option, please see @mymath{n} in @ref{If convolving
-afterwards}. This is useful when you want to convolve the image
-afterwards. If you are using an external PSF, be sure to oversample it to
-the same scale used for creating the mock images. If a background image is
-specified, any possible value to this option is ignored.
-
-@item -c
-@itemx --prepforconv
-Shift all the profiles and enlarge the image based on half the width
-of the first Moffat or Gaussian profile in the catalog, considering
-any possible oversampling see @ref{If convolving
-afterwards}. @option{--prepforconv} is only checked and possibly
-activated if @option{--xshift} and @option{--yshift} are both zero
-(after reading the command-line and configuration files). If a
-background image is specified, any possible value to this option is
-ignored.
-
-@item --magatpeak
-The magnitude column in the catalog (see @ref{MakeProfiles catalog})
-will be used to find the brightness only for the peak profile pixel,
-not the full profile. Note that this is the flux of the profile's peak
-pixel in the final output of MakeProfiles. So beware of the
-oversampling, see @ref{Oversampling}.
-
-This option can be useful if you want to check a mock profile's total
-magnitude at various truncation radii. Without this option, no matter
-what the truncation radius is, the total magnitude will be the same as
-that given in the catalog. But with this option, the total magnitude
-will become brighter as you increase the truncation radius.
-
-In sharper profiles, sometimes the accuracy of measuring the peak
-profile flux is more than the overall object brightness. In such
-cases, with this option, the final profile will be built such that its
-peak has the given magnitude, not the total profile.
-
-@cartouche
-@strong{CAUTION:} If you want to use this option for comparing with
-observations, please note that MakeProfiles does not do convolution. Unless
-you have de-convolved your data, your images are convolved with the
-instrument and atmospheric PSF, see @ref{PSF}. Particularly in sharper
-profiles, the flux in the peak pixel is strongly decreased after
-convolution. Also note that in such cases, besides de-convolution, you will
-have to set @option{--oversample=1} otherwise after resampling your profile
-with Warp (see @ref{Warp}), the peak flux will be different.
-@end cartouche
-
-@item -R
-@itemx --replace
-Do not add the pixels of each profile over the background (possibly crowded
-by other profiles), replace them. By default, when two profiles overlap,
-the final pixel value is the sum of all the profiles that overlap on that
-pixel. When this option is given, the pixels are not added but replaced by
-the newer profile's pixel and any value under it is lost.
-
-@cindex CPU threads
-@cindex Threads, CPU
-When order matters, make sure to use this function with
-`@option{--numthreads=1}'. When multiple threads are used, the separate
-profiles are built asynchronously and not in order. Since order does not
-matter in an addition, this causes no problems by default but has to be
-considered when this option is given. Using multiple threads is no problem
-if the profiles are to be used as a mask with a blank or fixed value (see
-`@option{--mforflatpix}') since all their pixel values are the same.
-
-Note that only non-zero pixels are replaced. With radial profiles (for
-example S@'ersic or Moffat) only values above zero will be part of the
-profile. However, when using flat profiles with the
-`@option{--mforflatpix}' option, you should be careful not to give a
-@code{0.0} value as the flat profile's pixel value.
-
-@item -C
-@itemx --clearcanvas
-When an input image is specified (with the @option{--background} option,
-set all its pixels to 0.0 immediately after reading it into
-memory. Effectively, this will allow you to use all its properties
-(described under the @option{--background} option), without having to worry
-about the pixel values.
-
-@option{--clearcanvas} can come in handy in many situations, for example if
-you want to create a labeled image (segmentation map) for creating a
-catalog (see @ref{MakeCatalog}). In other cases, you might have modeled the
-objects in an image and want to create them on the same frame, but without
-the original pixel values.
-
-@item -w FLT
-@itemx --circumwidth=FLT
-The width of the circumference if the profile is to be an elliptical
-circumference or annulus. See the explanations for this type of profile in
-@option{--fcol}.
-
-@item -z FLT
-@itemx --zeropoint=FLT
-The zero-point magnitude of the image.
-
-@end table
-
-@noindent
-Catalog: The value to all of these options is considered to be a
-column number, where counting starts from zero.
-
-@table @option
-
-@item --mode=STR
-Interpret the center position columns in image or WCS coordinates. This
-option thus accepts only two values: @option{img} and @option{wcs}. It is
-mandatory when a catalog is being used.
-
-@item --ccol=STR/INT
-Center coordinate column for each dimension. This option must be called two
-times to define the center coordinates in an image. For example
-@option{--ccol=RA} and @option{--ccol=DEC} (along with @option{--mode=wcs})
-will inform MakeProfiles to look into the catalog columns named @option{RA}
-and @option{DEC} for the Right Ascension and Declination of the profile
-centers.
-
-@item --fcol=INT/STR
-The functional form of the profile with one of the values below depending
-on the desired profile. The column can contain either the numeric codes
-(for example `@code{1}') or string characters (for example
-`@code{sersic}'). The numeric codes are easier to use in scripts which
-generate catalogs with hundreds or thousands of profiles.
-
-The string format can be easier when the catalog is to be written/checked
-by hand/eye before running MakeProfiles. It is much more readable and
-provides a level of documentation. All Gnuastro's recognized table formats
-(see @ref{Recognized table formats}) accept string type columns. To have
-string columns in a plain text table/catalog, see @ref{Gnuastro text table
-format}.
-
-@itemize
-@item
-S@'ersic profile with `@code{sersic}' or `@code{1}'.
-@item
-Moffat profile with `@code{moffat}' or `@code{2}'.
-@item
-Gaussian profile with `@code{gaussian}' or `@code{3}'.
-@item
-Point source with `@code{point}' or `@code{4}'.
-@item
-Flat profile with `@code{flat}' or `@code{5}'.
-@item
-Circumference profile with `@code{circum}' or `@code{6}'. A fixed
-value will be used for all pixels between the truncation radius
-(@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
-@option{--circumwidth}).
-@end itemize
-
-@item --rcol=STR/INT
-The radius parameter of the profiles. Effective radius (@mymath{r_e}) if
-S@'ersic, FWHM if Moffat or Gaussian.
-
-@item --ncol=STR/INT
-The S@'ersic index (@mymath{n}) or Moffat @mymath{\beta}.
-
-@item --pcol=STR/INT
-The position angle (in degrees) of the profiles relative to the first FITS
-axis (horizontal when viewed in SAO ds9).
-
-@item --qcol=STR/INT
-The axis ratio of the profiles (minor axis divided by the major axis).
-
-@item --mcol=STR/INT
-The total pixelated magnitude of the profile within the truncation radius,
-see @ref{Profile magnitude}.
-
-@item --tcol=STR/INT
-The truncation radius of this profile. By default it is in units of the
-radial parameter of the profile (the value in the @option{--rcol} of the
-catalog). If @option{--tunitinp} is given, this value is interpreted in
-units of pixels (prior to oversampling) irrespective of the profile.
-
-@item -f
-@itemx --mforflatpix
-When making fixed value profiles (flat and circumference, see
-`@option{--fcol}'), don't use the value in the column specified by
-`@option{--mcol}' as the magnitude. Instead use it as the exact value that
-all the pixels of these profiles should have. This option is irrelevant for
-other types of profiles. This option is very useful for creating masks, or
-labeled regions in an image. Any integer, or floating point value can used
-in this column with this option, including @code{NaN} (or `@code{nan}', or
-`@code{NAN}', case is irrelevant), and infinities (@code{inf}, @code{-inf},
-or @code{+inf}).
-
-For example, with this option if you set the value in the magnitude column
-(@option{--mcol}) to @code{NaN}, you can create an elliptical or circular
-mask over an image (which can be given as the argument), see @ref{Blank
-pixels}. Another useful application of this option is to create labeled
-elliptical or circular apertures in an image. To do this, set the value in
-the magnitude column to the label you want for this profile. This labeled
-image can then be used in combination with NoiseChisel's output (see
-@ref{NoiseChisel output}) to do aperture photometry with MakeCatalog (see
-@ref{MakeCatalog}).
-
-Alternatively, if you want to mark regions of the image (for example with
-an elliptical circumference) and you don't want to use NaN values (as
-explained above) for some technical reason, you can get the minimum or
-maximum value in the image @footnote{The minimum will give a better result,
-because the maximum can be too high compared to most pixels in the image,
-making it harder to display.} using Arithmetic (see @ref{Arithmetic}), then
-use that value in the magnitude column along with this option for all the
-profiles.
-
-Please note that when using MakeProfiles on an already existing image, you
-have to set `@option{--oversample=1}'. Otherwise all the profiles will be
-scaled up based on the oversampling scale in your configuration files (see
-@ref{Configuration files}) unless you have accounted for oversampling in
-your catalog.
-
-@end table
 
 @noindent
 The options below can be used to define the world coordinate system (WCS)
@@ -15244,31 +15269,38 @@ later usage of them might cause trouble.
 
 @end table
 
-@node MakeProfiles output,  , MakeProfiles options, Invoking astmkprof
-@subsubsection MakeProfiles output
+@node MakeProfiles log file,  , MakeProfiles output dataset, Invoking astmkprof
+@subsubsection MakeProfiles log file
 
-Besides the final merged image of all the profiles or individual
-profiles that can be built based on the input options, MakeProfiles
-will also create a log file in the current directory (where you run
-MockProfiles). The values for each column are explained in the first
-few commented (starting with @command{#} character). The log file
-includes the following information:
+Besides the final merged dataset of all the profiles, or the individual
+datasets (see @ref{MakeProfiles output dataset}), if the @option{--log}
+option is called MakeProfiles will also create a log file in the current
+directory (where you run MockProfiles). See @ref{Common options} for a full
+description of @option{--log} and other options that are shared between all
+Gnuastro programs. The values for each column are explained in the first
+few commented lines of the log file (starting with @command{#}
+character). Here is a more complete description.
 
 @itemize
 @item
-The total magnitude of the profile in the image. This will be
-different from your input magnitude if the profile was not completely
-in the image.
+An ID (row number of profile in input catalog).
+
+@item
+The total magnitude of the profile in the output dataset. When the profile
+does not completely overlap with the output dataset, this will be different
+from your input magnitude.
 
 @item
 The number of pixels (in the oversampled image) which used Monte Carlo
-integration and not the central pixel value.
+integration and not the central pixel value, see @ref{Sampling from a
+function}.
 
 @item
 The fraction of flux in the Monte Carlo integrated pixels.
 
 @item
-If an individual image was created or not.
+If an individual image was created, this column will have a value of
+@code{1}, otherwise it will have a value of @code{0}.
 @end itemize
 
 
@@ -17920,9 +17952,9 @@ acceptable values to this element are defined in @ref{Table input
 output}. Based on C's @code{printf} standards.
 
 @item gal_data_t *next
-Through this pointer, you can link a @code{gal_data_t} with other related
-datasets, for example the different columns in a dataset each have one
-@code{gal_data_t} associate with them and they are linked to each other
+Through this pointer, you can link a @code{gal_data_t} with other datasets
+related datasets, for example the different columns in a dataset each have
+one @code{gal_data_t} associate with them and they are linked to each other
 using this element. There are several functions described below to
 facilitate using @code{gal_data_t} as a linked list. See @ref{Linked lists}
 for more on these wonderful high-level constructs.
@@ -18024,7 +18056,7 @@ memory or it is used in multiple datasets, be sure to set it to @code{NULL}
 not have any zero values (a dimension of length zero is not defined).
 @end deftypefun
 
-@deftypefun {void *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+@deftypefun {gal_data_t *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
 
 Dynamically allocate a @code{gal_data_t} and initialize it will all the
 given values. See the description of @code{gal_data_initialize} and
@@ -18036,9 +18068,10 @@ the dataset, be sure to clean up all the allocated spaces with
 @end deftypefun
 
 @deftypefun void gal_data_free_contents (gal_data_t @code{*data})
-Free all the non-@code{NULL} pointers in @code{gal_data_t}, for a complete
-description of the @code{gal_data_t} contents, see @ref{Generic data
-container}.
+Free all the non-@code{NULL} pointers in @code{gal_data_t}. If @code{data}
+is actually a tile (@code{data->block!=NULL}, see @ref{Tessellation
+library}), then @code{tile->array} is not freed. For a complete description
+of @code{gal_data_t} and its contents, see @ref{Generic data container}.
 @end deftypefun
 
 @deftypefun void gal_data_free (gal_data_t @code{*data})
@@ -20488,13 +20521,27 @@ operation will be done on @code{numthreads} threads.
 
 
 @deffn {Function-like macro} GAL_TILE_PARSE_OPERATE (@code{IN}, @code{OTHER}, @code{PARSE_OTHER}, @code{CHECK_BLANK}, @code{OP})
-Parse over @code{IN} (which can be a tile or a fully allocated block of
-memory) and do the @code{OP} operation on it (can be any combination of C
-expressions). If @code{OTHER!=NULL}, this macro will allow access to its
-element(s) and it can optionally be parsed while parsing over
-@code{IN}. You can use this to parse the same region over two arrays. The
-input arguments are (the expected types of each argument are also written
-here):
+Parse @code{IN} (which can be a tile or a fully allocated block of memory)
+and do the @code{OP} operation on it. @code{OP} can be any combination of C
+expressions. If @code{OTHER!=NULL}, @code{OTHER} will be interpretted as a
+dataset and this macro will allow access to its element(s) and it can
+optionally be parsed while parsing over @code{IN}.
+
+If @code{OTHER} is a fully allocated block of memory (not a tile), then the
+same region that is covered by @code{IN} within its own block will be
+parsed (the same starting pixel with the same number of pixels in each
+dimension). Hence, in this case, the blocks of @code{OTHER} and @code{IN}
+must have the same size. When @code{OTHER} is a tile it must have the same
+size as @code{IN} and parsing will start from its starting element/pixel.
+Also, the respective allocated blocks of @code{OTHER} and @code{IN} (if
+different) may have different sizes. Using @code{OTHER} (along with
+@code{PARSE_OTHER}), this funciton-like macro will thus enable you to parse
+and define your own operation on two fixed size regions in one or two
+blocks of memory. In the latter case, they may have different numeric
+datatypes, see @ref{Numeric data types}).
+
+The input arguments to this macro are explained below, the expected type of
+each argument are also written following the argument name:
 
 @table @code
 @item IN (gal_data_t)
@@ -20504,8 +20551,12 @@ Input dataset, this can be a tile or an allocated block of memory.
 Dataset (@code{gal_data_t}) to parse along with @code{IN}. It can be
 @code{NULL}. In that case, @code{o} (see description of @code{OP} below)
 will be @code{NULL} and should not be used. If @code{PARSE_OTHER} is zero,
-the size of this dataset is irrelevant. Otherwise, it has to have the same
-size as the allocated block of @code{IN}.
+only its first element will be used and the size of this dataset is
+irrelevant.
+
+When @code{OTHER} is a block of memory, it has to have the same size as the
+allocated block of @code{IN}. When its a tile, it has to have the same size
+as @code{IN}.
 
 @item PARSE_OTHER (int)
 Parse the other dataset along with the input. When this is non-zero and
@@ -20556,15 +20607,15 @@ Blank value in the type of @code{INPUT}.
 @end table
 @end table
 
-You can use a given tile (@code{tile}) on a dataset that it was not
-initialized with (but has the same size, let's call it @code{new}) with the
+You can use a given tile (@code{tile} on a dataset that it was not
+initialized with but has the same size, let's call it @code{new}) with the
 following steps:
 
 @example
 void *tarray;
 gal_data_t *tblock;
 
-/* `tile->block' must corrected AFTER `tile->array' */
+/* `tile->block' must be corrected AFTER `tile->array'. */
 tarray      = tile->array;
 tblock      = tile->block;
 tile->array = gal_tile_block_relative_to_other(tile, new);
@@ -20604,15 +20655,15 @@ faketile->size  = tile->size;
 faketile->dsize = tile->dsize;
 faketile->array = gal_tile_block_relative_to_other(tile, new);
 
-// Do your processing....
+/* Do your processing.... in a loop (over many tiles). */
 GAL_TILE_PARSE_OPERATE(tile, faketile, 1, 1, @{
     YOUR_PROCESSING_EXPRESSIONS;
   @});
 
-// Clean up.
-bintile->array=NULL;
-bintile->dsize=NULL;
-gal_data_free(bintile);
+/* Clean up (outside the loop). */
+faketile->array=NULL;
+faketile->dsize=NULL;
+gal_data_free(faketile);
 @end example
 @end deffn
 
@@ -20860,28 +20911,37 @@ declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
 
-@deftypefun void gal_box_ellipse_in_box (double @code{a}, double @code{b}, double @code{theta_rad}, long @code{*width})
+@deftypefun void gal_box_bound_ellipse (double @code{a}, double @code{b}, double @code{theta_deg}, long @code{*width})
 Any ellipse can be enclosed into a rectangular box. The purpose of this
-function is to give the height and width of that box. @code{a} is the
-ellipse major axis, @code{b} is the minor axis, @code{theta_rad} is the
-position angle in radians. The @code{width} array will contain the output
-size in long integer type. @code{width[0]}, and @code{width[1]} are the
-number of pixels along the first and second FITS axis.
+function is to give the height and width of that box assuming the center of
+the ellipse is in the box center. @code{a} is the ellipse major axis,
+@code{b} is the minor axis, @code{theta_deg} is the position angle in
+degrees. The @code{width} array will contain the output size in long
+integer type. @code{width[0]}, and @code{width[1]} are the number of pixels
+along the first and second FITS axis. Since the ellipse center is assumed
+to be in the center of the box, all the values in @code{width} will be an
+odd integer.
 @end deftypefun
 
-@deftypefun void gal_box_border_from_center (double @code{xc}, double @code{yc}, long @code{*width}, long @code{*fpixel}, long @code{*lpixel})
-Given the center (@code{xc} and @code{yc}) and width (two element array) of a
-box, return the coordinates of the first @code{fpixel} and last @code{lpixel}
-pixels (both are two element arrays.
+@deftypefun void gal_box_border_from_center (double @code{center}, size_t @code{ndim}, long @code{*width}, long @code{*fpixel}, long @code{*lpixel})
+Given the center coordinates in @code{center} and the @code{width} (along
+each dimension) of a box, return the coordinates of the first
+(@code{fpixel}) and last (@code{lpixel}) pixels. All arrays must have
+@code{ndim} elements (one for each dimension).
 @end deftypefun
 
-@deftypefun int gal_box_overlap (long @code{*naxes}, long @code{*fpixel_i}, long @code{*lpixel_i}, long @code{*fpixel_o}, long @code{*lpixel_o})
-We have an image of size @code{naxes} and want to get the overlap of the
-image with a box. This function will return 1 if there is an overlap and 0
-if there isn't. The input and output box are specified by their first and
-last pixels. When there is an overlap, the coordinates of the first and
-last pixels of the overlap will be put in @code{fpixel_o} and
-@code{lpixel_o}.
+@deftypefun int gal_box_overlap (long @code{*naxes}, long @code{*fpixel_i}, long @code{*lpixel_i}, long @code{*fpixel_o}, long @code{*lpixel_o}, size_t @code{ndim})
+An @code{ndim}-dimensional dataset of size @code{naxes} (along each
+dimension, in FITS order) and a box with first and last (inclusive)
+coordinate of @code{fpixel_i} and @code{lpixel_i} is given. This box
+doesn't necessarily have to lie within the dataset, it can be outside of
+it, or only patially overlap. This function will change the values of
+@code{fpixel_i} and @code{lpixel_i} to exactly cover the overlap in the
+input dataset's coordinates.
+
+This function will return 1 if there is an overlap and 0 if there
+isn't. When there is an overlap, the coordinates of the first and last
+pixels of the overlap will be put in @code{fpixel_o} and @code{lpixel_o}.
 @end deftypefun
 
 

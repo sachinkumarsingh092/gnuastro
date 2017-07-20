@@ -348,9 +348,9 @@ size_t
 gal_tile_block_increment(gal_data_t *block, size_t *tsize,
                          size_t num_increment, size_t *coord)
 {
-  size_t increment;
   size_t n=block->ndim;
   size_t *b=block->dsize, *t=tsize;
+  size_t increment=GAL_BLANK_SIZE_T;
 
   if(n>3)
     error(EXIT_FAILURE, 0, "%s: currently only implemented for at most 3 "
@@ -358,6 +358,7 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
 
   switch(n)
     {
+    /* A zero-dimensional dataset is not defined. */
     case 0:
       error(EXIT_FAILURE, 0, "%s: zero dimensional input is not acceptable",
             __func__);
@@ -374,18 +375,17 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
       if(coord) ++coord[0];
       break;
 
-    /* Higher dimensions. */
-    default:
-      if(num_increment % t[n-2])
+    /* 3D: The increment depends on which dimension we are reaching. */
+    case 3:
+      if(num_increment % t[1])
         {
-          increment=b[n-1];
-          if(coord) ++coord[n-2];
+          increment = b[2];
+          if(coord) ++coord[1];
         }
       else
         {
-          increment=(b[n-2] * b[n-1]) - ( (t[n-2]-1) * b[n-1] );
-          ++coord[n-3];
-          if(coord) coord[n-2]=coord[n-1]=0;
+          increment=(b[1] * b[2]) - ( (t[1]-1) * b[2] );
+          if(coord) { ++coord[0]; coord[1]=coord[2]=0; }
         }
       break;
     }

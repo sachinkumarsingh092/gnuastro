@@ -264,8 +264,8 @@ mkprof_build(void *inparam)
       if( p->f[id] == PROFILE_POINT )
         mkp->width[0]=mkp->width[1]=1;
       else
-        gal_box_ellipse_in_box(mkp->truncr, mkp->q*mkp->truncr,
-                               p->p[id]*DEGREESTORADIANS, mkp->width);
+        gal_box_bound_ellipse(mkp->truncr, mkp->q*mkp->truncr, p->p[id],
+                              mkp->width);
 
 
 

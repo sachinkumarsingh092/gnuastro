@@ -1,5 +1,5 @@
 /*********************************************************************
-overlap -- Find the overlap of a region and an image.
+Box -- Define bounding and overlapping boxes.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -64,20 +64,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    and you will find the distance (about the center of the ellipse
    that encloses the whole ellipse. */
 void
-gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width)
+gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
 {
-  double t_x, t_y, max_x, max_y;
-  t_x=atan(b/a*tan(theta_rad));
-  t_y=atan(-1*b/a/tan(theta_rad));
+  double t_r=theta_deg*M_PI/180;
+  double max_x, max_y, ct=cos(t_r), st=sin(t_r);
+  double t_x=atan(b/a*tan(t_r)), t_y=atan(-1.0f*b/a/tan(t_r));
 
-  max_x=a*cos(t_x)*cos(theta_rad)+b*sin(t_x)*sin(theta_rad);
-  max_y=-1*a*cos(t_y)*sin(theta_rad)+b*sin(t_y)*cos(theta_rad);
+  /* Calculate the maxima along each direction. */
+  max_x = a*cos(t_x)*ct    + b*sin(t_x)*st;
+  max_y = -1*a*cos(t_y)*st + b*sin(t_y)*ct;
 
   /* max_x and max_y are calculated from the center of the ellipse. We
      want the final height and width of the box enclosing the
      ellipse. So we have to multiply them by two, then take one from
-     them (for the center).
-  */
+     them (for the center). */
   width[0]=2*( (size_t)fabs(max_x)+1 ) + 1;
   width[1]=2*( (size_t)fabs(max_y)+1 ) + 1;
 }
@@ -129,19 +129,19 @@ gal_box_border_from_center(double *center, size_t ndim, long *width,
 
 
 
-/* Problem to solve: We have set the first and last pixels in an input
-   image (fpixel_i[2] and lpixel_i[2]). But those first and last
-   pixels don't necessarily have to lie within the image, they can be
-   outside of it or patially overlap with it. So the job of this
-   function is to correct for such situations and find the starting
+/* Problem to solve: We have set the first and last pixels of a box in an
+   input image (fpixel_i[2] and lpixel_i[2]). But those first and last
+   pixels don't necessarily lie within the image's boundaries. They can be
+   outside of it or patially overlap with it (see examples below). The job
+   of this function is to corret for such situations and find the starting
    and ending points of any overlap.
 
-   It is assumed that your output (overlap) image's first pixel lies
-   right ontop of the fpixel_i[0] in the input image. But since
-   fpixel_i might be outside of the image, in this function we find
-   the fpixel_o[2] and lpixel_o[2] in the overlap image coordinates
-   that overlap with the input image. So the values of all four points
-   might change after this function.
+   It is assumed that your output (overlap) image's first pixel lies right
+   ontop of the fpixel_i[0] in the input image. But since fpixel_i might be
+   outside of the image, in this function we find the fpixel_o[2] and
+   lpixel_o[2] in the overlap image coordinates that overlap with the input
+   image. So the values of all four points might change after this
+   function.
 
    Before:
    =======

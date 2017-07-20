@@ -1109,8 +1109,8 @@ ui_prepare_canvas(struct mkprofparams *p)
                        half of it for the shift. */
                     setshift=1;
                     truncr = p->tunitinp ? p->t[i] : p->t[i] * p->r[i]/2;
-                    gal_box_ellipse_in_box(truncr, p->q[i]*truncr,
-                                           p->p[i]*DEGREESTORADIANS, width);
+                    gal_box_bound_ellipse(truncr, p->q[i]*truncr, p->p[i],
+                                          width);
                   }
 
               /* Either set the shifts to zero or to the values set from

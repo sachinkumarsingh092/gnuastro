@@ -434,7 +434,7 @@ gal_data_free_contents(gal_data_t *data)
       free(data->mmapname);
     }
   else
-    if(data->array) free(data->array);
+    if(data->array && data->block==NULL) free(data->array);
   data->array=NULL;
 }
 

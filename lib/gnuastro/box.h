@@ -1,5 +1,5 @@
 /*********************************************************************
-overlap -- Find the overlap of a region and an image.
+Box -- Define bounding and overlapping boxes.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -52,7 +52,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 */
 
 void
-gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width);
+gal_box_bound_ellipse(double a, double b, double theta_rad, long *width);
 
 void
 gal_box_border_from_center(double *center, size_t ndim, long *width,
