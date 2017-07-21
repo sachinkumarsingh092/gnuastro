@@ -37,7 +37,7 @@ context under categories/chapters.
     and growing set of arithmetic, mathematical, and even statistical
     operators (for example +, -, *, /, sqrt, log, min, average, median).
 
-  - BuildProgram (astbuildprog) Compile, link and run programs that depend
+  - BuildProgram (astbuildprog): Compile, link and run programs that depend
     on the Gnuastro library. BuildProgram will automatically link with the
     libraries that Gnuastro depends on, so there is no need to explicily
     mention them every time you are compiling a Gnuastro library dependent

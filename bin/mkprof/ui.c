@@ -629,7 +629,7 @@ ui_read_cols(struct mkprofparams *p)
   char *colname=NULL, **strarr;
   gal_list_str_t *colstrs=NULL, *ccol;
   gal_data_t *cols, *tmp, *corrtype=NULL;
-  size_t i, counter=0, coordcounter=0, ndim=p->out->ndim;
+  size_t i, counter=0, ndim=p->out->ndim;
 
   /* Make sure the number of coordinate columns and number of dimensions in
      outputs are the same. There is no problem if it is more than
@@ -640,7 +640,15 @@ ui_read_cols(struct mkprofparams *p)
           "given but output has %zu dimensions",
           gal_list_str_number(p->ccol), p->out->ndim);
 
-  /* Put the columns a specific order to read. */
+  /* The coordinate columns are a linked list of strings. */
+  ccol=p->ccol;
+  for(i=0;i<ndim;++i)
+    {
+      gal_list_str_add(&colstrs, ccol->v, 0);
+      ccol=ccol->next;
+    }
+
+  /* Add the rest of the columns in a specific order. */
   gal_list_str_add(&colstrs, p->fcol, 0);
   gal_list_str_add(&colstrs, p->rcol, 0);
   gal_list_str_add(&colstrs, p->ncol, 0);
@@ -648,15 +656,6 @@ ui_read_cols(struct mkprofparams *p)
   gal_list_str_add(&colstrs, p->qcol, 0);
   gal_list_str_add(&colstrs, p->mcol, 0);
   gal_list_str_add(&colstrs, p->tcol, 0);
-
-  /* The coordinate columns might be different, So we'll add them to the
-     end (top of the list). */
-  ccol=p->ccol;
-  for(i=0;i<ndim;++i)
-    {
-      gal_list_str_add(&colstrs, ccol->v, 0);
-      ccol=ccol->next;
-    }
 
   /* Reverse the order to make the column orders correspond to how we added
      them here and avoid possible bugs. */
@@ -680,12 +679,23 @@ ui_read_cols(struct mkprofparams *p)
          turned off for some columns. */
       checkblank=1;
 
-      /* Note that the input was a linked list, so the output order is the
-         inverse of the input order. For the position, we will store the
-         values into the `x' and `y' arrays even if they are RA/Dec. */
+      /* Put each column's data in the respective internal pointer. */
       switch(++counter)
         {
         case 1:
+        case 2:
+          colname = ( counter==1
+                      ? "first coordinate column (`--coordcol')"
+                      : "second coordinate column (`--coordcol')" );
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
+          switch(counter)
+            {
+            case 1: p->x=corrtype->array; break;
+            case 2: p->y=corrtype->array; break;
+            }
+          break;
+
+        case 3:
           if(tmp->type==GAL_TYPE_STRING)
             {
               p->f=gal_data_malloc_array(GAL_TYPE_UINT8, p->num,
@@ -719,55 +729,64 @@ ui_read_cols(struct mkprofparams *p)
             }
           break;
 
-        case 2:
+        case 4:
           colname="radius (`rcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->r=corrtype->array;
+
+          /* Check if there is no negative or zero-radius profile. */
+          for(i=0;i<p->num;++i)
+            if(p->r[i]<=0.0f)
+              error(EXIT_FAILURE, 0, "%s: row %zu, the radius value %g is "
+                    "not acceptable. It has to be larger than 0", p->catname,
+                    i+1, p->r[i]);
           break;
 
-        case 3:
+        case 5:
           colname="index (`ncol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->n=corrtype->array;
           break;
 
-        case 4:
+        case 6:
           colname="position angle (`pcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->p=corrtype->array;
           break;
 
-        case 5:
+        case 7:
           colname="axis ratio (`qcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->q=corrtype->array;
+
+          /* Check if there is no negative or >1.0f axis ratio. */
+          for(i=0;i<p->num;++i)
+            if(p->q[i]<=0.0f || p->q[i]>1.0f)
+              error(EXIT_FAILURE, 0, "%s: row %zu, the axis ratio value %g "
+                    "is not acceptable. It has to be >0 and <=1", p->catname,
+                    i+1, p->q[i]);
+
           break;
 
-        case 6:
+        case 8:
           colname="magnitude (`mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->m=corrtype->array;
           checkblank=0;          /* Magnitude can be NaN: to mask regions. */
           break;
 
-        case 7:
+        case 9:
           colname="truncation (`tcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->t=corrtype->array;
-          break;
 
-        case 8:
-        case 9:
-          ++coordcounter;
-          colname = ( counter==8
-                      ? "first coordinate column (`--coordcol')"
-                      : "second coordinate column (`--coordcol')" );
-          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-          switch(counter)
-            {
-            case 8: p->x=corrtype->array; break;
-            case 9: p->y=corrtype->array; break;
-            }
+          /* Check if there is no negative or zero truncation radius. */
+          for(i=0;i<p->num;++i)
+            if(p->t[i]<=0.0f)
+              error(EXIT_FAILURE, 0, "%s: row %zu, the truncation radius "
+                    "value %g is not acceptable. It has to be larger than 0",
+                    p->catname, i+1, p->t[i]);
+
           break;
 
         /* If the index isn't recognized, then it is larger, showing that
