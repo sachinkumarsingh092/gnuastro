@@ -18,6 +18,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   to specify the PC matrix, CUNIT and CTYPE world coordinate system
   keywords of the output FITS file.
 
+  MakeProfiles: the new `distance' profile will save the radial distance of
+  each pixel. This may be used to define your own profiles that are not
+  currently supported in MakeProfiles.
+
 ** Removed features
 
 ** Changed features

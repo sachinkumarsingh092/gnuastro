@@ -31,17 +31,13 @@ struct mkonthread
 {
   /* General parameters: */
   double                r;   /* Elliptical radius at this point.      */
-  double                x;   /* x value of this point.                */
-  double               xl;   /* lower  x boundary                     */
-  double               xh;   /* higher x boundary.                    */
-  double                y;   /* y value when integrating over x.      */
-  double               yl;   /* lower  y boundary.                    */
-  double               yh;   /* higher y boundary.                    */
-  double                c;   /* Cosine of the position angle.         */
-  double                s;   /* Sine of the position angle.           */
-  double                q;   /* axis ratio of the position angle.     */
-  double               xc;   /* Center in C of created(oversampled).  */
-  double               yc;   /* Center in C of created(oversampled).  */
+  double         coord[2];   /* Pixel coordinate.                     */
+  double         lower[2];   /* Coordinates of lower pixel position.  */
+  double        higher[2];   /* Coordinates of higher pixel position. */
+  double             c[1];   /* Cosine of position angle(s).          */
+  double             s[1];   /* Sine of position angle(s).            */
+  double             q[1];   /* Axis ratio(s).                        */
+  double        center[2];   /* Center (in FITS) in oversampled image.*/
   double (*profile)(struct mkonthread *); /* Function to use.         */
   double           truncr;   /* Truncation radius in pixels.          */
   double         intruncr;   /* Inner truncation radius in pixels.    */

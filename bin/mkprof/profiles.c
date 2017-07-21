@@ -43,20 +43,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************/
 /* The Gaussian function at a point. */
 double
-Gaussian(struct mkonthread *mkp)
+profiles_radial_distance(struct mkonthread *mkp)
 {
-  return exp( mkp->gaussian_c * mkp->r * mkp->r );
+  return mkp->r;
 }
 
 
 
 
-/* The integral of the Gaussian from -inf to +inf equals the square
- root of PI. So from zero to +inf it equals half of that.*/
+
+/* The integral of the Gaussian from -inf to +inf equals the square root of
+   PI. So from zero to +inf it equals half of that.*/
 double
-totgaussian(double q)
+profiles_gaussian_total(double q)
 {
   return q*sqrt(M_PI)/2;
+}
+
+
+
+
+
+/* The Gaussian function at a point. */
+double
+profiles_gaussian(struct mkonthread *mkp)
+{
+  return exp( mkp->gaussian_c * mkp->r * mkp->r );
 }
 
 
@@ -71,7 +83,7 @@ totgaussian(double q)
    alpha=(FWHM/2)/(2^(1.0/beta)-1)^(0.5). Then the moffat
    function at r is: (1.0 + (r/alpha)^2.0)^(-1.0*beta)*/
 double
-moffat_alpha(double fwhm, double beta)
+profiles_moffat_alpha(double fwhm, double beta)
 {
   return (fwhm/2)/pow((pow(2, 1/beta)-1), 0.5f);
 }
@@ -84,7 +96,7 @@ moffat_alpha(double fwhm, double beta)
  from Pengetal 2010 (Galfit). In finding the profiles, I am assuming
  \Sigma_0=1. So that is what I put here too.*/
 double
-totmoffat(double alpha, double beta, double q)
+profiles_moffat_total(double alpha, double beta, double q)
 {
   return M_PI*alpha*alpha*q/(beta-1);
 }
@@ -99,7 +111,7 @@ totmoffat(double alpha, double beta, double q)
 
    This is done before hand to speed up the process. */
 double
-Moffat(struct mkonthread *mkp)
+profiles_moffat(struct mkonthread *mkp)
 {
   return pow(1+mkp->r*mkp->r/mkp->moffat_alphasq, mkp->moffat_nb);
 }
@@ -112,7 +124,7 @@ Moffat(struct mkonthread *mkp)
    Courteau and Holtzman 2003:
    http://adsabs.harvard.edu/abs/2003ApJ...582..689 */
 double
-sersic_b(double n)
+profiles_sersic_b(double n)
 {
   if(n<=0.35f)
     error(EXIT_FAILURE, 0, "the Sersic index cannot be smaller "
@@ -125,24 +137,11 @@ sersic_b(double n)
 
 
 
-/* Find the Sersic profile for a certain radius. rdre=r/re, inv_n=1/n,
-   nb= -1*b.  */
-double
-Sersic(struct mkonthread *mkp)
-{
-  return exp( mkp->sersic_nb
-              * ( pow(mkp->r/mkp->sersic_re, mkp->sersic_inv_n) -1 ) );
-}
-
-
-
-
-
 /* Find the total brightness in a Sersic profile. From equation 4 in
    Peng 2010. This assumes the surface brightness at the effective
    radius is 1.*/
 double
-totsersic(double n, double re, double b, double q)
+profiles_sersic_total(double n, double re, double b, double q)
 {
   return (2*M_PI*re*re*exp(b)*n*pow(b, -2*n)*q*
           gsl_sf_gamma(2*n));
@@ -152,9 +151,22 @@ totsersic(double n, double re, double b, double q)
 
 
 
+/* Find the Sersic profile for a certain radius. rdre=r/re, inv_n=1/n,
+   nb= -1*b.  */
+double
+profiles_sersic(struct mkonthread *mkp)
+{
+  return exp( mkp->sersic_nb
+              * ( pow(mkp->r/mkp->sersic_re, mkp->sersic_inv_n) -1 ) );
+}
+
+
+
+
+
 /* Make a circumference (inner to the radius). */
 double
-Circumference(struct mkonthread *mkp)
+profiles_circumference(struct mkonthread *mkp)
 {
   return mkp->r > mkp->intruncr ? mkp->fixedvalue : 0.0f;
 }
@@ -165,7 +177,7 @@ Circumference(struct mkonthread *mkp)
 
 /* Always returns a fixed value: */
 double
-Flat(struct mkonthread *mkp)
+profiles_flat(struct mkonthread *mkp)
 {
   return mkp->fixedvalue;
 }

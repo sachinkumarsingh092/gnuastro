@@ -165,6 +165,20 @@ struct argp_option program_options[] =
       ARGS_GROUP_PROFILES
     },
     {
+      "mode",
+      UI_KEY_MODE,
+      "STR",
+      0,
+      "Mode of `--ccol': `img' or `wcs'.",
+      ARGS_GROUP_PROFILES,
+      &p->mode,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_coordinate_mode
+    },
+    {
       "numrandom",
       UI_KEY_NUMRANDOM,
       "INT",
@@ -175,6 +189,19 @@ struct argp_option program_options[] =
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "envseed",
+      UI_KEY_ENVSEED,
+      0,
+      0,
+      "Use GSL_RNG_SEED environment variable for seed.",
+      ARGS_GROUP_PROFILES,
+      &p->envseed,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
@@ -198,6 +225,19 @@ struct argp_option program_options[] =
       "Truncation is in units of pixels, not radius.",
       ARGS_GROUP_PROFILES,
       &p->tunitinp,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "mforflatpix",
+      UI_KEY_MFORFLATPIX,
+      0,
+      0,
+      "mcol is flat pixel value (when fcol is 5 or 6)",
+      ARGS_GROUP_PROFILES,
+      &p->mforflatpix,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -244,6 +284,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "magatpeak",
+      UI_KEY_MAGATPEAK,
+      0,
+      0,
+      "Magnitude is for peak pixel, not full profile.",
+      ARGS_GROUP_PROFILES,
+      &p->magatpeak,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "circumwidth",
       UI_KEY_CIRCUMWIDTH,
       "FLT",
@@ -264,32 +317,6 @@ struct argp_option program_options[] =
       "Replace overlapping profile pixels, don't add.",
       ARGS_GROUP_PROFILES,
       &p->replace,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "magatpeak",
-      UI_KEY_MAGATPEAK,
-      0,
-      0,
-      "Magnitude is for peak pixel, not full profile.",
-      ARGS_GROUP_PROFILES,
-      &p->magatpeak,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "envseed",
-      UI_KEY_ENVSEED,
-      0,
-      0,
-      "Use GSL_RNG_SEED environment variable for seed.",
-      ARGS_GROUP_PROFILES,
-      &p->envseed,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -319,26 +346,12 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "mode",
-      UI_KEY_MODE,
-      "STR",
-      0,
-      "Coordinate mode `img' or `wcs'.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->mode,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      ui_parse_coordinate_mode
-    },
-    {
       "fcol",
       UI_KEY_FCOL,
       "STR/INT",
       0,
       "sersic (1), moffat (2), gaussian (3), point (4), "
-      "flat (5), circumference (6).",
+      "flat (5), circumference (6), distance (7).",
       ARGS_GROUP_CATALOG,
       &p->fcol,
       GAL_TYPE_STRING,
@@ -422,19 +435,6 @@ struct argp_option program_options[] =
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "mforflatpix",
-      UI_KEY_MFORFLATPIX,
-      0,
-      0,
-      "mcol is flat pixel value (when fcol is 5 or 6)",
-      ARGS_GROUP_CATALOG,
-      &p->mforflatpix,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
 

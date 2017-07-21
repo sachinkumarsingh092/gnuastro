@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/git.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
@@ -78,11 +79,17 @@ builtqueue_addempty(struct builtqueue **bq)
     error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `tbq'",
           __func__, sizeof *tbq);
 
-  /* Initialize some of the values. */
-  tbq->img=NULL;
-  tbq->numaccu=0;
-  tbq->accufrac=0.0f;
-  tbq->indivcreated=0;
+  /* Initialize the values (same order as in structure definition). */
+  tbq->id           = GAL_BLANK_SIZE_T;
+  tbq->ispsf        = 0;
+  tbq->overlaps     = 0;
+  tbq->image        = NULL;
+  tbq->overlap_i    = NULL;
+  tbq->overlap_m    = NULL;
+  tbq->func         = PROFILE_MAXIMUM_CODE;
+  tbq->indivcreated = 0;
+  tbq->numaccu      = 0;
+  tbq->accufrac     = 0.0f;
 
   /* Set its next element to the input bq and re-set the input bq. */
   tbq->next=*bq;
@@ -118,14 +125,10 @@ saveindividual(struct mkonthread *mkp)
   struct mkprofparams *p=mkp->p;
 
   double *crpix;
-  gal_data_t *data;
   long os=p->oversample;
-  size_t i, ndim=p->out->ndim;
+  size_t i, ndim=p->ndim;
   struct builtqueue *ibq=mkp->ibq;
   char *filename, *jobname, *outdir=p->outdir;
-
-  /* Note that `width' is in FITS format, not C. */
-  size_t dsize[2]={mkp->width[1], mkp->width[0]};
 
 
   /* Write the name and remove a similarly named file when the `--kernel'
@@ -140,25 +143,20 @@ saveindividual(struct mkonthread *mkp)
     }
 
 
-  /* Put the array into a data structure */
-  data=gal_data_alloc(ibq->img, GAL_TYPE_FLOAT32, 2, dsize, NULL, 0,
-                      p->cp.minmapsize, "MockImage", "Brightness", NULL);
-
-
   /* Write the array to file (a separately built PSF doesn't need WCS
      coordinates). */
   if(ibq->ispsf && p->psfinimg==0)
-    gal_fits_img_write(data, filename, NULL, PROGRAM_STRING);
+    gal_fits_img_write(ibq->image, filename, NULL, PROGRAM_STRING);
   else
     {
       /* Allocate space for the corrected crpix and fill it in. Both
          `crpix' and `fpixel_i' are in FITS order. */
       crpix=gal_data_malloc_array(GAL_TYPE_FLOAT64, ndim, __func__, "crpix");
       for(i=0;i<ndim;++i)
-        crpix[0] = ((double *)(p->crpix->array))[0] - os*(mkp->fpixel_i[0]-1);
+        crpix[i] = ((double *)(p->crpix->array))[i] - os*(mkp->fpixel_i[i]-1);
 
       /* Write the image. */
-      gal_fits_img_write_corr_wcs_str(data, filename, p->wcsheader,
+      gal_fits_img_write_corr_wcs_str(ibq->image, filename, p->wcsheader,
                                       p->wcsnkeyrec, crpix, NULL,
                                       PROGRAM_STRING);
     }
@@ -199,6 +197,148 @@ saveindividual(struct mkonthread *mkp)
 /**************************************************************/
 /************            The builders             *************/
 /**************************************************************/
+/* High-level function to built a single profile and prepare it for the
+   next steps. */
+static void
+mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
+                    long *fpixel_o)
+{
+  struct mkprofparams *p = mkp->p;
+  struct builtqueue *ibq = mkp->ibq;
+
+  void *ptr;
+  int needs_crop=0;
+  size_t i, ind, fits_i, ndim=p->ndim;
+  size_t start_indiv[2], start_mrg[2], dsize[2], os=p->oversample;
+
+  /* Make a copy of the main random number generator to use for this
+     profile (in this thread). */
+  gsl_rng_memcpy(mkp->rng, p->rng);
+
+  /* Set the seed of the random number generator if the
+     environment is not to be used. */
+  if(mkp->p->envseed==0)
+    gsl_rng_set(mkp->rng, gal_timing_time_based_rng_seed());
+
+  /* Make the profile */
+  oneprofile_make(mkp);
+
+  /* Build an individual image if necessary. */
+  if( p->individual || (ibq->ispsf && p->psfinimg==0))
+    {
+      saveindividual(mkp);
+      if(ibq->ispsf && p->psfinimg==0)
+        ibq->overlaps=0;
+    }
+
+  /* If we want a merged image, then a tile needs to be defined over the
+     individual profile array and the output merged array to define the
+     overlapping region. */
+  if(p->out)
+    {
+      /* Note that `fpixel_o' and `lpixel_o' were in the un-oversampled
+         image, they are also in the FITS coordinates. */
+      for(i=0;i<ndim;++i)
+        {
+          /* Set the start and width of the overlap. */
+          fits_i = ndim-i-1;
+          start_indiv[i] = os * (fpixel_o[fits_i] - 1);
+          start_mrg[i]   = os * (fpixel_i[fits_i] - 1);
+          dsize[i]       = os * (lpixel_i[fits_i] - fpixel_i[fits_i] + 1);
+
+          /* Check if we need to crop the individual image or not. */
+          if(dsize[i] != ibq->image->dsize[i]) needs_crop=1;
+        }
+
+
+      /* Define the individual overlap tile. */
+      if(needs_crop)
+        {
+          /* If a crop is needed, set the starting pointer. */
+          ind=gal_dimension_coord_to_index(ndim, ibq->image->dsize,
+                                           start_indiv);
+          ptr=gal_data_ptr_increment(ibq->image->array, ind,
+                                     ibq->image->type);
+        }
+      else ptr=ibq->image->array;
+      ibq->overlap_i=gal_data_alloc(ptr, ibq->image->type, ndim, dsize, NULL,
+                                    0, -1, NULL, NULL, NULL);
+      ibq->overlap_i->block=ibq->image;
+
+
+      /* Define the merged overlap tile. */
+      ind=gal_dimension_coord_to_index(ndim, p->out->dsize, start_mrg);
+      ptr=gal_data_ptr_increment(p->out->array, ind, p->out->type);
+      ibq->overlap_m=gal_data_alloc(ptr, p->out->type, ndim, dsize, NULL,
+                                    0, -1, NULL, NULL, NULL);
+      ibq->overlap_m->block=p->out;
+    }
+}
+
+
+
+
+
+/* The profile has been built, now add it to the queue of profiles that
+   must be written into the final merged image. */
+static void
+mkprof_add_built_to_write_queue(struct mkonthread *mkp,
+                                struct builtqueue *ibq,
+                                struct builtqueue **fbq, size_t counter)
+{
+  struct mkprofparams *p = mkp->p;
+
+  int lockresult;
+  pthread_mutex_t *qlock=&p->qlock;
+  pthread_cond_t *qready=&p->qready;
+
+  /* Try locking the mutex so no thread can change the value of p->bq. If
+     you can lock it, then put the internal builtqueue on top of the
+     general builtqueue. If you can't, continue adding to the internal
+     builtqueue (make the next profiles) until you find a chance to lock
+     the mutex. */
+  lockresult=pthread_mutex_trylock(qlock);
+  if(lockresult==0)     /* Mutex was successfully locked. */
+    {
+      /* Add this internal queue to system queue. */
+      (*fbq)->next=p->bq;
+      p->bq=ibq;
+
+      /* If the list was empty when you locked the mutex, then either
+         `mkprof_write` is waiting behind a condition variable for you to
+         fill it up or not (either it hasn't got to setting the condition
+         variable yet (this function locked the mutex before
+         `mkprof_write`) or it just got the list to be made and is busy
+         writing the arrays in the output). In either case,
+         pthread_cond_signal will work. */
+      if((*fbq)->next==NULL)
+        pthread_cond_signal(qready);
+      pthread_mutex_unlock(qlock);
+
+      /* Finally set both the internal queue and the first internal queue
+         element to NULL.*/
+      (*fbq)=NULL;
+      mkp->ibq=NULL;
+    }
+
+  /* The mutex couldn't be locked and there are no more objects for this
+     thread to build (giving a chance for this thread to add up its built
+     profiles). So we have to lock the mutex to pass on this built
+     structure to the builtqueue. */
+  else if (mkp->indexs[counter+1]==GAL_BLANK_SIZE_T)
+    {
+      pthread_mutex_lock(qlock);
+      (*fbq)->next=p->bq;
+      p->bq=ibq;
+      pthread_cond_signal(qready);
+      pthread_mutex_unlock(qlock);
+    }
+}
+
+
+
+
+
 /* Build the profiles that are indexed in the indexs array of the
    mkonthread structure that was assigned to it.
 
@@ -227,19 +367,17 @@ saveindividual(struct mkonthread *mkp)
    fractional value >=0.5, we will just shift the integer part of the
    central pixel by one and completely ignore the fractional part.
 */
-void *
+static void *
 mkprof_build(void *inparam)
 {
   struct mkonthread *mkp=(struct mkonthread *)inparam;
   struct mkprofparams *p=mkp->p;
 
-  size_t i, id;
-  int lockresult;
   double center[2];
-  long lpixel_o[2];
-  pthread_mutex_t *qlock=&p->qlock;
+  size_t i, id, ndim=p->ndim;
   struct builtqueue *ibq, *fbq=NULL;
-  pthread_cond_t *qready=&p->qready;
+  long fpixel_i[2], lpixel_i[2], fpixel_o[2], lpixel_o[2];
+
 
   /* Make each profile that was specified for this thread. */
   for(i=0; mkp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
@@ -264,94 +402,33 @@ mkprof_build(void *inparam)
       if( p->f[id] == PROFILE_POINT )
         mkp->width[0]=mkp->width[1]=1;
       else
-        gal_box_bound_ellipse(mkp->truncr, mkp->q*mkp->truncr, p->p[id],
-                              mkp->width);
-
+        gal_box_bound_ellipse(mkp->truncr, mkp->q[0]*mkp->truncr,
+                              p->p[id], mkp->width);
 
 
       /* Get the overlapping pixels using the starting points (NOT
          oversampled). */
-      center[0]=p->x[id];
-      center[1]=p->y[id];
-      gal_box_border_from_center(center, p->out->ndim, mkp->width,
-                                 ibq->fpixel_i, ibq->lpixel_i);
-      mkp->fpixel_i[0]=ibq->fpixel_i[0];
-      mkp->fpixel_i[1]=ibq->fpixel_i[1];
-      ibq->overlaps = gal_box_overlap(mkp->onaxes, ibq->fpixel_i,
-                                      ibq->lpixel_i, ibq->fpixel_o,
-                                      lpixel_o, 2);
+      if(p->out)
+        {
+          center[0]=p->x[id];
+          center[1]=p->y[id];
+          gal_box_border_from_center(center, ndim, mkp->width, fpixel_i,
+                                     lpixel_i);
+          memcpy(mkp->fpixel_i, fpixel_i, ndim*sizeof *fpixel_i);
+          ibq->overlaps = gal_box_overlap(mkp->onaxes, fpixel_i, lpixel_i,
+                                          fpixel_o, lpixel_o, ndim);
+        }
 
 
-      /* Build the profile if necessary, After this, the width is
-         oversampled. */
+      /* Build the profile if necessary. */
       if(ibq->overlaps || p->individual || (ibq->ispsf && p->psfinimg==0))
-        {
-          /* Put a copy of the main random number generator for this
-             thread to use for this profile. */
-          gsl_rng_memcpy(mkp->rng, p->rng);
+        mkprof_build_single(mkp, fpixel_i, lpixel_i, fpixel_o);
 
-          /* Set the seed of the random number generator if the
-             environment is not to be used. */
-          if(mkp->p->envseed==0)
-            gsl_rng_set(mkp->rng, gal_timing_time_based_rng_seed());
 
-          /* Make the profile */
-          oneprofile_make(mkp);
-          if( p->individual || (ibq->ispsf && p->psfinimg==0))
-            {
-              saveindividual(mkp);
-              if(ibq->ispsf && p->psfinimg==0)
-                ibq->overlaps=0;
-            }
-        }
-
-      /* Add ibq to bq if you can lock the mutex. */
+      /* Add this profile to the list of profiles that must be written onto
+         the final merged image with another thread. */
       if(p->cp.numthreads>1)
-        {
-          /* Try locking the mutex so no thread can change the value
-             of p->bq. If you can lock it, then put the internal
-             builtqueue on top of the general builtqueue. If you
-             can't, continue adding to the internal builtqueue (make
-             the next profiles) until you find a chance to lock the
-             mutex. */
-          lockresult=pthread_mutex_trylock(qlock);
-          if(lockresult==0)     /* Mutex was successfully locked. */
-            {
-              /* Add this internal queue to system queue. */
-              fbq->next=p->bq;
-              p->bq=ibq;
-
-              /* If the list was empty when you locked the mutex, then
-                 either `mkprof_write` is waiting behind a condition
-                 variable for you to fill it up or not (either it hasn't
-                 got to setting the condition variable yet (this function
-                 locked the mutex before `mkprof_write`) or it just got the
-                 list to be made and is busy writing the arrays in the
-                 output). In either case, pthread_cond_signal will work. */
-              if(fbq->next==NULL)
-                pthread_cond_signal(qready);
-              pthread_mutex_unlock(qlock);
-
-              /* Finally set both the internal queue and the first
-                 internal queue element to NULL.*/
-              fbq=NULL;
-              mkp->ibq=NULL;
-            }
-
-          /* The mutex couldn't be locked and there are no more
-             objects for this thread to build (giving a chance for
-             this thread to add up its built profiles). So we have to
-             lock the mutex to pass on this built structure to the
-             builtqueue. */
-          else if (mkp->indexs[i+1]==GAL_BLANK_SIZE_T)
-            {
-              pthread_mutex_lock(qlock);
-              fbq->next=p->bq;
-              p->bq=ibq;
-              pthread_cond_signal(qready);
-              pthread_mutex_unlock(qlock);
-            }
-        }
+        mkprof_add_built_to_write_queue(mkp, ibq, &fbq, i);
     }
 
   /* Free the allocated space for this thread and wait until all other
@@ -387,21 +464,15 @@ mkprof_build(void *inparam)
 /**************************************************************/
 /************              The writer             *************/
 /**************************************************************/
-void
+static void
 mkprof_write(struct mkprofparams *p)
 {
   double sum;
   char *jobname;
   struct timeval t1;
-  long os=p->oversample;
-  int replace=p->replace;
   gal_data_t *out=p->out, *log;
-  size_t i, j, iw, jw, ii, jj, ow;
-  size_t w=p->dsize[ out->ndim - 1];         /* Number of rows. */
   struct builtqueue *ibq=NULL, *tbq;
-  float *to, *from, *colend, *rowend;
   size_t complete=0, num=p->num, clog;
-
 
   /* Write each image into the output array. */
   while(complete<p->num)
@@ -423,66 +494,17 @@ mkprof_write(struct mkprofparams *p)
         }
       sum=0.0f;
 
-      /* Write the array pointed to by ibq into the output image. Note
-         that the FITS and C arrays have opposite axis orders and FITS
-         counting starts from 1, not zero. Also fpixel is the first
-         (inclusive) pixel and so is lpixel (it is inclusive). */
-      if(ibq->overlaps && out->array)
-        {
 
-          /* Set the starting and ending points in the complete image. */
-          i  = os * (ibq->fpixel_i[1]-1);
-          j  = os * (ibq->fpixel_i[0]-1);
+      /* During the build process, we also defined the overlap tiles of
+         both the individual array and the final merged array, here we will
+         use those to put the required profile pixels into the final
+         array. */
+      if(ibq->overlaps && out)
+        GAL_TILE_PO_OISET(float,float,ibq->overlap_i,ibq->overlap_m,1,0, {
+            *o  = p->replace ? ( *i==0.0f ? *o : *i ) :  (*i + *o);
+            sum += *i;
+          });
 
-
-          /* Set the starting and ending points in the overlapping
-             image. Note that oversampling has already been taken
-             into account in ibq->imgwidth. */
-          ow = ibq->imgwidth;
-          ii = os * (ibq->fpixel_o[1]-1);
-          jj = os * (ibq->fpixel_o[0]-1);
-
-
-          /* Find the width of the overlapping region: */
-          iw = os*(ibq->lpixel_i[1]-ibq->fpixel_i[1]+1);
-          jw = os*(ibq->lpixel_i[0]-ibq->fpixel_i[0]+1);
-
-
-          /* Write the overlap to the actual image. Instead of writing
-             two for loops and summing all the row and column indexs
-             for every pixel and each image, we use pointer arithmetic
-             which is much more efficient. Just think of one pointer
-             that is advancing over the final image (*to) and one that
-             is advancing over the overlap image (*from). Since we
-             know the images overlap, iw and jw are both smaller than
-             the two image number of columns and number of rows, so
-             w-jw and ow-jw will always be positive. */
-          to = (float *)(out->array) + i*w+j;
-          from=ibq->img+ii*ow+jj;
-          rowend=to+iw*w;
-          do
-            {
-              /* Go over all the pixels in this row and write this profile
-                 into the final output array. Just note that when
-                 replacing, we don't want to replace those pixels that have
-                 a zero value, since no profile existed there. */
-              colend=to+jw;
-              do
-                {
-                  *to  = ( replace
-                           ? ( *from==0.0f ? *to : *from )
-                           :  *to + *from );
-                  sum += *from;
-                  ++from;
-                }
-              while(++to<colend);
-
-              /* Go to the next row. */
-              to   += w-jw;
-              from += ow-jw;
-            }
-          while(to<rowend);
-        }
 
       /* Fill the log array. */
       if(p->cp.log)
@@ -510,6 +532,7 @@ mkprof_write(struct mkprofparams *p)
               }
         }
 
+
       /* Report if in verbose mode. */
       ++complete;
       if(!p->cp.quiet && p->num>1)
@@ -520,25 +543,33 @@ mkprof_write(struct mkprofparams *p)
           free(jobname);
         }
 
+
       /* Free the array and the queue element and change it to the next one
          and increment complete. Note that there is no problem to free a
          NULL pointer (when the built array didn't overlap). */
-      free(ibq->img);
+      gal_data_free(ibq->overlap_i);
+      gal_data_free(ibq->overlap_m);
+      gal_data_free(ibq->image);
       tbq=ibq->next;
       free(ibq);
       ibq=tbq;
     }
 
+
   /* Write the final array to the output FITS image if a merged image is to
      be created. */
-  if(out->array)
+  if(out)
     {
       /* Get the current time for verbose output. */
       if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
-      /* Write the final image into a FITS file with the requested type. */
+      /* Write the final image into a FITS file with the requested
+         type. Until now, we were using `p->wcs' for the WCS, but from now
+         on, will put it in `out' to also free it while freeing `out'. */
+      out->wcs=p->wcs;
       gal_fits_img_write_to_type(out, p->mergedimgname, NULL,
                                  PROGRAM_STRING, p->cp.type);
+      p->wcs=NULL;
 
       /* Clean up */
       gal_data_free(out);
@@ -551,11 +582,6 @@ mkprof_write(struct mkprofparams *p)
           free(jobname);
         }
     }
-
-  /* Even with no merged image, there might still be pointers in `out' that
-     need to be freed. */
-  else
-    gal_data_free(p->out);
 }
 
 
@@ -590,10 +616,9 @@ mkprof(struct mkprofparams *p)
   pthread_barrier_t b;
   struct mkonthread *mkp;
   gal_list_str_t *comments=NULL;
-  long *onaxes, os=p->oversample;
   size_t i, fi, *indexs, thrdcols;
-  size_t nb, ndim=p->out->ndim, nt=p->cp.numthreads;
-
+  long *onaxes=NULL, os=p->oversample;
+  size_t nb, ndim=p->ndim, nt=p->cp.numthreads;
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. Note that we only want nt-1 threads to do the
@@ -611,13 +636,18 @@ mkprof(struct mkprofparams *p)
   gal_threads_dist_in_threads(p->num, nt, &indexs, &thrdcols);
 
 
-  /* onaxes are sides of the image without over-sampling in FITS order. */
-  onaxes=gal_data_malloc_array(GAL_TYPE_LONG, ndim, __func__, "onaxes");
-  for(fi=0; fi < ndim; ++fi)
+  /* `onaxes' are size of the merged output image without over-sampling or
+     shifting in FITS order. When no output merged image is needed, we can
+     ignore it. */
+  if(p->out)
     {
-      i=ndim-fi-1;
-      onaxes[fi] = ( ( p->dsize[i] - 2 * p->shift[i] ) / os
-                     + 2 * p->shift[i]/os );
+      onaxes=gal_data_malloc_array(GAL_TYPE_LONG, ndim, __func__, "onaxes");
+      for(fi=0; fi < ndim; ++fi)
+        {
+          i=ndim-fi-1;
+          onaxes[fi] = ( ( p->dsize[i] - 2 * p->shift[i] ) / os
+                         + 2 * p->shift[i]/os );
+        }
     }
 
 
@@ -694,5 +724,5 @@ mkprof(struct mkprofparams *p)
   /* Clean up. */
   free(mkp);
   free(indexs);
-  free(onaxes);
+  if(onaxes) free(onaxes);
 }

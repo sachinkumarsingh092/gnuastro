@@ -24,33 +24,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define PROFILES_H
 
 double
-Gaussian(struct mkonthread *mkp);
+profiles_radial_distance(struct mkonthread *mkp);
 
 double
-totgaussian(double q);
+profiles_gaussian_total(double q);
 
 double
-Moffat(struct mkonthread *mkp);
+profiles_gaussian(struct mkonthread *mkp);
 
 double
-moffat_alpha(double fwhm, double beta);
+profiles_moffat_alpha(double fwhm, double beta);
 
 double
-totmoffat(double alpha, double beta, double q);
+profiles_moffat_total(double alpha, double beta, double q);
 
 double
-Sersic(struct mkonthread *mkp);
+profiles_moffat(struct mkonthread *mkp);
 
 double
-sersic_b(double n);
+profiles_sersic_b(double n);
 
 double
-totsersic(double n, double re, double b, double q);
+profiles_sersic_total(double n, double re, double b, double q);
 
 double
-Circumference(struct mkonthread *mkp);
+profiles_sersic(struct mkonthread *mkp);
 
 double
-Flat(struct mkonthread *mkp);
+profiles_circumference(struct mkonthread *mkp);
+
+double
+profiles_flat(struct mkonthread *mkp);
 
 #endif

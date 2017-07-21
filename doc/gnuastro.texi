@@ -14860,6 +14860,18 @@ Circumference profile with `@code{circum}' or `@code{6}'. A fixed
 value will be used for all pixels between the truncation radius
 (@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
 @option{--circumwidth}).
+@item
+Radial distance profile with `@code{distance}' or `@code{7}'. At the lowest
+level, each pixel only has an elliptical radial distance given the
+profile's shape and orentiation (see @ref{Defining an ellipse}). When this
+profile is chosen, the pixel's elliptical radial distance from the profile
+center is written as its value. For this profile, the value in the
+magnitude column (@option{--mcol}) will be ignored.
+
+You can use this for checks or as a first approximation to define your own
+higher-level radial function. In the latter case, just note that the
+central values are going to be incorrect (see @ref{Sampling from a
+function}).
 @end itemize
 
 @item --rcol=STR/INT

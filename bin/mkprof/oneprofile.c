@@ -51,30 +51,100 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /****************************************************************
- **************        Elliptical radius       ******************
+ **************          Radial distance       ******************
  ****************************************************************/
-/* Convert cartesian coordinates to the rotated elliptical radius. */
-void
-r_el(struct mkonthread *mkp)
+/* Set the center position of the profile in the oversampled image. Note
+   that `mkp->width' is in the non-oversampled scale. IMPORTANT: the
+   ordering is in FITS coordinate order. */
+static void
+oneprofile_center_oversampled(struct mkonthread *mkp)
 {
-  double c=mkp->c, s=mkp->s, q=mkp->q, x=mkp->x, y=mkp->y;
-  mkp->r = sqrt( (x*c+y*s)*(x*c+y*s) + ((y*c-x*s)*(y*c-x*s)/q/q) );
+  struct mkprofparams *p=mkp->p;
+
+  double *dim;
+  long os=p->oversample;
+  size_t i, id=mkp->ibq->id;
+  double val, pixfrac, intpart;
+
+  for(i=0;i<p->ndim;++i)
+    {
+      dim = i==0 ? p->x : p->y;
+
+      pixfrac = modf(fabs(dim[id]), &intpart);
+      val     = ( os*(mkp->width[i]/2 + pixfrac)
+                  + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
+      mkp->center[i] = round(val*100)/100;
+    }
 }
 
 
 
 
 
-/* Calculate the cercular distance of a pixel to the profile center. */
-float
-r_circle(size_t p, struct mkonthread *mkp)
+static void
+oneprofile_set_coord(struct mkonthread *mkp, size_t index)
 {
-  double x, y;
+  size_t i, coord_c[2];
+  uint8_t os=mkp->p->oversample;
+  size_t ndim=mkp->ibq->image->ndim, *dsize=mkp->ibq->image->dsize;
 
-  x = p/mkp->width[0];   /* Note that width[0] is the First FITS */
-  y = p%mkp->width[0];   /* axis, not first C axis.              */
+  /* Get the coordinates in C order. */
+  gal_dimension_index_to_coord(index, ndim, dsize, coord_c);
 
-  return sqrt( (x-mkp->xc)*(x-mkp->xc) + (y-mkp->yc)*(y-mkp->yc) );
+  /* Convert these coordinates to one where the profile center is at the
+     center and the image is not over-sampled. Note that only `coord_c' is
+     in C order.*/
+  for(i=0;i<ndim;++i)
+    mkp->coord[i] = ( coord_c[ndim-i-1] - mkp->center[i] )/os;
+}
+
+
+
+
+
+/* Convert cartesian coordinates to the rotated elliptical radius. See the
+   "Defining an ellipse" section of the book for the full derivation. */
+static void
+oneprofile_r_el(struct mkonthread *mkp)
+{
+  double Xr, Yr;                 /* Rotated x and y. */
+  double q=mkp->q[0];
+  double c=mkp->c[0],     s=mkp->s[0];
+  double x=mkp->coord[0], y=mkp->coord[1];
+
+  Xr = x * ( c       )     +   y * ( s );
+  Yr = x * ( -1.0f*s )     +   y * ( c );
+  mkp->r = sqrt( Xr*Xr + Yr*Yr/q/q );
+}
+
+
+
+
+
+/* Calculate the circular/spherical distance of a pixel to the profile
+   center. This is just used to add pixels in the stack. Later, when the
+   pixels are popped from the stack, the elliptical radius will be used to
+   give them a value.*/
+static float
+oneprofile_r_circle(size_t index, struct mkonthread *mkp)
+{
+  size_t i, c[2];
+  double d, sum=0.0f;
+  size_t ndim=mkp->ibq->image->ndim, *dsize=mkp->ibq->image->dsize;
+
+  /* Convert the index into a coordinate. */
+  gal_dimension_index_to_coord(index, ndim, dsize, c);
+
+  /* Find the distance to the center along each dimension (in FITS
+     order). */
+  for(i=0;i<ndim;++i)
+    {
+      d = c[ndim-i-1] - mkp->center[i];
+      sum += d*d;
+    }
+
+  /* Return the distance. */
+  return sqrt(sum);
 }
 
 
@@ -100,21 +170,21 @@ r_circle(size_t p, struct mkonthread *mkp)
  ****************************************************************/
 /* Fill pixel with random values */
 float
-randompoints(struct mkonthread *mkp)
+oneprofile_randompoints(struct mkonthread *mkp)
 {
-  double xrange, yrange, sum=0.0f;
-  size_t i, numrandom=mkp->p->numrandom;
+  double range[2], sum=0.0f;
+  size_t i, j, numrandom=mkp->p->numrandom, ndim=mkp->p->ndim;
 
-  /* Set the range of the x and y: */
-  xrange=mkp->xh-mkp->xl;
-  yrange=mkp->yh-mkp->yl;
+  /* Set the range in each dimension. */
+  for(i=0;i<ndim;++i)
+    range[i] = mkp->higher[i] - mkp->lower[i];
 
-  /* Find the sum of the profile on the random positions */
+  /* Find the sum of the profile on the random positions. */
   for(i=0;i<numrandom;++i)
     {
-      mkp->x = mkp->xl + gsl_rng_uniform(mkp->rng)*xrange;
-      mkp->y = mkp->yl + gsl_rng_uniform(mkp->rng)*yrange;
-      r_el(mkp);
+      for(j=0;j<ndim;++j)
+        mkp->coord[j] = mkp->lower[j] + gsl_rng_uniform(mkp->rng) * range[j];
+      oneprofile_r_el(mkp);
       sum+=mkp->profile(mkp);
     }
 
@@ -143,15 +213,16 @@ randompoints(struct mkonthread *mkp)
 /****************************************************************
  *****************      2D integration       ********************
  ****************************************************************/
-/* This function is used in the integration of a profile. It
-   assumes a fixed y and integrates over a range of x values.  */
+/* This is an old implementation which we are not using now. But it is kept
+   here in case it can be useful */
+#if 0
 double
 twod_over_x(double x, void *params)
 {
   struct mkonthread *mkp=(struct mkonthread *) params;
 
   mkp->x=x;
-  r_el(mkp);
+  oneprofile_r_el(mkp);
   return mkp->profile(mkp);
 }
 
@@ -196,8 +267,7 @@ integ2d(struct mkonthread *mkp)
                       epsrel, &result, &abserr, &neval);
   return result;
 }
-
-
+#endif
 
 
 
@@ -220,49 +290,76 @@ integ2d(struct mkonthread *mkp)
 /************       Pixel by pixel building       *************/
 /*********        Positions are in C not FITS         *********/
 /**************************************************************/
-static void
-makepixbypix(struct mkonthread *mkp)
+/* `oneprofile_center_oversampled' stored the center of the profile in
+   floating point coordinates. This function will convert that into a
+   pixel index. */
+static size_t
+oneprofile_center_pix_index(struct mkonthread *mkp)
 {
-  size_t ndim=2, dsize[2]={mkp->width[1], mkp->width[0]};
+  double pixfrac, intpart;
+  size_t *dsize=mkp->ibq->image->dsize;
+  size_t i, coord[2], ndim=mkp->p->ndim;
+
+  /* Find the coordinates of the center point. Note `mkp->center' is in
+     FITS coordinates, while coord must be in C coordinates (to be used in
+     `gal_dimension_coord_to_index'). */
+  for(i=0;i<ndim;++i)
+    {
+      pixfrac = modf(mkp->center[i], &intpart);
+      coord[ndim-i-1] = (long)(mkp->center[i]) + ( pixfrac<0.5f ? 0 : 1 );
+    }
+
+  /* Retun the pixel index of this coordinate. */
+  return gal_dimension_coord_to_index(ndim, dsize, coord);
+}
+
+
+
+
+
+static void
+oneprofile_pix_by_pix(struct mkonthread *mkp)
+{
+  struct builtqueue *ibq=mkp->ibq;
+  size_t ndim=ibq->image->ndim, *dsize=ibq->image->dsize;
 
   uint8_t *byt;
   gal_list_sizet_t *Q=NULL;
   int use_rand_points=1, ispeak=1;
-  struct builtqueue *ibq=mkp->ibq;
-  float circ_r, *img=mkp->ibq->img;
-  size_t *dinc=gal_dimension_increment(ndim, dsize);
-  double tolerance=mkp->p->tolerance, pixfrac, junk;
+  double tolerance=mkp->p->tolerance;
+  float circ_r, *array=mkp->ibq->image->array;
   double (*profile)(struct mkonthread *)=mkp->profile;
-  double xc=mkp->xc, yc=mkp->yc, os=mkp->p->oversample;
-  size_t p, x, y, is1=mkp->width[0], is0=mkp->width[1];
   double truncr=mkp->truncr, approx, hp=0.5f/mkp->p->oversample;
+  size_t i, p, *dinc=gal_dimension_increment(ndim, dsize);
 
   /* lQ: Largest. sQ: Smallest in queue */
   gal_list_dosizet_t *lQ=NULL, *sQ;
 
   /* Find the nearest pixel to the profile center and add it to the
      queue. */
-  pixfrac = modf(mkp->xc, &junk);
-  x=(long)mkp->xc + ( pixfrac<0.5f ? 0 : 1 );
-  pixfrac = modf(mkp->yc, &junk);
-  y=(long)mkp->yc + ( pixfrac<0.5f ? 0 : 1 );
-  p=x*mkp->width[0]+y;
+  p=oneprofile_center_pix_index(mkp);
 
-  /* If this is a point source, just fill that one pixel and go. */
+  /* If this is a point source, just fill that one pixel and leave this
+     function. */
   if(mkp->func==PROFILE_POINT)
-    { img[p]=1; return; }
+    { array[p]=1; return; }
 
-  /* Allocate the byt array to not repeat completed pixels. */
-  byt = gal_data_calloc_array(GAL_TYPE_UINT8, is0*is1, __func__, "byt");
+  /* Allocate the `byt' array. It is used as a flag to make sure that we
+     don't re-calculate the profile value on a pixel more than once. */
+  byt = gal_data_calloc_array(GAL_TYPE_UINT8,
+                              gal_dimension_total_size(ndim, dsize),
+                              __func__, "byt");
 
   /* Start the queue: */
   byt[p]=1;
-  gal_list_dosizet_add( &lQ, &sQ, p, r_circle(p, mkp) );
+  gal_list_dosizet_add( &lQ, &sQ, p, oneprofile_r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
-  if(mkp->func==PROFILE_SERSIC || mkp->func==PROFILE_MOFFAT
-     || mkp->func==PROFILE_GAUSSIAN)
+  switch(mkp->func)
     {
+    case PROFILE_SERSIC:
+    case PROFILE_MOFFAT:
+    case PROFILE_GAUSSIAN:
       while(sQ)
         {
           /* In case you want to see the status of the twosided ordered
@@ -270,39 +367,34 @@ makepixbypix(struct mkonthread *mkp)
              line. Note that there will be a lot of lines printed! */
           /*print_tossll(lQ, sQ);*/
 
-          /* Pop the pixel from the queue and check if it is within the
-             truncation radius. Note that `xc` and `p` both belong to the
-             over sampled image. But all the profile parameters are in the
-             non-oversampled image. So we divide the distance by os
-             (p->oversample in double type) */
+          /* Pop a pixel from the queue, convert its index into coordinates
+             and use them to estimate the elliptical radius of the
+             pixel. If the pixel is outside the truncation radius, ignore
+             it. */
           p=gal_list_dosizet_pop_smallest(&lQ, &sQ, &circ_r);
-          mkp->x=(p/is1-xc)/os;
-          mkp->y=(p%is1-yc)/os;
-          r_el(mkp);
-          if(mkp->r>truncr) continue;
+          oneprofile_set_coord(mkp, p);
+          oneprofile_r_el(mkp);
+          if(mkp->r > truncr) continue;
 
           /* Find the value for this pixel: */
-          mkp->xl=mkp->x-hp;
-          mkp->xh=mkp->x+hp;
-          mkp->yl=mkp->y-hp;
-          mkp->yh=mkp->y+hp;
-          /*
-            printf("Center (%zu, %zu). r: %.4f. x: [%.4f--%.4f], "
-                   "y: [%.4f, %.4f]\n", p%is1+1, p/is1+1, mkp->r, mkp->xl,
-                   mkp->xh, mkp->yl, mkp->yh);
-          */
+          for(i=0;i<ndim;++i)
+            {
+              mkp->lower[i]  = mkp->coord[i] - hp;
+              mkp->higher[i] = mkp->coord[i] + hp;
+            }
+
           /* Find the random points and profile center. */
-          img[p]=randompoints(mkp);
+          array[p]=oneprofile_randompoints(mkp);
           approx=profile(mkp);
-          if (fabs(img[p]-approx)/img[p] < tolerance)
+          if (fabs(array[p]-approx)/array[p] < tolerance)
             use_rand_points=0;
 
           /* Save the peak flux if this is the first pixel: */
-          if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
+          if(ispeak) { mkp->peakflux=array[p]; ispeak=0; }
 
           /* For the log file: */
           ++ibq->numaccu;
-          ibq->accufrac+=img[p];
+          ibq->accufrac+=array[p];
 
           /* Go over the neighbors and add them to queue of elements to
              check if they haven't been done already. */
@@ -311,7 +403,8 @@ makepixbypix(struct mkonthread *mkp)
               if(byt[nind]==0)
                 {
                   byt[nind]=1;
-                  gal_list_dosizet_add( &lQ, &sQ, nind, r_circle(nind, mkp) );
+                  gal_list_dosizet_add( &lQ, &sQ, nind,
+                                        oneprofile_r_circle(nind, mkp) );
                 }
             } );
 
@@ -329,23 +422,26 @@ makepixbypix(struct mkonthread *mkp)
   while(Q)
     {
       p=gal_list_sizet_pop(&Q);
-      mkp->x=(p/is1-xc)/os;
-      mkp->y=(p%is1-yc)/os;
-      r_el(mkp);
+      oneprofile_set_coord(mkp, p);
+      oneprofile_r_el(mkp);
+
+      /* See if this pixel's radial distance is larger than the truncation
+         radius. If so, then don't add its neighbors to the queue and
+         continue to the next pixel in the queue. */
       if(mkp->r>truncr)
         {
           /* For the circumference, if the profile is too elongated
              and circumwidth is too small, then some parts of the
              circumference will not be shown without this condition. */
-          if(mkp->func==PROFILE_CIRCUMFERENCE) img[p]=profile(mkp);
+          if(mkp->func==PROFILE_CIRCUMFERENCE) array[p]=profile(mkp);
           continue;
         }
 
       /* Find the value for this pixel: */
-      img[p]=profile(mkp);
+      array[p]=profile(mkp);
 
       /* Save the peak flux if this is the first pixel: */
-      if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
+      if(ispeak) { mkp->peakflux=array[p]; ispeak=0; }
 
       /* Go over the neighbours and add them to queue of elements
          to check. */
@@ -395,7 +491,7 @@ oneprofile_ispsf(uint8_t fcode)
 
 
 
-/* About the shifts on the X column and y column:*/
+/* Prepare all the parameters for any type of profile. */
 void
 oneprof_set_prof_params(struct mkonthread *mkp)
 {
@@ -405,26 +501,31 @@ oneprof_set_prof_params(struct mkonthread *mkp)
   int tp=p->tunitinp;
   size_t id=mkp->ibq->id;
 
-  /* Fill in the profile independant parameters. */
-  p->x[id]       += p->shift[1]/p->oversample; /* Shifts were multiplied by */
-  p->y[id]       += p->shift[0]/p->oversample; /* `p->oversample' before.   */
-  mkp->c          = cos( (90-p->p[id]) * DEGREESTORADIANS );
-  mkp->s          = sin( (90-p->p[id]) * DEGREESTORADIANS );
-  mkp->q          = p->q[id];
+  /* Fill the most basic dimension and profile agnostic parameters. */
   mkp->brightness = pow( 10, (p->zeropoint - p->m[id]) / 2.5f );
   mkp->ibq->ispsf = p->kernel ? 1 : oneprofile_ispsf(p->f[id]);
   mkp->func       = mkp->ibq->func = p->f[id];
 
 
-  /* Fill the profile dependent parameters. */
+  /* Shifts were already multiplied with oversample. Just note that
+     p->x and p->y are in the FITS ordering, while p->shift is in C
+     ordering. */
+  mkp->q[0]       = p->q[id];
+  p->x[id]       += p->shift[1]/p->oversample;
+  p->y[id]       += p->shift[0]/p->oversample;
+  mkp->c[0]       = cos( p->p[id] * DEGREESTORADIANS );
+  mkp->s[0]       = sin( p->p[id] * DEGREESTORADIANS );
+
+
+  /* Fill the profile-dependent parameters. */
   switch (mkp->func)
     {
     case PROFILE_SERSIC:
       mkp->correction       = 1;
-      mkp->profile          = &Sersic;
+      mkp->profile          = &profiles_sersic;
       mkp->sersic_re        = p->r[id];
       mkp->sersic_inv_n     = 1.0f/p->n[id];
-      mkp->sersic_nb        = -1.0f*sersic_b(p->n[id]);
+      mkp->sersic_nb        = -1.0f*profiles_sersic_b(p->n[id]);
       mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       break;
 
@@ -432,9 +533,9 @@ oneprof_set_prof_params(struct mkonthread *mkp)
 
     case PROFILE_MOFFAT:
       mkp->correction       = 1;
-      mkp->profile          = &Moffat;
+      mkp->profile          = &profiles_moffat;
       mkp->moffat_nb        = -1.0f*p->n[id];
-      mkp->moffat_alphasq   = moffat_alpha(p->r[id], p->n[id]);
+      mkp->moffat_alphasq   = profiles_moffat_alpha(p->r[id], p->n[id]);
       mkp->moffat_alphasq  *= mkp->moffat_alphasq;
       mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id]/2;
       if(p->psfinimg==0 && p->individual==0)
@@ -449,7 +550,7 @@ oneprof_set_prof_params(struct mkonthread *mkp)
 
     case PROFILE_GAUSSIAN:
       mkp->correction       = 1;
-      mkp->profile          = &Gaussian;
+      mkp->profile          = &profiles_gaussian;
       sigma                 = p->r[id]/2.35482f;
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
       mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id]/2;
@@ -466,13 +567,13 @@ oneprof_set_prof_params(struct mkonthread *mkp)
     case PROFILE_POINT:
       mkp->correction       = 1;
       mkp->fixedvalue       = 1.0f;
-      mkp->profile          = &Flat;
+      mkp->profile          = &profiles_flat;
       break;
 
 
 
     case PROFILE_FLAT:
-      mkp->profile          = &Flat;
+      mkp->profile          = &profiles_flat;
       mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       if(p->mforflatpix)
         {
@@ -489,7 +590,7 @@ oneprof_set_prof_params(struct mkonthread *mkp)
 
 
     case PROFILE_CIRCUMFERENCE:
-      mkp->profile          = &Circumference;
+      mkp->profile          = &profiles_circumference;
       mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       mkp->intruncr         = mkp->truncr - p->circumwidth;
       if(p->mforflatpix)
@@ -507,6 +608,12 @@ oneprof_set_prof_params(struct mkonthread *mkp)
       break;
 
 
+
+    case PROFILE_DISTANCE:
+      mkp->profile          = profiles_radial_distance;
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
+      mkp->correction       = 0;
+      break;
 
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can correct "
@@ -542,44 +649,33 @@ oneprofile_make(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 
+  double sum;
   float *f, *ff;
-  long os=p->oversample;
-  double sum, pixfrac, intpart;
-  size_t size, id=mkp->ibq->id;
+  size_t i, dsize[3], ndim=p->ndim;
 
 
-  /* Find the profile center (see comments above
-     `mkprof_build'). mkp->width is in the non-oversampled scale.*/
-  pixfrac = modf(fabs(p->x[id]), &intpart);
-  mkp->yc = ( os * (mkp->width[0]/2 + pixfrac)
-              + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
-  mkp->yc = round(mkp->yc*100)/100;
-
-  pixfrac = modf(fabs(p->y[id]), &intpart);
-  mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
-              + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
-  mkp->xc = round(mkp->xc*100)/100;
+  /* Find the profile center in the over-sampled image in C
+     coordinates. IMPORTANT: width must not be oversampled.*/
+  oneprofile_center_oversampled(mkp);
 
 
-  /* From this point on, the widths are the actual pixel
-     widths (with oversampling). */
-  mkp->width[0] *= os;
-  mkp->width[1] *= os;
-  mkp->ibq->imgwidth=mkp->width[0];
+  /* From this point on, the widths will be in the actual pixel widths
+     (with oversampling). */
+  for(i=0;i<ndim;++i)
+    {
+      mkp->width[i]  *= p->oversample;
+      dsize[ndim-i-1] = mkp->width[i];
+    }
 
 
   /* Allocate and clear the array for this one profile. */
-  errno=0;
-  size=mkp->width[0]*mkp->width[1];
-  mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
-  if(mkp->ibq->img==NULL)
-    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for object in row %zu of "
-          "data in %s", __func__,
-          size*sizeof *mkp->ibq->img, mkp->ibq->id, p->catname);
+  mkp->ibq->image=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, ndim, dsize,
+                                 NULL, 1, p->cp.minmapsize, "MOCK",
+                                 "Brightness", NULL);
 
 
   /* Build the profile in the image. */
-  makepixbypix(mkp);
+  oneprofile_pix_by_pix(mkp);
 
 
   /* Correct the sum of pixels in the profile so it has the fixed total
@@ -589,7 +685,8 @@ oneprofile_make(struct mkonthread *mkp)
   if(mkp->correction)
     {
       /* First get the sum of all the pixels in the profile. */
-      sum=0.0f; ff=(f=mkp->ibq->img)+size; do sum+=*f++; while(f<ff);
+      ff=(f=mkp->ibq->image->array) + mkp->ibq->image->size;
+      sum=0.0f; do sum+=*f++; while(f<ff);
 
       /* Correct the fraction of brightness that was calculated
          accurately (not using the pixel center). */
@@ -604,7 +701,7 @@ oneprofile_make(struct mkonthread *mkp)
          value, then the whole profile's box is going to be NaN values,
          which is inconvenient and with the simple check here we can avoid
          it (only have the profile's pixels set to NaN. */
-      ff=(f=mkp->ibq->img)+size;
+      ff = (f=mkp->ibq->image->array) + mkp->ibq->image->size;
       if(isnan(mkp->brightness))
         do *f = *f ? NAN : *f ; while(++f<ff);
       else

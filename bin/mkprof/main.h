@@ -65,6 +65,7 @@ enum profile_types
   PROFILE_POINT,                /* Point profile.              */
   PROFILE_FLAT,                 /* Flat profile.               */
   PROFILE_CIRCUMFERENCE,        /* Circumference profile.      */
+  PROFILE_DISTANCE,             /* Elliptical radius of pixel. */
 
   PROFILE_MAXIMUM_CODE,         /* Just for a sanity check.    */
 };
@@ -91,13 +92,10 @@ struct builtqueue
   size_t               id;    /* ID of this object.                  */
   int               ispsf;    /* This is a PSF profile.              */
   int            overlaps;    /* ==1: Overlaps with the image.       */
-  float              *img;    /* Array of this profile's image.      */
-  size_t         imgwidth;    /* Width of *img.                      */
-  long        fpixel_i[2];    /* First pixel in output image.        */
-  long        lpixel_i[2];    /* Last pixel in output image.         */
-  long        fpixel_o[2];    /* First pixel in this array.          */
+  gal_data_t       *image;    /* Array of this profile's image.      */
+  gal_data_t   *overlap_i;    /* Overlap tile over individual array. */
+  gal_data_t   *overlap_m;    /* Overlap tile over merged array.     */
   int                func;    /* Profile's radial function.          */
-
   int        indivcreated;    /* ==1: an individual file is created. */
   size_t          numaccu;    /* Number of accurate pixels.          */
   double         accufrac;    /* Difference of accurate values.      */
@@ -165,7 +163,7 @@ struct mkprofparams
   uint8_t                *f;  /* Profile function code.                   */
   float                  *r;  /* Radius of profile.                       */
   float                  *n;  /* Index of profile.                        */
-  float                  *p;  /* Position angle of profile                */
+  float                  *p;  /* Position angle of profile.               */
   float                  *q;  /* Axis ratio of profile.                   */
   float                  *m;  /* Magnitude of profile.                    */
   float                  *t;  /* Truncation distance.                     */
@@ -180,6 +178,11 @@ struct mkprofparams
   char           *wcsheader;  /* The WCS header information for main img. */
   int            wcsnkeyrec;  /* The number of keywords in the WCS header.*/
   char       *mergedimgname;  /* Name of merged image.                    */
+  int                  nwcs;  /* for WCSLIB: no. coord. representations.  */
+  struct wcsprm        *wcs;  /* WCS information for this dataset.        */
+  size_t               ndim;  /* Number of dimensions (for `nomerged').   */
+                              /* We can't put it in `out' because it is   */
+                              /* meaning ful there.                       */
 };
 
 #endif
