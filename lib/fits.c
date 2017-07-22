@@ -470,42 +470,40 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
    type that must be used to store the actual values of the pixels may be
    different from the type from BITPIX. This function does the necessary
    corrections.*/
-void
+static void
 fits_type_correct(int *type, double bscale, double bzero)
 {
   int tofloat=1;
 
-  /* Work based on type, for the default conversions defined by CFITSIO,
-     make the proper correction, otherwise set the type to float. */
+  /* Work based on type. For the default conversions defined by the FITS
+     standard to change the signs of integers, make the proper correction,
+     otherwise set the type to float. */
   if(bscale==1.0f)
     switch(*type)
       {
       case GAL_TYPE_UINT8:
-        if(bzero == -128.0f)  { *type = GAL_TYPE_INT8;   tofloat=0; }
+        if(bzero == -128.0f)      { *type = GAL_TYPE_INT8;   tofloat=0; }
         break;
 
-    case GAL_TYPE_INT16:
-      /* Defined by the FITS standard: */
-      if(bzero == 32768)      { *type = GAL_TYPE_UINT16; tofloat=0; }
-      break;
+      case GAL_TYPE_INT16:
+        if(bzero == 32768)        { *type = GAL_TYPE_UINT16; tofloat=0; }
+        break;
 
-    case GAL_TYPE_INT32:
-      /* Defined by the FITS standard: */
-      if(bzero == 2147483648) { *type = GAL_TYPE_UINT32; tofloat=0; }
-      break;
+      case GAL_TYPE_INT32:
+        if(bzero == 2147483648LU) { *type = GAL_TYPE_UINT32; tofloat=0; }
+        break;
 
-    case GAL_TYPE_INT64:
-      /* Defined by the FITS standard: */
-      if(bzero == 9223372036854775808.0f)
-        {*type = GAL_TYPE_UINT64; tofloat=0;}
-      break;
+      case GAL_TYPE_INT64:
+        if(bzero == 9223372036854775808LLU)
+          {*type = GAL_TYPE_UINT64; tofloat=0;}
+        break;
 
-    /* For the other types (when `BSCALE=1.0f'), currently no correction is
-       necessary, maybe later we can check if the scales are integers and
-       set the integer output type to the smallest type that can allow the
-       scaled values. */
-    default: tofloat=0;
-    }
+        /* For the other types (when `BSCALE=1.0f'), currently no correction is
+           necessary, maybe later we can check if the scales are integers and
+           set the integer output type to the smallest type that can allow the
+           scaled values. */
+      default: tofloat=0;
+      }
 
   /* If the type must be a float, then do the conversion. */
   if(tofloat) *type=GAL_TYPE_FLOAT32;
