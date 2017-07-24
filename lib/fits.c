@@ -524,8 +524,8 @@ fits_type_correct(int *type, double bscale, char *bzero_str)
                         "used to identify that the dataset should be read as "
                         "unsigned 64-bit integers instead of signed 64-bit "
                         "integers. Depending on your version of CFITSIO, "
-                        "it may be read as a signed unsigned 64-bit "
-                        "integer\n\n", __func__, bzero_str, bzero_u64);
+                        "it may be read as a signed or unsigned 64-bit "
+                        "integer array\n\n", __func__, bzero_str, bzero_u64);
                 tofloat=0;
               }
           break;
