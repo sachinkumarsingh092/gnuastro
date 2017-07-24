@@ -110,8 +110,8 @@ operands_pop(struct arithmeticparams *p, char *operator)
   /* If the operand linked list has finished, then give an error and
      exit. */
   if(operands==NULL)
-    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" "
-          "operator", operator);
+    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" operator",
+          operator);
 
 
   /* Set the dataset. If filename is present then read the file
@@ -126,7 +126,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
       if(p->popcounter==0)
         p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
 
-      /* Read the input image as a double type array. */
+      /* Read the dataset. */
       data=gal_fits_img_read(filename, hdu, p->cp.minmapsize);
 
       /* When the reference data structure's dimensionality is non-zero, it

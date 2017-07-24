@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/arithmetic.h>
 
@@ -132,6 +133,7 @@ void
 reversepolish(struct arithmeticparams *p)
 {
   int op=0, nop=0;
+  char *filename, *hdu;
   unsigned int numop, i;
   gal_list_str_t *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
@@ -333,12 +335,34 @@ reversepolish(struct arithmeticparams *p)
     error(EXIT_FAILURE, 0, "too many operands");
 
 
-  /* Set the output type. */
-  d1=p->operands->data;
+  /* If the final operand has a filename, but it `data' element is NULL,
+     then the file hasn't actually be read yet. In this case, we need to
+     read the contents of the file and put the resulting dataset into the
+     operands `data' element. This can happen for example if no operators
+     are called and there is only one filename as an argument (which can
+     happen in scripts). */
+  if(p->operands->data==NULL && p->operands->filename)
+    {
+      /* Read the desired image and report it if necessary. */
+      hdu=p->operands->hdu;
+      filename=p->operands->filename;
+      if( gal_fits_name_is_fits(filename) )
+        {
+          p->operands->data=gal_fits_img_read(filename,hdu,p->cp.minmapsize);
+          p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
+          if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
+        }
+      else
+        error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix "
+              "the problem. While `operands->data' is NULL, the filename "
+              "(`%s') is not recognized as a FITS file", __func__,
+              PACKAGE_BUGREPORT, filename);
+    }
 
 
   /* If the final data structure has more than one element, write it as a
      FITS file. Otherwise, print it in the standard output. */
+  d1=p->operands->data;
   if(d1->size==1)
     {
       /* To simplify the printing process, we will first change it to
