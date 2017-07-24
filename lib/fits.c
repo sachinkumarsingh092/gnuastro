@@ -471,39 +471,72 @@ gal_fits_datatype_to_type(int datatype, int is_table_column)
    different from the type from BITPIX. This function does the necessary
    corrections.*/
 static void
-fits_type_correct(int *type, double bscale, double bzero)
+fits_type_correct(int *type, double bscale, char *bzero_str)
 {
+  double bzero;
   int tofloat=1;
+  char *tailptr, *bzero_u64="9223372036854775808";
 
-  /* Work based on type. For the default conversions defined by the FITS
-     standard to change the signs of integers, make the proper correction,
-     otherwise set the type to float. */
-  if(bscale==1.0f)
-    switch(*type)
-      {
-      case GAL_TYPE_UINT8:
-        if(bzero == -128.0f)      { *type = GAL_TYPE_INT8;   tofloat=0; }
-        break;
+  /* If bzero_str is given and `bscale=1.0' the case might be that we are
+     dealing with an integer dataset that just needs a different sign. */
+  if(bzero_str && bscale==1.0f)
+    {
+      /* Read the `bzero' string as a `double' number. */
+      bzero  = strtod(bzero_str, &tailptr);
+      if(tailptr==bzero_str)
+        error(EXIT_FAILURE, 0, "%s: BZERO value `%s' couldn't be "
+              "parsed as a number", __func__, bzero_str);
 
-      case GAL_TYPE_INT16:
-        if(bzero == 32768)        { *type = GAL_TYPE_UINT16; tofloat=0; }
-        break;
+      /* Work based on type. For the default conversions defined by the
+         FITS standard to change the signs of integers, make the proper
+         correction, otherwise set the type to float. */
+      switch(*type)
+        {
+        case GAL_TYPE_UINT8:
+          if(bzero == -128.0f)      { *type = GAL_TYPE_INT8;   tofloat=0; }
+          break;
 
-      case GAL_TYPE_INT32:
-        if(bzero == 2147483648LU) { *type = GAL_TYPE_UINT32; tofloat=0; }
-        break;
+        case GAL_TYPE_INT16:
+          if(bzero == 32768)        { *type = GAL_TYPE_UINT16; tofloat=0; }
+          break;
 
-      case GAL_TYPE_INT64:
-        if(bzero == 9223372036854775808LLU)
-          {*type = GAL_TYPE_UINT64; tofloat=0;}
-        break;
+        case GAL_TYPE_INT32:
+          if(bzero == 2147483648LU) { *type = GAL_TYPE_UINT32; tofloat=0; }
+          break;
 
-        /* For the other types (when `BSCALE=1.0f'), currently no correction is
-           necessary, maybe later we can check if the scales are integers and
-           set the integer output type to the smallest type that can allow the
-           scaled values. */
-      default: tofloat=0;
-      }
+        /* The `bzero' value for unsigned 64-bit integers has 19 decimal
+           digits, but a 64-bit floating point (`double' type) can only
+           safely store 15 decimal digits. As a result, the safest way to
+           check the `bzero' value for this type is to compare it as a
+           string. But all integers nearby (for example
+           `9223372036854775807') get rounded to this same value (when
+           stored as `double'). So we will also check the parsed number and
+           if it equals this number, a warning will be printed. */
+        case GAL_TYPE_INT64:
+          if( !strcmp(bzero_str, bzero_u64) )
+            {*type = GAL_TYPE_UINT64; tofloat=0;}
+          else
+            if( bzero == 9223372036854775808LLU )
+              {
+                fprintf(stderr, "\nWARNING in %s: the BZERO header keyword "
+                        "value (`%s') is very close (but not exactly equal) "
+                        "to `%s'. The latter value in the FITS standard is "
+                        "used to identify that the dataset should be read as "
+                        "unsigned 64-bit integers instead of signed 64-bit "
+                        "integers. Depending on your version of CFITSIO, "
+                        "it may be read as a signed unsigned 64-bit "
+                        "integer\n\n", __func__, bzero_str, bzero_u64);
+                tofloat=0;
+              }
+          break;
+
+          /* For the other types (when `BSCALE=1.0f'), currently no
+             correction is necessary, maybe later we can check if the
+             scales are integers and set the integer output type to the
+             smallest type that can allow the scaled values. */
+        default: tofloat=0;
+        }
+    }
 
   /* If the type must be a float, then do the conversion. */
   if(tofloat) *type=GAL_TYPE_FLOAT32;
@@ -1288,10 +1321,10 @@ void
 gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
                   char **name, char **unit)
 {
-  char **str;
+  double bscale=NAN;
   size_t i, dsize_key=1;
+  char **str, *bzero_str=NULL;
   int bitpix, status=0, naxis;
-  double bzero=NAN, bscale=NAN;
   gal_data_t *key, *keysll=NULL;
   long naxes[GAL_FITS_MAX_NDIM];
 
@@ -1314,7 +1347,7 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
                           NULL, 0, -1, "EXTNAME", NULL, NULL);
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_FLOAT64, 1, &dsize_key,
                           NULL, 0, -1, "BSCALE", NULL, NULL);
-  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_FLOAT64, 1, &dsize_key,
+  gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
                           NULL, 0, -1, "BZERO", NULL, NULL);
   gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
 
@@ -1331,8 +1364,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
           {
           case 4: if(unit) {str = key->array; *unit = *str; *str=NULL;} break;
           case 3: if(name) {str = key->array; *name = *str; *str=NULL;} break;
-          case 2: bscale = *(double *)(key->array);    break;
-          case 1: bzero  = *(double *)(key->array);    break;
+          case 2: bscale = *(double *)(key->array);                     break;
+          case 1: str = key->array; bzero_str = *str;                   break;
           default:
             error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                   "fix the problem. For some reason, there are more "
@@ -1342,8 +1375,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
       ++i;
     }
 
-  if( !isnan(bscale) || !isnan(bzero) )
-    fits_type_correct(type, bscale, bzero);
+  if( !isnan(bscale) || bzero_str )
+    fits_type_correct(type, bscale, bzero_str);
 
 
   /* Allocate the array to keep the dimension size and fill it in, note
