@@ -107,6 +107,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Crashes on 32-bit and big-endian systems (bug #51476).
 
+  Warp's align matrix when second dimention must be reversed (bug #51536).
+
   Reading BZERO for unsigned 64-bit integers (bug #51555).
 
   Arithmetic with one file and no operators (bug #51559).
