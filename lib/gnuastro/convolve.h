@@ -1,5 +1,5 @@
 /*********************************************************************
-convolve -- Convolve the dataset with a given kernel.
+Convolve -- Convolve the dataset with a given kernel.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:

@@ -218,9 +218,9 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
         else                                                            \
           if(gal_data_dsize_is_different(IN, OTHER) )                   \
             {                                                           \
-              /* The `error' function, is a GNU extension and this is  */ \
-              /* a header, not a library which the user has to compile */ \
-              /* every time (on their own system).                     */ \
+              /* The `error' function, is a GNU extension and this */   \
+              /* is a header, not a library which the user has to  */   \
+              /* compile every time (on their own system).         */   \
               fprintf(stderr, "GAL_TILE_PO_OISET: when "                \
                       "`PARSE_OTHER' is non-zero, the sizes of `IN' "   \
                       "and `OTHER' must be equal (in all "              \

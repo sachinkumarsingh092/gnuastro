@@ -1,5 +1,5 @@
 /*********************************************************************
-convolve -- Convolve a dataset with a given kernel.
+Convolve -- Convolve a dataset with a given kernel.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -91,8 +91,10 @@ convolve_tile_is_on_edge(size_t *h, size_t *start_end_coord, size_t *k,
 struct per_thread_spatial_prm
 {
   /* Internally stored/used values. */
+  size_t             id;     /* ID of tile being operatred on.           */
   gal_data_t      *tile;     /* Tile this thread is working on.          */
-  gal_data_t   *overlap;     /* Overlap pointer and starting point.      */
+  gal_data_t *i_overlap;     /* Overlap tile over input dataset.         */
+  gal_data_t *k_overlap;     /* Overlap tile over kernel dataset.        */
   size_t *overlap_start;     /* Starting coordinate of kernel overlap.   */
   size_t  *kernel_start;     /* Kernel starting point.                   */
   size_t    *host_start;     /* Starting coordinate of host.             */
@@ -100,7 +102,6 @@ struct per_thread_spatial_prm
                                 Later, just the pixel being convolved.   */
   int           on_edge;     /* If the tile is on the edge or not.       */
   gal_data_t      *host;     /* Size of host (channel or block).         */
-  size_t    k_start_inc;     /* Increment for kernel.                    */
   struct spatial_params *cprm; /* Link to main structure for all threads.*/
 };
 
@@ -124,23 +125,24 @@ struct spatial_params
 
 
 
+
 /* Define the overlap of the kernel and image over this part of the image,
    the necessary input image parameters are stored in `overlap' (its
    `array' and `dsize' elements).  */
 static int
-convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
-                         int tocorrect)
+convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
 {
   struct spatial_params *cprm=pprm->cprm;
   gal_data_t *block=cprm->block, *kernel=cprm->kernel;
   size_t *dsize = tocorrect ? block->dsize : pprm->host->dsize;
+  size_t ndim=block->ndim;
 
-  size_t *pp, *ppf, *hs;
-  size_t overlap_inc, ndim=block->ndim;
+  size_t *kd=pprm->k_overlap->dsize;
+  size_t *pp, *ppf, *hs, increment, size=1;
   size_t *h=dsize, *os=pprm->overlap_start;
+  size_t *p, *pf, *od=pprm->i_overlap->dsize;
   size_t *k=kernel->dsize, *ks=pprm->kernel_start;
   int full_overlap=1, dim_full_overlap, is_start, is_end;
-  size_t *p=pprm->pix, *pf=pprm->pix+ndim, *od=pprm->overlap->dsize;
 
 
   /* In to-correct mode, the pix position needs to be relative to the
@@ -153,14 +155,15 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
 
 
   /* Coordinate to start convolution for this pixel. */
+  pf = (p=pprm->pix) + ndim;
   do
     {
       /* Initialize the overlap for this dimension (we'll assume it
          overlaps because this is the most common case usually). */
       dim_full_overlap=1;
 
-      /* When the tile is on the edge, still some pixels in it can have
-         full overlap. So using the `dim_full_overlap', we will do the same
+      /* When the tile is on the edge, some pixels in it can have full
+         overlap. So using the `dim_full_overlap', we will do the same
          thing we do for the tiles that don't overlap for them. When
          `tocorrect!=0', then only pixels that are on the edge of the tile
          will get to this point, so it must always be checked. */
@@ -206,6 +209,12 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
               if(is_start) *od -= *k/2 - *p;
               if(is_end)   *od -= *p + *k/2 - *h + 1;
 
+              /* Put the overlap size into the kernel's overlap `dsize'
+                 also and then use it to update the total size of the
+                 overlap. */
+              *kd++ = *od;
+              size *= *od;
+
               /* Increment and finalize. */
               ++h;
               ++k;
@@ -221,38 +230,22 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
         {
           /* Set the values. */
           *ks++ = 0;
-          *od++ = *k;
+          size *= *k;
+          *kd++ = *od = *k;
           *os++ = *p - *k/2;
 
           /* Increment. */
           ++h;
           ++k;
+          ++od;
         }
     }
   while(++p<pf);
 
 
-  /* To check, add an `int check' argument to the function.
-  if(check)
-    {
-      printf("pix (within %s): %zu, %zu\n", tocorrect ? "full" : "channel",
-             pprm->pix[0], pprm->pix[1]);
-      printf("\tk/2: %zu, %zu\n", kernel->dsize[0]/2, kernel->dsize[1]/2);
-      printf("\th: %zu, %zu\n", dsize[0], dsize[1]);
-      printf("\toverlap_start: %zu, %zu\n", pprm->overlap_start[0],
-             pprm->overlap_start[1]);
-      printf("\toverlap->dsize: %zu, %zu\n", pprm->overlap->dsize[0],
-             pprm->overlap->dsize[1]);
-      printf("\tfulloverlap: %d\n", full_overlap);
-    }
-  */
+  /* Update the `size' element of both overlap datasets. */
+  pprm->i_overlap->size = pprm->k_overlap->size = size;
 
-  /* Set the increment to start working on the kernel. */
-  pprm->k_start_inc = ( full_overlap
-                        ? 0
-                        : gal_dimension_coord_to_index(ndim,
-                                                       kernel->dsize,
-                                                       pprm->kernel_start) );
 
   /* Make correction.
 
@@ -270,17 +263,26 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
          the channel). */
   hs=pprm->host_start;
   if(tocorrect)
-    { ppf=(pp=pprm->pix)+ndim; do *pp -= *hs++; while(++pp<ppf); }
+    { ppf=(pp=pprm->pix)           + ndim; do *pp -= *hs++; while(++pp<ppf); }
   else
-    { ppf=(pp=pprm->overlap_start)+ndim; do *pp += *hs++; while(++pp<ppf); }
+    { ppf=(pp=pprm->overlap_start) + ndim; do *pp += *hs++; while(++pp<ppf); }
 
 
-  /* Set the increment to start working on the overlap region and use that
-     to set the starting pointer of the overlap region. */
-  overlap_inc=gal_dimension_coord_to_index(ndim, block->dsize,
-                                           pprm->overlap_start);
-  pprm->overlap->array=gal_data_ptr_increment(block->array, overlap_inc,
-                                              block->type);
+  /* Set the starting point of the dataset overlap tile. */
+  increment=gal_dimension_coord_to_index(ndim, block->dsize,
+                                         pprm->overlap_start);
+  pprm->i_overlap->array=gal_data_ptr_increment(block->array, increment,
+                                                block->type);
+
+
+  /* Set the starting point of the kernel overlap tile. */
+  increment = ( full_overlap
+                ? 0
+                : gal_dimension_coord_to_index(ndim,
+                                               kernel->dsize,
+                                               pprm->kernel_start) );
+  pprm->k_overlap->array=gal_data_ptr_increment(kernel->array, increment,
+                                                kernel->type);
   return full_overlap;
 }
 
@@ -292,35 +294,37 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm,
 static void
 convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
 {
+  gal_data_t *tile=pprm->tile;
 
-  double sum, ksum;
   int full_overlap;
+  double sum, ksum;
   struct spatial_params *cprm=pprm->cprm;
-  gal_data_t *tile=pprm->tile, *overlap=pprm->overlap;
   gal_data_t *block=cprm->block, *kernel=cprm->kernel;
-  size_t i, ndim=block->ndim, csize=tile->dsize[ndim-1];
+  size_t j, ndim=block->ndim, csize=tile->dsize[ndim-1];
+  gal_data_t *i_overlap=pprm->i_overlap, *k_overlap=pprm->k_overlap;
 
   /* Variables for scanning a tile (`i_*') and the region around every
      pixel of a tile (`o_*'). */
   size_t start_fastdim;
-  size_t k_inc, i_inc, i_ninc, i_st_en[2], o_inc, o_ninc, o_st_en[2];
+  size_t i_inc, i_ninc, i_st_en[2];
 
   /* These variables depend on the type of the input. */
-  float *kv, *iv, *ivf, *i_start, *o_start, *k_start;
+  float *i_start;
   float *in_v, *in=block->array, *out=cprm->out->array;
 
 
-  /* Starting pixel for this tile. Note that when we are in `tocorrect'
-     mode, this position has to be  */
+  /* Starting pixel for the host of this tile. Note that when we are in
+     `convoverch' mode, `host' refers to the fully allocated block of
+     memory. */
   pprm->host=cprm->convoverch ? block : tile->block;
   gal_tile_start_coord(pprm->host, pprm->host_start);
 
 
   /* Set the starting and ending coordinates of this tile (recall that the
-     start and end are the first two allocated spaces in
-     parse_coords). When `convoverch' is set, we want to convolve over the
-     whole allocated block, not just one channel. So in effect, it is the
-     same as `rel_block' in `gal_tile_start_end_coord'. */
+     space for the start and end coordinates is stored in `p->pix'). When
+     `convoverch' is set, we want to convolve over the whole allocated
+     block, not just one channel. So in effect, it is the same as
+     `rel_block' in `gal_tile_start_end_coord'. */
   gal_tile_start_end_coord(tile, pprm->pix, cprm->convoverch);
   start_fastdim = pprm->pix[ndim-1];
 
@@ -334,15 +338,8 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
      image (`tocorrect!=NULL'), then this tile can be ignored. */
   if(cprm->tocorrect && pprm->on_edge==0) return;
 
-  /*
-  if(tile_ind==2053)
-    {
-      printf("\ntile %zu...\n", tile_ind);
-      printf("\tpix: %zu, %zu\n", pprm->pix[0], pprm->pix[1]);
-      exit(0);
-    }
-  */
-  /* Go over the tile. */
+
+  /* Parse over all the tile elements. */
   i_inc=0; i_ninc=1;
   i_start=gal_tile_start_end_ind_inclusive(tile, block, i_st_en);
   while( i_st_en[0] + i_inc <= i_st_en[1] )
@@ -352,10 +349,10 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
       pprm->pix[ndim-1]=start_fastdim;
 
       /* Go over each pixel to convolve. */
-      for(i=0;i<csize;++i)
+      for(j=0;j<csize;++j)
         {
           /* Pointer to the pixel under consideration. */
-          in_v = i_start + i_inc + i;
+          in_v = i_start + i_inc + j;
 
           /* If the input on this pixel is a NaN, then just set the output
              to NaN too and go onto the next pixel. `in_v' is the pointer
@@ -378,54 +375,21 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
                   if(cprm->tocorrect)
                     full_overlap=convolve_spatial_overlap(pprm, 1);
 
-                  /* Set the starting pixel over the image (`o_start'). */
-                  o_start=gal_tile_start_end_ind_inclusive(overlap, block,
-                                                           o_st_en);
+                  /* Initialize the necessary values. */
+                  sum  = 0.0L;
+                  ksum = cprm->edgecorrection ? 0.0L : 1.0L;
 
-                  /* Set the starting kernel pixel. Note that
-                     `kernel_array' is `void *' (pointer arithmetic is not
-                     defined on it). So we will first put it in `k_start,
-                     and then increment that. */
-                  k_start=kernel->array; k_start += pprm->k_start_inc;
-
-                  /* Go over the kernel-overlap region. */
-                  ksum = cprm->edgecorrection ? 0.0f : 1.0f;
-                  sum=0.0f; k_inc=0; o_inc=0; o_ninc=1; kv=k_start;
-                  while( o_st_en[0] + o_inc <= o_st_en[1] )
-                    {
-                      /* Go over the contiguous region. When there is full
-                         overlap, we don't need to calculate incrementation
-                         over the kernel, it is always a single
-                         incrementation. But when we have partial overlap,
-                         we'll need to calculate a different
-                         incrementation. */
-                      ivf = ( iv = o_start + o_inc ) + overlap->dsize[ndim-1];
-                      if(full_overlap==0) kv = k_start + k_inc;
-                      do
+                  /* Parse over both the overlap tiles. */
+                  GAL_TILE_PO_OISET(float, float, i_overlap, k_overlap, 1, 0, {
+                      if( !isnan(*i) )
                         {
-                          if( !isnan(*iv) )
-                            {
-                              sum += *iv * *kv;
-                              if(cprm->edgecorrection) ksum += *kv;
-                            }
-                          ++kv;
+                          sum += *i * *o;
+                          if(cprm->edgecorrection) ksum += *o;
                         }
-                      while(++iv<ivf);
-
-                      /* Update the incrementation to the next contiguous
-                         region of memory over this tile. */
-                      o_inc += gal_tile_block_increment(block, overlap->dsize,
-                                                        o_ninc++, NULL);
-                      if(full_overlap==0)
-                        k_inc += gal_tile_block_increment(kernel,
-                                                          overlap->dsize,
-                                                          o_ninc-1, NULL);
-                    }
+                    });
 
                   /* Set the output value. */
-                  out[ in_v - in ] = ( ksum==0.0f
-                                       ? NAN
-                                       : sum/ksum );
+                  out[ in_v - in ] = ksum==0.0L ? NAN : sum/ksum;
                 }
             }
 
@@ -439,7 +403,7 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
                                         pprm->pix);
     }
   /*
-  if(tile_ind==2053)
+  if(pprm->id==2053)
     printf("... done.\n");
   */
 }
@@ -459,7 +423,7 @@ convolve_spatial_on_thread(void *inparam)
   size_t i;
   size_t ndim=block->ndim;
   struct per_thread_spatial_prm *pprm=&cprm->pprm[tprm->id];
-  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T,ndim, __func__,
+  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
                                       "dsize");
 
 
@@ -469,38 +433,37 @@ convolve_spatial_on_thread(void *inparam)
 
 
   /* Initialize/Allocate necessary items for this thread. */
-  pprm->cprm           = cprm;
-  pprm->pix            = gal_data_malloc_array(GAL_TYPE_SIZE_T, 2*ndim,
-                                               __func__, "pprm->pix");
-  pprm->host_start     = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
-                                               __func__, "pprm->host_start");
-  pprm->kernel_start   = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+  pprm->cprm          = cprm;
+  pprm->pix           = gal_data_malloc_array(GAL_TYPE_SIZE_T, 2*ndim,
+                                              __func__, "pprm->pix");
+  pprm->host_start    = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+                                              __func__, "pprm->host_start");
+  pprm->kernel_start  = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
+                                              __func__, "pprm->kernel_start");
+  pprm->overlap_start = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
                                                __func__,
-                                               "pprm->kernel_start");
-  pprm->overlap_start  = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
-                                               __func__,
-                                               "pprm->overlap_start");
-  pprm->overlap        = gal_data_alloc(NULL, block->type, ndim, dsize,
-                                        NULL, 0, -1, NULL, NULL, NULL);
+                                              "pprm->overlap_start");
+  pprm->i_overlap     = gal_data_alloc(NULL, block->type, ndim, dsize,
+                                       NULL, 0, -1, NULL, NULL, NULL);
+  pprm->k_overlap     = gal_data_alloc(NULL, cprm->kernel->type, ndim, dsize,
+                                       NULL, 0, -1, NULL, NULL, NULL);
   free(dsize);
-  free(pprm->overlap->array);
-  pprm->overlap->block = cprm->block;
+  free(pprm->i_overlap->array);
+  free(pprm->k_overlap->array);
+  pprm->i_overlap->block = cprm->block;
+  pprm->k_overlap->block = cprm->kernel;
 
 
   /* Go over all the tiles given to this thread. */
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Set this tile's pointer into this thread's parameters. */
-      pprm->tile = &cprm->tiles[ tprm->indexs[i] ];
+      pprm->id   = tprm->indexs[i];
+      pprm->tile = &cprm->tiles[ pprm->id ];
 
       /* Do the convolution on this tile. */
       convolve_spatial_tile(pprm);
     }
-
-
-  /* Set the overlap dataset's array to NULL, it was used to point to
-     different parts of the image during convolution. */
-  pprm->overlap->array=NULL;
 
 
   /* Clean up, wait until all other threads finish, then return. In a
@@ -509,7 +472,8 @@ convolve_spatial_on_thread(void *inparam)
   free(pprm->host_start);
   free(pprm->kernel_start);
   free(pprm->overlap_start);
-  gal_data_free(pprm->overlap);
+  gal_data_free(pprm->i_overlap);
+  gal_data_free(pprm->k_overlap);
   if(tprm->b) pthread_barrier_wait(tprm->b);
   return NULL;
 }
@@ -533,8 +497,7 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   if(tiles->ndim!=kernel->ndim)
     error(EXIT_FAILURE, 0, "%s: The number of dimensions between the kernel "
           "and input should be the same", __func__);
-  if( block->type!=GAL_TYPE_FLOAT32
-      || kernel->type!=GAL_TYPE_FLOAT32 )
+  if( block->type!=GAL_TYPE_FLOAT32 || kernel->type!=GAL_TYPE_FLOAT32 )
     error(EXIT_FAILURE, 0, "%s: only accepts `float32' type input and "
           "kernel currently", __func__);
 

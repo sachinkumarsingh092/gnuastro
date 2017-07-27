@@ -329,8 +329,8 @@ gal_tile_block(gal_data_t *tile)
 
   num_increment      coord         increment
   -------------      -----         ---------
-         0          (...0,0,0)     b[n-1]: fastest dimension of the block.
-         1          (...0,1,0)     Similar to previous
+         1          (...0,0,0)     b[n-1]: fastest dimension of the block.
+         2          (...0,1,0)     Similar to previous
          .              .               .
          .              .               .
        t[n-2]       (...1,0,0)     (b[n-2] * b[n-1]) - ( (t[n-2]-1) * b[n-1] )
@@ -385,7 +385,7 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
       else
         {
           increment=(b[1] * b[2]) - ( (t[1]-1) * b[2] );
-          if(coord) { ++coord[0]; coord[1]=coord[2]=0; }
+          if(coord) { ++coord[0]; coord[1] -= t[1]-1; coord[2]=0; }
         }
       break;
     }
