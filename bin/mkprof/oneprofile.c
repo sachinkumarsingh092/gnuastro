@@ -501,8 +501,10 @@ oneprof_set_prof_params(struct mkonthread *mkp)
   int tp=p->tunitinp;
   size_t id=mkp->ibq->id;
 
-  /* Fill the most basic dimension and profile agnostic parameters. */
-  mkp->brightness = pow( 10, (p->zeropoint - p->m[id]) / 2.5f );
+  /* Fill the most basic profile agnostic parameters. */
+  mkp->brightness = ( p->mcolisbrightness
+                      ? p->m[id]
+                      : pow( 10, (p->zeropoint - p->m[id]) / 2.5f ) );
   mkp->ibq->ispsf = p->kernel ? 1 : oneprofile_ispsf(p->f[id]);
   mkp->func       = mkp->ibq->func = p->f[id];
 

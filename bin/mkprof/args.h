@@ -244,6 +244,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "mcolisbrightness",
+      UI_KEY_MCOLISBRIGHTNESS,
+      0,
+      0,
+      "mcol is total brightness, not magnitude.",
+      ARGS_GROUP_PROFILES,
+      &p->mcolisbrightness,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "shift",
       UI_KEY_SHIFT,
       "INT[, ...]",
@@ -280,7 +293,7 @@ struct argp_option program_options[] =
       &p->zeropoint,
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {

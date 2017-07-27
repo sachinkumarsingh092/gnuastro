@@ -196,7 +196,8 @@ ui_initialize_options(struct mkprofparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Default program parameters. */
-  p->cp.type=GAL_TYPE_FLOAT32;
+  p->zeropoint           = NAN;
+  p->cp.type             = GAL_TYPE_FLOAT32;
 
 
   /* Modify the common options for this program. */
@@ -542,6 +543,15 @@ ui_read_check_only_options(struct mkprofparams *p)
               "`img' or `wcs' which specify how to interpret the "
               "coordinate columns");
     }
+
+  /* The zeropoint magnitude is only necessary when `mcolisbrightness' is
+     not called.  */
+  if( p->mcolisbrightness==0 && isnan(p->zeropoint) )
+    error(EXIT_FAILURE, 0, "no zeropoint magnitude given. A zeropoint "
+          "magnitude is necessary when `--mcolisbrightness' is not called "
+          "(i.e., when the contents of `--mcol' must be interpretted as "
+          "a magnitude, not brightness).");
+
 
   /* Make sure no zero value is given for the `--naxis' option (only when
      it is necessary). */

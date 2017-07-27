@@ -22,6 +22,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   each pixel. This may be used to define your own profiles that are not
   currently supported in MakeProfiles.
 
+  MakeProfiles: with the new `--mcolisbrightness' ("mcol-is-brightness")
+  option, the `--mcol' values of the catalog will be interpretted as total
+  brightness (sum of pixel values), not magnitude.
+
 ** Removed features
 
 ** Changed features

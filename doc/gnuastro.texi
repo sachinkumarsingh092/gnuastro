@@ -14982,6 +14982,19 @@ scaled up based on the oversampling scale in your configuration files (see
 @ref{Configuration files}) unless you have accounted for oversampling in
 your catalog.
 
+@item --mcolisbrightness
+The value given in the ``magnitude column'' (specified by @option{--mcol},
+see @ref{MakeProfiles catalog}) must be interpretted as brightness, not
+magnitude. The zeropoint magnitude (value to the @option{--zeropoint}
+option) is ignored and the given value must have the same units as the
+input dataset's pixels.
+
+Recall that the total profile magnitude or brightness that is specified
+with in the @option{--mcol} column of the input catalog is not an
+integration to infinity, but the actual sum of pixels in the profile (until
+the desired truncation radius). See @ref{Profile magnitude} for more on
+this point.
+
 @item --magatpeak
 The magnitude column in the catalog (see @ref{MakeProfiles catalog})
 will be used to find the brightness only for the peak profile pixel,
