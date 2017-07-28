@@ -32,13 +32,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct argp_option program_options[] =
   {
     {
-      "stdadd",
-      UI_KEY_STDADD,
+      "sigma",
+      UI_KEY_SIGMA,
       "FLT",
       0,
-      "Standard deviation addition constant.",
+      "Total noise sigma, ignore other options.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->stdadd,
+      &p->sigma,
+      GAL_TYPE_FLOAT64,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "instrumental",
+      UI_KEY_INSTRUMENTAL,
+      "FLT",
+      0,
+      "Instrument noise level (in pixel value units).",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->instrumental,
       GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -54,7 +67,7 @@ struct argp_option program_options[] =
       &p->background_mag,
       GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
@@ -67,7 +80,7 @@ struct argp_option program_options[] =
       &p->zeropoint,
       GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_GE_0,
-      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
 

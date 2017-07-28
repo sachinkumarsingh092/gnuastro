@@ -15650,25 +15650,34 @@ $ astmknoise [OPTION ...] InputImage.fits
 One line examples:
 
 @example
-## Add noise to input image assuming background and instrumental noise:
-$ astmknoise --background=1000 --stdadd=20 mockimage.fits
+## Add noise with a standard deviation of 100 to image:
+$ astmknoise --sigma=100 image.fits
+
+## Add noise to input image assuming a background magnitude (with zeropoint
+## magnitude of 0) and a certain instrumental noise:
+$ astmknoise --background=-10 -z0 --instrumental=20 mockimage.fits
 @end example
 
 @noindent
 If actual processing is to be done, the input image is a mandatory
-argument. The full list of options common to all the programs in
-Gnuastro can be seen in @ref{Common options}. The output will have the
-same type as the input image, however the internal processing is done
-on a double precision floating point format. If the input values were
-integer types, then each floating point number will be rounded to the
-nearest integer away from zero. This might cause integer overflow if
-types with small ranges are used (for example images with a
-@code{BITPIX} of @code{8} which can only keep 256 values). This can be
-disabled with the @option{doubletype} option.  The header of the
-output FITS file keeps all the parameters that were influential in
-making it. This is done for future reproducibility.
+argument. The full list of options common to all the programs in Gnuastro
+can be seen in @ref{Common options}. The type (see @ref{Numeric data
+types}) of the output can be specified with the @option{--type} option, see
+@ref{Input output options}. The header of the output FITS file keeps all
+the parameters that were influential in making it. This is done for future
+reproducibility.
 
 @table @option
+
+@item -s FLT
+@item --sigma=FLT
+The total noise sigma in the same units as the pixel values. With this
+option, the @option{--background}, @option{--zeropoint} and
+@option{--instrumental} will be ignored. With this option, the noise will
+be independent of the pixel values (which is not realistic, see @ref{Photon
+counting noise}). Hence it is only useful if you are working on low surface
+brightness regions where the change in pixel value (and thus real noise) is
+insignificant.
 
 @item -b FLT
 @itemx --background=FLT
@@ -15680,8 +15689,8 @@ The background pixel value for the image in units of magnitudes, see
 The zeropoint magnitude used to convert the value of @option{--background}
 (in units of magnitude) to flux, see @ref{Flux Brightness and magnitude}.
 
-@item -s FLT
-@itemx --stdadd=FLT
+@item -i FLT
+@itemx --instrumental=FLT
 The instrumental noise which is in units of flux, see @ref{Instrumental
 noise}.
 

@@ -111,6 +111,12 @@ ui_initialize_options(struct mknoiseparams *p,
   cp->coptions           = gal_commonopts_options;
 
 
+  /* Initialize options for this program. */
+  p->sigma               = NAN;
+  p->zeropoint           = NAN;
+  p->background_mag      = NAN;
+
+
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
@@ -208,13 +214,25 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'.
+   check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct mknoiseparams *p)
 {
+  /* At leaset one of `--sigma' or `--background' are necessary. */
+  if( isnan(p->sigma) && isnan(p->background_mag) )
+    error(EXIT_FAILURE, 0, "at least one of `--sigma' or `--background' "
+          "must be given to identify the noise level");
 
+
+  /* If a background magnitude is given (and the user hasn't given a
+     `--sigma'), the zeropoint is necessary. */
+  if( isnan(p->sigma) && !isnan(p->background_mag) && isnan(p->zeropoint) )
+    error(EXIT_FAILURE, 0, "no zeropoint magnitude given. When the noise is "
+          "identified by the background magnitude, a zeropoint magnitude "
+          "is mandatory. Please use the `--zeropoint' option to specify "
+          "a zeropoint magnitude");
 }
-*/
+
 
 
 
@@ -286,12 +304,12 @@ ui_preparations(struct mknoiseparams *p)
 
 
   /* Convert the background value from magnitudes to flux. Note that
-     magnitudes are actually calculated from the ratio of brightness,
-     not flux. But in the context of MakeNoise where everything is
-     done on pixels independently, brightness and flux are the same
-     (flux is multiplied by the area of one pixel (=1) to give
-     brightness).*/
-  p->background=pow(10, (p->zeropoint-p->background_mag)/2.5f);
+     magnitudes are actually calculated from the ratio of brightness, not
+     flux. But in the context of MakeNoise where everything is done on
+     pixels independently, brightness and flux are the same (flux is
+     multiplied by the area of one pixel (=1) to give brightness).*/
+  if( !isnan(p->background_mag) )
+    p->background=pow(10, (p->zeropoint-p->background_mag)/2.5f);
 
 
   /* Allocate the random number generator: */
@@ -359,9 +377,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
 
 
   /* Read the options into the program's structure, and check them and
-     their relations prior to printing.
+     their relations prior to printing. */
   ui_read_check_only_options(p);
-  */
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the

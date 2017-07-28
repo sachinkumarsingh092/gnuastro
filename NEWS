@@ -10,6 +10,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Arithmetic: now has a new `--globalhdu' (`-g') option which can be used
   once for all the input images.
 
+  MakeNoise: with the new `--sigma' (`-s') option, it is now possible to
+  directly request the noise sigma or standard deviation. When this option
+  is called, the `--background', `--zeropoint' and other option values will
+  be ignored.
+
   MakeProfiles: the new `--kernel' option can make a kernel image without
   the need to define a catalog. With this option, a catalog (or
   accompanying background image) must not be given.
@@ -50,6 +55,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   `--xcol', and `--ycol' have been removed. This new option can be called
   multiple times and the order of its calling will be used for the column
   containing the center in the respective dimension (in FITS format).
+
+  MakeNoise: the old `--stdadd' (`-s') option has been renamed to
+  `--instrumental' (`-i') to be more clear.
 
   MakeProfiles: The new `--naxis' and `--shift' options can take multiple
   values for each dimension (separated by a comma). This replaces the old

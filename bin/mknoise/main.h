@@ -44,7 +44,8 @@ struct mknoiseparams
   /* From command-line */
   struct gal_options_common_params cp;   /* Common parameters.           */
   char        *inputname;    /* Input filename.                          */
-  double          stdadd;    /* Standard deviation constants.            */
+  double           sigma;    /* Total noise sigma (ignoring others).     */
+  double    instrumental;    /* Standard deviation constants.            */
   double       zeropoint;    /* Zeropoint magnitude of image.            */
   double  background_mag;    /* Background in magnitudes.                */
   uint8_t        envseed;    /* ==1, generate a random seed.             */
