@@ -14748,7 +14748,7 @@ that image are used as the background value for every pixel. The flux value
 of each profile pixel will be added to the pixel in that background
 value. In this case, the values to all options relating to the output size
 and WCS will be ignored if specified (for example @option{--oversample},
-@option{--naxis} and @option{--prepforconv}) on the command-line or in the
+@option{--naxis}, and @option{--prepforconv}) on the command-line or in the
 configuration files.
 
 The sections below discuss the options specific to MakeProfiles based on
@@ -15135,12 +15135,12 @@ Only build one kernel profile with the parameters given as the values to
 this option. The different values must be separated by a comma
 (@key{,}). The first value identifies the radial function of the profile,
 either through a string or through a number (see description of
-@option{--fcol} below). Each radial profile needs a different total number
-of parameters: S@'ersic and Moffat functions need 3 parameters: radial,
-S@'ersic index or Moffat @mymath{\beta}, and truncation radius. The
-Gaussian function needs two parameters: radial and truncation radius. The
-point function doesn't need any parameters and flat and circumference
-profiles just need one parameter (truncation radius).
+@option{--fcol} in @ref{MakeProfiles catalog}). Each radial profile needs a
+different total number of parameters: S@'ersic and Moffat functions need 3
+parameters: radial, S@'ersic index or Moffat @mymath{\beta}, and truncation
+radius. The Gaussian function needs two parameters: radial and truncation
+radius. The point function doesn't need any parameters and flat and
+circumference profiles just need one parameter (truncation radius).
 
 The PSF or kernel is a unique (and highly constrained) type of profile: the
 sum of its pixels must be one, its center must be the center of the central

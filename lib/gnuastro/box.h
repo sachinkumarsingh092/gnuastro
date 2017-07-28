@@ -52,7 +52,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 */
 
 void
-gal_box_bound_ellipse(double a, double b, double theta_rad, long *width);
+gal_box_bound_ellipse(double a, double b, double theta_deg, long *width);
 
 void
 gal_box_border_from_center(double *center, size_t ndim, long *width,
