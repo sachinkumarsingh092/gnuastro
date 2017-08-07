@@ -220,6 +220,12 @@ ui_read_check_only_options(struct convolveparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
+  /* Make sure the kernel name is a FITS file and a HDU is given. */
+  if( gal_fits_name_is_fits(p->kernelname)==0 )
+    error(EXIT_FAILURE, 0, "`%s' is not a recognized FITS file name",
+          p->kernelname);
+
+
   /* Read the domain from a string into an integer. */
   if( !strcmp("spatial", p->domainstr) )
     p->domain=CONVOLVE_DOMAIN_SPATIAL;
@@ -228,6 +234,7 @@ ui_read_check_only_options(struct convolveparams *p)
   else
     error(EXIT_FAILURE, 0, "domain value `%s' not recognized. Please use "
           "either `spatial' or `frequency'", p->domainstr);
+
 
   /* If we are in the spatial domain, make sure that the necessary
      parameters are set. */
@@ -259,6 +266,11 @@ ui_check_options_and_arguments(struct convolveparams *p)
      a HDU is also given. */
   if(p->filename==NULL)
     error(EXIT_FAILURE, 0, "no input file is specified");
+
+  /* Make sure the input name is a FITS file name. */
+  if( gal_fits_name_is_fits(p->filename)==0 )
+    error(EXIT_FAILURE, 0, "`%s' is not a recognized FITS file name",
+          p->filename);
 }
 
 
@@ -342,6 +354,13 @@ ui_preparations(struct convolveparams *p)
   p->input=gal_fits_img_read_to_type(p->filename, cp->hdu,
                                      GAL_TYPE_FLOAT32, cp->minmapsize);
   p->input->wcs=gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs);
+
+
+  /* Currently Convolve only works on 2D images. */
+  if(p->input->ndim!=2)
+    error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
+          "Convolve only operates on 2D images", p->filename, cp->hdu,
+          p->input->ndim);
 
 
   /* See if there are any blank values. */
