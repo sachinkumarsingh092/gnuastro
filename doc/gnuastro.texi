@@ -5624,14 +5624,14 @@ also contain non-numerical columns.
 @node Gnuastro text table format, Selecting table columns, Recognized table formats, Tables
 @subsection Gnuastro text table format
 
-Plain text files are most generic, portable, and easiest way to (manually)
-create, (visually) inspect, or (manually) edit a table. In this format, the
-ending of a row is defined by the new-line character (a line on a text
-editor). So when you view it on a text editor, every row will occupy one
-line. The delimiters (or characters separating the columns) are white space
-characters (space, horizontal tab, vertical tab) and a comma (@key{,}). The
-only further requirement is that all rows/lines must have the same number
-of columns.
+Plain text files are the most generic, portable, and easiest way to
+(manually) create, (visually) inspect, or (manually) edit a table. In this
+format, the ending of a row is defined by the new-line character (a line on
+a text editor). So when you view it on a text editor, every row will occupy
+one line. The delimiters (or characters separating the columns) are white
+space characters (space, horizontal tab, vertical tab) and a comma
+(@key{,}). The only further requirement is that all rows/lines must have
+the same number of columns.
 
 The columns don't have to be exactly under each other and the rows can be
 arbitrarily long with different lengths. For example the following contents
@@ -5644,13 +5644,14 @@ types}).
 2 , 4.454        792     72.98348e7
 @end example
 
-However, the example above has no other information about the columns (its
-raw data, with no meta-data). To use this table, you have to remember what
-each column was. Also, when you want to select columns, you have to count
-their position within the table. This can become frustrating and prone to
-bad errors (getting the columns wrong) especially as the number of columns
-increase. It is also bad for sending to a colleague, because they will find
-it hard to remember/use the columns properly.
+However, the example above has no other information about the columns (it
+is just raw data, with no meta-data). To use this table, you have to
+remember what the numbers in each column represent. Also, when you want to
+select columns, you have to count their position within the table. This can
+become frustrating and prone to bad errors (getting the columns wrong)
+especially as the number of columns increase. It is also bad for sending to
+a colleague, because they will find it hard to remember/use the columns
+properly.
 
 To solve these problems in Gnuastro's programs/libraries you aren't limited
 to using the column's number, see @ref{Selecting table columns}. If the
@@ -5720,24 +5721,24 @@ space characters will be stripped from all of the elements. For example in
 this line:
 
 @example
-# Column 5:  column name   [km/s,    f,-99] Redshift as speed
+# Column 5:  column name   [km/s,    f32,-99] Redshift as speed
 @end example
 
-The @code{NAME} field will be `@code{column name}', or @code{TYPE} will be
-`@code{f}'. Note how all the white space characters before and after
-strings are not used, but those in the middle remained. Also, white space
-characters aren't mandatory, so in the example above @code{BLANK} will be
-`@code{-99}'.
+The @code{NAME} field will be `@code{column name}' and the @code{TYPE}
+field will be `@code{f32}'. Note how all the white space characters before
+and after strings are not used, but those in the middle remained. Also,
+white space characters aren't mandatory. Hence, in the example above, the
+@code{BLANK} field will be given the value of `@code{-99}'.
 
 Except for the column number (@code{N}), the rest of the fields are
-optional and the column information comments don't have to be in order. In
-other words, the information for column @mymath{N+m} (@mymath{m>0}) can be
-given before column @mymath{N}. Also, you don't have to specify information
-for all columns. Those columns that don't have this information will be
-interpreted with the default settings (like the case above: values are
-double precision floating point, and the column has no name, unit, or
-comment). So these lines are all acceptable for any table (the first one,
-with nothing but the column number is redundant):
+optional. Alao, the column information comments don't have to be in
+order. In other words, the information for column @mymath{N+m}
+(@mymath{m>0}) can be given in a line before column @mymath{N}. Also, you
+don't have to specify information for all columns. Those columns that don't
+have this information will be interpreted with the default settings (like
+the case above: values are double precision floating point, and the column
+has no name, unit, or comment). So these lines are all acceptable for any
+table (the first one, with nothing but the column number is redundant):
 
 @example
 # Column 5:
