@@ -155,7 +155,11 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   /* When the check image has the same resolution as the input, write the
      binary array as a reference to help in the comparison. */
   if(checkname && !tl->oneelempertile)
-    gal_fits_img_write(p->binary, checkname, NULL, PROGRAM_STRING);
+    {
+      p->binary->name="DETECTED";
+      gal_fits_img_write(p->binary, checkname, NULL, PROGRAM_STRING);
+      p->binary->name=NULL;
+    }
 
 
   /* Allocate space for the mean and standard deviation. */
