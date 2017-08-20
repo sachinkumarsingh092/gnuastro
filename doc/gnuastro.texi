@@ -8183,10 +8183,13 @@ input.
 
 @item -x STR/INT
 @itemx --coordcol=STR/INT
-The column in a catalog to read as a coordinate. This option must be called
-multiple times depending on the number of dimensions in the input
-dataset. The value can be either the column number (starting from 1), or a
-match/search in the table meta-data, see @ref{Selecting table columns}.
+The column in a catalog to read as a coordinate. The value can be either
+the column number (starting from 1), or a match/search in the table
+meta-data, see @ref{Selecting table columns}. This option must be called
+multiple times, depending on the number of dimensions in the input
+dataset. If it is called more than necessary, the extra columns (later
+calls to this option on the command-line or configuration files) will be
+ignored, see @ref{Configuration file precedence}.
 
 @item -n STR/INT
 @item --namecol=STR/INT

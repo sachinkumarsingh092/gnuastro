@@ -603,10 +603,9 @@ static void
 ui_read_cols(struct cropparams *p)
 {
   char colname[100];
-  gal_list_str_t *colstrs=NULL;
   gal_data_t *cols, *tmp, *corrtype=NULL;
-  size_t ncoordcols, counter=0, dcounter=0, ndim=p->imgs->ndim;
-
+  gal_list_str_t *colstrs=NULL, *extracolstr, *lastcolstr;
+  size_t i, ncoordcols, counter=0, dcounter=0, ndim=p->imgs->ndim;
 
   /* See if the number of columns given for coordinates corresponds to the
      number of dimensions of the input dataset. */
@@ -615,13 +614,34 @@ ui_read_cols(struct cropparams *p)
       /* Check if the number of columns given for coordinates is the same
          as the number of dimensions in the input dataset(s). */
       ncoordcols=gal_list_str_number(p->coordcol);
-      if( ncoordcols != ndim)
+      if( ncoordcols < ndim)
         error(EXIT_FAILURE, 0, "`--coordcol' was called %zu times, but the "
-              "input dataset%s %zu dimensions, these values must not be "
-              "different. Recall that through `--coordcol' you are "
-              "specifying the columns containing the coordinates of the "
-              "center of the crop in a catalog", ncoordcols,
-              (p->numin==1?" has":"s have"), ndim);
+              "input dataset%s %zu dimensions. Recall that through "
+              "`--coordcol' you are specifying the columns containing the "
+              "coordinates of the center of the crop in a catalog",
+              ncoordcols, (p->numin==1?" has":"s have"), ndim);
+
+      /* If the number of given columns is more than the input's
+         dimensions, then we'll just delete all the unnecessary columns. */
+      else if( ncoordcols > ndim )
+        {
+          /* Go over the columns find the last, but first initialize the
+             two (`lastcolstr' to avoid compiler warnings). */
+          lastcolstr=extracolstr=p->coordcol;
+          for(i=0;i<ndim;++i)
+            {
+              /* Keep the last node if on the last (useful) column. */
+              if(i==ndim-1) lastcolstr=extracolstr;
+
+              /* Go onto the next one. */
+              extracolstr=extracolstr->next;
+            }
+
+          /* Set the `next' element of the last node to NULL and free the
+             extra ones. */
+          lastcolstr->next=NULL;
+          gal_list_str_free(extracolstr, 1);
+        }
     }
   else
     error(EXIT_FAILURE, 0, "no coordinate columns specified. When a catalog"
