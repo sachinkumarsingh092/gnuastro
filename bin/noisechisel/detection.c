@@ -659,7 +659,7 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
   /* If the user wanted to see the steps. */
   if(p->detectionname)
     {
-      workbin->name="TRUE-PSEUDO-DETECTIONS";
+      workbin->name="TRUE-PSEUDOS";
       gal_fits_img_write(workbin, p->detectionname, NULL,
                          PROGRAM_STRING);
       workbin->name=NULL;
@@ -810,7 +810,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
   /* For a check image. */
   if(p->detectionname)
     {
-      p->olabel->name="DETECTION_FINAL";
+      p->olabel->name="DETECTION-FINAL";
       gal_fits_img_write(p->olabel, p->detectionname, NULL,
                          PROGRAM_STRING);
       p->olabel->name=NULL;
@@ -1000,7 +1000,7 @@ detection(struct noisechiselparams *p)
       p->numdetections = num_true_initial;
       if(p->detectionname)
         {
-          p->olabel->name="DETECTION_FINAL";
+          p->olabel->name="DETECTION-FINAL";
           gal_fits_img_write(p->olabel, p->detectionname, NULL,
                              PROGRAM_STRING);
           p->olabel->name=NULL;

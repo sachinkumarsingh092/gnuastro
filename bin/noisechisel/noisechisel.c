@@ -62,7 +62,7 @@ noisechisel_convolve(struct noisechiselparams *p)
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   p->conv=gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
                                1, tl->workoverch);
-  gal_checkset_allocate_copy("INPUT_CONVOLVED", &p->conv->name);
+  gal_checkset_allocate_copy("CONVOLVED", &p->conv->name);
 
 
   if(!p->cp.quiet) gal_timing_report(&t1, "Convolved with kernel.", 1);
