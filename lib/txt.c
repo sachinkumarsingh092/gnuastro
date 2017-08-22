@@ -296,11 +296,19 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
   size_t n=0, maxcnum=0, numtokens;
   char *token, *end=line+strlen(line);
 
-  /* Remove the new line character from the end of the line. If the last
-     column is a string, and the given length is larger than the available
-     space on the line, we don't want to have the line's new-line
-     character. Its better for it to actually be shorter than the space. */
-  *(end-1)='\0';
+  /* Remove the line termination character(s) from the end of the line. In
+     Unix, the line terminator is just the new-line character, however, in
+     some operating systems (like MS Windows), it is two characters:
+     carriage return and new-line. To be able to deal with both, we will be
+     checking the second last character first, the ASCII code for carriage
+     return is 13.
+
+     If the last column is a string, and the given length is larger than
+     the available space on the line, we don't want to have the line's
+     new-line character. Its better for it to actually be shorter than the
+     space. */
+  if( *(end-2)==13 ) *(end-2)='\0';
+  else               *(end-1)='\0';
 
   /* Get the maximum number of columns read from the comment
      information. */
@@ -768,8 +776,9 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
   int notenoughcols=0;
   char *end=line+strlen(line);
 
-  /* See explanations in `txt_info_from_row'. */
-  *(end-1)='\0';
+  /* See explanations in `txt_info_from_first_row'. */
+  if( *(end-2)==13 ) *(end-2)='\0';
+  else               *(end-1)='\0';
 
   /* Start parsing the line. Note that `n' and `maxcolnum' start from
      one. */
@@ -781,7 +790,7 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
       if(n>maxcolnum) break;
 
       /* Set the pointer to the start of this token/column. See
-         explanations in `txt_info_from_row'. */
+         explanations in `txt_info_from_first_row'. */
       if( info[n-1].type == GAL_TYPE_STRING )
         {
           /* Remove any delimiters and stop at the first non-delimiter. If

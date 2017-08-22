@@ -19827,6 +19827,14 @@ editor or even on the command-line. Therefore the functions in this section
 are defined to simplify reading from and writing to plain text
 files.
 
+Lines are one of the most basic buiding blocks (delimiters) of a text
+file. Some operating systems like Microsoft Windows, terminate their ASCII
+text lines with a carriage return character and a new-line character (two
+characters, also known as CRLF line terminators). While Unix-like operating
+systems just use a single new-line character. The functions below that read
+an ASCII text file are able to identify lines with both kinds of line
+terminators.
+
 Gnuastro defines a simple format for metadata of table columns in a plain
 text file that is discussed in @ref{Gnuastro text table format}. The
 functions to get information from, read from and write to plain text files
