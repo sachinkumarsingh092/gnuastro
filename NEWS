@@ -4,8 +4,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
-  `.fit' suffix is now also recognized as a FITS file extension in all
-  programs and libraries.
+  All programs: `.fit' suffix is now also recognized as a FITS file
+  extension in all programs and libraries.
+
+  All programs: ASCII text files (tables) created with CRLF line
+  terminators (for example text files created in MS Windows) are now also
+  readable as input when necessary.
 
   Arithmetic: now has a new `--globalhdu' (`-g') option which can be used
   once for all the input images.
@@ -33,8 +37,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Library: Functions that read data from an ASCII text file
   (`gal_txt_table_info', `gal_txt_table_read', `gal_txt_image_read') now
-  also operate on files with CRLF line terminators (for example text files
-  created in MS Windows).
+  also operate on files with CRLF line terminators.
 
 ** Removed features
 

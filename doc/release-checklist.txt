@@ -236,6 +236,6 @@ Steps necessary to Package Gnuastro for Debian.
 
  - Push all the changes to the repository:
 
-     $ git push --all origin
+     $ git push --all --tags
 
  - Inform Debian Astro.
