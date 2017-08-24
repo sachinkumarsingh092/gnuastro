@@ -286,7 +286,8 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
       hdu=gal_list_str_pop(&list);
 
       /* Open the FITS file at the specified HDU. */
-      in=gal_fits_hdu_open(p->filename, hdu, READWRITE);
+      in=gal_fits_hdu_open(p->filename, hdu,
+                           cut1_copy0 ? READWRITE : READONLY);
 
       /* Copy to the extension. */
       if( fits_copy_hdu(in, out, 0, &status) )
