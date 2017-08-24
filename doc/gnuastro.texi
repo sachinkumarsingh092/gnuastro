@@ -634,7 +634,7 @@ Other useful software
 
 SAO ds9
 
-* Viewing multiextension FITS::  Configure SAO ds9 for multiextension images.
+* Viewing multiextension FITS images::  Configure SAO ds9 for multiextension images.
 
 @end detailmenu
 @end menu
@@ -5731,7 +5731,7 @@ white space characters aren't mandatory. Hence, in the example above, the
 @code{BLANK} field will be given the value of `@code{-99}'.
 
 Except for the column number (@code{N}), the rest of the fields are
-optional. Alao, the column information comments don't have to be in
+optional. Also, the column information comments don't have to be in
 order. In other words, the information for column @mymath{N+m}
 (@mymath{m>0}) can be given in a line before column @mymath{N}. Also, you
 don't have to specify information for all columns. Those columns that don't
@@ -12838,7 +12838,12 @@ pixel.
 
 @end enumerate
 
-
+To inspect NoiseChisel's output, you can configure SAO DS9 in your Graphic
+User Interface (GUI) to open NoiseChisel's output as a multi-extension data
+cube. This will allow you to flip through the different extensions and
+visually inspect the results. This process has been described for the GNOME
+GUI (most common GUI in GNU/Linux operating systems) in @ref{Viewing
+multiextension FITS images}.
 
 
 
@@ -23932,10 +23937,10 @@ export XPA_METHOD=local
 
 
 @menu
-* Viewing multiextension FITS::  Configure SAO ds9 for multiextension images.
+* Viewing multiextension FITS images::  Configure SAO ds9 for multiextension images.
 @end menu
 
-@node Viewing multiextension FITS,  , SAO ds9, SAO ds9
+@node Viewing multiextension FITS images,  , SAO ds9, SAO ds9
 @subsection Viewing multiextension FITS images
 
 @cindex Multiextension FITS
