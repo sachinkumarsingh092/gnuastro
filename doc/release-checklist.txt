@@ -230,12 +230,14 @@ Steps necessary to Package Gnuastro for Debian.
  - Commit the contents of the new release, make sure everything except the
    `debian' directory is commited (with `git status'):
 
-     $ git add -f bin/ bootstrapped/ doc/ lib/ tests/
-     $ git status                         # Add anything that remains.
+     $ git add --all
+     $ git status                         # For a visual check
      $ git commit -m "Gnuastro $ver"
 
- - Push all the changes to the repository:
+ - Push all the changes to the repository (you can't call `--all' and
+   `--tags' together):
 
-     $ git push --all --tags
+     $ git push --all
+     $ git push --tags
 
  - Inform Debian Astro.
