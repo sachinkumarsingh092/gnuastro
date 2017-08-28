@@ -6,12 +6,14 @@ set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
 
- - Only in an alpha release (In the next main release they will remain
-   unchanged): update the library version (the values starting with `GAL_'
-   in `configure.ac'). See the `Updating library version information'
-   section of the GNU Libtool manual as a guide.
+ - [ALPHA] Only in the first alpha release after a main release: update the
+   library version (the values starting with `GAL_' in `configure.ac'). See
+   the `Updating library version information' section of the GNU Libtool
+   manual as a guide.
 
- - Run a spell-check (in emacs with `M-x ispell') on the whole book.
+
+ - [ALPHA] Run a spell-check (in emacs with `M-x ispell') on the whole book.
+
 
  - Update the NEWS file (use `git log --reverse gnuastro_vA.B..HEAD').
 
@@ -25,7 +27,11 @@ all the commits needed for this release have been completed.
    people/institutions.
 
 
- - Update the webpage (`doc/gnuastro-top.html') and correct the links.
+ - Make sure THANKS corresponds to the acknowledgements in the book.
+
+
+ - [STABLE] Update the webpage (`doc/gnuastro-top.html') and correct the
+   links.
 
 
  - Commit all these changes and tag the commit:
@@ -45,13 +51,21 @@ all the commits needed for this release have been completed.
      $ make distcheck -j8
 
 
+ - [ALPHA] For alpha, we will only be distributing lzip tarballs. So first
+   remove the `tar.gz' file that was produced by `make distcheck', then
+   make the `tar.lz' that will be distributed.
+
+     $ rm *.tar.gz
+     $ make dist-lzip
+
+
  - [STABLE]: After the `make distcheck' is safely finished, tag the release:
 
      $ git tag -a gnuastro_vX.X
 
 
- - The tag will cause a change in the tarball version. So clean the build
-   directory, and repeat the steps for the final release:
+ - [STABLE] The tag will cause a change in the tarball version. So clean
+   the build directory, and repeat the steps for the final release:
 
      $ rm -rf ./build/*
      $ autoreconf -f
@@ -59,6 +73,7 @@ all the commits needed for this release have been completed.
      $ cd build
      $ make distcheck -j8
      $ make dist-lzip
+
 
  - Upload the tarball with the command below: Note that `gnupload'
    uses `ncftpput' which comes with the `ncftp' package. The replaces
@@ -68,7 +83,7 @@ all the commits needed for this release have been completed.
 
        $  /path/to/gnulib/build-aux/gnupload --to alpha.gnu.org:gnuastro   \
                --replace --symlink-regex="s/X.X.XXX-XXXX/alpha-latest/"    \
-               gnuastro-X.X.XXX-XXXX.tar.gz
+               gnuastro-X.X.XXX-XXXX.tar.lz
 
    - For a stable release:
 
@@ -76,20 +91,23 @@ all the commits needed for this release have been completed.
                --replace --symlink-regex                                   \
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
+
  - [ALPHA]: Now that you have the release number, update the link on the
    main HTML on the webpage (`gnuastro-top.html').
 
- - Build the manual in all the formats and upload everything. Note that you
-   will need to configure Gnuastro in the main source directory to build
-   the full webpage with this script.
+ - [STABLE] Build the manual in all the formats and upload everything. Note
+   that you will need to configure Gnuastro in the main source directory to
+   build the full webpage with this script.
 
        $ ./configure
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
 
+
  - Push all the changes and tag to the main repo:
 
     $ git push --follow-tags
+
 
  - Prepare the announcement, this command will calculate the checksums and
    also make the links ready. You just have to add a starting and ending
@@ -102,14 +120,18 @@ all the commits needed for this release have been completed.
               --url-directory=http://XXXX.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
+
  - After finishing the announcement (adding an intro and NEWS file), run a
    spell-check on it.
 
- - IMPORTANT: double check the changes in the list of authors and the list
-   in THANKS and make sure everyone's contribution is correctly included.
 
- - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org' and
-   Savannah news.
+ - IMPORTANT: In the announcements, double check the changes in the list of
+   authors and the list in THANKS and make sure everyone's contribution is
+   correctly included.
+
+
+ - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org'
+   (only for STABLE) and Savannah news (only for STABLE).
 
 
 
@@ -131,6 +153,7 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
 
+
  - If a Git directory exists, then pull any possible changes that already
    exist:
 
@@ -138,10 +161,12 @@ Steps necessary to Package Gnuastro for Debian.
      $ git pull
      $ cd ..
 
+
  - Clean any existing files (if this process was already done for an
    earlier version):
 
      $ rm -f gnuastro_* gnuastro-*
+
 
  - To keep things clean, define Gnuastro's version as a variable (if this
    isn't a major release, we won't use the last four or five characters
@@ -149,12 +174,14 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ export ver=A.B.CCC
 
+
  - Put a copy of the tarball to be packaged in this directory and make a
    standard symbolic link to it (IMPORTANT: the `dash' is changed to an
    `underscore' and an `orig' is added), then go into the cloned directory.
 
      $ ln -s gnuastro-$ver-XXXX.tar.gz gnuastro_$ver.orig.tar.gz
      $ cd gnuastro
+
 
  - You need to checkout to the `upstream' branch, clean everything that was
    in it and unpack this release's raw package source files into it as
@@ -166,6 +193,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
+
  - We now need to commit these into the `upstream' branch of the Git
    history, tag it and run `pristine-tar' on it.
 
@@ -174,10 +202,12 @@ Steps necessary to Package Gnuastro for Debian.
      $ git tag upstream/$ver
      $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz
 
+
  - We are done with the `upstream' and `pristine-tar' branches and can
    checkout `master':
 
      $ git checkout master
+
 
  - Again, we need to clean everything that already exists here, except
    `.git' and `debian':
@@ -188,9 +218,11 @@ Steps necessary to Package Gnuastro for Debian.
      $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
      $ mv ../gnuastro-tmp-debian debian    # Bring back the `debian' directory.
 
+
  - Unpack the distribution tarball into the master branch too:
 
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
+
 
  - Update the ChangeLog. But first get all the changes in this version from
    the NEWS file.
@@ -202,10 +234,12 @@ Steps necessary to Package Gnuastro for Debian.
      $ git diff NEWS
      $ emacs debian/changelog
 
+
  - Check the current Debian policy version at
    https://www.debian.org/doc/debian-policy/ and update debian/control:
 
      $ emacs debian/control
+
 
  - If the soname of the shared libraries has changed:
 
@@ -214,18 +248,22 @@ Steps necessary to Package Gnuastro for Debian.
 
      - In `debian control, change all the old sonames to the new value.
 
+
  - Update your version of `pbuilder':
 
      $ sudo pbuilder update
+
 
  - Run `pdebuild' to build the package (needs sudo).
 
      $ sudo pdebuild
 
+
  - Run Lintian to check the build.
 
      $ lintian -E -I --pedantic                                         \
                /var/cache/pbuilder/result/gnuastro_$ver-1_amd64.changes
+
 
  - Commit the contents of the new release, make sure everything except the
    `debian' directory is commited (with `git status'):
@@ -234,10 +272,12 @@ Steps necessary to Package Gnuastro for Debian.
      $ git status                         # For a visual check
      $ git commit -m "Gnuastro $ver"
 
+
  - Push all the changes to the repository (you can't call `--all' and
    `--tags' together):
 
      $ git push --all
      $ git push --tags
+
 
  - Inform Debian Astro.
