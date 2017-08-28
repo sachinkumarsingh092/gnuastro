@@ -1290,6 +1290,12 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
   for(i=0;i<p->ltl.tottiles;++i)
     if(clprm.sn[i].ndim)  /* Only on tiles were an S/N was calculated. */
       numsn+=clprm.sn[i].size;
+  if( numsn < p->minnumfalse )
+    error(EXIT_FAILURE, 0, "only %zu clumps could be identified in the "
+          "undetected regions. This is less than %zu (value to "
+          "`--minnumfalse' option). Please either decrease this value or "
+          "other options to change prior processing steps", numsn,
+          p->minnumfalse);
 
 
   /* Allocate the space to keep all the S/N values. */
