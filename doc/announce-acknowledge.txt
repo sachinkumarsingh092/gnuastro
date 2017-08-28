@@ -1,0 +1,15 @@
+This file is meant to keep the names of the people who's help must be
+acknowledged in the next release.
+
+Marjan Akbari
+Adrian Bunk
+Antonio Diaz Diaz
+Mosè Giordano
+Raúl Infante Sainz
+Aurélien Jarno
+Alan Lefor
+Guillaume Mahler
+William Pence
+Ole Streicher
+Ignacio Trujillo
+David Valls-Gabaud

@@ -6,10 +6,10 @@ set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
 
- - [ALPHA] Only in the first alpha release after a main release: update the
-   library version (the values starting with `GAL_' in `configure.ac'). See
-   the `Updating library version information' section of the GNU Libtool
-   manual as a guide.
+ - [ALPHA] Only in the first alpha release after a stable release: update
+   the library version (the values starting with `GAL_' in
+   `configure.ac'). See the `Updating library version information' section
+   of the GNU Libtool manual as a guide.
 
 
  - [ALPHA] Run a spell-check (in emacs with `M-x ispell') on the whole book.
@@ -92,9 +92,6 @@ all the commits needed for this release have been completed.
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
 
- - [ALPHA]: Now that you have the release number, update the link on the
-   main HTML on the webpage (`gnuastro-top.html').
-
  - [STABLE] Build the manual in all the formats and upload everything. Note
    that you will need to configure Gnuastro in the main source directory to
    build the full webpage with this script.
@@ -112,12 +109,13 @@ all the commits needed for this release have been completed.
  - Prepare the announcement, this command will calculate the checksums and
    also make the links ready. You just have to add a starting and ending
    similar to previous announcements in a text editor. In the `XXXX', put
-   `ftp' for a stable, and `alpha' for an alpha release.
+   `stable' or `alpha' and in YYYY, put `ftp' for a stable, and `alpha' for
+   an alpha release.
 
-     $ /path/to/gnulib/build-aux/announce-gen --release-type=stable        \
+     $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX        \
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=16A8A4B2AEC42AFF          \
-              --url-directory=http://XXXX.gnu.org/gnu/gnuastro             \
+              --url-directory=http://YYYY.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
 

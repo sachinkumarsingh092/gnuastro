@@ -4,8 +4,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
-  All programs: `.fit' suffix is now also recognized as a FITS file
-  extension in all programs and libraries.
+  All programs: `.fit' is now a recognized FITS file suffix.
 
   All programs: ASCII text files (tables) created with CRLF line
   terminators (for example text files created in MS Windows) are now also
@@ -108,7 +107,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   `GAL_TILE_PARSE_OPERATE' (only when `OTHER' is given) can now parse and
   operate on different datasets independent of the size of allocated block
-  of memory (the tile sizes of `IN' and `OTHER' have to be idential, but
+  of memory (the tile sizes of `IN' and `OTHER' have to be identical, but
   not their allocated blocks of memory). Until now, it was necessary for
   the two blocks to have the same size and this is no longer the case.
 
@@ -127,7 +126,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Crashes on 32-bit and big-endian systems (bug #51476).
 
-  Warp's align matrix when second dimention must be reversed (bug #51536).
+  Warp's align matrix when second dimension must be reversed (bug #51536).
 
   Reading BZERO for unsigned 64-bit integers (bug #51555).
 
