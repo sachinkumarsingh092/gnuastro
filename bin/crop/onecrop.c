@@ -577,7 +577,6 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
   char **strarr, cpname[FLEN_KEYWORD];
   gal_data_t *rkey=gal_data_array_calloc(1);
   char *cp, *cpf, blankrec[80], titlerec[80];
-  char startblank[]="                      / ";
   struct inputimgs *img=&crp->p->imgs[crp->in_ind];
 
 
@@ -663,7 +662,7 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
       /* Write the WCS title and common WCS information. */
       if(fits_write_record(ofp, blankrec, &status))
         gal_fits_io_error(status, NULL);
-      sprintf(titlerec, "%sWCS information", startblank);
+      sprintf(titlerec, "%sWCS information", GAL_FITS_KEY_TITLE_START);
       for(i=strlen(titlerec);i<79;++i)
         titlerec[i]=' ';
       fits_write_record(ofp, titlerec, &status);
@@ -683,9 +682,7 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
 
 
   /* Add the Crop information. */
-  if(fits_write_record(ofp, blankrec, &status))
-    gal_fits_io_error(status, NULL);
-  sprintf(titlerec, "%sCrop information", startblank);
+  sprintf(titlerec, "%sCrop information", GAL_FITS_KEY_TITLE_START);
   for(i=strlen(titlerec);i<79;++i)
     titlerec[i]=' ';
   if(fits_write_record(ofp, titlerec, &status))

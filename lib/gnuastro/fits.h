@@ -68,7 +68,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Macros. */
 #define GAL_FITS_MAX_NDIM 999
-
+#define GAL_FITS_KEY_TITLE_START "                      / "
 
 
 

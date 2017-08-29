@@ -1123,7 +1123,6 @@ gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
 {
   size_t i;
   int h, status=0;
-  char startblank[]="                      / ";
   char *cp, *cpf, blankrec[80], titlerec[80];
 
   /* Set the last element of the blank array. */
@@ -1135,7 +1134,7 @@ gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
   /* Print the first two lines before the WCS header information. */
   if(fits_write_record(fptr, blankrec, &status))
     gal_fits_io_error(status, NULL);
-  sprintf(titlerec, "%sWCS information", startblank);
+  sprintf(titlerec, "%sWCS information", GAL_FITS_KEY_TITLE_START);
   for(i=strlen(titlerec);i<79;++i)
     titlerec[i]=' ';
   if(fits_write_record(fptr, titlerec, &status))
@@ -1210,7 +1209,6 @@ gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
   int status=0;
   char *gitdescribe;
   char cfitsioversion[20];
-  char startblank[]="              / ";
   char *cp, *cpf, blankrec[80], titlerec[80];
 
   /* Before WCSLIB 5.0, the wcslib_version function was not
@@ -1233,7 +1231,7 @@ gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
   if(headers)
     {
       fits_write_record(fptr, blankrec, &status);
-      sprintf(titlerec, "%s%s", startblank,
+      sprintf(titlerec, "%s%s", GAL_FITS_KEY_TITLE_START,
               program_name ? program_name : PACKAGE_NAME);
       for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
       fits_write_record(fptr, titlerec, &status);
@@ -1243,7 +1241,7 @@ gal_fits_key_write_version(fitsfile *fptr, gal_fits_list_key_t *headers,
 
   /* Start printing the version information */
   fits_write_record(fptr, blankrec, &status);
-  sprintf(titlerec, "%sVersions and date", startblank);
+  sprintf(titlerec, "%sVersions and date", GAL_FITS_KEY_TITLE_START);
   for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
   fits_write_record(fptr, titlerec, &status);
   gal_fits_io_error(status, NULL);
