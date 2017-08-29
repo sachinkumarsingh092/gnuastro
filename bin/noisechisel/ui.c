@@ -221,13 +221,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct noisechiselparams *p)
 {
-  /* Make sure the connectivity is defined. */
+  /* Make sure the connectivities have the correct values. */
   if(p->erodengb!=4 && p->erodengb!=8)
     error(EXIT_FAILURE, 0, "%zu not acceptable for `--erodengb'. It must "
           "be 4 or 8 (specifying the type of connectivity)", p->erodengb);
   if(p->openingngb!=4 && p->openingngb!=8)
     error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
           "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
+  if(p->dilatengb!=4 && p->dilatengb!=8)
+    error(EXIT_FAILURE, 0, "%zu not acceptable for `--dilatengb'. It must "
+          "be 4 or 8 (specifying the type of connectivity)", p->dilatengb);
 
   /* Make sure that the no-erode-quantile is not smaller or equal to
      qthresh. */

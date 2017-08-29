@@ -34,6 +34,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   option, the `--mcol' values of the catalog will be interpretted as total
   brightness (sum of pixel values), not magnitude.
 
+  NoiseChisel: with the new `--dilatengb' option, it is now possible to
+  identify the connectivity of the final dilation.
+
   Library: Functions that read data from an ASCII text file
   (`gal_txt_table_info', `gal_txt_table_read', `gal_txt_image_read') now
   also operate on files with CRLF line terminators.

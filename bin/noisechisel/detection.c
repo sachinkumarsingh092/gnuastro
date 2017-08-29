@@ -976,7 +976,7 @@ detection(struct noisechiselparams *p)
   /* If the user asked for dilation, then apply it. */
   if(p->dilate)
     {
-      gal_binary_dilate(workbin, p->dilate, p->input->ndim, 1);
+      gal_binary_dilate(workbin, p->dilate, p->dilatengb==4 ? 1 : 2 , 1);
       num_true_initial = gal_binary_connected_components(workbin, &p->olabel,
                                                          8);
     }

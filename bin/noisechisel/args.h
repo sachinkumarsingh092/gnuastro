@@ -378,6 +378,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "dilatengb",
+      UI_KEY_DILATENGB,
+      "INT",
+      0,
+      "4 or 8 connectivity in final dilation.",
+      ARGS_GROUP_DETECTION,
+      &p->dilatengb,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "cleandilated",
       UI_KEY_CLEANDILATED,
       0,

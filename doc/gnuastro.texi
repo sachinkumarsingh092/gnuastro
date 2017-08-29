@@ -12160,6 +12160,11 @@ give this option a value of 1 (only the largest valued pixel in the input
 will not be eroded).
 
 @item
+@option{--dilatengb}: to specify the final dilation connectivity. Prior to
+Gnuastro 0.4, it was assumed to be 8 (maximum connectivity in a 2D image
+where each pixel has 8 neighbors).
+
+@item
 @option{--cleandilated}: After dilation, if the signal-to-noise ratio of a
 detection is less than the derived pseudo-detection S/N limit, that
 detection will be discarded. In an ideal/clean noise, a true detection's
@@ -12628,6 +12633,10 @@ element for this final dilation is fixed to an 8-connected
 neighborhood. This is because astronomical objects, except cosmic rays,
 never have a clear cutoff, so all the 8-pixels connected to the border
 pixels of a detection might harbor data.
+
+@item --dilatengb=INT
+The connectivity used for the final dilation, see @option{--erodengb} for
+more information about connectivity or a structuring element.
 
 @item --checkdetection
 Every step of the detection process will be added as an extension to a file

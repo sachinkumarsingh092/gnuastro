@@ -73,6 +73,7 @@ struct noisechiselparams
   uint8_t          checkdetsn;  /* Save pseudo-detection S/N values.      */
   float              detquant;  /* True detection quantile.               */
   size_t               dilate;  /* Number of times to dilate true dets.   */
+  size_t            dilatengb;  /* Connectivity for final dilation.       */
   uint8_t        cleandilated;  /* Remove dilated objects with small S/N. */
   uint8_t      checkdetection;  /* Save all detection steps to a file.    */
   uint8_t            checksky;  /* Check the Sky value estimation.        */
