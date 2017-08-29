@@ -70,7 +70,7 @@ detection_initial(struct noisechiselparams *p)
   if(p->detectionname)
     {
       p->binary->name="THRESHOLDED";
-      gal_fits_img_write(p->binary, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->binary, p->detectionname, NULL, PROGRAM_NAME);
       p->binary->name=NULL;
     }
 
@@ -88,7 +88,7 @@ detection_initial(struct noisechiselparams *p)
   if(p->detectionname)
     {
       p->binary->name="ERODED";
-      gal_fits_img_write(p->binary, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->binary, p->detectionname, NULL, PROGRAM_NAME);
       p->binary->name=NULL;
     }
 
@@ -115,7 +115,7 @@ detection_initial(struct noisechiselparams *p)
   if(p->detectionname)
     {
       p->olabel->name="OPENED_AND_LABELED";
-      gal_fits_img_write(p->olabel, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->olabel, p->detectionname, NULL, PROGRAM_NAME);
       p->olabel->name=NULL;
     }
 
@@ -291,7 +291,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
   if(p->detectionname)
     {
       workbin->name = s0d1 ? "DTHRESH-ON-DET" : "DTHRESH-ON-SKY";
-      gal_fits_img_write(workbin, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(workbin, p->detectionname, NULL, PROGRAM_NAME);
       workbin->name=NULL;
     }
 
@@ -346,7 +346,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
             }
 
           /* Write the temporary array into the check image. */
-          gal_fits_img_write(bin, p->detectionname, NULL, PROGRAM_STRING);
+          gal_fits_img_write(bin, p->detectionname, NULL, PROGRAM_NAME);
 
           /* Increment the step counter. */
           ++fho_prm.step;
@@ -547,7 +547,7 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
           while(++plab<plabend);
         }
       worklab->name=extname;
-      gal_fits_img_write(worklab, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(worklab, p->detectionname, NULL, PROGRAM_NAME);
       worklab->name=NULL;
     }
 
@@ -661,7 +661,7 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
     {
       workbin->name="TRUE-PSEUDOS";
       gal_fits_img_write(workbin, p->detectionname, NULL,
-                         PROGRAM_STRING);
+                         PROGRAM_NAME);
       workbin->name=NULL;
     }
 
@@ -814,7 +814,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
     {
       p->olabel->name="DETECTION-FINAL";
       gal_fits_img_write(p->olabel, p->detectionname, NULL,
-                         PROGRAM_STRING);
+                         PROGRAM_NAME);
       p->olabel->name=NULL;
     }
 
@@ -1004,7 +1004,7 @@ detection(struct noisechiselparams *p)
         {
           p->olabel->name="DETECTION-FINAL";
           gal_fits_img_write(p->olabel, p->detectionname, NULL,
-                             PROGRAM_STRING);
+                             PROGRAM_NAME);
           p->olabel->name=NULL;
         }
     }

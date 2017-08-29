@@ -97,7 +97,7 @@ convertsaveoutput(struct mknoiseparams *p)
 
   /* Save the output: */
   p->input=gal_data_copy_to_new_type_free(p->input, p->cp.type);
-  gal_fits_img_write(p->input, p->cp.output, headers, PROGRAM_STRING);
+  gal_fits_img_write(p->input, p->cp.output, headers, PROGRAM_NAME);
 }
 
 

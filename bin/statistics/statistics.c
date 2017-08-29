@@ -254,7 +254,7 @@ statistics_interpolate_and_write(struct statisticsparams *p,
     }
 
   /* Write the values. */
-  gal_tile_full_values_write(values, &cp->tl, output, NULL, PROGRAM_STRING);
+  gal_tile_full_values_write(values, &cp->tl, output, NULL, PROGRAM_NAME);
 }
 
 
@@ -557,7 +557,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   gal_list_str_add(&comments, tmp, 0);
 
   if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
-    gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
+    gal_table_comments_add_intro(&comments, PROGRAM_NAME, &p->rawtime);
 
 
   /* Write the table. */
@@ -704,7 +704,7 @@ print_input_info(struct statisticsparams *p)
   char *str, *name, *col=NULL;
 
   /* Print the program name and version. */
-  printf("%s\n", PROGRAM_STRING);
+  printf("%s\n", PROGRAM_NAME);
 
   /* Print the input information, if the input was a table, we also need to
      give the column information. When the column has a name, it will be

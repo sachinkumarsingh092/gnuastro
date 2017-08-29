@@ -647,13 +647,13 @@ convolve_frequency(struct convolveparams *p)
       /* Save the padded input image. */
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
       data->array=tmp; data->name="input padded";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       free(tmp); data->name=NULL;
 
       /* Save the padded kernel image. */
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_REAL, &tmp);
       data->array=tmp; data->name="kernel padded";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       free(tmp); data->name=NULL;
     }
 
@@ -671,12 +671,12 @@ convolve_frequency(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name="input transformed";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       free(tmp); data->name=NULL;
 
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name="kernel transformed";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       free(tmp); data->name=NULL;
     }
 
@@ -698,7 +698,7 @@ convolve_frequency(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEX_TO_REAL_SPEC, &tmp);
       data->array=tmp; data->name=p->makekernel ? "Divided" : "Multiplied";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       free(tmp); data->name=NULL;
     }
 
@@ -714,7 +714,7 @@ convolve_frequency(struct convolveparams *p)
   if(p->checkfreqsteps)
     {
       data->array=p->rpad; data->name="padded output";
-      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(data, p->freqstepsname, NULL, PROGRAM_NAME);
       data->name=NULL; data->array=NULL;
     }
 
@@ -794,6 +794,6 @@ convolve(struct convolveparams *p)
     convolve_frequency(p);
 
   /* Save the output (which is in p->input) array. */
-  gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_STRING,
+  gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_NAME,
                              cp->type);
 }

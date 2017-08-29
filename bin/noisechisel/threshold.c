@@ -272,8 +272,8 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
     {
       (*first)->name="THRESH1_INTERP";
       (*second)->name="THRESH2_INTERP";
-      gal_tile_full_values_write(*first, tl, filename, NULL, PROGRAM_STRING);
-      gal_tile_full_values_write(*second, tl, filename, NULL, PROGRAM_STRING);
+      gal_tile_full_values_write(*first, tl, filename, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(*second, tl, filename, NULL, PROGRAM_NAME);
       (*first)->name = (*second)->name = NULL;
     }
 
@@ -298,9 +298,9 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
           (*first)->name="THRESH1_SMOOTH";
           (*second)->name="THRESH2_SMOOTH";
           gal_tile_full_values_write(*first, tl, filename, NULL,
-                                     PROGRAM_STRING);
+                                     PROGRAM_NAME);
           gal_tile_full_values_write(*second, tl, filename, NULL,
-                                     PROGRAM_STRING);
+                                     PROGRAM_NAME);
           (*first)->name = (*second)->name = NULL;
         }
     }
@@ -457,7 +457,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
      the full input when `oneelempertile' isn't requested. */
   if(p->qthreshname && !tl->oneelempertile)
     gal_fits_img_write(p->conv ? p->conv : p->input, p->qthreshname, NULL,
-                       PROGRAM_STRING);
+                       PROGRAM_NAME);
 
 
   /* Allocate space for the quantile threshold values. */
@@ -490,9 +490,9 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
       qprm.erode_th->name="QTHRESH_ERODE";
       qprm.noerode_th->name="QTHRESH_NOERODE";
       gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
       gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
       qprm.erode_th->name = qprm.noerode_th->name = NULL;
     }
 
@@ -509,7 +509,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
   /* Write the binary image if check is requested. */
   if(p->qthreshname && !tl->oneelempertile)
-    gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_STRING);
+    gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_NAME);
 
 
   /* Clean up and report duration if necessary. */

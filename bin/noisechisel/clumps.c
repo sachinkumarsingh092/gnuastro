@@ -96,7 +96,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
     error(EXIT_FAILURE, 0, "in the debugging mode of `clumps_oversegment' "
           "only one thread must be used");
   crop=gal_data_copy(tile);
-  gal_fits_img_write(crop, filename, NULL, PROGRAM_STRING);
+  gal_fits_img_write(crop, filename, NULL, PROGRAM_NAME);
   gal_data_free(crop);
   printf("blank: %u\nriver: %u\ntmpcheck: %u\ninit: %u\nmaxlab: %u\n",
          (int32_t)GAL_BLANK_INT32, (int32_t)CLUMPS_RIVER,
@@ -348,7 +348,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
             crop=gal_data_copy(tile);
             crf=(cr=crop->array)+crop->size;
             do if(*cr==CLUMPS_RIVER) *cr=0; while(++cr<crf);
-            gal_fits_img_write(crop, filename, NULL, PROGRAM_STRING);
+            gal_fits_img_write(crop, filename, NULL, PROGRAM_NAME);
             gal_data_free(crop);
           }
         **********************************************/
@@ -1263,7 +1263,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
              demo, set all Sky regions to blank and all clump macro values
              to zero. */
           gal_fits_img_write(p->clabel, p->segmentationname, NULL,
-                             PROGRAM_STRING);
+                             PROGRAM_NAME);
 
           /* Increment the step counter. */
           ++clprm.step;

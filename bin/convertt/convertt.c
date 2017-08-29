@@ -179,7 +179,7 @@ save_with_gnuastro_lib(struct converttparams *p)
     /* FITS: a FITS file can have many extensions (channels). */
     case OUT_FORMAT_FITS:
       for(channel=p->chll; channel!=NULL; channel=channel->next)
-        gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_STRING);
+        gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_NAME);
       break;
 
     /* Plain text: only one channel is acceptable. */

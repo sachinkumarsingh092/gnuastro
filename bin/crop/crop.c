@@ -222,7 +222,7 @@ crop_mode_img(void *inparam)
           crp->centerfilled=onecrop_center_filled(crp);
 
           /* Add the final headers and close output FITS image: */
-          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
+          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_NAME);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close "
@@ -325,7 +325,7 @@ crop_mode_wcs(void *inparam)
           crp->centerfilled=onecrop_center_filled(crp);
 
           /* Write all the dependency versions and close the file. */
-          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_STRING);
+          gal_fits_key_write_version(crp->outfits, NULL, PROGRAM_NAME);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close the "

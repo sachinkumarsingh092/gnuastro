@@ -157,7 +157,7 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   if(checkname && !tl->oneelempertile)
     {
       p->binary->name="DETECTED";
-      gal_fits_img_write(p->binary, checkname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->binary, checkname, NULL, PROGRAM_NAME);
       p->binary->name=NULL;
     }
 
@@ -174,8 +174,8 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
                        cp->numthreads);
   if(checkname)
     {
-      gal_tile_full_values_write(p->sky, tl, checkname, NULL, PROGRAM_STRING);
-      gal_tile_full_values_write(p->std, tl, checkname, NULL, PROGRAM_STRING);
+      gal_tile_full_values_write(p->sky, tl, checkname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(p->std, tl, checkname, NULL, PROGRAM_NAME);
     }
 
   /* Get the basic information about the standard deviation

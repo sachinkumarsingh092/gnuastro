@@ -68,8 +68,8 @@ noisechisel_convolve(struct noisechiselparams *p)
   if(!p->cp.quiet) gal_timing_report(&t1, "Convolved with kernel.", 1);
   if(p->detectionname)
     {
-      gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_STRING);
-      gal_fits_img_write(p->conv, p->detectionname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_NAME);
+      gal_fits_img_write(p->conv, p->detectionname, NULL, PROGRAM_NAME);
     }
 }
 
@@ -205,7 +205,7 @@ noisechisel_output(struct noisechiselparams *p)
                         0, "Minimum S/N of true pseudo-detections", 0,
                         "ratio");
   p->olabel->name = p->onlydetection ? "DETECTIONS" : "OBJECTS";
-  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_STRING);
+  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
   p->olabel->name=NULL;
   keys=NULL;
 
@@ -223,7 +223,7 @@ noisechisel_output(struct noisechiselparams *p)
       gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
                             &p->clumpsnthresh, 0, "Minimum S/N of true clumps",
                             0, "ratio");
-      gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_STRING);
+      gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_NAME);
       p->clabel->name=NULL;
       keys=NULL;
     }
@@ -233,7 +233,7 @@ noisechisel_output(struct noisechiselparams *p)
   if(p->sky->name) free(p->sky->name);
   p->sky->name="SKY";
   gal_tile_full_values_write(p->sky, &p->cp.tl, p->cp.output,
-                             NULL, PROGRAM_STRING);
+                             NULL, PROGRAM_NAME);
   p->sky->name=NULL;
 
 
@@ -249,7 +249,7 @@ noisechisel_output(struct noisechiselparams *p)
                         "Median raw tile standard deviation", 0,
                         p->input->unit);
   gal_tile_full_values_write(p->std, &p->cp.tl, p->cp.output, keys,
-                             PROGRAM_STRING);
+                             PROGRAM_NAME);
   p->std->name=NULL;
 }
 

@@ -151,7 +151,7 @@ sky(struct statisticsparams *p)
 
   /* When checking steps, the input image is the first extension. */
   if(p->checksky)
-    gal_fits_img_write(p->input, p->checkskyname, NULL, PROGRAM_STRING);
+    gal_fits_img_write(p->input, p->checkskyname, NULL, PROGRAM_NAME);
 
 
   /* Convolve the image (if desired). */
@@ -162,7 +162,7 @@ sky(struct statisticsparams *p)
                                         cp->numthreads, 1, tl->workoverch);
       if(p->checksky)
         gal_fits_img_write(p->convolved, p->checkskyname, NULL,
-                           PROGRAM_STRING);
+                           PROGRAM_NAME);
       if(!cp->quiet)
         gal_timing_report(&t1, "Input convolved with kernel.", 1);
     }
@@ -193,9 +193,9 @@ sky(struct statisticsparams *p)
   if(p->checksky)
     {
       gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
       gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
     }
 
 
@@ -214,9 +214,9 @@ sky(struct statisticsparams *p)
   if(p->checksky)
     {
       gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
       gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
-                                 PROGRAM_STRING);
+                                 PROGRAM_NAME);
     }
 
 
@@ -238,9 +238,9 @@ sky(struct statisticsparams *p)
       if(p->checksky)
         {
           gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
-                                     PROGRAM_STRING);
+                                     PROGRAM_NAME);
           gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
-                                     PROGRAM_STRING);
+                                     PROGRAM_NAME);
         }
     }
 
@@ -250,8 +250,8 @@ sky(struct statisticsparams *p)
                                         ( p->cp.output
                                           ? p->cp.output
                                           : p->inputname ), "_sky.fits");
-  gal_tile_full_values_write(p->sky_t, tl, outname, NULL, PROGRAM_STRING);
-  gal_tile_full_values_write(p->std_t, tl, outname, NULL, PROGRAM_STRING);
+  gal_tile_full_values_write(p->sky_t, tl, outname, NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(p->std_t, tl, outname, NULL, PROGRAM_NAME);
   if(!cp->quiet)
     printf("  - Written to `%s'.\n", outname);
 

@@ -767,7 +767,7 @@ segmentation_detections(struct noisechiselparams *p)
              default values are hard to view, so we'll make a copy of the
              demo, set all Sky regions to blank and all clump macro values
              to zero. */
-          gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_STRING);
+          gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_NAME);
 
           /* If the user wanted to check the clump S/N values, then break
              out of the loop, we don't need the rest of the process any
@@ -847,11 +847,11 @@ segmentation(struct noisechiselparams *p)
      inputs. */
   if(p->segmentationname)
     {
-      gal_fits_img_write(p->input, p->segmentationname, NULL, PROGRAM_STRING);
-      gal_fits_img_write(p->conv, p->segmentationname, NULL, PROGRAM_STRING);
+      gal_fits_img_write(p->input, p->segmentationname, NULL, PROGRAM_NAME);
+      gal_fits_img_write(p->conv, p->segmentationname, NULL, PROGRAM_NAME);
       p->olabel->name="DETECTION_LABELS";
       gal_fits_img_write(p->olabel, p->segmentationname, NULL,
-                         PROGRAM_STRING);
+                         PROGRAM_NAME);
       p->olabel->name=NULL;
     }
 
