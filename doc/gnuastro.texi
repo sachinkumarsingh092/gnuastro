@@ -1545,13 +1545,13 @@ management of its version controlled source server there.
 @c (alphabetical, except for the names in the paragraph above).
 We would also like to gratefully thank (in alphabetical order by family
 name) Marjan Akbari, Roland Bacon, Nicolas Bouch@'e, Adrian Bunk, Rosa
-Calvi, Antonio Diaz Diaz, Raúl Infante Sainz, Lee Kelvin, Mohammad-Reza
-Khellat, Alan Lefor, Guillaume Mahler, Francesco Montanari, William Pence,
-Yahya Sefidbakht, Ole Streicher, Ignacio Trujillo, David Valls-Gabaud and
-Christopher Willmer for their useful and constructive comments and
-suggestions. Finally we should thank all the (sometimes anonymous) people
-in various online forums which patiently answered all our small (but
-important) technical questions.
+Calvi, Antonio Diaz Diaz, Stephen Hamer, Raúl Infante Sainz, Lee Kelvin,
+Mohammad-Reza Khellat, Alan Lefor, Guillaume Mahler, Francesco Montanari,
+William Pence, Yahya Sefidbakht, Ole Streicher, Ignacio Trujillo, David
+Valls-Gabaud and Christopher Willmer for their useful and constructive
+comments and suggestions. Finally we should thank all the (sometimes
+anonymous) people in various online forums which patiently answered all our
+small (but important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
