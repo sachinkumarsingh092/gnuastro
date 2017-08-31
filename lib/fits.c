@@ -675,7 +675,53 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
 
   /* Open the FITS file: */
   if( fits_open_file(&fptr, ffname, iomode, &status) )
-    gal_fits_io_error(status, "reading this FITS file");
+    {
+      switch(status)
+        {
+        /* Since the default HDU is `1', when the file only has one
+           extension, this error is common, so we will put a special
+           notice. */
+        case END_OF_FILE:
+          if( hdu[0]=='1' && hdu[1]=='\0' )
+            error(EXIT_FAILURE, 0, "%s has only one extension/HDU but you "
+                  "have asked for the second HDU (hdu number 1 in CFITSIO)."
+                  "\n\n"
+                  "To fix the problem please add `--hdu=0' (or `-h0') to "
+                  "your command when calling Gnuastro's programs. For "
+                  "library users, please give a value of \"0\" to the HDU "
+                  "argument.\n\n"
+                  "FOOTNOTE -- When writing a new FITS file, Gnuastro leaves "
+                  "the first HDU blank (with no data) and writes the "
+                  "outputs in the second HDU. In this way the keywords of "
+                  "the the first HDU can be used as meta data of the whole "
+                  "file (which may contain many extensions). This is the "
+                  "recommended way in the FITS standard. As a result, "
+                  "Gnuastro's default HDU to read an extension in a FITS "
+                  "file is the second. This error is commonly caused when "
+                  "the FITS file wasn't created according to this "
+                  "convention.", filename);
+          break;
+
+        /* Generic error below is fine for this case */
+        case BAD_HDU_NUM:
+          break;
+
+        /* In case an un-expected error occurs, use the general CFITSIO
+           reporting that we have already prepared. */
+        default:
+          gal_fits_io_error(status, "opening the given extension/HDU in "
+                            "the given file");
+        }
+
+      error(EXIT_FAILURE, 0, "%s: extension/HDU `%s' doesn't exist. Please "
+            "run the following command to see the extensions/HDUs in "
+            "`%s':\n\n"
+            "    $ astfits %s\n\n"
+            "The respective HDU number (or name, when present) may be used "
+            "with the `--hdu' option in Gnuastro's programs (or the `hdu' "
+            "argument in Gnuastro's libraries) to open the respective HDU.",
+            filename, hdu, filename, filename);
+    }
 
   /* Clean up and the pointer. */
   free(ffname);
