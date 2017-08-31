@@ -135,6 +135,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Arithmetic with one file and no operators (bug #51559).
 
+  NoiseChisel segfault when detection contains no clumps (bug #51906).
+
 
 
 

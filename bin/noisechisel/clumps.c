@@ -1449,57 +1449,67 @@ clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
   int istouching;
-  size_t *s, *sf;
-  float *sn=cltprm->sn->array;
-  int32_t *l, *lf, curlab=1, *clabel=p->clabel->array;
-  size_t i, *dinc=gal_dimension_increment(ndim, dsize);
-  int32_t *newlabs=gal_data_malloc_array(GAL_TYPE_INT32,
-                                         cltprm->numinitclumps+1, __func__,
-                                         "newlabs");
+  size_t i, *s, *sf, *dinc;
+  float *sn = cltprm->sn ? cltprm->sn->array : NULL;
+  int32_t *l, *lf, *newlabs, curlab=1, *clabel=p->clabel->array;
 
-  /* Initialize the new labels with CLUMPS_INIT (so the diffuse area can be
-     distinguished from the clumps). */
-  lf=(l=newlabs)+cltprm->numinitclumps+1; do *l++=CLUMPS_INIT; while(l<lf);
-
-
-  /* Set the new labels. Here we will also be removing clumps with a peak
-     that touches a river pixel. */
-  if(p->keepmaxnearriver)
+  /* If there were no clumps over the detection, then just set the number
+     of true clumps to zero, otherwise, see which ones should be
+     removed. */
+  if(cltprm->sn)
     {
-      for(i=1;i<cltprm->numinitclumps+1;++i)
-        if( sn[i] > p->clumpsnthresh ) newlabs[i]=curlab++;
-    }
-  else
-    {
-      for(i=1;i<cltprm->numinitclumps+1;++i)
+      /* Allocate the necessary arrays. */
+      newlabs=gal_data_malloc_array(GAL_TYPE_INT32,
+                                    cltprm->numinitclumps+1, __func__,
+                                    "newlabs");
+      dinc=gal_dimension_increment(ndim, dsize);
+
+      /* Initialize the new labels with CLUMPS_INIT (so the diffuse area
+         can be distinguished from the clumps). */
+      lf=(l=newlabs)+cltprm->numinitclumps+1;
+      do *l++=CLUMPS_INIT; while(l<lf);
+
+      /* Set the new labels. Here we will also be removing clumps with a peak
+         that touches a river pixel. */
+      if(p->keepmaxnearriver)
         {
-          /* Check if all the neighbors of this top element are touching a
-             river or not. */
-          istouching=0;
-          GAL_DIMENSION_NEIGHBOR_OP(cltprm->topinds[i], ndim, dsize, ndim,
-                                    dinc,
-                                    { if(clabel[nind]==0) istouching=1; });
-
-          /* If the peak isn't touching a river, then check its S/N and if
-             that is also good, give it a new label. */
-          if( !istouching && sn[i] > p->clumpsnthresh ) newlabs[i]=curlab++;
+          for(i=1;i<cltprm->numinitclumps+1;++i)
+            if( sn[i] > p->clumpsnthresh ) newlabs[i]=curlab++;
         }
+      else
+        {
+          for(i=1;i<cltprm->numinitclumps+1;++i)
+            {
+              /* Check if all the neighbors of this top element are
+                 touching a river or not. */
+              istouching=0;
+              GAL_DIMENSION_NEIGHBOR_OP(cltprm->topinds[i], ndim, dsize,
+                                        ndim, dinc,
+                                        {
+                                          if(clabel[nind]==0)
+                                            istouching=1;
+                                        });
+
+              /* If the peak isn't touching a river, then check its S/N and
+                 if that is also good, give it a new label. */
+              if( !istouching && sn[i] > p->clumpsnthresh )
+                newlabs[i]=curlab++;
+            }
+        }
+
+      /* Correct the clump labels. Note that the non-clumpy regions over the
+         detections (rivers) have already been initialized to CLUMPS_INIT
+         (which is negative). So we'll just need to correct the ones with a
+         value larger than 0. */
+      sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
+      do if(clabel[*s]>0) clabel[*s] = newlabs[ clabel[*s] ]; while(++s<sf);
+
+      /* Save the total number of true clumps in this detection. */
+      cltprm->numtrueclumps=curlab-1;
+
+      /* Clean up. */
+      free(dinc);
+      free(newlabs);
     }
-
-
-  /* Save the total number of true clumps in this detection. */
-  cltprm->numtrueclumps=curlab-1;
-
-
-  /* Correct the clump labels. Note that the non-clumpy regions over the
-     detections (rivers) have already been initialized to CLUMPS_INIT
-     (which is negative). So we'll just need to correct the ones with a
-     value larger than 0. */
-  sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
-  do if(clabel[*s]>0) clabel[*s] = newlabs[ clabel[*s] ]; while(++s<sf);
-
-
-  /* Clean up. */
-  free(dinc);
-  free(newlabs);
+  else cltprm->numtrueclumps=0;
 }
