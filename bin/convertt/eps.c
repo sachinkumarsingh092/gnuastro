@@ -390,11 +390,11 @@ eps_write_eps_or_pdf(struct converttparams *p)
   if(p->outformat==OUT_FORMAT_EPS)
     {
       epsfilename=p->cp.output;
-      gal_checkset_check_remove_file(epsfilename, 0, p->cp.dontdelete);
+      gal_checkset_writable_remove(epsfilename, 0, p->cp.dontdelete);
     }
   else if (p->outformat==OUT_FORMAT_PDF)
     {
-      gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
+      gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
       epsfilename=gal_checkset_automatic_output(&p->cp, p->cp.output, ".ps");
     }
   else

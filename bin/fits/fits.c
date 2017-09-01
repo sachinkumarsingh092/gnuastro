@@ -313,7 +313,7 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
 int
 fits(struct fitsparams *p)
 {
-  int r=EXIT_SUCCESS, printhduinfo=1;;
+  int r=EXIT_SUCCESS, printhduinfo=1;
 
   switch(p->mode)
     {

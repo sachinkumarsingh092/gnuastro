@@ -323,7 +323,7 @@ ui_set_output_names(struct noisechiselparams *p)
   if(output)
     {
       /* Delete the file if it already exists. */
-      gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
+      gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
 
       /* When the output name is given (possibly with directory
          information), the check images will also be put in that same

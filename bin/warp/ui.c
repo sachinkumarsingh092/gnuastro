@@ -867,7 +867,7 @@ ui_preparations(struct warpparams *p)
      which we will need to determine the suffix if no output name is
      specified. */
   if(p->cp.output)
-    gal_checkset_check_remove_file(p->cp.output, 0, p->cp.dontdelete);
+    gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
   else
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
                                                ui_set_suffix(p));

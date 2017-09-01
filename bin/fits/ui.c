@@ -257,7 +257,7 @@ ui_read_check_only_options(struct fitsparams *p)
 
       /* Make sure the output name is set. */
       if(p->cp.output)
-        gal_checkset_check_remove_file(p->filename, 1, p->cp.dontdelete);
+        gal_checkset_writable_remove(p->cp.output, 1, p->cp.dontdelete);
       else
         p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
                                                    "_ext.fits");

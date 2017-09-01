@@ -630,8 +630,8 @@ ui_check_options_and_arguments(struct mkprofparams *p)
   /* If a merged image is requested (or `--kernel' the option is called),
      then delete the final filename if it exists. */
   if(p->nomerged==0 && p->kernel)
-    gal_checkset_check_remove_file(p->mergedimgname, p->cp.keep,
-                                   p->cp.dontdelete);
+    gal_checkset_writable_remove(p->mergedimgname, p->cp.keep,
+                                 p->cp.dontdelete);
 }
 
 

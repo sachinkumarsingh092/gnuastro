@@ -85,6 +85,12 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);
 /**************************************************************/
 /********** Set file names and check if they exist ************/
 /**************************************************************/
+char *
+gal_checkset_dir_part(char *filename);
+
+char *
+gal_checkset_not_dir_part(char *filename);
+
 void
 gal_checkset_check_file(char *filename);
 
@@ -92,7 +98,7 @@ int
 gal_checkset_check_file_report(char *filename);
 
 void
-gal_checkset_check_remove_file(char *filename, int keep, int dontdelete);
+gal_checkset_writable_remove(char *filename, int keep, int dontdelete);
 
 int
 gal_checkset_dir_0_file_1(char *name, int dontdelete);
@@ -100,12 +106,6 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete);
 char *
 gal_checkset_automatic_output(struct gal_options_common_params *cp,
                               char *inname, char *suffix);
-
-char *
-gal_checkset_dir_part(char *input);
-
-char *
-gal_checkset_not_dir_part(char *input);
 
 void
 gal_checkset_check_dir_write_add_slash(char **dirname);

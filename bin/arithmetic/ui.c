@@ -256,8 +256,8 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
           if(output_checked==0)
             {
               if(p->cp.output)
-                gal_checkset_check_remove_file(p->cp.output, 0,
-                                               p->cp.dontdelete);
+                gal_checkset_writable_remove(p->cp.output, 0,
+                                             p->cp.dontdelete);
               else
                 p->cp.output=gal_checkset_automatic_output(&p->cp, token->v,
                                                            "_arith.fits");

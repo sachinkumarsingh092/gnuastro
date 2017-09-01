@@ -91,7 +91,7 @@ clumps_oversegment(struct clumps_thread_params *cltprm)
                                   GAL_TYPE_INVALID, 2, checkdsize,
                                   NULL, 0, 0, NULL, NULL, NULL);
   tile->block=p->conv;
-  gal_checkset_check_remove_file(filename, 0, 0);
+  gal_checkset_writable_remove(filename, 0, 0);
   if(p->cp.numthreads!=1)
     error(EXIT_FAILURE, 0, "in the debugging mode of `clumps_oversegment' "
           "only one thread must be used");

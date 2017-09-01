@@ -334,19 +334,19 @@ ui_preparations(struct convolveparams *p)
   /* Set the output name if the user hasn't set it. */
   if(cp->output==NULL)
     cp->output=gal_checkset_automatic_output(cp, p->filename, outsuffix);
-  gal_checkset_check_remove_file(cp->output, 0, cp->dontdelete);
+  gal_checkset_writable_remove(cp->output, 0, cp->dontdelete);
   if(p->checkfreqsteps)
     {
       p->freqstepsname=gal_checkset_automatic_output(cp, p->filename,
                                                      "_freqsteps.fits");
-      gal_checkset_check_remove_file(p->freqstepsname, 0, cp->dontdelete);
+      gal_checkset_writable_remove(p->freqstepsname, 0, cp->dontdelete);
     }
   if(cp->tl.checktiles)
     {
       cp->tl.tilecheckname=gal_checkset_automatic_output(cp, p->filename,
                                                          "_tiled.fits");
-      gal_checkset_check_remove_file(cp->tl.tilecheckname, 0,
-                                     cp->dontdelete);
+      gal_checkset_writable_remove(cp->tl.tilecheckname, 0,
+                                   cp->dontdelete);
     }
 
 

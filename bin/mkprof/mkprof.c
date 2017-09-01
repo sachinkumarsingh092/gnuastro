@@ -139,7 +139,7 @@ saveindividual(struct mkonthread *mkp)
   else
     {
       asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
-      gal_checkset_check_remove_file(filename, 0, p->cp.dontdelete);
+      gal_checkset_writable_remove(filename, 0, p->cp.dontdelete);
     }
 
 

@@ -151,6 +151,67 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set)
 /**************************************************************/
 /********** Set file names and check if they exist ************/
 /**************************************************************/
+/* Given a filename, this function will separate its directory name
+   part. */
+char *
+gal_checkset_dir_part(char *filename)
+{
+  char *out;
+  size_t i, l=strlen(filename);
+
+  /* Find the first slash from the end. */
+  for(i=l;i!=0;--i)
+    if(filename[i]=='/')
+      break;
+
+  /* If there was no slash, then the current directory should be
+     given: */
+  if(i==0 && filename[0]!='/')
+    gal_checkset_allocate_copy("./", &out);
+  else
+    {
+      gal_checkset_allocate_copy(filename, &out);
+      out[i+1]='\0';
+    }
+
+  return out;
+}
+
+
+
+
+
+/* Given a file name, keep the non-directory part. Note that if there
+   is no forward slash in the input name, the full input name is
+   considered to be the notdir output.*/
+char *
+gal_checkset_not_dir_part(char *filename)
+{
+  size_t i, l;
+  char *out, *tmp=filename;
+
+  /* Find the first `/' to identify the directory */
+  l=strlen(filename);
+  for(i=l;i!=0;--i)
+    if(filename[i]=='/')
+      { tmp=&filename[i+1]; break; }
+
+  /* Get the length of the notdir name: */
+  l=strlen(tmp);
+  errno=0;
+  out=malloc((l+1)*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for notdir", __func__,
+          (l+1)*sizeof *out);
+
+  strcpy(out, tmp);
+  return out;
+}
+
+
+
+
+
 /* Check if a file exists and report if it doesn't: */
 void
 gal_checkset_check_file(char *filename)
@@ -200,8 +261,9 @@ gal_checkset_check_file_report(char *filename)
    won't be deleted, but the program will abort with an error, informing
    the user that the output can't be made. */
 void
-gal_checkset_check_remove_file(char *filename, int keep, int dontdelete)
+gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
 {
+  char *dir;
   FILE *tmpfile;
 
   /* If the filename is `NULL' everything is ok (it doesn't exist)! In some
@@ -237,11 +299,23 @@ gal_checkset_check_remove_file(char *filename, int keep, int dontdelete)
             error(EXIT_FAILURE, errno, "%s", filename);
         }
     }
-  /* If the file doesn't exist, there is no problem, we wanted to
-     remove it any way! Any other kind of error should not be
-     tolerated! */
-  else if(errno!=ENOENT)
-    error(EXIT_FAILURE, errno, "%s", filename);
+
+  /* If the file doesn't exist, we just need to make sure if we have write
+     permissions to its host directory. */
+  else
+    {
+      /* Separate the directory part of the filename. */
+      dir=gal_checkset_dir_part(filename);
+
+      /* Make sure this directory is writable by this user. */
+      errno=0;
+      if( access(dir, W_OK) )
+        error(EXIT_FAILURE, errno, "cannot create any file(s) in the "
+              "directory `%s'", dir);
+
+      /* Clean up. */
+      free(dir);
+    }
 }
 
 
@@ -292,7 +366,7 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
     return 0;
   else if (S_ISREG(nameinfo.st_mode))  /* It is a file, GOOD. */
     {
-      gal_checkset_check_remove_file(name, 0, dontdelete);
+      gal_checkset_writable_remove(name, 0, dontdelete);
       return 1;
     }
   else                                 /* Not a file or a dir, ABORT */
@@ -378,83 +452,9 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
     }
 
   /* Remove the created filename if it already exits. */
-  gal_checkset_check_remove_file(out, cp->keep, cp->dontdelete);
+  gal_checkset_writable_remove(out, cp->keep, cp->dontdelete);
 
   /* Return the resulting filename. */
-  return out;
-}
-
-
-
-
-
-/* Given a filename, this function will separate its directory name
-   part. */
-char *
-gal_checkset_dir_part(char *input)
-{
-  char *out;
-  size_t i, l;
-
-  /* Find the first slash. */
-  l=strlen(input);
-  for(i=l;i!=0;--i)
-    if(input[i]=='/')
-      break;
-
-  /* If there was no slash, then the current directory should be
-     given: */
-  if(i==0)
-    {
-      errno=0;
-      out=malloc(3*sizeof *out);
-      if(out==NULL)
-        error(EXIT_FAILURE, errno, "%s: %zu bytes for current directory name",
-              __func__, 3*sizeof *out);
-      strcpy(out, "./");
-    }
-  else
-    {
-      errno=0;
-      out=malloc((l+1)*sizeof *out);
-      if(out==NULL)
-        error(EXIT_FAILURE, errno, "%s: %zu bytes for `out'", __func__,
-              (l+1)*sizeof *out);
-      strcpy(out, input);
-      out[i+1]='\0';
-    }
-
-  return out;
-}
-
-
-
-
-
-/* Given a file name, keep the non-directory part. Note that if there
-   is no forward slash in the input name, the full input name is
-   considered to be the notdir output.*/
-char *
-gal_checkset_not_dir_part(char *input)
-{
-  size_t i, l;
-  char *out, *tmp=input;
-
-  /* Find the first `/' to identify the directory */
-  l=strlen(input);
-  for(i=l;i!=0;--i)
-    if(input[i]=='/')
-      { tmp=&input[i+1]; break; }
-
-  /* Get the length of the notdir name: */
-  l=strlen(tmp);
-  errno=0;
-  out=malloc((l+1)*sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%s: %zu bytes for notdir", __func__,
-          (l+1)*sizeof *out);
-
-  strcpy(out, tmp);
   return out;
 }
 

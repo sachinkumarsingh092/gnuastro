@@ -2617,7 +2617,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
 
 
   /* Remove the output if it already exists. */
-  gal_checkset_check_remove_file(filename, 0, dontdelete);
+  gal_checkset_writable_remove(filename, 0, dontdelete);
 
 
   /* Create the FITS file */
