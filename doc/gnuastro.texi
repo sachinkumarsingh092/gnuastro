@@ -3380,29 +3380,34 @@ but not run the tests and directly install after building.
 @cindex Root access, not possible
 @cindex No access to super-user install
 @cindex Install with no super-user access
-One of the most commonly used options to configure is the directory that
-will host all the files which require installing (for example the actual
-executable files for the program and/or the documentation and configuration
-files). This is done through the @option{--prefix} option. To demonstrate
-its applicability, let's assume you don't have administrator or root access
-but you want to be able to access the installed files from anywhere while
-you are logged in (one of the most common uses of @option{--prefix}).
+One of the most commonly used options to @file{./configure} is
+@option{--prefix}, it is used to define the directory that will host all
+the installed files (or the ``prefix'' in their final absolute file
+name). For example, when you are using a server and you don't have
+administrator or root access. In this example scenario, if you don't use
+the @option{--prefix} option, you won't be able to install the built files
+and thus access them from anywhere without having to worry about where they
+are installed. However, once you prepare your startup file to look into the
+proper place (as discussed thoroughly below), you will be able to easily
+use this option and benefit from any software you want to install without
+having to ask the system administrators or install and use a different
+version of a software that is already installed on the server.
 
-The most basic way to run an executable is to explicitly type the full file
-name (including all the directory information) and run it. One example is
-running the configuration script with the @command{$ ./configure} command
-(see @ref{Quick start}). By giving a specific directory (the current
-directory or @file{./}), we are explicitly telling the shell to look in the
-current directory for an executable file named `@file{configure}'. Directly
-specifying the directory is thus useful for simple shell scripts in the
-current (or nearby) directories. However, when the program (an executable)
-is to be used a lot, specifying all those directories will become a
-significant burden. For example, the @file{ls} executable lists the
-contents in a given directory and it is (usually) installed in the
-@file{/usr/bin/} directory by the operating system maintainers. So each
-time you you want to use it you would have to run the following command
-(which is very inconvenient, both in typing and in remembering the various
-directories).
+The most basic way to run an executable is to explicitly write its full
+file name (including all the directory information) and run it. One example
+is running the configuration script with the @command{$ ./configure}
+command (see @ref{Quick start}). By giving a specific directory (the
+current directory or @file{./}), we are explicitly telling the shell to
+look in the current directory for an executable file named
+`@file{configure}'. Directly specifying the directory is thus useful for
+executables in the current (or nearby) directories. However, when the
+program (an executable file) is to be used a lot, specifying all those
+directories will become a significant burden. For example, the @file{ls}
+executable lists the contents in a given directory and it is (usually)
+installed in the @file{/usr/bin/} directory by the operating system
+maintainers. So each time you want to use it you would have to run the
+following command (which is very inconvenient, both in writing and in
+remembering the various directories).
 
 @example
 $ /usr/bin/ls
@@ -3413,31 +3418,37 @@ $ /usr/bin/ls
 To address this problem, we have the @file{PATH} environment variable. To
 understand it better, we will start with a short introduction to the shell
 variables. Shell variable values are basically treated as strings of
-characters. You can define a variable and a value for it by running
+characters. For example, it doesn't matter if the value is a name (string
+of @emph{alphabetic} characters) or a number (string of @emph{numeric}
+characters). You can define a variable and a value for it by running
 @example
-$ myvariable=a_test_value
+$ myvariable1=a_test_value
+$ myvariable2="a test value"
 @end example
 @noindent
-You can see the value it represents by running
+As you see above, if the value contains white space characters, you have to
+put the whole value (including white space characters) in double quotes
+(@key{"}). You can see the value it represents by running
 @example
-$ echo $myvariable
+$ echo $myvariable1
+$ echo $myvariable2
 @end example
 @noindent
 @cindex Environment
 @cindex Environment variables
-If a variable has no value, the last command will only print an empty
-line. A variable defined like this will be known as long as this shell or
-terminal is running. Other terminals will have no idea it existed.  The
-main advantage of shell variables is that if they are exported@footnote{By
-running @command{$ export myvariable=a_test_value} instead of the simpler
-case in the text}, subsequent programs that are run within that shell can
-access their value. So by giving them different values, you can change the
-``environment'' of a program which uses their values. The shell variables
-which are accessed by programs are therefore known as ``environment
-variables''@footnote{You can use shell variables for other actions too, for
-example to temporarily keep some names or run loops on some files.}. You
-can see the full list of the environment variables that your shell
-currently recognizes by running:
+If a variable has no value or it wasn't defined, the last command will only
+print an empty line. A variable defined like this will be known as long as
+this shell or terminal is running. Other terminals will have no idea it
+existed.  The main advantage of shell variables is that if they are
+exported@footnote{By running @command{$ export myvariable=a_test_value}
+instead of the simpler case in the text}, subsequent programs that are run
+within that shell can access their value. So by changing their value, you
+can change the ``environment'' of a program which uses them. The shell
+variables which are accessed by programs are therefore known as
+``environment variables''@footnote{You can use shell variables for other
+actions too, for example to temporarily keep some names or run loops on
+some files.}. You can see the full list of exported variables that your
+shell recognizes by running:
 
 @example
 $ printenv
@@ -3447,11 +3458,11 @@ $ printenv
 @cindex @file{HOME/.local/}
 @cindex Environment variable, @code{HOME}
 @file{HOME} is one commonly used environment variable, it is any user's
-(the one that is logged in) top directory. It is used so often that the
-shell has a special expansion (alternative) for it: `@file{~}'. Whenever
-you see file names starting with the tilde sign, it actually represents the
-value to the @file{HOME} environment variable, so @file{~/doc} is the same
-as @file{$HOME/doc}.
+(the one that is logged in) top directory. Try finding it in the command
+above. It is used so often that the shell has a special expansion
+(alternative) for it: `@file{~}'. Whenever you see file names starting with
+the tilde sign, it actually represents the value to the @file{HOME}
+environment variable, so @file{~/doc} is the same as @file{$HOME/doc}.
 
 @vindex PATH
 @pindex ./configure
@@ -3489,13 +3500,15 @@ components: programs (executables), libraries, include (header) files,
 shared data (like manuals), or configuration files (see @ref{Review of
 library fundamentals} for a thorough introduction to headers and
 linking). So it commonly has some of the following sub-directories for each
-class of components respectively: @file{bin/}, @file{lib/}, @file{include/}
-@file{man/}, @file{share/}, @file{etc/}. Since the @file{PATH} variable is
-only used for executables, you can add the @file{~/.local/bin} directory to
-@file{PATH} with the following command. As defined below, first the
-existing value of @file{PATH} is used, then your given directory is added
-to its end and the combined value is put back in @file{PATH} (run
-`@command{$ echo $PATH}' afterwards to check if it was added).
+class of installed components respectively: @file{bin/}, @file{lib/},
+@file{include/} @file{man/}, @file{share/}, @file{etc/}. Since the
+@file{PATH} variable is only used for executables, you can add the
+@file{~/.local/bin} directory (which keeps the executables/programs or more
+generally, ``binary'' files) to @file{PATH} with the following command. As
+defined below, first the existing value of @file{PATH} is used, then your
+given directory is added to its end and the combined value is put back in
+@file{PATH} (run `@command{$ echo $PATH}' afterwards to check if it was
+added).
 
 @example
 $ PATH=$PATH:~/.local/bin
@@ -3504,14 +3517,15 @@ $ PATH=$PATH:~/.local/bin
 @cindex GNU Bash
 @cindex Startup scripts
 @cindex Scripts, startup
-Any executable that you installed in this directory will now be usable
-without having to remember and type its full address. However, as soon as
-you leave your current terminal session, this modified @file{PATH} variable
-will be forgotten. Adding your specified directory to the @file{PATH}
-environment variable each time you start a terminal is also very
-inconvenient and prone to errors. So there are standard `startup files'
-defined by your shell. There is a special startup file for every
-significant starting step:
+Any executable that you installed in @file{~/.local/bin} will now be usable
+without having to remember and write its full address. However, as soon as
+you leave/close your current terminal session, this modified @file{PATH}
+variable will be forgotten. Adding the directories which contain
+executables to the @file{PATH} environment variable each time you start a
+terminal is also very inconvenient and prone to errors. Fortunately, there
+are standard `startup files' defined by your shell precisely for this (and
+other) purposes. There is a special startup file for every significant
+starting step:
 
 @table @asis
 
@@ -3535,17 +3549,13 @@ emulator in the graphic user interface).
 For security reasons, it is highly recommended to directly type in your
 @file{HOME} directory value by hand in startup files instead of using
 variables. So in the following, let's assume your user name is
-`@file{name}'. To add @file{~/.local/bin} to your @file{PATH} automatically
-on any startup file, you have to ``export'' the new value of @command{PATH}
-in the startup file that is most relevant to you with the line
-`@command{export PATH=$PATH:/home/name/.local/bin}'. You can either do it
-manually using a text editor, or by running the following command which
-will add this line as the last line of the file. Let's assume you want to
-add it to @file{~/.bashrc} (afterwards, open your @file{~/.bashrc} with a
-text editor and check it out, to see the result for your self):
+`@file{name}' (so @file{~} may be replaced with @file{/home/name}). To add
+@file{~/.local/bin} to your @file{PATH} automatically on any startup file,
+you have to ``export'' the new value of @command{PATH} in the startup file
+that is most relevant to you by adding this line:
 
 @example
-$ echo 'export PATH=$PATH:/home/name/.local/bin' >> ~/.bashrc
+export PATH=$PATH:/home/name/.local/bin
 @end example
 
 @cindex GNU build system
@@ -3554,17 +3564,17 @@ $ echo 'export PATH=$PATH:/home/name/.local/bin' >> ~/.bashrc
 Now that you know your system will look into @file{~/.local/bin} for
 executables, you can tell Gnuastro's configure script to install everything
 in the top @file{~/.local} directory using the @option{--prefix}
-option. The configure script will then put the executables in
-@file{~/.local/bin}, the compiled library files in @file{~/.local/lib}, the
-library header files in @file{~/.local/include} and so on (see @ref{Review
-of library fundamentals} for a review of the compiled library files and the
-headers). When you subsequently run @command{$ make install}, all the
+option. When you subsequently run @command{$ make install}, all the
 install-able files will be put in their respective directory under
-@file{~/.local/} (as discussed above). Note that tilde (`@key{~}')
-expansion will not happen if you put a `@key{=}' between @option{--prefix}
-and @file{~/.local}@footnote{If you insist on using `@key{=}', you can use
-@option{--prefix=$HOME/.local}.}, so we have avoided the @key{=} character
-here which is optional in GNU-style options, see @ref{Options}.
+@file{~/.local/} (the executables in @file{~/.local/bin}, the compiled
+library files in @file{~/.local/lib}, the library header files in
+@file{~/.local/include} and so on, to learn more about these different
+files, please see @ref{Review of library fundamentals}). Note that tilde
+(`@key{~}') expansion will not happen if you put a `@key{=}' between
+@option{--prefix} and @file{~/.local}@footnote{If you insist on using
+`@key{=}', you can use @option{--prefix=$HOME/.local}.}, so we have avoided
+the @key{=} character here which is optional in GNU-style options, see
+@ref{Options}.
 
 @example
 $ ./configure --prefix ~/.local
@@ -3576,14 +3586,16 @@ $ ./configure --prefix ~/.local
 @cindex Library search directory
 @cindex Default library search directory
 You can install everything (including libraries like GSL, CFITSIO, or
-WCSLIB) locally by configuring them as above. However, recall that
-@command{PATH} is only for executable files, not libraries. Therefore, when
-building programs or libraries@footnote{For example WCSLIB which needs
-CFITSIO, or Gnuastro which needs both.} that depend on libraries you
-installed like this, you have to guide your compiler to the necessary
-directories. To do that, you have to define the @command{LDFLAGS} and
-@command{CPPFLAGS} environment variables respectively. This can be done
-while calling @file{./configure} as shown below:
+WCSLIB which are Gnuastro's mandatory dependencies, see @ref{Mandatory
+dependencies}) locally by configuring them as above. However, recall that
+@command{PATH} is only for executable files, not libraries and that
+libraries can also depend on other libraries. For example WCSLIB depends on
+CFITSIO and Gnuastro needs both. Therefore, when you installed a library in
+a non-recognized directory, you have to guide the program that depends on
+them to look into the necessary library and header file directories. To do
+that, you have to define the @command{LDFLAGS} and @command{CPPFLAGS}
+environment variables respectively. This can be done while calling
+@file{./configure} as shown below:
 
 @example
 $ ./configure LDFLAGS=-L/home/name/.local/lib            \
@@ -3591,39 +3603,36 @@ $ ./configure LDFLAGS=-L/home/name/.local/lib            \
               --prefix ~/.local
 @end example
 
-If you do this for all your libraries, it can be annoying to do this when
-configuring every software that depends on them. Hence, you can define
-these two variables in the most relevant startup file (discussed
-above). The convention on using these variables doesn't include a colon to
-separate values (as @command{PATH}-like variables do), they use white space
-characters and each value is prefixed with a compiler option@footnote{These
-variables are ultimately used as options while building the programs, so
-every value has be an option name followed be a value as discussed in
-@ref{Options}.} (note the @option{-L} and @option{-I} above, see
-@ref{Options}, @ref{Headers} for @option{-I}, and @ref{Linking} for
-@option{-L}). Therefore we have to keep the value in double quotation signs
-to keep the white space characters. Run the following two commands to do
-that if you want them in your @file{~/.bashrc}.
+It can be annoying/buggy to do this when configuring every software that
+depends on such libraries. Hence, you can define these two variables in the
+most relevant startup file (discussed above). The convention on using these
+variables doesn't include a colon to separate values (as
+@command{PATH}-like variables do), they use white space characters and each
+value is prefixed with a compiler option@footnote{These variables are
+ultimately used as options while building the programs, so every value has
+be an option name followed be a value as discussed in @ref{Options}.}: note
+the @option{-L} and @option{-I} above (see @ref{Options}), for @option{-I}
+see @ref{Headers}, and for @option{-L}, see @ref{Linking}. Therefore we
+have to keep the value in double quotation signs to keep the white space
+characters and adding the following two lines to the startup file of
+choice:
 
 @example
-echo 'export LDFLAGS="$LDFLAGS -L/home/name/.local/lib"' >> ~/.bashrc
-echo 'export CPPFLAGS="$CPPFLAGS -I/home/name/.local/include"' \
-     >> ~/.bashrc
+export LDFLAGS="$LDFLAGS -L/home/name/.local/lib"
+export CPPFLAGS="$CPPFLAGS -I/home/name/.local/include"
 @end example
 
+@cindex Dynamic libraries
 Dynamic libraries are linked to the executable every time you run a program
 that depends on them (see @ref{Linking} to fully understand this important
 concept). Hence dynamic libraries also require a special path variable
-called @command{LD_LIBRARY_PATH}. To use programs that depend on these
-libraries, you will need to have @file{~/.local/lib} added to your
-@command{LD_LIBRARY_PATH} environment variable in the relevant start-up
-file (similar to @command{PATH}) as shown below (the @key{\} is only to fit
-this command within the page width, you can ignore it when typing on the
-terminal):
+called @command{LD_LIBRARY_PATH} (same formatting as @command{PATH}). To
+use programs that depend on these libraries, you need to add
+@file{~/.local/lib} to your @command{LD_LIBRARY_PATH} environment variable
+by adding the following line to the relevant start-up file:
 
 @example
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/name/.local/lib' \
-     >> ~/.bashrc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/name/.local/lib
 @end example
 
 If you also want to access the Info (see @ref{Info}) and man pages (see
@@ -3659,20 +3668,46 @@ export LD_LIBRARY_PATH=/home/name/.local/lib:$LD_LIBRARY_PATH
 This is good when a library, for example CFITSIO, is already present on the
 system, but the system-wide install wasn't configured with the correct
 configuration flags (see @ref{CFITSIO}), or you want to use a newer version
-and you don't have administrator or root access to update it. If you update
-@file{LD_LIBRARY_PATH} with the @file{~/.local/lib} installation first, the
-linker will first find the CFITSIO you installed for yourself and link with
-it. It will never reach the system-wide installation. However there are
-important security problems with this order: all important system-wide
-programs and libraries can be replaced by non-secure versions with the same
-file names and put in the customized directory (@file{./.local/lib} in this
-example). So if you choose to search in your customized directory first, be
-sure to keep it clean from executables or libraries with the same names as
-important system programs or libraries.
+and you don't have administrator or root access to update it on the whole
+system/server. If you update @file{LD_LIBRARY_PATH} by placing
+@file{~/.local/lib} first (like above), the linker will first find the
+CFITSIO you installed for yourself and link with it. It thus will never
+reach the system-wide installation.
 
+There are important security problems with using local installations first:
+all important system-wide executables and libraries (important executables
+like @command{ls} and @command{cp}, or libraries like the C library) can be
+replaced by non-secure versions with the same file names and put in the
+customized directory (@file{~/.local} in this example). So if you choose to
+search in your customized directory first, please @emph{be sure} to keep it
+clean from executables or libraries with the same names as important system
+programs or libraries.
 
+@cartouche
+@noindent
+@strong{Summary:} When you are using a server which doesn't give you
+administrator/root access AND you would like to give priority to your own
+built programs and libraries, not the version that is (possibly already)
+present on the server, add these lines to your startup file. See above for
+which startup file is best for your case and for a detailed explanation on
+each. Don't forget to replace `@file{/YOUR-HOME-DIR}' with your home
+directory (for example `@file{/home/your-id}'):
 
+@example
+export PATH="/YOUR-HOME-DIR/.local/bin:$PATH"
+export LDFLAGS="-L/YOUR-HOME-DIR/.local/lib $LDFLAGS"
+export MANPATH="/YOUR-HOME-DIR/.local/share/man/:$MANPATH"
+export CPPFLAGS="-I/YOUR-HOME-DIR/.local/include $CPPFLAGS"
+export INFOPATH="/YOUR-HOME-DIR/.local/share/info/:$INFOPATH"
+export LD_LIBRARY_PATH="/YOUR-HOME-DIR/.local/lib:$LD_LIBRARY_PATH"
+@end example
 
+@noindent
+Afterwards, you just need to add an extra
+@option{--prefix=/YOUR-HOME-DIR/.local} to the @file{./configure} command
+of the software that you intend to install. Everything else will be the
+same as a standard build and install, see @ref{Quick start}.
+@end cartouche
 
 @node Executable names, Configure and build in RAM, Installation directory, Configuring
 @subsubsection Executable names
