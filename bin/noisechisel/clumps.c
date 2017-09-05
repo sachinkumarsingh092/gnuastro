@@ -1303,7 +1303,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
                     p->cp.minmapsize, "CLUMP_S/N", "ratio",
                     "Signal-to-noise ratio");
   snind = ( p->checkclumpsn
-            ? gal_data_alloc(NULL, clprm.snind->type, 1, &numsn, NULL, 0,
+            ? gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &numsn, NULL, 0,
                              p->cp.minmapsize, "CLUMP_ID", "counter",
                              "Unique ID for this clump.")
             : NULL );
