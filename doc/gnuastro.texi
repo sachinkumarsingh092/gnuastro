@@ -1545,7 +1545,7 @@ management of its version controlled source server there.
 @c (alphabetical, except for the names in the paragraph above).
 We would also like to gratefully thank (in alphabetical order by family
 name) Marjan Akbari, Roland Bacon, Nicolas Bouch@'e, Fernando Buitrago,
-Adrian Bunk, Rosa Calvi, Antonio Diaz Diaz, Stephen Hamer, Raúl Infante
+Adrian Bunk, Rosa Calvi, Antonio Diaz Diaz, Stephen Hamer, Ra@'ul Infante
 Sainz, Aur@'elien Jarno, Lee Kelvin, Mohammad-Reza Khellat, Alan Lefor,
 Guillaume Mahler, Francesco Montanari, William Pence, Yahya Sefidbakht, Ole
 Streicher, Ignacio Trujillo, David Valls-Gabaud and Christopher Willmer for
@@ -4196,7 +4196,7 @@ tokens that are not preceded by any hyphens (@command{-}, see
 @ref{Arguments}). Here is one example:
 
 @example
-$ astcrop --ra=53.162551 --dec=-27.789676 -w10 hubble-udf.fits
+$ astcrop --center=53.162551,-27.789676 -w10 --mode=wcs hubble-udf.fits
 @end example
 
 In this example, the argument is @file{hubble-udf.fits}. Arguments are most
