@@ -40,6 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "sky.h"
+#include "clumps.h"
 #include "threshold.h"
 
 
@@ -240,8 +241,9 @@ detection_fill_holes_open(void *in_prm)
       copy->size=p->maxltcontig;
       gal_data_copy_to_allocated(tile, copy);
 
-      /* Fill the holes in this tile. */
-      gal_binary_fill_holes(copy);
+      /* Fill the holes in this tile: holes with maximal connectivity means
+         that they are most strongly bounded. */
+      gal_binary_fill_holes(copy, copy->ndim);
       if(fho_prm->step==1)
         {
           detection_write_in_large(tile, copy);
@@ -404,7 +406,7 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
   /* Description comment. */
   str = ( s0d1D2
           ? ( s0d1D2==2
-              ? "S/N of dilated detections."
+              ? "S/N of grown detections."
               : "Pseudo-detection S/N over initial detections." )
           : "Pseudo-detection S/N over initial undetections.");
   gal_list_str_add(&comments, str, 1);
@@ -421,8 +423,8 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
   /* Abort NoiseChisel if the user asked for it. */
   if(s0d1D2==2 && !p->continueaftercheck)
     ui_abort_after_check(p, p->detsn_s_name, p->detsn_d_name,
-                         "pseudo-detection and dilated S/N values in "
-                         "a table");
+                         "pseudo-detection and grown/final detection S/N "
+                         "values in a table");
 }
 
 
@@ -742,7 +744,7 @@ detection_pseudo_real(struct noisechiselparams *p)
 
 
 
-/* This is for the final detections (dilated) detections. */
+/* This is for the final detections (grown) detections. */
 static size_t
 detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
 {
@@ -799,8 +801,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
       /* Make the comments, then write the table. */
       gal_list_str_add(&comments, "See also: `DILATED' "
                        "HDU of output with `--checkdetection'.", 1);
-      gal_list_str_add(&comments, "S/N of finally dilated "
-                       "detections.", 1);
+      gal_list_str_add(&comments, "S/N of finally grown detections.", 1);
 
 
       threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments);
@@ -887,25 +888,24 @@ detection_remove_false_initial(struct noisechiselparams *p,
   for(i=0;i<p->numinitialdets;++i) if(newlabels[i]) newlabels[i] = curlab++;
 
 
-  /* Replace the byt and olab values with their proper values. If the
-     user doesn't want to dilate, then change the labels in `lab'
-     too. Otherwise, you don't have to worry about the label
-     array. After dilation a new labeling will be done and the whole
-     labeled array will be re-filled.*/
+  /* Replace the byt and olab values with their proper values. If the user
+     doesn't want to grow, then change the labels in `lab' too. Otherwise,
+     you don't have to worry about the label array. After dilation a new
+     labeling will be done and the whole labeled array will be re-filled.*/
   b=workbin->array; l=p->olabel->array;
-  if(p->dilate)
+  if(p->detgrowquant==1.0f)          /* We need the binary array even when */
+    do                               /* there is no growth: the binary     */
+      {                              /* array is used for estimating the   */
+        if(*l!=GAL_BLANK_INT32)      /* Sky and its STD. */
+          *b = ( *l = newlabels[ *l ] ) > 0;
+        ++b;
+      }
+    while(++l<lf);
+  else
     do
       {
         if(*l!=GAL_BLANK_INT32)
           *b = newlabels[ *l ] > 0;
-        ++b;
-      }
-    while(++l<lf);
-  else                               /* We need the binary array even when */
-    do                               /* there is no dilation: the binary   */
-      {                              /* array is used for estimating the   */
-        if(*l!=GAL_BLANK_INT32)     /* Sky and its STD. */
-          *b = ( *l = newlabels[ *l ] ) > 0;
         ++b;
       }
     while(++l<lf);
@@ -914,6 +914,73 @@ detection_remove_false_initial(struct noisechiselparams *p,
   /* Clean up and return. */
   free(newlabels);
   return curlab-1;
+}
+
+
+
+
+
+static size_t
+detection_quantile_expand(struct noisechiselparams *p, gal_data_t **workbin_i)
+{
+  gal_data_t *workbin=*workbin_i;  /* workbin comes from and is later used */
+                                   /* outside this function.               */
+  int32_t *o, *of;
+  size_t *d, counter=0;
+  gal_data_t *exp_thresh_full, *diffuseindexs;
+  uint8_t *b=workbin->array, *bf=b+workbin->size;
+  float *e_th, *arr=p->conv ? p->conv->array : p->input->array;
+
+  /* Expand the threshold values (from one value for each tile) to the
+     whole dataset. */
+  exp_thresh_full=gal_tile_block_write_const_value(p->expand_thresh,
+                                                   p->cp.tl.tiles, 0);
+
+  /* Count the pixels that must be expanded. */
+  e_th=exp_thresh_full->array;
+  do { if(*b++==0 && *arr>*e_th) ++counter; ++arr; ++e_th; } while(b<bf);
+
+  /* Allocate the space necessary to keep all the pixels that must be
+     expanded and re-initialize the necessary pointers. */
+  diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
+                               p->cp.minmapsize, NULL, NULL, NULL);
+
+  /* Fill in the diffuse indexs and initialize the objects dataset. */
+  b=workbin->array;
+  d=diffuseindexs->array;
+  e_th=exp_thresh_full->array;
+  of=(o=p->olabel->array)+p->olabel->size;
+  arr=p->conv ? p->conv->array : p->input->array;
+  do
+    {
+      /* If the binary value is 1, then we want an initial label of 1 (the
+         object is already detected). If it isn't, then we only want it if
+         it is above the threshold. */
+      *o = *b==1 ? 1 : ( *arr>*e_th ? CLUMPS_INIT : 0);
+      if(*b==0 && *arr>*e_th)
+        *d++ = o - (int32_t *)(p->olabel->array);
+
+      /* Increment the points and go onto the next pixel. */
+      ++b;
+      ++arr;
+      ++e_th;
+    }
+  while(++o<of);
+
+  /* Expand the detections. */
+  clumps_grow(p->olabel, diffuseindexs, 0);
+
+  /* Only keep the 1 valued pixels in the binary array and fill its
+     holes. */
+  o=p->olabel->array;
+  bf=(b=workbin->array)+workbin->size;
+  do *b = (*o++ == 1); while(++b<bf);
+  workbin=gal_binary_dilate(workbin, 1, 1, 0);
+  gal_binary_fill_holes(workbin, 1);
+
+  /* Clean up and return. */
+  gal_data_free(exp_thresh_full);
+  return gal_binary_connected_components(workbin, &p->olabel, 8);
 }
 
 
@@ -963,6 +1030,7 @@ detection(struct noisechiselparams *p)
 
   /* Only keep the initial detections that overlap with the real
      pseudo-detections. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   num_true_initial=detection_remove_false_initial(p, workbin);
   if(!p->cp.quiet)
     {
@@ -973,31 +1041,33 @@ detection(struct noisechiselparams *p)
     }
 
 
-  /* If the user asked for dilation, then apply it. */
-  if(p->dilate)
-    {
-      gal_binary_dilate(workbin, p->dilate, p->dilatengb==4 ? 1 : 2 , 1);
-      num_true_initial = gal_binary_connected_components(workbin, &p->olabel,
-                                                         8);
-    }
+  /* If the user asked for dilation/expansion, then apply it and report the
+     final number of detections. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
+  if(p->detgrowquant!=1.0f)
+    num_true_initial=detection_quantile_expand(p, &workbin);
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "%zu detections after %zu dilation%s",
-              num_true_initial, p->dilate, p->dilate>1 ? "s." : ".");
+      if(p->detgrowquant==1.0f)
+        asprintf(&msg, "%zu detections with no growth.", num_true_initial);
+      else
+        asprintf(&msg, "%zu detections after growth to %.3f quantile.",
+                 num_true_initial, p->detgrowquant);
       gal_timing_report(&t0, msg, 2);
       free(msg);
     }
 
 
-  /* When the final (dilated or over-all object) detection's S/N is less
-     than the pseudo-detection's S/N limit, the object is false. For a real
+  /* When the final (grown or over-all object) detection's S/N is less than
+     the pseudo-detection's S/N limit, the object is false. For a real
      detection, the actual object S/N should be higher than any of its
      pseudo-detection because it has a much larger area (and possibly more
      flux under it).  So when the final S/N is smaller than the minimum
      acceptable S/N threshold, we have a false pseudo-detection. */
-  if(p->cleandilated)
+  if(p->cleangrowndet)
     p->numdetections = detection_final_remove_small_sn(p, num_true_initial);
   else
+
     {
       p->numdetections = num_true_initial;
       if(p->detectionname)

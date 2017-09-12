@@ -469,7 +469,8 @@ segmentation_on_threads(void *in_prm)
         {
           /* Grow the true clumps over the detection. */
           clumps_grow_prepare_initial(&cltprm);
-          if(cltprm.diffuseindexs->size) clumps_grow(&cltprm, 1);
+          if(cltprm.diffuseindexs->size)
+            clumps_grow(p->olabel, cltprm.diffuseindexs, 1);
           if(clprm->step==3)
             { gal_data_free(cltprm.diffuseindexs); continue; }
 
@@ -508,7 +509,7 @@ segmentation_on_threads(void *in_prm)
               clumps_grow_prepare_final(&cltprm);
 
               /* Cover the whole area. */
-              clumps_grow(&cltprm, 0);
+              clumps_grow(p->olabel, cltprm.diffuseindexs, 0);
             }
           gal_data_free(cltprm.diffuseindexs);
           if(clprm->step==5) { gal_data_free(cltprm.clumptoobj); continue; }

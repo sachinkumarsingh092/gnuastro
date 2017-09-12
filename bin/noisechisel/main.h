@@ -72,9 +72,8 @@ struct noisechiselparams
   size_t         detsnminarea;  /* Minimum pseudo-detection area for S/N. */
   uint8_t          checkdetsn;  /* Save pseudo-detection S/N values.      */
   float              detquant;  /* True detection quantile.               */
-  size_t               dilate;  /* Number of times to dilate true dets.   */
-  size_t            dilatengb;  /* Connectivity for final dilation.       */
-  uint8_t        cleandilated;  /* Remove dilated objects with small S/N. */
+  float          detgrowquant;  /* Quantile to grow true detections.      */
+  uint8_t       cleangrowndet;  /* Remove grown objects with small S/N.   */
   uint8_t      checkdetection;  /* Save all detection steps to a file.    */
   uint8_t            checksky;  /* Check the Sky value estimation.        */
 
@@ -105,6 +104,7 @@ struct noisechiselparams
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
   gal_data_t          *clabel;  /* Labels of clumps in the detection.     */
+  gal_data_t   *expand_thresh;  /* Quantile threshold to expand per tile. */
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
   size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */

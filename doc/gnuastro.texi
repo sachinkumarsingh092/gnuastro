@@ -12195,29 +12195,20 @@ give this option a value of 1 (only the largest valued pixel in the input
 will not be eroded).
 
 @item
-@option{--dilatengb}: to specify the final dilation connectivity. Prior to
-Gnuastro 0.4, it was assumed to be 8 (maximum connectivity in a 2D image
-where each pixel has 8 neighbors).
+@option{--detgrowquant}: is used to grow the final true detections until a
+given quantile in the same way that clumps are grown during segmentation
+(compare columns 2 and 3 in Figure 10 of the paper). It replaces the old
+@option{--dilate} option in the paper and older versions of
+Gnuastro. Dilation is a blind growth method which causes objects to be boxy
+or diamond shaped when too many layers are added. However, with the growth
+method that is defined now, we can follow the signal into the noise with
+any shape. The appropriate quantile depends on your dataset's correlated
+noise properties and how cleanly it was Sky subtracted.
 
 @item
-@option{--cleandilated}: After dilation, if the signal-to-noise ratio of a
-detection is less than the derived pseudo-detection S/N limit, that
-detection will be discarded. In an ideal/clean noise, a true detection's
-S/N should be larger than its constituent pseudo-detections because its
-area is larger and it also covers more signal. However, on a false
-detections (especially at lower @option{--detquant} values), the increase
-in size can cause a decrease in S/N below that threshold.
-
-This will improve purity and not change completeness (a true detection will
-not be discarded). Because a true detection has flux in its vicinity and
-dilation will catch more of that flux and increase the S/N. So on a true
-detection, the final S/N cannot be less than pseudo-detections.
-
-However, in many real images bad processing creates artifacts that cannot
-be accurately removed by the Sky subtraction. In such cases, this option
-will decrease the completeness (will artificially discard true
-detections). So this feature is not default and should to be explicitly
-called when you know the noise is clean.
+@option{--cleangrowndet}: A process to further clean/remove the possibility
+of false detections, see the descriptions under this option in
+@ref{Detection options}.
 
 @end itemize
 
@@ -12660,18 +12651,46 @@ that this is only calculated for the large mesh grids that satisfy the
 minimum fraction of undetected pixels (value of @option{--minbfrac}) and
 minimum number of psudo-detections (value of @option{--minnumfalse}).
 
-@item -d INT
-@itemx --dilate=INT
-Number of times to dilate the final true detections. See the explanations
-in @option{--opening} for more information on dilation. The structuring
-element for this final dilation is fixed to an 8-connected
-neighborhood. This is because astronomical objects, except cosmic rays,
-never have a clear cutoff, so all the 8-pixels connected to the border
-pixels of a detection might harbor data.
+@item -d FLT
+@itemx --detgrowquant=FLT
+Quantile limit to ``grow'' the final detections. As discussed in the
+previous options, after applying the initial quantile threshold, layers of
+pixels are carved off the objects to identify true signal. With this step
+you can return those low surface brightness layers that were carved off
+back to the detections. To disable growth, set the value of this option to
+@code{1}.
 
-@item --dilatengb=INT
-The connectivity used for the final dilation, see @option{--erodengb} for
-more information about connectivity or a structuring element.
+The process is as follows: after the true detections are found, all the
+non-detected pixels above this quantile will be put in a list and used to
+``grow'' the true detections (seeds of the growth). Like all quantile
+thresholds, this threshold is defined and applied to the convolved
+dataset. Afterwards, the dataset is dilated once (with minimum
+connectivity) to connect very thin regions on the boundary: imagine
+building a dam at the point rivers spill into an open sea/ocean. Finally,
+all holes are filled. In the geography metaphor, holes can be seen as the
+closed (by the dams) rivers and lakes, so this process is like turning the
+water in all such rivers and lakes into soil.
+
+@item cleangrowndet
+After dilation, if the signal-to-noise ratio of a detection is less than
+the derived pseudo-detection S/N limit, that detection will be
+discarded. In an ideal/clean noise, a true detection's S/N should be larger
+than its constituent pseudo-detections because its area is larger and it
+also covers more signal. However, on a false detections (especially at
+lower @option{--detquant} values), the increase in size can cause a
+decrease in S/N below that threshold.
+
+This will improve purity and not change completeness (a true detection will
+not be discarded). Because a true detection has flux in its vicinity and
+dilation will catch more of that flux and increase the S/N. So on a true
+detection, the final S/N cannot be less than pseudo-detections.
+
+However, in many real images bad processing creates artifacts that cannot
+be accurately removed by the Sky subtraction. In such cases, this option
+will decrease the completeness (will artificially discard true
+detections). So this feature is not default and should to be explicitly
+called when you know the noise is clean.
+
 
 @item --checkdetection
 Every step of the detection process will be added as an extension to a file
@@ -21730,10 +21749,11 @@ Although the adjacency matrix as used here is symmetric, currently this
 function assumes that it is filled on both sides of the diagonal.
 @end deftypefun
 
-@deftypefun void gal_binary_fill_holes (gal_data_t @code{*input})
-Fill all the holes that are bounded within a 4-connected region of the
-binary @code{input} dataset. This function currently only works on a 2D
-dataset.
+@deftypefun void gal_binary_fill_holes (gal_data_t @code{*input}, int @code{connectivity})
+Fill all the holes (0 valued pixels surrounded by 1 valued pixels) within a
+region of the binary @code{input} dataset. The connectivity of the holes
+can be set with @code{connectivity}. This function currently only works on
+a 2D dataset.
 @end deftypefun
 
 @node Convolution functions, Interpolation, Binary datasets, Gnuastro library

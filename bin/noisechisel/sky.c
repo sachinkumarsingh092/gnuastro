@@ -202,7 +202,7 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
   /* Interpolate and smooth the derived values. */
-  threshold_interp_smooth(p, &p->sky, &p->std, checkname);
+  threshold_interp_smooth(p, &p->sky, &p->std, NULL, checkname);
 
 
   /* If a check was requested, abort NoiseChisel. */

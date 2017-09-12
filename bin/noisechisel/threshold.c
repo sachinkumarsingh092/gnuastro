@@ -137,9 +137,10 @@ threshold_apply_on_thread(void *in_prm)
 
 
         default:
-          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
-                "address the problem. A value of %d had for `taprm->kind' "
-                "is not valid", __func__, PACKAGE_BUGREPORT, taprm->kind);
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
+                "can address the problem. A value of %d had for "
+                "`taprm->kind' is not valid", __func__, PACKAGE_BUGREPORT,
+                taprm->kind);
         }
     }
 
@@ -247,7 +248,8 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
 /* Interpolate and smooth the values for each tile over the whole image. */
 void
 threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
-                        gal_data_t **second, char *filename)
+                        gal_data_t **second, gal_data_t **third,
+                        char *filename)
 {
   gal_data_t *tmp;
   struct gal_options_common_params *cp=&p->cp;
@@ -255,26 +257,43 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
 
   /* A small sanity check. */
   if( (*first)->next )
-    error(EXIT_FAILURE, 0, "%s: the `first' argument to must not have any "
-          "`next' pointer.", __func__);
+    error(EXIT_FAILURE, 0, "%s: `first' must not have any `next' pointer.",
+          __func__);
+  if( (*second)->next )
+    error(EXIT_FAILURE, 0, "%s: `second' must not have any `next' pointer.",
+          __func__);
+  if( third && (*third)->next )
+    error(EXIT_FAILURE, 0, "%s: `third' must not have any `next' pointer.",
+          __func__);
 
 
   /* Do the interpolation of both arrays. */
   (*first)->next = *second;
+  if(third) (*second)->next = *third;
   tmp=gal_interpolate_close_neighbors(*first, tl, cp->interpnumngb,
                                       cp->numthreads, cp->interponlyblank, 1);
   gal_data_free(*first);
   gal_data_free(*second);
+  if(third) gal_data_free(*third);
   *first=tmp;
-  *second=tmp->next;
+  *second=(*first)->next;
+  if(third)
+    {
+      *third=(*second)->next;
+      (*third)->next=NULL;
+    }
   (*first)->next=(*second)->next=NULL;
   if(filename)
     {
       (*first)->name="THRESH1_INTERP";
       (*second)->name="THRESH2_INTERP";
+      if(third) (*third)->name="THRESH3_INTERP";
       gal_tile_full_values_write(*first, tl, filename, NULL, PROGRAM_NAME);
       gal_tile_full_values_write(*second, tl, filename, NULL, PROGRAM_NAME);
+      if(third)
+        gal_tile_full_values_write(*third, tl, filename, NULL, PROGRAM_NAME);
       (*first)->name = (*second)->name = NULL;
+      if(third) (*third)->name=NULL;
     }
 
   /* Smooth the threshold if requested. */
@@ -292,16 +311,30 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
       gal_data_free(*second);
       *second=tmp;
 
+      /* Smooth the third */
+      if(third)
+        {
+          tmp=gal_tile_full_values_smooth(*third, tl, p->smoothwidth,
+                                          p->cp.numthreads);
+          gal_data_free(*third);
+          *third=tmp;
+        }
+
       /* Add them to the check image. */
       if(filename)
         {
           (*first)->name="THRESH1_SMOOTH";
           (*second)->name="THRESH2_SMOOTH";
+          if(third) (*third)->name="THRESH3_SMOOTH";
           gal_tile_full_values_write(*first, tl, filename, NULL,
                                      PROGRAM_NAME);
           gal_tile_full_values_write(*second, tl, filename, NULL,
                                      PROGRAM_NAME);
+          if(third)
+            gal_tile_full_values_write(*third, tl, filename, NULL,
+                                       PROGRAM_NAME);
           (*first)->name = (*second)->name = NULL;
+          if(third) (*third)->name=NULL;
         }
     }
 }
@@ -332,6 +365,7 @@ struct qthreshparams
 {
   gal_data_t        *erode_th;
   gal_data_t      *noerode_th;
+  gal_data_t       *expand_th;
   void                 *usage;
   struct noisechiselparams *p;
 };
@@ -408,9 +442,15 @@ qthresh_on_tile(void *in_prm)
                  qvalue->array, twidth);
           gal_data_free(qvalue);
 
-          /* Do the same for the no-erode quantile. */
+          /* Same for the no-erode quantile. */
           qvalue=gal_statistics_quantile(usage, p->noerodequant, 1);
           memcpy(gal_data_ptr_increment(qprm->noerode_th->array, tind, type),
+                 qvalue->array, twidth);
+          gal_data_free(qvalue);
+
+          /* Same for the expansion quantile. */
+          qvalue=gal_statistics_quantile(usage, p->detgrowquant, 1);
+          memcpy(gal_data_ptr_increment(qprm->expand_th->array, tind, type),
                  qvalue->array, twidth);
           gal_data_free(qvalue);
         }
@@ -419,6 +459,8 @@ qthresh_on_tile(void *in_prm)
           gal_blank_write(gal_data_ptr_increment(qprm->erode_th->array,
                                                  tind, type), type);
           gal_blank_write(gal_data_ptr_increment(qprm->noerode_th->array,
+                                                 tind, type), type);
+          gal_blank_write(gal_data_ptr_increment(qprm->expand_th->array,
                                                  tind, type), type);
         }
 
@@ -467,6 +509,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
                                  NULL, p->input->unit, NULL);
+  if(p->detgrowquant!=1.0f)
+    qprm.expand_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
+                                  tl->numtiles, NULL, 0, cp->minmapsize,
+                                  NULL, p->input->unit, NULL);
+  else
+    qprm.expand_th=NULL;
 
 
   /* Allocate temporary space for processing in each tile. */
@@ -483,8 +531,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
   free(qprm.usage);
   if( gal_blank_present(qprm.erode_th, 1) )
-    qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+    {
+      qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+      if(qprm.expand_th) qprm.expand_th->flag  |= GAL_DATA_FLAG_HASBLANK;
+    }
   qprm.noerode_th->flag |= GAL_DATA_FLAG_BLANK_CH;
+  qprm.expand_th->flag  |= GAL_DATA_FLAG_BLANK_CH;
   if(p->qthreshname)
     {
       qprm.erode_th->name="QTHRESH_ERODE";
@@ -493,13 +545,21 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
                                  PROGRAM_NAME);
       gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname, NULL,
                                  PROGRAM_NAME);
-      qprm.erode_th->name = qprm.noerode_th->name = NULL;
+      qprm.erode_th->name=qprm.noerode_th->name=NULL;
+
+      if(qprm.expand_th)
+        {
+          qprm.expand_th->name="QTHRESH_EXPAND";
+          gal_tile_full_values_write(qprm.expand_th, tl, p->qthreshname,
+                                     NULL, PROGRAM_NAME);
+          qprm.expand_th->name=NULL;
+        }
     }
 
 
   /* Interpolate and smooth the derived values. */
   threshold_interp_smooth(p, &qprm.erode_th, &qprm.noerode_th,
-                          p->qthreshname);
+                          &qprm.expand_th, p->qthreshname);
 
 
   /* We now have a threshold for all tiles, apply it. */
@@ -510,6 +570,10 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   /* Write the binary image if check is requested. */
   if(p->qthreshname && !tl->oneelempertile)
     gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_NAME);
+
+
+  /* Set the expansion quantile if necessary. */
+  p->expand_thresh = qprm.expand_th ? qprm.expand_th : NULL;
 
 
   /* Clean up and report duration if necessary. */

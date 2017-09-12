@@ -49,5 +49,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --cleandilated --checkdetection --checksegmentation \
-          --continueaftercheck
+$execname $img --cleangrowndet --checkdetection --checksegmentation \
+          --continueaftercheck --tilesize=100,100

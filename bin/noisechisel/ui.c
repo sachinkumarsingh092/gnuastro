@@ -119,7 +119,6 @@ ui_initialize_options(struct noisechiselparams *p,
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
-
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
@@ -228,9 +227,6 @@ ui_read_check_only_options(struct noisechiselparams *p)
   if(p->openingngb!=4 && p->openingngb!=8)
     error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
           "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
-  if(p->dilatengb!=4 && p->dilatengb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--dilatengb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->dilatengb);
 
   /* Make sure that the no-erode-quantile is not smaller or equal to
      qthresh. */
@@ -360,7 +356,7 @@ ui_set_output_names(struct noisechiselparams *p)
                    ? "_detsn_det.txt" : "_detsn_det.fits") );
       p->detsn_D_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_dilated.txt" : "_detsn_dilated.fits") );
+                   ? "_detsn_grown.txt" : "_detsn_grown.fits") );
     }
 
   /* Detection steps. */
