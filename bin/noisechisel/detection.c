@@ -958,6 +958,7 @@ detection(struct noisechiselparams *p)
 
 
   /* Find the real pseudo-detections. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   workbin=detection_pseudo_real(p);
 
 
@@ -974,6 +975,7 @@ detection(struct noisechiselparams *p)
 
 
   /* If the user asked for dilation, then apply it. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
   if(p->dilate)
     {
       gal_binary_dilate(workbin, p->dilate, p->dilatengb==4 ? 1 : 2 , 1);
@@ -984,7 +986,7 @@ detection(struct noisechiselparams *p)
     {
       asprintf(&msg, "%zu detections after %zu dilation%s",
               num_true_initial, p->dilate, p->dilate>1 ? "s." : ".");
-      gal_timing_report(&t0, msg, 2);
+      gal_timing_report(&t1, msg, 2);
       free(msg);
     }
 
