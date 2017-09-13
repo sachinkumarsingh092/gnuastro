@@ -79,7 +79,6 @@ convertt_change(struct converttparams *p)
 
         /* Clean up, since we set the free flag, all extra arrays have been
            freed.*/
-        gal_data_free(cond);
         gal_data_free(change->from);
       }
 

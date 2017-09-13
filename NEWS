@@ -1,5 +1,22 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
+
+* Noteworthy changes in release 0.4.XXX (library 2.0.0) (YYYY-MM-DD) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bug fixes
+
+  ConvertType crash when changing values (bug #52010).
+
+
+
+
+
 * Noteworthy changes in release 0.4 (library 2.0.0) (2017-09-13) [stable]
 
 ** New features
