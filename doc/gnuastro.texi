@@ -5437,7 +5437,7 @@ are inclusive.
 @item i8
 @itemx int8
 8-bit signed integers, range:@*
-@mymath{[-2^7\rm{\ to\ }2^7-1]} or @mymath{[-127\rm{\ to\ }127]}.
+@mymath{[-2^7\rm{\ to\ }2^7-1]} or @mymath{[-128\rm{\ to\ }127]}.
 
 @item u16
 @itemx uint16
@@ -5447,7 +5447,7 @@ are inclusive.
 @item i16
 @itemx int16
 16-bit signed integers, range:@* @mymath{[-2^{15}\rm{\ to\ }2^{15}-1]} or
-@mymath{[-32768\rm{\ to\ }32768]}.
+@mymath{[-32768\rm{\ to\ }32767]}.
 
 @item u32
 @itemx uint32
@@ -19408,6 +19408,20 @@ typedef struct gal_fits_list_key_t
 @} gal_fits_list_key_t;
 @end example
 @end deftp
+
+@deftypefun {void *} gal_fits_key_img_blank (uint8_t @code{type})
+Returns a pointer to an allocated space for the FITS @code{BLANK} header
+keyword when the input array has a type of @code{type}.
+
+According to the FITS standard: ``If the @code{BSCALE} and @code{BZERO}
+keywords do not have the default values of 1.0 and 0.0, respectively, then
+the value of the @code{BLANK} keyword must equal the actual value in the
+FITS data array that is used to represent an undefined pixel and not the
+corresponding physical value''. Therefore a special @code{BLANK} value is
+needed for datasets containing signed 8-bit integers and unsigned 16-bit,
+32-bit and 64-bit integers (types that are defined with @code{BSCALE} and
+@code{BZERO} in the FITS standard).
+@end deftypefun
 
 @deftypefun void gal_fits_key_clean_str_value (char @code{*string})
 Remove the single quotes and possible extra spaces around the keyword values

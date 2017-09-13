@@ -882,7 +882,7 @@ ui_preparations(struct cropparams *p)
           /* Set the basic information. */
           firsttype = p->type;
           firstndim = img->ndim;
-          p->bitnul = gal_blank_alloc_write(p->type);
+          p->bitnul = gal_fits_key_img_blank(p->type);
 
           /* Make sure the number of dimensions is supported. */
           if(firstndim>MAXDIM)

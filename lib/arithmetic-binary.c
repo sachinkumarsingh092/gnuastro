@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/blank.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/arithmetic-internal.h>
@@ -196,20 +197,41 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************              High level macros           *****************/
 /************************************************************************/
 /* Final step to be used by all operators and all types. */
-#define BINARY_OP_OT_RT_LT_SET(OP, OT, RT, LT) {                   \
-    LT *la=l->array;                                               \
-    RT *ra=r->array;                                               \
-    OT *oa=o->array, *of=oa + o->size;                             \
-    if(l->size==r->size) do *oa = *la++ OP *ra++; while(++oa<of);  \
-    else if(l->size==1)  do *oa = *la   OP *ra++; while(++oa<of);  \
-    else                 do *oa = *la++ OP *ra;   while(++oa<of);  \
+#define BINARY_OP_OT_RT_LT_SET(OP, OT, RT, LT) {                        \
+    LT lb, *la=l->array;                                                \
+    RT rb, *ra=r->array;                                                \
+    OT ob, *oa=o->array, *of=oa + o->size;                              \
+    if(checkblank)                                                      \
+      {                                                                 \
+        gal_blank_write(&lb, l->type);                                  \
+        gal_blank_write(&rb, r->type);                                  \
+        gal_blank_write(&ob, o->type);                                  \
+        do                                                              \
+          {                                                             \
+            if(lb==lb && rb==rb)/* Both are integers.                */ \
+              *oa = (*la!=lb  && *ra!=rb)  ? *la OP *ra : ob ;          \
+            else if(lb==lb)     /* Only left operand is an integer.  */ \
+              *oa = (*la!=lb  && *ra==*ra) ? *la OP *ra : ob;           \
+            else                /* Only right operand is an integer. */ \
+              *oa = (*la==*la && *ra!=rb)  ? *la OP *ra : ob;           \
+            if(l->size>1) ++la;                                         \
+            if(r->size>1) ++ra;                                         \
+          }                                                             \
+        while(++oa<of);                                                 \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        if(l->size==r->size) do *oa = *la++ OP *ra++; while(++oa<of);   \
+        else if(l->size==1)  do *oa = *la   OP *ra++; while(++oa<of);   \
+        else                 do *oa = *la++ OP *ra;   while(++oa<of);   \
+      }                                                                 \
   }
 
 
 
 
 /* This is for operators like `&&' and `||', where the right operator is
-   not necessarily read (and thus incremented) incremented. */
+   not necessarily read (and thus incremented). */
 #define BINARY_OP_INCR_OT_RT_LT_SET(OP, OT, RT, LT) {                   \
     LT *la=l->array;                                                    \
     RT *ra=r->array;                                                    \
@@ -332,6 +354,7 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
      time). */
+  int checkblank;
   int32_t otype, final_otype;
   size_t out_size, minmapsize;
   gal_data_t *l, *r, *o=NULL, *tmp_o;
@@ -396,6 +419,17 @@ arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
                        l->size>1 ? l->dsize : r->dsize,
                        l->size>1 ? l->wcs   : r->wcs,
                        0, minmapsize, NULL, NULL, NULL );
+
+
+  /* See if we should check for blanks. When both types are floats, blanks
+     don't need to be checked (the floating point standard will do the job
+     for us). It is also not necessary to check blanks in bitwise
+     operators, but bitwise operators have their own macro
+     (`BINARY_OP_INCR_OT_RT_LT_SET') which doesn' use `checkblanks'.*/
+  checkblank = ((((l->type!=GAL_TYPE_FLOAT32    && l->type!=GAL_TYPE_FLOAT64)
+                  || (r->type!=GAL_TYPE_FLOAT32 && r->type!=GAL_TYPE_FLOAT64))
+                 && (gal_blank_present(l, 1) || gal_blank_present(r, 1)))
+                ? 1 : 0 );
 
 
   /* Start setting the operator and operands. */

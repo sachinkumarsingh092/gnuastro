@@ -1,9 +1,12 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 
-* Noteworthy changes in release 0.4.XXX (library 2.0.0) (YYYY-MM-DD) [stable]
+* Noteworthy changes in release 0.4.XXX (library 3.0.0) (YYYY-MM-DD) [stable]
 
 ** New features
+
+  `gal_fits_key_img_blank': returns the value that must be used in the
+  BLANK keyword for the given type as defined by the FITS standard.
 
 ** Removed features
 
@@ -12,6 +15,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Bug fixes
 
   ConvertType crash when changing values (bug #52010).
+
+  Arithmetic not accounting for integer blank pixels in binary operators
+  (bug #52014).
 
 
 

@@ -159,6 +159,9 @@ gal_fits_hdu_open_format(char *filename, char *hdu, int img0_tab1);
 /**************************************************************/
 /**********            Header keywords             ************/
 /**************************************************************/
+void *
+gal_fits_key_img_blank(uint8_t type);
+
 void
 gal_fits_key_clean_str_value(char *string);
 

@@ -794,6 +794,63 @@ gal_fits_hdu_open_format(char *filename, char *hdu, int img0_tab1)
 /**************************************************************/
 /**********            Header keywords             ************/
 /**************************************************************/
+/* Return allocated pointer to the blank value to use in a FITS file header
+   keyword. */
+void *
+gal_fits_key_img_blank(uint8_t type)
+{
+  void *out=NULL, *tocopy=NULL;
+  uint8_t u8=0;          /* Equivalent of minimum in signed   with BZERO. */
+  int16_t s16=INT16_MAX; /* Equivalend of maximum in unsigned with BZERO. */
+  int32_t s32=INT32_MAX; /* Equivalend of maximum in unsigned with BZERO. */
+  int64_t s64=INT64_MAX; /* Equivalend of maximum in unsigned with BZERO. */
+
+  switch(type)
+    {
+    /* Types with no special treatment: */
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_UINT8:
+    case GAL_TYPE_INT16:
+    case GAL_TYPE_INT32:
+    case GAL_TYPE_INT64:
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
+    case GAL_TYPE_STRING:
+    case GAL_TYPE_STRLL:
+      out = gal_blank_alloc_write(type);
+      break;
+
+    /* Types that need values from their opposite-signed types. */
+    case GAL_TYPE_INT8:      tocopy=&u8;      break;
+    case GAL_TYPE_UINT16:    tocopy=&s16;     break;
+    case GAL_TYPE_UINT32:    tocopy=&s32;     break;
+    case GAL_TYPE_UINT64:    tocopy=&s64;     break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %u not recognized as a Gnuastro "
+            "data type", __func__, type);
+    }
+
+  /* If `gal_blank_alloc_write' wasn't used (copy!=NULL), then allocate the
+     necessary space and fill it in. Note that the width of the signed and
+     unsigned values doesn't differ, so we can use the actual input
+     type. */
+  if(tocopy)
+    {
+      out = gal_data_malloc_array(type, 1, __func__, "out");
+      memcpy(out, tocopy, gal_type_sizeof(type));
+    }
+
+  /* Return. */
+  return out;
+}
+
+
+
+
+
 /* CFITSIO doesn't remove the two single quotes around the string value, so
    the strings it reads are like: 'value ', or 'some_very_long_value'. To
    use the value, it is commonly necessary to remove the single quotes (and
@@ -1710,7 +1767,7 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
         break;
 
       default:
-        blank=gal_blank_alloc_write(towrite->type);
+        blank=gal_fits_key_img_blank(towrite->type);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
