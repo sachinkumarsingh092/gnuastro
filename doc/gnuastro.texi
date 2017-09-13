@@ -1699,8 +1699,8 @@ column it has each object's Right Ascension (the first column is a label he
 has given to each object) and in the third the object's declination.
 
 @example
-$ astcrop --racol=2 --deccol=3 /mnt/data/images/*.fits     \
-             /mnt/data/catalogs/extragalactic.txt
+$ astcrop --coordcol=2 --coordcol=3 /mnt/data/images/*.fits     \
+          --mode=wcs /mnt/data/catalogs/extragalactic.txt
 Crop started on Tue Jun  14 10:18:11 1932
   ---- ./4_crop.fits                  1 1
   ---- ./2_crop.fits                  1 1
@@ -4196,18 +4196,18 @@ tokens that are not preceded by any hyphens (@command{-}, see
 @ref{Arguments}). Here is one example:
 
 @example
-$ astcrop --center=53.162551,-27.789676 -w10 --mode=wcs hubble-udf.fits
+$ astcrop --center=53.162551,-27.789676 -w10/3600 --mode=wcs udf.fits
 @end example
 
-In this example, the argument is @file{hubble-udf.fits}. Arguments are most
+In this example, the argument is @file{udf.fits}. Arguments are most
 commonly the input file names containing your data. Options start with one
 or two hyphens, followed by an identifier for the option (the option's
 name) and its value (see @ref{Options}). Through options you tell the
 program how to interpret the data. In this example, we are running
-@ref{Crop} to crop a region of width 10 arc-seconds centered at the given RA
-and Dec from the input Hubble Ultra-Deep Field (UDF) FITS image. So options
-come with an identifier (the option name which is separate from their
-value).
+@ref{Crop} to crop a region of width 10 arc-seconds centered at the given
+RA and Dec from the input Hubble Ultra-Deep Field (UDF) FITS image. So
+options come with an identifier (the option name which is separate from
+their value).
 
 @vindex --help
 @vindex --usage
@@ -5860,14 +5860,16 @@ $ asttable --information table-file
 @end example
 
 Gnuastro's programs need the columns for different purposes, for example in
-Crop, you specify the column containing the Right Ascension of the crop
-centers with the @option{--racol} option and the column containing the
-Declination with @option{--deccol}. Thus, there is no unified common option
-name to select columns for all programs. However, when the program expects
-the column for a specific context (like the RA and Dec example above), the
-option names end in the @option{col} suffix (for example @option{--racol}
-and @option{--deccol}). These options accept values in integer (column
-number), or string (metadata match/search) format.
+Crop, you specify the columns containing the central coordinates of the
+crop centers with the @option{--coordcol} option (see @ref{Crop
+options}). On the other hand, in MakeProfiles, to specify the column
+containing the profile position angles, you must use the @option{--pcol}
+option (see @ref{MakeProfiles catalog}). Thus, there can be no unified
+common option name to select columns for all programs (different columns
+have different purposes). However, when the program expects a column for a
+specific context, the option names end in the @option{col} suffix like the
+examples above. These options accept values in integer (column number), or
+string (metadata match/search) format.
 
 If the value can be parsed as a positive integer, it will be seen as the
 low-level column number. Note that column counting starts from 1, so if you
@@ -5882,12 +5884,13 @@ convention:
 
 @itemize
 @item
-If the value is enclosed in two slashes (for example @command{-r/RA_/}, or
-@option{--racol=/RA_/}), then it is assumed to be a regular expression with
-the same convention as GNU AWK. GNU AWK has a very well written
+If the value is enclosed in two slashes (for example @command{-x/RA_/}, or
+@option{--coordcol=/RA_/}, see @ref{Crop options}), then it is assumed to
+be a regular expression with the same convention as GNU AWK. GNU AWK has a
+very well written
 @url{https://www.gnu.org/software/gawk/manual/html_node/Regexp.html,
 chapter} describing regular expressions, so we we will not continue
-discussing it here. Regular expressions are a very powerful tool in
+discussing them here. Regular expressions are a very powerful tool in
 matching text and useful in many contexts. We thus strongly encourage
 reviewing this chapter for greatly improving the quality of your work in
 many cases, not just for searching column meta-data in Gnuastro.
