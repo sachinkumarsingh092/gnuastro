@@ -92,15 +92,27 @@ all the commits needed for this release have been completed.
 
 
  - [STABLE] Build the manual in all the formats and upload everything. Note
-   that you will need to configure Gnuastro in the main source directory to
-   build the full webpage with this script.
+   that you will need to configure and build Gnuastro in the main source
+   directory to build the full webpage with this script.
 
        $ ./configure
+       $ make -j8
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
 
+   If any of the files have a `?' infront of them, run these two commands
+   in the webpage directory:
 
- - Push all the changes and tag to the main repo:
+       $ cvs add filename1 filename2 filename3
+       $ cvs commit
+
+   Afterwards, clean up the source directory from all the built files:
+
+       $ cd ..
+       $ make distclean
+
+
+ - [STABLE] Push all the changes and tag to the main repo:
 
     $ git push --follow-tags
 
@@ -111,7 +123,8 @@ all the commits needed for this release have been completed.
    `stable' or `alpha' and in YYYY, put `ftp' for a stable, and `alpha' for
    an alpha release.
 
-     $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX        \
+     $ cd build
+     $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX          \
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=16A8A4B2AEC42AFF          \
               --url-directory=http://YYYY.gnu.org/gnu/gnuastro             \
