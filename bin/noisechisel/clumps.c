@@ -941,6 +941,11 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   size_t len=cltprm->numinitclumps+1;
   struct noisechiselparams *p=cltprm->clprm->p;
 
+  /* If there are no clumps in this tile, then this function can be
+     ignored. */
+  if(cltprm->snind->size==0) return;
+
+
   /* A small sanity check. */
   if(gal_tile_block(tile)!=p->clabel)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "
@@ -977,7 +982,6 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   ninds=newinds->array;
   lf = (l=cltprm->snind->array) + cltprm->snind->size;
   do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
-
 
 
   /* Go over this tile and correct the values. */
@@ -1045,7 +1049,11 @@ clumps_find_make_sn_table(void *in_prm)
 
 
       /* Find the number of detected pixels over this tile. Since this is
-         the binary image, this is just the sum of all the pixels. */
+         the binary image, this is just the sum of all the pixels.
+
+         Note that `numdet' can be `nan' when the whole tile is blank and
+         so there was no values to sum. Recall that in summing, when there
+         is not input, the output is `nan'. */
       tmp=gal_statistics_sum(tile);
       numdet=*((double *)(tmp->array));
       gal_data_free(tmp);
@@ -1063,6 +1071,7 @@ clumps_find_make_sn_table(void *in_prm)
           cltprm.indexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &numsky,
                                        NULL, 0, p->cp.minmapsize, NULL, NULL,
                                        NULL);
+
 
           /* Change the tile's block to the clump labels dataset (because
              we'll need to set the labels of the rivers on the edge of the
@@ -1294,7 +1303,6 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
       gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
                            p->ltl.tottiles, p->cp.numthreads);
     }
-
 
   /* Destroy the mutex if it was initialized. */
   if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )

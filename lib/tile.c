@@ -423,7 +423,7 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
         don't cover the full allocated block. */
 gal_data_t *
 gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
-                                 int initialize)
+                                 int withblank, int initialize)
 {
   void *in;
   int type=tilevalues->type;
@@ -443,7 +443,7 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
 
   /* If requested, initialize `tofill', otherwise it is assumed that the
      full area of the output is covered by the tiles. */
-  if(initialize) gal_blank_initialize(tofill);
+  if(withblank || initialize) gal_blank_initialize(tofill);
   else
     {
       /* Copy the flags. */
@@ -465,9 +465,9 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
     {
       /* Set the pointer to use as input. The `if(o)' statement is set
          because GCC 7.1.1 complained about the possiblity of the first
-         argument of `memcpy' being NULL. */
+         argument of `memcpy' being NULL. Recall that `o' is a pointer. */
       in=gal_data_ptr_increment(tilevalues->array, tile_ind++, type);;
-      GAL_TILE_PARSE_OPERATE( tile, tofill, 1, 0, {
+      GAL_TILE_PARSE_OPERATE( tile, tofill, 1, withblank, {
           if(o) memcpy(o, in, gal_type_sizeof(type));
         } );
     }
@@ -497,7 +497,7 @@ gal_tile_block_check_tiles(gal_data_t *tilesll)
   arr=ids->array; for(i=0;i<dsize;++i) arr[i]=i;
 
   /* Make the output. */
-  out=gal_tile_block_write_const_value(ids, tilesll, 1);
+  out=gal_tile_block_write_const_value(ids, tilesll, 0, 1);
 
   /* Clean up and return. */
   gal_data_free(ids);
@@ -1088,8 +1088,8 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl)
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
-                           char *filename, gal_fits_list_key_t *keys,
-                           char *program_string)
+                           int withblank, char *filename,
+                           gal_fits_list_key_t *keys, char *program_string)
 {
   gal_data_t *disp;
 
@@ -1113,8 +1113,8 @@ gal_tile_full_values_write(gal_data_t *tilevalues,
       else disp = tilevalues;
     }
   else
-    disp=gal_tile_block_write_const_value(tilevalues, tl->tiles, 0);
-
+    disp=gal_tile_block_write_const_value(tilevalues, tl->tiles,
+                                          withblank, 0);
 
   /* Write the array as a file and then clean up (if necessary). */
   gal_fits_img_write(disp, filename, keys, program_string);

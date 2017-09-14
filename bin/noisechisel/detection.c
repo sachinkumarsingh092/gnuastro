@@ -243,7 +243,7 @@ detection_fill_holes_open(void *in_prm)
 
       /* Fill the holes in this tile: holes with maximal connectivity means
          that they are most strongly bounded. */
-      gal_binary_fill_holes(copy, copy->ndim);
+      gal_binary_fill_holes(copy, copy->ndim, -1);
       if(fho_prm->step==1)
         {
           detection_write_in_large(tile, copy);
@@ -746,7 +746,8 @@ detection_pseudo_real(struct noisechiselparams *p)
 
 /* This is for the final detections (grown) detections. */
 static size_t
-detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
+detection_final_remove_small_sn(struct noisechiselparams *p,
+                                gal_data_t *workbin, size_t num)
 {
   size_t i;
   int8_t *b;
@@ -756,7 +757,6 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
   gal_list_str_t *comments=NULL;
   int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_INT32, num+1, __func__,
                                          "newlabs");
-
 
   /* Get the Signal to noise ratio of all detections. */
   sn=detection_sn(p, p->olabel, num, 2, "DILATED");
@@ -769,7 +769,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
 
 
   /* Go over the labeled image and correct the labels. */
-  b=p->binary->array;
+  b=workbin->array;
   lf=(l=p->olabel->array)+p->olabel->size;
   if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
     {
@@ -809,15 +809,6 @@ detection_final_remove_small_sn(struct noisechiselparams *p, size_t num)
 
     }
 
-
-  /* For a check image. */
-  if(p->detectionname)
-    {
-      p->olabel->name="DETECTION-FINAL";
-      gal_fits_img_write(p->olabel, p->detectionname, NULL,
-                         PROGRAM_NAME);
-      p->olabel->name=NULL;
-    }
 
   /* Clean up and return. */
   free(newlabs);
@@ -921,36 +912,35 @@ detection_remove_false_initial(struct noisechiselparams *p,
 
 
 static size_t
-detection_quantile_expand(struct noisechiselparams *p, gal_data_t **workbin_i)
+detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
 {
-  gal_data_t *workbin=*workbin_i;  /* workbin comes from and is later used */
-                                   /* outside this function.               */
   int32_t *o, *of;
-  size_t *d, counter=0;
+  size_t *d, counter=0, numexpanded;
+  float *i, *e_th, *arr=p->conv->array;
   gal_data_t *exp_thresh_full, *diffuseindexs;
   uint8_t *b=workbin->array, *bf=b+workbin->size;
-  float *e_th, *arr=p->conv ? p->conv->array : p->input->array;
 
   /* Expand the threshold values (from one value for each tile) to the
-     whole dataset. */
+     whole dataset. Since we know the tiles cover the whole image, we don't
+     neeed to initialize or check for blanks.*/
   exp_thresh_full=gal_tile_block_write_const_value(p->expand_thresh,
-                                                   p->cp.tl.tiles, 0);
+                                                   p->cp.tl.tiles, 0, 0);
 
   /* Count the pixels that must be expanded. */
   e_th=exp_thresh_full->array;
   do { if(*b++==0 && *arr>*e_th) ++counter; ++arr; ++e_th; } while(b<bf);
 
-  /* Allocate the space necessary to keep all the pixels that must be
-     expanded and re-initialize the necessary pointers. */
+  /* Allocate the space necessary to keep all the index of all the pixels
+     that must be expanded and re-initialize the necessary pointers. */
   diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
                                p->cp.minmapsize, NULL, NULL, NULL);
 
   /* Fill in the diffuse indexs and initialize the objects dataset. */
   b=workbin->array;
+  arr=p->conv->array;
   d=diffuseindexs->array;
   e_th=exp_thresh_full->array;
   of=(o=p->olabel->array)+p->olabel->size;
-  arr=p->conv ? p->conv->array : p->input->array;
   do
     {
       /* If the binary value is 1, then we want an initial label of 1 (the
@@ -975,12 +965,34 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t **workbin_i)
   o=p->olabel->array;
   bf=(b=workbin->array)+workbin->size;
   do *b = (*o++ == 1); while(++b<bf);
-  workbin=gal_binary_dilate(workbin, 1, 1, 0);
-  gal_binary_fill_holes(workbin, 1);
+  workbin=gal_binary_dilate(workbin, 1, 1, 1);
+  gal_binary_fill_holes(workbin, 1, p->detgrowmaxholesize);
 
-  /* Clean up and return. */
+  /* Get the labeled image. */
+  numexpanded=gal_binary_connected_components(workbin, &p->olabel, 8);
+
+  /* Set all the input's blank pixels to blank in the labeled and binary
+     arrays. */
+  if( gal_blank_present(p->input, 1) )
+    {
+      b=workbin->array;
+      i=p->input->array;
+      of=(o=p->olabel->array)+p->olabel->size;
+      do
+        {
+          if(isnan(*i++))
+            {
+              *o=GAL_BLANK_INT32;
+              *b=GAL_BLANK_UINT8;
+            }
+          ++b;
+        }
+      while(++o<of);
+    }
+
+  /* Clean up and return */
   gal_data_free(exp_thresh_full);
-  return gal_binary_connected_components(workbin, &p->olabel, 8);
+  return numexpanded;
 }
 
 
@@ -1045,7 +1057,7 @@ detection(struct noisechiselparams *p)
      final number of detections. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   if(p->detgrowquant!=1.0f)
-    num_true_initial=detection_quantile_expand(p, &workbin);
+    num_true_initial=detection_quantile_expand(p, workbin);
   if(!p->cp.quiet)
     {
       if(p->detgrowquant==1.0f)
@@ -1064,25 +1076,22 @@ detection(struct noisechiselparams *p)
      pseudo-detection because it has a much larger area (and possibly more
      flux under it).  So when the final S/N is smaller than the minimum
      acceptable S/N threshold, we have a false pseudo-detection. */
-  if(p->cleangrowndet)
-    p->numdetections = detection_final_remove_small_sn(p, num_true_initial);
-  else
-
-    {
-      p->numdetections = num_true_initial;
-      if(p->detectionname)
-        {
-          p->olabel->name="DETECTION-FINAL";
-          gal_fits_img_write(p->olabel, p->detectionname, NULL,
-                             PROGRAM_NAME);
-          p->olabel->name=NULL;
-        }
-    }
+  p->numdetections = ( p->cleangrowndet
+                       ?  detection_final_remove_small_sn(p, workbin,
+                                                          num_true_initial)
+                       : num_true_initial );
   if(!p->cp.quiet)
     {
       asprintf(&msg, "%zu final true detections.", p->numdetections);
       gal_timing_report(&t0, msg, 1);
       free(msg);
+    }
+  if(p->detectionname)
+    {
+      p->olabel->name="DETECTION-FINAL";
+      gal_fits_img_write(p->olabel, p->detectionname, NULL,
+                         PROGRAM_NAME);
+      p->olabel->name=NULL;
     }
 
 

@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   a b f j l n u w x z
+   a b f j l n u x z
    A H J W X Y
 */
 enum option_keys_enum
@@ -37,6 +37,7 @@ enum option_keys_enum
   /* With short-option version. */
   UI_KEY_LARGETILESIZE      = 'L',
   UI_KEY_KERNEL             = 'k',
+  UI_KEY_WIDEKERNEL         = 'w',
   UI_KEY_SKYSUBTRACTED      = 'E',
   UI_KEY_MINSKYFRAC         = 'B',
   UI_KEY_MIRRORDIST         = 'r',
@@ -61,6 +62,7 @@ enum option_keys_enum
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
   UI_KEY_KHDU               = 1000,
+  UI_KEY_WKHDU,
   UI_KEY_MINNUMFALSE,
   UI_KEY_ONLYDETECTION,
   UI_KEY_GROWNCLUMPS,
@@ -71,6 +73,7 @@ enum option_keys_enum
   UI_KEY_OPENINGNGB,
   UI_KEY_CHECKDETSKY,
   UI_KEY_CHECKDETSN,
+  UI_KEY_DETGROWMAXHOLESIZE,
   UI_KEY_CLEANGROWNDET,
   UI_KEY_CHECKDETECTION,
   UI_KEY_CHECKSKY,

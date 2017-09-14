@@ -12188,6 +12188,23 @@ major changes since that paper was published.
 @itemize
 
 @item
+@option{--widekernel}: NoiseChisel uses the difference between the mode and
+median to identify if a tile should be used for estimating the quantile
+thresholds (see @ref{Quantifying signal in a tile}). Until now, NoiseChisel
+would convolve an image once and estimate the proper tiles for quantile
+estimations on the convolved image. The same convolved image would later be
+used for quantile estimation. A larger kernel does increase the skewness
+(and thus difference between the mode and median), however, it disfigures
+the shapes/morphology of the objects.
+
+This new @option{--widekernel} option (and a corresponding @option{--wkhdu}
+option to specify its HDU) option are added to solve such cases. When its
+given, the input will be convolved with both the sharp (given through the
+@option{--kernel} option) and wide kernels. The mode and median are
+calculated on the dataset that is convolved with the wider kernel, then the
+quantiles are estimated on the image convolved with the sharper kernel.
+
+@item
 @option{--noerodequant}: to specify a quantile threshold where erosion
 will not apply. This is useful to detect sharper point-like sources that
 will be missed due to too much erosion. To completely ignore this features
@@ -12203,7 +12220,10 @@ Gnuastro. Dilation is a blind growth method which causes objects to be boxy
 or diamond shaped when too many layers are added. However, with the growth
 method that is defined now, we can follow the signal into the noise with
 any shape. The appropriate quantile depends on your dataset's correlated
-noise properties and how cleanly it was Sky subtracted.
+noise properties and how cleanly it was Sky subtracted. The new
+@option{--detgrowmaxholesize} can also be used to specify the maximum hole
+size to fill as part of this growth, see the description in @ref{Detection
+options} for more details.
 
 @item
 @option{--cleangrowndet}: A process to further clean/remove the possibility
@@ -12347,6 +12367,23 @@ Akhlaghi and Ichikawa [2015].
 @item --khdu=STR
 HDU containing the kernel in the file given to the @option{--kernel}
 option.
+
+@item -w STR
+@itemx --widekernel=STR
+File name of a wider kernel to use in estimating the difference of the mode
+and median in a tile (this difference is used to identify the significance
+of signal in that tile, see @ref{Quantifying signal in a tile}). This
+convolved image is only used for this purpose. Once the mode is found to be
+sufficiently close to the median, the input convolved with the sharper
+kernel (@option{--kernel}) is used to identify the quantile threshold (see
+@option{--qthresh}).
+
+Since this convolution will significantly slow down the processing, it is
+optional. If no image is given, the mode and median will be found on the
+image that is convolved with the dataset in @option{--kernel}.
+
+@item --wkhdu=STR
+HDU containing the kernel file given to the @option{--widekernel} option.
 
 @item -E
 @itemx --skysubtracted
@@ -12669,9 +12706,26 @@ connectivity) to connect very thin regions on the boundary: imagine
 building a dam at the point rivers spill into an open sea/ocean. Finally,
 all holes are filled. In the geography metaphor, holes can be seen as the
 closed (by the dams) rivers and lakes, so this process is like turning the
-water in all such rivers and lakes into soil.
+water in all such rivers and lakes into soil. See
+@option{--detgrowmaxholesize} for configuring the hole filling.
 
-@item cleangrowndet
+@item --detgrowmaxholesize=INT
+The maximum hole size to fill during the final expansion of the true
+detections as described in @option{--detgrowquant}. This is necessary when
+the input contains many smaller objects and can be used to avoid marking
+blank sky regions as detections. For example multiple galaxies can be
+positioned such that they surround an empty region of sky. If all the holes
+are filled, the Sky region in between them will be taken as a detection
+which is not desired. To avoid such cases, the integer given to this option
+must be smaller than the hole between the objects.
+
+On the other hand, if you have a very large (and extended) galaxy, the
+diffuse wings of the galaxy may create very large holes. In such cases, a
+larger value to this option will cause the whole region to be detected as
+part of the large galaxy and thus detect it to extremely low surface
+brightness limits.
+
+@item --cleangrowndet
 After dilation, if the signal-to-noise ratio of a detection is less than
 the derived pseudo-detection S/N limit, that detection will be
 discarded. In an ideal/clean noise, a true detection's S/N should be larger
@@ -18125,7 +18179,7 @@ to manually copy and paste the function name or worry about it changing
 later (@code{__func__} was standardized in C99).
 @end deftypefun
 
-@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size)}, const char @code{*funcname}, const char @code{*varname})
+@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size}, const char @code{*funcname}, const char @code{*varname})
 Similar to @code{gal_data_malloc_array}, but the space is cleared (set to
 0) after allocation.
 @end deftypefun
@@ -20578,7 +20632,7 @@ function, it should be @code{1}. In subsequent calls (while you are parsing
 a tile), it should be increased by one.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_tile_block_write_const_value (gal_data_t @code{*tilevalues}, gal_data_t @code{*tilesll}, int @code{initialize})
+@deftypefun {gal_data_t *} gal_tile_block_write_const_value (gal_data_t @code{*tilevalues}, gal_data_t @code{*tilesll}, int @code{withblank}, int @code{initialize})
 Write a constant value for each tile over the area it covers in an
 allocated dataset that is the size of @code{tile}'s allocated block of
 memory (found through @code{gal_tile_block} described above). The arguments
@@ -20599,6 +20653,11 @@ doesn't care, it will parse the @code{next} elements to go to the next
 tile. This function will not pop-from or free the @code{tilesll}, it will
 only parse it from start to end.
 
+@item withblank
+If the block containing the tiles has blank elements, those blank elements
+will be blank in the output of this function also, hence the array will be
+initialzied with blank values when this option is called (see below).
+
 @item initialize
 Initialize the allocated space with blank values before writing in the
 constant values. This can be useful when the tiles don't cover the full
@@ -20614,7 +20673,7 @@ values. The output dataset will have a type of @code{GAL_TYPE_INT32} (see
 
 This function can be used when you want to check the coverage of each tile
 over the allocated block of memory. It is just a wrapper over the
-@code{gal_tile_block_write_const_value}.
+@code{gal_tile_block_write_const_value} (with @code{withblank} set to zero).
 @end deftypefun
 
 @deftypefun {void *} gal_tile_block_relative_to_other (gal_data_t @code{*tile}, gal_data_t @code{*other})
@@ -20985,13 +21044,17 @@ inverse:    IN_ALL[ perm[i] ]   =   IN_MEMORY[ i       ]
 @end example
 @end deftypefun
 
-@deftypefun void gal_tile_full_values_write (gal_data_t @code{*tilevalues}, struct gal_tile_two_layer_params @code{*tl}, char @code{*filename}, gal_fits_list_key_t @code{*keys}, char @code{*program_string})
+@deftypefun void gal_tile_full_values_write (gal_data_t @code{*tilevalues}, struct gal_tile_two_layer_params @code{*tl}, int @code{withblank}, char @code{*filename}, gal_fits_list_key_t @code{*keys}, char @code{*program_string})
 Write one value for each tile into a file. It is important to note that the
 values in @code{tilevalues} must be ordered in the same manner as the
 tiles, so @code{tilevalues->array[i]} is the value that should be given to
 @code{tl->tiles[i]}. The @code{tl->permutation} array must have been
 initialized before calling this function with
 @code{gal_tile_full_permutation}.
+
+If @code{withblank} is non-zero, then block structure of the tiles will be
+checked and all blank pixels in the block will be blank in the final output
+file also.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_tile_full_values_smooth (gal_data_t @code{*tilevalues}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{width}, size_t @code{numthreads})
