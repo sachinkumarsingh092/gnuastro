@@ -137,9 +137,10 @@ threshold_apply_on_thread(void *in_prm)
 
 
         default:
-          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
-                "address the problem. A value of %d had for `taprm->kind' "
-                "is not valid", __func__, PACKAGE_BUGREPORT, taprm->kind);
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
+                "can address the problem. A value of %d had for "
+                "`taprm->kind' is not valid", __func__, PACKAGE_BUGREPORT,
+                taprm->kind);
         }
     }
 
@@ -247,7 +248,8 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
 /* Interpolate and smooth the values for each tile over the whole image. */
 void
 threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
-                        gal_data_t **second, char *filename)
+                        gal_data_t **second, gal_data_t **third,
+                        char *filename)
 {
   gal_data_t *tmp;
   struct gal_options_common_params *cp=&p->cp;
@@ -255,26 +257,45 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
 
   /* A small sanity check. */
   if( (*first)->next )
-    error(EXIT_FAILURE, 0, "%s: the `first' argument to must not have any "
-          "`next' pointer.", __func__);
+    error(EXIT_FAILURE, 0, "%s: `first' must not have any `next' pointer.",
+          __func__);
+  if( (*second)->next )
+    error(EXIT_FAILURE, 0, "%s: `second' must not have any `next' pointer.",
+          __func__);
+  if( third && (*third)->next )
+    error(EXIT_FAILURE, 0, "%s: `third' must not have any `next' pointer.",
+          __func__);
 
 
   /* Do the interpolation of both arrays. */
   (*first)->next = *second;
+  if(third) (*second)->next = *third;
   tmp=gal_interpolate_close_neighbors(*first, tl, cp->interpnumngb,
                                       cp->numthreads, cp->interponlyblank, 1);
   gal_data_free(*first);
   gal_data_free(*second);
+  if(third) gal_data_free(*third);
   *first=tmp;
-  *second=tmp->next;
+  *second=(*first)->next;
+  if(third)
+    {
+      *third=(*second)->next;
+      (*third)->next=NULL;
+    }
   (*first)->next=(*second)->next=NULL;
   if(filename)
     {
       (*first)->name="THRESH1_INTERP";
       (*second)->name="THRESH2_INTERP";
-      gal_tile_full_values_write(*first, tl, filename, NULL, PROGRAM_NAME);
-      gal_tile_full_values_write(*second, tl, filename, NULL, PROGRAM_NAME);
+      if(third) (*third)->name="THRESH3_INTERP";
+      gal_tile_full_values_write(*first, tl, 1, filename, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(*second, tl, 1, filename, NULL,
+                                 PROGRAM_NAME);
+      if(third)
+        gal_tile_full_values_write(*third, tl, 1, filename, NULL,
+                                   PROGRAM_NAME);
       (*first)->name = (*second)->name = NULL;
+      if(third) (*third)->name=NULL;
     }
 
   /* Smooth the threshold if requested. */
@@ -292,16 +313,30 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
       gal_data_free(*second);
       *second=tmp;
 
+      /* Smooth the third */
+      if(third)
+        {
+          tmp=gal_tile_full_values_smooth(*third, tl, p->smoothwidth,
+                                          p->cp.numthreads);
+          gal_data_free(*third);
+          *third=tmp;
+        }
+
       /* Add them to the check image. */
       if(filename)
         {
           (*first)->name="THRESH1_SMOOTH";
           (*second)->name="THRESH2_SMOOTH";
-          gal_tile_full_values_write(*first, tl, filename, NULL,
+          if(third) (*third)->name="THRESH3_SMOOTH";
+          gal_tile_full_values_write(*first, tl, 1, filename, NULL,
                                      PROGRAM_NAME);
-          gal_tile_full_values_write(*second, tl, filename, NULL,
+          gal_tile_full_values_write(*second, tl, 1, filename, NULL,
                                      PROGRAM_NAME);
+          if(third)
+            gal_tile_full_values_write(*third, tl, 1, filename, NULL,
+                                       PROGRAM_NAME);
           (*first)->name = (*second)->name = NULL;
+          if(third) (*third)->name=NULL;
         }
     }
 }
@@ -332,6 +367,7 @@ struct qthreshparams
 {
   gal_data_t        *erode_th;
   gal_data_t      *noerode_th;
+  gal_data_t       *expand_th;
   void                 *usage;
   struct noisechiselparams *p;
 };
@@ -350,6 +386,7 @@ qthresh_on_tile(void *in_prm)
   double *darr;
   void *tarray=NULL;
   int type=qprm->erode_th->type;
+  gal_data_t *modeconv = p->wconv ? p->wconv : p->conv;
   gal_data_t *tile, *mode, *qvalue, *usage, *tblock=NULL;
   size_t i, tind, twidth=gal_type_sizeof(type), ndim=p->input->ndim;
 
@@ -375,23 +412,18 @@ qthresh_on_tile(void *in_prm)
       tile = &p->cp.tl.tiles[tind];
 
 
-      /* If we have a convolved image, temporarily change the tile's
-         pointers so we can do the work on the convolved image, then copy
-         the desired contents into the already allocated `usage' array. */
-      if(p->conv)
-        {
-          tarray=tile->array; tblock=tile->block;
-          tile->array=gal_tile_block_relative_to_other(tile, p->conv);
-          tile->block=p->conv;
-        }
+      /* Temporarily change the tile's pointers so we can do the work on
+         the convolved image, then copy the desired contents into the
+         already allocated `usage' array. */
+      tarray=tile->array; tblock=tile->block;
+      tile->array=gal_tile_block_relative_to_other(tile, modeconv);
+      tile->block=modeconv;
       gal_data_copy_to_allocated(tile, usage);
-      if(p->conv) { tile->array=tarray; tile->block=tblock; }
+      tile->array=tarray; tile->block=tblock;
 
 
-      /* Find the mode on this dataset, note that we have set the `inplace'
-         flag to `1'. So as a byproduct of finding the mode, `usage' is not
-         going to have any blank elements and will be sorted (thus ready to
-         be used by the quantile functions). */
+      /* Find the mode on this tile, note that we have set the `inplace'
+         flag to `1' to avoid extra allocation. */
       mode=gal_statistics_mode(usage, p->mirrordist, 1);
 
 
@@ -401,6 +433,24 @@ qthresh_on_tile(void *in_prm)
       darr=mode->array;
       if( fabs(darr[1]-0.5f) < p->modmedqdiff )
         {
+          /* The mode was found on the wider convolved image, but the
+             qthresh values have to be found on the sharper convolved
+             images. This is because the distribution becomes more skewed
+             with a wider kernel, helping us find tiles with no data more
+             easily. But for the quantile threshold, we want to use the
+             sharper convolved image to loose less of the spatial
+             information. */
+          if(modeconv!=p->conv)
+            {
+              tarray=tile->array; tblock=tile->block;
+              tile->array=gal_tile_block_relative_to_other(tile, p->conv);
+              tile->block=p->conv;
+              usage->ndim=ndim;             /* Since usage was modified in */
+              usage->size=p->maxtcontig;    /* place, it needs to be       */
+              gal_data_copy_to_allocated(tile, usage);  /* re-initialized. */
+              tile->array=tarray; tile->block=tblock;
+            }
+
           /* Get the erosion quantile for this tile and save it. Note that
              the type of `qvalue' is the same as the input dataset. */
           qvalue=gal_statistics_quantile(usage, p->qthresh, 1);
@@ -408,11 +458,21 @@ qthresh_on_tile(void *in_prm)
                  qvalue->array, twidth);
           gal_data_free(qvalue);
 
-          /* Do the same for the no-erode quantile. */
+          /* Same for the no-erode quantile. */
           qvalue=gal_statistics_quantile(usage, p->noerodequant, 1);
           memcpy(gal_data_ptr_increment(qprm->noerode_th->array, tind, type),
                  qvalue->array, twidth);
           gal_data_free(qvalue);
+
+          /* Same for the expansion quantile. */
+          if(p->detgrowquant!=1.0f)
+            {
+              qvalue=gal_statistics_quantile(usage, p->detgrowquant, 1);
+              memcpy(gal_data_ptr_increment(qprm->expand_th->array, tind,
+                                            type),
+                     qvalue->array, twidth);
+              gal_data_free(qvalue);
+            }
         }
       else
         {
@@ -420,6 +480,9 @@ qthresh_on_tile(void *in_prm)
                                                  tind, type), type);
           gal_blank_write(gal_data_ptr_increment(qprm->noerode_th->array,
                                                  tind, type), type);
+          if(p->detgrowquant!=1.0f)
+            gal_blank_write(gal_data_ptr_increment(qprm->expand_th->array,
+                                                   tind, type), type);
         }
 
       /* Clean up and fix the tile's pointers. */
@@ -456,8 +519,13 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
      as the input, making it hard to inspect visually. So we'll only put
      the full input when `oneelempertile' isn't requested. */
   if(p->qthreshname && !tl->oneelempertile)
-    gal_fits_img_write(p->conv ? p->conv : p->input, p->qthreshname, NULL,
-                       PROGRAM_NAME);
+    {
+      gal_fits_img_write(p->conv ? p->conv : p->input, p->qthreshname, NULL,
+                         PROGRAM_NAME);
+      if(p->wconv)
+        gal_fits_img_write(p->wconv ? p->wconv : p->input, p->qthreshname,
+                           NULL, PROGRAM_NAME);
+    }
 
 
   /* Allocate space for the quantile threshold values. */
@@ -467,6 +535,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
                                  NULL, p->input->unit, NULL);
+  if(p->detgrowquant!=1.0f)
+    qprm.expand_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
+                                  tl->numtiles, NULL, 0, cp->minmapsize,
+                                  NULL, p->input->unit, NULL);
+  else
+    qprm.expand_th=NULL;
 
 
   /* Allocate temporary space for processing in each tile. */
@@ -483,22 +557,35 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
   free(qprm.usage);
   if( gal_blank_present(qprm.erode_th, 1) )
-    qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+    {
+      qprm.noerode_th->flag |= GAL_DATA_FLAG_HASBLANK;
+      if(qprm.expand_th) qprm.expand_th->flag  |= GAL_DATA_FLAG_HASBLANK;
+    }
   qprm.noerode_th->flag |= GAL_DATA_FLAG_BLANK_CH;
+  if(p->detgrowquant!=1.0f) qprm.expand_th->flag  |= GAL_DATA_FLAG_BLANK_CH;
   if(p->qthreshname)
     {
       qprm.erode_th->name="QTHRESH_ERODE";
       qprm.noerode_th->name="QTHRESH_NOERODE";
-      gal_tile_full_values_write(qprm.erode_th, tl, p->qthreshname, NULL,
+      gal_tile_full_values_write(qprm.erode_th, tl, 1, p->qthreshname, NULL,
                                  PROGRAM_NAME);
-      gal_tile_full_values_write(qprm.noerode_th, tl, p->qthreshname, NULL,
+      gal_tile_full_values_write(qprm.noerode_th, tl, 1, p->qthreshname, NULL,
                                  PROGRAM_NAME);
-      qprm.erode_th->name = qprm.noerode_th->name = NULL;
+      qprm.erode_th->name=qprm.noerode_th->name=NULL;
+
+      if(qprm.expand_th)
+        {
+          qprm.expand_th->name="QTHRESH_EXPAND";
+          gal_tile_full_values_write(qprm.expand_th, tl, 1, p->qthreshname,
+                                     NULL, PROGRAM_NAME);
+          qprm.expand_th->name=NULL;
+        }
     }
 
 
   /* Interpolate and smooth the derived values. */
   threshold_interp_smooth(p, &qprm.erode_th, &qprm.noerode_th,
+                          qprm.expand_th ? & qprm.expand_th : NULL,
                           p->qthreshname);
 
 
@@ -510,6 +597,10 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   /* Write the binary image if check is requested. */
   if(p->qthreshname && !tl->oneelempertile)
     gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_NAME);
+
+
+  /* Set the expansion quantile if necessary. */
+  p->expand_thresh = qprm.expand_th ? qprm.expand_th : NULL;
 
 
   /* Clean up and report duration if necessary. */

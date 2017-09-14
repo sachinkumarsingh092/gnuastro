@@ -368,8 +368,8 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
       /* Make sure the given dataset has the same size as the input. */
       if( gal_data_dsize_is_different(binary, lab) )
-        error(EXIT_FAILURE, 0, "%s: the `binary' and `out' datasets must have "
-              "the same size", __func__);
+        error(EXIT_FAILURE, 0, "%s: the `binary' and `out' datasets must "
+              "have the same size", __func__);
 
       /* Make sure it has a `int32' type. */
       if( lab->type!=GAL_TYPE_INT32 )
@@ -618,8 +618,7 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
 
 
 
-/* Fill all the holes in an input unsigned char array that are bounded
-   within a 4-connected region.
+/* Fill all the holes in an input unsigned char array.
 
    The basic method is this:
 
@@ -642,9 +641,11 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
       Any pixel with a label larger than 1, is therefore a bounded
       hole that is not 8-connected to the rest of the holes.  */
 void
-gal_binary_fill_holes(gal_data_t *input)
+gal_binary_fill_holes(gal_data_t *input, int connectivity, size_t maxsize)
 {
   uint8_t *in;
+  uint32_t *i, *fi;
+  size_t numholes, *sizes;
   gal_data_t *inv, *tile, *holelabs=NULL;
 
   /* A small sanity check. */
@@ -658,8 +659,8 @@ gal_binary_fill_holes(gal_data_t *input)
   inv=binary_make_padded_inverse(input, &tile);
 
 
-  /* Label the 8-connected (connectivity==2) holes. */
-  gal_binary_connected_components(inv, &holelabs, 2);
+  /* Label the holes */
+  numholes=gal_binary_connected_components(inv, &holelabs, connectivity);
 
 
   /* Any pixel with a label larger than 1 is a hole in the input image and
@@ -669,6 +670,22 @@ gal_binary_fill_holes(gal_data_t *input)
   tile->array=gal_tile_block_relative_to_other(tile, holelabs);
   tile->block=holelabs; /* has to be after correcting `tile->array'. */
 
+  /* If the user wants to only fill holes to a certain size, then remove
+     those with a larger size. */
+  if(maxsize<-1)
+    {
+      /* Allocate space to keep the size of each hole: */
+      sizes=gal_data_calloc_array(GAL_TYPE_SIZE_T, numholes+1, __func__,
+                                  "sizes");
+      fi=(i=holelabs->array)+holelabs->size; do ++sizes[*i]; while(++i<fi);
+
+      /* Set those labels with a larger size to 1 (treat it as
+         background). */
+      fi=(i=holelabs->array)+holelabs->size;
+      do
+        if(*i!=GAL_BLANK_INT32) *i = sizes[*i]>maxsize ? 1 : *i;
+      while(++i<fi);
+    }
 
   /* The type of the tile is already known (it is `int32_t') and we have no
      output, so we'll just put `int' as a place-holder. In this way we can

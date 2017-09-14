@@ -58,18 +58,33 @@ noisechisel_convolve(struct noisechiselparams *p)
   struct timeval t1;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
-  /* Do the convolution. */
+  /* Convovle with sharper kernel. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   p->conv=gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
                                1, tl->workoverch);
-  gal_checkset_allocate_copy("CONVOLVED", &p->conv->name);
+  gal_checkset_allocate_copy(p->widekernel?"CONVOLVED-SHARPER":"CONVOLVED",
+                             &p->conv->name);
 
-
-  if(!p->cp.quiet) gal_timing_report(&t1, "Convolved with kernel.", 1);
+  /* Report and write check images if necessary. */
+  if(!p->cp.quiet)
+    gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
   if(p->detectionname)
     {
       gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_NAME);
       gal_fits_img_write(p->conv, p->detectionname, NULL, PROGRAM_NAME);
+    }
+
+  /* Convolve with wider kernel (if requested). */
+  if(p->widekernel)
+    {
+      if(!p->cp.quiet) gettimeofday(&t1, NULL);
+      p->wconv=gal_convolve_spatial(tl->tiles, p->widekernel,
+                                    p->cp.numthreads, 1, tl->workoverch);
+      gal_checkset_allocate_copy("CONVOLVED-WIDER", &p->wconv->name);
+
+      /* Report the status: */
+      if(!p->cp.quiet)
+        gal_timing_report(&t1, "Convolved with wider kernel.", 1);
     }
 }
 
@@ -232,7 +247,7 @@ noisechisel_output(struct noisechiselparams *p)
   /* Write the Sky image into the output */
   if(p->sky->name) free(p->sky->name);
   p->sky->name="SKY";
-  gal_tile_full_values_write(p->sky, &p->cp.tl, p->cp.output,
+  gal_tile_full_values_write(p->sky, &p->cp.tl, 1, p->cp.output,
                              NULL, PROGRAM_NAME);
   p->sky->name=NULL;
 
@@ -248,7 +263,7 @@ noisechisel_output(struct noisechiselparams *p)
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0, &p->medstd, 0,
                         "Median raw tile standard deviation", 0,
                         p->input->unit);
-  gal_tile_full_values_write(p->std, &p->cp.tl, p->cp.output, keys,
+  gal_tile_full_values_write(p->std, &p->cp.tl, 1, p->cp.output, keys,
                              PROGRAM_NAME);
   p->std->name=NULL;
 }

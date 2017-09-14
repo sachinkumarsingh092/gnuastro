@@ -532,19 +532,34 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
    This function is going to be used before identifying objects and also
    after it (to completely fill in the diffuse area). The distinguishing
    point between these two steps is the presence of rivers, so you can use
-   the `withrivers' argument. */
-void
-clumps_grow(struct clumps_thread_params *cltprm, int withrivers)
-{
-  struct noisechiselparams *p=cltprm->clprm->p;
-  gal_data_t *diffuseindexs=cltprm->diffuseindexs;
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+   the `withrivers' argument.
 
+
+   Input:
+
+     labels: The labels array that must be operated on. The pixels that
+             must be "grown" must have the value `CLUMPS_INIT' (negative).
+
+     diffuseindexs: The indexs of the pixels that must be grown.
+
+     withrivers: as described abvoe.
+*/
+void
+clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers)
+{
   int searchngb;
-  size_t *diarray=cltprm->diffuseindexs->array;
-  int32_t n1, nlab, *olabel=p->olabel->array;
-  size_t *dinc=gal_dimension_increment(ndim, dsize);
+  size_t *diarray=diffuseindexs->array;
+  int32_t n1, nlab, *olabel=labels->array;
   size_t *s, *sf, thisround, ndiffuse=diffuseindexs->size;
+  size_t *dinc=gal_dimension_increment(labels->ndim, labels->dsize);
+
+  /* A small sanity check: */
+  if(labels->type!=GAL_TYPE_INT32)
+    error(EXIT_FAILURE, 0, "%s: `labels' has to have type of int32_t",
+          __func__);
+  if(diffuseindexs->type!=GAL_TYPE_SIZE_T)
+    error(EXIT_FAILURE, 0, "%s: `diffuseindexs' has to have type of size_t",
+          __func__);
 
   /* The basic idea is this: after growing, not all the blank pixels are
      necessarily filled, for example the pixels might belong to two regions
@@ -580,7 +595,7 @@ clumps_grow(struct clumps_thread_params *cltprm, int withrivers)
              in a 2D image). Note that since this macro has multiple loops
              within it, we can't use break. We'll use a variable instead. */
           searchngb=1;
-          GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, 1, dinc,
+          GAL_DIMENSION_NEIGHBOR_OP(*s, labels->ndim, labels->dsize, 1, dinc,
             {
               if(searchngb)
                 {
@@ -926,6 +941,11 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   size_t len=cltprm->numinitclumps+1;
   struct noisechiselparams *p=cltprm->clprm->p;
 
+  /* If there are no clumps in this tile, then this function can be
+     ignored. */
+  if(cltprm->snind->size==0) return;
+
+
   /* A small sanity check. */
   if(gal_tile_block(tile)!=p->clabel)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "
@@ -962,7 +982,6 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   ninds=newinds->array;
   lf = (l=cltprm->snind->array) + cltprm->snind->size;
   do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
-
 
 
   /* Go over this tile and correct the values. */
@@ -1030,7 +1049,11 @@ clumps_find_make_sn_table(void *in_prm)
 
 
       /* Find the number of detected pixels over this tile. Since this is
-         the binary image, this is just the sum of all the pixels. */
+         the binary image, this is just the sum of all the pixels.
+
+         Note that `numdet' can be `nan' when the whole tile is blank and
+         so there was no values to sum. Recall that in summing, when there
+         is not input, the output is `nan'. */
       tmp=gal_statistics_sum(tile);
       numdet=*((double *)(tmp->array));
       gal_data_free(tmp);
@@ -1048,6 +1071,7 @@ clumps_find_make_sn_table(void *in_prm)
           cltprm.indexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &numsky,
                                        NULL, 0, p->cp.minmapsize, NULL, NULL,
                                        NULL);
+
 
           /* Change the tile's block to the clump labels dataset (because
              we'll need to set the labels of the rivers on the edge of the
@@ -1279,7 +1303,6 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
       gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
                            p->ltl.tottiles, p->cp.numthreads);
     }
-
 
   /* Destroy the mutex if it was initialized. */
   if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )

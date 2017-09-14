@@ -85,7 +85,7 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
 
 gal_data_t *
 gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
-                                 int initialize);
+                                 int withblank, int initialize);
 
 gal_data_t *
 gal_tile_block_check_tiles(gal_data_t *tiles);
@@ -151,8 +151,8 @@ gal_tile_full_permutation(struct gal_tile_two_layer_params *tl);
 void
 gal_tile_full_values_write(gal_data_t *tilevalues,
                            struct gal_tile_two_layer_params *tl,
-                           char *filename, gal_fits_list_key_t *keys,
-                           char *program_string);
+                           int withblank, char *filename,
+                           gal_fits_list_key_t *keys, char *program_string);
 
 gal_data_t *
 gal_tile_full_values_smooth(gal_data_t *tilevalues,

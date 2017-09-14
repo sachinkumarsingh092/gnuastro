@@ -192,9 +192,9 @@ sky(struct statisticsparams *p)
     }
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
+      gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
                                  PROGRAM_NAME);
-      gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
+      gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
                                  PROGRAM_NAME);
     }
 
@@ -213,9 +213,9 @@ sky(struct statisticsparams *p)
     gal_timing_report(&t1, "All blank tiles filled (interplated).", 1);
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
+      gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
                                  PROGRAM_NAME);
-      gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
+      gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
                                  PROGRAM_NAME);
     }
 
@@ -237,9 +237,9 @@ sky(struct statisticsparams *p)
                           1);
       if(p->checksky)
         {
-          gal_tile_full_values_write(p->sky_t, tl, p->checkskyname, NULL,
+          gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
                                      PROGRAM_NAME);
-          gal_tile_full_values_write(p->std_t, tl, p->checkskyname, NULL,
+          gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
                                      PROGRAM_NAME);
         }
     }
@@ -250,8 +250,8 @@ sky(struct statisticsparams *p)
                                         ( p->cp.output
                                           ? p->cp.output
                                           : p->inputname ), "_sky.fits");
-  gal_tile_full_values_write(p->sky_t, tl, outname, NULL, PROGRAM_NAME);
-  gal_tile_full_values_write(p->std_t, tl, outname, NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(p->sky_t, tl, 1, outname, NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(p->std_t, tl, 1, outname, NULL, PROGRAM_NAME);
   if(!cp->quiet)
     printf("  - Written to `%s'.\n", outname);
 

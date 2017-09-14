@@ -58,8 +58,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 gal_data_t *
 gal_statistics_number(gal_data_t *input)
 {
-  uint64_t counter=0;
   size_t dsize=1;
+  uint64_t counter=0;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 

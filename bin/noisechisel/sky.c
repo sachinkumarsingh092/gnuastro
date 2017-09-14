@@ -174,8 +174,10 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
                        cp->numthreads);
   if(checkname)
     {
-      gal_tile_full_values_write(p->sky, tl, checkname, NULL, PROGRAM_NAME);
-      gal_tile_full_values_write(p->std, tl, checkname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(p->sky, tl, 1, checkname, NULL,
+                                 PROGRAM_NAME);
+      gal_tile_full_values_write(p->std, tl, 1, checkname, NULL,
+                                 PROGRAM_NAME);
     }
 
   /* Get the basic information about the standard deviation
@@ -202,7 +204,7 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
   /* Interpolate and smooth the derived values. */
-  threshold_interp_smooth(p, &p->sky, &p->std, checkname);
+  threshold_interp_smooth(p, &p->sky, &p->std, NULL, checkname);
 
 
   /* If a check was requested, abort NoiseChisel. */

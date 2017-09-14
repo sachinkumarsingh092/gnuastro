@@ -47,7 +47,9 @@ struct noisechiselparams
   struct gal_tile_two_layer_params ltl;/* Large tessellation.             */
   char             *inputname;  /* Input filename.                        */
   char            *kernelname;  /* Input kernel filename.                 */
+  char        *widekernelname;  /* Name of wider kernel to be used.       */
   char                  *khdu;  /* Kernel HDU.                            */
+  char                 *wkhdu;  /* Wide kernel HDU.                       */
   uint8_t       skysubtracted;  /* Input has been Sky subtracted before.  */
   float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
@@ -72,9 +74,9 @@ struct noisechiselparams
   size_t         detsnminarea;  /* Minimum pseudo-detection area for S/N. */
   uint8_t          checkdetsn;  /* Save pseudo-detection S/N values.      */
   float              detquant;  /* True detection quantile.               */
-  size_t               dilate;  /* Number of times to dilate true dets.   */
-  size_t            dilatengb;  /* Connectivity for final dilation.       */
-  uint8_t        cleandilated;  /* Remove dilated objects with small S/N. */
+  float          detgrowquant;  /* Quantile to grow true detections.      */
+  size_t   detgrowmaxholesize;  /* Max. size of holes to fill in growth.  */
+  uint8_t       cleangrowndet;  /* Remove grown objects with small S/N.   */
   uint8_t      checkdetection;  /* Save all detection steps to a file.    */
   uint8_t            checksky;  /* Check the Sky value estimation.        */
 
@@ -100,11 +102,14 @@ struct noisechiselparams
   char      *segmentationname;  /* Name of segmentation steps file.       */
 
   gal_data_t           *input;  /* Input image.                           */
-  gal_data_t          *kernel;  /* Input image.                           */
-  gal_data_t            *conv;  /* Convolved input.                       */
+  gal_data_t          *kernel;  /* Sharper kernel.                        */
+  gal_data_t      *widekernel;  /* Wider kernel.                          */
+  gal_data_t            *conv;  /* Convolved wth sharper kernel.          */
+  gal_data_t           *wconv;  /* Convolved with wider kernel.           */
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
   gal_data_t          *clabel;  /* Labels of clumps in the detection.     */
+  gal_data_t   *expand_thresh;  /* Quantile threshold to expand per tile. */
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
   size_t           maxtcontig;  /* Maximum contiguous space for a tile.   */

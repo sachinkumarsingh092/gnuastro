@@ -254,7 +254,7 @@ statistics_interpolate_and_write(struct statisticsparams *p,
     }
 
   /* Write the values. */
-  gal_tile_full_values_write(values, &cp->tl, output, NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(values, &cp->tl, 1, output, NULL, PROGRAM_NAME);
 }
 
 

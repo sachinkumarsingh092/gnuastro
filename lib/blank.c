@@ -168,10 +168,10 @@ gal_blank_present(gal_data_t *input, int updateflag)
      blank is present. */
   if(input->size==0) return 0;
 
-  /* From the user's flags, it might not be necessary to go through the
-     dataset any more.  */
-  if( ( input->flag & GAL_DATA_FLAG_HASBLANK )
-      || ( input->flag & GAL_DATA_FLAG_BLANK_CH ) )
+  /* From the user's flags, you can tell if the dataset has already been
+     checked for blank values or not. If it has, then just return the
+     checked result. */
+  if( input->flag & GAL_DATA_FLAG_BLANK_CH )
     return input->flag & GAL_DATA_FLAG_HASBLANK;
 
   /* Go over the pixels and check: */

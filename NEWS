@@ -5,12 +5,34 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  NoiseChisel: with the new `--widekernel' option it is now possible to use
+  a wider kernel to identify which tiles contain signal. The rest of the
+  steps (identifying the quantile threshold on the selected tiles and etc)
+  are done on the dataset convolved with `--kernel' as they were
+  before. Since it is time consuming, this is an optional feature.
+
+  NoiseChisel: the finally selected true detections are now grown based on
+  signal contiguity, not by blind dilation. The growth process is the same
+  as the growing of clumps to define objects. Only for true detections, the
+  growth occurs in the noise. You can configure this growth with the
+  `--detgrowquant' and `--detgrowmaxholesize'. With this new feature it is
+  now possible to detect signal out to much lower surface brightness limits
+  and the detections don't look boxy any more.
+
   `gal_fits_key_img_blank': returns the value that must be used in the
   BLANK keyword for the given type as defined by the FITS standard.
 
 ** Removed features
 
 ** Changed features
+
+  `gal_binary_fill_holes' now accepts a `connectivity' and `maxsize'
+  argument to specify the connectivity of the holes and the maximum size of
+  acceptable holes to fill.
+
+  `gal_tile_block_write_const_value' and `gal_tile_full_values_write' now
+  accept a new `withblank' option to set all pixels that are blank in the
+  tile's block to be blank in the check image.
 
 ** Bug fixes
 
