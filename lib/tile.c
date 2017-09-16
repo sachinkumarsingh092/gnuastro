@@ -1244,7 +1244,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
   if(tl->permutation)   free(tl->permutation);
   if(tl->firsttsize)    free(tl->firsttsize);
 
-  /* Free the arrays of `gal_data_c' for each tile and channel. */
+  /* Free the arrays of `gal_data_t' for each tile and channel. */
   if(tl->tiles)    gal_data_array_free(tl->tiles,    tl->tottiles,    0);
   if(tl->channels) gal_data_array_free(tl->channels, tl->totchannels, 0);
 }

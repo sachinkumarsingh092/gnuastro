@@ -1304,6 +1304,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
                            p->ltl.tottiles, p->cp.numthreads);
     }
 
+
   /* Destroy the mutex if it was initialized. */
   if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )
     pthread_mutex_destroy(&clprm.labmutex);

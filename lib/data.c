@@ -432,6 +432,9 @@ gal_data_free_contents(gal_data_t *data)
 
       /* Free the file name space. */
       free(data->mmapname);
+
+      /* Set the name pointer to NULL since it has been freed. */
+      data->mmapname=NULL;
     }
   else
     if(data->array && data->block==NULL) free(data->array);
@@ -505,6 +508,7 @@ gal_data_array_calloc(size_t size)
       out[i].wcs        = NULL;
       out[i].mmapname   = NULL;
       out[i].next       = NULL;
+      out[i].block      = NULL;
       out[i].name = out[i].unit = out[i].comment = NULL;
       out[i].disp_fmt = out[i].disp_width = out[i].disp_precision = -1;
     }

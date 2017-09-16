@@ -30,6 +30,7 @@
 # Set the variables:
 NUM_THREADS=8
 TMPDIR=/dev/shm
+debug_noshared=0
 
 
 
@@ -123,7 +124,11 @@ cd $build_dir
 # (in `configure.ac'), we have set optimization flags which have to be
 # cancelled in debugging.
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir #CFLAGS="-g -O0" --disable-shared
+    if [ x$debug_noshared = x1 ]; then
+        $srcdir/configure --srcdir=$srcdir CFLAGS="-g -O0" --disable-shared
+    else
+        $srcdir/configure --srcdir=$srcdir
+    fi
 fi
 
 

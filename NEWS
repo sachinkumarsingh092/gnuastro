@@ -41,6 +41,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Arithmetic not accounting for integer blank pixels in binary operators
   (bug #52014).
 
+  NoiseChisel segfault when memory mapping to a file (bug #52043).
+
 
 
 

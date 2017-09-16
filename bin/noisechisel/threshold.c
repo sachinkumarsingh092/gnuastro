@@ -266,7 +266,6 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
     error(EXIT_FAILURE, 0, "%s: `third' must not have any `next' pointer.",
           __func__);
 
-
   /* Do the interpolation of both arrays. */
   (*first)->next = *second;
   if(third) (*second)->next = *third;

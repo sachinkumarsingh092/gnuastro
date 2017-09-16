@@ -411,6 +411,7 @@ segmentation_on_threads(void *in_prm)
       /* Find the clumps over this region. */
       clumps_oversegment(&cltprm);
 
+
       /* Make the clump S/N table. This table is made before (possibly)
          stopping the process (if a check is requested). This is because if
          the user has also asked for a check image, we can break out of the
@@ -424,6 +425,7 @@ segmentation_on_threads(void *in_prm)
         clumps_make_sn_table(&cltprm);
       else cltprm.sn=&clprm->sn[ cltprm.id ];
 
+
       /* If the user wanted to check the segmentation steps or the clump
          S/N values in a table, then we have to stop the process at this
          point. */
@@ -434,6 +436,7 @@ segmentation_on_threads(void *in_prm)
       clumps_det_keep_true_relabel(&cltprm);
       gal_data_free(topinds);
       if(clprm->step==2) continue;
+
 
       /* Set the internal (with the detection) clump and object
          labels. Segmenting a detection into multiple objects is only
@@ -760,8 +763,9 @@ segmentation_detections(struct noisechiselparams *p)
 
             default:
               error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
-                    "we can address the issue. The value %d is not recognized "
-                    "for clprm.step", __func__, PACKAGE_BUGREPORT, clprm.step);
+                    "we can address the issue. The value %d is not "
+                    "recognized for clprm.step", __func__, PACKAGE_BUGREPORT,
+                    clprm.step);
             }
 
           /* Write the demonstration array into the check image. The
@@ -790,6 +794,7 @@ segmentation_detections(struct noisechiselparams *p)
       gal_threads_spin_off(segmentation_on_threads, &clprm, p->numdetections,
                            p->cp.numthreads);
     }
+
 
   /* Save the final number of objects and clumps. */
   p->numclumps=clprm.totclumps;

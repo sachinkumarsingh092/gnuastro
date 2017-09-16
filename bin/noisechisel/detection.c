@@ -356,7 +356,16 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
       /* Clean up: the array in `bin' should just be replaced with that in
          `workbin' because it is used in later steps. */
-      free(workbin->array);
+      if(workbin->mmapname)
+        {
+          /* Delete the memory mapped file and set the filename of `bin'
+             for `workbin'. */
+          remove(workbin->mmapname);
+          workbin->mmapname=bin->mmapname;
+          bin->mmapname=NULL;
+        }
+      else
+        free(workbin->array);
       workbin->array=bin->array;
       bin->name=bin->array=NULL;
       gal_data_free(bin);
