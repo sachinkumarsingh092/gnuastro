@@ -4596,6 +4596,37 @@ display in the @option{--help} output of the program.
 
 @table @option
 
+@item --minmapsize=INT
+The minimum size (in bytes) to store the contents of each main processing
+array of a program as a file (on the non-volatile HDD/SSD), not in
+RAM. This can be very useful for large datasets which can be very memory
+intensive such that your RAM will not be sufficient to keep/process them. A
+random filename is assigned to the array (in a @file{.gnuastro} directory
+within the running directory) which will keep the contents of the array as
+long as it is necessary.
+
+When this option has a value of @code{0} (zero), all arrays that use this
+option in a program will actually be in a file (not in RAM). When the value
+is @code{-1} (largest possible number in the unsigned integer types) these
+arrays will be definitely allocated in RAM. However, for complex programs
+like @ref{NoiseChisel}, it is recommended to not set it to @code{0}, but a
+value like @code{10000} so the many small arrays necessary during
+processing are stored in RAM and only larger ones are saved as a file.
+
+Please note that using a non-volatile file (in the HDD/SDD) instead of RAM
+can significantly increase the program's running time, especially on
+HDDs. So it is best to give this option large values by default. You can
+then decrease it for a specific program's invocation on a large input after
+you see memory issues arise (for example an error, or the program not
+aborting and fully consuming your memory).
+
+The random file will be deleted once it is no longer needed by the
+program. The @file{.gnuastro} directory will also be deleted if it has no
+other contents (you may also have configuration files in this directory,
+see @ref{Configuration files}). If you see randomly named files remaining
+in this directory, please send us a bug report so we address the problem,
+see @ref{Report a bug}.
+
 @item -Z INT[,INT[,...]]
 @itemx --tilesize=[,INT[,...]]
 The size of regular tiles for tessellation, see @ref{Tessellation}. For
@@ -17998,23 +18029,14 @@ will be deleted.
 The minimum size of an array (in bytes) to store the contents of
 @code{array} as a file (on the non-volatile HDD/SSD), not in RAM. This can
 be very useful for large datasets which can be very memory intensive and
-the user's hardware RAM might not be sufficient to keep/process it. A random
+the user's RAM might not be sufficient to keep/process it. A random
 filename is assigned to the array which is available in the @code{mmapname}
-element of @code{gal_data_t} (above), see there for more.
+element of @code{gal_data_t} (above), see there for more. @code{minmapsize}
+is stored in each @code{gal_data_t}, so it can be passed on to
+subsequent/derived datasets.
 
-When this variable has a value of @code{0} (zero), any allocated
-@code{array} will actually be in a file (not in RAM). When the value is
-@code{-1} (largest possible number in the unsigned types including
-@code{size_t}) the array will be definitely allocated in RAM.
-
-Please note that using a non-volatile file instead of RAM will
-significantly increase the programs running time, especially on HDDs. So it
-is best to give this option very large values (depending on how much memory
-you will need for a given input). For example your processing might involve
-a copy of the the input (possibly to a wider data type which takes more
-bytes for each element), so take all such issues into
-consideration. @code{minmapsize} is actually stored in each
-@code{gal_data_t}, so it can be passed on to subsequent/derived datasets.
+See the description of the @option{--minmapsize} option in @ref{Processing
+options} for more on using this value.
 
 @item nwcs
 The number of WCS coordinate representations (for WCSLIB).

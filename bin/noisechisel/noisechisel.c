@@ -67,7 +67,12 @@ noisechisel_convolve(struct noisechiselparams *p)
 
   /* Report and write check images if necessary. */
   if(!p->cp.quiet)
-    gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
+    {
+      if(p->widekernel)
+        gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
+      else
+        gal_timing_report(&t1, "Convolved with given kernel.", 1);
+    }
   if(p->detectionname)
     {
       gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_NAME);

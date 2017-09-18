@@ -361,6 +361,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
           /* Delete the memory mapped file and set the filename of `bin'
              for `workbin'. */
           remove(workbin->mmapname);
+          free(workbin->mmapname);
           workbin->mmapname=bin->mmapname;
           bin->mmapname=NULL;
         }

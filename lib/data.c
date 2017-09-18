@@ -179,7 +179,7 @@ gal_data_calloc_array(uint8_t type, size_t size, const char *funcname,
 
 
 static void
-gal_data_mmap(gal_data_t *data, int clear)
+gal_data_mmap(gal_data_t *data, int clear, size_t minmapsize)
 {
   int filedes;
   uint8_t uc=0;
@@ -222,8 +222,22 @@ gal_data_mmap(gal_data_t *data, int clear)
 
 
   /* Map the memory. */
+  errno=0;
   data->array=mmap(NULL, bsize, PROT_READ | PROT_WRITE, MAP_SHARED,
                    filedes, 0);
+  if(data->array==MAP_FAILED)
+    {
+      if(minmapsize<10000u)
+        fprintf(stderr, "\nIf the processing involves many small mappings "
+                "(along with larger ones), the following error may be "
+                "corrected with a larger value to `minmapsize' (minimum "
+                "number of bytes to use mapping instead of RAM for each "
+                "patch of memory), for example 10000. In this way, mapping "
+                "will only be reserved for larger sizes. The current value is "
+                "%zu.\n\n", minmapsize);
+      error(EXIT_FAILURE, errno, "couldn't map %zu bytes into the file `%s'",
+            bsize, filename);
+    }
 
 
   /* Close the file. */
@@ -318,6 +332,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
           data->size *= ( data->dsize[i] = dsize[i] );
         }
 
+
       /* Set the array pointer. If an non-NULL array pointer was given,
          then use it. */
       if(array)
@@ -326,9 +341,9 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         {
           if(data->size)
             {
-              if( gal_type_sizeof(type)*data->size  > minmapsize )
+              if( gal_type_sizeof(type)*data->size > minmapsize )
                 /* Allocate the space into disk (HDD/SSD). */
-                gal_data_mmap(data, clear);
+                gal_data_mmap(data, clear, minmapsize);
               else
                 /* Allocate the space in RAM. */
                 data->array = ( clear

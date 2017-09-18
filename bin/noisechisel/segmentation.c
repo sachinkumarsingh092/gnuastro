@@ -451,11 +451,9 @@ segmentation_on_threads(void *in_prm)
           cltprm.numobjects=1;
           segmentation_relab_noseg(&cltprm);
 
-
           /* If the user wanted a check image, this object doesn't
              change. */
           if( clprm->step >= 3 && clprm->step <= 6) continue;
-
 
           /* If the user has asked for grown clumps in the clumps image
              instead of the raw clumps, then replace the indexs in the
@@ -477,7 +475,6 @@ segmentation_on_threads(void *in_prm)
           if(clprm->step==3)
             { gal_data_free(cltprm.diffuseindexs); continue; }
 
-
           /* If grown clumps are desired instead of the raw clumps, then
              replace all the grown clumps with those in clabel. */
           if(p->grownclumps)
@@ -488,7 +485,6 @@ segmentation_on_threads(void *in_prm)
               while(++s<sf);
             }
 
-
           /* Identify the objects in this detection using the grown clumps
              and correct the grown clump labels into new object labels. */
           segmentation_relab_to_objects(&cltprm);
@@ -498,7 +494,6 @@ segmentation_on_threads(void *in_prm)
               gal_data_free(cltprm.diffuseindexs);
               continue;
             }
-
 
           /* Continue the growth and cover the whole area, we don't need
              the diffuse indexs any more, so after filling the detected
@@ -516,7 +511,6 @@ segmentation_on_threads(void *in_prm)
             }
           gal_data_free(cltprm.diffuseindexs);
           if(clprm->step==5) { gal_data_free(cltprm.clumptoobj); continue; }
-
 
           /* Correct the clump labels. Note that this is only necessary
              when there is more than object over the detection or when
