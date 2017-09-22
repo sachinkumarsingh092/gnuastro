@@ -266,7 +266,15 @@ ui_read_check_only_options(struct fitsparams *p)
   /* If no options are given, go into HDU mode, which will print the HDU
      information when nothing is asked. */
   if(p->mode==FITS_MODE_INVALID)
-    p->mode=FITS_MODE_HDU;
+    {
+      if(p->hdu_in_commandline)
+        {
+          p->printallkeys=1;
+          p->mode = FITS_MODE_KEY;
+        }
+      else
+        p->mode = FITS_MODE_HDU;
+    }
 }
 
 
@@ -408,8 +416,8 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output)
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)
-                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `dp'",
-                      __func__, sizeof *dp);
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                      "`dp'", __func__, sizeof *dp);
               *dp=d;
             }
           else
@@ -461,6 +469,7 @@ ui_preparations(struct fitsparams *p)
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
 {
+  size_t i;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -483,6 +492,15 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
+
+
+  /* Check if the HDU is specified on the command-line. If so, then later,
+     if no operation is requested, we will print the header of the given
+     HDU.*/
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    if(cp->coptions[i].key==GAL_OPTIONS_KEY_HDU
+       && cp->coptions[i].set)
+      p->hdu_in_commandline=1;
 
 
   /* Read the configuration files and set the common values. */

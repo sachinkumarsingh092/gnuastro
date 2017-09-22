@@ -6678,10 +6678,13 @@ One line examples:
 $ astfits image.fits
 
 ## Print the header keywords in the second HDU (counting from 0):
-$ astfits image.fits -h1 --printallkeys
+$ astfits image.fits -h1
 
 ## Only print header keywords that contain `NAXIS':
-$ astfits image.fits -h1 --printallkeys | grep NAXIS
+$ astfits image.fits -h1 | grep NAXIS
+
+## Only print the WCS standard PC matrix elements
+$ astfits image.fits -h1 | grep 'PC._.'
 
 ## Copy a HDU from input.fits to out.fits:
 $ astfits input.fits --copy=hdu-name --output=out.fits
@@ -6737,6 +6740,18 @@ HDU (extension) information: `image.fits'.
 3      CATALOG         table_binary    12371x5
 @end example
 
+If a specific HDU is identified on the command-line with the @option{--hdu}
+(or @option{-h} option) and no operation requested, then the full list of
+header keywords in that HDU will be printed (as if the
+@option{--printallkeys} was called, see below). It is important to remember
+that this only occurs when @option{--hdu} is given on the command-line. The
+@option{--hdu} value given in a configuration file will only be used when a
+specific operation on keywords requested. Therefore as described in the
+paragraphs above, when no explicit call to the @option{--hdu} option is
+made on the command-line and no operation is requested (on the command-line
+or configuration files), the basic information of each HDU/extension is
+printed.
+
 The operating mode and input/output options to Fits are similar to the
 other programs and fully described in @ref{Common options}. The options
 particular to Fits can be divided into two groups: 1) those related to
@@ -6767,8 +6782,8 @@ extensions will be copied from the input FITS file to the output FITS file
 in the given order (on the command-line and also in configuration files,
 see @ref{Configuration file precedence}). If the separate classes are
 called together in one run of Fits, then first @option{--copy} is run (on
-all specified HDUs), followed @option{--cut} (again on all specified HDUs),
-and then @option{--remove} (on all specified HDUs).
+all specified HDUs), followed by @option{--cut} (again on all specified
+HDUs), and then @option{--remove} (on all specified HDUs).
 
 The @option{--copy} and @option{--cut} options need an output FITS file
 (specified with the @option{--output} option). If the output file exists,

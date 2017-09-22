@@ -5,6 +5,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Fits: when an extension/HDU is identified on the command-line with the
+  `--hdu' option and no operation is requested, the full list of header
+  keywords in that HDU will be printed (as if only `--printallkeys' was
+  called).
+
   NoiseChisel: with the new `--widekernel' option it is now possible to use
   a wider kernel to identify which tiles contain signal. The rest of the
   steps (identifying the quantile threshold on the selected tiles and etc)
