@@ -438,10 +438,10 @@ double *
 gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
   gsl_vector S;
-  double *a, *out;
-  int permute_set;
   gsl_matrix A, V;
   size_t i, j, n=wcs->naxis;
+  double *a, *out, maxrow, minrow;
+  int permute_set, warning_printed;
   double *v=gal_data_malloc_array(GAL_TYPE_FLOAT64, n*n, __func__, "v");
   size_t *permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, n, __func__,
                                             "permutation");
@@ -453,6 +453,61 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
      style it was stored in the wcsprm structure (`PCi_j' style or `CDi_j'
      style). */
   a=gal_wcs_warp_matrix(wcs);
+
+
+  /* To avoid confusing issues with floating point errors being written in
+     the non-diagonal elements of the FITS header PC or CD matrices, we
+     need to check if the minimum and maximum values in each row are not
+     several orders of magnitude apart.
+
+     Note that in some cases (for example a spectrum), one axis might be in
+     degrees (value around 1e-5) and the other in angestroms (value around
+     1e-10). So we can't look at the minimum and maximum of the whole
+     matrix. However, in such cases, people will probably not warp/rotate
+     the image to mix the coordinates. So the important thing to check is
+     the minimum and maximum (non-zero) values in each row. */
+  warning_printed=0;
+  for(i=0;i<n;++i)
+    {
+      /* Find the minimum and maximum values in each row. */
+      minrow=FLT_MAX;
+      maxrow=-FLT_MAX;
+      for(j=0;j<n;++j)
+        if(a[i*n+j]!=0.0) /* We aren't concerned with 0 valued elements. */
+          {
+            /* We have to use absolutes because in cases like RA, the
+               diagonal values in different rows may have different signs*/
+            if(fabs(a[i*n+j])<minrow) minrow=fabs(a[i*n+j]);
+            if(fabs(a[i*n+j])>maxrow) maxrow=fabs(a[i*n+j]);
+          }
+
+      /* Do the check, print warning and make correction. */
+      if(maxrow!=minrow && maxrow/minrow>1e4 && warning_printed==0)
+        {
+          fprintf(stderr, "\nWARNING: The input WCS matrix (possibly taken "
+                  "from the FITS header keywords starting with `CD' or `PC') "
+                  "contains values with very different scales (more than "
+                  "10^4 different). This is probably due to floating point "
+                  "errors. These values might bias the pixel scale (and "
+                  "subsequent) calculations.\n\n"
+                  "You can see the respective matrix with one of the "
+                  "following two commands (depending on how the FITS file "
+                  "was written). Recall that if the desired extension/HDU "
+                  "isn't the default, you can choose it with the `--hdu' "
+                  "(or `-h') option before the `|' sign in these commands."
+                  "\n\n"
+                  "    $ astfits file.fits -p | grep 'PC._.'\n"
+                  "    $ astfits file.fits -p | grep 'CD._.'\n\n"
+                  "You can delete the ones with obvious floating point "
+                  "error values using the following command (assuming you "
+                  "want to delete `CD1_2' and `CD2_1') and rerun the your "
+                  "command to remove this warning message and possibly "
+                  "correct errors that might be reported due to it.\n\n"
+                  "    $ astfits file.fits --delete=CD1_2 --delete=CD2_1\n\n"
+                  );
+          warning_printed=1;
+        }
+    }
 
 
   /* Fill in the necessary GSL vector and Matrix structures. */
