@@ -61,6 +61,7 @@ struct noisechiselparams
   float            mirrordist;  /* Maximum distance to check mode sym.    */
   float           modmedqdiff;  /* Difference between mode and median.    */
   float               qthresh;  /* Quantile threshold on convolved image. */
+  float      qthreshtilequant;  /* Remove tiles with lower quantile.      */
   size_t          smoothwidth;  /* Width of flat kernel to smooth.        */
   uint8_t        checkqthresh;  /* Save the quantile threhsold steps.     */
   size_t                erode;  /* Number of erosions after thresholding. */

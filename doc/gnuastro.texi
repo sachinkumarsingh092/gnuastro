@@ -12225,15 +12225,43 @@ successfully.
 Before using NoiseChisel it is strongly recommended to read
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} to
 gain a good understanding of what it does and how each parameter influences
-the output. Thanks to that paper, there is no more need to continue this
-introduction any further and we can just dive into the details of running
-NoiseChisel in @ref{Invoking astnoisechisel}. However, the paper cannot
-undergo any further updates, but NoiseChisel will evolve: better algorithms
-or steps will be found, thus options will be added or removed. So this book
-is the final and definitive guide. To make the transition form the paper to
-this book easier (and encourage reading the paper), below you can see the
-major changes since that paper was published.
+the output. Thanks to that paper, there is no need to go into the details
+of the major processing steps. Hence we can just dive into the details of
+running NoiseChisel in @ref{Invoking astnoisechisel}.
 
+However, the paper cannot undergo any further updates, but NoiseChisel will
+evolve: better algorithms or steps will be found, thus options will be
+added or removed. So this book is the final and definitive guide. For a
+more detailed list of changes in each release, please follow the
+@file{NEWS} file. The @file{NEWS} file is in the released Gnuastro tarball
+(see @ref{Release tarball}). You can also view the most recent @file{NEWS}
+file @url{http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS,
+online}@footnote{The online version of the @file{NEWS} file here may
+contain features that have been implemented, but not yet officially
+released as a tarball (see @ref{Downloading the source}). Therefore, please
+be sure to look at the dates and versions above each group of changed
+features and make sure it corresponds to your installed version. It is
+hence recommended to always stay up to date, see @ref{Announcements}).}.
+
+To make the transition form the paper to this book easier (and encourage
+reading the paper), below you can see the major changes since the paper was
+published. First, the options that have been removed are discussed,
+followed by those that have been added.
+
+@noindent
+Removed options:
+@itemize
+@item
+@option{--dilate}: In the paper, true detections were dilated for a final
+dig into the noise. However, simple 8-connected dilation can produce boxy
+results which are not realistic and could miss diffuse flux. The finalq dig
+into the noise is now done by ``grow''ing the true detections, similar to
+how true clumps were grown, see the description of @option{--detgrowquant}
+below and in @ref{Detection options} for more on the new alternative.
+@end itemize
+
+@noindent
+Added options:
 @itemize
 
 @item
@@ -12261,6 +12289,11 @@ give this option a value of 1 (only the largest valued pixel in the input
 will not be eroded).
 
 @item
+@option{--qthreshtilequant}: to manually remove the measured qthresh from
+some tiles. This feature helps in detecting large and extended diffuse
+(almost flat) signal when necessary, see @ref{Detection options}.
+
+@item
 @option{--detgrowquant}: is used to grow the final true detections until a
 given quantile in the same way that clumps are grown during segmentation
 (compare columns 2 and 3 in Figure 10 of the paper). It replaces the old
@@ -12274,17 +12307,17 @@ noise properties and how cleanly it was Sky subtracted. The new
 size to fill as part of this growth, see the description in @ref{Detection
 options} for more details.
 
+This new growth process can be much more successful in detecting diffuse
+flux around true detections compared to dilation and give more realistic
+results, but it can also increase the NoiseChisel run time (depending on
+the given value and input size).
+
 @item
 @option{--cleangrowndet}: A process to further clean/remove the possibility
 of false detections, see the descriptions under this option in
 @ref{Detection options}.
 
 @end itemize
-
-For a more detailed list of updates in each release, please follow the
-@file{NEWS} file. The @file{NEWS} file is in the released Gnuastro tarball
-(see @ref{Release tarball}). You can also see it online at
-@url{http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS}.
 
 @node Invoking astnoisechisel,  , NoiseChisel changes after publication, NoiseChisel
 @subsection Invoking NoiseChisel
@@ -12589,6 +12622,44 @@ integer to) @mymath{q\times{N}} in the sorted data set. After thresholding
 is complete, we will have a binary (two valued) image. The pixels above the
 threshold are known as foreground pixels (have a value of 1) while those
 which lie below the threshold are known as background (have a value of 0).
+
+@item --qthreshtilequant=FLT
+Only keep tiles which have a q-thresh value above the given quantile of the
+all successful tiles. Hence, when given a value of @code{1}, this option
+will be ignored. When there is more than one channel (and
+@option{--workoverch} is not called), quantile calculation and application
+will be done on each channel independently.
+
+This option is useful when a large and diffuse (almost flat within each
+tile) signal exists with very small regions of Sky. The flat-ness of the
+profile will cause it to successfully pass the tests of @ref{Quantifying
+signal in a tile}. As a result, without this option the flat and diffuse
+signal will be interpretted as sky. In such cases, you can see the status
+of the tiles with the @option{--checkqthresh} option (first image extension
+is enough) and select a quantile through this option to ignore the measured
+values in the higher-valued tiles.
+
+This option can also be useful when there are large bright objects in the
+image with large flat wings which can also pass the tests and give outlier
+values. When there is a sky gradient over the image (mainly due to
+post-processing issues like bad flat fielding), this option must be set to
+@code{1} so it is completely ignored and the sky gradient is accurately
+measured and subtracted.
+
+To get an estimate of the measured qthresh distribution, you can run the
+following commands. The first will create the qthresh check image with one
+value/pixel per tile (see @ref{Processing options}). Open the image in a
+FITS viewer and inspect it. The second command below will print the basic
+information about the distribution of values and the third will print the
+value at the 0.4 quantile. Recall that Gnuastro's Statistics program
+ignores blank values (in this case: tiles with significant signal), see
+@ref{Statistics}.
+
+@example
+$ astnoisechisel image.fits --checkqthresh --oneelempertile
+$ aststatistics image_qthresh.fits
+$ aststatistics image_qthresh.fits --quantile=0.4
+@end example
 
 @item --smoothwidth=INT
 Width of flat kernel used to smooth the interpolated quantile thresholds,

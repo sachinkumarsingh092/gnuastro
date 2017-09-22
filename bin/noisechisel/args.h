@@ -221,6 +221,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "qthreshtilequant",
+      UI_KEY_QTHRESHTILEQUANT,
+      "FLT",
+      0,
+      "Remove tiles at higher quantiles.",
+      ARGS_GROUP_DETECTION,
+      &p->qthreshtilequant,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "smoothwidth",
       UI_KEY_SMOOTHWIDTH,
       "INT",

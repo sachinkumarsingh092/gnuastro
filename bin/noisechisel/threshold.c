@@ -499,6 +499,149 @@ qthresh_on_tile(void *in_prm)
 
 
 
+/* The main working function for `threshold_qthresh_clean'. The main
+   purpose/problem is this: when we have channels, the qthresh values for
+   each channel should be treated independently. */
+static void
+threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
+                             gal_data_t *second, gal_data_t *third,
+                             size_t start, size_t number)
+{
+  gal_data_t *quantile;
+  size_t i, osize=first->size;
+  float *oa1=NULL, *oa2=NULL, *oa3=NULL;
+  float q, *arr1=NULL, *arr2=NULL, *arr3=NULL;
+
+  /* A small sanity check. */
+  if(first->type!=GAL_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "%s: datatype has to be float32", __func__);
+
+  /* Correct the arrays (if necessary). IMPORTANT: The datasets are
+     multi-dimensional. However, when estimating the quantile, their
+     dimensionality doesn't matter (only the `size' element is checked by
+     `gal_statistics_quantile', not `ndim' or `dsize'). So we just need to
+     correct `size' if channels are to be considered. */
+  if(start || number!=first->size)
+    {
+      /* Keep the original values for re-setting later. */
+      oa1=first->array;
+      oa2=second->array;
+      if(third) oa3=third->array;
+
+      /* Increment the array pointers. */
+      first->array=gal_data_ptr_increment(first->array, start, first->type);
+      second->array=gal_data_ptr_increment(second->array, start,
+                                           second->type);
+      if(third)
+        third->array=gal_data_ptr_increment(third->array, start, third->type);
+
+      /* Correct their sizes. */
+      first->size=number;
+      second->size=number;
+      if(third) third->size=number;
+    }
+
+  /* Find the quantile and remove all tiles that are more than it in the
+     first array. */
+  arr1=first->array;
+  quantile=gal_statistics_quantile(first, p->qthreshtilequant, 0);
+  q=*((float *)(quantile->array));
+  for(i=0;i<first->size;++i)
+    /* Just note that we have blank (NaN) values, so to avoid doing a
+       NaN check with `isnan', we will check if the value is below the
+       quantile, if it succeeds (isn't NaN and is below the quantile),
+       then we'll put it's actual value, otherwise, a NaN. */
+    arr1[i] = arr1[i]<q ? arr1[i] : NAN;
+  gal_data_free(quantile);
+
+  /* Second quantile threshold. */
+  arr2=second->array;
+  quantile=gal_statistics_quantile(second, p->qthreshtilequant, 0);
+  q=*((float *)(quantile->array));
+  for(i=0;i<second->size;++i)
+    arr2[i] = arr2[i]<q ? arr2[i] : NAN;
+  gal_data_free(quantile);
+
+  /* The third (if it exists). */
+  if(third)
+    {
+      arr3=third->array;
+      quantile=gal_statistics_quantile(third, p->qthreshtilequant, 0);
+      q=*((float *)(quantile->array));
+      for(i=0;i<third->size;++i)
+        arr3[i] = arr3[i]<q ? arr3[i] : NAN;
+      gal_data_free(quantile);
+    }
+
+  /* Make sure all three have the same NaN pixels. */
+  for(i=0;i<first->size;++i)
+    if( isnan(arr1[i]) || isnan(arr2[i]) || isnan(arr3[i]) )
+      {
+        arr1[i] = arr2[i] = NAN;
+        if(third) arr3[i] = NAN;
+      }
+
+  /* Correct the values if they were changed. */
+  if(start || number!=osize)
+    {
+      first->array=oa1;
+      second->array=oa2;
+      first->size = second->size = osize;
+      if(third) { third->array=oa3; third->size=osize; }
+    }
+}
+
+
+
+
+
+/* Clean higher valued quantile thresholds: useful when the diffuse (almost
+   flat) structures are much larger than the tile size. */
+static void
+threshold_qthresh_clean(struct noisechiselparams *p, gal_data_t *first,
+                        gal_data_t *second, gal_data_t *third,
+                        char *filename)
+{
+  size_t i;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
+
+  /* A small sanity check: */
+  if(first->size!=tl->tottiles)
+    error(EXIT_FAILURE, 0, "%s: `first->size' and `tl->tottiles' must have "
+          "the same value, but they don't: %zu, %zu", __func__, first->size,
+          tl->tottiles);
+
+  /* If the input is from a tile structure and the user has asked to ignore
+     channels, then re-order the values. */
+  for(i=0;i<tl->totchannels;++i)
+    threshold_qthresh_clean_work(p, first, second, third,
+                                 i*tl->tottilesinch, tl->tottilesinch);
+
+  /* If the user wants to see the steps. */
+  if(p->qthreshname)
+    {
+      first->name="QTHRESH_ERODE_CLEAN";
+      second->name="QTHRESH_NOERODE_CLEAN";
+      gal_tile_full_values_write(first, tl, 1, p->qthreshname, NULL,
+                                 PROGRAM_NAME);
+      gal_tile_full_values_write(second, tl, 1, p->qthreshname, NULL,
+                                 PROGRAM_NAME);
+      first->name=second->name=NULL;
+
+      if(third)
+        {
+          third->name="QTHRESH_EXPAND_CLEAN";
+          gal_tile_full_values_write(third, tl, 1, p->qthreshname,
+                                     NULL, PROGRAM_NAME);
+          third->name=NULL;
+        }
+    }
+}
+
+
+
+
+
 void
 threshold_quantile_find_apply(struct noisechiselparams *p)
 {
@@ -582,9 +725,16 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
     }
 
 
+  /* Remove higher thresholds if requested. */
+  if(p->qthreshtilequant!=1.0)
+    threshold_qthresh_clean(p, qprm.erode_th, qprm.noerode_th,
+                            qprm.expand_th ? qprm.expand_th : NULL,
+                            p->qthreshname);
+
+
   /* Interpolate and smooth the derived values. */
   threshold_interp_smooth(p, &qprm.erode_th, &qprm.noerode_th,
-                          qprm.expand_th ? & qprm.expand_th : NULL,
+                          qprm.expand_th ? &qprm.expand_th : NULL,
                           p->qthreshname);
 
 

@@ -164,7 +164,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_ONEELEMPERTILE,
       0,
       0,
-      "Only display 1 element/tile, not full input res.",
+      "Display 1 element/tile, not full input res.",
       GAL_OPTIONS_GROUP_TESSELLATION,
       &cp->tl.oneelempertile,
       GAL_OPTIONS_NO_ARG_TYPE,

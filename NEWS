@@ -16,6 +16,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   are done on the dataset convolved with `--kernel' as they were
   before. Since it is time consuming, this is an optional feature.
 
+  NoiseChisel: with the new `--qthreshtilequant' option, it is now possible
+  to discard high-valued (outlier) tiles before estimating qthresh over the
+  whole image. This can be useful in detecting very large diffuse/flat
+  regions that would otherwise be detected as background (and effectively
+  removed).
+
   NoiseChisel: the finally selected true detections are now grown based on
   signal contiguity, not by blind dilation. The growth process is the same
   as the growing of clumps to define objects. Only for true detections, the
@@ -28,6 +34,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   BLANK keyword for the given type as defined by the FITS standard.
 
 ** Removed features
+
+  NoiseChisel: The `--dilate' and `--dilatengb' options have been
+  removed. Growing of true detections is no longer done through dilation
+  but through the `--detgrowquant' and `--detgrowmaxholesize' options (see
+  above).
 
 ** Changed features
 
