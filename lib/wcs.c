@@ -500,9 +500,10 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
                   "    $ astfits file.fits -p | grep 'CD._.'\n\n"
                   "You can delete the ones with obvious floating point "
                   "error values using the following command (assuming you "
-                  "want to delete `CD1_2' and `CD2_1') and rerun the your "
-                  "command to remove this warning message and possibly "
-                  "correct errors that might be reported due to it.\n\n"
+                  "want to delete `CD1_2' and `CD2_1'). Afterwards, you can "
+                  "rerun your original command to remove this warning "
+                  "message and possibly correct errors that it might have "
+                  "caused.\n\n"
                   "    $ astfits file.fits --delete=CD1_2 --delete=CD2_1\n\n"
                   );
           warning_printed=1;
