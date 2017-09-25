@@ -3001,7 +3001,9 @@ telling it to copy some files (instead of making symbolic links, with the
 @option{--copy} option, this is not mandatory@footnote{The @option{--copy}
 option is recommended because some backup systems might do strange things
 with symbolic links.}) and where to look for Gnulib (with the
-@option{--gnulib-srcdir} option).
+@option{--gnulib-srcdir} option). Please note that teh address given to
+@option{--gnulib-srcdir} has to be an absolute address (so don't use
+@file{~} or @file{../} for example).
 
 @example
 $ cd $TOPGNUASTRO/gnuastro
