@@ -1435,8 +1435,10 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
     gal_fits_io_error(status, NULL);
   *ndim=naxis;
 
+
   /* Convert bitpix to Gnuastro's known types. */
   *type=gal_fits_bitpix_to_type(bitpix);
+
 
   /* Define the names of the possibly existing important keywords about the
      dataset. We are defining these in the opposite order to be read by
@@ -1476,6 +1478,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
       ++i;
     }
 
+
+  /* If a type correction is necessary, then do it. */
   if( !isnan(bscale) || bzero_str )
     fits_type_correct(type, bscale, bzero_str);
 
@@ -1489,6 +1493,7 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
 
   /* Clean up. */
   gal_list_data_free(keysll);
+  if(bzero_str) free(bzero_str);
 }
 
 

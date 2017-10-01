@@ -936,12 +936,13 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
   exp_thresh_full=gal_tile_block_write_const_value(p->expand_thresh,
                                                    p->cp.tl.tiles, 0, 0);
 
+
   /* Count the pixels that must be expanded. */
   e_th=exp_thresh_full->array;
   do { if(*b++==0 && *arr>*e_th) ++counter; ++arr; ++e_th; } while(b<bf);
 
-  /* Allocate the space necessary to keep all the index of all the pixels
-     that must be expanded and re-initialize the necessary pointers. */
+  /* Allocate the space necessary to keep the index of all the pixels that
+     must be expanded and re-initialize the necessary pointers. */
   diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
                                p->cp.minmapsize, NULL, NULL, NULL);
 
@@ -1001,7 +1002,9 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
     }
 
   /* Clean up and return */
+  gal_data_free(p->expand_thresh);
   gal_data_free(exp_thresh_full);
+  gal_data_free(diffuseindexs);
   return numexpanded;
 }
 

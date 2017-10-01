@@ -685,6 +685,9 @@ gal_binary_fill_holes(gal_data_t *input, int connectivity, size_t maxsize)
       do
         if(*i!=GAL_BLANK_INT32) *i = sizes[*i]>maxsize ? 1 : *i;
       while(++i<fi);
+
+      /* Clean up. */
+      free(sizes);
     }
 
   /* The type of the tile is already known (it is `int32_t') and we have no

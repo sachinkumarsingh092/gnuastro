@@ -771,6 +771,7 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   /* Free the simply allocated spaces. */
   free(p->cp.hdu);
   free(p->maxtsize);
+  free(p->maxltsize);
   free(p->cp.output);
   if(p->skyname)          free(p->skyname);
   if(p->detskyname)       free(p->detskyname);
