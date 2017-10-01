@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
@@ -1601,6 +1602,11 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
 
   /* Abort if any of the mandatory options are not set. */
   gal_options_abort_if_mandatory_missing(cp);
+
+  /* If `numthreads' is 0, use the number of threads available to the
+     system. */
+  if(cp->numthreads==0)
+    cp->numthreads=gal_threads_number();
 }
 
 

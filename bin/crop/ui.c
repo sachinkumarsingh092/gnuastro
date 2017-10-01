@@ -379,7 +379,8 @@ ui_read_check_only_options(struct cropparams *p)
   if(p->section && p->mode!=IMGCROP_MODE_IMG)
     error(EXIT_FAILURE, 0, "The `--section' option is only available in "
           "image coordinate mode, currently it doesn't work with WCS mode. "
-          "Please run with `--mode=img' and change the values accordingly");
+          "Please run with `--mode=img' and if necessary, change the "
+          "values accordingly");
 
 
   /* Sanity checks and mode setting based on the desired crop. */

@@ -306,7 +306,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &cp->numthreads,
       GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
