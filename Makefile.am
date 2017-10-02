@@ -190,7 +190,7 @@ check-local:
 	 echo "==================================================================="; \
 	 echo "==================================================================="; \
 	 echo "Your build of Gnuastro $(VERSION) didn't fail on any tests.";         \
-	 echo "To install Gnuastro, please run the commands below:";                 \
+	 echo "To install Gnuastro, please run the command(s) below:";               \
 	 echo;                                                                       \
 	 if [ ! -w $(prefix) ] ; then                                                \
 	  echo "(NOTE: As the user $$USER, you don't have writing permissions";      \

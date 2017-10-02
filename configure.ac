@@ -226,6 +226,15 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 
 
 
+# Check libtool: need by BuildProgram.
+AC_CHECK_PROG(has_libtool, libtool, [yes], [no])
+AS_IF([test "x$has_libtool" = "xno"], [anywarnings=yes])
+AM_CONDITIONAL([COND_HASLIBTOOL], [test "x$has_libtool" = "xyes"])
+
+
+
+
+
 # Check Ghostscript: "-dPDFFitPage" option to Ghostscript, used by
 # ConvertType to convert from EPS to PDF, has been introduced in
 # Ghostscript 9.10.  Make sure we have at least that version.
@@ -715,13 +724,21 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    output files if Gnuastro's programs were called within a Git"])
                AS_ECHO(["    version controlled directory to help in reproducibility."])
                AS_ECHO([]) ])
+        AS_IF([test "x$has_libtool" = "xno"],
+              [AS_ECHO(["  - GNU Libtool, could not be found in your search path."])
+               AS_ECHO(["    Gnuastro's BuildProgram uses libtool to link your source code"])
+               AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Note that"])
+               AS_ECHO(["    not having libtool in your search path will not harm Gnuastro's"])
+               AS_ECHO(["    building and installation process. This warning is only for"])
+               AS_ECHO(["    using BuildProgram after Gnuastro has been built and installed."])
+               AS_ECHO([]) ])
         AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
                AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
                AS_ECHO([]) ])
-        AS_ECHO(["  All checks related to the warning(s) will be skipped."])
+        AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
         AS_ECHO([])
       ]
      )

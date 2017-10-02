@@ -2597,6 +2597,23 @@ take effect.
 
 @table @asis
 
+@item libtool
+@cindex GNU Libtool
+GNU Libtool is a program to simplify managing of the libraries to build an
+executable (program). It is used by @ref{BuildProgram} in Gnuastro to help
+you easily link to all the necessary libraries that Gnuastro's library
+depends on. Libtool is a low-level program that is probably already present
+on your system (and in your operating system package manager). However, if
+you want to install it's latest version from source, please visit its
+@url{https://www.gnu.org/software/libtool/, webpage}.
+
+Gnuastro's tarball ships with Libtool and it is extensively used during its
+building and installing. Therefore, you can easily build Gnuastro even if
+you don't have Libtool installed on your system. However, this internal
+Libtool does not get installed. Hence, if you want to use the installed
+BuildProgram to compile and link your own source code later, you need to
+have Libtool on your system (independent of Gnuastro).
+
 @item libgit2
 @cindex Git
 @cindex libgit2
