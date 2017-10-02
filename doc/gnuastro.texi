@@ -19341,9 +19341,9 @@ this example multiple images are linked together as a list:
 @example
 size_t minmapsize=-1;
 gal_data_t *tmp, *list=NULL;
-tmp = gal_fits_img_read("file1.fits", "1", minmapsize);
+tmp = gal_fits_img_read("file1.fits", "1", minmapsize, 0, 0);
 gal_list_data_add( &list, tmp );
-tmp = gal_fits_img_read("file2.fits", "1", minmapsize);
+tmp = gal_fits_img_read("file2.fits", "1", minmapsize, 0, 0);
 gal_list_data_add( &list, tmp );
 @end example
 @end deftypefun
@@ -19779,23 +19779,30 @@ then if the image has a name and units, the respective string will be put
 in these pointers.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize}, size_t @code{hstartwcs}, size_t @code{hendwcs})
 Read the contents of the @code{hdu} extension/HDU of @code{filename} into a
 Gnuastro generic data container (see @ref{Generic data container}) and
 return it. If the necessary space is larger than @code{minmapsize}, then
 don't keep the data in RAM, but in a file on the HDD/SSD. For more on
 @code{minmapsize} see the description under the same name in @ref{Generic
 data container}.
+
+The @code{hstartwcs} and @code{hendwcs} arguments are the starting and
+ending header keywords to search for WCS information, if no limit is
+needed, set them to zero. For more on these two options, please see the
+description of @code{gal_wcs_read_fitsptr} in @ref{World Coordinate
+System}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_img_read_to_type (char @code{*inputname}, char @code{*inhdu}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_img_read_to_type (char @code{*inputname}, char @code{*inhdu}, uint8_t @code{type}, size_t @code{minmapsize}, )
 Read the contents of the @code{hdu} extension/HDU of @code{filename} into a
 Gnuastro generic data container (see @ref{Generic data container}) of type
 @code{type} and return it.
 
 This is just a wrapper around @code{gal_fits_img_read} (to read the
 image/array of any type) and @code{gal_data_copy_to_new_type_free} (to
-convert it to @code{type} and free the initially read dataset).
+convert it to @code{type} and free the initially read dataset). See the
+description there for more.
 @end deftypefun
 
 @cindex NaN
@@ -21104,7 +21111,7 @@ char *filename="input.fits", *hdu="1";
 ...
 
 /* Read the input dataset. */
-input=gal_fits_img_read(filename, hdu, -1);
+input=gal_fits_img_read(filename, hdu, -1, 0, 0);
 
 /* Do a sanity check and preparations. */
 gal_tile_full_sanity_check(filename, hdu, input, &tl);
@@ -22140,7 +22147,8 @@ main(void)
 
 
   /* Read `img.fits' (HDU: 1) as a float32 array. */
-  image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+  image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1,
+                                  0, 0);
 
 
   /* Use the allocated space as a single precision floating
@@ -22189,7 +22197,8 @@ main(void)
   float *array;
   size_t i, num, *dinc;
   gal_data_t *input=gal_fits_img_read_to_type("input.fits", "1",
-                                              GAL_TYPE_FLOAT32, -1);
+                                              GAL_TYPE_FLOAT32, -1,
+                                              0, 0);
 
   /* To avoid the `void *' pointer and have `dinc'. */
   array=input->array;
@@ -22330,7 +22339,7 @@ main(void)
    * `-1' for `minmapsize' to ensure that the image is read into
    * memory. */
   p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
-                                    -1);
+                                    -1, 0, 0);
 
 
   /* Print some basic information before the actual contents: */

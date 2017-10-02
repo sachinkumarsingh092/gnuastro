@@ -53,6 +53,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   accept a new `withblank' option to set all pixels that are blank in the
   tile's block to be blank in the check image.
 
+  `gal_fits_img_read' and `gal_fits_img_read_to_type' now also read the WCS
+  structure of the extension/HDU in a FITS file and have two extra
+  arguments: `hstartwcs' and `hendwcs'. With these options it is possible
+  to limit the range of header keywords to read the WCS, similar to how
+  they are used in `gal_wcs_read'.
+
 ** Bug fixes
 
   ConvertType crash when changing values (bug #52010).

@@ -1091,14 +1091,26 @@ ui_prepare_canvas(struct mkprofparams *p)
           p->ndim = *(size_t *)(keysll->array);
           keysll->name=NULL;
           gal_data_array_free(keysll, 1, 1);
+
+          /* Read the WCS structure of the background image. */
+          p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
         }
       else
         {
           /* Read the image. */
           p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
                                            GAL_TYPE_FLOAT32,
-                                           p->cp.minmapsize);
+                                           p->cp.minmapsize, 0, 0);
+
+          /* Put the WCS structure and number of dimensions in the
+             MakeProfiles's main structure for generality. The WCS
+             structure will be put back in the end when writing. */
+          p->wcs=p->out->wcs;
+          p->nwcs=p->out->nwcs;
           p->ndim=p->out->ndim;
+          p->out->wcs=NULL;
+          p->out->nwcs=0;
+
 
           /* If p->dsize was given as an option, free it. */
           if( p->dsize ) free(p->dsize);
@@ -1127,9 +1139,6 @@ ui_prepare_canvas(struct mkprofparams *p)
       if(p->shift) free(p->shift);
       p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->ndim, __func__,
                                      "p->shift (1)");
-
-      /* Read the WCS structure of the background image. */
-      p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
     }
   else
     {

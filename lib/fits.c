@@ -1502,7 +1502,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
 
 /* Read a FITS image HDU into a Gnuastro data structure. */
 gal_data_t *
-gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize,
+                  size_t hstartwcs, size_t hendwcs)
 {
   void *blank;
   long *fpixel;
@@ -1558,6 +1559,10 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
   free(blank);
 
 
+  /* Read the WCS structure (if the FITS file has any). */
+  img->wcs=gal_wcs_read_fitsptr(fptr, hstartwcs, hendwcs, &img->nwcs);
+
+
   /* Close the input FITS file. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
@@ -1576,12 +1581,13 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
    used to convert the input file to the desired type. */
 gal_data_t *
 gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
-                          size_t minmapsize)
+                          size_t minmapsize, size_t hstartwcs,
+                          size_t hendwcs)
 {
   gal_data_t *in, *converted;
 
   /* Read the specified input image HDU. */
-  in=gal_fits_img_read(inputname, hdu, minmapsize);
+  in=gal_fits_img_read(inputname, hdu, minmapsize, hstartwcs, hendwcs);
 
   /* If the input had another type, convert it to float. */
   if(in->type!=type)
@@ -1608,9 +1614,10 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
   gal_data_t *kernel;
   float *f, *fp, tmp;
 
-  /* Read the image as a float */
+  /* Read the image as a float and if it has a WCS structure, free it. */
   kernel=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
-                                   minmapsize);
+                                   minmapsize, 0, 0);
+  if(kernel->wcs) { wcsfree(kernel->wcs); kernel->wcs=NULL; }
 
   /* Check if the size along each dimension of the kernel is an odd
      number. If they are all an odd number, then the for each dimension,

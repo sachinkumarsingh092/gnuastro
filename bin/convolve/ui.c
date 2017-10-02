@@ -304,8 +304,9 @@ ui_read_kernel(struct convolveparams *p)
 
   /* Read the image into file. */
   p->kernel = gal_fits_img_read_to_type(p->kernelname, p->khdu,
-                                        GAL_TYPE_FLOAT32,
-                                        p->cp.minmapsize);
+                                        GAL_TYPE_FLOAT32, p->cp.minmapsize,
+                                        0, 0);
+  if(p->kernel->wcs) { wcsfree(p->kernel->wcs); p->kernel->wcs=NULL; }
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
      pixels, also update the flags so it is not checked any more. */
@@ -350,10 +351,9 @@ ui_preparations(struct convolveparams *p)
     }
 
 
-  /* Read the input image as a float64 array and its WCS info. */
+  /* Read the input image as a float64 array. */
   p->input=gal_fits_img_read_to_type(p->filename, cp->hdu,
-                                     GAL_TYPE_FLOAT32, cp->minmapsize);
-  p->input->wcs=gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs);
+                                     GAL_TYPE_FLOAT32, cp->minmapsize, 0, 0);
 
 
   /* Currently Convolve only works on 2D images. */

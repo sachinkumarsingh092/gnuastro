@@ -340,7 +340,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the input image. */
   p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                     GAL_TYPE_FLOAT32, p->cp.minmapsize);
+                                     GAL_TYPE_FLOAT32, p->cp.minmapsize, 0,0);
 
 
   /* Currently MakeCatalog is only implemented for 2D images. */
@@ -356,7 +356,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the object label image and check its size. */
   p->objects = gal_fits_img_read(objectsfile, p->objectshdu,
-                                 p->cp.minmapsize);
+                                 p->cp.minmapsize, 0, 0);
   if( gal_data_dsize_is_different(p->input, p->objects) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", objectsfile, p->objectshdu,
@@ -365,7 +365,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the Sky image and check its size. */
   p->sky=gal_fits_img_read_to_type(skyfile, p->skyhdu, GAL_TYPE_FLOAT32,
-                                   p->cp.minmapsize);
+                                   p->cp.minmapsize, 0, 0);
   if( gal_data_dsize_is_different(p->input, p->sky) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", skyfile, p->skyhdu, p->inputname,
@@ -374,7 +374,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the Sky standard deviation image and check its size. */
   p->std=gal_fits_img_read_to_type(stdfile, p->stdhdu, GAL_TYPE_FLOAT32,
-                                   p->cp.minmapsize);
+                                   p->cp.minmapsize, 0, 0);
   if( gal_data_dsize_is_different(p->input, p->std) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", stdfile, p->stdhdu, p->inputname,
@@ -386,7 +386,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
     {
       /* Read the mask image. */
       p->upmask = gal_fits_img_read(p->upmaskfile, p->upmaskhdu,
-                                    p->cp.minmapsize);
+                                    p->cp.minmapsize, 0, 0);
       if( gal_data_dsize_is_different(p->input, p->upmask) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->upmaskfile, p->upmaskhdu,
@@ -442,7 +442,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
       /* Read the clumps image and check its size. */
       p->clumps = gal_fits_img_read(clumpsfile, p->clumpshdu,
-                                    p->cp.minmapsize);
+                                    p->cp.minmapsize, 0, 0);
       if( gal_data_dsize_is_different(p->input, p->std) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", clumpsfile, p->clumpshdu,
@@ -479,12 +479,6 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
   p->objects=gal_data_copy_to_new_type_free(p->objects, GAL_TYPE_INT32);
   if(p->clumps)
     p->clumps=gal_data_copy_to_new_type_free(p->clumps, GAL_TYPE_INT32);
-
-
-  /* Read the WCS structure of the input dataset. Even if no WCS-related
-     columns are requested, we still need it to report the pixel area of
-     the input dataset. */
-  p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 
 
   /* Clean up. */

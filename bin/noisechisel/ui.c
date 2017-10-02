@@ -581,8 +581,7 @@ ui_preparations(struct noisechiselparams *p)
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
                                        GAL_TYPE_FLOAT32,
-                                       p->cp.minmapsize);
-  p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
+                                       p->cp.minmapsize, 0, 0);
   if(p->input->name==NULL)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
 

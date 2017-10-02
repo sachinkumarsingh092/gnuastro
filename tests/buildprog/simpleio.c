@@ -39,7 +39,7 @@ main(int argc, char *argv[])
     }
 
   /* Read the image into memory. */
-  image=gal_fits_img_read(argv[1], argv[2], -1);
+  image=gal_fits_img_read(argv[1], argv[2], -1, 0, 0);
 
   /* Let the user know. */
   printf("%s (hdu %s) is read into memory.\n", argv[1], argv[2]);
