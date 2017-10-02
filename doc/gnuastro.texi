@@ -17161,6 +17161,17 @@ confronts).
 @itemx --onlybuild
 Only build the program, don't run it. By default, the built program is
 immediately run afterwards.
+
+@item -a STR
+@itemx --la=STR
+Use the given @file{.la} file (Libtool control file) instead of the one
+that was produced from Gnuastro's configuration results. The Libtool
+control file keeps all the necesary information for building and linking a
+program with a library built by Libtool. The default
+@file{prefix/lib/libgnuastro.la} keeps all the information necessary to
+build a program using the Gnuastro library gathered during configure time
+(see @ref{Installation directory} for prefix). This option is useful when
+you prefer to use another Libtool control file.
 @end table
 
 

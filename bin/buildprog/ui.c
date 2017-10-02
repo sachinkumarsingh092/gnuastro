@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gnuastro/fits.h>
 
@@ -216,13 +217,23 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'.
+   check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct buildprogparams *p)
 {
+  size_t len;
 
+  /* If an `.la' file is given, make sure it has the correct suffix. */
+  if(p->la)
+    {
+      len=strlen(p->la);
+      if(len>=4)
+        if(strcmp(&p->la[len-3], ".la"))
+          error(EXIT_FAILURE, 0, "`%s' is not a Libtool control file name "
+                "(with a `.la' suffix). The file name given to the `--la' "
+                "(`-a') option must be a Libtool control file", p->la);
+    }
 }
-*/
 
 
 
@@ -327,9 +338,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct buildprogparams *p)
 
 
   /* Read the options into the program's structure, and check them and
-     their relations prior to printing.
+     their relations prior to printing. */
   ui_read_check_only_options(p);
-  */
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
