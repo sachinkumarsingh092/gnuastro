@@ -73,6 +73,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
 
+    {
+      "la",
+      UI_KEY_LA,
+      "STR",
+      0,
+      "Libtool `.la' to use instead of default.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->la,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
     {
       "debug",

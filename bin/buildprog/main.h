@@ -48,6 +48,7 @@ struct buildprogparams
   gal_list_str_t     *include;    /* Libraries to link against.         */
   gal_list_str_t     *linkdir;    /* Libraries to link against.         */
   gal_list_str_t     *linklib;    /* Libraries to link against.         */
+  char                    *la;    /* Libtool `.la' instead of default.  */
 
   char              *optimize;    /* Optimization level.                */
   char                 *debug;    /* Keep debugging information.        */

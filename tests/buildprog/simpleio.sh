@@ -56,4 +56,10 @@ if [ "x$haslibtool" != "xyes" ];then echo "libtool not present.";  exit 77;fi
 
 # Actual test script
 # ==================
-$execname $source $img 1
+#
+# We want to use the `libgnuastro.la' corresponding to this install, not
+# the one (that is possibly) installed (hence the use of `--la').
+#
+# Except for `gnuastro/config.h', all headers are installed in
+# `$topsrc/lib' and `gnuastro/config.h' is in "../lib/"
+$execname $source $img 1 --la=../lib/libgnuastro.la -I$topsrc/lib -I../lib/

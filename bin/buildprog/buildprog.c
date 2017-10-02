@@ -23,6 +23,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,6 +73,7 @@ buildprog(struct buildprogparams *p)
   /* Note that the first node of `sourceargs' is the acutal source and the
      rest are arguments to be run later. */
   int retval;
+  char *fullla;
   char *command, *optimize=NULL, *warning=NULL;
   char *include   = buildprog_as_one_string("-I", p->include);
   char *linkdir   = buildprog_as_one_string("-L", p->linkdir);
@@ -88,9 +91,13 @@ buildprog(struct buildprogparams *p)
   if(p->warning)   asprintf(&warning,  "-W%s", p->warning);
   if(p->optimize)  asprintf(&optimize, "-O%s", p->optimize);
 
+  /* Libtool `.la' file: */
+  if(p->la) fullla=p->la;
+  else      asprintf(&fullla, "%s/libgnuastro.la", LIBDIR);
+
   /* Put the command to run into a string. */
   asprintf(&command, "libtool %s --mode=link gcc %s %s %s %s %s %s %s "
-           "-I%s %s/libgnuastro.la -o %s",
+           "-I%s %s -o %s",
            p->cp.quiet ? "--quiet" : "",
            warning     ? warning   : "",
            p->debug    ? "-g"      : "",
@@ -100,12 +107,14 @@ buildprog(struct buildprogparams *p)
            p->sourceargs->v,
            linklib     ?linklib    : "",
            INCLUDEDIR,
-           LIBDIR,
+           fullla,
            p->cp.output);
 
   /* Compile (and link): */
   retval=system(command);
-  if( retval==EXIT_SUCCESS && p->onlybuild==0)
+  if(retval!=EXIT_SUCCESS)
+    error(EXIT_FAILURE, 0, "failed to build, see libtool error above");
+  else if(p->onlybuild==0)
     {
       /* Free the initial command. */
       free(command);
@@ -127,7 +136,7 @@ buildprog(struct buildprogparams *p)
       /* Print the executed command if necessary, then run it. */
       if(!p->cp.quiet)
         {
-          printf("\nRun the compiled program\n");
+          printf("Run the compiled program\n");
           printf("------------------------\n");
           printf("%s\n", command);
         }

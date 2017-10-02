@@ -8,6 +8,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   All programs: a value of `0' to the `--numthreads' option will use the
   number of threads available to the system at run time.
 
+  BuildProgram: The new `--la' option allows the identification of a
+  different Libtool `.la' file for Libtool linking information.
+
   Fits: when an extension/HDU is identified on the command-line with the
   `--hdu' option and no operation is requested, the full list of header
   keywords in that HDU will be printed (as if only `--printallkeys' was
@@ -68,7 +71,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel segfault when memory mapping to a file (bug #52043).
 
-
+  CFITSIO 3.42 and libcurl crash at Gnuastro configure time (bug #52152).
 
 
 

@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   a c d e f i j k l n p r s t u v w x y z
+   c d e f i j k n p r s t u v w x y z
    A B C E G H J Q R X Y
 */
 enum option_keys_enum
@@ -38,6 +38,7 @@ enum option_keys_enum
   UI_KEY_INCLUDE     = 'I',
   UI_KEY_LINKDIR     = 'L',
   UI_KEY_LINKLIB     = 'l',
+  UI_KEY_LA          = 'a',
   UI_KEY_ONLYBUILD   = 'b',
   UI_KEY_DEBUG       = 'g',
   UI_KEY_OPTIMIZE    = 'O',
