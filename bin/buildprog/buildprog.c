@@ -90,7 +90,7 @@ buildprog(struct buildprogparams *p)
 
   /* Put the command to run into a string. */
   asprintf(&command, "libtool %s --mode=link gcc %s %s %s %s %s %s %s "
-           "%s/libgnuastro.la -o %s",
+           "-I%s %s/libgnuastro.la -o %s",
            p->cp.quiet ? "--quiet" : "",
            warning     ? warning   : "",
            p->debug    ? "-g"      : "",
@@ -99,6 +99,7 @@ buildprog(struct buildprogparams *p)
            linkdir     ? linkdir   : "",
            p->sourceargs->v,
            linklib     ?linklib    : "",
+           INCLUDEDIR,
            LIBDIR,
            p->cp.output);
 

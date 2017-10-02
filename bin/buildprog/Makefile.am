@@ -25,8 +25,8 @@
 ## Buildprog will also need some system-specific information that is
 ## gathered at compile time (for example the library installation directory
 ## (LIBDIR) and the executive file suffix (EXEEXT).
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib                   \
-              -DLIBDIR=\"$(libdir)\" -DEXEEXT=\"$(EXEEXT)\"
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -DLIBDIR=\"$(libdir)\"  \
+              -DINCLUDEDIR=\"$(includedir)\" -DEXEEXT=\"$(EXEEXT)\"
 
 
 
