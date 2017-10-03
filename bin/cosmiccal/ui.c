@@ -107,9 +107,6 @@ ui_initialize_options(struct cosmiccalparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
 
-  /* Speed of light: */
-  p->c                   = GSL_CONST_MKSA_SPEED_OF_LIGHT;
-
   /* Modify the common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
@@ -195,7 +192,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct cosmiccalparams *p)
 {
-  double sum=p->olambda + p->omatter + p->oradiation;
+  double sum = p->olambda + p->omatter + p->oradiation;
 
   /* Check if the density fractions add up to 1 (within floating point
      error). */
@@ -204,12 +201,6 @@ ui_read_check_only_options(struct cosmiccalparams *p)
           "The cosmological constant (`olambda'), matter (`omatter') "
           "and radiation (`oradiation') densities are given as %.8f, %.8f, "
           "%.8f", sum, p->olambda, p->omatter, p->oradiation);
-
-  /* The curvature fractional density: */
-  p->ocurv=1-sum;
-
-  /* Convert H0 from km/sec/Mpc to 1/sec: */
-  p->H0s=p->H0/1000/GSL_CONST_MKSA_PARSEC;
 }
 
 

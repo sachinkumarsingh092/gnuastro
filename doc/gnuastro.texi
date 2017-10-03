@@ -555,6 +555,7 @@ Gnuastro library
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Cosmology library::           Cosmological calculations.
 
 Multithreaded programming (@file{threads.h})
 
@@ -17252,6 +17253,7 @@ documentation will correspond to your installed version.
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Cosmology library::           Cosmological calculations.
 @end menu
 
 @node Configuration information, Multithreaded programming, Gnuastro library, Gnuastro library
@@ -22084,7 +22086,7 @@ checking that is the most CPU intensive part will only be done once.
 @end deftypefun
 
 
-@node Git wrappers,  , Interpolation, Gnuastro library
+@node Git wrappers, Cosmology library, Interpolation, Gnuastro library
 @subsection Git wrappers (@file{git.h})
 
 @cindex Git
@@ -22118,6 +22120,62 @@ Space for the output string is allocated within this function, so after
 using the value you have to @code{free} the output string. If libgit2 is
 not installed or the program calling this function is not within a version
 controlled directory, then the output will be the @code{NULL} pointer.
+@end deftypefun
+
+
+@node Cosmology library,  , Git wrappers, Gnuastro library
+@subsection Cosmology library (@file{cosmology.h})
+
+This library does the main cosmological calculations that are commonly
+necessary in extra-galactic astronomical studies. The main variable in this
+context is the redshift (@mymath{z}). The cosmological input parameters in
+the functions below are @code{H0}, @code{o_lambda_0}, @code{o_matter_0},
+@code{o_radiation_0} which respectively represent the current (at redshift
+0) expansion rate (Hubble constant in units of km/sec/Mpc), cosmological
+constant (@mymath{\Lambda}), matter and radiation densities.
+
+All these functions are declared in @file{gnuastro/cosmology.h}. For a more
+extended introduction/discussion of the cosmological parameters, please see
+@ref{CosmicCalculator}.
+
+@deftypefun double gal_cosmology_age (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Returns the age of the universe at redshift @code{z} in units of Giga
+years.
+@end deftypefun
+
+@deftypefun double gal_cosmology_proper_distance (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Returns the proper distance to an object at redshift @code{z} in units of
+Mega parsecs.
+@end deftypefun
+
+@deftypefun double gal_cosmology_comoving_volume (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Returns the comoving volume over 4pi stradian to @code{z} in units of Mega
+parsecs cube.
+@end deftypefun
+
+@deftypefun double gal_cosmology_critical_density (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Returns the critical density at redshift @code{z} in units of
+@mymath{g/cm^3}.
+@end deftypefun
+
+@deftypefun double gal_cosmology_angular_distance (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Return the angular diameter distance to an object at redshift @code{z} in
+units of Mega parsecs.
+@end deftypefun
+
+@deftypefun double gal_cosmology_luminosity_distance (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Return the luminosity diameter distance to an object at redshift @code{z}
+in units of Mega parsecs.
+@end deftypefun
+
+@deftypefun double gal_cosmology_distance_modulus (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Return the distance modulus at redshift @code{z} (with no units).
+@end deftypefun
+
+@deftypefun double gal_cosmology_to_absolute_mag (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
+Return the conversion from apparent to absolute magnitdue for an object at
+redshift @code{z}. This value has to be added to the apparent magnitude to
+give the absolute magnitude of an object at redshift @code{z}.
 @end deftypefun
 
 

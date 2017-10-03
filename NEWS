@@ -36,6 +36,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   now possible to detect signal out to much lower surface brightness limits
   and the detections don't look boxy any more.
 
+  Cosmology library: A new set of cosmology functions are now included in
+  the library (declared in `gnuastro/cosmology.h'). These functions are
+  also used in the CosmicCalculator program.
+
   `gal_fits_key_img_blank': returns the value that must be used in the
   BLANK keyword for the given type as defined by the FITS standard.
 

@@ -58,11 +58,6 @@ struct cosmiccalparams
   uint8_t       onlyabsmagconv; /* Only print conversion to abs. mag.   */
 
   /* Internal: */
-  double                     K; /* Curvature constant.                  */
-  double                     c; /* Speed of light.                      */
-  double                   H0s; /* Current expansion rate (1/sec).      */
-  double                 ocurv; /* Curvature density today.             */
-
   time_t               rawtime; /* Starting time of the program.        */
 };
 
