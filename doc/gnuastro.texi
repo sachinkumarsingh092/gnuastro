@@ -16150,11 +16150,14 @@ relations allow our 2D friend to find the value of @mymath{z} (an abstract
 dimension for it) as a function of r (distance on a flat 2D plane, which
 it can visualize) and thus eliminate @mymath{z}. From
 @mymath{\sin^2\theta+\cos^2\theta=1}, we get @mymath{z^2-2Rz+r^2=0} and
-solving for @mymath{z}, we find: @dispmath{z=R\left(1\pm\sqrt{1-{r^2\over
-R^2}}\right).}The @mymath{\pm} can be understood from @ref{sphereandplane}:
-For each @mymath{r}, there are two points on the sphere, one in the upper
-hemisphere and one in the lower hemisphere. An infinitesimal change in
-@mymath{r}, will create the following infinitesimal change in @mymath{z}:
+solving for @mymath{z}, we find:
+
+@dispmath{z=R\left(1\pm\sqrt{1-{r^2\over R^2}}\right).}
+
+The @mymath{\pm} can be understood from @ref{sphereandplane}: For each
+@mymath{r}, there are two points on the sphere, one in the upper hemisphere
+and one in the lower hemisphere. An infinitesimal change in @mymath{r},
+will create the following infinitesimal change in @mymath{z}:
 
 @dispmath{dz={\mp r\over R}\left(1\over
 \sqrt{1-{r^2/R^2}}\right)dr.}Using the positive signed equation
@@ -16165,18 +16168,20 @@ instead of @mymath{dz} in the @mymath{ds_s^2} equation above, we get:
 The derivation above was done for a spherical shell of radius @mymath{R} as
 a curved 2D surface. To generalize it to any surface, we can define
 @mymath{K=1/R^2} as the curvature parameter. Then the general infinitesimal
-change in a static universe can be written as: @dispmath{ds_s^2={dr^2\over
-1-Kr^2}+r^2d\phi^2.}Therefore, we see that a positive @mymath{K} represents
-a real @mymath{R} which signifies a closed 2D spherical shell like
-@ref{sphereandplane}. When @mymath{K=0}, we have a flat plane
-(@ref{flatplane}) and a negative @mymath{K} will correspond to an imaginary
-@mymath{R}. The latter two cases may be infinite in area (which is not a
-simple concept, but mathematically can be modelled with @mymath{r}
-extending infinitely), or finite-area (like a cylinder is flat everywhere
-with @dispmath{ds_s^2={dx^2 + dy^2}}, but finite in one direction in size).
-However, when @mymath{K>0} (and curvature is the same everywhere), we have
-a finite universe, where @mymath{r} cannot become larger than @mymath{R} as
-in @ref{sphereandplane}.
+change in a static universe can be written as:
+
+@dispmath{ds_s^2={dr^2\over 1-Kr^2}+r^2d\phi^2.}
+
+Therefore, we see that a positive @mymath{K} represents a real @mymath{R}
+which signifies a closed 2D spherical shell like @ref{sphereandplane}. When
+@mymath{K=0}, we have a flat plane (@ref{flatplane}) and a negative
+@mymath{K} will correspond to an imaginary @mymath{R}. The latter two cases
+may be infinite in area (which is not a simple concept, but mathematically
+can be modelled with @mymath{r} extending infinitely), or finite-area (like
+a cylinder is flat everywhere with @mymath{ds_s^2={dx^2 + dy^2}}, but
+finite in one direction in size).  However, when @mymath{K>0} (and
+curvature is the same everywhere), we have a finite universe, where
+@mymath{r} cannot become larger than @mymath{R} as in @ref{sphereandplane}.
 
 @cindex Proper distance
 A very important issue that can be discussed now (while we are still
@@ -16198,13 +16203,13 @@ radians). using the @mymath{\sin\theta} relation found above, we can
 find @mymath{l} as a function of @mymath{r}:
 
 @dispmath{\theta=\sin^{-1}\left({r\over R}\right)\quad\rightarrow\quad
-l(r)=R\sin^{-1}\left({r\over R}\right)}@mymath{R} is just an arbitrary
-constant and can be directly found from @mymath{K}, so for cleaner
-equations, it is common practice to set @mymath{R=1}, which gives:
-@mymath{l(r)=\sin^{-1}r}. Also note that if @mymath{R=1}, then
-@mymath{l=\theta}. Generally, depending on the the curvature, in a
-@emph{static} universe the proper distance can be written as a
-function of the coordinate @mymath{r} as (from now on we are assuming
+l(r)=R\sin^{-1}\left({r\over R}\right)}
+@mymath{R} is just an arbitrary constant and can be directly found from
+@mymath{K}, so for cleaner equations, it is common practice to set
+@mymath{R=1}, which gives: @mymath{l(r)=\sin^{-1}r}. Also note that if
+@mymath{R=1}, then @mymath{l=\theta}. Generally, depending on the the
+curvature, in a @emph{static} universe the proper distance can be written
+as a function of the coordinate @mymath{r} as (from now on we are assuming
 @mymath{R=1}):
 
 @dispmath{l(r)=\sin^{-1}(r)\quad(K>0),\quad\quad
@@ -16254,7 +16259,7 @@ position can make different choices of splitting up a map into
 twenty-first century observations, only makes sense if we can add up space
 and time. But we can only add bits of space and time together if we measure
 them in the same units, with a conversion constant, like 1000 is used to
-convert a kilometre into metres. Experimentally, we find extremely strong
+convert a kilometre into metres.  Experimentally, we find extremely strong
 support for the hypothesis that this conversion constant matches the speed
 of light in a vacuum, and it is almost always written either as `c', or in
 `natural units', as 1. To satisfy the linear transformations in spacetime
