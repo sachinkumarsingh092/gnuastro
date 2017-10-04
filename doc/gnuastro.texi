@@ -2089,9 +2089,9 @@ Warp started on Mon Apr  6 16:51:59 953
  Using 8 CPU threads.
  Input: cat_convolved.fits (hdu: 1)
  matrix:
-	0.2000   0.0000   0.4000
-	0.0000   0.2000   0.4000
-	0.0000   0.0000   1.0000
+        0.2000   0.0000   0.4000
+        0.0000   0.2000   0.4000
+        0.0000   0.0000   1.0000
 
 $ ls
 0_cat.fits          cat_convolved_scaled.fits     cat.txt
@@ -16043,26 +16043,34 @@ interested readers can study those books.
 @node Distance on a 2D curved space, Extending distance concepts to 3D, CosmicCalculator, CosmicCalculator
 @subsection Distance on a 2D curved space
 
-The observations to date (for example the Plank 2013 results), have
-not measured the presence of a significant curvature in the
-universe. However to be generic (and allow its measurement if it does
-in fact exist), it is very important to create a framework that allows
-curvature. As 3D beings, it is impossible for us to mentally create
-(visualize) a picture of the curvature of a 3D volume in a 4D
-space. Hence, here we will assume a 2D surface and discuss distances
+The observations to date (for example the Planck 2015 results), have
+not measured the presence of significant curvature in the
+universe, when the observations are interpeted under the
+assumption of uniform curvature. However to be generic (and allow its measurement if it does
+in fact exist), it is very important to create a framework that allows non-zero uniform
+curvature. For a relativistic alternative to dark energy
+(and maybe also some part of dark matter), non-uniform curvature
+may be even be more critical, but that is beyond the scope
+of this brief explanation.
+
+As 3D beings, it is difficult for us to mentally create
+(visualize) a picture of the curvature of a 3D volume
+embedded in a 4D
+space without sustained training.
+Hence, here we will assume a 2D surface and discuss distances
 on that 2D surface when it is flat, or when the 2D surface is curved
-(in a 3D space). Once the concepts have been created/visualized here,
+(and thought of embedded in a 3D non-curved (flat) space). Once the concepts have been created/visualized here,
 in @ref{Extending distance concepts to 3D}, we will extend them to the
 real 3D universe we live in and hope to study.
 
 To be more understandable (actively discuss from an observer's point
 of view) let's assume we have an imaginary 2D friend living on the 2D
 space (which @emph{might} be curved in 3D). So here we will be working
-with it in its efforts to analyze distances on its 2D universe. The
+with her in her efforts to analyze distances on her 2D universe. The
 start of the analysis might seem too mundane, but since it is
 impossible to imagine a 3D curved space, it is important to review all
 the very basic concepts thoroughly for an easy transition to a
-universe we cannot visualize any more (a curved 3D space in 4D).
+universe that is difficult to visualize more (a curved 3D space in 4D).
 
 To start, let's assume a static (not expanding or shrinking), flat 2D
 surface similar to @ref{flatplane} and that our 2D friend is observing its
@@ -16072,7 +16080,7 @@ this space is through the Cartesian coordinates (@mymath{x},
 are plotted. An infinitesimal change in the direction of each axis is
 written as @mymath{dx} and @mymath{dy}. For each point, the infinitesimal
 changes are parallel with the respective axes and are not shown for
-clarity. Another very useful way of parameterizing this space is through
+clarity. Another very useful way of parametrizing this space is through
 polar coordinates. For each point, we define a radius (@mymath{r}) and
 angle (@mymath{\phi}) from a fixed (but arbitrary) reference axis. In
 @ref{flatplane} the infinitesimal changes for each polar coordinate are
@@ -16097,7 +16105,7 @@ as:
 @dispmath{ds_s=dx^2+dy^2=dr^2+r^2d\phi^2}
 
 The main question is this: how can our 2D friend incorporate the (possible)
-curvature in its universe when it is calculating distances? The universe it
+curvature in her universe when she is calculating distances? The universe she
 lives in might equally be a locally flat but globally curved surface like
 @ref{sphericalplane}. The answer to this question but for a 3D being (us)
 is the whole purpose to this discussion. So here we want to give our 2D
@@ -16113,10 +16121,10 @@ as shown in @ref{sphericalplane}. For simplicity, the @mymath{z} axis
 is assumed to pass through the center of the spherical shell. Our
 imaginary 2D friend cannot visualize the third dimension or a curved
 2D surface within it, so the remainder of this discussion is purely
-abstract for it (similar to us being unable to visualize a 3D curved
+abstract for her (similar to us being unable to visualize a 3D curved
 space in 4D). But since we are 3D creatures, we have the advantage of
 visualizing the following steps. Fortunately our 2D friend knows our
-mathematics, so it can follow along with us.
+mathematics, so she can follow our reasoning.
 
 With the third axis added, a generic infinitesimal change over
 @emph{the full} 3D space corresponds to the distance:
@@ -16139,8 +16147,8 @@ flat plain is also displayed. From the dark triangle, we see that
 
 @dispmath{\sin\theta={r\over R},\quad\cos\theta={R-z\over R}.}These
 relations allow our 2D friend to find the value of @mymath{z} (an
-abstract dimension for it) as a function of r (distance on a flat 2D
-plane, which it can visualize) and thus eliminate @mymath{z}. From
+abstract dimension for her) as a function of r (distance on a flat 2D
+plane, which she can visualize) and thus eliminate @mymath{z}. From
 @mymath{\sin^2\theta+\cos^2\theta=1}, we get @mymath{z^2-2Rz+r^2=0}
 and solving for @mymath{z}, we find:
 @dispmath{z=R\left(1\pm\sqrt{1-{r^2\over R^2}}\right).}The
@@ -16180,7 +16188,9 @@ observer's position. In other words, it is on the gray flat surface of
 on a curved space, the raw coordinate @mymath{r} is the distance to
 @mymath{P'}, not @mymath{P}. The distance to the point @mymath{P} (at
 a specific coordinate @mymath{r} on the flat plane) on the curved
-surface (thick line in @ref{sphericalplane}) is called the
+surface (thick line in @ref{sphericalplane}) is called
+(in the cosmological context that we aim at motivating)
+the
 @emph{proper distance} and is displayed with @mymath{l}. For the
 specific example of @ref{sphericalplane}, the proper distance can be
 calculated with: @mymath{l=R\theta} (@mymath{\theta} is in
@@ -16207,20 +16217,24 @@ more simpler and abstract form of
 @cindex Comoving distance
 Until now, we had assumed a static universe (not changing with
 time). But our observations so far appear to indicate that the
-universe is expanding (isn't static). Since there is no reason to
+universe is expanding (it isn't static). Since there is no reason to
 expect the observed expansion is unique to our particular position of
 the universe, we expect the universe to be expanding at all points
 with the same rate at the same time. Therefore, to add a time
-dependence to our distance measurements, we can simply add a
+dependence to our distance measurements, we can include a
 multiplicative scaling factor, which is a function of time:
 @mymath{a(t)}. The functional form of @mymath{a(t)} comes from the
 cosmology and the physics we assume for it: general relativity.
 
 With this scaling factor, the proper distance will also depend on
-time. As the universe expands (moves), the distance will also move to
-larger values. We thus define a distance measure, or coordinate, that
-is independent of time and thus doesn't `move' which we call the
-@emph{comoving distance} and display with @mymath{\chi} such that:
+time. As the universe expands, the distance between two given points will shift to
+larger values. We thus define a special set of spatial coordinates
+that are independent of time, such that from the `main' observer to a given
+distant observer, the distance,
+that we call the
+@emph{comoving distance},
+is fixed (`comoving' with the set of fundamental observers),
+and represent it by @mymath{\chi} such that:
 @mymath{l(r,t)=\chi(r)a(t)}. We thus shift the @mymath{r} dependence
 of the proper distance we derived above for a static universe to the
 comoving distance:
@@ -16228,21 +16242,27 @@ comoving distance:
 @dispmath{\chi(r)=\sin^{-1}(r)\quad(K>0),\quad\quad
 \chi(r)=r\quad(K=0),\quad\quad \chi(r)=\sinh^{-1}(r)\quad(K<0).}
 
-Therefore @mymath{\chi(r)} is the proper distance of an object at a
+So @mymath{\chi(r)} is the proper distance to an object at a
 specific reference time: @mymath{t=t_r} (the @mymath{r} subscript
 signifies ``reference'') when @mymath{a(t_r)=1}. At any arbitrary
 moment (@mymath{t\neq{t_r}}) before or after @mymath{t_r}, the proper
-distance to the object can simply be scaled with
+distance to the object can be scaled with
 @mymath{a(t)}. Measuring the change of distance in a time-dependent
-(expanding) universe will also involve the speed of the object
-changing positions. Hence, let's assume that we are only thinking
-about the change in distance caused by something (light) moving at the
-speed of light. This speed is postulated as the only constant and
-frame-of-reference-independent speed in the universe, making our
-calculations easier, light is also the major source of information we
-receive from the universe, so this is a reasonable assumption for most
-extra-galactic studies. We can thus parametrize the change in distance
-as
+(expanding) universe will require making our spacetime consistent with
+Minkowski spacetime geometry, in which different observers at a given point
+(event) in spacetime split up spacetime into `space' and `time' in
+different ways, just like people at the same spatial position can make
+different choices of splitting up a map into `left--right' and `up--down'.
+This model, well supported by twentieth and twenty-first century observations,
+only makes sense if we can add up space and time. But we can only
+add bits of space and time together if we measure them in the same
+units, with a conversion constant, like 1000 is used to convert a kilometre
+into metres. This conversion constant happens to match the speed
+of light, and is almost always written either as `c', or in `natural
+units', as 1. To satisfy the linear transformations in spacetime
+required by Minkowski spacetime, the hypothesis that is extremely
+useful in modern cosmology is that we can define an infinitesimal
+spacetime element as
 
 @dispmath{ds^2=c^2dt^2-a^2(t)ds_s^2 =
 c^2dt^2-a^2(t)(d\chi^2+r^2d\phi^2).}
