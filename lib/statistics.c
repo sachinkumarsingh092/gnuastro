@@ -1805,7 +1805,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       meanstd=gal_statistics_mean_std(nbs);
 
       /* Put the three final values in usable (with a type) pointers. */
-      med = median_d->array;
+      med  = median_d->array;
       mean = meanstd->array;
       std  = &((double *)(meanstd->array))[1];
 

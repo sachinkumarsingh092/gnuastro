@@ -23,6 +23,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef IMGARITH_H
 #define IMGARITH_H
 
+
+#include <gnuastro/arithmetic.h>
+
+
+/* These are operator codes for functions that aren't in the arithmetic
+   library. */
+enum arithmetic_prog_operators
+{
+  ARITHMETIC_OP_FILTER_MEDIAN=GAL_ARITHMETIC_OP_LAST_CODE,
+  ARITHMETIC_OP_FILTER_MEAN,
+};
+
+
+
+
 void
 imgarith(struct arithmeticparams *p);
 

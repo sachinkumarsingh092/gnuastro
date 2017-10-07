@@ -8694,6 +8694,49 @@ standard deviation of the respective pixels in all operands in the stack.
 Similar to @command{min}, but the pixels of the output will contain
 the median of the respective pixels in all operands in the stack.
 
+@item filter-mean
+Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average,
+moving average}) on the input dataset. During mean filtering, each pixel
+(data element) is replaced by the mean value of all its surrounding pixels
+(excluding blank values). The number of surrounding pixels in each
+dimension (to calculate the mean) is determined through the earlier
+operands that have been pushed onto the stack prior to the input
+dataset. The number of necessary operands is determined by the
+dimensionality of the input dataset (first popped operand). The order of
+the dimensions on the command-line is the order in FITS format. Here is one
+example:
+
+@example
+$ astarithmetic 5 4 image.fits filter-mean
+@end example
+
+@noindent
+In this example, each pixel is replaced by the mean of a 5 by 4 box around
+it. The box is 5 pixels along the first FITS dimension (horizontal when
+viewed in ds9) and 4 pixels along the second FITS dimension (vertical).
+
+Each pixel will be placed in the center of the box that the mean is
+calculated on. If the given width along a dimension is even, then the
+center is assumed to be between the pixels (not in the center of a
+pixel). When the pixel is close to the center, the pixels of the box that
+fall outside the image are ignored. Therefore, on the edge, less points
+will be used in calculating the mean.
+
+The final effect of mean filtering is to smooth the input image, it is
+essentially a convolution with a kernel that has identical values for all
+its pixels (is flat), see @ref{Convolution process}.
+
+@item filter-median
+Apply @url{https://en.wikipedia.org/wiki/Median_filter, median filtering}
+on the input dataset. This is very similar to @command{filter-mean}, except
+that instead of the mean value of the box pixels, the median value is used
+to replace a pixel value. For more on how to use this operator, please see
+@command{filter-mean}.
+
+The median is less susceptible to outliers compared to the mean. As a
+result, after median filtering, the pixel values will be more discontinuous
+than mean filtering.
+
 @item lt
 Less than: If the second popped (or left operand in infix notation, see
 @ref{Reverse polish notation}) value is smaller than the first popped
@@ -17481,7 +17524,7 @@ number of threads on the system and spin-off threads. You can see a
 demonstration of using these functions in @ref{Library demo -
 multi-threaded operation}.
 
-@deftp {C @code{struct})} gal_threads_params
+@deftp {C @code{struct}} gal_threads_params
 Structure keeping the parameters of each thread. When each thread is
 created, a pointer to this structure is passed to it. The @code{params}
 element can be the pointer to a structure defined by the user which

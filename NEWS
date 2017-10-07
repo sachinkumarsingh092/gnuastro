@@ -8,6 +8,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   All programs: a value of `0' to the `--numthreads' option will use the
   number of threads available to the system at run time.
 
+  Arithmetic: The new operators `filter-median' and `filter-mean' can be
+  used to filter (smooth) the input. The size of the filter can be set as
+  the other operands to these operators.
+
   BuildProgram: The new `--la' option allows the identification of a
   different Libtool `.la' file for Libtool linking information.
 

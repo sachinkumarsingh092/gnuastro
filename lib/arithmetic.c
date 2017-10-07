@@ -1484,6 +1484,8 @@ gal_arithmetic(int operator, unsigned char flags, ...)
       out=arithmetic_abs(flags, d1);
       break;
 
+
+    /* Multi-operand operators */
     case GAL_ARITHMETIC_OP_MIN:
     case GAL_ARITHMETIC_OP_MAX:
     case GAL_ARITHMETIC_OP_NUM:
