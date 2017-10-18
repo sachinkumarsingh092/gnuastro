@@ -42,7 +42,7 @@ all.pdf: all.tex ./tex/*.tex ./conversions.sh
 	cp tikz/all-figure0.eps ../gnuastro-figures/iandtime.eps
 	cp tikz/all-figure1.eps ../gnuastro-figures/samplingfreq.eps
 	cp tikz/all-figure2.eps ../gnuastro-figures/flatplane.eps
-	cp tikz/all-figure3.eps ../gnuastro-figures/sphericalplane.eps
+	cp tikz/all-figure3.eps ../gnuastro-figures/sphereandplane.eps
 
 #	Make all the conversions:
 	./conversions.sh ../gnuastro-figures/
