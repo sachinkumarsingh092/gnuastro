@@ -16093,20 +16093,18 @@ also some part of dark matter), non-uniform curvature may be even be more
 critical, but that is beyond the scope of this brief explanation.} the
 presence of significant curvature in the universe. However to be generic
 (and allow its measurement if it does in fact exist), it is very important
-to create a framework that allows non-zero uniform curvature. As 3D beings,
-it is difficult for us to mentally create (visualize) a picture of the
-curvature of a 3D volume. We might try to do that by embedding the 3D space
-in a flat@footnote{`Flat' means in this context that the Pythagorean
-theorem is true for every triangle in a space.} 4D space, but that would
-require good intuition of the 4D space. Hence, here we will assume a 2D
-surface and discuss distances on that 2D surface when it is flat and when
-it is curved. Curvature is something to think of mathematically as
-intrinsic to a space itself, but to make things easier, we will do what
-mathematicians often do, and think of our 2D surface (we can also call it a
-space) embedded in a flat 3D space. Once the concepts have been
-created/visualized here, we will extend them, in @ref{Extending distance
-concepts to 3D}, to a real 3D spatial `slice' of the Universe we live in
-and hope to study.
+to create a framework that allows non-zero uniform curvature. However, this
+section is not intended to be a fully thorough and mathematically complete
+derivation of these concepts. There are many references available for such
+reviews that go deep into the abstract mathematical proofs. The emphasis
+here is on visualization of the concepts for a beginner.
+
+As 3D beings, it is difficult for us to mentally create (visualize) a
+picture of the curvature of a 3D volume. Hence, here we will assume a 2D
+surface/space and discuss distances on that 2D surface when it is flat and
+when it is curved. Once the concepts have been created/visualized here, we
+will extend them, in @ref{Extending distance concepts to 3D}, to a real 3D
+spatial @emph{slice} of the Universe we live in and hope to study.
 
 To be more understandable (actively discuss from an observer's point of
 view) let's assume there's an imaginary 2D creature living on the 2D space
@@ -16306,10 +16304,14 @@ twentieth and twenty-first century observations.}. But we can only add bits
 of space and time together if we measure them in the same units: with a
 conversion constant (similar to how 1000 is used to convert a kilometer
 into meters).  Experimentally, we find strong support for the hypothesis
-that this conversion constant is the speed of light or gravitational waves
-in a vacuum. It is almost always written either as @mymath{c}, or in
-`natural units', as 1. We can thus parametrize the change in distance on an
-expanding 2D surface as
+that this conversion constant is the speed of light (or gravitational
+waves@footnote{The speed of gravitational waves was recently found to be
+very similar to that of light in vaccum, see
+@url{https://arxiv.org/abs/1710.05834, arXiv:1710.05834}.}) in a
+vacuum. This speed is postulated to be constant@footnote{In @emph{natural
+units}, speed is measured in units of the speed of light in vaccum.} and is
+almost always written as @mymath{c}. We can thus parametrize the change in
+distance on an expanding 2D surface as
 
 @dispmath{ds^2=c^2dt^2-a^2(t)ds_s^2 = c^2dt^2-a^2(t)(d\chi^2+r^2d\phi^2).}
 
@@ -16319,21 +16321,20 @@ expanding 2D surface as
 
 The concepts of @ref{Distance on a 2D curved space} are here extended to a
 3D space that @emph{might} be curved. We can start with the generic
-infinitesimal distance in a static 3D universe, but this time not in
-spherical coordinates instead of polar coordinates.  @mymath{\theta} is
-shown in @ref{sphereandplane}, but here we are 3D beings, positioned on
-@mymath{O} (the center of the sphere) and the point @mymath{O} is tangent
-to a 4D-sphere. In our 3D space, a generic infinitesimal displacement will
-have the distance:
+infinitesimal distance in a static 3D universe, but this time in spherical
+coordinates instead of polar coordinates.  @mymath{\theta} is shown in
+@ref{sphereandplane}, but here we are 3D beings, positioned on @mymath{O}
+(the center of the sphere) and the point @mymath{O} is tangent to a
+4D-sphere. In our 3D space, a generic infinitesimal displacement will
+correspond to the following distance in spherical coordinates:
 @dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}Like
-our 2D friend before, we now have to assume an abstract dimension which we
-cannot visualize. Let's call the fourth dimension @mymath{w}, then the
-general change in coordinates in the @emph{full} four dimensional space
-will be:
+the 2D creature before, we now have to assume an abstract dimension which
+we cannot visualize easily. Let's call the fourth dimension @mymath{w},
+then the general change in coordinates in the @emph{full} four dimensional
+space will be:
 @dispmath{ds_s^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)+dw^2.}But we can
 only work on a 3D curved space, so following exactly the same steps and
-conventions as our 2D friend, we arrive at:
-@dispmath{ds_s^2={dr^2\over
+conventions as our 2D friend, we arrive at: @dispmath{ds_s^2={dr^2\over
 1-Kr^2}+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}In a non-static universe
 (with a scale factor a(t), the distance can be written as:
 @dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)].}
