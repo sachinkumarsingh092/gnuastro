@@ -16353,16 +16353,26 @@ coordinates instead of polar coordinates.  @mymath{\theta} is shown in
 (the center of the sphere) and the point @mymath{O} is tangent to a
 4D-sphere. In our 3D space, a generic infinitesimal displacement will
 correspond to the following distance in spherical coordinates:
-@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}Like
-the 2D creature before, we now have to assume an abstract dimension which
-we cannot visualize easily. Let's call the fourth dimension @mymath{w},
-then the general change in coordinates in the @emph{full} four dimensional
-space will be:
-@dispmath{ds_s^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)+dw^2.}But we can
-only work on a 3D curved space, so following exactly the same steps and
-conventions as our 2D friend, we arrive at: @dispmath{ds_s^2={dr^2\over
-1-Kr^2}+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}In a non-static universe
-(with a scale factor a(t), the distance can be written as:
+
+@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}
+
+Like the 2D creature before, we now have to assume an abstract dimension
+which we cannot visualize easily. Let's call the fourth dimension
+@mymath{w}, then the general change in coordinates in the @emph{full} four
+dimensional space will be:
+
+@dispmath{ds_s^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)+dw^2.}
+
+@noindent
+But we can only work on a 3D curved space, so following exactly the same
+steps and conventions as our 2D friend, we arrive at:
+
+@dispmath{ds_s^2={dr^2\over 1-Kr^2}+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}
+
+@noindent
+In a non-static universe (with a scale factor a(t)), the distance can be
+written as:
+
 @dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)].}
 
 
