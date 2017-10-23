@@ -718,8 +718,11 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   if(p->input->wcs)
     {
       pixarea=gal_wcs_pixel_area_arcsec2(p->input->wcs);
-      asprintf(&str, "Pixel area (arcsec^2): %g", pixarea);
-      gal_list_str_add(&comments, str, 0);
+      if( isnan(pixarea)==0 )
+        {
+          asprintf(&str, "Pixel area (arcsec^2): %g", pixarea);
+          gal_list_str_add(&comments, str, 0);
+        }
     }
 
   if(p->hasmag)

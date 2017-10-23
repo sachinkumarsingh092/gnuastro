@@ -20181,7 +20181,9 @@ for each dimension.
 @end deftypefun
 
 @deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})
-Return the pixel area of @code{wcs} in arcsecond squared.
+Return the pixel area of @code{wcs} in arcsecond squared. If the input WCS
+structure is not two dimensional and the units (@code{CUNIT} keywords) are
+not @code{deg} (for degrees), then this function will return a NaN.
 @end deftypefun
 
 @deftypefun void gal_wcs_world_to_img (struct wcsprm @code{*wcs}, double @code{*ra}, double @code{*dec}, double @code{**x}, double @code{**y}, size_t @code{size})

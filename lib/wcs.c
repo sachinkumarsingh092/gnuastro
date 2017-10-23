@@ -581,9 +581,13 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
   /* A small sanity check. Later, when higher dimensions are necessary, we
      can find which ones correlate to RA and Dec and use them to find the
      pixel area in arcsec^2. */
-  if(wcs->naxis!=2)
-    error(EXIT_FAILURE, 0, "%s: currently only 2D datasets supported. "
-          "The input WCS has %d dimensions", __func__, wcs->naxis);
+  if(wcs->naxis!=2) return NAN;
+
+  /* Check if the units of the axis are degrees or not. Currently all FITS
+     images I have worked with use `deg' for degrees. If other alternatives
+     exist, we can add corrections later. */
+  if( strcmp("deg", wcs->cunit[0]) || strcmp("deg", wcs->cunit[1]) )
+    return NAN;
 
   /* Get the pixel scales along each axis in degrees, then multiply. */
   pixscale=gal_wcs_pixel_scale(wcs);

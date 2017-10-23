@@ -88,6 +88,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   to limit the range of header keywords to read the WCS, similar to how
   they are used in `gal_wcs_read'.
 
+  `gal_wcs_pixel_area_arcsec2' will return NaN (instead of aborting) when
+  input is unreasonable (not two dimensions or not in units of degrees).
+
 ** Bug fixes
 
   ConvertType crash when changing values (bug #52010).
