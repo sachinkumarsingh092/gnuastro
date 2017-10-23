@@ -63,6 +63,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Removed features
 
+  MakeCatalog: `--zeropoint' option doesn't have a short option name any
+  more. Previously it was `-z' which was confusing because `-x' and `-y'
+  were used to refer to image coordinate positions.
+
   NoiseChisel: The `--dilate' and `--dilatengb' options have been
   removed. Growing of true detections is no longer done through dilation
   but through the `--detgrowquant' and `--detgrowmaxholesize' options (see
