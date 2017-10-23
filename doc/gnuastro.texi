@@ -14127,7 +14127,7 @@ only one of them. The latter cases are explicitly marked with [Objects] or
 
 @item --i
 @itemx --ids
-This is a unique option it can add multiple columns to the final
+This is a unique option which can add multiple columns to the final
 catalog(s). Calling this option will put the object IDs (@option{--objid})
 in the objects catalog and host-object-ID (@option{--hostobjid}) and
 ID-in-host-object (@option{--idinhostobj}) into the clumps catalog. Hence
@@ -14203,35 +14203,61 @@ the second FITS axis. See @option{--geox}.
 
 @item -r
 @itemx --ra
-Flux weighted right ascension of all objects or clumps, see @option{--x}.
+Flux weighted right ascension of all objects or clumps, see
+@option{--x}. This is just an alias for one of the lower-level
+@option{--w1} or @option{--w2} options. Using the FITS WCS keywords
+(@code{CTYPE}), MakeCatalog will determine which axis corresponds to the
+right ascension. If no @code{CTYPE} keywords start with @code{RA}, an error
+will be printed when requesting this column and MakeCatalog will abort.
 
 @item -d
 @itemx --dec
-Flux weighted declination of all objects or clumps, see @option{--x}.
+Flux weighted declination of all objects or clumps, see @option{--x}. This
+is just an alias for one of the lower-level @option{--w1} or @option{--w2}
+options. Using the FITS WCS keywords (@code{CTYPE}), MakeCatalog will
+determine which axis corresponds to the declination. If no @code{CTYPE}
+keywords start with @code{DEC}, an error will be printed when requesting
+this column and MakeCatalog will abort.
 
-@item --geora
-Geometric center right ascension of all objects or clumps, see
-@option{--geox}.
+@item --w1
+Flux weighted first WCS axis of all objects or clumps, see
+@option{--x}. The first WCS axis is commonly used as right ascension in
+images.
 
-@item --geodec
-Geometric center declination of all objects or clumps, see
-@option{--geox}.
+@item --w2
+Flux weighted second WCS axis of all objects or clumps, see
+@option{--x}. The second WCS axis is commonly used as declination in
+images.
 
-@item --clumpsra
-[Objects] Flux weighted right ascension of all clumps in this object,
-see @option{--x}.
+@item --geow1
+Geometric center in first WCS axis of all objects or clumps, see
+@option{--geox}. The first WCS axis is commonly used as right ascension in
+images.
 
-@item --clumpsdec
+@item --geow2
+Geometric center in second WCS axis of all objects or clumps, see
+@option{--geox}. The second WCS axis is commonly used as declination in
+images.
+
+@item --clumpsw1
+[Objects] Flux weighted center in first WCS axis of all clumps in this
+object, see @option{--x}. The first WCS axis is commonly used as right
+ascension in images.
+
+@item --clumpsw2
 [Objects] Flux weighted declination of all clumps in this object, see
-@option{--x}.
+@option{--x}. The second WCS axis is commonly used as declination in
+images.
 
-@item --clumpsgeora
-[Objects] Geometric center right ascension of all clumps in this
-object, see @option{--geox}.
+@item --clumpsgeow1
+[Objects] Geometric center right ascension of all clumps in this object,
+see @option{--geox}. The first WCS axis is commonly used as right ascension
+in images.
 
-@item --clumpsgeodec
-[Objects] Geometric center declination of all clumps in this object,
-see @option{--geox}.
+@item --clumpsgeow2
+[Objects] Geometric center declination of all clumps in this object, see
+@option{--geox}. The second WCS axis is commonly used as declination in
+images.
 
 @item -b
 @itemx --brightness

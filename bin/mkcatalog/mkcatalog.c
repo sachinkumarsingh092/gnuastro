@@ -604,14 +604,14 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
          probably columns that don't need any correction. */
       switch(column->status)
         {
-        case UI_KEY_RA:           c=p->rd_vo[0];   break;
-        case UI_KEY_DEC:          c=p->rd_vo[1];   break;
-        case UI_KEY_GEORA:        c=p->rd_go[0];   break;
-        case UI_KEY_GEODEC:       c=p->rd_go[1];   break;
-        case UI_KEY_CLUMPSRA:     c=p->rd_vcc[0];  break;
-        case UI_KEY_CLUMPSDEC:    c=p->rd_vcc[1];  break;
-        case UI_KEY_CLUMPSGEORA:  c=p->rd_gcc[0];  break;
-        case UI_KEY_CLUMPSGEODEC: c=p->rd_gcc[1];  break;
+        case UI_KEY_W1:           c=p->rd_vo[0];   break;
+        case UI_KEY_W2:           c=p->rd_vo[1];   break;
+        case UI_KEY_GEOW1:        c=p->rd_go[0];   break;
+        case UI_KEY_GEOW2:        c=p->rd_go[1];   break;
+        case UI_KEY_CLUMPSW1:     c=p->rd_vcc[0];  break;
+        case UI_KEY_CLUMPSW2:     c=p->rd_vcc[1];  break;
+        case UI_KEY_CLUMPSGEOW1:  c=p->rd_gcc[0];  break;
+        case UI_KEY_CLUMPSGEOW2:  c=p->rd_gcc[1];  break;
         }
 
       /* Copy the elements. */
@@ -630,10 +630,10 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
          probably columns that don't need any correction. */
       switch(column->status)
         {
-        case UI_KEY_RA:           c=p->rd_vc[0];   break;
-        case UI_KEY_DEC:          c=p->rd_vc[1];   break;
-        case UI_KEY_GEORA:        c=p->rd_gc[0];   break;
-        case UI_KEY_GEODEC:       c=p->rd_gc[1];   break;
+        case UI_KEY_W1:           c=p->rd_vc[0];   break;
+        case UI_KEY_W2:           c=p->rd_vc[1];   break;
+        case UI_KEY_GEOW1:        c=p->rd_gc[0];   break;
+        case UI_KEY_GEOW2:        c=p->rd_gc[1];   break;
         }
 
       /* Copy the elements. */

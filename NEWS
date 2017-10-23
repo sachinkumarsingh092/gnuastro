@@ -20,6 +20,20 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   keywords in that HDU will be printed (as if only `--printallkeys' was
   called).
 
+  MakeCatalog: physical nature agnostic WCS column names. Previously the
+  first WCS axis was always assumed to be RA and the second DEC. So for
+  example even if you had a spectrum (with X and wavelength as the two WCS
+  dimensions), you would have to ask for `--ra' and `--dec'. The new `--w1'
+  and `--w2' options are now generic and don't assume any particular type
+  only their order in the FITS header. MakeCatalog now also uses the CTYPE
+  and CUNIT keywords to set the names and units of its output columns. The
+  `--ra' and `--dec' options are now just internal aliases for `--w1' or
+  `--w2' which will be determined based on the input's CTYPE keyword. Also
+  the new `--geow1', `--geow2', `--clumpsw1', `--clumpsw2',
+  `--clumpsgeow1', `--clumpsgeow2' options replace the old options
+  `--geora', `--geodec', `--clumpsra', `--clumpsdec', `--clumpsgeora',
+  `--clumpsgeodec'. No alias is currently defined for the latter group.
+
   NoiseChisel: with the new `--widekernel' option it is now possible to use
   a wider kernel to identify which tiles contain signal. The rest of the
   steps (identifying the quantile threshold on the selected tiles and etc)

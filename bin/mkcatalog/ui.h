@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   f g k l u v w x y
+   f g k l u v w x y z
    H J L W X Y
 */
 enum option_keys_enum
@@ -39,7 +39,6 @@ enum option_keys_enum
   UI_KEY_CLUMPSFILE      = 'C',
   UI_KEY_SKYFILE         = 's',
   UI_KEY_STDFILE         = 't',
-  UI_KEY_ZEROPOINT       = 'z',
   UI_KEY_SKYSUBTRACTED   = 'E',
   UI_KEY_THRESHOLD       = 'R',
   UI_KEY_ENVSEED         = 'e',
@@ -68,6 +67,7 @@ enum option_keys_enum
   UI_KEY_CLUMPSHDU,
   UI_KEY_SKYHDU,
   UI_KEY_STDHDU,
+  UI_KEY_ZEROPOINT,
   UI_KEY_SFMAGNSIGMA,
   UI_KEY_SFMAGAREA,
   UI_KEY_UPMASKFILE,
@@ -86,12 +86,14 @@ enum option_keys_enum
   UI_KEY_CLUMPSY,
   UI_KEY_CLUMPSGEOX,
   UI_KEY_CLUMPSGEOY,
-  UI_KEY_GEORA,
-  UI_KEY_GEODEC,
-  UI_KEY_CLUMPSRA,
-  UI_KEY_CLUMPSDEC,
-  UI_KEY_CLUMPSGEORA,
-  UI_KEY_CLUMPSGEODEC,
+  UI_KEY_W1,
+  UI_KEY_W2,
+  UI_KEY_GEOW1,
+  UI_KEY_GEOW2,
+  UI_KEY_CLUMPSW1,
+  UI_KEY_CLUMPSW2,
+  UI_KEY_CLUMPSGEOW1,
+  UI_KEY_CLUMPSGEOW2,
   UI_KEY_CLUMPSBRIGHTNESS,
   UI_KEY_NORIVERBRIGHTNESS,
   UI_KEY_CLUMPSMAGNITUDE,

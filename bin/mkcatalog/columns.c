@@ -27,7 +27,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
+
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 #include "mkcatalog.h"
@@ -196,6 +199,74 @@ columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
 /******************************************************************/
 /**********       Column definition/allocation      ***************/
 /******************************************************************/
+static void
+columns_wcs_preparation(struct mkcatalogparams *p)
+{
+  size_t i;
+  gal_list_i32_t *colcode;
+  int continue_wcs_check=1;
+
+  /* Make sure a WCS structure is present if we need it. */
+  for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
+    {
+      if(continue_wcs_check)
+        {
+          switch(colcode->v)
+            {
+            /* High-level. */
+            case UI_KEY_RA:
+            case UI_KEY_DEC:
+
+            /* Low-level. */
+            case UI_KEY_W1:
+            case UI_KEY_W2:
+            case UI_KEY_GEOW1:
+            case UI_KEY_GEOW2:
+            case UI_KEY_CLUMPSW1:
+            case UI_KEY_CLUMPSW2:
+            case UI_KEY_CLUMPSGEOW1:
+            case UI_KEY_CLUMPSGEOW2:
+              if(p->input->wcs)
+                continue_wcs_check=0;
+              else
+                error(EXIT_FAILURE, 0, "input doesn't have WCS meta-data for "
+                      "defining world coordinates (like RA and Dec). Atleast "
+                      "one of the requested columns requires this "
+                      "information");
+              break;
+            }
+        }
+      else
+        break;
+    }
+
+  /* Convert the high-level WCS columns to low-level ones. */
+  for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
+    switch(colcode->v)
+      {
+      case UI_KEY_RA:
+      case UI_KEY_DEC:
+        /* Check all the CTYPES. */
+        for(i=0;i<p->input->ndim;++i)
+          if( !strcmp(p->ctype[i], colcode->v==UI_KEY_RA ? "RA" : "DEC") )
+            {
+              colcode->v = i==0 ? UI_KEY_W1 : UI_KEY_W2;
+              break;
+            }
+
+        /* Make sure it actually existed. */
+        if(i==p->input->ndim)
+          error(EXIT_FAILURE, 0, "%s (hdu: %s): %s not present in any of "
+                "the WCS axis types (CTYPE)", p->inputname, p->cp.hdu,
+                colcode->v==UI_KEY_RA ? "RA" : "DEC");
+        break;
+      }
+}
+
+
+
+
+
 /* Set the necessary parameters for each output column and allocate the
    space necessary to keep the values. */
 void
@@ -206,6 +277,13 @@ columns_define_alloc(struct mkcatalogparams *p)
   int disp_fmt=0, disp_width=0, disp_precision=0;
   char *name=NULL, *unit=NULL, *ocomment=NULL, *ccomment=NULL;
   uint8_t otype=GAL_TYPE_INVALID, ctype=GAL_TYPE_INVALID, *oiflag, *ciflag;
+
+  /* If there is any columns that need WCS, the input image needs to have a
+     WCS in its headers. So before anything, we need to check if a WCS is
+     present or not. This can't be done after the initial setting of column
+     properties because the WCS-related columns use information that is
+     based on it (for units and names). */
+  columns_wcs_preparation(p);
 
   /* Allocate the array for which intermediate parameters are
      necessary. The basic issue is that higher-level calculations require a
@@ -427,10 +505,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_C_GY ] = 1;
           break;
 
-        case UI_KEY_RA:
-          name           = "RA";
-          unit           = "degrees";
-          ocomment       = "Flux weighted center right ascension.";
+        case UI_KEY_W1:
+          name           = p->ctype[0];
+          unit           = p->input->wcs->cunit[0];
+          ocomment       = "Flux weighted center in first WCS axis.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -442,10 +520,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_radec(p);
           break;
 
-        case UI_KEY_DEC:
-          name           = "DEC";
-          unit           = "degrees";
-          ocomment       = "Flux weighted center declination.";
+        case UI_KEY_W2:
+          name           = p->ctype[1];
+          unit           = p->input->wcs->cunit[1];
+          ocomment       = "Flux weighted center in second WCS axis.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -457,10 +535,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_radec(p);
           break;
 
-        case UI_KEY_GEORA:
-          name           = "GEO_RA";
-          unit           = "degrees";
-          ocomment       = "Geometric center right ascension.";
+        case UI_KEY_GEOW1:
+          name           = gal_checkset_malloc_cat("GEO_", p->ctype[0]);
+          unit           = p->input->wcs->cunit[0];
+          ocomment       = "Geometric center in first WCS axis.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -474,10 +552,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_georadec(p);
           break;
 
-        case UI_KEY_GEODEC:
-          name           = "GEO_DEC";
-          unit           = "degrees";
-          ocomment       = "Geometric center declination.";
+        case UI_KEY_GEOW2:
+          name           = gal_checkset_malloc_cat("GEO_", p->ctype[1]);
+          unit           = p->input->wcs->cunit[1];
+          ocomment       = "Geometric center in second WCS axis.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -491,10 +569,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_georadec(p);
           break;
 
-        case UI_KEY_CLUMPSRA:
-          name           = "CLUMPS_RA";
-          unit           = "degrees";
-          ocomment       = "RA of all clumps flux weighted center.";
+        case UI_KEY_CLUMPSW1:
+          name           = gal_checkset_malloc_cat("CLUMPS_", p->ctype[0]);
+          unit           = p->input->wcs->cunit[0];
+          ocomment       = "Flux.wht center of all clumps in 1st WCS axis.";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -506,10 +584,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_clumpsradec(p);
           break;
 
-        case UI_KEY_CLUMPSDEC:
-          name           = "CLUMPS_DEC";
-          unit           = "degrees";
-          ocomment       = "Declination of all clumps flux weighted center.";
+        case UI_KEY_CLUMPSW2:
+          name           = gal_checkset_malloc_cat("CLUMPS_", p->ctype[1]);
+          unit           = p->input->wcs->cunit[1];
+          ocomment       = "Flux.wht center of all clumps in 2nd WCS axis.";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -521,10 +599,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_clumpsradec(p);
           break;
 
-        case UI_KEY_CLUMPSGEORA:
-          name           = "CLUMPS_RA";
-          unit           = "degrees";
-          ocomment       = "RA of all clumps geometric center.";
+        case UI_KEY_CLUMPSGEOW1:
+          name           = gal_checkset_malloc_cat("CLUMPS_GEO", p->ctype[0]);
+          unit           = p->input->wcs->cunit[0];
+          ocomment       = "Geometric center of all clumps in 1st WCS axis.";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -536,10 +614,10 @@ columns_define_alloc(struct mkcatalogparams *p)
           columns_alloc_clumpsgeoradec(p);
           break;
 
-        case UI_KEY_CLUMPSGEODEC:
-          name           = "CLUMPS_DEC";
-          unit           = "degrees";
-          ocomment       = "Declination of all clumps geometric center.";
+        case UI_KEY_CLUMPSGEOW2:
+          name           = gal_checkset_malloc_cat("CLUMPS_GEO", p->ctype[1]);
+          unit           = p->input->wcs->cunit[1];
+          ocomment       = "Geometric center of all clumps in 2nd WCS axis.";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -650,8 +728,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
           disp_width     = 8;
           disp_precision = 3;
-          p->upperlimit  = 1;
-          /* Upper limit measurement doesn't need per-pixel calculations. */
+          p->upperlimit  = 1;   /* Doesn't need per-pixel calculations. */
           break;
 
         case UI_KEY_UPPERLIMITMAG:
@@ -665,8 +742,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 8;
           disp_precision = 3;
           p->upperlimit  = 1;
-          p->hasmag      = 1;
-          /* Upper limit magnitude doesn't need per-pixel calculations. */
+          p->hasmag      = 1;   /* Doesn't need per-pixel calculations. */
           break;
 
         case UI_KEY_RIVERAVE:
@@ -895,6 +971,7 @@ columns_define_alloc(struct mkcatalogparams *p)
                 "the problem. The code %d is not an internally recognized "
                 "column code", __func__, PACKAGE_BUGREPORT, colcode->v);
         }
+
 
       /* If this is an objects column, add it to the list of columns. We
          will be using the `status' element to keep the MakeCatalog code
@@ -1246,40 +1323,44 @@ columns_fill(struct mkcatalog_passparams *pp)
                                                oi[OCOL_C_NUMALL] );
           break;
 
-        case UI_KEY_RA:
-        case UI_KEY_DEC:
+        case UI_KEY_W1:
+        case UI_KEY_W2:
           p->rd_vo[0][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                       OCOL_VX, OCOL_GX);
           p->rd_vo[1][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
                                       OCOL_VY, OCOL_GY);
           break;
 
-        case UI_KEY_GEORA:
-        case UI_KEY_GEODEC:
+        case UI_KEY_GEOW1:
+        case UI_KEY_GEOW2:
           p->rd_go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUMALL] );
           p->rd_go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUMALL] );
           break;
 
-        case UI_KEY_CLUMPSRA:
-        case UI_KEY_CLUMPSDEC:
+        case UI_KEY_CLUMPSW1:
+        case UI_KEY_CLUMPSW2:
           p->rd_vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                        OCOL_C_VX, OCOL_C_GX);
           p->rd_vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
                                        OCOL_C_VY, OCOL_C_GY);
           break;
 
-        case UI_KEY_CLUMPSGEORA:
-        case UI_KEY_CLUMPSGEODEC:
+        case UI_KEY_CLUMPSGEOW1:
+        case UI_KEY_CLUMPSGEOW2:
           p->rd_gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUMALL] );
           p->rd_gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUMALL] );
           break;
 
         case UI_KEY_BRIGHTNESS:
-          ((float *)colarr)[oind] = oi[ OCOL_NUM ]>0.0f ? oi[ OCOL_SUM ] : NAN;
+          ((float *)colarr)[oind] = ( oi[ OCOL_NUM ]>0.0f
+                                      ? oi[ OCOL_SUM ]
+                                      : NAN );
           break;
 
         case UI_KEY_CLUMPSBRIGHTNESS:
-          ((float *)colarr)[oind] = oi[ OCOL_C_NUM ]>0.0f ?oi[ OCOL_C_SUM ]:NAN;
+          ((float *)colarr)[oind] = ( oi[ OCOL_C_NUM ]>0.0f
+                                      ? oi[ OCOL_C_SUM ]
+                                      : NAN );
           break;
 
         case UI_KEY_MAGNITUDE:
@@ -1407,16 +1488,16 @@ columns_fill(struct mkcatalog_passparams *pp)
                                                  ci[CCOL_NUMALL] );
             break;
 
-          case UI_KEY_RA:
-          case UI_KEY_DEC:
+          case UI_KEY_W1:
+          case UI_KEY_W2:
             p->rd_vc[0][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                         CCOL_VX, CCOL_GX);
             p->rd_vc[1][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
                                         CCOL_VY, CCOL_GY);
             break;
 
-          case UI_KEY_GEORA:
-          case UI_KEY_GEODEC:
+          case UI_KEY_GEOW1:
+          case UI_KEY_GEOW2:
             p->rd_gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUMALL] );
             p->rd_gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUMALL] );
             break;

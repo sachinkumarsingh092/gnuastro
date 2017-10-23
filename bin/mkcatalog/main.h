@@ -136,7 +136,7 @@ struct mkcatalogparams
 {
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
-  gal_list_i32_t   *columnids; /* The desired column codes.   */
+  gal_list_i32_t   *columnids;  /* The desired column codes.            */
   char             *inputname;  /* Input filename.                      */
   char           *objectsfile;  /* File name of objects file.           */
   char            *objectshdu;  /* HDU of objects image.                */
@@ -194,6 +194,8 @@ struct mkcatalogparams
   double              **rd_gc;  /* Clump RA-Dec geometric X, Y.         */
   double             **rd_vcc;  /* All clumps RA-Dec flx. wht. X, Y.    */
   double             **rd_gcc;  /* All clumps RA-Dec geometric X, Y.    */
+
+  char                **ctype;  /* Type of WCS axis.                    */
 
   uint8_t            hasblank;  /* Dataset has blank values.            */
   uint8_t              hasmag;  /* Catalog has magnitude columns.       */

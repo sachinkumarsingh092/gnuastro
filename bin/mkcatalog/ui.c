@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <inttypes.h>
 
-#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
@@ -325,6 +324,42 @@ ui_check_options_and_arguments(struct mkcatalogparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
+/* If a WCS structure is present, then read its basic information to use in
+   the table meta-data. */
+static void
+ui_wcs_info(struct mkcatalogparams *p)
+{
+  char *c;
+  size_t i;
+
+  /* Read the basic WCS information. */
+  if(p->input->wcs)
+    {
+      /* Allocate space for the array of strings. */
+      errno=0;
+      p->ctype=malloc(p->input->ndim * sizeof *p->ctype);
+      if(p->ctype==NULL)
+        error(EXIT_FAILURE, 0, "%s: %zu bytes for `p->ctype'", __func__,
+              p->input->ndim * sizeof *p->ctype);
+
+      /* Fill in the values. */
+      for(i=0;i<p->input->ndim;++i)
+        {
+          /* CTYPE might contain `-' characters, we just want the first
+             non-dash characters. The loop will either stop either at the end
+             or where there is a dash. So we can just replace it with an
+             end-of-string character. */
+          gal_checkset_allocate_copy(p->input->wcs->ctype[i], &p->ctype[i]);
+          for(c=p->ctype[i]; *c!='\0' && *c!='-'; ++c) c=c;
+          *c='\0';
+        }
+    }
+}
+
+
+
+
+
 static void
 ui_preparations_read_inputs(struct mkcatalogparams *p)
 {
@@ -343,9 +378,13 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                                      GAL_TYPE_FLOAT32, p->cp.minmapsize, 0,0);
 
 
+  /* Read basic WCS information for final table meta-data. */
+  ui_wcs_info(p);
+
+
   /* Currently MakeCatalog is only implemented for 2D images. */
   if(p->input->ndim!=2)
-    error(EXIT_FAILURE, 0, "%s (%s) has %zu dimensions, MakeCatalog "
+    error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions, MakeCatalog "
           "currently only supports 2D inputs", p->inputname, p->cp.hdu,
           p->input->ndim);
 
@@ -992,6 +1031,14 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
       if(p->rd_gc)  free(p->rd_gc);
       if(p->rd_vcc) free(p->rd_vcc);
       if(p->rd_gcc) free(p->rd_gcc);
+    }
+
+  /* Free the types of the WCS coordinates (for catalog meta-data). */
+  if(p->ctype)
+    {
+      for(d=0;d<p->input->ndim;++d)
+        free(p->ctype[d]);
+      free(p->ctype);
     }
 
   /* If a random number generator was allocated, free it. */
