@@ -319,41 +319,43 @@ wcsmode_crop_corners(struct onecropparams *crp)
 void
 fillcrpipolygon(struct onecropparams *crp)
 {
-  size_t i;
-  double *x, *y, *ra, *dec;
   struct cropparams *p=crp->p;
+  gal_data_t *tmp, *coords=NULL;
+  size_t i, d, ndim=p->imgs->ndim;
 
-  /* Allocate the necessary arrays. */
-  x=gal_data_calloc_array(GAL_TYPE_FLOAT64, p->nvertices, __func__, "x");
-  y=gal_data_calloc_array(GAL_TYPE_FLOAT64, p->nvertices, __func__, "y");
-  ra=gal_data_calloc_array(GAL_TYPE_FLOAT64, p->nvertices, __func__, "ra");
-  dec=gal_data_calloc_array(GAL_TYPE_FLOAT64, p->nvertices, __func__, "dec");
-  crp->ipolygon=gal_data_malloc_array(GAL_TYPE_FLOAT64, 2*p->nvertices,
-                                      __func__, "crp->ipolygon");
+  /* Allocate the necessary arrays for each column. */
+  for(d=0;d<ndim;++d)
+    gal_list_data_add_alloc(&coords, NULL, GAL_TYPE_FLOAT64, 1, &p->nvertices,
+                            NULL, 0, -1, NULL, NULL, NULL);
 
-  /* Fill in the RA and Dec columns. */
+
+  /* Fill in the world coordinate columns. */
   for(i=0;i<p->nvertices;++i)
     {
-      ra[i]=p->wpolygon[i*2];
-      dec[i]=p->wpolygon[i*2+1];
+      d=0;
+      for(tmp=coords;tmp!=NULL;tmp=tmp->next)
+        ((double *)(tmp->array))[i] = p->wpolygon[ i * ndim + d++ ];
     }
+
 
   /* Convert them to image coordinates. */
-  gal_wcs_world_to_img(p->imgs[crp->in_ind].wcs, ra, dec, &x, &y,
-                       p->nvertices);
+  gal_wcs_world_to_img(coords, p->imgs[crp->in_ind].wcs, 1);
 
-  /* Put them in the image polygon vertice array. */
+
+  /* Allocate the image polygon array, and put the image polygon vertice
+     values into it. */
+  crp->ipolygon=gal_data_malloc_array(GAL_TYPE_FLOAT64, ndim*p->nvertices,
+                                      __func__, "crp->ipolygon");
   for(i=0;i<p->nvertices;++i)
     {
-      crp->ipolygon[i*2]   = x[i];
-      crp->ipolygon[i*2+1] = y[i];
+      d=0;
+      for(tmp=coords;tmp!=NULL;tmp=tmp->next)
+        crp->ipolygon[ i * ndim + d++ ] = ((double *)(tmp->array))[i];
     }
 
+
   /* Clean up. */
-  free(x);
-  free(y);
-  free(ra);
-  free(dec);
+  gal_list_data_free(coords);
 }
 
 

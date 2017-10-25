@@ -98,13 +98,11 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
 /**************************************************************/
 /**********              Conversion                ************/
 /**************************************************************/
-void
-gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
-                     double **x, double **y, size_t size);
+gal_data_t *
+gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace);
 
-void
-gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
-                     double **ra, double **dec, size_t size);
+gal_data_t *
+gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace);
 
 
 

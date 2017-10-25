@@ -559,38 +559,35 @@ mkcatalog_single_object(void *in_prm)
 static void
 mkcatalog_wcs_conversion(struct mkcatalogparams *p)
 {
-  double *c, *d, *df;
+  gal_data_t *c;
   gal_data_t *column;
 
   /* Flux weighted center positions for clumps and objects. */
-  if(p->rd_vo)
+  if(p->wcs_vo)
     {
-      gal_wcs_img_to_world(p->input->wcs, p->rd_vo[0], p->rd_vo[1],
-                           &p->rd_vo[0], &p->rd_vo[1], p->numobjects);
-      if(p->rd_vc)
-        gal_wcs_img_to_world(p->input->wcs, p->rd_vc[0], p->rd_vc[1],
-                             &p->rd_vc[0], &p->rd_vc[1], p->numclumps);
+      gal_wcs_img_to_world(p->wcs_vo, p->input->wcs, 1);
+      if(p->wcs_vc)
+        gal_wcs_img_to_world(p->wcs_vc, p->input->wcs, 1);
     }
+
 
   /* Geometric center positions for clumps and objects. */
-  if(p->rd_go)
+  if(p->wcs_go)
     {
-      gal_wcs_img_to_world(p->input->wcs, p->rd_go[0], p->rd_go[1],
-                           &p->rd_go[0], &p->rd_go[1], p->numobjects);
-      if(p->rd_gc)
-        gal_wcs_img_to_world(p->input->wcs, p->rd_gc[0], p->rd_gc[1],
-                             &p->rd_gc[0], &p->rd_gc[1], p->numclumps);
+      gal_wcs_img_to_world(p->wcs_go, p->input->wcs, 1);
+      if(p->wcs_gc)
+        gal_wcs_img_to_world(p->wcs_gc, p->input->wcs, 1);
     }
 
+
   /* All clumps flux weighted center. */
-  if(p->rd_vcc)
-    gal_wcs_img_to_world(p->input->wcs, p->rd_vcc[0], p->rd_vcc[1],
-                         &p->rd_vcc[0], &p->rd_vcc[1], p->numobjects);
+  if(p->wcs_vcc)
+    gal_wcs_img_to_world(p->wcs_vcc, p->input->wcs, 1);
+
 
   /* All clumps geometric center. */
-  if(p->rd_gcc)
-    gal_wcs_img_to_world(p->input->wcs, p->rd_gcc[0], p->rd_gcc[1],
-                         &p->rd_gcc[0], &p->rd_gcc[1], p->numobjects);
+  if(p->wcs_gcc)
+    gal_wcs_img_to_world(p->wcs_gcc, p->input->wcs, 1);
 
 
   /* Go over all the object columns and fill in the values. */
@@ -604,18 +601,20 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
          probably columns that don't need any correction. */
       switch(column->status)
         {
-        case UI_KEY_W1:           c=p->rd_vo[0];   break;
-        case UI_KEY_W2:           c=p->rd_vo[1];   break;
-        case UI_KEY_GEOW1:        c=p->rd_go[0];   break;
-        case UI_KEY_GEOW2:        c=p->rd_go[1];   break;
-        case UI_KEY_CLUMPSW1:     c=p->rd_vcc[0];  break;
-        case UI_KEY_CLUMPSW2:     c=p->rd_vcc[1];  break;
-        case UI_KEY_CLUMPSGEOW1:  c=p->rd_gcc[0];  break;
-        case UI_KEY_CLUMPSGEOW2:  c=p->rd_gcc[1];  break;
+        case UI_KEY_W1:           c=p->wcs_vo;                break;
+        case UI_KEY_W2:           c=p->wcs_vo->next;          break;
+        case UI_KEY_GEOW1:        c=p->wcs_go;                break;
+        case UI_KEY_GEOW2:        c=p->wcs_go->next;          break;
+        case UI_KEY_CLUMPSW1:     c=p->wcs_vcc;               break;
+        case UI_KEY_CLUMPSW2:     c=p->wcs_vcc->next;         break;
+        case UI_KEY_CLUMPSGEOW1:  c=p->wcs_gcc;               break;
+        case UI_KEY_CLUMPSGEOW2:  c=p->wcs_gcc->next;         break;
         }
 
-      /* Copy the elements. */
-      if(c) { df=(d=column->array)+column->size; do *d=*c++; while(++d<df); }
+      /* Copy the elements into the output column. */
+      if(c)
+        memcpy(column->array, c->array,
+               column->size*gal_type_sizeof(c->type));
     }
 
 
@@ -630,14 +629,16 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
          probably columns that don't need any correction. */
       switch(column->status)
         {
-        case UI_KEY_W1:           c=p->rd_vc[0];   break;
-        case UI_KEY_W2:           c=p->rd_vc[1];   break;
-        case UI_KEY_GEOW1:        c=p->rd_gc[0];   break;
-        case UI_KEY_GEOW2:        c=p->rd_gc[1];   break;
+        case UI_KEY_W1:           c=p->wcs_vc;                break;
+        case UI_KEY_W2:           c=p->wcs_vc->next;          break;
+        case UI_KEY_GEOW1:        c=p->wcs_gc;                break;
+        case UI_KEY_GEOW2:        c=p->wcs_gc->next;          break;
         }
 
-      /* Copy the elements. */
-      if(c) { df=(d=column->array)+column->size; do *d=*c++; while(++d<df); }
+      /* Copy the elements into the output column. */
+      if(c)
+        memcpy(column->array, c->array,
+               column->size*gal_type_sizeof(c->type));
     }
 }
 
@@ -882,7 +883,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
 
 
 
-  /* OBJECT CATALOG
+  /* CLUMPS CATALOG
      ============== */
   if(p->clumps)
     {

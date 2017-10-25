@@ -188,12 +188,12 @@ struct mkcatalogparams
   uint64_t               seed;  /* Random number generator seed.        */
   const char         *rngname;  /* Name of random number generator.     */
 
-  double              **rd_vo;  /* Object RA-Dec flux weighted X, Y.    */
-  double              **rd_vc;  /* Clump RA-Dec flux weighted X, Y.     */
-  double              **rd_go;  /* Object RA-Dec geometric X,Y.         */
-  double              **rd_gc;  /* Clump RA-Dec geometric X, Y.         */
-  double             **rd_vcc;  /* All clumps RA-Dec flx. wht. X, Y.    */
-  double             **rd_gcc;  /* All clumps RA-Dec geometric X, Y.    */
+  gal_data_t          *wcs_vo;  /* Object RA-Dec flux weighted X, Y.    */
+  gal_data_t          *wcs_vc;  /* Clump RA-Dec flux weighted X, Y.     */
+  gal_data_t          *wcs_go;  /* Object RA-Dec geometric X,Y.         */
+  gal_data_t          *wcs_gc;  /* Clump RA-Dec geometric X, Y.         */
+  gal_data_t         *wcs_vcc;  /* All clumps RA-Dec flx. wht. X, Y.    */
+  gal_data_t         *wcs_gcc;  /* All clumps RA-Dec geometric X, Y.    */
 
   char                **ctype;  /* Type of WCS axis.                    */
 

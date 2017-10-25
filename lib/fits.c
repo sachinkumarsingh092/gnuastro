@@ -1670,9 +1670,9 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   fitsfile *fptr;
   uint64_t *u64, *u64f;
   long fpixel=1, *naxes;
+  char *wcsstr, *u64key;
   size_t i, ndim=input->ndim;
   int nkeyrec, hasblank, status=0, datatype=0;
-  char *wcsstr, *u64key;
   gal_data_t *i64data, *towrite, *block=gal_tile_block(input);
 
   /* If the input is a tile (isn't a contiguous region of memory), then

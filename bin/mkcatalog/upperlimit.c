@@ -179,12 +179,13 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   st_oc = clumplab ? (int32_t *)(p->clumps->array) + se_inc[0] : NULL;
 
 
-  /* Continue measuring magnitudes randomly until we get the desired
-     number. */
+  /* Continue measuring randomly until we get the desired total number. */
   while(tcounter<maxcount && counter<p->upnum)
     {
       /* Get the random coordinates, note that `gsl_rng_uniform_int'
-         returns an inclusive value. */
+         returns an inclusive value. It may happen that the labeled region
+         extends the full range of a dimension. In that case, the only
+         possible want the random starting point would be 0. */
       for(d=0;d<ndim;++d)
         rcoord[d] = ( (dsize[d]-tile->dsize[d])
                       ? gsl_rng_uniform_int(pp->rng, dsize[d]-tile->dsize[d]-1)
@@ -208,9 +209,6 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
       st_o               = (int32_t *)(p->objects->array) + se_inc[0];
       st_sky             = (float   *)(p->sky->array)     + se_inc[0];
       if(p->upmask) st_m = (uint8_t *)(p->upmask->array)  + se_inc[0];
-
-
-      /* Starting pointers for the original tile.*/
 
       /* Parse over this object/clump. */
       while( se_inc[0] + increment <= se_inc[1] )

@@ -1010,28 +1010,13 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
 {
   size_t d;
 
-  /* The temporary arrays for RA and Dec. */
-  if(p->rd_vo || p->rd_vc || p->rd_go || p->rd_gc || p->rd_vcc || p->rd_gcc)
-    {
-      /* First free the separate dimensions in each value. */
-      for(d=0;d<p->input->ndim;++d)
-        {
-          if(p->rd_vo)  free(p->rd_vo[d]);
-          if(p->rd_vc)  free(p->rd_vc[d]);
-          if(p->rd_go)  free(p->rd_go[d]);
-          if(p->rd_gc)  free(p->rd_gc[d]);
-          if(p->rd_vcc) free(p->rd_vcc[d]);
-          if(p->rd_gcc) free(p->rd_gcc[d]);
-        }
-
-      /* Then free the container arrays. */
-      if(p->rd_vo)  free(p->rd_vo);
-      if(p->rd_vc)  free(p->rd_vc);
-      if(p->rd_go)  free(p->rd_go);
-      if(p->rd_gc)  free(p->rd_gc);
-      if(p->rd_vcc) free(p->rd_vcc);
-      if(p->rd_gcc) free(p->rd_gcc);
-    }
+  /* The temporary arrays for WCS coordinates. */
+  if(p->wcs_vo ) gal_list_data_free(p->wcs_vo);
+  if(p->wcs_vc ) gal_list_data_free(p->wcs_vc);
+  if(p->wcs_go ) gal_list_data_free(p->wcs_go);
+  if(p->wcs_gc ) gal_list_data_free(p->wcs_gc);
+  if(p->wcs_vcc) gal_list_data_free(p->wcs_vcc);
+  if(p->wcs_gcc) gal_list_data_free(p->wcs_gcc);
 
   /* Free the types of the WCS coordinates (for catalog meta-data). */
   if(p->ctype)

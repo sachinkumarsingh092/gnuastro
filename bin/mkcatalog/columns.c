@@ -55,36 +55,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 static void
 columns_alloc_radec(struct mkcatalogparams *p)
 {
-  if(p->rd_vo==NULL)
-    {
-      /* Allocate the space for all dimensions. */
-      errno=0;
-      p->rd_vo = malloc(p->input->ndim * sizeof *p->rd_vo);
-      if(p->rd_vo==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for p->rd_vo",
-              __func__, p->input->ndim * sizeof *p->rd_vo );
+  size_t i;
 
-      /* Space for each dimension. */
-      p->rd_vo[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                          __func__, "p->rd_vo[0]");
-      p->rd_vo[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                          __func__, "p->rd_vo[1]");
-      if(p->clumps)
-        {
-          /* Allocate the space for all dimensions. */
-          errno=0;
-          p->rd_vc = malloc(p->input->ndim * sizeof *p->rd_vc);
-          if(p->rd_vc==NULL)
-            error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for p->rd_vo",
-                  __func__, p->input->ndim * sizeof *p->rd_vc );
+  /* For objects. */
+  if(p->wcs_vo==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_vo, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numobjects, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
 
-          /* Space for each dimension. */
-          p->rd_vc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_vc[0]");
-          p->rd_vc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_vc[1]");
-        }
-    }
+  /* For clumps */
+  if(p->clumps && p->wcs_vc==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_vc, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numclumps, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
 }
 
 
@@ -95,36 +80,21 @@ columns_alloc_radec(struct mkcatalogparams *p)
 static void
 columns_alloc_georadec(struct mkcatalogparams *p)
 {
-  if(p->rd_go==NULL)
-    {
-      /* Allocate the space for all dimensions. */
-      errno=0;
-      p->rd_go = malloc(p->input->ndim * sizeof *p->rd_go);
-      if(p->rd_go==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_go'",
-              __func__, p->input->ndim * sizeof *p->rd_go );
+  size_t i;
 
-      /* Space for each dimension. */
-      p->rd_go[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                          __func__, "p->rd_go[0]");
-      p->rd_go[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                          __func__, "p->rd_go[1]");
-      if(p->clumps)
-        {
-          /* Allocate the space for all dimensions. */
-          errno=0;
-          p->rd_gc = malloc(p->input->ndim * sizeof *p->rd_gc);
-          if(p->rd_gc==NULL)
-            error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_go'",
-                  __func__, p->input->ndim * sizeof *p->rd_gc );
+  /* For objects. */
+  if(p->wcs_go==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_go, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numobjects, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
 
-          /* Space for each dimension. */
-          p->rd_gc[0]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_gc[0]");
-          p->rd_gc[1]=gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numclumps,
-                                            __func__, "p->rd_gc[1]");
-        }
-    }
+  /* For clumps */
+  if(p->clumps && p->wcs_gc==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_gc, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numclumps, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
 }
 
 
@@ -135,21 +105,13 @@ columns_alloc_georadec(struct mkcatalogparams *p)
 static void
 columns_alloc_clumpsradec(struct mkcatalogparams *p)
 {
-  if(p->rd_vcc==NULL)
-    {
-      /* Allocate the space for all dimensions. */
-      errno=0;
-      p->rd_vcc = malloc(p->input->ndim * sizeof *p->rd_vcc);
-      if(p->rd_vcc==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_vcc'",
-              __func__, p->input->ndim * sizeof *p->rd_vcc );
+  size_t i;
 
-      /* Space for each dimension. */
-      p->rd_vcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                           __func__, "p->rd_vcc[0]");
-      p->rd_vcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                           __func__, "p->rd_vcc[1]");
-    }
+  if(p->wcs_vcc==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_vcc, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numobjects, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
 }
 
 
@@ -160,21 +122,44 @@ columns_alloc_clumpsradec(struct mkcatalogparams *p)
 static void
 columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
 {
-  if(p->rd_gcc==NULL)
-    {
-      /* Allocate the space for all dimensions. */
-      errno=0;
-      p->rd_gcc = malloc(p->input->ndim * sizeof *p->rd_gcc);
-      if(p->rd_gcc==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `p->rd_gcc'",
-              __func__, p->input->ndim * sizeof *p->rd_gcc );
+  size_t i;
 
-      /* Space for each dimension. */
-      p->rd_gcc[0] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                           __func__, "p->rd_gcc[0]");
-      p->rd_gcc[1] = gal_data_malloc_array(GAL_TYPE_FLOAT64, p->numobjects,
-                                           __func__, "p->rd_gcc[1]");
-    }
+  if(p->wcs_gcc==NULL)
+    for(i=0;i<p->input->ndim;++i)
+      gal_list_data_add_alloc(&p->wcs_gcc, NULL, GAL_TYPE_FLOAT64, 1,
+                              &p->numobjects, NULL, 0, p->cp.minmapsize,
+                              NULL, NULL, NULL);
+}
+
+
+
+
+
+/* Set pointers to fascilitate filling in the values. */
+#define SET_WCS_PREPARE(ARR, LIST, ARRNAME) {                           \
+    d=0;                                                                \
+    errno=0;                                                            \
+    (ARR)=malloc(p->input->ndim * sizeof (ARR) );                       \
+    if( (ARR)==NULL )                                                   \
+      error(EXIT_FAILURE, 0, "%s: %zu bytes for %s", __func__,          \
+            p->input->ndim * sizeof (ARR), ARRNAME);                    \
+    for(tmp=(LIST);tmp!=NULL;tmp=tmp->next) (ARR)[d++]=tmp->array;      \
+  }
+
+static void
+columns_set_wcs_pointers(struct mkcatalogparams *p, double ***vo,
+                         double ***vc, double ***go, double ***gc,
+                         double ***vcc, double ***gcc)
+{
+  size_t d;
+  gal_data_t *tmp;
+
+  if(p->wcs_vo)  SET_WCS_PREPARE(*vo,  p->wcs_vo,  "vo" );
+  if(p->wcs_vc)  SET_WCS_PREPARE(*vc,  p->wcs_vc,  "vc" );
+  if(p->wcs_go)  SET_WCS_PREPARE(*go,  p->wcs_go,  "go" );
+  if(p->wcs_gc)  SET_WCS_PREPARE(*gc,  p->wcs_gc,  "gc" );
+  if(p->wcs_vcc) SET_WCS_PREPARE(*vcc, p->wcs_vcc, "vcc");
+  if(p->wcs_gcc) SET_WCS_PREPARE(*gcc, p->wcs_gcc, "gcc");
 }
 
 
@@ -399,7 +384,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_X:
           name           = "X";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Flux weighted center (FITS axis 1).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
@@ -413,7 +398,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_Y:
           name           = "Y";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Flux weighted center (FITS axis 2).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
@@ -427,7 +412,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_GEOX:
           name           = "GEO_X";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Geometric center (FITS axis 1).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
@@ -441,7 +426,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_GEOY:
           name           = "GEO_Y";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Geometric center (FITS axis 2).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
@@ -455,7 +440,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_CLUMPSX:
           name           = "CLUMPS_X";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Flux weighted center of clumps (FITS axis 1).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT32;
@@ -468,7 +453,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_CLUMPSY:
           name           = "CLUMPS_Y";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Flux weighted center of clumps (FITS axis 2).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT32;
@@ -481,7 +466,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_CLUMPSGEOX:
           name           = "CLUMPS_GEO_X";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Geometric center of clumps (FITS axis 1).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT32;
@@ -494,7 +479,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_CLUMPSGEOY:
           name           = "CLUMPS_GEO_Y";
-          unit           = "position";
+          unit           = "pixel";
           ocomment       = "Geometric center of clumps (FITS axis 2).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT32;
@@ -508,37 +493,41 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_W1:
           name           = p->ctype[0];
           unit           = p->input->wcs->cunit[0];
-          ocomment       = "Flux weighted center in first WCS axis.";
+          ocomment       = "Flux weighted center (WCS axis 1).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 13;
           disp_precision = 7;
-          oiflag[ OCOL_C_VX ] = 1;
-          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_VX ] = 1;
+          oiflag[ OCOL_VY ] = 1;
+          oiflag[ CCOL_VX ] = 1;
+          oiflag[ CCOL_VY ] = 1;
           columns_alloc_radec(p);
           break;
 
         case UI_KEY_W2:
           name           = p->ctype[1];
           unit           = p->input->wcs->cunit[1];
-          ocomment       = "Flux weighted center in second WCS axis.";
+          ocomment       = "Flux weighted center (WCS axis 2).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 13;
           disp_precision = 7;
-          oiflag[ OCOL_C_VX ] = 1;
-          oiflag[ OCOL_C_VY ] = 1;
+          oiflag[ OCOL_VX ] = 1;
+          oiflag[ OCOL_VY ] = 1;
+          oiflag[ CCOL_VX ] = 1;
+          oiflag[ CCOL_VY ] = 1;
           columns_alloc_radec(p);
           break;
 
         case UI_KEY_GEOW1:
           name           = gal_checkset_malloc_cat("GEO_", p->ctype[0]);
           unit           = p->input->wcs->cunit[0];
-          ocomment       = "Geometric center in first WCS axis.";
+          ocomment       = "Geometric center (WCS axis 1).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -555,7 +544,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_GEOW2:
           name           = gal_checkset_malloc_cat("GEO_", p->ctype[1]);
           unit           = p->input->wcs->cunit[1];
-          ocomment       = "Geometric center in second WCS axis.";
+          ocomment       = "Geometric center (WCS axis 2).";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_FLOAT64;
@@ -587,7 +576,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_CLUMPSW2:
           name           = gal_checkset_malloc_cat("CLUMPS_", p->ctype[1]);
           unit           = p->input->wcs->cunit[1];
-          ocomment       = "Flux.wht center of all clumps in 2nd WCS axis.";
+          ocomment       = "Flux.wht center of all clumps (WCS axis 1).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -602,7 +591,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_CLUMPSGEOW1:
           name           = gal_checkset_malloc_cat("CLUMPS_GEO", p->ctype[0]);
           unit           = p->input->wcs->cunit[0];
-          ocomment       = "Geometric center of all clumps in 1st WCS axis.";
+          ocomment       = "Geometric center of all clumps (WCS axis 1).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -617,7 +606,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_CLUMPSGEOW2:
           name           = gal_checkset_malloc_cat("CLUMPS_GEO", p->ctype[1]);
           unit           = p->input->wcs->cunit[1];
-          ocomment       = "Geometric center of all clumps in 2nd WCS axis.";
+          ocomment       = "Geometric center of all clumps (WCS axis 2).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -1254,6 +1243,11 @@ columns_fill(struct mkcatalog_passparams *pp)
   double *ci, *oi=pp->oi;
   size_t sr=pp->clumpstartindex, cind, coind;
   size_t oind=pp->object-1; /* IDs start from 1, indexs from 0. */
+  double **vo=NULL, **vc=NULL, **go=NULL, **gc=NULL, **vcc=NULL, **gcc=NULL;
+
+  /* If a WCS column is requested (check will be done inside the function),
+     then set the pointers. */
+  columns_set_wcs_pointers(p, &vo, &vc, &go, &gc, &vcc, &gcc);
 
   /* Go over all the object columns and fill in the information. */
   for(column=p->objectcols; column!=NULL; column=column->next)
@@ -1325,30 +1319,30 @@ columns_fill(struct mkcatalog_passparams *pp)
 
         case UI_KEY_W1:
         case UI_KEY_W2:
-          p->rd_vo[0][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
-                                      OCOL_VX, OCOL_GX);
-          p->rd_vo[1][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL,
-                                      OCOL_VY, OCOL_GY);
+          vo[0][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL, OCOL_VX,
+                                OCOL_GX);
+          vo[1][oind] = POS_V_G(oi, OCOL_SUMWHT, OCOL_NUMALL, OCOL_VY,
+                                OCOL_GY);
           break;
 
         case UI_KEY_GEOW1:
         case UI_KEY_GEOW2:
-          p->rd_go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUMALL] );
-          p->rd_go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUMALL] );
+          go[0][oind] = MKC_RATIO( oi[OCOL_GX], oi[OCOL_NUMALL] );
+          go[1][oind] = MKC_RATIO( oi[OCOL_GY], oi[OCOL_NUMALL] );
           break;
 
         case UI_KEY_CLUMPSW1:
         case UI_KEY_CLUMPSW2:
-          p->rd_vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
-                                       OCOL_C_VX, OCOL_C_GX);
-          p->rd_vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL,
-                                       OCOL_C_VY, OCOL_C_GY);
+          vcc[0][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL, OCOL_C_VX,
+                                 OCOL_C_GX);
+          vcc[1][oind] = POS_V_G(oi, OCOL_C_SUMWHT, OCOL_C_NUMALL, OCOL_C_VY,
+                                 OCOL_C_GY);
           break;
 
         case UI_KEY_CLUMPSGEOW1:
         case UI_KEY_CLUMPSGEOW2:
-          p->rd_gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUMALL] );
-          p->rd_gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUMALL] );
+          gcc[0][oind] = MKC_RATIO( oi[OCOL_C_GX], oi[OCOL_C_NUMALL] );
+          gcc[1][oind] = MKC_RATIO( oi[OCOL_C_GY], oi[OCOL_C_NUMALL] );
           break;
 
         case UI_KEY_BRIGHTNESS:
@@ -1490,16 +1484,16 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_W1:
           case UI_KEY_W2:
-            p->rd_vc[0][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
-                                        CCOL_VX, CCOL_GX);
-            p->rd_vc[1][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL,
-                                        CCOL_VY, CCOL_GY);
+            vc[0][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL, CCOL_VX,
+                                  CCOL_GX);
+            vc[1][cind] = POS_V_G(ci, CCOL_SUMWHT, CCOL_NUMALL, CCOL_VY,
+                                  CCOL_GY);
             break;
 
           case UI_KEY_GEOW1:
           case UI_KEY_GEOW2:
-            p->rd_gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUMALL] );
-            p->rd_gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUMALL] );
+            gc[0][cind] = MKC_RATIO( ci[CCOL_GX], ci[CCOL_NUMALL] );
+            gc[1][cind] = MKC_RATIO( ci[CCOL_GY], ci[CCOL_NUMALL] );
             break;
 
           case UI_KEY_BRIGHTNESS:
@@ -1517,7 +1511,8 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_NORIVERBRIGHTNESS:
-            ((float *)colarr)[cind] = ci[ CCOL_NUM ]>0.0f ? ci[ CCOL_SUM ]:NAN;
+            ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
+                                        ? ci[ CCOL_SUM ] : NAN );
             break;
 
           case UI_KEY_MAGNITUDE: /* Similar: brightness for clumps */
@@ -1606,4 +1601,12 @@ columns_fill(struct mkcatalog_passparams *pp)
                   key);
           }
       }
+
+  /* Clean up. */
+  if(vo)  free(vo);
+  if(vc)  free(vc);
+  if(go)  free(go);
+  if(gc)  free(gc);
+  if(vcc) free(vcc);
+  if(gcc) free(gcc);
 }

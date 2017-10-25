@@ -620,59 +620,165 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 /**************************************************************/
 /**********            Array conversion            ************/
 /**************************************************************/
-/* Convert an array of world coordinates to image coordinates. Note that in
-   Gnuastro, each column is treated independently, so the inputs are
-   separate. If `*x==NULL', or `*y==NULL', then space will be allocated for
-   them, otherwise, it is assumed that space has already been
-   allocated. Note that they must each be a 1 dimensional array.
-
-   You can do the conversion in place: just pass the same array as you give
-   to RA and Dec to X and Y. */
-void
-gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
-                     double **x, double **y, size_t size)
+/* Some sanity checks for the WCS conversion functions. */
+static void
+wcs_convert_sanity_check_alloc(gal_data_t *coords, struct wcsprm *wcs,
+                               const char *func, int **stat, double **phi,
+                               double **theta, double **world,
+                               double **pixcrd, double **imgcrd)
 {
-  size_t i;
-  int status, *stat, ncoord=size, nelem=2;
-  double *phi, *theta, *world, *pixcrd, *imgcrd;
+  gal_data_t *tmp;
+  size_t ndim=0, firstsize=0, size=coords->size;
+
+  for(tmp=coords; tmp!=NULL; tmp=tmp->next)
+    {
+      /* Count how many coordinates are given. */
+      ++ndim;
+
+      /* Check the type of the input. */
+      if(tmp->type!=GAL_TYPE_FLOAT64)
+        error(EXIT_FAILURE, 0, "%s: input coordinates must have `float64' "
+              "type", func);
+
+      /* Make sure it has a single dimension. */
+      if(tmp->ndim!=1)
+        error(EXIT_FAILURE, 0, "%s: input coordinates for each dimension "
+              "must each be one dimensional. Coordinate dataset %zu of the "
+              "inputs has %zu dimensions", func, ndim, tmp->ndim);
+
+      /* See if all inputs have the same size. */
+      if(ndim==1) firstsize=tmp->size;
+      else
+        if(firstsize!=tmp->size)
+          error(EXIT_FAILURE, 0, "%s: all input coordinates must have the "
+                "same number of elements. Coordinate dataset %zu has %zu "
+                "elements while the first coordinate has %zu", func, ndim,
+                tmp->size, firstsize);
+    }
+
+  /* See if the number of coordinates given corresponds to the dimensions
+     of the WCS structure. */
+  if(ndim!=wcs->naxis)
+    error(EXIT_FAILURE, 0, "%s: the number of input coordinates (%zu) does "
+          "not match the dimensions of the input WCS structure (%d)", func,
+          ndim, wcs->naxis);
 
   /* Allocate all the necessary arrays. */
-  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
-  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
-  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
-  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "world");
-  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "imgcrd");
-  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "pixcrd");
+  *phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
+  *stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
+  *theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
+  *world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
+                                   "world");
+  *imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
+                                   "imgcrd");
+  *pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
+                                   "pixcrd");
+}
 
-  /* Write the values into the allocated contiguous array. */
-  for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
 
-  /* Use WCSLIB's `wcss2p'. */
+
+
+
+/* In Gnuastro, each column (coordinate for WCS conversion) is treated as a
+   separate array in a `gal_data_t' that are linked through a linked
+   list. But in WCSLIB, the input is a single array (with multiple
+   columns). This function will convert between the two. */
+static void
+wcs_convert_list_to_array(gal_data_t *list, double *array, int *stat,
+                          size_t ndim, int listtoarray)
+{
+  size_t i, d=0;
+  gal_data_t *tmp;
+
+  for(tmp=list; tmp!=NULL; tmp=tmp->next)
+    {
+      /* Put all this coordinate's values into the single array that is
+         input into or output from WCSLIB. */
+      for(i=0;i<list->size;++i)
+        {
+          if(listtoarray)
+            array[i*ndim+d] = ((double *)(tmp->array))[i];
+          else
+            ((double *)(tmp->array))[i] = stat[i] ? NAN : array[i*ndim+d];
+        }
+
+      /* Increment the dimension. */
+      ++d;
+    }
+}
+
+
+
+
+
+/* Prepare the output of the WCS conversion functions. */
+static gal_data_t *
+wcs_convert_prepare_out(gal_data_t *coords, struct wcsprm *wcs, int inplace)
+{
+  size_t i;
+  gal_data_t *out=NULL;
+  if(inplace)
+    out=coords;
+  else
+    for(i=0;i<wcs->naxis;++i)
+      gal_list_data_add_alloc(&out, NULL, GAL_TYPE_FLOAT64, 1,
+                              &coords->size, NULL, 0, coords->minmapsize,
+                              wcs->ctype[i], wcs->cunit[i], NULL);
+  return out;
+}
+
+
+
+
+
+/* Convert world coordinates to image coordinates given the input WCS
+   structure. The input must be a linked list of data structures of float64
+   (`double') type. The top element of the linked list must be the first
+   coordinate and etc. If `inplace' is non-zero, then the output will be
+   written into the input's allocated space. */
+gal_data_t *
+gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
+{
+  gal_data_t *out;
+  int status, *stat=NULL, ncoord=coords->size, nelem=wcs->naxis;
+  double *phi=NULL, *theta=NULL, *world=NULL, *pixcrd=NULL, *imgcrd=NULL;
+
+  /* Some sanity checks. */
+  wcs_convert_sanity_check_alloc(coords, wcs, __func__, &stat, &phi, &theta,
+                                 &world, &pixcrd, &imgcrd);
+
+
+  /* Write the values from the input list of separate columns into a single
+     array (WCSLIB input). */
+  wcs_convert_list_to_array(coords, world, stat, wcs->naxis, 1);
+
+
+  /* Use WCSLIB's wcsp2s for the conversion. */
   status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
   if(status)
     error(EXIT_FAILURE, 0, "%s: wcss2p ERROR %d: %s", __func__, status,
           wcs_errmsg[status]);
 
-  /* For a sanity check:
-  printf("\n\ngal_wcs_world_to_img sanity check:\n");
-  for(i=0;i<size;++i)
-    printf("world (%f, %f) --> pix (%f, %f), [stat: %d]\n",
-           world[i*2], world[i*2+1], pixcrd[i*2], pixcrd[i*2+1], stat[i]);
+
+  /* For a sanity check.
+  {
+    size_t i;
+    printf("\n\n%s sanity check:\n", __func__);
+    for(i=0;i<coords->size;++i)
+      printf("(%g, %g) --> (%g, %g), [stat: %d]\n", world[i*2], world[i*2+1],
+             pixcrd[i*2], pixcrd[i*2+1], stat[i]);
+  }
   */
 
-  /* Allocate the output arrays if they were not already allocated. */
-  if(*x==NULL) *x=gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__,"x");
-  if(*y==NULL) *y=gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__,"y");
 
-  /* Put the values into the output arrays. */
-  for(i=0;i<size;++i)
-    {
-      (*x)[i] = stat[i] ? NAN : pixcrd[i*2];
-      (*y)[i] = stat[i] ? NAN : pixcrd[i*2+1];
-    }
+  /* Allocate the output arrays if they were not already allocated. */
+  out=wcs_convert_prepare_out(coords, wcs, inplace);
+
+
+  /* Write the output from a single array (WCSLIB output) into the output
+     list of this function. */
+  wcs_convert_list_to_array(out, pixcrd, stat, wcs->naxis, 0);
+
 
   /* Clean up. */
   free(phi);
@@ -680,35 +786,32 @@ gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
   free(theta);
   free(world);
   free(pixcrd);
+
+  /* Return the output list of coordinates. */
+  return out;
 }
 
 
 
 
 
-/* Similar to `gal_wcs_world_to_img' but converts image coordinates into
-   world coordinates. */
-void
-gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
-                     double **ra, double **dec, size_t size)
+/* Similar to `gal_wcs_world_to_img'. */
+gal_data_t *
+gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 {
-  size_t i;
-  int status, *stat, ncoord=size, nelem=2;
-  double *phi, *theta, *world, *pixcrd, *imgcrd;
+  gal_data_t *out;
+  int status, *stat=NULL, ncoord=coords->size, nelem=wcs->naxis;
+  double *phi=NULL, *theta=NULL, *world=NULL, *pixcrd=NULL, *imgcrd=NULL;
 
-  /* Allocate all the necessary arrays. */
-  phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
-  stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
-  theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
-  world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "world");
-  imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "imgcrd");
-  pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, 2*size, __func__,
-                                  "pixcrd");
+  /* Some sanity checks. */
+  wcs_convert_sanity_check_alloc(coords, wcs, __func__, &stat, &phi, &theta,
+                                 &world, &pixcrd, &imgcrd);
 
-  /* Write the values into the allocated contiguous array. */
-  for(i=0;i<size;++i) { pixcrd[i*2]=x[i]; pixcrd[i*2+1]=y[i]; }
+
+  /* Write the values from the input list of separate columns into a single
+     array (WCSLIB input). */
+  wcs_convert_list_to_array(coords, pixcrd, stat, wcs->naxis, 1);
+
 
   /* Use WCSLIB's wcsp2s for the conversion. */
   status=wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta, world, stat);
@@ -716,25 +819,26 @@ gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
     error(EXIT_FAILURE, 0, "%s: wcsp2s ERROR %d: %s", __func__, status,
           wcs_errmsg[status]);
 
-  /* For a sanity check:
-  printf("\n\ngal_wcs_img_to_world sanity check:\n");
-  for(i=0;i<size;++i)
-    printf("img (%f, %f) --> world (%f, %f), [stat: %d]\n",
-           pixcrd[i*2], pixcrd[i*2+1], world[i*2], world[i*2+1], stat[i]);
+
+  /* For a sanity check.
+  {
+    size_t i;
+    printf("\n\n%s sanity check:\n", __func__);
+    for(i=0;i<coords->size;++i)
+      printf("(%g, %g) --> (%g, %g), [stat: %d]\n", pixcrd[i*2], pixcrd[i*2+1],
+             world[i*2],  world[i*2+1], stat[i]);
+  }
   */
 
-  /* Allocate the output arrays if they were not already allocated. */
-  if(*ra==NULL)
-    *ra  = gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__, "ra");
-  if(*dec==NULL)
-    *dec = gal_data_malloc_array(GAL_TYPE_FLOAT64, size, __func__, "dec");
 
-  /* Put the values into the output arrays. */
-  for(i=0;i<size;++i)
-    {
-      (*ra)[i]  = stat[i] ? NAN : world[i*2];
-      (*dec)[i] = stat[i] ? NAN : world[i*2+1];
-    }
+  /* Allocate the output arrays if they were not already allocated. */
+  out=wcs_convert_prepare_out(coords, wcs, inplace);
+
+
+  /* Write the output from a single array (WCSLIB output) into the output
+     list of this function. */
+  wcs_convert_list_to_array(out, world, stat, wcs->naxis, 0);
+
 
   /* Clean up. */
   free(phi);
@@ -742,4 +846,8 @@ gal_wcs_img_to_world(struct wcsprm *wcs, double *x, double *y,
   free(theta);
   free(world);
   free(pixcrd);
+
+
+  /* Return the output list of coordinates. */
+  return out;
 }

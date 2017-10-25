@@ -91,6 +91,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   `gal_wcs_pixel_area_arcsec2' will return NaN (instead of aborting) when
   input is unreasonable (not two dimensions or not in units of degrees).
 
+  `gal_wcs_world_to_img' and `gal_wcs_img_to_world': Until now, these two
+  WCS conversion functions would explicitly assume RA and Dec and work
+  based on input arrays (so for example it was also necessary to give the
+  number of elements and etc). They now accept `gal_data_t' as input for
+  the input coordinates, thus their API has been greatly simplified and
+  their functionality increased.
+
 ** Bug fixes
 
   ConvertType crash when changing values (bug #52010).

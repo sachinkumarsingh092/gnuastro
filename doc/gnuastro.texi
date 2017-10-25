@@ -13537,12 +13537,11 @@ image separately. Not one value for the whole image.
 
 The shape or morphology of a target is one of the most commonly desired
 parameters of a target. Here, we will review the derivation of the most
-basic/simple morphological parameters are estimated: the elliptical
-parameters for a set of labeled pixels. The elliptical parameters are: the
-(semi-)major axis, the (semi-)minor axis and the position angle along with
-the central position of the profile. The derivations below follow the
-SExtractor manual derivations with some added explanations for easier
-reading.
+basic/simple morphological parameters: the elliptical parameters for a set
+of labeled pixels. The elliptical parameters are: the (semi-)major axis,
+the (semi-)minor axis and the position angle along with the central
+position of the profile. The derivations below follow the SExtractor manual
+derivations with some added explanations for easier reading.
 
 @cindex Moments
 Let's begin with one dimension for simplicity: Assume we have a set of
@@ -13573,7 +13572,7 @@ the distribution:
 @noindent
 The last step was done from the definition of @mymath{\overline{x}}. Hence,
 the square root of @mymath{\overline{x^2}} is the spatial standard
-deviation (along the one-dimensional) of this particular brightness
+deviation (along the one-dimension) of this particular brightness
 distribution (@mymath{B_i}). Crudely (or qualitatively), you can think of
 its square root as the distance (from @mymath{\overline{x}}) which contains
 a specific amount of the flux (depending on the @mymath{B_i}
@@ -13586,21 +13585,24 @@ other words, it quantifies how ``sharp'' the object's image is.
 @cindex Floating point error
 Before continuing to two dimensions and the derivation of the elliptical
 parameters, let's pause for an important implementation technicality. You
-can ignore this paragraph if you don't want to implement these
-concepts. The basic definition (first fraction for @mymath{\overline{x^2}})
-can be used without any major problem. However, using this fraction
-requires two runs over the data: one run to find @mymath{\overline{x}} and
-one run to find @mymath{\overline{x^2}}, this can be slow. However, using
-the last fraction above, we can estimate both the first and second moments
-in one run (since the @mymath{-\overline{x}^2} term can easily be added
-later). The logarithmic nature of floating point number digitization
-creates a complication in this approach: suppose the object is located
-between pixels 10000 and 10020. Hence the target's pixels are only
-distributed over 20 pixels (with a standard deviation @mymath{<20}), while
-the mean has a value of @mymath{\sim10000}. The @mymath{\sum_iB_i^2x_i^2}
-will go to very very large values while the individual pixel differences
-will be much smaller, this will lower the accuracy of our calculation due
-to the limited accuracy of floating point operations. The variance only
+can ignore this paragraph and the next two if you don't want to implement
+these concepts. The basic definition (first definition of
+@mymath{\overline{x^2}} above) can be used without any major
+problem. However, using this fraction requires two runs over the data: one
+run to find @mymath{\overline{x}} and another run to find
+@mymath{\overline{x^2}} from @mymath{\overline{x}}, this can be slow. The
+advantage of the last fraction above, is that we can estimate both the
+first and second moments in one run (since the @mymath{-\overline{x}^2}
+term can easily be added later).
+
+The logarithmic nature of floating point number digitization creates a
+complication however: suppose the object is located between pixels 10000
+and 10020. Hence the target's pixels are only distributed over 20 pixels
+(with a standard deviation @mymath{<20}), while the mean has a value of
+@mymath{\sim10000}. The @mymath{\sum_iB_i^2x_i^2} will go to very very
+large values while the individual pixel differences will be orders of
+magnitude smaller. This will lower the accuracy of our calculation due to
+the limited accuracy of floating point operations. The variance only
 depends on the distance of each point from the mean, so we can shift all
 position by a constant/arbitrary @mymath{K} which is much closer to the
 mean: @mymath{\overline{x-K}=\overline{x}-K}. Hence we can calculate the
@@ -20186,25 +20188,28 @@ structure is not two dimensional and the units (@code{CUNIT} keywords) are
 not @code{deg} (for degrees), then this function will return a NaN.
 @end deftypefun
 
-@deftypefun void gal_wcs_world_to_img (struct wcsprm @code{*wcs}, double @code{*ra}, double @code{*dec}, double @code{**x}, double @code{**y}, size_t @code{size})
-Convert the arrays of input world coordinates (@code{ra} and @code{dec})
-into arrays of image coordinates (@code{x} and @code{y}). Each is assumed
-to be a separate one-dimensional array of @code{size} elements. If
-@code{*x==NULL} or @code{*y==NULL}, then space will be allocated for them
-by this function, otherwise, it is assumed that they already contain the
-space necessary to write the values.
+@deftypefun {gal_data_t *} gal_wcs_world_to_img (gal_data_t @code{*coords}, struct wcsprm @code{*wcs}, int @code{inplace})
+Convert the linked list of world coordinates in @code{coords} to a linked
+list of image coordinates given the input WCS structure. @code{coords} must
+be a linked list of data structures of float64 (`double') type,
+see@ref{Linked lists} and @ref{List of gal_data_t}. The top (first
+popped/read) node of the linked list must be the first WCS coordinate (RA
+in an image usually) and etc. Similarly, the top node of the output will be
+the first image coordinate (in the FITS standard).
 
-If you don't need the input values after this conversion any more, you can
-pass the pointers of the @code{ra} and @code{dec} arrays and the outputs
-will be written into them. This can help to avoid extra allocations and
-freeing.
+If @code{inplace} is zero, then the output will be a newly allocated list
+and the input list will be untouched. However, if @code{inplace} is
+non-zero, the output values will be written into the input's already
+allocated array and the returned pointer will be the same pointer to
+@code{coords} (in other words, you can ignore the returned value). Note
+that in the latter case, only the values will be changed, things like units
+or name (if present) will be untouched.
 @end deftypefun
 
-@deftypefun void gal_wcs_img_to_world (struct wcsprm @code{*wcs}, double @code{*x}, double @code{*y}, double @code{**ra}, double @code{**dec}, size_t @code{size})
-Convert the arrays of input image coordinates (@code{x} and @code{y}) into
-arrays of world coordinates (@code{ra} and @code{dec}). Each is assumed to
-be a separate one-dimensional array of @code{size} elements. See
-@code{gal_wcs_world_to_img} for more.
+@deftypefun {gal_data_t *} gal_wcs_img_to_world (gal_data_t @code{*coords}, struct wcsprm @code{*wcs}, int @code{inplace})
+Convert the linked list of image coordinates in @code{coords} to a linked
+list of world coordinates given the input WCS structure. See the
+description of @code{gal_wcs_world_to_img} for more details.
 @end deftypefun
 
 

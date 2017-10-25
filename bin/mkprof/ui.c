@@ -1273,9 +1273,10 @@ ui_prepare_canvas(struct mkprofparams *p)
 static void
 ui_finalize_coordinates(struct mkprofparams *p)
 {
-  size_t i, ndim=p->ndim;
-  double *x=NULL, *y=NULL;
+  void *arr=NULL;
+  size_t i=0, ndim=p->ndim;
   uint8_t os=p->oversample;
+  gal_data_t *tmp, *coords=NULL;
   double *cdelt=p->wcs->cdelt, *crpix=p->wcs->crpix;
 
   /* When the user specified RA and Dec columns, the respective values
@@ -1283,24 +1284,46 @@ ui_finalize_coordinates(struct mkprofparams *p)
      need to change them into actual image coordinates. */
   if(p->mode==MKPROF_MODE_WCS)
     {
-      /* Note that we read the RA and Dec columns into the `p->x' and `p->y'
-         arrays temporarily before. Here, we will convert them, free the old
-         ones and replace them with the proper X and Y values. */
-      gal_wcs_world_to_img(p->wcs, p->x, p->y, &x, &y, p->num);
+      /* Make list of coordinates for input of `gal_wcs_world_to_img'. */
+      for(i=0;i<ndim;++i)
+        {
+          /* Set the array pointer. Note that we read the WCS columns into
+         the `p->x', `p->y' and `p->z' arrays temporarily before. Here, we
+         will convert them to image coordinates in place. */
+          switch(i)
+            {
+            /* Note that the linked list gets filled in a first-in-last-out
+               order, so the last column added should be the first WCS
+               dimension. */
+            case 0: arr = p->y;   break;
+            case 1: arr = p->x;   break;
+            default:
+              error(EXIT_FAILURE, 0, "conversion from WCS to image "
+                    "coordinates is not currently supported for "
+                    "%zu-dimensional datasets", ndim);
+            }
+
+          /* Allocate the list of coordinates. */
+          gal_list_data_add_alloc(&coords, arr, GAL_TYPE_FLOAT64, 1, &p->num,
+                                  NULL, 0, -1, NULL, NULL, NULL);
+        }
+
+      /* Convert the world coordinates to image coordinates (inplace). */
+      gal_wcs_world_to_img(coords, p->wcs, 1);
+
 
       /* If any conversions created a WCSLIB error, both the outputs will be
          set to NaN. */
       for(i=0;i<p->num;++i)
-        if( isnan(x[i]) )
+        if( isnan(p->x[i]) )
           error(EXIT_FAILURE, 0, "catalog row %zu: WCSLIB could not convert "
                 "(%f, %f) coordinates into image coordinates", i, p->x[i],
                 p->y[i]);
 
-      /* Free the RA and Dec arrays and put in the new image values. */
-      free(p->x);
-      free(p->y);
-      p->x=x;
-      p->y=y;
+      /* We want the actual arrays of each `coords' column. So, first we'll
+         set all the array elements to NULL, then free it. */
+      for(tmp=coords;tmp!=NULL;tmp=tmp->next) tmp->array=NULL;
+      gal_list_data_free(coords);
     }
 
   /* Correct the WCS scale. Note that when the WCS is read from a
