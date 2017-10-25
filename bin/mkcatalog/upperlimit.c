@@ -186,7 +186,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
       /* Get the random coordinates, note that `gsl_rng_uniform_int'
          returns an inclusive value. */
       for(d=0;d<ndim;++d)
-        rcoord[d] = gsl_rng_uniform_int(pp->rng, dsize[d]-tile->dsize[d]-1);
+        rcoord[d] = ( (dsize[d]-tile->dsize[d])
+                      ? gsl_rng_uniform_int(pp->rng, dsize[d]-tile->dsize[d]-1)
+                      : 0 );
 
       /* Set the tile's new starting pointer. */
       tile->array = gal_data_ptr_increment(p->input->array,

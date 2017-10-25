@@ -102,6 +102,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   CFITSIO 3.42 and libcurl crash at Gnuastro configure time (bug #52152).
 
+  MakeCatalog crash in upper-limit with full size label (bug #52281).
+
 
 
 * Noteworthy changes in release 0.4 (library 2.0.0) (2017-09-13) [stable]
