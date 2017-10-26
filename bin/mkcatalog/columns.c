@@ -561,7 +561,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_CLUMPSW1:
           name           = gal_checkset_malloc_cat("CLUMPS_", p->ctype[0]);
           unit           = p->input->wcs->cunit[0];
-          ocomment       = "Flux.wht center of all clumps in 1st WCS axis.";
+          ocomment       = "Flux.wht center of all clumps (WCS axis 1).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
@@ -576,7 +576,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_CLUMPSW2:
           name           = gal_checkset_malloc_cat("CLUMPS_", p->ctype[1]);
           unit           = p->input->wcs->cunit[1];
-          ocomment       = "Flux.wht center of all clumps (WCS axis 1).";
+          ocomment       = "Flux.wht center of all clumps (WCS axis 2).";
           ccomment       = NULL;
           otype          = GAL_TYPE_FLOAT64;
           ctype          = GAL_TYPE_INVALID;
