@@ -23,6 +23,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
+/* For common options groups. */
+#include <gnuastro-internal/options.h>
+
 
 
 

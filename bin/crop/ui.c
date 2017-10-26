@@ -83,19 +83,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create cutouts, "
 
 
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_CENTER_GENERAL = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  ARGS_GROUP_CENTER_SINGLE,
-  ARGS_GROUP_CENTER_CATALOG,
-  ARGS_GROUP_REGION,
-};
-
-
-
-
-
 
 
 
@@ -155,7 +142,7 @@ ui_initialize_options(struct cropparams *p,
 
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
-          cp->coptions[i].group=ARGS_GROUP_CENTER_CATALOG;
+          cp->coptions[i].group=UI_GROUP_CENTER_CATALOG;
           break;
         }
 

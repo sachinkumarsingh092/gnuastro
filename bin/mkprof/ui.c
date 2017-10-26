@@ -79,17 +79,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a FITS image "
 
 
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_PROFILES = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  ARGS_GROUP_CATALOG,
-  ARGS_GROUP_WCS,
-};
-
-
-
-
 
 
 

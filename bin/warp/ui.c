@@ -75,15 +75,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will warp/transform the "
 
 
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_WARPS = GAL_OPTIONS_GROUP_AFTER_COMMON,
-};
-
-
-
-
 
 
 

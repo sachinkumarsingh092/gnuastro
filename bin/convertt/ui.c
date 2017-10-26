@@ -80,16 +80,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will convert any of the "
 
 
 
-/* Option groups particular to this program */
-enum program_args_groups
-{
-  ARGS_GROUP_FLUX = GAL_OPTIONS_GROUP_AFTER_COMMON,
-};
-
-
-
-
-
 
 
 

@@ -76,12 +76,8 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a catalog from "
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_UPPERLIMIT = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  ARGS_GROUP_COLUMNS,
-};
+
+
 
 
 

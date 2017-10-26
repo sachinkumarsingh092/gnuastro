@@ -123,7 +123,7 @@ struct argp_option program_options[] =
     {
       0, 0, 0, 0,
       "Crop by center",
-      ARGS_GROUP_CENTER_GENERAL
+      UI_GROUP_CENTER_GENERAL
     },
     {
       "checkcenter",
@@ -131,7 +131,7 @@ struct argp_option program_options[] =
       "INT",
       0,
       "Width (in pixels) of box at center to check.",
-      ARGS_GROUP_CENTER_GENERAL,
+      UI_GROUP_CENTER_GENERAL,
       &p->checkcenter,
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_0_OR_ODD,
@@ -144,7 +144,7 @@ struct argp_option program_options[] =
       "FLT[,...]",
       0,
       "Width when crop is defined by its center.",
-      ARGS_GROUP_CENTER_GENERAL,
+      UI_GROUP_CENTER_GENERAL,
       &p->width,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -158,7 +158,7 @@ struct argp_option program_options[] =
       "FLT[,...]",
       0,
       "Central coordinates of a single crop.",
-      ARGS_GROUP_CENTER_GENERAL,
+      UI_GROUP_CENTER_GENERAL,
       &p->center,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -176,7 +176,7 @@ struct argp_option program_options[] =
     {
       0, 0, 0, 0,
       "Crop by center (when a catalog is given)",
-      ARGS_GROUP_CENTER_CATALOG
+      UI_GROUP_CENTER_CATALOG
     },
     {
       "catalog",
@@ -184,7 +184,7 @@ struct argp_option program_options[] =
       "STR",
       0,
       "Input catalog filename.",
-      ARGS_GROUP_CENTER_CATALOG,
+      UI_GROUP_CENTER_CATALOG,
       &p->catname,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -197,7 +197,7 @@ struct argp_option program_options[] =
       "STR/INT",
       0,
       "HDU of catalog, if it is a FITS table.",
-      ARGS_GROUP_CENTER_CATALOG,
+      UI_GROUP_CENTER_CATALOG,
       &p->cathdu,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -210,7 +210,7 @@ struct argp_option program_options[] =
       "STR/INT",
       0,
       "Column no./info of crop filename (no suffix).",
-      ARGS_GROUP_CENTER_CATALOG,
+      UI_GROUP_CENTER_CATALOG,
       &p->namecol,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -223,7 +223,7 @@ struct argp_option program_options[] =
       "STR/INT",
       0,
       "Column no./info containing coordinates.",
-      ARGS_GROUP_CENTER_CATALOG,
+      UI_GROUP_CENTER_CATALOG,
       &p->coordcol,
       GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
@@ -238,7 +238,7 @@ struct argp_option program_options[] =
     {
       0, 0, 0, 0,
       "Crop by region",
-      ARGS_GROUP_REGION
+      UI_GROUP_REGION
     },
     {
       "section",
@@ -246,7 +246,7 @@ struct argp_option program_options[] =
       "STR",
       0,
       "Image section string specifying crop range.",
-      ARGS_GROUP_REGION,
+      UI_GROUP_REGION,
       &p->section,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -259,7 +259,7 @@ struct argp_option program_options[] =
       "STR",
       0,
       "Polygon vertices of region to crop, keep inside.",
-      ARGS_GROUP_REGION,
+      UI_GROUP_REGION,
       &p->polygon,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -272,7 +272,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Keep the polygon's outside, mask the inside.",
-      ARGS_GROUP_REGION,
+      UI_GROUP_REGION,
       &p->outpolygon,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,

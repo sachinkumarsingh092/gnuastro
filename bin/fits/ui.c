@@ -71,14 +71,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" allows you to view and "
 
 
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_EXTENSION = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  ARGS_GROUP_KEYWORD,
-};
-
-
 
 
 
