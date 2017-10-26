@@ -15,6 +15,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   BuildProgram: The new `--la' option allows the identification of a
   different Libtool `.la' file for Libtool linking information.
 
+  CosmicCalculator: all the various cosmological calculations can now be
+  requested individually in one line with a specific option added for each
+  calculation (for example `--age' or `--luminositydist' for the age of the
+  universe at a given redshift or the luminosity distance). Therefore the
+  old `--onlyvolume' and `--onlyabsmagconv' options are now removed. To
+  effectively use these new features, please review the "Invoking
+  CosmicCalculator" section of the book.
+
   Fits: when an extension/HDU is identified on the command-line with the
   `--hdu' option and no operation is requested, the full list of header
   keywords in that HDU will be printed (as if only `--printallkeys' was
@@ -73,6 +81,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   above).
 
 ** Changed features
+
+  CosmicCalculator: The redshift is no longer mandatory. When no redshift
+  is given, it will only print the input parameters (cosmology) and abort.
 
   `gal_binary_fill_holes' now accepts a `connectivity' and `maxsize'
   argument to specify the connectivity of the holes and the maximum size of

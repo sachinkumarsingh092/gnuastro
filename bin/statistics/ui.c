@@ -38,7 +38,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
-#include <gnuastro-internal/options.h>
 #include <gnuastro-internal/checkset.h>
 #include <gnuastro-internal/tableintern.h>
 #include <gnuastro-internal/fixedstringmacros.h>
@@ -85,14 +84,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do statistical "
 
 
 
-/* Option groups particular to this program. */
-enum program_args_groups
-{
-  ARGS_GROUP_SINGLE_VALUE = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  ARGS_GROUP_PARTICULAR_STAT,
-  ARGS_GROUP_SKY,
-  ARGS_GROUP_HIST_CFP,
-};
+
 
 
 
@@ -225,8 +217,9 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
           "(like `--number', `--mean', and etc) do not support printing "
           "with the `--printparams' (`-P'), or writing into configuration "
           "files due to lack of time when implementing these features. "
-          "Please get in touch with us at `%s', so we can implement it if "
-          "it is possible now, thank you", PACKAGE_BUGREPORT);
+          "You can put them into configuration files manually. Please get "
+          "in touch with us at `%s', so we can implement it",
+          PACKAGE_BUGREPORT);
 
   /* Some of these options take values and some don't. */
   if(option->type==GAL_OPTIONS_NO_ARG_TYPE)

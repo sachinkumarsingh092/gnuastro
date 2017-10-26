@@ -24,6 +24,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 
+/* For common options groupings. */
+#include <gnuastro-internal/options.h>
+
+
+
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
+{
+  UI_GROUP_SINGLE_VALUE = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  UI_GROUP_PARTICULAR_STAT,
+  UI_GROUP_SKY,
+  UI_GROUP_HIST_CFP,
+};
+
+
 
 
 

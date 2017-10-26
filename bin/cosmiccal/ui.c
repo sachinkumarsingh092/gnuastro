@@ -63,7 +63,10 @@ args_doc[] = "";
 
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do cosmological "
-  "calculations.\n"
+  "calculations. If no redshfit is specified, it will only print the main "
+  "input parameters. If only a redshift is given, it will print a table of "
+  "all calculations. If any of the single row calculations are requested, "
+  "only their values will be printed with a single space between each.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -107,14 +110,30 @@ ui_initialize_options(struct cosmiccalparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
 
+  /* Program specific initializations. */
+  p->redshift            = NAN;
+
   /* Modify the common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
       /* Select by group. */
       switch(cp->coptions[i].group)
         {
+        case GAL_OPTIONS_GROUP_OUTPUT:
         case GAL_OPTIONS_GROUP_TESSELLATION:
           cp->coptions[i].doc=NULL; /* Necessary to remove title. */
+          cp->coptions[i].flags=OPTION_HIDDEN;
+          break;
+        }
+
+      /* Select specific options. */
+      switch(cp->coptions[i].key)
+        {
+        case GAL_OPTIONS_KEY_HDU:
+        case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -163,6 +182,45 @@ parse_opt(int key, char *arg, struct argp_state *state)
     }
 
   return 0;
+}
+
+
+
+
+
+static void *
+ui_add_to_single_value(struct argp_option *option, char *arg,
+                      char *filename, size_t lineno, void *params)
+{
+  /* In case of printing the option values. */
+  if(lineno==-1)
+    error(EXIT_FAILURE, 0, "currently the options to be printed in one row "
+          "(like `--age', `--luminositydist', and etc) do not support "
+          "printing with the `--printparams' (`-P'), or writing into "
+          "configuration files due to lack of time when implementing "
+          "these features. You can put them into configuration files "
+          "manually. Please get in touch with us at `%s', so we can "
+          "implement it", PACKAGE_BUGREPORT);
+
+  /* If this option is given in a configuration file, then `arg' will not
+     be NULL and we don't want to do anything if it is `0'. */
+  if(arg)
+    {
+      /* Make sure the value is only `0' or `1'. */
+      if( arg[1]!='\0' && *arg!='0' && *arg!='1' )
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                      "option takes no arguments. In a configuration "
+                      "file it can only have the values `1' or `0', "
+                      "indicating if it should be used or not",
+                      option->name);
+
+      /* Only proceed if the (possibly given) argument is 1. */
+      if(arg[0]=='0' && arg[1]=='\0') return NULL;
+    }
+
+  /* Add this option to the print list and return. */
+  gal_list_i32_add(option->value, option->key);
+  return NULL;
 }
 
 
@@ -223,6 +281,36 @@ ui_read_check_only_options(struct cosmiccalparams *p)
 
 
 /**************************************************************/
+/***************       Preparations         *******************/
+/**************************************************************/
+static void
+ui_preparations(struct cosmiccalparams *p)
+{
+  /* The list is filled out in a first-in-last-out order. By the time
+     control reaches here, the list is finalized. So we should just reverse
+     it so the user gets values in the same order they requested them. */
+  gal_list_i32_reverse(&p->specific);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
 
@@ -241,7 +329,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct cosmiccalparams *p)
      available within the scope of this function. */
 #include <gnuastro-internal/commonopts.h>
 #include "args.h"
-
 
   /* Initialize the options and necessary information.  */
   ui_initialize_options(p, program_options, gal_commonopts_options);
@@ -266,4 +353,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct cosmiccalparams *p)
      after the option checks so un-sane values are not printed in the
      output state. */
   gal_options_print_state(&p->cp);
+
+
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
 }

@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Include necessary headers */
 #include <gnuastro/data.h>
-
+#include <gnuastro/list.h>
 #include <gnuastro-internal/options.h>
 
 /* Progarm names.  */
@@ -51,11 +51,9 @@ struct cosmiccalparams
   double               olambda; /* Current cosmological constant dens.  */
   double               omatter; /* Current matter density.              */
   double            oradiation; /* Current radiation density.           */
-  double            solidangle; /* Solid angle for volume (in stradian).*/
 
-  /* Output: */
-  uint8_t           onlyvolume; /* Only print the volume in Mpc^3.      */
-  uint8_t       onlyabsmagconv; /* Only print conversion to abs. mag.   */
+  /* Outputs. */
+  gal_list_i32_t     *specific; /* Codes for single row calculations.   */
 
   /* Internal: */
   time_t               rawtime; /* Starting time of the program.        */

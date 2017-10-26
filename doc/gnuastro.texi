@@ -514,6 +514,11 @@ CosmicCalculator
 * Extending distance concepts to 3D::  Going to 3D (our real universe).
 * Invoking astcosmiccal::       How to run CosmicCalculator
 
+Invoking CosmicCalculator
+
+* CosmicCalculator input options::  Options to specify input conditions.
+* CosmicCalculator specific calculations::  Requesting specific outputs.
+
 Library
 
 * Review of library fundamentals::  Guide on libraries and linking.
@@ -16421,50 +16426,42 @@ One line examples:
 $ astcosmiccal -z2.5
 
 ## Only print Comoving volume over 4pi stradian to z (Mpc^3):
-$ astcosmiccal --onlyvolume --redshift=0.8
+$ astcosmiccal --redshift=0.8 --volume
+
+## Print luminosity distance, angular diameter distance and age
+## of universe in one row at redshift 0.4
+$ astcosmiccal -z0.4 -LAg
 
 ## Assume Lambda and matter density of 0.7 and 0.3 and print
 ## basic cosmological parameters for redshift 2.1:
 $ astcosmiccal -l0.7 -m0.3 -z2.1
 @end example
 
-The input parameters can be given as command-line options or in the
-configuration files, see @ref{Configuration files}. For a definition
-of the different parameters, please see the sections prior to this. By
-default, all the cosmological calculations will be printed in the
-standard output (the command-line mainly) along with a short
-description and units.
+The input parameters (for example current matter density and etc) can be
+given as command-line options or in the configuration files, see
+@ref{Configuration files}. For a definition of the different parameters,
+please see the sections prior to this. If no redshift is given,
+CosmicCalculator will just print its input parameters and abort. For a full
+list of the input options, please see @ref{CosmicCalculator input options}.
 
-The options starting with @option{--only} will only do that single
-desired calculation and only print the final number (in the same units
-as reported by default). These options are very useful when you want
-to call CosmicCalculator from a script. The resulting number can
-simply be put into a shell variable (for example @code{vol}) with the
-following line, which will allow you to use the value for any other
-subsequent operation.
+When only a redshift is given, CosmicCalculator will print all calculations
+(one per line) with some explanations before each. This can be good when
+you want a general feeling of the conditions at a specific
+redshift. Alternatively, if any specific calculations are requested, only
+the requested values will be calculated and printed with one character
+space between them. In this case, no description will be printed. See
+@ref{CosmicCalculator specific calculations} for the full list of these
+options along with some explanations how when/how they can be useful.
 
-@example
-z=3.12
-vol=$(astcosmiccal --redshift=$z --onlyvolume)
-@end example
+@menu
+* CosmicCalculator input options::  Options to specify input conditions.
+* CosmicCalculator specific calculations::  Requesting specific outputs.
+@end menu
 
-@cindex GNU Grep
-@noindent
-In a script, this operation might be necessary for a very large number
-of objects (thousands of galaxies in a catalog for example). So the
-fact that all the other default calculations are ignored will also
-help you get to your result faster. If you just want to inspect the
-value of a variable, the description (which comes with units) might be
-more useful. In that case, the following command might be better. The
-other parameters will also be calculated, but they are so fast that
-you will not notice on modern computers.
+@node CosmicCalculator input options, CosmicCalculator specific calculations, Invoking astcosmiccal, Invoking astcosmiccal
+@subsubsection CosmicCalculator input options
 
-@example
-$ astcosmiccal --redshift=0.832 | grep volume
-@end example
-
-@noindent
-The full list of options is shown and described below:
+The inputs to CosmicCalculator can be specified with the following options:
 @table @option
 
 @item -z FLT
@@ -16489,20 +16486,141 @@ density in the current Universe (@mymath{\Omega_{m,0}}).
 @itemx --oradiation=FLT
 Radiation density divided by the critical density in the current Universe
 (@mymath{\Omega_{r,0}}).
+@end table
+
+
+
+@node CosmicCalculator specific calculations,  , CosmicCalculator input options, Invoking astcosmiccal
+@subsubsection CosmicCalculator specific calculations
+By default, when no specific calculations are requested, CosmicCalculator
+will print a complete set of all its calculators (one line for each
+calculation, see @ref{Invoking astcosmiccal}). The full list of
+calculations can be useful when you don't want any specific value, but just
+a general view. In other contexts (for example in a batch script or during
+a discussion), you know exactly what you want and don't want to be
+distracted by all the extra information.
+
+You can use any number of the options described below in any order. When
+any of these options are requested, CosmicCalculator's output will just be
+a single line with a single space between the (possibly) multiple
+values. In the example below, only the tangential distance along one
+arcsecond (in kpc), absolute magnitude conversion, and age of the universe
+at redshift 2 are printed (recall that you can merge short options
+together, see @ref{Options}).
+
+@example
+$ astcosmiccal -z2 -sag
+8.585046 44.819248 3.289979
+@end example
+
+Here is one example of using this feature in scripts: by adding the
+following two lines in a script to keep/use the comoving volume with
+varying redshifts:
+
+@example
+z=3.12
+vol=$(astcosmiccal --redshift=$z --volume)
+@end example
+
+@cindex GNU Grep
+@noindent
+In a script, this operation might be necessary for a large number of
+objects (several of galaxies in a catalog for example). So the fact that
+all the other default calculations are ignored will also help you get to
+your result faster.
+
+If you are indeed dealing with many (for example thousands) of redshifts,
+using CosmicCalculator is not the best/fastest solution. Because it has to
+go through all the configuration files and preparations for each
+invocation. To get the best efficiency (least overhead), we recommend using
+Gnuastro's cosmology library (see @ref{Cosmology
+library}). CosmicCalculator also calls the library functions defined there
+for its calculations, so you get the same result with no overhead. Gnuastro
+also has libraries for easily reading tables into a C program, see
+@ref{Table input output}. Afterwards, you can easily build and run your C
+program for the particular processing with @ref{BuildProgram}.
+
+If you just want to inspect the value of a variable visually, the
+description (which comes with units) might be more useful. In such cases,
+the following command might be better. The other calculations will also be
+done, but they are so fast that you will not notice on modern computers
+(the time it takes your eye to focus on the result is usually longer than
+the processing: a fraction of a second).
+
+@example
+$ astcosmiccal --redshift=0.832 | grep volume
+@end example
+
+The full list of CosmicCalculator's specific calculations is present
+below. In case you have forgot the units, you can use the @option{--help}
+option which has the units along with a short description.
+
+@table @option
+
+@item -G
+@itemx --agenow
+The current age of the universe (given the input parameters) in Giga-years
+(Gyr).
+
+@item -C
+@itemx --criticaldensitynow
+The current critical density (given the input parameters) in grams per
+centimeter-cube (@mymath{g/cm^3}).
+
+@item -d
+@itemx --properdistance
+The proper distance (at current time) to object at the given redshift in
+Megaparsecs (Mpc). See @ref{Distance on a 2D curved space} for a
+description of the proper distance.
+
+@item -A
+@itemx --angulardimdist
+The angular diameter distance to object at given redshift in Megaparsecs
+(Mpc).
+
+@item -s
+@itemx --arcsectandist
+The tangential distance covered by 1 arcseconds at the given redshift in
+kiloparsecs (Kpc). This can be useful when trying to estimate the
+resolution or pixel scale of an instrument (usually in units of arcseconds)
+at a given redshift.
+
+@item -L
+@itemx --luminositydist
+The luminosity distance to object at given redshift in Megaparsecs (Mpc).
+
+@item -u
+@itemx --distancemodulus
+The distance modulus at given redshift.
+
+@item -a
+@itemx --absmagconv
+The conversion factor (addition) to absolute magnitude. Note that this is
+practically the distance modulus added with @mymath{-2.5\log{(1+z)}} for
+the the desired redshift based on the input parameters. Once the apparent
+magnitude and redshift of an object is known, this value may be added with
+the apparent magnitdue to give the object's absolute magnitude.
+
+@item -g
+@itemx --age
+Age of the universe at given redshift in Giga-years (Gyr).
+
+@item -b
+@itemx --lookbacktime
+The look-back time to given redshift in Giga-years (Gyr). The look-back
+time at a given redshift is defined as the current age of the universe
+(@option{--agenow}) subtracted by the age of the universe at the given
+redshift.
+
+@item -c
+@itemx --criticaldensity
+The critical density at given redshift in grams per centimeter-cube
+(@mymath{g/cm^3}).
 
 @item -v
 @itemx --onlyvolume
-Only print the comoving volume (in units of Mpc@mymath{^3}) until the
-desired redshift based on the input parameters. See explanations above
-for more on these types of options and how to effectively use them.
-
-@item -d
-@itemx --onlyabsmagconv
-Only print the conversion factor for apparent magnitude to absolute
-magnitude. Note that this is practically the distance modulus added
-with @mymath{-2.5\log{(1+z)}} for the the desired redshift based on
-the input parameters. See explanations above for more on these types
-of options and how to effectively use them.
+The comoving volume in Megaparsecs cube (Mpc@mymath{^3}) until the desired
+redshift based on the input parameters.
 
 @end table
 

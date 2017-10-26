@@ -24,12 +24,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
 #include <gnuastro/cosmology.h>
 
 #include "main.h"
 
+#include "ui.h"
 #include "cosmiccal.h"
 
 
@@ -45,29 +48,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /************            Main function            *************/
 /**************************************************************/
-void
-cosmiccal(struct cosmiccalparams *p)
+static void
+cosmiccal_print_input(struct cosmiccalparams *p)
+{
+  printf("%s\n", PROGRAM_STRING);
+  printf("\n Input parameters\n");
+  printf(  " ----------------\n");
+  if( !isnan(p->redshift) )
+    printf(FLTFORMAT, "Desired redshift for calculations (z):", p->redshift);
+  printf(FLTFORMAT, "Expansion rate (Hubble constant, H0), now:", p->H0);
+  printf(FLTFORMAT, "Cosmological constant fractional density, now:",
+         p->olambda);
+  printf(FLTFORMAT, "Matter fractional density, now:", p->omatter);
+  printf(EXPFORMAT, "Radiation fractional density, now:", p->oradiation);
+  printf(EXPFORMAT, "Curvatue fractional density (from the above):",
+         1 - ( p->olambda + p->omatter + p->oradiation ));
+}
+
+
+
+
+
+static void
+cosmiccal_printall(struct cosmiccalparams *p)
 {
   double ad, ld, vz, pd, absmagconv;
   double curage, ccritd, distmod, outage, zcritd;
-
-  /* In case the user just wants one number, only print that and
-     return. */
-  if(p->onlyvolume){
-    printf("%f\n", gal_cosmology_comoving_volume(p->redshift, p->H0,
-                                                 p->olambda, p->omatter,
-                                                 p->oradiation));
-    return;
-  }
-  if(p->onlyabsmagconv){
-    pd=gal_cosmology_proper_distance(p->redshift, p->H0, p->olambda,
-                                     p->omatter, p->oradiation);
-    ld=pd*(1+p->redshift);
-    distmod=5*(log10(ld*1000000)-1);
-    absmagconv=distmod-2.5*log10(1+p->redshift);
-    printf("%f\n", absmagconv);
-    return;
-  }
 
   /* The user wants everything, do all the calculations and print
      everything with full descriptions. */
@@ -77,20 +83,11 @@ cosmiccal(struct cosmiccalparams *p)
   ccritd=gal_cosmology_critical_density(0.0f, p->H0, p->olambda, p->omatter,
                                         p->oradiation);
 
-  vz=gal_cosmology_comoving_volume(p->redshift, p->H0, p->olambda, p->omatter,
-                                   p->oradiation);
-
   pd=gal_cosmology_proper_distance(p->redshift, p->H0, p->olambda, p->omatter,
                                    p->oradiation);
 
-  outage=gal_cosmology_age(p->redshift, p->H0, p->olambda, p->omatter,
-                           p->oradiation);
-
-  zcritd=gal_cosmology_critical_density(p->redshift, p->H0, p->olambda,
-                                        p->omatter, p->oradiation);
-
-  ad=gal_cosmology_angular_distance(p->redshift, p->H0, p->olambda, p->omatter,
-                                    p->oradiation);
+  ad=gal_cosmology_angular_distance(p->redshift, p->H0, p->olambda,
+                                    p->omatter, p->oradiation);
 
   ld=gal_cosmology_luminosity_distance(p->redshift, p->H0, p->olambda,
                                        p->omatter, p->oradiation);
@@ -101,18 +98,17 @@ cosmiccal(struct cosmiccalparams *p)
   absmagconv=gal_cosmology_to_absolute_mag(p->redshift, p->H0, p->olambda,
                                            p->omatter, p->oradiation);
 
+  outage=gal_cosmology_age(p->redshift, p->H0, p->olambda, p->omatter,
+                           p->oradiation);
+
+  zcritd=gal_cosmology_critical_density(p->redshift, p->H0, p->olambda,
+                                        p->omatter, p->oradiation);
+
+  vz=gal_cosmology_comoving_volume(p->redshift, p->H0, p->olambda, p->omatter,
+                                   p->oradiation);
+
   /* Print out results: */
-  printf("%s\n", PROGRAM_STRING);
-  printf("\n Input parameters\n");
-  printf(  " ----------------\n");
-  printf(FLTFORMAT, "Desired redshift for calculations (z):", p->redshift);
-  printf(FLTFORMAT, "Expansion rate (Hubble constant, H0), now:", p->H0);
-  printf(FLTFORMAT, "Cosmological constant fractional density, now:",
-         p->olambda);
-  printf(FLTFORMAT, "Matter fractional density, now:", p->omatter);
-  printf(EXPFORMAT, "Radiation fractional density, now:", p->oradiation);
-  printf(EXPFORMAT, "Curvatue fractional density (from the above):",
-         1 - ( p->olambda + p->omatter + p->oradiation ));
+  cosmiccal_print_input(p);
 
 
   printf("\n\n Universe now\n");
@@ -138,4 +134,129 @@ cosmiccal(struct cosmiccalparams *p)
   printf("\n\n Comoving universe (time independent)\n");
   printf(    " ------------------------------------\n");
   printf(FLTFORMAT, "Comoving volume over 4pi stradian to z (Mpc^3):", vz);
+}
+
+
+
+
+
+void
+cosmiccal(struct cosmiccalparams *p)
+{
+  gal_list_i32_t *tmp;
+  double curage, zage;
+
+  /* If no redshift is given, just print the input parameters along with a
+     notice that further calculations are only possible with a redshift and
+     abort. */
+  if(isnan(p->redshift))
+    {
+      cosmiccal_print_input(p);
+      printf("\n\nPlease specify a redshift with the `--redshift' (or `-z') "
+             "option.\n");
+      return;
+    }
+
+  /* In case the user just wants one number, only print that and
+     return. */
+  if(p->specific)
+    {
+      for(tmp=p->specific;tmp!=NULL;tmp=tmp->next)
+        switch(tmp->v)
+          {
+          case UI_KEY_AGENOW:
+            printf("%f ", gal_cosmology_age(0.0f, p->H0, p->olambda,
+                                            p->omatter, p->oradiation));
+            break;
+
+          case UI_KEY_CRITICALDENSITYNOW:
+            printf("%e ", gal_cosmology_critical_density(0.0f, p->H0,
+                                                         p->olambda,
+                                                         p->omatter,
+                                                         p->oradiation));
+            break;
+
+          case UI_KEY_PROPERDISTANCE:
+            printf("%f ", gal_cosmology_proper_distance(p->redshift, p->H0,
+                                                        p->olambda,
+                                                        p->omatter,
+                                                        p->oradiation));
+            break;
+
+          case UI_KEY_ANGULARDIMDIST:
+            printf("%f ", gal_cosmology_angular_distance(p->redshift, p->H0,
+                                                         p->olambda,
+                                                         p->omatter,
+                                                         p->oradiation));
+            break;
+
+          case UI_KEY_ARCSECTANDIST:
+            printf("%f ", ( gal_cosmology_angular_distance(p->redshift, p->H0,
+                                                           p->olambda,
+                                                           p->omatter,
+                                                           p->oradiation)
+                            * 1000 * M_PI / 3600 / 180 ) );
+            break;
+
+          case UI_KEY_LUMINOSITYDIST:
+            printf("%f ", gal_cosmology_luminosity_distance(p->redshift,
+                                                            p->H0,
+                                                            p->olambda,
+                                                            p->omatter,
+                                                            p->oradiation));
+            break;
+
+          case UI_KEY_DISTANCEMODULUS:
+            printf("%f ", gal_cosmology_distance_modulus(p->redshift, p->H0,
+                                                         p->olambda,
+                                                         p->omatter,
+                                                         p->oradiation));
+            break;
+
+          case UI_KEY_ABSMAGCONV:
+            printf("%f ", gal_cosmology_to_absolute_mag(p->redshift, p->H0,
+                                                        p->olambda,
+                                                        p->omatter,
+                                                        p->oradiation));
+            break;
+
+          case UI_KEY_AGE:
+            printf("%f ", gal_cosmology_age(p->redshift, p->H0, p->olambda,
+                                            p->omatter, p->oradiation));
+            break;
+
+          case UI_KEY_LOOKBACKTIME:
+            curage=gal_cosmology_age(0.0f, p->H0, p->olambda, p->omatter,
+                                     p->oradiation);
+            zage=gal_cosmology_age(p->redshift, p->H0, p->olambda, p->omatter,
+                                   p->oradiation);
+            printf("%f ", curage-zage);
+            break;
+
+          case UI_KEY_CRITICALDENSITY:
+            printf("%e ", gal_cosmology_critical_density(p->redshift, p->H0,
+                                                         p->olambda,
+                                                         p->omatter,
+                                                         p->oradiation));
+            break;
+
+          case UI_KEY_VOLUME:
+            printf("%f ", gal_cosmology_comoving_volume(p->redshift, p->H0,
+                                                        p->olambda,
+                                                        p->omatter,
+                                                        p->oradiation));
+            break;
+
+          default:
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                  "fix the problem. The code %d is not recognized as a "
+                  "single value calculation code", __func__,
+                  PACKAGE_BUGREPORT, tmp->v);
+          }
+
+      /* Print a new-line character to finish the output. */
+      printf("\n");
+    }
+  else
+    cosmiccal_printall(p);
 }

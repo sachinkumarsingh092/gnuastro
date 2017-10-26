@@ -23,26 +23,49 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef UI_H
 #define UI_H
 
+/* For common options groupings. */
+#include <gnuastro-internal/options.h>
+
+
+
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
+{
+  UI_GROUP_SPECIFIC = GAL_OPTIONS_GROUP_AFTER_COMMON,
+};
+
 
 
 
 
 /* Available letters for short options:
 
-   b c d e f g i j k n p s t u w x y
-   A B C E G J L O Q R W X Y
+   e f i j k n p t w x y
+   B E J O Q R W X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
-  UI_KEY_REDSHIFT       = 'z',
-  UI_KEY_H0             = 'H',
-  UI_KEY_OLAMBDA        = 'l',
-  UI_KEY_OMATTER        = 'm',
-  UI_KEY_ORADIATION     = 'r',
-  UI_KEY_ONLYVOLUME     = 'v',
-  UI_KEY_ONLYABSMAGCONV = 'a',
+  UI_KEY_REDSHIFT            = 'z',
+  UI_KEY_H0                  = 'H',
+  UI_KEY_OLAMBDA             = 'l',
+  UI_KEY_OMATTER             = 'm',
+  UI_KEY_ORADIATION          = 'r',
 
+  UI_KEY_AGENOW              = 'G',
+  UI_KEY_CRITICALDENSITYNOW  = 'C',
+  UI_KEY_PROPERDISTANCE      = 'd',
+  UI_KEY_ANGULARDIMDIST      = 'A',
+  UI_KEY_ARCSECTANDIST       = 's',
+  UI_KEY_LUMINOSITYDIST      = 'L',
+  UI_KEY_DISTANCEMODULUS     = 'u',
+  UI_KEY_ABSMAGCONV          = 'a',
+  UI_KEY_AGE                 = 'g',
+  UI_KEY_LOOKBACKTIME        = 'b',
+  UI_KEY_CRITICALDENSITY     = 'c',
+  UI_KEY_VOLUME              = 'v',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
