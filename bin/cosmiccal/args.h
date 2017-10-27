@@ -102,7 +102,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Single row calculations",
+      "Specific calculations",
       UI_GROUP_SPECIFIC
     },
     {

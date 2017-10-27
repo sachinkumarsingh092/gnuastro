@@ -17386,6 +17386,13 @@ confronts).
 Only build the program, don't run it. By default, the built program is
 immediately run afterwards.
 
+@item --deletecompiled
+Delete the compiled binary file after running it. This option is only
+relevant when the compiled program is run after being built. In other
+words, it is only relevant when @option{--onlybuild} is not called. It can
+be useful when you are busy testing a program or just want a fast result
+and the actual binary/compiled file is not of later use.
+
 @item -a STR
 @itemx --la=STR
 Use the given @file{.la} file (Libtool control file) instead of the one

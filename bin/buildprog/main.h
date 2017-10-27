@@ -54,6 +54,7 @@ struct buildprogparams
   char                 *debug;    /* Keep debugging information.        */
   char               *warning;    /* Compiler warnings.                 */
   uint8_t           onlybuild;    /* Don't run the compiled program.    */
+  uint8_t      deletecompiled;    /* Delete compiled program after running. */
 
   /* Output: */
   time_t              rawtime;  /* Starting time of the program.        */

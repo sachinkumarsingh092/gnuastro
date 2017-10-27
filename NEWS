@@ -15,6 +15,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   BuildProgram: The new `--la' option allows the identification of a
   different Libtool `.la' file for Libtool linking information.
 
+  BuildProgram: The new `--deletecompiled' option will delete the compiled
+  program after running it.
+
   CosmicCalculator: all the various cosmological calculations can now be
   requested individually in one line with a specific option added for each
   calculation (for example `--age' or `--luminositydist' for the age of the

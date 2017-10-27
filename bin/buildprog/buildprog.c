@@ -119,7 +119,7 @@ buildprog(struct buildprogparams *p)
       /* Free the initial command. */
       free(command);
 
-      /* Right the command to run the program. Note that if the output
+      /* Wright the command to run the program. Note that if the output
          value doesn't start with a directory, we'll have to put one for
          it. */
       switch(p->cp.output[0])
@@ -136,11 +136,19 @@ buildprog(struct buildprogparams *p)
       /* Print the executed command if necessary, then run it. */
       if(!p->cp.quiet)
         {
-          printf("Run the compiled program\n");
+          printf("\nRun the compiled program\n");
           printf("------------------------\n");
           printf("%s\n", command);
         }
       retval=system(command);
+
+      /* Delete the compiled program after running it. */
+      if(p->deletecompiled)
+        {
+          errno=0;
+          if( remove(p->cp.output) == -1 )
+            error(EXIT_FAILURE, 0, "unable to delete %s", p->cp.output);
+        }
     }
 
   /* Clean up and return. */

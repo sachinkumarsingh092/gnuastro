@@ -88,6 +88,9 @@ struct argp_option program_options[] =
     },
 
 
+
+
+
     {
       "debug",
       UI_KEY_DEBUG,
@@ -137,6 +140,19 @@ struct argp_option program_options[] =
       &p->onlybuild,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "deletecompiled",
+      UI_KEY_DETELECOMPILED,
+      0,
+      0,
+      "Delete compiled program after running.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->deletecompiled,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

@@ -38,17 +38,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum option_keys_enum
 {
   /* With short-option version. */
-  UI_KEY_INCLUDE     = 'I',
-  UI_KEY_LINKDIR     = 'L',
-  UI_KEY_LINKLIB     = 'l',
-  UI_KEY_LA          = 'a',
-  UI_KEY_ONLYBUILD   = 'b',
-  UI_KEY_DEBUG       = 'g',
-  UI_KEY_OPTIMIZE    = 'O',
-  UI_KEY_WARNING     = 'W',
+  UI_KEY_INCLUDE        = 'I',
+  UI_KEY_LINKDIR        = 'L',
+  UI_KEY_LINKLIB        = 'l',
+  UI_KEY_LA             = 'a',
+  UI_KEY_ONLYBUILD      = 'b',
+  UI_KEY_DEBUG          = 'g',
+  UI_KEY_OPTIMIZE       = 'O',
+  UI_KEY_WARNING        = 'W',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
+  UI_KEY_DETELECOMPILED = 1000,
 };
 
 
