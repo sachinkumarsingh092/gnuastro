@@ -253,10 +253,10 @@ Steps necessary to Package Gnuastro for Debian.
 
  - If the soname of the shared libraries has changed:
 
-     - Rename the file `debain/libgnuastroX.install' (set `X' to the new
+     - Rename the file `debian/libgnuastroX.install' (set `X' to the new
        soname).
 
-     - In `debian control, change all the old sonames to the new value.
+     - In `debian/control', change all the old sonames to the new value.
 
 
  - Update your version of `pbuilder':
