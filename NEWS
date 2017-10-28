@@ -92,7 +92,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   is given, it will only print the input parameters (cosmology) and abort.
 
   MakeCatalog: when the output is a FITS file, the two object and clumps
-  catalogs will no longer
+  catalogs will be stored as multiple extensions of a single file. Until
+  now, two separate FITS files would be created. Plain text outputs will be
+  the same as before (two files).
 
   `gal_binary_fill_holes' now accepts a `connectivity' and `maxsize'
   argument to specify the connectivity of the holes and the maximum size of
