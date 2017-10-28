@@ -89,8 +89,7 @@ gal_data_t *
 gal_txt_image_read(char *filename, size_t minmapsize);
 
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
-              int dontdelete);
+gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename);
 
 
 

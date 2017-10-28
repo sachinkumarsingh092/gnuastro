@@ -1143,8 +1143,7 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
 
 static FILE *
 txt_open_file_write_info(gal_data_t *datall, char **fmts,
-                         gal_list_str_t *comment, char *filename,
-                         int dontdelete)
+                         gal_list_str_t *comment, char *filename)
 {
   FILE *fp;
   gal_data_t *data;
@@ -1153,9 +1152,13 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
   gal_list_str_t *strt;
   int nlen, nw=0, uw=0, tw=0, bw=0;
 
+  /* Make sure the file doesn't already eixist. */
+  if( gal_checkset_check_file_return(filename) )
+    error(EXIT_FAILURE, 0, "%s: %s already exists. For safety, this "
+          "function will not over-write an existing file. Please delete "
+          "it before calling this function", __func__, filename);
 
-  /* Check the file and open it. */
-  gal_checkset_writable_remove(filename, 0, dontdelete);
+  /* Open the output file. */
   errno=0;
   fp=fopen(filename, "w");
   if(fp==NULL)
@@ -1235,8 +1238,7 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
 
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
-              int dontdelete)
+gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename)
 {
   FILE *fp;
   char **fmts;
@@ -1285,8 +1287,7 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
   /* Set the output FILE pointer: if it isn't NULL, its an actual file,
      otherwise, its the standard output. */
   fp = ( filename
-         ? txt_open_file_write_info(input, fmts, comment, filename,
-                                    dontdelete)
+         ? txt_open_file_write_info(input, fmts, comment, filename)
          : stdout );
 
 

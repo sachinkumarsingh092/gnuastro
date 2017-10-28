@@ -812,8 +812,12 @@ ui_preparations(struct statisticsparams *p)
           if(p->inputformat==INPUT_FORMAT_IMAGE)
             gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
           else
-            gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
-                            cp->dontdelete);
+            {
+              gal_checkset_writable_remove(tl->tilecheckname, 0,
+                                           cp->dontdelete);
+              gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
+                              "TABLE");
+            }
           gal_data_free(check);
         }
 

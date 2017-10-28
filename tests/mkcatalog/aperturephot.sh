@@ -52,5 +52,5 @@ if [ ! -f $objimg   ]; then echo "$objimg does not exist";  exit 77; fi
 # Actual test script
 # ==================
 $execname $img --objectsfile=$objimg --objectshdu=1 \
-          --output=aperturephot.txt                 \
+          --output=aperturephot.fits                \
           --objid --x --y --ra --dec --magnitude --sn

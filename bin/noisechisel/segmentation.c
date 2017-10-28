@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/dimension.h>
 
 #include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
@@ -593,7 +594,9 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   /* Set the column pointers and write them into a table.. */
   clumpinobj->next=sn;
   objind->next=clumpinobj;
-  gal_table_write(objind, comments, p->cp.tableformat, p->clumpsn_d_name, 1);
+  gal_checkset_writable_remove(p->clumpsn_d_name, 0, 1);
+  gal_table_write(objind, comments, p->cp.tableformat, p->clumpsn_d_name,
+                  "CLUMPS_SN");
 
 
   /* Clean up. */

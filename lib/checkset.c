@@ -235,7 +235,7 @@ gal_checkset_check_file(char *filename)
 /* Similar to `gal_checkset_check_file', but will report the result instead
    of doing it quietly. */
 int
-gal_checkset_check_file_report(char *filename)
+gal_checkset_check_file_return(char *filename)
 {
   FILE *tmpfile;
   errno=0;
@@ -279,7 +279,7 @@ gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
   tmpfile=fopen(filename, "r+");
   if (tmpfile)                        /* The file opened. */
     {
-      /* Close the file and make sure that it should be deleted. */
+      /* Close the file. */
       errno=0;
       if(fclose(tmpfile))
         error(EXIT_FAILURE, errno, "%s", filename);

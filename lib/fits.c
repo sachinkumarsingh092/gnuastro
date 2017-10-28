@@ -2663,7 +2663,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
    table.*/
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tableformat, char *filename, int dontdelete)
+                   int tableformat, char *filename, char *extname)
 {
   void *blank;
   fitsfile *fptr;
@@ -2685,13 +2685,8 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
     }
 
 
-  /* Remove the output if it already exists. */
-  gal_checkset_writable_remove(filename, 0, dontdelete);
-
-
-  /* Create the FITS file */
-  fits_create_file(&fptr, filename, &status);
-  gal_fits_io_error(status, NULL);
+  /* Open the FITS file for writing. */
+  fptr=gal_fits_open_to_write(filename);
 
 
   /* prepare necessary arrays and if integer type columns have blank
@@ -2704,7 +2699,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
      `fits_table_prepare_arrays'. */
   tbltype = tableformat==GAL_TABLE_FORMAT_AFITS ? ASCII_TBL : BINARY_TBL;
   fits_create_tbl(fptr, tbltype, numrows, numcols, ttype, tform, tunit,
-                  "table", &status);
+                  extname, &status);
   gal_fits_io_error(status, NULL);
 
 

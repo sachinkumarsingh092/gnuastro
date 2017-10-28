@@ -32,6 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 
+#include <gnuastro-internal/checkset.h>
+
 #include "main.h"
 
 
@@ -44,6 +46,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 table(struct tableparams *p)
 {
-  gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,
-                  p->cp.dontdelete);
+  gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+  gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output, "TABLE");
 }

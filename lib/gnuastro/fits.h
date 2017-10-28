@@ -262,7 +262,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tableformat, char *filename, int dontdelete);
+                   int tableformat, char *filename, char *extname);
 
 
 

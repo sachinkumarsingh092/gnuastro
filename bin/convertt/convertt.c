@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
@@ -183,7 +184,8 @@ save_with_gnuastro_lib(struct converttparams *p)
 
     /* Plain text: only one channel is acceptable. */
     case OUT_FORMAT_TXT:
-      gal_txt_write(p->chll, NULL, p->cp.output, p->cp.dontdelete);
+      gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+      gal_txt_write(p->chll, NULL, p->cp.output);
       break;
 
 

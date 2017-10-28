@@ -707,41 +707,63 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
 static void
 ui_preparations_both_names(struct mkcatalogparams *p)
 {
-  char *basename;
-  char *end, *tend, suffix[50];
+  char *basename, *suffix=".fits";
   uint8_t keepinputdir=p->cp.keepinputdir;  /* See below. */
 
   /* Set the type ending. */
   if(p->cp.output)
     {
       /* When the user has specified a name, any possible directories in
-         that name must be respected. So we will keep the actual
-         `keepinputdir' value in a temporary variable, set it to 1 only for
-         this operation, then set it back to what it was. */
+         that name must be respected. So we have kept the actual
+         `keepinputdir' value in a temporary variable above and set it to 1
+         only for this operation. Later we set it back to what it was. */
       p->cp.keepinputdir=1;
 
-      /* Set the basic strings. */
+      /* Set the base name (if necessary). */
       basename = p->cp.output;
-      tend = gal_fits_name_is_fits(p->cp.output)     ? "fits" : "txt";
+
+      /* FITS speicifc preparations. */
+      if( gal_fits_name_is_fits(p->cp.output) )
+        {
+          /* The output file name that the user has given supersedes the
+             `tableformat' argument. In this case, the filename is a FITS
+             file, so if `tableformat' is a text file, we will change it to
+             a default binary FITS table. */
+          if( p->cp.tableformat==GAL_TABLE_FORMAT_TXT )
+            p->cp.tableformat=GAL_TABLE_FORMAT_BFITS;
+        }
     }
   else
     {
+      /* Note that suffix is not used in the text table outputs, so it
+         doesn't matter if the output table is not FITS. */
+      suffix="_catalog.fits";
       basename = p->inputname;
-      tend = p->cp.tableformat==GAL_TABLE_FORMAT_TXT ? "txt"  : "fits";
     }
 
-  /* Set the objects name */
-  end="_o";
-  sprintf(suffix, "%s.%s", end, tend);
-  p->objectsout=gal_checkset_automatic_output(&p->cp, basename, suffix);
 
-  /* Set the clumps name */
-  end="_c";
-  sprintf(suffix, "%s.%s", end, tend);
-  p->clumpsout=gal_checkset_automatic_output(&p->cp, basename, suffix);
+  /* Set the final filename. If the output is a text file, we need two
+     files. But when its a FITS file we want to make a multi-extension FITS
+     file. */
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      p->objectsout=gal_checkset_automatic_output(&p->cp, basename, "_o.txt");
+      p->clumpsout=gal_checkset_automatic_output(&p->cp, basename, "_c.txt");
+    }
+  else
+    {
+      p->objectsout=gal_checkset_automatic_output(&p->cp, basename, suffix);
+      p->clumpsout=p->objectsout;
+    }
 
-  /* Revert `keepinputdir' to what it was. */
-  if(p->cp.output) p->cp.keepinputdir=keepinputdir;
+  /* Revert `keepinputdir' to what it was and free `p->cp.output', we will
+     be using `p->objectsout' and `p->clumpsout' from now on. */
+  if(p->cp.output)
+    {
+      p->cp.keepinputdir=keepinputdir;
+      free(p->cp.output);
+      p->cp.output=NULL;
+    }
 }
 
 
@@ -770,7 +792,12 @@ ui_preparations_outnames(struct mkcatalogparams *p)
 
       /* If a clumps image has been read, then we have two outputs. */
       if(p->clumps) ui_preparations_both_names(p);
-      else          p->objectsout=p->cp.output;
+      else
+        {
+          gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+          p->objectsout=p->cp.output;
+          p->cp.output=NULL;
+        }
     }
   else
     {
@@ -1025,6 +1052,11 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   /* If a random number generator was allocated, free it. */
   if(p->rng) gsl_rng_free(p->rng);
 
+  /* Free output names. */
+  if(p->clumpsout && p->clumpsout!=p->objectsout)
+    free(p->clumpsout);
+  free(p->objectsout);
+
   /* Free the allocated arrays: */
   free(p->skyhdu);
   free(p->stdhdu);
@@ -1033,7 +1065,6 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   free(p->ciflag);
   free(p->skyfile);
   free(p->stdfile);
-  free(p->cp.output);
   free(p->clumpshdu);
   free(p->objectshdu);
   free(p->clumpsfile);

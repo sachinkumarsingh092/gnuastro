@@ -95,7 +95,7 @@ void
 gal_checkset_check_file(char *filename);
 
 int
-gal_checkset_check_file_report(char *filename);
+gal_checkset_check_file_return(char *filename);
 
 void
 gal_checkset_writable_remove(char *filename, int keep, int dontdelete);

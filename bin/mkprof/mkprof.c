@@ -703,8 +703,9 @@ mkprof(struct mkprofparams *p)
     {
       asprintf(&tmp, "Zeropoint: %g", p->zeropoint);
       gal_list_str_add(&comments, tmp, 0);
+      gal_checkset_writable_remove(LOGFILENAME, 0, p->cp.dontdelete);
       gal_table_write_log(p->log, PROGRAM_STRING, &p->rawtime, comments,
-                          LOGFILENAME, p->cp.dontdelete, p->cp.quiet);
+                          LOGFILENAME, p->cp.quiet);
       gal_list_str_free(comments, 1);
     }
 

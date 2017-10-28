@@ -151,12 +151,12 @@ gal_table_comments_add_intro(gal_list_str_t **comments,
 
 void
 gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
-                int tableformat, char *filename, int dontdelete);
+                int tableformat, char *filename, char *extname);
 
 void
 gal_table_write_log(gal_data_t *logll, char *program_string,
                     time_t *rawtime, gal_list_str_t *comments,
-                    char *filename, int dontdelete, int quiet);
+                    char *filename, int quiet);
 
 
 

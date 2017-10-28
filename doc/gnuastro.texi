@@ -20181,16 +20181,27 @@ the inverse of the input indexs linked list. It is recommended to use
 output}.
 @end deftypefun
 
-@deftypefun void gal_fits_tab_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, int @code{dontdelete})
+@deftypefun void gal_fits_tab_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename})
 Write the list of datasets in @code{cols} (see @ref{List of gal_data_t}) as
 separate columns in a FITS table in @code{filename}. If @code{filename}
-already exists and @code{dontdelete} is non-zero, then this function will
-abort with an error and will not write over the existing file. The format
-of the table (ASCII or binary) may be specified with the @code{tableformat}
-(see @ref{Table input output}). If @code{comments!=NULL}, each node of the
-list of strings will be written as a @code{COMMENT} keywords in the output
-FITS file (see @ref{List of strings}.
+already exists then this function will write the table as a new extension
+after all existing ones. The format of the table (ASCII or binary) may be
+specified with the @code{tableformat} (see @ref{Table input output}). If
+@code{comments!=NULL}, each node of the list of strings will be written as
+a @code{COMMENT} keywords in the output FITS file (see @ref{List of
+strings}.
+
+This is a low-level function for tables. It is recommended to use
+@code{gal_table_write} for generic writing of tables in a variety of
+formats, see @ref{Table input output}.
 @end deftypefun
+
+
+
+
+
+
+
 
 
 
@@ -20415,7 +20426,7 @@ the dataset. If the necessary space for the image is larger than
 see the description under the same name in @ref{Generic data container}.
 @end deftypefun
 
-@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, int @code{dontdelete})
+@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename})
 Write @code{cols} in a plain text file @code{filename}. @code{cols} may
 have one or two dimensions which determines the output:
 
@@ -20432,13 +20443,14 @@ table.
 be written.
 @end table
 
-If @code{filename} already exists and @code{dontdelete} is non-zero, then
-this function will abort with an error and will not write over the existing
-file. If @code{comments!=NULL}, a @code{#} will be put at the start of each
-node of the list of strings and will be written in the file before the
+If @code{filename} already exists this function will abort with an error
+and will not write over the existing file. Please make sure if the file
+exists or not and take the appropriate action before calling this
+function. If @code{comments!=NULL}, a @code{#} will be put at the start of
+each node of the list of strings and will be written in the file before the
 column meta-data in @code{filename} (see @ref{List of strings}).
 
-Note that this is a low-level function for tables. It is recommended to use
+This is a low-level function for tables. It is recommended to use
 @code{gal_table_write} for generic writing of tables in a variety of
 formats, see @ref{Table input output}.
 @end deftypefun
@@ -20597,18 +20609,24 @@ this line is ignored.
 @end itemize
 @end deftypefun
 
-@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, int @code{dontdelete})
+@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname})
 Write the @code{cols} list of datasets into a table in @code{filename} (see
 @ref{List of gal_data_t}). The format of the table can be determined with
 @code{tableformat} that accepts the macros defined above. If
-@code{comments!=NULL}, then the list of comments will also be printed into
-the output table. When the output table is a plain text file, each node's
-string will be printed after a @code{#} (so it can be considered as a
-comment). If @code{filename} already exists and @code{dontdelete} is not
-zero, this function will abort the program with an error.
+@code{comments} is not @code{NULL}, then the list of comments will also be
+printed into the output table. When the output table is a plain text file,
+each node's string will be printed after a @code{#} (so it can be
+considered as a comment) and in FITS table they will follow a
+@code{COMMENT} keyword. If @file{filename} is a FITS file, the table
+extension that will be written will have the name @code{extname}.
+
+If a file named @file{filename} already exists, the operation depends on
+the type of output. When @file{filename} is a FITS file, the table will be
+added as a new extension after all existing ones. If @file{filename} is a
+plain text file, this function will abort with an error.
 @end deftypefun
 
-@deftypefun void gal_table_write_log (gal_data_t @code{*logll}, char @code{*program_string}, time_t @code{*rawtime}, gal_list_str_t @code{*comments}, char @code{*filename}, int @code{dontdelete}, int @code{quiet})
+@deftypefun void gal_table_write_log (gal_data_t @code{*logll}, char @code{*program_string}, time_t @code{*rawtime}, gal_list_str_t @code{*comments}, char @code{*filename}, int @code{quiet})
 Write the @code{logll} list of datasets into a table in @code{filename}
 (see @ref{List of gal_data_t}). This function is just a wrapper around
 @code{gal_table_comments_add_intro} and @code{gal_table_write} (see
@@ -22809,7 +22827,7 @@ main(void)
   /* Set names for the columns and write them out. */
   c1->name = "COUNTER";
   c2->name = "VALUE";
-  gal_table_write(c1, NULL, GAL_TABLE_FORMAT_BFITS, outname, 1);
+  gal_table_write(c1, NULL, GAL_TABLE_FORMAT_BFITS, outname);
 
   /* The names weren't allocated, so to avoid cleaning-up problems,
    * we'll set them to NULL. */

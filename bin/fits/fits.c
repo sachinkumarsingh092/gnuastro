@@ -232,7 +232,7 @@ fits_print_extension_info(struct fitsparams *p)
       printf(" Column 4: Size of data in HDU.\n");
       printf("-----\n");
     }
-  gal_table_write(cols, NULL, GAL_TABLE_FORMAT_TXT, NULL, 0);
+  gal_table_write(cols, NULL, GAL_TABLE_FORMAT_TXT, NULL, NULL);
   gal_list_data_free(cols);
 }
 

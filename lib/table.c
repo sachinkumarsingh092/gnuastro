@@ -507,11 +507,10 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
 
 /* The input is a linked list of data structures and some comments. The
    table will then be written into `filename' with a format that is
-   specified by `tableformat'. If it already exists, and `dontdelete' has a
-   value of 1, then it won't be deleted and an error will be printed. */
+   specified by `tableformat'. */
 void
 gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
-                int tableformat, char *filename, int dontdelete)
+                int tableformat, char *filename, char *extname)
 {
   /* If a filename was given, then the tableformat is relevant and must be
      used. When the filename is empty, a text table must be printed on the
@@ -519,13 +518,13 @@ gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
   if(filename)
     {
       if(gal_fits_name_is_fits(filename))
-        gal_fits_tab_write(cols, comments, tableformat, filename,
-                           dontdelete);
+        gal_fits_tab_write(cols, comments, tableformat, filename, extname);
       else
-        gal_txt_write(cols, comments, filename, dontdelete);
+        gal_txt_write(cols, comments, filename);
     }
   else
-    gal_txt_write(cols, comments, filename, dontdelete);
+    /* Write to standard output. */
+    gal_txt_write(cols, comments, filename);
 }
 
 
@@ -535,7 +534,7 @@ gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
 void
 gal_table_write_log(gal_data_t *logll, char *program_string,
                     time_t *rawtime, gal_list_str_t *comments,
-                    char *filename, int dontdelete, int quiet)
+                    char *filename, int quiet)
 {
   char *msg;
 
@@ -543,8 +542,7 @@ gal_table_write_log(gal_data_t *logll, char *program_string,
   gal_table_comments_add_intro(&comments, program_string, rawtime);
 
   /* Write the log file to disk */
-  gal_table_write(logll, comments, GAL_TABLE_FORMAT_TXT, filename,
-                  dontdelete);
+  gal_table_write(logll, comments, GAL_TABLE_FORMAT_TXT, filename, "LOG");
 
   /* In verbose mode, print the information. */
   if(!quiet)

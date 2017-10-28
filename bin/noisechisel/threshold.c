@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/interpolate.h>
 
 #include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
@@ -216,7 +217,8 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
 
 
   /* write the table. */
-  gal_table_write(cols, comments, p->cp.tableformat, filename, 1);
+  gal_checkset_writable_remove(filename, 0, 1);
+  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN");
 
 
   /* Clean up (if necessary). */
