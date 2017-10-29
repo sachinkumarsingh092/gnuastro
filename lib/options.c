@@ -677,7 +677,7 @@ gal_options_parse_csv_strings(struct argp_option *option, char *arg,
 
 
 /* Parse the given string into a series of size values (integers, stored as
-   an array of size_t). The ouput array will be stored in the `value'
+   an array of size_t). The output array will be stored in the `value'
    element of the option. The last element of the array is
    `GAL_BLANK_SIZE_T' to allow finding the number of elements within it
    later (similar to a string which terminates with a '\0' element). */

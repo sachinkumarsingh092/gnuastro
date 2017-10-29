@@ -254,6 +254,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "uprange",
+      UI_KEY_UPRANGE,
+      "INT,INT",
+      0,
+      "Range of random positions (pix) around target.",
+      UI_GROUP_UPPERLIMIT,
+      &p->uprange,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_sizes_reverse
+    },
+    {
       "envseed",
       UI_KEY_ENVSEED,
       0,

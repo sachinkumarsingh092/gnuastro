@@ -14062,6 +14062,11 @@ given to @option{--upnum}. If @option{--upnum} good samples cannot be found
 until this limit, it will set the upper-limit magnitude for that object to
 NaN (blank).
 
+MakeCatalog will also print a warning if the range of positions available
+for the labeled region is smaller than double the size of the region. In
+such cases, the limited range of random positions can artificially decrease
+the standard deviation of the final distribution.
+
 @table @option
 
 @item --upmaskfile=STR
@@ -14078,8 +14083,8 @@ ignored in the upper-limit magnitude measurements.
 For example, when you are using labels from another image, you can give
 NoiseChisel's objects image output for this image as the value to this
 option. In this way, you can be sure that regions with data do not harm
-your distribution. See @ref{Quantifying measurement limits} for more on the upper
-limit magnitude.
+your distribution. See @ref{Quantifying measurement limits} for more on the
+upper limit magnitude.
 
 @item --upmaskhdu=STR
 The extension in the file specified by @option{--upmask}.
@@ -14093,6 +14098,18 @@ found until the object completely lies over an undetected region. So you
 can be sure that for each object, this many samples over undetected objects
 are made. See the upper limit magnitude discussion in @ref{Quantifying
 measurement limits} for more.
+
+@item --uprange=INT,INT
+The range/width of the region (in pixels) to do random sampling along each
+dimension of the input image around each object's position. This is not a
+mandatory option and if not given (or given a value of zero in a
+dimension), the full possible range of the dataset along that dimension
+will be used. This is useful when the noise properties of the dataset vary
+gradually. In such cases, using the full range of the input dataset is
+going to bias the result. However, note that decreasing the the range of
+available positions too much will also artificially decrease the standard
+deviation of the final distribution (and thus bias the upper-limit
+measurement).
 
 @item --envseed
 Read the random number generator type and seed value from the environment

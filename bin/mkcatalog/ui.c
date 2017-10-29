@@ -823,6 +823,18 @@ ui_preparations_outnames(struct mkcatalogparams *p)
 static void
 ui_preparations_upperlimit(struct mkcatalogparams *p)
 {
+  size_t i, c=0;
+
+  /* Check if the given range has the same number of elements as dimensions
+     in the input. */
+  if(p->uprange)
+    {
+      for(i=0;p->uprange[i]!=-1;++i) ++c;
+      if(c!=p->input->ndim)
+        error(EXIT_FAILURE, 0, "%zu values given to `--uprange', but input "
+              "has %zu dimensions", c, p->input->ndim);
+    }
+
   /* Check the number of random samples. */
   if( p->upnum < MKCATALOG_UPPERLIMIT_MINIMUM_NUM )
     error(EXIT_FAILURE, 0, "%zu not acceptable as `--upnum'. The minimum "
@@ -851,6 +863,10 @@ ui_preparations_upperlimit(struct mkcatalogparams *p)
               : gal_timing_time_based_rng_seed() );
   if(p->envseed) gsl_rng_set(p->rng, p->seed);
   p->rngname=gsl_rng_name(p->rng);
+
+  /* Keep the minimum and maximum values of the random number generator. */
+  p->rngmin=gsl_rng_min(p->rng);
+  p->rngdiff=gsl_rng_max(p->rng)-p->rngmin;
 }
 
 

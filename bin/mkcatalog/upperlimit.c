@@ -145,6 +145,122 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 /*********************************************************************/
 /*******************         For one tile         ********************/
 /*********************************************************************/
+static void
+upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
+                        size_t *min, size_t *max, int32_t clumplab)
+{
+  struct mkcatalogparams *p=pp->p;
+  size_t d, tstart, minext, maxext, coord[]={0,0};
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  /* Set the minimum and maximum acceptable value for the range.  */
+  if(p->uprange)
+    {
+      tstart=gal_data_ptr_dist(tile->block->array, tile->array,
+                               p->input->type);
+      gal_dimension_index_to_coord(tstart, ndim, dsize, coord);
+    }
+
+  /* Go over the dimensions and set the range along each dimension. */
+  for(d=0;d<ndim;++d)
+    {
+      /* If uprange is given and it is not zero, then use it, otherwise,
+         just use the full possible range. */
+      if( p->uprange && p->uprange[d] )
+        {
+          /* Set the minimum of the random range. Since `size_t' is always
+             positive, to make sure the difference isn't negative, we need
+             to convert them to integer first. */
+          if( (int)coord[d] - ((int)p->uprange[d])/2 > 0 )
+            {
+              min[d] = coord[d]-p->uprange[d]/2;
+              maxext = 0;
+            }
+          else
+            {
+              min[d] = 0;
+              maxext = -1 * ((int)coord[d] - ((int)p->uprange[d])/2);
+            }
+
+          /* Set the maximum of the random range. */
+          if( coord[d] + p->uprange[d]/2 < dsize[d] - tile->dsize[d] )
+            {
+              max[d] = coord[d] + p->uprange[d]/2;
+              minext = 0;
+            }
+          else
+            {
+              max[d] = dsize[d] - tile->dsize[d] - 1;
+              minext = ( (coord[d] + p->uprange[d]/2)
+                         - (dsize[d] - tile->dsize[d]) );
+            }
+
+          /* `minadd' and `maxadd' were defined to account for the removed
+             smaller range when an object is on the edge. Their role is to
+             add to the other side of the range as much as possible when
+             one side is decreased on an edge. */
+          if(minext)
+            min[d] = ((int)(min[d]) - (int)minext >= 0) ? (min[d]-minext) : 0;
+          if(maxext)
+            max[d] = ( (max[d] + maxext < dsize[d] - tile->dsize[d])
+                       ? (max[d] + maxext) : (dsize[d]-tile->dsize[d]-1) );
+        }
+      else
+        {
+          min[d]=0;
+          max[d]=dsize[d]-tile->dsize[d]-1;
+        }
+
+      /* A small sanity check. */
+      if( max[d]-min[d] < 2*tile->dsize[d] )
+        {
+          if(clumplab)
+            fprintf(stderr, "WARNING: object %d clump %d: range of random "
+                    "positions (%zu) along dimension %zu for upper-limit "
+                    "calculations is smaller than double of its size (%zu) "
+                    "in this dimension.\n\n", pp->object, clumplab,
+                    max[d]-min[d], ndim-d, 2*tile->dsize[d]);
+          else
+            fprintf(stderr, "WARNING: object %d: range of random "
+                    "positions (%zu) along dimension %zu for upper-limit "
+                    "calculations is smaller than double of its size (%zu) "
+                    "in this dimension.\n\n", pp->object, max[d]-min[d],
+                    ndim-d, 2*tile->dsize[d]);
+        }
+    }
+}
+
+
+
+
+
+/* Return a random position in the requested dimension. */
+static size_t
+upperlimit_random_position(struct mkcatalog_passparams *pp, gal_data_t *tile,
+                           size_t dim, size_t *min, size_t *max)
+{
+  size_t r;
+  struct mkcatalogparams *p=pp->p;
+
+  /* `gsl_rng_get' returns an inclusive value between the minimum and
+     maximum of the particular generator. It may happen that the labeled
+     region extends the full range of a dimension. In that case, the only
+     possible starting point would be 0. */
+  if( (int)(p->input->dsize[dim]) - (int)(tile->dsize[dim]) > 0 )
+    {
+      r=gsl_rng_get(pp->rng); /* For easy reading. */
+      return lrint( (float)(min[dim])
+                    + ( (float)(r-p->rngmin)/(float)(p->rngdiff)
+                        * (float)(max[dim] - min[dim]) ) );
+    }
+  else
+    return 0;
+}
+
+
+
+
+
 static double
 upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
                     unsigned long seed, int32_t clumplab)
@@ -158,9 +274,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   gal_data_t *sigclip;
   uint8_t *M=NULL, *st_m=NULL;
   float *uparr=pp->up_vals->array;
-  size_t increment, num_increment;
   float *I, *II, *SK, *st_i, *st_sky;
   size_t d, tcounter=0, counter=0, se_inc[2];
+  size_t min[2], max[2], increment, num_increment;
   int32_t *O, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
   size_t maxcount = p->upnum * MKCATALOG_UPPERLIMIT_STOP_MULTIP;
   size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
@@ -169,6 +285,10 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   /* Initializations. */
   tarray=tile->array;
   gsl_rng_set(pp->rng, seed);
+
+
+  /* Set the range of random values for this tile. */
+  upperlimit_random_range(pp, tile, min, max, clumplab);
 
 
   /* `se_inc' is just used temporarily, the important thing here is
@@ -182,14 +302,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   /* Continue measuring randomly until we get the desired total number. */
   while(tcounter<maxcount && counter<p->upnum)
     {
-      /* Get the random coordinates, note that `gsl_rng_uniform_int'
-         returns an inclusive value. It may happen that the labeled region
-         extends the full range of a dimension. In that case, the only
-         possible want the random starting point would be 0. */
+      /* Get the random coordinates. */
       for(d=0;d<ndim;++d)
-        rcoord[d] = ( (dsize[d]-tile->dsize[d])
-                      ? gsl_rng_uniform_int(pp->rng, dsize[d]-tile->dsize[d]-1)
-                      : 0 );
+        rcoord[d] = upperlimit_random_position(pp, tile, d, min, max);
 
       /* Set the tile's new starting pointer. */
       tile->array = gal_data_ptr_increment(p->input->array,

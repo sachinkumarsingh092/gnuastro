@@ -156,6 +156,7 @@ struct mkcatalogparams
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */
   size_t                upnum;  /* Number of upper-limit random samples.*/
+  size_t             *uprange;  /* Range of random positions about target. */
   uint8_t             envseed;  /* Use the environment for random seed. */
   double       upsigmaclip[2];  /* Sigma clip to measure upper limit.   */
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */
@@ -187,6 +188,8 @@ struct mkcatalogparams
   gsl_rng                *rng;  /* Main random number generator.        */
   uint64_t               seed;  /* Random number generator seed.        */
   const char         *rngname;  /* Name of random number generator.     */
+  size_t               rngmin;  /* Minimum possible value of RNG.       */
+  size_t              rngdiff;  /* Difference of RNG max and min.       */
 
   gal_data_t          *wcs_vo;  /* Object RA-Dec flux weighted X, Y.    */
   gal_data_t          *wcs_vc;  /* Clump RA-Dec flux weighted X, Y.     */
