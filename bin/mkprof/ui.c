@@ -1414,7 +1414,7 @@ ui_preparations(struct mkprofparams *p)
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
-  p->rng=gsl_rng_alloc(gsl_rng_default);
+  p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
 
   /* Make the log linked list. */
   ui_make_log(p);

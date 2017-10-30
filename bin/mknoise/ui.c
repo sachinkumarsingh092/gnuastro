@@ -310,7 +310,7 @@ ui_preparations(struct mknoiseparams *p)
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
-  p->rng=gsl_rng_alloc(gsl_rng_default);
+  p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
   p->rng_seed = ( p->envseed
                   ? gsl_rng_default_seed
                   : gal_timing_time_based_rng_seed() );
