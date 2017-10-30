@@ -819,6 +819,13 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       asprintf(&str, "Number of random samples: %zu", p->upnum);
       gal_list_str_add(&comments, str, 0);
 
+      if(p->uprange)
+        {
+          asprintf(&str, "Range of random samples about target: %zu, %zu",
+                   p->uprange[1], p->uprange[0]);
+          gal_list_str_add(&comments, str, 0);
+        }
+
       asprintf(&str, "Random number generator name: %s", p->rngname);
       gal_list_str_add(&comments, str, 0);
 
