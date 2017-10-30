@@ -32,8 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Gnuastro source code directory) as an example.*/
 
 #define PROGRAM_BIBTEX                                                 \
-  "Description of MakeCatalog"                                         \
-  "--------------------------"                                         \
+  "Description of MakeCatalog\n"                                       \
+  "--------------------------\n"                                       \
   "@ARTICLE{2016arXiv161106387A,\n"                                    \
   "   author = {{Akhlaghi}, M.},\n"                                    \
   "    title = \"{Separating detection and catalog production}\",\n"   \

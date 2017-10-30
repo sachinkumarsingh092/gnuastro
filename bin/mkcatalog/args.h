@@ -211,7 +211,7 @@ struct argp_option program_options[] =
     /* Upper limit magnitude configurations. */
     {
       0, 0, 0, 0,
-      "Upper limit magnitude:",
+      "Upper limit magnitude settings:",
       UI_GROUP_UPPERLIMIT
     },
     {
