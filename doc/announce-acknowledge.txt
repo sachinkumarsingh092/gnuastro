@@ -4,4 +4,5 @@ acknowledged in the next release.
 Leindert Boogaard
 Aurélien Jarno
 Takashi Ichikawa
+Alan Lefor
 David Valls-Gabaud

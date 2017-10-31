@@ -233,11 +233,30 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 
 
 
-# Check libtool: need by BuildProgram.
+# Check the libtool executable: needed by BuildProgram.
 AC_CHECK_PROG(has_libtool, libtool, [yes], [no])
-AS_IF([test "x$has_libtool" = "xno"], [anywarnings=yes])
-AM_CONDITIONAL([COND_HASLIBTOOL], [test "x$has_libtool" = "xyes"])
 
+# If Libtool is present, make sure it is GNU Libtool
+AS_IF([test "x$has_libtool" = "xyes"],
+      [ AC_MSG_CHECKING(if libtool executable is GNU)
+        AS_IF( libtool --version 2> /dev/null | grep GNU 2>&1 > /dev/null,
+               [has_gnulibtool=yes], [has_gnulibtool=no])
+        AC_MSG_RESULT( $has_gnulibtool )],
+      [ has_gnulibtool=no ])
+
+# When either the `libtool' executable isn't GNU or it doesn't exist, then
+# look for `glibtool'.
+AS_IF([test "x$has_gnulibtool" = "xyes"],
+      [ gnulibtool_exec=libtool ],
+      [ AC_CHECK_PROG(has_glibtool, glibtool, [yes], [no])
+        AS_IF( [test "x$has_glibtool" = "xyes"],
+               [has_gnulibtool=yes; gnulibtool_exec=glibtool],
+               [has_gnulibtool=no; anywarnings=yes] ) ])
+
+# Write the test results in the Makefiles and `config.h'.
+AM_CONDITIONAL([COND_HASGNULIBTOOL], [test "x$has_gnulibtool" = "xyes"])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_EXEC], ["$gnulibtool_exec"],
+                   [The executable to call GNU Libtool])
 
 
 
@@ -574,16 +593,11 @@ AC_ARG_ENABLE([warp],
 
 
 
-# If we had a "ano" variable to be "true" if there was a no, then we
-# would get. So we see we have no need for such a variable.
-#
-# if [ ano == true ]; then
-#    every "notset" becomes yes.        if [ ayes == true ]; then
-# elif [ ayes == true ]; then                 every "notset" becomes "no"
-#    every "notset" becomes no.   ==>   else
-# else                                        every "notset" becomes "yes"
-#    every "notset"  becomes yes.       fi
-# fi
+
+# If we had a "ayes" variable to be "true" if there was a `yes'. So any
+# program that is not explicitly requested must be ignored and vice versa
+# (if no programs were explicly requested, the enable all that weren't
+# disabled).
 AS_IF([test $ayes = true ],
       [
        AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=no])
@@ -621,6 +635,14 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_warp = notset], [enable_warp=yes])
        ]
      )
+
+
+
+
+
+# BuildProgram depends on the presence of GNU Libtool, if it isn't present,
+# then don't build it.
+AS_IF([test "x$has_gnulibtool" = "xno"], [enable_buildprog=no])
 
 
 
@@ -731,13 +753,17 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    output files if Gnuastro's programs were called within a Git"])
                AS_ECHO(["    version controlled directory to help in reproducibility."])
                AS_ECHO([]) ])
-        AS_IF([test "x$has_libtool" = "xno"],
+        AS_IF([test "x$has_gnulibtool" = "xno"],
               [AS_ECHO(["  - GNU Libtool, could not be found in your search path."])
-               AS_ECHO(["    Gnuastro's BuildProgram uses libtool to link your source code"])
-               AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Note that"])
-               AS_ECHO(["    not having libtool in your search path will not harm Gnuastro's"])
-               AS_ECHO(["    building and installation process. This warning is only for"])
-               AS_ECHO(["    using BuildProgram after Gnuastro has been built and installed."])
+               AS_ECHO(["    Gnuastro's BuildProgram uses GNU libtool to link your source code"])
+               AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Therefore"])
+               AS_ECHO(["    BuildProgarm will not be built or installed. Please note that"])
+               AS_ECHO(["    not having GNU libtool in your search path will not harm the rest"])
+               AS_ECHO(["    of Gnuastro's building and installation. Gnuastro has its own"])
+               AS_ECHO(["    internal implementation of GNU Libtool to build its self. This"])
+               AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
+               AS_ECHO(["    built and installed. The executable names searched were \`libtool'"])
+               AS_ECHO(["    and \`glibtool'."])
                AS_ECHO([]) ])
         AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])

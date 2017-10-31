@@ -48,8 +48,8 @@ endif
 if COND_HASLIBJPEG
   MAYBE_HASLIBJPEG = "yes"
 endif
-if COND_HASLIBTOOL
-  MAYBE_HASLIBTOOL = "yes"
+if COND_HASGNULIBTOOL
+  MAYBE_HASGNULIBTOOL = "yes"
 endif
 if COND_ARITHMETIC
   MAYBE_ARITHMETIC_TESTS = arithmetic/snimage.sh arithmetic/onlynumbers.sh \
@@ -188,7 +188,7 @@ AM_TESTS_ENVIRONMENT =                              \
 export mkdir_p="$(MKDIR_P)";                        \
 export topsrc=$(top_srcdir);                        \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
-export haslibtool=$(MAYBE_HASLIBTOOL);              \
+export hasgnulibtool=$(MAYBE_HASGNULIBTOOL);        \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 

@@ -49,7 +49,10 @@ source=$topsrc/tests/$prog/simpleio.c
 if [ ! -f $execname ]; then echo "$execname not created.";  exit 77; fi
 if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
 if [ ! -f $source   ]; then echo "$source does not exist."; exit 77; fi
-if [ "x$haslibtool" != "xyes" ];then echo "libtool not present.";  exit 77;fi
+if [ "x$hasgnulibtool" != "xyes" ];then
+    echo "GNU libtool not present.";
+    exit 77;
+fi
 
 
 
