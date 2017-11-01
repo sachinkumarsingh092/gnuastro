@@ -141,15 +141,15 @@ in project history):
 @*
 @*
 @*
-For myself, I am interested in science and in philosophy only because
-I want to learn something about the riddle of the world in which we
-live, and the riddle of man’s knowledge of that world. And I believe
-that only a revival of interest in these riddles can save the sciences
-and philosophy from narrow specialization and from an obscurantist
-faith in the expert’s special skill, and in his personal knowledge and
-authority; a faith that so well fits our ‘post-rationalist’ and
-‘post-critical’ age, proudly dedicated to the destruction of the
-tradition of rational philosophy, and of rational thought itself.
+For myself, I am interested in science and in philosophy only because I
+want to learn something about the riddle of the world in which we live, and
+the riddle of man's knowledge of that world. And I believe that only a
+revival of interest in these riddles can save the sciences and philosophy
+from narrow specialization and from an obscurantist faith in the expert's
+special skill, and in his personal knowledge and authority; a faith that so
+well fits our `post-rationalist' and `post-critical' age, proudly dedicated
+to the destruction of the tradition of rational philosophy, and of rational
+thought itself.
 @author Karl Popper. The logic of scientific discovery. 1959.
 @end quotation
 
@@ -795,7 +795,7 @@ mis-understandings about what it really does behind the scenes and can
 be misleading. This attitude is further encouraged through non-free
 software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}.
 This approach to scientific software only helps in producing dogmas
-and an ``obscurantist faith in the expert’s special skill, and in his
+and an ``obscurantist faith in the expert's special skill, and in his
 personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
 PDF (for print) version of this book.}.
@@ -3031,7 +3031,7 @@ telling it to copy some files (instead of making symbolic links, with the
 @option{--copy} option, this is not mandatory@footnote{The @option{--copy}
 option is recommended because some backup systems might do strange things
 with symbolic links.}) and where to look for Gnulib (with the
-@option{--gnulib-srcdir} option). Please note that teh address given to
+@option{--gnulib-srcdir} option). Please note that the address given to
 @option{--gnulib-srcdir} has to be an absolute address (so don't use
 @file{~} or @file{../} for example).
 
@@ -4277,7 +4277,7 @@ the whole string you want to pass to @option{--hdu} as seen below:
 @example
 $ astcrop --hdu="3; images(exposure > 100)" FITSimage.fits
 @end example
-Alternatively you can put a `@command{\}' before every metacharacter in
+Alternatively you can put a `@command{\}' before every meta-character in
 this string, but try doing that, and probably you will agree that the
 double quotes are much more easier, elegant and readable.
 
@@ -4663,8 +4663,8 @@ see @ref{Report a bug}.
 @itemx --tilesize=[,INT[,...]]
 The size of regular tiles for tessellation, see @ref{Tessellation}. For
 each dimension an integer length (in units of data-elements or pixels) is
-necessary. If the input dimensionality is different from the number of
-values given to this option, the program will stop with an error. Values
+necessary. If the number of input dimensions is different from the number
+of values given to this option, the program will stop with an error. Values
 must be separated by commas (@key{,}) and can also be fractions (for
 example @code{4/2}). If they are fractions, the result must be an integer,
 otherwise an error will be printed.
@@ -8713,10 +8713,9 @@ moving average}) on the input dataset. During mean filtering, each pixel
 (excluding blank values). The number of surrounding pixels in each
 dimension (to calculate the mean) is determined through the earlier
 operands that have been pushed onto the stack prior to the input
-dataset. The number of necessary operands is determined by the
-dimensionality of the input dataset (first popped operand). The order of
-the dimensions on the command-line is the order in FITS format. Here is one
-example:
+dataset. The number of necessary operands is determined by the dimensions
+of the input dataset (first popped operand). The order of the dimensions on
+the command-line is the order in FITS format. Here is one example:
 
 @example
 $ astarithmetic 5 4 image.fits filter-mean
@@ -12332,7 +12331,7 @@ Removed options:
 @item
 @option{--dilate}: In the paper, true detections were dilated for a final
 dig into the noise. However, simple 8-connected dilation can produce boxy
-results which are not realistic and could miss diffuse flux. The finalq dig
+results which are not realistic and could miss diffuse flux. The final dig
 into the noise is now done by ``grow''ing the true detections, similar to
 how true clumps were grown, see the description of @option{--detgrowquant}
 below and in @ref{Detection options} for more on the new alternative.
@@ -12709,7 +12708,7 @@ will be ignored. When there is more than one channel (and
 will be done on each channel independently.
 
 This option is useful when a large and diffuse (almost flat within each
-tile) signal exists with very small regions of Sky. The flat-ness of the
+tile) signal exists with very small regions of Sky. The flatness of the
 profile will cause it to successfully pass the tests of @ref{Quantifying
 signal in a tile}. As a result, without this option the flat and diffuse
 signal will be interpretted as sky. In such cases, you can see the status
@@ -15625,8 +15624,8 @@ dimensions, for example @code{CRPIX1} and @code{PC2_1}. You can see the
 FITS headers with Gnuastro's @ref{Fits} program using a command like this:
 @command{$ astfits -p image.fits}.
 
-If the values given to all of these options does not correspond to the
-dimensionality of the output dataset, then no WCS information will be
+If the values given to any of these options does not correspond to the
+number of dimensions in the output dataset, then no WCS information will be
 added.
 
 @table @option
@@ -16144,7 +16143,7 @@ interested readers can study those books.
 @subsection Distance on a 2D curved space
 
 The observations to date (for example the Planck 2015 results), have not
-measured@footnote{The observations are interpeted under the assumption of
+measured@footnote{The observations are interpreted under the assumption of
 uniform curvature. For a relativistic alternative to dark energy (and maybe
 also some part of dark matter), non-uniform curvature may be even be more
 critical, but that is beyond the scope of this brief explanation.} the
@@ -16180,7 +16179,7 @@ parametrize this space is through the Cartesian coordinates (@mymath{x},
 are plotted. An infinitesimal change in the direction of each axis is
 written as @mymath{dx} and @mymath{dy}. For each point, the infinitesimal
 changes are parallel with the respective axes and are not shown for
-clarity. Another very useful way of parametrizing this space is through
+clarity. Another very useful way of parameterizing this space is through
 polar coordinates. For each point, we define a radius (@mymath{r}) and
 angle (@mymath{\phi}) from a fixed (but arbitrary) reference axis. In
 @ref{flatplane} the infinitesimal changes for each polar coordinate are
@@ -16279,7 +16278,7 @@ have a finite universe, where @mymath{r} cannot become larger than
 @mymath{R} as in @ref{sphereandplane}. When @mymath{K=0}, we have a flat
 plane (@ref{flatplane}) and a negative @mymath{K} will correspond to an
 imaginary @mymath{R}. The latter two cases may be infinite in area (which
-is not a simple concept, but mathematically can be modelled with @mymath{r}
+is not a simple concept, but mathematically can be modeled with @mymath{r}
 extending infinitely), or finite-area (like a cylinder is flat everywhere
 with @mymath{ds_s^2={dx^2 + dy^2}}, but finite in one direction in size).
 
@@ -16330,12 +16329,12 @@ can include a multiplicative scaling factor, which is a function of time:
 cosmology, the physics we assume for it: general relativity, and the choice
 of whether the universe is uniform (`homogeneous') in density and curvature
 or inhomogeneous. In this section, the functional form of @mymath{a(t)} is
-irrelevant, so we can aviod these issues.
+irrelevant, so we can avoid these issues.
 
 With this scaling factor, the proper distance will also depend on time. As
 the universe expands, the distance between two given points will shift to
 larger values. We thus define a distance measure, or coordinate, that is
-independent of time and thus doesn’t `move'. We call it the @emph{comoving
+independent of time and thus doesn't `move'. We call it the @emph{comoving
 distance} and display with @mymath{\chi} such that:
 @mymath{l(r,t)=\chi(r)a(t)}.  We have therefore, shifted the @mymath{r}
 dependence of the proper distance we derived above for a static universe to
@@ -16352,9 +16351,9 @@ the object can be scaled with @mymath{a(t)}.
 
 Measuring the change of distance in a time-dependent (expanding) universe
 only makes sense if we can add up space and time@footnote{In other words,
-making our spacetime consistent with Minkowski spacetime geometry. In this
-geometry, different observers at a given point (event) in spacetime split
-up spacetime into `space' and `time' in different ways, just like people at
+making our space-time consistent with Minkowski space-time geometry. In this
+geometry, different observers at a given point (event) in space-time split
+up space-time into `space' and `time' in different ways, just like people at
 the same spatial position can make different choices of splitting up a map
 into `left--right' and `up--down'. This model is well supported by
 twentieth and twenty-first century observations.}. But we can only add bits
@@ -16363,10 +16362,10 @@ conversion constant (similar to how 1000 is used to convert a kilometer
 into meters).  Experimentally, we find strong support for the hypothesis
 that this conversion constant is the speed of light (or gravitational
 waves@footnote{The speed of gravitational waves was recently found to be
-very similar to that of light in vaccum, see
+very similar to that of light in vacuum, see
 @url{https://arxiv.org/abs/1710.05834, arXiv:1710.05834}.}) in a
 vacuum. This speed is postulated to be constant@footnote{In @emph{natural
-units}, speed is measured in units of the speed of light in vaccum.} and is
+units}, speed is measured in units of the speed of light in vacuum.} and is
 almost always written as @mymath{c}. We can thus parametrize the change in
 distance on an expanding 2D surface as
 
@@ -16623,7 +16622,7 @@ The conversion factor (addition) to absolute magnitude. Note that this is
 practically the distance modulus added with @mymath{-2.5\log{(1+z)}} for
 the the desired redshift based on the input parameters. Once the apparent
 magnitude and redshift of an object is known, this value may be added with
-the apparent magnitdue to give the object's absolute magnitude.
+the apparent magnitude to give the object's absolute magnitude.
 
 @item -g
 @itemx --age
@@ -17429,7 +17428,7 @@ and the actual binary/compiled file is not of later use.
 @itemx --la=STR
 Use the given @file{.la} file (Libtool control file) instead of the one
 that was produced from Gnuastro's configuration results. The Libtool
-control file keeps all the necesary information for building and linking a
+control file keeps all the necessary information for building and linking a
 program with a library built by Libtool. The default
 @file{prefix/lib/libgnuastro.la} keeps all the information necessary to
 build a program using the Gnuastro library gathered during configure time
@@ -21108,7 +21107,7 @@ only parse it from start to end.
 @item withblank
 If the block containing the tiles has blank elements, those blank elements
 will be blank in the output of this function also, hence the array will be
-initialzied with blank values when this option is called (see below).
+initialized with blank values when this option is called (see below).
 
 @item initialize
 Initialize the allocated space with blank values before writing in the
@@ -22458,7 +22457,7 @@ Return the distance modulus at redshift @code{z} (with no units).
 @end deftypefun
 
 @deftypefun double gal_cosmology_to_absolute_mag (double @code{z}, double @code{H0}, double @code{o_lambda_0}, double @code{o_matter_0}, double @code{o_radiation_0})
-Return the conversion from apparent to absolute magnitdue for an object at
+Return the conversion from apparent to absolute magnitude for an object at
 redshift @code{z}. This value has to be added to the apparent magnitude to
 give the absolute magnitude of an object at redshift @code{z}.
 @end deftypefun
