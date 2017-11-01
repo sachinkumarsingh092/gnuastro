@@ -112,7 +112,8 @@ detection_initial(struct noisechiselparams *p)
 
 
   /* Label the connected components. */
-  p->numinitialdets=gal_binary_connected_components(p->binary, &p->olabel, 1);
+  p->numinitialdets=gal_binary_connected_components(p->binary, &p->olabel,
+                                                    p->binary->ndim);
   if(p->detectionname)
     {
       p->olabel->name="OPENED_AND_LABELED";
@@ -969,7 +970,7 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
   while(++o<of);
 
   /* Expand the detections. */
-  clumps_grow(p->olabel, diffuseindexs, 0);
+  clumps_grow(p->olabel, diffuseindexs, 0, p->olabel->ndim);
 
   /* Only keep the 1 valued pixels in the binary array and fill its
      holes. */
@@ -980,7 +981,8 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
   gal_binary_fill_holes(workbin, 1, p->detgrowmaxholesize);
 
   /* Get the labeled image. */
-  numexpanded=gal_binary_connected_components(workbin, &p->olabel, 8);
+  numexpanded=gal_binary_connected_components(workbin, &p->olabel,
+                                              workbin->ndim);
 
   /* Set all the input's blank pixels to blank in the labeled and binary
      arrays. */

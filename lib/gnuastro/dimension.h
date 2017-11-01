@@ -188,6 +188,12 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
     size_t nind, gdn_ind=index;                                         \
     uint8_t gdn_D, *gdn_is_start, *gdn_is_end, *gdn_is_edge, gdn_one=1; \
                                                                         \
+    /* A small sanity check. */                                         \
+    if(connectivity>ndim)                                               \
+      error(EXIT_FAILURE, 0, "%s: connectivity value (%d) is larger "   \
+            "than the number of dimensions (%zu)", __func__,            \
+            (int)connectivity, ndim);                                   \
+                                                                        \
     /* Initialize the start/end. */                                     \
     gdn_is_start=(uint8_t *)(&gdn_bitstr);                              \
     gdn_is_end=(uint8_t *)(&gdn_bitstr)+1;                              \

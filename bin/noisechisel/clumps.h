@@ -79,7 +79,8 @@ void
 clumps_grow_prepare_final(struct clumps_thread_params *cltprm);
 
 void
-clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers);
+clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers,
+            int connectivity);
 
 void
 clumps_true_find_sn_thresh(struct noisechiselparams *p);

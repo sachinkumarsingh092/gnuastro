@@ -472,7 +472,7 @@ segmentation_on_threads(void *in_prm)
           /* Grow the true clumps over the detection. */
           clumps_grow_prepare_initial(&cltprm);
           if(cltprm.diffuseindexs->size)
-            clumps_grow(p->olabel, cltprm.diffuseindexs, 1);
+            clumps_grow(p->olabel, cltprm.diffuseindexs, 1, 1);
           if(clprm->step==3)
             { gal_data_free(cltprm.diffuseindexs); continue; }
 
@@ -507,8 +507,17 @@ segmentation_on_threads(void *in_prm)
                  grown. */
               clumps_grow_prepare_final(&cltprm);
 
-              /* Cover the whole area. */
-              clumps_grow(p->olabel, cltprm.diffuseindexs, 0);
+              /* Cover the whole area (using maximum connectivity to not
+                 miss any pixels). */
+              clumps_grow(p->olabel, cltprm.diffuseindexs, 0,
+                          p->olabel->ndim);
+
+              /* Make sure all diffuse pixels are labeled. */
+              if(cltprm.diffuseindexs->size)
+                error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to "
+                      "fix it. %zu pixels of detection %zu have not been "
+                      "labeled (as an object)", PACKAGE_BUGREPORT,
+                      cltprm.diffuseindexs->size, cltprm.id);
             }
           gal_data_free(cltprm.diffuseindexs);
           if(clprm->step==5) { gal_data_free(cltprm.clumptoobj); continue; }

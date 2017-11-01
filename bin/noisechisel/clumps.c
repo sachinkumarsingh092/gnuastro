@@ -542,10 +542,13 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
 
      diffuseindexs: The indexs of the pixels that must be grown.
 
-     withrivers: as described abvoe.
+     withrivers: as described above.
+
+     connectivity: connectivity to define neighbors for growth.
 */
 void
-clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers)
+clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers,
+            int connectivity)
 {
   int searchngb;
   size_t *diarray=diffuseindexs->array;
@@ -595,7 +598,8 @@ clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers)
              in a 2D image). Note that since this macro has multiple loops
              within it, we can't use break. We'll use a variable instead. */
           searchngb=1;
-          GAL_DIMENSION_NEIGHBOR_OP(*s, labels->ndim, labels->dsize, 1, dinc,
+          GAL_DIMENSION_NEIGHBOR_OP(*s, labels->ndim, labels->dsize,
+                                    connectivity, dinc,
             {
               if(searchngb)
                 {
