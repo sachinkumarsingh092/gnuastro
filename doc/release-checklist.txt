@@ -157,6 +157,20 @@ Packaging in Debian
 
 Steps necessary to Package Gnuastro for Debian.
 
+ - It would help to use the most recent versions of packages in Debian. To
+   do that, you can update the `/etc/apt/sources.list' file. You can get
+   the current releases from this webpage:
+   http://ftp.debian.org/debian/. See which release is currently the
+   `testing' release and use replace its name with the one that is
+   currently present in that file. Afterwards, run these commands:
+
+     $ sudo apt-get update
+     $ sudo apt-get upgrade
+
+   A restart should help in making sure everything that has been updated is
+   being used.
+
+
  - If you don't already have the Git repository, clone it with the
    following command. A `gnuastro' directory will be built, for the moment
    don't go in it.
