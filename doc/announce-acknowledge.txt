@@ -2,6 +2,7 @@ This file is meant to keep the names of the people who's help must be
 acknowledged in the next release.
 
 Leindert Boogaard
+Nicolas Bouché
 Aurélien Jarno
 Takashi Ichikawa
 Alan Lefor
