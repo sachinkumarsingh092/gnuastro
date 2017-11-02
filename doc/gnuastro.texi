@@ -20493,17 +20493,19 @@ formats, see @ref{Table input output}.
 Tables are a collection of one dimensional datasets that are packed
 together into one file. They are the single most common format to store
 high-level (processed) information, hence they play a very important role
-in Gnuastro. For a more thorough introduction, please see Gnuastro's
+in Gnuastro. For a more thorough introduction, please see
 @ref{Table}. Gnuastro's Table program, and all the other programs that can
-read from and write into tables, use the functions of this section. For a
-simple demonstration of using the constructs introduced here, see
-@ref{Library demo - reading and writing table columns}.
+read from and write into tables, use the functions of this section for
+reading and writing their input/output tables. For a simple demonstration
+of using the constructs introduced here, see @ref{Library demo - reading
+and writing table columns}.
 
 Currently only plain text (see @ref{Gnuastro text table format}) and FITS
-tables are supported by Gnuastro. However, the low-level table
-infra-structure is written such that for other formats are also possible
-and in future releases more formats will be supported, please let us know
-your priorities so they get higher priorities.
+(ASCII and binary) tables are supported by Gnuastro. However, the low-level
+table infra-structure is written such that accommodating other formats is
+also possible and in future releases more formats will hopefully be
+supported. Please don't hesitate to suggest your favorite format so it can
+be implemented when possible.
 
 @deffn  Macro GAL_TABLE_DEF_WIDTH_STR
 @deffnx Macro GAL_TABLE_DEF_WIDTH_INT
@@ -22760,24 +22762,24 @@ column selection is discussed in @ref{Selecting table columns}. The first
 and second columns can be any type, but this program will convert them to
 @code{int32_t} and @code{float} for its internal usage
 respectively. However, the third column must be double for this program. So
-if it isn't the program will abort with an error. Having the columns in
+if it isn't, the program will abort with an error. Having the columns in
 memory, it will print them out along with their sum (just a simple
 application, you can do what ever you want at this stage). Reading the
 table finishes here.
 
 The rest of the program is a demonstration of writing a table. While
 parsing the rows, this program will change the first column (to be
-counters) and multiply the second by 10 (to the output may be
+counters) and multiply the second by 10 (so the output will be
 different). Then it will define the order of the output columns by setting
 the @code{next} element (to create a @ref{List of gal_data_t}). Before
 writing, this function will also set names for the columns (units and
 comments can be defined in a similar manner). Writing the columns to a file
 is then done through a simple call to @code{gal_table_write}.
 
-The operations that are shows in this example program are not necessary all
+The operations that are shown in this example program are not necessary all
 the time. For example, in many cases, you know the numerical data type of
-the column before writing the program (see @ref{Numeric data types}), so
-type checking and copying won't be necessary.
+the column before writing your program (see @ref{Numeric data types}), so
+type checking and copying to a specific type won't be necessary.
 
 @example
 #include <stdio.h>
@@ -24436,12 +24438,12 @@ simplify the final merging of your work.
 @appendix Gnuastro programs list
 
 GNU Astronomy Utilities @value{VERSION}, contains the following
-programs. They are sorted in alphabetical order and followed by their
-version number. A short description is provided for each program which
-starts with the executable names in @file{thisfont} followed by a link to
-the respective section in parenthesis, see @ref{Naming
-convention}. Throughout this book, they are ordered based on their context,
-please see the book contents for contextual ordering.
+programs. They are sorted in alphabetical order and a short description is
+provided for each program. The description starts with the executable names
+in @file{thisfont} followed by a pointer to the respective section in
+parenthesis. Throughout this book, they are ordered based on their context,
+please see the top-level contents for contextual ordering (based on what
+they do).
 
 
 @table @asis
