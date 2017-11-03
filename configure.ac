@@ -93,7 +93,7 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
-# Generic compiler flags for all subdirectories.
+# Generic compiler flags for all sub-directories.
 CFLAGS="-Wall -O3 $CFLAGS"
 LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
 CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
@@ -596,7 +596,7 @@ AC_ARG_ENABLE([warp],
 
 # If we had a "ayes" variable to be "true" if there was a `yes'. So any
 # program that is not explicitly requested must be ignored and vice versa
-# (if no programs were explicly requested, the enable all that weren't
+# (if no programs were explicitly requested, then enable all that weren't
 # disabled).
 AS_IF([test $ayes = true ],
       [
@@ -757,12 +757,12 @@ AS_IF([test x$enable_guide_message = xyes],
               [AS_ECHO(["  - GNU Libtool, could not be found in your search path."])
                AS_ECHO(["    Gnuastro's BuildProgram uses GNU libtool to link your source code"])
                AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Therefore"])
-               AS_ECHO(["    BuildProgarm will not be built or installed. Please note that"])
+               AS_ECHO(["    BuildProgram will not be built or installed. Please note that"])
                AS_ECHO(["    not having GNU libtool in your search path will not harm the rest"])
                AS_ECHO(["    of Gnuastro's building and installation. Gnuastro has its own"])
                AS_ECHO(["    internal implementation of GNU Libtool to build its self. This"])
                AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
-               AS_ECHO(["    built and installed. The executable names searched were \`libtool'"])
+               AS_ECHO(["    part of this build. The executable names searched were \`libtool'"])
                AS_ECHO(["    and \`glibtool'."])
                AS_ECHO([]) ])
         AS_IF([test "x$has_ghostscript" = "xno"],
