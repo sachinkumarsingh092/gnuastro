@@ -144,6 +144,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     /* Output options. */
     {
       "onlydetection",
@@ -158,19 +160,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-    {
-      "grownclumps",
-      UI_KEY_GROWNCLUMPS,
-      0,
-      0,
-      "Save grown clumps instead of original.",
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->grownclumps,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
+
 
 
 
@@ -471,6 +461,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     /* Segmentation */
     {
       0, 0, 0, 0,
@@ -569,6 +561,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "grownclumps",
+      UI_KEY_GROWNCLUMPS,
+      0,
+      0,
+      "Save grown clumps instead of original.",
+      UI_GROUP_SEGMENTATION,
+      &p->grownclumps,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "checksegmentation",
       UI_KEY_CHECKSEGMENTATION,
       0,
@@ -583,6 +588,10 @@ struct argp_option program_options[] =
     },
 
 
+
+
+
+    /* Operating mode options. */
     {
       "continueaftercheck",
       UI_KEY_CONTINUEAFTERCHECK,
@@ -599,6 +608,9 @@ struct argp_option program_options[] =
 
 
 
+
+
+    /* End of options. */
     {0}
   };
 
