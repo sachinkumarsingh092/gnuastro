@@ -60,7 +60,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "convolved",
+      "convolvedname",
       UI_KEY_CONVOLVED,
       "STR",
       0,
