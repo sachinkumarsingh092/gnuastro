@@ -12527,6 +12527,58 @@ Akhlaghi and Ichikawa [2015].
 HDU containing the kernel in the file given to the @option{--kernel}
 option.
 
+@item --convolvedname=STR
+Use this file as the convolved image and don't do convolution and ignore
+@option{--kernel}. NoiseChisel will just check the size of the given
+dataset is the same as the input's size. If a wrong image (with the same
+size) is given to this option, the results (errors, bugs, and etc) are
+un-predictable. So please use this option with care and in a highly
+controlled environment. On such scenario is discussed below.
+
+In almost all situations, as the input gets larger, the single most CPU and
+time consuming step in NoiseChisel is convolution (the first step in its
+processing). The process of testing NoiseChisel for the best parameters in
+a given analysis will involve running NoiseChisel multiple times: to see
+the effect of each new option value. Therefore, once the kernel is
+finalized, re-convolving the input will greatly hinder fast testing of
+higher-level parameters. With this option, you can convolve the input image
+with your chosen kernel once before running NoiseChisel, then feed it to
+NoiseChisel on each test run and thus save valuable time for better/more
+tests.
+
+To build your desired convolution kernel, you can use
+@ref{MakeProfiles}. To convolve the image with a given kernel you can use
+@ref{Convolve}. Spatial domain convolution is mandatory. In the frequency
+domain, blank pixels (if present) will cover the whole image and gradients
+will appear on the edges, see @ref{Spatial vs. Frequency domain}.
+
+Below you can see an example of such a scenario: you want to see how
+variation of the growth level (through the @option{--detgrowquant} option)
+will affect the final result. Recall that you can ignore all the extra
+spaces, new lines, and `@code{\}' if you are typing in the terminal (in a
+shell script, remove the @code{$} signs at the start of the lines).
+
+@example
+## Make the kernel to convolve with.
+$ astmkprof --oversample=1 --kernel=gaussian,2,5
+
+## Convolve the input with the given kernel.
+$ astconvolve input.fits --kernel=kernel.fits                \
+              --domain=spatial --output=convolved.fits
+
+## Run NoiseChisel with seven growth quantile values.
+$ for g in 60 65 70 75 80 85 90; do                          \
+    astnoisechisel input.fits --convolvedname=convolved.fits \
+                   --detgrowquant=0.$g --output=$g.fits;     \
+  done
+@end example
+
+
+
+@item --convolvedhdu=STR
+The HDU/extension containing the convolved image in the file given to
+@option{--convolvedname}.
+
 @item -w STR
 @itemx --widekernel=STR
 File name of a wider kernel to use in estimating the difference of the mode
@@ -12630,13 +12682,6 @@ catalog). You can then run MakeCatalog on A normally, see
 @ref{MakeCatalog}. To run MakeCatalog on B, you simply set the object and
 clump labels images to those that NoiseChisel produced for A, see
 @ref{Invoking astmkcatalog}.
-
-@item --grownclumps
-In the output (see @ref{NoiseChisel output}) store the grown clumps (or
-full detected region if only one clump was present in that detection). By
-default the original clumps are stored as the third extension of the
-output, if this option is called, it is replaced with the grown clump
-labels.
 
 @item --continueaftercheck
 Continue NoiseChisel after any of the options starting with
@@ -13072,6 +13117,13 @@ the only Signal to noise ratio that the user gives into
 NoiseChisel. The `true' detections and clumps can be objectively
 identified from the noise characteristics of the image, so you don't
 have to give any hand input Signal to noise ratio.
+
+@item --grownclumps
+In the output (see @ref{NoiseChisel output}) store the grown clumps (or
+full detected region if only one clump was present in that detection). By
+default the original clumps are stored as the third extension of the
+output, if this option is called, it is replaced with the grown clump
+labels.
 
 @item --checksegmentation
 A file with the suffix @file{_seg.fits} will be created. This file keeps

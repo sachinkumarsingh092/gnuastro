@@ -76,6 +76,8 @@ enum option_keys_enum
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
   UI_KEY_KHDU               = 1000,
+  UI_KEY_CONVOLVED,
+  UI_KEY_CONVOLVEDHDU,
   UI_KEY_WKHDU,
   UI_KEY_MINNUMFALSE,
   UI_KEY_ONLYDETECTION,

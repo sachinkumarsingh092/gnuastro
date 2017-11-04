@@ -48,6 +48,8 @@ struct noisechiselparams
   char             *inputname;  /* Input filename.                        */
   char            *kernelname;  /* Input kernel filename.                 */
   char        *widekernelname;  /* Name of wider kernel to be used.       */
+  char         *convolvedname;  /* Convolved image (to avoid convolution).*/
+  char          *convolvedhdu;  /* HDU of convolved image.                */
   char                  *khdu;  /* Kernel HDU.                            */
   char                 *wkhdu;  /* Wide kernel HDU.                       */
   uint8_t       skysubtracted;  /* Input has been Sky subtracted before.  */

@@ -60,6 +60,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "convolved",
+      UI_KEY_CONVOLVED,
+      "STR",
+      0,
+      "Convolved image file to avoid convolution.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->convolvedname,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "convolvedhdu",
+      UI_KEY_CONVOLVEDHDU,
+      "STR",
+      0,
+      "HDU/extension of convolved image in file.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->convolvedhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "widekernel",
       UI_KEY_WIDEKERNEL,
       "STR",

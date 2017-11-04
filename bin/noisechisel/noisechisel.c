@@ -59,20 +59,31 @@ noisechisel_convolve(struct noisechiselparams *p)
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* Convovle with sharper kernel. */
-  if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  p->conv=gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
-                               1, tl->workoverch);
-  gal_checkset_allocate_copy(p->widekernel?"CONVOLVED-SHARPER":"CONVOLVED",
-                             &p->conv->name);
-
-  /* Report and write check images if necessary. */
-  if(!p->cp.quiet)
+  if(p->conv==NULL)
     {
-      if(p->widekernel)
-        gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
-      else
-        gal_timing_report(&t1, "Convolved with given kernel.", 1);
+      /* Make the convolved image. */
+      if(!p->cp.quiet) gettimeofday(&t1, NULL);
+      p->conv = gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
+                                     1, tl->workoverch);
+
+      /* Report and write check images if necessary. */
+      if(!p->cp.quiet)
+        {
+          if(p->widekernel)
+            gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
+          else
+            gal_timing_report(&t1, "Convolved with given kernel.", 1);
+        }
     }
+
+  /* Set a fixed name for the convolved image (since it will be used in
+     many check images). */
+  if(p->conv->name) free(p->conv->name);
+  gal_checkset_allocate_copy( ( p->widekernel
+                                ? "CONVOLVED-SHARPER"
+                                : "CONVOLVED" ), &p->conv->name);
+
+  /* Save the convolution step if necessary. */
   if(p->detectionname)
     {
       gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_NAME);
@@ -87,7 +98,6 @@ noisechisel_convolve(struct noisechiselparams *p)
                                     p->cp.numthreads, 1, tl->workoverch);
       gal_checkset_allocate_copy("CONVOLVED-WIDER", &p->wconv->name);
 
-      /* Report the status: */
       if(!p->cp.quiet)
         gal_timing_report(&t1, "Convolved with wider kernel.", 1);
     }
