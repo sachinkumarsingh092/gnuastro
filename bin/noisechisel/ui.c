@@ -119,6 +119,7 @@ ui_initialize_options(struct noisechiselparams *p,
       /* Select individually. */
       switch(cp->coptions[i].key)
         {
+        case GAL_OPTIONS_KEY_LOG:
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
@@ -218,7 +219,7 @@ ui_read_check_only_options(struct noisechiselparams *p)
      mandatory. */
   if(p->convolvedname && p->convolvedhdu==NULL)
     error(EXIT_FAILURE, 0, "no value given to `--convolvedhdu'. When the "
-          "`--convolvedname' option is called (to specify a convolved image "
+          "`--convolved' option is called (to specify a convolved image "
           "and avoid convolution) it is mandatory to also specify a HDU "
           "for it");
 
@@ -606,8 +607,8 @@ ui_preparations(struct noisechiselparams *p)
 
       /* Make sure the convolved image is the same size as the input. */
       if( gal_data_dsize_is_different(p->input, p->conv) )
-        error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolvedname' "
-              "and `--convolvehdu', is not the same size as NoiseChisel's "
+        error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
+              "`--convolvehdu', is not the same size as NoiseChisel's "
               "input: %s (hdu: %s)", p->convolvedname, p->convolvedhdu,
               p->inputname, p->cp.hdu);
     }

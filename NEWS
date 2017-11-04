@@ -45,15 +45,16 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   `--geora', `--geodec', `--clumpsra', `--clumpsdec', `--clumpsgeora',
   `--clumpsgeodec'. No alias is currently defined for the latter group.
 
-  MakeCatalog: The new `--uprange' option allows you to specify a range for
+  MakeCatalog: the new `--uprange' option allows you to specify a range for
   the random values around each object. This is useful when the noise
   properties of the dataset vary gradually and sampling from the whole
   dataset might produce biased results.
 
-  NoiseChisel: with the new `--convolved' option, NoiseChisel will not
-  convolve the input any more and use the given image. In many cases,
-  convolution is the most time consuming step of NoiseChisel, so with this
-  option, you can greatly speed up your tests (to find the best parameters
+  NoiseChisel: with the new `--convolved' and `--convolvedhdu' options,
+  NoiseChisel will not convolve the input any more and use the given
+  dataset instead. In many cases, as the inputs get larger, convolution is
+  the most time consuming step of NoiseChisel. With this option, you can
+  greatly speed up your tests (to find the best parameters by varying them,
   for a given analysis). See the book for more information and examples.
 
   NoiseChisel: with the new `--widekernel' option it is now possible to use

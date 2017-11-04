@@ -12527,7 +12527,7 @@ Akhlaghi and Ichikawa [2015].
 HDU containing the kernel in the file given to the @option{--kernel}
 option.
 
-@item --convolvedname=STR
+@item --convolved=STR
 Use this file as the convolved image and don't do convolution and ignore
 @option{--kernel}. NoiseChisel will just check the size of the given
 dataset is the same as the input's size. If a wrong image (with the same
@@ -12568,7 +12568,7 @@ $ astconvolve input.fits --kernel=kernel.fits                \
 
 ## Run NoiseChisel with seven growth quantile values.
 $ for g in 60 65 70 75 80 85 90; do                          \
-    astnoisechisel input.fits --convolvedname=convolved.fits \
+    astnoisechisel input.fits --convolved=convolved.fits     \
                    --detgrowquant=0.$g --output=$g.fits;     \
   done
 @end example
@@ -12577,7 +12577,7 @@ $ for g in 60 65 70 75 80 85 90; do                          \
 
 @item --convolvedhdu=STR
 The HDU/extension containing the convolved image in the file given to
-@option{--convolvedname}.
+@option{--convolved}.
 
 @item -w STR
 @itemx --widekernel=STR
