@@ -233,34 +233,15 @@ Steps necessary to Package Gnuastro for Debian.
      $ git checkout master
 
 
- - Again, we need to clean everything that already exists here, except
-   `.git' and `debian':
+ - Merge the upstream branch into the master branch to update the Gnuastro
+   files in master also:
 
-     $ mv debian ../gnuastro-tmp-debian    # We want to keep `debian'.
-     $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
-     $ rm -rf ./* ./.*                     # Delete everything.
-     $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
-     $ mv ../gnuastro-tmp-debian debian    # Bring back the `debian' directory.
+     $ git merge upstream
 
 
- - Unpack the distribution tarball into the master branch too:
-
-     $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
-
-
- - Update the ChangeLog. But first get all the changes in this version from
-   the NEWS file.
-
-   IMPORTANT: An official release should have `unstable' after the
-   version. But if you just want to making sure Gnuastro builds on all
-   systems, it should be `experimental'.
-
-     $ git diff NEWS
-     $ emacs debian/changelog
-
-
- - Check the current Debian policy version at
-   https://www.debian.org/doc/debian-policy/ and update debian/control:
+ - Check the current Debian policy version and update it in
+   `debian/control'. The policy can be found here:
+   https://www.debian.org/doc/debian-policy/
 
      $ emacs debian/control
 
@@ -271,6 +252,18 @@ Steps necessary to Package Gnuastro for Debian.
        soname).
 
      - In `debian/control', change all the old sonames to the new value.
+
+
+ - Update `debian/changeLog' with all the Debian-related changes (since
+   merging with the upstream branch). Gnuastro's changes don't need to be
+   mentioned here. If there was no major changes, just say "New upstream
+   version".
+
+   IMPORTANT: An official release should have `unstable' after the
+   version. But if you just want to make sure Gnuastro builds on all
+   systems, it should be `experimental'. If it is experimental, also add
+   this line in `debian/changelog': "Switch to experimental to prepare
+   transition".
 
 
  - Update your version of `pbuilder':
@@ -289,8 +282,8 @@ Steps necessary to Package Gnuastro for Debian.
                /var/cache/pbuilder/result/gnuastro_$ver-1_amd64.changes
 
 
- - Commit the contents of the new release, make sure everything except the
-   `debian' directory is commited (with `git status'):
+ - Commit the contents of the new release (should be just the contents of
+   the `debian' directory).
 
      $ git add --all
      $ git status                         # For a visual check

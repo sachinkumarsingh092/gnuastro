@@ -6,4 +6,5 @@ Nicolas Bouché
 Aurélien Jarno
 Takashi Ichikawa
 Alan Lefor
+Ole Streicher
 David Valls-Gabaud
