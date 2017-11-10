@@ -130,8 +130,12 @@ ui_initialize_options(struct cosmiccalparams *p,
       switch(cp->coptions[i].key)
         {
         case GAL_OPTIONS_KEY_HDU:
+        case GAL_OPTIONS_KEY_LOG:
         case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_QUIET:
         case GAL_OPTIONS_KEY_SEARCHIN:
+        case GAL_OPTIONS_KEY_NUMTHREADS:
+        case GAL_OPTIONS_KEY_MINMAPSIZE:
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].flags=OPTION_HIDDEN;
