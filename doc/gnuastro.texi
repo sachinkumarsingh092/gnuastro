@@ -233,6 +233,7 @@ Tutorials
 
 * Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
+* Measuring colors::
 
 Installation
 
@@ -1626,6 +1627,7 @@ Wikipedia.
 @menu
 * Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
+* Measuring colors::            Measuring colors on a real dataset.
 @end menu
 
 @node Hubble visually checks and classifies his catalog, Sufi simulates a detection, Tutorials, Tutorials
@@ -1857,7 +1859,7 @@ about what these nebulous objects that are outside of the Galaxy are.
 
 
 
-@node Sufi simulates a detection,  , Hubble visually checks and classifies his catalog, Tutorials
+@node Sufi simulates a detection, Measuring colors, Hubble visually checks and classifies his catalog, Tutorials
 @section Sufi simulates a detection
 
 It is the year 953 A.D.  and Sufi@footnote{Abd al-rahman Sufi (903 --
@@ -2289,12 +2291,216 @@ catalog). It was nearly sunset and they had to begin preparing for the
 night's measurements on the ecliptic.
 
 
+@node Measuring colors,  , Sufi simulates a detection, Tutorials
+@section Measuring colors
 
+@cindex HST
+@cindex XDF survey
+@cindex Hubble Space Telescope
+@cindex Extreme Deep Field survey
+Measuring colors of astronomical objects in broad-band or narrow-band
+images is one of the most basic and common steps in any processing. Here,
+we will be using Gnuastro's programs to detect objects in a Hubble Space
+Telescope (HST) image and measure their colors. We will be using the
+@url{https://archive.stsci.edu/prepds/xdf, Extreme Deep Field}
+dataset. Like almost all astronomical surveys, this dataset is free for
+download and use by the public. You will need the following tools in this
+tutorial: Gnuastro, ds9 @footnote{See @ref{SAO ds9}, available at
+@url{http://ds9.si.edu/site/Home.html}.}, GNU
+Wget@footnote{@url{https://www.gnu.org/software/wget}.}, and AWK (most
+common implementation is GNU
+AWK@footnote{@url{https://www.gnu.org/software/gawk}.}.
 
+We will be using the near infra-red @url{http://www.stsci.edu/hst/wfc3,
+Wide Field Camera} dataset. If you already have them in another directory
+(for example @file{XDFDIR}), you can set the @file{download} directory to
+be a symbolic link to it with a command like this: @command{ln -s XDFDIR
+download}. If not, you can download them in a special directory for the
+downloaded images.
 
+@example
+$ mkdir download
+$ cd download
+$ xdfurl=http://archive.stsci.edu/pub/hlsp/xdf/
+$ wget $xdfurl/hlsp_xdf_hst_acswfc-60mas_hudf_f775w_v1_sci.fits
+$ wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
+$ wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits
+@end example
 
+@noindent
+In this tutorial, we'll just need three filters. Later, you will probably
+need to download more filters, you can use the shell's @code{for} loop to
+download them all in series (one after the other@footnote{Note that you
+only have one port to the internet, so downloading in parallel will
+actually be slower than downloading in series.}) with one command like this
+example for the WFC3 filters. Recall that all the extra spaces,
+back-slashes (@code{\}) and new lines can be ignored if you are typing on
+the lines ending with a back-slash on the terminal.
 
+@example
+$ for f in f105w f125w f140w f160w; do                              \
+    wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits;   \
+  done
+@end example
 
+Open the image with ds9 to inspect the dataset. As a first step, let's
+calculate the area of this field. The lines starting with @code{##} are
+just comments to help you follow the steps, don't type them on the
+terminal. The commands are intentionally repetative in some places for
+better understanding each step and also to demonstrate the beauty of pipes
+in the command-line. Later, if you would like to repeat this process on
+another dataset, you will just use commands 1@footnote{Not necessary if
+dataset has blank pixels for regions outside of the field, not 0 like this
+example.}, 3, 6, 8 and 9.
+
+@example
+## (1) Set all the zero valued pixels to blank.
+$ astcrop download/hlsp_xdf_hst_acswfc-60mas_hudf_f775w_v1_sci.fits  \
+          --section=: --mode=img -h0 --output=nozeros.fits
+
+## (2) Count how many non-blank pixels there are in the image.
+$ aststatistics nozeros.fits --number
+
+## (3) Keep the result of the command above in the shell variable `n'.
+$ n=$(aststatistics nozeros.fits --number)
+
+## (4) Show all the FITS keywords of this image.
+$ astfits nozeros.fits -h1
+
+## (5) The resolution (in degrees/pixel) is in the `CDELT' keywords,
+##     so only show lines that contain these characters, by feeding
+##     the output of the previous command to the `grep' program.
+$ astfits nozeros.fits -h1 | grep CDELT
+
+## (6) Save the resolution in the variable `r'. The last part uses
+##     AWK to print the third 'field' of its input line.
+$ r=$(astfits nozeros.fits -h1 | grep CDELT1 | awk '@{print $3@}')
+
+## (7) Print the values of `n' and `r'.
+$ echo $n $r
+
+## (8) Use the number of pixels (first number passed to AWK) and
+##     length of each pixel's edge (second number passed to AWK)
+##     to estimate the area of the field in arc-minutes squared.
+$ echo $n $r | awk '@{print $1 * ($2^2) * 3600@}'
+
+## (9) We don't need `nozeros.fits' any more, so delete it.
+$ rm nozeros.fits
+@end example
+
+This is the Hubble Ultra Deep field (UDF): the deepest image we currently
+have of the universe (in the optical, using the ACS camera). As you
+calculated above, the area of this field is 10.778 arc-minutes
+squared. Just for comparison, this is roughly 70 times smaller than the
+moon's angular area (with a diameter of 30arc-minutes or half a degree).
+
+Here, we'll focus the processing on the near infra-red field (WFC3-IR
+filters). The WFC3-IR's field of view is smaller than the ACS field (that
+we calculate an area above). Therefore, the ``deep'' near infra-red images
+of the UDF are smaller than in the optical. Please open one of the WFC3-IR
+images (clear from the file names) to see how the images in those filters
+are not flat like the previous example above, it has multiple depths
+(noise-levels). Fortunately the XDF survey webpage (above) contains the
+vertices of the flat WFC3-IR field. You can use those vertices in
+@ref{Crop} to cutout this particular region. We'll make a directory called
+ir-flat and keep the flat infra-red regions in that directory (with a
+`@file{xdf-}' suffix for a shorter and easier filename).
+
+@example
+$ mkdir flat-ir
+$ astcrop --mode=wcs -h0 --output=ir-flat/xdf-f105w.fits              \
+          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
+                     53.134517,-27.787144 : 53.161906,-27.807208"     \
+          download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
+$ astcrop --mode=wcs -h0 --output=ir-flat/xdf-f160w.fits              \
+          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
+                     53.134517,-27.787144 : 53.161906,-27.807208"     \
+          download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits
+@end example
+
+The only thing varying in the two calls to Gnuastro's Crop program is the
+filter name. Therefore, to simplify the command, and later allow work on
+more filters, we can use the shell's @code{for} loop. Notice how the two
+places where the filter names (@file{f105w} and @file{f160w}) are used
+above have been replaced with @file{$f} (the shell variable that @code{for}
+is in charge of setting) below. To generalize this to all filters later,
+you can simply add the other filter names in the first line.
+
+@example
+$ for f in f105w f160w; do                                            \
+    astcrop --mode=wcs -h0 --output=ir-flat/xdf-$f.fits               \
+            --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
+                       53.134517,-27.787144 : 53.161906,-27.807208"   \
+            download/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits; \
+  done;
+@end example
+
+Please open these images and inspect them, you will see how it is now
+completely flat and doesn't have varying depths. You can now use the
+previous set of commands to calculate the area of this deep infra-red field
+(the XDF). Note that you don't need the first command any more, because the
+image has blank pixels outside the field and you can use
+@file{flat-ir/xdf-f160w.fits} instead of @file{nozeros.fits}. The resulting
+area is 4.03817 (or roughly 4.04) arc-minutes squared.
+
+To get a feeling of the tangential area that this field covers at redshift
+2, you can use @ref{CosmicCalculator}. In particular, you want its
+tangential distance covered by 1arcsec as raw output (which you will
+process). The series of commands below will give you the area of the field
+at that redshift in Mega Parsecs squared (@mymath{Mpc^2}).
+
+@example
+## Print the general universe properties at redshift 2.
+$ astcosmiccal -z2
+
+## When given a "Specific calculation" option, CosmicCalculator
+## will just print that particular calculation. See the options
+## under this title in the output of `--help':
+$ astcosmiccal --help
+
+## Only print the `Tangential dist. covered by 1arcsec at z (kpc)'.
+## in units of kpc/arc-seconds.
+$ astcosmiccal -z2 --arcsectandist
+
+## Convert this distance to kpc^2/arcmin^2 and save in `k'.
+$ k=$(astcosmiccal -z2 --arcsectandist | awk '@{print ($1*60)^2@}')
+
+## Multiply by the area of the field (in arcmin^2) and divide by
+## 10^6 to return value in Mpc^2.
+$ echo $k | awk '@{print $1 * 4.03817 / 1e6@}'
+@end example
+
+@noindent
+We thus see that at redshift 2, this field covers 1.07145
+@mymath{Mpc^2}. If you would like to see this value for multiple redshifts,
+you can use a shell loop like below, we have just re-arranged the shell
+variables to fit better into a line here.
+
+@example
+$ for z in 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0; do           \
+    k=$(astcosmiccal -z$z --arcsectandist);                      \
+    echo $z $k | awk '@{print $1, ($2*60)^2 * 4.03817 / 1e6@}';    \
+  done
+@end example
+
+@noindent
+Fortunately, the shell has a very useful tool/program to print a sequence
+of numbers that is nicely called @code{seq}. You can use it instead of
+typing all the different redshifts in this example. For example the loop
+below will print the same range of redshifts (between 0.5 and 5) but with
+increments of 0.1.
+
+@example
+$ for z in $(seq 0.5 0.1 5); do                                  \
+    k=$(astcosmiccal -z$z --arcsectandist);                      \
+    echo $z $k | awk '@{print $1, ($2*60)^2 * 4.03817 / 1e6@}';    \
+  done
+@end example
+
+CosmicCalculator only has a very limited number of input parameters, this
+is a good situation to give a few examples of using Gnuastro's
+configuration files (for a full discussion, please see @ref{Configuration
+files}).
 
 
 
@@ -2792,7 +2998,7 @@ bytes)@footnote{You can also download the DVD iso file at a later time to
 keep as a backup for when you don't have internet connection if you need a
 package.}.
 
-After the installation be sure to set the environment variables as
+After the installation, be sure to set the environment variables as
 suggested in the end of the outputs. Any time you confront (need) a package
 you don't have, simply install it with a command like below (similar to how
 you install software from your operating system's package
@@ -13397,9 +13603,9 @@ measurements discussed here are defined in units of magnitudes.
 As we make more observations on one region of the sky, and add the
 observations into one dataset, we are able to decrease the standard
 deviation of the noise in each pixel@footnote{This is true for any noisy
-data, not just astronomical images}. Qualitatively, this decrease manifests
-its self by making fainter (per pixel) parts of the objects in the image
-more visible. Technically, this is known as surface
+data, not just astronomical images.}. Qualitatively, this decrease
+manifests its self by making fainter (per pixel) parts of the objects in
+the image more visible. Technically, this is known as surface
 brightness. Quantitatively, it increases the Signal to noise ratio, since
 the signal increases faster than noise with more data. It is very important
 to have in mind that here, noise is defined per pixel (or in the units of
