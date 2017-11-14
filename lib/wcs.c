@@ -433,7 +433,6 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 
 
 /* Return the pixel scale of the dataset in units of the WCS. */
-/* Return the pixel scale of the dataset in units of the WCS. */
 double *
 gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
@@ -541,8 +540,8 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
           {
             /* Only works when each row only has one non-zero value. */
             if(permute_set)
-              error(EXIT_FAILURE, 0, "%s: not able to find the proper "
-                    "permutation for given rotation matrix", __func__);
+              fprintf(stderr, "%s: (WARNING) not able to find the proper "
+                    "permutation for given rotation matrix.\n", __func__);
             else
               {
                 permutation[i]=j;
