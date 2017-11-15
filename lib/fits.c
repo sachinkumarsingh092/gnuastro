@@ -1491,9 +1491,9 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
     (*dsize)[i]=naxes[*ndim-1-i];
 
 
-  /* Clean up. */
+  /* Clean up. Note that bzero_str, gets freed by `gal_data_free' (which is
+     called by `gal_list_data_free'. */
   gal_list_data_free(keysll);
-  if(bzero_str) free(bzero_str);
 }
 
 

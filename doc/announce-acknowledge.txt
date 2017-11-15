@@ -5,6 +5,7 @@ Leindert Boogaard
 Nicolas Bouché
 Aurélien Jarno
 Takashi Ichikawa
+Raúl Infante Sainz
 Alan Lefor
 Alejandro Serrano Borlaff
 Ole Streicher
