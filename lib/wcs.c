@@ -438,9 +438,9 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
 {
   gsl_vector S;
   gsl_matrix A, V;
-  size_t i, j, n=wcs->naxis;
-  double *a, *out, maxrow, minrow;
-  int permute_set, warning_printed;
+  int warning_printed;
+  size_t i, j, maxj, n=wcs->naxis;
+  double jvmax, *a, *out, maxrow, minrow;
   double *v=gal_data_malloc_array(GAL_TYPE_FLOAT64, n*n, __func__, "v");
   size_t *permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, n, __func__,
                                             "permutation");
@@ -524,30 +524,28 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
 
   /* The raw pixel scale array produced from the singular value
      decomposition above is ordered based on values, not the input. So when
-     the pixel scales in all the dimensions aren't the same (for example in
-     IFU datacubes), the order of the values in `pixelscale' will not
-     necessarily correspond to the input's dimensions.
+     the pixel scales in all the dimensions aren't the same (the units of
+     the dimensions differ), the order of the values in `pixelscale' will
+     not necessarily correspond to the input's dimensions.
 
      To correct the order, we can use the `V' matrix to find the original
      position of the pixel scale values and then use permutation to
-     re-order it correspondingly. This works when there is only one
-     non-zero element in each row of `V'. */
+     re-order it correspondingly. The column with the largest (absolute)
+     value will be taken as the one to be used for each row. */
   for(i=0;i<n;++i)
     {
-      permute_set=0;
+      /* Find the column with the maximum value. */
+      maxj=-1;
+      jvmax=-FLT_MAX;
       for(j=0;j<n;++j)
-        if(v[i*n+j])
+        if(fabs(v[i*n+j])>jvmax)
           {
-            /* Only works when each row only has one non-zero value. */
-            if(permute_set)
-              fprintf(stderr, "%s: (WARNING) not able to find the proper "
-                    "permutation for given rotation matrix.\n", __func__);
-            else
-              {
-                permutation[i]=j;
-                permute_set=1;
-              }
+            maxj=j;
+            jvmax=fabs(v[i*n+j]);
           }
+
+      /* Use the column with the maximum value for this dimension. */
+      permutation[i]=maxj;
     }
 
 
