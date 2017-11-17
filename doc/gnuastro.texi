@@ -2479,7 +2479,7 @@ $ astcrop --mode=wcs -h0 --output=ir-flat/xdf-f105w.fits              \
           --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
                      53.134517,-27.787144 : 53.161906,-27.807208"     \
           download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
-$ astcrop --mode=wcs -h0 --output=ir-flat/xdf-f160w.fits              \
+$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f160w.fits              \
           --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
                      53.134517,-27.787144 : 53.161906,-27.807208"     \
           download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits
@@ -2605,7 +2605,7 @@ any configuration file. So, try running the following command to see how
 the hubble constant in the output of the command above has changed.
 
 @example
-$ astcosmiccal --h0=70 -P
+$ astcosmiccal --H0=70 -P
 @end example
 
 You can confirm this changed hubble constant by running one or both of the
