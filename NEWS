@@ -152,6 +152,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel leaving unlabeled regions after clump growth (bug #52327).
 
+  Arithmetic crash with no input tokens (bug #52422).
+
 
 
 

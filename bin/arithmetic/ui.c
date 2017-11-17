@@ -232,6 +232,15 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
   size_t numfits=0, numhdus=0;
   gal_list_str_t *token, *hdu;
 
+  /* First, make sure that any tokens are actually given. */
+  if(p->tokens==NULL)
+    error(EXIT_FAILURE, 0, "no input tokens. Please specify a filename or "
+          "number (as operands) along with operator(s) as input. Please run "
+          "any of the following commands for more information.\n\n"
+          "    $ astarithmetic --help           # Short info.\n"
+          "    $ info astarithmetic             # Full invocation "
+          "documentation.\n");
+
   /* The input tokens are put in a lastin-firstout (simple) linked list, so
      change them to the correct order so the order we pop a token is the
      same order that the user input a value. Note that for the options this
