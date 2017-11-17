@@ -96,9 +96,12 @@ buildprog(struct buildprogparams *p)
   else      asprintf(&fullla, "%s/libgnuastro.la", LIBDIR);
 
   /* Put the command to run into a string. */
-  asprintf(&command, "%s %s --mode=link gcc %s %s %s %s %s %s %s "
-           "-I%s %s -o %s", GAL_CONFIG_GNULIBTOOL_EXEC,
+  asprintf(&command, "%s %s %s%s --mode=link gcc %s %s %s %s %s %s %s "
+           "-I%s %s -o %s",
+           GAL_CONFIG_GNULIBTOOL_EXEC,
            p->cp.quiet ? "--quiet" : "",
+           p->tag      ? "--tag="   : "",
+           p->tag      ? p->tag    : "",
            warning     ? warning   : "",
            p->debug    ? "-g"      : "",
            optimize    ? optimize  : "",

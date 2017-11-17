@@ -87,6 +87,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
 
+    {
+      "tag",
+      UI_KEY_TAG,
+      "STR",
+      0,
+      "Libtool `--tag': programming language.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->tag,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
 
 

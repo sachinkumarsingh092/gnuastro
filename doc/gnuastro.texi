@@ -18133,6 +18133,16 @@ list. Some of the most common values to this option are: @option{pedantic}
 (Warnings related to standard C) and @option{all} (all issues the compiler
 confronts).
 
+@item --tag=STR
+The language configuration information. Libtool can build objects and
+libraries in many languages. In many cases, it can identify the language
+automatically, but when it doesn't you can use this option to explicitly
+notify Libtool of the language. The acceptable values are: @code{CC} for C,
+@code{CXX} for C++, @code{GCJ} for Java, @code{F77} for Fortran 77,
+@code{FC} for Fortran, @code{GO} for Go and @code{RC} for Windows
+Resource. Note that the Gnuastro library is not yet fully compatible with
+all these languages.
+
 @item -b
 @itemx --onlybuild
 Only build the program, don't run it. By default, the built program is
