@@ -154,6 +154,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Arithmetic crash with no input tokens (bug #52422).
 
+  Libtool checks only in non-current directory (bug #52427).
+
+
 
 
 

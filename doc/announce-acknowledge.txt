@@ -8,5 +8,6 @@ Takashi Ichikawa
 Raúl Infante Sainz
 Alan Lefor
 Alejandro Serrano Borlaff
+Lee Spitler
 Ole Streicher
 David Valls-Gabaud

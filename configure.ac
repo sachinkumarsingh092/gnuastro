@@ -234,7 +234,8 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 
 
 # Check the libtool executable: needed by BuildProgram.
-AC_CHECK_PROG(has_libtool, libtool, [yes], [no])
+AC_CHECK_PROG(has_libtool, libtool, [yes], [no], ,
+              ./libtool .//libtool $ac_pwd/libtool)
 
 # If Libtool is present, make sure it is GNU Libtool
 AS_IF([test "x$has_libtool" = "xyes"],
@@ -729,6 +730,7 @@ AC_OUTPUT
 
 
 
+
 # Print a message if necessary
 AS_IF([test x$enable_guide_message = xyes],
 [
@@ -764,7 +766,12 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
                AS_ECHO(["    part of this build. The executable names searched were \`libtool'"])
                AS_ECHO(["    and \`glibtool'."])
-               AS_ECHO([]) ])
+               AS_ECHO([])
+               AS_IF([test "x$has_libtool" = "xyes"],
+                     [AS_ECHO(["    -- A libtool implementation was found, but it isn't GNU."])
+                      AS_ECHO([])
+                     ])
+              ])
         AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
