@@ -347,7 +347,7 @@ ui_wcs_info(struct mkcatalogparams *p)
              or where there is a dash. So we can just replace it with an
              end-of-string character. */
           gal_checkset_allocate_copy(p->input->wcs->ctype[i], &p->ctype[i]);
-          for(c=p->ctype[i]; *c!='\0' && *c!='-'; ++c) c=c;
+          c=p->ctype[i]; while(*c!='\0' && *c!='-') ++c;
           *c='\0';
         }
     }
