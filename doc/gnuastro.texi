@@ -2299,13 +2299,13 @@ night's measurements on the ecliptic.
 @cindex Hubble Space Telescope
 @cindex Extreme Deep Field survey
 Measuring colors of astronomical objects in broad-band or narrow-band
-images is one of the most basic and common steps in any processing. Here,
-we will be using Gnuastro's programs to detect objects in a Hubble Space
-Telescope (HST) image and measure their colors. We will be using the
-@url{https://archive.stsci.edu/prepds/xdf, Extreme Deep Field}
+images is one of the most basic and common steps in astronomical
+analysis. We will thus use Gnuastro's programs to detect objects in a
+Hubble Space Telescope (HST) image and measure their colors. We will be
+using the @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
 dataset. Like almost all astronomical surveys, this dataset is free for
-download and use by the public. You will need the following tools in this
-tutorial: Gnuastro, ds9 @footnote{See @ref{SAO ds9}, available at
+download and usable by the public. You will need the following tools in
+this tutorial: Gnuastro, ds9 @footnote{See @ref{SAO ds9}, available at
 @url{http://ds9.si.edu/site/Home.html}.}, GNU
 Wget@footnote{@url{https://www.gnu.org/software/wget}.}, and AWK (most
 common implementation is GNU
@@ -2313,26 +2313,31 @@ AWK@footnote{@url{https://www.gnu.org/software/gawk}.}).
 
 A very useful feature of Gnuastro that will be handy later is that all
 program names start with @code{ast}. So try typing the following command
-(pressing @key{TAB} key when you see @code{<TAB>}. You will see the list of
-all Gnuastro programs. By choosing the following characters of your desired
-program and pressing @key{TAB} again, the list will decrease and the
-program name will autocomplete once your input characters are
-unambiguous. In short, you often don't need to type the full program name.
+(press @key{TAB} key when you see @code{<TAB>}).
 
 @example
 $ ast<TAB><TAB>
 @end example
 
-Before starting processing, it is important to master your ability to
-inspect Gnuastro's full manual any time you want on the command line using
-the Info format. This manual comes with your installation so it will
-correspond to your installed version of Gnuastro. Please see @ref{Info} for
-more.
+@noindent
+Any program that starts with @code{ast} (including all Gnuastro programs)
+will be shown. By choosing the following characters of your desired program
+and pressing @key{TAB} again, the list will decrease and the program name
+will autocomplete once your input characters are unambiguous. In short, you
+often don't need to type the full program name.
 
+Gnuastro contains a large number of programs and it is natural to forget
+the details of each program's options. Therefore, before startings, it is
+important to master the ability to access full manual any time you want on
+the command line while working (without taking your hands off the
+keyboard). This manual comes with your installation so it will correspond
+to your installed version of Gnuastro. Please see @ref{Info} for more.
+
+@cindex GNU Info
 To see this whole book on your command-line please run the following
 commands. Since Info has its own mini-environment, the keys to press after
 going into the mini-environment are shown with a preceding @code{->}. You
-can also ignore anything after the @code{#} sign in the end of the line.
+can also ignore anything after the @code{#} sign in the middle of the line.
 
 @example
 $ info gnuastro                # Open the top of the manual.
@@ -2347,15 +2352,23 @@ with an underline). You can immediately go to the next link in the page
 with the @key{TAB} key and press @key{ENTER} on it to go into that part of
 the manual. Try the commands above again, but this time also use @key{TAB}
 to go to the links and press @key{ENTER} on them to go to the respective
-section of the book. If you are searching for a specific phrase in the
-whole book (for example an option name), you just press @key{s} and type
-your search phrase in the line below the page that shows up.
+section of the book. To return, press @key{l} (small L). If you are
+searching for a specific phrase in the whole book (for example an option
+name), just press @key{s} and type your search phrase ending with and
+@key{ENTER} in the line below the page that shows up.
 
 You don't need to start from the top of the manual every time. For example,
-if you are just concerned with the list of NoiseChisel's detection or
-segmentation options (which are discussed in @ref{Detection options} and
-@ref{Segmentation options}), just run any of these commands. Note how case
-is irrelevant for Info when calling a special title in this manner.
+to get to @ref{Invoking astnoisechisel} section, run:
+
+@example
+$ info astnoisechisel
+@end example
+
+Using @key{<TAB>}, you can easily get to the section that describes your
+option of interest. If you only want to remember with the list of
+NoiseChisel's @ref{Detection options} or @ref{Segmentation options}), just
+run any of these commands. Note how case is irrelevant for Info when
+calling a special title in this manner.
 
 @example
 $ info gnuastro "Detection options"
@@ -2366,7 +2379,8 @@ In general, Info is a wonderful and powerfull way to access this whole book
 with detailed information about the programs you are running very fast. If
 you are not already familiar with it, please run the following command and
 just read along and do what it says to learn it. Don't stop until you have
-become sufficiently fluent in it.
+become sufficiently fluent in it. Please invest the half an hour to master
+Info.
 
 @example
 $ info info
