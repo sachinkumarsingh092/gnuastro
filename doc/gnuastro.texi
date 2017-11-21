@@ -2300,12 +2300,12 @@ night's measurements on the ecliptic.
 @cindex Extreme Deep Field survey
 Measuring colors of astronomical objects in broad-band or narrow-band
 images is one of the most basic and common steps in astronomical
-analysis. We will thus use Gnuastro's programs to detect objects in a
-Hubble Space Telescope (HST) image and measure their colors. We will be
-using the @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
+analysis. Here, we will use Gnuastro's programs to detect objects in a
+Hubble Space Telescope (HST) image and measure their colors. We will use
+the @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
 dataset. Like almost all astronomical surveys, this dataset is free for
 download and usable by the public. You will need the following tools in
-this tutorial: Gnuastro, ds9 @footnote{See @ref{SAO ds9}, available at
+this tutorial: Gnuastro, SAO DS9 @footnote{See @ref{SAO ds9}, available at
 @url{http://ds9.si.edu/site/Home.html}.}, GNU
 Wget@footnote{@url{https://www.gnu.org/software/wget}.}, and AWK (most
 common implementation is GNU
@@ -2322,22 +2322,24 @@ $ ast<TAB><TAB>
 @noindent
 Any program that starts with @code{ast} (including all Gnuastro programs)
 will be shown. By choosing the following characters of your desired program
-and pressing @key{TAB} again, the list will decrease and the program name
+and pressing @key{<TAB>} again, the list will decrease and the program name
 will autocomplete once your input characters are unambiguous. In short, you
-often don't need to type the full program name.
+often don't need to type the full name of the program you want to run.
 
 Gnuastro contains a large number of programs and it is natural to forget
 the details of each program's options. Therefore, before startings, it is
 important to master the ability to access full manual any time you want on
-the command line while working (without taking your hands off the
-keyboard). This manual comes with your installation so it will correspond
-to your installed version of Gnuastro. Please see @ref{Info} for more.
+the command-line while working (without taking your hands off the
+keyboard). The command-line version manual comes with your installation so
+it will always correspond to your installed version of Gnuastro. Please see
+@ref{Info} for more.
 
 @cindex GNU Info
 To see this whole book on your command-line please run the following
-commands. Since Info has its own mini-environment, the keys to press after
-going into the mini-environment are shown with a preceding @code{->}. You
-can also ignore anything after the @code{#} sign in the middle of the line.
+command and subsequent keys. Since Info has its own mini-environment, the
+keys to press after going into the mini-environment are shown with a
+preceding @code{->}. You can also ignore anything after the @code{#} sign
+in the middle of the line, they are only for your information.
 
 @example
 $ info gnuastro                # Open the top of the manual.
@@ -2349,13 +2351,13 @@ $ info gnuastro                # Open the top of the manual.
 
 The thing that greatly simplifies navigation in Info is the links (regions
 with an underline). You can immediately go to the next link in the page
-with the @key{TAB} key and press @key{ENTER} on it to go into that part of
-the manual. Try the commands above again, but this time also use @key{TAB}
-to go to the links and press @key{ENTER} on them to go to the respective
-section of the book. To return, press @key{l} (small L). If you are
-searching for a specific phrase in the whole book (for example an option
-name), just press @key{s} and type your search phrase ending with and
-@key{ENTER} in the line below the page that shows up.
+with the @key{<TAB>} key and press @key{<ENTER>} on it to go into that part
+of the manual. Try the commands above again, but this time also use
+@key{<TAB>} to go to the links and press @key{<ENTER>} on them to go to the
+respective section of the book. Then follow a few more links and go deeper
+into the book. To return, press @key{l} (small L). If you are searching for
+a specific phrase in the whole book (for example an option name), press
+@key{s} and type your search phrase ending with an @key{ENTER}.
 
 You don't need to start from the top of the manual every time. For example,
 to get to @ref{Invoking astnoisechisel} section, run:
@@ -2364,11 +2366,12 @@ to get to @ref{Invoking astnoisechisel} section, run:
 $ info astnoisechisel
 @end example
 
+@noindent
 Using @key{<TAB>}, you can easily get to the section that describes your
-option of interest. If you only want to remember with the list of
-NoiseChisel's @ref{Detection options} or @ref{Segmentation options}), just
-run any of these commands. Note how case is irrelevant for Info when
-calling a special title in this manner.
+option of interest. If you only want to review/remember NoiseChisel's
+@ref{Detection options} or @ref{Segmentation options}), just run any of
+these commands. Note how case is irrelevant for Info when calling a special
+title in this manner.
 
 @example
 $ info gnuastro "Detection options"
@@ -2379,25 +2382,43 @@ In general, Info is a wonderful and powerfull way to access this whole book
 with detailed information about the programs you are running very fast. If
 you are not already familiar with it, please run the following command and
 just read along and do what it says to learn it. Don't stop until you have
-become sufficiently fluent in it. Please invest the half an hour to master
-Info.
+become sufficiently fluent in it. Please invest the half an hour's time
+necessary to start using Info natively.
 
 @example
 $ info info
 @end example
 
-As a good scientist you need to play with the features/options and avoid
-(be critical to) using default values as much as possible. On the other
-hand, our human memory is very limited, so it is important to be able to
-easily access any part of this book fast and remember the option names,
-what they do and their acceptable values.
+As a good scientist you need to feel comfortable to play with the
+features/options and avoid (be critical to) using default values as much as
+possible. On the other hand, our human memory is very limited, so it is
+important to be able to easily access any part of this book fast and
+remember the option names, what they do and their acceptable values.
+
+If you just want the option names and a short description, calling the
+program with the @option{--help} option might also be a good solution like
+the first example below. If you know a few characters of the option name,
+you can feed the output to @command{grep} like the second or third
+examples.
+
+@example
+$ astnoisechisel --help
+$ astnoisechisel --help | grep quant
+$ astnoisechisel --help | grep check
+@end example
 
 We will be using the near infra-red @url{http://www.stsci.edu/hst/wfc3,
 Wide Field Camera} dataset. If you already have them in another directory
 (for example @file{XDFDIR}), you can set the @file{download} directory to
-be a symbolic link to it with a command like this: @command{ln -s XDFDIR
-download}. If not, you can download them in a special directory for the
-downloaded images.
+be a symbolic link to it with a command like this:
+
+@example
+ln -s XDFDIR download
+@end example
+
+@noindent
+If not, you can download them in a special directory for the downloaded
+images.
 
 @example
 $ mkdir download
@@ -2424,72 +2445,114 @@ $ for f in f105w f125w f140w f160w; do                              \
   done
 @end example
 
-Open the image with ds9 to inspect the dataset. As a first step, let's
-calculate the area of this field. The lines starting with @code{##} are
-just comments to help you follow the steps, don't type them on the
-terminal. The commands are intentionally repetative in some places for
-better understanding each step and also to demonstrate the beauty of pipes
-in the command-line. Later, if you would like to repeat this process on
-another dataset, you will just use commands 1@footnote{Not necessary if
-dataset has blank pixels for regions outside of the field, not 0 like this
-example.}, 3, 6, 8 and 9.
+First, we need to visually inspect the dataset. Let's take F775W image as
+one example. Do the steps below with the other images too (and later with
+any dataset that you want to work on). It is very important to understand
+your dataset visually. Note how ds9 doesn't follow the GNU style of options
+where ``long'' and ``short'' options are preceded by @option{--} and
+@option{-} respectively (for example @option{--width} and @option{-w}, see
+@ref{Options}).
+
+Ds9's @option{-zscale} option is a good scaling to highlight the low
+surface brightness regions, and as the name suggests, @option{-zoom to fit}
+will fit the whole dataset in the window. If the window is too small,
+expand it with your mouse, then press the ``zoom'' button on the top row of
+buttons above the image, then in the row below it, press ``zoom fit''. You
+can also zoom in and out by scrolling your mouse or the respective
+operation on your touchpad when your cursor/pointer is over the image.
 
 @example
-## (1) Set all the zero valued pixels to blank.
-$ astcrop download/hlsp_xdf_hst_acswfc-60mas_hudf_f775w_v1_sci.fits  \
-          --section=: --mode=img -h0 --output=nozeros.fits
+$ ds9 download/hlsp_xdf_hst_acswfc-60mas_hudf_f775w_v1_sci.fits     \
+      -zscale -zoom to fit
+@end example
 
-## (2) Count how many non-blank pixels there are in the image.
-$ aststatistics nozeros.fits --number
+@noindent
+When you think that this is the deepest image we have of the sky, the first
+thing that comes to mind may be this: ``How large is this field?''. To find
+the answer you can follow the commands below. The lines starting with
+@code{##} are just comments for you (not the computer) to help you follow
+the steps, don't type them on the terminal. The commands are intentionally
+repetative in some places for better understanding each step and also to
+demonstrate the beauty of shell variables, pipes and loops in the
+command-line. Later, if you would like to repeat this process on another
+dataset, you can just use commands 1@footnote{Not necessary if dataset has
+blank pixels for regions outside of the field, not 0 like this example.},
+4, 8, 10 and 11.
 
-## (3) Keep the result of the command above in the shell variable `n'.
-$ n=$(aststatistics nozeros.fits --number)
+@example
+## (1)  Set all the zero valued pixels using the arithmetic program.
+##      Since the input's name is long, we are first putting the name
+##      in a shell variable (`in').
+$ in=download/hlsp_xdf_hst_acswfc-60mas_hudf_f775w_v1_sci.fits
+$ astarithmetic $in $in 0 eq nan where --globalhdu=0               \
+                --output=no-zeros.fits
 
-## (4) Show all the FITS keywords of this image.
-$ astfits nozeros.fits -h1
+## (2)  See what happened:
+$ ds9 no-zeros.fits -zscale -zoom to fit
 
-## (5) The resolution (in degrees/pixel) is in the `CDELT' keywords,
-##     so only show lines that contain these characters, by feeding
-##     the output of the previous command to the `grep' program.
-$ astfits nozeros.fits -h1 | grep CDELT
+## (3)  Count how many non-blank pixels there are in the image.
+$ aststatistics no-zeros.fits --number
 
-## (6) Save the resolution in the variable `r'. The last part uses
-##     AWK to print the third 'field' of its input line.
-$ r=$(astfits nozeros.fits -h1 | grep CDELT1 | awk '@{print $3@}')
+## (4)  Keep the result of the command above in the shell variable `n'.
+$ n=$(aststatistics no-zeros.fits --number)
 
-## (7) Print the values of `n' and `r'.
+## (5)  See what is stored the shell variable `n':
+$ echo $n
+
+## (6)  Show all the FITS keywords of this image.
+$ astfits no-zeros.fits -h1
+
+## (7)  The resolution (in degrees/pixel) is in the `CDELT' keywords,
+##      so only show lines that contain these characters, by feeding
+##      the output of the previous command to the `grep' program.
+$ astfits no-zeros.fits -h1 | grep CDELT
+
+## (8)  Save the resolution in the variable `r'. The last part uses
+##      AWK to print the third 'field' of its input line.
+$ r=$(astfits no-zeros.fits -h1 | grep CDELT1 | awk '@{print $3@}')
+
+## (9)  Print the values of `n' and `r'.
 $ echo $n $r
 
-## (8) Use the number of pixels (first number passed to AWK) and
-##     length of each pixel's edge (second number passed to AWK)
-##     to estimate the area of the field in arc-minutes squared.
+## (10) Use the number of pixels (first number passed to AWK) and
+##      length of each pixel's edge (second number passed to AWK)
+##      to estimate the area of the field in arc-minutes squared.
 $ echo $n $r | awk '@{print $1 * ($2^2) * 3600@}'
 
-## (9) We don't need `nozeros.fits' any more, so delete it.
-$ rm nozeros.fits
+## (11) We don't need `no-zeros.fits' any more, so delete it.
+$ rm no-zeros.fits
 @end example
+
+@cindex GNU AWK
+AWK is a powerful and simple tool for text processing, above (and further
+below) some simple examples are shown. GNU AWK (the most common
+implementation) comes with a free and wonderful
+@url{https://www.gnu.org/software/gawk/manual/, manual} in the same format
+as this book which will allow you to master it nicely. Just like this
+manual, you can also access AWK's manual on the command-line whenever
+necessary without taking your hands off the keyboard as described above.
 
 This is the Hubble Ultra Deep field (UDF): the deepest image we currently
 have of the universe (in the optical, using the ACS camera). As you
 calculated above, the area of this field is 10.778 arc-minutes
-squared. Just for comparison, this is roughly 70 times smaller than the
+squared. Just for comparison, this is roughly 65 times smaller than the
 moon's angular area (with a diameter of 30arc-minutes or half a degree).
 
-Here, we'll focus the processing on the near infra-red field (WFC3-IR
-filters). The WFC3-IR's field of view is smaller than the ACS field (that
-we calculate an area above). Therefore, the ``deep'' near infra-red images
-of the UDF are smaller than in the optical. Please open one of the WFC3-IR
-images (clear from the file names) to see how the images in those filters
-are not flat like the previous example above, it has multiple depths
-(noise-levels). Fortunately the XDF survey webpage (above) contains the
-vertices of the flat WFC3-IR field. You can use those vertices in
-@ref{Crop} to cutout this particular region. We'll make a directory called
-ir-flat and keep the flat infra-red regions in that directory (with a
-`@file{xdf-}' suffix for a shorter and easier filename).
+Now, let's focus the rest of the processing on the near infra-red field
+(WFC3-IR filters). The WFC3-IR's field of view is smaller than that of
+ACS. Therefore, the ``deep'' near infra-red images of the UDF are smaller
+than in the optical. Please open one of the WFC3-IR images (clear from the
+file names) to see how the images in those filters are not flat like the
+F775W example above. Do you see how it has multiple depths (noise levels)?
+Fortunately the XDF survey webpage (above) contains the vertices of the
+deep flat WFC3-IR field. You can use those vertices in @ref{Crop} to cutout
+this deep infra-red region. We'll make a directory called @file{flat-ir}
+and keep the flat infra-red regions in that directory (with a `@file{xdf-}'
+suffix for a shorter and easier filename).
 
 @example
 $ mkdir flat-ir
-$ astcrop --mode=wcs -h0 --output=ir-flat/xdf-f105w.fits              \
+$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f105w.fits              \
           --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
                      53.134517,-27.787144 : 53.161906,-27.807208"     \
           download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
@@ -2504,32 +2567,37 @@ filter name. Therefore, to simplify the command, and later allow work on
 more filters, we can use the shell's @code{for} loop. Notice how the two
 places where the filter names (@file{f105w} and @file{f160w}) are used
 above have been replaced with @file{$f} (the shell variable that @code{for}
-is in charge of setting) below. To generalize this to all filters later,
-you can simply add the other filter names in the first line before
-@code{;}.
+is in charge of setting) below. To generalize this for more filters later,
+you can simply add the other filter names in the first line before the
+semi-colon (@code{;}).
 
 @example
 $ for f in f105w f160w; do                                            \
-    astcrop --mode=wcs -h0 --output=ir-flat/xdf-$f.fits               \
+    astcrop --mode=wcs -h0 --output=flat-ir/xdf-$f.fits               \
             --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
                        53.134517,-27.787144 : 53.161906,-27.807208"   \
             download/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits; \
-  done;
+  done
 @end example
 
-Please open these images and inspect them, you will see how it is now
-completely flat and doesn't have varying depths. You can now use the
-previous set of commands to calculate the area of this deep infra-red field
-(the XDF). Note that you don't need the first command any more, because the
-image has blank pixels outside the field and you can use
-@file{flat-ir/xdf-f160w.fits} instead of @file{nozeros.fits}. The resulting
-area is 4.03817 (or roughly 4.04) arc-minutes squared.
+Please open these images and inspect them with the same ds9 commands you
+used above. You will see how it is now completely flat and doesn't have
+varying depths. You can now use the previous set of commands to calculate
+the area of this deep infra-red field (the XDF). Note that you don't need
+the first command of the area calculation any more. This is because Crop
+set all pixels outside the vertices to blank. Therefore, you can directly
+use @file{flat-ir/xdf-f160w.fits} instead of @file{no-zeros.fits} in those
+commands. The resulting area is 4.03817 (or roughly 4.04) arc-minutes
+squared.
 
-To get a feeling of the tangential area that this field covers at redshift
-2, you can use @ref{CosmicCalculator}. In particular, you want its
-tangential distance covered by 1 arc-seconds as raw output (which you will
-process). The series of commands below will give you the area of the field
-at that redshift in Mega Parsecs squared (@mymath{Mpc^2}).
+This takes us to the second question that you have probably asked yourself
+when you saw the field for the first time: ``How large is this area at
+different redshifts?''. To get a feeling of the tangential area that this
+field covers at redshift 2, you can use @ref{CosmicCalculator}. In
+particular, you want the tangential distance covered by 1 arc-seconds as
+raw output (which you will process). The series of commands below will give
+you the area of the field at that redshift in Mega Parsecs squared
+(@mymath{Mpc^2}).
 
 @example
 ## Print the general universe properties at redshift 2.
@@ -2540,7 +2608,7 @@ $ astcosmiccal -z2
 ## under this title in the output of `--help':
 $ astcosmiccal --help
 
-## Only print the `Tangential dist. covered by 1arcsec at z (kpc)'.
+## Only print the "Tangential dist. covered by 1arcsec at z (kpc)".
 ## in units of kpc/arc-seconds.
 $ astcosmiccal -z2 --arcsectandist
 
@@ -2553,10 +2621,9 @@ $ echo $k | awk '@{print $1 * 4.03817 / 1e6@}'
 @end example
 
 @noindent
-We thus see that at redshift 2, this field covers 1.07145
-@mymath{Mpc^2}. If you would like to see this value for multiple redshifts,
-you can use a shell loop like below, we have just re-arranged the shell
-variables to fit better into a line here.
+At redshift 2, this field covers 1.07145 @mymath{Mpc^2}. If you would like
+to see this value for multiple redshifts, you can use a shell loop like
+below.
 
 @example
 $ for z in 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0; do           \
@@ -2579,56 +2646,58 @@ $ for z in $(seq 0.5 0.1 5); do                                  \
   done
 @end example
 
-Let's stop for a moment here. Since CosmicCalculator has a very limited set
-of parameters and it is fast, we'll use it to discuss configuration files
-@ref{Configuration files}). Once you get comfortable with what is done
+Let's stop for a moment here. CosmicCalculator has a very limited set of
+parameters and it is fast, so, we'll use it to discuss configuration files
+(@ref{Configuration files}). Once you get comfortable with what is done
 below, you can easily do the same for the different options of all the
-programs. The full list of the options in all Gnuastro programs can be seen
-with the @option{--help} option. Try it to see all acceptable options with
-a short description. Also note how options are grouped by context to make
-it easier to find your desired option. However, in each group, options are
-ordered alphabetically.
+programs.
+
+As we saw above, the full list of the options in all Gnuastro programs can
+be seen with the @option{--help} option. Try it to see all acceptable
+options with a short description. Also note how options are grouped by
+context to make it easier to find your desired option. However, in each
+group, options are ordered alphabetically.
 
 @example
 $ astcosmiccal --help
 @end example
 
-So, now you know the option names along with a short description. The
-options that take a value have an @key{=} sign after their long version and
-@code{FLT}, @code{INT} or @code{STR} for floating point numbers, integer
-numbers and strings (filenames for example). All options have a long format
-and some have a short format.
+@noindent
+The options that need a value have an @key{=} sign after their long version
+and @code{FLT}, @code{INT} or @code{STR} for floating point numbers,
+integer numbers and strings (filenames for example) respectively. All
+options have a long format and some have a short format, see @ref{Options}.
 
-But when an option takes a value, if the program was to start running, what
-is the value of each option? You can see this by calling Gnuastro's
-programs with the @option{--printparams} or @code{-P} option. You can see
-its short description in the output of @option{--help} above. In the
-command below, try replacing @code{-P} with @option{--printparams} to see
-how both do the same operation.
+When you are using a program, it is often necessary to check the value the
+option has just before the program starts its processing. You can see the
+values of all options that need one with the @option{--printparams} or
+@code{-P} option that is common to all programs. In the command below, try
+replacing @code{-P} with @option{--printparams} to see how both do the same
+operation.
 
 @example
 $ astcosmiccal -P
 @end example
 
-None of Gnuastro's programs keep a default value
-internally. CosmicCalculator has got the values for these options from a
-default configuration file (see @ref{Configuration file precedence}). You
-can change the values on the command-line. Let's say you want a different
-Hubble constant. The options given on the command-line take precedence over
-any configuration file. So, try running the following command to see how
-the hubble constant in the output of the command above has changed.
+None of Gnuastro's programs keep a default value internally. But when you
+ran it with @option{-z2} option above, it completed its processing. Where
+does CosmicCalculator get the ``default'' values it used? The values come
+from the command-line or a configuration file (see @ref{Configuration file
+precedence}). The highest priority is given to the command-line. Let's say
+you want a different Hubble constant. Try running the following command to
+see how the hubble constant in the output of the command above has
+changed. Then remove the @option{-P} to confirm the new results.
 
 @example
 $ astcosmiccal --H0=70 -P
 @end example
 
-You can confirm this changed hubble constant by running one or both of the
-previous commands again (and comparing the outputs from before). From the
-output of the @code{--help} option, note how the option for hubble constant
-has both short (@code{-H}) and long (@code{--H0}) formats. Also do you see
-how using an @key{=} sign is not mandatory. In the short format, the value
-can stick to the actual option (the short option name is just one character
-after-all) and in the long format, a white-space character is also enough.
+From the output of the @code{--help} option, note how the option for hubble
+constant has both short (@code{-H}) and long (@code{--H0}) formats. One
+final note is that the equal (@key{=}) sign is not mandatory. In the short
+format, the value can stick to the actual option (the short option name is
+just one character after-all and thus easily identifiable) and in the long
+format, a white-space character is also enough.
 
 @example
 $ astcosmiccal -H70    -z2
@@ -2636,8 +2705,8 @@ $ astcosmiccal --H0 70 -z2 --arcsectandisk
 @end example
 
 Let's assume that in one project, you want to only use rounded cosmological
-parameters (H0 of 70km/s/Mpc and matter density of 0.3). So you should run
-CosmicCalculator like this:
+parameters (H0 of 70km/s/Mpc and matter density of 0.3). You should
+therefore run CosmicCalculator like this:
 
 @example
 $ astcosmiccal --H0=70 --olambda=0.7 --omatter=0.3 -z2
@@ -2658,47 +2727,52 @@ olambda  0.7
 omatter  0.3
 @end example
 
-You can tell CosmicCalculator to read this file for option values with the
-following command. You will see that the output corresponds to the option
-values in @file{my-cosmology.txt}.
+@noindent
+You can now tell CosmicCalculator to read this file for option values
+(immediately, before continuing with the other options or other
+configuration files) with the following command. Do you see how the output
+corresponds to the option values in @file{my-cosmology.txt}?
 
 @example
 $ astcosmiccal --config=my-cosmology.conf -z2
 @end example
 
 If you need this cosmology every time you are working in a specific
-directory, you can also use Gnuastro's default configuration files so you
-can avoid having to call the @option{--config} option also. Let's assume
-that you want any CosmicCalculator call you make in the @file{my-cosmology}
+directory, you can benefit from Gnuastro's default configuration files to
+avoid having to call the @option{--config} option. Let's assume that you
+want any CosmicCalculator call you make in the @file{my-cosmology}
 directory to use these parameters. You just have to copy the above
-configuration file into a special directory and file in that directory and
-once you run CosmicCalculator, you will see the results implement your
-desired option values:
+configuration file into a special directory and file in that
+directory. Once you run CosmicCalculator, you will see the results
+implement your desired option values without having to type anything extra
+on the command-line.
 
 @example
 $ mkdir my-cosmology
 $ mkdir my-cosmology/.gnuastro
-$ cp my-cosmology.conf my-cosmology/.gnuastro/astcosmiccal.conf
+$ mv my-cosmology.conf my-cosmology/.gnuastro/astcosmiccal.conf
 $ cd my-cosmology
 $ astcosmiccal -z2
 @end example
 
-Above, you saw how to use default configuration files when running programs
-in a special directory. Gnuastro's programs also have default configuration
-files for a specific user (when run in any diretory). This allows you to
-set a special behavior every time a program is run by a specific user. Only
-the directory and filename differ from the above, the rest of the process
-is similar to before. Finally, there are also system-wide configuration
-files that can be used to define the option values for all users on a
-system. Please see @ref{Configuration file precedence} for where the
-program look for default user and system wide configuration files.
+We thus reviewed how to use default configuration files when running
+programs in a special directory. Gnuastro's programs also have default
+configuration files for a specific user (when run in any diretory). This
+allows you to set a special behavior every time a program is run by a
+specific user. Only the directory and filename differ from the above, the
+rest of the process is similar to before. Finally, there are also
+system-wide configuration files that can be used to define the option
+values for all users on a system. Please see @ref{Configuration file
+precedence} for where the programs look for default user and system wide
+configuration files.
 
-Let's get back to working with the downloaded dataset. Since these datasets
-are already aligned, you don't need to align the images (to make sure the
-pixel grid covers the same region in all regions). So, let's just assume
-one image needs to be rotated by 20 degrees to correspond to the other. To
-do that, you can use Gnuastro's Warp program (see @ref{Warp}) with a
-command like this:
+We are now ready to start working with the downloaded images. Since these
+datasets are already aligned, you don't need to align them to make sure the
+pixel grid covers the same region in all inputs. Gnuastro's Warp program
+does have features for such pixel-grid warping (see @ref{Warp}). Therefore,
+just for a demonstration for cases that it is necessary, let's assume one
+image needs to be rotated by 20 degrees to correspond to the other. To do
+that, you can run this command:
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --rotate=20
@@ -2708,11 +2782,7 @@ Warp can generally be used for any kind of pixel grid manipulation. For
 example the outputs of the commands below will respectively have larger
 pixels (new resolution being one quarter the original resolution), get
 shifted by 2.8 (by sub-pixel), get a shear of 2, and be tilted
-(projected). If you are curious, you can also combine multiple warps in one
-command (for example rotatation and scaling, just note that order
-matters). Infact, if you have multiple warps, do them all in one command,
-don't do them separately because the correlated noise will become too
-strong.
+(projected).
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --scale=0.25
@@ -2721,12 +2791,27 @@ $ astwarp flat-ir/xdf-f160w.fits --shear=2
 $ astwarp flat-ir/xdf-f160w.fits --project=0.001,0.0005
 @end example
 
+You can also combine multiple warps in one command. For example rotation
+and scaling with the command below. Infact, if you have multiple warps, do
+them all in one command, don't do them separately because the correlated
+noise will become too strong. As you see when you run Warp, it merges all
+the warps into a single warping matrix (see @ref{Warping basics} and
+@ref{Merging multiple warpings}) and simply applies that just once. Recall
+that since this is done through matrix multiplication, order matters in the
+separate operations. Infact through Warp's @option{--matrix} option, you
+can directly request your desired final rotation and don't have to break it
+up into different warps (see @ref{Invoking astwarp}).
+
+@example
+$ astwarp flat-ir/xdf-f160w.fits --rotate=20 --scale=0.25
+@end example
+
 Fortunately these datasets are already aligned to the same pixel grid, so
-you don't need the files that were just generated. You can safely delete
-them all with the following command. Here, you see why we put the processed
-outputs that we need into a separate directory. In this way, the top
-directory we are running the commands from can be used for temporary files
-that you can simply delete with a generic command like below.
+you don't actually need the files that were just generated. You can safely
+delete them all with the following command. Here, you see why we put the
+processed outputs that we need into a separate directory. In this way, the
+top directory can be used for temporary files for testing that you can
+simply delete with a generic command like below.
 
 @example
 $ rm *.fits
@@ -2738,15 +2823,16 @@ ratio of the image (for later detection), by combining the two images
 below. Currently Arithmetic uses reverse polish notation (see @ref{Reverse
 polish notation}), and it has many useful operators to work on a single or
 many datasets. Please see @ref{Arithmetic operators} for a full list with a
-description.
+description. Here, we'll take the mean pixel value of both images.
 
 @example
 $ astarithmetic flat-ir/xdf-f160w.fits flat-ir/xdf-f105w.fits 2 mean \
                 --output=flat-ir/xdf-deep.fits --globalhdu=1
 @end example
 
-Now we can run NoiseChisel on the deeper dataset to detect the objects in
-the image. To do that, please run the following command:
+@noindent
+To detect the objects in the image, let's run NoiseChisel on the deeper
+dataset. To do that, please run the following command:
 
 @example
 $ mkdir noisechisel
