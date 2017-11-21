@@ -832,7 +832,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
 
 
   /* If there were no initial clumps, then ignore this function. */
-  if(cltprm->numinitclumps==0) { cltprm->sn=NULL; return; }
+  if(cltprm->numinitclumps==0) { cltprm->snind=cltprm->sn=NULL; return; }
 
 
   /* Allocate the arrays to keep the final S/N table (and possibly S/N

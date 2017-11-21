@@ -401,7 +401,6 @@ ui_set_output_names(struct noisechiselparams *p)
   if(p->checksegmentation)
     p->segmentationname=gal_checkset_automatic_output(&p->cp, basename,
                                                       "_seg.fits");
-
 }
 
 
