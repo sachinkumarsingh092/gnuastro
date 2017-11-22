@@ -31,8 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    See the `gnuastro_bibtex' variable in `lib/options' (from the top
    Gnuastro source code directory) as an example.*/
 
-#define PROGRAM_BIBTEX "";
+#define PROGRAM_BIBTEX ""
 
-#define PROGRAM_AUTHORS "Mohammad Akhlaghi";
+#define PROGRAM_AUTHORS "Mohammad Akhlaghi"
 
 #endif

@@ -49,6 +49,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"  \
   "};\n"
 
-#define PROGRAM_AUTHORS "Mohammad Akhlaghi";
+#define PROGRAM_AUTHORS "Mohammad Akhlaghi"
 
 #endif
