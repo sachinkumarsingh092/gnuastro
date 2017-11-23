@@ -3,9 +3,11 @@ acknowledged in the next release.
 
 Leindert Boogaard
 Nicolas Bouché
+Madusha Gunawardhana
 Aurélien Jarno
 Takashi Ichikawa
 Raúl Infante Sainz
+Floriane Leclercq
 Alan Lefor
 Alejandro Serrano Borlaff
 Lee Spitler
