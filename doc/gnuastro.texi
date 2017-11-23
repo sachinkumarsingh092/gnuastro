@@ -705,24 +705,52 @@ founding basis of the Gnuastro.
 @cindex GNU Tar
 @cindex Uncompress source
 @cindex Source, uncompress
-Gnuastro has three mandatory dependencies and three optional dependencies
-for extra functionality, see @ref{Dependencies}. The latest official
-release tarball is always available as
+The latest official release tarball is always available as
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
 @file{gnuastro-latest.tar.gz}}. For better compression (faster download),
 and robust archival features, an @url{http://www.nongnu.org/lzip/lzip.html,
 Lzip} compressed tarball is also available at
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.lz,
 @file{gnuastro-latest.tar.lz}}, see @ref{Release tarball} for more details
-on the tarball release. If you have downloaded the tarball in the
-@file{TOPGNUASTRO} directory and the dependencies are installed, you can
-unpack, compile, check and install Gnuastro with the following commands. If
-you use GNU Tar, the same command (@command{$ tar xf}) can also be used to
-unpack @file{.tar.lz} tarballs (the Lzip must already be installed).
+on the tarball release.
+
+@cindex Gzip
+@cindex Lzip
+@cindex GNU Tar
+The Gzip library and program are commonly available on most
+systems. However, Gnuastro recommends Lzip as described above and the
+beta-releases are also only distributed in @file{tar.lz}. You can download
+and install Lzip's source (in @file{.tar.gz} format) from its webpage and
+follow the same process as below: Lzip has no dependencies, so simply
+decompress, then run @command{./configure}, @command{make}, @command{sudo
+make install}.
+
+Let's assume the downloaded tarball is in the @file{TOPGNUASTRO}
+directory. The first two commands below can be used to decompress the
+source. If you download @file{tar.lz} and your Tar implementation doesn't
+recognize Lzip (the second command fails), run the third and fourth
+lines. Note that lines starting with @code{##} don't need to be typed.
 
 @example
+## Go into the download directory.
 $ cd TOPGNUASTRO
-$ tar xf gnuastro-latest.tar.gz    # This works on `.tar.lz' too.
+
+## Also works on `tar.gz'. GNU Tar recognizes both formats.
+$ tar xf gnuastro-latest.tar.lz
+
+## Only when previous command fails.
+$ lzip -d gnuastro-latest.tar.lz
+$ tar xf gnuastro-latest.tar
+@end example
+
+Gnuastro has three mandatory dependencies and some optional dependencies
+for extra functionality, see @ref{Dependencies} for the full list. Links to
+the dependency sources and instructions on installing each are fully
+described there. When the mandatory dependencies are ready, you can
+configure, compile, check and install Gnuastro on your system with the
+following commands.
+
+@example
 $ cd gnuastro-X.X                  # Replace X.X with version number.
 $ ./configure
 $ make -j8                         # Replace 8 with no. CPU threads.
@@ -734,12 +762,14 @@ $ sudo make install
 
 See @ref{Known issues} if you confront any complications. For each program
 there is an `Invoke ProgramName' sub-section in this book which explains
-how the programs should be run on the command-line. You can read it on the
-command-line by running the command @command{$ info astprogname}, see
-@ref{Naming convention} and @ref{Getting help}. The `Invoke ProgramName'
-sub-section starts with a few examples of each program and goes on to
-explain the invocation details. In @ref{Tutorials} some real life examples
-of how these programs might be used are given.
+how the programs should be run on the command-line (for example
+@ref{Invoking asttable}). You can read the same section on the command-line
+by running @command{$ info astprogname} (for example @command{info
+asttable}). The `Invoke ProgramName' sub-section starts with a few examples
+of each program and goes on to explain the invocation details. See
+@ref{Getting help} for all the options you have to get help. In
+@ref{Tutorials} some real life examples of how these programs might be used
+are given.
 
 
 
