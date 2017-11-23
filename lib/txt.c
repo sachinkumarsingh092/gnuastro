@@ -237,7 +237,7 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
          are dealing with the string type, we have to pull out the number
          part first. If there is no number for a string type, then ignore
          the line. */
-      if(typestr)
+      if(typestr && *typestr!='\0')
         {
           typestr=txt_trim_space(typestr);
           if( !strncmp(typestr, "str", 3) )

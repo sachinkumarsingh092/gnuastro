@@ -986,7 +986,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         if(readcomment)
           {
             errno=0;
-            tmp->comment=malloc(FLEN_COMMENT * sizeof *tmp->comment);
+            tmp->comment=calloc(FLEN_COMMENT, sizeof *tmp->comment);
             if(tmp->comment==NULL)
               error(EXIT_FAILURE, errno, "%s: %zu bytes for tmp->comment",
                     __func__, FLEN_COMMENT * sizeof *tmp->comment);
@@ -1004,7 +1004,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
           {
             /* Allocate space for the unit and read it in. */
             errno=0;
-            tmp->unit=malloc(FLEN_COMMENT * sizeof *tmp->unit);
+            tmp->unit=calloc(FLEN_COMMENT, sizeof *tmp->unit);
             if(tmp->unit==NULL)
               error(EXIT_FAILURE, errno, "%s: %zu bytes for tmp->unit",
                     __func__, FLEN_COMMENT * sizeof *tmp->unit);
@@ -1016,7 +1016,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         else
           tmp->unit=NULL;
 
-        /* Read the keyword and place its value in the poitner. */
+        /* Read the keyword and place its value in the pointer. */
         fits_read_key(fptr, gal_fits_type_to_datatype(tmp->type),
                       tmp->name, valueptr, tmp->comment, &tmp->status);
 
