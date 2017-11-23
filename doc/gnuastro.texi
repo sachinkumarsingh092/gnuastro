@@ -2817,22 +2817,9 @@ simply delete with a generic command like below.
 $ rm *.fits
 @end example
 
-Since the inputs are in the same grid, we can improve the signal-to-noise
-ratio of the image (for later detection), by combining the two images
-(which are already aligned) with Gnuastro's Arithmetic program as shown
-below. Currently Arithmetic uses reverse polish notation (see @ref{Reverse
-polish notation}), and it has many useful operators to work on a single or
-many datasets. Please see @ref{Arithmetic operators} for a full list with a
-description. Here, we'll take the mean pixel value of both images.
-
-@example
-$ astarithmetic flat-ir/xdf-f160w.fits flat-ir/xdf-f105w.fits 2 mean \
-                --output=flat-ir/xdf-deep.fits --globalhdu=1
-@end example
-
 @noindent
-To detect the objects in the image, let's run NoiseChisel on the deeper
-dataset. To do that, please run the following command:
+To detect the objects in the image, let's run NoiseChisel on both the
+filters. To do that, please run the following command:
 
 @example
 $ mkdir noisechisel
@@ -3121,10 +3108,10 @@ will print the ID, positional columns and the difference between the
 respective magnitude columns.
 
 @example
-$ paste catalog/xdf-f160w_o.txt catalog/xdf-f105w_o.txt           \
-        > xdf-f160w-f105w_o_p.txt
-$ awk '!/^#/@{print $1, $2, $3, $4-$9@}' xdf-f160w-f105w_o_p.txt    \
-      > xdf-f160w-f105w_o.txt
+$ paste catalog/xdf-f105w_o.txt catalog/xdf-f160w_o.txt           \
+        > xdf-f105w-f160w_o_p.txt
+$ awk '!/^#/@{print $1, $2, $3, $4-$9@}' xdf-f105w-f160w_o_p.txt    \
+      > catalog/xdf-f105w-f160w_o.txt
 @end example
 
 Gnuastro has a simple program for basic statistical measurements, you can
@@ -3137,7 +3124,7 @@ want some basic and general information and also works on a server (where
 you may not have graphic user interface).
 
 @example
-$ aststatistics xdf-f160w-f105w_o.txt -c4
+$ aststatistics catalog/xdf-f105w-f160w_o.txt -c4
 @end example
 
 Once your processing is complete, you can use Gnuastro's Statistics program
@@ -3147,8 +3134,100 @@ you just want a specific measure, for example the mean, median and standard
 deviation, you can ask for them specifically:
 
 @example
-$ aststatistics xdf-f160w-f105w_o.txt -c4 --mean --median --std
+$ aststatistics xdf-f105w-f160w_o.txt -c4 --mean --median --std
 @end example
+
+Some researchers prefer to have colors in a fixed aperture for all the
+objects. The colors we calculated above used a different segmentation map
+for each object. This might not satisfy some science cases. To make a fixed
+aperture catalog, we should make a labeled image which has a fixed label
+for each aperture. That labeled image can be given to MakeCatalog instead
+of NoiseChisel's labeled detection image.
+
+@cindex GNU AWK
+We'll use one of the previous catalogs for the positions and set the other
+parameters of each profile to be fixed circle of radious 5 pixels (we want
+all apertures to be fixed afterall). AWK is a wonderful tool for such jobs
+as the command below shows.
+
+@example
+$ awk '!/^#/@{print $1, $2, $3, 5, 5, 0, 0, 1, $1, 1@}'                \
+      catalog/xdf-f160w_o.txt > apertures.txt
+@end example
+
+We can now feed this catalog into MakeProfiles to build the apertures for
+us. See @ref{Invoking astmkprof} for a description of the options. The most
+important for this particular job is @option{--mforflatpix}, it tells
+MakeProfiles that the values in the magnitude column should be used for
+each pixel of a flat profile. Without it, MakeProfiles would build the
+profiles such that the @emph{sum} of the pixels of each profile would have
+a @emph{magnitude} (in log-scale) of the value given in that column (what
+you would expect when simulating a galaxy for example).
+
+@example
+$ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits        \
+            --clearcanvas --replace --type=int16 --mforflatpix       \
+            --mode=wcs
+@end example
+
+The first thing you might notice is that the profiles are not built in
+order. This is because MakeProfiles works in parallel and parallel CPU
+operations are asynchronous. The output is the same in any case. You can
+try running MakeProfiles with one thread (using @option{--numthreads=1} to
+see how order is respected in tha case. Open the output
+@file{apertures.fits} file and see the result. Where the apertures overlap,
+you will notice that one label has replaced the other (thanks to the
+@option{--replace} option). In the future, MakeCatalog will be able to work
+with overlapping labels also. If you are interested, please join us in
+completing Gnuastro with added improvements like this.
+
+We can now give this labeled image instead as input into MakeCatalog
+instead of @file{noisechisel/xdf-deep.fits} as in the examples below. In
+comparison with the previous MakeCatalog call, notice how 1) we have no
+more clumps image, 2) that we have set @option{--objectshdu=1} (since
+@file{apertures.fits} is not the output of NoiseChisel where the labeled
+image is in the third extension), and 3) that we are now using
+@option{--objid} instead of @option{--ids} to avoid warnings that some ID
+columns are only for clumps.
+
+@example
+$ astmkcatalog noisechisel/xdf-f105w.fits --zeropoint=26.27        \
+               --objectsfile=apertures.fits --objectshdu=1         \
+               --objid --ra --dec --magnitude --magnitudeerr       \
+               --output=catalog/xdf-f105w-aper.fits
+@end example
+
+Change the filter name and zeropoint magnitudes and run this command again
+to have the fixed aperture magnitude in the F160W filter also. You can now
+follow the previous steps to derive the color in a fixed aperture.
+
+We will now find some of the objects with the strongest color difference
+and make a cutout to inspect them visually. Let's see what the objects with
+a color more than one magnitude look like.
+
+@cindex AWK
+First, we'll pull out the columns that contain the coordinates of these
+objects using AWK, keep them in @file{reddest.txt} and inspect it using
+@command{cat}.
+
+@example
+$ awk '$4>1@{print@}' catalog/xdf-f105w-f160w_o.txt > reddest.txt
+$ cat reddest.txt
+@end example
+
+We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
+objects look like. To keep things clean, we'll make a directory called
+@file{reddest} and ask Crop to save the crops in this directory. We'll also
+add a @file{-f160w.fits} suffix to the crops.
+
+@example
+$ astcrop flat-ir/xdf-f160w.fits --catalog=reddest.txt             \
+          --width=15/3600,15/3600 --suffix=-f160w.fits             \
+          --output=reddest/
+@end example
+
+@c ##########################################
+@c ##########################################
 
 Finally, if any of the programs in Gnuastro have been useful for your
 research, please cite the respective papers. All Gnuastro programs have a
