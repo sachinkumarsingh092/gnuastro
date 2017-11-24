@@ -114,6 +114,26 @@ CC="$PTHREAD_CC"
 
 
 
+# See if the C++ compiler understands `-Qunused-arguments'. AX_PTHREAD adds
+# this option to LDFLAGS when the C compiler knows this option. But as
+# reported in bug #52490, it can happen that at the same time, the C++
+# compiler doesn't recognize it.
+cpp_Qunused_arguments_problem=no
+for flg in $LDFLAGS; do
+  AS_IF([test "$flg" = \-Qunused-arguments],
+        [ AC_LANG(C++)
+          AX_CHECK_COMPILE_FLAG([-Qunused-arguments],
+                                [cpp_Qunused_arguments_problem=no],
+                                [cpp_Qunused_arguments_problem=yes])
+          AC_LANG(C) ])
+done
+AM_CONDITIONAL([COND_NO_CPP_QUNUSED_ARGUMENTS_PROBLEM],
+               [test "x$cpp_Qunused_arguments_problem" = "xno"])
+
+
+
+
+
 # Check if `malloc(0)' returns valid pointer
 AC_FUNC_MALLOC
 
@@ -129,7 +149,7 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_SIZE_T], [$ac_cv_sizeof_size_t],
 AC_CHECK_SIZEOF([long])
 AC_SUBST(SIZEOF_LONG, [$ac_cv_sizeof_long])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_LONG], [$ac_cv_sizeof_long],
-                   [Depends on bit length of system.])
+                   [On 32bit will be 4, on 64 bit, will be 8])
 
 
 
