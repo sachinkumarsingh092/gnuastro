@@ -49,14 +49,13 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 
+
 # Specify the library .c files
 libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
   arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c     \
   cosmology.c data.c fits.c git.c interpolate.c list.c options.c        \
   permutation.c polygon.c qsort.c dimension.c statistics.c table.c      \
   tableintern.c threads.c tile.c timing.c txt.c type.c wcs.c
-
-
 
 
 
@@ -150,3 +149,13 @@ gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	'$(srcdir)/$@.in' >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
+
+
+
+
+
+# Remove the two local directories we needed during installation
+install-exec-hook:
+	$(SED) -e 's/ -L..\/lib//g' -e 's/ -L..\/..\/lib//g'       \
+	       $(libdir)/libgnuastro.la > libgnuastro.la_tmp
+	mv libgnuastro.la_tmp $(libdir)/libgnuastro.la
