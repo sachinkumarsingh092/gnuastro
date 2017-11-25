@@ -19923,8 +19923,8 @@ In many contexts such situations never come up, for example you don't want
 to shift all the pixels in an image by one or two pixels from some random
 position in the image: their positions have scientific value. But in other
 contexts you will find your self frequently adding/removing an a-priori
-unknown of elements. Linked lists (or @emph{lists} for short) are the
-data-container of choice in such situations. As in a chain, each
+unknown number of elements. Linked lists (or @emph{lists} for short) are
+the data-container of choice in such situations. As in a chain, each
 @emph{node} in a list is an independent C structure, keeping its own data
 along with pointer(s) to its immediate neighbor(s). Below, you can see one
 simple linked list node structure along with an ASCII art schematic of how
@@ -19949,13 +19949,12 @@ middle, you just have to change two. You initially define a variable of
 this type with a @code{NULL} pointer as shown below:
 
 @example
-struct list_float *mylist=NULL
+struct list_float *mylist=NULL;
 @end example
 
 @noindent
-then you use functions provided for that the respective type in the
-sections below to add elements to add or remove/pop an element from the
-list.
+To add or remove/pop a node from the list you can use functions provided
+for the respective type in the sections below.
 
 @cindex last-in-first-out
 @cindex first-in-first-out
@@ -19972,10 +19971,11 @@ the list. If you do that, you will get a ``first-in-first-out'' list. But
 that will force you to go through the whole list for each new element that
 is created (this will slow down the processing)@footnote{A better way to
 get a first-in-first-out is to first keep the data as last-in-first-out
-until they are all read. Afterwards, pop each node and immediately add it
-to the new list: practically reversing the last-in-first-out list to a
-first-in-first-out one. All the list types discussed in this chapter have a
-@code{_reverse} function.}.
+until they are all read. Afterwards, reverse the list by popping each node
+and immediately add it to the new list. This practically reverses the
+last-in-first-out list to a first-in-first-out one. All the list types
+discussed in this chapter have a function with a @code{_reverse} suffix for
+this job.}.
 
 The node example above creates the simplest kind of a list. We can define
 each node with two pointers to both the next and previous neighbors, this
