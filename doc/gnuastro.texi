@@ -25038,9 +25038,9 @@ $ autoreconf -f
 @cindex Making a distribution package
 @item
 Finally, to make sure everything will be built, installed and checked
-correctly run (after re-configuring, and re-building). To greatly speed up
-the process, use multiple threads (8 in the example below, change it
-appropriately)
+correctly run the following command (after re-configuring, and
+re-building). To greatly speed up the process, use multiple threads (8 in
+the example below, change it appropriately)
 
 @example
 $ make distcheck -j8
