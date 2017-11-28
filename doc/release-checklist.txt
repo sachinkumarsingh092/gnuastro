@@ -28,8 +28,8 @@ all the commits needed for this release have been completed.
  - Make sure THANKS corresponds to the acknowledgements in the book.
 
 
- - [STABLE] Update the webpage (`doc/gnuastro-top.html') and correct the
-   links.
+ - [STABLE] Correct the links in the webpage (`doc/gnuastro-top.html' and
+   `doc/gnuastro.fr.html').
 
 
  - Commit all these changes and tag the commit:
