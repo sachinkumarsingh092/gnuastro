@@ -122,8 +122,8 @@ License''.
 @author Mohammad Akhlaghi
 
 @page
-Gnuastro (source code and book) authors (sorted by number of commits
-in project history):
+Gnuastro (source code, book and webpage) authors (sorted by number of
+commits):
 @quotation
 @include authors.texi
 @end quotation
