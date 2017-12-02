@@ -15609,7 +15609,7 @@ given an input aperture. The executable name is @file{astmatch} with the
 following general template
 
 @example
-$ astmatch [OPTION ...] input-1.fits input-2.fits
+$ astmatch [OPTION ...] input-1 input-2
 @end example
 
 @noindent
@@ -15618,11 +15618,11 @@ One line examples:
 @example
 ## Match the two catalogs with a circular aperture of width 2.
 ## (Units same as given positional columns)
-$ astmatch --aperture=2 input1.fits input2.fits
+$ astmatch --aperture=2 input1.txt input2.fits
 
 ## Match the two catalogs within an elliptical aperture of 1 and 2
 ## arcseconds along RA and Dec respectively.
-$ astmatch --aperture=1/3600,2/3600 in1.fits in2.fits
+$ astmatch --aperture=1/3600,2/3600 in1.fits in2.txt
 
 ## Match the RA and DEC columns of the two inputs within an
 ## aperture of 0.5 arcseconds.
@@ -15630,9 +15630,10 @@ $ astmatch --aperture0.5/3600 in1.fits in2.fits             \
            --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC
 @end example
 
-Two inputs are necessary for Match to produce output(s). By default, the
-output will be the input tables that are re-arranged to match each other
-(both tables will have the same number of rows).  If the
+Two inputs are necessary for Match to produce output(s). They can be plain
+text tables or FITS tables, see @ref{Tables}. By default, the output will
+be the input tables that are re-arranged to match each other: both output
+tables will have the same number of rows which are matched. If the
 @option{--logasoutput} option is called, the output will be a single table
 (contents of the log file, see below). Match follows the same basic
 behavior of all Gnuastro programs as fully described in @ref{Common program
