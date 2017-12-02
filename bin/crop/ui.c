@@ -240,75 +240,6 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
 
 
 
-/* Parse the width and center coordinates from the comman-line or
-   configuration files. */
-void *
-ui_parse_width_and_center(struct argp_option *option, char *arg,
-                          char *filename, size_t lineno, void *junk)
-{
-  size_t i, nc;
-  double *darray;
-  gal_data_t *values;
-  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
-
-  /* We want to print the stored values. */
-  if(lineno==-1)
-    {
-      /* Set the value pointer to the correct type. */
-      values = *(gal_data_t **)(option->value);
-      darray = values->array;
-
-      /* Write the values into a string. */
-      nc=0;
-      for(i=0;i<values->size;++i)
-        {
-          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
-            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
-                  "can address the problem. The number of necessary "
-                  "characters in the statically allocated string has become "
-                  "too close to %d", __func__, PACKAGE_BUGREPORT,
-                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
-          nc += sprintf(sstr+nc, "%g,", darray[i]);
-        }
-      sstr[nc-1]='\0';
-
-      /* Copy the string into a dynamically allocated space, because it
-         will be freed later.*/
-      gal_checkset_allocate_copy(sstr, &str);
-      return str;
-    }
-  else
-    {
-      /* If the option is already set, then ignore it. */
-      if(option->set) return NULL;
-
-      /* Read the values. */
-      values=gal_options_parse_list_of_numbers(arg, filename, lineno);
-      *(gal_data_t **)(option->value) = values;
-
-      /* If we are on the width option, then make sure none of the values
-         are negative or zero. */
-      if(!strcmp(option->name, "width"))
-        {
-          darray=values->array;
-          for(i=0;i<values->size;++i)
-            if(darray[i]<=0.0f)
-              error_at_line(EXIT_FAILURE, 0, filename, lineno, "%g is <=0. "
-                            "The values to the `--width' option must be "
-                            "larger than zero. The complete input to this "
-                            "option was `%s' (%g is input number %zu)",
-                            darray[i], arg, darray[i], i+1);
-        }
-
-      /* The return value is only for printing mode. */
-      return NULL;
-    }
-}
-
-
-
-
-
 
 
 
@@ -332,7 +263,8 @@ ui_parse_width_and_center(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct cropparams *p)
 {
-  int checksum;
+  double *darray;
+  int i, checksum;
 
   /* Make sure that only one of the crop definitions is given. */
   checksum = ( (p->center!=NULL)
@@ -359,6 +291,18 @@ ui_read_check_only_options(struct cropparams *p)
             p->catname!=NULL ? "`--catalog', " : "",
             p->section!=NULL ? "`--section', " : "",
             p->polygon!=NULL ? "`--polygon', " : "");
+    }
+
+
+  /* The width values must not be negative. */
+  if(p->width)
+    {
+      darray=p->width->array;
+      for(i=0;i<p->width->size;++i)
+        if(darray[i]<=0.0f)
+          error(EXIT_FAILURE, 0, "%g is <=0. The values to the `--width' "
+                "option must be larger than zero. %g is input number %d to "
+                "this option", darray[i], darray[i], i+1);
     }
 
 

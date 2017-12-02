@@ -61,6 +61,9 @@ context under categories/chapters.
 
   - Header (astheader): Print and manipulate the header data of a FITS file.
 
+  - Match (astmatch): Given two input catalogs, find the rows that match
+    with each other within a given aperture (may be an ellipse).
+
   - MakeCatalog (astmkcatalog): Make catalog of labeled image (output of
     NoiseChisel). The catalogs are highly customizable and adding new
     calculations/columns is very streightforward.

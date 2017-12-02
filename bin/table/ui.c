@@ -263,68 +263,59 @@ ui_check_options_and_arguments(struct tableparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
-ui_preparations(struct tableparams *p)
+ui_print_info_exit(struct tableparams *p)
 {
   char *tmp;
   int tableformat;
   gal_data_t *allcols;
   size_t i, numcols, numrows;
+
+  /* Read the table information for the number of columns and rows. */
+  allcols=gal_table_info(p->filename, p->cp.hdu, &numcols,
+                         &numrows, &tableformat);
+
+  /* If there was no actual data in the file, then inform the user */
+  if(allcols==NULL)
+    error(EXIT_FAILURE, 0, "%s: no usable data rows", p->filename);
+
+
+  /* Print the file information. */
+  printf("--------\n");
+  tmp=gal_fits_name_save_as_string(p->filename, p->cp.hdu);
+  printf("%s\n", tmp);
+  free(tmp);
+
+
+  /* Print each column's information. */
+  gal_table_print_info(allcols, numcols, numrows);
+
+
+  /* Free the information from all the columns. */
+  for(i=0;i<numcols;++i)
+    gal_data_free_contents(&allcols[i]);
+  free(allcols);
+
+
+  /* Free the allocated spaces and exit. Otherwise, add the number of
+     columns to the list if the user wanted to print the columns
+     (didn't just want their information. */
+  ui_free_report(p);
+  exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+void
+ui_preparations(struct tableparams *p)
+{
   struct gal_options_common_params *cp=&p->cp;
 
   /* If there were no columns specified or the user has asked for
      information on the columns, we want the full set of columns. */
-  if(p->columns==NULL || p->information)
-    {
-      /* Read the table information for the number of columns and rows. */
-      allcols=gal_table_info(p->filename, cp->hdu, &numcols,
-                             &numrows, &tableformat);
-
-      /* If there was no actual data in the file, then inform the user */
-      if(allcols==NULL)
-        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->filename);
-
-
-      /* If the user just wanted information, then print it. */
-      if(p->information)
-        {
-          /* Print the file information. */
-          printf("--------\n");
-          tmp=gal_fits_name_save_as_string(p->filename, p->cp.hdu);
-          printf("%s\n", tmp);
-          free(tmp);
-
-          /* Print each column's information. */
-          gal_table_print_info(allcols, numcols, numrows);
-        }
-
-
-      /* Free the information from all the columns. */
-      for(i=0;i<numcols;++i)
-        gal_data_free_contents(&allcols[i]);
-      free(allcols);
-
-
-      /* If the user just wanted information, then free the allocated
-         spaces and exit. Otherwise, add the number of columns to the list
-         if the user wanted to print the columns (didn't just want their
-         information. */
-      if(p->information)
-        {
-          ui_free_report(p);
-          exit(EXIT_SUCCESS);
-        }
-      else
-        /* The user wants to read the column values, so put all the column
-           numbers into the list (as strings). Note that we will write the
-           column numbers into the list in reverse order. This way, they
-           are read/popped in the proper order. Recall that this is a
-           last-in-first-out list. */
-        for(i=numcols;i>0;--i)
-          {
-            asprintf(&tmp, "%zu", i);
-            gal_list_str_add(&p->columns, tmp, 0);
-          }
-    }
+  if(p->information)
+    ui_print_info_exit(p);
 
   /* Read in the table columns. */
   p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
@@ -339,6 +330,7 @@ ui_preparations(struct tableparams *p)
   /* Now that the data columns are ready, we can free the string linked
      list. */
   gal_list_str_free(p->columns, 1);
+  p->columns=NULL;
 }
 
 

@@ -21,22 +21,32 @@ all the commits needed for this release have been completed.
  - Check if README includes all the recent updates and important features.
 
 
- - Check if THANKS is up to date and includes recently updated
-   people/institutions.
-
-
- - Make sure THANKS corresponds to the acknowledgements in the book.
+ - Check if THANKS and the book's Acknowledgments section have everyone in
+   `doc/announce-acknowledge.txt' in them.
 
 
  - [STABLE] Correct the links in the webpage (`doc/gnuastro-top.html' and
    `doc/gnuastro.fr.html').
 
 
- - Commit all these changes and tag the commit:
+ - Run the following commands to keep the list of people who contributed
+   code and those that must be acknowledged for the announcement (`P.P' is
+   the previous version). Finally, if in a stable release, clean
+   `doc/announce-acknowledge.txt' for the next release. We will use
+   `~/people.txt' in the announcement.
+
+     $ git shortlog gnuastro_vP.P...HEAD --numbered --summary > ~/people.txt
+     $ cat doc/announce-acknowledge.txt >> ~/people.txt
+
+     [STABLE]:
+     $ echo "People who's help must be acknowledged in the next release." \
+            > doc/announce-acknowledge.txt
+
+
+ - Commit all these changes:
 
      $ git add -u
      $ git commit
-
 
  - Make sure all the bootstrapping tools are up to date (keep the
    versions in text file to use in the release), then bootstrap and
@@ -100,7 +110,7 @@ all the commits needed for this release have been completed.
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
 
-   If any of the files have a `?' infront of them, run these two commands
+   If any of the files have a `?' in front of them, run these two commands
    in the webpage directory:
 
        $ cvs add filename1 filename2 filename3
@@ -131,13 +141,13 @@ all the commits needed for this release have been completed.
               --archive-suffix=tar.lz > announcement.txt
 
 
- - After finishing the announcement (adding an intro and NEWS file), run a
-   spell-check on it.
+ - Based on previous announcements, add an intro, the NEWS file and the
+   contents of `~/people.txt' to the announcement.
 
 
- - IMPORTANT: In the announcements, double check the changes in the list of
-   authors and the list in THANKS and make sure everyone's contribution is
-   correctly included.
+ - Run a spell-check on the announcement and remove `~/people.txt'.
+
+     $ rm ~/people.txt
 
 
  - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org'

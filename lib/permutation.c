@@ -136,6 +136,7 @@ gal_permutation_apply(gal_data_t *input, size_t *permutation)
 
 
 
+
 /* Apply the inverse of given permutation on the input dataset, see
    `gal_permutation_apply_inverse'. */
 void

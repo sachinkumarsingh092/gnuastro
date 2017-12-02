@@ -764,6 +764,65 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
 
 
 
+/* Parse options with values of a list of numbers. */
+void *
+gal_options_parse_csv_float64(struct argp_option *option, char *arg,
+                              char *filename, size_t lineno, void *junk)
+{
+  size_t i, nc;
+  double *darray;
+  gal_data_t *values;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the pointer to the values dataset. */
+      values = *(gal_data_t **)(option->value);
+      darray=values->array;
+
+      /* Write each string into the output string */
+      nc=0;
+      for(i=0;i<values->size;++i)
+        {
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+          nc += sprintf(sstr+nc, "%g,", darray[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+
+  /* We want to read the user's string. */
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
+
+      /* Read the values. */
+      values=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+      /* Put the values into the option. */
+      *(gal_data_t **)(option->value) = values;
+
+      /* The return value is only for printing mode, so we can return
+         NULL after reading is complete. */
+      return NULL;
+    }
+}
+
+
+
+
+
 /* Two numbers must be provided as an argument. This function will read
    them as the sigma-clipping multiple and parameter and store the two in a
    2-element array. `option->value' must point to an already allocated

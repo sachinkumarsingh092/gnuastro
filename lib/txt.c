@@ -1245,6 +1245,9 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename)
   size_t i, j, num=0, fmtlen;
   gal_data_t *data, *next2d=NULL;
 
+  /* Make sure input is valid. */
+  if(input==NULL) error(EXIT_FAILURE, 0, "%s: input is NULL", __func__);
+
 
   /* Currently only 1 and 2 dimension datasets are acceptable. */
   if( input->ndim!=1 && input->ndim!=2 )

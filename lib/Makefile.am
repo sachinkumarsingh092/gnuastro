@@ -51,10 +51,10 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
-  arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c     \
-  cosmology.c data.c fits.c git.c interpolate.c list.c options.c        \
-  permutation.c polygon.c qsort.c dimension.c statistics.c table.c      \
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                \
+  arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c      \
+  cosmology.c data.c fits.c git.c interpolate.c list.c match.c options.c \
+  permutation.c polygon.c qsort.c dimension.c statistics.c table.c       \
   tableintern.c threads.c tile.c timing.c txt.c type.c wcs.c
 
 
@@ -69,7 +69,7 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h         \
   $(headersdir)/binary.h $(headersdir)/blank.h $(headersdir)/box.h        \
   $(headersdir)/convolve.h $(headersdir)/cosmology.h $(headersdir)/data.h \
   $(headersdir)/dimension.h $(headersdir)/fits.h $(headersdir)/git.h      \
-  $(headersdir)/interpolate.h $(headersdir)/list.h                        \
+  $(headersdir)/interpolate.h $(headersdir)/list.h $(headersdir)/match.h  \
   $(headersdir)/permutation.h $(headersdir)/polygon.h                     \
   $(headersdir)/qsort.h $(headersdir)/statistics.h $(headersdir)/table.h  \
   $(headersdir)/threads.h $(headersdir)/tile.h $(headersdir)/txt.h        \
@@ -154,8 +154,15 @@ gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 
 
 
-# Remove the two local directories we needed during installation
+# Remove the two local directories we needed during installation from the
+# library search paths of the installed `libgnuastro.la'.
+#
+# Note that this hook is executed after every installation command
+# (including `make uninstall'). So we should only do it if the library
+# actually exists.
 install-exec-hook:
-	$(SED) -e 's/ -L..\/lib//g' -e 's/ -L..\/..\/lib//g'       \
-	       $(libdir)/libgnuastro.la > libgnuastro.la_tmp
-	mv libgnuastro.la_tmp $(libdir)/libgnuastro.la
+	if [ -f $(libdir)/libgnuastro.la ]; then                   \
+	  $(SED) -e 's/ -L..\/lib//g' -e 's/ -L..\/..\/lib//g'     \
+	         $(libdir)/libgnuastro.la > libgnuastro.la_tmp;    \
+	  mv libgnuastro.la_tmp $(libdir)/libgnuastro.la;          \
+	fi

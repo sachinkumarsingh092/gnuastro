@@ -252,7 +252,7 @@ ui_check_options_and_arguments(struct TEMPLATEparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-void
+static void
 ui_preparations(struct TEMPLATEparams *p)
 {
 
@@ -279,7 +279,6 @@ ui_preparations(struct TEMPLATEparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
-
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct TEMPLATEparams *p)
 {

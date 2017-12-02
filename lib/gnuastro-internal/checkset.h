@@ -79,6 +79,9 @@ gal_checkset_allocate_copy(const char *arg, char **copy);
 void
 gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);
 
+char *
+gal_checkset_dataset_name(char *filename, char *hdu);
+
 
 
 
@@ -97,7 +100,7 @@ gal_checkset_check_file(char *filename);
 int
 gal_checkset_check_file_return(char *filename);
 
-void
+void    /* keep==0 && dontdelete==0: file will be deleted if exists.*/
 gal_checkset_writable_remove(char *filename, int keep, int dontdelete);
 
 int

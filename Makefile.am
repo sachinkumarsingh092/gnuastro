@@ -68,6 +68,9 @@ endif
 if COND_FITS
   MAYBE_FITS = bin/fits
 endif
+if COND_MATCH
+  MAYBE_MATCH = bin/match
+endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG = bin/mkcatalog
 endif
@@ -109,10 +112,10 @@ endif
 ## having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
 SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)  \
   $(MAYBE_BUILDPROG) $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE)                 \
-  $(MAYBE_COSMICCAL) $(MAYBE_CROP) $(MAYBE_FITS) $(MAYBE_MKCATALOG)      \
-  $(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL)                  \
-  $(MAYBE_STATISTICS) $(MAYBE_TABLE) $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc \
-  tests
+  $(MAYBE_COSMICCAL) $(MAYBE_CROP) $(MAYBE_FITS) $(MAYBE_MATCH)          \
+  $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)                    \
+  $(MAYBE_NOISECHISEL) $(MAYBE_STATISTICS) $(MAYBE_TABLE)                \
+  $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc tests
 
 
 

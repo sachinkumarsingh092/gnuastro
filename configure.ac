@@ -559,9 +559,15 @@ AC_ARG_ENABLE([crop],
 AC_ARG_ENABLE([fits],
               [AS_HELP_STRING([--enable-fits],
                     [Install Fits and other enabled programs.])],
-	      [AS_IF([test "x$enable_Fits" != xno],
+	      [AS_IF([test "x$enable_fits" != xno],
                      [enable_fits=yes; ayes=true])],
               [enable_fits=notset])
+AC_ARG_ENABLE([match],
+              [AS_HELP_STRING([--enable-match],
+                    [Install Match and other enabled programs.])],
+	      [AS_IF([test "x$enable_match" != xno],
+                     [enable_match=yes; ayes=true])],
+              [enable_match=notset])
 AC_ARG_ENABLE([mkcatalog],
               [AS_HELP_STRING([--enable-mkcatalog],
                     [Install MakeCatalog and other enabled programs.])],
@@ -628,6 +634,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=no])
        AS_IF([test $enable_crop = notset], [enable_crop=no])
        AS_IF([test $enable_fits = notset], [enable_fits=no])
+       AS_IF([test $enable_match = notset], [enable_match=no])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
@@ -646,6 +653,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=yes])
        AS_IF([test $enable_crop = notset], [enable_crop=yes])
        AS_IF([test $enable_fits = notset], [enable_fits=yes])
+       AS_IF([test $enable_match = notset], [enable_match=yes])
        AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
@@ -677,6 +685,7 @@ AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_COSMICCAL], [test $enable_cosmiccal = yes])
 AM_CONDITIONAL([COND_CROP], [test $enable_crop = yes])
 AM_CONDITIONAL([COND_FITS], [test $enable_fits = yes])
+AM_CONDITIONAL([COND_MATCH], [test $enable_match = yes])
 AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
@@ -701,6 +710,7 @@ AC_CONFIG_FILES([Makefile
                  bin/fits/Makefile
                  bin/warp/Makefile
                  bin/table/Makefile
+                 bin/match/Makefile
                  bin/mkprof/Makefile
                  bin/mknoise/Makefile
                  bin/convertt/Makefile

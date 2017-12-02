@@ -694,9 +694,9 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
   if(to->type!=GAL_TYPE_STRING)
     error(EXIT_FAILURE, 0, "%s: `to' must have a string type", __func__);
   if(from->block)
-    error(EXIT_FAILURE, 0, "%s: tile inputs not currently supported (`block' "
-          "element must be NULL). Please contact us at %s so we can implement "
-          "this feature", __func__, PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "%s: tile inputs not currently supported "
+          "(`block' element must be NULL). Please contact us at %s so we "
+          "can implement this feature", __func__, PACKAGE_BUGREPORT);
 
   /* Do the copying */
   switch(from->type)
@@ -918,9 +918,9 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t newtype)
 
 
 /* Copy a given dataset (`in') into an already allocated dataset `out' (the
-   actual dataset and its `array' element). The meta-data of `in' will be
-   fully copied into `out' also. `out->size' will be used to find the
-   available space in the allocated space.
+   actual dataset and its `array' element). The meta-data of `in' (except
+   for `block') will be fully copied into `out' also. `out->size' will be
+   used to find the available space in the allocated space.
 
    When `in->size != out->size' this function will behave as follows:
 

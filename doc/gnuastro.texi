@@ -423,6 +423,7 @@ Data analysis
 * Statistics::                  Calculate dataset statistics.
 * NoiseChisel::                 Detect objects in an image.
 * MakeCatalog::                 Catalog from input and labeled images.
+* Match::                       Match two datasets.
 
 Statistics
 
@@ -464,6 +465,10 @@ Invoking MakeCatalog
 * Upper-limit magnitude settings::  Necessary to define upper-limit magnitudes.
 * MakeCatalog output columns::  How to specify the columns in the output.
 
+Match
+
+* Invoking astmatch::           Inputs, outputs and options of Match
+
 Modeling and fitting
 
 * MakeProfiles::                Making mock galaxies and stars.
@@ -479,7 +484,7 @@ MakeProfiles
 
 Modeling basics
 
-* Defining an ellipse::         Defining an ellipse in 2D.
+* Defining an ellipse::         An ellipse on a pixelated grid.
 * PSF::                         Radial profiles for the PSF.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
@@ -12289,6 +12294,7 @@ input dataset (with @ref{MakeCatalog}).
 * Statistics::                  Calculate dataset statistics.
 * NoiseChisel::                 Detect objects in an image.
 * MakeCatalog::                 Catalog from input and labeled images.
+* Match::                       Match two datasets.
 @end menu
 
 @node Statistics, NoiseChisel, Data analysis, Data analysis
@@ -14311,7 +14317,7 @@ multiextension FITS images}.
 
 
 
-@node MakeCatalog,  , NoiseChisel, Data analysis
+@node MakeCatalog, Match, NoiseChisel, Data analysis
 @section MakeCatalog
 
 At the lowest level, a dataset (for example an image) is just a collection
@@ -15576,8 +15582,152 @@ with the first FITS axis in degrees.
 
 
 
+@node Match,  , MakeCatalog, Data analysis
+@section Match
 
+Data can come come from different telescopes, filters, software and even
+different configurations for a single software. As a result, one of the
+primary things to do after generating catalogs from each of these sources
+(for example with @ref{MakeCatalog}), is to find which sources in one
+catalog correspond to which in the other(s). In other words, to `match' the
+two catalogs with each other.
 
+Gnuastro's Match program is in charge of such operations. The nearest
+objects in the two catalogs, within the given aperture, will be found and
+given as output. The aperture can be a circle or an ellipse with any
+orientation.
+
+@menu
+* Invoking astmatch::           Inputs, outputs and options of Match
+@end menu
+
+@node Invoking astmatch,  , Match, Match
+@subsection Invoking Match
+
+When given two catalogs, Match find which rows correspond to each other
+given an input aperture. The executable name is @file{astmatch} with the
+following general template
+
+@example
+$ astmatch [OPTION ...] input-1.fits input-2.fits
+@end example
+
+@noindent
+One line examples:
+
+@example
+## Match the two catalogs with a circular aperture of width 2.
+## (Units same as given positional columns)
+$ astmatch --aperture=2 input1.fits input2.fits
+
+## Match the two catalogs within an elliptical aperture of 1 and 2
+## arcseconds along RA and Dec respectively.
+$ astmatch --aperture=1/3600,2/3600 in1.fits in2.fits
+
+## Match the RA and DEC columns of the two inputs within an
+## aperture of 0.5 arcseconds.
+$ astmatch --aperture0.5/3600 in1.fits in2.fits             \
+           --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC
+@end example
+
+Two inputs are necessary for Match to produce output(s). By default, the
+output will be the input tables that are re-arranged to match each other
+(both tables will have the same number of rows).  If the
+@option{--logasoutput} option is called, the output will be a single table
+(contents of the log file, see below). Match follows the same basic
+behavior of all Gnuastro programs as fully described in @ref{Common program
+behavior}. If the first input is a FITS file, the common @option{--hdu}
+option (see @ref{Input output options}) should be used to identify the
+extension. For the second input, the extension can be specified with
+@option{--hdu2}.
+
+When the @option{--log} option is called (see @ref{Operating mode
+options}), Match will also create a file named @file{astmatch.log} in the
+directory it is run in. This log table will have three columns. The first
+and second column shows the rows/record number (counting from 1) of the
+first and second input catalogs respectively. The third column is the
+distance between the two matched positions. The units of this distance are
+the same as the given coordinates. When @option{--logasoutput} is called,
+no log file (with a fixed name) will be created. In this case, the output
+file (possibly given by the @option{--output} option) will have the
+contents of this log file.
+
+If no output file name is given with the @option{--output} option, then
+automatic output @ref{Automatic output} will be used to determine the
+output names. Depending on @option{--tableformat} (see @ref{Input output
+options}), the output will then be a FITS table or a plain text table.
+
+When the output name is a FITS file, and @option{--logasoutput} is not
+called, the re-arranged inputs will be two extensions of the output FITS
+file. If the output name is a text file, then two files will be created
+with a @file{_matched_1.txt} and @file{_matched_2.txt} suffix.
+
+@table @option
+@item -H STR
+@itemx --hdu2=STR
+The extension/HDU of the second input if it is a FITS file. When it isn't a
+FITS file, this option's value is ignored. For the first input, the common
+option @option{--hdu} must be used.
+
+@item -l
+@itemx --logasoutput
+The output file will have the contents of the log file: indexs in the two
+catalogs that match with each other along with their distance. See
+description above. When this option is called, a log file called
+@file{astmatch.txt} will not be created. With this option, the default
+output behavior (two tables containing the re-arranged inputs) will be
+
+@item --ccol1=INT/STR
+The coordinate column of the first input. This option must be called
+multiple times to specify all the coordinate columns of the first
+input.
+
+For example, to match the RA and Dec columns of the first catalog with the
+same named columns of the second, you need to call this option (along with
+@option{--ccol2}) two times:
+
+@example
+$ astmatch --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC   \
+           input-1.fits input-2.fits
+@end example
+
+@item --ccol2=INT/STR
+The coordinate column of the second input. This option must be called
+multiple times to specify all the coordinate columns of the second
+input. See the example in @option{--ccol1} for more.
+
+@item -a FLT[,FLT[,FLT]]
+@itemx --aperture=FLT[,FLT[,FLT]]
+Parameters of the aperture for matching. The values given to this option
+can be fractions, for example @option{1/3600} can be used to ask for one
+arcsecond. The interpretation of the values depends on how many are given:
+
+@table @asis
+@item 1 number
+For example @option{--aperture=2}. The aperture will be a circle of the
+given radius. The value will be in the same units as the columns in
+@option{--ccol1} and @option{--ccol2}).
+
+@item 2 numbers
+For example @option{--aperture=3,4e-10}. The aperture will be an ellipse
+(if the two numbers are different) with the respective value along each
+dimension. The numbers are in units of the first and second axis. In the
+example above, the semi-axis value along the first axis will be 3 (in units
+of the first coordinate) and along the second axis will be
+@mymath{4\times10^{-10}} (in units of the second coordinate). Such values
+can happen if you are comparing catalogs of a spectra for example. If more
+than one object exists in the aperture, the nearest will be found along the
+major axis as described in @ref{Defining an ellipse}.
+
+@item 3 numbers
+For example @option{--aperture=2,0.6,30}. The aperture will be an ellipse
+(if the second value is not 1). The first number is the semi-major axis,
+the second is the axis ratio and the third is the position angle (in
+degrees). If multiple matches are found within the ellipse, the distance
+(to find the nearest) is calculated along the major axis in the elliptical
+space, see @ref{Defining an ellipse}.
+@end table
+@end table
 
 
 
@@ -15688,13 +15838,15 @@ given. You can skip this subsection if you are already sufficiently
 familiar with these concepts.
 
 @menu
-* Defining an ellipse::         Defining an ellipse in 2D.
+* Defining an ellipse::         An ellipse on a pixelated grid.
 * PSF::                         Radial profiles for the PSF.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
 @end menu
+
+
 
 @node Defining an ellipse, PSF, Modeling basics, Modeling basics
 @subsubsection Defining an ellipse
@@ -15703,8 +15855,8 @@ familiar with these concepts.
 @cindex Axis ratio
 @cindex Position angle
 The PSF, see @ref{PSF}, and galaxy radial profiles are generally defined on
-an ellipse so in this section first defining an ellipse on a pixelated 2D
-surface is discussed. Labeling the major axis of an ellipse @mymath{a}, and
+an ellipse. Therefore, in this section we'll start defining an ellipse on a
+pixelated 2D surface. Labeling the major axis of an ellipse @mymath{a}, and
 its minor axis with @mymath{b}, the @emph{axis ratio} is defined as:
 @mymath{q\equiv b/a}. The major axis of an ellipse can be aligned in any
 direction, therefore the angle of the major axis with respect to the
@@ -15716,7 +15868,7 @@ Our aim is to put a radial profile of any functional form @mymath{f(r)}
 over an ellipse. Hence we need to associate a radius/distance to every
 point in space. Let's define the radial distance @mymath{r_{el}} as the
 distance on the major axis to the center of an ellipse which is located at
-@mymath{i_c} and @mymath{i_c} (in other words @mymath{r_{el}\equiv{a}}). We
+@mymath{i_c} and @mymath{j_c} (in other words @mymath{r_{el}\equiv{a}}). We
 want to find @mymath{r_{el}} of a point located at @mymath{(i,j)} (in the
 image coordinate system) from the center of the ellipse with axis ratio
 @mymath{q} and position angle @mymath{\theta}. First the coordinate system
@@ -19859,15 +20011,15 @@ converting to a smaller type, it is up to you to make sure that the values
 fit into the output type.
 
 @deftypefun {gal_data_t *} gal_data_copy (gal_data_t @code{*in})
-Return a new dataset that is a copy of @code{in}, the main meta-data of the
-input is also copied into the output.
+Return a new dataset that is a copy of @code{in}, all of @code{in}'s
+meta-data will also copied into the output, except for @code{block}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_data_copy_to_new_type (gal_data_t @code{*in}, uint8_t @code{newtype})
 Return a copy of the dataset @code{in}, converted to @code{newtype}, see
 @ref{Library data types} for Gnuastro library's type identifiers. The
-returned dataset will have all meta-data accept their type equal to the
-input's metadata.
+returned dataset will have all meta-data except their type and @code{block}
+equal to the input's metadata.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_data_copy_to_new_type_free (gal_data_t @code{*in}, uint8_t @code{newtype})
@@ -22695,6 +22847,15 @@ Functions related to reporting a the bounding box of certain inputs are
 declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
+
+@deftypefun void gal_box_bound_ellipse_extent (double @code{a}, double @code{b}, double @code{theta_deg}, double @code{*extent})
+Return the maximum extent along each dimension of the given ellipse from
+the center of the ellipse. Therefore this is half the extent of the box in
+each dimension. @code{a} is the ellipse major axis, @code{b} is the minor
+axis, @code{theta_deg} is the position angle in degrees. The extent in each
+dimension is in floating point format and stored in @code{extent} which
+must already be allocated before this function.
+@end deftypefun
 
 @deftypefun void gal_box_bound_ellipse (double @code{a}, double @code{b}, double @code{theta_deg}, long @code{*width})
 Any ellipse can be enclosed into a rectangular box. The purpose of this
@@ -25663,6 +25824,10 @@ a large set of random number generators and any seed.
 image. The central regions of radial profiles are made with a configurable
 2D Monte Carlo integration. It can also build the profiles on an
 over-sampled image.
+
+@item Match
+(@file{astmatch}, see @ref{Match}) Given two input catalogs, find the rows
+that match with each other within a given aperture (may be an ellipse).
 
 @item NoiseChisel
 (@file{astnoisechisel}, see @ref{NoiseChisel}) Detect and segment signal in

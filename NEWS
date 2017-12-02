@@ -5,6 +5,17 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Manual/Book: An extended tutorial is added showing some general
+  applications of almost all the programs. This may be a good place to get
+  a feeling of how Gnuastro is intended to be used and some of the
+  programs.
+
+  New Program and library: Match is a new program that will match two given
+  inputs (currently catalogs). Its output is the re-arranged inputs with
+  the same number of rows/records such that all the rows match. The main
+  work is also done with the new `gal_match_catalog' library function which
+  can also be used in other contexts.
+
   All programs: a value of `0' to the `--numthreads' option will use the
   number of threads available to the system at run time.
 
@@ -86,6 +97,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   `gal_txt_write' and `gal_fits_tab_write' now accept an extension name as
   argument to allow a name for the FITS extension they write.
+
+  `gal_box_bound_ellipse_extent' will return the maximum extent of an
+  ellipse along each axis from the ellipse center in floating point.
 
 ** Removed features
 

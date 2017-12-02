@@ -44,6 +44,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcshdr.h>
 #include <wcslib/wcsfix.h>
 
+#include <gnuastro/list.h>
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
 

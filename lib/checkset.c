@@ -133,6 +133,28 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set)
 
 
 
+/* The dataset may be alone in a file (for example a table in a text file)
+   or it may an extension of a FITS file. In error messages in particular,
+   we need to differentiate between the two. This function will check the
+   filename and if it is FITS, it will return a string with the filename
+   and HDU in parenthesis. If it isn't a FITS file, it will only return the
+   filename. Note that the output needs to be freed, although when used in
+   an error message, you can leave it to the system to free the
+   space. There is no problem. */
+char *
+gal_checkset_dataset_name(char *filename, char *hdu)
+{
+  char *out;
+  if( gal_fits_name_is_fits(filename) )
+    asprintf(&out, "%s (hdu %s)", filename, hdu);
+  else
+    gal_checkset_allocate_copy(filename, &out);
+  return out;
+}
+
+
+
+
 
 
 

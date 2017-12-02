@@ -122,6 +122,11 @@ if COND_FITS
   fits/delete.sh: fits/write.sh.log
   fits/copyhdu.sh: fits/write.sh.log mkprof/mosaic2.sh.log
 endif
+if COND_MATCH
+  MAYBE_MATCH_TESTS = match/positions.sh
+
+  match/positions.sh: prepconf.sh.log
+endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG_TESTS = mkcatalog/simple.sh mkcatalog/aperturephot.sh
 
@@ -220,10 +225,10 @@ lib/multithread.sh: mkprof/mosaic1.sh.log
 TESTS = prepconf.sh lib/multithread.sh $(MAYBE_VERSIONCPP_SH)              \
   $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_BUILDPROG_TESTS)                       \
   $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
-  $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MKCATALOG_TESTS)         \
-  $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS) $(MAYBE_NOISECHISEL_TESTS)  \
-  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                     \
-  $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
+  $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MATCH_TESTS)             \
+  $(MAYBE_MKCATALOG_TESTS) $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS)    \
+  $(MAYBE_NOISECHISEL_TESTS) $(MAYBE_STATISTICS_TESTS)                     \
+  $(MAYBE_SUBTRACTSKY_TESTS) $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
 
 
 
@@ -231,9 +236,10 @@ TESTS = prepconf.sh lib/multithread.sh $(MAYBE_VERSIONCPP_SH)              \
 
 # Files to distribute along with the tests.
 EXTRA_DIST = $(TESTS) during-dev.sh buildprog/simpleio.c crop/cat.txt     \
-  mkprof/mkprofcat1.txt mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt \
-  mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt       \
-  mkprof/radeccat.txt table/table.txt
+  match/positions-1.txt match/positions-2.txt mkprof/mkprofcat1.txt       \
+  mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt mkprof/mkprofcat2.txt \
+  mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt         \
+  table/table.txt
 
 
 

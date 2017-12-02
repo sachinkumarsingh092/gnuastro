@@ -64,22 +64,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    and you will find the distance (about the center of the ellipse
    that encloses the whole ellipse. */
 void
-gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
+gal_box_bound_ellipse_extent(double a, double b, double theta_deg,
+                             double *extent)
 {
   double t_r=theta_deg*M_PI/180;
-  double max_x, max_y, ct=cos(t_r), st=sin(t_r);
+  double ct=cos(t_r), st=sin(t_r);
   double t_x=atan(b/a*tan(t_r)), t_y=atan(-1.0f*b/a/tan(t_r));
 
   /* Calculate the maxima along each direction. */
-  max_x = a*cos(t_x)*ct    + b*sin(t_x)*st;
-  max_y = -1*a*cos(t_y)*st + b*sin(t_y)*ct;
+  extent[0] = fabs( a*cos(t_x)*ct    + b*sin(t_x)*st );
+  extent[1] = fabs( -1*a*cos(t_y)*st + b*sin(t_y)*ct );
+}
+
+
+
+
+
+void
+gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
+{
+  double extent[2];
+
+  /* Find the extent of the ellipse. */
+  gal_box_bound_ellipse_extent(a, b, theta_deg, extent);
 
   /* max_x and max_y are calculated from the center of the ellipse. We
      want the final height and width of the box enclosing the
      ellipse. So we have to multiply them by two, then take one from
      them (for the center). */
-  width[0]=2*( (size_t)fabs(max_x)+1 ) + 1;
-  width[1]=2*( (size_t)fabs(max_y)+1 ) + 1;
+  width[0] = 2 * ( (size_t)extent[0] + 1 ) + 1;
+  width[1] = 2 * ( (size_t)extent[1] + 1 ) + 1;
 }
 
 

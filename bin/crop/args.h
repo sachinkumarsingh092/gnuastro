@@ -150,7 +150,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_width_and_center
+      gal_options_parse_csv_float64
     },
     {
       "center",
@@ -164,7 +164,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_width_and_center
+      gal_options_parse_csv_float64
     },
 
 

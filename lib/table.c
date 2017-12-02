@@ -223,144 +223,153 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
   gal_list_sizet_t *indexll=NULL;
   char *str, *strcheck, *tailptr, *errorstring;
 
-  for(tmp=cols; tmp!=NULL; tmp=tmp->next)
-    {
-      /* Counter for number of columns matched, and length of name. */
-      nummatch=0;
-      len=strlen(tmp->v);
+  /* Go over the given columns.  */
+  if(cols)
+    for(tmp=cols; tmp!=NULL; tmp=tmp->next)
+      {
+        /* Counter for number of columns matched, and length of name. */
+        nummatch=0;
+        len=strlen(tmp->v);
 
-      /* REGULAR EXPRESSION: When the first and last characters are `/'. */
-      if( tmp->v[0]=='/' && tmp->v[len-1]=='/' )
-        {
-          /* Remove the slashes, note that we don't want to change `tmp->v'
-             (because it should be freed later). So first we set the last
-             character to `\0', then define a new string from the first
-             element. */
-          tmp->v[len-1]='\0';
-          str = tmp->v + 1;
+        /* REGULAR EXPRESSION: the first and last characters are `/'. */
+        if( tmp->v[0]=='/' && tmp->v[len-1]=='/' )
+          {
+            /* Remove the slashes, note that we don't want to change
+               `tmp->v' (because it should be freed later). So first we set
+               the last character to `\0', then define a new string from
+               the first element. */
+            tmp->v[len-1]='\0';
+            str = tmp->v + 1;
 
-          /* Allocate the regex_t structure: */
-          errno=0;
-          regex=malloc(sizeof *regex);
-          if(regex==NULL)
-            error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for regex",
-                  __func__, sizeof *regex);
+            /* Allocate the regex_t structure: */
+            errno=0;
+            regex=malloc(sizeof *regex);
+            if(regex==NULL)
+              error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for regex",
+                    __func__, sizeof *regex);
 
-          /* First we have to "compile" the string into the regular
-             expression, see the "POSIX Regular Expression Compilation"
-             section of the GNU C Library.
+            /* First we have to "compile" the string into the regular
+               expression, see the "POSIX Regular Expression Compilation"
+               section of the GNU C Library.
 
-             About the case of the string: the FITS standard says: "It is
-             _strongly recommended_ that every field of the table be
-             assigned a unique, case insensitive name with this keyword..."
-             So the column names can be case-sensitive.
+               About the case of the string: the FITS standard says: "It is
+               _strongly recommended_ that every field of the table be
+               assigned a unique, case insensitive name with this
+               keyword..."  So the column names can be case-sensitive.
 
-             Here, we don't care about the details of a match, the only
-             important thing is a match, so we are using the REG_NOSUB
-             flag.*/
-          regreturn=0;
-          regreturn=regcomp(regex, str, ( ignorecase
-                                          ? RE_SYNTAX_AWK | REG_ICASE
-                                          : RE_SYNTAX_AWK ) );
-          if(regreturn)
-            table_regexerrorexit(regreturn, regex, str);
-
-
-          /* With the regex structure "compile"d you can go through all the
-             column names. Just note that column names are not mandatory in
-             the FITS standard, so some (or all) columns might not have
-             names, if so `p->tname[i]' will be NULL. */
-          for(i=0;i<numcols;++i)
-            {
-              strcheck=table_set_strcheck(&allcols[i], searchin);
-              if(strcheck && regexec(regex, strcheck, 0, 0, 0)==0)
-                {
-                  ++nummatch;
-                  gal_list_sizet_add(&indexll, i);
-                }
-            }
-
-          /* Free the regex_t structure: */
-          regfree(regex);
-
-          /* Put the `/' back into the input string. This is done because
-             after this function, the calling program might want to inform
-             the user of their exact input string. */
-          tmp->v[len-1]='/';
-        }
+               Here, we don't care about the details of a match, the only
+               important thing is a match, so we are using the REG_NOSUB
+               flag.*/
+            regreturn=0;
+            regreturn=regcomp(regex, str, ( ignorecase
+                                            ? RE_SYNTAX_AWK | REG_ICASE
+                                            : RE_SYNTAX_AWK ) );
+            if(regreturn)
+              table_regexerrorexit(regreturn, regex, str);
 
 
-      /* Not regular expression. */
-      else
-        {
-          tlong=strtol(tmp->v, &tailptr, 0);
+            /* With the regex structure "compile"d you can go through all
+               the column names. Just note that column names are not
+               mandatory in the FITS standard, so some (or all) columns
+               might not have names, if so `p->tname[i]' will be NULL. */
+            for(i=0;i<numcols;++i)
+              {
+                strcheck=table_set_strcheck(&allcols[i], searchin);
+                if(strcheck && regexec(regex, strcheck, 0, 0, 0)==0)
+                  {
+                    ++nummatch;
+                    gal_list_sizet_add(&indexll, i);
+                  }
+              }
 
-          /* INTEGER: If the string is an integer, then tailptr should
-             point to the null character. If it points to anything else, it
-             shows that we are not dealing with an integer (usable as a
-             column number). So floating point values are also not
-             acceptable. Since it is possible for the users to give zero
-             for the column number, we need to read the string as a number
-             first, then check it here. */
-          if(*tailptr=='\0')
-            {
-              /* Make sure the number is larger than zero! */
-              if(tlong<=0)
-                error(EXIT_FAILURE, 0, "%s: column numbers must be positive "
-                      "(not zero or negative). You have asked for column "
-                      "number %ld", __func__, tlong);
+            /* Free the regex_t structure: */
+            regfree(regex);
 
-              /* Check if the given value is not larger than the number of
-                 columns in the input catalog (note that the user is
-                 counting from 1, not 0!) */
-              if(tlong>numcols)
-                error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
-                      "have asked for column number %ld",
-                      gal_fits_name_save_as_string(filename, hdu),
-                      numcols, tlong);
-
-              /* Everything seems to be fine, put this column number in the
-                 output column numbers linked list. Note that internally,
-                 the column numbers start from 0, not 1.*/
-              gal_list_sizet_add(&indexll, tlong-1);
-              ++nummatch;
-            }
+            /* Put the `/' back into the input string. This is done because
+               after this function, the calling program might want to
+               inform the user of their exact input string. */
+            tmp->v[len-1]='/';
+          }
 
 
+        /* Not regular expression. */
+        else
+          {
+            tlong=strtol(tmp->v, &tailptr, 0);
 
-          /* EXACT MATCH: */
-          else
-            {
-              /* Go through all the desired column information and add the
-                 column number when there is a match. */
-              for(i=0;i<numcols;++i)
-                {
-                  /* Check if this column actually has any
-                     information. Then do a case-sensitive or insensitive
-                     comparison of the strings. */
-                  strcheck=table_set_strcheck(&allcols[i], searchin);
-                  if(strcheck && ( ignorecase
-                                   ? !strcasecmp(tmp->v, strcheck)
-                                   : !strcmp(tmp->v, strcheck) ) )
-                    {
-                      ++nummatch;
-                      gal_list_sizet_add(&indexll, i);
-                    }
-                }
-            }
-        }
+            /* INTEGER: If the string is an integer, then tailptr should
+               point to the null character. If it points to anything else,
+               it shows that we are not dealing with an integer (usable as
+               a column number). So floating point values are also not
+               acceptable. Since it is possible for the users to give zero
+               for the column number, we need to read the string as a
+               number first, then check it here. */
+            if(*tailptr=='\0')
+              {
+                /* Make sure the number is larger than zero! */
+                if(tlong<=0)
+                  error(EXIT_FAILURE, 0, "%s: column numbers must be "
+                        "positive (not zero or negative). You have asked "
+                        "for column number %ld", __func__, tlong);
+
+                /* Check if the given value is not larger than the number
+                   of columns in the input catalog (note that the user is
+                   counting from 1, not 0!) */
+                if(tlong>numcols)
+                  error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
+                        "have asked for column number %ld",
+                        gal_fits_name_save_as_string(filename, hdu),
+                        numcols, tlong);
+
+                /* Everything seems to be fine, put this column number in
+                   the output column numbers linked list. Note that
+                   internally, the column numbers start from 0, not 1.*/
+                gal_list_sizet_add(&indexll, tlong-1);
+                ++nummatch;
+              }
 
 
-      /* If there was no match, then report an error. This can only happen
-         for string matches, not column numbers, for numbers, the checks
-         are done (and program is aborted) before this step. */
-      if(nummatch==0)
-        {
-          asprintf(&errorstring, "`%s' didn't match any of the column %ss.",
-                   tmp->v, gal_tableintern_searchin_as_string(searchin));
-          gal_tableintern_error_col_selection(filename, hdu, errorstring);
-        }
-    }
+
+            /* EXACT MATCH: */
+            else
+              {
+                /* Go through all the desired column information and add
+                   the column number when there is a match. */
+                for(i=0;i<numcols;++i)
+                  {
+                    /* Check if this column actually has any
+                       information. Then do a case-sensitive or insensitive
+                       comparison of the strings. */
+                    strcheck=table_set_strcheck(&allcols[i], searchin);
+                    if(strcheck && ( ignorecase
+                                     ? !strcasecmp(tmp->v, strcheck)
+                                     : !strcmp(tmp->v, strcheck) ) )
+                      {
+                        ++nummatch;
+                        gal_list_sizet_add(&indexll, i);
+                      }
+                  }
+              }
+          }
+
+
+        /* If there was no match, then report an error. This can only happen
+           for string matches, not column numbers, for numbers, the checks
+           are done (and program is aborted) before this step. */
+        if(nummatch==0)
+          {
+            asprintf(&errorstring, "`%s' didn't match any of the column %ss.",
+                     tmp->v, gal_tableintern_searchin_as_string(searchin));
+            gal_tableintern_error_col_selection(filename, hdu, errorstring);
+          }
+      }
+
+  /* cols==NULL */
+  else
+    for(i=0;i<numcols;++i)
+      gal_list_sizet_add(&indexll, i);
+
+
 
   /* Reverse the list. */
   gal_list_sizet_reverse(&indexll);
@@ -395,9 +404,6 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
   gal_list_sizet_t *indexll;
   size_t i, numcols, numrows;
   gal_data_t *allcols, *out=NULL;
-
-  /* If the column string linked list is empty, no need to continue. */
-  if(cols==NULL) return NULL;
 
   /* First get the information of all the columns. */
   allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tableformat);

@@ -398,63 +398,6 @@ ui_parse_kernel(struct argp_option *option, char *arg,
 
 
 
-/* Parse options with values of a list of numbers. */
-void *
-ui_parse_numbers(struct argp_option *option, char *arg,
-                 char *filename, size_t lineno, void *junk)
-{
-  int i;
-  size_t nc;
-  double *darr;
-  gal_data_t *values;
-  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
-
-  /* We want to print the stored values. */
-  if(lineno==-1)
-    {
-      /* Set the pointer to the values dataset. */
-      values = *(gal_data_t **)(option->value);
-
-      /* Write each string into the output string */
-      nc=0;
-      darr=values->array;
-      for(i=0;i<values->size;++i)
-        {
-          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
-            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
-                  "can address the problem. The number of necessary "
-                  "characters in the statically allocated string has become "
-                  "too close to %d", __func__, PACKAGE_BUGREPORT,
-                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
-          nc += sprintf(sstr+nc, "%g,", darr[i]);
-        }
-      sstr[nc-1]='\0';
-
-      /* Copy the string into a dynamically allocated space, because it
-         will be freed later.*/
-      gal_checkset_allocate_copy(sstr, &str);
-      return str;
-    }
-
-  /* We want to read the user's string. */
-  else
-    {
-      /* If the option is already set, just return. */
-      if(option->set) return NULL;
-
-      /* Read the values. */
-      values=gal_options_parse_list_of_numbers(arg, filename, lineno);
-
-      /* Put the values into the option. */
-      *(gal_data_t **)(option->value) = values;
-      return NULL;
-    }
-}
-
-
-
-
-
 /* Parse the mode to interpret the given coordinates. */
 void *
 ui_parse_coordinate_mode(struct argp_option *option, char *arg,

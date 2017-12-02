@@ -40,7 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Some constants */
 #define EPSREL_FOR_INTEG   2
-#define DEGREESTORADIANS   M_PI/180.0f
+#define DEGREESTORADIANS   M_PI/180.0
 
 
 /* Modes to interpret coordinates. */

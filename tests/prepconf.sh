@@ -69,8 +69,9 @@ rm addedoptions.txt
 #
 # Each utility's configuration file is copied in the `tests' directory for
 # easy readability.
-for prog in arithmetic buildprog convertt convolve cosmiccal crop fits \
-            mkcatalog mknoise mkprof noisechisel statistics table warp
+for prog in arithmetic buildprog convertt convolve cosmiccal crop fits  \
+            match mkcatalog mknoise mkprof noisechisel statistics table \
+            warp
 do
     cp $topsrc/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
 done

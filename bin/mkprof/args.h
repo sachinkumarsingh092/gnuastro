@@ -472,7 +472,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
+      gal_options_parse_csv_float64
     },
     {
       "crval",
@@ -486,7 +486,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
+      gal_options_parse_csv_float64
     },
     {
       "cdelt",
@@ -500,7 +500,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
+      gal_options_parse_csv_float64
     },
     {
       "pc",
@@ -514,7 +514,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_numbers
+      gal_options_parse_csv_float64
     },
     {
       "cunit",

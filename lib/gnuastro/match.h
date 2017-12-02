@@ -1,11 +1,11 @@
 /*********************************************************************
-Box -- Define bounding and overlapping boxes.
+match -- Functions to match catalogs and WCS.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,12 +20,12 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_BOX_H__
-#define __GAL_BOX_H__
+#ifndef __GAL_MATCH_H__
+#define __GAL_MATCH_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
-
+#include <gnuastro/data.h>
 
 
 /* C++ Preparations */
@@ -42,32 +42,25 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Actual header contants (the above were for the Pre-processor). */
-__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+gal_data_t *
+gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
+                      gal_data_t *aperture, int sorted_by_first,
+                      int inplace, size_t minmapsize);
 
 
 
-/*                        IMPORTANT NOTE:
-         All the axises are based on the FITS standard, NOT C.
-*/
 
-void
-gal_box_bound_ellipse_extent(double a, double b, double theta_deg,
-                             double *extent);
 
-void
-gal_box_bound_ellipse(double a, double b, double theta_deg, long *width);
 
-void
-gal_box_border_from_center(double *center, size_t ndim, long *width,
-                           long *fpixel, long *lpixel);
 
-int
-gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
-                long *fpixel_o, long *lpixel_o, size_t ndim);
+
+
+
 
 
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_BOX_H__ */
+#endif           /* __GAL_TABLE_H__ */
