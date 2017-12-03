@@ -15605,9 +15605,9 @@ orientation.
 @node Invoking astmatch,  , Match, Match
 @subsection Invoking Match
 
-When given two catalogs, Match find which rows correspond to each other
-given an input aperture. The executable name is @file{astmatch} with the
-following general template
+When given two catalogs, Match finds the rows that are nearest to each
+other within an input aperture. The executable name is @file{astmatch} with
+the following general template
 
 @example
 $ astmatch [OPTION ...] input-1 input-2
@@ -15617,18 +15617,24 @@ $ astmatch [OPTION ...] input-1 input-2
 One line examples:
 
 @example
+## 1D wavelength match (within 5 angestroms) of the two inputs.
+## The wavelengths are in the 5th and 10th columns respectively.
+$ astmatch --aperture=5e-10 --ccol1=5 --ccol2=10 in1.fits in2.txt
+
 ## Match the two catalogs with a circular aperture of width 2.
-## (Units same as given positional columns)
+## (Units same as given positional columns).
+## (By default two columns are given for `--ccol1' and `--ccol2',
+##  The number of values to these determines the dimensionality).
 $ astmatch --aperture=2 input1.txt input2.fits
 
 ## Match the two catalogs within an elliptical aperture of 1 and 2
 ## arcseconds along RA and Dec respectively.
 $ astmatch --aperture=1/3600,2/3600 in1.fits in2.txt
 
-## Match the RA and DEC columns of the two inputs within an
-## aperture of 0.5 arcseconds.
-$ astmatch --aperture0.5/3600 in1.fits in2.fits             \
-           --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC
+## Match the RA and DEC columns of the first input with the RA_D
+## and DEC_D columns of the second within a 0.5 arcseconds aperture.
+$ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture0.5/3600  \
+           in1.fits in2.fits
 @end example
 
 Two inputs are necessary for Match to start processing. The inputs can be
@@ -15637,38 +15643,39 @@ is not called, Match will print the number of matches found in standard
 output (on the command-line). If no match was found, no output file will be
 created (table or log file). When matches are found, the output file(s)
 will be the re-arranged input tables such that the rows match each other:
-both output tables will have the same number of rows which are matched. If
-the @option{--logasoutput} option is called, the output will be a single
-table with the contents of the log file, see below.
+both output tables will have the same number of rows which are matched with
+each other. If the @option{--logasoutput} option is called, the output will
+be a single table with the contents of the log file, see below.
 
 Match follows the same basic behavior of all Gnuastro programs as fully
 described in @ref{Common program behavior}. If the first input is a FITS
 file, the common @option{--hdu} option (see @ref{Input output options})
-should be used to identify the extension. For the second input, the
-extension can be specified with @option{--hdu2}.
-
-When the @option{--log} option is called (see @ref{Operating mode
-options}), Match will also create a file named @file{astmatch.log} in the
-directory it is run in. This log table will have three columns. The first
-and second column shows the rows/record number (counting from 1) of the
-first and second input catalogs respectively. The third column is the
-distance between the two matched positions. The units of this distance are
-the same as the given coordinates. When @option{--logasoutput} is called,
-no log file (with a fixed name) will be created. In this case, the output
-file (possibly given by the @option{--output} option) will have the
-contents of this log file.
+should be used to identify the extension. When the second input is FITS,
+the extension can be specified with @option{--hdu2}.
 
 If no output file name is given with the @option{--output} option, then
 automatic output @ref{Automatic output} will be used to determine the
 output names. Depending on @option{--tableformat} (see @ref{Input output
-options}), the output will then be a FITS table or a plain text table.
+options}), the output will then be a multi-extension FITS file or two plain
+text files.
 
-When the output name is a FITS file, and @option{--logasoutput} is not
-called, the re-arranged inputs will be two extensions of the output FITS
-file. If the output name is a text file, then two files will be created
-with a @file{_matched_1.txt} and @file{_matched_2.txt} suffix.
+When @option{--output} is a FITS file (and @option{--logasoutput} is not
+called, see below), the re-arranged inputs will be two extensions of the
+output FITS file. If the output name is a text file, then two files will be
+created with a @file{_matched_1.txt} and @file{_matched_2.txt} suffix.
 
-If there is no match could be found
+When the @option{--log} option is called (see @ref{Operating mode
+options}), Match will also create a file named @file{astmatch.fits} (or
+@file{astmatch.txt}, depending on @option{--tableformat}, see @ref{Input
+output options}) in the directory it is run in. This log table will have
+three columns. The first and second columns show the matching row/record
+number (counting from 1) of the first and second input catalogs
+respectively. The third column is the distance between the two matched
+positions. The units of the distance are the same as the given coordinates
+(given the possible ellipticity, see description of @option{--aperture}
+below). When @option{--logasoutput} is called, no log file (with a fixed
+name) will be created. In this case, the output file (possibly given by the
+@option{--output} option) will have the contents of this log file.
 
 @table @option
 @item -H STR
@@ -15685,31 +15692,35 @@ description above. When this option is called, a log file called
 @file{astmatch.txt} will not be created. With this option, the default
 output behavior (two tables containing the re-arranged inputs) will be
 
-@item --ccol1=INT/STR
-The coordinate column of the first input. This option must be called
-multiple times to specify all the coordinate columns of the first
-input.
-
-For example, to match the RA and Dec columns of the first catalog with the
-same named columns of the second, you need to call this option (along with
-@option{--ccol2}) two times:
-
-@example
-$ astmatch --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC   \
-           input-1.fits input-2.fits
-@end example
+@item --ccol1=INT/STR[,INT/STR]
+The coordinate columns of the first input. The number of dimensions for the
+match is determined by the number of comma-separated values given to this
+option. The values can be the column number (counting from 1), exact column
+name or a regular expression. For more, see @ref{Selecting table
+columns}. See the one-line examples above for some usages of this option.
 
 @item --ccol2=INT/STR
-The coordinate column of the second input. This option must be called
-multiple times to specify all the coordinate columns of the second
-input. See the example in @option{--ccol1} for more.
+The coordinate columns of the second input. See the example in
+@option{--ccol1} for more.
 
 @item -a FLT[,FLT[,FLT]]
 @itemx --aperture=FLT[,FLT[,FLT]]
 Parameters of the aperture for matching. The values given to this option
-can be fractions, for example @option{1/3600} can be used to ask for one
-arcsecond. The interpretation of the values depends on how many are given:
+can be fractions, for example when the position columns are in units of
+degrees, @option{1/3600} can be used to ask for one arcsecond. The
+interpretation of the values depends on the requested dimensionality
+(determined from @option{--ccol1} and @code{--ccol2}) and how many values
+are given to this option.
 
+@table @asis
+@item 1D match
+The aperture/interval can only take one value: half of the interval around
+each point (maximum distance from each point).
+
+@item 2D match
+In a 2D match, the aperture can be a circle, an ellipse aligned in the axes
+or an ellipse with a rotated major axis. To simply the usage, you can
+determine the shape based on the number of free parameters for each.
 @table @asis
 @item 1 number
 For example @option{--aperture=2}. The aperture will be a circle of the
@@ -15734,6 +15745,7 @@ the second is the axis ratio and the third is the position angle (in
 degrees). If multiple matches are found within the ellipse, the distance
 (to find the nearest) is calculated along the major axis in the elliptical
 space, see @ref{Defining an ellipse}.
+@end table
 @end table
 @end table
 

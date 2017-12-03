@@ -76,28 +76,30 @@ struct argp_option program_options[] =
     {
       "ccol1",
       UI_KEY_CCOL1,
-      "STR",
+      "STR[,STR]",
       0,
       "Column name/number of first catalog.",
       UI_GROUP_CATALOGMATCH,
       &p->ccol1,
-      GAL_TYPE_STRLL,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
     },
     {
       "ccol2",
       UI_KEY_CCOL2,
-      "STR",
+      "STR[,STR]",
       0,
       "Column name/number of second catalog.",
       UI_GROUP_CATALOGMATCH,
       &p->ccol2,
-      GAL_TYPE_STRLL,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
     },
     {
       "aperture",

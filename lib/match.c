@@ -159,10 +159,10 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
 
 
   /* This function currently only works for 2 dimensions. */
-  if(ncoord1!=2)
-    error(EXIT_FAILURE, 0, "%s: inputs correspond to %zu dimensions, this "
-          "function currently only works on 2 dimensional datasets",
-          __func__, ncoord1);
+  if(ncoord1>2)
+    error(EXIT_FAILURE, 0, "%s: %zu dimension matching requested, this "
+          "function currently only matches datasets with a maximum of 2 "
+          "dimensions", __func__, ncoord1);
 
   /* Check the column properties. */
   match_coordinate_sanity_check_columns(coord1, "first");
@@ -170,13 +170,13 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
 
   /* Check the aperture values. */
   if(aperture[0]<=0)
-    error(EXIT_FAILURE, 0, "%s: the first value in the aperture (%g) is the "
-          "semi-major axis and thus not be zero or negative", __func__,
-          aperture[0]);
-  if(aperture[1]<=0 || aperture[1]>1)
-    error(EXIT_FAILURE, 0, "%s: the second value in the aperture (%g) is "
-          "the axis ratio, so it must be larger than zero and less than 1",
-          __func__, aperture[1]);
+    error(EXIT_FAILURE, 0, "%s: the first value in the aperture (%g) cannot "
+          "be zero or negative", __func__, aperture[0]);
+  if(ncoord1==2)
+    if(aperture[1]<=0 || aperture[1]>1)
+      error(EXIT_FAILURE, 0, "%s: the second value in the aperture (%g) "
+            "is the axis ratio, so it must be larger than zero and less "
+            "than 1", __func__, aperture[1]);
 }
 
 
@@ -289,14 +289,47 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
 /*************            Coordinate matching           *************/
 /********************************************************************/
 static double
-match_coordinates_elliptical_r(double d1, double d2, double *ellipse,
-                               double c, double s)
+match_coordinates_elliptical_r_2d(double d1, double d2, double *ellipse,
+                                  double c, double s)
 {
   double Xr = d1 * ( c       )     +   d2 * ( s );
   double Yr = d1 * ( -1.0f*s )     +   d2 * ( c );
   return sqrt( Xr*Xr + Yr*Yr/ellipse[1]/ellipse[1] );
 }
 
+
+
+
+
+static double
+match_coordinates_distance(double *delta, int iscircle, size_t ndim,
+                           double *aperture, double c, double s)
+{
+  /* In a one dimensional case, the distance is just the absolute value of
+     delta[0]. */
+  if(ndim==1) return fabs(delta[0]);
+
+  /* For more than one dimension, we'll need to calculate the distance from
+     the deltas (differences) in each dimension. */
+  switch(ndim)
+    {
+    case 2:
+      return ( iscircle
+               ? sqrt( delta[0]*delta[0] + delta[1]*delta[1] )
+               : match_coordinates_elliptical_r_2d(delta[0], delta[1],
+                                                   aperture, c, s) );
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The value %zu is not recognized for ndim",
+            __func__, PACKAGE_BUGREPORT, ndim);
+    }
+
+  /* Control should not reach this point. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return NAN;
+}
 
 
 
@@ -314,15 +347,28 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
      with an `a' and things related to catalog 2 are marked with a `b'. The
      redundant variables (those that equal a previous value) are only
      defined to make it easy to read the code.*/
-  double r, c, s, dist[2];
-  size_t ar=A->size, br=B->size;
+  int iscircle=0;
+  double delta[2];
+  double r, c=NAN, s=NAN, dist[2];
   size_t ai, bi, blow, prevblow=0;
-  int iscircle=aperture[1]==1 ? 1 : 0;
-  double *a[2]={A->array, A->next->array};
-  double *b[2]={B->array, B->next->array};
+  size_t i, ar=A->size, br=B->size;
+  size_t ndim=gal_list_data_number(A);
+  double *a[2]={A->array, A->next ? A->next->array : NULL};
+  double *b[2]={B->array, B->next ? B->next->array : NULL};
+
+  /* See if the aperture is a circle or not. */
+  switch(ndim)
+    {
+    case 1: iscircle = 0; /* Irrelevant for 1D. */  break;
+    case 2: iscircle = aperture[1]==1 ? 1 : 0;      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The value %zu is not recognized for ndim",
+            __func__, PACKAGE_BUGREPORT, ndim);
+    }
 
   /* Preparations for the shape of the aperture. */
-  if(iscircle)
+  if(ndim==1 || iscircle)
     dist[0]=dist[1]=aperture[0];
   else
     {
@@ -384,7 +430,9 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
 	     axis coordinates have EXACTLY the same floating point
 	     value as each other to easily define an independent
 	     sorting in the second axis. */
-	  if( b[1][bi] >= a[1][ai]-dist[1] && b[1][bi] <= a[1][ai]+dist[1] )
+	  if( ndim==1
+              || ( b[1][bi] >= a[1][ai]-dist[1]
+                   && b[1][bi] <= a[1][ai]+dist[1] ) )
 	    {
 	      /* Now, `bi' is within the rectangular range of `ai'. But
 		 this is not enough to consider the two objects matched for
@@ -414,12 +462,9 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
 
 		 The next two problems will be solved with the list after
 		 parsing of the whole catalog is complete.*/
-              r = ( iscircle
-                    ? sqrt( (b[0][bi]-a[0][ai])*(b[0][bi]-a[0][ai])
-                            + (b[1][bi]-a[1][ai])*(b[1][bi]-a[1][ai]) )
-                    : match_coordinates_elliptical_r(b[0][bi]-a[0][ai],
-                                                     b[1][bi]-a[1][ai],
-                                                     aperture, c, s));
+              for(i=0;i<ndim;++i) delta[i]=b[i][bi]-a[i][ai];
+              r=match_coordinates_distance(delta, iscircle, ndim, aperture,
+                                           c, s);
 	      if(r<aperture[0])
 		match_coordinate_add_to_sfll(&bina[ai], bi, r);
 	    }

@@ -323,7 +323,7 @@ ui_set_mode(struct matchparams *p)
        p->aperture[1]: Axis ratio.
        p->aperture[2]: Position angle (relative to first dim).     */
 static void
-ui_read_columns_aperture(struct matchparams *p, size_t numcols)
+ui_read_columns_aperture_2d(struct matchparams *p)
 {
   size_t apersize=3;
   gal_data_t *newaper=NULL;
@@ -369,7 +369,7 @@ ui_read_columns_aperture(struct matchparams *p, size_t numcols)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. This "
+      error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In 2D, this "
             "option can only take 1, 2, or 3 values", p->aperture->size);
     }
 
@@ -390,49 +390,45 @@ ui_read_columns_aperture(struct matchparams *p, size_t numcols)
 static void
 ui_read_columns(struct matchparams *p)
 {
+  size_t i;
+  size_t ccol1n=p->ccol1->size;
+  size_t ccol2n=p->ccol2->size;
+  gal_list_str_t *cols1=NULL, *cols2=NULL;
   struct gal_options_common_params *cp=&p->cp;
-  size_t ccol1n=gal_list_str_number(p->ccol1);
-  size_t ccol2n=gal_list_str_number(p->ccol2);
+  char **strarr1=p->ccol1->array, **strarr2=p->ccol2->array;
   char *diff_cols_error="%s: the number of columns matched (%zu) "
     "differs from the number of usable calls to `--ccol1' (%zu). "
     "Please give more specific values to `--ccol1' (column "
     "numberes are the only identifiers guaranteed to be unique).";
 
-  /* First check the number of columns given. It might happen that extra
-     columns are present in configuration files, so we will only abort if
-     the total number isn't enough. When it is too much, we'll just free
-     the rest of the list.*/
-  if(ccol1n<2 || ccol2n<2)
-    error(EXIT_FAILURE, 0, "at least two coordinate columns from each "
-          "catalog must be given for the match. Please use repeated "
-          "calls to `--ccol1' and `--ccol2' to specify the columns by "
-          "name (if they have one) or number (starting from 1).\n\n"
-          "You can use this command to list the column information of "
-          "a table in the N-th extension/HDU of a FITS file:\n\n"
-          "    $ asttable filename.fits -hN -i\n\n"
-          "For more information on selecting table columns in Gnuastro, "
-          "please run the following command:\n\n"
-          "    $ info gnuastro \"selecting table columns\"\n");
-  else if(ccol1n>2 || ccol2n>2)
-    {
-      if(ccol1n>2)
-        {
-          gal_list_str_free(p->ccol1->next->next, 1);
-          p->ccol1->next->next=NULL;
-          ccol1n=2;             /* Will be used later. */
-        }
-      if(ccol2n>2)
-        {
-          gal_list_str_free(p->ccol2->next->next, 1);
-          p->ccol2->next->next=NULL;
-          ccol2n=2;             /* Will be used later. */
-        }
-    }
+  /* Make sure the same number of columns is given to both. */
+  if(ccol1n!=ccol2n)
+    error(EXIT_FAILURE, 0, "the number of values given to `--ccol1' and "
+          "`--ccol2' (%zu and %zu) are not equal", ccol1n, ccol2n);
 
 
   /* Read/check the aperture values. */
   if(p->aperture)
-    ui_read_columns_aperture(p, ccol1n);
+    switch(ccol1n)
+      {
+      case 1:
+        if(p->aperture->size>1)
+          error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In a 1D "
+                "match, this option can only take one value",
+                p->aperture->size);
+        break;
+
+      case 2:
+        ui_read_columns_aperture_2d(p);
+        break;
+
+      default:
+
+        error(EXIT_FAILURE, 0, "%zu dimensional matches are not currently "
+              "supported (maximum is 2 dimensions). The number of "
+              "dimensions is deduced from the number of values given to "
+              "`--ccol1' and `--ccol2'", ccol1n);
+      }
   else
     error(EXIT_FAILURE, 0, "no matching aperture specified. Please use "
           "the `--aperture' option to define the acceptable aperture for "
@@ -441,20 +437,32 @@ ui_read_columns(struct matchparams *p)
           "information.\n\n    $ info %s\n", PROGRAM_EXEC);
 
 
+  /* Convert the array of strings to a list of strings for the column
+     names. */
+  for(i=0;i<ccol1n;++i)
+    {
+      gal_list_str_add(&cols1, strarr1[i], 0);
+      gal_list_str_add(&cols2, strarr2[i], 0);
+      strarr1[i]=strarr2[i]=NULL;  /* So they are not freed later. */
+    }
+  gal_list_str_reverse(&cols1);
+  gal_list_str_reverse(&cols2);
+
+
   /* Read the columns. */
   if(cp->searchin)
     {
       /* Read the first dataset. */
-      p->cols1=gal_table_read(p->input1name, cp->hdu, p->ccol1, cp->searchin,
-                              cp->ignorecase, cp->minmapsize);
+      p->cols1=gal_table_read(p->input1name, cp->hdu, cols1,
+                              cp->searchin, cp->ignorecase, cp->minmapsize);
       if(gal_list_data_number(p->cols1)!=ccol1n)
         error(EXIT_FAILURE, 0, diff_cols_error,
               gal_checkset_dataset_name(p->input1name, cp->hdu),
               gal_list_data_number(p->cols1), ccol1n);
 
       /* Read the second dataset. */
-      p->cols2=gal_table_read(p->input2name, p->hdu2, p->ccol2, cp->searchin,
-                              cp->ignorecase, cp->minmapsize);
+      p->cols2=gal_table_read(p->input2name, p->hdu2, cols2,
+                              cp->searchin, cp->ignorecase, cp->minmapsize);
       if(gal_list_data_number(p->cols2)!=ccol2n)
         error(EXIT_FAILURE, 0, diff_cols_error,
               gal_checkset_dataset_name(p->input2name, p->hdu2),
@@ -464,6 +472,13 @@ ui_read_columns(struct matchparams *p)
     error(EXIT_FAILURE, 0, "no `--searchin' option specified. Please run "
           "the following command for more information:\n\n"
           "    $ info gnuastro \"selecting table columns\"\n");
+
+  /* Free the extra spaces. */
+  gal_list_str_free(cols1, 1);
+  gal_list_str_free(cols2, 1);
+  gal_data_free(p->ccol1);
+  gal_data_free(p->ccol2);
+  p->ccol1=p->ccol2=NULL;
 }
 
 

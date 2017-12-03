@@ -618,15 +618,15 @@ gal_options_parse_csv_strings_raw(char *string, char *filename, size_t lineno)
 
 /* `arg' is the value given to an option. It contains multiple strings
    separated by a comma (`,'). This function will parse `arg' and make a
-   `gal_data_t' that contains all the strings separately. The output
-   `gal_data_t' will be put in `option->value'. */
+   `gal_data_t' array of strings from it. The output `gal_data_t' will be
+   put in `option->value'. */
 void *
 gal_options_parse_csv_strings(struct argp_option *option, char *arg,
                               char *filename, size_t lineno, void *junk)
 {
-  int i;
   size_t nc;
-  char **strarr;
+  char *c, **strarr;
+  int i, has_space=0;
   gal_data_t *values;
   char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
 
@@ -636,9 +636,25 @@ gal_options_parse_csv_strings(struct argp_option *option, char *arg,
       /* Set the pointer to the values dataset. */
       values = *(gal_data_t **)(option->value);
 
-      /* Write each string into the output string */
-      nc=0;
+      /* See if there are any space characters in the final string. */
       strarr=values->array;
+      for(i=0;i<values->size;++i)
+        if(has_space==0)
+        {
+          for(c=strarr[i];*c!='\0';++c)
+            if(*c==' ' || *c=='\t')
+              {
+                has_space=1;
+                break;
+              }
+        }
+
+      /* If there is a space, the string must start wth quotation marks. */
+      nc = has_space ? 1 : 0;
+      if(has_space) {sstr[0]='"'; sstr[1]='\0';}
+
+
+      /* Write each string into the output string */
       for(i=0;i<values->size;++i)
         {
           if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
@@ -649,7 +665,11 @@ gal_options_parse_csv_strings(struct argp_option *option, char *arg,
                   GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
           nc += sprintf(sstr+nc, "%s,", strarr[i]);
         }
-      sstr[nc-1]='\0';
+
+      /* If there was a space, we need a quotation mark at the end of the
+         string. */
+      if(has_space) { sstr[nc-1]='"'; sstr[nc]='\0'; }
+      else            sstr[nc-1]='\0';
 
       /* Copy the string into a dynamically allocated space, because it
          will be freed later.*/
