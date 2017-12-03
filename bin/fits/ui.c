@@ -224,7 +224,7 @@ ui_read_check_only_options(struct fitsparams *p)
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
-      || p->rename || p->rename || p->update || p->write || p->printallkeys )
+      || p->rename || p->update || p->write || p->printallkeys )
     {
       /* Set the mode. */
       p->mode=FITS_MODE_KEY;
