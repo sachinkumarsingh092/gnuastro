@@ -282,6 +282,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                     char *unit, char *comment)
 {
   size_t i;
+  size_t data_size_limit = (size_t)(-1);
 
   /* Do the simple copying cases. For the display elements, set them all to
      impossible (negative) values so if not explicitly set by later steps,
@@ -321,11 +322,24 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
       data->size=1;
       for(i=0;i<ndim;++i)
         {
-          /* Do a small sanity check. */
-          if(dsize[i]<=0)
-            error(EXIT_FAILURE, 0, "%s: the size of a dimension cannot be "
-                  "zero or negative. dsize[%zu], but has a value of %zu",
-                  __func__, i, dsize[i]);
+          /* Size along a dimension cannot be negative. */
+          if(dsize[i] == 0)
+            error(EXIT_FAILURE, 0, "%s: dsize[%zu]==0. The size of a "
+                  "dimension cannot be zero", __func__, i);
+
+          /* Check for possible overflow while multiplying. */
+          if (dsize[i] >= data_size_limit / data->size)
+            error(EXIT_FAILURE, 0, "%s: dimension %zu size is too "
+                    "large %zu. Total is out of bounds",
+                    __func__, i, dsize[i]);
+
+          /* Print a warning if the size in this dimension is too
+             large. May happen when the user (mistakenly) writes a negative
+             value in this dimension.. */
+          if (dsize[i] >= data_size_limit / 2)
+            fprintf(stderr, "%s: WARNING: dsize[%zu] value %zu is probably "
+                    "a mistake: it exceeds the limit %zu", __func__, i,
+                    dsize[i], data_size_limit / 2);
 
           /* Write this dimension's size, also correct the total number of
              elements. */
