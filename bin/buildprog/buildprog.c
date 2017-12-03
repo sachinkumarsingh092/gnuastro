@@ -161,5 +161,6 @@ buildprog(struct buildprogparams *p)
   free(command);
   if(warning) free(warning);
   if(optimize) free(optimize);
+  if(!p->la && fullla) free(fullla);
   return retval;
 }
