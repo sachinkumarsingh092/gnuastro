@@ -146,9 +146,8 @@ match_coordinate_sanity_check_columns(gal_data_t *coord, char *info)
 /* To keep the main function clean, we'll do the sanity checks here. */
 static void
 match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
-                              gal_data_t *aperture)
+                              double *aperture)
 {
-  double *aper=aperture->array;
   size_t ncoord1=gal_list_data_number(coord1);
 
   /* Make sure both lists have the same number of datasets. NOTE: they
@@ -170,14 +169,14 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
   match_coordinate_sanity_check_columns(coord2, "second");
 
   /* Check the aperture values. */
-  if(aper[0]<=0)
+  if(aperture[0]<=0)
     error(EXIT_FAILURE, 0, "%s: the first value in the aperture (%g) is the "
           "semi-major axis and thus not be zero or negative", __func__,
-          aper[0]);
-  if(aper[1]<=0 || aper[1]>1)
+          aperture[0]);
+  if(aperture[1]<=0 || aperture[1]>1)
     error(EXIT_FAILURE, 0, "%s: the second value in the aperture (%g) is "
           "the axis ratio, so it must be larger than zero and less than 1",
-          __func__, aper[1]);
+          __func__, aperture[1]);
 }
 
 
@@ -308,34 +307,34 @@ match_coordinates_elliptical_r(double d1, double d2, double *ellipse,
    the first (a). */
 static void
 match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
-                                  gal_data_t *aperture,
+                                  double *aperture,
                                   struct match_coordinate_sfll **bina)
 {
   /* To keep things easy to read, all variables related to catalog 1 start
      with an `a' and things related to catalog 2 are marked with a `b'. The
      redundant variables (those that equal a previous value) are only
      defined to make it easy to read the code.*/
-  double dist[2];
+  double r, c, s, dist[2];
   size_t ar=A->size, br=B->size;
   size_t ai, bi, blow, prevblow=0;
-  double r, c, s, *aper=aperture->array;
+  int iscircle=aperture[1]==1 ? 1 : 0;
   double *a[2]={A->array, A->next->array};
   double *b[2]={B->array, B->next->array};
-  int iscircle=((double *)(aperture->array))[1]==1 ? 1 : 0;
 
   /* Preparations for the shape of the aperture. */
   if(iscircle)
-    dist[0]=dist[1]=aper[0];
+    dist[0]=dist[1]=aperture[0];
   else
     {
       /* Using the box that encloses the aperture, calculate the distance
          along each axis. */
-      gal_box_bound_ellipse_extent(aper[0], aper[0]*aper[1], aper[2], dist);
+      gal_box_bound_ellipse_extent(aperture[0], aperture[0]*aperture[1],
+                                   aperture[2], dist);
 
       /* Calculate the sin and cos of the given ellipse if necessary for
          ease of processing later. */
-      c = cos( aper[3] * M_PI/180.0 );
-      s = sin( aper[3] * M_PI/180.0 );
+      c = cos( aperture[2] * M_PI/180.0 );
+      s = sin( aperture[2] * M_PI/180.0 );
     }
 
 
@@ -420,8 +419,8 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
                             + (b[1][bi]-a[1][ai])*(b[1][bi]-a[1][ai]) )
                     : match_coordinates_elliptical_r(b[0][bi]-a[0][ai],
                                                      b[1][bi]-a[1][ai],
-                                                     aper, c, s));
-	      if(r<aper[0])
+                                                     aperture, c, s));
+	      if(r<aperture[0])
 		match_coordinate_add_to_sfll(&bina[ai], bi, r);
 	    }
 	}
@@ -560,6 +559,107 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
 
 
 
+/* The matching has been done, write the output. */
+static gal_data_t *
+gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
+                             size_t *B_perm,
+                             struct match_coordinate_sfll **bina,
+                             size_t minmapsize)
+{
+  float r;
+  double *rval;
+  gal_data_t *out;
+  uint8_t *Bmatched;
+  size_t ai, bi, nummatched=0;
+  size_t *aind, *bind, match_i, nomatch_i;
+
+  /* Find how many matches there were in total */
+  for(ai=0;ai<A->size;++ai) if(bina[ai]) ++nummatched;
+
+
+  /* If there aren't any matches, return NULL. */
+  if(nummatched==0) return NULL;
+
+
+  /* Allocate the output list. */
+  out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &A->size, NULL, 0,
+                     minmapsize, "CAT1_ROW", "counter",
+                     "Row index in first catalog (counting from 0).");
+  out->next=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &B->size, NULL, 0,
+                           minmapsize, "CAT2_ROW", "counter",
+                           "Row index in second catalog (counting "
+                           "from 0).");
+  out->next->next=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &nummatched,
+                                 NULL, 0, minmapsize, "MATCH_DIST", NULL,
+                                 "Distance between the match.");
+
+
+  /* Allocate the `Bmatched' array which is a flag for which rows of the
+     second catalog were matched. The columns that had a match will get a
+     value of one while we are parsing them below. */
+  Bmatched=gal_data_calloc_array(GAL_TYPE_UINT8, B->size, __func__,
+                                 "Bmatched");
+
+
+  /* Initialize the indexs. We want the first `nummatched' indexs in both
+     outputs to be the matching rows. The non-matched rows should start to
+     be indexed after the matched ones. So the first non-matched index is
+     at the index `nummatched'. */
+  match_i   = 0;
+  nomatch_i = nummatched;
+
+
+  /* Fill in the output arrays. */
+  aind = out->array;
+  bind = out->next->array;
+  rval = out->next->next->array;
+  for(ai=0;ai<A->size;++ai)
+    {
+      /* A match was found. */
+      if(bina[ai])
+        {
+          /* Note that the permutation keeps the original indexs. */
+          match_coordinate_pop_from_sfll(&bina[ai], &bi, &r);
+          rval[ match_i   ] = r;
+          aind[ match_i   ] = A_perm[ai];
+          bind[ match_i++ ] = B_perm[bi];
+
+          /* Set a `1' for this object in the second catalog. This will
+             later be used to find which rows didn't match to fill in the
+             output.. */
+          Bmatched[ B_perm[bi] ] = 1;
+        }
+      /* No match found. At this stage, we can only fill the indexs of the
+         first input. The second input needs to be matched afterwards.*/
+      else aind[ nomatch_i++ ] = A_perm[ai];
+    }
+
+
+  /* Complete the second input's permutation. */
+  nomatch_i=nummatched;
+  for(bi=0;bi<B->size;++bi)
+    if( Bmatched[bi] == 0 )
+      bind[ nomatch_i++ ] = bi;
+
+
+  /* For a check
+  printf("\nFirst input's permutation:\n");
+  for(ai=0;ai<A->size;++ai)
+    printf("%s%zu\n", ai<nummatched?"  ":"* ", aind[ai]+1);
+  printf("\nSecond input's permutation:\n");
+  for(bi=0;bi<B->size;++bi)
+    printf("%s%zu\n", bi<nummatched?"  ":"* ", bind[bi]+1);
+  exit(0);
+  */
+
+  /* Return the output. */
+  return out;
+}
+
+
+
+
+
 
 
 
@@ -578,14 +678,19 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
 /********************************************************************/
 /*************            Coordinate matching           *************/
 /********************************************************************/
-/* Match two positions: the inputs (`coord1' and `coord2') should be lists
-   of coordinates. To speed up the search, this function needs the input
-   arrays to be sorted by their first column. If it is already sorted, you
-   can set `sorted_by_first' to non-zero. When sorting is necessary and
-   `inplace' is non-zero, the actual inputs will be sorted. Otherwise, an
-   internal copy of the inputs will be made which will be used (sorted) and
-   later freed. Therefore when `inplace==0', the input's won't be
-   changed.
+/* Match two positions: the two inputs (`coord1' and `coord2') should be
+   lists of coordinates (each is a list of datasets). To speed up the
+   search, this function will sort the inputs by their first column. If
+   both are already sorted, give a non-zero value to
+   `sorted_by_first'. When sorting is necessary and `inplace' is non-zero,
+   the actual inputs will be sorted. Otherwise, an internal copy of the
+   inputs will be made which will be used (sorted) and later
+   freed. Therefore when `inplace==0', the input's won't be changed.
+
+   IMPORTANT NOTE: the output permutations will correspond to the initial
+   inputs. Therefore, even when `inplace' is non-zero (and this function
+   changes the inputs' order), the output permutation will correspond to
+   original inputs.
 
    The output is a list of `gal_data_t' with the following columns:
 
@@ -594,21 +699,19 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
        Node 3: Distance between the match.                    */
 gal_data_t *
 gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
-                      gal_data_t *aperture, int sorted_by_first,
-                      int inplace, size_t minmapsize)
+                      double *aperture, int sorted_by_first,
+                      int inplace, size_t minmapsize, size_t *nummatched)
 {
-  float r;
-  double *rmatch;
-  size_t *aind, *bind;
   gal_data_t *A, *B, *out;
+  size_t *A_perm=NULL, *B_perm=NULL;
   struct match_coordinate_sfll **bina;
-  size_t ai, bi, counter=0, *A_perm=NULL, *B_perm=NULL;
 
   /* Do a small sanity check and make the preparations. After this point,
      we'll call the two arrays `a' and `b'.*/
   match_coordinaes_sanity_check(coord1, coord2, aperture);
   match_coordinates_prepare(coord1, coord2, sorted_by_first, inplace,
                             &A, &B, &A_perm, &B_perm, minmapsize);
+
 
   /* Allocate the `bina' array (an array of lists). Let's call the first
      catalog `a' and the second `b'. This array has `a->size' elements
@@ -620,43 +723,20 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
     error(EXIT_FAILURE, errno, "%s: %zu bytes for `bina'", __func__,
           A->size*sizeof *bina);
 
+
   /* All records in `b' that match each `a' (possibly duplicate). */
   match_coordinates_second_in_first(A, B, aperture, bina);
+
 
   /* Two re-arrangings will fix the issue. */
   match_coordinates_rearrange(A, B, bina);
 
-  /* Find how many matches there were in total */
-  for(ai=0;ai<A->size;++ai) if(bina[ai]) ++counter;
 
-  /* Allocate the output list. */
-  out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
-                     minmapsize, "CAT1_ROW", "counter",
-                     "Row index in first catalog (counting from 0).");
-  out->next=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
-                           minmapsize, "CAT2_ROW", "counter",
-                           "Row index in second catalog (counting "
-                           "from 0).");
-  out->next->next=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &counter, NULL,
-                                 0, minmapsize, "MATCH_DIST", NULL,
-                                 "Distance between the match.");
+  /* The match is done, write the output. */
+  out=gal_match_coordinates_output(A, B, A_perm, B_perm, bina, minmapsize);
 
-  /* Fill in the output arrays. */
-  counter=0;
-  aind=out->array;
-  bind=out->next->array;
-  rmatch=out->next->next->array;
-  for(ai=0;ai<A->size;++ai)
-    if(bina[ai])
-      {
-        /* Note that the permutation keeps the original indexs. */
-        match_coordinate_pop_from_sfll(&bina[ai], &bi, &r);
-        aind[counter]=A_perm[ai];
-        bind[counter]=B_perm[bi];
-        rmatch[counter++]=r;
-      }
 
-  /* Clean up and return. */
+  /* Clean up. */
   free(bina);
   free(A_perm);
   free(B_perm);
@@ -665,5 +745,9 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
       gal_list_data_free(A);
       gal_list_data_free(B);
     }
+
+
+  /* Set `nummatched' and return output. */
+  *nummatched = out ?  out->next->next->size : 0;
   return out;
 }

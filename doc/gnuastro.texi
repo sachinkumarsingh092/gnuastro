@@ -561,6 +561,7 @@ Gnuastro library
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
 * Permutations::                Re-order (or permute) the values in a dataset.
+* Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
 * Binary datasets::             Datasets that can only have values of 0 or 1.
 * Convolution functions::       Library functions to do convolution.
@@ -15630,17 +15631,21 @@ $ astmatch --aperture0.5/3600 in1.fits in2.fits             \
            --ccol1=RA --ccol1=DEC --ccol2=RA --ccol2=DEC
 @end example
 
-Two inputs are necessary for Match to produce output(s). They can be plain
-text tables or FITS tables, see @ref{Tables}. By default, the output will
-be the input tables that are re-arranged to match each other: both output
-tables will have the same number of rows which are matched. If the
-@option{--logasoutput} option is called, the output will be a single table
-(contents of the log file, see below). Match follows the same basic
-behavior of all Gnuastro programs as fully described in @ref{Common program
-behavior}. If the first input is a FITS file, the common @option{--hdu}
-option (see @ref{Input output options}) should be used to identify the
-extension. For the second input, the extension can be specified with
-@option{--hdu2}.
+Two inputs are necessary for Match to start processing. The inputs can be
+plain text tables or FITS tables, see @ref{Tables}. When @option{--quiet}
+is not called, Match will print the number of matches found in standard
+output (on the command-line). If no match was found, no output file will be
+created (table or log file). When matches are found, the output file(s)
+will be the re-arranged input tables such that the rows match each other:
+both output tables will have the same number of rows which are matched. If
+the @option{--logasoutput} option is called, the output will be a single
+table with the contents of the log file, see below.
+
+Match follows the same basic behavior of all Gnuastro programs as fully
+described in @ref{Common program behavior}. If the first input is a FITS
+file, the common @option{--hdu} option (see @ref{Input output options})
+should be used to identify the extension. For the second input, the
+extension can be specified with @option{--hdu2}.
 
 When the @option{--log} option is called (see @ref{Operating mode
 options}), Match will also create a file named @file{astmatch.log} in the
@@ -15662,6 +15667,8 @@ When the output name is a FITS file, and @option{--logasoutput} is not
 called, the re-arranged inputs will be two extensions of the output FITS
 file. If the output name is a text file, then two files will be created
 with a @file{_matched_1.txt} and @file{_matched_2.txt} suffix.
+
+If there is no match could be found
 
 @table @option
 @item -H STR
@@ -18819,6 +18826,7 @@ documentation will correspond to your installed version.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
 * Permutations::                Re-order (or permute) the values in a dataset.
+* Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
 * Binary datasets::             Datasets that can only have values of 0 or 1.
 * Convolution functions::       Library functions to do convolution.
@@ -23073,7 +23081,7 @@ types}, for example @code{gal_qsort_int32_decreasing}, or
 
 
 
-@node Permutations, Statistical operations, Qsort functions, Gnuastro library
+@node Permutations, Matching, Qsort functions, Gnuastro library
 @subsection Permutations (@file{permutation.h})
 @cindex permutation
 Permutation is the technical name for re-ordering of values. The need for
@@ -23129,7 +23137,89 @@ Apply the inverse of @code{permutation} on the @code{input} dataset (can
 have any type), see above for the definition of permutation.
 @end deftypefun
 
-@node Statistical operations, Binary datasets, Permutations, Gnuastro library
+@node Matching, Statistical operations, Permutations, Gnuastro library
+@subsection Matching (@file{match.h})
+
+Matching is often necessary when the measurements have been done using
+different instruments, different software or different configurations of
+the same software. The functions in this part of Gnuastro's library will be
+growing to allow matching of images and finding a match between different
+catalogs (register them). Currently it only provides the  The high-level
+measurements are stored in tables with positions (commonly in RA and Dec
+with units of degrees).
+
+@deftypefun {gal_data_t *} gal_match_coordinates (gal_data_t @code{*coord1}, gal_data_t @code{*coord2}, double @code{*aperture}, int @code{sorted_by_first}, int @code{inplace}, size_t @code{minmapsize}, size_t @code{*nummatched})
+
+Return the permutations that when applied, the first @code{nummatched} rows
+of both inputs match with each other (are the nearest within the given
+aperture). The two inputs (@code{coord1} and @code{coord2}) must be
+@ref{List of gal_data_t}. Each @code{gal_data_t} node in the list should be
+a single dimensional dataset (column in a table). The dimensionality of the
+coordinates is determined by the number of @code{gal_data_t} nodes in the
+input lists (which must be equal). Note that the number of rows (or the
+number of elements in each @code{gal_data_t}) in the columns of
+@code{coord1} and @code{coord2} can be different.
+
+The matching aperture is defined by the @code{aperture} array. If several
+points of one catalog lie within this aperture of a point in the other, the
+nearest is defined as the match. In a 2D situation (where the input lists
+have two nodes), for the most generic case, it must have three elements:
+the major axis length, axis ratio and position angle (see @ref{Defining an
+ellipse}). If @code{aperture[1]==1}, the aperture will be a circle of
+radius @code{aperture[0]} and the third value won't be used. When the
+aperture is an ellipse, distances between the points are also calculated in
+the respective elliptical distances (@mymath{r_{el}} in @ref{Defining an
+ellipse}).
+
+To speed up the search, this function will sort the input coordinates by
+their first column (first axis). If @emph{both} are already sorted by their
+first column, you can avoid the sorting step by giving a non-zero value to
+@code{sorted_by_first}.
+
+When sorting is necessary and @code{inplace} is non-zero, the actual input
+columns will be sorted. Otherwise, an internal copy of the inputs will be
+made, used (sorted) and later freed before returning. Therefore, when
+@code{inplace==0}, inputs will remain untouched, but this function will
+take more time and memory.
+
+If internal allocation is necessary and the space is larger than
+@code{minmapsize}, the space will be not allocated in the RAM, but in a
+file, see description of @option{--minmapsize} in @ref{Processing options}.
+
+The number of matchs will be put in the space pointed by
+@code{nummatched}. If there wasn't any match, this function will return
+@code{NULL}. If match(s) were found, a list with three @code{gal_data_t}
+nodes will be returned. The top two nodes in the list are the permutations
+that must be applied to the first and second inputs respectively. After
+applying the permutations, the top @code{nummatched} elements will match
+with each other. The third node is the distances between the respective
+match. Note that the three nodes of the list are all one-dimensional (a
+column) and can have different lengths.
+
+@cartouche
+@noindent
+@strong{Output permutations ignore internal sorting}: the output
+permutations will correspond to the initial inputs. Therefore, even when
+@code{inplace!=0} (and this function re-arranges the inputs), the output
+permutation will correspond to original (possibly non-sorted) inputs.
+
+The reason for this is that you rarely want the actual positional columns
+after the match. Usually, you also have other columns (measurements, for
+example magnitudes) for higher-level processing after the match (that
+correspond to the input order before sorting). Once you have the
+permutations, they can be applied to those other columns (see
+@ref{Permutations}) and the higher-level processing can continue.
+@end cartouche
+
+When you read the coordinates from a table using @code{gal_table_read} (see
+@ref{Table input output}), and only ask for the coordinate columns, the
+inputs to this function are the returned @code{gal_data_t *} from two
+different tables.
+
+
+@end deftypefun
+
+@node Statistical operations, Binary datasets, Matching, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
 After reading a dataset into memory from a file or fully simulating it with

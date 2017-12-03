@@ -60,7 +60,9 @@ args_doc[] = "ASTRdata";
 
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" matches catalogs of objects "
-  "or returns the warping matrix necessary to match two images.\n"
+  "and (by default) will return the re-arranged matching inputs. The "
+  "optional log file will return low-level information about the match "
+  "(indexs and distances).\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -114,6 +116,10 @@ ui_initialize_options(struct matchparams *p,
         {
         case GAL_OPTIONS_KEY_HDU:
           cp->coptions[i].doc="Extension name or number of first input.";
+          break;
+        case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_NUMTHREADS:
+          cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
 
