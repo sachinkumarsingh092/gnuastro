@@ -349,8 +349,8 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
   int iscircle=0;
   double delta[2];
   double r, c=NAN, s=NAN, dist[2];
-  size_t ai, bi, blow, prevblow=0;
   size_t i, ar=A->size, br=B->size;
+  size_t ai, bi, blow=0, prevblow=0;
   size_t ndim=gal_list_data_number(A);
   double *a[2]={A->array, A->next ? A->next->array : NULL};
   double *b[2]={B->array, B->next ? B->next->array : NULL};
@@ -387,107 +387,109 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
      in catalog b within the maximum distance. Note that both catalogs are
      sorted by their first axis coordinate.*/
   for(ai=0;ai<ar;++ai)
-    {
-      /* Initialize `bina'. */
-      bina[ai]=NULL;
-
-      /* Find the first (lowest first axis value) row/record in catalog `b'
-	 that is within the search radius for this record of catalog
-	 `a'. `blow' is the index of the first element to start searching
-	 in the catalog `b' for a match to `a[][ai]' (the record in catalog
-	 a that is currently being searched). `blow' is only based on the
-	 first coordinate, not the second.
-
-         Both catalogs are sorted by their first coordinate, so the `blow'
-	 to search for the next record in catalog `a' will be larger or
-	 equal to that of the previous catalog `a' record. To account for
-	 possibly large distances between the records, we do a search here
-	 to change `blow' if necessary before doing further searching.*/
-      for( blow=prevblow; blow<ar && b[0][blow] < a[0][ai]-dist[0]; ++blow)
-	{/* This can be blank, the `for' does all we need :-). */}
-
-
-      /* `blow' is now found for this `ai' and will be used unchanged to
-	 the end of the loop. So keep its value to help the search for the
-	 next entry in catalog `a'. */
-      prevblow=blow;
-
-
-      /* Go through catalog `b' (starting at `blow') with a first axis
-	 value smaller than the maximum acceptable range for `si'. */
-      for( bi=blow; bi<br && b[0][bi] <= a[0][ai] + dist[0]; ++bi )
-	{
-	  /* Only consider records with a second axis value in the
-	     correct range, note that unlike the first axis, the
-	     second axis is no longer sorted. so we have to do both
-	     lower and higher limit checks for each item.
-
-	     Positions can have an accuracy to a much higher order of
-	     magnitude than the search radius. Therefore, it is
-	     meaning-less to sort the second axis (after having sorted
-	     the first). In other words, very rarely can two first
-	     axis coordinates have EXACTLY the same floating point
-	     value as each other to easily define an independent
-	     sorting in the second axis. */
-	  if( ndim==1
-              || ( b[1][bi] >= a[1][ai]-dist[1]
-                   && b[1][bi] <= a[1][ai]+dist[1] ) )
-	    {
-	      /* Now, `bi' is within the rectangular range of `ai'. But
-		 this is not enough to consider the two objects matched for
-		 the following reasons:
-
-		 1) Until now we have avoided calculations other than
-		    larger or smaller on double precision floating point
-		    variables for efficiency. So the `bi' is within a
-		    square of side `dist[0]*dist[1]' around `ai' (not
-		    within a fixed radius).
-
-		 2) Other objects in the `b' catalog may be closer to `ai'
-		    than this `bi'.
-
-		 3) The closest `bi' to `ai' might be closer to another
-		    catalog `a' record.
-
-		 To address these problems, we will use a linked list to
-		 keep the indexes of the `b's near `ai', along with their
-		 distance. We only add the `bi's to this list that are
-		 within the acceptable distance.
-
-                 Since we are dealing with much fewer objects at this
-		 stage, it is justified to do complex mathematical
-		 operations like square root and multiplication. This fixes
-		 the first problem.
-
-		 The next two problems will be solved with the list after
-		 parsing of the whole catalog is complete.*/
-              for(i=0;i<ndim;++i) delta[i]=b[i][bi]-a[i][ai];
-              r=match_coordinates_distance(delta, iscircle, ndim, aperture,
-                                           c, s);
-	      if(r<aperture[0])
-		match_coordinate_add_to_sfll(&bina[ai], bi, r);
-	    }
-	}
-
-
-      /* If there was no objects within the acceptable distance, then the
-	 linked list pointer will be NULL, so go on to the next `ai'. */
-      if(bina[ai]==NULL)
-	continue;
-
-      /* For checking the status of affairs uncomment this block
+    if(blow<br)
       {
-	struct match_coordinate_sfll *tmp;
-	printf("\n\nai: %lu:\n", ai);
-	printf("ax: %f (%f -- %f)\n", a[0][ai], a[0][ai]-dist[0],
-               a[0][ai]+dist[0]);
-	printf("ay: %f (%f -- %f)\n", a[1][ai], a[1][ai]-dist[1],
-               a[1][ai]+dist[1]);
-	for(tmp=bina[ai];tmp!=NULL;tmp=tmp->next)
-	  printf("%lu: %f\n", tmp->v, tmp->f);
+        /* Initialize `bina'. */
+        bina[ai]=NULL;
+
+        /* Find the first (lowest first axis value) row/record in catalog
+           `b' that is within the search radius for this record of catalog
+           `a'. `blow' is the index of the first element to start searching
+           in the catalog `b' for a match to `a[][ai]' (the record in
+           catalog a that is currently being searched). `blow' is only
+           based on the first coordinate, not the second.
+
+           Both catalogs are sorted by their first coordinate, so the
+           `blow' to search for the next record in catalog `a' will be
+           larger or equal to that of the previous catalog `a' record. To
+           account for possibly large distances between the records, we do
+           a search here to change `blow' if necessary before doing further
+           searching.*/
+        for( blow=prevblow; blow<br && b[0][blow] < a[0][ai]-dist[0]; ++blow)
+          {/* This can be blank, the `for' does all we need :-). */}
+
+
+        /* `blow' is now found for this `ai' and will be used unchanged to
+           the end of the loop. So keep its value to help the search for
+           the next entry in catalog `a'. */
+        prevblow=blow;
+
+
+        /* Go through catalog `b' (starting at `blow') with a first axis
+           value smaller than the maximum acceptable range for `si'. */
+        for( bi=blow; bi<br && b[0][bi] <= a[0][ai] + dist[0]; ++bi )
+          {
+            /* Only consider records with a second axis value in the
+               correct range, note that unlike the first axis, the second
+               axis is no longer sorted. so we have to do both lower and
+               higher limit checks for each item.
+
+               Positions can have an accuracy to a much higher order of
+               magnitude than the search radius. Therefore, it is
+               meaning-less to sort the second axis (after having sorted
+               the first). In other words, very rarely can two first axis
+               coordinates have EXACTLY the same floating point value as
+               each other to easily define an independent sorting in the
+               second axis. */
+            if( ndim==1
+                || ( b[1][bi] >= a[1][ai]-dist[1]
+                     && b[1][bi] <= a[1][ai]+dist[1] ) )
+              {
+                /* Now, `bi' is within the rectangular range of `ai'. But
+                   this is not enough to consider the two objects matched
+                   for the following reasons:
+
+                   1) Until now we have avoided calculations other than
+                   larger or smaller on double precision floating point
+                   variables for efficiency. So the `bi' is within a square
+                   of side `dist[0]*dist[1]' around `ai' (not within a
+                   fixed radius).
+
+                   2) Other objects in the `b' catalog may be closer to
+                   `ai' than this `bi'.
+
+                   3) The closest `bi' to `ai' might be closer to another
+                   catalog `a' record.
+
+                   To address these problems, we will use a linked list to
+                   keep the indexes of the `b's near `ai', along with their
+                   distance. We only add the `bi's to this list that are
+                   within the acceptable distance.
+
+                   Since we are dealing with much fewer objects at this
+                   stage, it is justified to do complex mathematical
+                   operations like square root and multiplication. This
+                   fixes the first problem.
+
+                   The next two problems will be solved with the list after
+                   parsing of the whole catalog is complete.*/
+                for(i=0;i<ndim;++i) delta[i]=b[i][bi]-a[i][ai];
+                r=match_coordinates_distance(delta, iscircle, ndim, aperture,
+                                             c, s);
+                if(r<aperture[0])
+                  match_coordinate_add_to_sfll(&bina[ai], bi, r);
+              }
+          }
+
+
+        /* If there was no objects within the acceptable distance, then the
+           linked list pointer will be NULL, so go on to the next `ai'. */
+        if(bina[ai]==NULL)
+          continue;
+
+        /* For checking the status of affairs uncomment this block
+           {
+           struct match_coordinate_sfll *tmp;
+           printf("\n\nai: %lu:\n", ai);
+           printf("ax: %f (%f -- %f)\n", a[0][ai], a[0][ai]-dist[0],
+           a[0][ai]+dist[0]);
+           printf("ay: %f (%f -- %f)\n", a[1][ai], a[1][ai]-dist[1],
+           a[1][ai]+dist[1]);
+           for(tmp=bina[ai];tmp!=NULL;tmp=tmp->next)
+           printf("%lu: %f\n", tmp->v, tmp->f);
+           }
+        */
       }
-      */
-    }
 }
 
 

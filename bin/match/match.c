@@ -96,7 +96,7 @@ match_catalog(struct matchparams *p)
         {
           match_catalog_write(p, p->input1name, p->cp.hdu, mcols->array,
                               nummatched, p->out1name, "INPUT_1");
-          match_catalog_write(p, p->input2name, p->cp.hdu, mcols->next->array,
+          match_catalog_write(p, p->input2name, p->hdu2, mcols->next->array,
                               nummatched, p->out2name, "INPUT_2");
         }
 
@@ -147,7 +147,7 @@ match_catalog(struct matchparams *p)
 
   /* Print the number of matches if not in quiet mode. */
   if(!p->cp.quiet)
-    fprintf(stdout, "%zu", nummatched);
+    fprintf(stdout, "%zu\n", nummatched);
 }
 
 
