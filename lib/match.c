@@ -158,7 +158,7 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
           gal_list_data_number(coord2));
 
 
-  /* This function currently only works for 2 dimensions. */
+  /* This function currently only works on 1 and 2 dimensional inputs. */
   if(ncoord1>2)
     error(EXIT_FAILURE, 0, "%s: %zu dimension matching requested, this "
           "function currently only matches datasets with a maximum of 2 "
@@ -305,14 +305,13 @@ static double
 match_coordinates_distance(double *delta, int iscircle, size_t ndim,
                            double *aperture, double c, double s)
 {
-  /* In a one dimensional case, the distance is just the absolute value of
-     delta[0]. */
-  if(ndim==1) return fabs(delta[0]);
-
   /* For more than one dimension, we'll need to calculate the distance from
      the deltas (differences) in each dimension. */
   switch(ndim)
     {
+    case 1:
+      return fabs(delta[0]);
+
     case 2:
       return ( iscircle
                ? sqrt( delta[0]*delta[0] + delta[1]*delta[1] )

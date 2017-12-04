@@ -92,8 +92,8 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
      want the final height and width of the box enclosing the
      ellipse. So we have to multiply them by two, then take one from
      them (for the center). */
-  width[0] = 2 * ( (size_t)extent[0] + 1 ) + 1;
-  width[1] = 2 * ( (size_t)extent[1] + 1 ) + 1;
+  width[0] = 2 * ( (long)extent[0] + 1 ) + 1;
+  width[1] = 2 * ( (long)extent[1] + 1 ) + 1;
 }
 
 
