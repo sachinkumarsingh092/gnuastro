@@ -115,6 +115,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       gal_options_parse_csv_float64
     },
+    {
+      "notmatched",
+      UI_KEY_NOTMATCHED,
+      0,
+      0,
+      "Output is rows that don't match.",
+      UI_GROUP_CATALOGMATCH,
+      &p->notmatched,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
 
     {0}

@@ -47,11 +47,14 @@ match_catalog_write(struct matchparams *p, char *filename, char *hdu,
                     size_t *permutation, size_t nummatched, char *outname,
                     char *extname)
 {
+  size_t origsize;
   gal_data_t *tmp, *cat;
+  gal_list_void_t *arrays=NULL;
 
   /* Read the full table. */
   cat=gal_table_read(filename, hdu, NULL,p->cp.searchin, p->cp.ignorecase,
                      p->cp.minmapsize);
+  origsize=cat->size;
 
   /* Go over each column and permute its contents. */
   for(tmp=cat; tmp!=NULL; tmp=tmp->next)
@@ -62,11 +65,42 @@ match_catalog_write(struct matchparams *p, char *filename, char *hdu,
       /* Correct the size of the array so only the matching columns are
          saved as output. This is only Gnuastro's convention, it has no
          effect on later freeing of the array in the memory. */
-      tmp->size=tmp->dsize[0]=nummatched;
+      if(p->notmatched)
+        {
+          /* Add the original array pointer to a list (we need to reset it
+             later). */
+          gal_list_void_add(&arrays, tmp->array);
+
+          /* Reset the data structure's array element to start where the
+             non-matched elements start. */
+          tmp->array=gal_data_ptr_increment(tmp->array, nummatched,
+                                            tmp->type);
+
+          /* Correct the size of the tile. */
+          tmp->size = tmp->dsize[0] = tmp->size - nummatched;
+        }
+      else
+        tmp->size=tmp->dsize[0]=nummatched;
     }
 
   /* Write the catalog to the output. */
   gal_table_write(cat, NULL, p->cp.tableformat, outname, extname);
+
+  /* Correct arrays and sizes (when `notmatched' was called). The `array'
+     element has to be corrected for later freeing. */
+  if(p->notmatched)
+    {
+      /* Reverse the list of array pointers to write them back in. */
+      gal_list_void_reverse(&arrays);
+
+      /* Correct the array and size pointers. */
+      for(tmp=cat; tmp!=NULL; tmp=tmp->next)
+        {
+          tmp->array=gal_list_void_pop(&arrays);
+          tmp->size=tmp->dsize[0]=origsize;
+          tmp->block=NULL;
+        }
+    }
 
   /* Clean up. */
   gal_list_data_free(cat);

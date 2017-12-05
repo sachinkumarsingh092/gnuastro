@@ -40,8 +40,8 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   b c d e f g i j k m n p r s t u v w x y z
-   A B C E G J L O Q R W X Y
+   b d e f g i j k m n p r s t u v w x y z
+   A B E G J L O Q R W X Y
 */
 enum option_keys_enum
 {
@@ -49,11 +49,12 @@ enum option_keys_enum
   UI_KEY_HDU2            = 'H',
   UI_KEY_APERTURE        = 'a',
   UI_KEY_LOGASOUTPUT     = 'l',
+  UI_KEY_CCOL1           = 'c',
+  UI_KEY_CCOL2           = 'C',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  UI_KEY_CCOL1           = 1000,
-  UI_KEY_CCOL2,
+  UI_KEY_NOTMATCHED      = 1000,
 };
 
 

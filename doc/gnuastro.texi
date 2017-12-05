@@ -15698,14 +15698,21 @@ description above. When this option is called, a log file called
 @file{astmatch.txt} will not be created. With this option, the default
 output behavior (two tables containing the re-arranged inputs) will be
 
-@item --ccol1=INT/STR[,INT/STR]
+@item --notmatched
+Write the non-matching rows into the outputs, not the matched ones. Note
+that with this option, the two output tables will not necessarily have the
+same number of rows.
+
+@item -c INT/STR[,INT/STR]
+@itemx --ccol1=INT/STR[,INT/STR]
 The coordinate columns of the first input. The number of dimensions for the
 match is determined by the number of comma-separated values given to this
 option. The values can be the column number (counting from 1), exact column
 name or a regular expression. For more, see @ref{Selecting table
 columns}. See the one-line examples above for some usages of this option.
 
-@item --ccol2=INT/STR
+@item -c INT/STR[,INT/STR]
+@itemx --ccol2=INT/STR[,INT/STR]
 The coordinate columns of the second input. See the example in
 @option{--ccol1} for more.
 
@@ -24420,26 +24427,26 @@ complicated, the speed of Python scripts significantly decrease. So when
 the program doesn't change too often and is widely used in a large
 community, mostly on large data sets (like astronomical images), using
 Python will waste a lot of valuable research-hours. It is possible to wrap
-C or C++ functions with Python to fix the speed issue. But this adds to
-complexity, because the interested scientist will now have to master two
+C or C++ functions with Python to fix the speed issue. But this creates
+further complexity, because the interested scientist has to master two
 programming languages and their connection (which is not trivial).
 
 Like C++, Python is object oriented, so as explained above, it needs a high
-level of experience with that particular program to fully understand its
-inner workings. To make things worse, since it is mainly for fast and on
-the go programming@footnote{Note that Python is good for fast programming,
-not fast programs.}, it can undergo significant changes. One recent example
-is how Python 2.x and Python 3.x are not compatible. Lots of research teams
+level of experience with that particular program to reasonably understand
+its inner workings. To make things worse, since it is mainly for on-the-go
+programming@footnote{Note that Python is good for fast programming, not
+fast programs.}, it can undergo significant changes. One recent example is
+how Python 2.x and Python 3.x are not compatible. Lots of research teams
 that invested heavily in Python 2.x cannot benefit from Python 3.x or
 future versions any more. Some converters are available, but since they are
-automatic, lots of complications might arise in the conversion. Thus,
-re-writing all the changes would be the only truly reliable option. If a
-research project begins using Python 3.x today, there is no telling how
-compatible their investments will be when Python 4.x or 5.x will come
-out. This stems from the core principles of Python, which are very useful
-when you look in the `on the go' basis as described before and not future
-usage. Future-proof code (as long as current operating systems will be
-used) is written in C.
+automatic, lots of complications might arise in the conversion@footnote{For
+example see @url{https://arxiv.org/abs/1712.00461, Jenness (2017)} which
+describes how LSST is managing the transition.}. If a research project
+begins using Python 3.x today, there is no telling how compatible their
+investments will be when Python 4.x or 5.x will come out. This stems from
+the core principles of Python, which are very useful when you look in the
+`on the go' basis as described before and not future usage. Future-proof
+code (as long as current operating systems will be used) is written in C.
 
 The portability of C is best demonstrated by the fact that both C++ and
 Python are part of the C-family of programming languages which also include
@@ -24494,11 +24501,14 @@ anything particular to the GNU C library is used in the processing
 functions, it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
-Similar to GNU Coreutils, all the Gnuastro programs provide very low level
-operations. This enables you to use shell scripting languages (for example
-GNU Bash) to operate on a large number of files or do very complex things
-through the creative combinations of these tools that the authors had never
-dreamed of. We have put a few simple examples in @ref{Tutorials}.
+All the Gnuastro programs provide very low level and modular operations
+(modeled on GNU Coreutils). Almost all the basic command-line programs like
+@command{ls}, @command{cp} or @command{rm} on GNU/Linux operting systems
+are part of GNU Coreutils. This enables you to use shell scripting
+languages (for example GNU Bash) to operate on a large number of files or
+do very complex things through the creative combinations of these tools
+that the authors had never dreamed of. We have put a few simple examples in
+@ref{Tutorials}.
 
 @cindex @LaTeX{}
 @cindex GNU Bash
@@ -24512,24 +24522,24 @@ check your results. If you want to include the plots in a document, you can
 use the PGFplots package within @LaTeX{}, no attempt is made to include
 such operations in Gnuastro. In short, Bash can act as a glue to connect
 the inputs and outputs of all these various Gnuastro programs (and other
-programs) in any fashion you please. Of course, Gnuastro's programs are just
+programs) in any fashion. Of course, Gnuastro's programs are just
 front-ends to the main workhorse (@ref{Gnuastro library}), allowing a user
 to create their own programs (for example with @ref{BuildProgram}). So once
 the functions within programs become mature enough, they will be moved
-within the libraries for more general applications.
+within the libraries for even more general applications.
 
 The advantage of this architecture is that the programs become small and
 transparent: the starting and finishing point of every program is clearly
-demarcated. For nearly all operations on a modern computer, the read/write
-speed is very insignificant compared to the actual processing a program
-does. Therefore the complexity which arises from sharing memory in a large
-application is simply not worth the speed gain. Gnuastro's design is
-heavily influenced from Eric Raymond's ``The Art of Unix
-Programming''@footnote{Eric S. Raymond, 2004, @emph{The Art of Unix
-Programming}, Addison-Wesley Professional Computing Series.}  which
-beautifully describes the design philosophy and practice which lead to the
-success of Unix-based operating systems@footnote{KISS principle: Keep It
-Simple, Stupid!}.
+demarcated. For nearly all operations on a modern computer (fast file
+input-output) with a modest level of complexity, the read/write speed is
+insignificant compared to the actual processing a program does. Therefore
+the complexity which arises from sharing memory in a large application is
+simply not worth the speed gain. Gnuastro's design is heavily influenced
+from Eric Raymond's ``The Art of Unix Programming''@footnote{Eric
+S. Raymond, 2004, @emph{The Art of Unix Programming}, Addison-Wesley
+Professional Computing Series.}  which beautifully describes the design
+philosophy and practice which lead to the success of Unix-based operating
+systems@footnote{KISS principle: Keep It Simple, Stupid!}.
 
 
 

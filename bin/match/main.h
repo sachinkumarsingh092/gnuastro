@@ -57,6 +57,7 @@ struct matchparams
   gal_data_t           *ccol2;  /* Array of second input column names.  */
   gal_data_t        *aperture;  /* Acceptable matching aperture.        */
   uint8_t         logasoutput;  /* Don't rearrange inputs, out is log.  */
+  uint8_t          notmatched;  /* Output is rows that don't match.     */
 
   /* Internal */
   int                    mode;  /* Mode of operation: image or catalog. */
