@@ -719,7 +719,7 @@ ui_read_columns(struct statisticsparams *p)
 
   /* Read the desired column(s). */
   cols=gal_table_read(p->inputname, p->cp.hdu, column, p->cp.searchin,
-                      p->cp.ignorecase, p->cp.minmapsize);
+                      p->cp.ignorecase, p->cp.minmapsize, NULL);
 
   /* Put the columns into the proper gal_data_t. */
   size=cols->size;

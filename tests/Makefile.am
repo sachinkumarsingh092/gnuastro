@@ -123,9 +123,10 @@ if COND_FITS
   fits/copyhdu.sh: fits/write.sh.log mkprof/mosaic2.sh.log
 endif
 if COND_MATCH
-  MAYBE_MATCH_TESTS = match/positions.sh
+  MAYBE_MATCH_TESTS = match/positions.sh match/merged-cols.sh
 
   match/positions.sh: prepconf.sh.log
+  match/merged-cols.sh: prepconf.sh.log
 endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG_TESTS = mkcatalog/simple.sh mkcatalog/aperturephot.sh

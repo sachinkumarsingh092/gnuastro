@@ -42,19 +42,33 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Read the catalog in the given file and use the given permutation to keep
    the proper columns. */
-static void
-match_catalog_write(struct matchparams *p, char *filename, char *hdu,
-                    size_t *permutation, size_t nummatched, char *outname,
-                    char *extname)
+static gal_data_t *
+match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
+                             size_t nummatched, int f1s2,
+                             size_t **numcolmatch)
 {
   size_t origsize;
   gal_data_t *tmp, *cat;
   gal_list_void_t *arrays=NULL;
 
+  char *hdu            = (f1s2==1) ? p->cp.hdu     : p->hdu2;
+  gal_list_str_t *cols = (f1s2==1) ? p->acols      : p->bcols;
+  char *extname        = (f1s2==1) ? "INPUT_1"     : "INPUT_2";
+  char *outname        = (f1s2==1) ? p->out1name   : p->out2name;
+  char *filename       = (f1s2==1) ? p->input1name : p->input2name;
+
+  /* When the output contains columns from both inputs, we need to keep the
+     number of columns matched against each column identifier. */
+  if(p->outcols)
+    *numcolmatch=gal_data_malloc_array(GAL_TYPE_SIZE_T,
+                                       gal_list_str_number(cols), __func__,
+                                       "numcolmatch");
+
   /* Read the full table. */
-  cat=gal_table_read(filename, hdu, NULL,p->cp.searchin, p->cp.ignorecase,
-                     p->cp.minmapsize);
+  cat=gal_table_read(filename, hdu, cols, p->cp.searchin, p->cp.ignorecase,
+                     p->cp.minmapsize, *numcolmatch);
   origsize=cat->size;
+
 
   /* Go over each column and permute its contents. */
   for(tmp=cat; tmp!=NULL; tmp=tmp->next)
@@ -83,27 +97,79 @@ match_catalog_write(struct matchparams *p, char *filename, char *hdu,
         tmp->size=tmp->dsize[0]=nummatched;
     }
 
+
   /* Write the catalog to the output. */
-  gal_table_write(cat, NULL, p->cp.tableformat, outname, extname);
-
-  /* Correct arrays and sizes (when `notmatched' was called). The `array'
-     element has to be corrected for later freeing. */
-  if(p->notmatched)
+  if(p->outcols)
+    return cat;
+  else
     {
-      /* Reverse the list of array pointers to write them back in. */
-      gal_list_void_reverse(&arrays);
+      /* Write the catalog to a file. */
+      gal_table_write(cat, NULL, p->cp.tableformat, outname, extname);
 
-      /* Correct the array and size pointers. */
-      for(tmp=cat; tmp!=NULL; tmp=tmp->next)
+      /* Correct arrays and sizes (when `notmatched' was called). The
+         `array' element has to be corrected for later freeing.
+
+         IMPORTANT: `--notmatched' cannot be called with `--outcols'. So
+         you don't have to worry about the checks here being done later. */
+      if(p->notmatched)
         {
-          tmp->array=gal_list_void_pop(&arrays);
-          tmp->size=tmp->dsize[0]=origsize;
-          tmp->block=NULL;
-        }
-    }
+          /* Reverse the list of array pointers to write them back in. */
+          gal_list_void_reverse(&arrays);
 
-  /* Clean up. */
-  gal_list_data_free(cat);
+          /* Correct the array and size pointers. */
+          for(tmp=cat; tmp!=NULL; tmp=tmp->next)
+            {
+              tmp->array=gal_list_void_pop(&arrays);
+              tmp->size=tmp->dsize[0]=origsize;
+              tmp->block=NULL;
+            }
+        }
+
+      /* Clean up. */
+      gal_list_data_free(cat);
+      return NULL;
+    }
+}
+
+
+
+
+
+/* When specific columns from both inputs are requested, this function
+   will write them out into a single table. */
+static void
+match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
+                        size_t *acolmatch, size_t *bcolmatch)
+{
+  gal_data_t *cat=NULL;
+  size_t i, j, ac=0, bc=0;
+  char **strarr=p->outcols->array;
+
+  /* Go over the initial list of strings. */
+  for(i=0; i<p->outcols->size; ++i)
+    switch(strarr[i][0])
+      {
+      case 'a':
+        for(j=0;j<acolmatch[ac];++j)
+          gal_list_data_add(&cat, gal_list_data_pop(&a));
+        ac++;
+        break;
+
+      case 'b':
+        for(j=0;j<bcolmatch[bc];++j)
+          gal_list_data_add(&cat, gal_list_data_pop(&b));
+        bc++;
+        break;
+
+      default:
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to fix the "
+              "problem. the value to strarr[%zu][0] (%c) is not recognized",
+              PACKAGE_BUGREPORT, i, strarr[i][0]);
+      }
+
+  /* Reverse the table and write it out. */
+  gal_list_data_reverse(&cat);
+  gal_table_write(cat, NULL, p->cp.tableformat, p->cp.output, "MATCHED");
 }
 
 
@@ -114,8 +180,9 @@ static void
 match_catalog(struct matchparams *p)
 {
   uint32_t *u, *uf;
-  size_t nummatched;
   gal_data_t *tmp, *mcols;
+  gal_data_t *a=NULL, *b=NULL;
+  size_t nummatched, *acolmatch, *bcolmatch;
 
   /* Find the matching coordinates. We are doing the processing in
      place, */
@@ -128,10 +195,28 @@ match_catalog(struct matchparams *p)
       /* Read all the first catalog columns. */
       if(p->logasoutput==0)
         {
-          match_catalog_write(p, p->input1name, p->cp.hdu, mcols->array,
-                              nummatched, p->out1name, "INPUT_1");
-          match_catalog_write(p, p->input2name, p->hdu2, mcols->next->array,
-                              nummatched, p->out2name, "INPUT_2");
+          /* Read (and possibly write) the outputs. Note that we only need
+             to read the table when it is necessary for the output (the
+             user user might have asked for `--outcols', only with columns
+             of one of the two inputs. */
+          if(p->outcols==NULL || p->acols)
+            a=match_catalog_read_write_all(p, mcols->array, nummatched,
+                                           1, &acolmatch);
+          if(p->outcols==NULL || p->bcols)
+            b=match_catalog_read_write_all(p, mcols->next->array, nummatched,
+                                           2, &bcolmatch);
+
+          /* If one catalog (with specific columns from either of the two
+             inputs) was requested, then write it out. */
+          if(p->outcols)
+            {
+              /* Arrange the columns and write the output. */
+              match_catalog_write_one(p, a, b, acolmatch, bcolmatch);
+
+              /* Clean up. */
+              if(acolmatch) free(acolmatch);
+              if(bcolmatch) free(bcolmatch);
+            }
         }
 
       /* Write the raw information in a log file if necessary.  */

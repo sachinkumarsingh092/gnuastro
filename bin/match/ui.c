@@ -209,13 +209,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'.
+   check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct matchparams *p)
 {
-
+  if(p->outcols && p->notmatched)
+    error(EXIT_FAILURE, 0, "`--outcols' and `--notmatched' cannot be called "
+          "at the same time. The former is only for cases when the matches "
+          "are required");
 }
-*/
+
 
 
 
@@ -402,7 +405,7 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
 
   /* Read the columns. */
   tout=gal_table_read(filename, hdu, cols, cp->searchin, cp->ignorecase,
-                     cp->minmapsize);
+                      cp->minmapsize, NULL);
 
   /* A small sanity check. */
   if(gal_list_data_number(tout)!=numcols)
@@ -525,6 +528,40 @@ ui_read_columns(struct matchparams *p)
 
 
 static void
+ui_preparations_out_cols(struct matchparams *p)
+{
+  size_t i;
+  char **strarr=p->outcols->array;
+
+  /* Go over all the values and put the respective column identifier in the
+     proper list. */
+  for(i=0;i<p->outcols->size;++i)
+    switch(strarr[i][0])
+      {
+      case 'a': gal_list_str_add(&p->acols, strarr[i]+1, 0); break;
+      case 'b': gal_list_str_add(&p->bcols, strarr[i]+1, 0); break;
+      default:
+        error(EXIT_FAILURE, 0, "`%s' is not a valid value for `--outcols'. "
+              "The first character of each value to this option must be "
+              "either `a' or `b'. The former specifies a column from the "
+              "first input and the latter a column from the second. The "
+              "characters after them can be any column identifier (number, "
+              "name, or regular expression). For more on column selection, "
+              "please run this command:\n\n"
+              "    $ info gnuastro \"Selecting table columns\"\n",
+              strarr[i]);
+      }
+
+  /* Revere the lists so they correspond to the input order. */
+  gal_list_str_reverse(&p->acols);
+  gal_list_str_reverse(&p->bcols);
+}
+
+
+
+
+
+static void
 ui_preparations_out_name(struct matchparams *p)
 {
   if(p->logasoutput)
@@ -547,42 +584,58 @@ ui_preparations_out_name(struct matchparams *p)
     }
   else
     {
-      /* Set `p->out1name' and `p->out2name'. */
-      if(p->cp.output)
+      if(p->outcols)
         {
-          if( gal_fits_name_is_fits(p->cp.output) )
-            {
-              gal_checkset_allocate_copy(p->cp.output, &p->out1name);
-              gal_checkset_allocate_copy(p->cp.output, &p->out2name);
-            }
-          else
-            {
-              p->out1name=gal_checkset_automatic_output(&p->cp, p->cp.output,
-                                                        "_matched_1.txt");
-              p->out2name=gal_checkset_automatic_output(&p->cp, p->cp.output,
-                                                        "_matched_2.txt");
-            }
+          if(p->cp.output==NULL)
+            p->cp.output = gal_checkset_automatic_output(&p->cp,
+                 p->input1name, ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                                  ? "_matched.txt" : "_matched.fits") );
+          gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
         }
       else
         {
-          if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+          /* Set `p->out1name' and `p->out2name'. */
+          if(p->cp.output)
             {
-              p->out1name=gal_checkset_automatic_output(&p->cp, p->input1name,
-                                                        "_matched_1.txt");
-              p->out2name=gal_checkset_automatic_output(&p->cp, p->input2name,
-                                                        "_matched_2.txt");
+              if( gal_fits_name_is_fits(p->cp.output) )
+                {
+                  gal_checkset_allocate_copy(p->cp.output, &p->out1name);
+                  gal_checkset_allocate_copy(p->cp.output, &p->out2name);
+                }
+              else
+                {
+                  p->out1name=gal_checkset_automatic_output(&p->cp,
+                                                            p->cp.output,
+                                                            "_matched_1.txt");
+                  p->out2name=gal_checkset_automatic_output(&p->cp,
+                                                            p->cp.output,
+                                                            "_matched_2.txt");
+                }
             }
           else
             {
-              p->out1name=gal_checkset_automatic_output(&p->cp, p->input1name,
-                                                        "_matched.fits");
-              gal_checkset_allocate_copy(p->out1name, &p->out2name);
+              if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+                {
+                  p->out1name=gal_checkset_automatic_output(&p->cp,
+                                                            p->input1name,
+                                                            "_matched_1.txt");
+                  p->out2name=gal_checkset_automatic_output(&p->cp,
+                                                            p->input2name,
+                                                            "_matched_2.txt");
+                }
+              else
+                {
+                  p->out1name=gal_checkset_automatic_output(&p->cp,
+                                                            p->input1name,
+                                                            "_matched.fits");
+                  gal_checkset_allocate_copy(p->out1name, &p->out2name);
+                }
             }
-        }
 
-      /* Make sure no file with these names exists. */
-      gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
-      gal_checkset_writable_remove(p->out2name, 0, p->cp.dontdelete);
+          /* Make sure no file with these names exists. */
+          gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
+          gal_checkset_writable_remove(p->out2name, 0, p->cp.dontdelete);
+        }
 
       /* If a log file is necessary, set its name here. */
       if(p->cp.log)
@@ -610,7 +663,10 @@ ui_preparations(struct matchparams *p)
     error(EXIT_FAILURE, 0, "currently Match only works on catalogs, we will "
           "implement the WCS matching routines later");
   else
-    ui_read_columns(p);
+    {
+      ui_read_columns(p);
+      if(p->outcols) ui_preparations_out_cols(p);
+    }
 
   /* Set the output filename. */
   ui_preparations_out_name(p);
@@ -669,9 +725,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct matchparams *p)
 
 
   /* Read the options into the program's structure, and check them and
-     their relations prior to printing.
+     their relations prior to printing. */
   ui_read_check_only_options(p);
-  */
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the

@@ -15633,6 +15633,13 @@ $ astmatch --aperture=5e-10 --ccol1=5 --ccol2=10 in1.fits in2.txt
 ##  The number of values to these determines the dimensionality).
 $ astmatch --aperture=2 input1.txt input2.fits
 
+## Similar to before, but the output is created by merging various
+## columns from the two inputs: columns 1, RA, DEC from the first
+## input, followed by all columns starting with MAG and the 8th
+## column from second input and finaly the 10th from first input.
+$ astmatch --aperture=2 input1.txt input2.fits                   \
+           --outcols=a1,aRA,aDEC,b/^MAG/,bBRG,a10
+
 ## Match the two catalogs within an elliptical aperture of 1 and 2
 ## arcseconds along RA and Dec respectively.
 $ astmatch --aperture=1/3600,2/3600 in1.fits in2.txt
@@ -15644,31 +15651,32 @@ $ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture0.5/3600  \
 @end example
 
 Two inputs are necessary for Match to start processing. The inputs can be
-plain text tables or FITS tables, see @ref{Tables}. When @option{--quiet}
-is not called, Match will print the number of matches found in standard
-output (on the command-line). If no match was found, no output file will be
-created (table or log file). When matches are found, the output file(s)
-will be the re-arranged input tables such that the rows match each other:
-both output tables will have the same number of rows which are matched with
-each other. If the @option{--logasoutput} option is called, the output will
-be a single table with the contents of the log file, see below.
+plain text tables or FITS tables, see @ref{Tables}. Match follows the same
+basic behavior of all Gnuastro programs as fully described in @ref{Common
+program behavior}. If the first input is a FITS file, the common
+@option{--hdu} option (see @ref{Input output options}) should be used to
+identify the extension. When the second input is FITS, the extension must
+be specified with @option{--hdu2}.
 
-Match follows the same basic behavior of all Gnuastro programs as fully
-described in @ref{Common program behavior}. If the first input is a FITS
-file, the common @option{--hdu} option (see @ref{Input output options})
-should be used to identify the extension. When the second input is FITS,
-the extension can be specified with @option{--hdu2}.
+When @option{--quiet} is not called, Match will print the number of matches
+found in standard output (on the command-line). If no match was found, no
+output file will be created (table or log file). When matches are found, by
+default, the output file(s) will be the re-arranged input tables such that
+the rows match each other: both output tables will have the same number of
+rows which are matched with each other. If @option{--outcols} is called,
+the output is a single table with rows chosen from either of the two inputs
+in any order, see the description of @option{--outcols}. If the
+@option{--logasoutput} option is called, the output will be a single table
+with the contents of the log file, see below.
 
 If no output file name is given with the @option{--output} option, then
 automatic output @ref{Automatic output} will be used to determine the
-output names. Depending on @option{--tableformat} (see @ref{Input output
-options}), the output will then be a multi-extension FITS file or two plain
-text files.
-
-When @option{--output} is a FITS file (and @option{--logasoutput} is not
-called, see below), the re-arranged inputs will be two extensions of the
-output FITS file. If the output name is a text file, then two files will be
-created with a @file{_matched_1.txt} and @file{_matched_2.txt} suffix.
+output name(s). Depending on @option{--tableformat} (see @ref{Input output
+options}), the output will then be a (possibly multi-extension) FITS file
+or (possibly two) plain text file(s). When the output is a FITS file, the
+default re-arranged inputs will be two extensions of the output FITS
+file. With @option{--outcols} and @option{--logasoutput}, the FITS output
+will be a single table (in one extension).
 
 When the @option{--log} option is called (see @ref{Operating mode
 options}), Match will also create a file named @file{astmatch.fits} (or
@@ -15690,6 +15698,25 @@ The extension/HDU of the second input if it is a FITS file. When it isn't a
 FITS file, this option's value is ignored. For the first input, the common
 option @option{--hdu} must be used.
 
+@item --outcols=STR
+Columns from both inputs to write into a single matched table output. The
+value to @code{--outcols} must be a comma-separated list of strings, for
+example @option{--outcols=a1,bRA,bDEC}. The first character of each string
+specifies the input catalog: @option{a} for the first and @option{b} for
+the second. The rest of the characters of the string will be directly used
+to identify the proper column(s) in the respective table. See
+@ref{Selecting table columns} for how columns can be specified in
+Gnuastro. In this example, the output will have three columns: the first
+column of the first input and the @option{RA} and @option{DEC} columns of
+the second input.
+
+Another example is given in the one-line examples above. Compared to the
+default case (where two tables with all their columns) are printed, using
+this option is much faster: it will only read and re-arrange the necessary
+columns and it will write a single outputtable. Combined with regular
+expressions in large tables, this can be a very powerful and convenient way
+to retrieve your desired information and do the match at the same time.
+
 @item -l
 @itemx --logasoutput
 The output file will have the contents of the log file: indexs in the two
@@ -15701,7 +15728,10 @@ output behavior (two tables containing the re-arranged inputs) will be
 @item --notmatched
 Write the non-matching rows into the outputs, not the matched ones. Note
 that with this option, the two output tables will not necessarily have the
-same number of rows.
+same number of rows. Therefore, this option cannot be called with
+@option{--outcols}. @option{--outcols} prints mixed columns from both
+inputs, so they must all have the same number of elements and must
+correspond to each other.
 
 @item -c INT/STR[,INT/STR]
 @itemx --ccol1=INT/STR[,INT/STR]
@@ -15711,7 +15741,7 @@ option. The values can be the column number (counting from 1), exact column
 name or a regular expression. For more, see @ref{Selecting table
 columns}. See the one-line examples above for some usages of this option.
 
-@item -c INT/STR[,INT/STR]
+@item -C INT/STR[,INT/STR]
 @itemx --ccol2=INT/STR[,INT/STR]
 The coordinate columns of the second input. See the example in
 @option{--ccol1} for more.
@@ -21942,7 +21972,7 @@ $ asttable --info table.fits
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, int @code{minmapsize})
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, int @code{minmapsize}, size_t @code{colmatch})
 Read the specified columns in a text file (named @code{filename}) into a
 linked list of data structures. If the file is FITS, then @code{hdu} will
 also be used, otherwise, @code{hdu} is ignored.
@@ -21963,6 +21993,10 @@ example from regular expressions), in this case, the order of output
 columns that correspond to that one input, are in order of the table (which
 column was read first). So the first requested column is the first popped
 data structure and so on.
+
+if @code{colmatch!=NULL}, it is assumed to be an array that has atleast the
+same number of elements as nodes in the @code{cols} list. The number of
+columns that matched each input column will be sored in each element.
 @end deftypefun
 
 @cindex Git
@@ -24250,7 +24284,7 @@ main(void)
 
   /* Read the desired columns. */
   columns = gal_table_read(inname, hdu, column_ids,
-                           GAL_TABLE_SEARCH_NAME, 1, -1);
+                           GAL_TABLE_SEARCH_NAME, 1, -1, NULL);
 
   /* Go over the columns, we'll assume that you don't know their type
    * a-priori, so we'll check  */

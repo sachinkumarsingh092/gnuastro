@@ -319,7 +319,7 @@ ui_preparations(struct tableparams *p)
 
   /* Read in the table columns. */
   p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
-                          cp->ignorecase, cp->minmapsize);
+                          cp->ignorecase, cp->minmapsize, NULL);
 
   /* If there was no actual data in the file, then inform the user and
      abort. */

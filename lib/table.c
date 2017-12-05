@@ -213,14 +213,14 @@ table_set_strcheck(gal_data_t *col, int searchin)
 static gal_list_sizet_t *
 make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                     size_t numcols, int searchin, int ignorecase,
-                    char *filename, char *hdu)
+                    char *filename, char *hdu, size_t *colmatch)
 {
   long tlong;
   int regreturn;
   regex_t *regex;
   gal_list_str_t *tmp;
-  size_t i, nummatch, len;
   gal_list_sizet_t *indexll=NULL;
+  size_t i, nummatch, colcount=0, len;
   char *str, *strcheck, *tailptr, *errorstring;
 
   /* Go over the given columns.  */
@@ -362,6 +362,10 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                      tmp->v, gal_tableintern_searchin_as_string(searchin));
             gal_tableintern_error_col_selection(filename, hdu, errorstring);
           }
+
+
+        /* Keep the value of `nummatch' if the user requested it. */
+        if(colmatch) colmatch[colcount++]=nummatch;
       }
 
   /* cols==NULL */
@@ -398,7 +402,8 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
    on. */
 gal_data_t *
 gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
-               int searchin, int ignorecase, int minmapsize)
+               int searchin, int ignorecase, int minmapsize,
+               size_t *colmatch)
 {
   int tableformat;
   gal_list_sizet_t *indexll;
@@ -413,7 +418,7 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
 
   /* Get the list of indexs in the same order as the input list */
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
-                              ignorecase, filename, hdu);
+                              ignorecase, filename, hdu, colmatch);
 
   /* Depending on the table format, read the columns into the output
      structure. Note that the functions here pop each index, read/store the

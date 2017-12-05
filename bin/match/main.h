@@ -55,6 +55,7 @@ struct matchparams
   char                  *hdu2;  /* Second input's HDU.                  */
   gal_data_t           *ccol1;  /* Array of firs input column names.    */
   gal_data_t           *ccol2;  /* Array of second input column names.  */
+  gal_data_t         *outcols;  /* Array of second input column names.  */
   gal_data_t        *aperture;  /* Acceptable matching aperture.        */
   uint8_t         logasoutput;  /* Don't rearrange inputs, out is log.  */
   uint8_t          notmatched;  /* Output is rows that don't match.     */
@@ -63,6 +64,8 @@ struct matchparams
   int                    mode;  /* Mode of operation: image or catalog. */
   gal_data_t           *cols1;  /* Column values of first input.        */
   gal_data_t           *cols2;  /* Column values of second input.       */
+  gal_list_str_t       *acols;  /* Output columns from first input.     */
+  gal_list_str_t       *bcols;  /* Output columns from second input.    */
   char               *logname;  /* Name of log file.                    */
   char              *out1name;  /* Name of first matched output.        */
   char              *out2name;  /* Name of second matched output.       */

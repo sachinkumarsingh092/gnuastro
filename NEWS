@@ -92,6 +92,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   the library (declared in `gnuastro/cosmology.h'). These functions are
   also used in the CosmicCalculator program.
 
+  `gal_table_read' can now return the number of columns matched with each
+  input column (for example with regular expressions), a new argument has
+  been added to allow this feature.
+
   `gal_fits_key_img_blank': returns the value that must be used in the
   BLANK keyword for the given type as defined by the FITS standard.
 
