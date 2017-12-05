@@ -2340,8 +2340,14 @@ analysis. Here, we will use Gnuastro's programs to detect objects in a
 Hubble Space Telescope (HST) image and measure their colors. We will use
 the @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
 dataset. Like almost all astronomical surveys, this dataset is free for
-download and usable by the public. You will need the following tools in
-this tutorial: Gnuastro, SAO DS9 @footnote{See @ref{SAO ds9}, available at
+download and usable by the public. This tutorial was first prepared for the
+``Exploring the Ultra-Low Surface Brightness Universe'' workshop (November
+2017) at the International Space Science Institute (ISSI) in Bern,
+Switzerland. We would like to thank them and the attendees for a very
+fruiteful week.
+
+You will need the following tools in this tutorial: Gnuastro, SAO DS9
+@footnote{See @ref{SAO ds9}, available at
 @url{http://ds9.si.edu/site/Home.html}.}, GNU
 Wget@footnote{@url{https://www.gnu.org/software/wget}.}, and AWK (most
 common implementation is GNU
@@ -20957,8 +20963,11 @@ linked list and thus any number of tiles can be represented with one
 variable.
 
 @deftypefun void gal_list_data_add (gal_data_t @code{**list}, gal_data_t @code{*newnode})
-Add an already allocated dataset (@code{newnode}) to top of @code{list}. In
-this example multiple images are linked together as a list:
+Add an already allocated dataset (@code{newnode}) to top of
+@code{list}. Note that if @code{newnode->next!=NULL} (@code{newnode} is
+itself a list), then @code{list} will be added to its end.
+
+In this example multiple images are linked together as a list:
 @example
 size_t minmapsize=-1;
 gal_data_t *tmp, *list=NULL;

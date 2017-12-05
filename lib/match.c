@@ -115,16 +115,23 @@ match_coordinate_pop_from_sfll(struct match_coordinate_sfll **list,
 /* Since these checks are repetative, its easier to have a separate
    function for both inputs. */
 static void
-match_coordinate_sanity_check_columns(gal_data_t *coord, char *info)
+match_coordinate_sanity_check_columns(gal_data_t *coord, char *info,
+                                      int inplace, int *allf64)
 {
   gal_data_t *tmp;
 
   for(tmp=coord; tmp!=NULL; tmp=tmp->next)
     {
       if(tmp->type!=GAL_TYPE_FLOAT64)
-        error(EXIT_FAILURE, 0, "%s: the input coordinates must have "
-              "`float64' type. At least one node of the %s list has type "
-              "of `%s'", __func__, info, gal_type_name(tmp->type, 1));
+        {
+          if(inplace)
+            error(EXIT_FAILURE, 0, "%s: when `inplace' is activated, the "
+                  "input coordinates must have `float64' type. At least "
+                  "one node of the %s list has type of `%s'", __func__, info,
+                  gal_type_name(tmp->type, 1));
+          else
+            *allf64=0;
+        }
 
       if(tmp->ndim!=1)
         error(EXIT_FAILURE, 0, "%s: each input coordinate column must have "
@@ -146,7 +153,7 @@ match_coordinate_sanity_check_columns(gal_data_t *coord, char *info)
 /* To keep the main function clean, we'll do the sanity checks here. */
 static void
 match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
-                              double *aperture)
+                              double *aperture, int inplace, int *allf64)
 {
   size_t ncoord1=gal_list_data_number(coord1);
 
@@ -165,8 +172,8 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
           "dimensions", __func__, ncoord1);
 
   /* Check the column properties. */
-  match_coordinate_sanity_check_columns(coord1, "first");
-  match_coordinate_sanity_check_columns(coord2, "second");
+  match_coordinate_sanity_check_columns(coord1, "first", inplace, allf64);
+  match_coordinate_sanity_check_columns(coord2, "second", inplace, allf64);
 
   /* Check the aperture values. */
   if(aperture[0]<=0)
@@ -211,7 +218,7 @@ match_coordinates_prepare_sort(gal_data_t *coords, size_t minmapsize)
 /* Do the preparations for matching of coordinates. */
 static void
 match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
-                          int sorted_by_first, int inplace,
+                          int sorted_by_first, int inplace, int allf64,
                           gal_data_t **A_out, gal_data_t **B_out,
                           size_t **A_perm, size_t **B_perm,
                           size_t minmapsize)
@@ -220,10 +227,21 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
 
   /* Sort the datasets if they aren't sorted. If the dataset is already
      sorted, then `inplace' is irrelevant. */
-  if(!sorted_by_first)
+  if(sorted_by_first && allf64)
     {
-      /* Allocating a new list is only necessary when  */
-      if(!inplace)
+      *A_out=coord1;
+      *B_out=coord2;
+    }
+  else
+    {
+      /* Allocating a new list is only necessary when `inplace==0' or all
+         the columns are double. */
+      if( inplace && allf64 )
+        {
+          *A_out=coord1;
+          *B_out=coord2;
+        }
+      else
         {
           /* Copy the first list. */
           for(tmp=coord1; tmp!=NULL; tmp=tmp->next)
@@ -249,20 +267,10 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
           *A_out=A;
           *B_out=B;
         }
-      else
-        {
-          *A_out=coord1;
-          *B_out=coord2;
-        }
 
       /* Sort each dataset by the first coordinate. */
       *A_perm = match_coordinates_prepare_sort(*A_out, minmapsize);
       *B_perm = match_coordinates_prepare_sort(*B_out, minmapsize);
-    }
-  else
-    {
-      *A_out=coord1;
-      *B_out=coord2;
     }
 }
 
@@ -667,17 +675,18 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
           /* Note that the permutation keeps the original indexs. */
           match_coordinate_pop_from_sfll(&bina[ai], &bi, &r);
           rval[ match_i   ] = r;
-          aind[ match_i   ] = A_perm[ai];
-          bind[ match_i++ ] = B_perm[bi];
+          aind[ match_i   ] = A_perm ? A_perm[ai] : ai;
+          bind[ match_i++ ] = B_perm ? B_perm[bi] : bi;
 
           /* Set a `1' for this object in the second catalog. This will
              later be used to find which rows didn't match to fill in the
              output.. */
-          Bmatched[ B_perm[bi] ] = 1;
+          Bmatched[ B_perm ? B_perm[bi] : bi ] = 1;
         }
+
       /* No match found. At this stage, we can only fill the indexs of the
          first input. The second input needs to be matched afterwards.*/
-      else aind[ nomatch_i++ ] = A_perm[ai];
+      else aind[ nomatch_i++ ] = A_perm ? A_perm[ai] : ai;
     }
 
 
@@ -748,14 +757,16 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
                       double *aperture, int sorted_by_first,
                       int inplace, size_t minmapsize, size_t *nummatched)
 {
+  int allf64=1;
   gal_data_t *A, *B, *out;
   size_t *A_perm=NULL, *B_perm=NULL;
   struct match_coordinate_sfll **bina;
 
   /* Do a small sanity check and make the preparations. After this point,
      we'll call the two arrays `a' and `b'.*/
-  match_coordinaes_sanity_check(coord1, coord2, aperture);
-  match_coordinates_prepare(coord1, coord2, sorted_by_first, inplace,
+  match_coordinaes_sanity_check(coord1, coord2, aperture, inplace,
+                                &allf64);
+  match_coordinates_prepare(coord1, coord2, sorted_by_first, inplace, allf64,
                             &A, &B, &A_perm, &B_perm, minmapsize);
 
 
@@ -784,13 +795,13 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
 
   /* Clean up. */
   free(bina);
-  free(A_perm);
-  free(B_perm);
   if(A!=coord1)
     {
       gal_list_data_free(A);
       gal_list_data_free(B);
     }
+  if(A_perm) free(A_perm);
+  if(B_perm) free(B_perm);
 
 
   /* Set `nummatched' and return output. */

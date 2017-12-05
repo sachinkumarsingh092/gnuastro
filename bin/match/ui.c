@@ -209,12 +209,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in `ui_check_options_and_arguments'.
 static void
 ui_read_check_only_options(struct matchparams *p)
 {
 
 }
+*/
 
 
 
@@ -386,6 +387,59 @@ ui_read_columns_aperture_2d(struct matchparams *p)
 
 
 
+/* We want to keep the columns as double type. So what-ever their original
+   type is, convert it. */
+static gal_data_t *
+ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
+                          gal_list_str_t *cols, size_t numcols)
+{
+  gal_data_t *tmp, *ttmp, *tout, *out=NULL;
+  struct gal_options_common_params *cp=&p->cp;
+  char *diff_cols_error="%s: the number of columns matched (%zu) "
+    "differs from the number of usable calls to `--ccol1' (%zu). "
+    "Please give more specific values to `--ccol1' (column "
+    "numberes are the only identifiers guaranteed to be unique).";
+
+  /* Read the columns. */
+  tout=gal_table_read(filename, hdu, cols, cp->searchin, cp->ignorecase,
+                     cp->minmapsize);
+
+  /* A small sanity check. */
+  if(gal_list_data_number(tout)!=numcols)
+    error(EXIT_FAILURE, 0, diff_cols_error,
+          gal_checkset_dataset_name(filename, hdu),
+          gal_list_data_number(tout), numcols);
+
+  /* Go over the columns and see if they are double or not. To keep things
+     simple, we'll keep a new list even if all the types are float64.*/
+  tmp=tout;
+  while(tmp!=NULL)
+    {
+      /* We need ot set the `next' pointer  */
+      ttmp=tmp->next;
+      tmp->next=NULL;
+
+      /* Correct the type if necessary. */
+      if(tmp->type==GAL_TYPE_FLOAT64)
+        gal_list_data_add(&out, tmp);
+      else
+        gal_list_data_add(&out,
+                          gal_data_copy_to_new_type_free(tmp,
+                                                         GAL_TYPE_FLOAT64) );
+
+      /* Set `tmp' to the initial `next pointer. */
+      tmp=ttmp;
+    }
+
+  /* The `out' above is in reverse, so correct it and return */
+  gal_list_data_reverse(&out);
+  return out;
+}
+
+
+
+
+
 /* Read catalog columns */
 static void
 ui_read_columns(struct matchparams *p)
@@ -394,12 +448,7 @@ ui_read_columns(struct matchparams *p)
   size_t ccol1n=p->ccol1->size;
   size_t ccol2n=p->ccol2->size;
   gal_list_str_t *cols1=NULL, *cols2=NULL;
-  struct gal_options_common_params *cp=&p->cp;
   char **strarr1=p->ccol1->array, **strarr2=p->ccol2->array;
-  char *diff_cols_error="%s: the number of columns matched (%zu) "
-    "differs from the number of usable calls to `--ccol1' (%zu). "
-    "Please give more specific values to `--ccol1' (column "
-    "numberes are the only identifiers guaranteed to be unique).";
 
   /* Make sure the same number of columns is given to both. */
   if(ccol1n!=ccol2n)
@@ -450,23 +499,13 @@ ui_read_columns(struct matchparams *p)
 
 
   /* Read the columns. */
-  if(cp->searchin)
+  if(p->cp.searchin)
     {
       /* Read the first dataset. */
-      p->cols1=gal_table_read(p->input1name, cp->hdu, cols1,
-                              cp->searchin, cp->ignorecase, cp->minmapsize);
-      if(gal_list_data_number(p->cols1)!=ccol1n)
-        error(EXIT_FAILURE, 0, diff_cols_error,
-              gal_checkset_dataset_name(p->input1name, cp->hdu),
-              gal_list_data_number(p->cols1), ccol1n);
-
-      /* Read the second dataset. */
-      p->cols2=gal_table_read(p->input2name, p->hdu2, cols2,
-                              cp->searchin, cp->ignorecase, cp->minmapsize);
-      if(gal_list_data_number(p->cols2)!=ccol2n)
-        error(EXIT_FAILURE, 0, diff_cols_error,
-              gal_checkset_dataset_name(p->input2name, p->hdu2),
-              gal_list_data_number(p->cols2), ccol2n);
+      p->cols1=ui_read_columns_to_double(p, p->input1name, p->cp.hdu,
+                                         cols1, ccol1n);
+      p->cols2=ui_read_columns_to_double(p, p->input2name, p->hdu2,
+                                         cols2, ccol2n);
     }
   else
     error(EXIT_FAILURE, 0, "no `--searchin' option specified. Please run "
@@ -630,9 +669,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct matchparams *p)
 
 
   /* Read the options into the program's structure, and check them and
-     their relations prior to printing. */
+     their relations prior to printing.
   ui_read_check_only_options(p);
-
+  */
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
