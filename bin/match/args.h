@@ -34,7 +34,7 @@ struct argp_option program_options[] =
     /* Input file parameters. */
     {
       "hdu2",
-      GAL_OPTIONS_KEY_HDU,
+      UI_KEY_HDU2,
       "STR/INT",
       0,
       "Extension name or number of second input.",
