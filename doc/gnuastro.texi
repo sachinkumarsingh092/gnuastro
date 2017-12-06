@@ -2710,13 +2710,96 @@ $ for z in $(seq 0.5 0.1 5); do                                  \
   done
 @end example
 
-Let's stop for a moment here. CosmicCalculator has a very limited set of
-parameters and it is fast, so, we'll use it to discuss configuration files
-(@ref{Configuration files}). Once you get comfortable with what is done
-below, you can easily do the same for the options of all Gnuastro
-programs. For example, NoiseChisel has the largest number of options in all
-Gnuastro's programs. Therefore configuration files will be very useful for
-it when you use different datasets (with different noise properties).
+If you want a fast result and commonly need such processing for a larger
+number of redshifts, the command above can be slow. This is because the
+CosmicCalculator program has a lot of overhead: it has to parse the
+command-line and all configuration files (see below). These are both
+human-readable characters, not computer-readable bits. CosmicCalculator
+then has to check the sanity of its inputs and check which of its many
+options you have asked for. It has to do all of these for every
+redshift. To greatly speed up the processing, Gnuastro gives you direct
+access to the root work-horse of CosmicCalculator without all that
+overhead: @ref{Gnuastro library}.
+
+You can write your own tiny little program for this same calculation,
+without all that extra overhead of CosmicCalculator (or any of Gnuastro's
+programs, see @ref{Library}). For this particular job, you want Gnuastro's
+@ref{Cosmology library}. Here is one example: put the following small C
+program in a file called @file{myprogram.c}.
+
+@example
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <gnuastro/cosmology.h>
+
+int
+main(void)
+@{
+  double area=4.03817;              /* Area of field.       */
+  double z, adist, tandist;         /* Temporary variables. */
+
+  /* Constants from Plank 2015 (Paper XIII, A&A 594, 2016) */
+  double H0=67.74, olambda=0.6911, omatter=0.3089, oradiation=0;
+
+  /* Do the same thing for all redshifts (z) between 0.1 and 5. */
+  for(z=0.1; z<5; z+=0.1)
+    @{
+      /* Calculate the angular diameter distance. */
+      adist=gal_cosmology_angular_distance(z, H0, olambda,
+					   omatter, oradiation);
+
+      /* Calculate the tangential distance of one arcsecond. */
+      tandist = adist * 1000 * M_PI / 3600 / 180;
+
+      /* Print the redshift and area. */
+      printf("%-5.2f %g\n", z, pow(tandist * 60,2) * area / 1e6);
+    @}
+
+  /* Tell the system that everything finished successfully. */
+  return EXIT_SUCCESS;
+@}
+@end example
+
+@noindent
+To build and run this C program, you can use @ref{BuildProgram}. It is
+designed to manage all the Gnuastro dependencies, compile the program you
+give it and then run it. In short, it hides all the complexities of
+compiling, linking and running C programs based on Gnuastro's library (see
+@ref{Why C} for the benefits of doing your research in this language).
+
+@example
+$ astbuildprog myprogram.c
+@end example
+
+You might have noticed that a new file called @file{myprogram} is also
+created in the directory. This the compiled program that was run by the
+command above. You can run it again to get the same results again with a
+command like this:
+
+@example
+$ ./myprogram
+@end example
+
+Gnuastro has a large library which all the programs use for various steps
+their processing. For the full list, please see @ref{Gnuastro library}. As
+you saw in this example, if the job you want is well-defined and needed
+often, it is much more efficient to write your own program for that
+job. Gnuastro's library and BuildProgram are created to make it easy for
+you to use these powerful features and get to your scientific results as
+efficiently (fast) and accurately as possible. Writing the program does
+take slightly time before the first result. But in later usages, this
+investment will be returned with great profits (in time). For the rest of
+this tutorial, we'll get back to the programs on the command-line.
+
+CosmicCalculator has a very limited set of parameters and doesn't need any
+particular file inputs. Therefore, we'll use it to discuss configuration
+files which are an important part of all Gnuastro's programs (see
+@ref{Configuration files}). Once you get comfortable with configuration
+files, you can easily do the same for the options of all Gnuastro
+programs. For example, NoiseChisel has the largest number of options in the
+programs. Therefore configuration files will be very useful for it when you
+use different datasets (with different noise properties).
 
 As we saw above, the full list of the options in all Gnuastro programs can
 be seen with the @option{--help} option. Try using it with the command
