@@ -136,7 +136,7 @@ all the commits needed for this release have been completed.
      $ cd build
      $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX          \
               --package-name=gnuastro --previous-version=0.1               \
-              --current-version=0.2 --gpg-key-id=16A8A4B2AEC42AFF          \
+              --current-version=0.2 --gpg-key-id=1849814357EFB73A          \
               --url-directory=http://YYYY.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
