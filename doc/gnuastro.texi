@@ -2344,7 +2344,7 @@ download and usable by the public. This tutorial was first prepared for the
 ``Exploring the Ultra-Low Surface Brightness Universe'' workshop (November
 2017) at the International Space Science Institute (ISSI) in Bern,
 Switzerland. We would like to thank them and the attendees for a very
-fruiteful week.
+fruitful week.
 
 You will need the following tools in this tutorial: Gnuastro, SAO DS9
 @footnote{See @ref{SAO ds9}, available at
@@ -2438,7 +2438,7 @@ $ info gnuastro "Detection options"
 $ info gnuastro "segmentation options"
 @end example
 
-In general, Info is a wonderful and powerfull way to access this whole book
+In general, Info is a wonderful and powerful way to access this whole book
 with detailed information about the programs you are running very fast. If
 you are not already familiar with it, please run the following command and
 just read along and do what it says to learn it. Don't stop until you feel
@@ -2530,7 +2530,7 @@ will fit the whole dataset in the window. If the window is too small,
 expand it with your mouse, then press the ``zoom'' button on the top row of
 buttons above the image, then in the row below it, press ``zoom fit''. You
 can also zoom in and out by scrolling your mouse or the respective
-operation on your touchpad when your cursor/pointer is over the image.
+operation on your touch-pad when your cursor/pointer is over the image.
 
 @example
 $ ds9 download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits     \
@@ -2588,7 +2588,7 @@ This is the deepest image we currently have of the sky. The first thing
 that comes to mind may be this: ``How large is this field?''. Let's find
 the answer to this question with the commands below. The lines starting
 with @code{##} are just comments for you to help in following the steps.
-Don't type them on the terminal. The commands are intentionally repetative
+Don't type them on the terminal. The commands are intentionally repetitive
 in some places to better understand each step and also to demonstrate the
 beauty of command-line features like variables, pipes and loops. Later, if
 you would like to repeat this process on another dataset, you can just use
@@ -2721,11 +2721,11 @@ redshift. To greatly speed up the processing, Gnuastro gives you direct
 access to the root work-horse of CosmicCalculator without all that
 overhead: @ref{Gnuastro library}.
 
-You can write your own tiny little program for this same calculation,
-without all that extra overhead of CosmicCalculator (or any of Gnuastro's
-programs, see @ref{Library}). For this particular job, you want Gnuastro's
-@ref{Cosmology library}. Here is one example: put the following small C
-program in a file called @file{myprogram.c}.
+Using Gnuastro's library, you can write your own tiny little program for
+this same calculation, without all that extra overhead of CosmicCalculator
+(or any of Gnuastro's programs, see @ref{Library}). For this particular
+job, you want Gnuastro's @ref{Cosmology library}. Here is one example: put
+the following small C program in a file called @file{myprogram.c}.
 
 @example
 #include <math.h>
@@ -2736,8 +2736,8 @@ program in a file called @file{myprogram.c}.
 int
 main(void)
 @{
-  double area=4.03817;              /* Area of field.       */
-  double z, adist, tandist;         /* Temporary variables. */
+  double area=4.03817;          /* Area of field (arcmin^2). */
+  double z, adist, tandist;     /* Temporary variables.      */
 
   /* Constants from Plank 2015 (Paper XIII, A&A 594, 2016) */
   double H0=67.74, olambda=0.6911, omatter=0.3089, oradiation=0;
@@ -2747,7 +2747,7 @@ main(void)
     @{
       /* Calculate the angular diameter distance. */
       adist=gal_cosmology_angular_distance(z, H0, olambda,
-					   omatter, oradiation);
+                                           omatter, oradiation);
 
       /* Calculate the tangential distance of one arcsecond. */
       tandist = adist * 1000 * M_PI / 3600 / 180;
@@ -2763,34 +2763,41 @@ main(void)
 
 @noindent
 To build and run this C program, you can use @ref{BuildProgram}. It is
-designed to manage all the Gnuastro dependencies, compile the program you
-give it and then run it. In short, it hides all the complexities of
-compiling, linking and running C programs based on Gnuastro's library (see
-@ref{Why C} for the benefits of doing your research in this language).
+designed to manage Gnuastro's dependencies, compile the program you give it
+and then run it. In short, it hides all the complexities of compiling,
+linking and running C programs based on Gnuastro's library. The library
+will later be usable higher level languages like Python or Julia, for now
+it is only usable by C and C++ programs.
 
 @example
 $ astbuildprog myprogram.c
 @end example
 
-You might have noticed that a new file called @file{myprogram} is also
-created in the directory. This the compiled program that was run by the
-command above. You can run it again to get the same results again with a
-command like this:
+See how much faster this is compared to the shell loop we wrote above? You
+might have noticed that a new file called @file{myprogram} is also created
+in the directory. This is the compiled program that was created and run by
+the command above (its in binary machine code, not human-readable any
+more). You can run it again to get the same results with a command like
+this:
 
 @example
 $ ./myprogram
 @end example
 
+The efficiency of @file{myprogram} compared to CosmicCalculator is because
+the requested processing is faster/comparable to the overheads. For other
+programs that take large input datasets, the overhead is usually negligible
+compared to the processing. In such cases, the libraries are useful if you
+want a different/new processing compared to Gnuastro's existing programs.
+
 Gnuastro has a large library which all the programs use for various steps
-their processing. For the full list, please see @ref{Gnuastro library}. As
-you saw in this example, if the job you want is well-defined and needed
-often, it is much more efficient to write your own program for that
-job. Gnuastro's library and BuildProgram are created to make it easy for
-you to use these powerful features and get to your scientific results as
-efficiently (fast) and accurately as possible. Writing the program does
-take slightly time before the first result. But in later usages, this
-investment will be returned with great profits (in time). For the rest of
-this tutorial, we'll get back to the programs on the command-line.
+their processing. For the full list of available functions classified by
+context, please see @ref{Gnuastro library}. Gnuastro's library and
+BuildProgram are created to make it easy for you to use these powerful
+features and get to your scientific results as efficiently (fast) and
+accurately as possible. For the rest of this tutorial, we'll get back to
+Gnuastro's programs, which are already written and ready to be used on the
+command-line.
 
 CosmicCalculator has a very limited set of parameters and doesn't need any
 particular file inputs. Therefore, we'll use it to discuss configuration
@@ -2836,7 +2843,7 @@ processing. Where did the ``default'' cosmological parameter values come
 from?  The values come from the command-line or a configuration file (see
 @ref{Configuration file precedence}). The highest priority is given to the
 command-line. Let's say you want a different Hubble constant. Try running
-the following command to see how the hubble constant in the output of the
+the following command to see how the Hubble constant in the output of the
 command above has changed. Then replace the @option{-P} with @option{-z2}
 to confirm the new results.
 
@@ -2844,7 +2851,7 @@ to confirm the new results.
 $ astcosmiccal --H0=70 -P
 @end example
 
-From the output of the @code{--help} option, note how the option for hubble
+From the output of the @code{--help} option, note how the option for Hubble
 constant has both short (@code{-H}) and long (@code{--H0}) formats. One
 final note is that the equal (@key{=}) sign is not mandatory. In the short
 format, the value can stick to the actual option (the short option name is
@@ -2968,7 +2975,7 @@ you see in the matrix that is printed when you run Warp, it merges all the
 warps into a single warping matrix (see @ref{Warping basics} and
 @ref{Merging multiple warpings}) and simply applies that just once. Recall
 that since this is done through matrix multiplication, order matters in the
-separate operations. Infact through Warp's @option{--matrix} option, you
+separate operations. In fact through Warp's @option{--matrix} option, you
 can directly request your desired final rotation and don't have to break it
 up into different warps (see @ref{Invoking astwarp}).
 
@@ -3041,7 +3048,7 @@ $ astfits noisechisel/xdf-f160w.fits -h2                             \
           | awk '$1=="NUMLABS" @{print $3@}'
 @end example
 
-Grep and AWK are simple, but very powerfull command-line software for
+Grep and AWK are simple, but very powerful command-line software for
 processing text files. Learning them properly can greatly simplify your
 processing, while improve your creativity, productivity and speed. When you
 get time, it is highly recommended to master them. The most common
@@ -3127,7 +3134,7 @@ We can now get back to the curious situation we noticed after running
 NoiseChisel: the number of false clumps to find an S/N limit was very small
 (given the extent of this image). This is bad, because we use quantiles in
 NoiseChisel and such a small number will result in a relatively large
-scatter. Since this is a segmenation issue, let's see why this happens with
+scatter. Since this is a segmentation issue, let's see why this happens with
 @option{--checksegmentation}.
 
 @example
@@ -3178,7 +3185,7 @@ false clump S/N. So it is always important to find a good balance between a
 larger @option{--minskyfrac} while having a sufficient number of resulting
 clumps (to avoid scatter).
 
-NoiseChisel doesn't just find the labelled pixels, it also finds the Sky
+NoiseChisel doesn't just find the labeled pixels, it also finds the Sky
 value and the Sky standard deviation in the final two extensions of its
 output. To generate a catalog of the colors, we will be using the
 NoiseChisel labeled image from the F160W image. But the Sky and Sky
@@ -3338,8 +3345,8 @@ of NoiseChisel's labeled detection image.
 @cindex GNU AWK
 We'll use the objects catalog in the F160W catalog we generated before for
 the positions and set the other parameters of each profile to be a fixed
-circle of radious 5 pixels (we want all apertures to be fixed
-afterall). AWK is a wonderful tool for such jobs as the command below
+circle of radius 5 pixels (we want all apertures to be fixed
+after all). AWK is a wonderful tool for such jobs as the command below
 shows.
 
 @example
@@ -3453,10 +3460,11 @@ $ parallel astconvertt --fluxlow=-0.001 --fluxhigh=0.005 --invert      \
 
 You can now easily use your general GUI image viewer to flip through the
 images more easily. On GNOME, you can use the ``Eye of GNOME'' image viewer
-with a command like below and by pressing the @key{<SPACE>} key, you can
-flip through the images and compare them visually more easily. Ofcourse,
-the flux ranges have been chosen generically here for seeing the fainter
-parts. Therefore, brighter objects will be fully black.
+(with executable name of @file{eog}). Run the command below and by pressing
+the @key{<SPACE>} key, you can flip through the images and compare them
+visually more easily. Of course, the flux ranges have been chosen
+generically here for seeing the fainter parts. Therefore, brighter objects
+will be fully black.
 
 @example
 $ eog 1-f105w.jpg
@@ -15706,20 +15714,20 @@ $ astmatch [OPTION ...] input-1 input-2
 One line examples:
 
 @example
-## 1D wavelength match (within 5 angestroms) of the two inputs.
+## 1D wavelength match (within 5 angstroms) of the two inputs.
 ## The wavelengths are in the 5th and 10th columns respectively.
 $ astmatch --aperture=5e-10 --ccol1=5 --ccol2=10 in1.fits in2.txt
 
 ## Match the two catalogs with a circular aperture of width 2.
 ## (Units same as given positional columns).
 ## (By default two columns are given for `--ccol1' and `--ccol2',
-##  The number of values to these determines the dimensionality).
+##  The number of values to these determines the dimensions).
 $ astmatch --aperture=2 input1.txt input2.fits
 
 ## Similar to before, but the output is created by merging various
 ## columns from the two inputs: columns 1, RA, DEC from the first
 ## input, followed by all columns starting with MAG and the 8th
-## column from second input and finaly the 10th from first input.
+## column from second input and finally the 10th from first input.
 $ astmatch --aperture=2 input1.txt input2.fits                   \
            --outcols=a1,aRA,aDEC,b/^MAG/,bBRG,a10
 
@@ -15796,7 +15804,7 @@ the second input.
 Another example is given in the one-line examples above. Compared to the
 default case (where two tables with all their columns) are printed, using
 this option is much faster: it will only read and re-arrange the necessary
-columns and it will write a single outputtable. Combined with regular
+columns and it will write a single output table. Combined with regular
 expressions in large tables, this can be a very powerful and convenient way
 to retrieve your desired information and do the match at the same time.
 
@@ -15834,7 +15842,7 @@ The coordinate columns of the second input. See the example in
 Parameters of the aperture for matching. The values given to this option
 can be fractions, for example when the position columns are in units of
 degrees, @option{1/3600} can be used to ask for one arcsecond. The
-interpretation of the values depends on the requested dimensionality
+interpretation of the values depends on the requested dimensions
 (determined from @option{--ccol1} and @code{--ccol2}) and how many values
 are given to this option.
 
@@ -19748,7 +19756,7 @@ included by any library header that uses @code{gal_data_t}.
 
 @deftp {Type (C @code{struct})} gal_data_t
 The main container for datasets in Gnuastro. It can host data of any
-dimensionality, with any numeric data type. It is actually a structure, but
+dimensions, with any numeric data type. It is actually a structure, but
 @code{typedef}'d as a new type to avoid having to write the @code{struct}
 before any declaration. The actual structure is shown below which is
 followed by a description of each element.
@@ -19849,8 +19857,8 @@ an increment along that dimension becomes larger.
 The total number of elements in the dataset. This is actually a
 multiplication of all the values in the @code{dsize} array, so it is not an
 independent parameter. However, low-level operations with the dataset
-(irrespective of its dimensionality) commonly need this number, so this
-element is designed to avoid calculating it every time.
+(irrespective of its dimensions) commonly need this number, so this element
+is designed to avoid calculating it every time.
 
 @item char *mmapname
 Name of file hosting the @code{mmap}'d contents of @code{array}. If the
@@ -20211,12 +20219,12 @@ single-element dataset.
 An array is a contiguous region of memory.  Hence, at the lowest level,
 every element of an array just has one single-valued position: the number
 of elements that lie between it and the first element in the array. This is
-also known as the @emph{index} of the element within the
-array. Dimensionality is high-level abstraction (meta-data) that we project
+also known as the @emph{index} of the element within the array. A dataset's
+number of dimensions is high-level abstraction (meta-data) that we project
 onto that contiguous patch of memory. When the array is interpreted as a
 one-dimensional dataset, this index is also the @emph{coordinate} of the
-element. But once we associate the patch of memory with a higher
-dimensionality, there must also be one coordinate for each dimension.
+element. But once we associate the patch of memory with a higher dimension,
+there must also be one coordinate for each dimension.
 
 The functions and macros in this section provide you with the tools to
 convert an index into a coordinate and vice-versa along with several other
@@ -22077,9 +22085,9 @@ columns that correspond to that one input, are in order of the table (which
 column was read first). So the first requested column is the first popped
 data structure and so on.
 
-if @code{colmatch!=NULL}, it is assumed to be an array that has atleast the
+if @code{colmatch!=NULL}, it is assumed to be an array that has at least the
 same number of elements as nodes in the @code{cols} list. The number of
-columns that matched each input column will be sored in each element.
+columns that matched each input column will be stored in each element.
 @end deftypefun
 
 @cindex Git
@@ -22137,7 +22145,7 @@ When the dataset's type and other information are already known, any
 programming language (including C) provides some very good tools for
 various operations (including arithmetic operations like addition) on the
 dataset with a simple loop. However, as an author of a program, making
-assumptions about the type of data, its dimensionality and other basic
+assumptions about the type of data, its dimensions and other basic
 characteristics will come with a large processing burden.
 
 For example if you always read your data as double precision floating
@@ -22558,8 +22566,8 @@ to this function are:
 @item tilevalues
 This must be an array that has the same number of elements as the nodes in
 in @code{tilesll} and in the same order that `tilesll' elements are parsed
-(from top to bottom, see @ref{Linked lists}). As a result the
-dimensionality of this array is irrelevant, it will be parsed contiguously.
+(from top to bottom, see @ref{Linked lists}). As a result the array's
+number of dimensions is irrelevant, it will be parsed contiguously.
 
 @item tilesll
 The list of input tiles (see @ref{List of gal_data_t}). Internally, it
@@ -23299,9 +23307,9 @@ Return the permutations that when applied, the first @code{nummatched} rows
 of both inputs match with each other (are the nearest within the given
 aperture). The two inputs (@code{coord1} and @code{coord2}) must be
 @ref{List of gal_data_t}. Each @code{gal_data_t} node in the list should be
-a single dimensional dataset (column in a table). The dimensionality of the
+a single dimensional dataset (column in a table). The dimensions of the
 coordinates is determined by the number of @code{gal_data_t} nodes in the
-input lists (which must be equal). Note that the number of rows (or the
+two input lists (which must be equal). Note that the number of rows (or the
 number of elements in each @code{gal_data_t}) in the columns of
 @code{coord1} and @code{coord2} can be different.
 
@@ -23331,7 +23339,7 @@ If internal allocation is necessary and the space is larger than
 @code{minmapsize}, the space will be not allocated in the RAM, but in a
 file, see description of @option{--minmapsize} in @ref{Processing options}.
 
-The number of matchs will be put in the space pointed by
+The number of matches will be put in the space pointed by
 @code{nummatched}. If there wasn't any match, this function will return
 @code{NULL}. If match(s) were found, a list with three @code{gal_data_t}
 nodes will be returned. The top two nodes in the list are the permutations
@@ -24620,7 +24628,7 @@ functions, it is explained in the comments in between the code.
 @cindex GNU Coreutils
 All the Gnuastro programs provide very low level and modular operations
 (modeled on GNU Coreutils). Almost all the basic command-line programs like
-@command{ls}, @command{cp} or @command{rm} on GNU/Linux operting systems
+@command{ls}, @command{cp} or @command{rm} on GNU/Linux operating systems
 are part of GNU Coreutils. This enables you to use shell scripting
 languages (for example GNU Bash) to operate on a large number of files or
 do very complex things through the creative combinations of these tools
