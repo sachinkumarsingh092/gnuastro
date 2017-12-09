@@ -221,6 +221,7 @@ gal_options_print_citation(struct argp_option *option, char *arg,
                            char *filename, size_t lineno, void *pa)
 {
   struct gal_options_common_params *cp=(struct gal_options_common_params *)pa;
+  char *gnuastro_acknowledgement;
   char *gnuastro_bibtex=
     "Gnuastro package/infrastructure\n"
     "-------------------------------\n"
@@ -249,15 +250,33 @@ gal_options_print_citation(struct argp_option *option, char *arg,
   /* Print the statements. */
   printf("\nThank you for using %s (%s) %s.\n\n", cp->program_name,
          PACKAGE_NAME, PACKAGE_VERSION);
-  printf("Citations are vital for the continued work on Gnuastro.\n\n"
-         "Please cite these BibTeX record(s) in your paper(s).\n"
-         "(don't forget to also include the version as shown above)\n\n"
-         "%s\n\n",
-         gnuastro_bibtex);
+  printf("Citations and acknowledgement are vital for the continued "
+         "work on Gnuastro.\n\n"
+         "Please cite the following record(s) and add the acknowledgement "
+         "statement below in your work to support us. Please note that "
+         "different Gnuastro programs may have different corresponding "
+         "papers. Hence, please check all the programs you used. Don't "
+         "forget to also include the version as shown above for "
+         "reproducibility.\n\n"
+         "%s\n\n", gnuastro_bibtex);
 
 
   /* Only print the citation for the program if one exists. */
   if(cp->program_bibtex[0]!='\0') printf("%s\n\n", cp->program_bibtex);
+
+
+  /* Notice for acknowledgements. */
+  asprintf(&gnuastro_acknowledgement,
+           "Acknowledgement\n"
+           "---------------\n"
+           "This work was partly done using GNU Astronomy Utilities "
+           "(Gnuastro) version %s. Gnuastro is a generic package for "
+           "astronomical data manipulation and analysis which was "
+           "primarily created and developed for research funded by the "
+           "Monbukagakusho (Japanese government) scholarship and ERC "
+           "advanced grant 339659-MUSICOS.", PACKAGE_VERSION);
+  printf("%s\n", gnuastro_acknowledgement);
+  free(gnuastro_acknowledgement);
 
 
   /* Print a thank you message. */
