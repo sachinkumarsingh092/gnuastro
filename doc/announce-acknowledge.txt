@@ -12,4 +12,5 @@ Alan Lefor
 Alejandro Serrano Borlaff
 Lee Spitler
 Ole Streicher
+Ignacio Trujillo
 David Valls-Gabaud

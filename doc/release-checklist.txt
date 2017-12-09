@@ -88,16 +88,20 @@ all the commits needed for this release have been completed.
    uses `ncftpput' which comes with the `ncftp' package. The replaces
    are necessary for the symbolic links.
 
+   - Set the key-ID as a variable for easy steps later:
+
+       $ mykeyid=1849814357EFB73A
+
    - For an alpha upload:
 
        $  /path/to/gnulib/build-aux/gnupload --to alpha.gnu.org:gnuastro   \
                --replace --symlink-regex="s/X.X.XXX-XXXX/alpha-latest/"    \
-               gnuastro-X.X.XXX-XXXX.tar.lz
+               --user $mykeyid gnuastro-X.X.XXX-XXXX.tar.lz
 
    - For a stable release:
 
        $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro     \
-               --replace --symlink-regex                                   \
+               --replace --symlink-regex --user $mykeyid                   \
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
 
@@ -136,7 +140,7 @@ all the commits needed for this release have been completed.
      $ cd build
      $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX          \
               --package-name=gnuastro --previous-version=0.1               \
-              --current-version=0.2 --gpg-key-id=1849814357EFB73A          \
+              --current-version=0.2 --gpg-key-id=$mykeyid                  \
               --url-directory=http://YYYY.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
