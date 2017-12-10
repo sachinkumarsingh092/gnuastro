@@ -2789,33 +2789,48 @@ $ ./myprogram
 
 The efficiency of @file{myprogram} compared to CosmicCalculator is because
 the requested processing is faster/comparable to the overheads. For other
-programs that take large input datasets, the overhead is usually negligible
-compared to the processing. In such cases, the libraries are useful if you
-want a different/new processing compared to Gnuastro's existing programs.
+programs that take large input datasets (images for example), the overhead
+is usually negligible compared to the processing. In such cases, the
+libraries are only useful if you want a different/new processing compared
+to the functionalities in Gnuastro's existing programs.
 
 Gnuastro has a large library which all the programs use for various steps
 their processing. For the full list of available functions classified by
 context, please see @ref{Gnuastro library}. Gnuastro's library and
 BuildProgram are created to make it easy for you to use these powerful
 features and get to your scientific results as efficiently (fast) and
-accurately as possible. For the rest of this tutorial, we'll get back to
-Gnuastro's programs, which are already written and ready to be used on the
+accurately as possible. Several other complete working examples (involving
+images and tables) of Gnuastro's libraries can be see in @ref{Library demo
+programs}. We'll stop with the libraries at this point in this tutorial and
+get back to Gnuastro's already built programs which ready to be used on the
 command-line.
+
+None of Gnuastro's programs keep a default value internally within their
+code. However, when you ran CosmicCalculator with the @option{-z2} option
+above, it completed its processing and printed results. So where did the
+``default'' cosmological parameter values (like the matter density and etc)
+come from?  The values come from the command-line or a configuration file
+(see @ref{Configuration file precedence}).
 
 CosmicCalculator has a very limited set of parameters and doesn't need any
 particular file inputs. Therefore, we'll use it to discuss configuration
 files which are an important part of all Gnuastro's programs (see
-@ref{Configuration files}). Once you get comfortable with configuration
-files, you can easily do the same for the options of all Gnuastro
-programs. For example, NoiseChisel has the largest number of options in the
-programs. Therefore configuration files will be very useful for it when you
-use different datasets (with different noise properties).
+@ref{Configuration files}).
+
+Once you get comfortable with configuration files, you can easily do the
+same for the options of all Gnuastro programs. For example, NoiseChisel has
+the largest number of options in the programs. Therefore configuration
+files will be very useful for it when you use different datasets (with
+different noise properties or in different research contexts). The
+configuration of each program (besides its version) is vital for the
+reproducibility of your results, so it is very important to manage them
+properly.
 
 As we saw above, the full list of the options in all Gnuastro programs can
-be seen with the @option{--help} option. Try using it with the command
-below. Note how options are grouped by context to make it easier to find
-your desired option. However, in each group, options are ordered
-alphabetically.
+be seen with the @option{--help} option. Try calling it with
+CosmicCalculator as shown below. Note how options are grouped by context to
+make it easier to find your desired option. However, in each group, options
+are ordered alphabetically.
 
 @example
 $ astcosmiccal --help
@@ -2825,8 +2840,8 @@ $ astcosmiccal --help
 The options that need a value have an @key{=} sign after their long version
 and @code{FLT}, @code{INT} or @code{STR} for floating point numbers,
 integer numbers and strings (filenames for example) respectively. All
-options have a long format and some have a (single character) short format,
-see @ref{Options}.
+options have a long format and some have a short format (a single
+character), for more see @ref{Options}.
 
 When you are using a program, it is often necessary to check the value the
 option has just before the program starts its processing. In other words,
@@ -2840,18 +2855,13 @@ with @option{--printparams} to see how both do the same operation.
 $ astcosmiccal -P
 @end example
 
-None of Gnuastro's programs keep a default value internally. But when you
-ran CosmicCalculator with the @option{-z2} option above, it completed its
-processing. Where did the ``default'' cosmological parameter values come
-from?  The values come from the command-line or a configuration file (see
-@ref{Configuration file precedence}). The highest priority is given to the
-command-line. Let's say you want a different Hubble constant. Try running
-the following command to see how the Hubble constant in the output of the
-command above has changed. Then replace the @option{-P} with @option{-z2}
-to confirm the new results.
+Let's say you want a different Hubble constant. Try running the following
+command to see how the Hubble constant in the output of the command above
+has changed. Afterwards, delete the @option{-P} and add a @option{-z2} to
+see the results with the new cosmology (or configuration).
 
 @example
-$ astcosmiccal --H0=70 -P
+$ astcosmiccal -P --H0=70
 @end example
 
 From the output of the @code{--help} option, note how the option for Hubble
@@ -2878,11 +2888,14 @@ But having to type these extra options every time you run CosmicCalculator
 will be prone to errors (typos in particular) and also will be frustrating
 and slow. Therefore in Gnuastro, you can put all the options and their
 values in a ``Configuration file'' and tell the programs to read the option
-values from there. Create a file named @file{my-cosmology.conf} (or
-@file{my-cosmology.txt}, the suffix doesn't matter) with these lines. One
-space between the option value and name is enough, the values are just
-under each other to help in readability). Also note that you can only use
-long option names in configuration files.
+values from there.
+
+Let's create a configuration file. In your favorite text editor, make a
+file named @file{my-cosmology.conf} (or @file{my-cosmology.txt}, the suffix
+doesn't matter) which contains the following lines. One space between the
+option value and name is enough, the values are just under each other to
+help in readability. Also note that you can only use long option names in
+configuration files.
 
 @example
 H0       70
@@ -2893,7 +2906,8 @@ omatter  0.3
 @noindent
 You can now tell CosmicCalculator to read this file for option values
 immediately using the @option{--config} option as shown below. Do you see
-how the output corresponds to the option values in @file{my-cosmology.txt}?
+how the output of the following command corresponds to the option values in
+@file{my-cosmology.txt} (previous command)?
 
 @example
 $ astcosmiccal --config=my-cosmology.conf -z2
@@ -2904,14 +2918,19 @@ directory, you can benefit from Gnuastro's default configuration files to
 avoid having to call the @option{--config} option. Let's assume that you
 want any CosmicCalculator call you make in the @file{my-cosmology}
 directory to use these parameters. You just have to copy the above
-configuration file into a special directory and file. Once you run
-CosmicCalculator, you will see the results implement your desired option
-values without having to type anything extra on the command-line.
+configuration file into a special directory and file:
 
 @example
 $ mkdir my-cosmology
 $ mkdir my-cosmology/.gnuastro
 $ mv my-cosmology.conf my-cosmology/.gnuastro/astcosmiccal.conf
+@end example
+
+Once you run CosmicCalculator within @file{my-cosmology} as shown below,
+you will see how your cosmology has been implemented without having to type
+anything extra on the command-line.
+
+@example
 $ cd my-cosmology
 $ astcosmiccal -z2
 $ cd ..
@@ -2920,14 +2939,15 @@ $ cd ..
 To further simplify the process, you can use the @option{--setdirconf}
 option. If you are already in your desired directory, calling this option
 with the others will automatically write the final values (along with
-descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example this
-command:
+descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example the
+commands below will make the same configuration file automatically (with
+one extra call to CosmicCalculator).
 
 @example
-$ rm -rf my-cosmology         # Make sure the directory doesn't exist.
-$ mkdir my-cosmology
+$ mkdir my-cosmology2
+$ cd my-cosmology2
 $ astcosmiccal --H0 70 --olambda=0.7 --omatter=0.3 --setdirconf
-$ cat .gnuastro/astcosmiccal.conf # See the output configuration file.
+$ astcosmiccal -z2
 $ cd ..
 @end example
 
@@ -2936,26 +2956,32 @@ user (when run in any directory). This allows you to set a special behavior
 every time a program is run by a specific user. Only the directory and
 filename differ from the above, the rest of the process is similar to
 before. Finally, there are also system-wide configuration files that can be
-used to define the option values for all users on a system. Please see
-@ref{Configuration file precedence} for where the programs look for default
-user and system wide configuration files.
+used to define the option values for all users on a system. See
+@ref{Configuration file precedence} for a more detailed discussion.
 
 We are now ready to start processing the downloaded images. Since these
 datasets are already aligned, you don't need to align them to make sure the
 pixel grid covers the same region in all inputs. Gnuastro's Warp program
 has features for such pixel-grid warping (see @ref{Warp}). Therefore, just
 for a demonstration, let's assume one image needs to be rotated by 20
-degrees to correspond to the other. To do that, you can run this command:
+degrees to correspond to the other. To do that, you can run the following
+command:
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --rotate=20
 @end example
 
-Warp can generally be used for any kind of pixel grid manipulation. For
-example the outputs of the commands below will respectively have larger
-pixels (new resolution being one quarter the original resolution), get
-shifted by 2.8 (by sub-pixel), get a shear of 2, and be tilted
-(projected).
+@noindent
+Open the output and see the output. If your final image is already aligned
+with RA and Dec, you can simply use the @option{--align} option and let
+Warp calculate the necessary rotation.
+
+Warp can generally be used for any kind of pixel grid manipulation
+(warping). For example the outputs of the commands below will respectively
+have larger pixels (new resolution being one quarter the original
+resolution), get shifted by 2.8 (by sub-pixel), get a shear of 2, and be
+tilted (projected). After running each, please open the output file and see
+the effect.
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --scale=0.25
@@ -2965,8 +2991,8 @@ $ astwarp flat-ir/xdf-f160w.fits --project=0.001,0.0005
 @end example
 
 @noindent
-You can also combine multiple warps in one command. For example rotation
-and scaling with the command below.
+You can also combine multiple warps in one command. For example to first
+rotate the image, then scale it, run this command:
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --rotate=20 --scale=0.25
@@ -2979,8 +3005,8 @@ warps into a single warping matrix (see @ref{Warping basics} and
 @ref{Merging multiple warpings}) and simply applies that just once. Recall
 that since this is done through matrix multiplication, order matters in the
 separate operations. In fact through Warp's @option{--matrix} option, you
-can directly request your desired final rotation and don't have to break it
-up into different warps (see @ref{Invoking astwarp}).
+can directly request your desired final warp and don't have to break it up
+into different warps like above (see @ref{Invoking astwarp}).
 
 Fortunately these datasets are already aligned to the same pixel grid, so
 you don't actually need the files that were just generated. You can safely
