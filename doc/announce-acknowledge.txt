@@ -1,12 +1,12 @@
 People who's help must be acknowledged in the next release.
 
 Leindert Boogaard
-Benjamin Clement
 Nicolas Bouché
+Benjamin Clement
 Madusha Gunawardhana
-Aurélien Jarno
 Takashi Ichikawa
 Raúl Infante Sainz
+Aurélien Jarno
 Floriane Leclercq
 Alan Lefor
 Alejandro Serrano Borlaff
