@@ -65,7 +65,7 @@ char *
 gal_arithmetic_operator_string(int operator);
 
 gal_data_t *
-gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags);
+gal_arithmetic_convert_to_compiled_type(gal_data_t *in, int flags);
 
 
 

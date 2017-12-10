@@ -265,8 +265,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************              Top level function          *****************/
 /************************************************************************/
 gal_data_t *
-arithmetic_onlyint_binary(int operator, unsigned char flags,
-                          gal_data_t *lo, gal_data_t *ro)
+arithmetic_onlyint_binary(int operator, int flags, gal_data_t *lo,
+                          gal_data_t *ro)
 {
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
@@ -414,7 +414,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
 
 
 gal_data_t *
-arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
+arithmetic_onlyint_bitwise_not(int flags, gal_data_t *in)
 {
   gal_data_t *o;
   uint8_t    *iu8  = in->array,  *iu8f  = iu8  + in->size,   *ou8;

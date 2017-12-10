@@ -447,8 +447,8 @@ reversepolish(struct arithmeticparams *p)
   unsigned int numop, i;
   gal_list_str_t *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
-  unsigned char flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
-                          | GAL_ARITHMETIC_NUMOK );
+  int flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
+                | GAL_ARITHMETIC_NUMOK );
 
 
   /* Prepare the processing: */

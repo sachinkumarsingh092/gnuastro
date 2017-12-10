@@ -348,8 +348,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************              Top level function          *****************/
 /************************************************************************/
 gal_data_t *
-arithmetic_binary(int operator, uint8_t flags, gal_data_t *lo,
-                  gal_data_t *ro)
+arithmetic_binary(int operator, int flags, gal_data_t *lo, gal_data_t *ro)
 {
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure

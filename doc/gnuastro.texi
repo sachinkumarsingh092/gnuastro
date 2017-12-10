@@ -22397,7 +22397,7 @@ directly use those functions.
 @end deffn
 
 
-@deftypefun {gal_data_t *} gal_arithmetic (int operator, unsigned char flags, ...)
+@deftypefun {gal_data_t *} gal_arithmetic (int operator, int flags, ...)
 Do the arithmetic operation of @code{operator} on the given operands (the
 third argument and any further argument). Certain special conditions can
 also be specified with the @code{flag} operator. The acceptable values for

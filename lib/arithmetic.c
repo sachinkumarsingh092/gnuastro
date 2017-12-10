@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***********************************************************************/
 /* Change input data structure type. */
 static gal_data_t *
-arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
+arithmetic_change_type(gal_data_t *data, int operator, int flags)
 {
   int type=-1;
   gal_data_t *out;
@@ -92,7 +92,7 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
   }
 
 static gal_data_t *
-arithmetic_not(gal_data_t *data, unsigned char flags)
+arithmetic_not(gal_data_t *data, int flags)
 {
   uint8_t *o;
   gal_data_t *out;
@@ -149,7 +149,7 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
     do *o++ = FUNC(*a); while(++a<af);                             \
   }
 static gal_data_t *
-arithmetic_abs(unsigned char flags, gal_data_t *in)
+arithmetic_abs(int flags, gal_data_t *in)
 {
   gal_data_t *out;
 
@@ -317,7 +317,7 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 
 
 static gal_data_t *
-arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
+arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 {
   gal_data_t *o;
 
@@ -457,8 +457,8 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 
 
 static gal_data_t *
-arithmetic_binary_function_flt(int operator, unsigned char flags,
-                               gal_data_t *l, gal_data_t *r)
+arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
+                               gal_data_t *r)
 {
   int final_otype;
   gal_data_t *o=NULL;
@@ -606,7 +606,7 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
 
 
 static void
-arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
+arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
                  gal_data_t *iftrue)
 {
   unsigned char *c=cond->array;
@@ -959,7 +959,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
    number of operators is determined from the fact that the last node in
    the linked list must have a NULL pointer as its `next' element.*/
 static gal_data_t *
-arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
+arithmetic_multioperand(int operator, int flags, gal_data_t *list)
 {
   uint8_t *hasblank;
   size_t i=0, dnum=1;
@@ -1323,7 +1323,7 @@ gal_arithmetic_operator_string(int operator)
 /* Note that for signed types, we won't be considering the unsigned types
    of the larger types. */
 gal_data_t *
-gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
+gal_arithmetic_convert_to_compiled_type(gal_data_t *in, int flags)
 {
   int ntype;
   char *typestring;
@@ -1377,8 +1377,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
 
 /* Call functions in the `gnuastro/statistics' library. */
 static gal_data_t *
-arithmetic_from_statistics(int operator, unsigned char flags,
-                           gal_data_t *input)
+arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 {
   gal_data_t *out=NULL;
   int ip=(flags & GAL_ARITHMETIC_INPLACE) || (flags & GAL_ARITHMETIC_FREE);
@@ -1408,7 +1407,7 @@ arithmetic_from_statistics(int operator, unsigned char flags,
 
 
 gal_data_t *
-gal_arithmetic(int operator, unsigned char flags, ...)
+gal_arithmetic(int operator, int flags, ...)
 {
   va_list va;
   gal_data_t *d1, *d2, *d3, *out=NULL;

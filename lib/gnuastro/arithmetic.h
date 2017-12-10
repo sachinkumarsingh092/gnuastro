@@ -139,7 +139,7 @@ enum gal_arithmetic_operators
 
 
 gal_data_t *
-gal_arithmetic(int operator, unsigned char flags, ...);
+gal_arithmetic(int operator, int flags, ...);
 
 
 

@@ -25,11 +25,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 gal_data_t *
-arithmetic_onlyint_binary(int operator, unsigned char flags, gal_data_t *lo,
+arithmetic_onlyint_binary(int operator, int flags, gal_data_t *lo,
                           gal_data_t *ro);
 
 gal_data_t *
-arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in);
+arithmetic_onlyint_bitwise_not(int flags, gal_data_t *in);
 
 
 #endif
