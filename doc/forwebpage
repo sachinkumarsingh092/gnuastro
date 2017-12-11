@@ -327,10 +327,19 @@ echo %%%%% DONE %%%%%
 
 
 
+
 # Copy `gnuastro.en.html' page into `index.html'. Then copy the other
 # necessary webpage files.
-cp gnuastro.en.html $topwebcheckout/gnuastro/index.html
+cp gnuastro.en.html $topwebcheckout/gnuastro/gnuastro.html
 cp gnuastro.fr.html gnuastro.translist $topwebcheckout/gnuastro/
+
+# `index.html' must be just a symbolic to `gnuastro.html'. In case this is
+# the first time, CVS might have downloaded a full file and not the
+# link. To be safe, we'll just delete index.html and build a new symbolic
+# link.
+rm -f $topwebcheckout/gnuastro/index.html
+ln -s $topwebcheckout/gnuastro/gnuastro.html $topwebcheckout/gnuastro/index.html
+
 
 
 
