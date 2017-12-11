@@ -3,6 +3,7 @@ People who's help must be acknowledged in the next release.
 Leindert Boogaard
 Nicolas Bouché
 Benjamin Clement
+Thérèse Godefroy
 Madusha Gunawardhana
 Takashi Ichikawa
 Raúl Infante Sainz
@@ -14,3 +15,5 @@ Lee Spitler
 Ole Streicher
 Ignacio Trujillo
 David Valls-Gabaud
+
+GNU French Translation Team

@@ -25,7 +25,7 @@ all the commits needed for this release have been completed.
    `doc/announce-acknowledge.txt' in them.
 
 
- - [STABLE] Correct the links in the webpage (`doc/gnuastro-top.html' and
+ - [STABLE] Correct the links in the webpage (`doc/gnuastro.en.html' and
    `doc/gnuastro.fr.html').
 
 

@@ -1,0 +1,12 @@
+<!-- begin translist file -->
+<!--#set var="TRANSLATION_LIST"
+value='<div id="translations">
+<p>
+<span dir="ltr" class="original"><a lang="en" hreflang="en" href="index.html">English</a>&nbsp;[en]</span> &nbsp;
+<span dir="ltr"><a lang="fr" hreflang="fr" href="gnuastro.fr.html">français</a>&nbsp;[fr]</span> &nbsp;
+</p>
+</div>' -->
+<link rel="alternate" type="text/html" href="index.html" hreflang="x-default" />
+<link rel="alternate" type="text/html" lang="en" hreflang="en" href="index.html" title="English" />
+<link rel="alternate" type="text/html" lang="fr" hreflang="fr" href="gnuastro.fr.html" title="français" />
+<!-- end translist file -->

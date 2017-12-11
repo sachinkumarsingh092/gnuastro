@@ -1,73 +1,27 @@
-<!--#include virtual="/server/header.html" -->
-<!-- Parent-Version: 1.77 -->
+<!--#set var="ENGLISH_PAGE" value="gnuastro.html" -->
 
-<!-- This is the template document for GNU web pages.  We use
-     server side includes (#include) for common elements, for
-     instance, the very first line of the file.  If you're reading
-     this in its expanded form, you can retrieve the original source,
-     with the SSI statements intact, from
-     http://web.cvs.savannah.gnu.org/viewvc/*checkout*/www/server/standards/boilerplate.html?root=www&content-type=text%2Fplain
--->
+<!--#include virtual="/server/html5-header.fr.html" -->
+<!-- Parent-Version: 1.84 -->
 
-<!-- Instructions for adapting this boilerplate to a new project: -->
-
-<!-- 1. In the line above starting "Parent-Version:", remove the
-        "$Revision...$" from around the revision number,
-        leaving just Parent-Version: and the number. -->
-
-<!-- 2. Replace "baz" with the name of your project.
-        You should be able to do this with search and replace;
-        making sure that the search is case insensitive and
-        that the case of the replacement matches the case
-        of the string found. In Emacs, query-replace will do this
-        when case-fold-search and case-replace are both non-nil
-        and both search and replacement string are given in lower case. -->
-
-<!-- 3. Of course update the actual information according to your project,
-        such as mailing lists, project locations, and maintainer name.  -->
-
-<!-- 4. You can use the patch-from-parent script to semi-automate
-        merging future changes to the boilerplate with your file:
-        http://web.cvs.savannah.gnu.org/viewvc/*checkout*/www/server/standards/patch-from-parent?root=www&content-type=text%2Fplain
-        -->
-
-<!-- If you would like to make sure your page validates with HTML5, that
-     would be a good thing.  To do that, change the first line from
-     to /server/html5-header.html before trying the validation.  Maybe
-     someday we will be able to make /server/header be HTML5.  -->
-
-<title>Les Utilités GNU d'Astronomie - Gnuastro -
-  Le Projet GNU - Fondation du Logiciel Libre</title>
-
-<!-- ATTENTION RELECTEUR
-
- Merci beaucoup pour votre aide. J'ai fait quelques notes avec les
- traductions que je pensais étaient mal, mais probablement il y a certains
- qui ont échappé mon oeil. Le format est plus ou moins comme suivant: Note
- anglais + note français. Original Text: la texte original.
-
- ATTENTION PROOF READER/TRANSLATOR.
-
- Thanks a lot for your help. I've made some notes with the translations
- that I thought were bad but there are probably some that've escaped my
- eye. The format is more or less as follows: English note + French
- note. Original Text: the original text.
-
- Contact me at macquarrielucas@gmail.com if necessary. -->
+<title>Utilitaires GNU pour l'astronomie - Gnuastro -
+  Projet GNU - Free Software Foundation</title>
 
 <style type="text/css"><!--
+#content {
+   max-width: 48em;
+   margin: 0 auto 2.5em;
+}
 #table-of-contents {
    float: left;
    margin: 1.3em 0 1.5em 0;
 }
-#content #table-of-contents h4 { margin-top: .8em; }
-#table-of-contents a:hover { text-decoration: underline; }
-#table-of-contents h4 { text-align: center; }
-h3 { clear: both; }
-#content h3 a[href^="#"] {
-   color: #333; text-decoration: none;
+#table-of-contents h4 {
+   text-align: center;
+   margin-top: .8em;
 }
 #table-of-contents a { text-decoration: none; }
+#table-of-contents a:hover { text-decoration: underline; }
+h3 { clear: both; }
 @media (min-width: 40em) {
    h3 { clear: none; }
    #table-of-contents {
@@ -76,349 +30,324 @@ h3 { clear: both; }
    }
 }
 --></style>
+<!--#include virtual="gnuastro.translist" -->
+<!--#include virtual="/server/banner.fr.html" -->
+<h2>Utilitaires GNU pour l'astronomie</h2>
 
-
-
-
-
-
-
-
-<!--#include virtual="/server/gnun/initial-translations-list.html" -->
-<!--#include virtual="/server/banner.html" -->
-<h2>Les Utilités GNU d'Astronomie</h2>
-
-<hr />
+<hr class="thin" />
 <div id="table-of-contents" class="emph-box">
-<h4>La Table des Matières</h4>
+<h4>Table des Matières</h4>
 <ul>
   <li><a href="#introduction">Introduction</a></li>
-  <li><a href="#download">Télécharger</a></li>
+  <li><a href="#download">Téléchargement</a></li>
   <li><a href="#installation">Installation</a></li>
-  <li><a href="#documentation">Le Livre (Les Documents)</a></li>
-  <li><a href="#mail">La Liste de Distribution</a></li>
-  <li><a href="#bug">Rapporter un Bug</a></li>
-  <li><a href="#contribute">Nous-Aider</a></li><!-- Erreur possible/ This is probably not correct and needs revision -->
-  <li><a href="#license">Autorisation</a></li><!-- Un autre erreur possible/ Another probable error -->
+  <li><a href="#documentation">Documentation – le Livre</a></li>
+  <li><a href="#mail">Listes de diffusion</a></li>
+  <li><a href="#bug">Signalement de bogues</a></li>
+  <li><a href="#contribute">Participer</a></li>
+  <li><a href="#license">Licence</a></li>
 </ul>
 <hr class="no-display"/>
 </div>
 
 
-
-
-
 <h3 id="introduction">Introduction</h3>
-<p> Les Utilités GNU d'Astronomie(Gnuastro) est un officiel progiciel GNU
-  consister des logiciels séperé pour la manipulation et analyse de données
-  astronomique. Tous les différent utilités utilisent la même interface de
-  ligne de commande pour le confort des utilisatuers et des développeurs.
-  Les Utilités Gnu d'Astronomie est écrit pour se conformer avec
-  <a href="https://www.gnu.org/prep/standards/">Les Normes de Code GNU</a>
-  donc il va bien avec le systèm d'exploitation de GNU/Linux. Aussi, ce
-  permet les astronomes à s'attendent à <!-- Original Text: 'This also allows astronomers to expect a fully familiar...' vraisemblable mal rédigé/ Most likely badly worded -->
-  une expérience famillière avec le code source, l'installation, le bâtir, <!-- Probablement, il y a un mot mieux pour ça. Bâtir comme Bâtir logiciel. Peut-être Bâtirant?/ There is probably another word for this. Building as in building software. Possible could be bâtirant -->
-  et l'interaction d'utilisateur de linge de commande, qu'ils ont vu avec tous
-  les autres logiciels de GNU qu'ils utilisent.
-  <!-- Original Text: 'which they have seen with all the other gnu software
-  that they use' Ce semble maladroit en anglais aussi/ This also sounds a
-  bit wierd in English as well --></p>
 
-Au cas où tu ne connais pas Gnuastro, ces liens peuvent t'aider: <!-- Original Text: ' You might find these links useful' -->
+<p> Les utilitaires GNU pour l'astronomie (Gnuastro – <cite>GNU Astronomy
+  Utilities</cite>) font partie des logiciels GNU officiels. Il s'agit d'un
+  ensemble de programmes séparés pour la manipulation et l'analyse des
+  données astronomiques. Les différents utilitaires utilisent tous la même
+  interface en ligne de commande pour le confort des utilisateurs et des
+  développeurs. Les utilitaires GNU pour l'astronomie se conforment aux
+  <a href="/prep/standards/">normes de codage GNU</a>, et par conséquent
+  s'intègrent bien au système d'exploitation GNU/Linux. Les astronomes
+  ne seront donc pas déroutés par le code source, les méthodes de
+  compilation et d'installation ou les interactions en ligne de commande,
+  car ils les ont déjà vus avec tous les autres logiciels GNU qu'ils
+  utilisent.</p>
+
+<p>Si vous ne connaissez pas Gnuastro, voici quelques liens qui peuvent
+  vous être utiles&nbsp;:</p>
+
 <ul>
+  <li><a href="manual/html_node/Quick-start.html">Démarrage rapide</a> –
+    installer Gnuastro&nbsp;;</li>
 
-  <li><a href="manual/html_node/Quick-start.html">Démarrage rapide <!-- Original Text: 'Quick start' -->
-    </a>: Installer Gnuastro.</li>
+  <li><a href="manual/html_node/GNU-Astronomy-Utilities-list.html">Liste
+    complète</a> des utilitaires GNU pour l'astronomie&nbsp;;</li>
 
-  <li><a href="manual/html_node/GNU-Astronomy-Utilities-list.html">La Liste
-  des Utilités GNU d'Astronomie</a>: Pour une liste complète des
-  utilités. </li>
-
-  <li><a href="http://www.gnu.org/software/gnuastro/manual/html_node/Tutorials.html#Tutorials">Les
-    Tutoriels</a>: pour les exemples amusant de la réalité qui sont
-    facile-à-lire </li>
-
+  <li><a href="manual/html_node/Tutorials.html#Tutorials">Tutoriels</a> –
+    exemples concrets d'utilisation, amusants et faciles à lire.</li>
 </ul>
 
 
+<h3 id="download">Téléchargement</h3>
 
+<p>La version stable actuelle est <a
+  href="https://ftp.gnu.org/gnu/gnuastro/gnuastro-0.4.tar.gz">Gnuastro
+  0.4</a> (sortie le 13 septembre 2017). Utilisez <a
+  href="https://ftpmirror.gnu.org/gnuastro/gnuastro-0.4.tar.gz">un miroir</a>
+  si possible.
+  <br />Les nouvelles publications sont annoncées sur <a
+  href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a>.
+  Abonnez-vous pour rester au courant.</p>
 
+<p>Les changements importants sont décrits dans le fichier <a
+  href="https://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS?id=gnuastro_v0.4">
+  NEWS</a>.</p>
 
-<h3 id="download">Télécharger</h3>
-
-<p>La sortie actuelle stable
-  est <a href="http://ftp.gnu.org/gnu/gnuastro/gnuastro-0.4.tar.gz">Gnuastro
-  0.4</a> (septembre 13, 2017).
-  Utilisez <a href="http://ftpmirror.gnu.org/gnuastro/gnuastro-0.4.tar.gz">un
-  miroir</a> si possible.
-
-  <br />Nouveaux sorties sont annoncé
-  sur <a href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a>,
-  à tenir à jour, s'il vous plait vous abonnez.
-
-<p>Pour les détails des changements importants, vois le
-fichier <a href="http://git.savannah.gnu.org/cgit/gnuastro.git/plain/NEWS?id=gnuastro_v0.4">NOUVELLES</a></p>
-
-<p>Le
-  canonical <a href="http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz"></a><a>http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz</a>
-  serait toujours contenir la version plus récente de Gnuastro. Utilisez le
-  lien miroir
-  (<a href="http://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz">http://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz</a>)
+<p>Le lien canonique <a
+  href="https://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz">
+  https://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz</a> renvoie toujours
+  à la version la plus récente de Gnuastro. Utilisez un miroir (<a
+  href="https://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz">https://ftpmirror.gnu.org/gnuastro/gnuastro-latest.tar.gz</a>)
   si possible.</p>
 
-<p>Les versions précédents et signatures PGP sont toujours disponible sur
-  <a href="http://ftp.gnu.org/gnu/gnuastro">http://ftp.gnu.org/gnu/gnuastro</a>. Utilizez <a href="http://ftpmirror.gnu.org/gnuastro">
-  un miroir</a> si possible. </p>
+<p>Les versions précédentes et les signatures PGP sont toujours disponibles sur
+  <a href="https://ftp.gnu.org/gnu/gnuastro">https://ftp.gnu.org/gnu/gnuastro</a>.
+  Utilisez un <a href="https://ftpmirror.gnu.org/gnuastro">miroir</a> si
+  possible.</p>
 
 
 <h3 id="installation">Installation</h3>
 
-<p>Voyez  <a href="manual/html_node/Quick-start.html">Démarge rapide</a> pour un
-petit rappel des commandes d'installation et bâtir de Gnuastro.</p>
+<p>Le chapitre <cite><a href="manual/html_node/Quick-start.html">Quick
+  start</a></cite> du <a href="manual/">Livre de Gnuastro</a> résume les
+  commandes de compilation et d'installation.</p>
 
-<p>Gnuastro a seulement trois dependencies
-obligatoires: <a href="manual/html_node/GNU-Scientific-Library.html">GNU
-Scientific
-Library</a>, <a href="manual/html_node/CFITSIO.html">CFITSIO</a>, <a href="manual/html_node/WCSLIB.html">WCSLIB</a>.</p>
+<p>Gnuastro n'a que trois dépendances obligatoires&nbsp;:
+  <a href="manual/html_node/GNU-Scientific-Library.html">GNU Scientific
+  Library</a>, <a href="manual/html_node/CFITSIO.html">CFITSIO</a> et
+  <a href="manual/html_node/WCSLIB.html">WCSLIB</a>.</p>
 
-<p>Pour un description moins bref, voyez le chapitre d'
-<a href="manual/html_node/Installation.html">Installation</a>
-du <a href="manual/">livre Gnuastro</a>. Il expliques complètement les
-<a href="manual/html_node/Dependencies.html">dependencies</a>,
-<a href="manual/html_node/Downloading-the-source.html">mode de
-téléchargements</a>, et
-le <a href="manual/html_node/Build-and-install.html">bâtirment et
-installation</a> de Gnuastro.
+<p>Dans le chapitre <cite><a href="manual/html_node/Installation.html">
+  Installation</a></cite>, vous trouverez des explications complètes sur les
+  <a href="manual/html_node/Dependencies.html">dépendances</a>, le
+  <a href="manual/html_node/Downloading-the-source.html">téléchargement</a>,
+  la <a href="manual/html_node/Build-and-install.html">compilation et
+  l'installation</a> de Gnuastro.</p>
 
-<h3 id="documentation">Livre de Gnuastro (Les documents)</h3>
 
-<p>Le <a href="manual/">livre de Gnuastro</a> (Les documents de Gnuastro
-  officiel où le manuel) est disponsable en ligne en différent formats, et
-  aussi est <!-- this is definitely wrong/ C'est mauvais, sans aucun
-  doute. Original text: The gnuastro book is available online in different
-  formats, and so is documentation f\ or most gnu software --> les
-  documents <a href="http://www.gnu.org/manual/manual.en.html">pour la
-  plupart de logiciel GNU</a>. Aprés l'installation, vous pouvez accèder le
-  livre complet, où les parties relié à les utilités individuel sur la
-  linge de commande (en
-  format <a href="../texinfo/manual/info/info.html">Info</a>
-  ). Voir <a href="manual/html_node/Getting-help.html">Trouvant d'aide</a>
-  pour plus d'infomation. En résumé, voici les façons à vous guider à les
-  parties plus important du livre sur la ligne de commande:
+<h3 id="documentation">Documentation – le Livre</h3>
 
+<p>Le <a href="manual/">Livre de Gnuastro</a> (documentation officielle, ou
+   manuel) est disponible en ligne en différent formats, de même que la
+   documentation de <a href="/manual/manual.html">la plupart des logiciels
+   GNU</a>. Après installation, vous pouvez accéder en ligne de commande au
+   livre complet ou aux parties se rapportant à des utilitaires particuliers
+   (au format <a
+   href="/software/texinfo/manual/texinfo/html_node/Info-Files.html#Info-Files">
+   Info</a>). Vous trouverez des information complètes dans <cite><a
+   href="manual/html_node/Getting-help.html">Getting help</a></cite>. En
+   résumé, voici comment vous pouvez ouvrir immédiatement en ligne de
+   commande les parties les plus importantes du livre&nbsp;:</p>
 
 <ul>
-  <li><code>info gnuastro</code>: Pour voir le livre Gnuastro complet
-    à debut.</li>
-  <li><code>info ProgramName</code>: Pour voir la partie à propos d'un
-    utilité spécifique.Par exemple <code>info NoiseChisel</code>
-    où <code>info ImageCrop</code>.</li>
-  <li><code>info astprogname</code>: Pour voir la sous-section seulement
-    "Invoking ProgramName" du manuel. Chaque programme a une sous-section
-    qu'explique les input(s), les output(s), et les options de la ligne de
-    commande pour cet programme. Par exemple <code>info
-    astnoisechisel</code> où <code>info astimgcrop</code>.</li>
-  <li><code>astprogname --help</code>: Un signalement et liste complète des
-    options (classé par contexte) pour cette programme
-    l'imprimera. <!-- Future tense is tough/ Futur est dur. Original Text:
-    will be printed. --> Par exemeple <code>astnoisechisel --help</code>
-    où <code>astimgcrop --help</code>.</li>
-  <li><code>man astprogname</code>: Une page manuel listant les options et
-    les arguments de la programme l'imprimera. Par exemple
-    <code>man astnoisechisel</code>,
-  où <code>man astimgcrop</code>.</li>
-</ul>
+  <li><code>info&nbsp;gnuastro</code> pour voir le livre complet
+    depuis le début.</li>
 
-<h3 id="mail">La Liste de distribution</h3>
+  <li><code>info&nbsp;ProgramName</code> pour voir l'ensemble de la section
+    concernant un utilitaire particulier. Par exemple
+    <code>info&nbsp;NoiseChisel</code> ou
+    <code>info&nbsp;ImageCrop</code>.</li>
 
-<p>Gnuastro a les listes de distribution suivantes:</p> <!-- Possible
-error/Erreur possible. Original Text: 'Gnuastro has the following mailing
-lists' -->
+  <li><code>info&nbsp;astprogname</code> pour voir uniquement la sous-section
+    <cite>Invoking ProgramName</cite> du manuel. Chaque programme a une
+    sous-section de ce type qui explique les entrées/sorties et les options
+    de la ligne de commande pour ce programme. Par exemple <code>info
+    astnoisechisel</code> ou <code>info&nbsp;astimgcrop</code>.</li>
 
-<ul>
+  <li><code>astprogname&nbsp;--help</code> affichera une description de ce
+    programme ainsi que la liste complète des options (classées par contexte).
+    Par exemple <code>astnoisechisel&nbsp;--help</code> ou
+    <code>astimgcrop&nbsp;--help</code>.</li>
 
-  <li><a href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a>:
-  Toutes annonces officielle <!-- wrong tout/toutes/tous/toute
-  mal. Original text: all official announcements --> circuleront dans la
-  liste de distribution là.</li>
-
-  <li><a href="https://lists.gnu.org/mailman/listinfo/help-gnuastro">help-gnuastro</a>:
-    Contacter les utilisateurs expérimenté et développeurs sur des
-    problèmes et conseils pour Gnuastro (Il serait utile si vous
-    lisiez <a href="manual/">les documents</a> à l'avance).</li>
-
-  <li><a href="https://lists.gnu.org/mailman/listinfo/bug-gnuastro">bug-gnuastro</a>:
-  Signaler un bug, ou suggérer des nouvelles fonctions.
-  (voir <a href="manual/html_node/Report-a-bug.html">Signalez un bug</a>
-  et <a href="manual/html_node/Suggest-new-feature.html">Suggérer un
-  nouveau fonction </a> dans les documents). </li>
-
-  <li><a href="https://lists.gnu.org/mailman/listinfo/gnuastro-devel">gnuastro-devel</a>:
-Les discussions à propos du développement (Pour l'intérêt des développeurs
-surtout) <!-- Original text: Mostly for gnuastro developers) -->.</li>
-
-  <li><a href="https://lists.gnu.org/mailman/listinfo/gnuastro-commits">gnuastro-commits</a>:
-    À propos des commits git <!-- about git commits --> faisaient aux
-    versions de Gnuastro, contrôlé par l'histoire dans le repository
-    officiel.</li>
-</ul>
-
-<p>Les rapports de securité qui ne devrait pas rendre public <!-- Original
-text: Security reports that should not be made public --> peut-être envoyer
-directement au <!-- au éditeur ou à l'éditor --> éditeur. S'il n'y a pas
-une réponse à une problème urgent, vous pouvez l'envoyer à la liste de
-distribution <a href="http://lists.gnu.org/mailman/listinfo/security">securité
-général</a> pour des conseils <!-- original text: You can send it to the
-geneeral security mailing list for advice-->.</p>
-
-
-<h3 id="bug">Signaler un bug</h3>
-<p>La section sur <a href="manual/html_node/Report-a-bug.html"> le signalant d'un bug
-  <!-- Original text: The section on reporting a bug --> </a> explique
-  complètement le processus de signaler un bug, lisez cette section s'il
-  vous plait!  please read that section. Pour un summaire,
-  voir <a href="https://savannah.gnu.org/bugs/?group=gnuastro"
-  target="_blank">Les archives des bugs Gnuastro</a>. Cliquez sur
-  "<i>Afficher critère</i>" (au-dessus de la liste), choisez "Any" dans le
-  menu déroulant "<i>Ouvert/Fermé</i>" <!-- original text: 'Open/closed' as
-  in the issues are open to improvement/discussion. Comme les problèmes
-  sont ouvert à discussion ou amélioration --> , et au-dessous
-  "<i>Catégorie</i>" choisez la section de Gnuastro qui correspond à votre
-  bug.  En cliquant sur le bouton "Appliquer", seulement les bugs pertinent
-  se listeront. <!-- original text: Only the relevant bugs will be listed
-  --> . Les points verts ont été résoudu et fermé, alors que les points
-  rouges encore sont ouvert. Si ton bug n'est pas listé, prendez un des
-  mesures suivant.  S'il vous plait, essayez d'être plus descripitif autant
-  que possible et incluez le version de Gnuastro que vous
-  fûtes <!-- original text: include the version of gnu astro that you were
-  using... --> utiliser, ainsi que les commandes ou le code qui a créé le
-  bug donc nous pouvons le recréer et le réparer plus rapide. </p>
-
-<ul>
-  <li><a href="https://savannah.gnu.org/support/?func=additem&group=gnuastro"
-         target="_blank">Envoir votre bug</a> par la page web de gestion du
-         projet principal. C'est le façon recommandé à nous informer de ton
-         bug. S'il vous plait reimplissez le meta-data (catégorie, groupe
-         d'articles, etc) autant que possible.</li>
-  <li> Envoyer le courrier
-  à <a href="mailto:bug-gnuastro=at=gnu.org">bug-gnuastro::at::gnu.org</a>
-  qui est un des <a href="#mail">listes de distribution</a> celles de
-  Gnuastro. <!-- send mail to
-                                                                                     <emails>
-    which is one of the gnuastro mailing listes --> Ce va être plus
-    lentement comparé à la premiére option. À cause des messages spam en
-    masse, cette liste de distribution est modéré et les autres
-    developpeurs le verraient seulement aprés il est approuvé. Donc, à
-    informer tous les developpeurs immédiatement, utiliser la première
-    option.</li>
+  <li><code>man&nbsp;astprogname</code> affichera une page de manuel donnant
+    la liste des options et des arguments du programme. Par exemple
+    <code>man&nbsp;astnoisechisel</code>, ou
+    <code>man&nbsp;astimgcrop</code>.</li>
 </ul>
 
 
-<h3 id="contribute">Être Impliqué</h3> <!-- Original Text: Getting Involved -->
+<h3 id="mail">Listes de diffusion</h3>
 
-<p>Le plus importante partie de Gnuastro est la capacité, pour tout le
-  monde, à le pirater (ajouter une nouvelle characteristique, changer une
-  préexistant, réparer un problème, ou à comprendre le logiciel lui-même),
-  voir <a href="manual/html_node/Science-and-its-tools.html">La Science et
-  ses outils</a> . Donner s'il vous intereste; c'est encouragé! Il y a un
-  chapitre dédié au
-  <a href="manual/html_node/Developing.html">Développement</a> pour le
-  rendre aussi facile que possible pour vous implique <!-- Original text:
-  There is also a chapter dedicated to developpment to make it as easy as
-  possible to get involved -->. Aussi
-  voir <a href="http://www.gnu.org/help/">Comment à Aider GNU</a> pour
-  joindre le projet GNU entier.</p>
+<p>Gnuastro a les listes de diffusion suivantes&nbsp;:</p>
+<ul>
+  <li><a
+    href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a>
+    pour toutes les annonces officielles.</li>
+
+  <li><a
+    href="https://lists.gnu.org/mailman/listinfo/help-gnuastro">help-gnuastro</a>
+    pour contacter les utilisateurs expérimentés et les développeurs de
+    Gnuastro à propos de problèmes d'utilisation, et leur demander conseil
+    (il serait utile que vous lisiez d'abord <a href="manual/">la
+    documentation</a>).</li>
+
+  <li><a
+    href="https://lists.gnu.org/mailman/listinfo/bug-gnuastro">bug-gnuastro</a>
+    pour signaler un bogue ou suggérer de nouvelles fonctions (voir <cite><a
+    href="manual/html_node/Report-a-bug.html">Report a bug</a></cite> et
+    <cite><a href="manual/html_node/Suggest-new-feature.html">Suggest new
+    feature</a></cite> dans la documentation).</li>
+
+  <li><a
+    href="https://lists.gnu.org/mailman/listinfo/gnuastro-devel">gnuastro-devel</a>
+    pour discuter du développement (cette liste est surtout destinée aux
+    développeurs de Gnuastro).</li>
+
+  <li><a
+    href="https://lists.gnu.org/mailman/listinfo/gnuastro-commits">gnuastro-commits</a>
+    pour annoncer les commits faits dans le dépôt officiel de Gnuastro (sous
+    contrôle de version).</li>
+</ul>
+
+<p>Les rapports sur des problèmes de securité qui ne doivent pas être rendus
+  publics peuvent être envoyés directement au mainteneur. S'il n'y a pas de
+  réponse à une problème urgent, vous pouvez demander conseil sur la liste de
+  diffusion générale dédiée à la <a
+  href="https://lists.gnu.org/mailman/listinfo/security">securité</a>.</p>
+
+
+<h3 id="bug">Signalement de bogues</h3>
+
+<p>La section <cite><a href="manual/html_node/Report-a-bug.html">Report
+  a bug</a></cite> explique en détail la marche à suivre pour signaler un
+  bogue. Lisez cette section s'il vous plaît&nbsp;! En résumé, allez voir en
+  premier lieu les <a href="https://savannah.gnu.org/bugs/?group=gnuastro"
+  target="_blank">archives des bogues de Gnuastro</a>. Cliquez sur
+  <cite>Display Criteria</cite> (au-dessus de la liste), puis dans le menu
+  déroulant <cite>Open/Closed</cite> choisissez <cite>Any</cite>, et
+  dans le menu <cite>Category</cite> choisissez la section de Gnuastro qui
+  correspond à votre bogue . En cliquant sur le bouton <cite>Apply</cite>,
+  seuls les bogues pertinents s'afficheront. Les rubriques en vert sont
+  fermées et correspondent à des bogues résolus, alors que les rubriques
+  en rouge sont toujours ouvertes. Si votre bogue n'est pas dans la liste,
+  choisissez l'une des deux options ci-dessous. Essayez d'être aussi
+  descriptif que possible&nbsp;; indiquez la version de Gnuastro que vous
+  utilisez, ainsi que les commandes ou le code qui ont créé le bogue, pour
+  que nous puissions le reproduire et ainsi le corriger plus rapidement.</p>
+
+<ul>
+  <li><a
+    href="https://savannah.gnu.org/support/?func=additem&amp;group=gnuastro"
+    target="_blank">Soumettez votre bogue</a> sur la page principale de
+    gestion du projet. C'est le méthode que nous recommandons. Remplissez
+    aussi les métadonnées autant que possible (<cite>Category, Item
+    Group,</cite> etc.)</li>
+
+  <li>Écrivez à
+    &lt;<a href="mailto:bug-gnuastro=at=gnu.org">bug-gnuastro::at::gnu.org</a>&gt;,
+    qui est l'une des <a href="#mail">listes de diffusion</a> de Gnuastro.
+    Ce sera moins rapide que la première option&nbsp;: à cause du grand nombre
+    de spams, cette liste est modérée et les autres developpeurs ne verront
+    votre message qu'une fois approuvé. Donc, pour informer tous les
+    developpeurs immédiatement, utilisez la première option.</li>
+</ul>
+
+
+<h3 id="contribute">Participer</h3>
+
+<p>Le principe le plus important qui sous-tend Gnuastro est la possibilité
+  pour tout un chacun de le hacker facilement (d'ajouter une nouvelle
+  fonctionnalité, de changer une fonctionnalité préexistante, de corriger un
+  problème, ou   de comprendre ce qui se passe sous le capot)&nbsp;; voir
+  <cite><a   href="manual/html_node/Science-and-its-tools.html">Science and
+  its tools</a></cite> (la science et ses outils). Vous êtes donc
+  cordialement invité à apporter votre contribution&nbsp;; vous y êtes même
+  vivement encouragé&nbsp;! Un chapitre complet est dédié au
+  <a href="manual/html_node/Developing.html">développement</a> pour que
+  votre participation soit la plus facile possible. Pour rejoindre l'ensemble
+  du projet GNU, allez voir également <a href="/help/help.html">Comment
+  aider GNU</a>.</p>
 
 <dl>
-<dt>Les Sorties Test</dt>
+<dt>Versions de test</dt>
 
-<dd>Essayez les sorties test (quand disponable) pour nous aider, c'est
-apprécié. <!-- Original Text: It's appreciated --> Les Sorties Test sont
-trouvé aux
-<a href="http://alpha.gnu.org/gnu/gnuastro/">http://alpha.gnu.org/gnu/gnuastro/</a>
-(via HTTP) et
-<a href="ftp://alpha.gnu.org/gnu/gnuastro/">ftp://alpha.gnu.org/gnu/gnuastro/</a>
-(via FTP).</dd>
-
+<dd>L'essai de la dernière version de test (quand elle est disponible)
+  est toujours très apprécié. Ces versions se trouvent sur <a
+  href="https://alpha.gnu.org/gnu/gnuastro/">https://alpha.gnu.org/gnu/gnuastro/</a>
+  et <a
+  href="ftp://alpha.gnu.org/gnu/gnuastro/">ftp://alpha.gnu.org/gnu/gnuastro/</a>.
+</dd>
 
 <dt>Développement</dt>
 
-<dd>Les Utilités GNU d'Astronomie est toujours en cours de développement.
-Donc si vous êtez interesté, voir le
-chapitre <a href="manual/html_node/Developing.html">Développement</a> des
-documents et commencer à pirater Gnuastro ou creer tes propres outils. Pour
-les sources
-développement, <a href="https://savannah.gnu.org/bugs/?group=gnuastro">bug
-trackers</a>, <a href="https://savannah.gnu.org/task/?group=gnuastro">task
-trackers</a> (les fonctions planifié vont être ajouté), et autre
-information, s'il vous plait voir
-<a href="http://savannah.gnu.org/projects/gnuastro/">le page de project
-Gnuastro</a> à <a href="http://savannah.gnu.org">savannah.gnu.org</a>.  Les
-trackers peuvent être un bien point de départ pour le codage.  À rendre
-mise à jour avec le développement de Gnuastro, vous abonner à la liste de
-distribution <a href="https://lists.gnu.org/mailman/listinfo/gnuastro-devel">gnuastro-devel</a>,
-et/ou
- <a href="https://lists.gnu.org/mailman/listinfo/gnuastro-commits">gnuastro-commits</a>
-.</dd>
+<dd>Gnuastro est toujours en phase de développement actif. Donc, si cela
+  vous intéresse, jetez un œil au chapitre <cite><a
+  href="manual/html_node/Developing.html">Developing</a></cite> de la
+  documentation et commencez à hacker, ou même créez vous-même un
+  programme à l'intérieur de Gnuastro (il y a un modèle pour vous aider).
+  Vous trouverez les sources de développement, les trackers de
+  <a href="https://savannah.gnu.org/bugs/?group=gnuastro">bogues</a> et de
+  <a href="https://savannah.gnu.org/task/?group=gnuastro">tâches</a>
+  (fonctionnalités dont l'ajout est prévu), ainsi que d'autres renseignements,
+  sur <a
+  href="https://savannah.gnu.org/projects/gnuastro/">la page du project
+  Gnuastro</a> (hébergé par <a
+  href="https://savannah.gnu.org">savannah.gnu.org</a>). Les trackers peuvent
+  être un bon point de départ si vous voulez vous mettre à coder.  Pour vous
+  tenir au courant du développement de Gnuastro, abonnez-vous aux listes de
+  diffusion <a
+  href="https://lists.gnu.org/mailman/listinfo/gnuastro-devel">gnuastro-devel</a>,
+  et/ou <a
+  href="https://lists.gnu.org/mailman/listinfo/gnuastro-commits">gnuastro-commits</a>.
+</dd>
 
-<dd>Gnuastro est contrôlé par git avec versions.
-  Les sources contrôlé <a href="manual/html_node/Version-controlled-source.html"> par version
-  </a> peut-être
-  <a href="http://git.savannah.gnu.org/cgit/gnuastro.git/tree/">vu enligne
-  </a>, ou vous pouvez <a href="http://git.savannah.gnu.org/cgit/gnuastro.git/log/"> voir le dernier histoire</a>.
-  Le cloner pour garder ton propre exemplaire local sur ton système. Utilisez une des commandes suivant (Le premier
-  est préféré):
+<dd>Les versions de Gnuastro sont sous le contrôle de Git. Les <a
+  href="manual/html_node/Version-controlled-source.html">sources sous contrôle
+  de version</a> peuvent être <a
+  href="https://git.savannah.gnu.org/cgit/gnuastro.git/tree/">examinées en ligne</a>,
+  ainsi que leur <a
+  href="https://git.savannah.gnu.org/cgit/gnuastro.git/log/">historique</a>.
+  Pour les cloner et en garder ainsi un exemplaire local sur votre système,
+  utilisez l'une des commandes suivantes (la première est préférable si elle
+  fonctionne)&nbsp;:
 
-  <pre class="emph-box"><samp>git clone git://git.sv.gnu.org/gnuastro git
-clone http://git.sv.gnu.org/r/gnuastro.git
-</samp></pre></dd>
+  <pre class="emph-box">
+git clone git://git.sv.gnu.org/gnuastro git
+clone http://git.sv.gnu.org/r/gnuastro.git</pre>
+</dd>
 
-<dd>Pour configurer et construire le source contrôlé par version, vous allez avoir besoin de le
-<a href="manual/html_node/Bootstrapping.html">bootstrap</a> (aussi voir
-<a href="manual/html_node/Bootstrapping-dependencies.html">les dépendance
-de bootstrap</a>).  Voir
-le <a href="manual/html_node/Forking-tutorial.html">tutoriel de fork</a>
-pour une démonstration du workflow du projet Gnuastro</dd>
+<dd>Pour configurer et compiler les sources sous contrôle de version, vous
+  allez avoir besoin de
+  <a href="manual/html_node/Bootstrapping.html">bootstrap</a> (voir également
+  les <a href="manual/html_node/Bootstrapping-dependencies.html">dépendances
+  de bootstrap</a>). Vous trouverez dans <cite><a
+  href="manual/html_node/Forking-tutorial.html">Forking tutorial</a></cite>
+  la description d'une méthode de travail utilisée par le projet Gnuastro.
+</dd>
 
-<dt>Mainteneur</dt>
+<dt>Maintenance</dt>
 
-<dd>Gnuastro etait crée et est maitenant maintenu <!-- Original text: Gnu
-astro was created and is currently maintained by Mohammah--> par
- <a href="https://cral.univ-lyon1.fr/labo/perso/mohammad.akhlaghi/">Mohammad
-Akhlaghi</a>
-<a href="mailto:akhlaghi=at=gnu.org">&lt;akhlaghi::at::gnu.org&gt;</a>. La
-traduction en français de cette page est maintenue par Lucas Macquarrie
-<a href="mailto:macquarrielucas=at=gmail.com">&lt;macquarrielucas::at::gmail.com&gt;</a>. S'il
-vous plait, utiliser la liste de distribution pour vous entrer en
-contacte. </dd>
-
-
+<dd>Gnuastro a été créé par <a href="http://akhlaghi.org">Mohammad
+  Akhlaghi</a>
+  &lt;<a href="mailto:mohammad=at=akhlaghi.org">mohammad::at::akhlaghi.org</a>&gt;,
+  qui en assure actuellement la maintenance. Merci d'utiliser les listes de
+  diffusion pour entrer en contact.
+</dd>
 </dl>
 
 
+<h3 id="license">Licence</h3>
 
-
-
-<h3 id="license">Autorisation</h3>
-
-<p>GNU Astronomy Utilities (Gnuastro) est logiciel libre; vous peuvez le
-redistribuer et/ou le modifier selon les termes
-du <a href="http://www.gnu.org/licenses/gpl.html" rel="license">GNU General
-Public License</a> comme publié par le Fondation du Logiciel Livre (the
-Free Software Foundation); soit version&nbsp;3 de la Licence, ou (si vous
-voulez) une version ultérieure.</p>
+<p><cite>GNU Astronomy Utilities</cite> (Gnuastro) est un logiciel libre&nbsp;;
+  vous pouvez le redistribuer et/ou le modifier selon les termes de la <a
+  href="/licenses/gpl.html" rel="license">licence publique générale GNU</a>
+  telle que publiée par la <cite>Free Software Foundation</cite> (Fondation
+  pour le logiciel libre)&nbsp;; soit en version&nbsp;3 de la licence, soit
+  (à votre convenance) en version ultérieure.</p>
 
 </div><!-- for id="content", starts in the include above -->
-<!--#include virtual="/server/footer.html" -->
+<!--#include virtual="/server/footer.fr.html" -->
 <div id="footer">
 <div class="unprintable">
 
-<p>S'il vous plait envoyer FLL general &amp; Les demandes GNU à
-<a href="mailto:gnu@gnu.org">&lt;gnu@gnu.org&gt;</a>.  Il y a
-aussi <a href="/contact/">des façons différent pour contacter</a> le
-FLL. Les liens cassé, les autres corrections, ou suggestions peuvent être
-envoyer
-à <a href="mailto:bug-gnuastro@gnu.org">&lt;bug-gnuastro@gnu.org&gt;</a>.</p>
+<p>Veuillez envoyer les requêtes concernant la FSF et GNU à &lt;<a
+href="mailto:gnu@gnu.org">gnu@gnu.org</a>&gt;. Il existe aussi <a
+href="/contact/">d'autres moyens de contacter</a> la FSF. Les liens
+orphelins et autres corrections ou suggestions peuvent être signalés à &lt;<a
+href="mailto:bug-gnuastro=at=gnu.org">bug-gnuastro::at::gnu.org</a>&gt;.</p>
 
 <p><!-- TRANSLATORS: Ignore the original text in this paragraph,
         replace it with the translation of these two:
@@ -433,22 +362,19 @@ envoyer
         our web pages, see <a
         href="/server/standards/README.translations.html">Translations
             README</a>. -->
-
-On travaille fort et faisons de notre mieux pour fournir des traductions
-précis et bonnes qualités.  Cependant, on n'est pas exempt des
-imperfections. S'il vous plait, envoyer vos commentaires et suggestions
-générals à <a href="mailto:web-translators@gnu.org">
-&lt;web-translators@gnu.org&gt;</a>.</p>
-
-<p>Pour puis d'information à propos du coordination et soumettre des
-traductions de nos cite webs,
-voyez <a href="/server/standards/README.translations.html">Translations
-README</a>.
-
+Nous faisons le maximum pour proposer des traductions fidèles et de bonne
+qualité, mais nous ne sommes pas parfaits. Merci d'adresser vos commentaires
+sur cette page, ainsi que vos suggestions d'ordre général sur les
+traductions, à &lt;<a
+href="mailto:web-translators@gnu.org">web-translators@gnu.org</a>&gt;.</p>
+<p>Pour tout renseignement sur la coordination et la soumission des
+traductions de nos pages web, reportez-vous au <a
+href="/server/standards/README.translations.html">guide de traduction</a>.</p>
+</div>
 
 <!-- Regarding copyright, in general, standalone pages (as opposed to
      files generated as part of manuals) on the GNU web server should
-     be under CC BY-ND 3.0 US.  Please do NOT change or remove this
+     be under CC BY-ND 4.0.  Please do NOT change or remove this
      without talking with the webmasters or licensing team first.
      Please make sure the copyright date is consistent with the
      document.  For web pages, it is ok to list just the latest year the
@@ -465,19 +391,25 @@ README</a>.
 
 <p>Copyright &copy; 2015-2016 Free Software Foundation, Inc.</p>
 
-<p>This page is licensed under a <a rel="license"
-href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative
-Commons Attribution-NoDerivs 3.0 United States License</a>.</p>
+<p>Cette page peut être utilisée suivant les conditions de la licence <a
+rel="license"
+href="http://creativecommons.org/licenses/by-nd/4.0/deed.fr">Creative
+Commons attribution, pas de modification, 4.0 internationale (CC BY-ND
+4.0)</a>.</p>
 
-<!--#include virtual="/server/bottom-notes.html" -->
+<!--#include virtual="/server/bottom-notes.fr.html" -->
+<div class="translators-credits">
+Traduction : Lucas MacQuarrie &lt;<a
+href="mailto:macquarrielucas=at=gmail.com">macquarrielucas::at::gmail.com</a>&gt;
+<br />Révision : &lt;<a
+href="mailto:trad-gnu&#64;april.org">trad-gnu&#64;april.org</a>&gt;</div>
 
-<p class="unprintable">Updated:
-<!-- timestamp start -->
-$Date: 2016/10/19 09:04:37 $
+<p class="unprintable"><!-- timestamp start -->
+Dernière mise à jour :
+$Date: 2017/11/28 17:58:53 $
 <!-- timestamp end -->
 </p>
 </div>
 </div>
 </body>
 </html>
-<!-- translated by Lucas MacQuarrie macquarrielucas@gmail.com -->

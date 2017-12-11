@@ -327,11 +327,10 @@ echo %%%%% DONE %%%%%
 
 
 
-# Copy the gnuastro-top.html page into index.html (but only if it actually
-# differs from it.
-if ! diff gnuastro-top.html $topwebcheckout/gnuastro/index.html; then
-    cp gnuastro-top.html $topwebcheckout/gnuastro/index.html
-fi
+# Copy `gnuastro.en.html' page into `index.html'. Then copy the other
+# necessary webpage files.
+cp gnuastro.en.html $topwebcheckout/gnuastro/index.html
+cp gnuastro.fr.html gnuastro.translist $topwebcheckout/gnuastro/
 
 
 
