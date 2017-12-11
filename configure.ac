@@ -60,6 +60,22 @@ AC_SUBST(GAL_LT_VERSION)
 
 
 
+# Remove any occurance of `./' or `.' in PATH. The main problem is the
+# `libtool' executable which Gnuastro builds internally in the top build
+# directory. However, we also need to know if the system has libtool or
+# not.
+#
+# The first expression will remove occurance of `./' or `.'. If they are in
+# the middle of the path, then their removal will result in `::' (or
+# possibly more if they are immedately after each other). The second
+# expression will change `::' to `:'. If the removed paths are in the start
+# or end of the string, then an extra `:' will be present. So the third and
+# fourth expressions respectively remove them.
+PATH=$(AS_ECHO([$PATH]) | sed -e 's/\.\/*//g' -e 's/::*/:/g' -e 's/^://' -e 's/:$//')
+
+
+
+
 # By default we assume no warnings
 anywarnings=no
 
@@ -253,9 +269,11 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 
 
 
-# Check the libtool executable: needed by BuildProgram.
-AC_CHECK_PROG(has_libtool, libtool, [yes], [no], ,
-              ./libtool .//libtool $ac_pwd/libtool)
+# Check the libtool executable on the system. Note that Gnuastro also ships
+# with a version of Libtool. We don't want Gnuastro's Libtool, here we want
+# to see if the system has libtool independent of Gnuastro so BuildProgram
+# can use it later.
+AC_CHECK_PROG(has_libtool, libtool, [yes], [no])
 
 # If Libtool is present, make sure it is GNU Libtool
 AS_IF([test "x$has_libtool" = "xyes"],
