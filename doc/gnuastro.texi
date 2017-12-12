@@ -3834,18 +3834,23 @@ take effect.
 @cindex GNU Libtool
 Libtool is a program to simplify managing of the libraries to build an
 executable (a program). GNU Libtool has some added functionality compared
-to other implementations. Therefore, GNU Libtool an optional dependency of
-Gnuastro. If it isn't present on your system during configuration,
-@ref{BuildProgram} won't be built or installed. The configure script will
-look for GNU Libtool through the following executable names in your search
-path @command{libtool} (acceptable only if it is the GNU implementation) or
-@command{glibtool}.
+to other implementations. If GNU Libtool isn't present on your system at
+configuration time a warning will be printed and @ref{BuildProgram} won't
+be built or installed. The configure script will look into your search path
+(@code{PATH}) for GNU Libtool through the following executable names:
+@command{libtool} (acceptable only if it is the GNU implementation) or
+@command{glibtool}. See @ref{Installation directory} for more on
+@code{PATH}.
 
-Libtool (the binary/executable file) is a low-level program that is
-probably already present on your system (and in your operating system
-package manager). However, if you want to install it's latest version from
-source, please visit its @url{https://www.gnu.org/software/libtool/,
-webpage}.
+GNU Libtool (the binary/executable file) is a low-level program that is
+probably already present on your system, and if not, is available in your
+operating system package manager@footnote{Note that we want the
+binary/executable Libtool program which can be run on the command-line. In
+Debian-based operating systems which separate various parts of a package,
+you want want @code{libtool-bin}, the @code{libtool} package won't contain
+the executable program.}. If you want to install GNU Libtool's latest
+version from source, please visit its
+@url{https://www.gnu.org/software/libtool/, webpage}.
 
 Gnuastro's tarball is shipped with an internal implementation of GNU
 Libtool. Even if you have GNU Libtool, Gnuastro's internal implementation
