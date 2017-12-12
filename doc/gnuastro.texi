@@ -3830,29 +3830,33 @@ take effect.
 
 @table @asis
 
-@item libtool
+@item GNU Libtool
 @cindex GNU Libtool
-GNU Libtool is a program to simplify managing of the libraries to build an
-executable (program). It is used by @ref{BuildProgram} in Gnuastro to help
-you when you are writing your own C code. It will enable easy linking to
-all the necessary libraries that Gnuastro's library depends on. If GNU
-Libtool isn't present on your system, then BuildProgram won't be built or
-installed. The configure script will look for GNU Libtool through the
-following executable names in your search path @command{libtool} (if it is
-GNU's implementation) or @command{glibtool}.
+Libtool is a program to simplify managing of the libraries to build an
+executable (a program). GNU Libtool has some added functionality compared
+to other implementations. Therefore, GNU Libtool an optional dependency of
+Gnuastro. If it isn't present on your system during configuration,
+@ref{BuildProgram} won't be built or installed. The configure script will
+look for GNU Libtool through the following executable names in your search
+path @command{libtool} (acceptable only if it is the GNU implementation) or
+@command{glibtool}.
 
-Libtool is a low-level program that is probably already present on your
-system (and in your operating system package manager). However, if you want
-to install it's latest version from source, please visit its
-@url{https://www.gnu.org/software/libtool/, webpage}.
+Libtool (the binary/executable file) is a low-level program that is
+probably already present on your system (and in your operating system
+package manager). However, if you want to install it's latest version from
+source, please visit its @url{https://www.gnu.org/software/libtool/,
+webpage}.
 
-Gnuastro's tarball ships with an internal implementation of GNU Libtool and
-it is extensively used while Gnuastro is being built and
-installed. Therefore, you can still build Gnuastro even if you don't have
-GNU Libtool installed on your system. However, this internal Libtool does
-not get installed. Hence, if you want to use BuildProgram to compile and
-link your own C source code later, you need to have GNU Libtool available
-on your system (independent of Gnuastro).
+Gnuastro's tarball is shipped with an internal implementation of GNU
+Libtool. Even if you have GNU Libtool, Gnuastro's internal implementation
+is used for the building and installation of Gnuastro. As a result, you can
+still build, install and use Gnuastro even if you don't have GNU Libtool
+installed on your system. However, this internal Libtool does not get
+installed. Therefore, after Gnuastro's installation, if you want to use
+@ref{BuildProgram} to compile and link your own C source code which uses
+the @ref{Gnuastro library}, you need to have GNU Libtool available on your
+system (independent of Gnuastro). See @ref{Review of library fundamentals}
+to learn more about libraries.
 
 @item libgit2
 @cindex Git
@@ -18748,9 +18752,10 @@ will be done correctly.
 @cartouche
 @noindent
 @strong{BuildProgram requires GNU Libtool:} BuildProgram depends on GNU
-Libtool, therefore if GNU Libtool isn't available at Gnuastro's configure
-time, BuildProgram will not be built or installed. Please see @ref{Optional
-dependencies} for more information.
+Libtool, other implementations don't have some necessary features. If GNU
+Libtool isn't available at Gnuastro's configure time, you will get a notice
+at the end of the configuration step and BuildProgram will not be built or
+installed. Please see @ref{Optional dependencies} for more information.
 @end cartouche
 
 @menu
