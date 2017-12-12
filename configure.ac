@@ -60,29 +60,6 @@ AC_SUBST(GAL_LT_VERSION)
 
 
 
-# Remove any occurance of `./' or `.' in PATH. The main problem is the
-# `libtool' executable which Gnuastro builds internally in the top build
-# directory. However, we also need to know if the system has libtool or
-# not.
-#
-# The first expression will remove occurance of `./' or `.'. If they are in
-# the middle of the path, then their removal will result in `::' (or
-# possibly more if they are immedately after each other). The second
-# expression will change `::' to `:'. If the removed paths are in the start
-# or end of the string, then an extra `:' will be present. So the third and
-# fourth expressions respectively remove them.
-PATH=$(AS_ECHO([$PATH]) | sed -e 's/\.\/*//g' -e 's/::*/:/g' -e 's/^://' -e 's/:$//')
-
-
-
-
-# By default we assume no warnings
-anywarnings=no
-
-
-
-
-
 # Checks for programs.
 : ${CFLAGS=""}
 AC_PROG_CC
@@ -166,6 +143,55 @@ AC_CHECK_SIZEOF([long])
 AC_SUBST(SIZEOF_LONG, [$ac_cv_sizeof_long])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_LONG], [$ac_cv_sizeof_long],
                    [On 32bit will be 4, on 64 bit, will be 8])
+
+
+
+
+
+# By default we assume no warnings
+anywarnings=no
+
+
+
+
+
+# Remove any occurance of the current directory `./', `.', or the full
+# address of the current directory in PATH. The main problem is the
+# `libtool' executable which Gnuastro builds internally in the top build
+# directory. However, we also need to know if the system has libtool or
+# not.
+AC_MSG_CHECKING(if PATH contains current directory)
+oldPATH=$PATH
+currpwd=$(pwd)
+
+# The first call to SED will remove any occurance of the current directory:
+# `./', `.', or the full address.
+#
+#    NOTE 1: We cannot simply remove all `.'s, because hidden directories
+#            (like the `~/.local' that is suggested for local
+#            installations) will also be altered.
+#
+#    NOTE 2: An empty string in the list of strings (separated by `:')
+#            means the current directory. This includes cases like: `::',
+#            or a leading and trailing `:'. So after all the removals of
+#            the current directory, we will remove all such cases.
+#
+#    NOTE 3: The SED separator can be any character immediately after `s',
+#            it doesn't just have to be the commonly used `/'. Since `$pwd'
+#            will possibly contain many `/'s, it is much more easier to use
+#            a differen separator (`|' in this call to SED).
+PATH=$(AS_ECHO([$PATH]) | $SED -e 's|'"$currpwd"'||g' \
+                               -e 's|\.\.*//*||g'     \
+                               -e 's|:\.\.*:|:|g'     \
+                               -e 's|\.*$||'          \
+                               -e 's|^\.*||'          \
+                               -e 's|::*|:|g'         \
+                               -e 's|^:||'            \
+                               -e 's|:$||' )
+AS_IF([test $oldPATH = $PATH],
+      [ path_warning=no ],
+      [ path_warning=yes; anywarnings=yes ])
+AC_MSG_RESULT( $path_warning )
 
 
 
@@ -825,6 +851,22 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
                AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
+               AS_ECHO([]) ])
+        # The last two scenarios described below are taken from
+        # https://unix.stackexchange.com/questions/65700/is-it-safe-to-add-to-my-path-how-come
+        AS_IF([test "x$path_warning" = "xyes"],
+              [AS_ECHO(["  - Your PATH contains the current directory. This does not affect"])
+               AS_ECHO(["    this build and installation of Gnuastro in any way, it is just to"])
+               AS_ECHO(["    to remind you that this is a security risk."])
+               AS_ECHO(["      It is a very serious security risk if it is closer to the start"])
+               AS_ECHO(["    of your PATH: a malicious/wrong program might be run instead of"])
+               AS_ECHO(["    a desired program, someone might find out you frequently mistype"])
+               AS_ECHO(["    a command and install a matching one, someone might install a"])
+               AS_ECHO(["    fake command with the name of one that is not installed. You can"])
+               AS_ECHO(["    always run a program in the current directory by explicity adding"])
+               AS_ECHO(["    a \`./' before it's name. Run the following command after"])
+               AS_ECHO(["    installing Gnuastro to learn more about PATH:"])
+               AS_ECHO(["        $ info gnuastro \"Installation directory\""])
                AS_ECHO([]) ])
         AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
         AS_ECHO([])
