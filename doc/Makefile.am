@@ -102,6 +102,9 @@ endif
 if COND_FITS
   MAYBE_FITS_MAN = man/astfits.1
 endif
+if COND_MATCH
+  MAYBE_MATCH_MAN = man/astmatch.1
+endif
 if COND_MKCATALOG
   MAYBE_MKCATALOG_MAN = man/astmkcatalog.1
 endif
@@ -126,10 +129,10 @@ endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE_MAN = man/astTEMPLATE.1
 #endif
-dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN)          \
-  $(MAYBE_CONVERTT_MAN) $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN)    \
-  $(MAYBE_CROP_MAN) $(MAYBE_FITS_MAN) $(MAYBE_WARP_MAN)                 \
-  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)       \
+dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN)             \
+  $(MAYBE_CONVERTT_MAN) $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN)       \
+  $(MAYBE_CROP_MAN) $(MAYBE_FITS_MAN) $(MAYBE_MATCH_MAN) $(MAYBE_WARP_MAN) \
+  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)          \
   $(MAYBE_NOISECHISEL_MAN) $(MAYBE_STATISTICS_MAN) $(MAYBE_TABLE_MAN)
 
 
@@ -175,6 +178,10 @@ man/astcrop.1: $(top_srcdir)/bin/crop/args.h  $(ALLMANSDEP)
 man/astfits.1: $(top_srcdir)/bin/fits/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "view and manipulate FITS headers"            \
 	                  --libtool $(toputildir)/fits/astfits
+
+man/astmatch.1: $(top_srcdir)/bin/match/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "match catalogs by 1D or 2D positions"        \
+	                  --libtool $(toputildir)/match/astmatch
 
 man/astmkcatalog.1: $(top_srcdir)/bin/mkcatalog/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "Make a catalog from labeled input images"    \

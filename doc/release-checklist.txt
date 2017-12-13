@@ -175,8 +175,8 @@ Steps necessary to Package Gnuastro for Debian.
    do that, you can update the `/etc/apt/sources.list' file. You can get
    the current releases from this webpage:
    http://ftp.debian.org/debian/. See which release is currently the
-   `testing' release and use replace its name with the one that is
-   currently present in that file. Afterwards, run these commands:
+   `testing' release and replace its name with the one that is currently
+   present in that file. Afterwards, run these commands:
 
      $ sudo apt-get update
      $ sudo apt-get upgrade
