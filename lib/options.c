@@ -272,7 +272,7 @@ gal_options_print_citation(struct argp_option *option, char *arg,
            "This work was partly done using GNU Astronomy Utilities "
            "(Gnuastro) version %s. Gnuastro is a generic package for "
            "astronomical data manipulation and analysis which was "
-           "primarily created and developed for research funded by the "
+           "initially created and developed for research funded by the "
            "Monbukagakusho (Japanese government) scholarship and ERC "
            "advanced grant 339659-MUSICOS.", PACKAGE_VERSION);
   printf("%s\n", gnuastro_acknowledgement);
