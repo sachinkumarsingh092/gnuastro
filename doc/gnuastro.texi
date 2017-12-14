@@ -818,24 +818,24 @@ was changed.
 
 @cindex Anscombe's quartet
 @cindex Statistical analysis
-Anscombe's quartet
-@footnote{@url{http://en.wikipedia.org/wiki/Anscombe%27s_quartet}}
-demonstrates how four data sets with widely different shapes (when
-plotted) give nearly identical output from standard regression
-techniques.  Anscombe argues that ``Good statistical analysis is not a
-purely routine matter, and generally calls for more than one pass
-through the computer''. Anscombe's quartet can be generalized to say
-that users of a software cannot claim to understand how it works only
-based on the experience they have gained by frequently using it. This
-kind of subjective experience is prone to very serious
-mis-understandings about what it really does behind the scenes and can
-be misleading. This attitude is further encouraged through non-free
-software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}.
-This approach to scientific software only helps in producing dogmas
-and an ``obscurantist faith in the expert's special skill, and in his
-personal knowledge and authority''@footnote{Karl Popper. The logic of
-scientific discovery. 1959. Larger quote is given at the start of the
-PDF (for print) version of this book.}.
+@url{http://en.wikipedia.org/wiki/Anscombe%27s_quartet,Anscombe's quartet}
+demonstrates how four data sets with widely different shapes (when plotted)
+give nearly identical output from standard regression techniques. Anscombe
+uses this (now famous) quartet, which was introduced in the paper quoted
+above, to argue that ``Good statistical analysis is not a purely routine
+matter, and generally calls for more than one pass through the
+computer''. Anscombe's quartet can be generalized to say that users of a
+software cannot claim to understand how it works only based on the
+experience they have gained by frequently using it. This kind of subjective
+experience is prone to very serious mis-understandings about what it really
+does behind the scenes and can be misleading. This attitude is further
+encouraged through non-free
+software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}.  This
+approach to scientific software only helps in producing dogmas and an
+``obscurantist faith in the expert's special skill, and in his personal
+knowledge and authority''@footnote{Karl Popper. The logic of scientific
+discovery. 1959. Larger quote is given at the start of the PDF (for print)
+version of this book.}.
 
 @quotation
 @cindex Douglas Rushkoff
@@ -4560,15 +4560,16 @@ is equivalent to simply enabling those that were enabled. Listing the
 disabled programs is redundant.
 @end cartouche
 
-Note that the tests of some programs might require other programs to
-have been installed and tested. For example MakeProfiles is the first
-program to be tested when you run @command{$ make check}, it provides
-the inputs to all the other tests. So if you don't install
-MakeProfiles, then the tests for all the other programs will be
-skipped or fail. To avoid this, in one run, you can install all the
-packages and run the tests but not install. If everything is working
-correctly, you can run configure again with only the packages you want
-but not run the tests and directly install after building.
+The tests of some programs might depend on the outputs of the tests of
+other programs. For example MakeProfiles is one the first programs to be
+tested when you run @command{$ make check}. MakeProfiles' test outputs
+(FITS images) are inputs to many other programs (which in turn provide
+inputs for other programs). Therefore, if you don't install MakeProfiles
+for example, the tests for many the other programs will be skipped. To
+avoid this, in one run, you can install all the programs and run the tests
+but not install. If everything is working correctly, you can run configure
+again with only the programs you want. However, don't run the tests and
+directly install after building.
 
 
 
