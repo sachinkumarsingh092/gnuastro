@@ -51,11 +51,15 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c                \
-  arithmetic-onlyint.c binary.c blank.c box.c checkset.c convolve.c      \
-  cosmology.c data.c fits.c git.c interpolate.c list.c match.c options.c \
-  permutation.c polygon.c qsort.c dimension.c statistics.c table.c       \
-  tableintern.c threads.c tile.c timing.c txt.c type.c wcs.c
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
+  arithmetic-bitlsh.c arithmetic-bitor.c arithmetic-bitrsh.c               \
+  arithmetic-bitxor.c arithmetic-divide.c arithmetic-eq.c arithmetic-ge.c  \
+  arithmetic-gt.c arithmetic-le.c arithmetic-lt.c arithmetic-minus.c       \
+  arithmetic-modulo.c arithmetic-multiply.c arithmetic-ne.c                \
+  arithmetic-or.c arithmetic-plus.c binary.c blank.c box.c checkset.c      \
+  convolve.c cosmology.c data.c fits.c git.c interpolate.c list.c match.c  \
+  options.c permutation.c polygon.c qsort.c dimension.c statistics.c       \
+  table.c tableintern.c threads.c tile.c timing.c txt.c type.c wcs.c
 
 
 
@@ -85,12 +89,21 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h         \
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
 internaldir=$(top_srcdir)/lib/gnuastro-internal
-EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README    \
-  $(internaldir)/arithmetic-binary.h $(internaldir)/arithmetic-internal.h \
-  $(internaldir)/arithmetic-onlyint.h $(internaldir)/checkset.h           \
-  $(internaldir)/commonopts.h $(internaldir)/config.h.in                  \
-  $(internaldir)/fixedstringmacros.h $(internaldir)/options.h             \
-  $(internaldir)/tableintern.h $(internaldir)/timing.h
+EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README  \
+  $(internaldir)/arithmetic-and.h $(internaldir)/arithmetic-binary.h    \
+  $(internaldir)/arithmetic-bitand.h $(internaldir)/arithmetic-bitlsh.h \
+  $(internaldir)/arithmetic-bitor.h $(internaldir)/arithmetic-bitrsh.h  \
+  $(internaldir)/arithmetic-bitxor.h $(internaldir)/arithmetic-divide.h \
+  $(internaldir)/arithmetic-eq.h $(internaldir)/arithmetic-ge.h         \
+  $(internaldir)/arithmetic-gt.h $(internaldir)/arithmetic-internal.h   \
+  $(internaldir)/arithmetic-le.h $(internaldir)/arithmetic-lt.h         \
+  $(internaldir)/arithmetic-minus.h $(internaldir)/arithmetic-modulo.h  \
+  $(internaldir)/arithmetic-multiply.h $(internaldir)/arithmetic-ne.h   \
+  $(internaldir)/arithmetic-or.h $(internaldir)/arithmetic-plus.h       \
+  $(internaldir)/checkset.h $(internaldir)/commonopts.h                 \
+  $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h         \
+  $(internaldir)/options.h $(internaldir)/tableintern.h                 \
+  $(internaldir)/timing.h
 
 
 
@@ -115,16 +128,6 @@ gnuastro/config.h: Makefile $(internaldir)/config.h.in
 	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g'                  \
 	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g'    \
 	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g'  \
-	       -e 's|@HAVE_BIN_OP_UINT8[@]|$(HAVE_BIN_OP_UINT8)|g'        \
-	       -e 's|@HAVE_BIN_OP_INT8[@]|$(HAVE_BIN_OP_INT8)|g'          \
-	       -e 's|@HAVE_BIN_OP_UINT16[@]|$(HAVE_BIN_OP_UINT16)|g'      \
-	       -e 's|@HAVE_BIN_OP_INT16[@]|$(HAVE_BIN_OP_INT16)|g'        \
-	       -e 's|@HAVE_BIN_OP_UINT32[@]|$(HAVE_BIN_OP_UINT32)|g'      \
-	       -e 's|@HAVE_BIN_OP_INT32[@]|$(HAVE_BIN_OP_INT32)|g'        \
-	       -e 's|@HAVE_BIN_OP_UINT64[@]|$(HAVE_BIN_OP_UINT64)|g'      \
-	       -e 's|@HAVE_BIN_OP_INT64[@]|$(HAVE_BIN_OP_INT64)|g'        \
-	       -e 's|@HAVE_BIN_OP_FLOAT32[@]|$(HAVE_BIN_OP_FLOAT32)|g'    \
-	       -e 's|@HAVE_BIN_OP_FLOAT64[@]|$(HAVE_BIN_OP_FLOAT64)|g'    \
 	       -e 's|@SIZEOF_LONG[@]|$(SIZEOF_LONG)|g'                    \
 	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g'                \
 	       -e 's|@RESTRICT_REPLACEMENT[@]|$(RESTRICT_REPLACEMENT)|g'  \

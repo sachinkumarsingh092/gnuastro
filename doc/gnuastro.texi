@@ -4518,74 +4518,6 @@ Do not build or install the program named @file{progname}. This is
 very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
-@item --enable-bin-op-uint8
-@itemx --enable-bin-op-int8
-@itemx --enable-bin-op-uint16
-@itemx --enable-bin-op-int16
-@itemx --enable-bin-op-uint32
-@itemx --enable-bin-op-int32
-@itemx --enable-bin-op-uint64
-@itemx --enable-bin-op-int64
-@itemx --enable-bin-op-float32
-@itemx --enable-bin-op-float64
-Enable the binary data-structure operators to work natively on the
-respective type of data (@option{u} stands for unsigned types, see
-@ref{Numeric data types}). Some are compiled by default, to disable them
-(or disable any other type), either run @option{enable-bin-op-TYPE=no}, or
-run @option{--disable-bin-op-TYPE}. The final list of enabled/disabled
-types can be inspected in the outputs of @command{./configure} (close to
-the end).
-
-Binary operators, for example @code{+} or @code{>} (greater than), are some
-of the most common operators to the @ref{Arithmetic} program or the
-@code{data_arithmetic} function in @ref{Gnuastro library}. To operate
-most efficiently (as fast as possible without using extra memory or CPU
-resources), it is best to rely on the native types of the input data. For
-example, if you want to add an integer array with a floating point array,
-using the native types, means relying the system's internal type conversion
-for each array element, see @ref{Invoking astarithmetic}. If we don't use
-the native conversion, then the integer array has to be converted to the
-same type as the floating point array to do the conversion. This will
-consume memory (to copy the integer array into a new float array) and CPU
-(integer types need much less processing) resources and ultimately slow
-down the running.
-
-There are many binary operators and in order to have them operate natively
-on of each of the above types, the compiler has to prepare for all the
-different combinations of these types. This can greatly slow down the
-compilation@footnote{It can also greatly increase the file size of the
-library, from a few hundred kilobytes to a few megabytes.} (when you run
-@command{make}). For example, with only one type, @command{make} will
-finish in less than a minute, but if you enable all types, it can take
-roughly half an hour. However, the profits of this one-time investment at
-compilation time will be directly felt (more significantly on large
-images/datasets) each time you run Gnuastro programs or libraries, because
-no internal type conversion will be necessary.
-
-If build time is important for you (mainly developers), disabling shared
-libraries and optimizations (as in @ref{Building and debugging}) is the
-first step to take. If you commonly work with very specific data-types, you
-can enable them (and disable the default types that you don't need) with
-these configuration options. Since the outputs of comparison operators are
-@code{unsigned char} (or @code{uint8_t}) type and most astronomical
-datasets are in single precision (32-bit) floating point (@code{float}),
-the recommended minimum enabled types are @code{uint8} and @code{float32}.
-
-GNU/Linux distribution package managers who compile once, for a large
-audience of users who just download the compiled programs and executables,
-are recommended to enable all types to help their users.
-
-@item --enable-bin-op-alltypes
-Enable native binary arithmetic operation on all types, see the description
-above for the various types for a full discussion. As discussed there,
-enabling all types can greatly speed up arithmetic operations on any
-arbitrary dataset, but will also slow down the building time of
-Gnuastro. Recall that in practice this only affects the @ref{Arithmetic}
-program and the @code{gal_arithmetic} library binary operators, nothing
-else. This option is strongly recommended when you are building Gnuastro to
-be included in a package manager of a GNU/Linux distribution (or other
-operating systems).
-
 @item --enable-gnulibcheck
 @cindex GNU C library
 @cindex Gnulib: GNU Portability Library
@@ -10337,33 +10269,14 @@ for(i=0;i<100;++i) out[i]=a[i]+b[i];
 
 @noindent
 Relying on the default C type conversion significantly speeds up the
-processing and also requires less RAM (when using very large
-images). However this great advantage comes at the cost of preparing for
-all the combinations of types while building/compiling Gnuastro. With the
-full list of CFITSIO types, compilation can take roughly half an
-hour. However, some types are not too common, therefore Gnuastro comes with
-a set of configure time options letting you enable certain types for native
-compilation. You can see the full list of @option{--enable-bin-op-XXXX}
-options in @ref{Gnuastro configure options}.
-
-When a type isn't enabled for native binary operations, the input data will
-be internally converted to the smallest, larger type that was enabled. This
-can slow down your processing (which is faster for smaller/integer types)
-and consume more RAM (to copy the new type), so if you often deal with data
-of a specific types, it is much better to make the one-time investment at
-compilation time and reap the benefits each time you run
-Gnuastro/Arithmetic. Note all arithmetic operations are done by
-@code{gal_data_arithmetic} function in @ref{Gnuastro library}, so the
-choice of native binary operator types will affect any program (within
-Gnuastro or outside of it) that uses this function (including Arithmetic).
+processing and also requires less RAM (when using very large images).
 
 Some operators can only work on integer types (of any length, for example
 bitwise operators) while others only work on floating point types,
 (currently only the @code{pow} operator). In such cases, if the operand
-type(s) are different an error will be printed and internal conversion
-won't occur. Arithmetic also comes with internal type conversion operators
-which you can use to convert the data into the appropriate type, see
-@ref{Arithmetic operators}.
+type(s) are different, an error will be printed. Arithmetic also comes with
+internal type conversion operators which you can use to convert the data
+into the appropriate type, see @ref{Arithmetic operators}.
 
 @cindex Options
 The hyphen (@command{-}) can be used both to specify options (see
@@ -19075,24 +18988,6 @@ one of the @command{./configure} step checks, Gnuastro we check if your
 system has this POSIX thread barriers. If so, this macro will have a value
 of @code{1}, otherwise it will have a value of @code{0}. see
 @ref{Implementation of pthread_barrier} for more.
-@end deffn
-
-@deffn Macro GAL_CONFIG_BIN_OP_UINT8
-@deffnx Macro GAL_CONFIG_BIN_OP_INT8
-@deffnx Macro GAL_CONFIG_BIN_OP_UINT16
-@deffnx Macro GAL_CONFIG_BIN_OP_INT16
-@deffnx Macro GAL_CONFIG_BIN_OP_UINT32
-@deffnx Macro GAL_CONFIG_BIN_OP_INT32
-@deffnx Macro GAL_CONFIG_BIN_OP_UINT64
-@deffnx Macro GAL_CONFIG_BIN_OP_INT64
-@deffnx Macro GAL_CONFIG_BIN_OP_FLOAT32
-@deffnx Macro GAL_CONFIG_BIN_OP_FLOAT64
-If binary arithmetic operators were configured for any type, the respective
-macro will have a value of @code{1} (one), otherwise its value will be
-@code{0} (zero). Please see the similar configure-time options in
-@ref{Gnuastro configure options} for a thorough explanation. These are only
-relevant for you if you intend to use the binary operators of
-@ref{Arithmetic on datasets}
 @end deffn
 
 @cindex 32-bit

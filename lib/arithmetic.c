@@ -33,9 +33,83 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
 
-#include <gnuastro-internal/arithmetic-binary.h>
-#include <gnuastro-internal/arithmetic-onlyint.h>
 #include <gnuastro-internal/arithmetic-internal.h>
+
+/* Headers for each binary operator. Since they heavily involve macros,
+   their compilation can be very large if they are in a single function and
+   file. So there is a separate C source and header file for each of these
+   functions.*/
+#include <gnuastro-internal/arithmetic-lt.h>
+#include <gnuastro-internal/arithmetic-le.h>
+#include <gnuastro-internal/arithmetic-gt.h>
+#include <gnuastro-internal/arithmetic-ge.h>
+#include <gnuastro-internal/arithmetic-eq.h>
+#include <gnuastro-internal/arithmetic-ne.h>
+#include <gnuastro-internal/arithmetic-or.h>
+#include <gnuastro-internal/arithmetic-and.h>
+#include <gnuastro-internal/arithmetic-plus.h>
+#include <gnuastro-internal/arithmetic-minus.h>
+#include <gnuastro-internal/arithmetic-bitor.h>
+#include <gnuastro-internal/arithmetic-bitand.h>
+#include <gnuastro-internal/arithmetic-bitxor.h>
+#include <gnuastro-internal/arithmetic-bitlsh.h>
+#include <gnuastro-internal/arithmetic-bitrsh.h>
+#include <gnuastro-internal/arithmetic-modulo.h>
+#include <gnuastro-internal/arithmetic-divide.h>
+#include <gnuastro-internal/arithmetic-multiply.h>
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/***************             Internal checks              **************/
+/***********************************************************************/
+/* Some functions are only for a floating point operand, so if the input
+   isn't floating point, inform the user to change the type explicitly,
+   doing it implicitly/internally puts too much responsability on the
+   program. */
+static void
+arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
+{
+  switch(in->type)
+    {
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "the %s operator can only accept single or "
+            "double precision floating point numbers as its operand. The "
+            "%s operand has type %s. You can use the `float' or `double' "
+            "operators before this operator to explicitly convert to the "
+            "desired precision floating point type. If the operand was "
+            "originally a typed number (string of characters), add an `f' "
+            "after it so it is directly read into the proper precision "
+            "floating point number (based on the number of non-zero "
+            "decimals it has)", gal_arithmetic_operator_string(operator),
+            numstr, gal_type_name(in->type, 1));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -139,6 +213,81 @@ arithmetic_not(gal_data_t *data, int flags)
 
 
 
+/* Bitwise not operator. */
+static gal_data_t *
+arithmetic_bitwise_not(int flags, gal_data_t *in)
+{
+  gal_data_t *o;
+  uint8_t    *iu8  = in->array,  *iu8f  = iu8  + in->size,   *ou8;
+  int8_t     *ii8  = in->array,  *ii8f  = ii8  + in->size,   *oi8;
+  uint16_t   *iu16 = in->array,  *iu16f = iu16 + in->size,   *ou16;
+  int16_t    *ii16 = in->array,  *ii16f = ii16 + in->size,   *oi16;
+  uint32_t   *iu32 = in->array,  *iu32f = iu32 + in->size,   *ou32;
+  int32_t    *ii32 = in->array,  *ii32f = ii32 + in->size,   *oi32;
+  uint64_t   *iu64 = in->array,  *iu64f = iu64 + in->size,   *ou64;
+  int64_t    *ii64 = in->array,  *ii64f = ii64 + in->size,   *oi64;
+
+  /* Check the type */
+  switch(in->type)
+    {
+    case GAL_TYPE_FLOAT32:
+    case GAL_TYPE_FLOAT64:
+      error(EXIT_FAILURE, 0, "%s: bitwise not (one's complement) "
+            "operator can only work on integer types", __func__);
+    }
+
+  /* If we want inplace output, set the output pointer to the input
+     pointer, for every pixel, the operation will be independent. */
+  if(flags & GAL_ARITHMETIC_INPLACE)
+    o = in;
+  else
+    o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
+                       0, in->minmapsize, NULL, NULL, NULL);
+
+  /* Start setting the types. */
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:
+      ou8=o->array;   do  *ou8++ = ~(*iu8++);    while(iu8<iu8f);     break;
+
+    case GAL_TYPE_INT8:
+      oi8=o->array;   do  *oi8++ = ~(*ii8++);    while(ii8<ii8f);     break;
+
+    case GAL_TYPE_UINT16:
+      ou16=o->array;  do *ou16++ = ~(*iu16++);   while(iu16<iu16f);   break;
+
+    case GAL_TYPE_INT16:
+      oi16=o->array;  do *oi16++ = ~(*ii16++);   while(ii16<ii16f);   break;
+
+    case GAL_TYPE_UINT32:
+      ou32=o->array;  do *ou32++ = ~(*iu32++);   while(iu32<iu32f);   break;
+
+    case GAL_TYPE_INT32:
+      oi32=o->array;  do *oi32++ = ~(*ii32++);   while(ii32<ii32f);   break;
+
+    case GAL_TYPE_UINT64:
+      ou64=o->array;  do *ou64++ = ~(*iu64++);   while(iu64<iu64f);   break;
+
+    case GAL_TYPE_INT64:
+      oi64=o->array;  do *oi64++ = ~(*ii64++);   while(ii64<ii64f);   break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, in->type);
+    }
+
+
+  /* Clean up (if necessary). */
+  if( (flags & GAL_ARITHMETIC_FREE) && o!=in)
+    gal_data_free(in);
+
+  /* Return */
+  return o;
+}
+
+
+
+
 
 /* We don't want to use the standard function for unary functions in the
    case of the absolute operator. This is because there are multiple
@@ -198,81 +347,10 @@ arithmetic_abs(int flags, gal_data_t *in)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************/
-/***************          Checking functions              **************/
-/***********************************************************************/
-/* Some functions are only for a floating point operand, so if the input
-   isn't floating point, inform the user to change the type explicitly,
-   doing it implicitly/internally puts too much responsability on the
-   program. */
-static void
-arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
-{
-  switch(in->type)
-    {
-    case GAL_TYPE_FLOAT32:
-    case GAL_TYPE_FLOAT64:
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "the %s operator can only accept single or "
-            "double precision floating point numbers as its operand. The "
-            "%s operand has type %s. You can use the `float' or `double' "
-            "operators before this operator to explicitly convert to the "
-            "desired precision floating point type. If the operand was "
-            "originally a typed number (string of characters), add an `f' "
-            "after it so it is directly read into the proper precision "
-            "floating point number (based on the number of non-zero "
-            "decimals it has)", gal_arithmetic_operator_string(operator),
-            numstr, gal_type_name(in->type, 1));
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************/
-/***************             Unary functions              **************/
-/***********************************************************************/
-
 #define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(IT, OP){                        \
     IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
     do *oa++ = OP(*ia++); while(ia<iaf);                                \
   }
-
-
-
-
 
 #define UNIARY_FUNCTION_ON_ELEMENT(OP)                                  \
   switch(in->type)                                                      \
@@ -311,10 +389,6 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized",         \
             "UNIARY_FUNCTION_ON_ELEMENT", in->type);                    \
     }
-
-
-
-
 
 static gal_data_t *
 arithmetic_unary_function(int operator, int flags, gal_data_t *in)
@@ -369,171 +443,31 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************/
-/***************            Binary functions              **************/
-/***********************************************************************/
-
-
-#define BINFUNC_RUN_FUNCTION(OT, RT, LT, OP){                           \
-    LT *la=l->array;                                                    \
-    RT *ra=r->array;                                                    \
-    OT *oa=o->array, *of=oa + o->size;                                  \
-    if(l->size==r->size) do *oa = OP(*la++, *ra++); while(++oa<of);     \
-    else if(l->size==1)  do *oa = OP(*la,   *ra++); while(++oa<of);     \
-    else                 do *oa = OP(*la++, *ra  ); while(++oa<of);     \
-  }
-
-
-
-
-
-#define BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(RT, LT, OP)                   \
-  switch(o->type)                                                       \
-    {                                                                   \
-    case GAL_TYPE_FLOAT32:                                              \
-      BINFUNC_RUN_FUNCTION(float, RT, LT, OP);                          \
-      break;                                                            \
-    case GAL_TYPE_FLOAT64:                                              \
-      BINFUNC_RUN_FUNCTION(double, RT, LT, OP);                         \
-      break;                                                            \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized for o->type ", \
-            "BINFUNC_F_OPERATOR_LEFT_RIGHT_SET", o->type);              \
-    }
-
-
-
-
-
-#define BINFUNC_F_OPERATOR_LEFT_SET(LT, OP)                             \
-  switch(r->type)                                                       \
-    {                                                                   \
-    case GAL_TYPE_FLOAT32:                                              \
-      BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(float, LT, OP);                 \
-      break;                                                            \
-    case GAL_TYPE_FLOAT64:                                              \
-      BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(double, LT, OP);                \
-      break;                                                            \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized for r->type",  \
-            "BINFUNC_F_OPERATOR_LEFT_SET", r->type);                    \
-    }
-
-
-
-
-
-#define BINFUNC_F_OPERATOR_SET(OP)                                      \
-  switch(l->type)                                                       \
-    {                                                                   \
-    case GAL_TYPE_FLOAT32:                                              \
-      BINFUNC_F_OPERATOR_LEFT_SET(float, OP);                           \
-      break;                                                            \
-    case GAL_TYPE_FLOAT64:                                              \
-      BINFUNC_F_OPERATOR_LEFT_SET(double, OP);                          \
-      break;                                                            \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized for l->type",  \
-            "BINFUNC_F_OPERATOR_SET", l->type);                         \
-    }
-
-
-
-
-
+/* Call functions in the `gnuastro/statistics' library. */
 static gal_data_t *
-arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
-                               gal_data_t *r)
+arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 {
-  int final_otype;
-  gal_data_t *o=NULL;
-  size_t out_size, minmapsize;
+  gal_data_t *out=NULL;
+  int ip=(flags & GAL_ARITHMETIC_INPLACE) || (flags & GAL_ARITHMETIC_FREE);
 
-
-  /* Simple sanity check on the input sizes */
-  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
-      && gal_data_dsize_is_different(l, r) )
-    error(EXIT_FAILURE, 0, "%s: the input datasets don't have the same "
-          "dimension/size", __func__);
-
-  /* Check for the types of the left and right operands. */
-  arithmetic_check_float_input(l, operator, "first");
-  arithmetic_check_float_input(r, operator, "second");
-
-  /* Set the output type. */
-  final_otype = gal_type_out(l->type, r->type);
-
-  /* Set the output sizes. */
-  minmapsize = ( l->minmapsize < r->minmapsize
-                 ? l->minmapsize : r->minmapsize );
-  out_size = l->size > r->size ? l->size : r->size;
-
-
-  /* If we want inplace output, set the output pointer to one input. Note
-     that the output type can be different from both inputs.  */
-  if(flags & GAL_ARITHMETIC_INPLACE)
-    {
-      if     (l->type==final_otype && out_size==l->size)   o = l;
-      else if(r->type==final_otype && out_size==r->size)   o = r;
-    }
-
-
-  /* If the output pointer was not set for any reason, allocate it. For
-     `mmapsize', note that since its `size_t', it will always be
-     Positive. The `-1' that is recommended to give when you want the value
-     in RAM is actually the largest possible memory location. So we just
-     have to choose the smaller minmapsize of the two to decide if the
-     output array should be in RAM or not. */
-  if(o==NULL)
-    o = gal_data_alloc(NULL, final_otype,
-                       l->size>1 ? l->ndim  : r->ndim,
-                       l->size>1 ? l->dsize : r->dsize,
-                       l->size>1 ? l->wcs : r->wcs, 0, minmapsize,
-                       NULL, NULL, NULL);
-
-
-  /* Start setting the operator and operands. */
   switch(operator)
     {
-    case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
+    case GAL_ARITHMETIC_OP_MINVAL:  out=gal_statistics_minimum(input); break;
+    case GAL_ARITHMETIC_OP_MAXVAL:  out=gal_statistics_maximum(input); break;
+    case GAL_ARITHMETIC_OP_NUMVAL:  out=gal_statistics_number(input);  break;
+    case GAL_ARITHMETIC_OP_SUMVAL:  out=gal_statistics_sum(input);     break;
+    case GAL_ARITHMETIC_OP_MEANVAL: out=gal_statistics_mean(input);    break;
+    case GAL_ARITHMETIC_OP_STDVAL:  out=gal_statistics_std(input);     break;
+    case GAL_ARITHMETIC_OP_MEDIANVAL:
+      out=gal_statistics_median(input, ip); break;
     default:
       error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
             __func__, operator);
     }
 
-
-  /* Clean up. Note that if the input arrays can be freed, and any of right
-     or left arrays needed conversion, `BINFUNC_CONVERT_TO_COMPILED_TYPE'
-     has already freed the input arrays, and we only have `r' and `l'
-     allocated in any case. Alternatively, when the inputs shouldn't be
-     freed, the only allocated spaces are the `r' and `l' arrays if their
-     types weren't compiled for binary operations, we can tell this from
-     the pointers: if they are different from the original pointers, they
-     were allocated. */
-  if(flags & GAL_ARITHMETIC_FREE)
-    {
-      if     (o==l)       gal_data_free(r);
-      else if(o==r)       gal_data_free(l);
-      else              { gal_data_free(l); gal_data_free(r); }
-    }
-
-  /* Return */
-  return o;
+  /* If the input is to be freed, then do so and return the output. */
+  if( flags & GAL_ARITHMETIC_FREE ) gal_data_free(input);
+  return out;
 }
 
 
@@ -1083,10 +1017,28 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list)
 
 
 /**********************************************************************/
-/****************      Compiled binary op types       *****************/
+/****************           Binary operators          *****************/
 /**********************************************************************/
+/* See if we should check for blanks. When both types are floats, blanks
+   don't need to be checked (the floating point standard will do the job
+   for us). It is also not necessary to check blanks in bitwise operators,
+   but bitwise operators have their own macro
+   (`BINARY_OP_INCR_OT_RT_LT_SET') which doesn' use `checkblanks'.*/
 int
-gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
+gal_arithmetic_binary_checkblank(gal_data_t *l, gal_data_t *r)
+{
+  return ((((l->type!=GAL_TYPE_FLOAT32    && l->type!=GAL_TYPE_FLOAT64)
+            || (r->type!=GAL_TYPE_FLOAT32 && r->type!=GAL_TYPE_FLOAT64))
+           && (gal_blank_present(l, 1) || gal_blank_present(r, 1)))
+          ? 1 : 0 );
+}
+
+
+
+
+
+static int
+arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
 {
   switch(operator)
     {
@@ -1106,118 +1058,245 @@ gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
 
 
 
-static int
-arithmetic_nearest_compiled_type(int intype)
+static gal_data_t *
+arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 {
-  switch(intype)
+  /* Read the variable arguments. `lo' and `ro' keep the original data, in
+     case their type isn't built (based on configure options are configure
+     time). */
+  int32_t otype;
+  gal_data_t *o=NULL;
+  size_t out_size, minmapsize;
+
+
+  /* Simple sanity check on the input sizes */
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
+      && gal_data_dsize_is_different(l, r) )
+    error(EXIT_FAILURE, 0, "%s: the non-number inputs to %s don't have the "
+          "same dimension/size", __func__,
+          gal_arithmetic_operator_string(operator));
+
+
+  /* Set the output type. For the comparison operators, the output type is
+     either 0 or 1, so we will set the output type to `unsigned char' for
+     efficient memory and CPU usage. Since the number of operators without
+     a fixed output type (like the conditionals) is less, by `default' we
+     will set the output type to `unsigned char', and if any of the other
+     operatrs are given, it will be chosen based on the input types.*/
+  otype=arithmetic_binary_out_type(operator, l, r);
+
+
+  /* Set the output sizes. */
+  minmapsize = ( l->minmapsize < r->minmapsize
+                 ? l->minmapsize : r->minmapsize );
+  out_size = l->size > r->size ? l->size : r->size;
+
+
+  /* If we want inplace output, set the output pointer to one input. Note
+     that the output type can be different from both inputs.  */
+  if(flags & GAL_ARITHMETIC_INPLACE)
     {
-    case GAL_TYPE_UINT8:
-      if(GAL_CONFIG_BIN_OP_UINT8) return GAL_TYPE_UINT8;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_UINT16)   return GAL_TYPE_UINT16;
-          else if(GAL_CONFIG_BIN_OP_INT16)    return GAL_TYPE_INT16;
-          else if(GAL_CONFIG_BIN_OP_UINT32)   return GAL_TYPE_UINT32;
-          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_TYPE_INT32;
-          else if(GAL_CONFIG_BIN_OP_UINT64)   return GAL_TYPE_UINT64;
-          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_INT8:
-      if(GAL_CONFIG_BIN_OP_INT8) return GAL_TYPE_INT8;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_INT16)    return GAL_TYPE_INT16;
-          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_TYPE_INT32;
-          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_UINT16:
-      if(GAL_CONFIG_BIN_OP_UINT16) return GAL_TYPE_UINT16;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_UINT32)   return GAL_TYPE_UINT32;
-          else if(GAL_CONFIG_BIN_OP_INT32)    return GAL_TYPE_INT32;
-          else if(GAL_CONFIG_BIN_OP_UINT64)   return GAL_TYPE_UINT64;
-          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_INT16:
-      if(GAL_CONFIG_BIN_OP_INT16) return GAL_TYPE_INT16;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_INT32)    return GAL_TYPE_INT32;
-          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_UINT32:
-      if(GAL_CONFIG_BIN_OP_UINT32) return GAL_TYPE_UINT32;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_UINT64)   return GAL_TYPE_UINT64;
-          else if(GAL_CONFIG_BIN_OP_INT64)    return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)  return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)  return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_INT32:
-      if(GAL_CONFIG_BIN_OP_INT32) return GAL_TYPE_INT32;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_INT64)     return GAL_TYPE_INT64;
-          else if(GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_UINT64:
-      if(GAL_CONFIG_BIN_OP_UINT64) return GAL_TYPE_UINT64;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_INT64:
-      if(GAL_CONFIG_BIN_OP_INT64) return GAL_TYPE_INT64;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_FLOAT32)   return GAL_TYPE_FLOAT32;
-          else if(GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_FLOAT32:
-      if(GAL_CONFIG_BIN_OP_FLOAT32) return GAL_TYPE_FLOAT32;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_TYPE_FLOAT64;
-        }
-      break;
-
-    case GAL_TYPE_FLOAT64:
-      if         (GAL_CONFIG_BIN_OP_FLOAT64)   return GAL_TYPE_FLOAT64;
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized", __func__, intype);
+      if     (l->type==otype && out_size==l->size)   o = l;
+      else if(r->type==otype && out_size==r->size)   o = r;
     }
 
-  return 0;
+
+  /* If the output pointer was not set above for any of the possible
+     reasons, allocate it. For `mmapsize', note that since its `size_t', it
+     will always be positive. The `-1' that is recommended to give when you
+     want the value in RAM is actually the largest possible memory
+     location. So we just have to choose the smaller minmapsize of the two
+     to decide if the output array should be in RAM or not. */
+  if(o==NULL)
+    o = gal_data_alloc(NULL, otype,
+                       l->size>1 ? l->ndim  : r->ndim,
+                       l->size>1 ? l->dsize : r->dsize,
+                       l->size>1 ? l->wcs   : r->wcs,
+                       0, minmapsize, NULL, NULL, NULL );
+
+
+  /* Call the proper function for the operator. Since they heavily involve
+     macros, their compilation can be very large if they are in a single
+     function and file. So there is a separate C source and header file for
+     each of these functions. */
+  switch(operator)
+    {
+    case GAL_ARITHMETIC_OP_PLUS:     arithmetic_plus(l, r, o);     break;
+    case GAL_ARITHMETIC_OP_MINUS:    arithmetic_minus(l, r, o);    break;
+    case GAL_ARITHMETIC_OP_MULTIPLY: arithmetic_multiply(l, r, o); break;
+    case GAL_ARITHMETIC_OP_DIVIDE:   arithmetic_divide(l, r, o);   break;
+    case GAL_ARITHMETIC_OP_LT:       arithmetic_lt(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_LE:       arithmetic_le(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_GT:       arithmetic_gt(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_GE:       arithmetic_ge(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_EQ:       arithmetic_eq(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_NE:       arithmetic_ne(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_AND:      arithmetic_and(l, r, o);      break;
+    case GAL_ARITHMETIC_OP_OR:       arithmetic_or(l, r, o);       break;
+    case GAL_ARITHMETIC_OP_BITAND:   arithmetic_bitand(l, r, o);   break;
+    case GAL_ARITHMETIC_OP_BITOR:    arithmetic_bitor(l, r, o);    break;
+    case GAL_ARITHMETIC_OP_BITXOR:   arithmetic_bitxor(l, r, o);   break;
+    case GAL_ARITHMETIC_OP_BITLSH:   arithmetic_bitlsh(l, r, o);   break;
+    case GAL_ARITHMETIC_OP_BITRSH:   arithmetic_bitrsh(l, r, o);   break;
+    case GAL_ARITHMETIC_OP_MODULO:   arithmetic_modulo(l, r, o);   break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to address "
+            "the problem. %d is not a valid operator code", __func__,
+            PACKAGE_BUGREPORT, operator);
+    }
+
+
+  /* Clean up if necessary. Note that if the operation was requested to be
+     in place, then the output might be one of the inputs. */
+  if(flags & GAL_ARITHMETIC_FREE)
+    {
+      if     (o==l)       gal_data_free(r);
+      else if(o==r)       gal_data_free(l);
+      else              { gal_data_free(l); gal_data_free(r); }
+    }
+
+
+  /* Return */
+  return o;
+}
+
+
+
+
+
+#define BINFUNC_RUN_FUNCTION(OT, RT, LT, OP){                           \
+    LT *la=l->array;                                                    \
+    RT *ra=r->array;                                                    \
+    OT *oa=o->array, *of=oa + o->size;                                  \
+    if(l->size==r->size) do *oa = OP(*la++, *ra++); while(++oa<of);     \
+    else if(l->size==1)  do *oa = OP(*la,   *ra++); while(++oa<of);     \
+    else                 do *oa = OP(*la++, *ra  ); while(++oa<of);     \
+  }
+
+
+#define BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(RT, LT, OP)                   \
+  switch(o->type)                                                       \
+    {                                                                   \
+    case GAL_TYPE_FLOAT32:                                              \
+      BINFUNC_RUN_FUNCTION(float, RT, LT, OP);                          \
+      break;                                                            \
+    case GAL_TYPE_FLOAT64:                                              \
+      BINFUNC_RUN_FUNCTION(double, RT, LT, OP);                         \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for o->type ", \
+            "BINFUNC_F_OPERATOR_LEFT_RIGHT_SET", o->type);              \
+    }
+
+
+#define BINFUNC_F_OPERATOR_LEFT_SET(LT, OP)                             \
+  switch(r->type)                                                       \
+    {                                                                   \
+    case GAL_TYPE_FLOAT32:                                              \
+      BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(float, LT, OP);                 \
+      break;                                                            \
+    case GAL_TYPE_FLOAT64:                                              \
+      BINFUNC_F_OPERATOR_LEFT_RIGHT_SET(double, LT, OP);                \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for r->type",  \
+            "BINFUNC_F_OPERATOR_LEFT_SET", r->type);                    \
+    }
+
+
+#define BINFUNC_F_OPERATOR_SET(OP)                                      \
+  switch(l->type)                                                       \
+    {                                                                   \
+    case GAL_TYPE_FLOAT32:                                              \
+      BINFUNC_F_OPERATOR_LEFT_SET(float, OP);                           \
+      break;                                                            \
+    case GAL_TYPE_FLOAT64:                                              \
+      BINFUNC_F_OPERATOR_LEFT_SET(double, OP);                          \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for l->type",  \
+            "BINFUNC_F_OPERATOR_SET", l->type);                         \
+    }
+
+
+static gal_data_t *
+arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
+                               gal_data_t *r)
+{
+  int final_otype;
+  gal_data_t *o=NULL;
+  size_t out_size, minmapsize;
+
+
+  /* Simple sanity check on the input sizes */
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
+      && gal_data_dsize_is_different(l, r) )
+    error(EXIT_FAILURE, 0, "%s: the input datasets don't have the same "
+          "dimension/size", __func__);
+
+  /* Check for the types of the left and right operands. */
+  arithmetic_check_float_input(l, operator, "first");
+  arithmetic_check_float_input(r, operator, "second");
+
+  /* Set the output type. */
+  final_otype = gal_type_out(l->type, r->type);
+
+  /* Set the output sizes. */
+  minmapsize = ( l->minmapsize < r->minmapsize
+                 ? l->minmapsize : r->minmapsize );
+  out_size = l->size > r->size ? l->size : r->size;
+
+
+  /* If we want inplace output, set the output pointer to one input. Note
+     that the output type can be different from both inputs.  */
+  if(flags & GAL_ARITHMETIC_INPLACE)
+    {
+      if     (l->type==final_otype && out_size==l->size)   o = l;
+      else if(r->type==final_otype && out_size==r->size)   o = r;
+    }
+
+
+  /* If the output pointer was not set for any reason, allocate it. For
+     `mmapsize', note that since its `size_t', it will always be
+     Positive. The `-1' that is recommended to give when you want the value
+     in RAM is actually the largest possible memory location. So we just
+     have to choose the smaller minmapsize of the two to decide if the
+     output array should be in RAM or not. */
+  if(o==NULL)
+    o = gal_data_alloc(NULL, final_otype,
+                       l->size>1 ? l->ndim  : r->ndim,
+                       l->size>1 ? l->dsize : r->dsize,
+                       l->size>1 ? l->wcs : r->wcs, 0, minmapsize,
+                       NULL, NULL, NULL);
+
+
+  /* Start setting the operator and operands. */
+  switch(operator)
+    {
+    case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
+            __func__, operator);
+    }
+
+
+  /* Clean up. Note that if the input arrays can be freed, and any of right
+     or left arrays needed conversion, `BINFUNC_CONVERT_TO_COMPILED_TYPE'
+     has already freed the input arrays, and we only have `r' and `l'
+     allocated in any case. Alternatively, when the inputs shouldn't be
+     freed, the only allocated spaces are the `r' and `l' arrays if their
+     types weren't compiled for binary operations, we can tell this from
+     the pointers: if they are different from the original pointers, they
+     were allocated. */
+  if(flags & GAL_ARITHMETIC_FREE)
+    {
+      if     (o==l)       gal_data_free(r);
+      else if(o==r)       gal_data_free(l);
+      else              { gal_data_free(l); gal_data_free(r); }
+    }
+
+  /* Return */
+  return o;
 }
 
 
@@ -1314,92 +1393,6 @@ gal_arithmetic_operator_string(int operator)
         "Control has reached the end of this function. This should not have "
         "happened", __func__);
   return NULL;
-}
-
-
-
-
-
-/* Note that for signed types, we won't be considering the unsigned types
-   of the larger types. */
-gal_data_t *
-gal_arithmetic_convert_to_compiled_type(gal_data_t *in, int flags)
-{
-  int ntype;
-  char *typestring;
-  gal_data_t *out=NULL;
-
-  /* Set the best compiled type. */
-  ntype=arithmetic_nearest_compiled_type(in->type);
-
-  /* If type is not compiled, then convert the dataset to the first
-     compiled larger type. */
-  if(in->type==ntype)
-    out=in;
-  else
-    {
-      if(ntype)
-        {
-          out=gal_data_copy_to_new_type(in, ntype);
-          if(flags & GAL_ARITHMETIC_FREE)
-            { gal_data_free(in); in=NULL; }
-        }
-      else
-        {
-          typestring=gal_type_name(in->type, 1);
-          error(EXIT_FAILURE, 0, "The given %s type data given to "
-                "binary operators is not compiled for native operation "
-                "and no larger types are compiled either.\n\nThe "
-                "largest type (which can act as a fallback for any "
-                "input type is double, so configure Gnuastro again "
-                "with `--enable-bin-op-double' to not get this error "
-                "any more. However, if you commonly deal with %s type "
-                "data, also enable %s with a similar option at "
-                "configure time to greatly decrease running time and "
-                "avoid unnecessary RAM and CPU resources. Run"
-                "`./configure --help' in Gnuastro's top source "
-                "directory (after unpacking the tarball) for the full "
-                "list of options", typestring, typestring, typestring);
-        }
-    }
-
-  /* Return the output data structure */
-  if(out==NULL)
-    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s, so we can "
-          "fix the problem. For some reason, the `out' array has not been "
-          "set", __func__, PACKAGE_BUGREPORT);
-  return out;
-}
-
-
-
-
-
-/* Call functions in the `gnuastro/statistics' library. */
-static gal_data_t *
-arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
-{
-  gal_data_t *out=NULL;
-  int ip=(flags & GAL_ARITHMETIC_INPLACE) || (flags & GAL_ARITHMETIC_FREE);
-
-  switch(operator)
-    {
-    case GAL_ARITHMETIC_OP_MINVAL:  out=gal_statistics_minimum(input); break;
-    case GAL_ARITHMETIC_OP_MAXVAL:  out=gal_statistics_maximum(input); break;
-    case GAL_ARITHMETIC_OP_NUMVAL:  out=gal_statistics_number(input);  break;
-    case GAL_ARITHMETIC_OP_SUMVAL:  out=gal_statistics_sum(input);     break;
-    case GAL_ARITHMETIC_OP_MEANVAL: out=gal_statistics_mean(input);    break;
-    case GAL_ARITHMETIC_OP_STDVAL:  out=gal_statistics_std(input);     break;
-    case GAL_ARITHMETIC_OP_MEDIANVAL:
-      out=gal_statistics_median(input, ip); break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
-            __func__, operator);
-    }
-
-  /* If the input is to be freed, then do so and return the output. */
-  if( flags & GAL_ARITHMETIC_FREE ) gal_data_free(input);
-  return out;
 }
 
 
@@ -1514,12 +1507,12 @@ gal_arithmetic(int operator, int flags, ...)
     case GAL_ARITHMETIC_OP_MODULO:
       d1 = va_arg(va, gal_data_t *);
       d2 = va_arg(va, gal_data_t *);
-      out=arithmetic_onlyint_binary(operator, flags, d1, d2);
+      out=arithmetic_binary(operator, flags, d1, d2);
       break;
 
     case GAL_ARITHMETIC_OP_BITNOT:
       d1 = va_arg(va, gal_data_t *);
-      out=arithmetic_onlyint_bitwise_not(flags, d1);
+      out=arithmetic_bitwise_not(flags, d1);
       break;
 
 
