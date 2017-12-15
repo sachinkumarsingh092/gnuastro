@@ -107,12 +107,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Removed features
 
-  Installation: The `--enable-bin-op-*' options that were introduced in
-  Gnuastro 0.3 have been removed. By managing the functions in a better
-  manner (a separate source file for each operator), compilation (when done
-  in parallel) takes about the same time as it took with the default (only
-  four) types before. However, Arithmetic's binary operators can now deal
-  with all ten numeric types natively.
+  Installation: The `--enable-bin-op-*' configuration options that were
+  introduced in Gnuastro 0.3 have been removed. By managing the arithmetic
+  functions in a better manner (a separate source file for each operator),
+  compilation for all types (when done in parallel) takes about the same
+  time as it took with the default (only four) types until now.
 
   MakeCatalog: `--zeropoint' option doesn't have a short option name any
   more. Previously it was `-z' which was confusing because `-x' and `-y'

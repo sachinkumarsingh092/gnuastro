@@ -21592,13 +21592,13 @@ of rows in the table is also put into the memory that @code{numrows} points
 to. The format of the table (e.g., FITS binary or ASCII table) will be put
 in @code{tableformat} (macros defined in @ref{Table input output}).
 
-Note that other than the character strings (column name, units and
-comments), nothing in the data structure(s) will be allocated by this
-function for the actual data (e.g., the @code{array} or @code{dsize}
-elements). This function is just for column information. This is a
-low-level function particular to reading tables in FITS format. It is
-recommended to use @code{gal_table_info} to be generic (see @ref{Table
-input output}).
+This function is just for column information. Therefore it only stores
+meta-data like column name, units and comments. No actual data (contents of
+the columns for example the @code{array} or @code{dsize} elements) will be
+allocated by this function. This is a low-level function particular to
+reading tables in FITS format. To be generic, it is recommended to use
+@code{gal_table_info} which will allow getting information from a variety
+of table formats based on the filename (see @ref{Table input output}).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, int @code{minmapsize})
@@ -21811,10 +21811,11 @@ also follow those conventions.
 @deffnx Macro GAL_TXT_LINESTAT_BLANK
 @deffnx Macro GAL_TXT_LINESTAT_COMMENT
 @deffnx Macro GAL_TXT_LINESTAT_DATAROW
-Status codes for lines in a plain text file that may be returned by
-@code{gal_txt_line_stat}). Lines which have a @key{#} character as their
+Status codes for lines in a plain text file that are returned by
+@code{gal_txt_line_stat}. Lines which have a @key{#} character as their
 first non-white character are considered to be comments. Lines with nothing
-but white space characters are considered blank.
+but white space characters are considered blank. The remaining lines are
+considered as containing data.
 @end deffn
 
 @deftypefun int gal_txt_line_stat (char @code{*line})
@@ -21829,13 +21830,14 @@ data structures with @code{numcols} elements (one data structure for each
 column) see @ref{Arrays of datasets}. The total number of rows in the table
 is also put into the memory that @code{numrows} points to.
 
-Note that other than the character strings (column name, units and
-comments), nothing in the data structure(s) will be allocated by this
-function for the actual data (e.g., the @code{array} or @code{dsize}
-elements). This function is just for column information. This is a
-low-level function particular to reading tables in FITS format. It is
-recommended to use @code{gal_table_info} which will allow getting
-information from a variety of table formats (see @ref{Table input output}).
+This function is just for column information. Therefore it only stores
+meta-data like column name, units and comments. No actual data (contents of
+the columns for example the @code{array} or @code{dsize} elements) will be
+allocated by this function. This is a low-level function particular to
+reading tables in plain text format. To be generic, it is recommended to
+use @code{gal_table_info} which will allow getting information from a
+variety of table formats based on the filename (see @ref{Table input
+output}).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
