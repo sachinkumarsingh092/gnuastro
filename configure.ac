@@ -96,11 +96,11 @@ CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
 
 
 # Check for pthreads and add the appropriate compilation flags. AX_PTHREAD
-# comes from the GNU Autoconf Archive's ax_pthread.m4.
+# comes from the GNU Autoconf Archive's ax_pthread.m4, see there for the
+# documentation. Note that
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
-CLIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-LDFLAGS="$LDFLAGS $PTHREAD_CFLAGS"
+LIBS="$PTHREAD_LIBS $LIBS"
 CC="$PTHREAD_CC"
 
 
@@ -225,12 +225,15 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
 # These are secondary tests for more fine-grained control in libraries that
 # have already been checked. We don't need to add them to the LIBS
 # variable, so we are using AC_CHECK_LIB for these tests.
+
+# If the WCS library has the `wcslib_version' function.
 AC_CHECK_LIB([wcs], [wcslib_version], [has_wcslib_version=1],
              [has_wcslib_version=0], [-lcfitsio -lm])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_VERSION], [$has_wcslib_version],
                    [WCSLIB comes with wcslib_version])
 AC_SUBST(HAVE_WCSLIB_VERSION, [$has_wcslib_version])
 
+# If the pthreads library has `pthread_barrier_wait'.
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
