@@ -355,11 +355,11 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
      redundant variables (those that equal a previous value) are only
      defined to make it easy to read the code.*/
   int iscircle=0;
-  double delta[2];
-  double r, c=NAN, s=NAN, dist[2];
+  double r, c=NAN, s=NAN;
   size_t i, ar=A->size, br=B->size;
   size_t ai, bi, blow=0, prevblow=0;
   size_t ndim=gal_list_data_number(A);
+  double dist[2]={NAN,NAN}, delta[2]={NAN,NAN};
   double *a[2]={A->array, A->next ? A->next->array : NULL};
   double *b[2]={B->array, B->next ? B->next->array : NULL};
 
