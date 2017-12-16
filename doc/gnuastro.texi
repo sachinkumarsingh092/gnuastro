@@ -24503,12 +24503,17 @@ that invested heavily in Python 2.x cannot benefit from Python 3.x or
 future versions any more. Some converters are available, but since they are
 automatic, lots of complications might arise in the conversion@footnote{For
 example see @url{https://arxiv.org/abs/1712.00461, Jenness (2017)} which
-describes how LSST is managing the transition.}. If a research project
-begins using Python 3.x today, there is no telling how compatible their
-investments will be when Python 4.x or 5.x will come out. This stems from
-the core principles of Python, which are very useful when you look in the
-`on the go' basis as described before and not future usage. Future-proof
-code (as long as current operating systems will be used) is written in C.
+describes how LSST is managing the transition.}.
+
+If a research project begins using Python 3.x today, there is no telling
+how compatible their investments will be when Python 4.x or 5.x will come
+out. This stems from the core principles of Python, which are very useful
+when you look in the `on the go' basis as described before and not future
+usage. Reproducibility (ability to run the code in the future) is a core
+principal of any scientific result, or the software that produced that
+result. Rebuilding all the dependencies of a software in an obsolete
+language is not easy. Future-proof code (as long as current operating
+systems will be used) is written in C.
 
 The portability of C is best demonstrated by the fact that both C++ and
 Python are part of the C-family of programming languages which also include

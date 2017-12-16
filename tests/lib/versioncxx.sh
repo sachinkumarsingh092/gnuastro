@@ -22,7 +22,7 @@
 # Set the variables (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-execname=./versioncpp
+execname=./versioncxx
 
 
 

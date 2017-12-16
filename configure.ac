@@ -62,6 +62,7 @@ AC_SUBST(GAL_LT_VERSION)
 
 # Checks for programs.
 : ${CFLAGS=""}
+: ${CXXFLAGS=""}
 AC_PROG_CC
 AC_PROG_CXX
 gl_EARLY
@@ -88,6 +89,7 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 # Generic compiler flags for all sub-directories.
 CFLAGS="-Wall -O3 $CFLAGS"
+CXXFLAGS="-Wall -O3 $CXXFLAGS"
 LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
 CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
 
@@ -99,6 +101,7 @@ CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
 # comes from the GNU Autoconf Archive's ax_pthread.m4, see there for the
 # documentation. Note that
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
+CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 LIBS="$PTHREAD_LIBS $LIBS"
 CC="$PTHREAD_CC"
@@ -108,20 +111,22 @@ CC="$PTHREAD_CC"
 
 
 # See if the C++ compiler understands `-Qunused-arguments'. AX_PTHREAD adds
-# this option to LDFLAGS when the C compiler knows this option. But as
-# reported in bug #52490, it can happen that at the same time, the C++
-# compiler doesn't recognize it.
-cpp_Qunused_arguments_problem=no
-for flg in $LDFLAGS; do
+# puts this option in `PTHREAD_CFLAGS' when the C compiler knows this
+# option. We then pass it to CFLAGS and CXXFLAGS above. But as reported in
+# bug #52490, it can happen that sometimes, the C++ compiler doesn't
+# recognize it. So we need to do a separate check for C++.
+cxxflags_tmp=
+for flg in $CXXFLAGS; do
   AS_IF([test "$flg" = \-Qunused-arguments],
         [ AC_LANG(C++)
           AX_CHECK_COMPILE_FLAG([-Qunused-arguments],
-                                [cpp_Qunused_arguments_problem=no],
-                                [cpp_Qunused_arguments_problem=yes])
-          AC_LANG(C) ])
+                                [cxx_Qunused_arguments=yes;
+                                 cxxflags_tmp="$cxxflags_tmp $flg"],
+                                [cxx_Qunused_arguments=no])
+          AC_LANG(C) ],
+        [ cxxflags_tmp="$cxxflags_tmp $flg"])
 done
-AM_CONDITIONAL([COND_NO_CPP_QUNUSED_ARGUMENTS_PROBLEM],
-               [test "x$cpp_Qunused_arguments_problem" = "xno"])
+CXXFLAGS="$cxxflags_tmp"
 
 
 

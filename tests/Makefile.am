@@ -51,11 +51,6 @@ endif
 if COND_HASGNULIBTOOL
   MAYBE_HASGNULIBTOOL = "yes"
 endif
-if COND_NO_CPP_QUNUSED_ARGUMENTS_PROBLEM
-  MAYBE_VERSIONCPP    = versioncpp
-  MAYBE_VERSIONCPP_SH = lib/versioncpp.sh
-  versioncpp_SOURCES  = lib/versioncpp.cpp
-endif
 if COND_ARITHMETIC
   MAYBE_ARITHMETIC_TESTS = arithmetic/snimage.sh arithmetic/onlynumbers.sh \
   arithmetic/where.sh arithmetic/or.sh
@@ -214,8 +209,9 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 # `TESTS'. So they do not need to be specified as any dependency, they will
 # be present when the `.sh' based tests are run.
 LDADD = -lgnuastro
-check_PROGRAMS = multithread $(MAYBE_VERSIONCPP)
+check_PROGRAMS = multithread versioncxx
 multithread_SOURCES = lib/multithread.c
+versioncxx_SOURCES  = lib/versioncxx.cpp
 lib/multithread.sh: mkprof/mosaic1.sh.log
 
 
@@ -223,7 +219,7 @@ lib/multithread.sh: mkprof/mosaic1.sh.log
 
 # Final Tests
 # ===========
-TESTS = prepconf.sh lib/multithread.sh $(MAYBE_VERSIONCPP_SH)              \
+TESTS = prepconf.sh lib/multithread.sh lib/versioncxx.sh              \
   $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_BUILDPROG_TESTS)                       \
   $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
   $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MATCH_TESTS)             \
