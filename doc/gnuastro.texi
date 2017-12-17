@@ -827,10 +827,11 @@ matter, and generally calls for more than one pass through the
 computer''. Anscombe's quartet can be generalized to say that users of a
 software cannot claim to understand how it works only based on the
 experience they have gained by frequently using it. This kind of subjective
-experience is prone to very serious mis-understandings about what it really
-does behind the scenes and can be misleading. This attitude is further
-encouraged through non-free
-software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}.  This
+experience is prone to very serious mis-understandings about the data, what
+the software/statistical-method really does (especially as it gets more
+complicated), and thus the scientific interpretation of the result. This
+attitude is further encouraged through non-free
+software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}. This
 approach to scientific software only helps in producing dogmas and an
 ``obscurantist faith in the expert's special skill, and in his personal
 knowledge and authority''@footnote{Karl Popper. The logic of scientific
@@ -910,16 +911,15 @@ first edition, 2008.}. Science is not independent of its tools.
 @cindex Stroustrup, Bjarne
 Bjarne Stroustrup (creator of the C++ language) says: ``Without
 understanding software, you are reduced to believing in magic''.  Ken
-Thomson (the designer or the Unix operating system) says ``I abhor a
-system designed for the `user' if that word is a coded pejorative
-meaning `stupid and unsophisticated'.'' Certainly no scientist (user
-of a scientific software) would want to be considered a believer in
-magic, or `stupid and unsophisticated'. However, this can happen when
-scientists get too distant from the raw data and are mainly indulging
-themselves in their own high-level (abstract) models (creations). For
-example, roughly 5 years before special relativity and about two
-decades before quantum mechanics fundamentally changed Physics, Kelvin
-is quoted as saying:
+Thomson (the designer or the Unix operating system) says ``I abhor a system
+designed for the `user' if that word is a coded pejorative meaning `stupid
+and unsophisticated'.'' Certainly no scientist (user of a scientific
+software) would want to be considered a believer in magic, or `stupid and
+unsophisticated'. However, this can happen when scientists get too distant
+from the raw data and are mainly indulging themselves in their own
+high-level (abstract) models (creations). For example, roughly five years
+before special relativity and about two decades before quantum mechanics
+fundamentally changed Physics, Kelvin is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin

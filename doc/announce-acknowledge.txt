@@ -10,6 +10,7 @@ Raúl Infante Sainz
 Aurélien Jarno
 Floriane Leclercq
 Alan Lefor
+Bob Proulx
 Alejandro Serrano Borlaff
 Lee Spitler
 Ole Streicher
