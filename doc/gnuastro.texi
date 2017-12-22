@@ -15680,7 +15680,7 @@ $ astmatch --aperture=2 input1.txt input2.fits
 
 ## Similar to before, but the output is created by merging various
 ## columns from the two inputs: columns 1, RA, DEC from the first
-## input, followed by all columns starting with MAG and the 8th
+## input, followed by all columns starting with MAG and the BRG
 ## column from second input and finally the 10th from first input.
 $ astmatch --aperture=2 input1.txt input2.fits                   \
            --outcols=a1,aRA,aDEC,b/^MAG/,bBRG,a10
@@ -15691,7 +15691,7 @@ $ astmatch --aperture=1/3600,2/3600 in1.fits in2.txt
 
 ## Match the RA and DEC columns of the first input with the RA_D
 ## and DEC_D columns of the second within a 0.5 arcseconds aperture.
-$ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture0.5/3600  \
+$ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture=0.5/3600  \
            in1.fits in2.fits
 @end example
 
