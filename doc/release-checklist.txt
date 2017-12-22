@@ -31,9 +31,7 @@ all the commits needed for this release have been completed.
 
  - Run the following commands to keep the list of people who contributed
    code and those that must be acknowledged for the announcement (`P.P' is
-   the previous version). Finally, if in a stable release, clean
-   `doc/announce-acknowledge.txt' for the next release. We will use
-   `~/people.txt' in the announcement.
+   the previous version).
 
      $ git shortlog gnuastro_vP.P...HEAD --numbered --summary > ~/people.txt
      $ cat doc/announce-acknowledge.txt >> ~/people.txt
@@ -41,6 +39,7 @@ all the commits needed for this release have been completed.
      [STABLE]:
      $ echo "People who's help must be acknowledged in the next release." \
             > doc/announce-acknowledge.txt
+
 
 
  - Commit all these changes:
@@ -147,6 +146,9 @@ all the commits needed for this release have been completed.
 
  - Based on previous announcements, add an intro, the NEWS file and the
    contents of `~/people.txt' to the announcement.
+
+
+ - Add the size of the files (in mega-bytes) to the announcement.
 
 
  - Run a spell-check on the announcement and remove `~/people.txt'.

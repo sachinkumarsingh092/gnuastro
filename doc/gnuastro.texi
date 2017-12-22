@@ -1577,27 +1577,31 @@ The Japanese Ministry of Science and Technology (MEXT) scholarship for
 Mohammad Akhlaghi's Masters and PhD period in Tohoku University
 Astronomical Institute had an instrumental role in the long term learning
 and planning that made the idea of Gnuastro possible. The very critical
-view points of Professor Takashi Ichikawa (from Tohoku University) were
-also instrumental in the initial ideas and creation of Gnuastro. Brandon
-Invergo, Karl Berry and Richard Stallman also provided very useful
-suggestions during the GNU evaluation process. Bob Proulx from Savannah,
-has kindly supported Gnuastro's project webpage on Savannah and the
-management of its version controlled source server there.
+view points of Professor Takashi Ichikawa (Mohammad's adviser) were also
+instrumental in the initial ideas and creation of Gnuastro. The European
+Research Council (ERC) advanced grant 339659-MUSICOS (Principal
+investigator: Roland Bacon) was vital in the growth and expansion of
+Gnuastro, enabling a thorough re-write of the core functionality of all
+libraries and programs, turning Gnuastro into the large collection of
+generic programs and libraries it is today.
 
 @c To the developers: please keep this in the same order as the THANKS file
 @c (alphabetical, except for the names in the paragraph above).
-We would like to gratefully thank (in alphabetical order by family name)
-Marjan Akbari, Karl Berry, Roland Bacon, Leindert Boogaard, Nicolas Bouché,
-Fernando Buitrago, Adrian Bunk, Rosa Calvi, Benjamin Clement, Antonio Diaz
-Diaz, Madusha Gunawardhana, Stephen Hamer, Takashi Ichikawa, Raúl Infante
-Sainz, Brandon Invergo, Aurélien Jarno, Lee Kelvin, Mohammad-Reza Khellat,
+In general, we would like to gratefully thank the following people for
+their useful and constructive comments and suggestions (in alphabetical
+order by family name): Marjan Akbari, Roland Bacon, Karl Berry, Leindert
+Boogaard, Nicolas Bouch@'e, Fernando Buitrago, Adrian Bunk, Rosa Calvi,
+Benjamin Clement, Antonio Diaz Diaz, Th@'er@`ese Godefroy, Madusha
+Gunawardhana, Stephen Hamer, Takashi Ichikawa, Ra@'ul Infante Sainz,
+Brandon Invergo, Aur@'elien Jarno, Lee Kelvin, Mohammad-Reza Khellat,
 Floriane Leclercq, Alan Lefor, Guillaume Mahler, Francesco Montanari,
-William Pence, Yahya Sefidbakht, Alejandro Serrano, Borlaff Lee Spitler,
-Richard Stallman, Ole Streicher, Ignacio Trujillo, David Valls-Gabaud and
-Christopher Willmer for their useful and constructive comments and
-suggestions. Finally we should thank all the (sometimes anonymous) people
-in various online forums which patiently answered all our small (but
-important) technical questions.
+William Pence, Bob Proulx, Yahya Sefidbakht, Alejandro Serrano Borlaff, Lee
+Spitler, Richard Stallman, Ole Streicher, Alfred M. Szmidt, Ignacio
+Trujillo, David Valls-Gabaud and Christopher Willmer. The GNU French
+Translation Team is also managing the French version of the top Gnuastro
+webpage which we highly appreciate. Finally we should thank all the
+(sometimes anonymous) people in various online forums which patiently
+answered all our small (but important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
@@ -1610,8 +1614,6 @@ University of Salento, Lecce, Italy.@*
 Centre national de la recherche scientifique (CNRS), France.@*
 Centre de Recherche Astrophysique de Lyon, University of Lyon 1, France.@*
 @end quotation
-
-
 
 
 
