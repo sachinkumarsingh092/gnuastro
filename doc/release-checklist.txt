@@ -277,9 +277,14 @@ Steps necessary to Package Gnuastro for Debian.
 
    IMPORTANT: An official release should have `unstable' after the
    version. But if you just want to make sure Gnuastro builds on all
-   systems, it should be `experimental'. If it is experimental, also add
-   this line in `debian/changelog': "Switch to experimental to prepare
-   transition".
+   systems for testing, it should be `experimental'.
+
+   When changing the state (from experimental to unstable or vice versa)
+   add the following line in `debian/changelog' (this is necessary to avoid
+   Lintian warnings):
+
+   Experimental -> Unstable: "Switch to unstable for upstream stable release"
+   Unstable -> Experimental: "Switch to experimental to prepare transition".
 
 
  - Update your version of `pbuilder':
