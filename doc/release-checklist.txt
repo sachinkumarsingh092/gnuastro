@@ -240,7 +240,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ git add --all
      $ git commit -m "Upstream Gnuastro $ver"
      $ git tag upstream/$ver
-     $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz
+     $ pristine-tar -s commit ../gnuastro_$ver.orig.tar.gz
 
 
  - We are done with the `upstream' and `pristine-tar' branches and can

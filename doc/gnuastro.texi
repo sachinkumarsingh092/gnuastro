@@ -2447,10 +2447,9 @@ In general, Info is a wonderful and powerful way to access this whole book
 with detailed information about the programs you are running very fast. If
 you are not already familiar with it, please run the following command and
 just read along and do what it says to learn it. Don't stop until you feel
-have become sufficiently fluent in it. Please invest the half an hour's
-time necessary to start using Info comfortably. It will greatly improve
-your productivity and you will start reaping the rewards of this investment
-very soon.
+sufficiently fluent in it. Please invest the half an hour's time necessary
+to start using Info comfortably. It will greatly improve your productivity
+and you will start reaping the rewards of this investment very soon.
 
 @example
 $ info info
@@ -2488,7 +2487,7 @@ Wide Field Camera} dataset. If you already have them in another directory
 be a symbolic link to @file{XDFDIR} with a command like this:
 
 @example
-ln -s XDFDIR download
+$ ln -s XDFDIR download
 @end example
 
 @noindent
@@ -2545,7 +2544,7 @@ $ ds9 download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits     \
 The first thing you might notice is that the regions with no data have a
 value of zero in this image. The next thing might be that the dataset
 actually has two ``depth''s (see @ref{Quantifying measurement limits}). The
-exposure time of the inner region is more than 4 times more than the outer
+exposure time of the inner region is more than 4 times of the outer
 parts. Fortunately the XDF survey webpage (above) contains the vertices of
 the deep flat WFC3-IR field. You can use those vertices in @ref{Crop} to
 cutout this deep infra-red region from the larger image. We'll make a
@@ -3837,7 +3836,7 @@ take effect.
 Libtool is a program to simplify managing of the libraries to build an
 executable (a program). GNU Libtool has some added functionality compared
 to other implementations. If GNU Libtool isn't present on your system at
-configuration time a warning will be printed and @ref{BuildProgram} won't
+configuration time, a warning will be printed and @ref{BuildProgram} won't
 be built or installed. The configure script will look into your search path
 (@code{PATH}) for GNU Libtool through the following executable names:
 @command{libtool} (acceptable only if it is the GNU implementation) or
@@ -3891,13 +3890,13 @@ compression and decompression algorithms.
 
 @item GPL Ghostscript
 @cindex GPL Ghostscript
-GPL Ghostscript's executable (@command{gs}) is called used by
-ConvertType to compile a PDF file from a source PostScript file, see
+GPL Ghostscript's executable (@command{gs}) is called by ConvertType to
+compile a PDF file from a source PostScript file, see
 @ref{ConvertType}. Therefore its headers (and libraries) are not
-needed. With a very high probability you already have it in your
-GNU/Linux distribution. Unfortunately it does not follow the standard
-GNU build style so installing it is very hard. It is best to rely on
-your distribution's package managers for this.
+needed. With a very high probability you already have it in your GNU/Linux
+distribution. Unfortunately it does not follow the standard GNU build style
+so installing it is very hard. It is best to rely on your distribution's
+package managers for this.
 
 @end table
 
@@ -4608,9 +4607,10 @@ program (an executable file) is to be used a lot, specifying all those
 directories will become a significant burden. For example, the @file{ls}
 executable lists the contents in a given directory and it is (usually)
 installed in the @file{/usr/bin/} directory by the operating system
-maintainers. So each time you want to use it you would have to run the
-following command (which is very inconvenient, both in writing and in
-remembering the various directories).
+maintainers. Therefore, if using the full address was the only way to
+access an executable, each time you wanted a listing of a directory, you
+would have to run the following command (which is very inconvenient, both
+in writing and in remembering the various directories).
 
 @example
 $ /usr/bin/ls
@@ -4622,8 +4622,9 @@ To address this problem, we have the @file{PATH} environment variable. To
 understand it better, we will start with a short introduction to the shell
 variables. Shell variable values are basically treated as strings of
 characters. For example, it doesn't matter if the value is a name (string
-of @emph{alphabetic} characters) or a number (string of @emph{numeric}
-characters). You can define a variable and a value for it by running
+of @emph{alphabetic} characters), or a number (string of @emph{numeric}
+characters), or both. You can define a variable and a value for it by
+running
 @example
 $ myvariable1=a_test_value
 $ myvariable2="a test value"
