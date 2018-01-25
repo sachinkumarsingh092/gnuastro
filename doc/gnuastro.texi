@@ -3080,8 +3080,8 @@ $ astfits noisechisel/xdf-f160w.fits -h2                             \
 
 Grep and AWK are simple, but very powerful command-line software for
 processing text files. Learning them properly can greatly simplify your
-processing, while improve your creativity, productivity and speed. When you
-get time, it is highly recommended to master them. The most common
+processing, while improving your creativity, productivity and speed. When
+you get time, it is highly recommended to master them. The most common
 implementation of both is from GNU. Like almost all GNU software, both GNU
 Grep and GNU AWK have wonderful manuals which come with the program for
 free. You don't have to read the whole manual at once, they both start with
