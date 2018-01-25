@@ -4,9 +4,9 @@
 # Utilities (Gnuastro).
 #
 # Original author:
-#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+#     Mohammad Akhlaghi <mohammad@akhlaghi.org>
 # Contributing author(s):
-# Copyright (C) 2016, Free Software Foundation, Inc.
+# Copyright (C) 2016-2018, Free Software Foundation, Inc.
 #
 # Gnuastro is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the

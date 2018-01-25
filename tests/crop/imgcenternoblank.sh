@@ -5,7 +5,7 @@
 # (in the Installing gnuastro section).
 #
 # Original author:
-#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+#     Mohammad Akhlaghi <mohammad@akhlaghi.org>
 # Contributing author(s):
 #
 # Copying and distribution of this file, with or without modification,
