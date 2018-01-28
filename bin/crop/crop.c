@@ -67,12 +67,19 @@ crop_verbose_info(struct onecropparams *crp)
 
   /* Define the output string based on the length of the output file. */
   if ( outnamelen > FILENAME_BUFFER_IN_VERB )
-    asprintf(&msg, "...%s %s: %zu input%s.",
-             &crp->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
-             filestatus, crp->numimg, crp->numimg==1 ?  "" :"s");
+    {
+      if( asprintf(&msg, "...%s %s: %zu input%s.",
+                   &crp->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
+                   filestatus, crp->numimg, crp->numimg==1 ?  "" :"s")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else
-    asprintf(&msg, "%-*s %s: %zu input%s.", FILENAME_BUFFER_IN_VERB,
-             crp->name, filestatus, crp->numimg, crp->numimg==1 ? "" : "s");
+    {
+      if( asprintf(&msg, "%-*s %s: %zu input%s.", FILENAME_BUFFER_IN_VERB,
+                   crp->name, filestatus, crp->numimg,
+                   crp->numimg==1 ? "" : "s")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
 
   /* Print the results. */
   gal_timing_report(NULL, msg, 2);
@@ -120,15 +127,16 @@ crop_verbose_final(struct cropparams *p)
           }
 
       /* Print the basic information. */
-      asprintf(&msg, "%zu crops created.", numcrops);
+      if( asprintf(&msg, "%zu crops created.", numcrops)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(NULL, msg, 1);
       free(msg);
 
       /* Only if the user wanted to check the center. */
       if(p->checkcenter)
         {
-          asprintf(&msg, "%zu filled in the center.",
-                   numcfilled);
+          if( asprintf(&msg, "%zu filled in the center.", numcfilled)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_timing_report(NULL, msg, 1);
           free(msg);
         }
@@ -136,8 +144,9 @@ crop_verbose_final(struct cropparams *p)
       /* Only if there were stitched images. */
       if(numstitched)
         {
-          asprintf(&msg, "%zu crops used more than one input.",
-                  numstitched);
+          if( asprintf(&msg, "%zu crops used more than one input.",
+                       numstitched)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_timing_report(NULL, msg, 1);
           free(msg);
         }
@@ -460,8 +469,9 @@ crop(struct cropparams *p)
     {
       if(p->checkcenter)
         {
-          asprintf(&tmp, "Width of central check box: %zu",
-                   p->checkcenter);
+          if( asprintf(&tmp, "Width of central check box: %zu",
+                       p->checkcenter)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_list_str_add(&comments, tmp, 0);
         }
       gal_checkset_writable_remove(LOGFILENAME, 0, p->cp.dontdelete);

@@ -449,12 +449,14 @@ onecrop_name(struct onecropparams *crp)
       if(p->name)
         {
           strarr=p->name;
-          asprintf(&crp->name, "%s%s%s", cp->output, strarr[crp->out_ind],
-                   p->suffix);
+          if( asprintf(&crp->name, "%s%s%s", cp->output, strarr[crp->out_ind],
+                       p->suffix)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
       else
-        asprintf(&crp->name, "%s%zu%s", cp->output, crp->out_ind+1,
-                 p->suffix);
+        if( asprintf(&crp->name, "%s%zu%s", cp->output, crp->out_ind+1,
+                     p->suffix)<0 )
+          error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
       /* Make sure the file doesn't exist. */
       gal_checkset_writable_remove(crp->name, 0, cp->dontdelete);

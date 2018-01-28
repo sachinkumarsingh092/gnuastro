@@ -538,7 +538,8 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
           ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
           : "txt" );
   if(use_auto_output)
-    asprintf(&suffix, "%s.%s", suf, fix);
+    if( asprintf(&suffix, "%s.%s", suf, fix)<0 )
+      error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
 
   /* Make the output name. */
@@ -553,7 +554,8 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   tmp=gal_fits_name_save_as_string(p->inputname, p->cp.hdu);
   gal_list_str_add(&comments, tmp, 0);
 
-  asprintf(&tmp, "%s created from:", contents);
+  if( asprintf(&tmp, "%s created from:", contents)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, tmp, 0);
 
   if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
@@ -720,12 +722,21 @@ print_input_info(struct statisticsparams *p)
   /* Range. */
   str=NULL;
   if( !isnan(p->greaterequal) && !isnan(p->lessthan) )
-    asprintf(&str, "from (inclusive) %g, up to (exclusive) %g",
-             p->greaterequal, p->lessthan);
+    {
+      if( asprintf(&str, "from (inclusive) %g, up to (exclusive) %g",
+                   p->greaterequal, p->lessthan)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else if( !isnan(p->greaterequal) )
-    asprintf(&str, "from (inclusive) %g", p->greaterequal);
+    {
+      if( asprintf(&str, "from (inclusive) %g", p->greaterequal)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else if( !isnan(p->lessthan) )
-    asprintf(&str, "up to (exclusive) %g", p->lessthan);
+    {
+      if( asprintf(&str, "up to (exclusive) %g", p->lessthan)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   if(str)
     {
       printf("Range: ");
@@ -861,10 +872,16 @@ print_sigma_clip(struct statisticsparams *p)
 
   /* Set the mode for printing: */
   if( p->sclipparams[1]>=1.0f )
-    asprintf(&mode, "for %g clips", p->sclipparams[1]);
+    {
+      if( asprintf(&mode, "for %g clips", p->sclipparams[1])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else
-    asprintf(&mode, "until relative change in STD is less than %g",
-             p->sclipparams[1]);
+    {
+      if( asprintf(&mode, "until relative change in STD is less than %g",
+                   p->sclipparams[1])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
 
   /* Report the status */
   if(!p->cp.quiet)

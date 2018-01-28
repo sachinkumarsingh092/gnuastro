@@ -1316,7 +1316,8 @@ ui_make_log(struct mkprofparams *p)
 
   /* Row number in input catalog. */
   name=gal_fits_name_save_as_string(p->catname, p->cp.hdu);
-  asprintf(&comment, "Row number of profile in %s.", name);
+  if( asprintf(&comment, "Row number of profile in %s.", name)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
                           1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
                           comment);
@@ -1395,40 +1396,56 @@ ui_print_intro(struct mkprofparams *p)
   printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
 
   if(p->kernel)
-    asprintf(&jobname, "Building one %s kernel",
-             ui_profile_name_write(p->kernel->status));
+    {
+      if( asprintf(&jobname, "Building one %s kernel",
+                   ui_profile_name_write(p->kernel->status))<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else
-    asprintf(&jobname, "%zu profile%sread from %s", p->num,
-             p->num>1?"s ":" ", p->catname);
+    {
+      if( asprintf(&jobname, "%zu profile%sread from %s", p->num,
+                   p->num>1?"s ":" ", p->catname)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   gal_timing_report(NULL, jobname, 1);
   free(jobname);
 
   if(p->backname)
     {
       if(p->nomerged)
-        asprintf(&jobname, "WCS information read from %s", p->backname);
+        {
+          if( asprintf(&jobname, "WCS information read from %s",
+                       p->backname)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       else
-        asprintf(&jobname, "%s is read and will be used as canvas",
-                 p->backname);
+        {
+          if( asprintf(&jobname, "%s is read and will be used as canvas",
+                       p->backname)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       gal_timing_report(NULL, jobname, 1);
       free(jobname);
     }
 
-  asprintf(&jobname, "Random number generator (RNG) type: %s",
-           gsl_rng_name(p->rng));
+  if( asprintf(&jobname, "Random number generator (RNG) type: %s",
+               gsl_rng_name(p->rng))<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_timing_report(NULL, jobname, 1);
   free(jobname);
   if(p->envseed)
     {
-      asprintf(&jobname, "RNG seed for all profiles: %lu",
-               gsl_rng_default_seed);
+      if( asprintf(&jobname, "RNG seed for all profiles: %lu",
+                   gsl_rng_default_seed)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(NULL, jobname, 1);
       free(jobname);
     }
 
   if(p->kernel==NULL)
     {
-      asprintf(&jobname, "Using %zu threads.", p->cp.numthreads);
+      if( asprintf(&jobname, "Using %zu threads.", p->cp.numthreads)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(NULL, jobname, 1);
       free(jobname);
     }

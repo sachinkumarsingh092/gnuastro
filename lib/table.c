@@ -358,8 +358,10 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
            are done (and program is aborted) before this step. */
         if(nummatch==0)
           {
-            asprintf(&errorstring, "`%s' didn't match any of the column %ss.",
-                     tmp->v, gal_tableintern_searchin_as_string(searchin));
+            if( asprintf(&errorstring, "`%s' didn't match any of the "
+                         "column %ss.", tmp->v,
+                         gal_tableintern_searchin_as_string(searchin))<0 )
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
             gal_tableintern_error_col_selection(filename, hdu, errorstring);
           }
 
@@ -500,7 +502,8 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
      line. Note that ctime puts a `\n' at the end of its string, so we'll
      have to remove that. Also, note that since we are allocating `msg', we
      are setting the allocate flag of `gal_list_str_add' to 0. */
-  asprintf(&tmp, "Created%s on %s", gitdescribe, ctime(rawtime));
+  if( asprintf(&tmp, "Created%s on %s", gitdescribe, ctime(rawtime))<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   tmp[ strlen(tmp)-1 ]='\0';
   gal_list_str_add(comments, tmp, 0);
 
@@ -558,7 +561,8 @@ gal_table_write_log(gal_data_t *logll, char *program_string,
   /* In verbose mode, print the information. */
   if(!quiet)
     {
-      asprintf(&msg, "%s created.", filename);
+      if( asprintf(&msg, "%s created.", filename)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(NULL, msg, 1);
       free(msg);
     }

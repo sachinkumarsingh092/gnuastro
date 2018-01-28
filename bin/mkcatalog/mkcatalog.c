@@ -660,59 +660,70 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   char *clumpsfile=p->clumpsfile ? p->clumpsfile : p->inputname;
   char *objectsfile=p->objectsfile ? p->objectsfile : p->inputname;
 
-  asprintf(&str, "%s catalog of %s", o0c1 ? "Object" : "Clump",
-           PROGRAM_STRING);
+  if( asprintf(&str, "%s catalog of %s", o0c1 ? "Object" : "Clump",
+               PROGRAM_STRING)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
 
   /* If in a Git controlled directory and output isn't a FITS file (in
      FITS, this will be automatically included). */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT && gal_git_describe())
     {
-      asprintf(&str, "Working directory commit %s", gal_git_describe());
+      if(asprintf(&str, "Working directory commit %s", gal_git_describe())<0)
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   /* Write the date. However, `ctime' is going to put a new-line character
      in the end of its string, so we are going to remove it manually. */
-  asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
+  if( asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime))<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   str[strlen(str)-1]='\0';
   gal_list_str_add(&comments, str, 0);
 
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
-      asprintf(&str, "--------- Input files ---------");
+      if( asprintf(&str, "--------- Input files ---------")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
-  asprintf(&str, "Values:  %s (hdu: %s).", p->inputname, p->cp.hdu);
+  if( asprintf(&str, "Values:  %s (hdu: %s).", p->inputname, p->cp.hdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
 
-  asprintf(&str, "Objects: %s (hdu: %s).", objectsfile, p->objectshdu);
+  if( asprintf(&str, "Objects: %s (hdu: %s).", objectsfile, p->objectshdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
 
   if(p->clumps)
     {
-      asprintf(&str, "Clumps:  %s (hdu: %s).", clumpsfile, p->clumpshdu);
+      if(asprintf(&str, "Clumps:  %s (hdu: %s).", clumpsfile, p->clumpshdu)<0)
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
-  asprintf(&str, "Sky:     %s (hdu: %s).", skyfile, p->skyhdu);
+  if( asprintf(&str, "Sky:     %s (hdu: %s).", skyfile, p->skyhdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
 
-  asprintf(&str, "Sky STD: %s (hdu: %s).", stdfile, p->stdhdu);
+  if( asprintf(&str, "Sky STD: %s (hdu: %s).", stdfile, p->stdhdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
 
   if(p->upmaskfile)
     {
-      asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
-               p->upmaskhdu);
+      if( asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
+                   p->upmaskhdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
-      asprintf(&str, "--------- Supplimentary information ---------");
+      if( asprintf(&str, "--------- Supplimentary information ---------")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -721,14 +732,16 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       pixarea=gal_wcs_pixel_area_arcsec2(p->input->wcs);
       if( isnan(pixarea)==0 )
         {
-          asprintf(&str, "Pixel area (arcsec^2): %g", pixarea);
+          if( asprintf(&str, "Pixel area (arcsec^2): %g", pixarea)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_list_str_add(&comments, str, 0);
         }
     }
 
   if(p->hasmag)
     {
-      asprintf(&str, "Zeropoint magnitude: %.4f", p->zeropoint);
+      if( asprintf(&str, "Zeropoint magnitude: %.4f", p->zeropoint)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -736,15 +749,16 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   if( !isnan(p->zeropoint) &&  !isnan(p->sfmagnsigma) )
     {
       /* Per pixel. */
-      asprintf(&str, "%g sigma surface brightness (magnitude/pixel): %.3f",
-               p->sfmagnsigma, ( -2.5f
-                                 *log10( p->sfmagnsigma
-                                         * p->medstd )
-                                 + p->zeropoint ) );
+      if( asprintf(&str, "%g sigma surface brightness (magnitude/pixel): "
+                   "%.3f", p->sfmagnsigma, ( -2.5f
+                                             *log10( p->sfmagnsigma
+                                                     * p->medstd )
+                                             + p->zeropoint ) )<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
 
-      /* Per requested projected area: if a pixel area could be measured (a
-         WCS was given), then also estimate the surface brightness over one
+      /* Requested projected area: if a pixel area could be measured (a WCS
+         was given), then also estimate the surface brightness over one
          arcsecond^2. From the pixel area, we know how many pixels are
          necessary to fill the requested projected area (in
          arcsecond^2). We also know that as the number of samples (pixels)
@@ -753,14 +767,19 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       if(!isnan(pixarea) && !isnan(p->sfmagarea))
         {
           /* Prepare the comment/information. */
-          if(p->sfmagarea==1.0f) tstr=NULL;
-          else                   asprintf(&tstr, "%g-", p->sfmagarea);
-          asprintf(&str, "%g sigma surface brightness (magnitude/%sarcsec^2): "
-                   "%.3f", p->sfmagnsigma, tstr ? tstr : "",
-                   ( -2.5f * log10( p->sfmagnsigma
-                                    * p->medstd
-                                    * sqrt( p->sfmagarea / pixarea) )
-                     + p->zeropoint ) );
+          if(p->sfmagarea==1.0f)
+            tstr=NULL;
+          else
+            if( asprintf(&tstr, "%g-", p->sfmagarea)<0 )
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          if( asprintf(&str, "%g sigma surface brightness "
+                       "(magnitude/%sarcsec^2): %.3f", p->sfmagnsigma,
+                       tstr ? tstr : "",
+                       ( -2.5f * log10( p->sfmagnsigma
+                                        * p->medstd
+                                        * sqrt( p->sfmagarea / pixarea) )
+                         + p->zeropoint ) )<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
           /* Add the final string/line to the catalog comments. */
           gal_list_str_add(&comments, str, 0);
@@ -774,36 +793,42 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
         }
 
       /* Notice: */
-      asprintf(&str, "Pixel STD for surface brightness calculation%s: %f",
-               (!isnan(pixarea) && !isnan(p->sfmagarea))?"s":"", p->medstd);
+      if( asprintf(&str, "Pixel STD for surface brightness calculation%s: %f",
+                   (!isnan(pixarea) && !isnan(p->sfmagarea))?"s":"",
+                   p->medstd)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   snlim = o0c1 ? p->clumpsn : p->detsn;
   if( !isnan(snlim) )
     {
-      asprintf(&str, "%s limiting signal-to-noise ratio: %.3f", ObjClump,
-               snlim);
+      if( asprintf(&str, "%s limiting signal-to-noise ratio: %.3f", ObjClump,
+                   snlim)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   if(o0c1==0)
     {
-      asprintf(&str, "(NOTE: S/N limit above is for pseudo-detections, "
-               "not objects.)");
+      if( asprintf(&str, "(NOTE: S/N limit above is for pseudo-detections, "
+                   "not objects.)")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   if(p->cpscorr>1.0f)
     {
-      asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr);
+      if( asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
   if( !isnan(p->threshold) )
     {
-      asprintf(&str, "**IMPORTANT** Pixel threshold (multiple of local "
-               "std): %.3f", p->threshold);
+      if( asprintf(&str, "**IMPORTANT** Pixel threshold (multiple of local "
+                   "std): %.3f", p->threshold)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -812,40 +837,53 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
     {
       if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
         {
-          asprintf(&str, "--------- Upper-limit measurement ---------");
+          if(asprintf(&str, "--------- Upper-limit measurement ---------")<0)
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_list_str_add(&comments, str, 0);
         }
 
-      asprintf(&str, "Number of random samples: %zu", p->upnum);
+      if( asprintf(&str, "Number of random samples: %zu", p->upnum)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
 
       if(p->uprange)
         {
-          asprintf(&str, "Range of random samples about target: %zu, %zu",
-                   p->uprange[1], p->uprange[0]);
+          if( asprintf(&str, "Range of random samples about target: %zu, %zu",
+                       p->uprange[1], p->uprange[0])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_list_str_add(&comments, str, 0);
         }
 
-      asprintf(&str, "Random number generator name: %s", p->rngname);
+      if( asprintf(&str, "Random number generator name: %s", p->rngname)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
 
-      asprintf(&str, "Random number generator seed: %"PRIu64, p->seed);
+      if( asprintf(&str, "Random number generator seed: %"PRIu64, p->seed)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
 
-      asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
-               p->upsigmaclip[0]);
+      if( asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
+                   p->upsigmaclip[0])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
 
       if(p->upsigmaclip[1]>=1.0f)
-        asprintf(&str, "Number of clips for sigma-clipping: %.0f",
-                 p->upsigmaclip[1]);
+        {
+          if( asprintf(&str, "Number of clips for sigma-clipping: %.0f",
+                       p->upsigmaclip[1])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       else
-        asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
-                 p->upsigmaclip[1]);
+        {
+          if( asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
+                       p->upsigmaclip[1])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       gal_list_str_add(&comments, str, 0);
 
-      asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: %.3f",
-               p->upnsigma);
+      if( asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: "
+                   "%.3f", p->upnsigma)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -853,7 +891,8 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
 
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
-      asprintf(&str, "--------- Table columns ---------");
+      if( asprintf(&str, "--------- Table columns ---------")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
 

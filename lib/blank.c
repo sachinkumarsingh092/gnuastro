@@ -385,66 +385,154 @@ gal_blank_as_string(uint8_t type, int width)
       break;
 
     case GAL_TYPE_STRING:
-      if(width) asprintf(&blank, "%*s", width,  GAL_BLANK_STRING);
-      else      asprintf(&blank, "%s",          GAL_BLANK_STRING);
+      if(width)
+        {
+          if( asprintf(&blank, "%*s", width,  GAL_BLANK_STRING)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%s", GAL_BLANK_STRING)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_UINT8:
       fmt = width ? "%*"PRIu8 : "%"PRIu8;
-      if(width) asprintf(&blank, fmt, width, (uint8_t)GAL_BLANK_UINT8);
-      else      asprintf(&blank, fmt,        (uint8_t)GAL_BLANK_UINT8);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint8_t)GAL_BLANK_UINT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint8_t)GAL_BLANK_UINT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_INT8:
       fmt = width ? "%*"PRId8 : "%"PRId8;
-      if(width) asprintf(&blank, fmt, width, (int8_t)GAL_BLANK_INT8);
-      else      asprintf(&blank, fmt,        (int8_t)GAL_BLANK_INT8);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int8_t)GAL_BLANK_INT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int8_t)GAL_BLANK_INT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_UINT16:
       fmt = width ? "%*"PRIu16 : "%"PRIu16;
-      if(width) asprintf(&blank, fmt, width, (uint16_t)GAL_BLANK_UINT16);
-      else      asprintf(&blank, fmt,        (uint16_t)GAL_BLANK_UINT16);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint16_t)GAL_BLANK_UINT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint16_t)GAL_BLANK_UINT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_INT16:
       fmt = width ? "%*"PRId16 : "%"PRId16;
-      if(width) asprintf(&blank, fmt, width, (int16_t)GAL_BLANK_INT16);
-      else      asprintf(&blank, fmt,        (int16_t)GAL_BLANK_INT16);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int16_t)GAL_BLANK_INT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int16_t)GAL_BLANK_INT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_UINT32:
       fmt = width ? "%*"PRIu32 : "%"PRIu32;
-      if(width) asprintf(&blank, fmt, width, (uint32_t)GAL_BLANK_UINT32);
-      else      asprintf(&blank, fmt,        (uint32_t)GAL_BLANK_UINT32);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint32_t)GAL_BLANK_UINT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint32_t)GAL_BLANK_UINT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_INT32:
       fmt = width ? "%*"PRId32 : "%"PRId32;
-      if(width) asprintf(&blank, fmt, width, (int32_t)GAL_BLANK_INT32);
-      else      asprintf(&blank, fmt,        (int32_t)GAL_BLANK_INT32);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int32_t)GAL_BLANK_INT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int32_t)GAL_BLANK_INT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_UINT64:
       fmt = width ? "%*"PRIu64 : "%"PRIu64;
-      if(width) asprintf(&blank, fmt, width, (uint64_t)GAL_BLANK_UINT64);
-      else      asprintf(&blank, fmt,        (uint64_t)GAL_BLANK_UINT64);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint64_t)GAL_BLANK_UINT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint64_t)GAL_BLANK_UINT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_INT64:
       fmt = width ? "%*"PRId64 : "%"PRId64;
-      if(width) asprintf(&blank, fmt, width, (int64_t)GAL_BLANK_INT64);
-      else      asprintf(&blank, fmt,        (int64_t)GAL_BLANK_INT64);
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int64_t)GAL_BLANK_INT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int64_t)GAL_BLANK_INT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_FLOAT32:
-      if(width) asprintf(&blank, "%*f", width,  (float)GAL_BLANK_FLOAT32);
-      else      asprintf(&blank, "%f",          (float)GAL_BLANK_FLOAT32);
+      if(width)
+        {
+          if( asprintf(&blank, "%*f", width,  (float)GAL_BLANK_FLOAT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%f", (float)GAL_BLANK_FLOAT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     case GAL_TYPE_FLOAT64:
-      if(width) asprintf(&blank, "%*f", width,  (double)GAL_BLANK_FLOAT64);
-      else      asprintf(&blank, "%f",          (double)GAL_BLANK_FLOAT64);
+      if(width)
+        {
+          if( asprintf(&blank, "%*f", width,  (double)GAL_BLANK_FLOAT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%f", (double)GAL_BLANK_FLOAT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       break;
 
     default:

@@ -759,8 +759,9 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   gal_data_free(qprm.noerode_th);
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "%.2f & %0.2f quantile thresholds applied.",
-               p->qthresh, p->noerodequant);
+      if( asprintf(&msg, "%.2f & %0.2f quantile thresholds applied.",
+                   p->qthresh, p->noerodequant)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
       free(msg);
     }

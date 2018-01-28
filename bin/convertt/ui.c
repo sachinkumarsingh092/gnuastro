@@ -614,7 +614,8 @@ ui_add_dot_use_automatic_output(struct converttparams *p)
   /* If the suffix does not start with a `.', put one there. */
   if(suffix[0]!='.')
     {
-      asprintf(&tmp, ".%s", suffix);
+      if( asprintf(&tmp, ".%s", suffix)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       free(suffix);
       suffix=tmp;
     }

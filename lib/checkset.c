@@ -146,7 +146,10 @@ gal_checkset_dataset_name(char *filename, char *hdu)
 {
   char *out;
   if( gal_fits_name_is_fits(filename) )
-    asprintf(&out, "%s (hdu %s)", filename, hdu);
+    {
+      if( asprintf(&out, "%s (hdu %s)", filename, hdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else
     gal_checkset_allocate_copy(filename, &out);
   return out;

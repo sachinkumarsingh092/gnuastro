@@ -138,7 +138,8 @@ saveindividual(struct mkonthread *mkp)
     filename=p->mergedimgname;
   else
     {
-      asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
+      if( asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_checkset_writable_remove(filename, 0, p->cp.dontdelete);
     }
 
@@ -166,7 +167,8 @@ saveindividual(struct mkonthread *mkp)
   /* Report if in verbose mode. */
   if(!p->cp.quiet)
     {
-      asprintf(&jobname, "%s created.", filename);
+      if( asprintf(&jobname, "%s created.", filename)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(NULL, jobname, 2);
       free(jobname);
     }
@@ -537,8 +539,9 @@ mkprof_write(struct mkprofparams *p)
       ++complete;
       if(!p->cp.quiet && p->num>1)
         {
-          asprintf(&jobname, "row %zu complete, %zu left to go",
-                   ibq->id+1, num-complete);
+          if( asprintf(&jobname, "row %zu complete, %zu left to go",
+                       ibq->id+1, num-complete)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
         }
@@ -577,7 +580,8 @@ mkprof_write(struct mkprofparams *p)
       /* In verbose mode, print the information. */
       if(!p->cp.quiet)
         {
-          asprintf(&jobname, "%s created.", p->mergedimgname);
+          if( asprintf(&jobname, "%s created.", p->mergedimgname)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_timing_report(&t1, jobname, 1);
           free(jobname);
         }
@@ -701,7 +705,8 @@ mkprof(struct mkprofparams *p)
   /* Write the log file. */
   if(p->cp.log)
     {
-      asprintf(&tmp, "Zeropoint: %g", p->zeropoint);
+      if( asprintf(&tmp, "Zeropoint: %g", p->zeropoint)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, tmp, 0);
       gal_checkset_writable_remove(LOGFILENAME, 0, p->cp.dontdelete);
       gal_table_write_log(p->log, PROGRAM_STRING, &p->rawtime, comments,

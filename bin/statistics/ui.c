@@ -296,8 +296,16 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
   /* For the `--printparams' (`-P') option:*/
   if(lineno==-1)
     {
-      if( isnan(p->quantmax) ) asprintf(&str, "%g", p->quantmin);
-      else     asprintf(&str, "%g,%g", p->quantmin, p->quantmax);
+      if( isnan(p->quantmax) )
+        {
+          if( asprintf(&str, "%g", p->quantmin)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&str, "%g,%g", p->quantmin, p->quantmax)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       return str;
     }
 
@@ -524,7 +532,8 @@ ui_check_options_and_arguments(struct statisticsparams *p)
                       "to tables.", p->inputname, p->cp.hdu);
             }
           else if(p->column==NULL)
-            asprintf(&name, "%s (hdu: %s)", p->inputname, p->cp.hdu);
+            if( asprintf(&name, "%s (hdu: %s)", p->inputname, p->cp.hdu)<0 )
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
 
       /* If its not FITS, it must be a table. */

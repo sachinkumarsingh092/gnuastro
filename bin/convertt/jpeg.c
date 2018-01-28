@@ -261,7 +261,8 @@ jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
     {
       dsize[0]=s0;
       dsize[1]=s1;
-      asprintf(&name, "JPEG_CH_%zu", i+1);
+      if( asprintf(&name, "JPEG_CH_%zu", i+1)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_data_add_alloc(list, allcolors[i], GAL_TYPE_UINT8, ndim,
                               dsize, NULL, 0, minmapsize, name, NULL, NULL);
       free(name);

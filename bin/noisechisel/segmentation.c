@@ -593,8 +593,9 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   /* Write the comments. */
   gal_list_str_add(&comments, "See also: `CLUMPS_ALL_DET' HDU of "
                    "output with `--checksegmentation'.", 1);
-  asprintf(&msg, "S/N values of `nan': clumps smaller than `--segsnminarea' "
-           "of %zu.", p->segsnminarea);
+  if( asprintf(&msg, "S/N values of `nan': clumps smaller than "
+               "`--segsnminarea' of %zu.", p->segsnminarea)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, msg, 0);
   gal_list_str_add(&comments, "S/N of clumps over detected regions.", 1);
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
@@ -687,8 +688,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "DET_CLUMPS_ALL";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "Identified clumps over detections  "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "Identified clumps over detections  "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -699,8 +702,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "DET_CLUMPS_TRUE";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "True clumps found                  "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "True clumps found                  "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -712,8 +717,10 @@ segmentation_detections(struct noisechiselparams *p)
               if(!p->cp.quiet)
                 {
                   gal_timing_report(NULL, "Starting to identify objects.", 1);
-                  asprintf(&msg, "True clumps grown                  "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "True clumps grown                  "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -724,8 +731,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "DET_OBJ_IDENTIFIED";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "Identified objects over detections "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "Identified objects over detections "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -736,8 +745,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "DET_OBJECTS_FULL";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "Objects grown to cover full area   "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "Objects grown to cover full area   "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -748,8 +759,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "CLUMPS_FINAL";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "Clumps given their final label     "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "Clumps given their final label     "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -760,8 +773,10 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "OBJECTS_FINAL";
               if(!p->cp.quiet)
                 {
-                  asprintf(&msg, "Objects given their final label    "
-                           "(HDU: `%s').", demo->name);
+                  if( asprintf(&msg, "Objects given their final label    "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
                   gal_timing_report(NULL, msg, 2);
                   free(msg);
                 }
@@ -896,9 +911,10 @@ segmentation(struct noisechiselparams *p)
   /* Report the results and timing to the user. */
   if(!p->cp.quiet)
     {
-      asprintf(&msg, "%zu object%s""containing %zu clump%sfound.",
-               p->numobjects, p->numobjects==1 ? " " : "s ",
-               p->numclumps,  p->numclumps ==1 ? " " : "s ");
+      if( asprintf(&msg, "%zu object%s""containing %zu clump%sfound.",
+                   p->numobjects, p->numobjects==1 ? " " : "s ",
+                   p->numclumps,  p->numclumps ==1 ? " " : "s ")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 1);
       free(msg);
     }

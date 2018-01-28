@@ -147,7 +147,10 @@ gal_fits_name_save_as_string(char *filename, char *hdu)
 {
   char *name;
   if( gal_fits_name_is_fits(filename) )
-    asprintf(&name, "%s (hdu: %s)", filename, hdu);
+    {
+      if( asprintf(&name, "%s (hdu: %s)", filename, hdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
   else gal_checkset_allocate_copy(filename, &name);
   return name;
 }
@@ -671,7 +674,8 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
   fitsfile *fptr;
 
   /* Add hdu to filename: */
-  asprintf(&ffname, "%s[%s#]", filename, hdu);
+  if( asprintf(&ffname, "%s[%s#]", filename, hdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
   /* Open the FITS file: */
   if( fits_open_file(&fptr, ffname, iomode, &status) )
@@ -2494,8 +2498,10 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
   for(col=cols; col!=NULL; col=col->next)
     {
       /* Set the `ttype' and `tunit' values: */
-      asprintf(&ttype[i], "%s", col->name ? col->name : "");
-      asprintf(&tunit[i], "%s", col->unit ? col->unit : "");
+      if( asprintf(&ttype[i], "%s", col->name ? col->name : "")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if( asprintf(&tunit[i], "%s", col->unit ? col->unit : "")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
 
       /* FITS's TFORM depends on the type of FITS table, so work
@@ -2537,13 +2543,15 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
               case GAL_TYPE_INT32:
               case GAL_TYPE_UINT64:
               case GAL_TYPE_INT64:
-                asprintf(&tform[i], "%c%d", fmt[0], col->disp_width);
+                if( asprintf(&tform[i], "%c%d", fmt[0], col->disp_width)<0 )
+                  error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
                 break;
 
               case GAL_TYPE_FLOAT32:
               case GAL_TYPE_FLOAT64:
-                asprintf(&tform[i], "%c%d.%d", fmt[0], col->disp_width,
-                         col->disp_precision);
+                if( asprintf(&tform[i], "%c%d.%d", fmt[0], col->disp_width,
+                             col->disp_precision)<0 )
+                  error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
                 break;
 
               default:
@@ -2561,9 +2569,15 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
           col->disp_width=fits_string_fixed_alloc_size(col);
           fmt[0]=gal_fits_type_to_bin_tform(col->type);
           if( col->type==GAL_TYPE_STRING )
-            asprintf(&tform[i], "%d%c", col->disp_width, fmt[0]);
+            {
+              if( asprintf(&tform[i], "%d%c", col->disp_width, fmt[0])<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
           else
-            asprintf(&tform[i], "%c", fmt[0]);
+            {
+              if( asprintf(&tform[i], "%c", fmt[0])<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
           break;
 
         default:
@@ -2599,7 +2613,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
     case GAL_TABLE_FORMAT_AFITS:
 
       /* Print the keyword and value. */
-      asprintf(&keyname, "TNULL%zu", colnum);
+      if( asprintf(&keyname, "TNULL%zu", colnum)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       blank=gal_blank_as_string(col->type, col->disp_width);
 
       /* When in exponential form (`tform' starting with `E'), CFITSIO
@@ -2627,7 +2642,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
           && col->type!=GAL_TYPE_STRING )
         {
           blank=gal_blank_alloc_write(col->type);
-          asprintf(&keyname, "TNULL%zu", colnum);
+          if( asprintf(&keyname, "TNULL%zu", colnum)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           fits_write_key(fptr, gal_fits_type_to_datatype(col->type),
                          keyname, blank, "blank value for this column",
                          &status);
@@ -2645,8 +2661,10 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
   /* Write the comments if there is any. */
   if(col->comment)
     {
-      asprintf(&keyname, "TCOMM%zu", colnum);
-      asprintf(&bcomment, "comment for field %zu", colnum);
+      if( asprintf(&keyname, "TCOMM%zu", colnum)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if( asprintf(&bcomment, "comment for field %zu", colnum)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       fits_write_key(fptr, TSTRING, keyname, col->comment,
                      bcomment, &status);
       gal_fits_io_error(status, NULL);

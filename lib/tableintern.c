@@ -54,10 +54,12 @@ gal_tableintern_error_col_selection(char *filename, char *hdu,
   /* Set the proper pointers. */
   if(gal_fits_name_is_fits(filename))
     {
-      asprintf(&name, "%s (hdu: %s)", filename, hdu);
+      if( asprintf(&name, "%s (hdu: %s)", filename, hdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       c=hdu; while(*c!='\0') if(isspace(*c++)) break;
-      asprintf(&command, *c=='\0' ? "%s --hdu=%s" : "%s --hdu=\"%s\"",
-               filename, hdu);
+      if( asprintf(&command, *c=='\0' ? "%s --hdu=%s" : "%s --hdu=\"%s\"",
+                   filename, hdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
     }
   else command=name=filename;
 

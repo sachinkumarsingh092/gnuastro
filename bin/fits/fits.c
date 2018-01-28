@@ -213,7 +213,8 @@ fits_print_extension_info(struct fitsparams *p)
       /* Move to the next extension if we aren't on the last extension. */
       if( i!=numext-1 && fits_movrel_hdu(fptr, 1, &hdutype, &status) )
         {
-          asprintf(&msg, "moving to hdu %zu", i+1);
+          if( asprintf(&msg, "moving to hdu %zu", i+1)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_fits_io_error(status, msg);
         }
     }

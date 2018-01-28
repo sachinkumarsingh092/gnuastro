@@ -88,30 +88,37 @@ buildprog(struct buildprogparams *p)
     }
 
   /* Compiler options with values: */
-  if(p->warning)   asprintf(&warning,  "-W%s", p->warning);
-  if(p->optimize)  asprintf(&optimize, "-O%s", p->optimize);
+  if(p->warning)
+    if( asprintf(&warning,  "-W%s", p->warning)<0 )
+      error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  if(p->optimize)
+    if( asprintf(&optimize, "-O%s", p->optimize)<0 )
+      error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
   /* Libtool `.la' file: */
   if(p->la) fullla=p->la;
-  else      asprintf(&fullla, "%s/libgnuastro.la", LIBDIR);
+  else
+    if( asprintf(&fullla, "%s/libgnuastro.la", LIBDIR)<0 )
+      error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
   /* Put the command to run into a string. */
-  asprintf(&command, "%s %s %s%s --mode=link gcc %s %s %s %s %s %s %s "
-           "-I%s %s -o %s",
-           GAL_CONFIG_GNULIBTOOL_EXEC,
-           p->cp.quiet ? "--quiet" : "",
-           p->tag      ? "--tag="   : "",
-           p->tag      ? p->tag    : "",
-           warning     ? warning   : "",
-           p->debug    ? "-g"      : "",
-           optimize    ? optimize  : "",
-           include     ? include   : "",
-           linkdir     ? linkdir   : "",
-           p->sourceargs->v,
-           linklib     ?linklib    : "",
-           INCLUDEDIR,
-           fullla,
-           p->cp.output);
+  if( asprintf(&command, "%s %s %s%s --mode=link gcc %s %s %s %s %s %s %s "
+               "-I%s %s -o %s",
+               GAL_CONFIG_GNULIBTOOL_EXEC,
+               p->cp.quiet ? "--quiet" : "",
+               p->tag      ? "--tag="   : "",
+               p->tag      ? p->tag    : "",
+               warning     ? warning   : "",
+               p->debug    ? "-g"      : "",
+               optimize    ? optimize  : "",
+               include     ? include   : "",
+               linkdir     ? linkdir   : "",
+               p->sourceargs->v,
+               linklib     ?linklib    : "",
+               INCLUDEDIR,
+               fullla,
+               p->cp.output)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
   /* Compile (and link): */
   retval=system(command);
@@ -129,11 +136,15 @@ buildprog(struct buildprogparams *p)
         {
         case '.':
         case '/':
-          asprintf(&command, "%s %s", p->cp.output, arguments?arguments:"");
+          if( asprintf(&command, "%s %s", p->cp.output,
+                       arguments?arguments:"")<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           break;
 
         default:
-          asprintf(&command, "./%s %s", p->cp.output, arguments?arguments:"");
+          if( asprintf(&command, "./%s %s", p->cp.output,
+                       arguments?arguments:"")<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
 
       /* Print the executed command if necessary, then run it. */

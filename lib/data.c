@@ -678,7 +678,11 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
     CTYPE *a=from->array;                                               \
     for(i=0;i<from->size;++i)                                           \
       {                                                                 \
-        if(a[i]!=BLANK) asprintf(&strarr[i], FMT, a[i]);                \
+        if(a[i]!=BLANK)                                                 \
+          {                                                             \
+            if( asprintf(&strarr[i], FMT, a[i])<0 )                     \
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__); \
+          }                                                             \
         else                                                            \
           gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]);     \
       }                                                                 \
@@ -690,7 +694,11 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
       {                                                                 \
         if(isnan(BLANK)) isblank = isnan(a[i]) ? 1 : 0;                 \
         else             isblank = a[i]==BLANK ? 1 : 0;                 \
-        if(isblank==0) asprintf(&strarr[i], "%f", a[i]);                \
+        if(isblank==0)                                                  \
+          {                                                             \
+            if( asprintf(&strarr[i], "%f", a[i])<0 )                    \
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__); \
+          }                                                             \
         else gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[i]);  \
       }                                                                 \
   }

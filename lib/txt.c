@@ -1206,7 +1206,8 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
      over-write the one that `sprintf' puts with a `:' for the columns
      that have the same number of digits as the final column. */
   i=0;
-  asprintf(&nstr, "%zu:", num);
+  if( asprintf(&nstr, "%zu:", num)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   nlen=strlen(nstr);
   for(data=datall; data!=NULL; data=data->next)
     {

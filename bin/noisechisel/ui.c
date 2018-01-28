@@ -761,8 +761,16 @@ ui_abort_after_check(struct noisechiselparams *p, char *filename,
 {
   char *name;
 
-  if(file2name) asprintf(&name, "`%s' and `%s'", filename, file2name);
-  else          asprintf(&name, "`%s'", filename);
+  if(file2name)
+    {
+      if( asprintf(&name, "`%s' and `%s'", filename, file2name)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
+  else
+    {
+      if( asprintf(&name, "`%s'", filename)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+    }
 
   /* Let the user know that NoiseChisel is aborting. */
   fprintf(stderr,

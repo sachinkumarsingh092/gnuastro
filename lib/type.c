@@ -362,7 +362,10 @@ gal_type_bit_string(void *in, size_t size)
 
 /* Write the contents of memory that `ptr' points to as a string of type
    `type'.*/
-#define TO_STRING(CTYPE, FMT) asprintf(&str, FMT, *(CTYPE *)ptr);
+#define TO_STRING(CTYPE, FMT) {                                         \
+  if( asprintf(&str, FMT, *(CTYPE *)ptr)<0 )                            \
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__); }
+
 char *
 gal_type_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
 {
@@ -376,11 +379,20 @@ gal_type_to_string(void *ptr, uint8_t type, int quote_if_str_has_space)
       if(quote_if_str_has_space)
         {
           c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
-          if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
-          else         asprintf(&str, "\"%s\" ", *(char **)ptr);
+          if(*c=='\0')
+            {
+              if( asprintf(&str, "%s", *(char **)ptr)<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
+          else
+            {
+              if( asprintf(&str, "\"%s\" ", *(char **)ptr)<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
         }
       else
-        asprintf(&str, "%s", *(char **)ptr);
+        if( asprintf(&str, "%s", *(char **)ptr)<0 )
+          error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       break;
 
     case GAL_TYPE_UINT8:   TO_STRING( uint8_t,  "%"PRIu8  );  break;

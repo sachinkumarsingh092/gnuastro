@@ -266,15 +266,16 @@ gal_options_print_citation(struct argp_option *option, char *arg,
 
 
   /* Notice for acknowledgements. */
-  asprintf(&gnuastro_acknowledgement,
-           "Acknowledgement\n"
-           "---------------\n"
-           "This work was partly done using GNU Astronomy Utilities "
-           "(Gnuastro) version %s. Gnuastro is a generic package for "
-           "astronomical data manipulation and analysis which was "
-           "initially created and developed for research funded by the "
-           "Monbukagakusho (Japanese government) scholarship and ERC "
-           "advanced grant 339659-MUSICOS.", PACKAGE_VERSION);
+  if( asprintf(&gnuastro_acknowledgement,
+               "Acknowledgement\n"
+               "---------------\n"
+               "This work was partly done using GNU Astronomy Utilities "
+               "(Gnuastro) version %s. Gnuastro is a generic package for "
+               "astronomical data manipulation and analysis which was "
+               "initially created and developed for research funded by the "
+               "Monbukagakusho (Japanese government) scholarship and ERC "
+               "advanced grant 339659-MUSICOS.", PACKAGE_VERSION)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   printf("%s\n", gnuastro_acknowledgement);
   free(gnuastro_acknowledgement);
 
@@ -877,7 +878,8 @@ gal_options_read_sigma_clip(struct argp_option *option, char *arg,
   /* Caller wants to print the option values. */
   if(lineno==-1)
     {
-      asprintf(&str, "%g,%g", sigmaclip[0], sigmaclip[1]);
+      if( asprintf(&str, "%g,%g", sigmaclip[0], sigmaclip[1])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       return str;
     }
 
@@ -1623,12 +1625,14 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
           "`uint8' type", __func__, PACKAGE_BUGREPORT);
 
   /* The program's current directory configuration file. */
-  asprintf(&filename, ".%s/%s.conf", PACKAGE, cp->program_exec);
+  if( asprintf(&filename, ".%s/%s.conf", PACKAGE, cp->program_exec)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 
   /* Common options configuration file. */
-  asprintf(&filename, ".%s/%s.conf", PACKAGE, PACKAGE);
+  if( asprintf(&filename, ".%s/%s.conf", PACKAGE, PACKAGE)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 
@@ -1636,23 +1640,27 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
   home=options_get_home();
 
   /* The program's user-wide configuration file. */
-  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR,
-           cp->program_exec);
+  if( asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR,
+               cp->program_exec)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 
   /* Common options user-wide configuration file. */
-  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, PACKAGE);
+  if( asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, PACKAGE)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 
   /* The program's system-wide configuration file. */
-  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, cp->program_exec);
+  if( asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, cp->program_exec)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 
   /* Common options system-wide configuration file. */
-  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, PACKAGE);
+  if( asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, PACKAGE)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   options_parse_file(filename, cp, 0);
   free(filename);
 }
@@ -1991,7 +1999,8 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
       gal_checkset_mkdir(dirname);
 
       /* Prepare the full filename: */
-      asprintf(&filename, "%s/%s.conf", dirname, cp->program_exec);
+      if( asprintf(&filename, "%s/%s.conf", dirname, cp->program_exec)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
       /* Remove the file if it already exists. */
       gal_checkset_writable_remove(filename, 0, 0);
@@ -2128,14 +2137,16 @@ gal_options_print_state(struct gal_options_common_params *cp)
           break;
 
         case GAL_OPTIONS_KEY_SETDIRCONF:
-          asprintf(&dirname, ".%s", PACKAGE);
+          if( asprintf(&dirname, ".%s", PACKAGE)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           options_print_all(cp, dirname, cp->coptions[i].name);
           free(dirname);
           break;
 
         case GAL_OPTIONS_KEY_SETUSRCONF:
           home=options_get_home();
-          asprintf(&dirname, "%s/%s", home, USERCONFIG_DIR);
+          if( asprintf(&dirname, "%s/%s", home, USERCONFIG_DIR)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           options_print_all(cp, dirname, cp->coptions[i].name);
           free(dirname);
           break;

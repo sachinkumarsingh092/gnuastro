@@ -495,15 +495,21 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                          || p->clumps->type==GAL_TYPE_FLOAT64 ) ) )
     {
       if(p->clumps)
-        asprintf(&namestypes, "However, `%s' (hdu: %s) and `%s' (hdu: %s) "
-                 "have types of `%s' and `%s' respectively", objectsfile,
-                 p->objectshdu, clumpsfile, p->clumpshdu,
-                 gal_type_name(p->objects->type, 1),
-                 gal_type_name(p->clumps->type, 1) );
+        {
+          if( asprintf(&namestypes, "However, `%s' (hdu: %s) and `%s' "
+                       "(hdu: %s) have types of `%s' and `%s' respectively",
+                       objectsfile, p->objectshdu, clumpsfile, p->clumpshdu,
+                       gal_type_name(p->objects->type, 1),
+                       gal_type_name(p->clumps->type, 1) )<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       else
-        asprintf(&namestypes, "However, %s (hdu: %s) has a type of %s",
-                 objectsfile, p->objectshdu,
-                 gal_type_name(p->objects->type, 1));
+        {
+          if( asprintf(&namestypes, "However, %s (hdu: %s) has a type of %s",
+                       objectsfile, p->objectshdu,
+                       gal_type_name(p->objects->type, 1))<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       error(EXIT_FAILURE, 0, "labeled images (for objects or clumps) must "
             "have an integer datatype. %s.\n\n"
             "If you are sure the images contain only integer values but "
@@ -607,8 +613,10 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
       if(keys[0].status) p->clumpsn=NAN;
       if(keys[1].status)
         {
-          asprintf(&msg, "couldn't find/read NUMLABS in the header of "
-                   "%s (hdu: %s), see error above", clumpsfile, p->clumpshdu);
+          if( asprintf(&msg, "couldn't find/read NUMLABS in the header of "
+                       "%s (hdu: %s), see error above", clumpsfile,
+                       p->clumpshdu)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_fits_io_error(keys[1].status, msg);
         }
     }
