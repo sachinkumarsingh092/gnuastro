@@ -735,7 +735,12 @@ Let's assume the downloaded tarball is in the @file{TOPGNUASTRO}
 directory. The first two commands below can be used to decompress the
 source. If you download @file{tar.lz} and your Tar implementation doesn't
 recognize Lzip (the second command fails), run the third and fourth
-lines. Note that lines starting with @code{##} don't need to be typed.
+lines@footnote{In case Tar doesn't directly uncompress your @file{.tar.lz}
+tarball, you can merge the separate calls to Lzip and Tar (shown in the
+main body of text) into one command by directly piping the output of Lzip
+into Tar with a command like this: @command{$ lzip -cd gnuastro-0.5.tar.lz
+| tar -xf -}}. Note that lines starting with @code{##} don't need to be
+typed.
 
 @example
 ## Go into the download directory.
