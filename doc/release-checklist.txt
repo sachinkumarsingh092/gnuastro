@@ -191,7 +191,7 @@ Steps necessary to Package Gnuastro for Debian.
    following command. A `gnuastro' directory will be built, for the moment
    don't go in it.
 
-     $ git clone git://anonscm.debian.org/debian-astro/packages/gnuastro.git
+     $ git clone https://salsa.debian.org/debian-astro-team/gnuastro.git
 
 
  - If a Git directory exists, then pull any possible changes that already
@@ -215,9 +215,16 @@ Steps necessary to Package Gnuastro for Debian.
      $ export ver=A.B.CCC
 
 
- - Put a copy of the tarball to be packaged in this directory and make a
-   standard symbolic link to it (IMPORTANT: the `dash' is changed to an
-   `underscore' and an `orig' is added), then go into the cloned directory.
+ - Put a copy of the TARBALL and its SIGNATURE to be packaged in this
+   directory (use a different address for the experimental releases)
+
+     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-$ver.tar.gz
+     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-$ver.tar.gz.sig
+
+
+ - Make a standard symbolic link to the tarball (IMPORTANT: the `dash' is
+   changed to an `underscore' and an `orig' is added), then go into the
+   cloned directory.
 
      $ ln -s gnuastro-$ver-XXXX.tar.gz gnuastro_$ver.orig.tar.gz
      $ cd gnuastro
@@ -240,7 +247,8 @@ Steps necessary to Package Gnuastro for Debian.
      $ git add --all
      $ git commit -m "Upstream Gnuastro $ver"
      $ git tag upstream/$ver
-     $ pristine-tar -s commit ../gnuastro_$ver.orig.tar.gz
+     $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz          \
+                    -s ../gnuastro-$ver.tar.gz.sig
 
 
  - We are done with the `upstream' and `pristine-tar' branches and can
