@@ -81,6 +81,9 @@ License''.
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
 
+* Match: (gnuastro)Match. Match two separate catalogs.
+* astmatch: (gnuastro)Invoking astmatch. Options to Match.
+
 * NoiseChisel: (gnuastro)NoiseChisel. Detect signal in noise.
 * astnoisechisel: (gnuastro)Invoking astnoisechisel. Options to NoiseChisel.
 
