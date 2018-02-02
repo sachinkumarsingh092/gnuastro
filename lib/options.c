@@ -270,11 +270,12 @@ gal_options_print_citation(struct argp_option *option, char *arg,
                "Acknowledgement\n"
                "---------------\n"
                "This work was partly done using GNU Astronomy Utilities "
-               "(Gnuastro) version %s. Gnuastro is a generic package for "
-               "astronomical data manipulation and analysis which was "
-               "initially created and developed for research funded by the "
-               "Monbukagakusho (Japanese government) scholarship and ERC "
-               "advanced grant 339659-MUSICOS.", PACKAGE_VERSION)<0 )
+               "(Gnuastro, ascl.net/1801.009) version %s. Gnuastro is a "
+               "generic package for astronomical data manipulation and "
+               "analysis which was initially created and developed for "
+               "research funded by the Monbukagakusho (Japanese "
+               "government) scholarship and European Research Council "
+               "(ERC) advanced grant 339659-MUSICOS.", PACKAGE_VERSION)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   printf("%s\n", gnuastro_acknowledgement);
   free(gnuastro_acknowledgement);
