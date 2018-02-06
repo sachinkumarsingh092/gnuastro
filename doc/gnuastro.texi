@@ -956,7 +956,7 @@ looked for in the sixth place of decimals.
 If scientists are considered to be more than mere ``puzzle
 solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
 Revolutions}, University of Chicago Press, 1962.} (simply adding to
-the decimals of known values or observing a feature in 10, 100, or
+the decimals of existing values or observing a feature in 10, 100, or
 100000 more galaxies or stars, as Kelvin and Michelson clearly
 believed), they cannot just passively sit back and uncritically repeat
 the previous (observational or theoretical) methods/tools on new
