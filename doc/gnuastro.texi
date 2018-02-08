@@ -3802,18 +3802,34 @@ old@footnote{As of early June 2016, its most recent version was uploaded in
 February 2001.}, so its installation is not easy, there are also many great
 modern WCS plotting tools (mostly in written in Python). Hence, if you will
 not be using those plotting functions in WCSLIB, you can configure it with
-the @option{--without-pgplot} option as shown below. Let's assume you have
-downloaded @url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
-@file{wcslib.tar.bz2}} and are in the same directory:
+the @option{--without-pgplot} option as shown below.
+
+If you have the cURL library @footnote{@url{https://curl.haxx.se}} on your
+system and you installed CFITSIO version 3.42 or later, you will need to
+also link with the cURL library at configure time (through the
+@code{-lcurl} option as shown below). CFITSIO uses the cURL library for its
+HTTPS (or HTTP Secure@footnote{@url{https://en.wikipedia.org/wiki/HTTPS}})
+support and if it is present on your system, CFITSIO will depend on
+it. Therefore, if @command{./configure} command below fails (you don't have
+the cURL library), then remove this option and rerun it.
+
+Let's assume you have downloaded
+@url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
+@file{wcslib.tar.bz2}} and are in the same directory, to configure, build,
+check and install WCSLIB follow the steps below.
 @example
 $ tar xf wcslib.tar.bz2
-$ cd wcslib-X.X                    # Replace X.X with version number
-$ ./configure --without-pgplot LIBS="-pthread -lm" --disable-fortran
+
+## In the `cd' command, replace `X.X' with version number.
+$ cd wcslib-X.X
+
+## If `./configure' fails, remove `-lcurl' and run again.
+$ ./configure LIBS="-pthread -lcurl -lm" --without-pgplot     \
+              --disable-fortran
 $ make
 $ make check
 $ sudo make install
 @end example
-
 
 
 
