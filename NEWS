@@ -1,6 +1,24 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 
+* Noteworthy changes in release A.A (library 4.0.0) (YYYY-MM-DD) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bug fixes
+
+  Many unused result warnings for asprintf in some compilers (bug #52979).
+
+  Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram (bug #53122).
+
+
+
+
+
 * Noteworthy changes in release 0.5 (library 3.0.0) (2017-12-22) [stable]
 
 ** New features
