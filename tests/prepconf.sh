@@ -68,10 +68,18 @@ rm addedoptions.txt
 # ---------------------------------
 #
 # Each utility's configuration file is copied in the `tests' directory for
-# easy readability.
-for prog in arithmetic buildprog convertt convolve cosmiccal crop fits  \
-            match mkcatalog mknoise mkprof noisechisel statistics table \
-            warp
+# easy readability. Note that some programs may need to build their
+# configuration files during compilation. Hence, their configuration files
+# are in the build directory, not the source directory.
+
+# Source directory configuraion files:
+for prog in arithmetic buildprog convertt convolve cosmiccal crop fits \
+            match mkcatalog mknoise mkprof noisechisel statistics table warp
 do
-    cp $topsrc/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
+    if test -f $topsrc/bin/$prog/ast$prog.conf; then
+        ctopdir=$topsrc
+    else
+        ctopdir=$topbuild
+    fi
+    cp $ctopdir/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
 done

@@ -191,6 +191,7 @@ AM_CPPFLAGS = -I../lib
 AM_TESTS_ENVIRONMENT =                              \
 export mkdir_p="$(MKDIR_P)";                        \
 export topsrc=$(top_srcdir);                        \
+export topbuild=$(top_builddir);                    \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasgnulibtool=$(MAYBE_HASGNULIBTOOL);        \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);

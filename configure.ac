@@ -87,6 +87,16 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
+# If any specific CPPFLAGS and LDFLAGS are given, we need to keep the raw
+# values (before they are changed in the next step) to pass onto
+# BuildProgram (which also needs them).
+AC_SUBST(IN_LDFLAGS, "$LDFLAGS")
+AC_SUBST(IN_CPPFLAGS, "$CPPFLAGS")
+
+
+
+
+
 # Generic compiler flags for all sub-directories.
 CFLAGS="-Wall -O3 $CFLAGS"
 CXXFLAGS="-Wall -O3 $CXXFLAGS"
