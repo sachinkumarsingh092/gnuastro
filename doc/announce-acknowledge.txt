@@ -3,5 +3,6 @@ People who's help must be acknowledged in the next release.
 Antonio Diaz Diaz
 Guillaume Mahler
 Ole Streicher
-Éric Thiébaut
 Michel Tallon
+Juan C. Tello
+Éric Thiébaut

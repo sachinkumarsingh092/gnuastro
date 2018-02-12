@@ -5279,17 +5279,22 @@ re-configure Gnuastro, then re-run make.
 @cindex Tests, only one passes
 @cindex @file{LD_LIBRARY_PATH}
 @item
-@command{$ make check}: @emph{Only one @file{.sh} test passes, all the rest
-fail.}  It is highly likely that your distribution doesn't look into the
-@file{/usr/local/lib} directory when searching for shared libraries. To
-make sure it is added to the list of directories, run the following command
-and restart your terminal: (you can ignore the @command{\} and extra space
-if you type it, it is only necessary if you copy and paste). See
-@ref{Installation directory} for more details.
+@command{$ make check}: @emph{Only the first couple of tests pass, all the
+rest fail or get skipped.}  It is highly likely that when searching for
+shared libraries, your system doesn't look into the @file{/usr/local/lib}
+directory (or wherever you installed Gnuastro or its dependencies). To make
+sure it is added to the list of directories, add the following line to your
+@file{~/.bashrc} file and restart your terminal. Don't forget to change
+@file{/usr/local/lib} if the libraries are installed in other
+(non-standard) directories.
+
 @example
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
-     >> ~/.bashrc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 @end example
+
+You can also add more directories by using a colon `@code{:}' to separate
+them. See @ref{Installation directory} and @ref{Linking} to learn more on
+the @code{PATH} variables and dynamic linking respectively.
 
 @cindex GPL Ghostscript
 @item
