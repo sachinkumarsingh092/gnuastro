@@ -18515,8 +18515,8 @@ library, you might need another tool.} program, for example:
 $ ldd /usr/local/bin/astarithmetic
 @end example
 
-Library file names start with a @file{lib} and end with suffix depending on
-their type as described below. In between these two is the name of the
+Library file names start with a @file{lib} and end with a suffix depending
+on their type as described below. In between these two is the name of the
 library, for example @file{libgnuastro.a} (Gnuastro's static library) and
 @file{libgsl.so.0.0.0} (GSL's shared library).
 
@@ -18552,16 +18552,17 @@ the @file{prefix/lib/} directory (see @ref{Installation directory}). In
 this way other programs can make which ever kind of link that they want.
 
 To link with a library, the linker needs to know where to find the
-library. You do that with two separate options to the linker (see
-@ref{Summary and example on libraries} for an example):
+library. @emph{At compilation time}, these locations can be passed to the
+linker with two separate options (see @ref{Summary and example on
+libraries} for an example) as described below.
 
 @table @option
 @item -L DIR
 Will tell the linker to look into @file{DIR} for the libraries. For example
 @file{-L/usr/local/lib}, or @file{-L/home/yourname/.local/lib}. You can
 make multiple calls to this option, so the linker looks into several
-directories. Note that the space between @key{L} and the directory is
-optional and commonly not used.
+directories at compilation time. Note that the space between @key{L} and
+the directory is optional and commonly not used.
 
 @item -lLIBRARY
 Specify the unique name of a library to be linked. As discussed above,
@@ -18591,6 +18592,14 @@ the linker will complain and abort.
 
 @end table
 
+If you have compiled and linked your program with a dynamic library, then
+the linker needs to know the location of the libraries @emph{every time}
+the final program is run. For this purpose, the linker looks into the
+@code{LD_LIBRARY_PATH} environment variable. Therefore, if you don't get
+any errors when compiling/linking, but are unable to run your program
+because of a failure to find a library, it is because the linker hasn't
+found the dynamic library @emph{at run time}. See @ref{Installation
+directory} on how to add any directory to @code{LD_LIBRARY_PATH}.
 
 
 
