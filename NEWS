@@ -15,6 +15,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram (bug #53122).
 
+  Crash when printing values with the `--onlyversion' option (bug #53142).
+
 
 
 

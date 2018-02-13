@@ -179,35 +179,53 @@ void *
 gal_options_check_version(struct argp_option *option, char *arg,
                           char *filename, size_t lineno, void *junk)
 {
-  /* Check if the given value is different from this version. */
-  if( strcmp(arg, PACKAGE_VERSION) )
-    {
-      /* Print an error message and abort.  */
-      error_at_line(EXIT_FAILURE, 0, filename, lineno, "version mis-match: "
-                    "you are running GNU Astronomy Utilities (Gnuastro) "
-                    "version `%s'. However, the `onlyversion' option is set "
-                    "to version `%s'.\n\n"
-                    "This was probably done for reproducibility. Therefore, "
-                    "manually removing, or changing, the option value might "
-                    "produce errors or unexpected results. It is thus "
-                    "strongly advised to build Gnuastro %s and re-run this "
-                    "command/script.\n\n"
-                    "You can download previously released tar-balls from the "
-                    "following URLs respectively:\n\n"
-                    "    Stable (version format: X.Y):      "
-                    "http://ftpmirror.gnu.org/gnuastro\n"
-                    "    Alpha  (version format: X.Y.A-B):  "
-                    "http://alpha.gnu.org/gnu/gnuastro\n\n"
-                    "Alternatively, you can clone Gnuastro, checkout the "
-                    "respective commit (from the version number), then "
-                    "bootstrap and build it. Please run the following "
-                    "command for more information:\n\n"
-                    "    $ info gnuastro \"Version controlled source\"\n",
-                    PACKAGE_VERSION, arg, arg);
+  char *str;
 
-      /* Just to avoid compiler warnings for unused variables. The program
-         will never reach this point! */
-      arg=filename=NULL; lineno=0; option=NULL; junk=NULL;
+  /* First see if we are reading or writing. */
+  if(lineno==-1)
+    {
+      /* Note that `PACKAGE_VERSION' is a static string. But the output
+         must be an allocated string so we can free it. */
+      gal_checkset_allocate_copy(PACKAGE_VERSION, &str);
+      return str;
+    }
+
+  /* Check if the given value is different from this version. */
+  else
+    {
+      if(arg==NULL)
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. The value to `arg' is NULL", __func__,
+              PACKAGE_BUGREPORT);
+      else if( strcmp(arg, PACKAGE_VERSION) )
+        {
+          /* Print an error message and abort.  */
+          error_at_line(EXIT_FAILURE, 0, filename, lineno, "version "
+                        "mis-match: you are running GNU Astronomy Utilities "
+                        "(Gnuastro) version `%s'. However, the `onlyversion' "
+                        "option is set to version `%s'.\n\n"
+                        "This was probably done for reproducibility. "
+                        "Therefore, manually removing, or changing, the "
+                        "option value might produce errors or unexpected "
+                        "results. It is thus strongly advised to build "
+                        "Gnuastro %s and re-run this command/script.\n\n"
+                        "You can download previously released tar-balls "
+                        "from the following URLs respectively:\n\n"
+                        "    Stable (version format: X.Y):      "
+                        "http://ftpmirror.gnu.org/gnuastro\n"
+                        "    Alpha  (version format: X.Y.A-B):  "
+                        "http://alpha.gnu.org/gnu/gnuastro\n\n"
+                        "Alternatively, you can clone Gnuastro, checkout the "
+                        "respective commit (from the version number), then "
+                        "bootstrap and build it. Please run the following "
+                        "command for more information:\n\n"
+                        "    $ info gnuastro \"Version controlled source\"\n",
+                        PACKAGE_VERSION, arg, arg);
+
+          /* Just to avoid compiler warnings for unused variables. The program
+             will never reach this point! */
+          arg=filename=NULL; lineno=0; option=NULL; junk=NULL;
+        }
     }
   return NULL;
 }
