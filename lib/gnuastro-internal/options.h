@@ -195,6 +195,7 @@ struct gal_options_common_params
   size_t            numthreads; /* Number of threads to use.              */
   size_t            minmapsize; /* Minimum bytes necessary to use mmap.   */
   uint8_t                  log; /* Make a log file.                       */
+  char            *onlyversion; /* Redundant, kept/set for generality.    */
 
   /* Configuration files. */
   uint8_t          printparams; /* To print the full list of parameters.  */

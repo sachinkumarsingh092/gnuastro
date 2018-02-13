@@ -227,10 +227,10 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Type of output: e.g., int16, float32, etc...",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &cp->type,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_NOT_MANDATORY,
+      &cp->type,                /* Internally, `cp->type' is actually an   */
+      GAL_TYPE_STRING,          /* `uint8_t', but the user gives a string. */
+      GAL_OPTIONS_RANGE_GT_0,   /* So for the sanity checks to pass, we    */
+      GAL_OPTIONS_NOT_MANDATORY,/* use `GAL_TYPE_STRING' for this option.  */
       GAL_OPTIONS_NOT_SET,
       gal_options_read_type
     },
@@ -427,7 +427,7 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Only run if the program version is STR.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
-      NULL,
+      &cp->onlyversion,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,

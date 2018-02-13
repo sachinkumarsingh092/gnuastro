@@ -17,6 +17,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Crash when printing values with the `--onlyversion' option (bug #53142).
 
+  NULL value of onlyversion option causing a crash (bug #53147).
+
 
 
 
