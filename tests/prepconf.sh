@@ -64,6 +64,7 @@ rm addedoptions.txt
 
 
 
+
 # Bring utility configuration files
 # ---------------------------------
 #
@@ -71,8 +72,6 @@ rm addedoptions.txt
 # easy readability. Note that some programs may need to build their
 # configuration files during compilation. Hence, their configuration files
 # are in the build directory, not the source directory.
-
-# Source directory configuraion files:
 for prog in arithmetic buildprog convertt convolve cosmiccal crop fits \
             match mkcatalog mknoise mkprof noisechisel statistics table warp
 do
@@ -81,5 +80,5 @@ do
     else
         ctopdir=$topbuild
     fi
-    cp $ctopdir/bin/$prog/ast$prog.conf .gnuastro/ast$prog.conf
+    cp $ctopdir/bin/$prog/*.conf .gnuastro/
 done
