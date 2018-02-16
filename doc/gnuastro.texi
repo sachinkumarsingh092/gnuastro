@@ -13028,9 +13028,9 @@ dataset.
 
 @cindex AWK
 @cindex GNU AWK
-The group of options below can used to get a single value measurement of
-the whole dataset. They will print only the requested value as one field in
-a line/row, like the @option{--mean}, @option{--median} options. These
+The group of options below can be used to get single value measurement(s)
+of the whole dataset. They will print only the requested value as one field
+in a line/row, like the @option{--mean}, @option{--median} options. These
 options can be called any number of times and in any order. The outputs of
 all such options will be printed on one line following each other (with a
 space character between them). This feature makes these options very useful
@@ -21116,14 +21116,15 @@ The FITS format is the most common format to store data (images and tables)
 in astronomy. The CFITSIO library already provides a very good low-level
 collection of functions for manipulating FITS data. The low-level nature of
 CFITSIO is defined for versatility and portability. As a result, even a
-simple a basic operation, like reading an image or table column into
+simple and basic operation, like reading an image or table column into
 memory, will require a special sequence of CFITSIO function calls which can
-be inconvenient and buggy to manage in separate locations. Therefore
-Gnuastro library provides wrappers for CFITSIO functions to make it much
-easier to read/write/modify FITS file data, header keywords and
-extensions. Hence, if you feel these functions don't exactly do what you
-want, we strongly recommend reading the CFITSIO manual to use its great
-features directly.
+be inconvenient and buggy to manage in separate locations. To ease this
+process, Gnuastro's library provides wrappers for CFITSIO functions. With
+these, it much easier to read, write, or modify FITS file data, header
+keywords and extensions. Hence, if you feel these functions don't exactly
+do what you want, we strongly recommend reading the CFITSIO manual to use
+its great features directly (afterwards, send us your wrappers so we can
+include it here for others to benefit also).
 
 All the functions and macros introduced in this section are declared in
 @file{gnuastro/fits.h}.  When you include this header, you are also
