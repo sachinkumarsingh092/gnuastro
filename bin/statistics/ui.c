@@ -765,11 +765,12 @@ ui_read_columns(struct statisticsparams *p)
 
       /* Print an error if there are too many columns: */
       if(toomanycols)
-        gal_tableintern_error_col_selection(p->inputname, p->cp.hdu, "too many "
-                                            "columns were selected by the "
-                                            "given values to the `--column' "
-                                            "and/or `--refcol' options. Only "
-                                            "one is acceptable for each.");
+        gal_tableintern_error_col_selection(p->inputname, p->cp.hdu, "too "
+                                            "many columns were selected by "
+                                            "the given values to the "
+                                            "`--column' and/or `--refcol' "
+                                            "options. Only one is "
+                                            "acceptable for each.");
     }
 
   /* Clean up. */

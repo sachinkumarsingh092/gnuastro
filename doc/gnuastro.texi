@@ -13215,9 +13215,10 @@ table. The first column is the value at the center of the bin and the
 second is the number of points in that bin. If the @option{--cumulative}
 option is also called with this option in a run, then the table will have
 three columns (the third is the cumulative frequency plot). Through the
-@option{--numbins} and @option{--lowerbin} you can modify the first column
-values and with @option{--normalize} and @option{--maxbinone} you can
-modify the second columns. See below for the description of each.
+@option{--numbins}, @option{--onebinstart}, or @option{--manualbinrange},
+you can modify the first column values and with @option{--normalize} and
+@option{--maxbinone} you can modify the second columns. See below for the
+description of each.
 
 By default (when no @option{--output} is specified) a plain text table will
 be created, see @ref{Gnuastro text table format}. If a FITS name is
@@ -13305,20 +13306,41 @@ can be very useful.
 @item --onebinstart=FLT
 Make sure that one bin starts with the value to this option. In practice,
 this will shift the bins used to find the histogram and cumulative
-frequency plot such that one bin's lower interval becomes this value. For
-example when the histogram range includes negative and positive values and
-zero has a special significance in your analysis, then zero will be
-somewhere in one bin and will mix counts of positive and negative. By
-setting @option{--onebinstart=0}, you can make sure that the viewers of the
-histogram will not be confused without doing the math of setting a range
-and number of bins.
+frequency plot such that one bin's lower interval becomes this value.
+
+For example when a histogram range includes negative and positive values
+and zero has a special significance in your analysis, then zero might fall
+somewhere in one bin. As a result that bin will have counts of positive and
+negative. By setting @option{--onebinstart=0}, you can make sure that one
+bin will only count negative values in the vicinity of zero and the next
+bin will only count positive ones in that vicinity.
 
 @cindex NaN
 Note that by default, the first row of the histogram and cumulative
 frequency plot show the central values of each bin. So in the example above
 you will not see the 0.000 in the first column, you will see two symmetric
-values. If the value is not within the usable input range, this option will
-be ignored.
+values.
+
+If the value is not within the usable input range, this option will be
+ignored. When it is, this option is the last operation before the bins are
+finalized, therefore it has a higher priority than options like
+@option{--manualbinrange}.
+
+@item --manualbinrange
+Use the values given to the @option{--greaterequal} and @option{--lessthan}
+to define the range of all bin-based calculations like the histogram. This
+option itself doesn't take any value, but just tells the program to use the
+values of those two options instead of the minimum and maximum values of a
+plot. If any of the two options are not given, then the minimum or maximum
+will be used respectively. Therefore, if none of them are called calling
+this option is redundant.
+
+The @option{--onebinstart} option has a higher priority than this option.
+In other words, @option{--onebinstart} takes effect after the range has
+been finalized and the initial bins have been defined, therefore it has the
+power to (possibly) shift the bins. If you want to manually set the range
+of the bins @emph{and} have one bin on a special value, it is thus better
+to avoid @option{--onebinstart}.
 
 @end table
 

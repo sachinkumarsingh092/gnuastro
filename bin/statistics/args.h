@@ -595,6 +595,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "manualbinrange",
+      UI_KEY_MANUALBINRANGE,
+      0,
+      0,
+      "Set min/max of bins manually, not from data.",
+      UI_GROUP_HIST_CFP,
+      &p->manualbinrange,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "onebinstart",
       UI_KEY_ONEBINSTART,
       "FLT",

@@ -303,8 +303,8 @@ statistics_on_tile(struct statisticsparams *p)
           type=GAL_TYPE_FLOAT64; break;
 
         default:
-          error(EXIT_FAILURE, 0, "%s: a bug! %d is not a recognized operation "
-                "code", __func__, operation->v);
+          error(EXIT_FAILURE, 0, "%s: a bug! %d is not a recognized "
+                "operation code", __func__, operation->v);
         }
 
       /* Allocate the space necessary to keep the value for each tile. */
@@ -470,13 +470,37 @@ print_ascii_plot(struct statisticsparams *p, gal_data_t *plot,
 
 
 
+
+/* Data structure that must be fed into `gal_statistics_regular_bins'.*/
+static gal_data_t *
+set_bin_range_params(struct statisticsparams *p)
+{
+  size_t rsize=2;
+  gal_data_t *range=NULL;
+
+  if(p->manualbinrange)
+    {
+      /* Allocate the range data structure. */
+      range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL, 0, -1,
+                           NULL, NULL, NULL);
+      ((float *)(range->array))[0]=p->greaterequal;
+      ((float *)(range->array))[1]=p->lessthan;
+    }
+  return range;
+}
+
+
+
+
+
 static void
 ascii_plots(struct statisticsparams *p)
 {
-  gal_data_t *bins, *hist, *cfp=NULL;
+  gal_data_t *bins, *hist, *cfp=NULL, *range=NULL;
 
   /* Make the bins and the respective plot. */
-  bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);
+  range=set_bin_range_params(p);
+  bins=gal_statistics_regular_bins(p->input, range, p->numasciibins, NAN);
   hist=gal_statistics_histogram(p->input, bins, 0, 0);
   if(p->asciicfp)
     {
@@ -586,13 +610,13 @@ static void
 save_hist_and_or_cfp(struct statisticsparams *p)
 {
   char *suf, *contents;
-  gal_data_t *bins, *hist, *cfp=NULL;
-
+  gal_data_t *bins, *hist, *cfp=NULL, *range=NULL;
 
   /* Set the bins and make the histogram, this is necessary for both the
      histogram and CFP (recall that the CFP is built from the
      histogram). */
-  bins=gal_statistics_regular_bins(p->input, NULL, p->numbins,
+  range=set_bin_range_params(p);
+  bins=gal_statistics_regular_bins(p->input, range, p->numbins,
                                    p->onebinstart);
   hist=gal_statistics_histogram(p->input, bins, p->normalize, p->maxbinone);
 
@@ -636,6 +660,10 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 
   /* Set the output file name. */
   write_output_table(p, bins, suf, contents);
+
+
+  /* Clean up. */
+  gal_data_free(range);
 }
 
 
@@ -770,7 +798,7 @@ print_basics(struct statisticsparams *p)
   int namewidth=40;
   float mirrdist=1.5;
   double mean, std, *d;
-  gal_data_t *tmp, *bins, *hist;
+  gal_data_t *tmp, *bins, *hist, *range=NULL;
 
   /* Define the input dataset. */
   print_input_info(p);
@@ -830,14 +858,16 @@ print_basics(struct statisticsparams *p)
      range of the histogram. In that case, we want to print the histogram
      information. */
   printf("-------");
+  range=set_bin_range_params(p);
   p->asciiheight = p->asciiheight ? p->asciiheight : 10;
   p->numasciibins = p->numasciibins ? p->numasciibins : 70;
-  bins=gal_statistics_regular_bins(p->input, NULL, p->numasciibins, NAN);
+  bins=gal_statistics_regular_bins(p->input, range, p->numasciibins, NAN);
   hist=gal_statistics_histogram(p->input, bins, 0, 0);
   if(p->refcol==NULL) printf("\nHistogram:\n");
   print_ascii_plot(p, hist, bins, 1, p->refcol ? 1 : 0);
   gal_data_free(bins);
   gal_data_free(hist);
+  gal_data_free(range);
 }
 
 

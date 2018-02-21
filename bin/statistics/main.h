@@ -79,6 +79,7 @@ struct statisticsparams
   size_t      numasciibins;  /* Number of bins in ASCII plots.           */
   size_t       asciiheight;  /* Height of ASCII histogram or CFP plots.  */
   uint8_t        normalize;  /* set the sum of all bins to 1.            */
+  uint8_t   manualbinrange;  /* Set bin min/max manually, not from data. */
   float        onebinstart;  /* Shift bins to start at this value.       */
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
   float         mirrordist;  /* Maximum distance after mirror for mode.  */
