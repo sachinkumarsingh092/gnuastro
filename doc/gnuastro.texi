@@ -830,21 +830,45 @@ was changed.
 demonstrates how four data sets with widely different shapes (when plotted)
 give nearly identical output from standard regression techniques. Anscombe
 uses this (now famous) quartet, which was introduced in the paper quoted
-above, to argue that ``Good statistical analysis is not a purely routine
-matter, and generally calls for more than one pass through the
-computer''. Anscombe's quartet can be generalized to say that users of a
-software cannot claim to understand how it works only based on the
-experience they have gained by frequently using it. This kind of subjective
-experience is prone to very serious mis-understandings about the data, what
-the software/statistical-method really does (especially as it gets more
+above, to argue that ``@emph{Good statistical analysis is not a purely
+routine matter, and generally calls for more than one pass through the
+computer}''. Echoing Anscombe's concern after 44 years, some of the highly
+recognized statisticians of our time (Leek, McShane, Gelman, Colquhoun,
+Nuijten and Goodman), wrote in Nature that:
+
+@quotation
+We need to appreciate that data analysis is not purely computational and
+algorithmic — it is a human behaviour....Researchers who hunt hard enough
+will turn up a result that fits statistical criteria — but their discovery
+will probably be a false positive.
+@author Five ways to fix statistics, Nature, 551, Nov 2017.
+@end quotation
+
+Users of statistical (scientific) methods (software) are therefore not
+passive (objective) agents in their result. Therefore, it is necessary to
+actually understand the method not just use it as a black box. The
+subjective experience gained by frequently using a method/software is not
+sufficient to claim an understanding of how the tool/method works and how
+relevant it is to the data and analysis. This kind of subjective experience
+is prone to very serious mis-understandings about the data, what the
+software/statistical-method really does (especially as it gets more
 complicated), and thus the scientific interpretation of the result. This
 attitude is further encouraged through non-free
-software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}. This
-approach to scientific software only helps in producing dogmas and an
-``obscurantist faith in the expert's special skill, and in his personal
-knowledge and authority''@footnote{Karl Popper. The logic of scientific
-discovery. 1959. Larger quote is given at the start of the PDF (for print)
-version of this book.}.
+software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}},
+poorly written (or non-existant) scientific software manuals, and
+non-reproducible papers@footnote{Where the authors omit many of the
+analysis/processing ``details'' from the paper by arguing that they would
+make the paper too long/unreadable. However, software methods do allows us
+to supplement papers with all the details necessary to exactly reproduce
+the result. For example see @url{https://doi.org/10.5281/zenodo.1163746,
+zenodo.1163746} and @url{https://doi.org/10.5281/zenodo.1164774,
+zenodo.1164774} and this @url{
+http://akhlaghi.org/reproducible-science.html, general discussion}.}. This
+approach to scientific software and methods only helps in producing dogmas
+and an ``@emph{obscurantist faith in the expert's special skill, and in his
+personal knowledge and authority}''@footnote{Karl Popper. The logic of
+scientific discovery. 1959. Larger quote is given at the start of the PDF
+(for print) version of this book.}.
 
 @quotation
 @cindex Douglas Rushkoff
@@ -907,8 +931,8 @@ Imagine if Galileo did not have the technical knowledge to build a
 telescope. Astronomical objects could not be seen with the Dutch military
 design of the telescope. In the beginning of his ``The Sidereal Messenger''
 (1610) he cautions the readers on this issue and instructs them on how to
-build a suitable instrument: without a detailed description of ``how'' he
-made his observations, no one would believe him. The same is true today,
+build a suitable instrument: without a detailed description of @emph{how}
+he made his observations, no one would believe him. The same is true today,
 science cannot progress with a black box. Before he actually saw the moons
 of Jupiter, the mountains on the Moon or the crescent of Venus, he was
 “evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
@@ -917,17 +941,19 @@ first edition, 2008.}. Science is not independent of its tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
-Bjarne Stroustrup (creator of the C++ language) says: ``Without
-understanding software, you are reduced to believing in magic''.  Ken
-Thomson (the designer or the Unix operating system) says ``I abhor a system
-designed for the `user' if that word is a coded pejorative meaning `stupid
-and unsophisticated'.'' Certainly no scientist (user of a scientific
-software) would want to be considered a believer in magic, or `stupid and
-unsophisticated'. However, this can happen when scientists get too distant
-from the raw data and are mainly indulging themselves in their own
-high-level (abstract) models (creations). For example, roughly five years
-before special relativity and about two decades before quantum mechanics
-fundamentally changed Physics, Kelvin is quoted as saying:
+Bjarne Stroustrup (creator of the C++ language) says: ``@emph{Without
+understanding software, you are reduced to believing in magic}''.  Ken
+Thomson (the designer or the Unix operating system) says ``@emph{I abhor a
+system designed for the `user' if that word is a coded pejorative meaning
+`stupid and unsophisticated'}.'' Certainly no scientist (user of a
+scientific software) would want to be considered a believer in magic, or
+stupid and unsophisticated. However, this often happen when scientists get
+too distant from the raw data and methods and are mainly indulging
+themselves in their own high-level (abstract) models (creations).
+
+Roughly five years before special relativity and about two decades before
+quantum mechanics fundamentally changed Physics, Kelvin is quoted as
+saying:
 
 @quotation
 @cindex Lord Kelvin
