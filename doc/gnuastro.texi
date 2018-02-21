@@ -2417,22 +2417,24 @@ unambiguous. In short, you often don't need to type the full name of the
 program you want to run.
 
 Gnuastro contains a large number of programs and it is natural to forget
-the details of each program's options. Therefore, before starting the
-analysis, let's review how you can refresh your memory any time you want on
-the command-line while working (without taking your hands off the
-keyboard). This book comes with your installation, so it will always
-correspond to your installed version of Gnuastro. Please see @ref{Info} for
-more.
+the details of each program's options or inputs and outputs. Therefore,
+before starting the analysis, let's review how you can access this book to
+refresh your memory any time you want. For example when working on the
+command-line, without having to take your hands off the keyboard. When you
+install Gnuastro, this book is also installed on your system along with all
+the programs and libraries, so you don't need an internet connection to to
+access/read it. Also, by accessing this book as described below, you can be
+sure that it corresponds to your installed version of Gnuastro.
 
 @cindex GNU Info
 GNU Info@footnote{GNU Info is already available on almost all Unix-like
 operating systems.} is the program in charge of displaying the manual on
-the command-line. To see this whole book on your command-line, please run
-the following command and subsequent keys. Info has its own
-mini-environment, therefore we'll show the keys that must be pressed in the
-mini-environment after a @code{->} sign. You can also ignore anything after
-the @code{#} sign in the middle of the line, they are only for your
-information.
+the command-line (for more, see @ref{Info}). To see this whole book on your
+command-line, please run the following command and press subsequent
+keys. Info has its own mini-environment, therefore we'll show the keys that
+must be pressed in the mini-environment after a @code{->} sign. You can
+also ignore anything after the @code{#} sign in the middle of the line,
+they are only for your information.
 
 @example
 $ info gnuastro                # Open the top of the manual.
