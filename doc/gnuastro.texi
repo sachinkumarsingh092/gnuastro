@@ -2750,22 +2750,22 @@ $ for z in $(seq 0.5 0.1 5); do                                  \
   done
 @end example
 
-If you want a fast result and commonly need such processing for a larger
-number of redshifts, the command above can be slow. This is because the
-CosmicCalculator program has a lot of overhead: it has to parse the
-command-line and all configuration files (see below). These are both
-human-readable characters, not computer-readable bits. CosmicCalculator
-then has to check the sanity of its inputs and check which of its many
-options you have asked for. It has to do all of these for every
-redshift. To greatly speed up the processing, Gnuastro gives you direct
-access to the root work-horse of CosmicCalculator without all that
-overhead: @ref{Gnuastro library}.
+This is a fast and simple way for this repeated calculation when it is only
+necessary once. However, if you commonly need this calculation and possibly
+for a larger number of redshifts, the command above can be slow. This is
+because the CosmicCalculator program has a lot of overhead. To be generic
+and easy to operate, it has to parse the command-line and all configuration
+files (see below) which contain human-readable characters and need a lot of
+processing to be ready for processing by the computer. Afterwards,
+CosmicCalculator has to check the sanity of its inputs and check which of
+its many options you have asked for. It has to do all of these for every
+redshift in the loop above.
 
-Using Gnuastro's library, you can write your own tiny little program for
-this same calculation, without all that extra overhead of CosmicCalculator
-(or any of Gnuastro's programs, see @ref{Library}). For this particular
-job, you want Gnuastro's @ref{Cosmology library}. Here is one example: put
-the following small C program in a file called @file{myprogram.c}.
+To greatly speed up the processing, you can directly access the root
+work-horse of CosmicCalculator without all that overhead. Using Gnuastro's
+library, you can write your own tiny program particularly designed for this
+exact calculation (and nothing else!). To do that, copy and paste the
+following C program in a file called @file{myprogram.c}.
 
 @example
 #include <math.h>
@@ -2802,45 +2802,46 @@ main(void)
 @end example
 
 @noindent
-To build and run this C program, you can use @ref{BuildProgram}. It is
-designed to manage Gnuastro's dependencies, compile the program you give it
-and then run it. In short, it hides all the complexities of compiling,
-linking and running C programs based on Gnuastro's library. The library
-will later be usable higher level languages like Python or Julia, for now
-it is only usable by C and C++ programs.
+To greatly simplify the compilation, linking and running of simple C
+programs like this that use Gnuastro's library, Gnuastro has
+@ref{BuildProgram}. This program designed to manage Gnuastro's
+dependencies, compile and link the program and then run the new program. To
+build and run the program above, simply run the following command:
 
 @example
 $ astbuildprog myprogram.c
 @end example
 
-See how much faster this is compared to the shell loop we wrote above? You
-might have noticed that a new file called @file{myprogram} is also created
-in the directory. This is the compiled program that was created and run by
-the command above (its in binary machine code, not human-readable any
-more). You can run it again to get the same results with a command like
-this:
+Did you notice how much faster this was compared to the shell loop we wrote
+above? You might have noticed that a new file called @file{myprogram} is
+also created in the directory. This is the compiled program that was
+created and run by the command above (its in binary machine code format,
+not human-readable any more). You can run it again to get the same results
+with a command like this:
 
 @example
 $ ./myprogram
 @end example
 
 The efficiency of @file{myprogram} compared to CosmicCalculator is because
-the requested processing is faster/comparable to the overheads. For other
-programs that take large input datasets (images for example), the overhead
-is usually negligible compared to the processing. In such cases, the
-libraries are only useful if you want a different/new processing compared
-to the functionalities in Gnuastro's existing programs.
+the requested processing is faster/comparable to the overheads necessary
+for each processing. For other programs that take large input datasets
+(images for example), the overhead is usually negligible compared to the
+processing. In such cases, the libraries are only useful if you want a
+different/new processing compared to the functionalities in Gnuastro's
+existing programs.
 
-Gnuastro has a large library which all the programs use for various steps
-their processing. For the full list of available functions classified by
-context, please see @ref{Gnuastro library}. Gnuastro's library and
-BuildProgram are created to make it easy for you to use these powerful
-features and get to your scientific results as efficiently (fast) and
-accurately as possible. Several other complete working examples (involving
-images and tables) of Gnuastro's libraries can be see in @ref{Library demo
-programs}. We'll stop with the libraries at this point in this tutorial and
-get back to Gnuastro's already built programs which ready to be used on the
-command-line.
+Gnuastro has a large library which is heavily used by all the programs. In
+other words, the library is like the skeleton of Gnuastro. For the full
+list of available functions classified by context, please see @ref{Gnuastro
+library}. Gnuastro's library and BuildProgram are created to make it easy
+for you to use these powerful features as you like. This gives you a high
+level of creativity, while also providing efficiency and
+robustness. Several other complete working examples (involving images and
+tables) of Gnuastro's libraries can be see in @ref{Library demo
+programs}. Let's stop the discussion on libraries at this point in this
+tutorial and get back to Gnuastro's already built programs which were the
+main purpose of this tutorial.
 
 None of Gnuastro's programs keep a default value internally within their
 code. However, when you ran CosmicCalculator with the @option{-z2} option
