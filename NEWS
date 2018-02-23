@@ -9,8 +9,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   cumulative frequency plots to be set outside the minimum or maximum
   values of the dataset.
 
-  MakeCatalog: The new `--median' option will calculate the median pixel
-  value within an object or clump.
+  MakeCatalog: The new `--mean' and `--median' options will calculate the
+  mean and median pixel value within an object or clump respectively.
 
 ** Removed features
 
