@@ -703,6 +703,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "mean",
+      UI_KEY_MEAN,
+      0,
+      0,
+      "Mean of values in object/clump.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "median",
       UI_KEY_MEDIAN,
       0,

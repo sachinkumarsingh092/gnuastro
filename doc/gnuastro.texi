@@ -15086,6 +15086,9 @@ work-horses: @code{mkcatalog_first_pass} and @code{mkcatalog_second_pass},
 their names are descriptive enough and their internals are also clear and
 heavily commented.
 
+@item doc/gnuastro.texi
+Update this manual and add a description for the new column.
+
 @end table
 
 
@@ -15593,6 +15596,11 @@ simply the sum of the pixels associated with clumps in the object. If no
 usable pixels (blank or below the threshold) are present over the clump or
 object, the stored value will be NaN, because zero (note that zero is
 meaningful).
+
+@item --mean
+The mean sky subtracted value of pixels within the object or clump. For
+clumps, the average river flux is subtracted from the sky subtracted
+mean.
 
 @item --median
 The median sky subtracted value of pixels within the object or clump. For

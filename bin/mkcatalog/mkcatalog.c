@@ -418,7 +418,7 @@ mkcatalog_median_pass(struct mkcatalog_passparams *pp)
   gal_data_t **clumpsmed=NULL;
   float ss, *I, *II, *SK, *ST;
   size_t i, increment=0, num_increment=1;
-  size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUMALL];
+  size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUM];
   gal_data_t *objmed=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL, 0,
                                     p->cp.minmapsize, NULL, NULL, NULL);
 
@@ -442,7 +442,7 @@ mkcatalog_median_pass(struct mkcatalog_passparams *pp)
                                      __func__, "ccounter");
       for(i=0;i<pp->clumpsinobj;++i)
         {
-          tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUMALL ];
+          tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
           clumpsmed[i]=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL,
                                       0, p->cp.minmapsize, NULL, NULL, NULL);
         }
@@ -463,11 +463,12 @@ mkcatalog_median_pass(struct mkcatalog_passparams *pp)
       /* Parse the next contiguous region of this tile. */
       do
         {
-          /* If this pixel belongs to the requested object, is a clumps and
-             isn't NAN, then do the processing. `hasblank' is constant, so
-             when the input doesn't have any blank values, the `isnan' will
-             never be checked. */
-          if( *O==pp->object && !isnan(*I) )
+          /* If this pixel belongs to the requested object, then do the
+             processing. `hasblank' is constant, so when the input doesn't
+             have any blank values, the `isnan' will never be checked. */
+          if( *O==pp->object
+              && !( p->hasblank && isnan(*I) )
+              && !( (ss = *I - *SK) < p->threshold * *ST ))
             {
               /* Copy the value for the whole object. */
               ss = *I - *SK;
