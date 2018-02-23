@@ -15046,7 +15046,7 @@ variable to the @code{mkcatalogparams} structure.
 
 @item ui.h
 The @code{option_keys_enum} associates a unique value for each option to
-MakeProfiles. The options that have a short option version, the single
+MakeCatalog. The options that have a short option version, the single
 character short comment is used for the value. Those that don't have a
 short option version, get a large integer automatically. You should add a
 variable here to identify your desired column.
@@ -15066,15 +15066,14 @@ sanity checks and preparations for it here. Otherwise, you can ignore this
 file.
 
 @item columns.c
-This file will contain the main definition and high-level calculation of
-your new column through the @code{columns_define_alloc} and
-@code{columns_fill} functions. In the first, you specify the basic
-information about the column: its name, units, comments, type (see
-@ref{Numeric data types}) and how it should be printed if the output is a
-text file. You should also specify the raw/internal columns that are
-necessary for this column here as the many existing examples show. Through
-the types for objects and rows, you can specify if this column is only for
-clumps, objects or both.
+This file contains the main definition and high-level calculation of your
+new column through the @code{columns_define_alloc} and @code{columns_fill}
+functions. In the first, you specify the basic information about the
+column: its name, units, comments, type (see @ref{Numeric data types}) and
+how it should be printed if the output is a text file. You should also
+specify the raw/internal columns that are necessary for this column here as
+the many existing examples show. Through the types for objects and rows,
+you can specify if this column is only for clumps, objects or both.
 
 The second main function (@code{columns_fill}) writes the final value into
 the appropriate column for each object and clump. As you can see in the
@@ -15594,6 +15593,11 @@ simply the sum of the pixels associated with clumps in the object. If no
 usable pixels (blank or below the threshold) are present over the clump or
 object, the stored value will be NaN, because zero (note that zero is
 meaningful).
+
+@item --median
+The median sky subtracted value of pixels within the object or clump. For
+clumps, the average river flux is subtracted from the sky subtracted
+median.
 
 @item --noriverbrightness
 [Clumps] The Sky (not river) subtracted clump brightness. By definition,
@@ -22707,15 +22711,14 @@ use to access an element of the @code{OTHER} dataset (if
 (similar to @code{itype} and @code{INPUT} discussed above). If
 @code{PARSE_OTHER} is non-zero, then @code{o} will also be incremented to
 the same index element but in the other array. You can use these along with
-any other variable you define before this macro to process the input and
-store it in the other.
+any other variable you define before this macro to process the input and/or
+the other.
 
 All variables within this function-like macro begin with @code{tpo_} except
-for the three variables listed above. So as long as you don't start the
-names of your variables with this prefix everything will be fine. Note that
-@code{i} (and possibly @code{o}) will be incremented once by this
-function-like macro, so don't increment them within @code{OP}. As a
-summary, the three variables you have access to within @code{OP} are:
+for the three variables listed below. Therefore, as long as you don't start
+the names of your variables with this prefix everything will be fine. Note
+that @code{i} (and possibly @code{o}) will be incremented once by this
+function-like macro, so don't increment them within @code{OP}.
 
 @table @code
 @item i

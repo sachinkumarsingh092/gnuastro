@@ -69,6 +69,7 @@ enum objectcols
     OCOL_NUMALL,         /* Number of all pixels with this label.     */
     OCOL_NUM,            /* Number of pixels above threshold.         */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
+    OCOL_MEDIAN,         /* Median of value in object.                */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
     OCOL_SX,             /* Shift along X axis.                       */
@@ -88,7 +89,7 @@ enum objectcols
     OCOL_UPPERLIMIT_B,   /* Upper limit magnitude.                    */
     OCOL_C_NUMALL,       /* Value independent no. of pixels in clumps.*/
     OCOL_C_NUM,          /* Area of clumps in this object.            */
-    OCOL_C_SUM,          /* Brightness  in object clumps.             */
+    OCOL_C_SUM,          /* Brightness in object clumps.              */
     OCOL_C_VX,           /* Sum of (value-sky)*x on clumps.           */
     OCOL_C_VY,           /* Sum of (value-sky)*y on obj. clumps.      */
     OCOL_C_GX,           /* Geometric center of clumps in object X.   */
@@ -109,6 +110,7 @@ enum clumpcols
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
     CCOL_SUM,            /* River subtracted brightness.              */
+    CCOL_MEDIAN,         /* Median of values in clump.                */
     CCOL_RIV_SUM,        /* Sum of rivers around clump.               */
     CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
     CCOL_SUMSKY,         /* Sum of sky value on this object.          */
@@ -156,7 +158,7 @@ struct mkcatalogparams
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */
   size_t                upnum;  /* Number of upper-limit random samples.*/
-  size_t             *uprange;  /* Range of random positions about target. */
+  size_t             *uprange;  /* Range of random positions about target.*/
   uint8_t             envseed;  /* Use the environment for random seed. */
   double       upsigmaclip[2];  /* Sigma clip to measure upper limit.   */
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */

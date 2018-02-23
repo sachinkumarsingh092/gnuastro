@@ -703,6 +703,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "median",
+      UI_KEY_MEDIAN,
+      0,
+      0,
+      "Median of values in object/clump.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "magnitude",
       UI_KEY_MAGNITUDE,
       0,
@@ -846,7 +860,7 @@ struct argp_option program_options[] =
 
 
 
-    /* Morphology/shapre related columns. */
+    /* Morphology/shape related columns. */
     {
       0, 0, 0, 0,
       "Morphology/shape related columns",

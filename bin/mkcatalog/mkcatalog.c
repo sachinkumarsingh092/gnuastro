@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
 
@@ -405,6 +406,124 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
 
 
 
+static void
+mkcatalog_median_pass(struct mkcatalog_passparams *pp)
+{
+  struct mkcatalogparams *p=pp->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  double *ci;
+  gal_data_t *median;
+  int32_t *O, *C=NULL;
+  gal_data_t **clumpsmed=NULL;
+  float ss, *I, *II, *SK, *ST;
+  size_t i, increment=0, num_increment=1;
+  size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUMALL];
+  gal_data_t *objmed=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL, 0,
+                                    p->cp.minmapsize, NULL, NULL, NULL);
+
+  /* A small sanity check. */
+  if(p->input->type!=GAL_TYPE_FLOAT32)
+    error(EXIT_FAILURE, 0, "%s: the input has to be float32 type", __func__);
+
+
+  /* Allocate space for the clump medians. */
+  if(p->clumps)
+    {
+      errno=0;
+      clumpsmed=malloc(pp->clumpsinobj * sizeof *clumpsmed);
+      if(clumpsmed==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't allocate `clumpsmed' for "
+              "%zu clumps", __func__, pp->clumpsinobj);
+
+
+      /* Allocate the array necessary to keep the values of each clump. */
+      ccounter=gal_data_calloc_array(GAL_TYPE_SIZE_T, pp->clumpsinobj,
+                                     __func__, "ccounter");
+      for(i=0;i<pp->clumpsinobj;++i)
+        {
+          tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUMALL ];
+          clumpsmed[i]=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL,
+                                      0, p->cp.minmapsize, NULL, NULL, NULL);
+        }
+    }
+
+
+  /* Parse each contiguous patch of memory covered by this object. */
+  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
+    {
+      /* Set the contiguous range to parse, we will check the count
+         over the `I' pointer and just increment the rest. */
+      O  = pp->st_o   + increment;
+      SK = pp->st_sky + increment;
+      ST = pp->st_std + increment;
+      if(p->clumps) C = pp->st_c + increment;
+      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
+
+      /* Parse the next contiguous region of this tile. */
+      do
+        {
+          /* If this pixel belongs to the requested object, is a clumps and
+             isn't NAN, then do the processing. `hasblank' is constant, so
+             when the input doesn't have any blank values, the `isnan' will
+             never be checked. */
+          if( *O==pp->object && !isnan(*I) )
+            {
+              /* Copy the value for the whole object. */
+              ss = *I - *SK;
+              memcpy( gal_data_ptr_increment(objmed->array, counter++,
+                                             p->input->type),
+                      &ss, gal_type_sizeof(p->input->type) );
+
+              /* We are also on a clump. */
+              if(p->clumps && *C>0)
+                memcpy( gal_data_ptr_increment(clumpsmed[*C-1]->array,
+                                               ccounter[*C-1]++,
+                                               p->input->type),
+                        &ss, gal_type_sizeof(p->input->type) );
+            }
+
+          /* Increment the other pointers. */
+          ++O; ++SK; ++ST; if(p->clumps) ++C;
+        }
+      while(++I<II);
+
+      /* Increment to the next contiguous region of this tile. */
+      increment += ( gal_tile_block_increment(p->input, dsize,
+                                              num_increment++, NULL) );
+    }
+
+
+  /* Calculate the final medians for objects. */
+  median=gal_data_copy_to_new_type_free(gal_statistics_median(objmed, 1),
+                                        GAL_TYPE_FLOAT64);
+  pp->oi[OCOL_MEDIAN]=*((double *)(median->array));
+  gal_data_free(objmed);
+  gal_data_free(median);
+
+
+  /* Calculate the median for clumps. */
+  if(p->clumps)
+    {
+      for(i=0;i<pp->clumpsinobj;++i)
+        {
+          ci=&pp->ci[ i * CCOL_NUMCOLS ];
+          median=gal_statistics_median(clumpsmed[i], 1);
+          median=gal_data_copy_to_new_type_free(median, GAL_TYPE_FLOAT64);
+          ci[ CCOL_MEDIAN ] = ( *((double *)(median->array))
+                                - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
+          gal_data_free(clumpsmed[i]);
+          gal_data_free(median);
+        }
+      free(clumpsmed);
+      free(ccounter);
+    }
+}
+
+
+
+
+
 
 
 
@@ -492,7 +611,7 @@ mkcatalog_single_object(void *in_prm)
       mkcatalog_first_pass(&pp);
 
       /* Currently the second pass is only necessary when there is a clumps
-         image. */
+         image or the median is requested. */
       if(p->clumps)
         {
           /* Allocate space for the properties of each clump. */
@@ -508,6 +627,10 @@ mkcatalog_single_object(void *in_prm)
           /* Get the second pass information. */
           mkcatalog_second_pass(&pp);
         }
+
+      /* If the median is requested, another pass is necessary. */
+      if( p->oiflag[ OCOL_MEDIAN ] )
+        mkcatalog_median_pass(&pp);
 
       /* Calculate the upper limit magnitude (if necessary). */
       if(p->upperlimit) upperlimit_calculate(&pp);
