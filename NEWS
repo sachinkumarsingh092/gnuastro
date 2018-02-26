@@ -26,6 +26,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NULL value of onlyversion option causing a crash (bug #53147).
 
+  Match output directory ignored when making multiple files (bug #53226).
+
 
 
 

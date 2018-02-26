@@ -564,6 +564,10 @@ ui_preparations_out_cols(struct matchparams *p)
 static void
 ui_preparations_out_name(struct matchparams *p)
 {
+  /* To temporarily keep the original value. */
+  uint8_t keepinputdir_orig;
+
+  /* Set the output file(s) name(s). */
   if(p->logasoutput)
     {
       /* Set the logname (as output). */
@@ -604,12 +608,21 @@ ui_preparations_out_name(struct matchparams *p)
                 }
               else
                 {
+                  /* Here, we are be using the output name as input to the
+                     automatic output generating function (usually it is
+                     the input name, not the output name). Therefore, the
+                     `keepinputdir' variable should be 1. So we will
+                     temporarily change it here, then set it back to what
+                     it was. */
+                  keepinputdir_orig=p->cp.keepinputdir;
+                  p->cp.keepinputdir=1;
                   p->out1name=gal_checkset_automatic_output(&p->cp,
                                                             p->cp.output,
                                                             "_matched_1.txt");
                   p->out2name=gal_checkset_automatic_output(&p->cp,
                                                             p->cp.output,
                                                             "_matched_2.txt");
+                  p->cp.keepinputdir=keepinputdir_orig;
                 }
             }
           else
