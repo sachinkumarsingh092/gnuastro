@@ -654,7 +654,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   /* Allocate a blank value to mask all pixels that don't satisfy the
      condition. */
   blank=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
-                     0, -1, NULL, NULL, NULL);
+                       0, -1, NULL, NULL, NULL);
   *((float *)(blank->array)) = NAN;
 
 
@@ -662,6 +662,11 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
      blank value will be used in the proper type of the input in the
      `where' operator.*/
   gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flagsor, p->input, cond, blank);
+
+
+  /* Reset the blank flags so they are checked again if necessary. */
+  p->input->flag &= ~GAL_DATA_FLAG_BLANK_CH;
+  p->input->flag &= ~GAL_DATA_FLAG_HASBLANK;
 }
 
 

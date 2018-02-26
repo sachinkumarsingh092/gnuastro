@@ -28,6 +28,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Match output directory ignored when making multiple files (bug #53226).
 
+  Statistics program bad results on integer columns with limits (bug #53230).
+
 
 
 

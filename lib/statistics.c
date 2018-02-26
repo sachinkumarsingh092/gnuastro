@@ -80,9 +80,7 @@ gal_statistics_number(gal_data_t *input)
 
 
 /* Return the minimum (non-blank) value of a dataset in the same type as
-   the dataset. Note that a NaN (blank in floating point) will fail on any
-   comparison. So when finding the minimum or maximum, when the blank value
-   is NaN, we can safely assume there is no blank value at all. */
+   the dataset. */
 gal_data_t *
 gal_statistics_minimum(gal_data_t *input)
 {
@@ -94,7 +92,7 @@ gal_statistics_minimum(gal_data_t *input)
   gal_type_max(out->type, out->array);
 
   /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 0, {*o = *i < *o ? *i : *o; ++n;});
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {*o = *i < *o ? *i : *o; ++n;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -107,7 +105,7 @@ gal_statistics_minimum(gal_data_t *input)
 
 
 /* Return the maximum (non-blank) value of a dataset in the same type as
-   the dataset. See explanations of `gal_statistics_minimum'. */
+   the dataset. */
 gal_data_t *
 gal_statistics_maximum(gal_data_t *input)
 {
@@ -119,7 +117,7 @@ gal_statistics_maximum(gal_data_t *input)
   gal_type_min(out->type, out->array);
 
   /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 0, {*o = *i > *o ? *i : *o; ++n;});
+  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {*o = *i > *o ? *i : *o; ++n;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */

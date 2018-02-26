@@ -97,7 +97,6 @@ statistics_print_one_row(struct statisticsparams *p)
   gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
 
-
   /* The user can ask for any of the operators more than once, also some
      operators might return more than one usable value (like mode). So we
      will calculate the desired values once, and then print them. */
@@ -1016,5 +1015,4 @@ statistics(struct statisticsparams *p)
   /* If nothing was requested print the simple statistics. */
   if(print_basic_info)
     print_basics(p);
-
 }
