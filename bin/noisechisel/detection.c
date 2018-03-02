@@ -860,11 +860,11 @@ detection_remove_false_initial(struct noisechiselparams *p,
 {
   size_t i;
   uint8_t *b=workbin->array;
+  float *e_th, *arr=p->conv->array;
   int32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
   int32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
                                            p->numinitialdets+1, __func__,
                                            "newlabels");
-
 
   /* Find the new labels for all the existing labels. Recall that
      `newlabels' was initialized to zero, so any label that is not given a
@@ -872,7 +872,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
      a label overlaps with dbyt[i], we don't need to check the rest of that
      object's pixels. At this point, tokeep is only binary: 0 or 1.
 
-     Note that the zeroth element of tokeep can also be non zero, this is
+     Note that the zeroth element of `tokeep' can also be non zero, this is
      because the holes of the labeled regions might be filled during
      filling the holes, but have not been filled in the original labeled
      array. They are not important so you can just ignore them. */
@@ -896,27 +896,52 @@ detection_remove_false_initial(struct noisechiselparams *p,
   for(i=0;i<p->numinitialdets;++i) if(newlabels[i]) newlabels[i] = curlab++;
 
 
-  /* Replace the byt and olab values with their proper values. If the user
-     doesn't want to grow, then change the labels in `lab' too. Otherwise,
-     you don't have to worry about the label array. After dilation a new
-     labeling will be done and the whole labeled array will be re-filled.*/
-  b=workbin->array; l=p->olabel->array;
-  if(p->detgrowquant==1.0f)          /* We need the binary array even when */
-    do                               /* there is no growth: the binary     */
-      {                              /* array is used for estimating the   */
-        if(*l!=GAL_BLANK_INT32)      /* Sky and its STD. */
-          *b = ( *l = newlabels[ *l ] ) > 0;
+  /* Replace the byt and olab values with their proper values. Note that we
+     need the binary array when there is no growth also. The binary array
+     is later used in estimating the sky and its STD.
+
+     See if growth is necessary or not. Note that even if the user has
+     asked for growth, if the edges of the objects in the image are sharp
+     enough, no growth will be necessary (and thus the labeled image won't
+     be re-written during growth). So it is necessary to check for growth
+     here and later do it in `detection_quantile_expand'. */
+  p->numexpand=0;
+  b=workbin->array;
+  l=p->olabel->array;
+  if(p->detgrowquant==1.0)
+    do
+      {                                       /* No growth will happen.  */
+        if(*l!=GAL_BLANK_INT32)               /* So set both the binary  */
+          *b = ( *l = newlabels[ *l ] ) > 0;  /* AND label images.       */
         ++b;
       }
     while(++l<lf);
   else
-    do
-      {
-        if(*l!=GAL_BLANK_INT32)
-          *b = newlabels[ *l ] > 0;
-        ++b;
-      }
-    while(++l<lf);
+    {
+      /* Expand the threshold values (from one value for each tile) to the
+         whole dataset. Since we know the tiles cover the whole image, we
+         don't neeed to initialize or check for blanks. */
+      p->exp_thresh_full=gal_tile_block_write_const_value(p->expand_thresh,
+                                                          p->cp.tl.tiles, 0,
+                                                          0);
+
+      /* Remove the false detections and count how many pixels need to
+         grow. */
+      e_th=p->exp_thresh_full->array;
+      do                                    /* Growth is necessary later.  */
+        {                                   /* So there is no need to set  */
+          if(*l!=GAL_BLANK_INT32)           /* the labels image, but we    */
+            {                               /* have to count the number of */
+              *b = newlabels[ *l ] > 0;     /* pixels to (possibly) grow.  */
+              if( *b==0 && *arr>*e_th )
+                ++p->numexpand;
+            }
+          ++b;
+          ++arr;
+          ++e_th;
+        }
+      while(++l<lf);
+    }
 
 
   /* Clean up and return. */
@@ -935,36 +960,26 @@ static size_t
 detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
 {
   int32_t *o, *of;
-  size_t *d, counter=0, numexpanded=0;
+  size_t *d, numexpanded=0;
+  gal_data_t *diffuseindexs;
   float *i, *e_th, *arr=p->conv->array;
-  gal_data_t *exp_thresh_full, *diffuseindexs;
   uint8_t *b=workbin->array, *bf=b+workbin->size;
-
-  /* Expand the threshold values (from one value for each tile) to the
-     whole dataset. Since we know the tiles cover the whole image, we don't
-     neeed to initialize or check for blanks.*/
-  exp_thresh_full=gal_tile_block_write_const_value(p->expand_thresh,
-                                                   p->cp.tl.tiles, 0, 0);
-
-
-  /* Count the pixels that must be expanded. */
-  e_th=exp_thresh_full->array;
-  do { if(*b++==0 && *arr>*e_th) ++counter; ++arr; ++e_th; } while(b<bf);
 
   /* only continue if there actually are any pixels to expand (this can
      happen!). */
-  if(counter)
+  if(p->numexpand)
     {
       /* Allocate the space necessary to keep the index of all the pixels
          that must be expanded and re-initialize the necessary pointers. */
-      diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL,
-                                   0, p->cp.minmapsize, NULL, NULL, NULL);
+      diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &p->numexpand,
+                                   NULL, 0, p->cp.minmapsize, NULL, NULL,
+                                   NULL);
 
       /* Fill in the diffuse indexs and initialize the objects dataset. */
       b=workbin->array;
       arr=p->conv->array;
       d=diffuseindexs->array;
-      e_th=exp_thresh_full->array;
+      e_th=p->exp_thresh_full->array;
       of=(o=p->olabel->array)+p->olabel->size;
       do
         {
@@ -1022,7 +1037,7 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
 
   /* Clean up and return */
   gal_data_free(p->expand_thresh);
-  gal_data_free(exp_thresh_full);
+  gal_data_free(p->exp_thresh_full);
   return numexpanded ? numexpanded : GAL_BLANK_SIZE_T;
 }
 
