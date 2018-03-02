@@ -16713,19 +16713,25 @@ format}.
 @itemize
 @item
 S@'ersic profile with `@code{sersic}' or `@code{1}'.
+
 @item
 Moffat profile with `@code{moffat}' or `@code{2}'.
+
 @item
 Gaussian profile with `@code{gaussian}' or `@code{3}'.
+
 @item
 Point source with `@code{point}' or `@code{4}'.
+
 @item
 Flat profile with `@code{flat}' or `@code{5}'.
+
 @item
 Circumference profile with `@code{circum}' or `@code{6}'. A fixed
 value will be used for all pixels between the truncation radius
 (@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
 @option{--circumwidth}).
+
 @item
 Radial distance profile with `@code{distance}' or `@code{7}'. At the lowest
 level, each pixel only has an elliptical radial distance given the
@@ -19768,12 +19774,13 @@ freed after you are done with it.
 Astronomical datasets have various dimensions, for example 1D spectra or
 table columns, 2D images, or 3D Integral field data cubes. Datasets can
 also have various numeric data types, depending on the operation/purpose,
-for example processed images are in commonly in floating point, but their
-mask images are integers using bit-wise flags to identify certain classes
-of special pixels, see @ref{Numeric data types}). Certain other information
-about a dataset are also commonly necessary, for example the units of the
-dataset, the name of the dataset and some comments. To deal with any
-generic dataset, Gnuastro defines the @code{gal_data_t} as input or output.
+for example processed images are commonly stored in floating point format,
+but their mask images are integers (allowing bit-wise flags to identify
+certain classes of pixels to keep or mask, see @ref{Numeric data
+types}). Certain other information about a dataset are also commonly
+necessary, for example the units of the dataset, the name of the dataset
+and some comments. To deal with any generic dataset, Gnuastro defines the
+@code{gal_data_t} as input or output.
 
 @menu
 * Generic data container::      Definition of Gnuastro's generic container.
@@ -20157,11 +20164,11 @@ simplify the allocation (and later cleaning) of several @code{gal_data_t}s
 that are related.
 
 For example, each column in a table is usually represented by one
-@code{gal_data_t} (so it has its own name, numeric data type, units and
-etc). A table (with many columns) can be seen as an array of
-@code{gal_data_t}s (when the number of columns is known a-priori). The
-functions below are defined to create a cleared array of data structures
-and to free them in the end. These functions are declared in
+@code{gal_data_t} (so it has its own name, data type, units and etc). A
+table (with many columns) can be seen as an array of @code{gal_data_t}s
+(when the number of columns is known a-priori). The functions below are
+defined to create a cleared array of data structures and to free them when
+none are necessary any more. These functions are declared in
 @file{gnuastro/data.h} which is also visible from the function names (see
 @ref{Gnuastro library}).
 
