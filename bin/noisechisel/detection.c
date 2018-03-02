@@ -928,11 +928,14 @@ detection_remove_false_initial(struct noisechiselparams *p,
 
 
 
+/* Expand the initial detections based on the quantile threshold and then
+   label the connected regions. If expansion is not possible, then return
+   the `GAL_BLANK_SIZET'.*/
 static size_t
 detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
 {
   int32_t *o, *of;
-  size_t *d, counter=0, numexpanded;
+  size_t *d, counter=0, numexpanded=0;
   float *i, *e_th, *arr=p->conv->array;
   gal_data_t *exp_thresh_full, *diffuseindexs;
   uint8_t *b=workbin->array, *bf=b+workbin->size;
@@ -948,72 +951,79 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
   e_th=exp_thresh_full->array;
   do { if(*b++==0 && *arr>*e_th) ++counter; ++arr; ++e_th; } while(b<bf);
 
-  /* Allocate the space necessary to keep the index of all the pixels that
-     must be expanded and re-initialize the necessary pointers. */
-  diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL, 0,
-                               p->cp.minmapsize, NULL, NULL, NULL);
-
-  /* Fill in the diffuse indexs and initialize the objects dataset. */
-  b=workbin->array;
-  arr=p->conv->array;
-  d=diffuseindexs->array;
-  e_th=exp_thresh_full->array;
-  of=(o=p->olabel->array)+p->olabel->size;
-  do
+  /* only continue if there actually are any pixels to expand (this can
+     happen!). */
+  if(counter)
     {
-      /* If the binary value is 1, then we want an initial label of 1 (the
-         object is already detected). If it isn't, then we only want it if
-         it is above the threshold. */
-      *o = *b==1 ? 1 : ( *arr>*e_th ? CLUMPS_INIT : 0);
-      if(*b==0 && *arr>*e_th)
-        *d++ = o - (int32_t *)(p->olabel->array);
+      /* Allocate the space necessary to keep the index of all the pixels
+         that must be expanded and re-initialize the necessary pointers. */
+      diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &counter, NULL,
+                                   0, p->cp.minmapsize, NULL, NULL, NULL);
 
-      /* Increment the points and go onto the next pixel. */
-      ++b;
-      ++arr;
-      ++e_th;
-    }
-  while(++o<of);
-
-  /* Expand the detections. */
-  clumps_grow(p->olabel, diffuseindexs, 0, p->olabel->ndim);
-
-  /* Only keep the 1 valued pixels in the binary array and fill its
-     holes. */
-  o=p->olabel->array;
-  bf=(b=workbin->array)+workbin->size;
-  do *b = (*o++ == 1); while(++b<bf);
-  workbin=gal_binary_dilate(workbin, 1, 1, 1);
-  gal_binary_fill_holes(workbin, 1, p->detgrowmaxholesize);
-
-  /* Get the labeled image. */
-  numexpanded=gal_binary_connected_components(workbin, &p->olabel,
-                                              workbin->ndim);
-
-  /* Set all the input's blank pixels to blank in the labeled and binary
-     arrays. */
-  if( gal_blank_present(p->input, 1) )
-    {
+      /* Fill in the diffuse indexs and initialize the objects dataset. */
       b=workbin->array;
-      i=p->input->array;
+      arr=p->conv->array;
+      d=diffuseindexs->array;
+      e_th=exp_thresh_full->array;
       of=(o=p->olabel->array)+p->olabel->size;
       do
         {
-          if(isnan(*i++))
-            {
-              *o=GAL_BLANK_INT32;
-              *b=GAL_BLANK_UINT8;
-            }
+          /* If the binary value is 1, then we want an initial label of 1
+             (the object is already detected). If it isn't, then we only
+             want it if it is above the threshold. */
+          *o = *b==1 ? 1 : ( *arr>*e_th ? CLUMPS_INIT : 0);
+          if(*b==0 && *arr>*e_th)
+            *d++ = o - (int32_t *)(p->olabel->array);
+
+          /* Increment the points and go onto the next pixel. */
           ++b;
+          ++arr;
+          ++e_th;
         }
       while(++o<of);
+
+      /* Expand the detections. */
+      clumps_grow(p->olabel, diffuseindexs, 0, p->olabel->ndim);
+
+      /* Only keep the 1 valued pixels in the binary array and fill its
+         holes. */
+      o=p->olabel->array;
+      bf=(b=workbin->array)+workbin->size;
+      do *b = (*o++ == 1); while(++b<bf);
+      workbin=gal_binary_dilate(workbin, 1, 1, 1);
+      gal_binary_fill_holes(workbin, 1, p->detgrowmaxholesize);
+
+      /* Get the labeled image. */
+      numexpanded=gal_binary_connected_components(workbin, &p->olabel,
+                                                  workbin->ndim);
+
+      /* Set all the input's blank pixels to blank in the labeled and
+         binary arrays. */
+      if( gal_blank_present(p->input, 1) )
+        {
+          b=workbin->array;
+          i=p->input->array;
+          of=(o=p->olabel->array)+p->olabel->size;
+          do
+            {
+              if(isnan(*i++))
+                {
+                  *o=GAL_BLANK_INT32;
+                  *b=GAL_BLANK_UINT8;
+                }
+              ++b;
+            }
+          while(++o<of);
+        }
+
+      /* Clean up. */
+      gal_data_free(diffuseindexs);
     }
 
   /* Clean up and return */
   gal_data_free(p->expand_thresh);
   gal_data_free(exp_thresh_full);
-  gal_data_free(diffuseindexs);
-  return numexpanded;
+  return numexpanded ? numexpanded : GAL_BLANK_SIZE_T;
 }
 
 
@@ -1028,7 +1038,7 @@ detection(struct noisechiselparams *p)
   char *msg;
   gal_data_t *workbin;
   struct timeval t0, t1;
-  size_t num_true_initial;
+  size_t num_true_initial, num_expanded;
 
   /* Report for the user. */
   if(!p->cp.quiet)
@@ -1081,7 +1091,14 @@ detection(struct noisechiselparams *p)
      final number of detections. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   if(p->detgrowquant!=1.0f)
-    num_true_initial=detection_quantile_expand(p, workbin);
+    {
+      num_expanded=detection_quantile_expand(p, workbin);
+      if(num_expanded!=GAL_BLANK_SIZE_T)
+        num_true_initial=num_expanded;
+    }
+
+
+  /* Update the user on the progress, if necessary. */
   if(!p->cp.quiet)
     {
       if(p->detgrowquant==1.0f)
@@ -1092,9 +1109,18 @@ detection(struct noisechiselparams *p)
         }
       else
         {
-          if( asprintf(&msg, "%zu detections after growth to %.3f quantile.",
-                       num_true_initial, p->detgrowquant)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          if(num_expanded==GAL_BLANK_SIZE_T)
+            {
+              if(asprintf(&msg, "%zu detections (no growth to %.3f "
+                          "quantile).", num_true_initial, p->detgrowquant)<0)
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
+          else
+            {
+              if( asprintf(&msg, "%zu detections after growth to %.3f "
+                           "quantile.", num_true_initial, p->detgrowquant)<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+            }
         }
       gal_timing_report(&t1, msg, 2);
       free(msg);

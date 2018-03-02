@@ -30,7 +30,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Statistics program bad results on integer columns with limits (bug #53230).
 
-
+  NoiseChisel crash when no growth is possible (bug #53268).
 
 
 

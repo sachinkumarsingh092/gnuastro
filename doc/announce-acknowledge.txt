@@ -1,8 +1,10 @@
 People who's help must be acknowledged in the next release.
 
+Nima Dehdilani
 Antonio Diaz Diaz
 Guillaume Mahler
 Ole Streicher
 Michel Tallon
 Juan C. Tello
 Éric Thiébaut
+Sara Yousefi
