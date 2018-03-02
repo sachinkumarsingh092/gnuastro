@@ -5,12 +5,15 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  MakeCatalog: The new `--mean' and `--median' options will calculate the
+  mean and median pixel value within an object or clump respectively.
+
+  NoiseChisel: a value of `none' to the `--kernel' option will disable
+  convolution.
+
   Statistics: the new `--manualbinrange' allows the bins in histograms or
   cumulative frequency plots to be set outside the minimum or maximum
   values of the dataset.
-
-  MakeCatalog: The new `--mean' and `--median' options will calculate the
-  mean and median pixel value within an object or clump respectively.
 
 ** Removed features
 

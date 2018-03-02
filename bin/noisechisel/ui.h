@@ -30,6 +30,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Macros. */
+#define UI_NO_CONV_KERNEL_NAME "none"
+
+
+
+
+
 /* Option groups particular to this program. */
 enum program_args_groups
 {

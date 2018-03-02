@@ -875,7 +875,8 @@ segmentation(struct noisechiselparams *p)
   if(p->segmentationname)
     {
       gal_fits_img_write(p->input, p->segmentationname, NULL, PROGRAM_NAME);
-      gal_fits_img_write(p->conv, p->segmentationname, NULL, PROGRAM_NAME);
+      if(p->input!=p->conv)
+        gal_fits_img_write(p->conv, p->segmentationname, NULL, PROGRAM_NAME);
       p->olabel->name="DETECTION_LABELS";
       gal_fits_img_write(p->olabel, p->segmentationname, NULL,
                          PROGRAM_NAME);

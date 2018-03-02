@@ -693,7 +693,7 @@ enum infocols
   {
     INFO_X,              /* Flux weighted X center col, 0 by C std. */
     INFO_Y,              /* Flux weighted Y center col.             */
-    INFO_NFF,            /* Number of non-negative pixels (for X,Y).*/
+    INFO_SFF,            /* Sum of non-negative pixels (for X,Y).   */
     INFO_INFLUX,         /* Tatal flux within clump.                */
     INFO_INAREA,         /* Tatal area within clump.                */
     INFO_RIVFLUX,        /* Tatal flux within rivers around clump.  */
@@ -731,7 +731,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
             info[   lab * INFO_NCOLS + INFO_INFLUX ] += arr[*a];
             if( arr[*a]>0.0f )
               {
-                info[ lab * INFO_NCOLS + INFO_NFF ] += arr[*a];
+                info[ lab * INFO_NCOLS + INFO_SFF ] += arr[*a];
                 info[ lab * INFO_NCOLS + INFO_X ] += arr[*a] * (*a/dsize[1]);
                 info[ lab * INFO_NCOLS + INFO_Y ] += arr[*a] * (*a%dsize[1]);
               }
@@ -791,23 +791,24 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
           /* Especially over the undetected regions, it might happen that
              none of the pixels were positive. In that case, set the total
              area of the clump to zero so it is no longer considered.*/
-          if( row[INFO_NFF]==0.0f ) row[INFO_INAREA]=0;
+          if( row[INFO_SFF]==0.0f ) row[INFO_INAREA]=0;
           else
             {
-              coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_NFF]);
-              coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_NFF]);
+              coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
+              coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
               row[INFO_INSTD] = std[ gal_tile_full_id_from_coord(&p->cp.tl,
                                                                  coord) ];
               /* For a check
               printf("---------\n");
-              printf("\t%f --> %zu\n", row[INFO_Y]/row[INFO_NFF], coord[1]);
-              printf("\t%f --> %zu\n", row[INFO_X]/row[INFO_NFF], coord[0]);
+              printf("\t%f --> %zu\n", row[INFO_Y]/row[INFO_SFF], coord[1]);
+              printf("\t%f --> %zu\n", row[INFO_X]/row[INFO_SFF], coord[0]);
               printf("%u: (%zu, %zu): %.3f\n", lab, coord[1]+1,
                      coord[0]+1, row[INFO_INSTD]);
               */
             }
         }
     }
+
 
   /* Clean up. */
   free(dinc);
@@ -829,7 +830,6 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   double I, O, Ni, var, *row;
   int sky0_det1=cltprm->clprm->sky0_det1;
   size_t i, ind, counter=0, infodsize[2]={tablen, INFO_NCOLS};
-
 
   /* If there were no initial clumps, then ignore this function. */
   if(cltprm->numinitclumps==0) { cltprm->snind=cltprm->sn=NULL; return; }
@@ -1278,8 +1278,8 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
           /* Set the extension name. */
           switch(clprm.step)
             {
-            case 1: p->clabel->name = "SKY_CLUMPS_ALL";  break;
-            case 2: p->clabel->name = "SKY_CLUMPS_FOR_SN";   break;
+            case 1: p->clabel->name = "SKY_CLUMPS_ALL";    break;
+            case 2: p->clabel->name = "SKY_CLUMPS_FOR_SN"; break;
             default:
               error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
                     "we can address the issue. The value %d is not valid for "
@@ -1423,20 +1423,17 @@ clumps_det_label_indexs(struct noisechiselparams *p)
   int32_t *a, *l, *lf;
   gal_data_t *labindexs=gal_data_array_calloc(p->numdetections+1);
 
-  /* Find the area in each detected objects (to see how much space we need
-     to allocate). */
+  /* Find the area in each detected object (to see how much space we need
+     to allocate). If blank values are present, an extra check is
+     necessary, so to get faster results when there aren't any blank
+     values, we'll also do a check. */
   areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numdetections+1, __func__,
                               "areas");
-  if(gal_blank_present(p->input, 1))
-    {
-      lf=(l=p->olabel->array)+p->olabel->size; /* Blank pixels have a      */
-      do if(*l>0) ++areas[*l]; while(++l<lf);  /* negative value in int32. */
-    }
-  else
-    {
-      lf=(l=p->olabel->array)+p->olabel->size; do ++areas[*l]; while(++l<lf);
-      areas[0]=0;
-    }
+  lf=(l=p->olabel->array)+p->olabel->size;
+  do
+    if(*l>0)  /* Only labeled regions: *l==0 (undetected), *l<0 (blank). */
+      ++areas[*l];
+  while(++l<lf);
 
   /* For a check.
   for(i=0;i<p->numdetections+1;++i)

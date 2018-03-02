@@ -61,33 +61,43 @@ noisechisel_convolve(struct noisechiselparams *p)
   /* Convovle with sharper kernel. */
   if(p->conv==NULL)
     {
-      /* Make the convolved image. */
-      if(!p->cp.quiet) gettimeofday(&t1, NULL);
-      p->conv = gal_convolve_spatial(tl->tiles, p->kernel, p->cp.numthreads,
-                                     1, tl->workoverch);
-
-      /* Report and write check images if necessary. */
-      if(!p->cp.quiet)
+      /* Do the convolution if a kernel was requested. */
+      if(p->kernel)
         {
-          if(p->widekernel)
-            gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
-          else
-            gal_timing_report(&t1, "Convolved with given kernel.", 1);
+          /* Make the convolved image. */
+          if(!p->cp.quiet) gettimeofday(&t1, NULL);
+          p->conv = gal_convolve_spatial(tl->tiles, p->kernel,
+                                         p->cp.numthreads, 1, tl->workoverch);
+
+          /* Report and write check images if necessary. */
+          if(!p->cp.quiet)
+            {
+              if(p->widekernel)
+                gal_timing_report(&t1, "Convolved with sharper kernel.", 1);
+              else
+                gal_timing_report(&t1, "Convolved with given kernel.", 1);
+            }
         }
+      else
+        p->conv=p->input;
     }
 
   /* Set a fixed name for the convolved image (since it will be used in
      many check images). */
-  if(p->conv->name) free(p->conv->name);
-  gal_checkset_allocate_copy( ( p->widekernel
-                                ? "CONVOLVED-SHARPER"
-                                : "CONVOLVED" ), &p->conv->name);
+  if(p->conv!=p->input)
+    {
+      if(p->conv->name) free(p->conv->name);
+      gal_checkset_allocate_copy( ( p->widekernel
+                                    ? "CONVOLVED-SHARPER"
+                                    : "CONVOLVED" ), &p->conv->name);
+    }
 
   /* Save the convolution step if necessary. */
   if(p->detectionname)
     {
       gal_fits_img_write(p->input, p->detectionname, NULL, PROGRAM_NAME);
-      gal_fits_img_write(p->conv, p->detectionname, NULL, PROGRAM_NAME);
+      if(p->input!=p->conv)
+        gal_fits_img_write(p->conv, p->detectionname, NULL, PROGRAM_NAME);
     }
 
   /* Convolve with wider kernel (if requested). */

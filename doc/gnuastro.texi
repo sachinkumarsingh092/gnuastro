@@ -13745,12 +13745,15 @@ Gnuastro's options with the @option{--help} option.
 @item -k STR
 @itemx --kernel=STR
 File name of kernel to smooth the image before applying the threshold, see
-@ref{Convolution kernel}. The first step of NoiseChisel is to
-convolve/smooth the image and use the convolved image in multiple steps
-during the processing. It will be used to define (and later apply) the
-quantile threshold (see @option{--qthresh}). The convolved image is also
-used to define the clumps (see Section 3.2.1 and Figure 8 of
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}).
+@ref{Convolution kernel}. If no convolution is needed, give this option a
+value of @option{none}.
+
+The first step of NoiseChisel is to convolve/smooth the image and use the
+convolved image in multiple steps during the processing. It will be used to
+define (and later apply) the quantile threshold (see
+@option{--qthresh}). The convolved image is also used to define the clumps
+(see Section 3.2.1 and Figure 8 of @url{https://arxiv.org/abs/1505.01664,
+Akhlaghi and Ichikawa [2015]}).
 
 The @option{--kernel} option is not mandatory. If no kernel is provided, a
 2D Gaussian profile with a FWHM of 2 pixels truncated at 5 times the FWHM

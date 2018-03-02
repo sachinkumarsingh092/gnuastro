@@ -37,8 +37,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-
 /* Main program parameters structure */
 struct noisechiselparams
 {

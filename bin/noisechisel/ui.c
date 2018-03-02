@@ -250,7 +250,7 @@ ui_read_check_only_options(struct noisechiselparams *p)
           "    $ info gnuastro \"Input Output options\"");
 
   /* Kernel checks. */
-  if(p->kernelname)
+  if(p->kernelname && strcmp(p->kernelname, UI_NO_CONV_KERNEL_NAME))
     {
       /* Check if it exists. */
       gal_checkset_check_file(p->kernelname);
@@ -466,8 +466,13 @@ ui_prepare_kernel(struct noisechiselparams *p)
   /* If a kernel file is given, then use it. Otherwise, use the default
      kernel. */
   if(p->kernelname)
-    p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                       p->cp.minmapsize);
+    {
+      if( strcmp(p->kernelname, UI_NO_CONV_KERNEL_NAME) )
+        p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                           p->cp.minmapsize);
+      else
+        p->kernel=NULL;
+    }
   else
     {
       /* Allocate space for the kernel (we don't want to use the statically
@@ -720,9 +725,14 @@ ui_read_check_inputs_setup(int argc, char *argv[],
       else
         {
           if(p->kernelname)
-            printf("  - %s: %s (hdu: %s)\n",
-                   p->widekernelname ? "Sharp Kernel" : "Kernel",
-                   p->kernelname, p->khdu);
+            {
+              if( strcmp(p->kernelname, UI_NO_CONV_KERNEL_NAME) )
+                printf("  - %s: %s (hdu: %s)\n",
+                       p->widekernelname ? "Sharp Kernel" : "Kernel",
+                       p->kernelname, p->khdu);
+              else
+                printf("  - No convolution requested.\n");
+            }
           else
             printf("  - %s: FWHM=2 pixel Gaussian.\n",
                    p->widekernelname ? "Sharp Kernel" : "Kernel");
@@ -817,7 +827,6 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   /* Free the allocated datasets. */
   gal_data_free(p->sky);
   gal_data_free(p->std);
-  gal_data_free(p->conv);
   gal_data_free(p->wconv);
   gal_data_free(p->input);
   gal_data_free(p->kernel);
@@ -825,6 +834,7 @@ ui_free_report(struct noisechiselparams *p, struct timeval *t1)
   gal_data_free(p->olabel);
   gal_data_free(p->clabel);
   gal_data_free(p->widekernel);
+  if(p->conv!=p->input) gal_data_free(p->conv);
 
   /* Clean up the tile structure. */
   p->ltl.numchannels=NULL;

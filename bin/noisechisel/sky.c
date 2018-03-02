@@ -258,25 +258,28 @@ sky_subtract(struct noisechiselparams *p)
       /* First subtract the Sky value from the input image. */
       GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=sky[tid];});
 
-      /* Change to the convolved image. */
-      tarray=tile->array;
-      tblock=tile->block;
-      tile->array=gal_tile_block_relative_to_other(tile, p->conv);
-      tile->block=p->conv;
+      /* Change to the convolved image (if there is any). */
+      if(p->conv!=p->input)
+        {
+          tarray=tile->array;
+          tblock=tile->block;
+          tile->array=gal_tile_block_relative_to_other(tile, p->conv);
+          tile->block=p->conv;
 
-      /* The threshold is always low. So for the majority of non-NaN
-         pixels in the image, the condition above will be true. If we
-         come over a NaN pixel, then by definition of NaN, all
-         conditionals will fail.
+          /* The threshold is always low. So for the majority of non-NaN
+             pixels in the image, the condition above will be true. If we
+             come over a NaN pixel, then by definition of NaN, all
+             conditionals will fail.
 
-         If an image doesn't have any NaN pixels, only the pixels below
-         the threshold have to be checked for a NaN which are by
-         definition a very small fraction of the total pixels. And if
-         there are NaN pixels in the image. */
-      GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=sky[tid];});
+             If an image doesn't have any NaN pixels, only the pixels below
+             the threshold have to be checked for a NaN which are by
+             definition a very small fraction of the total pixels. And if
+             there are NaN pixels in the image. */
+          GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=sky[tid];});
 
-      /* Revert back to the original block. */
-      tile->array=tarray;
-      tile->block=tblock;
+          /* Revert back to the original block. */
+          tile->array=tarray;
+          tile->block=tblock;
+        }
     }
 }
