@@ -936,11 +936,18 @@ detection_remove_false_initial(struct noisechiselparams *p,
               if( *b==0 && *arr>*e_th )
                 ++p->numexpand;
             }
-          ++b;
-          ++arr;
-          ++e_th;
+          ++b; ++arr; ++e_th;
         }
       while(++l<lf);
+
+      /* If there aren't any pixels to later expand, then reset the labels
+         (remove false detections in the labeled image). */
+      if(p->numexpand==0)
+        {
+          b=workbin->array;
+          l=p->olabel->array;
+          do if(*l!=GAL_BLANK_INT32) *l = newlabels[ *l ]; while(++l<lf);
+        }
     }
 
 
