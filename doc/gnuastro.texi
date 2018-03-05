@@ -14610,62 +14610,66 @@ transformations on the labeled image.
 No measurement on a real dataset can be perfect: you can only reach a
 certain level/limit of accuracy. Therefore, a meaningful (scientific)
 analysis requires an understanding of these limits for the dataset and your
-analysis tools: different datasets (images in the case of MakeCatalog) have
-different noise properties and different detection methods (one
-method/algorith/software that is run with a different set of parameters is
-considered as a different detection method) will have different abilities
-to detect or measure certain kinds of signal (astronomical objects) and
-their properties in an image. Hence, quantifying the detection and
-measurement limitations with a particular dataset and analysis tool is the
-most crucial/critical aspect of any high-level analysis.
+analysis tools: different datasets have different noise properties and
+different detection methods (one method/algorith/software that is run with
+a different set of parameters is considered as a different detection
+method) will have different abilities to detect or measure certain kinds of
+signal (astronomical objects) and their properties in the dataset. Hence,
+quantifying the detection and measurement limitations with a particular
+dataset and analysis tool is the most crucial/critical aspect of any
+high-level analysis.
 
-In this section we discuss some of the most general limits that are very
-important in any astronomical data analysis and how MakeCatalog makes it
-easy to find them. Depending on the higher-level analysis, there are more
-tests that must be done, but these are usually necessary in any case. In
-astronomy, it is common to use the magnitude (a unit-less scale) and
-physical units, see @ref{Flux Brightness and magnitude}. Therefore all the
-measurements discussed here are defined in units of magnitudes.
+Here, we'll review some of the most general limits that are important in
+any astronomical data analysis and how MakeCatalog makes it easy to find
+them. Depending on the higher-level analysis, there are more tests that
+must be done, but these are relatively low-level and usually necessary in
+most cases. In astronomy, it is common to use the magnitude (a unit-less
+scale) and physical units, see @ref{Flux Brightness and
+magnitude}. Therefore the measurements discussed here are commonly used in
+units of magnitudes.
 
 @table @asis
 
 @item Surface brightness limit (of whole dataset)
 @cindex Surface brightness
 As we make more observations on one region of the sky, and add the
-observations into one dataset, we are able to decrease the standard
-deviation of the noise in each pixel@footnote{This is true for any noisy
-data, not just astronomical images.}. Qualitatively, this decrease
-manifests its self by making fainter (per pixel) parts of the objects in
-the image more visible. Technically, this is known as surface
-brightness. Quantitatively, it increases the Signal to noise ratio, since
-the signal increases faster than noise with more data. It is very important
-to have in mind that here, noise is defined per pixel (or in the units of
-our data measurement), not per object.
+observations into one dataset, the signal and noise both increase. However,
+the signal increase much faster than the noise: assuming you add @mymath{N}
+datasets with equal exposure times, the signal will increases as a multiple
+of @mymath{N}, while noise increases as @mymath{\sqrt{N}}. Thus this
+increases the signal-to-noise ratio. Qualitatively, fainter (per pixel)
+parts of the objects/signal in the image will become more
+visible/detectable. The noise-level is known as the dataset's surface
+brightness limit.
 
 You can think of the noise as muddy water that is completely covering a
 flat ground@footnote{The ground is the sky value in this analogy, see
 @ref{Sky value}. Note that this analogy only holds for a flat sky value
-across the surface of the image or ground.} with some regions higher than
-the others@footnote{The peaks are the brightest parts of astronomical
-objects in this analogy.} in it. In this analogy, height (from the ground)
-is @emph{surface brightness}. Let's assume that in your first observation
-the muddy water has just been stirred and you can't see anything through
-it. As you wait and make more observations, the mud settles down and the
-@emph{depth} of the transparent water increases, making the summits of
-hills visible. As the depth of clear water increases, the parts of the
-hills with lower heights (less parts with lower surface brightness) can be
-seen more clearly.
+across the surface of the image or ground.}. The signal (or astronomical
+objects in this analogy) will be summits/hills that start from the flat sky
+level (under the muddy water) and can sometimes reach outside of the muddy
+water. Let's assume that in your first observation the muddy water has just
+been stirred and you can't see anything through it. As you wait and make
+more observations/exposures, the mud settles down and the @emph{depth} of
+the transparent water increases, making the summits visible. As the depth
+of clear water increases, the parts of the hills with lower heights (parts
+with lower surface brightness) can be seen more clearly. In this analogy,
+height (from the ground) is @emph{surface brightness}@footnote{Note that
+this muddy water analogy is not perfect, because while the water-level
+remains the same all over a peak, in data analysis, the poisson noise
+increases with the level of data.} and the height of the muddy water is
+your surface brightness limit.
 
 @cindex Data's depth
 The outputs of NoiseChisel include the Sky standard deviation
 (@mymath{\sigma}) on every group of pixels (a mesh) that were calculated
-from the undetected pixels in that mesh, see @ref{Tessellation} and
+from the undetected pixels in each tile, see @ref{Tessellation} and
 @ref{NoiseChisel output}. Let's take @mymath{\sigma_m} as the median
 @mymath{\sigma} over the successful meshes in the image (prior to
 interpolation or smoothing).
 
-On different instruments pixels have different physical sizes (for example
-in micro-meters, or spatial angle over the sky), nevertheless, a pixel is
+On different instruments, pixels have different physical sizes (for example
+in micro-meters, or spatial angle over the sky). Nevertheless, a pixel is
 our unit of data collection. In other words, while quantifying the noise,
 the physical or projected size of the pixels is irrelevant. We thus define
 the Surface brightness limit or @emph{depth}, in units of magnitude/pixel,
@@ -14694,23 +14698,23 @@ the pixel scale, we can obtain a more easily comparable surface brightness
 limit in units of: magnitude/arcsec@mymath{^2}. Let's assume that the
 dataset has a zeropoint value of @mymath{z}, and every pixel is @mymath{p}
 arcsec@mymath{^2} (so @mymath{A/p} is the number of pixels that cover an
-area of @mymath{A} arcsec@mymath{^2}). If the @mymath{n}th multiple of
-@mymath{\sigma_m} is desired, then the surface brightness (in units of
-magnitudes per A arcsec@mymath{^2}) is@footnote{If we have @mymath{N}
-datasets, each with noise @mymath{\sigma}, the noise of a combined dataset
-will increase as @mymath{\sqrt{N}\sigma}.}:
+area of @mymath{A} arcsec@mymath{^2}). If the surface brightness is desired
+at the @mymath{n}th multiple of @mymath{\sigma_m}, the following equation
+(in units of magnitudes per A arcsec@mymath{^2}) can be used:
 
 @dispmath{SB_{\rm Projected}=-2.5\times\log_{10}{\left(n\sigma_m\sqrt{A\over
 p}\right)+z}}
 
-Note that this is an extrapolation of the actually measured value of
-@mymath{\sigma_m} (which was per pixel). So it should be used with extreme
-care (for example the dataset must have an approximately flat depth). For
-each detection over the dataset, you can estimate an upper-limit magnitude
-which actually uses the detection's area/footprint. It doesn't extrapolate
-and even accounts for correlated noise features. Therefore, the upper-limit
-magnitude is a much better measure of your dataset's surface brightness
-limit for each particular object.
+Note that this is just an extrapolation of the per-pixel measurement
+@mymath{\sigma_m}. So it should be used with extreme care: for example the
+dataset must have an approximately flat depth or noise properties
+overall. A more accurate measure for each detection over the dataset is
+known as the @emph{upper-limit magnitude} which actually uses random
+positioning of each detection's area/footprint (see below). It doesn't
+extrapolate and even accounts for correlated noise patterns in relation to
+that detection. Therefore, the upper-limit magnitude is a much better
+measure of your dataset's surface brightness limit for each particular
+object.
 
 MakeCatalog will calculate the input dataset's @mymath{SB_{\rm Pixel}} and
 @mymath{SB_{\rm Projected}} and write them as comments/meta-data in the
@@ -14724,11 +14728,11 @@ them will also decrease. An important statistic is thus the fraction of
 objects of similar morphology and brightness that will be identified with
 our detection algorithm/parameters in the given image. This fraction is
 known as completeness. For brighter objects, completeness is 1: all bright
-objects that might exist over the image will be detected. However, as we
-go to lower surface brightness objects, we fail to detect some and
-gradually we are not able to detect anything any more. For a given profile,
-the magnitude where the completeness drops below a certain level usually
-above @mymath{90\%} is known as the completeness limit.
+objects that might exist over the image will be detected. However, as we go
+to objects of lower overall surface brightness, we will fail to detect
+some, and gradually we are not able to detect anything any more. For a
+given profile, the magnitude where the completeness drops below a certain
+level (usually above @mymath{90\%}) is known as the completeness limit.
 
 @cindex Purity
 @cindex False detections
@@ -14783,49 +14787,54 @@ magnitude error afterwards for any type of target.
 @item Upper limit magnitude (of each detection)
 Due to the noisy nature of data, it is possible to get arbitrarily low
 values for a faint object's brightness (or arbitrarily high
-magnitudes). Given the scatter caused by the noise, such small values are
-meaningless: another similar depth observation will give a radically
-different value. This problem is most common when you use one image/filter
-to generate target labels (which specify which pixels belong to which
-object, see @ref{NoiseChisel output} and @ref{MakeCatalog}) and another
-image/filter to generate a catalog for measuring colors.
+@emph{magnitudes}). Given the scatter caused by the dataset's noise, values
+fainter than a certain level are meaningless: another similar depth
+observation will give a radically different value. This problem is usually
+becomes relevant when the detection and measurement images are not the same
+(for example when you are estimating colors, see @ref{NoiseChisel output}).
 
-The object might not be visible in the filter used for the latter image, or
-the image @emph{depth} (see above) might be much shallower. So you will get
-unreasonably faint magnitudes. For example when the depth of the image is 32
-magnitudes, a measurement that gives a magnitude of 36 for a
-@mymath{\sim100} pixel object is clearly unreliable. In another similar
-depth image, we might measure a magnitude of 30 for it, and yet another
-might give 33. Furthermore, due to the noise scatter so close to the depth
-of the data-set, the total brightness might actually get measured as a
-negative value, so no magnitude can be defined (recall that a magnitude is
-a base-10 logarithm).
+For example, while the depth of the image is 32 magnitudes/pixel, a
+measurement that gives a magnitude of 36 for a @mymath{\sim100} pixel
+object is clearly unreliable. In another similar depth image, we might
+measure a magnitude of 30 for it, and yet another might give
+33. Furthermore, due to the noise scatter so close to the depth of the
+data-set, the total brightness might actually get measured as a negative
+value, so no magnitude can be defined (recall that a magnitude is a base-10
+logarithm).
 
 @cindex Upper limit magnitude
 @cindex Magnitude, upper limit
 Using such unreliable measurements will directly affect our analysis, so we
-must not use them. However, all is not lost! Given our limited depth, there
-is one thing we can deduce about the object's magnitude: we can say that if
-something actually exists here (possibly buried deep under the noise), it
-must have a magnitude that is fainter than an @emph{upper limit
-magnitude}. To find this upper limit magnitude, we place the object's
-footprint (segmentation map) over random parts of the image where there are
-no detections, so we only have pure (possibly correlated) noise and
-undetected objects. Doing this a large number of times will give us a
-distribution of brightness values. The standard deviation (@mymath{\sigma})
-of that distribution can be used to quantify the upper limit magnitude.
+must not use the raw measurements. However, all is not lost! Given our
+limited depth, there is one thing we can deduce about the object's
+magnitude: we can say that if something actually exists here (possibly
+buried deep under the noise), it must have a magnitude that is fainter than
+an @emph{upper limit magnitude}. To find this upper limit magnitude, we
+place the object's footprint (segmentation map) over random parts of the
+image where there are no detections, so we only have pure (possibly
+correlated) noise and undetected objects. Doing this a large number of
+times will give us a distribution of brightness values. The standard
+deviation (@mymath{\sigma}) of that distribution can be used to quantify
+the upper limit magnitude.
 
 @cindex Correlated noise
 Traditionally, faint/small object photometry was done using fixed circular
-apertures (for example with a diameter of @mymath{N} arc-seconds). In this
-way, the upper limit was like the depth discussed above: one value for the
-whole image. But with the much more advanced hardware and software of
-today, we can make customized segmentation maps for each object. The number
-of pixels (are of the object) used directly affects the final distribution
-and thus magnitude. Also the image correlated noise might actually create
-certain patters, so the shape of the object can also affect the result. So
-in MakeCatalog, the upper limit magnitude is found for each object in the
-image separately. Not one value for the whole image.
+apertures (for example with a diameter of @mymath{N} arc-seconds). Hence,
+the upper limit was like the depth discussed above: one value for the whole
+image. The problem with this simplified approach is that the number of
+pixels in the aperture directly affects the final distribution and thus
+magnitude. Also the image correlated noise might actually create certain
+patters, so the shape of the object can also affect the final result
+result. Fortunately, with the much more advanced hardware and software of
+today, we can make customized segmentation maps for each object.
+
+
+If requested, MakeCatalog will estimate teh the upper limit magnitude is
+found for each object in the image separately, the procedure is fully
+configurable with the options in @ref{Upper-limit magnitude settings}. If
+one value for the whole image is required, you can either use the surface
+brightness limit above or make a circular aperture and feed it into
+MakeCatalog to request an upper-limit magnitude for it.
 
 @end table
 
