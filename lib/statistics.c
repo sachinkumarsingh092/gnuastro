@@ -353,29 +353,44 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
 /* Return the index of the (first) point in the sorted dataset that has the
    closest value to `value' (which has to be the same type as the `input'
    dataset). */
-#define STATS_QFUNC(IT) {                                               \
+#define STATS_QFUNC_IND(IT) {                                           \
     IT *r, *a=nbs->array, *af=a+nbs->size, v=*((IT *)(value->array));   \
                                                                         \
-    /* For a reference. Since we are comparing with the previous. */    \
+    /* For a reference. Since we are comparing with the previous */     \
     /* element, we need to start with the second element.*/             \
     r=a++;                                                              \
                                                                         \
     /* Increasing array: */                                             \
     if( *a < *(a+1) )                                                   \
-      do if(*a>v) { if( v - *(a-1) < *a - v ) --a; break; } while(++a<af); \
+      {                                                                 \
+        if( v>=*r )                                                     \
+          {                                                             \
+            do if(*a>v) { if( v - *(a-1) < *a - v ) --a; break; }       \
+            while(++a<af);                                              \
+            parsed=1;                                                   \
+          }                                                             \
+      }                                                                 \
                                                                         \
     /* Decreasing array. */                                             \
     else                                                                \
-      do if(*a<v) { if( *(a-1) - v < v - *a ) --a; break; } while(++a<af); \
+      {                                                                 \
+        if(v<=*r)                                                       \
+          {                                                             \
+            do if(*a<v) { if( *(a-1) - v < v - *a ) --a; break; }       \
+            while(++a<af);                                              \
+            parsed=1;                                                   \
+          }                                                             \
+      }                                                                 \
                                                                         \
-    /* Set the difference. */                                           \
-    if(a<af) index=a-r;                                                 \
+    /* Set the difference if the value is actually in the range. */     \
+    if(parsed && a<af) index = a-r;                                     \
   }
 size_t
 gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
                                        int inplace)
 {
-  size_t index=-1;
+  int parsed=0;
+  size_t index=GAL_BLANK_SIZE_T;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
 
   /* A sanity check. */
@@ -386,16 +401,16 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
   /* Find the result: */
   switch(nbs->type)
     {
-    case GAL_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
-    case GAL_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
-    case GAL_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
-    case GAL_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
-    case GAL_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
-    case GAL_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
-    case GAL_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
-    case GAL_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
-    case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
-    case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
+    case GAL_TYPE_UINT8:     STATS_QFUNC_IND( uint8_t  );     break;
+    case GAL_TYPE_INT8:      STATS_QFUNC_IND( int8_t   );     break;
+    case GAL_TYPE_UINT16:    STATS_QFUNC_IND( uint16_t );     break;
+    case GAL_TYPE_INT16:     STATS_QFUNC_IND( int16_t  );     break;
+    case GAL_TYPE_UINT32:    STATS_QFUNC_IND( uint32_t );     break;
+    case GAL_TYPE_INT32:     STATS_QFUNC_IND( int32_t  );     break;
+    case GAL_TYPE_UINT64:    STATS_QFUNC_IND( uint64_t );     break;
+    case GAL_TYPE_INT64:     STATS_QFUNC_IND( int64_t  );     break;
+    case GAL_TYPE_FLOAT32:   STATS_QFUNC_IND( float    );     break;
+    case GAL_TYPE_FLOAT64:   STATS_QFUNC_IND( double   );     break;
     default:
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
             __func__, nbs->type);
@@ -411,12 +426,24 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
 
 
 /* Return the quantile function of the given value as float64. */
+#define STATS_QFUNC(IT) {                                               \
+    IT *a=nbs->array, v=*((IT *)(value->array));                        \
+                                                                        \
+    /* Increasing array: */                                             \
+    if( *a < *(a+1) )                                                   \
+      d[0] = v<*a ? -INFINITY : INFINITY;                               \
+                                                                        \
+    /* Decreasing array. */                                             \
+    else                                                                \
+      d[0] = v>*a ? INFINITY : -INFINITY;                               \
+  }
 gal_data_t *
 gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
                                  int inplace)
 {
   double *d;
   size_t dsize=1;
+  gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
   size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
@@ -424,7 +451,32 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
   /* Note that counting of the index starts from 0, so for the quantile we
      should divided by (size - 1). */
   d=out->array;
-  d[0] = ( ind==-1 ? NAN : ((double)ind) / ((double)(input->size - 1)) );
+  if(ind==GAL_BLANK_SIZE_T)
+    {
+      /* See if the value is larger or smaller than the input's minimum or
+         maximum. */
+      switch(nbs->type)
+        {
+        case GAL_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
+        case GAL_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
+        case GAL_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
+        case GAL_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
+        case GAL_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
+        case GAL_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
+        case GAL_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
+        case GAL_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
+        case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
+        case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, nbs->type);
+        }
+    }
+  else
+    d[0] = (double)ind / ((double)(nbs->size - 1));
+
+  /* Clean up and return. */
+  if(nbs!=input) gal_data_free(nbs);
   return out;
 }
 

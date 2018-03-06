@@ -801,6 +801,48 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "upperlimitonesigma",
+      UI_KEY_UPPERLIMITONESIGMA,
+      0,
+      0,
+      "Upper-limit one sigma value.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "upperlimitsigma",
+      UI_KEY_UPPERLIMITSIGMA,
+      0,
+      0,
+      "Place in upperlimit distribution (sigma multiple).",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "upperlimitquantile",
+      UI_KEY_UPPERLIMITQUANTILE,
+      0,
+      0,
+      "Quantile in random distribution (max 1).",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "riverave",
       UI_KEY_RIVERAVE,
       0,

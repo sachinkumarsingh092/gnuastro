@@ -33,11 +33,11 @@ struct mkcatalog_passparams
   gal_data_t          *tile;    /* The tile to pass-over.               */
   float               *st_i;    /* Starting pointer for input image.    */
   int32_t             *st_o;    /* Starting pointer for objects image.  */
-  int32_t             *st_c;    /* Starting pointer for objects image.  */
+  int32_t             *st_c;    /* Starting pointer for clumps image.   */
   float             *st_sky;    /* Starting pointer for input image.    */
   float             *st_std;    /* Starting pointer for input image.    */
   size_t   start_end_inc[2];    /* Starting and ending indexs.          */
-  size_t             *shift;    /* Shift coordinates for coordinates.   */
+  size_t             *shift;    /* Shift coordinates.                   */
   gsl_rng              *rng;    /* Random number generator.             */
   size_t    clumpstartindex;    /* Clump starting row in final catalog. */
   gal_data_t       *up_vals;    /* Container for upper-limit values.    */

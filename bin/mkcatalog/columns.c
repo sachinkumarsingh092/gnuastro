@@ -275,9 +275,9 @@ columns_define_alloc(struct mkcatalogparams *p)
      smaller domain of raw measurements. So to avoid having to calculate
      something multiple times, each parameter will flag the intermediate
      parameters it requires in these arrays. */
-  oiflag = p->oiflag = gal_data_malloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS,
+  oiflag = p->oiflag = gal_data_calloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS,
                                              __func__, "oiflag");
-  ciflag = p->ciflag = gal_data_malloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS,
+  ciflag = p->ciflag = gal_data_calloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS,
                                              __func__, "ciflag");
 
   /* Allocate the columns. */
@@ -770,6 +770,45 @@ columns_define_alloc(struct mkcatalogparams *p)
           p->hasmag      = 1;   /* Doesn't need per-pixel calculations. */
           break;
 
+        case UI_KEY_UPPERLIMITONESIGMA:
+          name           = "UPPERLIMIT_ONE_SIGMA";
+          unit           = p->input->unit;
+          ocomment       = "One sigma value of all random measurements.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          break;
+
+        case UI_KEY_UPPERLIMITSIGMA:
+          name           = "UPPERLIMIT_SIGMA";
+          unit           = "frac";
+          ocomment       = "Place in upperlimit distribution (sigma multiple).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          break;
+
+        case UI_KEY_UPPERLIMITQUANTILE:
+          name           = "UPPERLIMIT_QUANTILE";
+          unit           = "quantile";
+          ocomment       = "Quantile of brightness in random distribution.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          break;
+
         case UI_KEY_RIVERAVE:
           name           = "RIVER_AVE";
           unit           = p->input->unit ? p->input->unit : "pixelunit";
@@ -1227,6 +1266,27 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
 
 
 
+/* The clump brightness is needed in several places, so we've defined this
+   function to have an easier code. */
+static double
+columns_clump_brightness(double *ci)
+{
+  double tmp;
+  /* Calculate the river flux over the clump area. But only when rivers are
+     present. When grown clumps are requested, the clumps can fully cover a
+     detection (that has one or no clumps). */
+  tmp = ( ci[ CCOL_RIV_NUM ]>0.0f
+          ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ]
+          : 0 );
+
+  /* Subtract it from the clump's brightness. */
+  return ci[ CCOL_NUM ]>0.0f ? (ci[ CCOL_SUM ] - tmp) : NAN;
+}
+
+
+
+
+
 /* The magnitude error is directly derivable from the S/N:
 
    To derive the error in measuring the magnitude from the S/N, let's take
@@ -1425,6 +1485,20 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((float *)colarr)[oind] = MKC_MAG(oi[ OCOL_UPPERLIMIT_B ]);
           break;
 
+        case UI_KEY_UPPERLIMITONESIGMA:
+          ((float *)colarr)[oind] = oi[ OCOL_UPPERLIMIT_S ];
+          break;
+
+        case UI_KEY_UPPERLIMITSIGMA:
+          ((float *)colarr)[oind] = ( ( oi[ OCOL_NUM ]>0.0f
+                                        ? oi[ OCOL_SUM ] : NAN )
+                                      / oi[ OCOL_UPPERLIMIT_S ] );
+          break;
+
+        case UI_KEY_UPPERLIMITQUANTILE:
+          ((float *)colarr)[oind] = oi[ OCOL_UPPERLIMIT_Q ];
+          break;
+
         case UI_KEY_SN:
           ((float *)colarr)[oind] = columns_sn(p, oi, 0);
           break;
@@ -1545,17 +1619,7 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_BRIGHTNESS:
-            /* Calculate the river flux over the clump area. But only when
-               rivers are present. When grown clumps are requested, the
-               clumps can fully cover a detection (that has one or no
-               clumps). */
-            tmp = ( ci[ CCOL_RIV_NUM ]>0.0f
-                    ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]*ci[ CCOL_NUM ]
-                    : 0 );
-
-            /* Subtract it from the clump's brightness. */
-            ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
-                                        ? (ci[ CCOL_SUM ] - tmp) : NAN );
+            ((float *)colarr)[cind] = columns_clump_brightness(ci);
             break;
 
           case UI_KEY_NORIVERBRIGHTNESS:
@@ -1564,16 +1628,8 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_MEAN:
-            /* Similar to brightness. */
-            tmp = ( ci[ CCOL_RIV_NUM ]>0.0f
-                    ? ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]
-                    : 0 );
-
-            /* Subtract it from the clump's mean. */
-            ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
-                                        ? (ci[CCOL_SUM]/ci[CCOL_NUM] - tmp)
-                                        : NAN );
-
+            ((float *)colarr)[cind] = ( columns_clump_brightness(ci)
+                                        /ci[CCOL_NUM] );
             break;
 
           case UI_KEY_MEDIAN:
@@ -1598,6 +1654,18 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_UPPERLIMITMAG:
             ((float *)colarr)[cind] = MKC_MAG(ci[ CCOL_UPPERLIMIT_B ]);
+            break;
+
+          case UI_KEY_UPPERLIMITONESIGMA:
+            ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_S ];
+            break;
+
+          case UI_KEY_UPPERLIMITSIGMA:
+            ((float *)colarr)[cind] = ( columns_clump_brightness(ci)
+                                        / ci[ CCOL_UPPERLIMIT_S ] );
+
+          case UI_KEY_UPPERLIMITQUANTILE:
+            ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_Q ];
             break;
 
           case UI_KEY_RIVERAVE:

@@ -612,7 +612,7 @@ mkcatalog_single_object(void *in_prm)
       mkcatalog_first_pass(&pp);
 
       /* Currently the second pass is only necessary when there is a clumps
-         image or the median is requested. */
+         image. */
       if(p->clumps)
         {
           /* Allocate space for the properties of each clump. */

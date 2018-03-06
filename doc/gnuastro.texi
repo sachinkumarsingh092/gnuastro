@@ -15669,12 +15669,33 @@ magnitude settings} for a complete explanation. This is very important for
 the fainter and smaller objects in the image where the measured magnitudes
 are not reliable.
 
-
 @item --upperlimitmag
 The upper limit magnitude for this object or clump. See @ref{Quantifying
 measurement limits} and @ref{Upper-limit magnitude settings} for a complete
 explanation. This is very important for the fainter and smaller objects in
 the image where the measured magnitudes are not reliable.
+
+@item --upperlimitonesigma
+The @mymath{1\sigma} upper limit value (in units of the input image) for
+this object or clump. See @ref{Quantifying measurement limits} and
+@ref{Upper-limit magnitude settings} for a complete explanation. When
+@option{--upnsigma=1}, this column's values will be the same as
+@option{--upperlimit}.
+
+@item --upperlimitsigma
+The position of the total brightness measured within the distribution of
+randomly placed upperlimit measurements in units of the distribution's
+@mymath{\sigma} or standard deviation. See @ref{Quantifying measurement
+limits} and @ref{Upper-limit magnitude settings} for a complete
+explanation.
+
+@item --upperlimitquantile
+The position of the total brightness measured within the distribution of
+randomly placed upperlimit measurements as a quantile (value between 0 or
+1). See @ref{Quantifying measurement limits} and @ref{Upper-limit magnitude
+settings} for a complete explanation. If the object is brighter than the
+brightest randomly placed profile, a value of @code{inf} is returned. If it
+is less than the minimum, a value of @code{-inf} is reported.
 
 @item --riverave
 [Clumps] The average brightness of the river pixels around this
@@ -23551,16 +23572,18 @@ datatype of the output is the same as @code{input}. See
 Return the index of the quantile function (inverse quantile) of
 @code{input} at @code{value}. In other words, this function will return the
 index of the nearest element (of a sorted and non-blank) @code{input} to
-@code{value}. See @code{gal_statistics_median} for a description of
-@code{inplace}.
+@code{value}. If the value is outside the range of the input, then this
+function will return @code{GAL_BLANK_SIZE_T}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_quantile_function (gal_data_t @code{*input}, gal_data_t @code{*value}, int @code{inplace})
 Return a single-element (@code{double} or @code{float64}) dataset
 containing the quantile function of the non-blank values in @code{input} at
 @code{value}. In other words, this function will return the quantile of
-@code{value} in @code{input}. See @code{gal_statistics_median} for a
-description of @code{inplace}.
+@code{value} in @code{input}. If the value is smaller than the input's
+smallest element, the returned value will be zero. If the value is larger
+than the input's largest element, then the returned value is 1. See
+@code{gal_statistics_median} for a description of @code{inplace}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_mode (gal_data_t @code{*input}, float @code{mirrordist}, int @code{inplace})
