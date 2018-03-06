@@ -2396,12 +2396,23 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
           }
 
       /* Allocate a blank value for the given type and read/store the
-         column using CFITSIO. Afterwards, free the blank value. */
-      blank=gal_blank_alloc_write(out->type);
+         column using CFITSIO. Afterwards, free the blank value. Note that
+         we only need blank values for integer types. For floating point
+         types, the FITS standard defines blanks as NaN (same as almost any
+         other software like Gnuastro). However if a blank value is
+         specified, CFITSIO will convert other special numbers like `inf'
+         to NaN also. We want to be able to distringuish `inf' and NaN
+         here, so for floating point types, we won't define any blank
+         value. */
+      blank = ( (out->type==GAL_TYPE_FLOAT32 || out->type==GAL_TYPE_FLOAT64)
+                ? NULL
+                : gal_blank_alloc_write(out->type) );
       fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
                     1, 1, out->size, blank, out->array, &anynul, &status);
       gal_fits_io_error(status, NULL);
-      free(blank);
+
+      /* Clean up. */
+      if(blank) free(blank);
     }
 
   /* Close the FITS file */
@@ -2707,7 +2718,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
   fptr=gal_fits_open_to_write(filename);
 
 
-  /* prepare necessary arrays and if integer type columns have blank
+  /* Prepare necessary arrays and if integer type columns have blank
      values, write the TNULLn keywords into the FITS file. */
   fits_table_prepare_arrays(cols, numcols, tableformat,
                             &tform, &ttype, &tunit);
