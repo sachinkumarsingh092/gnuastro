@@ -35,6 +35,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel crash when no growth is possible (bug #53268).
 
+  MakeCatalog parses area larger than clump (bug #53295).
+
 
 
 * Noteworthy changes in release 0.5 (library 3.0.0) (2017-12-22) [stable]

@@ -45,7 +45,7 @@ static gal_data_t *
 upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 {
   gal_data_t *input=pp->p->input;
-  size_t ndim=input->ndim, *dsize=input->dsize;
+  size_t ndim=input->ndim, *tsize=pp->tile->dsize;
 
   int32_t *O, *C;
   gal_data_t *tiles=NULL;
@@ -68,7 +68,8 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
         minmax[ i * width + ndim + d ] = 0;                /* Maximum. */
       }
 
-  /* Parse over the object and get the clump's minimum and maximum. */
+  /* Parse over the object and get the clump's minimum and maximum
+     positions.*/
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
       /* Set the pointers for this tile. */
@@ -77,14 +78,15 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
       C = pp->st_c + increment;
 
       /* Go over the contiguous region. */
-      II = I + dsize[ndim-1];
+      II = I + tsize[ndim-1];
       do
         {
           /* Only consider clumps. */
           if( *O==pp->object && *C>0 )
             {
               /* Get the coordinates of this pixel. */
-              gal_dimension_index_to_coord(I-start, ndim, dsize, coord);
+              gal_dimension_index_to_coord(I-start, ndim, input->dsize,
+                                           coord);
 
               /* Check to see if this coordinate is the smallest/largest
                  found so far for this label. Note that labels start from
@@ -104,7 +106,7 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
       while(++I<II);
 
       /* Increment to the next contiguous region. */
-      increment += ( gal_tile_block_increment(input, dsize, num_increment++,
+      increment += ( gal_tile_block_increment(input, tsize, num_increment++,
                                               NULL) );
     }
 
