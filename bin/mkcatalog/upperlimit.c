@@ -274,7 +274,7 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
   gal_data_t *column;
   size_t init_size, col, one=1;
   struct mkcatalogparams *p=pp->p;
-  gal_data_t *sigclip=NULL, *sum, *qfunc;
+  gal_data_t *sum, *qfunc=NULL, *sigclip=NULL;
   double *o = ( clumplab
                 ? &pp->ci[ (clumplab-1) * CCOL_NUMCOLS ]
                 : pp->oi );
@@ -292,6 +292,7 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
             /* Columns that depend on the sigma of the distribution. */
             case UI_KEY_UPPERLIMIT:
             case UI_KEY_UPPERLIMITMAG:
+            case UI_KEY_UPPERLIMITSIGMA:
             case UI_KEY_UPPERLIMITONESIGMA:
 
               /* We only need to do this once. */
@@ -324,18 +325,26 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
             /* Quantile column. */
             case UI_KEY_UPPERLIMITQUANTILE:
 
-              /* Similar to the case for sigma-clipping, we'll need to keep
-                 the size here also. */
-              init_size=pp->up_vals->size;
-              sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0,
-                                 -1, NULL, NULL, NULL);
-              ((float *)(sum->array))[0]=o[clumplab ? CCOL_SUM : OCOL_SUM];
-              qfunc=gal_statistics_quantile_function(pp->up_vals, sum, 1);
+              /* Also only necessary once (if requested multiple times). */
+              if(qfunc==NULL)
+                {
+                  /* Similar to the case for sigma-clipping, we'll need to
+                     keep the size here also. */
+                  init_size=pp->up_vals->size;
+                  sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0,
+                                     -1, NULL, NULL, NULL);
+                  ((float *)(sum->array))[0]=o[clumplab?CCOL_SUM:OCOL_SUM];
+                  qfunc=gal_statistics_quantile_function(pp->up_vals, sum, 1);
 
-              /* Fill in the column. */
-              col = clumplab ? CCOL_UPPERLIMIT_Q : OCOL_UPPERLIMIT_Q;
-              pp->up_vals->size=pp->up_vals->dsize[0]=init_size;
-              o[col] = ((double *)(qfunc->array))[0];
+                  /* Fill in the column. */
+                  col = clumplab ? CCOL_UPPERLIMIT_Q : OCOL_UPPERLIMIT_Q;
+                  pp->up_vals->size=pp->up_vals->dsize[0]=init_size;
+                  o[col] = ((double *)(qfunc->array))[0];
+
+                  /* Clean up. */
+                  gal_data_free(sum);
+                  gal_data_free(qfunc);
+                }
               break;
             }
         }

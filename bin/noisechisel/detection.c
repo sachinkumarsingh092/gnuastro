@@ -972,7 +972,7 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
   float *i, *e_th, *arr=p->conv->array;
   uint8_t *b=workbin->array, *bf=b+workbin->size;
 
-  /* only continue if there actually are any pixels to expand (this can
+  /* Only continue if there actually are any pixels to expand (this can
      happen!). */
   if(p->numexpand)
     {
