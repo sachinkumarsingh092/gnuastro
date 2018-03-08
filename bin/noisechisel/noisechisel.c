@@ -23,6 +23,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
@@ -325,22 +327,34 @@ noisechisel(struct noisechiselparams *p)
   /* Remove false detections. */
   detection(p);
 
-  /* Find the Sky value and subtract it from the input and convolved
-     images. */
-  noisechisel_find_sky_subtract(p);
-
-  /* If the user only wanted detection, ignore the segmentation steps. */
-  if(p->onlydetection==0)
+  /* If we have any detections, find the Sky value and subtract it from the
+     input and convolved images. */
+  if(p->numdetections)
     {
-      /* Correct the convolved image channel edges if necessary. */
-      noisechisel_convolve_correct_ch_edges(p);
+      noisechisel_find_sky_subtract(p);
 
-      /* Do the segmentation. */
-      segmentation(p);
+      /* If the user only wanted detection, ignore the segmentation steps. */
+      if(p->onlydetection==0)
+        {
+          /* Correct the convolved image channel edges if necessary. */
+          noisechisel_convolve_correct_ch_edges(p);
+
+          /* Do the segmentation. */
+          segmentation(p);
+        }
+      else
+        p->numobjects=p->numdetections;
+
+      /* Write the output. */
+      noisechisel_output(p);
     }
   else
-    p->numobjects=p->numdetections;
-
-  /* Write the output. */
-  noisechisel_output(p);
+    {
+      if(p->cp.quiet)
+        error(0, 0, "no output file created: no detections could found "
+              "in `%s' with given parameters", p->inputname);
+      else
+        gal_timing_report(NULL, "NO OUTPUT FILE CREATED (try with "
+                          "`--checkdetection' to see why)", 1);
+    }
 }
