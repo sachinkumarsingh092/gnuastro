@@ -8768,7 +8768,7 @@ flux values, by default it is the opposite.
 @itemx --fluxlow=FLT
 The minimum flux (pixel value) to display in the output image, any pixel
 value below this value will be set to this value in the output. If the
-value to this option is the same as @option{--fluxmax}, then no flux
+value to this option is the same as @option{--fluxhigh}, then no flux
 truncation will be applied. Note that when multiple channels are given,
 this value is used for all the color channels.
 
