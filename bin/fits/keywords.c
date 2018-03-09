@@ -109,6 +109,7 @@ keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
       /* Rename the keyword */
       fits_modify_name(*fptr, from, to, &status);
       if(status) *r=fits_has_error(p, FITS_ACTION_RENAME, from, status);
+      status=0;
 
       /* Clean up the user's input string. Note that `strtok' just changes
          characters within the allocated string, no extra allocation is
@@ -208,9 +209,6 @@ keywords_print_all_keys(struct fitsparams *p, fitsfile **fptr)
   int nkeys, status=0;
   char *fullheader, *c, *cf;
 
-  /* Open the FITS file. */
-  keywords_open(p, fptr, READONLY);
-
   /* Conver the header into a contiguous string. */
   if( fits_hdr2str(*fptr, 0, NULL, 0, &fullheader, &nkeys, &status) )
     gal_fits_io_error(status, NULL);
@@ -257,6 +255,15 @@ keywords_print_all_keys(struct fitsparams *p, fitsfile **fptr)
 /***********************************************************************/
 /******************           Main function         ********************/
 /***********************************************************************/
+/* NOTE ON CALLING keywords_open FOR EACH OPERATION:
+
+   `keywords_open' is being called individually for each separate operation
+   because the necessary permissions differ: when the user only wants to
+   read keywords, they don't necessarily need write permissions. So if they
+   haven't asked for any writing/editing operation, we shouldn't open in
+   write-mode. Because the user might not have the permissions to write and
+   they might not want to write. `keywords_open' will only open the file
+   once (if the pointer is already allocated, it won't do anything). */
 int
 keywords(struct fitsparams *p)
 {
@@ -269,29 +276,42 @@ keywords(struct fitsparams *p)
   /* Delete the requested keywords. */
   if(p->delete)
     {
+      /* Open the FITS file. */
       keywords_open(p, &fptr, READWRITE);
+
+      /* Go over all the keywords to delete. */
       for(tstll=p->delete; tstll!=NULL; tstll=tstll->next)
         {
           fits_delete_key(fptr, tstll->v, &status);
           if(status)
             r=fits_has_error(p, FITS_ACTION_DELETE, tstll->v, status);
+          status=0;
         }
     }
 
 
   /* Rename the requested keywords. */
   if(p->rename)
-    keywords_rename_keys(p, &fptr, &r);
+    {
+      keywords_open(p, &fptr, READWRITE);
+      keywords_rename_keys(p, &fptr, &r);
+    }
 
 
   /* Update the requested keywords. */
   if(p->update)
-    keywords_write_update(p, &fptr, p->update_keys, 1);
+    {
+      keywords_open(p, &fptr, READWRITE);
+      keywords_write_update(p, &fptr, p->update_keys, 1);
+    }
 
 
   /* Write the requested keywords. */
   if(p->write)
-    keywords_write_update(p, &fptr, p->write_keys, 2);
+    {
+      keywords_open(p, &fptr, READWRITE);
+      keywords_write_update(p, &fptr, p->write_keys, 2);
+    }
 
 
   /* Put in any full line of keywords as-is. */
@@ -300,37 +320,46 @@ keywords(struct fitsparams *p)
       {
         fits_write_record(fptr, tstll->v, &status);
         if(status) r=fits_has_error(p, FITS_ACTION_WRITE, tstll->v, status);
+        status=0;
       }
 
 
   /* Add the history keyword(s). */
   if(p->history)
     {
+      keywords_open(p, &fptr, READWRITE);
       fits_write_history(fptr, p->history, &status);
       if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "HISTORY", status);
+      status=0;
     }
 
 
   /* Add comment(s). */
   if(p->comment)
     {
+      keywords_open(p, &fptr, READWRITE);
       fits_write_comment(fptr, p->comment, &status);
       if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "COMMENT", status);
+      status=0;
     }
 
 
   /* Update/add the date. */
   if(p->date)
     {
+      keywords_open(p, &fptr, READWRITE);
       fits_write_date(fptr, &status);
       if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "DATE", status);
+      status=0;
     }
 
 
-  /* If nothing was requested, then print all the keywords in this
-     extension. */
+  /* Print all the keywords in the extension. */
   if(p->printallkeys)
-    keywords_print_all_keys(p, &fptr);
+    {
+      keywords_open(p, &fptr, READONLY);
+      keywords_print_all_keys(p, &fptr);
+    }
 
 
   /* Close the FITS file */

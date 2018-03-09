@@ -50,6 +50,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel crash when there is no detection (bug #53304).
 
+  Fits crash on keyword editing (except --delete) (bug #53312).
+
+
+
 
 
 * Noteworthy changes in release 0.5 (library 3.0.0) (2017-12-22) [stable]

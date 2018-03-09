@@ -64,11 +64,11 @@ fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
   if(p->quitonerror)
     {
       fits_report_error(stderr, status);
-      error(EXIT_FAILURE, 0, "%s: not %s: %s\n", __func__, action, string);
+      error(EXIT_FAILURE, 0, "%s: %s: not %s\n", __func__, string, action);
     }
   else
     {
-      fprintf(stderr, "Not %s: %s\n", action, string);
+      fprintf(stderr, "%s: Not %s.\n", string, action);
       r=EXIT_FAILURE;
     }
   return r;
@@ -259,6 +259,7 @@ fits_hdu_remove(struct fitsparams *p, int *r)
       /* Delete the extension. */
       if( fits_delete_hdu(fptr, &hdutype, &status) )
         *r=fits_has_error(p, FITS_ACTION_REMOVE, hdu, status);
+      status=0;
 
       /* Close the file. */
       fits_close_file(fptr, &status);
@@ -293,11 +294,15 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
       /* Copy to the extension. */
       if( fits_copy_hdu(in, out, 0, &status) )
         *r=fits_has_error(p, FITS_ACTION_COPY, hdu, status);
+      status=0;
 
       /* If this is a `cut' operation, then remove the extension. */
       if(cut1_copy0)
-        if( fits_delete_hdu(in, &hdutype, &status) )
-          *r=fits_has_error(p, FITS_ACTION_REMOVE, hdu, status);
+        {
+          if( fits_delete_hdu(in, &hdutype, &status) )
+            *r=fits_has_error(p, FITS_ACTION_REMOVE, hdu, status);
+          status=0;
+        }
 
       /* Close the input file. */
       fits_close_file(in, &status);
