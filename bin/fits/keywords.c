@@ -316,21 +316,28 @@ keywords(struct fitsparams *p)
 
   /* Put in any full line of keywords as-is. */
   if(p->asis)
-    for(tstll=p->asis; tstll!=NULL; tstll=tstll->next)
-      {
-        fits_write_record(fptr, tstll->v, &status);
-        if(status) r=fits_has_error(p, FITS_ACTION_WRITE, tstll->v, status);
-        status=0;
-      }
+    {
+      keywords_open(p, &fptr, READWRITE);
+      for(tstll=p->asis; tstll!=NULL; tstll=tstll->next)
+        {
+          fits_write_record(fptr, tstll->v, &status);
+          if(status) r=fits_has_error(p, FITS_ACTION_WRITE, tstll->v, status);
+          status=0;
+        }
+    }
 
 
   /* Add the history keyword(s). */
   if(p->history)
     {
       keywords_open(p, &fptr, READWRITE);
-      fits_write_history(fptr, p->history, &status);
-      if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "HISTORY", status);
-      status=0;
+      for(tstll=p->history; tstll!=NULL; tstll=tstll->next)
+        {
+          fits_write_history(fptr, tstll->v, &status);
+          if(status)
+            r=fits_has_error(p, FITS_ACTION_WRITE, "HISTORY", status);
+          status=0;
+        }
     }
 
 
@@ -338,9 +345,13 @@ keywords(struct fitsparams *p)
   if(p->comment)
     {
       keywords_open(p, &fptr, READWRITE);
-      fits_write_comment(fptr, p->comment, &status);
-      if(status) r=fits_has_error(p, FITS_ACTION_WRITE, "COMMENT", status);
-      status=0;
+      for(tstll=p->comment; tstll!=NULL; tstll=tstll->next)
+        {
+          fits_write_comment(fptr, tstll->v, &status);
+          if(status)
+            r=fits_has_error(p, FITS_ACTION_WRITE, "COMMENT", status);
+          status=0;
+        }
     }
 
 

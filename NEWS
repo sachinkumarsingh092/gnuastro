@@ -30,6 +30,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   the given value is smaller than the minimum or larger than the maximum of
   the input dataset's range.
 
+  Fits: The `--comment' and `--history' command may be called multiple
+  times to write multiple COMMENT/HISTORY keywords into the input FITS
+  file.
+
 ** Bug fixes
 
   Many unused result warnings for asprintf in some compilers (bug #52979).

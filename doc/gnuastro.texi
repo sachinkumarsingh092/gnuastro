@@ -8261,20 +8261,17 @@ comments and units for the keyword, see the @option{--update} option above.
 
 @item -H STR
 @itemx --history STR
-Add a @code{HISTORY} keyword to the header. The string given to this
-keyword will be separated into multiple keyword cards if it is longer than
-70 characters. With each run only one value for the @option{--history}
-option will be read. If there are multiple, it is the last one. If there is
-an error, Fits will give a warning and return with a non-zero value, but
-will not stop. To stop as soon as an error occurs, run with
-@option{--quitonerror}.
+Add a @code{HISTORY} keyword to the header with the given value. A new
+@code{HISTORY} keyword will be created for every instance of this
+option. If the string given to this option is longer than 70 characters, it
+will be separated into multiple keyword cards. If there is an error, Fits
+will give a warning and return with a non-zero value, but will not stop. To
+stop as soon as an error occurs, run with @option{--quitonerror}.
 
 @item -c STR
 @itemx --comment STR
-Add a @code{COMMENT} keyword to the header. Similar to the explanation for
-@option{--history} above. If there is a writing error, Fits will give a
-warning and return with a non-zero value, but will not stop. To stop as
-soon as an error occurs, run with @option{--quitonerror}.
+Add a @code{COMMENT} keyword to the header with the given value. Similar to
+the explanation for @option{--history} above.
 
 @item -t
 @itemx --date
@@ -8285,9 +8282,12 @@ not stop. To stop as soon as an error occurs, run with
 @option{--quitonerror}.
 
 @item -p
-@itemx --printall
+@itemx --printallkeys
 Print all the keywords in the specified FITS extension (HDU) on the
-command-line.
+command-line. If this option is called along with any of the other keyword
+editing commands, as described above, all other editing commands take
+precedence to this. Therefore, it will print the final keywords after all
+the editing has been done.
 
 @item -Q
 @itemx --quitonerror

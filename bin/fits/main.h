@@ -61,13 +61,13 @@ struct fitsparams
   gal_list_str_t     *cut;     /* Copy ext. to output and remove.   */
   uint8_t    printallkeys;     /* Print all the header keywords.    */
   uint8_t            date;     /* Set DATE to current time.         */
-  char           *comment;     /* COMMENT value.                    */
-  char           *history;     /* HISTORY value.                    */
   gal_list_str_t    *asis;     /* Strings to write asis.            */
   gal_list_str_t  *delete;     /* Keywords to remove.               */
   gal_list_str_t  *rename;     /* Rename a keyword.                 */
   gal_list_str_t  *update;     /* For keywords to update.           */
   gal_list_str_t   *write;     /* Full arg. for keywords to add.    */
+  gal_list_str_t *history;     /* HISTORY value.                    */
+  gal_list_str_t *comment;     /* COMMENT value.                    */
   uint8_t     quitonerror;     /* Quit if an error occurs.          */
 
   /* Internal: */

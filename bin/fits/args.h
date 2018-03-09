@@ -157,7 +157,7 @@ struct argp_option program_options[] =
       "Add HISTORY keyword, any length is ok.",
       UI_GROUP_KEYWORD,
       &p->history,
-      GAL_TYPE_STRING,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
@@ -170,7 +170,7 @@ struct argp_option program_options[] =
       "Add COMMENT keyword, any length is ok.",
       UI_GROUP_KEYWORD,
       &p->comment,
-      GAL_TYPE_STRING,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
