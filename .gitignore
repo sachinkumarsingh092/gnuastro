@@ -107,11 +107,14 @@ doc/stamp-vti
 astarithmetic
 aststatistics
 astnoisechisel
+tests/simpleio
 astsubtractsky
 autom4te.cache
 lib/gnuastro.pc
 doc/gnuastro.cps
 doc/gnuastro.vrs
+tests/versioncxx
+tests/multithread
 lib/gnuastro/config.h
 
 
