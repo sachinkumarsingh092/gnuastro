@@ -5,6 +5,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  ConvertType: TIFF images can also be used as input into ConvertType,
+  therefore libtiff has been added as a new optional dependency.
+
   MakeCatalog: The new `--mean' and `--median' options will calculate the
   mean and median pixel value within an object or clump respectively.
 
@@ -21,6 +24,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Statistics: the new `--manualbinrange' allows the bins in histograms or
   cumulative frequency plots to be set outside the minimum or maximum
   values of the dataset.
+
+  Libraries:
+    gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
+    gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
+    gal_tiff_dir_string_read: convert a string to a TIFF directory number.
+    gal_tiff_read: Read the contents of a TIFF `directory' to `gal_data_t'.
 
 ** Removed features
 

@@ -287,8 +287,6 @@ AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
 
 
-
-
 # Check libjpeg:
 AC_SEARCH_LIBS([jpeg_stdio_dest], [jpeg],
                [has_libjpeg=yes], [has_libjpeg=no])
@@ -296,6 +294,18 @@ AS_IF([test "x$has_libjpeg" = "xyes"],
       [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
+
+
+
+
+
+# Check libtiff:
+AC_SEARCH_LIBS([TIFFOpen], [tiff],
+               [has_libtiff=yes], [has_libtiff=no])
+AS_IF([test "x$has_libtiff" = "xyes"],
+      [AC_DEFINE([HAVE_LIBTIFF], [], [Has libtiff])],
+      [anywarnings=yes])
+AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 
 
@@ -650,7 +660,12 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_ECHO([])
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
-               AS_ECHO(["    If JPEG outputs are desired from ConvertType, it will warn"])
+               AS_ECHO(["    If JPEG inputs/outputs are given to ConvertType, it will warn"])
+               AS_ECHO(["    you and abort with an error."])
+               AS_ECHO([]) ])
+        AS_IF([test "x$has_libtiff" = "xno"],
+              [AS_ECHO(["  - libtiff, could not be linked with in your library search path."])
+               AS_ECHO(["    If TIFF inputs/outputs are given to ConvertType, it will warn"])
                AS_ECHO(["    you and abort with an error."])
                AS_ECHO([]) ])
         AS_IF([test "x$has_libgit2" = "x0"],

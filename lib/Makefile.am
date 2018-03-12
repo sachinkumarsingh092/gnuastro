@@ -59,7 +59,7 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
   arithmetic-or.c arithmetic-plus.c binary.c blank.c box.c checkset.c      \
   convolve.c cosmology.c data.c fits.c git.c interpolate.c list.c match.c  \
   options.c permutation.c polygon.c qsort.c dimension.c statistics.c       \
-  table.c tableintern.c threads.c tile.c timing.c txt.c type.c wcs.c
+  table.c tableintern.c threads.c tiff.c tile.c timing.c txt.c type.c wcs.c
 
 
 
@@ -76,8 +76,8 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h         \
   $(headersdir)/interpolate.h $(headersdir)/list.h $(headersdir)/match.h  \
   $(headersdir)/permutation.h $(headersdir)/polygon.h                     \
   $(headersdir)/qsort.h $(headersdir)/statistics.h $(headersdir)/table.h  \
-  $(headersdir)/threads.h $(headersdir)/tile.h $(headersdir)/txt.h        \
-  $(headersdir)/type.h $(headersdir)/wcs.h
+  $(headersdir)/threads.h $(headersdir)/tiff.h $(headersdir)/tile.h       \
+  $(headersdir)/txt.h $(headersdir)/type.h $(headersdir)/wcs.h
 
 
 

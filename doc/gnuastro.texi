@@ -556,6 +556,7 @@ Gnuastro library
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
 * World Coordinate System::     Dealing with the world coordinate system.
+* TIFF files::                  Functions for using TIFF files.
 * Text files::                  Functions to work on Text files.
 * Table input output::          Reading and writing table columns.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
@@ -3931,15 +3932,26 @@ headers} for a discussion.
 @item libjpeg
 @pindex libjpeg
 @cindex JPEG format
-libjpeg is only used by ConvertType to read from and write to JPEG
-images. @url{http://www.ijg.org/, libjpeg} is a very basic library
-that provides tools to read and write JPEG images, most of the
-GNU/Linux graphic programs and libraries use it. Therefore you most
+libjpeg is only used by ConvertType to read from and write to JPEG images,
+see @ref{Recognized file formats}. @url{http://www.ijg.org/, libjpeg} is a
+very basic library that provides tools to read and write JPEG images, most
+Unix-like graphic programs and libraries use it. Therefore you most
 probably already have it installed.
-@url{http://libjpeg-turbo.virtualgl.org/, libjpeg-turbo} is an
-alternative to libjpeg. It uses SIMD instructions for ARM based
-systems that significantly decreases the processing time of JPEG
-compression and decompression algorithms.
+@url{http://libjpeg-turbo.virtualgl.org/, libjpeg-turbo} is an alternative
+to libjpeg. It uses SIMD instructions for ARM based systems that
+significantly decreases the processing time of JPEG compression and
+decompression algorithms.
+
+@item libtiff
+@pindex libtiff
+@cindex TIFF format
+libtiff is used by ConvertType and the libraries to read TIFF images, see
+@ref{Recognized file formats}. @url{http://www.simplesystems.org/libtiff/,
+libtiff} is a very basic library that provides tools to read and write TIFF
+images, most Unix-like operating system graphic programs and libraries use
+it. Therefore even if you don't have it installed, it must be easily
+available in your package manager.
+
 
 @item GPL Ghostscript
 @cindex GPL Ghostscript
@@ -8386,6 +8398,26 @@ The file name endings that are recognized as a JPEG file for input
 are: @file{.jpg}, @file{.JPG}, @file{.jpeg}, @file{.JPEG},
 @file{.jpe}, @file{.jif}, @file{.jfif} and @file{.jfi}.
 
+@item TIFF
+@cindex TIFF format
+TIFF (or Tagged Image File Format) was originally designed as a common
+format for scanners in the early 90s and since then it has grown to become
+very general. In many aspects, the TIFF stanard is similar to the FITS
+image standard: it can allow data of many types (see @ref{Numeric data
+types}), and also allows multiple images to be stored in a single file
+(each image in the file is called a `directory' in the TIFF
+standard). However, unlike FITS, it can only store images, it has no
+constructs for tables. Another (inconvenient) difference with the FITS
+standard is that keyword names are stored as numbers, not human-readable
+text.
+
+However, outside of astronomy, because of its support of different numeric
+data types, many fields use TIFF images for accurate (for example 16-bit
+integer or floating point for example) imaging data.
+
+Currently ConvertType can only read TIFF images, if you are interested in
+writing TIFF images, please get in touch with us.
+
 @item EPS
 @cindex EPS
 @cindex PostScript
@@ -8649,13 +8681,22 @@ Input:
 @item -h STR/INT
 @itemx --hdu=STR/INT
 In ConvertType, it is possible to call the HDU option multiple times for
-the different input FITS files (corresponding to different color channels)
-in the same order that they are called on the command-line. Except for the
-fact that multiple calls are possible, this option is identical to the
-common @option{--hdu} in @ref{Input output options}. The number of calls to
-this option cannot be less than the number of input FITS files, but if
-there are more, the extra HDUs will be ignored, note that they will be read
-in the order described in @ref{Configuration file precedence}.
+the different input FITS or TIFF files in the same order that they are
+called on the command-line. Note that in the TIFF standard, one `directory'
+(similar to a FITS HDU) may contain multiple color channels (for example
+when the image is in RGB).
+
+Except for the fact that multiple calls are possible, this option is
+identical to the common @option{--hdu} in @ref{Input output options}. The
+number of calls to this option cannot be less than the number of input FITS
+or TIFF files, but if there are more, the extra HDUs will be ignored, note
+that they will be read in the order described in @ref{Configuration file
+precedence}.
+
+Unlike CFITSIO, libtiff (which is used to read TIFF files) only recognizes
+numbers (counting from zero, similar to CFITSIO) for `directory'
+identification. Hence the concept of names is not defined for the
+directories and the values to this option for TIFF files must be numbers.
 @end table
 
 @noindent
@@ -19060,6 +19101,7 @@ documentation will correspond to your installed version.
 * Linked lists::                Various types of linked lists.
 * FITS files::                  Working with FITS data.
 * World Coordinate System::     Dealing with the world coordinate system.
+* TIFF files::                  Functions for using TIFF files.
 * Text files::                  Functions to work on Text files.
 * Table input output::          Reading and writing table columns.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
@@ -21783,7 +21825,7 @@ formats, see @ref{Table input output}.
 
 
 
-@node World Coordinate System, Text files, FITS files, Gnuastro library
+@node World Coordinate System, TIFF files, FITS files, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
 The FITS standard defines the world coordinate system (WCS) as a mechanism
@@ -21928,15 +21970,62 @@ description of @code{gal_wcs_world_to_img} for more details.
 
 
 
-@node Text files, Table input output, World Coordinate System, Gnuastro library
+@node TIFF files, Text files, World Coordinate System, Gnuastro library
+@subsection TIFF files
+
+Outside of astronomy, the TIFF standard is arguably the most commonly used
+format to store high-precision data/images. Unlike FITS however, the TIFF
+standard only supports images (not tables), but like FITS, it has support
+for all standard data types (see @ref{Numeric data types}) which is the
+primary reason other fields use it.
+
+Another similarity of the TIFF and FITS standards is that TIFF supports
+multiple images in one file. The TIFF standard calls each one of these
+images (and their accompanying meta-data) a `directory' (roughly equivalent
+to the FITS extensions). Unlike FITS however, the directories can only be
+identified by their number (counting from zero), recall that in FITS you
+can also use the extension name to identify it.
+
+The functions described here allow easy reading (and later writing) of TIFF
+files within Gnuastro or for users of Gnuastro's libraries. Currently only
+reading is supported, but if you are interested, please get in touch with
+us.
+
+@deftypefun {int} gal_tiff_name_is_tiff (char @code{*name})
+Return @code{1} if @code{name} has a TIFF suffix. This can be used to make
+sure that a given input file is TIFF. See @code{gal_tiff_suffix_is_tiff}
+for a list of recognized suffixes.
+@end deftypefun
+
+@deftypefun {int} gal_tiff_suffix_is_tiff (char @code{*name})
+Return @code{1} if @code{suffix} is a recognized TIFF suffix. The
+recognized suffixes are @file{tif}, @file{tiff}, @file{TIFF} and
+@file{TIFF}.
+@end deftypefun
+
+@deftypefun {size_t} gal_tiff_dir_string_read (char @code{*string})
+Return the number within @code{string} as a @code{size_t} number to
+identify a TIFF directory. Note that the directories start counting from
+zero.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize})
+Read the @code{dir} directory within the TIFF file @code{filename} and
+return the contents of that TIFF directory as @code{gal_data_t}. If the
+directory's image contains multiple channels, the output will be a list
+(see @ref{List of gal_data_t}).
+@end deftypefun
+
+
+
+@node Text files, Table input output, TIFF files, Gnuastro library
 @subsection Text files (@file{txt.h})
 
 FITS files are the primary data container in astronomy. FITS indeed as many
 useful features, but the most universal and portable format for data
 storage are plain text files. They can be viewed and edited on any text
 editor or even on the command-line. Therefore the functions in this section
-are defined to simplify reading from and writing to plain text
-files.
+are defined to simplify reading from and writing to plain text files.
 
 Lines are one of the most basic buiding blocks (delimiters) of a text
 file. Some operating systems like Microsoft Windows, terminate their ASCII

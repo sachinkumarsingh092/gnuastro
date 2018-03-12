@@ -1199,7 +1199,7 @@ gal_list_data_add(gal_data_t **list, gal_data_t *newnode)
 
   /* Set the next element of toadd and update what list points to.*/
   toadd->next=*list;
-  *list=toadd;
+  *list=newnode;
 }
 
 

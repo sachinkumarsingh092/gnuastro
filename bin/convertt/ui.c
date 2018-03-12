@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/tiff.h>
 #include <gnuastro/table.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/arithmetic.h>
@@ -393,9 +394,9 @@ static void
 ui_make_channels_ll(struct converttparams *p)
 {
   char *hdu=NULL;
-  size_t dsize=0;
   gal_data_t *data;
   gal_list_str_t *name;
+  size_t dsize=0, dirnum;
 
   /* Go through the input files and add the channel(s). */
   p->numch=0;
@@ -431,13 +432,31 @@ ui_make_channels_ll(struct converttparams *p)
         }
 
 
+      /* TIFF: */
+      else if( gal_tiff_name_is_tiff(name->v) )
+        {
+          /* Get the directory value for this channel. */
+          if(p->hdus)
+            {
+              hdu=gal_list_str_pop(&p->hdus);
+              dirnum=gal_tiff_dir_string_read(hdu);
+            }
+          else
+            dirnum=0;
+
+          /* Read the TIFF image into memory. */
+          data=gal_tiff_read(name->v, dirnum, p->cp.minmapsize);
+          p->numch += gal_list_data_number(data);
+          gal_list_data_add(&p->chll, data);
+        }
+
 
       /* JPEG: */
       else if ( nameisjpeg(name->v) )
         {
 #ifndef HAVE_LIBJPEG
           error(EXIT_FAILURE, 0, "you are giving a JPEG input, however, "
-                "when %s was configured libjpeg was not available. To read "
+                "when %s was configured, libjpeg was not available. To read "
                 "from (and write to) JPEG files, libjpeg is required. "
                 "Please install it and configure, make and install %s "
                 "again", PACKAGE_STRING, PACKAGE_STRING);
@@ -654,12 +673,12 @@ ui_set_output(struct converttparams *p)
 #else
       /* Small sanity checks. */
       if(p->quality == GAL_BLANK_UINT8)
-        error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary for "
-              "jpeg outputs, but it has not been given");
+        error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary "
+              "for jpeg outputs, but it has not been given");
       if(p->quality > 100)
         error(EXIT_FAILURE, 0, "`%u' is larger than 100. The value to the "
-              "`--quality' (`-u') option must be between 1 and 100 (inclusive)",
-              p->quality);
+              "`--quality' (`-u') option must be between 1 and 100 "
+              "(inclusive)", p->quality);
 
       /* Preparations. */
       p->outformat=OUT_FORMAT_JPEG;
@@ -667,6 +686,10 @@ ui_set_output(struct converttparams *p)
         ui_add_dot_use_automatic_output(p);
 #endif
     }
+  else if( gal_tiff_name_is_tiff(cp->output) )
+      error(EXIT_FAILURE, 0, "writing TIFF files is not yet supported, "
+            "please get in touch with us at %s so we implement it",
+            PACKAGE_BUGREPORT);
   else if(nameiseps(cp->output))
     {
       p->outformat=OUT_FORMAT_EPS;
