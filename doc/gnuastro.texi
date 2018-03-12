@@ -23581,8 +23581,8 @@ Macros used to identify if the regularity of the bins when defining bins.
 
 @cindex Number
 @deftypefun {gal_data_t *} gal_statistics_number (gal_data_t @code{*input})
-Return a single-element @code{uint64} dataset containing the number of
-non-blank elements in @code{input}.
+Return a single-element dataset with type @code{size_t} which contains the
+number of non-blank elements in @code{input}.
 @end deftypefun
 
 @cindex Minimum

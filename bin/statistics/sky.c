@@ -185,7 +185,7 @@ sky(struct statisticsparams *p)
     {
       num=gal_statistics_number(p->sky_t);
       if( asprintf(&msg, "Sky and its STD found on %zu/%zu tiles.",
-                   (size_t)(*((uint64_t *)(num->array))), tl->tottiles )<0 )
+                   *((size_t *)(num->array)), tl->tottiles )<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 1);
       gal_data_free(num);

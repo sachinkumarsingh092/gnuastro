@@ -35,13 +35,19 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
-  Libraries: `gal_statistics_quantile_function' returns `inf' or `-inf' if
-  the given value is smaller than the minimum or larger than the maximum of
-  the input dataset's range.
-
   Fits: The `--comment' and `--history' command may be called multiple
   times to write multiple COMMENT/HISTORY keywords into the input FITS
   file.
+
+  Libraries:
+
+   - `gal_statistics_quantile_function': returns `inf' or `-inf' if the
+     given value is smaller than the minimum or larger than the maximum of
+     the input dataset's range. Until now, it would return blank in such
+     cases.
+
+   - `gal_statistics_number': the output dataset now has a `size_t'
+     type. Until now it was `uint64_t'.
 
 ** Bug fixes
 

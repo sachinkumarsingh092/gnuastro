@@ -3,6 +3,7 @@ People who's help must be acknowledged in the next release.
 Leindert Boogaard
 Nima Dehdilani
 Antonio Diaz Diaz
+Lee Kelvin
 Guillaume Mahler
 Ole Streicher
 Michel Tallon

@@ -54,13 +54,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  ********               Simple statistics                 *******
  ****************************************************************/
 /* Return the number of non-blank elements in an array as a single element,
-   uint64 type data structure. */
+   `size_t' type data structure. */
 gal_data_t *
 gal_statistics_number(gal_data_t *input)
 {
-  size_t dsize=1;
-  uint64_t counter=0;
-  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, &dsize,
+  size_t counter=0, dsize=1;
+  gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
   /* If there is no blank values in the input, then the total number is
@@ -71,7 +70,7 @@ gal_statistics_number(gal_data_t *input)
     counter = input->size;
 
   /* Write the value into memory. */
-  *((uint64_t *)(out->array)) = counter;
+  *((size_t *)(out->array)) = counter;
   return out;
 }
 
