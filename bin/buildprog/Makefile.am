@@ -53,26 +53,22 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	cp $< $@
 	infoadded="no";                                \
 	for i in $(IN_CPPFLAGS); do                    \
-          if test x"$$i" != x; then                    \
-	    if test $$infoadded = "no"; then           \
-	      echo "" >> $@;                           \
-	      echo "# Installation information" >> $@; \
-	      infoadded="yes";                         \
-	    fi;                                        \
-	    v=$$(echo $$i | sed -e 's/-I//');          \
-	    echo " includedir $$v" >> $@;              \
-          fi;                                          \
+	  if test $$infoadded = "no"; then             \
+	    echo "" >> $@;                             \
+	    echo "# Installation information" >> $@;   \
+	    infoadded="yes";                           \
+	  fi;                                          \
+	  v=$$(echo $$i | sed -e 's/-I//');            \
+	  echo " includedir $$v" >> $@;                \
 	done;                                          \
 	for i in $(IN_LDFLAGS); do                     \
-          if test x"$$i" != x; then                    \
-	    if test $$infoadded = "no"; then           \
-	      echo "" >> $@;                           \
-	      echo "# Installation information" >> $@; \
-	      infoadded="yes";                         \
-	    fi;                                        \
-	    v=$$(echo $$i | sed -e 's/-L//');          \
-	    echo " linkdir $$v" >> $@;                 \
+	  if test $$infoadded = "no"; then             \
+	    echo "" >> $@;                             \
+	    echo "# Installation information" >> $@;   \
+	    infoadded="yes";                           \
 	  fi;                                          \
+	  v=$$(echo $$i | sed -e 's/-L//');            \
+	  echo " linkdir $$v" >> $@;                   \
 	done
 
 
