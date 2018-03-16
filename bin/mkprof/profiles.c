@@ -168,7 +168,8 @@ profiles_sersic(struct mkonthread *mkp)
 double
 profiles_circumference(struct mkonthread *mkp)
 {
-  return mkp->r > mkp->intruncr ? mkp->fixedvalue : 0.0f;
+  return ( (mkp->r > mkp->intruncr && mkp->r <= mkp->truncr)
+           ? mkp->fixedvalue : 0.0f );
 }
 
 

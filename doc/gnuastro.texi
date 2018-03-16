@@ -16801,10 +16801,10 @@ Point source with `@code{point}' or `@code{4}'.
 Flat profile with `@code{flat}' or `@code{5}'.
 
 @item
-Circumference profile with `@code{circum}' or `@code{6}'. A fixed
-value will be used for all pixels between the truncation radius
-(@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
-@option{--circumwidth}).
+Circumference profile with `@code{circum}' or `@code{6}'. A fixed value
+will be used for all pixels less than or equal to the truncation radius
+(@mymath{r_t}) and greater than @mymath{r_t-w} (@mymath{w} is the value to
+the @option{--circumwidth}).
 
 @item
 Radial distance profile with `@code{distance}' or `@code{7}'. At the lowest

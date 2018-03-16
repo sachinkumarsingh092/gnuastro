@@ -128,7 +128,7 @@ struct mkprofparams
   size_t             *shift;  /* Shift along axeses position of profiles. */
   uint8_t       prepforconv;  /* Shift and expand by size of first psf.   */
   float           zeropoint;  /* Magnitude of zero point flux.            */
-  double        circumwidth;  /* Width of circumference (inward).         */
+  float         circumwidth;  /* Width of circumference (inward).         */
   uint8_t           replace;  /* Replace overlaping profile pixel values. */
   uint8_t         magatpeak;  /* Mag only for peak pixel, not all profile.*/
   uint8_t           envseed;  /* Use GSL_RNG_SEED for random seed.        */
