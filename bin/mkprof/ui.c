@@ -1032,7 +1032,9 @@ ui_prepare_canvas(struct mkprofparams *p)
           /* Read the image. */
           p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
                                            GAL_TYPE_FLOAT32,
-                                           p->cp.minmapsize, 0, 0);
+                                           p->cp.minmapsize);
+          p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0,
+                                   &p->out->nwcs);
 
           /* Put the WCS structure and number of dimensions in the
              MakeProfiles's main structure for generality. The WCS

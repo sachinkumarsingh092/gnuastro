@@ -1,5 +1,5 @@
 /*********************************************************************
-tiff -- functions to read and write TIFF files.
+array - Functions to read/write arrays from/to files.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,14 +20,12 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_TIFF_H__
-#define __GAL_TIFF_H__
-
+#ifndef __GAL_ARRAY_H__
+#define __GAL_ARRAY_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
-#include <gnuastro/list.h>
-
+#include <gnuastro/data.h>
 
 
 /* C++ Preparations */
@@ -54,19 +52,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Functions */
-int
-gal_tiff_name_is_tiff(char *name);
-
-int
-gal_tiff_suffix_is_tiff(char *name);
-
-size_t
-gal_tiff_dir_string_read(char *string);
+gal_data_t *
+gal_array_read(char *filename, char *extension, size_t minmapsize);
 
 gal_data_t *
-gal_tiff_read(char *filename, size_t dir, size_t minmapsize);
-
-
+gal_array_read_to_type(char *filename, char *extension, uint8_t type,
+                       size_t minmapsize);
 
 
 __END_C_DECLS    /* From C++ preparations */

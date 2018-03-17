@@ -587,8 +587,9 @@ ui_preparations(struct noisechiselparams *p)
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                       GAL_TYPE_FLOAT32,
-                                       p->cp.minmapsize, 0, 0);
+                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
+                               &p->input->nwcs);
   if(p->input->name==NULL)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
 
@@ -606,8 +607,7 @@ ui_preparations(struct noisechiselparams *p)
     {
       /* Read the input convolved image. */
       p->conv = gal_fits_img_read_to_type(p->convolvedname, p->convolvedhdu,
-                                          GAL_TYPE_FLOAT32, p->cp.minmapsize,
-                                          0, 0);
+                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
 
       /* Make sure the convolved image is the same size as the input. */
       if( gal_data_dsize_is_different(p->input, p->conv) )

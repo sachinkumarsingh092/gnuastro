@@ -26,6 +26,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   values of the dataset.
 
   Libraries:
+    gal_array_read: read from file with all known formats (FITS, TIFF, etc).
+    gal_array_read_to_type: similar to `gal_array_read', but to given type.
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
     gal_tiff_dir_string_read: convert a string to a TIFF directory number.
@@ -40,6 +42,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   file.
 
   Libraries:
+
+   - `gal_fits_img_read': now only reads the data not the WCS, therefore it
+     no longer needs the last two arguments. A subsequent call to
+     `gal_wcs_read' can be used to read the WCS information in the file.
 
    - `gal_statistics_quantile_function': returns `inf' or `-inf' if the
      given value is smaller than the minimum or larger than the maximum of

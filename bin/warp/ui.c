@@ -338,8 +338,9 @@ ui_check_options_and_arguments(struct warpparams *p)
 
       /* Read the input image as double type and its WCS structure. */
       p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                         GAL_TYPE_FLOAT64, p->cp.minmapsize,
-                                         p->hstartwcs, p->hendwcs);
+                                         GAL_TYPE_FLOAT64, p->cp.minmapsize);
+      p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
+                                 p->hendwcs, &p->input->nwcs);
       if(p->input->wcs)
         {
           p->pixelscale=gal_wcs_pixel_scale(p->input->wcs);

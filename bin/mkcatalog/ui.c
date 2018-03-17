@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <inttypes.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
@@ -372,7 +373,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the input image. */
   p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                     GAL_TYPE_FLOAT32, p->cp.minmapsize, 0,0);
+                                     GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 
 
   /* Read basic WCS information for final table meta-data. */
@@ -392,7 +394,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the object label image and check its size. */
   p->objects = gal_fits_img_read(objectsfile, p->objectshdu,
-                                 p->cp.minmapsize, 0, 0);
+                                 p->cp.minmapsize);
   if( gal_data_dsize_is_different(p->input, p->objects) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", objectsfile, p->objectshdu,
@@ -401,7 +403,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the Sky image and check its size. */
   p->sky=gal_fits_img_read_to_type(skyfile, p->skyhdu, GAL_TYPE_FLOAT32,
-                                   p->cp.minmapsize, 0, 0);
+                                   p->cp.minmapsize);
   if( gal_data_dsize_is_different(p->input, p->sky) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", skyfile, p->skyhdu, p->inputname,
@@ -410,7 +412,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
   /* Read the Sky standard deviation image and check its size. */
   p->std=gal_fits_img_read_to_type(stdfile, p->stdhdu, GAL_TYPE_FLOAT32,
-                                   p->cp.minmapsize, 0, 0);
+                                   p->cp.minmapsize);
   if( gal_data_dsize_is_different(p->input, p->std) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", stdfile, p->stdhdu, p->inputname,
@@ -422,7 +424,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
     {
       /* Read the mask image. */
       p->upmask = gal_fits_img_read(p->upmaskfile, p->upmaskhdu,
-                                    p->cp.minmapsize, 0, 0);
+                                    p->cp.minmapsize);
       if( gal_data_dsize_is_different(p->input, p->upmask) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->upmaskfile, p->upmaskhdu,
@@ -478,7 +480,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
       /* Read the clumps image and check its size. */
       p->clumps = gal_fits_img_read(clumpsfile, p->clumpshdu,
-                                    p->cp.minmapsize, 0, 0);
+                                    p->cp.minmapsize);
       if( gal_data_dsize_is_different(p->input, p->std) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", clumpsfile, p->clumpshdu,

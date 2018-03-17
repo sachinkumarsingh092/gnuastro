@@ -690,11 +690,9 @@ reversepolish(struct arithmeticparams *p)
       filename=p->operands->filename;
       if( gal_fits_name_is_fits(filename) )
         {
-          p->operands->data=gal_fits_img_read(filename,hdu,p->cp.minmapsize,
-                                              0, 0);
-          p->refdata.wcs=p->operands->data->wcs;
-          p->refdata.nwcs=p->operands->data->nwcs;
-          p->operands->data->wcs=NULL;
+          p->operands->data=gal_fits_img_read(filename, hdu,
+                                              p->cp.minmapsize);
+          p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
           if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
         }
       else

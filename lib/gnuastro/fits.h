@@ -210,13 +210,11 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
                   char **name, char **unit);
 
 gal_data_t *
-gal_fits_img_read(char *filename, char *hdu, size_t minmapsize,
-                  size_t hstartwcs, size_t hendwcs);
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);
 
 gal_data_t *
 gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
-                          size_t minmapsize, size_t hstartwcs,
-                          size_t hendwcs);
+                          size_t minmapsize);
 
 gal_data_t *
 gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize);
