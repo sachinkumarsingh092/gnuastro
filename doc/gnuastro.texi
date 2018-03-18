@@ -22145,10 +22145,11 @@ recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg},
 @code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize})
 Read the JPEG file @code{filename} and return the contents as
-@code{gal_data_t}. If the directory's image contains multiple channels, the
-output will be a list (see @ref{List of gal_data_t}).
+@code{gal_data_t}. If the directory's image contains multiple
+colors/channels, the output will be a list with one node per color/channel
+(see @ref{List of gal_data_t}).
 @end deftypefun
 
 @cindex JPEG compression quality
