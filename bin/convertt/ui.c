@@ -28,8 +28,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/eps.h>
 #include <gnuastro/txt.h>
 #include <gnuastro/wcs.h>
+#include <gnuastro/pdf.h>
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/jpeg.h>
@@ -46,7 +48,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"
-#include "eps.h"
 #include "authors-cite.h"
 
 
@@ -474,18 +475,18 @@ ui_make_channels_ll(struct converttparams *p)
 
 
       /* EPS:  */
-      else if ( nameiseps(name->v) )
+      else if ( gal_eps_name_is_eps(name->v) )
         error(EXIT_FAILURE, 0, "EPS files cannot be used as input. Since "
-              "EPS files are not raster graphics, they are only used as "
-              "output");
+              "EPS files are not raster graphics. EPS is only an output "
+              "format");
 
 
 
       /* PDF:  */
-      else if ( nameispdf(name->v) )
+      else if ( gal_pdf_name_is_pdf(name->v) )
         error(EXIT_FAILURE, 0, "PDF files cannot be used as input. Since "
-              "PDF files are not raster graphics, they are only used as "
-              "output");
+              "PDF files are not raster graphics. PDF is only an output "
+              "format");
 
 
       /* Text: */
@@ -683,18 +684,18 @@ ui_set_output(struct converttparams *p)
             PACKAGE_BUGREPORT);
 
   /* EPS */
-  else if(nameiseps(cp->output))
+  else if(gal_eps_name_is_eps(cp->output))
     {
       p->outformat=OUT_FORMAT_EPS;
-      if( nameisepssuffix(cp->output) )
+      if( gal_eps_suffix_is_eps(cp->output) )
         ui_add_dot_use_automatic_output(p);
     }
 
   /* PDF */
-  else if(nameispdf(cp->output))
+  else if(gal_pdf_name_is_pdf(cp->output))
     {
       p->outformat=OUT_FORMAT_PDF;
-      if( nameispdfsuffix(cp->output) )
+      if( gal_pdf_suffix_is_pdf(cp->output) )
         ui_add_dot_use_automatic_output(p);
     }
 
@@ -735,7 +736,7 @@ ui_set_output(struct converttparams *p)
         }
     }
 
-  /* Check if the output already exists. */
+  /* Check if the output already exists and remove it if allowed. */
   gal_checkset_writable_remove(cp->output, 0, cp->dontdelete);
 }
 

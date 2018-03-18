@@ -30,9 +30,9 @@ bin_PROGRAMS = astconvertt
 
 astconvertt_LDADD = -lgnuastro
 
-astconvertt_SOURCES = main.c ui.c convertt.c eps.c
+astconvertt_SOURCES = main.c ui.c convertt.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h convertt.h eps.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h convertt.h
 
 
 

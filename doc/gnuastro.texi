@@ -557,9 +557,7 @@ Gnuastro library
 * Array input output::          Reading and writing images or cubes.
 * Table input output::          Reading and writing table columns.
 * FITS files::                  Working with FITS data.
-* TIFF files::                  Reading and writing TIFF files.
-* JPEG files::                  Reading and writing JPEG files.
-* Text files::                  Reading and writing Text files.
+* File input output::
 * World Coordinate System::     Dealing with the world coordinate system.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
@@ -607,6 +605,14 @@ FITS files (@file{fits.h})
 * FITS header keywords::        Reading and writing FITS header keywords.
 * FITS arrays::                 Reading and writing FITS images/arrays.
 * FITS tables::                 Reading and writing FITS tables.
+
+File input output
+
+* Text files::                  Reading and writing from/to plain text files.
+* TIFF files::                  Reading and writing from/to TIFF files.
+* JPEG files::                  Reading and writing from/to JPEG files.
+* EPS files::                   Writing to EPS files.
+* PDF files::                   Writing to PDF files.
 
 Tessellation library (@file{tile.h})
 
@@ -19104,9 +19110,7 @@ documentation will correspond to your installed version.
 * Array input output::          Reading and writing images or cubes.
 * Table input output::          Reading and writing table columns.
 * FITS files::                  Working with FITS data.
-* TIFF files::                  Reading and writing TIFF files.
-* JPEG files::                  Reading and writing JPEG files.
-* Text files::                  Reading and writing Text files.
+* File input output::
 * World Coordinate System::     Dealing with the world coordinate system.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
@@ -21491,7 +21495,7 @@ saying that the @code{filename} has been created.
 
 
 
-@node FITS files, TIFF files, Table input output, Gnuastro library
+@node FITS files, File input output, Table input output, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -22063,120 +22067,32 @@ formats, see @ref{Table input output}.
 
 
 
-@node TIFF files, JPEG files, FITS files, Gnuastro library
-@subsection TIFF files (@file{tiff.h})
+@node File input output, World Coordinate System, FITS files, Gnuastro library
+@subsection File input output
 
-@cindex TIFF format
-Outside of astronomy, the TIFF standard is arguably the most commonly used
-format to store high-precision data/images. Unlike FITS however, the TIFF
-standard only supports images (not tables), but like FITS, it has support
-for all standard data types (see @ref{Numeric data types}) which is the
-primary reason other fields use it.
+The most commonly used file format in astronomical data analysis is the
+FITS format (see @ref{Fits} for an introduction), therefore Gnuastro's
+library provides a large and separate collection of functions to read/write
+data from/to them (see @ref{FITS files}). However, FITS is not well
+recognized outside the astronomical community and cannot be imported into
+documents or slides. Therefore, in this section, we discuss the other
+different file formats that Gnuastro's library recognizes.
 
-Another similarity of the TIFF and FITS standards is that TIFF supports
-multiple images in one file. The TIFF standard calls each one of these
-images (and their accompanying meta-data) a `directory' (roughly equivalent
-to the FITS extensions). Unlike FITS however, the directories can only be
-identified by their number (counting from zero), recall that in FITS you
-can also use the extension name to identify it.
+@menu
+* Text files::                  Reading and writing from/to plain text files.
+* TIFF files::                  Reading and writing from/to TIFF files.
+* JPEG files::                  Reading and writing from/to JPEG files.
+* EPS files::                   Writing to EPS files.
+* PDF files::                   Writing to PDF files.
+@end menu
 
-The functions described here allow easy reading (and later writing) of TIFF
-files within Gnuastro or for users of Gnuastro's libraries. Currently only
-reading is supported, but if you are interested, please get in touch with
-us.
+@node Text files, TIFF files, File input output, File input output
+@subsubsection Text files (@file{txt.h})
 
-@deftypefun {int} gal_tiff_name_is_tiff (char @code{*name})
-Return @code{1} if @code{name} has a TIFF suffix. This can be used to make
-sure that a given input file is TIFF. See @code{gal_tiff_suffix_is_tiff}
-for a list of recognized suffixes.
-@end deftypefun
-
-@deftypefun {int} gal_tiff_suffix_is_tiff (char @code{*name})
-Return @code{1} if @code{suffix} is a recognized TIFF suffix. The
-recognized suffixes are @file{tif}, @file{tiff}, @file{TIFF} and
-@file{TIFF}.
-@end deftypefun
-
-@deftypefun {size_t} gal_tiff_dir_string_read (char @code{*string})
-Return the number within @code{string} as a @code{size_t} number to
-identify a TIFF directory. Note that the directories start counting from
-zero.
-@end deftypefun
-
-@deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize})
-Read the @code{dir} directory within the TIFF file @code{filename} and
-return the contents of that TIFF directory as @code{gal_data_t}. If the
-directory's image contains multiple channels, the output will be a list
-(see @ref{List of gal_data_t}).
-@end deftypefun
-
-
-
-
-
-@node JPEG files, Text files, TIFF files, Gnuastro library
-@subsection JPEG files (@file{jpeg.h})
-
-@cindex JPEG format
-The JPEG file format is one of the most common formats for storing and
-transferring images, recognized by almost all image rendering and
-processing programs. In particular, because of its lossy compression
-algorithm, JPEG files can have low volumes, making it used heavily on the
-internet. For more on this file format, and a comparison with others,
-please see @ref{Recognized file formats}.
-
-For scientific purposes, the lossy compression and very limited dymanic
-range (8-bit integers) make JPEG very un-attractive for storing of valuable
-data. However, because of its commonality, it will inevitably be needed in
-some situations. The functions here can be used to read and write JPEG
-images into Gnuastro's @ref{Generic data container}. If the JPEG file has
-more than one color channel, each channel is treated as a separate node in
-a list of datasets (see @ref{List of gal_data_t}).
-
-@deftypefun {int} gal_jpeg_name_is_jpeg (char @code{*name})
-Return @code{1} if @code{name} has a JPEG suffix. This can be used to make
-sure that a given input file is JPEG. See @code{gal_jpeg_suffix_is_jpeg}
-for a list of recognized suffixes.
-@end deftypefun
-
-@deftypefun {int} gal_jpeg_suffix_is_jpeg (char @code{*name})
-Return @code{1} if @code{suffix} is a recognized JPEG suffix. The
-recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg},
-@code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
-@end deftypefun
-
-@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize})
-Read the JPEG file @code{filename} and return the contents as
-@code{gal_data_t}. If the directory's image contains multiple
-colors/channels, the output will be a list with one node per color/channel
-(see @ref{List of gal_data_t}).
-@end deftypefun
-
-@cindex JPEG compression quality
-@deftypefun {void} gal_jpeg_write (gal_data_t @code{*in}, char @code{*filename}, uint8_t @code{quality}, float @code{widthincm})
-Write the given dataset (@code{in}) into @file{filename} (a JPEG file). If
-@code{in} is a list, then each node in the list will be a color channel,
-therefore there can only be 1, 3 or 4 nodes in the list. If the number of
-nodes is different, then this function will abort the program with a
-message describing the cause. The lossy JPEG compression level can be set
-through @code{quality} which is a value between 0 and 100 (inclusive, 100
-being the best quality). The display width of the JPEG file in units of
-centimeters (to suggest to viewers/users, only a meta-data) can be set
-through @code{widthincm}.
-@end deftypefun
-
-
-
-
-
-@node Text files, World Coordinate System, JPEG files, Gnuastro library
-@subsection Text files (@file{txt.h})
-
-FITS files are the primary data container in astronomy. FITS indeed as many
-useful features, but the most universal and portable format for data
-storage are plain text files. They can be viewed and edited on any text
-editor or even on the command-line. Therefore the functions in this section
-are defined to simplify reading from and writing to plain text files.
+The most universal and portable format for data storage are plain text
+files. They can be viewed and edited on any text editor or even on the
+command-line. This section are describes some functions that help in
+reading from and writing to plain text files.
 
 Lines are one of the most basic buiding blocks (delimiters) of a text
 file. Some operating systems like Microsoft Windows, terminate their ASCII
@@ -22276,10 +22192,221 @@ formats, see @ref{Table input output}.
 @end deftypefun
 
 
+@node TIFF files, JPEG files, Text files, File input output
+@subsubsection TIFF files (@file{tiff.h})
+
+@cindex TIFF format
+Outside of astronomy, the TIFF standard is arguably the most commonly used
+format to store high-precision data/images. Unlike FITS however, the TIFF
+standard only supports images (not tables), but like FITS, it has support
+for all standard data types (see @ref{Numeric data types}) which is the
+primary reason other fields use it.
+
+Another similarity of the TIFF and FITS standards is that TIFF supports
+multiple images in one file. The TIFF standard calls each one of these
+images (and their accompanying meta-data) a `directory' (roughly equivalent
+to the FITS extensions). Unlike FITS however, the directories can only be
+identified by their number (counting from zero), recall that in FITS you
+can also use the extension name to identify it.
+
+The functions described here allow easy reading (and later writing) of TIFF
+files within Gnuastro or for users of Gnuastro's libraries. Currently only
+reading is supported, but if you are interested, please get in touch with
+us.
+
+@deftypefun {int} gal_tiff_name_is_tiff (char @code{*name})
+Return @code{1} if @code{name} has a TIFF suffix. This can be used to make
+sure that a given input file is TIFF. See @code{gal_tiff_suffix_is_tiff}
+for a list of recognized suffixes.
+@end deftypefun
+
+@deftypefun {int} gal_tiff_suffix_is_tiff (char @code{*name})
+Return @code{1} if @code{suffix} is a recognized TIFF suffix. The
+recognized suffixes are @file{tif}, @file{tiff}, @file{TIFF} and
+@file{TIFF}.
+@end deftypefun
+
+@deftypefun {size_t} gal_tiff_dir_string_read (char @code{*string})
+Return the number within @code{string} as a @code{size_t} number to
+identify a TIFF directory. Note that the directories start counting from
+zero.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize})
+Read the @code{dir} directory within the TIFF file @code{filename} and
+return the contents of that TIFF directory as @code{gal_data_t}. If the
+directory's image contains multiple channels, the output will be a list
+(see @ref{List of gal_data_t}).
+@end deftypefun
 
 
 
-@node World Coordinate System, Arithmetic on datasets, Text files, Gnuastro library
+
+
+@node JPEG files, EPS files, TIFF files, File input output
+@subsubsection JPEG files (@file{jpeg.h})
+
+@cindex JPEG format
+The JPEG file format is one of the most common formats for storing and
+transferring images, recognized by almost all image rendering and
+processing programs. In particular, because of its lossy compression
+algorithm, JPEG files can have low volumes, making it used heavily on the
+internet. For more on this file format, and a comparison with others,
+please see @ref{Recognized file formats}.
+
+For scientific purposes, the lossy compression and very limited dymanic
+range (8-bit integers) make JPEG very un-attractive for storing of valuable
+data. However, because of its commonality, it will inevitably be needed in
+some situations. The functions here can be used to read and write JPEG
+images into Gnuastro's @ref{Generic data container}. If the JPEG file has
+more than one color channel, each channel is treated as a separate node in
+a list of datasets (see @ref{List of gal_data_t}).
+
+@deftypefun {int} gal_jpeg_name_is_jpeg (char @code{*name})
+Return @code{1} if @code{name} has a JPEG suffix. This can be used to make
+sure that a given input file is JPEG. See @code{gal_jpeg_suffix_is_jpeg}
+for a list of recognized suffixes.
+@end deftypefun
+
+@deftypefun {int} gal_jpeg_suffix_is_jpeg (char @code{*name})
+Return @code{1} if @code{suffix} is a recognized JPEG suffix. The
+recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg},
+@code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize})
+Read the JPEG file @code{filename} and return the contents as
+@code{gal_data_t}. If the directory's image contains multiple
+colors/channels, the output will be a list with one node per color/channel
+(see @ref{List of gal_data_t}).
+@end deftypefun
+
+@cindex JPEG compression quality
+@deftypefun {void} gal_jpeg_write (gal_data_t @code{*in}, char @code{*filename}, uint8_t @code{quality}, float @code{widthincm})
+Write the given dataset (@code{in}) into @file{filename} (a JPEG file). If
+@code{in} is a list, then each node in the list will be a color channel,
+therefore there can only be 1, 3 or 4 nodes in the list. If the number of
+nodes is different, then this function will abort the program with a
+message describing the cause. The lossy JPEG compression level can be set
+through @code{quality} which is a value between 0 and 100 (inclusive, 100
+being the best quality). The display width of the JPEG file in units of
+centimeters (to suggest to viewers/users, only a meta-data) can be set
+through @code{widthincm}.
+@end deftypefun
+
+
+
+
+
+@node EPS files, PDF files, JPEG files, File input output
+@subsubsection EPS files (@file{eps.h})
+
+The Encapsulated PostScript (EPS) format is commonly used to store images
+(or individual/single-page parts of a document) in the PostScript
+documents. For a more complete introduction, please see @ref{Recognized
+file formats}. To provide high quality graphics, the Postscript language is
+a vectorized format, therefore pixels (elements of a ``rasterized'' format)
+aren't defined in their context.
+
+To display rasterized images, PostScript does allow arrays of
+pixels. However, since the over-all EPS file may contain many vectorized
+elements (for example borders, text, or other lines over the text) and
+interpretting them is not trivial or necessary within Gnuastro's scope,
+Gnuastro only provides some functions to write a dataset (in the
+@code{gal_data_t} format, see @ref{Generic data container}) into EPS.
+
+@deftypefun {int} gal_eps_name_is_eps (char @code{*name})
+Return @code{1} if @code{name} has an EPS suffix. This can be used to make
+sure that a given input file is EPS. See @code{gal_eps_suffix_is_eps} for a
+list of recognized suffixes.
+@end deftypefun
+
+@deftypefun {int} gal_eps_suffix_is_eps (char @code{*name})
+Return @code{1} if @code{suffix} is a recognized EPS suffix. The recognized
+suffixes are @code{.eps}, @code{.EPS}, @code{.epsf}, @code{.epsi}.
+@end deftypefun
+
+@deftypefun {void} gal_eps_to_pt (float @code{widthincm}, size_t @code{*dsize}, size_t @code{*w_h_in_pt})
+Given a specific width in centimeters (@code{widthincm} and the number of
+the dataset's pixels in each dimension (@code{dsize}) calculate the size of
+the output in PostScript points. The output values are written in the
+@code{w_h_in_pt} array (which has to be allocated before calling this
+function). The first element in @code{w_h_in_pt} is the width and the
+second is the height of the image.
+@end deftypefun
+
+@deftypefun {void} gal_eps_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth}, int @code{hex}, int @code{forpdf})
+Write the @code{in} dataset into an EPS file called
+@code{filename}. @code{in} has to be an unsigned 8-bit character type
+(@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
+the image in human/non-pixel units (to help the displayer) can be set with
+the @code{widthincm} argument. If @code{borderwidth} is non-zero, it is
+interpretted as the width (in points) of a solid black border around the
+image. A border can helpful when importing the EPS file into a document.
+
+@cindex ASCII85 encoding
+@cindex Hexadecimal encoding
+EPS files are plain-text (can be opened/edited in a text editor), therefore
+there are different encodings to store the data (pixel values) within
+them. Gnuastro supports the Hexadecimal and ASCII85 encoding. ASCII85 is
+more efficient (producing small file sizes), so it is the default
+encoding. To use Hexademical encoding, set @code{hex} to a non-zero
+value. Currently If you don't directly want to import the EPS file into a
+PostScript document but want to later compile it into a PDF file, set the
+@code{forpdf} argument to @code{1}.
+@end deftypefun
+
+
+
+
+
+@node PDF files,  , EPS files, File input output
+@subsubsection PDF files (@file{pdf.h})
+
+The portable document format (PDF) has arguably become the most common
+format used for distribution of documents. In practice, a PDF file is just
+a compiled PostScript file. For a more complete introduction, please see
+@ref{Recognized file formats}. To provide high quality graphics, the PDF is
+a vectorized format, therefore pixels (elements of a ``rasterized'' format)
+aren't defined in their context. As a result, similar to @ref{EPS files},
+Gnuastro only writes datasets to a PDF file, not vice-versa.
+
+@deftypefun {int} gal_pdf_name_is_pdf (char @code{*name})
+Return @code{1} if @code{name} has an PDF suffix. This can be used to make
+sure that a given input file is PDF. See @code{gal_pdf_suffix_is_pdf} for a
+list of recognized suffixes.
+@end deftypefun
+
+@deftypefun {int} gal_pdf_suffix_is_pdf (char @code{*name})
+Return @code{1} if @code{suffix} is a recognized PDF suffix. The recognized
+suffixes are @code{.pdf} and @code{.PDF}.
+@end deftypefun
+
+@deftypefun {void} gal_pdf_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth})
+Write the @code{in} dataset into an EPS file called
+@code{filename}. @code{in} has to be an unsigned 8-bit character type
+(@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
+the image in human/non-pixel units (to help the displayer) can be set with
+the @code{widthincm} argument. If @code{borderwidth} is non-zero, it is
+interpretted as the width (in points) of a solid black border around the
+image. A border can helpful when importing the PDF file into a
+document.
+
+This function is just a wrapper for the @code{gal_eps_write} function in
+@ref{EPS files}. After making the EPS file, Ghostscript (with a version of
+9.10 or above, see @ref{Optional dependencies}) will be used to compile the
+EPS file to a PDF file. Therfore if GhostScript doesn't exist, doesn't have
+the proper version, or fails for any other reason, the EPS file will
+remain. It can be used to find the cause, or use another converter or
+PostScript compiler.
+@end deftypefun
+
+
+
+
+
+
+@node World Coordinate System, Arithmetic on datasets, File input output, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
 The FITS standard defines the world coordinate system (WCS) as a mechanism

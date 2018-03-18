@@ -354,9 +354,9 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_EXEC], ["$gnulibtool_exec"],
 
 
 
-# Check Ghostscript: "-dPDFFitPage" option to Ghostscript, used by
-# ConvertType to convert from EPS to PDF, has been introduced in
-# Ghostscript 9.10.  Make sure we have at least that version.
+# Check Ghostscript: "-dPDFFitPage" option to Ghostscript, used by the
+# library to convert from EPS to PDF, has been introduced in Ghostscript
+# 9.10.  Make sure we have at least that version.
 #
 # Below, only when Ghostscript exists, we check its version and only if its
 # version is larger than 9.10, does Gnuastro finally assume the existence
@@ -658,22 +658,26 @@ AS_IF([test x$enable_guide_message = xyes],
       [
         AS_ECHO(["Configuration warning(s):"])
         AS_ECHO([])
+
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
-               AS_ECHO(["    If JPEG inputs/outputs are given to ConvertType, it will warn"])
-               AS_ECHO(["    you and abort with an error."])
+               AS_ECHO(["    If JPEG inputs/outputs are requested, the respective tool will"])
+               AS_ECHO(["    inform you and abort with an error."])
                AS_ECHO([]) ])
+
         AS_IF([test "x$has_libtiff" = "xno"],
               [AS_ECHO(["  - libtiff, could not be linked with in your library search path."])
-               AS_ECHO(["    If TIFF inputs/outputs are given to ConvertType, it will warn"])
-               AS_ECHO(["    you and abort with an error."])
+               AS_ECHO(["    If TIFF inputs/outputs are requested, the respective tool will"])
+               AS_ECHO(["    inform you and abort with an error."])
                AS_ECHO([]) ])
+
         AS_IF([test "x$has_libgit2" = "x0"],
               [AS_ECHO(["  - libgit2, could not be linked with in your library search path."])
                AS_ECHO(["    When present, Git's describe output will be stored in the"])
                AS_ECHO(["    output files if Gnuastro's programs were called within a Git"])
                AS_ECHO(["    version controlled directory to help in reproducibility."])
                AS_ECHO([]) ])
+
         AS_IF([test "x$has_gnulibtool" = "xno"],
               [AS_ECHO(["  - GNU Libtool, could not be found in your search path."])
                AS_ECHO(["    Gnuastro's BuildProgram uses GNU libtool to link your source code"])
@@ -691,12 +695,14 @@ AS_IF([test x$enable_guide_message = xyes],
                       AS_ECHO([])
                      ])
               ])
+
         AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
-               AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
+               AS_ECHO(["    If PDF outputs are desired, the respective tool it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
                AS_ECHO([]) ])
+
         # The last two scenarios described below are taken from
         # https://unix.stackexchange.com/questions/65700/is-it-safe-to-add-to-my-path-how-come
         AS_IF([test "x$path_warning" = "xyes"],
@@ -713,6 +719,7 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    installing Gnuastro to learn more about PATH:"])
                AS_ECHO(["        $ info gnuastro \"Installation directory\""])
                AS_ECHO([]) ])
+
         AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
         AS_ECHO([])
       ]

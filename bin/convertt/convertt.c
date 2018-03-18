@@ -29,6 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/eps.h>
+#include <gnuastro/pdf.h>
 #include <gnuastro/txt.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/jpeg.h>
@@ -38,8 +40,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
-
-#include "eps.h"
 
 
 
@@ -345,11 +345,17 @@ convertt(struct converttparams *p)
       gal_jpeg_write(p->chll, p->cp.output, p->quality, p->widthincm);
       break;
 
-    /* EPS/PDF. */
+    /* EPS. */
     case OUT_FORMAT_EPS:
+      convertt_scale_to_uchar(p);
+      gal_eps_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
+                    p->hex, 0);
+      break;
+
+    /* PDF */
     case OUT_FORMAT_PDF:
       convertt_scale_to_uchar(p);
-      eps_write_eps_or_pdf(p);
+      gal_pdf_write(p->chll, p->cp.output, p->widthincm, p->borderwidth);
       break;
 
     /* Not recognized. */
