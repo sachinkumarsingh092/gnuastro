@@ -22152,7 +22152,7 @@ output will be a list (see @ref{List of gal_data_t}).
 @end deftypefun
 
 @cindex JPEG compression quality
-@deftypefun {gal_data_t *} gal_jpeg_write (gal_data_t @code{*in}, char @code{*filename}, uint8_t @code{quality}, float @code{widthincm})
+@deftypefun {void} gal_jpeg_write (gal_data_t @code{*in}, char @code{*filename}, uint8_t @code{quality}, float @code{widthincm})
 Write the given dataset (@code{in}) into @file{filename} (a JPEG file). If
 @code{in} is a list, then each node in the list will be a color channel,
 therefore there can only be 1, 3 or 4 nodes in the list. If the number of
