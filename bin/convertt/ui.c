@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/jpeg.h>
 #include <gnuastro/tiff.h>
 #include <gnuastro/table.h>
 #include <gnuastro/blank.h>
@@ -46,7 +47,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "eps.h"
-#include "jpeg.h"
 #include "authors-cite.h"
 
 
@@ -453,17 +453,11 @@ ui_make_channels_ll(struct converttparams *p)
 
 
       /* JPEG: */
-      else if ( nameisjpeg(name->v) )
+      else if ( gal_jpeg_name_is_jpeg(name->v) )
         {
-#ifndef HAVE_LIBJPEG
-          error(EXIT_FAILURE, 0, "you are giving a JPEG input, however, "
-                "when %s was configured, libjpeg was not available. To read "
-                "from (and write to) JPEG files, libjpeg is required. "
-                "Please install it and configure, make and install %s "
-                "again", PACKAGE_STRING, PACKAGE_STRING);
-#else
-          p->numch += jpeg_read_to_ll(name->v, &p->chll, p->cp.minmapsize);
-#endif
+          data=gal_jpeg_read(name->v, p->cp.minmapsize);
+          p->numch += gal_list_data_number(data);
+          gal_list_data_add(&p->chll, data);
         }
 
 
@@ -656,22 +650,17 @@ ui_set_output(struct converttparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
-  /* Determine the type */
+  /* FITS */
   if(gal_fits_name_is_fits(cp->output))
     {
       p->outformat=OUT_FORMAT_FITS;
       if( gal_fits_suffix_is_fits(cp->output) )
         ui_add_dot_use_automatic_output(p);
     }
-  else if(nameisjpeg(cp->output))
+
+  /* JPEG */
+  else if(gal_jpeg_name_is_jpeg(cp->output))
     {
-#ifndef HAVE_LIBJPEG
-      error(EXIT_FAILURE, 0, "you have asked for a JPEG output, "
-            "however, when %s was configured libjpeg was not "
-            "available. To write to JPEG files, libjpeg is required. "
-            "Please install it and configure, make and install %s "
-            "again", PACKAGE_STRING, PACKAGE_STRING);
-#else
       /* Small sanity checks. */
       if(p->quality == GAL_BLANK_UINT8)
         error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary "
@@ -683,26 +672,33 @@ ui_set_output(struct converttparams *p)
 
       /* Preparations. */
       p->outformat=OUT_FORMAT_JPEG;
-      if( nameisjpegsuffix(cp->output) )
+      if( gal_jpeg_suffix_is_jpeg(cp->output) )
         ui_add_dot_use_automatic_output(p);
-#endif
     }
+
+  /* TIFF */
   else if( gal_tiff_name_is_tiff(cp->output) )
       error(EXIT_FAILURE, 0, "writing TIFF files is not yet supported, "
             "please get in touch with us at %s so we implement it",
             PACKAGE_BUGREPORT);
+
+  /* EPS */
   else if(nameiseps(cp->output))
     {
       p->outformat=OUT_FORMAT_EPS;
       if( nameisepssuffix(cp->output) )
         ui_add_dot_use_automatic_output(p);
     }
+
+  /* PDF */
   else if(nameispdf(cp->output))
     {
       p->outformat=OUT_FORMAT_PDF;
       if( nameispdfsuffix(cp->output) )
         ui_add_dot_use_automatic_output(p);
     }
+
+  /* Default: plain text. */
   else
     {
       p->outformat=OUT_FORMAT_TXT;

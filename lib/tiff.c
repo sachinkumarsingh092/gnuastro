@@ -598,8 +598,9 @@ gal_tiff_read(char *filename, size_t dir, size_t minmapsize)
   return out;
 #else
   error(EXIT_FAILURE, 0, "%s: libtiff was not found during the "
-    "configuration of %s. To read from (and write to) TIFF files, "
-    "libtiff is required. Please install libtiff and configure, make "
-    "and install %s again", __func__, PACKAGE_STRING, PACKAGE_STRING);
-#endif
+        "configuration of %s on this system. To read from TIFF files, "
+        "libtiff is required. Please install libtiff, then configure, make "
+        "and install %s again", __func__, PACKAGE_STRING, PACKAGE_STRING);
+  return NULL;
+#endif  /* HAVE_LIBTIFF */
 }

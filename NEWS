@@ -28,10 +28,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Libraries:
     gal_array_read: read from file with all known formats (FITS, TIFF, etc).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
+    gal_jpeg_name_is_jpeg: Returns 1 if given filename is JPEG.
+    gal_jpeg_suffix_is_jpeg: Returns 1 if given suffix is JPEG.
+    gal_jpeg_read: Reads input JPEG image into `gal_data_t'.
+    gal_jpeg_write: Writes a `gal_data_t' into a JPEG file.
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
     gal_tiff_dir_string_read: convert a string to a TIFF directory number.
-    gal_tiff_read: Read the contents of a TIFF `directory' to `gal_data_t'.
+    gal_tiff_read: Read the contents of a TIFF "directory" to `gal_data_t'.
 
 ** Removed features
 

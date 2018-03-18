@@ -1,6 +1,6 @@
 /*********************************************************************
-ConvertType - Convert between various types of files.
-ConvertType is part of GNU Astronomy Utilities (Gnuastro) package.
+jpeg -- functions to read and write JPEG files.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -33,10 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <gnuastro/list.h>
-#include <gnuastro/fits.h>
-
-#include "main.h"
-#include "jpeg.h"
+#include <gnuastro/jpeg.h>
 
 
 
@@ -48,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  **************      Acceptable JPEG names      **************
  *************************************************************/
 int
-nameisjpeg(char *name)
+gal_jpeg_name_is_jpeg(char *name)
 {
   size_t len;
   len=strlen(name);
@@ -70,7 +67,7 @@ nameisjpeg(char *name)
 
 
 int
-nameisjpegsuffix(char *name)
+gal_jpeg_suffix_is_jpeg(char *name)
 {
   if (strcmp(name, "jpg") == 0   || strcmp(name, ".jpg") == 0
       || strcmp(name, "JPG") == 0 || strcmp(name, ".JPG") == 0
@@ -102,10 +99,12 @@ nameisjpegsuffix(char *name)
 
 
 
-#ifdef HAVE_LIBJPEG
+
+
 /*************************************************************
  **************        Read a JPEG image        **************
  *************************************************************/
+#ifdef HAVE_LIBJPEG
 /* Read the example.c in libjpeg's source code to understand the
    details of what is going on here.  */
 struct my_error_mgr
@@ -135,7 +134,7 @@ jpeg_error_exit(j_common_ptr cinfo)
 
 
 
-void
+static void
 makejsample(JSAMPLE **a, size_t size)
 {
   JSAMPLE *jsarr;
@@ -159,7 +158,7 @@ makejsample(JSAMPLE **a, size_t size)
 
 
 
-unsigned char **
+static unsigned char **
 readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 {
   FILE * infile;
@@ -238,6 +237,7 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 
   return all;
 }
+#endif  /* HAVE_LIBJPEG */
 
 
 
@@ -245,10 +245,12 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 
 /* Read each color channel of a JPEG image as a separate array and put them
    in a linked list of data-structures. */
-size_t
-jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
+gal_data_t *
+gal_jpeg_read(char *filename, size_t minmapsize)
 {
+#ifdef HAVE_LIBJPEG
   char *name;
+  gal_data_t *out=NULL;
   size_t ndim=2, dsize[2];
   unsigned char **allcolors;
   size_t i, s0, s1, numcolors;
@@ -263,7 +265,7 @@ jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
       dsize[1]=s1;
       if( asprintf(&name, "JPEG_CH_%zu", i+1)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_data_add_alloc(list, allcolors[i], GAL_TYPE_UINT8, ndim,
+      gal_list_data_add_alloc(&out, allcolors[i], GAL_TYPE_UINT8, ndim,
                               dsize, NULL, 0, minmapsize, name, NULL, NULL);
       free(name);
     }
@@ -275,7 +277,14 @@ jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
   free(allcolors);
 
   /* Return the number of color channels. */
-  return numcolors;
+  return out;
+#else
+  error(EXIT_FAILURE, 0, "%s: libjpeg was not found during the "
+        "configuration of %s on this system. To read from JPEG files, "
+        "libjpeg is required. Please install libjpeg and configure, make "
+        "and install %s again", __func__, PACKAGE_STRING, PACKAGE_STRING);
+  return NULL;
+#endif
 }
 
 
@@ -300,28 +309,36 @@ jpeg_read_to_ll(char *filename, gal_data_t **list, size_t minmapsize)
 /*************************************************************
  **************       Write a JPEG image        **************
  *************************************************************/
+#ifdef HAVE_LIBJPEG
 static void
-jpeg_write_array(JSAMPLE *jsr, struct converttparams *p)
+jpeg_write_array(JSAMPLE *jsr, gal_data_t *in, char *filename,
+                 uint8_t quality, float widthincm)
 {
   JSAMPROW r[1];
   FILE * outfile;
   int row_stride=0, c;
+  size_t *dsize=in->dsize;
   struct jpeg_error_mgr jerr;
-  size_t *dsize=p->chll->dsize;
   struct jpeg_compress_struct cinfo;
+  size_t numch=gal_list_data_number(in);
+
+  /* A small sanity check. */
+  if(quality > 100)
+    error(EXIT_FAILURE, 0, "%s: quality value %u not acceptable. It must be "
+          "a value between zero and 100 (inclusive)", __func__, quality);
 
   /* Begin the JPEG writing, following libjpeg's example.c  */
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
 
   errno=0;
-  if ((outfile = fopen(p->cp.output, "wb")) == NULL)
-    error(EXIT_FAILURE, errno, "%s", p->cp.output);
+  if ((outfile = fopen(filename, "wb")) == NULL)
+    error(EXIT_FAILURE, errno, "%s", filename);
   jpeg_stdio_dest(&cinfo, outfile);
 
   cinfo.image_width  = dsize[1];
   cinfo.image_height = dsize[0];
-  switch(p->numch)
+  switch(numch)
     {
     case 1:
       row_stride=dsize[1];
@@ -341,13 +358,13 @@ jpeg_write_array(JSAMPLE *jsr, struct converttparams *p)
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! The number of channels is not 1, 3 "
             "or 4, but %zu. This should not happen. Please contact us so we "
-            "can fix the problem", __func__, p->numch);
+            "can fix the problem", __func__, numch);
     }
 
   jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, p->quality, TRUE);
+  jpeg_set_quality(&cinfo, quality, TRUE);
   cinfo.density_unit=1;
-  cinfo.Y_density=cinfo.X_density=dsize[1]/(p->widthincm/2.54);
+  cinfo.Y_density=cinfo.X_density=dsize[1]/(widthincm/2.54);
   jpeg_start_compress(&cinfo, TRUE);
 
   /* cinfo.next_scanline is 'unsigned int' */
@@ -362,41 +379,48 @@ jpeg_write_array(JSAMPLE *jsr, struct converttparams *p)
   fclose(outfile);
   jpeg_destroy_compress(&cinfo);
 }
+#endif  /* HAVE_LIBJPEG */
 
 
 
 
 
 void
-jpeg_write(struct converttparams *p)
+gal_jpeg_write(gal_data_t *in, char *filename, uint8_t quality,
+               float widthincm)
 {
+#ifdef HAVE_LIBJPEG
   JSAMPLE *jsr;
   gal_data_t *channel;
   unsigned char *colors[4];
-  size_t i, pixel, color, numch=p->numch;
+  size_t i, pixel, color;
+  size_t numch=gal_list_data_number(in);
 
-  /* A small sanity check */
-  if(p->numch==2 || p->numch>4)
+  /* Small sanity checks. */
+  if(numch==2 || numch>4)
     error(EXIT_FAILURE, 0, "%s: only 1, 3, and 4 color channels are "
-          "acceptable", __func__);
+          "acceptable, input is a list of %zu data sets", __func__, numch);
+  if(in->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "%s: input has a `%s' type, but JPEG images can "
+          "only have a `uint8' type", __func__, gal_type_name(in->type, 1));
 
   /* Make sure the JSAMPLE is 8bits, then allocate the necessary space
      based on the number of channels. */
   if(sizeof *jsr!=1)
     error(EXIT_FAILURE, 0, "%s: JSAMPLE has to be 8bit", __func__);
   errno=0;
-  jsr=malloc(numch * p->chll->size * sizeof *jsr);
+  jsr=malloc(numch * in->size * sizeof *jsr);
   if(jsr==NULL)
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for jsr",
-          __func__, numch * p->chll->size * sizeof *jsr );
+          __func__, numch * in->size * sizeof *jsr );
 
   /* Set the pointers to each color. */
   i=0;
-  for(channel=p->chll; channel!=NULL; channel=channel->next)
+  for(channel=in; channel!=NULL; channel=channel->next)
     colors[i++]=channel->array;
 
   /* Write the different colors into jsr. */
-  for(pixel=0; pixel<p->chll->size; ++pixel)
+  for(pixel=0; pixel<in->size; ++pixel)
     for(color=0;color<numch;++color)
       {
         jsr[pixel*numch+color] = colors[color][pixel];
@@ -407,7 +431,12 @@ jpeg_write(struct converttparams *p)
       }
 
   /* Write jsr to a JPEG image and clean up. */
-  jpeg_write_array(jsr, p);
+  jpeg_write_array(jsr, in, filename, quality, widthincm);
   free(jsr);
-}
+#else
+  error(EXIT_FAILURE, 0, "%s: libjpeg was not found during the "
+        "configuration of %s on this system. To write JPEG files, libjpeg "
+        "is required. Please install libjpeg, then configure, make and "
+        "install %s again", __func__, PACKAGE_STRING, PACKAGE_STRING);
 #endif  /* HAVE_LIBJPEG */
+}

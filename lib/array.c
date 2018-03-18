@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/jpeg.h>
 #include <gnuastro/tiff.h>
 #include <gnuastro/array.h>
 
@@ -51,14 +52,22 @@ gal_array_read(char *filename, char *extension, size_t minmapsize)
 {
   size_t ext;
 
-  /* Based on the filename,  */
+  /* FITS  */
   if( gal_fits_name_is_fits(filename) )
     return gal_fits_img_read(filename, extension, minmapsize);
+
+  /* TIFF */
   else if ( gal_tiff_name_is_tiff(filename) )
     {
       ext=gal_tiff_dir_string_read(extension);
       return gal_tiff_read(filename, ext, minmapsize);
     }
+
+  /* JPEG */
+  else if ( gal_jpeg_name_is_jpeg(filename) )
+    return gal_jpeg_read(filename, minmapsize);
+
+  /* Default: plain text. */
   else
     return gal_txt_image_read(filename, minmapsize);
 

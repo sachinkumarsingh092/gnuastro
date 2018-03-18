@@ -58,9 +58,9 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
   arithmetic-modulo.c arithmetic-multiply.c arithmetic-ne.c                \
   arithmetic-or.c arithmetic-plus.c array.c binary.c blank.c box.c         \
   checkset.c convolve.c cosmology.c data.c fits.c git.c interpolate.c      \
-  list.c match.c options.c permutation.c polygon.c qsort.c dimension.c     \
-  statistics.c table.c tableintern.c threads.c tiff.c tile.c timing.c      \
-  txt.c type.c wcs.c
+  jpeg.c list.c match.c options.c permutation.c polygon.c qsort.c          \
+  dimension.c statistics.c table.c tableintern.c threads.c tiff.c tile.c   \
+  timing.c txt.c type.c wcs.c
 
 
 
@@ -74,8 +74,8 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
   $(headersdir)/array.h $(headersdir)/binary.h $(headersdir)/blank.h       \
   $(headersdir)/box.h $(headersdir)/convolve.h $(headersdir)/cosmology.h   \
   $(headersdir)/data.h $(headersdir)/dimension.h $(headersdir)/fits.h      \
-  $(headersdir)/git.h $(headersdir)/interpolate.h $(headersdir)/list.h     \
-  $(headersdir)/match.h $(headersdir)/permutation.h                        \
+  $(headersdir)/git.h $(headersdir)/jpeg.h $(headersdir)/interpolate.h     \
+  $(headersdir)/list.h $(headersdir)/match.h $(headersdir)/permutation.h   \
   $(headersdir)/polygon.h $(headersdir)/qsort.h $(headersdir)/statistics.h \
   $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tiff.h       \
   $(headersdir)/tile.h $(headersdir)/txt.h $(headersdir)/type.h            \

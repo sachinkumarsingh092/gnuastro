@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/jpeg.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
@@ -39,7 +40,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "eps.h"
-#include "jpeg.h"
 
 
 
@@ -142,57 +142,6 @@ convertt_truncate(struct converttparams *p)
         convertt_trunc_function(GAL_ARITHMETIC_OP_LT, channel, p->fluxlow);
       if(p->fluxhigh)
         convertt_trunc_function(GAL_ARITHMETIC_OP_GT, channel, p->fluxhigh);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/**************       Save text and FITS        ***************/
-/**************************************************************/
-static void
-save_with_gnuastro_lib(struct converttparams *p)
-{
-  gal_data_t *channel;
-
-  /* Determine the type. */
-  switch(p->outformat)
-    {
-
-    /* FITS: a FITS file can have many extensions (channels). */
-    case OUT_FORMAT_FITS:
-      for(channel=p->chll; channel!=NULL; channel=channel->next)
-        gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_NAME);
-      break;
-
-    /* Plain text: only one channel is acceptable. */
-    case OUT_FORMAT_TXT:
-      gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
-      gal_txt_write(p->chll, NULL, p->cp.output);
-      break;
-
-
-    /* Not recognized. */
-    default:
-      error(EXIT_FAILURE, 0, "%s: a bug! output format code `%d' not "
-            "recognized", __func__, p->outformat);
     }
 }
 
@@ -361,6 +310,7 @@ convertt_scale_to_uchar(struct converttparams *p)
 void
 convertt(struct converttparams *p)
 {
+  gal_data_t *channel;
 
   /* Make any of the desired changes to the data. */
   if(p->changeaftertrunc)
@@ -374,35 +324,35 @@ convertt(struct converttparams *p)
       convertt_truncate(p);
     }
 
-
-
   /* Save the outputs: */
   switch(p->outformat)
     {
-    case OUT_FORMAT_TXT:
+    /* FITS: a FITS file can have many extensions (channels). */
     case OUT_FORMAT_FITS:
-      save_with_gnuastro_lib(p);
+      for(channel=p->chll; channel!=NULL; channel=channel->next)
+        gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_NAME);
       break;
 
+    /* Plain text: only one channel is acceptable. */
+    case OUT_FORMAT_TXT:
+      gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+      gal_txt_write(p->chll, NULL, p->cp.output);
+      break;
+
+    /* JPEG: */
     case OUT_FORMAT_JPEG:
-#ifdef HAVE_LIBJPEG
       convertt_scale_to_uchar(p);
-      jpeg_write(p);
-#else
-      error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "
-            "when %s was configured libjpeg was not available. To write "
-            "to JPEG files, libjpeg is required. Please install it and "
-            "configure, make and install %s again", PACKAGE_STRING,
-            PACKAGE_STRING);
-#endif
+      gal_jpeg_write(p->chll, p->cp.output, p->quality, p->widthincm);
       break;
 
+    /* EPS/PDF. */
     case OUT_FORMAT_EPS:
     case OUT_FORMAT_PDF:
       convertt_scale_to_uchar(p);
       eps_write_eps_or_pdf(p);
       break;
 
+    /* Not recognized. */
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can find "
             "the problem and fix it The internal type of the output is "
