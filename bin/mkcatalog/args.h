@@ -175,6 +175,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "variance",
+      UI_KEY_VARIANCE,
+      0,
+      0,
+      "Image given as STD is actually variance.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->variance,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

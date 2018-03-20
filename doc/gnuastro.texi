@@ -15306,10 +15306,16 @@ The HDU of the Sky value image.
 
 @item -t STR
 @itemx --stdfile=STR
-File name of image keeping the Sky value standard deviation for each pixel.
+File name of image keeping the Sky value standard deviation for each
+pixel. With the @option{--variance} option you can tell MakeCatalog to
+interpret this image as a variance image, not standard deviation.
 
 @item --stdhdu=STR
 The HDU of the Sky value standard deviation image.
+
+@item --variance
+The image given to @option{--stdfile} has the variance of every pixel, not
+standard deviation.
 
 @end table
 

@@ -5,25 +5,19 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
-  ConvertType: TIFF images can also be used as input into ConvertType,
-  therefore libtiff has been added as a new optional dependency.
+  ConvertType:
+    - TIFF images can also be used as input.
 
-  MakeCatalog: The new `--mean' and `--median' options will calculate the
-  mean and median pixel value within an object or clump respectively.
+  MakeCatalog:
+    --variance: input STD image is variance (so take square root before use).
+    --mean: calculate the mean pixel value within an object or clump.
+    --median: calculate the median pixel value within an object or clump.
+    --upperlimitsigma: position in random distribution (in units of sigma).
+    --upperlimitquantile: position in random distribution (quantile).
+    --upperlimitonesigma: 1sigma value of the random distribution.
 
-  MakeCatalog: The new `--upperlimitsigma' and `--upperlimitquantile'
-  columns will report the postion of the object's brightness with respect
-  to the distribution of randomly measured values. The former as a multiple
-  of sigma and the latter as a quantile. Also, `--upperlimitonesigma' will
-  return the 1-sigma value of the randomly placed upper limit magnitudes
-  (irrespective of the value given to `--upnsigma').
-
-  NoiseChisel: a value of `none' to the `--kernel' option will disable
-  convolution.
-
-  Statistics: the new `--manualbinrange' allows the bins in histograms or
-  cumulative frequency plots to be set outside the minimum or maximum
-  values of the dataset.
+  Statistics:
+    --manualbinrange: histogram or CFP range can be outside of distribution.
 
   Libraries:
     gal_array_read: read from file with all known formats (FITS, TIFF, etc).
@@ -48,12 +42,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
-  Fits: The `--comment' and `--history' command may be called multiple
-  times to write multiple COMMENT/HISTORY keywords into the input FITS
-  file.
+  Fits:
+    --history: can be called/written multiple times in one run.
+    --comment: can be called/written multiple times in one run.
+
+  NoiseChisel:
+    --kernel: value `none' will disable convolution.
 
   Libraries:
-
    - `gal_fits_img_read': now only reads the data not the WCS, therefore it
      no longer needs the last two arguments. A subsequent call to
      `gal_wcs_read' can be used to read the WCS information in the file.
@@ -68,25 +64,16 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Bug fixes
 
-  Many unused result warnings for asprintf in some compilers (bug #52979).
-
-  Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram (bug #53122).
-
-  Crash when printing values with the `--onlyversion' option (bug #53142).
-
-  NULL value of onlyversion option causing a crash (bug #53147).
-
-  Match output directory ignored when making multiple files (bug #53226).
-
-  Statistics program bad results on integer columns with limits (bug #53230).
-
-  NoiseChisel crash when no growth is possible (bug #53268).
-
-  MakeCatalog parses area larger than clump (bug #53295).
-
-  NoiseChisel crash when there is no detection (bug #53304).
-
-  Fits crash on keyword editing (except --delete) (bug #53312).
+  bug #52979: Many unused result warnings for asprintf in some compilers.
+  bug #53122: Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram.
+  bug #53142: Crash when printing values with the `--onlyversion' option.
+  bug #53147: NULL value of onlyversion option causing a crash.
+  bug #53226: Match output directory ignored when making multiple files.
+  bug #53230: Statistics program bad results on integer columns with limits.
+  bug #53268: NoiseChisel crash when no growth is possible.
+  bug #53295: MakeCatalog parses area larger than clump.
+  bug #53304: NoiseChisel crash when there is no detection.
+  bug #53312: Fits crash on keyword editing (except --delete).
 
 
 

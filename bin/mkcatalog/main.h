@@ -155,6 +155,7 @@ struct mkcatalogparams
 
   float             zeropoint;  /* Zero-point magnitude of object.      */
   uint8_t       skysubtracted;  /* If image is already sky subtracted.  */
+  uint8_t            variance;  /* Input STD file is actually variance. */
   float             threshold;  /* Only use values above this threshold.*/
   float           sfmagnsigma;  /* Surface brightness multiple of sigma.*/
   float             sfmagarea;  /* Surface brightness area (arcsec^2).  */

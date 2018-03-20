@@ -1098,6 +1098,16 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
 void
 mkcatalog(struct mkcatalogparams *p)
 {
+  float *f, *fp;
+
+  /* If the given standard deviation array is actually variance, then take
+     its square root. */
+  if(p->variance)
+    {
+      fp = (f=p->std->array) + p->std->size;
+      do *f=sqrt(*f); while(++f<fp);
+    }
+
   /* When more than one thread is to be used, initialize the mutex: we need
      it to assign a column to the clumps in the final catalog. */
   if( p->cp.numthreads > 1 ) pthread_mutex_init(&p->mutex, NULL);
