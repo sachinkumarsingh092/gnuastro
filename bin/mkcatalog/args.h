@@ -688,6 +688,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "brightnesserr",
+      UI_KEY_BRIGHTNESSERR,
+      0,
+      0,
+      "Error (1-sigma) in measuring brightness.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpbrightness",
       UI_KEY_CLUMPSBRIGHTNESS,
       0,
@@ -916,7 +930,7 @@ struct argp_option program_options[] =
       UI_KEY_STD,
       0,
       0,
-      "Average Sky standard deviation.",
+      "Average Sky standard deviation under label.",
       UI_GROUP_COLUMNS_BRIGHTNESS,
       0,
       GAL_TYPE_INVALID,

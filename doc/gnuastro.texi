@@ -15315,9 +15315,18 @@ The HDU of the Sky value image.
 
 @item -t STR
 @itemx --stdfile=STR
-File name of image keeping the Sky value standard deviation for each
+File name of image keeping the @emph{Sky value} standard deviation for each
 pixel. With the @option{--variance} option you can tell MakeCatalog to
 interpret this image as a variance image, not standard deviation.
+
+@strong{Important note:} This must only be the Sky standard deviation or
+variance, without the signal's contribution. In other words, for each pixel
+that harbors signal, the final standard deviation is more than those
+without signal. MakeCatalog will find the amount of signal within each
+pixel using the Sky image and account for the extra error that it
+needs. Therefore if the input standard deviation (or variance) image also
+contains the contribution of signal to the error, then the final error
+measurements will be over-estimated.
 
 @item --stdhdu=STR
 The HDU of the Sky value standard deviation image.

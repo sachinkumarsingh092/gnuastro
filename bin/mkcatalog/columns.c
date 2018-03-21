@@ -634,6 +634,21 @@ columns_define_alloc(struct mkcatalogparams *p)
           ciflag[ CCOL_RIV_SUM ] = 1;
           break;
 
+        case UI_KEY_BRIGHTNESSERR:
+          name           = "BRIGHTNESS_ERROR";
+          unit           = p->input->unit ? p->input->unit : "pixelunit";
+          ocomment       = "Error (1-sigma) in measuring brightness.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 4;
+          oiflag[ OCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_RIV_SUM_VAR ] = 1;
+          break;
+
         case UI_KEY_CLUMPSBRIGHTNESS:
           name           = "CLUMPS_BRIGHTNESS";
           unit           = p->input->unit ? p->input->unit : "pixelunit";
@@ -712,7 +727,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           break;
 
         case UI_KEY_MAGNITUDEERR:
-          name           = "MAGNITUDE_ERR";
+          name           = "MAGNITUDE_ERROR";
           unit           = "log";
           ocomment       = "Error in measuring magnitude.";
           ccomment       = ocomment;
@@ -721,12 +736,12 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 8;
           disp_precision = 3;
-          oiflag[ OCOL_SUMSTD ] = 1;
-          oiflag[ OCOL_NUM    ] = 1;
-          oiflag[ OCOL_SUM    ] = 1;
-          ciflag[ CCOL_SUMSTD ] = 1;
-          ciflag[ CCOL_NUM    ] = 1;
-          ciflag[ CCOL_SUM    ] = 1;
+          oiflag[ OCOL_SUM         ] = 1;
+          oiflag[ OCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_SUM         ] = 1;
+          ciflag[ CCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_RIV_SUM     ] = 1;
+          ciflag[ CCOL_RIV_SUM_VAR ] = 1;
           break;
 
         case UI_KEY_CLUMPSMAGNITUDE:
@@ -846,12 +861,12 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_FLOAT;
           disp_width     = 10;
           disp_precision = 3;
-          oiflag[ OCOL_SUMSTD ] = 1;
-          oiflag[ OCOL_NUM    ] = 1;
-          oiflag[ OCOL_SUM    ] = 1;
-          ciflag[ CCOL_SUMSTD ] = 1;
-          ciflag[ CCOL_NUM    ] = 1;
-          ciflag[ CCOL_SUM    ] = 1;
+          oiflag[ OCOL_SUM         ] = 1;
+          oiflag[ OCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_SUM         ] = 1;
+          ciflag[ CCOL_SUM_VAR     ] = 1;
+          ciflag[ CCOL_RIV_SUM     ] = 1;
+          ciflag[ CCOL_RIV_SUM_VAR ] = 1;
           break;
 
         case UI_KEY_SKY:
@@ -1132,38 +1147,33 @@ columns_define_alloc(struct mkcatalogparams *p)
 
 
 
+/* Calculate the error in brightness. */
+static double
+columns_brightness_error(struct mkcatalogparams *p, double *row, int o0c1)
+{
+  double V = row[ o0c1 ? CCOL_SUM_VAR : OCOL_SUM_VAR ];
+  double OV = (o0c1 && row[ CCOL_RIV_NUM ]) ? row[ CCOL_RIV_SUM_VAR ] : 0.0;
+  return sqrt(V+OV);
+}
+
+
+
+
+
 /* Calculate the Signal to noise ratio for the object. */
 static double
 columns_sn(struct mkcatalogparams *p, double *row, int o0c1)
 {
-  double var, sn, std, Ni, I, O;
+  double I = row[ o0c1 ? CCOL_SUM     : OCOL_SUM     ];
 
-  /* Get all the values as averages (per pixel). */
-  Ni  = row[ o0c1 ? CCOL_NUM : OCOL_NUM ];
-  I   = MKC_RATIO( row[ o0c1 ? CCOL_SUM    : OCOL_SUM ],    Ni );
-  std = MKC_RATIO( row[ o0c1 ? CCOL_SUMSTD : OCOL_SUMSTD ], Ni );
-  var = (p->skysubtracted ? 2.0f : 1.0f) * std * std;
-
-
-  /* Calculate the S/N. Note that when grown clumps are requested from
-     NoiseChisel, some "clumps" will completely cover their objects and
-     there will be no rivers. So if this is a clump, and the river area is
-     0, we should treat the S/N as a an object. */
-  if( o0c1 && row[ CCOL_RIV_NUM ] )
-    {
-      /* If the Sky is already subtracted, the varience should be counted
-         two times. */
-      O   = row[ CCOL_RIV_SUM ] / row[ CCOL_RIV_NUM ];  /* Outside.  */
-      sn  = ( (I-O)>0
-              ? ( sqrt(Ni/p->cpscorr) * (I-O)
-                  / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) )
-              : NAN );
-    }
-  else
-    sn  = I>0 ? sqrt(Ni/p->cpscorr) * I / sqrt( (I>0?I:-1*I) + var ) : NAN;
+  /* When grown clumps are requested from NoiseChisel, some "clumps" will
+     completely cover their objects and there will be no rivers. So if this
+     is a clump, and the river area is 0, we should treat the S/N as a an
+     object. */
+  double O = (o0c1 && row[ CCOL_RIV_NUM ]) ? row[ CCOL_RIV_SUM ] : 0.0 ;
 
   /* Return the derived value. */
-  return sn;
+  return sqrt(1/p->cpscorr) * (I-O) / columns_brightness_error(p, row, o0c1);
 }
 
 
@@ -1312,7 +1322,11 @@ columns_clump_brightness(double *ci)
   `1/S'. So
 
       `DM = 2.5 / ( S * ln(10) )'               */
-#define MAG_ERROR(P,ROW,O0C1) (2.5f/(columns_sn((P),(ROW),(O0C1)) * log(10)))
+#define MAG_ERROR(P,ROW,O0C1) ( 2.5f                                    \
+                                / ( ( columns_sn((P),(ROW),(O0C1)) > 0  \
+                                      ? columns_sn((P),(ROW),(O0C1))    \
+                                      : NAN )                           \
+                                    * log(10) ) )
 
 
 
@@ -1444,6 +1458,12 @@ columns_fill(struct mkcatalog_passparams *pp)
         case UI_KEY_BRIGHTNESS:
           ((float *)colarr)[oind] = ( oi[ OCOL_NUM ]>0.0f
                                       ? oi[ OCOL_SUM ]
+                                      : NAN );
+          break;
+
+        case UI_KEY_BRIGHTNESSERR:
+          ((float *)colarr)[oind] = ( oi[ OCOL_NUM ]>0.0f
+                                      ? columns_brightness_error(p, oi, 0)
                                       : NAN );
           break;
 
@@ -1622,6 +1642,12 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((float *)colarr)[cind] = columns_clump_brightness(ci);
             break;
 
+          case UI_KEY_BRIGHTNESSERR:
+            ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
+                                        ? columns_brightness_error(p, ci, 1)
+                                        : NAN );
+            break;
+
           case UI_KEY_NORIVERBRIGHTNESS:
             ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
                                         ? ci[ CCOL_SUM ] : NAN );
@@ -1663,6 +1689,7 @@ columns_fill(struct mkcatalog_passparams *pp)
           case UI_KEY_UPPERLIMITSIGMA:
             ((float *)colarr)[cind] = ( columns_clump_brightness(ci)
                                         / ci[ CCOL_UPPERLIMIT_S ] );
+            break;
 
           case UI_KEY_UPPERLIMITQUANTILE:
             ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_Q ];
@@ -1704,7 +1731,7 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((float *)colarr)[cind]
               = ( columns_second_order(pp, ci, UI_KEY_SEMIMINOR, 1)
                   / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
-          break;
+            break;
 
           case UI_KEY_POSITIONANGLE:
             ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
@@ -1722,7 +1749,7 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((float *)colarr)[cind]
               = ( columns_second_order(pp, ci, UI_KEY_GEOSEMIMINOR, 1)
                   / columns_second_order(pp, ci, UI_KEY_GEOSEMIMAJOR, 1) );
-          break;
+            break;
 
           case UI_KEY_GEOPOSITIONANGLE:
             ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);

@@ -124,7 +124,7 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
   double *oi=pp->oi;
   int32_t *O, *C=NULL;
   size_t d, increment=0, num_increment=1;
-  float ss, *I, *II, *SK, *ST, *input=p->input->array;
+  float ss, st, *I, *II, *SK, *ST, *input=p->input->array;
   size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
   size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
 
@@ -196,16 +196,31 @@ mkcatalog_first_pass(struct mkcatalog_passparams *pp)
                  negation will be positive and the calculations below will
                  be done. However, if the user does specify a threhold and
                  the pixel is above the threshold, then (`ss < p->threshold
-                 * *ST') will be false and its logical negation will be
+                 * st') will be false and its logical negation will be
                  positive, so the pixel will be included. */
+              st = p->variance ? sqrt(*ST) : *ST;
               if( !( p->hasblank && isnan(*I) )
-                  && !( (ss = *I - *SK) < p->threshold * *ST ) )
+                  && !( (ss = *I - *SK) < p->threshold * st ) )
                 {
                   /* General flux summations. */
-                  oi[ OCOL_NUM    ]++;
-                  oi[ OCOL_SUM    ] += ss;
-                  oi[ OCOL_SUMSKY ] += *SK;
-                  oi[ OCOL_SUMSTD ] += *ST;
+                  oi[ OCOL_NUM     ]++;
+                  oi[ OCOL_SUM     ] += ss;
+                  oi[ OCOL_SUMSKY  ] += *SK;
+                  oi[ OCOL_SUMSTD  ] += st;
+
+                  /* For each pixel, we have a sky contribution to the
+                     counts and the signal's contribution. The standard
+                     deviation in the sky is simply `*ST', but the standard
+                     deviation of the signal (independent of the sky) is
+                     `sqrt(ss)'. Therefore the total variance of this pixel
+                     is the variance of the sky added with the absolute
+                     value of its sky-subtracted flux. We use the absolute
+                     value, because especially as the signal gets noisy
+                     there will be negative values, and we don't want them
+                     to decrease the variance. */
+                  oi[ OCOL_SUM_VAR ] += (p->variance ? *ST : st*st)+fabs(ss);
+
+                  /* Get the necessary clump information. */
                   if(p->clumps && *C>0)
                     {
                       oi[ OCOL_C_NUM ]++;
@@ -260,12 +275,12 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
   struct mkcatalogparams *p=pp->p;
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
-  double *ci;
+  double *ci, *cir;
   int32_t *O, *C=NULL, nlab, *ngblabs;
   size_t i, ii, d, increment=0, num_increment=1;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   size_t *dinc=gal_dimension_increment(ndim, dsize);
-  float ss, *I, *II, *SK, *ST, *input=p->input->array;
+  float ss, st, *I, *II, *SK, *ST, *input=p->input->array;
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
   size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
   size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
@@ -317,14 +332,17 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
 
                   /* Only use pixels above the threshold, see explanations in
                      first pass for an explanation. */
+                  st = p->variance ? sqrt(*ST) : *ST;
                   if( !( p->hasblank && isnan(*I) )
-                      && !( (ss = *I - *SK) < p->threshold * *ST ) )
+                      && !( (ss = *I - *SK) < p->threshold * st ) )
                     {
                       /* Fill in the necessary information. */
-                      ci[ CCOL_NUM    ]++;
-                      ci[ CCOL_SUM    ] += ss;
-                      ci[ CCOL_SUMSKY ] += *SK;
-                      ci[ CCOL_SUMSTD ] += *ST;
+                      ci[ CCOL_NUM     ]++;
+                      ci[ CCOL_SUM     ] += ss;
+                      ci[ CCOL_SUMSKY  ] += *SK;
+                      ci[ CCOL_SUMSTD  ] += st;
+                      ci[ CCOL_SUM_VAR ] += ( (p->variance ? *ST : st*st)
+                                              + fabs(ss) );
                       if( ss > 0.0f )
                         {
                           ci[ CCOL_NUMWHT ]++;
@@ -373,12 +391,19 @@ mkcatalog_second_pass(struct mkcatalog_passparams *pp)
                            /* It hasn't been considered yet: */
                            if(i==ii)
                              {
+                               /* Make sure it won't be considered any
+                                  more. */
                                ngblabs[ii++] = nlab;
 
-                               ++(pp->ci)[ (nlab-1) * CCOL_NUMCOLS
-                                           + CCOL_RIV_NUM ];
-                               pp->ci[ (nlab-1) * CCOL_NUMCOLS
-                                       + CCOL_RIV_SUM ] += *I-*SK;
+                               /* To help in reading. */
+                               cir=&pp->ci[ (nlab-1) * CCOL_NUMCOLS ];
+
+                               /* Write in the values. */
+                               cir[ CCOL_RIV_NUM ]++;
+                               cir[ CCOL_RIV_SUM ] += *I-*SK;
+                               cir[ CCOL_RIV_SUM_VAR ] +=
+                                 ( (p->variance ? *ST : *ST * *ST)
+                                   + fabs(*I-*SK) );
                              }
                          }
                      });
@@ -416,7 +441,7 @@ mkcatalog_median_pass(struct mkcatalog_passparams *pp)
   gal_data_t *median;
   int32_t *O, *C=NULL;
   gal_data_t **clumpsmed=NULL;
-  float ss, *I, *II, *SK, *ST;
+  float ss, st, *I, *II, *SK, *ST;
   size_t i, increment=0, num_increment=1;
   size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUM];
   gal_data_t *objmed=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL, 0,
@@ -466,9 +491,10 @@ mkcatalog_median_pass(struct mkcatalog_passparams *pp)
           /* If this pixel belongs to the requested object, then do the
              processing. `hasblank' is constant, so when the input doesn't
              have any blank values, the `isnan' will never be checked. */
+          st = p->variance ? sqrt(*ST) : *ST;
           if( *O==pp->object
               && !( p->hasblank && isnan(*I) )
-              && !( (ss = *I - *SK) < p->threshold * *ST ))
+              && !( (ss = *I - *SK) < p->threshold * st ))
             {
               /* Copy the value for the whole object. */
               ss = *I - *SK;
@@ -1071,6 +1097,16 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
                       "CLUMPS");
       gal_list_str_free(comments, 1);
     }
+
+  /* Inform the user. */
+  if(p->clumpsout==p->objectsout)
+    printf("  - Output catalog: %s\n", p->objectsout);
+  else
+    {
+      printf("  - Output objects catalog: %s\n", p->objectsout);
+      if(p->clumps)
+        printf("  - Output clumps catalog: %s\n", p->clumpsout);
+    }
 }
 
 
@@ -1098,16 +1134,6 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
 void
 mkcatalog(struct mkcatalogparams *p)
 {
-  float *f, *fp;
-
-  /* If the given standard deviation array is actually variance, then take
-     its square root. */
-  if(p->variance)
-    {
-      fp = (f=p->std->array) + p->std->size;
-      do *f=sqrt(*f); while(++f<fp);
-    }
-
   /* When more than one thread is to be used, initialize the mutex: we need
      it to assign a column to the clumps in the final catalog. */
   if( p->cp.numthreads > 1 ) pthread_mutex_init(&p->mutex, NULL);

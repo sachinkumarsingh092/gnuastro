@@ -10,6 +10,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   MakeCatalog:
     --variance: input STD image is variance (so take square root before use).
+    --brightnesserr: error in estimating the brightness.
     --mean: calculate the mean pixel value within an object or clump.
     --median: calculate the median pixel value within an object or clump.
     --upperlimitsigma: position in random distribution (in units of sigma).
@@ -20,7 +21,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --manualbinrange: histogram or CFP range can be outside of distribution.
 
   Libraries:
-    gal_array_read: read from file with all known formats (FITS, TIFF, etc).
+    gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
     gal_eps_name_is_eps: Returns 1 if given filename is EPS.
     gal_eps_suffix_is_eps: Returns 1 if given suffix is EPS.
@@ -49,10 +50,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   NoiseChisel:
     --kernel: value `none' will disable convolution.
 
+  MakeCatalog:
+    - Estimation of noise-level is now done per-pixel over the whole
+         label. Until now the average noise level was used.
+
   Table:
     --column: multiple columns (comma separated) can be used in one
-              instance of this option (multiple instances of this option
-              are still acceptable also).
+         instance of this option (multiple instances of this option are
+         still acceptable also).
 
   Libraries:
     gal_fits_img_read: now only reads the data not the WCS, therefore it no

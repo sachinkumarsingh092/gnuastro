@@ -69,6 +69,7 @@ enum objectcols
     OCOL_NUMALL,         /* Number of all pixels with this label.     */
     OCOL_NUM,            /* Number of pixels above threshold.         */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
+    OCOL_SUM_VAR,        /* Varience of sum (for brightness error).   */
     OCOL_MEDIAN,         /* Median of value in object.                */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
@@ -106,15 +107,17 @@ enum clumpcols
   {
     CCOL_NUMALL,         /* Area of clump irrespective of threshold.  */
     CCOL_NUM,            /* Area of this clump.                       */
+    CCOL_SUM,            /* River subtracted brightness.              */
+    CCOL_SUM_VAR,        /* Variance of sum (for brightness error).   */
+    CCOL_MEDIAN,         /* Median of values in clump.                */
+    CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
+    CCOL_RIV_SUM,        /* Sum of rivers around clump.               */
+    CCOL_RIV_SUM_VAR,    /* Variance of sum (for error measurements). */
     CCOL_VX,             /* Sum of (value-sky) * x.                   */
     CCOL_VY,             /* Sum of (value-sky) * y.                   */
     CCOL_VXX,            /* Sum of flux*x*x of this clump.            */
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
-    CCOL_SUM,            /* River subtracted brightness.              */
-    CCOL_MEDIAN,         /* Median of values in clump.                */
-    CCOL_RIV_SUM,        /* Sum of rivers around clump.               */
-    CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
     CCOL_SUMSKY,         /* Sum of sky value on this object.          */
     CCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
     CCOL_SUMWHT,         /* Sum of positive image pixels for wht.     */
