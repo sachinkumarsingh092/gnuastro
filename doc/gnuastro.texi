@@ -8936,17 +8936,22 @@ One line examples:
 ## Get the table column information (name, data type, or units):
 $ asttable bintab.fits --information
 
-## Only print those columns which have a name starting with "MAG_":
-$ asttable bintab.fits --column=/^MAG_/
+## Print columns named RA and DEC, followed by all the columns where
+## the name starts with "MAG_":
+$ asttable bintab.fits --column=RA --column=DEC --column=/^MAG_/
+
+## Similar to above, but with one call to --column (or -c) and writes
+## the columns to a file (with metadata) instead of the command-line.
+$ asttable bintab.fits -cRA,DEC,/^MAG_/ --output=out.txt
 
 ## Only print the 2nd column, and the third column multiplied by 5:
-$ asttable bintab.fits | awk '@{print $2, 5*$3@}'
+$ asttable bintab.fits -c2,5 | awk '@{print $1, 5*$2@}'
 
 ## Only print rows with a value in the 10th column above 100000:
 $ asttable bintab.fits | awk '$10>10e5 @{print@}'
 
 ## Sort the output columns by the third column, save output:
-$ asttable bintab.fits | 'sort -k3 > output.txt
+$ asttable bintab.fits | 'sort -nk3 > output.txt
 
 ## Convert a plain text table to a binary FITS table:
 $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
@@ -8997,11 +9002,15 @@ last command with all the previously typed columns present, delete
 @cindex GNU AWK
 @item -c STR/INT
 @itemx --column=STR/INT
-Specify the columns to output, see @ref{Selecting table columns} for a
-thorough explanation on how the value to this option is interpreted. To
-select several output columns, this option can also be called any number
-times in one call to Table. The order of the output columns will be the
-same call order on the command-line.
+Specify the columns to read, see @ref{Selecting table columns} for a
+thorough explanation on how the value to this option is interpreted. There
+are two ways to specify multiple columns: 1) multiple calls to this option,
+2) using a comma between each column specifier in one call to this
+option. These different solutions may be mixed in one call to Table: for
+example, @option{-cRA,DEC -cMAG}, or @option{-cRA -cDEC -cMAG} are both
+equivalent to @option{-cRA -cDEC -cMAG}. The order of the output columns
+will be the same order given to the option or in the configuration files
+(see @ref{Configuration file precedence}).
 
 This option is not mandatory, if no specific columns are requested, all the
 input table columns are output. When this option is called multiple times,

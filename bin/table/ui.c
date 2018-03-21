@@ -262,7 +262,7 @@ ui_check_options_and_arguments(struct tableparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-void
+static void
 ui_print_info_exit(struct tableparams *p)
 {
   char *tmp;
@@ -307,7 +307,51 @@ ui_print_info_exit(struct tableparams *p)
 
 
 
-void
+/* The columns can be given as comma-separated values to one option or
+   multiple calls to the column option. Here, we'll check if the input list
+   has comma-separated values. If they do then the list will be updated to
+   be fully separate. */
+static void
+ui_columns_prepare(struct tableparams *p)
+{
+  size_t i;
+  char **strarr;
+  gal_data_t *strs;
+  gal_list_str_t *tmp, *new=NULL;
+
+  /* Go over the whole original list (where each node may have more than
+     one value separated by a comma. */
+  for(tmp=p->columns;tmp!=NULL;tmp=tmp->next)
+    {
+      /* Read the different comma-separated strings into an array (within a
+         `gal_data_t'). */
+      strs=gal_options_parse_csv_strings_raw(tmp->v, NULL, 0);
+      strarr=strs->array;
+
+      /* Go over all the elements and add them to the `new' list. */
+      for(i=0;i<strs->size;++i)
+        {
+          gal_list_str_add(&new, strarr[i], 0);
+          strarr[i]=NULL;
+        }
+
+      /* Clean up. */
+      gal_data_free(strs);
+    }
+
+  /* Delete the old list. */
+  gal_list_str_free(p->columns, 1);
+
+  /* Reverse the new list, then put it into `p->columns'. */
+  gal_list_str_reverse(&new);
+  p->columns=new;
+}
+
+
+
+
+
+static void
 ui_preparations(struct tableparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
@@ -316,6 +360,9 @@ ui_preparations(struct tableparams *p)
      information on the columns, we want the full set of columns. */
   if(p->information)
     ui_print_info_exit(p);
+
+  /* Prepare the column names. */
+  ui_columns_prepare(p);
 
   /* Read in the table columns. */
   p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
