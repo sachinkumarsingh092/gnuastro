@@ -17491,12 +17491,12 @@ distribution with
 @cindex ADU
 @cindex Gain
 @cindex Counts
-This type of noise is completely independent of the type of objects
-being studied, it is completely determined by the instrument. So the
-flux scale (and not magnitude scale) is most commonly used for this
-type of noise. In practice, this value is usually reported in ADUs not
-flux or electron counts. The gain value of the device can be used to
-convert between these two, see @ref{Flux Brightness and magnitude}.
+This type of noise is independent of the signal in the dataset, it is only
+determined by the instrument. So the flux scale (and not magnitude scale)
+is most commonly used for this type of noise. In practice, this value is
+usually reported in ADUs not flux or electron counts. The gain value of the
+device can be used to convert between these two, see @ref{Flux Brightness
+and magnitude}.
 
 @node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
 @subsubsection Final noised pixel value

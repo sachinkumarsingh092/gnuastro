@@ -107,7 +107,8 @@ convertsaveoutput(struct mknoiseparams *p)
 void
 mknoise(struct mknoiseparams *p)
 {
-  double *d, *df, background=p->background, instrumental=p->instrumental;
+  double *d, *df, background=p->background;
+  double instpowtwo = p->instrumental*p->instrumental;
 
   /* Add the noise: */
   df=(d=p->input->array)+p->input->size;
@@ -122,7 +123,7 @@ mknoise(struct mknoiseparams *p)
       do
         *d += ( background
                 + gsl_ran_gaussian(p->rng,
-                                   sqrt( instrumental + background + *d )) );
+                                   sqrt( instpowtwo + background + *d )) );
       while(++d<df);
     }
 
