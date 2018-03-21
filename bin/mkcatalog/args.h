@@ -870,6 +870,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "upperlimitskew",
+      UI_KEY_UPPERLIMITSKEW,
+      0,
+      0,
+      "(Mean-Median)/STD of random distribution.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "riverave",
       UI_KEY_RIVERAVE,
       0,

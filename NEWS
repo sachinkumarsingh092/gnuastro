@@ -16,6 +16,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --upperlimitsigma: position in random distribution (in units of sigma).
     --upperlimitquantile: position in random distribution (quantile).
     --upperlimitonesigma: 1sigma value of the random distribution.
+    --upperlimitskew: (mean-median)/sigma or skewness of random distribution.
 
   Statistics:
     --manualbinrange: histogram or CFP range can be outside of distribution.

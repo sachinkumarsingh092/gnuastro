@@ -90,6 +90,7 @@ enum objectcols
     OCOL_UPPERLIMIT_B,   /* Upper limit brightness.                   */
     OCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     OCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
+    OCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
     OCOL_C_NUMALL,       /* Value independent no. of pixels in clumps.*/
     OCOL_C_NUM,          /* Area of clumps in this object.            */
     OCOL_C_SUM,          /* Brightness in object clumps.              */
@@ -130,6 +131,7 @@ enum clumpcols
     CCOL_UPPERLIMIT_B,   /* Upper limit brightness.                   */
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
+    CCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
 
     CCOL_NUMCOLS,        /* SHOULD BE LAST: total number of columns.  */
   };

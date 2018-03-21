@@ -309,13 +309,17 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
                   pp->up_vals->size=pp->up_vals->dsize[0]=init_size;
                   scarr=sigclip->array;
 
-                  /* Write the raw sigma. */
+                  /* 1-sigma. */
                   col = clumplab ? CCOL_UPPERLIMIT_S : OCOL_UPPERLIMIT_S;
                   o[col] = scarr[3];
 
-                  /* Write the multiple of `upnsigma'. */
+                  /* sigma multiplied by `upnsigma'. */
                   col = clumplab ? CCOL_UPPERLIMIT_B : OCOL_UPPERLIMIT_B;
                   o[col] = scarr[3] * p->upnsigma;
+
+                  /* Nonparametric skewness [ (Mean-Median)/STD ]. */
+                  col = clumplab?CCOL_UPPERLIMIT_SKEW:OCOL_UPPERLIMIT_SKEW;
+                  o[col] = ( scarr[2] - scarr[1] ) / scarr[3];
 
                   /* Clean up. */
                   gal_data_free(sigclip);

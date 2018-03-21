@@ -824,6 +824,19 @@ columns_define_alloc(struct mkcatalogparams *p)
           p->upperlimit  = 1;
           break;
 
+        case UI_KEY_UPPERLIMITSKEW:
+          name           = "UPPERLIMIT_SKEW";
+          unit           = "frac";
+          ocomment       = "(Mean-Median)/STD of random distribution.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 8;
+          disp_precision = 3;
+          p->upperlimit  = 1;
+          break;
+
         case UI_KEY_RIVERAVE:
           name           = "RIVER_AVE";
           unit           = p->input->unit ? p->input->unit : "pixelunit";
@@ -1519,6 +1532,10 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((float *)colarr)[oind] = oi[ OCOL_UPPERLIMIT_Q ];
           break;
 
+        case UI_KEY_UPPERLIMITSKEW:
+          ((float *)colarr)[oind] = oi[ OCOL_UPPERLIMIT_SKEW ];
+          break;
+
         case UI_KEY_SN:
           ((float *)colarr)[oind] = columns_sn(p, oi, 0);
           break;
@@ -1693,6 +1710,10 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_UPPERLIMITQUANTILE:
             ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_Q ];
+            break;
+
+          case UI_KEY_UPPERLIMITSKEW:
+            ((float *)colarr)[cind] = ci[ CCOL_UPPERLIMIT_SKEW ];
             break;
 
           case UI_KEY_RIVERAVE:

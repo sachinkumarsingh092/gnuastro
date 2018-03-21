@@ -557,7 +557,7 @@ Gnuastro library
 * Array input output::          Reading and writing images or cubes.
 * Table input output::          Reading and writing table columns.
 * FITS files::                  Working with FITS data.
-* File input output::
+* File input output::           Reading and writing to various file formats.
 * World Coordinate System::     Dealing with the world coordinate system.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
@@ -15770,6 +15770,21 @@ settings} for a complete explanation. If the object is brighter than the
 brightest randomly placed profile, a value of @code{inf} is returned. If it
 is less than the minimum, a value of @code{-inf} is reported.
 
+@item --upperlimitskew
+@cindex Skewness
+This column contains the nonparametric skew of the sigma-clipped random
+distribution that was used to estimate the upper-limit magnitude. Taking
+@mymath{\mu} as the mean, @mymath{\nu} as the median and @mymath{\sigma} as
+the standard deviation, the traditional definition of skewness is defined
+as: @mymath{(\mu-\nu)/\sigma}.
+
+This can be a good measure to see how much you can trust the random
+measurements, or in other words, how accurately the regions with signal
+have been masked/detected. If the skewness is strong (and to the positive),
+then you can tell that you have a lot of un-detected signal in the dataset,
+and therefore that the upper-limit measurement (and other measurements) are
+not reliable.
+
 @item --riverave
 [Clumps] The average brightness of the river pixels around this
 clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
@@ -19134,7 +19149,7 @@ documentation will correspond to your installed version.
 * Array input output::          Reading and writing images or cubes.
 * Table input output::          Reading and writing table columns.
 * FITS files::                  Working with FITS data.
-* File input output::
+* File input output::           Reading and writing to various file formats.
 * World Coordinate System::     Dealing with the world coordinate system.
 * Arithmetic on datasets::      Arithmetic operations on a dataset.
 * Tessellation library::        Functions for working on tiles.
