@@ -450,7 +450,7 @@ gal_data_free_contents(gal_data_t *data)
   if(data->type==GAL_TYPE_STRING && data->array)
     {
       strarr=data->array;
-      for(i=0;i<data->size;++i) free(strarr[i]);
+      for(i=0;i<data->size;++i) if(strarr[i]) free(strarr[i]);
     }
 
   /* Free the array. */

@@ -41,6 +41,6 @@ enum arithmetic_prog_operators
 
 
 void
-imgarith(struct arithmeticparams *p);
+arithmetic(struct arithmeticparams *p);
 
 #endif

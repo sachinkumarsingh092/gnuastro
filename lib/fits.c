@@ -966,12 +966,12 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         switch(tmp->type)
           {
           case GAL_TYPE_STRING:
-            errno=0;
             tmp->array=strarray=( tmp->array
                                   ? tmp->array
                                   : gal_data_malloc_array(tmp->type, 1,
                                                           __func__,
                                                           "tmp->array") );
+            errno=0;
             valueptr=strarray[0]=malloc(FLEN_VALUE * sizeof *strarray[0]);
             if(strarray[0]==NULL)
               error(EXIT_FAILURE, errno, "%s: %zu bytes for strarray[0]",
@@ -1030,7 +1030,6 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
 
         /* Strings need to be cleaned (CFITSIO puts `'' around them with
            some (possiblly) extra space on the two ends of the string. */
-
       }
 }
 
@@ -1551,6 +1550,8 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
   img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
   blank=gal_blank_alloc_write(type);
+  if(name) free(name);
+  if(unit) free(unit);
   free(dsize);
 
 

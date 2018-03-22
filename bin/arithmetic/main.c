@@ -46,7 +46,7 @@ main (int argc, char *argv[])
   ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
-  imgarith(&p);
+  arithmetic(&p);
 
   /* Free any allocated space */
   freeandreport(&p, &t1);

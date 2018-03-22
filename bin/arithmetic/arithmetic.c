@@ -404,6 +404,7 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
             error(EXIT_FAILURE, 0, "lengths of filter along dimensions "
                   "must be positive. The given length in dimension %zu"
                   "is either zero or negative", ndim-i);
+          gal_data_free(comp);
 
           /* Convert the input into size_t and put it into the array that
              keeps the filter size. */
@@ -482,8 +483,8 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
   /* Add the output to the top of the stack. */
   operands_add(p, NULL, afp.out);
 
-
   /* Clean up and add the output on top of the stack */
+  gal_data_free(zero);
   gal_data_free(afp.input);
   gal_list_data_free(params_list);
 }
@@ -842,7 +843,7 @@ reversepolish(struct arithmeticparams *p)
 /*************             Top function            *************/
 /***************************************************************/
 void
-imgarith(struct arithmeticparams *p)
+arithmetic(struct arithmeticparams *p)
 {
   /* Parse the arguments */
   reversepolish(p);
