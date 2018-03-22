@@ -91,6 +91,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #53304: NoiseChisel crash when there is no detection.
   bug #53312: Fits crash on keyword editing (except --delete).
   bug #53407: Instrumental noise in MakeNoise should be squared.
+  bug #53424: Sigma-clipping seg-faults when there are no more elements.
 
 
 

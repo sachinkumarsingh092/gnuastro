@@ -23899,6 +23899,7 @@ values by @code{gal_statistics_mode} will have a value of NaN.
 @end deffn
 
 @deffn  Macro GAL_STATISTICS_SORTED_NOT
+@deffnx Macro GAL_STATISTICS_SORTED_INVALID
 @deffnx Macro GAL_STATISTICS_SORTED_INCREASING
 @deffnx Macro GAL_STATISTICS_SORTED_DECREASING
 Macros used to identify if the dataset is sorted and increasing, sorted and
@@ -24045,7 +24046,9 @@ plot (with a maximum of one).
 
 
 @deftypefun int gal_statistics_is_sorted (gal_data_t @code{*input})
-Return the respective sort macro (see above) for the @code{input} dataset.
+Return the respective sort macro (see above) for the @code{input}
+dataset. If the dataset has zero elements, then
+@code{GAL_STATISTICS_SORTED_INVALID} is returned.
 @end deftypefun
 
 @deftypefun void gal_statistics_sort_increasing (gal_data_t @code{*input})

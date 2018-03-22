@@ -87,11 +87,16 @@ gal_statistics_minimum(gal_data_t *input)
   gal_data_t *out=gal_data_alloc(NULL, gal_tile_block(input)->type, 1,
                                  &dsize, NULL, 1, -1, NULL, NULL, NULL);
 
-  /* Initialize the output with the maximum possible value. */
-  gal_type_max(out->type, out->array);
+  /* See if the input actually has any elements. */
+  if(input->size)
+    {
+      /* Initialize the output with the maximum possible value. */
+      gal_type_max(out->type, out->array);
 
-  /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {*o = *i < *o ? *i : *o; ++n;});
+      /* Parse the full input. */
+      GAL_TILE_PARSE_OPERATE( input, out, 0, 1,
+                              {*o = *i < *o ? *i : *o; ++n;} );
+    }
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -111,12 +116,16 @@ gal_statistics_maximum(gal_data_t *input)
   size_t dsize=1, n=0;
   gal_data_t *out=gal_data_alloc(NULL, gal_tile_block(input)->type, 1,
                                  &dsize, NULL, 1, -1, NULL, NULL, NULL);
+  /* See if the input actually has any elements. */
+  if(input->size)
+    {
+      /* Initialize the output with the minimum possible value. */
+      gal_type_min(out->type, out->array);
 
-  /* Initialize the output with the minimum possible value. */
-  gal_type_min(out->type, out->array);
-
-  /* Parse the full input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {*o = *i > *o ? *i : *o; ++n;});
+      /* Parse the full input. */
+      GAL_TILE_PARSE_OPERATE(input, out, 0, 1,
+                             {*o = *i > *o ? *i : *o; ++n;});
+    }
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -137,9 +146,11 @@ gal_statistics_sum(gal_data_t *input)
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
-  /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
-     flag to 1, so it will be 0.0f. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
+  /* See if the input actually has any elements. */
+  if(input->size)
+    /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
+       flag to 1, so it will be 0.0f. */
+    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
   /* If there were no usable elements, set the output to blank, then
      return. */
@@ -160,9 +171,11 @@ gal_statistics_mean(gal_data_t *input)
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
-  /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
-     flag to 1, so it will be 0.0f. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
+  /* See if the input actually has any elements. */
+  if(input->size)
+    /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
+       flag to 1, so it will be 0.0f. */
+    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
   /* Above, we calculated the sum and number, so if there were any elements
      in the dataset (`n!=0'), divide the sum by the number, otherwise, put
@@ -186,8 +199,10 @@ gal_statistics_std(gal_data_t *input)
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
-  /* Parse the input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
+  /* See if the input actually has any elements. */
+  if(input->size)
+    /* Parse the input. */
+    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
 
   /* Write the standard deviation into the output. */
   *((double *)(out->array)) = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
@@ -208,9 +223,10 @@ gal_statistics_mean_std(gal_data_t *input)
   double s=0.0f, s2=0.0f;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
-
-  /* Parse the input. */
-  GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
+  /* See if the input actually has any elements. */
+  if(input->size)
+    /* Parse the input. */
+    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
 
   /* Write in the output values and return. */
   ((double *)(out->array))[0] = n ? s/n                  : GAL_BLANK_FLOAT64;
@@ -234,22 +250,26 @@ statistics_median_in_sorted_no_blank(gal_data_t *sorted, void *median)
 {
   size_t n=sorted->size;
 
-  switch(sorted->type)
-    {
-    case GAL_TYPE_UINT8:     MED_IN_SORTED( uint8_t  );    break;
-    case GAL_TYPE_INT8:      MED_IN_SORTED( int8_t   );    break;
-    case GAL_TYPE_UINT16:    MED_IN_SORTED( uint16_t );    break;
-    case GAL_TYPE_INT16:     MED_IN_SORTED( int16_t  );    break;
-    case GAL_TYPE_UINT32:    MED_IN_SORTED( uint32_t );    break;
-    case GAL_TYPE_INT32:     MED_IN_SORTED( int32_t  );    break;
-    case GAL_TYPE_UINT64:    MED_IN_SORTED( uint64_t );    break;
-    case GAL_TYPE_INT64:     MED_IN_SORTED( int64_t  );    break;
-    case GAL_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
-    case GAL_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, sorted->type);
-    }
+  /* Do the processing if there are actually any elements. */
+  if(sorted->size)
+    switch(sorted->type)
+      {
+      case GAL_TYPE_UINT8:     MED_IN_SORTED( uint8_t  );    break;
+      case GAL_TYPE_INT8:      MED_IN_SORTED( int8_t   );    break;
+      case GAL_TYPE_UINT16:    MED_IN_SORTED( uint16_t );    break;
+      case GAL_TYPE_INT16:     MED_IN_SORTED( int16_t  );    break;
+      case GAL_TYPE_UINT32:    MED_IN_SORTED( uint32_t );    break;
+      case GAL_TYPE_INT32:     MED_IN_SORTED( int32_t  );    break;
+      case GAL_TYPE_UINT64:    MED_IN_SORTED( uint64_t );    break;
+      case GAL_TYPE_INT64:     MED_IN_SORTED( int64_t  );    break;
+      case GAL_TYPE_FLOAT32:   MED_IN_SORTED( float    );    break;
+      case GAL_TYPE_FLOAT64:   MED_IN_SORTED( double   );    break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+              __func__, sorted->type);
+      }
+  else
+    gal_blank_write(median, sorted->type);
 }
 
 
@@ -427,7 +447,11 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
               __func__, nbs->type);
       }
   else
-    index=GAL_BLANK_SIZE_T;
+    {
+      error(0, 0, "%s: no non-blank elements. The quantile function is not "
+            "defined for a zero-sized array\n", __func__);
+      index=GAL_BLANK_SIZE_T;
+    }
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
@@ -1151,31 +1175,36 @@ gal_statistics_is_sorted(gal_data_t *input)
 {
   /* A one-element dataset can be considered, sorted, so we'll just return
      1 (for sorted and increasing). */
-  if(input->size==1) return GAL_STATISTICS_SORTED_INCREASING;
-
-  /* Do the check. */
-  switch(input->type)
+  switch(input->size)
     {
-    case GAL_TYPE_UINT8:     IS_SORTED( uint8_t  );    break;
-    case GAL_TYPE_INT8:      IS_SORTED( int8_t   );    break;
-    case GAL_TYPE_UINT16:    IS_SORTED( uint16_t );    break;
-    case GAL_TYPE_INT16:     IS_SORTED( int16_t  );    break;
-    case GAL_TYPE_UINT32:    IS_SORTED( uint32_t );    break;
-    case GAL_TYPE_INT32:     IS_SORTED( int32_t  );    break;
-    case GAL_TYPE_UINT64:    IS_SORTED( uint64_t );    break;
-    case GAL_TYPE_INT64:     IS_SORTED( int64_t  );    break;
-    case GAL_TYPE_FLOAT32:   IS_SORTED( float    );    break;
-    case GAL_TYPE_FLOAT64:   IS_SORTED( double   );    break;
+    case 0: return GAL_STATISTICS_SORTED_INVALID;
+    case 1: return GAL_STATISTICS_SORTED_INCREASING;
+
+    /* Do the check. */
     default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, input->type);
+      switch(input->type)
+        {
+        case GAL_TYPE_UINT8:     IS_SORTED( uint8_t  );    break;
+        case GAL_TYPE_INT8:      IS_SORTED( int8_t   );    break;
+        case GAL_TYPE_UINT16:    IS_SORTED( uint16_t );    break;
+        case GAL_TYPE_INT16:     IS_SORTED( int16_t  );    break;
+        case GAL_TYPE_UINT32:    IS_SORTED( uint32_t );    break;
+        case GAL_TYPE_INT32:     IS_SORTED( int32_t  );    break;
+        case GAL_TYPE_UINT64:    IS_SORTED( uint64_t );    break;
+        case GAL_TYPE_INT64:     IS_SORTED( int64_t  );    break;
+        case GAL_TYPE_FLOAT32:   IS_SORTED( float    );    break;
+        case GAL_TYPE_FLOAT64:   IS_SORTED( double   );    break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, input->type);
+        }
     }
 
   /* Control shouldn't reach this point. */
-  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix the "
-        "problem. Control must not have reached the end of this function",
-        __func__, PACKAGE_BUGREPORT);
-  return -1;
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
+        "fix the problem. Control must not have reached the end of this "
+        "function", __func__, PACKAGE_BUGREPORT);
+  return GAL_STATISTICS_SORTED_INVALID;
 }
 
 
@@ -1190,32 +1219,33 @@ gal_statistics_is_sorted(gal_data_t *input)
 void
 gal_statistics_sort_increasing(gal_data_t *input)
 {
-  switch(input->type)
-    {
-    case GAL_TYPE_UINT8:
-      STATISTICS_SORT(gal_qsort_uint8_increasing);    break;
-    case GAL_TYPE_INT8:
-      STATISTICS_SORT(gal_qsort_int8_increasing);     break;
-    case GAL_TYPE_UINT16:
-      STATISTICS_SORT(gal_qsort_uint16_increasing);   break;
-    case GAL_TYPE_INT16:
-      STATISTICS_SORT(gal_qsort_int16_increasing);    break;
-    case GAL_TYPE_UINT32:
-      STATISTICS_SORT(gal_qsort_uint32_increasing);   break;
-    case GAL_TYPE_INT32:
-      STATISTICS_SORT(gal_qsort_int32_increasing);    break;
-    case GAL_TYPE_UINT64:
-      STATISTICS_SORT(gal_qsort_uint64_increasing);   break;
-    case GAL_TYPE_INT64:
-      STATISTICS_SORT(gal_qsort_int64_increasing);    break;
-    case GAL_TYPE_FLOAT32:
-      STATISTICS_SORT(gal_qsort_float32_increasing);  break;
-    case GAL_TYPE_FLOAT64:
-      STATISTICS_SORT(gal_qsort_float64_increasing);  break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, input->type);
-    }
+  if(input->size)
+    switch(input->type)
+      {
+      case GAL_TYPE_UINT8:
+        STATISTICS_SORT(gal_qsort_uint8_increasing);    break;
+      case GAL_TYPE_INT8:
+        STATISTICS_SORT(gal_qsort_int8_increasing);     break;
+      case GAL_TYPE_UINT16:
+        STATISTICS_SORT(gal_qsort_uint16_increasing);   break;
+      case GAL_TYPE_INT16:
+        STATISTICS_SORT(gal_qsort_int16_increasing);    break;
+      case GAL_TYPE_UINT32:
+        STATISTICS_SORT(gal_qsort_uint32_increasing);   break;
+      case GAL_TYPE_INT32:
+        STATISTICS_SORT(gal_qsort_int32_increasing);    break;
+      case GAL_TYPE_UINT64:
+        STATISTICS_SORT(gal_qsort_uint64_increasing);   break;
+      case GAL_TYPE_INT64:
+        STATISTICS_SORT(gal_qsort_int64_increasing);    break;
+      case GAL_TYPE_FLOAT32:
+        STATISTICS_SORT(gal_qsort_float32_increasing);  break;
+      case GAL_TYPE_FLOAT64:
+        STATISTICS_SORT(gal_qsort_float64_increasing);  break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+              __func__, input->type);
+      }
 }
 
 
@@ -1226,40 +1256,41 @@ gal_statistics_sort_increasing(gal_data_t *input)
 void
 gal_statistics_sort_decreasing(gal_data_t *input)
 {
-  switch(input->type)
-    {
-    case GAL_TYPE_UINT8:
-      STATISTICS_SORT(gal_qsort_uint8_decreasing);    break;
-    case GAL_TYPE_INT8:
-      STATISTICS_SORT(gal_qsort_int8_decreasing);     break;
-    case GAL_TYPE_UINT16:
-      STATISTICS_SORT(gal_qsort_uint16_decreasing);   break;
-    case GAL_TYPE_INT16:
-      STATISTICS_SORT(gal_qsort_int16_decreasing);    break;
-    case GAL_TYPE_UINT32:
-      STATISTICS_SORT(gal_qsort_uint32_decreasing);   break;
-    case GAL_TYPE_INT32:
-      STATISTICS_SORT(gal_qsort_int32_decreasing);    break;
-    case GAL_TYPE_UINT64:
-      STATISTICS_SORT(gal_qsort_uint64_decreasing);   break;
-    case GAL_TYPE_INT64:
-      STATISTICS_SORT(gal_qsort_int64_decreasing);    break;
-    case GAL_TYPE_FLOAT32:
-      STATISTICS_SORT(gal_qsort_float32_decreasing);  break;
-    case GAL_TYPE_FLOAT64:
-      STATISTICS_SORT(gal_qsort_float64_decreasing);  break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, input->type);
-    }
+  if(input->size)
+    switch(input->type)
+      {
+      case GAL_TYPE_UINT8:
+        STATISTICS_SORT(gal_qsort_uint8_decreasing);    break;
+      case GAL_TYPE_INT8:
+        STATISTICS_SORT(gal_qsort_int8_decreasing);     break;
+      case GAL_TYPE_UINT16:
+        STATISTICS_SORT(gal_qsort_uint16_decreasing);   break;
+      case GAL_TYPE_INT16:
+        STATISTICS_SORT(gal_qsort_int16_decreasing);    break;
+      case GAL_TYPE_UINT32:
+        STATISTICS_SORT(gal_qsort_uint32_decreasing);   break;
+      case GAL_TYPE_INT32:
+        STATISTICS_SORT(gal_qsort_int32_decreasing);    break;
+      case GAL_TYPE_UINT64:
+        STATISTICS_SORT(gal_qsort_uint64_decreasing);   break;
+      case GAL_TYPE_INT64:
+        STATISTICS_SORT(gal_qsort_int64_decreasing);    break;
+      case GAL_TYPE_FLOAT32:
+        STATISTICS_SORT(gal_qsort_float32_decreasing);  break;
+      case GAL_TYPE_FLOAT64:
+        STATISTICS_SORT(gal_qsort_float64_decreasing);  break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+              __func__, input->type);
+      }
 }
 
 
 
 
 
-/* Return a dataset that has doesn't have blank values and is sorted. If
-   the `inplace' value is set to 1, then the input array will be modified,
+/* Return a dataset that doesn't have blank values and is sorted. If the
+   `inplace' value is set to 1, then the input array will be modified,
    otherwise, a new array will be allocated with the desired properties. So
    if it is already sorted and has blank values, the `inplace' variable is
    irrelevant.
@@ -1273,71 +1304,79 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
   int sortstatus;
   gal_data_t *contig, *noblank, *sorted;
 
-
-  /* If this is a tile, then first we have to copy it into a contiguous
-     piece of memory. After this step, we will only be dealing with
-     `contig' (for a contiguous patch of memory). */
-  if(input->block)
+  /* We need to account for the case that there are no elements in the
+     input. */
+  if(input->size)
     {
-      /* Copy the input into a contiguous patch of memory. */
-      contig=gal_data_copy(input);
-
-      /* When the data was a tile, we have already copied the array into a
-         separate allocated space. So to avoid any further copying, we will
-         just set the `inplace' variable to 1. */
-      inplace=1;
-    }
-  else contig=input;
-
-
-  /* Make sure there is no blanks in the array that will be used. After
-     this step, we won't be dealing with `input' any more, but with
-     `noblank'. */
-  if( gal_blank_present(contig, inplace) )
-    {
-      /* See if we should allocate a new dataset to remove blanks or if we
-         can use the actual contiguous patch of memory. */
-      noblank = inplace ? contig : gal_data_copy(contig);
-      gal_blank_remove(noblank);
-
-      /* If we are working in place, then mark that there are no blank
-         pixels. */
-      if(inplace)
+      /* If this is a tile, then first we have to copy it into a contiguous
+         piece of memory. After this step, we will only be dealing with
+         `contig' (for a contiguous patch of memory). */
+      if(input->block)
         {
-          noblank->flag |= GAL_DATA_FLAG_BLANK_CH;
-          noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
+          /* Copy the input into a contiguous patch of memory. */
+          contig=gal_data_copy(input);
+
+          /* When the data was a tile, we have already copied the array
+             into a separate allocated space. So to avoid any further
+             copying, we will just set the `inplace' variable to 1. */
+          inplace=1;
         }
-    }
-  else noblank=contig;
+      else contig=input;
 
 
-  /* If there are any non-blank elements, make sure the array is
-     sorted. After this step, we won't be dealing with `noblank' any more
-     but with `sorted'. */
-  if(noblank->size)
-    {
-      sortstatus=gal_statistics_is_sorted(noblank);
-      if( sortstatus )
+      /* Make sure there is no blanks in the array that will be used. After
+         this step, we won't be dealing with `input' any more, but with
+         `noblank'. */
+      if( gal_blank_present(contig, inplace) )
         {
-          sorted=noblank;
-          sorted->status=sortstatus;
+          /* See if we should allocate a new dataset to remove blanks or if
+             we can use the actual contiguous patch of memory. */
+          noblank = inplace ? contig : gal_data_copy(contig);
+          gal_blank_remove(noblank);
+
+          /* If we are working in place, then mark that there are no blank
+             pixels. */
+          if(inplace)
+            {
+              noblank->flag |= GAL_DATA_FLAG_BLANK_CH;
+              noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
+            }
         }
-      else
+      else noblank=contig;
+
+
+      /* If there are any non-blank elements, make sure the array is
+         sorted. After this step, we won't be dealing with `noblank' any
+         more but with `sorted'. */
+      if(noblank->size)
         {
-          if(inplace) sorted=noblank;
+          sortstatus=gal_statistics_is_sorted(noblank);
+          if( sortstatus )
+            {
+              sorted=noblank;
+              sorted->status=sortstatus;
+            }
           else
             {
-              if(noblank!=input)    /* no-blank has already been allocated. */
-                sorted=noblank;
+              if(inplace) sorted=noblank;
               else
-                sorted=gal_data_copy(noblank);
+                {
+                  if(noblank!=input)   /* no-blank is already allocated. */
+                    sorted=noblank;
+                  else
+                    sorted=gal_data_copy(noblank);
+                }
+              gal_statistics_sort_increasing(sorted);
+              sorted->status=GAL_STATISTICS_SORTED_INCREASING;
             }
-          gal_statistics_sort_increasing(sorted);
-          sorted->status=GAL_STATISTICS_SORTED_INCREASING;
         }
+      else
+        sorted=noblank;
     }
+
+  /* When the input's size is zero, just return the actual input. */
   else
-    sorted=noblank;
+    sorted=input;
 
 
   /* Return final array. */
@@ -1414,6 +1453,8 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
   if(numbins==0)
     error(EXIT_FAILURE, 0, "%s: `numbins' cannot be given a value of 0",
           __func__);
+  if(input->size==0)
+    error(EXIT_FAILURE, 0, "%s: input's size is 0", __func__);
 
 
   /* Set the minimum and maximum values. */
@@ -1435,8 +1476,8 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
           /* If the minimum isn't set (is blank), find it. */
           if( isnan(ra[0]) )
             {
-              tmp=gal_data_copy_to_new_type_free(gal_statistics_minimum(input),
-                                                 GAL_TYPE_FLOAT64);
+              tmp=gal_data_copy_to_new_type_free(
+                            gal_statistics_minimum(input), GAL_TYPE_FLOAT64);
               min=*((double *)(tmp->array));
               gal_data_free(tmp);
             }
@@ -1546,6 +1587,8 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
     error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
           "it is only implemented for regular bins", __func__);
+  if(input->size==0)
+    error(EXIT_FAILURE, 0, "%s: input's size is 0", __func__);
 
 
   /* Check if normalize and `maxone' are not called together. */
@@ -1672,6 +1715,8 @@ gal_statistics_cfp(gal_data_t *input, gal_data_t *bins, int normalize)
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
     error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
           "it is only implemented for regular bins", __func__);
+  if(input->size==0)
+    error(EXIT_FAILURE, 0, "%s: input's size is 0", __func__);
 
 
   /* Prepare the histogram. */
@@ -1864,7 +1909,8 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   if(nbs->size==0)
     {
       if(!quiet)
-        printf("NO SIGMA-CLIPPING: all input elements are blank.");
+        printf("NO SIGMA-CLIPPING: all input elements are blank or input's "
+               "size is zero.\n");
       oa[0] = oa[1] = oa[2] = oa[3] = NAN;
     }
   else
@@ -1881,7 +1927,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       size=nbs->size;
       start=nbs->array;
       sortstatus=nbs->status;
-      while(num<maxnum)
+      while(num<maxnum && size)
         {
           /* Find the median. */
           statistics_median_in_sorted_no_blank(nbs, median_i->array);
@@ -1947,7 +1993,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       /* If we were in tolerance mode and `num' and `maxnum' are equal (the
          loop didn't stop by tolerance), so the outputs should be NaN. */
       out->status=num;
-      if( bytolerance && num==maxnum )
+      if( size==0 || (bytolerance && num==maxnum) )
         oa[0] = oa[1] = oa[2] = oa[3] = NAN;
       else
         {
