@@ -5,11 +5,15 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Arithmetic:
+    - filter-sigclip-mean: sigma-clipped, mean filter operator.
+    - filter-sigclip-median: sigma-clipped, median filter operator.
+
   ConvertType:
     - TIFF images can also be used as input.
 
   MakeCatalog:
-    --variance: input STD image is variance (so take square root before use).
+    --variance: input standard deviation image is actually variance.
     --brightnesserr: error in estimating the brightness.
     --mean: calculate the mean pixel value within an object or clump.
     --median: calculate the median pixel value within an object or clump.
@@ -24,6 +28,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Libraries:
     gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
+    gal_blank_is: check to see if argument is blank in its type or not.
     gal_eps_name_is_eps: Returns 1 if given filename is EPS.
     gal_eps_suffix_is_eps: Returns 1 if given suffix is EPS.
     gal_eps_to_pt: Converts dataset size to PostScript points.

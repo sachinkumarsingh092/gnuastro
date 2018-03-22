@@ -269,7 +269,10 @@ gal_statistics_median(gal_data_t *input, int inplace)
                                  NULL, NULL, NULL);
 
   /* Write the median. */
-  statistics_median_in_sorted_no_blank(nbs, out->array);
+  if(nbs->size)
+    statistics_median_in_sorted_no_blank(nbs, out->array);
+  else
+    gal_blank_write(out->array, out->type);
 
   /* Clean up (if necessary), then return the output */
   if(nbs!=input) gal_data_free(nbs);
@@ -326,19 +329,26 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
 
-  /* Find the index of the quantile. */
-  index=gal_statistics_quantile_index(nbs->size, quantile);
-
-  /* Write the value at this index into the output. */
-  if(index==GAL_BLANK_SIZE_T)
+  /* Only continue processing if there are non-blank elements. */
+  if(nbs->size)
     {
-      blank=gal_data_malloc_array(nbs->type, 1, __func__, "blank");
-      memcpy(out->array, blank, gal_type_sizeof(nbs->type));
-      free(blank);
+      /* Find the index of the quantile. */
+      index=gal_statistics_quantile_index(nbs->size, quantile);
+
+      /* Write the value at this index into the output. */
+      if(index==GAL_BLANK_SIZE_T)
+        {
+          blank=gal_data_malloc_array(nbs->type, 1, __func__, "blank");
+          memcpy(out->array, blank, gal_type_sizeof(nbs->type));
+          free(blank);
+        }
+      else
+        memcpy(out->array,
+               gal_data_ptr_increment(nbs->array, index, nbs->type),
+               gal_type_sizeof(nbs->type));
     }
   else
-    memcpy(out->array, gal_data_ptr_increment(nbs->array, index, nbs->type),
-           gal_type_sizeof(nbs->type));
+    gal_blank_write(out->array, out->type);
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
@@ -397,23 +407,27 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
     error(EXIT_FAILURE, 0, "%s: the types of the input dataset and requested "
           "value have to be the same", __func__);
 
-  /* Find the result: */
-  switch(nbs->type)
-    {
-    case GAL_TYPE_UINT8:     STATS_QFUNC_IND( uint8_t  );     break;
-    case GAL_TYPE_INT8:      STATS_QFUNC_IND( int8_t   );     break;
-    case GAL_TYPE_UINT16:    STATS_QFUNC_IND( uint16_t );     break;
-    case GAL_TYPE_INT16:     STATS_QFUNC_IND( int16_t  );     break;
-    case GAL_TYPE_UINT32:    STATS_QFUNC_IND( uint32_t );     break;
-    case GAL_TYPE_INT32:     STATS_QFUNC_IND( int32_t  );     break;
-    case GAL_TYPE_UINT64:    STATS_QFUNC_IND( uint64_t );     break;
-    case GAL_TYPE_INT64:     STATS_QFUNC_IND( int64_t  );     break;
-    case GAL_TYPE_FLOAT32:   STATS_QFUNC_IND( float    );     break;
-    case GAL_TYPE_FLOAT64:   STATS_QFUNC_IND( double   );     break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, nbs->type);
-    }
+  /* Only continue processing if we have non-blank elements. */
+  if(nbs->size)
+    /* Find the result: */
+    switch(nbs->type)
+      {
+      case GAL_TYPE_UINT8:     STATS_QFUNC_IND( uint8_t  );     break;
+      case GAL_TYPE_INT8:      STATS_QFUNC_IND( int8_t   );     break;
+      case GAL_TYPE_UINT16:    STATS_QFUNC_IND( uint16_t );     break;
+      case GAL_TYPE_INT16:     STATS_QFUNC_IND( int16_t  );     break;
+      case GAL_TYPE_UINT32:    STATS_QFUNC_IND( uint32_t );     break;
+      case GAL_TYPE_INT32:     STATS_QFUNC_IND( int32_t  );     break;
+      case GAL_TYPE_UINT64:    STATS_QFUNC_IND( uint64_t );     break;
+      case GAL_TYPE_INT64:     STATS_QFUNC_IND( int64_t  );     break;
+      case GAL_TYPE_FLOAT32:   STATS_QFUNC_IND( float    );     break;
+      case GAL_TYPE_FLOAT64:   STATS_QFUNC_IND( double   );     break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+              __func__, nbs->type);
+      }
+  else
+    index=GAL_BLANK_SIZE_T;
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
@@ -447,32 +461,38 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
                                  NULL, 1, -1, NULL, NULL, NULL);
   size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
 
-  /* Note that counting of the index starts from 0, so for the quantile we
-     should divided by (size - 1). */
-  d=out->array;
-  if(ind==GAL_BLANK_SIZE_T)
+  /* Only continue processing if there are non-blank values. */
+  if(nbs->size)
     {
-      /* See if the value is larger or smaller than the input's minimum or
-         maximum. */
-      switch(nbs->type)
+      /* Note that counting of the index starts from 0, so for the quantile
+         we should divided by (size - 1). */
+      d=out->array;
+      if(ind==GAL_BLANK_SIZE_T)
         {
-        case GAL_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
-        case GAL_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
-        case GAL_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
-        case GAL_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
-        case GAL_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
-        case GAL_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
-        case GAL_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
-        case GAL_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
-        case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
-        case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
-        default:
-          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-                __func__, nbs->type);
+          /* See if the value is larger or smaller than the input's minimum
+             or maximum. */
+          switch(nbs->type)
+            {
+            case GAL_TYPE_UINT8:     STATS_QFUNC( uint8_t  );     break;
+            case GAL_TYPE_INT8:      STATS_QFUNC( int8_t   );     break;
+            case GAL_TYPE_UINT16:    STATS_QFUNC( uint16_t );     break;
+            case GAL_TYPE_INT16:     STATS_QFUNC( int16_t  );     break;
+            case GAL_TYPE_UINT32:    STATS_QFUNC( uint32_t );     break;
+            case GAL_TYPE_INT32:     STATS_QFUNC( int32_t  );     break;
+            case GAL_TYPE_UINT64:    STATS_QFUNC( uint64_t );     break;
+            case GAL_TYPE_INT64:     STATS_QFUNC( int64_t  );     break;
+            case GAL_TYPE_FLOAT32:   STATS_QFUNC( float    );     break;
+            case GAL_TYPE_FLOAT64:   STATS_QFUNC( double   );     break;
+            default:
+              error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                    __func__, nbs->type);
+            }
         }
+      else
+        d[0] = (double)ind / ((double)(nbs->size - 1));
     }
   else
-    d[0] = (double)ind / ((double)(nbs->size - 1));
+    gal_blank_write(out->array, out->type);
 
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
@@ -1055,6 +1075,8 @@ gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   size_t ind=gal_statistics_quantile_function_index(nbs, value, inplace);
 
+  /* Only continue if we actually have non-blank elements. */
+  if(nbs->size==0) return NULL;
 
   /* If the given mirror was outside the range of the input, then index
      will be 0 (below the range) or -1 (above the range), in that case, we
@@ -1244,8 +1266,7 @@ gal_statistics_sort_decreasing(gal_data_t *input)
 
    This function can also work on tiles, in that case, `inplace' is
    useless, because a tile doesn't own its dataset and the dataset is not
-   contiguous.
-*/
+   contiguous. */
 gal_data_t *
 gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 {
@@ -1290,27 +1311,33 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
   else noblank=contig;
 
 
-  /* Make sure the array is sorted. After this step, we won't be dealing
-     with `noblank' any more but with `sorted'. */
-  sortstatus=gal_statistics_is_sorted(noblank);
-  if( sortstatus )
+  /* If there are any non-blank elements, make sure the array is
+     sorted. After this step, we won't be dealing with `noblank' any more
+     but with `sorted'. */
+  if(noblank->size)
     {
-      sorted=noblank;
-      sorted->status=sortstatus;
-    }
-  else
-    {
-      if(inplace) sorted=noblank;
+      sortstatus=gal_statistics_is_sorted(noblank);
+      if( sortstatus )
+        {
+          sorted=noblank;
+          sorted->status=sortstatus;
+        }
       else
         {
-          if(noblank!=input)    /* no-blank has already been allocated. */
-            sorted=noblank;
+          if(inplace) sorted=noblank;
           else
-            sorted=gal_data_copy(noblank);
+            {
+              if(noblank!=input)    /* no-blank has already been allocated. */
+                sorted=noblank;
+              else
+                sorted=gal_data_copy(noblank);
+            }
+          gal_statistics_sort_increasing(sorted);
+          sorted->status=GAL_STATISTICS_SORTED_INCREASING;
         }
-      gal_statistics_sort_increasing(sorted);
-      sorted->status=GAL_STATISTICS_SORTED_INCREASING;
     }
+  else
+    sorted=noblank;
 
 
   /* Return final array. */
@@ -1799,6 +1826,7 @@ gal_data_t *
 gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                           int inplace, int quiet)
 {
+  float *oa;
   void *start, *nbs_array;
   double *med, *mean, *std;
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
@@ -1830,95 +1858,104 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                           NULL, NULL, NULL);
 
 
-  /* Print the comments. */
-  if(!quiet)
-    printf("%-8s %-10s %-15s %-15s %-15s\n",
-           "round", "number", "median", "mean", "STD");
-
-
-  /* Do the clipping, but first initialize the values that will be changed
-     during the clipping: the start of the array and the array's size. */
-  size=nbs->size;
-  sortstatus=nbs->status;
-  nbs_array=start=nbs->array;
-  while(num<maxnum)
+  /* Only continue processing if we have non-blank elements. */
+  oa=out->array;
+  nbs_array=nbs->array;
+  if(nbs->size==0)
     {
-      /* Find the median. */
-      statistics_median_in_sorted_no_blank(nbs, median_i->array);
-      median_d=gal_data_copy_to_new_type(median_i, GAL_TYPE_FLOAT64);
-
-      /* Find the average and Standard deviation, note that both `start'
-         and `size' will be different in the next round. */
-      nbs->array = start;
-      nbs->size = oldsize = size;
-      meanstd=gal_statistics_mean_std(nbs);
-
-      /* Put the three final values in usable (with a type) pointers. */
-      med  = median_d->array;
-      mean = meanstd->array;
-      std  = &((double *)(meanstd->array))[1];
-
-      /* If the user wanted to view the steps, show it to them. */
       if(!quiet)
-        printf("%-8zu %-10zu %-15g %-15g %-15g\n",
-               num+1, size, *med, *mean, *std);
-
-      /* If we are to work by tolerance, then check if we should jump out
-         of the loop. Normally, `oldstd' should be larger than std, because
-         the possible outliers have been removed. If it is not, it means
-         that we have clipped too much and must stop anyway, so we don't
-         need an absolute value on the difference! */
-      if( bytolerance && num>0 && ((oldstd - *std) / *std) < param )
-        break;
-
-      /* Clip all the elements outside of the desired range: since the
-         array is sorted, this means to just change the starting pointer
-         and size of the array. */
-      switch(type)
-        {
-        case GAL_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
-        case GAL_TYPE_INT8:      SIGCLIP( int8_t   );   break;
-        case GAL_TYPE_UINT16:    SIGCLIP( uint16_t );   break;
-        case GAL_TYPE_INT16:     SIGCLIP( int16_t  );   break;
-        case GAL_TYPE_UINT32:    SIGCLIP( uint32_t );   break;
-        case GAL_TYPE_INT32:     SIGCLIP( int32_t  );   break;
-        case GAL_TYPE_UINT64:    SIGCLIP( uint64_t );   break;
-        case GAL_TYPE_INT64:     SIGCLIP( int64_t  );   break;
-        case GAL_TYPE_FLOAT32:   SIGCLIP( float    );   break;
-        case GAL_TYPE_FLOAT64:   SIGCLIP( double   );   break;
-        default:
-          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-                __func__, type);
-        }
-
-      /* Set the values from this round in the old elements, so the next
-         round can compare with, and return then if necessary. */
-      oldmed =  *med;
-      oldstd  = *std;
-      oldmean = *mean;
-      ++num;
-
-      /* Clean up: */
-      gal_data_free(meanstd);
-      gal_data_free(median_d);
-    }
-
-  /* If we were in tolerance mode and `num' and `maxnum' are equal (the
-     loop didn't stop by tolerance), so the outputs should be NaN. */
-  out->status=num;
-  if( bytolerance && num==maxnum )
-    {
-      ((float *)(out->array))[0] = NAN;
-      ((float *)(out->array))[1] = NAN;
-      ((float *)(out->array))[2] = NAN;
-      ((float *)(out->array))[3] = NAN;
+        printf("NO SIGMA-CLIPPING: all input elements are blank.");
+      oa[0] = oa[1] = oa[2] = oa[3] = NAN;
     }
   else
     {
-      ((float *)(out->array))[0] = size;
-      ((float *)(out->array))[1] = oldmed;
-      ((float *)(out->array))[2] = oldmean;
-      ((float *)(out->array))[3] = oldstd;
+      /* Print the comments. */
+      if(!quiet)
+        printf("%-8s %-10s %-15s %-15s %-15s\n",
+               "round", "number", "median", "mean", "STD");
+
+
+      /* Do the clipping, but first initialize the values that will be
+         changed during the clipping: the start of the array and the
+         array's size. */
+      size=nbs->size;
+      start=nbs->array;
+      sortstatus=nbs->status;
+      while(num<maxnum)
+        {
+          /* Find the median. */
+          statistics_median_in_sorted_no_blank(nbs, median_i->array);
+          median_d=gal_data_copy_to_new_type(median_i, GAL_TYPE_FLOAT64);
+
+          /* Find the average and Standard deviation, note that both
+             `start' and `size' will be different in the next round. */
+          nbs->array = start;
+          nbs->size = oldsize = size;
+          meanstd=gal_statistics_mean_std(nbs);
+
+          /* Put the three final values in usable (with a type)
+             pointers. */
+          med  = median_d->array;
+          mean = meanstd->array;
+          std  = &((double *)(meanstd->array))[1];
+
+          /* If the user wanted to view the steps, show it to them. */
+          if(!quiet)
+            printf("%-8zu %-10zu %-15g %-15g %-15g\n",
+                   num+1, size, *med, *mean, *std);
+
+          /* If we are to work by tolerance, then check if we should jump
+             out of the loop. Normally, `oldstd' should be larger than std,
+             because the possible outliers have been removed. If it is not,
+             it means that we have clipped too much and must stop anyway,
+             so we don't need an absolute value on the difference! */
+          if( bytolerance && num>0 && ((oldstd - *std) / *std) < param )
+            break;
+
+          /* Clip all the elements outside of the desired range: since the
+             array is sorted, this means to just change the starting
+             pointer and size of the array. */
+          switch(type)
+            {
+            case GAL_TYPE_UINT8:     SIGCLIP( uint8_t  );   break;
+            case GAL_TYPE_INT8:      SIGCLIP( int8_t   );   break;
+            case GAL_TYPE_UINT16:    SIGCLIP( uint16_t );   break;
+            case GAL_TYPE_INT16:     SIGCLIP( int16_t  );   break;
+            case GAL_TYPE_UINT32:    SIGCLIP( uint32_t );   break;
+            case GAL_TYPE_INT32:     SIGCLIP( int32_t  );   break;
+            case GAL_TYPE_UINT64:    SIGCLIP( uint64_t );   break;
+            case GAL_TYPE_INT64:     SIGCLIP( int64_t  );   break;
+            case GAL_TYPE_FLOAT32:   SIGCLIP( float    );   break;
+            case GAL_TYPE_FLOAT64:   SIGCLIP( double   );   break;
+            default:
+              error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                    __func__, type);
+            }
+
+          /* Set the values from this round in the old elements, so the
+             next round can compare with, and return then if necessary. */
+          oldmed =  *med;
+          oldstd  = *std;
+          oldmean = *mean;
+          ++num;
+
+          /* Clean up: */
+          gal_data_free(meanstd);
+          gal_data_free(median_d);
+        }
+
+      /* If we were in tolerance mode and `num' and `maxnum' are equal (the
+         loop didn't stop by tolerance), so the outputs should be NaN. */
+      out->status=num;
+      if( bytolerance && num==maxnum )
+        oa[0] = oa[1] = oa[2] = oa[3] = NAN;
+      else
+        {
+          oa[0] = size;
+          oa[1] = oldmed;
+          oa[2] = oldmean;
+          oa[3] = oldstd;
+        }
     }
 
   /* Clean up and return. */

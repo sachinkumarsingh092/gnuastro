@@ -131,14 +131,16 @@ pop_number_of_operands(struct arithmeticparams *p, gal_data_t *data,
 
 struct arithmetic_filter_p
 {
-  int      operator;            /* The type of filtering.          */
-  size_t     *fsize;            /* Filter size.                    */
-  size_t   *hpfsize;            /* Positive Half-filter size.      */
-  size_t   *hnfsize;            /* Negative Half-filter size.      */
-  gal_data_t *input;            /* Input dataset.                  */
-  gal_data_t   *out;            /* Output dataset.                 */
+  int           operator;       /* The type of filtering.                */
+  size_t          *fsize;       /* Filter size.                          */
+  size_t        *hpfsize;       /* Positive Half-filter size.            */
+  size_t        *hnfsize;       /* Negative Half-filter size.            */
+  float     sclip_multip;       /* Sigma multiple in sigma-clipping.     */
+  float      sclip_param;       /* Termination critera in sigma-cliping. */
+  gal_data_t      *input;       /* Input dataset.                        */
+  gal_data_t        *out;       /* Output dataset.                       */
 
-  int      hasblank;            /* If the dataset has blank values.*/
+  int           hasblank;       /* If the dataset has blank values.      */
 };
 
 
@@ -153,9 +155,9 @@ arithmetic_filter(void *in_prm)
   struct arithmetic_filter_p *afp=(struct arithmetic_filter_p *)tprm->params;
   gal_data_t *input=afp->input;
 
-  size_t ind,index;
-  int out_type_checked=0;
-  gal_data_t *result=NULL;
+  size_t sind=-1;
+  size_t ind, index, one=1;
+  gal_data_t *sigclip, *result=NULL;
   size_t *hpfsize=afp->hpfsize, *hnfsize=afp->hnfsize;
   size_t *tsize, *dsize=input->dsize, *fsize=afp->fsize;
   size_t i, j, coord[ARITHMETIC_FILTER_DIM], ndim=input->ndim;
@@ -172,85 +174,128 @@ arithmetic_filter(void *in_prm)
   /* Go over all the pixels that were assigned to this thread. */
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
-      /* Get the coordinate of the pixel. */
+      /* For easy reading, put the index in `ind'. */
       ind=tprm->indexs[i];
-      gal_dimension_index_to_coord(ind, ndim, dsize, coord);
 
-      /* See which dimensions need trimming. */
-      tile->size=1;
-      for(j=0;j<ndim;++j)
+      /* If we are on a blank element, then just set the output to blank
+         also. */
+      if( afp->hasblank
+          && gal_blank_is(gal_data_ptr_increment(input->array, ind,
+                                                 input->type), input->type) )
+        gal_blank_write(gal_data_ptr_increment(afp->out->array, ind,
+                                               afp->out->type),
+                        afp->out->type);
+      else
         {
-          /* Estimate the coordinate of the filter's starting point. Note
-             that we are dealing with size_t (unsigned int) type here, so
-             there are no negatives. A negative result will produce an
-             extremely large number, so instead of checking for negative,
-             we can just see if the result of a subtraction is less than
-             the width of the input. */
-          if( (coord[j] - hnfsize[j] > dsize[j])
-              || (coord[j] + hpfsize[j] >= dsize[j]) )
+          /* Get the coordinate of the pixel. */
+          gal_dimension_index_to_coord(ind, ndim, dsize, coord);
+
+          /* See which dimensions need trimming. */
+          tile->size=1;
+          for(j=0;j<ndim;++j)
             {
-              start[j] = ( (coord[j] - hnfsize[j] > dsize[j])
-                           ? 0 : coord[j] - hnfsize[j] );
-              end[j]   = ( (coord[j] + hpfsize[j] >= dsize[j])
-                           ? dsize[j]
-                           : coord[j] + hpfsize[j] + 1);
-              tsize[j] = end[j] - start[j];
+              /* Estimate the coordinate of the filter's starting
+                 point. Note that we are dealing with size_t (unsigned int)
+                 type here, so there are no negatives. A negative result
+                 will produce an extremely large number, so instead of
+                 checking for negative, we can just see if the result of a
+                 subtraction is less than the width of the input. */
+              if( (coord[j] - hnfsize[j] > dsize[j])
+                  || (coord[j] + hpfsize[j] >= dsize[j]) )
+                {
+                  start[j] = ( (coord[j] - hnfsize[j] > dsize[j])
+                               ? 0 : coord[j] - hnfsize[j] );
+                  end[j]   = ( (coord[j] + hpfsize[j] >= dsize[j])
+                               ? dsize[j]
+                               : coord[j] + hpfsize[j] + 1);
+                  tsize[j] = end[j] - start[j];
+                }
+              else  /* NOT on the edge (given requested filter width). */
+                {
+                  tsize[j] = fsize[j];
+                  start[j] = coord[j] - hnfsize[j];
+                }
+              tile->size *= tsize[j];
             }
-          else  /* We are NOT on the edge (given requested filter width). */
+
+          /* For a test.
+             printf("coord: %zu, %zu\n", coord[1]+1, coord[0]+1);
+             printf("\tstart: %zu, %zu\n", start[1]+1, start[0]+1);
+             printf("\ttsize: %zu, %zu\n", tsize[1], tsize[0]);
+          */
+
+          /* Set the tile's starting pointer. */
+          index=gal_dimension_coord_to_index(ndim, dsize, start);
+          tile->array=gal_data_ptr_increment(input->array, index,
+                                             input->type);
+
+          /* Do the necessary calculation. */
+          switch(afp->operator)
             {
-              tsize[j] = fsize[j];
-              start[j] = coord[j] - hnfsize[j];
+            case ARITHMETIC_OP_FILTER_MEDIAN:
+              result=gal_statistics_median(tile, 0);
+              break;
+
+
+            case ARITHMETIC_OP_FILTER_MEAN:
+              result=gal_statistics_mean(tile);
+              break;
+
+
+            case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
+            case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
+              /* Find the sigma-clipped results. */
+              sigclip=gal_statistics_sigma_clip(tile, afp->sclip_multip,
+                                                afp->sclip_param, 0, 1);
+
+              /* Set the required index. */
+              switch(afp->operator)
+                {
+                case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:   sind = 2; break;
+                case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN: sind = 1; break;
+                default:
+                  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at "
+                        "%s to fix the problem. The `afp->operator' value "
+                        "%d is not recognized as sigma-clipped median or "
+                        "mean", __func__, PACKAGE_BUGREPORT, afp->operator);
+                }
+
+              /* Allocate the output and write the value into it. */
+              result=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
+                                    0, -1, NULL, NULL, NULL);
+              ((float *)(result->array))[0] =
+                ((float *)(sigclip->array))[sind];
+
+              /* Clean up. */
+              gal_data_free(sigclip);
+              break;
+
+
+            default:
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
+                    "to fix the problem. `afp->operator' code %d is not "
+                    "recognized", PACKAGE_BUGREPORT, __func__,
+                    afp->operator);
             }
-          tile->size *= tsize[j];
+
+          /* Make sure the output array type and result's type are the
+             same. */
+          if(result->type!=afp->out->type)
+            result=gal_data_copy_to_new_type_free(result, afp->out->type);
+
+
+          /* Copy the result into the output array. */
+          memcpy(gal_data_ptr_increment(afp->out->array, ind,
+                                        afp->out->type),
+                 result->array, gal_type_sizeof(afp->out->type));
+
+          /* Clean up for this pixel. */
+          gal_data_free(result);
         }
-
-      /* Set the tile's starting pointer. */
-      index=gal_dimension_coord_to_index(ndim, dsize, start);
-      tile->array=gal_data_ptr_increment(input->array, index, input->type);
-
-      /* Do the necessary calculation. */
-      switch(afp->operator)
-        {
-        case ARITHMETIC_OP_FILTER_MEDIAN:
-          result=gal_statistics_median(tile, 0);
-          break;
-
-        case ARITHMETIC_OP_FILTER_MEAN:
-          result=gal_statistics_mean(tile);
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
-                "fix the problem. `afp->operator' code %d is not "
-                "recognized", PACKAGE_BUGREPORT, __func__, afp->operator);
-        }
-
-      /* Make sure the output array type and result's type are the same. We
-         only need to do this once, but we'll suffice to once for each
-         thread for simplicify of the code, it is too negligible to have
-         any real affect. */
-      if( out_type_checked==0)
-        {
-          if(result->type!=afp->out->type )
-            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so "
-                  "we can address the problem. The tyes of `result' and "
-                  "`out' aren't the same, they are respectively: `%s' and "
-                  "`%s'", __func__, PACKAGE_BUGREPORT,
-                  gal_type_name(result->type, 1),
-                  gal_type_name(afp->out->type, 1));
-          out_type_checked=1;
-        }
-
-      /* Copy the result into the output array. */
-      memcpy(gal_data_ptr_increment(afp->out->array, ind, afp->out->type),
-             result->array, gal_type_sizeof(afp->out->type));
-
-      /* Clean up. */
-      gal_data_free(result);
     }
 
 
-  /* Clean up. */
+  /* Clean up for this thread. */
   tile->array=NULL;
   tile->block=NULL;
   gal_data_free(tile);
@@ -268,12 +313,14 @@ arithmetic_filter(void *in_prm)
 static void
 wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 {
-  size_t i=0, ndim, one=1;
   int type=GAL_TYPE_INVALID;
+  size_t i=0, ndim, nparams, one=1;
   struct arithmetic_filter_p afp={0};
   size_t fsize[ARITHMETIC_FILTER_DIM];
-  gal_data_t *tmp, *tmp2, *zero, *comp, *fsize_list=NULL;
+  gal_data_t *tmp, *tmp2, *zero, *comp, *params_list=NULL;
   size_t hnfsize[ARITHMETIC_FILTER_DIM], hpfsize[ARITHMETIC_FILTER_DIM];
+  int issigclip=(operator==ARITHMETIC_OP_FILTER_SIGCLIP_MEAN
+                 || operator==ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN);
 
 
   /* Get the input's number of dimensions. */
@@ -297,21 +344,40 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
                       NULL, NULL);
 
 
-  /* Based on the dimensions of the popped operand, pop the necessary
-     number of operands. */
-  for(i=0;i<ndim;++i)
-    gal_list_data_add(&fsize_list, operands_pop(p, token));
+  /* Based on the first popped operand's dimensions and the operator, of
+     pop the necessary number of operands. */
+  nparams = ndim + (issigclip ? 2 : 0 );
+  for(i=0;i<nparams;++i)
+    gal_list_data_add(&params_list, operands_pop(p, token));
 
 
-  /* Make sure the filter size only has single values. */
+  /* Make sure the parameters only have single values. */
   i=0;
-  for(tmp=fsize_list; tmp!=NULL; tmp=tmp->next)
+  for(tmp=params_list; tmp!=NULL; tmp=tmp->next)
     {
       ++i;
       if(tmp->size!=1)
-        error(EXIT_FAILURE, 0, "the filter length values given to the "
-              "filter operators can only be numbers. Value number %zu has "
-              "%zu elements, so its an array", ndim-i-1, tmp->size);
+        error(EXIT_FAILURE, 0, "the parameters given to the filtering "
+              "operators can only be numbers. Value number %zu has %zu "
+              "elements, so its an array", i, tmp->size);
+    }
+
+
+  /* If this is a sigma-clipping filter, the top two operands are the
+     sigma-clipping parameters. */
+  if(issigclip)
+    {
+      /* Read the sigma-clipping multiple (first element in the list). */
+      tmp=gal_list_data_pop(&params_list);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
+      afp.sclip_multip=*(float *)(tmp->array);
+      gal_data_free(tmp);
+
+      /* Read the sigma-clipping termination parameter. */
+      tmp=gal_list_data_pop(&params_list);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
+      afp.sclip_param=*(float *)(tmp->array);
+      gal_data_free(tmp);
     }
 
 
@@ -324,7 +390,7 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
          values must be written in the inverse order since the user gives
          dimensions with the FITS standard. */
       i=ndim-1;
-      for(tmp=fsize_list; tmp!=NULL; tmp=tmp->next)
+      for(tmp=params_list; tmp!=NULL; tmp=tmp->next)
         {
           /* Make sure the user has given an integer type. */
           if(tmp->type==GAL_TYPE_FLOAT32 || tmp->type==GAL_TYPE_FLOAT64)
@@ -370,18 +436,26 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
             { hnfsize[i]=fsize[i]/2; hpfsize[i]=fsize[i]/2-1; }
         }
 
+      /* For a test.
+      printf("fsize: %zu, %zu\n", fsize[0], fsize[1]);
+      printf("hnfsize: %zu, %zu\n", hnfsize[0], hnfsize[1]);
+      printf("hpfsize: %zu, %zu\n", hpfsize[0], hpfsize[1]);
+      */
 
       /* See if the input has blank pixels. */
       afp.hasblank=gal_blank_present(afp.input, 1);
+
 
       /* Set the type of the output dataset. */
       switch(operator)
         {
         case ARITHMETIC_OP_FILTER_MEDIAN:
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
           type=afp.input->type;
           break;
 
         case ARITHMETIC_OP_FILTER_MEAN:
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
           type=GAL_TYPE_FLOAT64;
           break;
 
@@ -391,11 +465,13 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
                 PACKAGE_BUGREPORT, __func__, operator);
         }
 
+
       /* Allocate the output dataset. Note that filtering doesn't change
          the units of the dataset. */
       afp.out=gal_data_alloc(NULL, type, ndim, afp.input->dsize,
                              afp.input->wcs, 0, afp.input->minmapsize,
                              NULL, afp.input->unit, NULL);
+
 
       /* Spin off threads for each pixel. */
       gal_threads_spin_off(arithmetic_filter, &afp, afp.input->size,
@@ -409,7 +485,7 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 
   /* Clean up and add the output on top of the stack */
   gal_data_free(afp.input);
-  gal_list_data_free(fsize_list);
+  gal_list_data_free(params_list);
 }
 
 
@@ -472,123 +548,127 @@ reversepolish(struct arithmeticparams *p)
           /* Order is the same as in the manual. */
           /* Simple arithmetic operators. */
           if      (!strcmp(token->v, "+" ))
-            { op=GAL_ARITHMETIC_OP_PLUS;          nop=2;  }
+            { op=GAL_ARITHMETIC_OP_PLUS;              nop=2;  }
           else if (!strcmp(token->v, "-" ))
-            { op=GAL_ARITHMETIC_OP_MINUS;         nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MINUS;             nop=2;  }
           else if (!strcmp(token->v, "x" ))
-            { op=GAL_ARITHMETIC_OP_MULTIPLY;      nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MULTIPLY;          nop=2;  }
           else if (!strcmp(token->v, "/" ))
-            { op=GAL_ARITHMETIC_OP_DIVIDE;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_DIVIDE;            nop=2;  }
           else if (!strcmp(token->v, "%" ))
-            { op=GAL_ARITHMETIC_OP_MODULO;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MODULO;            nop=2;  }
 
           /* Mathematical Operators. */
           else if (!strcmp(token->v, "abs"))
-            { op=GAL_ARITHMETIC_OP_ABS;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_ABS;               nop=1;  }
           else if (!strcmp(token->v, "pow"))
-            { op=GAL_ARITHMETIC_OP_POW;           nop=2;  }
+            { op=GAL_ARITHMETIC_OP_POW;               nop=2;  }
           else if (!strcmp(token->v, "sqrt"))
-            { op=GAL_ARITHMETIC_OP_SQRT;          nop=1;  }
+            { op=GAL_ARITHMETIC_OP_SQRT;              nop=1;  }
           else if (!strcmp(token->v, "log"))
-            { op=GAL_ARITHMETIC_OP_LOG;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_LOG;               nop=1;  }
           else if (!strcmp(token->v, "log10"))
-            { op=GAL_ARITHMETIC_OP_LOG10;         nop=1;  }
+            { op=GAL_ARITHMETIC_OP_LOG10;             nop=1;  }
 
           /* Statistical/higher-level operators. */
           else if (!strcmp(token->v, "minvalue"))
-            { op=GAL_ARITHMETIC_OP_MINVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MINVAL;            nop=1;  }
           else if (!strcmp(token->v, "maxvalue"))
-            { op=GAL_ARITHMETIC_OP_MAXVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MAXVAL;            nop=1;  }
           else if (!strcmp(token->v, "numvalue"))
-            { op=GAL_ARITHMETIC_OP_NUMVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_NUMVAL;            nop=1;  }
           else if (!strcmp(token->v, "sumvalue"))
-            { op=GAL_ARITHMETIC_OP_SUMVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_SUMVAL;            nop=1;  }
           else if (!strcmp(token->v, "meanvalue"))
-            { op=GAL_ARITHMETIC_OP_MEANVAL;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MEANVAL;           nop=1;  }
           else if (!strcmp(token->v, "stdvalue"))
-            { op=GAL_ARITHMETIC_OP_STDVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_STDVAL;            nop=1;  }
           else if (!strcmp(token->v, "medianvalue"))
-            { op=GAL_ARITHMETIC_OP_MEDIANVAL;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MEDIANVAL;         nop=1;  }
           else if (!strcmp(token->v, "min"))
-            { op=GAL_ARITHMETIC_OP_MIN;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MIN;               nop=-1; }
           else if (!strcmp(token->v, "max"))
-            { op=GAL_ARITHMETIC_OP_MAX;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MAX;               nop=-1; }
           else if (!strcmp(token->v, "num"))
-            { op=GAL_ARITHMETIC_OP_NUM;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_NUM;               nop=-1; }
           else if (!strcmp(token->v, "sum"))
-            { op=GAL_ARITHMETIC_OP_SUM;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_SUM;               nop=-1; }
           else if (!strcmp(token->v, "mean"))
-            { op=GAL_ARITHMETIC_OP_MEAN;          nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MEAN;              nop=-1; }
           else if (!strcmp(token->v, "std"))
-            { op=GAL_ARITHMETIC_OP_STD;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_STD;               nop=-1; }
           else if (!strcmp(token->v, "median"))
-            { op=GAL_ARITHMETIC_OP_MEDIAN;        nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MEDIAN;            nop=-1; }
 
           /* Conditional operators. */
           else if (!strcmp(token->v, "lt" ))
-            { op=GAL_ARITHMETIC_OP_LT;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_LT;                nop=2;  }
           else if (!strcmp(token->v, "le"))
-            { op=GAL_ARITHMETIC_OP_LE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_LE;                nop=2;  }
           else if (!strcmp(token->v, "gt" ))
-            { op=GAL_ARITHMETIC_OP_GT;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_GT;                nop=2;  }
           else if (!strcmp(token->v, "ge"))
-            { op=GAL_ARITHMETIC_OP_GE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_GE;                nop=2;  }
           else if (!strcmp(token->v, "eq"))
-            { op=GAL_ARITHMETIC_OP_EQ;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_EQ;                nop=2;  }
           else if (!strcmp(token->v, "ne"))
-            { op=GAL_ARITHMETIC_OP_NE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_NE;                nop=2;  }
           else if (!strcmp(token->v, "and"))
-            { op=GAL_ARITHMETIC_OP_AND;           nop=2;  }
+            { op=GAL_ARITHMETIC_OP_AND;               nop=2;  }
           else if (!strcmp(token->v, "or"))
-            { op=GAL_ARITHMETIC_OP_OR;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_OR;                nop=2;  }
           else if (!strcmp(token->v, "not"))
-            { op=GAL_ARITHMETIC_OP_NOT;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_NOT;               nop=1;  }
           else if (!strcmp(token->v, "isblank"))
-            { op=GAL_ARITHMETIC_OP_ISBLANK;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_ISBLANK;           nop=1;  }
           else if (!strcmp(token->v, "where"))
-            { op=GAL_ARITHMETIC_OP_WHERE;         nop=3;  }
+            { op=GAL_ARITHMETIC_OP_WHERE;             nop=3;  }
 
           /* Bitwise operators. */
           else if (!strcmp(token->v, "bitand"))
-            { op=GAL_ARITHMETIC_OP_BITAND;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITAND;            nop=2;  }
           else if (!strcmp(token->v, "bitor"))
-            { op=GAL_ARITHMETIC_OP_BITOR;         nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITOR;             nop=2;  }
           else if (!strcmp(token->v, "bitxor"))
-            { op=GAL_ARITHMETIC_OP_BITXOR;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITXOR;            nop=2;  }
           else if (!strcmp(token->v, "lshift"))
-            { op=GAL_ARITHMETIC_OP_BITLSH;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITLSH;            nop=2;  }
           else if (!strcmp(token->v, "rshift"))
-            { op=GAL_ARITHMETIC_OP_BITRSH;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITRSH;            nop=2;  }
           else if (!strcmp(token->v, "bitnot"))
-            { op=GAL_ARITHMETIC_OP_BITNOT;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_BITNOT;            nop=1;  }
 
           /* Type conversion. */
           else if (!strcmp(token->v, "uint8"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT8;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_UINT8;          nop=1;  }
           else if (!strcmp(token->v, "int8"))
-            { op=GAL_ARITHMETIC_OP_TO_INT8;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_INT8;           nop=1;  }
           else if (!strcmp(token->v, "uint16"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT16;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_UINT16;         nop=1;  }
           else if (!strcmp(token->v, "int16"))
-            { op=GAL_ARITHMETIC_OP_TO_INT16;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_INT16;          nop=1;  }
           else if (!strcmp(token->v, "uint32"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT32;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_UINT32;         nop=1;  }
           else if (!strcmp(token->v, "int32"))
-            { op=GAL_ARITHMETIC_OP_TO_INT32;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_INT32;          nop=1;  }
           else if (!strcmp(token->v, "uint64"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT64;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_UINT64;         nop=1;  }
           else if (!strcmp(token->v, "int64"))
-            { op=GAL_ARITHMETIC_OP_TO_INT64;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_INT64;          nop=1;  }
           else if (!strcmp(token->v, "float32"))
-            { op=GAL_ARITHMETIC_OP_TO_FLOAT32;    nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_FLOAT32;        nop=1;  }
           else if (!strcmp(token->v, "float64"))
-            { op=GAL_ARITHMETIC_OP_TO_FLOAT64;    nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_FLOAT64;        nop=1;  }
 
           /* Filters. */
-          else if (!strcmp(token->v, "filter-median"))
-            { op=ARITHMETIC_OP_FILTER_MEDIAN;     nop=0;  }
           else if (!strcmp(token->v, "filter-mean"))
-            { op=ARITHMETIC_OP_FILTER_MEAN;       nop=0;  }
+            { op=ARITHMETIC_OP_FILTER_MEAN;           nop=0;  }
+          else if (!strcmp(token->v, "filter-median"))
+            { op=ARITHMETIC_OP_FILTER_MEDIAN;         nop=0;  }
+          else if (!strcmp(token->v, "filter-sigclip-mean"))
+            { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEAN;   nop=0;  }
+          else if (!strcmp(token->v, "filter-sigclip-median"))
+            { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN; nop=0;  }
 
 
           /* Finished checks with known operators */
@@ -658,6 +738,8 @@ reversepolish(struct arithmeticparams *p)
                 {
                 case ARITHMETIC_OP_FILTER_MEAN:
                 case ARITHMETIC_OP_FILTER_MEDIAN:
+                case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
+                case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
                   wrapper_for_filter(p, token->v, op);
                   break;
 

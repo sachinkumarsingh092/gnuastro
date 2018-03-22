@@ -31,8 +31,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    library. */
 enum arithmetic_prog_operators
 {
-  ARITHMETIC_OP_FILTER_MEDIAN=GAL_ARITHMETIC_OP_LAST_CODE,
+  ARITHMETIC_OP_FILTER_MEDIAN = GAL_ARITHMETIC_OP_LAST_CODE,
   ARITHMETIC_OP_FILTER_MEAN,
+  ARITHMETIC_OP_FILTER_SIGCLIP_MEAN,
+  ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN,
 };
 
 

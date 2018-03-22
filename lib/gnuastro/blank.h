@@ -96,6 +96,9 @@ char *
 gal_blank_as_string(uint8_t type, int width);
 
 int
+gal_blank_is(void *pointer, uint8_t type);
+
+int
 gal_blank_present(gal_data_t *input, int updateflag);
 
 gal_data_t *

@@ -10017,7 +10017,7 @@ viewed in ds9) and 4 pixels along the second FITS dimension (vertical).
 Each pixel will be placed in the center of the box that the mean is
 calculated on. If the given width along a dimension is even, then the
 center is assumed to be between the pixels (not in the center of a
-pixel). When the pixel is close to the center, the pixels of the box that
+pixel). When the pixel is close to the edge, the pixels of the box that
 fall outside the image are ignored. Therefore, on the edge, less points
 will be used in calculating the mean.
 
@@ -10035,6 +10035,39 @@ to replace a pixel value. For more on how to use this operator, please see
 The median is less susceptible to outliers compared to the mean. As a
 result, after median filtering, the pixel values will be more discontinuous
 than mean filtering.
+
+@item filter-sigclip-mean
+Apply a @mymath{\sigma}-clipped mean filtering onto the input dataset. This
+is very similar to @code{filter-mean}, except that all outliers (identified
+by the @mymath{\sigma}-clipping algorithm) have been removed, see
+@ref{Sigma clipping} for more on the basics of this algorithm. As described
+there, two extra input parameters are necessary for
+@mymath{\sigma}-clipping: the multiple of @mymath{\sigma} and the
+termination critera. @code{filter-sigclip-mean} therefore needs to pop two
+other operands from the stack after the dimensions of the box.
+
+For example the line below uses the same box size as the example of
+@code{filter-mean}. However, all elements in the box that are iteratively
+beyond @mymath{3\sigma} of the distribution's median are removed from the
+final calculation of the mean until the change in @mymath{\sigma} is less
+than @mymath{0.2}.
+
+@example
+$ astarithmetic 3 0.2 5 4 image.fits filter-sigclip-mean
+@end example
+
+The median (which needs a sorted dataset) is necessary for
+@mymath{\sigma}-clipping, therefore @code{filter-sigclip-mean} can be
+significantly slower than @code{filter-mean}. However, if there are strong
+outliers in the dataset that you want to ignore (for example emission lines
+on a spectrum when finding the continuum), this is a much better solution.
+
+@item filter-sigclip-median
+Apply a @mymath{\sigma}-clipped median filtering onto the input
+dataset. This operator and its necessary operands are almost identical to
+@code{filter-sigclip-mean}, except that after @mymath{\sigma}-clipping, the
+median value (which is less affected by outliers than the mean) is added
+back to the stack.
 
 @item lt
 Less than: If the second popped (or left operand in infix notation, see
@@ -19844,6 +19877,17 @@ that corresponds to its type. If @code{input} is a tile over a larger
 dataset, only the region that the tile covers will be set to blank.
 @end deftypefun
 
+@deftypefun int gal_blank_is (void @code{*pointer}, uint8_t @code{type})
+Return 1 if the contents of @code{pointer} (assuming a type of @code{type})
+is blank. Otherwise, return 0. Note that this function only works on one
+element of the given type. So if @code{pointer} is an array, only its first
+element will be checked. Therefore for strings, the type of @code{pointer}
+is assumed to be @code{char *}. To check if an array/dataset has blank
+elements or to find which elements in an array are blank, you can use
+@code{gal_blank_present} or @code{gal_blank_flag} respectively (described
+below).
+@end deftypefun
+
 
 @deftypefun int gal_blank_present (gal_data_t @code{*input}, int @code{updateflag})
 Return 1 if the dataset has a blank value and zero if it doesn't. Before
@@ -19882,6 +19926,11 @@ adjust the size properly (the number of non-blank elements). In practice
 this function doesn't @code{realloc} the input array, it just shifts the
 blank elements to the end and adjusts the size elements of the
 @code{gal_data_t}, see @ref{Generic data container}.
+
+If all the elements were blank, then @code{input->size} will be zero. This
+is thus a good parameter to check after calling this function to see if
+there actually were any non-blank elements in the input or not and take the
+appropriate measure. This can help avoid strange bugs in later steps.
 @end deftypefun
 
 @deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
@@ -23983,8 +24032,10 @@ array[3]: value at the end of symmetricity.
 
 @deftypefun {gal_data_t *} gal_statistics_mode_mirror_plots (gal_data_t @code{*input}, gal_data_t @code{*value}, size_t @code{numbins}, int @code{inplace}, double @code{*mirror_val})
 Make a mirrored histogram and cumulative frequency plot (with
-@code{numbins}) with the mirror distribution of the @code{input} with a
-value at @code{value}.
+@code{numbins}) with the mirror distribution of the @code{input} having a
+value in @code{value}. If all the input elements are blank, or the mirror
+value is outside the range of the input, this function will return a
+@code{NULL} pointer.
 
 The output is a list of data structures (see @ref{List of gal_data_t}): the
 first is the bins with one bin at the mirror point, the second is the
@@ -24010,6 +24061,12 @@ Remove all the blanks and sort the input dataset. If @code{inplace} is
 non-zero this will happen on the input dataset (and the output will be the
 same as the input). However, if @code{inplace} is zero, this function will
 allocate a new copy of the dataset that is sorted and has no blank values.
+
+If all the elements were blank, then the returned dataset's @code{size}
+will be zero. This is thus a good parameter to check after calling this
+function to see if there actually were any non-blank elements in the input
+or not and take the appropriate measure. This can help avoid strange bugs
+in later steps.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_regular_bins (gal_data_t @code{*input}, gal_data_t @code{*inrange}, size_t @code{numbins}, double @code{onebinstart})
@@ -24089,8 +24146,8 @@ normalized CFP's maximum value is 1.
 Apply @mymath{\sigma}-clipping on a given dataset and return a dataset that
 contains the results. For a description of @mymath{\sigma}-clipping see
 @ref{Sigma clipping}. @code{multip} is the multiple of the standard
-deviation (@mymath{\sigma} that is used to define outliers in each round of
-clipping).
+deviation (or @mymath{\sigma}, that is used to define outliers in each
+round of clipping).
 
 The role of @code{param} is determined based on its value. If @code{param}
 is larger than @code{1} (one), it must be an integer and will be
@@ -24105,6 +24162,10 @@ array[1]: Median.
 array[2]: Mean.
 array[3]: Standard deviation.
 @end example
+
+If the @mymath{\sigma}-clipping doesn't converge or all input elements are
+blank, then this function will return NaN values for all the elements
+above.
 @end deftypefun
 
 

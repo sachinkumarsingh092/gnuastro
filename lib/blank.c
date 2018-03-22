@@ -112,6 +112,57 @@ gal_blank_initialize(gal_data_t *input)
 
 
 
+
+/* Return 1 if the contents of the pointer (with the given type) is
+   blank. */
+int
+gal_blank_is(void *pointer, uint8_t type)
+{
+  switch(type)
+    {
+    /* Numeric types */
+    case GAL_TYPE_UINT8:     return *(uint8_t  *)pointer==GAL_BLANK_UINT8;
+    case GAL_TYPE_INT8:      return *(int8_t   *)pointer==GAL_BLANK_INT8;
+    case GAL_TYPE_UINT16:    return *(uint16_t *)pointer==GAL_BLANK_UINT16;
+    case GAL_TYPE_INT16:     return *(int16_t  *)pointer==GAL_BLANK_INT16;
+    case GAL_TYPE_UINT32:    return *(uint32_t *)pointer==GAL_BLANK_UINT32;
+    case GAL_TYPE_INT32:     return *(int32_t  *)pointer==GAL_BLANK_INT32;
+    case GAL_TYPE_UINT64:    return *(uint64_t *)pointer==GAL_BLANK_UINT64;
+    case GAL_TYPE_INT64:     return *(int64_t  *)pointer==GAL_BLANK_INT64;
+    case GAL_TYPE_FLOAT32:   return isnan( *(float *)(pointer) );
+    case GAL_TYPE_FLOAT64:   return isnan( *(double *)(pointer) );
+
+    /* String. */
+    case GAL_TYPE_STRING:    if(!strcmp(pointer,GAL_BLANK_STRING)) return 1;
+
+    /* Complex types */
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "%s: complex types are not yet supported",
+            __func__);
+
+    /* Bit. */
+    case GAL_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "%s: bit type datasets are not yet supported",
+            __func__);
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, type);
+    }
+
+  /* Control should not reach here, so print an error if it does, then
+     return a 0 (just to avoid compiler warnings). */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address the "
+        "problem. Control should not reach the end of this funciton",
+        __func__, PACKAGE_BUGREPORT);
+  return 0;
+}
+
+
+
+
+
 /* Return 1 if the dataset has a blank value and zero if it doesn't. Before
    checking the dataset, this function will look at its flags. If the
    `GAL_DATA_FLAG_HASBLANK' or `GAL_DATA_FLAG_DONT_CHECK_ZERO' bits of

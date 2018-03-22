@@ -852,6 +852,12 @@ ui_preparations(struct statisticsparams *p)
     {
       /* Only keep the elements we want. */
       gal_blank_remove(p->input);
+
+      /* Make sure there actually are any (non-blank) elements left. */
+      if(p->input->size==0)
+        error(EXIT_FAILURE, 0, "%s: all elements are blank",
+              gal_fits_name_save_as_string(p->inputname, cp->hdu));
+
       p->input->flag &= ~GAL_DATA_FLAG_HASBLANK ;
       p->input->flag |= GAL_DATA_FLAG_BLANK_CH ;
 
