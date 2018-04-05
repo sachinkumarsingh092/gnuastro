@@ -1,11 +1,11 @@
 /*********************************************************************
-MakeCatalog - Make a catalog from an input and labeled image.
-MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2015-2018, Free Software Foundation, Inc.
+Copyright (C) 2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,14 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef UPPERLIMIT_H
-#define UPPERLIMIT_H
+#ifndef AUTHORS_CITE_H
+#define AUTHORS_CITE_H
 
-void
-upperlimit_write_comments(struct mkcatalogparams *p,
-                          gal_list_str_t **comments, int withsigclip);
+/* When any specific citation is necessary, please add its BibTeX (from ADS
+   hopefully) to this variable along with a title decribing what this
+   paper/book does for the progarm in a short line. In the following line
+   put a row of `-' with the same length and then put the BibTeX.
 
-void
-upperlimit_calculate(struct mkcatalog_passparams *pp);
+   See the `gnuastro_bibtex' variable in `lib/options' (from the top
+   Gnuastro source code directory) as an example.*/
+
+#define PROGRAM_BIBTEX ""
+
+#define PROGRAM_AUTHORS "Mohammad Akhlaghi"
 
 #endif

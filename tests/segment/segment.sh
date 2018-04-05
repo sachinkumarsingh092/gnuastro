@@ -1,4 +1,4 @@
-# Make a simple catalog for NoiseChisel's output.
+# Segment the detections into clumps and objects.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,8 +22,7 @@
 # Set the variables (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=mkcatalog
-objimg=clearcanvas.fits
+prog=segment
 execname=../bin/$prog/ast$prog
 img=convolve_spatial_noised_labeled.fits
 
@@ -41,9 +40,8 @@ img=convolve_spatial_noised_labeled.fits
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ]; then echo "$execname not created.";  exit 77; fi
-if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
-if [ ! -f $objimg   ]; then echo "$objimg does not exist";  exit 77; fi
+if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 
 
@@ -51,6 +49,4 @@ if [ ! -f $objimg   ]; then echo "$objimg does not exist";  exit 77; fi
 
 # Actual test script
 # ==================
-$execname $objimg --hdu=1 --valuesfile=$img             \
-          --output=aperturephot.fits                    \
-          --objid --x --y --ra --dec --magnitude --sn
+$execname $img --tilesize=100,100 --snquant=0.99

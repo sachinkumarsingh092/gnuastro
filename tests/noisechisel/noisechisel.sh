@@ -1,4 +1,4 @@
-# Detect objects and clumps in an image using NoiseChisel.
+# Detect objects in an image using NoiseChisel.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -41,7 +41,7 @@ img=convolve_spatial_noised.fits
 #   - The input data was not made (for example the test that created the
 #     data file failed).
 if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
-if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 
 
@@ -49,5 +49,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --cleangrowndet --checkdetection --checksegmentation \
-          --continueaftercheck --tilesize=100,100
+$execname $img --tilesize=100,100 --snquant=0.999 --cleangrowndet   \
+          --checkdetection --continueaftercheck

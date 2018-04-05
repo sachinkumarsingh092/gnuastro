@@ -3,9 +3,9 @@ TEMPLATE - A minimal set of files and functions to define a program.
 TEMPLATE is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
-     Your Name <your@email>
+     Mohammad akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) YYYY, Free Software Foundation, Inc.
+Copyright (C) 2016-2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -219,12 +219,15 @@ ui_check_options_and_arguments(struct TEMPLATEparams *p)
      a HDU is also given. */
   if(p->inputname)
     {
+      /* Check if it exists. */
+      gal_checkset_check_file(p->inputname);
+
+      /* If it is FITS, a HDU is also mandatory. */
       if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
               "file, a HDU must also be specified, you can use the `--hdu' "
               "(`-h') option and give it the HDU number (starting from "
               "zero), extension name, or anything acceptable by CFITSIO");
-
     }
   else
     error(EXIT_FAILURE, 0, "no input file is specified");

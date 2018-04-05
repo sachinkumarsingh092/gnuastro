@@ -183,6 +183,25 @@ Steps necessary to Package Gnuastro for Debian.
      $ sudo apt-get update
      $ sudo apt-get upgrade
 
+ - If this is the first time you are packaging on this system, you will
+   need to install the following programs:
+
+     $ sudo apt-get install devscripts pbuilder pristine-tar git quilt lintian
+     $ sudo pbuilder create
+     $ emacs ~/.devscripts
+
+   Add these two lines to the opened file:
+
+     DEBFULLNAME="Your name"
+     DEBEMAIL=your@email.address
+
+   Then add these lines to `~/.quiltrc':
+
+     QUILT_PATCHES=debian/patches
+     QUILT_NO_DIFF_INDEX=1
+     QUILT_NO_DIFF_TIMESTAMPS=1
+     QUILT_REFRESH_ARGS="-p ab"
+
    A restart should help in making sure everything that has been updated is
    being used.
 

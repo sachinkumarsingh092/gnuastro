@@ -1,6 +1,6 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -24,11 +24,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CLUMPS_H
 
 
-/* Constants for the clump over-segmentation. */
-#define CLUMPS_INIT      -1
-#define CLUMPS_RIVER     -2
-#define CLUMPS_TMPCHECK  -3
-
 
 /* Parameters for all threads. */
 struct clumps_params
@@ -36,7 +31,7 @@ struct clumps_params
   /* General */
   int                     step; /* Counter if we want to check steps.      */
   int                sky0_det1; /* If working on the Sky or Detections.    */
-  struct noisechiselparams  *p; /* Pointer to main NoiseChisel parameters. */
+  struct segmentparams      *p; /* Pointer to main Segment parameters.     */
   pthread_mutex_t     labmutex; /* Mutex to change the total numbers.      */
 
   /* For Sky region. */
@@ -68,10 +63,6 @@ struct clumps_thread_params
   struct clumps_params  *clprm; /* Pointer to main structure.              */
 };
 
-
-void
-clumps_oversegment(struct clumps_thread_params *cltprm);
-
 void
 clumps_grow_prepare_initial(struct clumps_thread_params *cltprm);
 
@@ -83,13 +74,13 @@ clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers,
             int connectivity);
 
 void
-clumps_true_find_sn_thresh(struct noisechiselparams *p);
+clumps_true_find_sn_thresh(struct segmentparams *p);
 
 void
 clumps_make_sn_table(struct clumps_thread_params *cltprm);
 
 gal_data_t *
-clumps_det_label_indexs(struct noisechiselparams *p);
+clumps_det_label_indexs(struct segmentparams *p);
 
 void
 clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm);

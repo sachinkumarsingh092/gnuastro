@@ -24,7 +24,8 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=arithmetic
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+imgin=convolve_spatial_noised.fits
+imgnc=convolve_spatial_noised_labeled.fits
 
 
 
@@ -41,7 +42,8 @@ img=convolve_spatial_noised_labeled.fits
 #   - The input data was not made (for example the test that created the
 #     data file failed).
 if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
-if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
+if [ ! -f $imgin    ]; then echo "$imgin does not exist."; exit 77; fi
+if [ ! -f $imgnc    ]; then echo "$imgnc does not exist."; exit 77; fi
 
 
 
@@ -49,5 +51,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img $img - $img / --hdu=1 --hdu=4 --hdu=5    \
+$execname $imgin $imgnc - $imgnc / --hdu=1 --hdu=SKY --hdu=SKY_STD  \
           --output=snimage.fits

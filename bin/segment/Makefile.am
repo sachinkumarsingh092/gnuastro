@@ -1,9 +1,9 @@
 ## Process this file with automake to produce Makefile.inx
 ##
 ## Original author:
-##     Mohammad Akhlaghi <mohammad@akhlaghi.org>
+##     Your Name <your@email>
 ## Contributing author(s):
-## Copyright (C) 2015-2018, Free Software Foundation, Inc.
+## Copyright (C) YYYY, Free Software Foundation, Inc.
 ##
 ## Gnuastro is free software: you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by
@@ -26,17 +26,16 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
 ## Program definition (name, linking, sources and headers)
-bin_PROGRAMS = astmkcatalog
+bin_PROGRAMS = astsegment
 
-astmkcatalog_LDADD = -lgnuastro
+astsegment_LDADD = -lgnuastro
 
-astmkcatalog_SOURCES = main.c ui.c mkcatalog.c columns.c upperlimit.c parse.c
+astsegment_SOURCES = main.c ui.c segment.c clumps.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h mkcatalog.h columns.h	\
-  upperlimit.h parse.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h segment.h clumps.h
 
 
 
 ## The configuration file (distribute and install).
 ## NOTE: the man page is created in doc/Makefile.am
-dist_sysconf_DATA = astmkcatalog.conf
+dist_sysconf_DATA = astsegment.conf

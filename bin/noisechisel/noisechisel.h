@@ -1,5 +1,5 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
+NoiseChisel - Detect signal in a noisy dataset.
 NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:

@@ -76,10 +76,13 @@ context under categories/chapters.
     Monte Carlo integration. It can also build the profiles on an
     over-sampled image.
 
-  - NoiseChisel (astnoisechisel): Detect and segment signal in noise. It
-    uses a technique to detect very faint and diffuse, irregularly shaped
-    signal in noise (galaxies in the sky), using thresholds that are below
-    the Sky value (see arXiv:1505.01664).
+  - NoiseChisel (astnoisechisel): Detect and signal in noise. It uses a
+    technique to detect very faint and diffuse, irregularly shaped signal
+    in noise (galaxies in the sky), using thresholds that are below the Sky
+    value (see arXiv:1505.01664).
+
+  - Segment (astsegment): Segment a detection based on the structure of
+    signal within it.
 
   - Statistics (aststatistics): Get pixel statistics and save histogram and
     cumulative frequency plots.

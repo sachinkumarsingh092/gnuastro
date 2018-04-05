@@ -104,4 +104,4 @@ gal_binary_fill_holes(gal_data_t *input, int connectivity, size_t maxsize);
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_DATA_H__ */
+#endif           /* __GAL_BINARY_H__ */

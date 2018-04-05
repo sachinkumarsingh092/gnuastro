@@ -1,6 +1,6 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/label.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
@@ -42,353 +43,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "clumps.h"
-#include "threshold.h"
-
-
-
-
-
-
-
-
-
-
-/****************************************************************
- *****************   Over segmentation       ********************
- ****************************************************************/
-/* Over-segment the region specified by its indexs into peaks and their
-   respective regions (clumps). This is very similar to the immersion
-   method of Vincent & Soille(1991), but here, we will not separate the
-   image into layers, instead, we will work based on the ordered flux
-   values. If a certain pixel (at a certain level) has no neighbors, it is
-   a local maximum and will be assigned a new label. If it has a labeled
-   neighbor, it will take that label and if there is more than one
-   neighboring labeled region that pixel will be a `river` pixel. */
-void
-clumps_oversegment(struct clumps_thread_params *cltprm)
-{
-  struct noisechiselparams *p=cltprm->clprm->p;
-  size_t ndim=p->input->ndim;
-
-  float *arr=p->conv->array;
-  gal_data_t *indexs=cltprm->indexs;
-  gal_list_sizet_t *Q=NULL, *cleanup=NULL;
-  size_t *a, *af, ind, *dsize=p->input->dsize;
-  size_t *dinc=gal_dimension_increment(ndim, dsize);
-  int32_t n1, nlab, rlab, curlab=1, *clabel=p->clabel->array;
-
-  /*********************************************
-   For checks and debugging:*
-  gal_data_t *crop;
-  size_t extcount=1;
-  int32_t *cr, *crf;
-  size_t checkdsize[2]={10,10};
-  size_t checkstart[2]={50,145};
-  char *filename="clumpbuild.fits";
-  size_t checkstartind=gal_dimension_coord_to_index(2, dsize, checkstart);
-  gal_data_t *tile=gal_data_alloc(gal_data_ptr_increment(arr, checkstartind,
-                                                         p->conv->type),
-                                  GAL_TYPE_INVALID, 2, checkdsize,
-                                  NULL, 0, 0, NULL, NULL, NULL);
-  tile->block=p->conv;
-  gal_checkset_writable_remove(filename, 0, 0);
-  if(p->cp.numthreads!=1)
-    error(EXIT_FAILURE, 0, "in the debugging mode of `clumps_oversegment' "
-          "only one thread must be used");
-  crop=gal_data_copy(tile);
-  gal_fits_img_write(crop, filename, NULL, PROGRAM_NAME);
-  gal_data_free(crop);
-  printf("blank: %u\nriver: %u\ntmpcheck: %u\ninit: %u\nmaxlab: %u\n",
-         (int32_t)GAL_BLANK_INT32, (int32_t)CLUMPS_RIVER,
-         (int32_t)CLUMPS_TMPCHECK, (int32_t)CLUMPS_INIT,
-         (int32_t)CLUMPS_MAXLAB);
-  tile->array=gal_tile_block_relative_to_other(tile, p->clabel);
-  tile->block=p->clabel;
-  **********************************************/
-
-
-  /* If the size of the indexs is zero, then this function is pointless. */
-  if(indexs->size==0) { cltprm->numinitclumps=0; return; }
-
-
-  /* Sort the given indexs based on their flux (`gal_qsort_index_arr' is
-     defined as static in `gnuastro/qsort.h') */
-  gal_qsort_index_arr=p->conv->array;
-  qsort(indexs->array, indexs->size, sizeof(size_t),
-        gal_qsort_index_float_decreasing);
-
-
-  /* Initialize the region we want to over-segment. */
-  af=(a=indexs->array)+indexs->size; do clabel[*a]=CLUMPS_INIT; while(++a<af);
-
-
-  /* Go over all the given indexs and pull out the clumps. */
-  af=(a=indexs->array)+indexs->size;
-  do
-    /* When regions of a constant flux or masked regions exist, some later
-       indexs (although they have same flux) will be filled before hand. If
-       they are done, there is no need to do them again. */
-    if(clabel[*a]==CLUMPS_INIT)
-      {
-        /* It might happen where one or multiple regions of the pixels
-           under study have the same flux. So two equal valued pixels of
-           two separate (but equal flux) regions will fall immediately
-           after each other in the sorted list of indexs and we have to
-           account for this.
-
-           Therefore, if we see that the next pixel in the index list has
-           the same flux as this one, it does not guarantee that it should
-           be given the same label. Similar to the breadth first search
-           algorithm for finding connected components, we will search all
-           the neighbours and the neighbours of those neighbours that have
-           the same flux of this pixel to see if they touch any label or
-           not and to finally give them all the same label. */
-        if( (a+1)<af && arr[*a]==arr[*(a+1)] )
-          {
-            /* Label of first neighbor found. */
-            n1=0;
-
-            /* A small sanity check. */
-            if(Q!=NULL || cleanup!=NULL)
-              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
-                    "we can fix this problem. `Q' and `cleanup' should be "
-                    "NULL but while checking the equal flux regions they "
-                    "aren't", __func__, PACKAGE_BUGREPORT);
-
-            /* Add this pixel to a queue. */
-            gal_list_sizet_add(&Q, *a);
-            gal_list_sizet_add(&cleanup, *a);
-            clabel[*a] = CLUMPS_TMPCHECK;
-
-            /* Find all the pixels that have the same flux and are
-               connected. */
-            while(Q!=NULL)
-              {
-                /* Pop an element from the queue. */
-                ind=gal_list_sizet_pop(&Q);
-
-                /* Look at the neighbors and see if we already have a
-                   label. */
-                GAL_DIMENSION_NEIGHBOR_OP(ind, ndim, dsize, ndim, dinc,
-                   {
-                     /* If it is already decided to be a river, then stop
-                        looking at the neighbors. */
-                     if(n1!=CLUMPS_RIVER)
-                       {
-                         /* For easy reading. */
-                         nlab=clabel[ nind ];
-
-                         /* This neighbor's label isn't zero. */
-                         if(nlab)
-                           {
-                             /* If this neighbor has not been labeled yet
-                                and has an equal flux, add it to the queue
-                                to expand the studied region.*/
-                             if( nlab==CLUMPS_INIT && arr[nind]==arr[*a] )
-                               {
-                                 clabel[nind]=CLUMPS_TMPCHECK;
-                                 gal_list_sizet_add(&Q, nind);
-                                 gal_list_sizet_add(&cleanup, nind);
-                               }
-                             else
-                               n1=( nlab>0
-
-                                    /* If this neighbor has a positive
-                                       nlab, it belongs to another object,
-                                       so if `n1' has not been set for the
-                                       whole region (n1==0), put `nlab'
-                                       into `n1'. If `n1' has been set and
-                                       is different from `nlab' then this
-                                       whole equal flux region should be a
-                                       wide river because it is connecting
-                                       two connected regions.*/
-                                    ? ( n1
-                                        ? (n1==nlab ? n1 : CLUMPS_RIVER)
-                                        : nlab )
-
-                                    /* If the data has blank pixels (recall
-                                       that blank in int32 is negative),
-                                       see if the neighbor is blank and if
-                                       so, set the label to a river. Since
-                                       the flag checking can be done
-                                       outside this loop, for datasets with
-                                       no blank element this last step will
-                                       be completley ignored. */
-                                    : ( ( (p->input->flag
-                                           & GAL_DATA_FLAG_HASBLANK)
-                                          && nlab==GAL_BLANK_INT32 )
-                                        ? CLUMPS_RIVER : n1 ) );
-                           }
-
-                         /* If this neigbour has a label of zero, then we
-                            are on the edge of the indexed region (the
-                            neighbor is not in the initial list of pixels
-                            to segment). When over-segmenting the noise and
-                            the detections, `clabel' is zero for the parts
-                            of the image that we are not interested in
-                            here. */
-                         else clabel[*a]=CLUMPS_RIVER;
-                       }
-                   } );
-              }
-
-            /* Set the label that is to be given to this equal flux
-               region. If `n1' was set to any value, then that label should
-               be used for the whole region. Otherwise, this is a new
-               label, see the case for a non-flat region. */
-            if(n1) rlab = n1;
-            else
-              {
-                rlab = curlab++;
-                if( cltprm->topinds )       /* This is a local maximum of  */
-                  cltprm->topinds[rlab]=*a; /* this region, save its index.*/
-              }
-
-            /* Give the same label to the whole connected equal flux
-               region, except those that might have been on the side of
-               the image and were a river pixel. */
-            while(cleanup!=NULL)
-              {
-                ind=gal_list_sizet_pop(&cleanup);
-                /* If it was on the sides of the image, it has been
-                   changed to a river pixel. */
-                if( clabel[ ind ]==CLUMPS_TMPCHECK ) clabel[ ind ]=rlab;
-              }
-          }
-
-        /* The flux of this pixel is not the same as the next sorted
-           flux, so simply find the label for this object. */
-        else
-          {
-            /* `n1' is the label of the first labeled neighbor found, so
-               we'll initialize it to zero. */
-            n1=0;
-
-            /* Go over all the fully connected neighbors of this pixel and
-               see if all the neighbors (with maximum connectivity: the
-               number of dimensions) that have a non-macro value (less than
-               CLUMPS_MAXLAB) belong to one label or not. If the pixel is
-               neighboured by more than one label, set it as a river
-               pixel. Also if it is touching a zero valued pixel (which
-               does not belong to this object), set it as a river pixel.*/
-            GAL_DIMENSION_NEIGHBOR_OP(*a, ndim, dsize, ndim, dinc,
-               {
-                 /* When `n1' has already been set as a river, there is no
-                    point in looking at the other neighbors. */
-                 if(n1!=CLUMPS_RIVER)
-                   {
-                     /* For easy reading. */
-                     nlab=clabel[ nind ];
-
-                     /* If this neighbor is on a non-processing label, then
-                        set the first neighbor accordingly. Note that we
-                        also want the zero valued neighbors (detections if
-                        working on sky, and sky if working on detection):
-                        we want rivers between the two domains. */
-                     n1 = ( nlab
-
-                            /* nlab is non-zero. */
-                            ? ( nlab>0
-
-                                /* Neighbor has a meaningful label, so
-                                   check with any previously found labeled
-                                   neighbors. */
-                                ? ( n1
-                                    ? ( nlab==n1 ? n1 : CLUMPS_RIVER )
-                                    : nlab )
-
-                                /* If the dataset has blank values and this
-                                   neighbor is blank, then the pixel should
-                                   be a river. Note that the blank checking
-                                   can be optimized out, so if the input
-                                   doesn't have blank values,
-                                   `nlab==GAL_BLANK_INT32' will never be
-                                   checked. */
-                                : ( (p->input->flag & GAL_DATA_FLAG_HASBLANK)
-                                    && nlab==GAL_BLANK_INT32
-                                    ? CLUMPS_RIVER : n1 ) )
-
-                            /* `nlab==0' (the neighbor lies in the other
-                               domain (sky or detections). To avoid the
-                               different domains touching, this pixel
-                               should be a river. */
-                            : CLUMPS_RIVER );
-                   }
-               });
-
-            /* Either assign a new label to this pixel, or give it the one
-               of its neighbors. If n1 equals zero, then this is a new
-               peak, and a new label should be created.  But if n1!=0, it
-               is either a river pixel (has more than one labeled neighbor
-               and has been set to `CLUMPS_RIVER' before) or all its
-               neighbors have the same label. In both such cases, rlab
-               should be set to n1.*/
-            if(n1) rlab = n1;
-            else
-              {
-                rlab = curlab++;
-                if( cltprm->topinds )
-                  cltprm->topinds[ rlab ]=*a;
-              }
-
-            /* Put the found label in the pixel. */
-            clabel[ *a ] = rlab;
-          }
-
-        /*********************************************
-         For checks and debugging:
-        if(    *a / dsize[1] >= checkstart[0]
-            && *a / dsize[1] <  checkstart[0] + checkdsize[0]
-            && *a % dsize[1] >= checkstart[1]
-            && *a % dsize[1] <  checkstart[1] + checkdsize[1] )
-          {
-            printf("%zu (%zu: %zu, %zu): %u\n", ++extcount, *a,
-                   (*a%dsize[1])-checkstart[1], (*a/dsize[1])-checkstart[0],
-                   clabel[*a]);
-            crop=gal_data_copy(tile);
-            crf=(cr=crop->array)+crop->size;
-            do if(*cr==CLUMPS_RIVER) *cr=0; while(++cr<crf);
-            gal_fits_img_write(crop, filename, NULL, PROGRAM_NAME);
-            gal_data_free(crop);
-          }
-        **********************************************/
-      }
-  while(++a<af);
-
-  /* Save the total number of clumps. */
-  cltprm->numinitclumps=curlab-1;
-
-  /* Set all the river pixels to zero. Note that this is only necessary for
-     the detected clumps. When finding clumps over the Sky, we will be
-     going over the full tile and removing rivers after this function. This
-     is because, we set the borders of the tile to a river value and didn't
-     include them in the list of indexs. */
-  if(cltprm->clprm->sky0_det1)
-    {
-      af=(a=indexs->array)+indexs->size;
-      do if( clabel[*a]==CLUMPS_RIVER ) clabel[*a]=CLUMPS_INIT; while(++a<af);
-    }
-
-  /*********************************************
-   For checks and debugging:
-  tile->array=NULL;
-  gal_data_free(tile);
-  printf("Total number of clumps: %u\n", curlab-1);
-  **********************************************/
-
-  /* Clean up. */
-  free(dinc);
-}
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -411,11 +65,11 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
 {
   gal_data_t *indexs=cltprm->indexs;
   gal_data_t *input=cltprm->clprm->p->input;
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
 
-  size_t *s, *sf, *dsize=input->dsize;
   size_t ndiffuse=0, coord[2], *dindexs;
-  double wcoord[2]={0.0f,0.0f}, brightness=0.0f;
+  double wcoord[2]={0.0f,0.0f}, sum=0.0f;
+  size_t *s, *sf, *dsize=input->dsize, ndim=input->ndim;
   float glimit, *imgss=input->array, *std=p->std->array;
   int32_t *olabel=p->olabel->array, *clabel=p->clabel->array;
 
@@ -426,7 +80,7 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   do
     if( imgss[ *s ] > 0.0f )
       {
-        brightness += imgss[ *s ];
+        sum        += imgss[ *s ];
         wcoord[0]  += imgss[ *s ] * (*s/dsize[1]);
         wcoord[1]  += imgss[ *s ] * (*s%dsize[1]);
       }
@@ -435,7 +89,7 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
 
   /* Calculate the center, if no pixels were positive, use the
      geometric center (irrespective of flux). */
-  if(brightness==0.0f)
+  if(sum==0.0f)
     {
       sf=(s=indexs->array)+indexs->size;
       do
@@ -444,17 +98,24 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
           wcoord[1] += *s % dsize[1];
         }
       while(++s<sf);
-      brightness = indexs->size;
+      sum = indexs->size;
     }
 
 
-  /* Convert floatint point coordinates to FITS integers. */
-  coord[0] = GAL_DIMENSION_FLT_TO_INT(wcoord[0]);
-  coord[1] = GAL_DIMENSION_FLT_TO_INT(wcoord[1]);
+  /* Convert floating point coordinates to integers. */
+  coord[0] = GAL_DIMENSION_FLT_TO_INT(wcoord[0]/sum);
+  coord[1] = GAL_DIMENSION_FLT_TO_INT(wcoord[1]/sum);
 
 
-  /* Find the growth limit  */
-  cltprm->std = std[ gal_tile_full_id_from_coord(&p->cp.tl, coord) ];
+  /* Find the growth limit. Note that the STD image may be a full sized
+     image or a tessellation. We'll check through the number of elements it
+     has. */
+  cltprm->std = ( p->std->size==p->input->size
+                  ? std[ gal_dimension_coord_to_index(ndim, dsize, coord) ]
+                  : std[ gal_tile_full_id_from_coord(&p->cp.tl, coord)    ] );
+
+
+  /* From the standard deviation, find the growth limit. */
   glimit = p->gthresh * cltprm->std;
 
 
@@ -473,7 +134,7 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   do
     {
       olabel[*s] = clabel[*s];
-      if( clabel[*s]==CLUMPS_INIT )
+      if( clabel[*s]==GAL_LABEL_INIT )
         if( imgss[*s]>glimit ) dindexs[ ndiffuse++ ] = *s;
     }
   while(++s<sf);
@@ -521,145 +182,7 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
 
 
 
-/* Grow the true clumps over the diffuse regions of a detection. Note that
-   unlike before, were river pixels would get a separate label for them
-   selves, here, they don't, they just get set back to SEGMENTINIT. This is
-   because some of the pixels that lie immediately between two labeled
-   regions might not be in the blankinds array (they were below the
-   threshold). So we have to find river pixels later on, after the growth
-   is done independently.
 
-   This function is going to be used before identifying objects and also
-   after it (to completely fill in the diffuse area). The distinguishing
-   point between these two steps is the presence of rivers, so you can use
-   the `withrivers' argument.
-
-
-   Input:
-
-     labels: The labels array that must be operated on. The pixels that
-             must be "grown" must have the value `CLUMPS_INIT' (negative).
-
-     diffuseindexs: The indexs of the pixels that must be grown.
-
-     withrivers: as described above.
-
-     connectivity: connectivity to define neighbors for growth.
-*/
-void
-clumps_grow(gal_data_t *labels, gal_data_t *diffuseindexs, int withrivers,
-            int connectivity)
-{
-  int searchngb;
-  size_t *diarray=diffuseindexs->array;
-  int32_t n1, nlab, *olabel=labels->array;
-  size_t *s, *sf, thisround, ndiffuse=diffuseindexs->size;
-  size_t *dinc=gal_dimension_increment(labels->ndim, labels->dsize);
-
-  /* A small sanity check: */
-  if(labels->type!=GAL_TYPE_INT32)
-    error(EXIT_FAILURE, 0, "%s: `labels' has to have type of int32_t",
-          __func__);
-  if(diffuseindexs->type!=GAL_TYPE_SIZE_T)
-    error(EXIT_FAILURE, 0, "%s: `diffuseindexs' has to have type of size_t",
-          __func__);
-
-  /* The basic idea is this: after growing, not all the blank pixels are
-     necessarily filled, for example the pixels might belong to two regions
-     above the growth threshold. So the pixels in between them (which are
-     below the threshold will not ever be able to get a label). Therefore,
-     the safest way we can terminate the loop of growing the objects is to
-     stop it when the number of pixels left to fill in this round
-     (thisround) equals the number of blanks.
-
-     To start the loop, we set `thisround' to one more than the number of
-     diffuse pixels. Note that it will be corrected immediately after the
-     loop has started, it is just important to pass the `while'. */
-  thisround=ndiffuse+1;
-  while( thisround > ndiffuse )
-    {
-      /* `thisround' will keep the number of pixels to be inspected in this
-         round. `ndiffuse' will count the number of pixels left without a
-         label by the end of this round. Since `ndiffuse' comes from the
-         previous loop (or outside, for the first round) it has to be saved
-         in `thisround' to begin counting a fresh. */
-      thisround=ndiffuse;
-      ndiffuse=0;
-
-      /* Go over all the available indexs. */
-      sf=(s=diffuseindexs->array)+diffuseindexs->size;
-      do
-        {
-          /* We'll begin by assuming the nearest neighbor of this pixel has
-             no label (has a value of 0). */
-          n1=0;
-
-          /* Check the very closest neighbors of each pixel (4-connectivity
-             in a 2D image). Note that since this macro has multiple loops
-             within it, we can't use break. We'll use a variable instead. */
-          searchngb=1;
-          GAL_DIMENSION_NEIGHBOR_OP(*s, labels->ndim, labels->dsize,
-                                    connectivity, dinc,
-            {
-              if(searchngb)
-                {
-                  /* For easy reading. */
-                  nlab = olabel[nind];
-
-                  /* This neighbor's label is meaningful. */
-                  if(nlab>0)                      /* This is a real label. */
-                    {
-                      if(n1)  /* A prev. neighboring label has been found. */
-                        {
-                          if( n1 != nlab )       /* Different label from   */
-                            {  /* prevously found neighbor for this pixel. */
-                              n1=CLUMPS_RIVER;
-                              searchngb=0;
-                            }
-                        }
-                      else
-                        {      /* This is the first labeld neighbor found. */
-                          n1=nlab;
-
-                          /* If we want to completely fill in the region
-                             (`withrivers==0'), then there is no point in
-                             looking in other neighbors, the first neighbor
-                             we find is the one we'll use. */
-                          if(!withrivers) searchngb=0;
-                        }
-                    }
-                }
-            } );
-
-          /* The loop above over neighbors finishes with three
-             possibilities:
-
-               n1==0                    --> No labeled neighbor was found.
-               n1==CLUMPS_RIVER         --> Connecting two labeled regions.
-               n1>0                     --> Only has one neighbouring label.
-
-             The first one means that no neighbors were found and this
-             pixel should be kept for the next loop (we'll be growing the
-             objects pixel-layer by pixel-layer). In the other two cases,
-             we just need to write in the value of `n1'. */
-          if(n1)
-            {
-              olabel[*s]=n1;
-              if(withrivers && n1==CLUMPS_RIVER)   /* To keep rivers in */
-                diarray[ ndiffuse++ ] = *s;        /* the diffuse list. */
-            }
-          else
-            diarray[ ndiffuse++ ] = *s;
-
-          /* Correct the size of the `diffuseindexs' dataset. */
-          diffuseindexs->size = diffuseindexs->dsize[0] = ndiffuse;
-        }
-      while(++s<sf);
-    }
-
-  /* Clean up. */
-  free(dinc);
-}
 
 
 
@@ -705,12 +228,13 @@ enum infocols
 static void
 clumps_get_raw_info(struct clumps_thread_params *cltprm)
 {
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
   size_t i, *a, *af, ii, coord[2];
   double *row, *info=cltprm->info->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
   float *arr=p->input->array, *std=p->std->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
@@ -786,7 +310,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   for(lab=1; lab<=cltprm->numinitclumps; ++lab)
     {
       row = &info [ lab * INFO_NCOLS ];
-      if ( row[INFO_INAREA] > p->segsnminarea )
+      if ( row[INFO_INAREA] > p->snminarea )
         {
           /* Especially over the undetected regions, it might happen that
              none of the pixels were positive. In that case, set the total
@@ -796,8 +320,12 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
             {
               coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
               coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
-              row[INFO_INSTD] = std[ gal_tile_full_id_from_coord(&p->cp.tl,
-                                                                 coord) ];
+              row[INFO_INSTD]=( p->std->size==p->input->size
+                                ? std[ gal_dimension_coord_to_index(ndim,
+                                                                    dsize,
+                                                                    coord) ]
+                                : std[ gal_tile_full_id_from_coord(tl,
+                                                                   coord)] );
               /* For a check
               printf("---------\n");
               printf("\t%f --> %zu\n", row[INFO_Y]/row[INFO_SFF], coord[1]);
@@ -822,7 +350,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
 void
 clumps_make_sn_table(struct clumps_thread_params *cltprm)
 {
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
   size_t tablen=cltprm->numinitclumps+1;
 
   float *snarr;
@@ -888,13 +416,10 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
          noise cases) or the area is smaller than the minimum area to
          calculate signal-to-noise, then set the S/N of this segment to
          zero. */
-      if( I>O && Ni>p->segsnminarea )
+      if( I>O && Ni>p->snminarea )
         {
-          /* Here we have done sky subtraction once. However, if the sky
-             was already subtracted (informed by the user), then the
-             varience should be multiplied by 2.  */
-          var = ( (p->skysubtracted ? 2.0f : 1.0f)
-                  * row[INFO_INSTD] * row[INFO_INSTD] );
+          /* For easy reading, define `var' for variance.  */
+          var = row[INFO_INSTD] * row[INFO_INSTD];
 
           /* Calculate the Signal to noise ratio, if we are on the noise
              regions, we don't care about the IDs of the clumps anymore, so
@@ -943,7 +468,7 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   gal_data_t *newinds;
   int32_t *ninds, curlab, *l, *lf;
   size_t len=cltprm->numinitclumps+1;
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
 
   /* If there are no clumps in this tile, then this function can be
      ignored. */
@@ -975,9 +500,10 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   if(p->cp.numthreads>1) pthread_mutex_unlock(&cltprm->clprm->labmutex);
 
 
-  /* Initialize the newinds array to CLUMPS_INIT (which be used as a new
+  /* Initialize the newinds array to GAL_LABEL_INIT (which be used as a new
      label for all the clumps that must be removed. */
-  lf = (l=newinds->array) + newinds->size; do *l++=CLUMPS_INIT; while(l<lf);
+  lf = (l=newinds->array) + newinds->size;
+  do *l++=GAL_LABEL_INIT; while(l<lf);
 
 
   /* The new indexs array has been initialized to zero. So we just need to
@@ -1005,7 +531,7 @@ clumps_find_make_sn_table(void *in_prm)
 {
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct clumps_params *clprm=(struct clumps_params *)(tprm->params);
-  struct noisechiselparams *p=clprm->p;
+  struct segmentparams *p=clprm->p;
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
   void *tarray;
@@ -1043,7 +569,7 @@ clumps_find_make_sn_table(void *in_prm)
 
       /* Get the number of usable elements in this tile (note that tiles
          can have blank pixels), so we can't simply use `tile->size'. */
-      if(tile->flag & GAL_DATA_FLAG_HASBLANK)
+      if(p->input->flag & GAL_DATA_FLAG_HASBLANK)
         {
           tmp=gal_statistics_number(tile);
           num=*((size_t *)(tmp->array));
@@ -1114,7 +640,7 @@ clumps_find_make_sn_table(void *in_prm)
                   || icoord[0]==scoord[0]+tile->dsize[0]-1
                   || icoord[1]==scoord[1]
                   || icoord[1]==scoord[1]+tile->dsize[1]-1 )
-                *(int32_t *)i=CLUMPS_RIVER;
+                *(int32_t *)i=GAL_LABEL_RIVER;
 
               /* This pixel is not on the edge, check if it had a value of
                  `0' in the binary image (is not detected) then add it to
@@ -1151,13 +677,15 @@ clumps_find_make_sn_table(void *in_prm)
 
 
           /* Generate the clumps over this region. */
-          clumps_oversegment(&cltprm);
+          cltprm.numinitclumps=gal_label_oversegment(p->conv, cltprm.indexs,
+                                                     p->clabel,
+                                                     cltprm.topinds);
 
 
-          /* Set all river pixels to CLUMPS_INIT (to be distinguishable
+          /* Set all river pixels to GAL_LABEL_INIT (to be distinguishable
              from the detected regions). */
           GAL_TILE_PO_OISET( int32_t, int, tile, NULL, 0, 1,
-                             {if(*i==CLUMPS_RIVER) *i=CLUMPS_INIT;} );
+                             {if(*i==GAL_LABEL_RIVER) *i=GAL_LABEL_INIT;} );
 
 
           /* For a check, the step variable will be set. */
@@ -1198,6 +726,59 @@ clumps_find_make_sn_table(void *in_prm)
 
 
 
+/* Write the S/N table. */
+static void
+clumps_write_sn_table(struct segmentparams *p, gal_data_t *insn,
+                      gal_data_t *inind, char *filename,
+                      gal_list_str_t *comments)
+{
+  gal_data_t *sn, *ind, *cols;
+
+  /* Remove all blank elements. The index and sn values must have the same
+     set of blank elements, but checking on the integer array is faster. */
+  if( gal_blank_present(inind, 1) )
+    {
+      /* Remove blank elements. */
+      ind=gal_data_copy(inind);
+      sn=gal_data_copy(insn);
+      gal_blank_remove(ind);
+      gal_blank_remove(sn);
+
+      /* A small sanity check. */
+      if(ind->size==0 || sn->size==0)
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. For some reason, all the elements in `ind' or "
+              "`sn' are blank", __func__, PACKAGE_BUGREPORT);
+    }
+  else
+    {
+      sn  = insn;
+      ind = inind;
+    }
+
+  /* Set the columns. */
+  cols       = ind;
+  cols->next = sn;
+
+
+  /* Prepare the comments. */
+  gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
+
+
+  /* write the table. */
+  gal_checkset_writable_remove(filename, 0, 1);
+  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN");
+
+
+  /* Clean up (if necessary). */
+  if(sn!=insn) gal_data_free(sn);
+  if(ind==inind) ind->next=NULL; else gal_data_free(ind);
+}
+
+
+
+
+
 /* Find the true clump signal to noise value from the clumps in the sky
    region.
 
@@ -1214,7 +795,7 @@ clumps_find_make_sn_table(void *in_prm)
    concatenate all the S/N values into one array and send it to the main
    findsnthresh function in thresh.c. */
 void
-clumps_true_find_sn_thresh(struct noisechiselparams *p)
+clumps_true_find_sn_thresh(struct segmentparams *p)
 {
   char *msg;
   struct timeval t1;
@@ -1233,7 +814,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
   clprm.p=p;
   clprm.sky0_det1=0;
   clprm.sn=gal_data_array_calloc(p->ltl.tottiles);
-  clprm.snind = ( p->checksegmentation || p->checkclumpsn
+  clprm.snind = ( p->checksegmentation || p->checksn
                   ? gal_data_array_calloc(p->ltl.tottiles) : NULL );
 
 
@@ -1243,7 +824,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
      label. Since `p->numclumps' is not used yet, we will use it here. When
      multiple threads are used, we will need a mutex to make sure that only
      one thread can change this central variable at every one moment. */
-  if(p->checksegmentation || p->checkclumpsn)
+  if(p->checksegmentation || p->checksn)
     {
       p->numclumps=0;
       if( p->cp.numthreads > 1 ) pthread_mutex_init(&clprm.labmutex, NULL);
@@ -1310,7 +891,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
 
 
   /* Destroy the mutex if it was initialized. */
-  if( p->cp.numthreads>1 && (p->checksegmentation || p->checkclumpsn) )
+  if( p->cp.numthreads>1 && (p->checksegmentation || p->checksn) )
     pthread_mutex_destroy(&clprm.labmutex);
 
 
@@ -1330,7 +911,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
   sn=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &numsn, NULL, 0,
                     p->cp.minmapsize, "CLUMP_S/N", "ratio",
                     "Signal-to-noise ratio");
-  snind = ( p->checkclumpsn
+  snind = ( p->checksn
             ? gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &numsn, NULL, 0,
                              p->cp.minmapsize, "CLUMP_ID", "counter",
                              "Unique ID for this clump.")
@@ -1357,7 +938,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
 
 
   /* If the user wanted to see the S/N table, then save it. */
-  if(p->checkclumpsn)
+  if(p->checksn)
     {
       /* Make the comments, then write the table and free the comments. */
       if(p->cp.numthreads>1)
@@ -1367,18 +948,18 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
                        "output with `--checksegmentation'.", 1);
       gal_list_str_add(&comments, "S/N of clumps over undetected regions.",
                        1);
-      threshold_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);
+      clumps_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);
       gal_list_str_free(comments, 1);
     }
 
 
   /* Find the desired quantile from the full S/N distribution. */
-  quant = gal_statistics_quantile(sn, p->segquant, 1);
+  quant = gal_statistics_quantile(sn, p->snquant, 1);
   p->clumpsnthresh = *((float *)(quant->array));
   if(!p->cp.quiet)
     {
       if( asprintf(&msg, "Clump S/N: %.2f (%.3f quant of %zu).",
-                   p->clumpsnthresh, p->segquant, sn->size)<0 )
+                   p->clumpsnthresh, p->snquant, sn->size)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
       free(msg);
@@ -1417,7 +998,7 @@ clumps_true_find_sn_thresh(struct noisechiselparams *p)
    (where each element is a dataset containing the respective label's
    indexs). */
 gal_data_t *
-clumps_det_label_indexs(struct noisechiselparams *p)
+clumps_det_label_indexs(struct segmentparams *p)
 {
   size_t i, *areas;
   int32_t *a, *l, *lf;
@@ -1471,7 +1052,7 @@ clumps_det_label_indexs(struct noisechiselparams *p)
 void
 clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
 {
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
   int istouching;
@@ -1490,10 +1071,10 @@ clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
                                     "newlabs");
       dinc=gal_dimension_increment(ndim, dsize);
 
-      /* Initialize the new labels with CLUMPS_INIT (so the diffuse area
+      /* Initialize the new labels with GAL_LABEL_INIT (so the diffuse area
          can be distinguished from the clumps). */
       lf=(l=newlabs)+cltprm->numinitclumps+1;
-      do *l++=CLUMPS_INIT; while(l<lf);
+      do *l++=GAL_LABEL_INIT; while(l<lf);
 
       /* Set the new labels. Here we will also be removing clumps with a peak
          that touches a river pixel. */
@@ -1523,10 +1104,10 @@ clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
             }
         }
 
-      /* Correct the clump labels. Note that the non-clumpy regions over the
-         detections (rivers) have already been initialized to CLUMPS_INIT
-         (which is negative). So we'll just need to correct the ones with a
-         value larger than 0. */
+      /* Correct the clump labels. Note that the non-clumpy regions over
+         the detections (rivers) have already been initialized to
+         GAL_LABEL_INIT (which is negative). So we'll just need to correct
+         the ones with a value larger than 0. */
       sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
       do if(clabel[*s]>0) clabel[*s] = newlabs[ clabel[*s] ]; while(++s<sf);
 

@@ -83,6 +83,9 @@ endif
 if COND_NOISECHISEL
   MAYBE_NOISECHISEL = bin/noisechisel
 endif
+if COND_SEGMENT
+  MAYBE_SEGMENT = bin/segment
+endif
 if COND_STATISTICS
   MAYBE_STATISTICS = bin/statistics
 endif
@@ -110,12 +113,12 @@ endif
 ## conditions above). When `MAYBE_TEMPLATE' is not defined, then Make will
 ## see it as a blank string and igonore it, so there is no problem with
 ## having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
-SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)  \
-  $(MAYBE_BUILDPROG) $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE)                 \
-  $(MAYBE_COSMICCAL) $(MAYBE_CROP) $(MAYBE_FITS) $(MAYBE_MATCH)          \
-  $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)                    \
-  $(MAYBE_NOISECHISEL) $(MAYBE_STATISTICS) $(MAYBE_TABLE)                \
-  $(MAYBE_TEMPLATE) $(MAYBE_WARP) doc tests
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)    \
+  $(MAYBE_BUILDPROG) $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE)                   \
+  $(MAYBE_COSMICCAL) $(MAYBE_CROP) $(MAYBE_FITS) $(MAYBE_MATCH)            \
+  $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL) \
+  $(MAYBE_SEGMENT) $(MAYBE_STATISTICS) $(MAYBE_TABLE) $(MAYBE_TEMPLATE)    \
+  $(MAYBE_WARP) doc tests
 
 
 

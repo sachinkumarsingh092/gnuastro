@@ -1,5 +1,5 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
+NoiseChisel - Detect signal in a noisy dataset.
 NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -73,13 +73,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "convolvedhdu",
-      UI_KEY_CONVOLVEDHDU,
+      "chdu",
+      UI_KEY_CHDU,
       "STR",
       0,
       "HDU/extension of convolved image in file.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->convolvedhdu,
+      &p->chdu,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -99,57 +99,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "wkhdu",
-      UI_KEY_WKHDU,
+      "whdu",
+      UI_KEY_WHDU,
       "STR",
       0,
       "HDU containing wide kernel image.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->wkhdu,
+      &p->whdu,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-    {
-      "skysubtracted",
-      UI_KEY_SKYSUBTRACTED,
-      0,
-      0,
-      "Input is Sky subtracted (for error estimation).",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->skysubtracted,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "minskyfrac",
-      UI_KEY_MINSKYFRAC,
-      "FLT",
-      0,
-      "Min. fraction of undetected area in tile.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->minskyfrac,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GE_0_LE_1,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "minnumfalse",
-      UI_KEY_MINNUMFALSE,
-      "INT",
-      0,
-      "Minimum number for S/N estimation.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->minnumfalse,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
+
+
 
 
     /* Tessellation. */
@@ -174,19 +137,18 @@ struct argp_option program_options[] =
 
     /* Output options. */
     {
-      "onlydetection",
-      UI_KEY_ONLYDETECTION,
+      "rawoutput",
+      UI_KEY_RAWOUTPUT,
       0,
       0,
-      "Stop at the end of detection.",
+      "Output only detection labels & 1-elem/tile grid.",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &p->onlydetection,
+      &p->rawoutput,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-
 
 
 
@@ -355,6 +317,19 @@ struct argp_option program_options[] =
       gal_options_read_sigma_clip
     },
     {
+      "minskyfrac",
+      UI_KEY_MINSKYFRAC,
+      "FLT",
+      0,
+      "Min. fraction of undetected area in tile.",
+      UI_GROUP_DETECTION,
+      &p->minskyfrac,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "checkdetsky",
       UI_KEY_CHECKDETSKY,
       0,
@@ -381,39 +356,52 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "detsnminarea",
-      UI_KEY_DETSNMINAREA,
+      "snminarea",
+      UI_KEY_SNMINAREA,
       "INT",
       0,
       "Min. pseudo-detection area for S/N dist.",
       UI_GROUP_DETECTION,
-      &p->detsnminarea,
+      &p->snminarea,
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
-      "checkdetsn",
-      UI_KEY_CHECKDETSN,
+      "checksn",
+      UI_KEY_CHECKSN,
       0,
       0,
       "Save pseudo-detection S/N values to a file.",
       UI_GROUP_DETECTION,
-      &p->checkdetsn,
+      &p->checksn,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
-      "detquant",
-      UI_KEY_DETQUANT,
+      "minnumfalse",
+      UI_KEY_MINNUMFALSE,
+      "INT",
+      0,
+      "Minimum number for S/N estimation.",
+      UI_GROUP_DETECTION,
+      &p->minnumfalse,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "snquant",
+      UI_KEY_SNQUANT,
       "FLT",
       0,
       "Quantile in pseudo-det. to define true.",
       UI_GROUP_DETECTION,
-      &p->detquant,
+      &p->snquant,
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GT_0_LT_1,
       GAL_OPTIONS_MANDATORY,
@@ -479,134 +467,6 @@ struct argp_option program_options[] =
       "Final sky and its STD steps in a file.",
       UI_GROUP_DETECTION,
       &p->checksky,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-
-
-
-
-
-    /* Segmentation */
-    {
-      0, 0, 0, 0,
-      "Segmentation:",
-      UI_GROUP_SEGMENTATION
-    },
-    {
-      "segsnminarea",
-      UI_KEY_SEGSNMINAREA,
-      "INT",
-      0,
-      "Minimum area of clumps for S/N estimation.",
-      UI_GROUP_SEGMENTATION,
-      &p->segsnminarea,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "checkclumpsn",
-      UI_KEY_CHECKCLUMPSN,
-      0,
-      0,
-      "Save Sky clump S/N values into a file.",
-      UI_GROUP_SEGMENTATION,
-      &p->checkclumpsn,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "segquant",
-      UI_KEY_SEGQUANT,
-      "FLT",
-      0,
-      "S/N Quantile of true sky clumps.",
-      UI_GROUP_SEGMENTATION,
-      &p->segquant,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GT_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "keepmaxnearriver",
-      UI_KEY_KEEPMAXNEARRIVER,
-      0,
-      0,
-      "Keep clumps with peak touching a river.",
-      UI_GROUP_SEGMENTATION,
-      &p->keepmaxnearriver,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "gthresh",
-      UI_KEY_GTHRESH,
-      "FLT",
-      0,
-      "Multiple of STD to stop growing clumps.",
-      UI_GROUP_SEGMENTATION,
-      &p->gthresh,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "minriverlength",
-      UI_KEY_MINRIVERLENGTH,
-      "INT",
-      0,
-      "Minimum len of useful grown clump rivers.",
-      UI_GROUP_SEGMENTATION,
-      &p->minriverlength,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "objbordersn",
-      UI_KEY_OBJBORDERSN,
-      "FLT",
-      0,
-      "Min. S/N for grown clumps as one object.",
-      UI_GROUP_SEGMENTATION,
-      &p->objbordersn,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GE_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "grownclumps",
-      UI_KEY_GROWNCLUMPS,
-      0,
-      0,
-      "Save grown clumps instead of original.",
-      UI_GROUP_SEGMENTATION,
-      &p->grownclumps,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "checksegmentation",
-      UI_KEY_CHECKSEGMENTATION,
-      0,
-      0,
-      "Store segmentation steps in a file.",
-      UI_GROUP_SEGMENTATION,
-      &p->checksegmentation,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,

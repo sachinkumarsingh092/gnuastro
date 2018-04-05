@@ -124,9 +124,11 @@ if COND_MATCH
   match/merged-cols.sh: prepconf.sh.log
 endif
 if COND_MKCATALOG
-  MAYBE_MKCATALOG_TESTS = mkcatalog/simple.sh mkcatalog/aperturephot.sh
+  MAYBE_MKCATALOG_TESTS = mkcatalog/detections.sh        \
+  mkcatalog/objects-clumps.sh mkcatalog/aperturephot.sh
 
-  mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
+  mkcatalog/objects-clumps.sh: segment/segment.sh.log
+  mkcatalog/detections.sh: noisechisel/noisechisel.sh.log
   mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
                              mkprof/clearcanvas.sh.log
 endif
@@ -152,6 +154,11 @@ if COND_NOISECHISEL
   MAYBE_NOISECHISEL_TESTS = noisechisel/noisechisel.sh
 
   noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
+endif
+if COND_SEGMENT
+  MAYBE_SEGMENT_TESTS = segment/segment.sh
+
+  segment/segment.sh: noisechisel/noisechisel.sh.log
 endif
 if COND_STATISTICS
   MAYBE_STATISTICS_TESTS = statistics/basicstats.sh statistics/estimate_sky.sh
@@ -220,13 +227,14 @@ lib/multithread.sh: mkprof/mosaic1.sh.log
 
 # Final Tests
 # ===========
-TESTS = prepconf.sh lib/multithread.sh lib/versioncxx.sh              \
+TESTS = prepconf.sh lib/multithread.sh lib/versioncxx.sh                   \
   $(MAYBE_ARITHMETIC_TESTS) $(MAYBE_BUILDPROG_TESTS)                       \
   $(MAYBE_CONVERTT_TESTS) $(MAYBE_CONVOLVE_TESTS) $(MAYBE_COSMICCAL_TESTS) \
   $(MAYBE_CROP_TESTS) $(MAYBE_FITS_TESTS) $(MAYBE_MATCH_TESTS)             \
   $(MAYBE_MKCATALOG_TESTS) $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS)    \
-  $(MAYBE_NOISECHISEL_TESTS) $(MAYBE_STATISTICS_TESTS)                     \
-  $(MAYBE_SUBTRACTSKY_TESTS) $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
+  $(MAYBE_NOISECHISEL_TESTS) $(MAYBE_SEGMENT_TESTS)                        \
+  $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                     \
+  $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
 
 
 

@@ -1,11 +1,11 @@
 /*********************************************************************
-NoiseChisel - Detect signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2015-2018, Free Software Foundation, Inc.
+Copyright (C) 2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -30,7 +30,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 
@@ -64,10 +63,10 @@ static char
 args_doc[] = "ASTRdata";
 
 const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" Detects and segments signal "
-  "that is deeply burried in noise. It employs a noise-based detection and "
-  "segmentation method enabling it to be very resilient to the rich diversity "
-  "of shapes in astronomical targets.\n"
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will segment an initially "
+  "labeled region based on structure with the signal. It will first find "
+  "true clumps (local maxima), estimate which ones have strong connections, "
+  "and then grow them to cover the full area of each detection.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -96,7 +95,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" Detects and segments signal "
 /*********    Initialize & Parse command-line    **************/
 /**************************************************************/
 static void
-ui_initialize_options(struct noisechiselparams *p,
+ui_initialize_options(struct segmentparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
@@ -112,6 +111,11 @@ ui_initialize_options(struct noisechiselparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
+
+  p->medstd              = NAN;
+  p->minstd              = NAN;
+  p->maxstd              = NAN;
+  p->clumpsnthresh       = NAN;
 
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -147,10 +151,10 @@ ui_initialize_options(struct noisechiselparams *p,
 
 
 /* Parse a single option: */
-static error_t
+error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
-  struct noisechiselparams *p = state->input;
+  struct segmentparams *p = state->input;
 
   /* Pass `gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
@@ -213,33 +217,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
-ui_read_check_only_options(struct noisechiselparams *p)
+ui_read_check_only_options(struct segmentparams *p)
 {
-  /* If the convolved option is given, then the convolved HDU is also
-     mandatory. */
+  /* If the convolved HDU is given. */
   if(p->convolvedname && p->chdu==NULL)
-    error(EXIT_FAILURE, 0, "no value given to `--chdu'. When the "
+    error(EXIT_FAILURE, 0, "no value given to `--convolvedhdu'. When the "
           "`--convolved' option is called (to specify a convolved image "
           "and avoid convolution) it is mandatory to also specify a HDU "
           "for it");
 
-  /* Make sure the connectivities have the correct values. */
-  if(p->erodengb!=4 && p->erodengb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--erodengb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->erodengb);
-  if(p->openingngb!=4 && p->openingngb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
-
-  /* Make sure that the no-erode-quantile is not smaller or equal to
-     qthresh. */
-  if( p->noerodequant <= p->qthresh)
-    error(EXIT_FAILURE, 0, "the quantile for no erosion (`--noerodequant') "
-          "must be larger than the base quantile threshold (`--qthresh', "
-          "or `-t'). You have provided %.4f and %.4f for the former and "
-          "latter, respectively", p->noerodequant, p->qthresh);
-
-  /* For the options that make tables, the table formation option is
+  /* For the options that make tables, the table format option is
      mandatory. */
   if( p->checksn && p->cp.tableformat==0 )
     error(EXIT_FAILURE, 0, "`--tableformat' is necessary with the "
@@ -263,21 +250,6 @@ ui_read_check_only_options(struct noisechiselparams *p)
               "(starting from zero), extension name, or anything "
               "acceptable by CFITSIO");
     }
-
-  /* Wide kernel checks. */
-  if(p->widekernelname)
-    {
-      /* Check if it exists. */
-      gal_checkset_check_file(p->widekernelname);
-
-      /* If its FITS, see if a HDU has been provided. */
-      if( gal_fits_name_is_fits(p->widekernelname) && p->whdu==NULL )
-        error(EXIT_FAILURE, 0, "no HDU specified for the given wide kernel "
-              "(`%s'). When the wide kernel is a FITS file, a HDU must also "
-              "be specified. You can use the `--whdu' option and give it the "
-              "HDU number (starting from zero), extension name, or any "
-              "HDU identifier acceptable by CFITSIO", p->widekernelname);
-    }
 }
 
 
@@ -285,21 +257,22 @@ ui_read_check_only_options(struct noisechiselparams *p)
 
 
 static void
-ui_check_options_and_arguments(struct noisechiselparams *p)
+ui_check_options_and_arguments(struct segmentparams *p)
 {
-  /* Basic input file checks. */
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
   if(p->inputname)
     {
       /* Check if it exists. */
       gal_checkset_check_file(p->inputname);
 
-      /* If its FITS, see if a HDU has been provided. */
+      /* If it is FITS, a HDU is also mandatory. */
       if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
-        error(EXIT_FAILURE, 0, "no HDU specified for input. When the input "
-              "is a FITS file, a HDU must also be specified, you can use "
-              "the `--hdu' (`-h') option and give it the HDU number "
-              "(starting from zero), extension name, or anything "
-              "acceptable by CFITSIO");
+        error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
+              "file, a HDU must also be specified, you can use the `--hdu' "
+              "(`-h') option and give it the HDU number (starting from "
+              "zero), extension name, or anything acceptable by CFITSIO");
+
     }
   else
     error(EXIT_FAILURE, 0, "no input file is specified");
@@ -328,7 +301,23 @@ ui_check_options_and_arguments(struct noisechiselparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
-ui_set_output_names(struct noisechiselparams *p)
+ui_set_used_names(struct segmentparams *p)
+{
+  p->useddetectionname = p->detectionname ? p->detectionname : p->inputname;
+
+  p->usedstdname = ( p->stdname
+                     ? p->stdname
+                     : ( p->detectionname
+                         ? p->detectionname
+                         : p->inputname ) );
+}
+
+
+
+
+
+static void
+ui_set_output_names(struct segmentparams *p)
 {
   char *output=p->cp.output;
   char *basename = output ? output : p->inputname;
@@ -341,50 +330,33 @@ ui_set_output_names(struct noisechiselparams *p)
 
       /* When the output name is given (possibly with directory
          information), the check images will also be put in that same
-         directory.. */
+         directory. */
       p->cp.keepinputdir=1;
     }
   else
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                               "_labeled.fits");
+                                               "_segmented.fits");
 
   /* Tile check. */
   if(p->cp.tl.checktiles)
     p->cp.tl.tilecheckname=gal_checkset_automatic_output(&p->cp, basename,
                                                          "_tiles.fits");
 
-  /* Quantile threshold. */
-  if(p->checkqthresh)
-    p->qthreshname=gal_checkset_automatic_output(&p->cp, basename,
-                                                 "_qthresh.fits");
-
-  /* Initial detection Sky values. */
-  if(p->checkdetsky)
-    p->detskyname=gal_checkset_automatic_output(&p->cp, basename,
-                                                "_detsky.fits");
-
-  /* Pseudo-detection S/N values. */
+  /* Clump S/N values. */
   if(p->checksn)
     {
-      p->detsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
+      p->clumpsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_sky.txt" : "_detsn_sky.fits") );
-      p->detsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
+                   ? "_clumpsn_sky.txt" : "_clumpsn_sky.fits") );
+      p->clumpsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_det.txt" : "_detsn_det.fits") );
-      p->detsn_D_name=gal_checkset_automatic_output(&p->cp, basename,
-                 ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_grown.txt" : "_detsn_grown.fits") );
+                   ? "_clumpsn_det.txt" : "_clumpsn_det.fits") );
     }
 
-  /* Detection steps. */
-  if(p->checkdetection)
-    p->detectionname=gal_checkset_automatic_output(&p->cp, basename,
-                                               "_detcheck.fits");
-
-  /* Sky checks. */
-  if(p->checksky)
-    p->skyname=gal_checkset_automatic_output(&p->cp, basename, "_sky.fits");
+  /* Segmentation steps. */
+  if(p->checksegmentation)
+    p->segmentationname=gal_checkset_automatic_output(&p->cp, basename,
+                                                      "_segcheck.fits");
 }
 
 
@@ -392,7 +364,71 @@ ui_set_output_names(struct noisechiselparams *p)
 
 
 static void
-ui_prepare_kernel(struct noisechiselparams *p)
+ui_prepare_inputs(struct segmentparams *p)
+{
+  /* Read the input as a single precision floating point dataset. */
+  p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
+                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
+                               &p->input->nwcs);
+  if(p->input->name) free(p->input->name);
+  gal_checkset_allocate_copy("INPUT", &p->input->name);
+
+
+  /* Check for blank values to help later processing.  */
+  gal_blank_present(p->input, 1);
+
+
+  /* Segment currently only works on 2D datasets (images). */
+  if(p->input->ndim!=2)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) has %zu dimensions but Segment "
+          "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
+          p->input->ndim);
+
+
+  /* If a convolved image is given, read it. */
+  if(p->convolvedname)
+    {
+      /* Read the input convolved image. */
+      p->conv = gal_fits_img_read_to_type(p->convolvedname, p->chdu,
+                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->conv->wcs=gal_wcs_copy(p->input->wcs);
+
+      /* Make sure it is the same size as the input. */
+      if( gal_data_dsize_is_different(p->input, p->conv) )
+        error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
+              "`--chdu', is not the same size as the input (%s, hdu: %s)",
+              p->convolvedname, p->chdu, p->inputname, p->cp.hdu);
+    }
+
+
+  /* Read the detected label image and check its type and size. */
+  p->olabel = gal_fits_img_read(p->useddetectionname, p->dhdu,
+                                p->cp.minmapsize);
+  if( gal_data_dsize_is_different(p->input, p->olabel) )
+    error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
+          "different dimension/size", p->useddetectionname, p->dhdu,
+          p->inputname, p->cp.hdu);
+  if(p->olabel->type==GAL_TYPE_FLOAT32 || p->olabel->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) has a `%s' type. The detection "
+          "(labeled) map must have an integer type (labels/classes can only "
+          "be integers). If the pixel values are integers, but only the "
+          "numerical type of the image is floating-point, you can use the "
+          "command below to convert it to a 32-bit (signed) integer type:\n\n"
+          "    $ astarithmetic %s int32 -h%s\n\n", p->useddetectionname,
+          p->dhdu, gal_type_name(p->olabel->type, 1), p->useddetectionname,
+          p->dhdu);
+  p->olabel = gal_data_copy_to_new_type_free(p->olabel, GAL_TYPE_INT32);
+  p->olabel->wcs=gal_wcs_copy(p->input->wcs);
+}
+
+
+
+
+
+/* Prepare the input kernel. */
+static void
+ui_prepare_kernel(struct segmentparams *p)
 {
   float *f, *ff, *k;
 
@@ -424,40 +460,25 @@ ui_prepare_kernel(struct noisechiselparams *p)
       ff=(f=kernel_2d)+gal_dimension_total_size(2, p->kernel->dsize);
       do *k++=*f; while(++f<ff);
     }
-
-
-  /* If a wide kernel is given, then read it into memory. Otherwise, just
-     ignore it. */
-  if(p->widekernelname)
-    p->widekernel=gal_fits_img_read_kernel(p->widekernelname, p->whdu,
-                                           p->cp.minmapsize);
 }
 
 
 
 
 
+/* Set up the tessellation. */
 static void
-ui_prepare_tiles(struct noisechiselparams *p)
+ui_prepare_tiles(struct segmentparams *p)
 {
   gal_data_t *check;
   struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
 
 
   /* Check the tile parameters for the small tile sizes and make the tile
-     structure. We will also need the dimensions of the tile with the
-     maximum required memory. */
-  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
-                                    __func__, "p->maxtsize");
+     structure.  */
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
   gal_tile_full_two_layers(p->input, tl);
   gal_tile_full_permutation(tl);
-  for(check=tl->tiles; check!=NULL; check=check->next)
-    if( check->size > p->maxtcontig )/* p->maxtcontig initialized to 0. */
-      {
-        p->maxtcontig=check->size;
-        memcpy(p->maxtsize, check->dsize, tl->ndim*sizeof *p->maxtsize);
-      }
 
 
   /* Make the large tessellation, except for the size, the rest of the
@@ -467,20 +488,12 @@ ui_prepare_tiles(struct noisechiselparams *p)
   ltl->workoverch     = tl->workoverch;
   ltl->checktiles     = tl->checktiles;
   ltl->oneelempertile = tl->oneelempertile;
-  p->maxltsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
-                                     __func__, "p->maxltsize");
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, ltl);
   gal_tile_full_two_layers(p->input, ltl);
   gal_tile_full_permutation(ltl);
-  for(check=ltl->tiles; check!=NULL; check=check->next)
-    if( check->size > p->maxltcontig )/* p->maxltcontig initialized to 0. */
-      {
-        p->maxltcontig=check->size;
-        memcpy(p->maxltsize, check->dsize, ltl->ndim*sizeof *p->maxltsize);
-      }
 
 
-  /* If the input has blank elements, then set teh appropriate flag for
+  /* If the input has blank elements, then set the appropriate flag for
      each tile.*/
   if( p->input->flag & GAL_DATA_FLAG_HASBLANK )
     {
@@ -509,6 +522,7 @@ ui_prepare_tiles(struct noisechiselparams *p)
 
       /* Free the name. */
       free(tl->tilecheckname);
+      tl->tilecheckname=NULL;
     }
 }
 
@@ -517,63 +531,167 @@ ui_prepare_tiles(struct noisechiselparams *p)
 
 
 static void
-ui_preparations(struct noisechiselparams *p)
+ui_check_size(gal_data_t *base, gal_data_t *comp, size_t numtiles,
+              char *bname, char *bhdu, char *cname, char *chdu)
 {
+  if( gal_data_dsize_is_different(base, comp) && numtiles!=comp->size)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s): doesn't have the right size "
+          "(%zu elements or pixels).\n\n"
+          "It must either be the same size as `%s' (hdu: `%s'), or "
+          "it must have the same number of elements as the total "
+          "number of tiles in the tessellation (%zu). In the latter "
+          "case, each pixel is assumed to be a fixed value for a "
+          "complete tile.\n\n"
+          "Run with `-P' to see the (tessellation) options/settings "
+          "and their values). For more information on tessellation in "
+          "Gnuastro, please run the following command (use the arrow "
+          "keys for up and down and press `q' to return to the "
+          "command-line):\n\n"
+          "    $ info gnuastro tessellation",
+          cname, chdu, comp->size, bname, bhdu, numtiles);
+}
+
+
+
+
+
+/* Subtract `sky' from the input dataset depending on its size (it may be
+   the whole array or a tile-values array).. */
+static void
+ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
+                           struct gal_tile_two_layer_params *tl)
+{
+  size_t tid;
+  gal_data_t *tile;
+  float *f, *s, *sf, *skyarr=sky->array;
+
+  /* It is the same size as the input. */
+  if( gal_data_dsize_is_different(in, sky)==0 )
+    {
+      f=in->array;
+      sf=(s=sky->array)+sky->size;
+      do *f++-=*s; while(++s<sf);
+    }
+
+  /* It is the same size as the number of tiles. */
+  else if( tl->tottiles==sky->size )
+    {
+      /* Go over all the tiles. */
+      for(tid=0; tid<tl->tottiles; ++tid)
+        {
+          /* For easy reading. */
+          tile=&tl->tiles[tid];
+
+          /* Subtract the Sky value from the input image. */
+          GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=skyarr[tid];});
+        }
+    }
+
+  /* The size must have been checked before, so if control reaches here, we
+     have a bug! */
+  else
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+          "the problem. For some reason, the size doesn't match", __func__,
+          PACKAGE_BUGREPORT);
+}
+
+
+
+
+
+/* The Sky and Sky standard deviation images can be a `oneelempertile'
+   image (only one element/pixel for a tile). So we need to do some extra
+   checks on them (after reading the tessellation). */
+static void
+ui_read_std(struct segmentparams *p)
+{
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
+  gal_data_t *sky, *keys=gal_data_array_calloc(3);
+
+  /* The standard devitaion image. */
+  p->std=gal_fits_img_read_to_type(p->usedstdname, p->stdhdu,
+                                   GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  ui_check_size(p->input, p->std, tl->tottiles, p->inputname, p->cp.hdu,
+                p->usedstdname, p->stdhdu);
+
+
+  /* If a Sky image is given, subtract it from the values and convolved
+     images, then free it. */
+  if(p->skyname)
+    {
+      /* Read the Sky dataset. */
+      sky=gal_fits_img_read_to_type(p->skyname, p->skyhdu, GAL_TYPE_FLOAT32,
+                                    p->cp.minmapsize);
+
+      /* Check its size. */
+      ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,
+                    p->skyname, p->skyhdu);
+
+      /* Subtract it from the input. */
+      ui_subtract_sky(p->input, sky, tl);
+
+      /* If a convolved image is given, subtract the Sky from that too. */
+      if(p->conv)
+        ui_subtract_sky(p->conv, sky, tl);
+
+      /* Clean up. */
+      gal_data_free(sky);
+    }
+
+
+  /* When the Standard deviation image is made by NoiseChisel, it puts
+     three basic statistics of the pre-interpolation distribution of
+     standard deviations in `MEDSTD', `MINSTD' and `MAXSTD'. The `MEDSTD'
+     in particular is most important because it can't be inferred after the
+     interpolations and it can be useful in MakeCatalog later to give a
+     more accurate estimate of the noise level. So if they are present, we
+     will read them here and write them to the STD output (which is created
+     when `--rawoutput' is not given). */
+  if(!p->rawoutput)
+    {
+      keys[0].next=&keys[1];
+      keys[1].next=&keys[2];
+      keys[2].next=NULL;
+      keys[0].array=&p->medstd;     keys[0].name="MEDSTD";
+      keys[1].array=&p->minstd;     keys[1].name="MINSTD";
+      keys[2].array=&p->maxstd;     keys[2].name="MAXSTD";
+      keys[0].type=keys[1].type=keys[2].type=GAL_TYPE_FLOAT32;
+      gal_fits_key_read(p->usedstdname, p->stdhdu, keys, 0, 0);
+      if(keys[0].status) p->medstd=NAN;
+      if(keys[1].status) p->minstd=NAN;
+      if(keys[2].status) p->maxstd=NAN;
+      keys[0].name=keys[1].name=keys[2].name=NULL;
+      keys[0].array=keys[1].array=keys[2].array=NULL;
+      gal_data_array_free(keys, 3, 1);
+    }
+}
+
+
+
+
+
+static void
+ui_preparations(struct segmentparams *p)
+{
+  /* Set the input names. */
+  ui_set_used_names(p);
+
   /* Prepare the names of the outputs. */
   ui_set_output_names(p);
 
-
-  /* Read the input as a single precision floating point dataset. */
-  p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
-  p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
-                               &p->input->nwcs);
-  if(p->input->name==NULL)
-    gal_checkset_allocate_copy("INPUT", &p->input->name);
-
-
-  /* NoiseChisel currently only works on 2D datasets (images). */
-  if(p->input->ndim!=2)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s) has %zu dimensions but NoiseChisel "
-          "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
-          p->input->ndim);
-
+  /* Read the input datasets. */
+  ui_prepare_inputs(p);
 
   /* If a convolved image was given, read it in. Otherwise, read the given
      kernel. */
-  if(p->convolvedname)
-    {
-      /* Read the input convolved image. */
-      p->conv = gal_fits_img_read_to_type(p->convolvedname, p->chdu,
-                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
-
-      /* Make sure the convolved image is the same size as the input. */
-      if( gal_data_dsize_is_different(p->input, p->conv) )
-        error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
-              "`--convolvehdu', is not the same size as NoiseChisel's "
-              "input: %s (hdu: %s)", p->convolvedname, p->chdu,
-              p->inputname, p->cp.hdu);
-    }
-  else
+  if(p->conv==NULL)
     ui_prepare_kernel(p);
-
-
-  /* Check for blank values to help later processing.  */
-  gal_blank_present(p->input, 1);
-
 
   /* Prepare the tessellation. */
   ui_prepare_tiles(p);
 
-
-  /* Allocate space for the over-all necessary arrays. */
-  p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
-                           p->input->dsize, p->input->wcs, 0,
-                           p->cp.minmapsize, NULL, "binary", NULL);
-  p->olabel=gal_data_alloc(NULL, GAL_TYPE_INT32, p->input->ndim,
-                           p->input->dsize, p->input->wcs, 0,
-                           p->cp.minmapsize, NULL, "labels", NULL);
-  p->binary->flag = p->olabel->flag = p->input->flag;
+  /* Prepare the (optional Sky, and) Sky Standard deviation image. */
+  ui_read_std(p);
 }
 
 
@@ -595,11 +713,10 @@ ui_preparations(struct noisechiselparams *p)
 
 
 /**************************************************************/
-/************     High level reading function     *************/
+/************         Set the parameters          *************/
 /**************************************************************/
 void
-ui_read_check_inputs_setup(int argc, char *argv[],
-                           struct noisechiselparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
@@ -657,27 +774,25 @@ ui_read_check_inputs_setup(int argc, char *argv[],
       printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf("  - Input: %s (hdu: %s)\n", p->inputname, p->cp.hdu);
+      if(p->skyname)
+        printf("  - Sky: %s (hdu: %s)\n", p->skyname, p->skyhdu);
       if(p->convolvedname)
-        printf("  - Convolved input: %s (hdu: %s)\n",
-               p->convolvedname, p->chdu);
+        printf("  - Convolved input: %s (hdu: %s)\n", p->convolvedname,
+               p->chdu);
       else
         {
           if(p->kernelname)
             {
               if( strcmp(p->kernelname, UI_NO_CONV_KERNEL_NAME) )
-                printf("  - %s: %s (hdu: %s)\n",
-                       p->widekernelname ? "Sharp Kernel" : "Kernel",
-                       p->kernelname, p->khdu);
+                printf("  - Kernel: %s (hdu: %s)\n", p->kernelname, p->khdu);
               else
                 printf("  - No convolution requested.\n");
             }
           else
-            printf("  - %s: FWHM=2 pixel Gaussian.\n",
-                   p->widekernelname ? "Sharp Kernel" : "Kernel");
+            printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
         }
-      if(p->widekernelname)
-        printf("  - Wide Kernel: %s (hdu: %s)\n", p->widekernelname,
-               p->whdu);
+      printf("  - Detection: %s (hdu: %s)\n", p->useddetectionname, p->dhdu);
+      printf("  - Sky STD: %s (hdu: %s)\n", p->usedstdname, p->stdhdu);
     }
 }
 
@@ -701,10 +816,10 @@ ui_read_check_inputs_setup(int argc, char *argv[],
 
 
 /**************************************************************/
-/************     Pre-finish/abort operations     *************/
+/************      Free allocated, report         *************/
 /**************************************************************/
 void
-ui_abort_after_check(struct noisechiselparams *p, char *filename,
+ui_abort_after_check(struct segmentparams *p, char *filename,
                      char *file2name, char *description)
 {
   char *name;
@@ -745,35 +860,29 @@ ui_abort_after_check(struct noisechiselparams *p, char *filename,
 
 
 void
-ui_free_report(struct noisechiselparams *p, struct timeval *t1)
+ui_free_report(struct segmentparams *p, struct timeval *t1)
 {
-  /* Free the simply allocated spaces. */
+  /* Free the allocated arrays: */
   free(p->cp.hdu);
-  free(p->maxtsize);
-  free(p->maxltsize);
   free(p->cp.output);
-  if(p->skyname)          free(p->skyname);
-  if(p->detskyname)       free(p->detskyname);
-  if(p->qthreshname)      free(p->qthreshname);
-  if(p->detsn_s_name)     free(p->detsn_s_name);
-  if(p->detsn_d_name)     free(p->detsn_d_name);
-  if(p->detectionname)    free(p->detectionname);
-
-  /* Free the allocated datasets. */
-  gal_data_free(p->sky);
-  gal_data_free(p->std);
-  gal_data_free(p->wconv);
   gal_data_free(p->input);
   gal_data_free(p->kernel);
   gal_data_free(p->binary);
   gal_data_free(p->olabel);
-  gal_data_free(p->widekernel);
+  gal_data_free(p->clabel);
+  if(p->khdu) free(p->khdu);
+  if(p->chdu) free(p->chdu);
+  if(p->dhdu) free(p->dhdu);
+  if(p->skyhdu) free(p->skyhdu);
+  if(p->stdhdu) free(p->stdhdu);
+  if(p->stdname) free(p->stdname);
+  if(p->kernelname) free(p->kernelname);
+  if(p->detectionname) free(p->detectionname);
+  if(p->convolvedname) free(p->convolvedname);
   if(p->conv!=p->input) gal_data_free(p->conv);
-
-  /* Clean up the tile structure. */
-  p->ltl.numchannels=NULL;
-  gal_tile_full_free_contents(&p->ltl);
-  gal_tile_full_free_contents(&p->cp.tl);
+  if(p->clumpsn_s_name) free(p->clumpsn_s_name);
+  if(p->clumpsn_d_name) free(p->clumpsn_d_name);
+  if(p->segmentationname) free(p->segmentationname);
 
   /* Print the final message. */
   if(!p->cp.quiet && t1)

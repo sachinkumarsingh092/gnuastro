@@ -31,17 +31,22 @@ struct mkcatalog_passparams
   int32_t            object;    /* Object that is currently working on. */
   size_t        clumpsinobj;    /* The number of clumps in this object. */
   gal_data_t          *tile;    /* The tile to pass-over.               */
-  float               *st_i;    /* Starting pointer for input image.    */
-  int32_t             *st_o;    /* Starting pointer for objects image.  */
-  int32_t             *st_c;    /* Starting pointer for clumps image.   */
-  float             *st_sky;    /* Starting pointer for input image.    */
-  float             *st_std;    /* Starting pointer for input image.    */
+  int32_t             *st_o;    /* Starting pointer for object labels.  */
+  int32_t             *st_c;    /* Starting pointer for clump labels.   */
+  float               *st_v;    /* Starting pointer for values array.   */
+  float             *st_sky;    /* Starting pointer for Sky array.      */
+  float             *st_std;    /* Starting pointer for Sky STD array.  */
   size_t   start_end_inc[2];    /* Starting and ending indexs.          */
   size_t             *shift;    /* Shift coordinates.                   */
   gsl_rng              *rng;    /* Random number generator.             */
   size_t    clumpstartindex;    /* Clump starting row in final catalog. */
   gal_data_t       *up_vals;    /* Container for upper-limit values.    */
 };
+
+void
+mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
+                                   gal_list_str_t **comments, int withsky,
+                                   int withstd);
 
 void
 mkcatalog(struct mkcatalogparams *p);

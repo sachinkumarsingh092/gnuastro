@@ -5,6 +5,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  New program:
+    - Segment: new program in charge of segmentation over detections.
+
   Arithmetic:
     - filter-sigclip-mean: sigma-clipped, mean filter operator.
     - filter-sigclip-median: sigma-clipped, median filter operator.
@@ -13,7 +16,20 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - TIFF images can also be used as input.
 
   MakeCatalog:
+    MakeCatalog will only read the datasets necessary for the requested
+    columns. Until now, it would read all the possible datasets and all the
+    intermediate measurements. This is thus major improvement in memory and
+    CPU usage. As a result, the input argument is no longer assumed to be
+    the values file, but the object labels file. Please see the
+    "MakeCatalog inputs and basic settings" section of the book for
+    more. Here is the summary of the the options:
+    --valuesfile: filename containing the values dataset.
+    --valueshdu: HDU/extension containing the values dataset.
+    --clumpscat: Make a clumps catalog also (`WCLUMPS' keyword not used anymore).
+    --subtractsky: Subtract the given Sky from the values dataset.
     --variance: input standard deviation image is actually variance.
+    --checkupperlimit: make a table for random positions and measurements.
+    --geoarea: the number of labeled pixels (irrespective of value).
     --brightnesserr: error in estimating the brightness.
     --mean: calculate the mean pixel value within an object or clump.
     --median: calculate the median pixel value within an object or clump.
@@ -21,6 +37,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --upperlimitquantile: position in random distribution (quantile).
     --upperlimitonesigma: 1sigma value of the random distribution.
     --upperlimitskew: (mean-median)/sigma or skewness of random distribution.
+
+  NoiseChisel:
+    --rawoutput: only output the detection labels and Sky and its STD.
 
   Statistics:
     --manualbinrange: histogram or CFP range can be outside of distribution.
@@ -37,6 +56,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_jpeg_suffix_is_jpeg: Returns 1 if given suffix is JPEG.
     gal_jpeg_read: Reads input JPEG image into `gal_data_t'.
     gal_jpeg_write: Writes a `gal_data_t' into a JPEG file.
+    gal_label_grow_indexs: grow known indexs into desired areas.
+    gal_label_oversegment: apply over-segmentation to an input dataset.
     gal_pdf_name_is_pdf: Returns 1 if given filename is PDF.
     gal_pdf_suffix_is_pdf: Returns 1 if given suffix is PDF.
     gal_pdf_write: Writes a dataset into an PDF file.
@@ -47,6 +68,18 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Removed features
 
+  NoiseChisel:
+
+    - Segmentation (and thus the options below) moved to the new Segment
+      program: --onlydetection, --segsnminarea, --checkclumpsn, --segquant,
+      --keepmaxnearriver, --gthresh, --minriverlength, --objbordersn,
+      --grownclumps, --checksegmentation.
+
+    --skysubtracted: no longer necessary, included in noise measuremnts.
+
+  MakeCatalog:
+    --skysubtracted: no longer necessary, included in noise measuremnts.
+
 ** Changed features
 
   Fits:
@@ -54,11 +87,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --comment: can be called/written multiple times in one run.
 
   NoiseChisel:
+    Many of the changes below are because NoiseChisel doesn't do
+    segmentation any more.
     --kernel: value `none' will disable convolution.
+    - Renamed options:
+      --convolvedhdu ==> --chdu
+      --wkhdu        ==> --whdu
+      --detsnminarea ==> --snminarea
+      --checkdetsn   ==> --checksn
+      --detquant     ==> --snquant
 
   MakeCatalog:
     - Estimation of noise-level is now done per-pixel over the whole
          label. Until now the average noise level was used.
+    --objectsfile has been removed. The main input argument is now assumed
+         to be the objects file.
 
   Table:
     --column: multiple columns (comma separated) can be used in one

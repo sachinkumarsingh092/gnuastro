@@ -72,8 +72,9 @@ rm addedoptions.txt
 # easy readability. Note that some programs may need to build their
 # configuration files during compilation. Hence, their configuration files
 # are in the build directory, not the source directory.
-for prog in arithmetic buildprog convertt convolve cosmiccal crop fits \
-            match mkcatalog mknoise mkprof noisechisel statistics table warp
+for prog in arithmetic buildprog convertt convolve cosmiccal crop fits    \
+                       match mkcatalog mknoise mkprof noisechisel segment \
+                       statistics table warp
 do
     if test -f $topsrc/bin/$prog/ast$prog.conf; then
         ctopdir=$topsrc

@@ -41,6 +41,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MKCATALOG_UPPERLIMIT_MINIMUM_NUM 20
 
 
+/* Unit string to use if values dataset doesn't have any. */
+#define MKCATALOG_NO_UNIT "input-units"
+
+
 
 /* Intermediate/raw array elements
    ===============================
@@ -67,14 +71,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum objectcols
   {
     OCOL_NUMALL,         /* Number of all pixels with this label.     */
-    OCOL_NUM,            /* Number of pixels above threshold.         */
+    OCOL_NUM,            /* Number of pixels with a value.            */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Varience of sum (for brightness error).   */
     OCOL_MEDIAN,         /* Median of value in object.                */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
-    OCOL_SX,             /* Shift along X axis.                       */
-    OCOL_SY,             /* Shift along Y axis.                       */
     OCOL_VXX,            /* Sum of (value-sky) * x * x.               */
     OCOL_VYY,            /* Sum of (value-sky) * y * y.               */
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
@@ -106,8 +108,8 @@ enum objectcols
 
 enum clumpcols
   {
-    CCOL_NUMALL,         /* Area of clump irrespective of threshold.  */
-    CCOL_NUM,            /* Area of this clump.                       */
+    CCOL_NUMALL,         /* Number of pixels in clump.                */
+    CCOL_NUM,            /* Number of values used in clump.           */
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance of sum (for brightness error).   */
     CCOL_MEDIAN,         /* Median of values in clump.                */
@@ -148,9 +150,9 @@ struct mkcatalogparams
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
   gal_list_i32_t   *columnids;  /* The desired column codes.            */
-  char             *inputname;  /* Input filename.                      */
-  char           *objectsfile;  /* File name of objects file.           */
-  char            *objectshdu;  /* HDU of objects image.                */
+  char           *objectsfile;  /* Input filename.                      */
+  char            *valuesfile;  /* File name of objects file.           */
+  char             *valueshdu;  /* HDU of objects image.                */
   char            *clumpsfile;  /* File name of objects file.           */
   char             *clumpshdu;  /* HDU of objects image.                */
   char               *skyfile;  /* File name of sky file.               */
@@ -158,33 +160,32 @@ struct mkcatalogparams
   char               *stdfile;  /* File name of sky STD file.           */
   char                *stdhdu;  /* HDU of sky STD image.                */
 
+  uint8_t           clumpscat;  /* ==1: create clumps catalog.          */
   float             zeropoint;  /* Zero-point magnitude of object.      */
-  uint8_t       skysubtracted;  /* If image is already sky subtracted.  */
   uint8_t            variance;  /* Input STD file is actually variance. */
-  float             threshold;  /* Only use values above this threshold.*/
+  uint8_t         subtractsky;  /* ==1: subtract the Sky from values.   */
   float           sfmagnsigma;  /* Surface brightness multiple of sigma.*/
   float             sfmagarea;  /* Surface brightness area (arcsec^2).  */
 
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */
   size_t                upnum;  /* Number of upper-limit random samples.*/
-  size_t             *uprange;  /* Range of random positions about target.*/
+  size_t             *uprange;  /* Range of random pos. around target.  */
   uint8_t             envseed;  /* Use the environment for random seed. */
   double       upsigmaclip[2];  /* Sigma clip to measure upper limit.   */
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */
+  int32_t  checkupperlimit[2];  /* Object & clump ID to check dist.     */
 
   /* Internal. */
   time_t              rawtime;  /* Starting time of the program.        */
-  gal_data_t           *input;  /* Input.                               */
+  gal_data_t          *values;  /* Input.                               */
   gal_data_t         *objects;  /* Object labels.                       */
   gal_data_t          *clumps;  /* Clump labels.                        */
   gal_data_t             *sky;  /* Sky.                                 */
   gal_data_t             *std;  /* Sky standard deviation.              */
   gal_data_t          *upmask;  /* Upper limit magnitude mask.          */
-  float                minstd;  /* Minimum Standard deviation value.    */
   float                medstd;  /* Median standard deviation value.     */
   float               cpscorr;  /* Counts-per-second correction.        */
-  float                 detsn;  /* Minimum detection S/N threshold.     */
   size_t           numobjects;  /* Number of object labels in image.    */
   float               clumpsn;  /* Clump S/N threshold.                 */
   size_t            numclumps;  /* Number of clumps in image.           */
@@ -193,6 +194,7 @@ struct mkcatalogparams
   gal_data_t           *tiles;  /* Tiles to cover each object.          */
   char            *objectsout;  /* Output objects catalog.              */
   char             *clumpsout;  /* Output clumps catalog.               */
+  char            *upcheckout;  /* Name of upperlimit check table.      */
   uint8_t             *oiflag;  /* Intermediate flags for objects.      */
   uint8_t             *ciflag;  /* Intermediate flags for clumps.       */
   pthread_mutex_t       mutex;  /* Mutex to change the total numbers.   */
@@ -202,6 +204,12 @@ struct mkcatalogparams
   const char         *rngname;  /* Name of random number generator.     */
   size_t               rngmin;  /* Minimum possible value of RNG.       */
   size_t              rngdiff;  /* Difference of RNG max and min.       */
+  uint8_t      uprangewarning;  /* A warning must be printed.           */
+
+  char        *usedvaluesfile;  /* Ptr to final name used for values.   */
+  char        *usedclumpsfile;  /* Ptr to final name used for clumps.   */
+  char           *usedskyfile;  /* Ptr to final fname used for sky.     */
+  char           *usedstdfile;  /* Ptr to final name used for sky std.  */
 
   gal_data_t          *wcs_vo;  /* Object RA-Dec flux weighted X, Y.    */
   gal_data_t          *wcs_vc;  /* Clump RA-Dec flux weighted X, Y.     */

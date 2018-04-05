@@ -45,6 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "mkcatalog.h"
 
 #include "ui.h"
+#include "parse.h"
 #include "columns.h"
 #include "upperlimit.h"
 
@@ -52,522 +53,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/*********************************************************************/
-/*************      Definitions and initialization     ***************/
-/*********************************************************************/
-/* Both passes are going to need their starting pointers set, so we'll do
-   that here. */
-static void
-mkcatalog_initialize_params(struct mkcatalog_passparams *pp)
-{
-  struct mkcatalogparams *p=pp->p;
-
-  /* Initialize the number of clumps in this object. */
-  pp->clumpsinobj=0;
-
-
-  /* Initialize the intermediate values. */
-  memset(pp->oi, 0, OCOL_NUMCOLS * sizeof *pp->oi);
-
-
-  /* Set the shifts in every dimension to avoid round-off errors in large
-     numbers for the non-linear calculations. We are using the first pixel
-     of each object's tile as the shift parameter to keep the mean
-     (average) reasonably near to the standard deviation. Otherwise, when
-     the object is far out in the image (large x and y positions), then
-     roundoff errors are going to decrease the accuracy of the second order
-     calculations. */
-  gal_dimension_index_to_coord( ( (float *)(pp->tile->array)
-                                  - (float *)(pp->tile->block->array) ),
-                                p->input->ndim, p->input->dsize, pp->shift);
-
-
-  /* Set the starting and ending indexs of this tile/object.  */
-  pp->st_i   = gal_tile_start_end_ind_inclusive(pp->tile, p->input,
-                                                pp->start_end_inc);
-  pp->st_sky = (float *)(p->sky->array)       + pp->start_end_inc[0];
-  pp->st_std = (float *)(p->std->array)       + pp->start_end_inc[0];
-  pp->st_o   = (int32_t *)(p->objects->array) + pp->start_end_inc[0];
-  pp->st_c   = ( p->clumps
-                 ? (int32_t *)(p->clumps->array)  + pp->start_end_inc[0]
-                 : NULL );
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 
 /*********************************************************************/
-/*************         First and second passes         ***************/
-/*********************************************************************/
-static void
-mkcatalog_first_pass(struct mkcatalog_passparams *pp)
-{
-  struct mkcatalogparams *p=pp->p;
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
-
-  double *oi=pp->oi;
-  int32_t *O, *C=NULL;
-  size_t d, increment=0, num_increment=1;
-  float ss, st, *I, *II, *SK, *ST, *input=p->input->array;
-  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
-  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
-
-
-  /* Parse each contiguous patch of memory covered by this object. */
-  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
-    {
-      /* Set the contiguous range to parse, we will check the count
-         over the `I' pointer and just increment the rest. */
-      O  = pp->st_o   + increment;
-      SK = pp->st_sky + increment;
-      ST = pp->st_std + increment;
-      if(p->clumps) C = pp->st_c + increment;
-      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
-
-      /* Parse the tile. */
-      do
-        {
-          /* If this pixel belongs to the requested object then do the
-             processing.  */
-          if( *O==pp->object )
-            {
-              /* Get the number of clumps in this object: the largest clump
-                 ID over each object. */
-              if( p->clumps && *C>0 )
-                pp->clumpsinobj = *C > pp->clumpsinobj ? *C : pp->clumpsinobj;
-
-
-              /* Get the coordinates of this point. */
-              gal_dimension_index_to_coord(I-input, ndim, dsize, c);
-
-
-              /* Calculate the shifted coordinates for second order
-                 calculations. The coordinate is incremented because from
-                 now on, the positions are in the FITS standard (starting
-                 from one).
-
-                 IMPORTANT NOTE: this is a postfix increment, so after the
-                 expression (difference) is evaluated, the coordinate is
-                 going to change. This is necessary because `shift' is also
-                 starting from zero.  */
-              for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
-
-
-              /* Do the general geometric (independent of pixel value)
-                 calculations. */
-              oi[ OCOL_NUMALL ]++;
-              oi[ OCOL_GX     ] += c[1];
-              oi[ OCOL_GY     ] += c[0];
-              oi[ OCOL_GXX    ] += sc[1] * sc[1];
-              oi[ OCOL_GYY    ] += sc[0] * sc[0];
-              oi[ OCOL_GXY    ] += sc[1] * sc[0];
-              if(p->clumps && *C>0)
-                {
-                  oi[ OCOL_C_GX    ] += c[1];
-                  oi[ OCOL_C_GY    ] += c[0];
-                }
-
-
-              /* Start the pixel value related parameters.
-
-                 ABOUT THE CHECK: The reason this condition is given
-                 like this is that the `threshold' value is optional
-                 and we don't want to do multiple checks.
-
-                 The basic idea is this: when the user doesn't want any
-                 thresholds applied, then `p->threshold==NAN' and any
-                 conditional that involves a NaN will fail, so its logical
-                 negation will be positive and the calculations below will
-                 be done. However, if the user does specify a threhold and
-                 the pixel is above the threshold, then (`ss < p->threshold
-                 * st') will be false and its logical negation will be
-                 positive, so the pixel will be included. */
-              st = p->variance ? sqrt(*ST) : *ST;
-              if( !( p->hasblank && isnan(*I) )
-                  && !( (ss = *I - *SK) < p->threshold * st ) )
-                {
-                  /* General flux summations. */
-                  oi[ OCOL_NUM     ]++;
-                  oi[ OCOL_SUM     ] += ss;
-                  oi[ OCOL_SUMSKY  ] += *SK;
-                  oi[ OCOL_SUMSTD  ] += st;
-
-                  /* For each pixel, we have a sky contribution to the
-                     counts and the signal's contribution. The standard
-                     deviation in the sky is simply `*ST', but the standard
-                     deviation of the signal (independent of the sky) is
-                     `sqrt(ss)'. Therefore the total variance of this pixel
-                     is the variance of the sky added with the absolute
-                     value of its sky-subtracted flux. We use the absolute
-                     value, because especially as the signal gets noisy
-                     there will be negative values, and we don't want them
-                     to decrease the variance. */
-                  oi[ OCOL_SUM_VAR ] += (p->variance ? *ST : st*st)+fabs(ss);
-
-                  /* Get the necessary clump information. */
-                  if(p->clumps && *C>0)
-                    {
-                      oi[ OCOL_C_NUM ]++;
-                      oi[ OCOL_C_SUM ] += ss;
-                    }
-
-                  /* For flux weighted centers, we can only use positive
-                     values, so do those measurements here. */
-                  if( ss > 0.0f )
-                    {
-                      oi[ OCOL_NUMWHT ]++;
-                      oi[ OCOL_SUMWHT ] += ss;
-                      oi[ OCOL_VX     ] += ss * c[1];
-                      oi[ OCOL_VY     ] += ss * c[0];
-                      oi[ OCOL_VXX    ] += ss * sc[1] * sc[1];
-                      oi[ OCOL_VYY    ] += ss * sc[0] * sc[0];
-                      oi[ OCOL_VXY    ] += ss * sc[1] * sc[0];
-                      if(p->clumps && *C>0)
-                        {
-                          oi[ OCOL_C_NUMWHT ]++;
-                          oi[ OCOL_C_SUMWHT ] += ss;
-                          oi[ OCOL_C_VX     ] += ss * c[1];
-                          oi[ OCOL_C_VY     ] += ss * c[0];
-                        }
-                    }
-                }
-            }
-
-          /* Increment the other pointers. */
-          ++O; ++SK; ++ST; if(p->clumps) ++C;
-        }
-      while(++I<II);
-
-      /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->input, dsize,
-                                              num_increment++, NULL) );
-    }
-
-  /* Clean up. */
-  free(c);
-  free(sc);
-}
-
-
-
-
-
-/* Do the second pass  */
-static void
-mkcatalog_second_pass(struct mkcatalog_passparams *pp)
-{
-  struct mkcatalogparams *p=pp->p;
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
-
-  double *ci, *cir;
-  int32_t *O, *C=NULL, nlab, *ngblabs;
-  size_t i, ii, d, increment=0, num_increment=1;
-  size_t nngb=gal_dimension_num_neighbors(ndim);
-  size_t *dinc=gal_dimension_increment(ndim, dsize);
-  float ss, st, *I, *II, *SK, *ST, *input=p->input->array;
-  int32_t *objects=p->objects->array, *clumps=p->clumps->array;
-  size_t *c=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c");
-  size_t *sc=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "sc");
-
-  /* Allocate array to keep the neighbor labels. */
-  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
-
-  /* Parse each contiguous patch of memory covered by this object. */
-  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
-    {
-      /* Set the contiguous range to parse, we will check the count
-         over the `I' pointer and just increment the rest. */
-      O  = pp->st_o   + increment;
-      SK = pp->st_sky + increment;
-      ST = pp->st_std + increment;
-      if(p->clumps) C = pp->st_c + increment;
-      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
-
-      /* Parse the next contiguous region of this tile. */
-      do
-        {
-          /* If this pixel belongs to the requested object, is a clumps and
-             isn't NAN, then do the processing. `hasblank' is constant, so
-             when the input doesn't have any blank values, the `isnan' will
-             never be checked. */
-          if( *O==pp->object )
-            {
-              /* We are on a clump. */
-              if(p->clumps && *C>0)
-                {
-                  /* Pointer to make things easier. Note that the clump
-                     labels start from 1, but the array indexs from 0.*/
-                  ci=&pp->ci[ (*C-1) * CCOL_NUMCOLS ];
-
-                  /* Get the coordinates of this point. */
-                  gal_dimension_index_to_coord(I-input, ndim, dsize, c);
-
-                  /* Shifted coordinates for second order moments, see
-                     explanations in the first pass.*/
-                  for(d=0;d<ndim;++d) sc[d] = c[d]++ - pp->shift[d];
-
-                  /* Geometric measurements (independent of pixel value). */
-                  ci[ CCOL_NUMALL ]++;
-                  ci[ CCOL_GX     ] += c[1];
-                  ci[ CCOL_GY     ] += c[0];
-                  ci[ CCOL_GXX    ] += sc[1] * sc[1];
-                  ci[ CCOL_GYY    ] += sc[0] * sc[0];
-                  ci[ CCOL_GXY    ] += sc[1] * sc[0];
-
-                  /* Only use pixels above the threshold, see explanations in
-                     first pass for an explanation. */
-                  st = p->variance ? sqrt(*ST) : *ST;
-                  if( !( p->hasblank && isnan(*I) )
-                      && !( (ss = *I - *SK) < p->threshold * st ) )
-                    {
-                      /* Fill in the necessary information. */
-                      ci[ CCOL_NUM     ]++;
-                      ci[ CCOL_SUM     ] += ss;
-                      ci[ CCOL_SUMSKY  ] += *SK;
-                      ci[ CCOL_SUMSTD  ] += st;
-                      ci[ CCOL_SUM_VAR ] += ( (p->variance ? *ST : st*st)
-                                              + fabs(ss) );
-                      if( ss > 0.0f )
-                        {
-                          ci[ CCOL_NUMWHT ]++;
-                          ci[ CCOL_SUMWHT ] += ss;
-                          ci[ CCOL_VX     ] += ss * c[1];
-                          ci[ CCOL_VY     ] += ss * c[0];
-                          ci[ CCOL_VXX    ] += ss * sc[1] * sc[1];
-                          ci[ CCOL_VYY    ] += ss * sc[0] * sc[0];
-                          ci[ CCOL_VXY    ] += ss * sc[1] * sc[0];
-                        }
-                    }
-                }
-
-              /* This pixel is on the diffuse region, check to see if it is
-                 touching a clump or not, but only if this object actually
-                 has any clumps. */
-              else if(pp->clumpsinobj)
-                {
-                  /* We are on a diffuse (possibly a river) pixel. So the
-                     value of this pixel has to be added to any of the
-                     clumps in touches. But since it might touch a labeled
-                     region more than once, we use `ngblabs' to keep track
-                     of which label we have already added its value
-                     to. `ii' is the number of different labels this river
-                     pixel has already been considered for. `ngblabs' will
-                     keep the list labels. */
-                  ii=0;
-                  memset(ngblabs, 0, nngb*sizeof *ngblabs);
-
-                  /* Go over the neighbors and see if this pixel is
-                     touching a clump or not. */
-                  GAL_DIMENSION_NEIGHBOR_OP(I-input, ndim, dsize, ndim, dinc,
-                     {
-                       /* Neighbor's label (mainly for easy reading). */
-                       nlab=clumps[nind];
-
-                       /* We only want neighbors that are a clump and part
-                          of this object and part of the same object. */
-                       if( nlab>0 && objects[nind]==pp->object)
-                         {
-                           /* Go over all already checked labels and make
-                              sure this clump hasn't already been
-                              considered. */
-                           for(i=0;i<ii;++i) if(ngblabs[i]==nlab) break;
-
-                           /* It hasn't been considered yet: */
-                           if(i==ii)
-                             {
-                               /* Make sure it won't be considered any
-                                  more. */
-                               ngblabs[ii++] = nlab;
-
-                               /* To help in reading. */
-                               cir=&pp->ci[ (nlab-1) * CCOL_NUMCOLS ];
-
-                               /* Write in the values. */
-                               cir[ CCOL_RIV_NUM ]++;
-                               cir[ CCOL_RIV_SUM ] += *I-*SK;
-                               cir[ CCOL_RIV_SUM_VAR ] +=
-                                 ( (p->variance ? *ST : *ST * *ST)
-                                   + fabs(*I-*SK) );
-                             }
-                         }
-                     });
-                }
-            }
-
-          /* Increment the other pointers. */
-          ++O; ++SK; ++ST; if(p->clumps) ++C;
-        }
-      while(++I<II);
-
-      /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->input, dsize,
-                                              num_increment++, NULL) );
-    }
-
-  /* Clean up. */
-  free(c);
-  free(sc);
-  free(dinc);
-  free(ngblabs);
-}
-
-
-
-
-
-static void
-mkcatalog_median_pass(struct mkcatalog_passparams *pp)
-{
-  struct mkcatalogparams *p=pp->p;
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
-
-  double *ci;
-  gal_data_t *median;
-  int32_t *O, *C=NULL;
-  gal_data_t **clumpsmed=NULL;
-  float ss, st, *I, *II, *SK, *ST;
-  size_t i, increment=0, num_increment=1;
-  size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUM];
-  gal_data_t *objmed=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL, 0,
-                                    p->cp.minmapsize, NULL, NULL, NULL);
-
-  /* A small sanity check. */
-  if(p->input->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "%s: the input has to be float32 type", __func__);
-
-
-  /* Allocate space for the clump medians. */
-  if(p->clumps)
-    {
-      errno=0;
-      clumpsmed=malloc(pp->clumpsinobj * sizeof *clumpsmed);
-      if(clumpsmed==NULL)
-        error(EXIT_FAILURE, errno, "%s: couldn't allocate `clumpsmed' for "
-              "%zu clumps", __func__, pp->clumpsinobj);
-
-
-      /* Allocate the array necessary to keep the values of each clump. */
-      ccounter=gal_data_calloc_array(GAL_TYPE_SIZE_T, pp->clumpsinobj,
-                                     __func__, "ccounter");
-      for(i=0;i<pp->clumpsinobj;++i)
-        {
-          tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
-          clumpsmed[i]=gal_data_alloc(NULL, p->input->type, 1, &tsize, NULL,
-                                      0, p->cp.minmapsize, NULL, NULL, NULL);
-        }
-    }
-
-
-  /* Parse each contiguous patch of memory covered by this object. */
-  while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
-    {
-      /* Set the contiguous range to parse, we will check the count
-         over the `I' pointer and just increment the rest. */
-      O  = pp->st_o   + increment;
-      SK = pp->st_sky + increment;
-      ST = pp->st_std + increment;
-      if(p->clumps) C = pp->st_c + increment;
-      II = ( I = pp->st_i + increment ) + pp->tile->dsize[ndim-1];
-
-      /* Parse the next contiguous region of this tile. */
-      do
-        {
-          /* If this pixel belongs to the requested object, then do the
-             processing. `hasblank' is constant, so when the input doesn't
-             have any blank values, the `isnan' will never be checked. */
-          st = p->variance ? sqrt(*ST) : *ST;
-          if( *O==pp->object
-              && !( p->hasblank && isnan(*I) )
-              && !( (ss = *I - *SK) < p->threshold * st ))
-            {
-              /* Copy the value for the whole object. */
-              ss = *I - *SK;
-              memcpy( gal_data_ptr_increment(objmed->array, counter++,
-                                             p->input->type),
-                      &ss, gal_type_sizeof(p->input->type) );
-
-              /* We are also on a clump. */
-              if(p->clumps && *C>0)
-                memcpy( gal_data_ptr_increment(clumpsmed[*C-1]->array,
-                                               ccounter[*C-1]++,
-                                               p->input->type),
-                        &ss, gal_type_sizeof(p->input->type) );
-            }
-
-          /* Increment the other pointers. */
-          ++O; ++SK; ++ST; if(p->clumps) ++C;
-        }
-      while(++I<II);
-
-      /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->input, dsize,
-                                              num_increment++, NULL) );
-    }
-
-
-  /* Calculate the final medians for objects. */
-  median=gal_data_copy_to_new_type_free(gal_statistics_median(objmed, 1),
-                                        GAL_TYPE_FLOAT64);
-  pp->oi[OCOL_MEDIAN]=*((double *)(median->array));
-  gal_data_free(objmed);
-  gal_data_free(median);
-
-
-  /* Calculate the median for clumps. */
-  if(p->clumps)
-    {
-      for(i=0;i<pp->clumpsinobj;++i)
-        {
-          ci=&pp->ci[ i * CCOL_NUMCOLS ];
-          median=gal_statistics_median(clumpsmed[i], 1);
-          median=gal_data_copy_to_new_type_free(median, GAL_TYPE_FLOAT64);
-          ci[ CCOL_MEDIAN ] = ( *((double *)(median->array))
-                                - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
-          gal_data_free(clumpsmed[i]);
-          gal_data_free(median);
-        }
-      free(clumpsmed);
-      free(ccounter);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/*****************       High-level funcitons      *******************/
+/**************       Manage a single object       *******************/
 /*********************************************************************/
 static void
 mkcatalog_clump_starting_index(struct mkcatalog_passparams *pp)
@@ -601,41 +93,56 @@ mkcatalog_single_object(void *in_prm)
 {
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct mkcatalogparams *p=(struct mkcatalogparams *)(tprm->params);
-  size_t ndim=p->input->ndim;
+  size_t ndim=p->objects->ndim;
 
   size_t i;
+  uint8_t *oif=p->oiflag;
   struct mkcatalog_passparams pp;
+
 
   /* Initialize the mkcatalog_passparams elements. */
   pp.p               = p;
   pp.clumpstartindex = 0;
   pp.rng             = p->rng ? gsl_rng_clone(p->rng) : NULL;
-  pp.shift           = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                             "pp.shift");
   pp.oi              = gal_data_malloc_array(GAL_TYPE_FLOAT64, OCOL_NUMCOLS,
                                              __func__, "pp.oi");
 
+  /* If we have second order measurements, allocate the array keeping the
+     temporary shift values for each object of this thread. Note that the
+     clumps catalog (if requested), will have the same measurements, so its
+     just enough to check the objects. */
+  pp.shift = ( ( oif[    OCOL_GXX ]
+                 || oif[ OCOL_GYY ]
+                 || oif[ OCOL_GXY ]
+                 || oif[ OCOL_VXX ]
+                 || oif[ OCOL_VYY ]
+                 || oif[ OCOL_VXY ] )
+               ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+                                       "pp.shift")
+               : NULL );
+
   /* If we have upper-limit mode, then allocate the container to keep the
      values to calculate the standard deviation. */
-  pp.up_vals = p->upperlimit ? gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1,
-                                              &p->upnum, NULL, 0,
-                                              p->cp.minmapsize, NULL, NULL,
-                                              NULL) : NULL;
+  pp.up_vals = ( p->upperlimit
+                 ? gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &p->upnum,
+                                  NULL, 0, p->cp.minmapsize, NULL, NULL,
+                                  NULL)
+                 : NULL );
 
   /* Fill the desired columns for all the objects given to this thread. */
   for(i=0; tprm->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
-      /* For easy reading, Note that the object IDs start from one while
+      /* For easy reading. Note that the object IDs start from one while
          the array positions start from 0. */
       pp.ci=NULL;
       pp.object = tprm->indexs[i] + 1;
       pp.tile   = &p->tiles[ tprm->indexs[i] ];
 
       /* Initialize the parameters for this object/tile. */
-      mkcatalog_initialize_params(&pp);
+      parse_initialize(&pp);
 
       /* Get the first pass information. */
-      mkcatalog_first_pass(&pp);
+      parse_objects(&pp);
 
       /* Currently the second pass is only necessary when there is a clumps
          image. */
@@ -652,12 +159,12 @@ mkcatalog_single_object(void *in_prm)
           mkcatalog_clump_starting_index(&pp);
 
           /* Get the second pass information. */
-          mkcatalog_second_pass(&pp);
+          parse_clumps(&pp);
         }
 
       /* If the median is requested, another pass is necessary. */
       if( p->oiflag[ OCOL_MEDIAN ] )
-        mkcatalog_median_pass(&pp);
+        parse_median(&pp);
 
       /* Calculate the upper limit magnitude (if necessary). */
       if(p->upperlimit) upperlimit_calculate(&pp);
@@ -715,29 +222,29 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
   /* Flux weighted center positions for clumps and objects. */
   if(p->wcs_vo)
     {
-      gal_wcs_img_to_world(p->wcs_vo, p->input->wcs, 1);
+      gal_wcs_img_to_world(p->wcs_vo, p->objects->wcs, 1);
       if(p->wcs_vc)
-        gal_wcs_img_to_world(p->wcs_vc, p->input->wcs, 1);
+        gal_wcs_img_to_world(p->wcs_vc, p->objects->wcs, 1);
     }
 
 
   /* Geometric center positions for clumps and objects. */
   if(p->wcs_go)
     {
-      gal_wcs_img_to_world(p->wcs_go, p->input->wcs, 1);
+      gal_wcs_img_to_world(p->wcs_go, p->objects->wcs, 1);
       if(p->wcs_gc)
-        gal_wcs_img_to_world(p->wcs_gc, p->input->wcs, 1);
+        gal_wcs_img_to_world(p->wcs_gc, p->objects->wcs, 1);
     }
 
 
   /* All clumps flux weighted center. */
   if(p->wcs_vcc)
-    gal_wcs_img_to_world(p->wcs_vcc, p->input->wcs, 1);
+    gal_wcs_img_to_world(p->wcs_vcc, p->objects->wcs, 1);
 
 
   /* All clumps geometric center. */
   if(p->wcs_gcc)
-    gal_wcs_img_to_world(p->wcs_gcc, p->input->wcs, 1);
+    gal_wcs_img_to_world(p->wcs_gcc, p->objects->wcs, 1);
 
 
   /* Go over all the object columns and fill in the values. */
@@ -796,19 +303,77 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
 
 
 
+void
+mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
+                                   gal_list_str_t **comments, int withsky,
+                                   int withstd)
+{
+  char *str;
+
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      if( asprintf(&str, "--------- Input files ---------")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if( asprintf(&str, "Objects: %s (hdu: %s).", p->objectsfile, p->cp.hdu)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_list_str_add(comments, str, 0);
+
+  if(p->clumps)
+    {
+      if(asprintf(&str, "Clumps:  %s (hdu: %s).", p->usedclumpsfile,
+                  p->clumpshdu)<0)
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if(p->values)
+    {
+      if( asprintf(&str, "Values:  %s (hdu: %s).", p->usedvaluesfile,
+                   p->valueshdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if(withsky && p->sky)
+    {
+      if( asprintf(&str, "Sky:     %s (hdu: %s).", p->usedskyfile,
+                   p->skyhdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if(withstd && p->std)
+    {
+      if( asprintf(&str, "Sky STD: %s (hdu: %s).", p->usedstdfile,
+                   p->stdhdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if(p->upmaskfile)
+    {
+      if( asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
+                   p->upmaskhdu)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+}
+
+
+
+
+
 /* Write the similar information. */
 static gal_list_str_t *
 mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                              char *ObjClump)
 {
-  float snlim;
   char *str, *tstr;
   double pixarea=NAN;
   gal_list_str_t *comments=NULL;
-  char *skyfile=p->skyfile ? p->skyfile : p->inputname;
-  char *stdfile=p->stdfile ? p->stdfile : p->inputname;
-  char *clumpsfile=p->clumpsfile ? p->clumpsfile : p->inputname;
-  char *objectsfile=p->objectsfile ? p->objectsfile : p->inputname;
 
   if( asprintf(&str, "%s catalog of %s", o0c1 ? "Object" : "Clump",
                PROGRAM_STRING)<0 )
@@ -832,44 +397,11 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   gal_list_str_add(&comments, str, 0);
 
 
-  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
-    {
-      if( asprintf(&str, "--------- Input files ---------")<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
+  /* Write the basic information. */
+  mkcatalog_write_inputs_in_comments(p, &comments, 1, 1);
 
-  if( asprintf(&str, "Values:  %s (hdu: %s).", p->inputname, p->cp.hdu)<0 )
-    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-  gal_list_str_add(&comments, str, 0);
 
-  if( asprintf(&str, "Objects: %s (hdu: %s).", objectsfile, p->objectshdu)<0 )
-    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-  gal_list_str_add(&comments, str, 0);
-
-  if(p->clumps)
-    {
-      if(asprintf(&str, "Clumps:  %s (hdu: %s).", clumpsfile, p->clumpshdu)<0)
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
-
-  if( asprintf(&str, "Sky:     %s (hdu: %s).", skyfile, p->skyhdu)<0 )
-    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-  gal_list_str_add(&comments, str, 0);
-
-  if( asprintf(&str, "Sky STD: %s (hdu: %s).", stdfile, p->stdhdu)<0 )
-    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-  gal_list_str_add(&comments, str, 0);
-
-  if(p->upmaskfile)
-    {
-      if( asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
-                   p->upmaskhdu)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
-
+  /* Write other supplimentary information. */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       if( asprintf(&str, "--------- Supplimentary information ---------")<0 )
@@ -877,9 +409,9 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
-  if(p->input->wcs)
+  if(p->objects->wcs)
     {
-      pixarea=gal_wcs_pixel_area_arcsec2(p->input->wcs);
+      pixarea=gal_wcs_pixel_area_arcsec2(p->objects->wcs);
       if( isnan(pixarea)==0 )
         {
           if( asprintf(&str, "Pixel area (arcsec^2): %g", pixarea)<0 )
@@ -896,7 +428,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
     }
 
   /* Print surface brightness limits. */
-  if( !isnan(p->zeropoint) &&  !isnan(p->sfmagnsigma) )
+  if( !isnan(p->medstd) && !isnan(p->zeropoint) &&  !isnan(p->sfmagnsigma) )
     {
       /* Per pixel. */
       if( asprintf(&str, "%g sigma surface brightness (magnitude/pixel): "
@@ -950,23 +482,6 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
-  snlim = o0c1 ? p->clumpsn : p->detsn;
-  if( !isnan(snlim) )
-    {
-      if( asprintf(&str, "%s limiting signal-to-noise ratio: %.3f", ObjClump,
-                   snlim)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
-
-  if(o0c1==0)
-    {
-      if( asprintf(&str, "(NOTE: S/N limit above is for pseudo-detections, "
-                   "not objects.)")<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
-
   if(p->cpscorr>1.0f)
     {
       if( asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr)<0 )
@@ -974,68 +489,8 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
-  if( !isnan(p->threshold) )
-    {
-      if( asprintf(&str, "**IMPORTANT** Pixel threshold (multiple of local "
-                   "std): %.3f", p->threshold)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
-
-
   if(p->upperlimit)
-    {
-      if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
-        {
-          if(asprintf(&str, "--------- Upper-limit measurement ---------")<0)
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-          gal_list_str_add(&comments, str, 0);
-        }
-
-      if( asprintf(&str, "Number of random samples: %zu", p->upnum)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-
-      if(p->uprange)
-        {
-          if( asprintf(&str, "Range of random samples about target: %zu, %zu",
-                       p->uprange[1], p->uprange[0])<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-          gal_list_str_add(&comments, str, 0);
-        }
-
-      if( asprintf(&str, "Random number generator name: %s", p->rngname)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-
-      if( asprintf(&str, "Random number generator seed: %"PRIu64, p->seed)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-
-      if( asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
-                   p->upsigmaclip[0])<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-
-      if(p->upsigmaclip[1]>=1.0f)
-        {
-          if( asprintf(&str, "Number of clips for sigma-clipping: %.0f",
-                       p->upsigmaclip[1])<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
-                       p->upsigmaclip[1])<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      gal_list_str_add(&comments, str, 0);
-
-      if( asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: "
-                   "%.3f", p->upnsigma)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-    }
+    upperlimit_write_comments(p, &comments, 1);
 
 
 
@@ -1099,13 +554,16 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
     }
 
   /* Inform the user. */
-  if(p->clumpsout==p->objectsout)
-    printf("  - Output catalog: %s\n", p->objectsout);
-  else
+  if(!p->cp.quiet)
     {
-      printf("  - Output objects catalog: %s\n", p->objectsout);
-      if(p->clumps)
-        printf("  - Output clumps catalog: %s\n", p->clumpsout);
+      if(p->clumpsout==p->objectsout)
+        printf("  - Output catalog: %s\n", p->objectsout);
+      else
+        {
+          printf("  - Output objects catalog: %s\n", p->objectsout);
+          if(p->clumps)
+            printf("  - Output clumps catalog: %s\n", p->clumpsout);
+        }
     }
 }
 
@@ -1138,20 +596,16 @@ mkcatalog(struct mkcatalogparams *p)
      it to assign a column to the clumps in the final catalog. */
   if( p->cp.numthreads > 1 ) pthread_mutex_init(&p->mutex, NULL);
 
-
   /* Do the processing on each thread. */
   gal_threads_spin_off(mkcatalog_single_object, p, p->numobjects,
                        p->cp.numthreads);
-
 
   /* Post-thread processing, for example to convert image coordinates to RA
      and Dec. */
   mkcatalog_wcs_conversion(p);
 
-
   /* Write the filled columns into the output. */
   mkcatalog_write_outputs(p);
-
 
   /* Destroy the mutex. */
   if( p->cp.numthreads>1 ) pthread_mutex_destroy(&p->mutex);

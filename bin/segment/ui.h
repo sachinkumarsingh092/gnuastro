@@ -1,11 +1,11 @@
 /*********************************************************************
-NoiseChisel - Detect signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2015-2018, Free Software Foundation, Inc.
+Copyright (C) 2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -40,8 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Option groups particular to this program. */
 enum program_args_groups
 {
-  UI_GROUP_DETECTION = GAL_OPTIONS_GROUP_AFTER_COMMON,
-  UI_GROUP_SEGMENTATION,
+  UI_GROUP_SEGMENTATION = GAL_OPTIONS_GROUP_AFTER_COMMON,
 };
 
 
@@ -50,49 +49,40 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b f g i j l n u v x y z
-   A E G H J O W X Y
+   a b e f g i j l n p r t u w x z
+   A E H J Q R W X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
-  UI_KEY_LARGETILESIZE      = 'L',
   UI_KEY_KERNEL             = 'k',
-  UI_KEY_WIDEKERNEL         = 'w',
+  UI_KEY_DETECTION          = 'd',
+  UI_KEY_LARGETILESIZE      = 'L',
   UI_KEY_MINSKYFRAC         = 'B',
-  UI_KEY_MIRRORDIST         = 'r',
-  UI_KEY_MODMEDQDIFF        = 'Q',
-  UI_KEY_QTHRESH            = 't',
-  UI_KEY_ERODE              = 'e',
-  UI_KEY_OPENING            = 'p',
-  UI_KEY_SIGMACLIP          = 's',
-  UI_KEY_DTHRESH            = 'R',
   UI_KEY_SNMINAREA          = 'm',
   UI_KEY_SNQUANT            = 'c',
-  UI_KEY_DETGROWQUANT       = 'd',
+  UI_KEY_KEEPMAXNEARRIVER   = 'v',
+  UI_KEY_CLUMPSNTHRESH      = 's',
+  UI_KEY_GTHRESH            = 'G',
+  UI_KEY_MINRIVERLENGTH     = 'y',
+  UI_KEY_OBJBORDERSN        = 'O',
   UI_KEY_CONTINUEAFTERCHECK = 'C',
-
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
   UI_KEY_KHDU               = 1000,
   UI_KEY_CONVOLVED,
   UI_KEY_CHDU,
-  UI_KEY_WHDU,
-  UI_KEY_MINNUMFALSE,
-  UI_KEY_SMOOTHWIDTH,
-  UI_KEY_QTHRESHTILEQUANT,
-  UI_KEY_CHECKQTHRESH,
-  UI_KEY_ERODENGB,
-  UI_KEY_NOERODEQUANT,
-  UI_KEY_OPENINGNGB,
-  UI_KEY_CHECKDETSKY,
-  UI_KEY_CHECKSN,
-  UI_KEY_DETGROWMAXHOLESIZE,
-  UI_KEY_CLEANGROWNDET,
-  UI_KEY_CHECKDETECTION,
-  UI_KEY_CHECKSKY,
+  UI_KEY_DHDU,
+  UI_KEY_SKY,
+  UI_KEY_SKYHDU,
+  UI_KEY_STD,
+  UI_KEY_STDHDU,
   UI_KEY_RAWOUTPUT,
+  UI_KEY_MINNUMFALSE,
+  UI_KEY_GROWNCLUMPS,
+  UI_KEY_CHECKSN,
+  UI_KEY_CHECKSEGMENTATION,
 };
 
 
@@ -100,14 +90,13 @@ enum option_keys_enum
 
 
 void
-ui_read_check_inputs_setup(int argc, char *argv[],
-                           struct noisechiselparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p);
 
 void
-ui_abort_after_check(struct noisechiselparams *p, char *filename,
-                     char *file2name, char *description);
+ui_abort_after_check(struct segmentparams *p, char *filename, char *file2name,
+                     char *description);
 
 void
-ui_free_report(struct noisechiselparams *p, struct timeval *t1);
+ui_free_report(struct segmentparams *p, struct timeval *t1);
 
 #endif

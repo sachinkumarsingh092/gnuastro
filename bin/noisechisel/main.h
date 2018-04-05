@@ -1,5 +1,5 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
+NoiseChisel - Detect signal in a noisy dataset.
 NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -45,24 +45,21 @@ struct noisechiselparams
   struct gal_tile_two_layer_params ltl;/* Large tessellation.             */
   char             *inputname;  /* Input filename.                        */
   char            *kernelname;  /* Input kernel filename.                 */
-  char        *widekernelname;  /* Name of wider kernel to be used.       */
-  char         *convolvedname;  /* Convolved image (to avoid convolution).*/
-  char          *convolvedhdu;  /* HDU of convolved image.                */
   char                  *khdu;  /* Kernel HDU.                            */
-  char                 *wkhdu;  /* Wide kernel HDU.                       */
-  uint8_t       skysubtracted;  /* Input has been Sky subtracted before.  */
-  float            minskyfrac;  /* Undetected area min. frac. in tile.    */
-  size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
+  char         *convolvedname;  /* Convolved image (to avoid convolution).*/
+  char                  *chdu;  /* HDU of convolved image.                */
+  char        *widekernelname;  /* Name of wider kernel to be used.       */
+  char                  *whdu;  /* Wide kernel HDU.                       */
 
-  uint8_t       onlydetection;  /* Do not do any segmentation.            */
-  uint8_t         grownclumps;  /* Save grown clumps instead of original. */
   uint8_t  continueaftercheck;  /* Don't abort after the check steps.     */
+  uint8_t           rawoutput;  /* Only detection & 1 elem/tile output.   */
 
   float            mirrordist;  /* Maximum distance to check mode sym.    */
   float           modmedqdiff;  /* Difference between mode and median.    */
+  float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   float               qthresh;  /* Quantile threshold on convolved image. */
   float      qthreshtilequant;  /* Remove tiles with lower quantile.      */
-  size_t          smoothwidth;  /* Width of flat kernel to smooth.        */
+  size_t          smoothwidth;  /* Interpolation: flat kernel to smooth.  */
   uint8_t        checkqthresh;  /* Save the quantile threhsold steps.     */
   size_t                erode;  /* Number of erosions after thresholding. */
   size_t             erodengb;  /* Connectivity for erosion.              */
@@ -72,23 +69,15 @@ struct noisechiselparams
   double         sigmaclip[2];  /* Sigma-clipping parameters.             */
   uint8_t         checkdetsky;  /* Check pseudo-detection sky value.      */
   float               dthresh;  /* Sigma threshold for Pseudo-detections. */
-  size_t         detsnminarea;  /* Minimum pseudo-detection area for S/N. */
-  uint8_t          checkdetsn;  /* Save pseudo-detection S/N values.      */
-  float              detquant;  /* True detection quantile.               */
+  size_t            snminarea;  /* Minimum pseudo-detection area for S/N. */
+  uint8_t             checksn;  /* Save pseudo-detection S/N values.      */
+  size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
+  float              snquant;  /* True detection quantile.               */
   float          detgrowquant;  /* Quantile to grow true detections.      */
   size_t   detgrowmaxholesize;  /* Max. size of holes to fill in growth.  */
   uint8_t       cleangrowndet;  /* Remove grown objects with small S/N.   */
   uint8_t      checkdetection;  /* Save all detection steps to a file.    */
   uint8_t            checksky;  /* Check the Sky value estimation.        */
-
-  size_t         segsnminarea;  /* Minimum area for segmentation.         */
-  uint8_t        checkclumpsn;  /* Save the clump S/N values to a file.   */
-  float              segquant;  /* Quantile of clumps in sky for true S/N.*/
-  uint8_t    keepmaxnearriver;  /* Keep clumps with a peak near a river.  */
-  float               gthresh;  /* Multiple of STD to stop growing clumps.*/
-  size_t       minriverlength;  /* Min, len of good grown clump rivers.   */
-  float           objbordersn;  /* Minimum S/N for grown clumps to be one.*/
-  uint8_t   checksegmentation;  /* Save the segmentation steps in file.   */
 
   /* Internal. */
   char           *qthreshname;  /* Name of Quantile threshold check image.*/
@@ -98,9 +87,6 @@ struct noisechiselparams
   char          *detsn_D_name;  /* Final detection S/N name.              */
   char         *detectionname;  /* Name of detection steps file.          */
   char               *skyname;  /* Name of Sky estimation steps file.     */
-  char        *clumpsn_s_name;  /* Sky clump S/N name.                    */
-  char        *clumpsn_d_name;  /* Detection clumps S/N name.             */
-  char      *segmentationname;  /* Name of segmentation steps file.       */
 
   gal_data_t           *input;  /* Input image.                           */
   gal_data_t          *kernel;  /* Sharper kernel.                        */
@@ -109,7 +95,6 @@ struct noisechiselparams
   gal_data_t           *wconv;  /* Convolved with wider kernel.           */
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
-  gal_data_t          *clabel;  /* Labels of clumps in the detection.     */
   gal_data_t   *expand_thresh;  /* Quantile threshold to expand per tile. */
   gal_data_t *exp_thresh_full;  /* Full array containing growth thresh.   */
   gal_data_t             *sky;  /* Mean of undetected pixels, per tile.   */
@@ -128,10 +113,7 @@ struct noisechiselparams
 
   size_t       numinitialdets;  /* Number of initial detections.          */
   size_t        numdetections;  /* Number of final detections.            */
-  size_t            numclumps;  /* Number of true clumps.                 */
-  size_t           numobjects;  /* Number of objects.                     */
   float           detsnthresh;  /* Pseudo-detection S/N threshold.        */
-  float         clumpsnthresh;  /* Clump S/N threshold.                   */
 };
 
 #endif

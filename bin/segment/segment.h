@@ -1,6 +1,6 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -20,10 +20,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef SEGMENTATION_H
-#define SEGMENTATION_H
+#ifndef SEGMENT_H
+#define SEGMENT_H
 
 void
-segmentation(struct noisechiselparams *p);
+segment(struct segmentparams *p);
 
 #endif

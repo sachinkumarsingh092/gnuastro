@@ -45,7 +45,7 @@ main (int argc, char *argv[])
   /* Read the input parameters. */
   ui_read_check_inputs_setup(argc, argv, &p);
 
-  /* Run MakeProfiles */
+  /* Run MakeCatalog */
   mkcatalog(&p);
 
   /* Free all non-freed allocations. */

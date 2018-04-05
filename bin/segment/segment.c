@@ -1,6 +1,6 @@
 /*********************************************************************
-NoiseChisel - Detect and segment signal in a noisy dataset.
-NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
+Segment - Segment initial labels based on signal structure.
+Segment is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -28,11 +28,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/label.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/convolve.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
@@ -41,7 +45,155 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "clumps.h"
-#include "segmentation.h"
+#include "segment.h"
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/*****************            Preparations             *****************/
+/***********************************************************************/
+static void
+segment_convolve(struct segmentparams *p)
+{
+  struct timeval t1;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
+
+  /* Convovle with sharper kernel. */
+  if(p->conv==NULL)
+    {
+      /* Do the convolution if a kernel was requested. */
+      if(p->kernel)
+        {
+          /* Make the convolved image. */
+          if(!p->cp.quiet) gettimeofday(&t1, NULL);
+          p->conv = gal_convolve_spatial(tl->tiles, p->kernel,
+                                         p->cp.numthreads, 1, tl->workoverch);
+
+          /* Report and write check images if necessary. */
+          if(!p->cp.quiet)
+            gal_timing_report(&t1, "Convolved with given kernel.", 1);
+        }
+      else
+        p->conv=p->input;
+    }
+
+  /* Make necessary corrections to the convolved array. */
+  if(p->conv!=p->input)
+    {
+      /* Set the flags (most importantly, the blank flags). */
+      p->conv->flag = p->input->flag;
+
+      /* Set the name. */
+      if(p->conv->name) free(p->conv->name);
+      gal_checkset_allocate_copy("CONVOLVED", &p->conv->name);
+    }
+}
+
+
+
+
+
+static void
+segment_initialize(struct segmentparams *p)
+{
+  uint8_t *b;
+  float *f, minv;
+  gal_data_t *min;
+  gal_data_t *forcc;
+  int32_t *o, *c, *cf, maxlab=0;
+
+  /* Allocate the clump labels image and the binary image. */
+  p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
+                           p->olabel->dsize, p->olabel->wcs, 1,
+                           p->cp.minmapsize, NULL, NULL, NULL);
+  p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->olabel->ndim,
+                           p->olabel->dsize, p->olabel->wcs, 1,
+                           p->cp.minmapsize, NULL, NULL, NULL);
+  p->clabel->flag=p->input->flag;
+  p->binary->wcs=gal_wcs_copy(p->input->wcs);
+  p->clabel->wcs=gal_wcs_copy(p->input->wcs);
+
+
+  /* Prepare the `binary', `clabel' and `olabel' arrays. */
+  b=p->binary->array;
+  o=p->olabel->array;
+  f=p->input->array; cf=(c=p->clabel->array)+p->clabel->size;
+  do
+    {
+      if(isnan(*f++)) *o = *c = GAL_BLANK_INT32;
+      else
+        {
+          /* Initialize the binary array. */
+          *b = *o > 0;
+
+          /* A small sanity check. */
+          if(*o<0)
+            error(EXIT_FAILURE, 0, "%s (hdu: %s) has negative value(s). "
+                  "Each non-zero pixel in this image must be positive (a "
+                  "counter, counting from 1).", p->useddetectionname,
+                  p->dhdu);
+
+          /* Set the largest value. */
+          if(*o>maxlab) maxlab=*o;
+        }
+      ++o;
+      ++b;
+    }
+  while(++c<cf);
+
+  /* prepare the labeled image. */
+  switch(maxlab)
+    {
+    /* No positive values. */
+    case 0:
+      error(EXIT_FAILURE, 0, "%s (hdu: %s): contains no detections "
+            "(positive valued pixels)", p->useddetectionname, p->dhdu);
+
+    /* This is a binary image, probably it was the result of a
+       threshold. In this case, we need to separate the connected
+       components. */
+    case 1:
+      forcc=gal_data_copy_to_new_type(p->olabel, GAL_TYPE_UINT8);
+      p->numdetections=gal_binary_connected_components(forcc, &p->olabel,
+                                                       p->olabel->ndim);
+      break;
+
+    /* There is more than one label in the image, so just set the maximum
+       number to the number of detections. */
+    default:
+      p->numdetections=maxlab;
+    }
+
+  /* If the minimum standard deviation is less than 1, then the units of
+     the input are in units of counts/time. As described in the NoiseChisel
+     paper, we need to correct the S/N equation later. */
+  min=gal_statistics_minimum(p->std);
+  minv=*(float *)(min->array);
+  p->cpscorr = minv>1 ? 1.0 : minv;
+  gal_data_free(min);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -55,7 +207,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    composed of multiple objects). So the labels within each detection start
    from 1.*/
 static void
-segmentation_relab_noseg(struct clumps_thread_params *cltprm)
+segment_relab_noseg(struct clumps_thread_params *cltprm)
 {
   int32_t *olabel=cltprm->clprm->p->olabel->array;
   size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
@@ -76,10 +228,10 @@ segmentation_relab_noseg(struct clumps_thread_params *cltprm)
    a*numobjs+b or b*numobjs+a and get the answer. Since the number of
    objects in a given region will not be too high, this is efficient. */
 static void
-segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
+segment_relab_to_objects(struct clumps_thread_params *cltprm)
 {
   size_t amwidth=cltprm->numtrueclumps+1;
-  struct noisechiselparams *p=cltprm->clprm->p;
+  struct segmentparams *p=cltprm->clprm->p;
   size_t ndim=p->input->ndim, *dsize=p->input->dsize;
 
   size_t mdsize[2]={amwidth, amwidth};
@@ -91,13 +243,13 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
                                          NULL, 1, p->cp.minmapsize, NULL,
                                          NULL, NULL);
   float *imgss=p->input->array;
+  double var=cltprm->std*cltprm->std;
   uint8_t *adjacency=adjacency_d->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   int32_t *clumptoobj, *olabel=p->olabel->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   size_t *s, *sf, i, j, ii, rpnum, *nums=nums_d->array;
   double ave, rpsum, c=sqrt(1/p->cpscorr), *sums=sums_d->array;
-  double err=cltprm->std*cltprm->std*(p->skysubtracted?1.0f:2.0f);
   int32_t *ngblabs=gal_data_malloc_array(GAL_TYPE_UINT32, nngb, __func__,
                                          "ngblabs");
 
@@ -114,7 +266,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
       do
         /* We only want to work on pixels that have already been identified
            as touching more than one label: river pixels. */
-        if( olabel[ *s ]==CLUMPS_RIVER )
+        if( olabel[ *s ]==GAL_LABEL_RIVER )
           {
             /* Initialize the values. */
             i=ii=0;
@@ -188,7 +340,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
                    acceptable, and we put no area criteria here, because
                    the fact that a river exists between two clumps is
                    important. */
-                if( ave>0.0f && ( c * ave / sqrt(ave+err) ) > p->objbordersn )
+                if( ave>0.0f && ( c * ave / sqrt(ave+var) ) > p->objbordersn )
                   {
                     adjacency[ii]=1;   /* We want to set both sides of the */
                     adjacency[ j * amwidth + i ] = 1; /* Symmetric matrix. */
@@ -213,7 +365,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
                       ave=sums[ii]/nums[ii];
                       printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f "
                              "--> %u\n", j, nums[ii], sums[ii],
-                             c*ave/sqrt(ave+err), adjacency[ii]);
+                             c*ave/sqrt(ave+var), adjacency[ii]);
                     }
                 }
               printf("\n");
@@ -283,7 +435,7 @@ segmentation_relab_to_objects(struct clumps_thread_params *cltprm)
    this function, we want to correct the clump labels so the clump IDs in
    each object start from 1 and are contiguous. */
 static void
-segmentation_relab_clumps_in_objects(struct clumps_thread_params *cltprm)
+segment_relab_clumps_in_objects(struct clumps_thread_params *cltprm)
 {
   size_t numobjects=cltprm->numobjects, numtrueclumps=cltprm->numtrueclumps;
 
@@ -319,7 +471,7 @@ segmentation_relab_clumps_in_objects(struct clumps_thread_params *cltprm)
    instance, this function will use a mutex to limit the reading and
    writing to the variable keeping the total number of objects counter. */
 static void
-segmentation_relab_overall(struct clumps_thread_params *cltprm)
+segment_relab_overall(struct clumps_thread_params *cltprm)
 {
   struct clumps_params *clprm=cltprm->clprm;
   int32_t startinglab, *olabel=clprm->p->olabel->array;
@@ -369,11 +521,11 @@ segmentation_relab_overall(struct clumps_thread_params *cltprm)
 /***********************************************************************/
 /* Find the true clumps over each detection. */
 static void *
-segmentation_on_threads(void *in_prm)
+segment_on_threads(void *in_prm)
 {
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct clumps_params *clprm=(struct clumps_params *)(tprm->params);
-  struct noisechiselparams *p=clprm->p;
+  struct segmentparams *p=clprm->p;
 
   size_t i, *s, *sf;
   gal_data_t *topinds;
@@ -410,7 +562,16 @@ segmentation_on_threads(void *in_prm)
 
 
       /* Find the clumps over this region. */
-      clumps_oversegment(&cltprm);
+      cltprm.numinitclumps=gal_label_oversegment(p->conv, cltprm.indexs,
+                                                 p->clabel, cltprm.topinds);
+
+
+      /* Set all the river pixels to zero (we don't need them any more in
+         the clumps image).  */
+      sf=(s=cltprm.indexs->array) + cltprm.indexs->size;
+      do
+        if( clabel[*s]==GAL_LABEL_RIVER ) clabel[*s]=GAL_LABEL_INIT;
+      while(++s<sf);
 
 
       /* Make the clump S/N table. This table is made before (possibly)
@@ -430,7 +591,7 @@ segmentation_on_threads(void *in_prm)
       /* If the user wanted to check the segmentation steps or the clump
          S/N values in a table, then we have to stop the process at this
          point. */
-      if(clprm->step==1 || p->checkclumpsn)
+      if(clprm->step==1 || p->checksn)
         { gal_data_free(topinds); continue; }
 
       /* Only keep true clumps. */
@@ -450,7 +611,7 @@ segmentation_on_threads(void *in_prm)
         {
           /* Set the basics. */
           cltprm.numobjects=1;
-          segmentation_relab_noseg(&cltprm);
+          segment_relab_noseg(&cltprm);
 
           /* If the user wanted a check image, this object doesn't
              change. */
@@ -472,7 +633,7 @@ segmentation_on_threads(void *in_prm)
           /* Grow the true clumps over the detection. */
           clumps_grow_prepare_initial(&cltprm);
           if(cltprm.diffuseindexs->size)
-            clumps_grow(p->olabel, cltprm.diffuseindexs, 1, 1);
+            gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 1, 1);
           if(clprm->step==3)
             { gal_data_free(cltprm.diffuseindexs); continue; }
 
@@ -488,7 +649,7 @@ segmentation_on_threads(void *in_prm)
 
           /* Identify the objects in this detection using the grown clumps
              and correct the grown clump labels into new object labels. */
-          segmentation_relab_to_objects(&cltprm);
+          segment_relab_to_objects(&cltprm);
           if(clprm->step==4)
             {
               gal_data_free(cltprm.clumptoobj);
@@ -500,7 +661,7 @@ segmentation_on_threads(void *in_prm)
              the diffuse indexs any more, so after filling the detected
              region, free the indexs. */
           if( cltprm.numobjects == 1 )
-            segmentation_relab_noseg(&cltprm);
+            segment_relab_noseg(&cltprm);
           else
             {
               /* Correct the labels so every non-labeled pixel can be
@@ -509,8 +670,8 @@ segmentation_on_threads(void *in_prm)
 
               /* Cover the whole area (using maximum connectivity to not
                  miss any pixels). */
-              clumps_grow(p->olabel, cltprm.diffuseindexs, 0,
-                          p->olabel->ndim);
+              gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 0,
+                                    p->olabel->ndim);
 
               /* Make sure all diffuse pixels are labeled. */
               if(cltprm.diffuseindexs->size)
@@ -526,13 +687,13 @@ segmentation_on_threads(void *in_prm)
              when there is more than object over the detection or when
              there were multiple clumps over the detection. */
           if(cltprm.numobjects>1)
-            segmentation_relab_clumps_in_objects(&cltprm);
+            segment_relab_clumps_in_objects(&cltprm);
           gal_data_free(cltprm.clumptoobj);
           if(clprm->step==6) {continue;}
         }
 
       /* Convert the object labels to their final value */
-      segmentation_relab_overall(&cltprm);
+      segment_relab_overall(&cltprm);
     }
 
   /* Wait until all the threads finish then return. */
@@ -547,7 +708,7 @@ segmentation_on_threads(void *in_prm)
 /* If the user wanted to see the S/N table in a file, this function will be
    called and will do the job. */
 static void
-segmentation_save_sn_table(struct clumps_params *clprm)
+segment_save_sn_table(struct clumps_params *clprm)
 {
   char *msg;
   float *sarr;
@@ -555,7 +716,7 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   gal_list_str_t *comments=NULL;
   size_t i, j, c=0, totclumps=0;
   gal_data_t *sn, *objind, *clumpinobj;
-  struct noisechiselparams *p=clprm->p;
+  struct segmentparams *p=clprm->p;
 
 
   /* Find the total number of clumps in all the initial detections. Recall
@@ -594,7 +755,7 @@ segmentation_save_sn_table(struct clumps_params *clprm)
   gal_list_str_add(&comments, "See also: `CLUMPS_ALL_DET' HDU of "
                    "output with `--checksegmentation'.", 1);
   if( asprintf(&msg, "S/N values of `nan': clumps smaller than "
-               "`--segsnminarea' of %zu.", p->segsnminarea)<0 )
+               "`--snminarea' of %zu.", p->snminarea)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, msg, 0);
   gal_list_str_add(&comments, "S/N of clumps over detected regions.", 1);
@@ -628,7 +789,7 @@ segmentation_save_sn_table(struct clumps_params *clprm)
 
 /* Find true clumps over the detected regions. */
 static void
-segmentation_detections(struct noisechiselparams *p)
+segment_detections(struct segmentparams *p)
 {
   char *msg;
   struct clumps_params clprm;
@@ -677,7 +838,7 @@ segmentation_detections(struct noisechiselparams *p)
                    claborig->size*gal_type_sizeof(claborig->type));
 
           /* (Re-)do everything until this step. */
-          gal_threads_spin_off(segmentation_on_threads, &clprm,
+          gal_threads_spin_off(segment_on_threads, &clprm,
                                p->numdetections, p->cp.numthreads);
 
           /* Set the extension name. */
@@ -716,7 +877,8 @@ segmentation_detections(struct noisechiselparams *p)
               demo->name = "DET_CLUMPS_GROWN";
               if(!p->cp.quiet)
                 {
-                  gal_timing_report(NULL, "Starting to identify objects.", 1);
+                  gal_timing_report(NULL, "Identify objects...",
+                                    1);
                   if( asprintf(&msg, "True clumps grown                  "
                                "(HDU: `%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
@@ -799,7 +961,7 @@ segmentation_detections(struct noisechiselparams *p)
              out of the loop, we don't need the rest of the process any
              more. */
           if( clprm.step==1
-              && ( p->checkclumpsn && !p->continueaftercheck ) ) break;
+              && ( p->checksn && !p->continueaftercheck ) ) break;
 
           /* Increment the step counter. */
           ++clprm.step;
@@ -812,7 +974,7 @@ segmentation_detections(struct noisechiselparams *p)
   else
     {
       clprm.step=0;
-      gal_threads_spin_off(segmentation_on_threads, &clprm, p->numdetections,
+      gal_threads_spin_off(segment_on_threads, &clprm, p->numdetections,
                            p->cp.numthreads);
     }
 
@@ -822,7 +984,7 @@ segmentation_detections(struct noisechiselparams *p)
   p->numobjects=clprm.totobjects;
 
   /* If the user wanted to see the S/N table, then make the S/N table. */
-  if(p->checkclumpsn) segmentation_save_sn_table(&clprm);
+  if(p->checksn) segment_save_sn_table(&clprm);
 
 
   /* Clean up allocated structures and destroy the mutex. */
@@ -851,27 +1013,113 @@ segmentation_detections(struct noisechiselparams *p)
 
 
 /***********************************************************************/
+/*****************                Output               *****************/
+/***********************************************************************/
+void
+segment_output(struct segmentparams *p)
+{
+  gal_fits_list_key_t *keys=NULL;
+
+  /* The Sky-subtracted input (if requested). */
+  if(!p->rawoutput)
+    gal_fits_img_write(p->input, p->cp.output, NULL, PROGRAM_NAME);
+
+
+  /* The clump labels. */
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
+                        &p->clumpsnthresh, 0, "Minimum S/N of true clumps",
+                        0, "ratio");
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                        &p->numclumps, 0, "Total number of clumps", 0,
+                        "counter");
+  p->clabel->name="CLUMPS";
+  gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_NAME);
+  p->clabel->name=NULL;
+  keys=NULL;
+
+
+  /* The object labels. */
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                        &p->numobjects, 0, "Total number of objects", 0,
+                        "counter");
+  p->olabel->name="OBJECTS";
+  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
+  p->olabel->name=NULL;
+  keys=NULL;
+
+
+  /* The Standard deviation image. */
+  if(!p->rawoutput)
+    {
+      /* See if any keywords should be written (possibly inherited from the
+         detection program). */
+      if( !isnan(p->maxstd) )
+        gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0,
+                              &p->maxstd, 0,
+                              "Maximum raw tile standard deviation", 0,
+                              p->input->unit);
+      if( !isnan(p->minstd) )
+        gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0,
+                              &p->minstd, 0,
+                              "Minimum raw tile standard deviation", 0,
+                              p->input->unit);
+      if( !isnan(p->medstd) )
+        gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0,
+                              &p->medstd, 0,
+                              "Median raw tile standard deviation", 0,
+                              p->input->unit);
+
+      /* Write the STD dataset into the output file. */
+      p->std->name="SKY_STD";
+      if(p->std->size == p->input->size)
+        gal_fits_img_write(p->std, p->cp.output, keys, PROGRAM_NAME);
+      else
+        gal_tile_full_values_write(p->std, &p->cp.tl, 1, p->cp.output, keys,
+                                   PROGRAM_NAME);
+      p->std->name=NULL;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
 /*****************         High level function         *****************/
 /***********************************************************************/
 void
-segmentation(struct noisechiselparams *p)
+segment(struct segmentparams *p)
 {
   float *f;
   char *msg;
-  int32_t *l, *lf;
+  int32_t *c, *cf;
   struct timeval t1;
 
-  /* To keep the user up to date. */
-  if(!p->cp.quiet)
-    {
-      if(!p->cp.quiet) gettimeofday(&t1, NULL);
-      gal_timing_report(NULL, "Starting segmentation.",
-                        1);
-    }
+  /* Get starting time for later reporting if necessary. */
+  if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
 
-  /* If a check segmentation image was requested, then put in the
-     inputs. */
+  /* Prepare the inputs. */
+  segment_convolve(p);
+  segment_initialize(p);
+
+
+  /* If a check segmentation image was requested, then start filling it
+     in. */
   if(p->segmentationname)
     {
       gal_fits_img_write(p->input, p->segmentationname, NULL, PROGRAM_NAME);
@@ -882,31 +1130,33 @@ segmentation(struct noisechiselparams *p)
                          PROGRAM_NAME);
       p->olabel->name=NULL;
     }
-
-
-  /* Allocate the clump labels image. */
-  p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
-                           p->olabel->dsize, p->olabel->wcs, 1,
-                           p->cp.minmapsize, NULL, NULL, NULL);
-  p->clabel->flag=p->input->flag;
-
-
-  /* Set any possibly existing NaN values to blank. */
-  f=p->input->array; lf=(l=p->clabel->array)+p->clabel->size;
-  do if(isnan(*f++)) *l=GAL_BLANK_INT32; while(++l<lf);
+  if(!p->cp.quiet)
+    printf("  - Input number of detections: %zu\n", p->numdetections);
 
 
   /* Find the clump S/N threshold. */
-  clumps_true_find_sn_thresh(p);
+  if( isnan(p->clumpsnthresh) )
+    {
+      gal_timing_report(NULL, "Finding true clumps...", 1);
+      clumps_true_find_sn_thresh(p);
+    }
+  else
+    {
+      if( asprintf(&msg, "Given S/N for true clumps: %g",
+                   p->clumpsnthresh) <0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_timing_report(NULL, msg, 1);
+      free(msg);
+    }
 
 
   /* Reset the clabel array to find true clumps in objects. */
-  f=p->input->array; lf=(l=p->clabel->array)+p->clabel->size;
-  do *l = isnan(*f++) ? GAL_BLANK_INT32 : 0; while(++l<lf);
+  f=p->input->array; cf=(c=p->clabel->array)+p->clabel->size;
+  do *c = isnan(*f++) ? GAL_BLANK_INT32 : 0; while(++c<cf);
 
 
   /* Find true clumps over the detected regions. */
-  segmentation_detections(p);
+  segment_detections(p);
 
 
   /* Report the results and timing to the user. */
@@ -926,4 +1176,8 @@ segmentation(struct noisechiselparams *p)
   if(p->segmentationname && !p->continueaftercheck)
     ui_abort_after_check(p, p->segmentationname, NULL,
                          "showing all segmentation steps");
+
+
+  /* Write the output. */
+  segment_output(p);
 }

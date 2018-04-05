@@ -1,9 +1,9 @@
 ## Process this file with automake to produce Makefile.inx
 ##
 ## Original author:
-##     Your Name <your@email>
+##      Mohammad akhlaghi <mohammad@akhlaghi.org>
 ## Contributing author(s):
-## Copyright (C) YYYY, Free Software Foundation, Inc.
+## Copyright (C) 2016-2018, Free Software Foundation, Inc.
 ##
 ## Gnuastro is free software: you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by

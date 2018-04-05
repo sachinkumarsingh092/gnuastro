@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <float.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
@@ -46,14 +47,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 static gal_data_t *
 upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 {
-  gal_data_t *input=pp->p->input;
-  size_t ndim=input->ndim, *tsize=pp->tile->dsize;
+  gal_data_t *objects=pp->p->objects;
+  size_t ndim=objects->ndim, *tsize=pp->tile->dsize;
 
-  int32_t *O, *C;
   gal_data_t *tiles=NULL;
-  float *I, *II, *start=input->array;
   size_t increment=0, num_increment=1;
   size_t i, d, *min, *max, width=2*ndim;
+  int32_t *O, *OO, *C, *start=objects->array;
   size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
                                       "coord");
   size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
@@ -75,19 +75,17 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
       /* Set the pointers for this tile. */
-      I = pp->st_i + increment;
-      O = pp->st_o + increment;
-      C = pp->st_c + increment;
+      C  = pp->st_c + increment;
+      OO = ( O = pp->st_o + increment ) + tsize[ndim-1];
 
       /* Go over the contiguous region. */
-      II = I + tsize[ndim-1];
       do
         {
           /* Only consider clumps. */
           if( *O==pp->object && *C>0 )
             {
               /* Get the coordinates of this pixel. */
-              gal_dimension_index_to_coord(I-start, ndim, input->dsize,
+              gal_dimension_index_to_coord(O-start, ndim, objects->dsize,
                                            coord);
 
               /* Check to see if this coordinate is the smallest/largest
@@ -103,12 +101,12 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
             }
 
           /* Increment the other pointers. */
-          ++O; ++C;
+          ++C;
         }
-      while(++I<II);
+      while(++O<OO);
 
       /* Increment to the next contiguous region. */
-      increment += ( gal_tile_block_increment(input, tsize, num_increment++,
+      increment += ( gal_tile_block_increment(objects, tsize, num_increment++,
                                               NULL) );
     }
 
@@ -119,7 +117,7 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
   */
 
   /* Make the tiles. */
-  tiles=gal_tile_series_from_minmax(input, minmax, pp->clumpsinobj);
+  tiles=gal_tile_series_from_minmax(objects, minmax, pp->clumpsinobj);
 
   /* Cleanup and return. */
   free(coord);
@@ -149,19 +147,21 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 /*********************************************************************/
 /*******************         For one tile         ********************/
 /*********************************************************************/
+/* Set the minimum and maximum possible range to place the FIRST pixel of
+   the object/clump tile over the dataset. */
 static void
 upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
                         size_t *min, size_t *max, int32_t clumplab)
 {
   struct mkcatalogparams *p=pp->p;
   size_t d, tstart, minext, maxext, coord[]={0,0};
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+  size_t ndim=p->objects->ndim, *dsize=p->objects->dsize;
 
   /* Set the minimum and maximum acceptable value for the range.  */
   if(p->uprange)
     {
       tstart=gal_data_ptr_dist(tile->block->array, tile->array,
-                               p->input->type);
+                               p->objects->type);
       gal_dimension_index_to_coord(tstart, ndim, dsize, coord);
     }
 
@@ -211,25 +211,27 @@ upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
         }
       else
         {
+          /* We are positioning the FIRST pixel of the tile, not the
+             center. So, the minimum possible value is zero, and in order
+             to not push out of the image, the maximum is the
+             `tile->dsize[d]' away from the edge. */
           min[d]=0;
           max[d]=dsize[d]-tile->dsize[d]-1;
         }
 
-      /* A small sanity check. */
+      /* A small warning to the user if the range isn't large enough. */
       if( max[d]-min[d] < 2*tile->dsize[d] )
         {
+          p->uprangewarning=1;
           if(clumplab)
-            fprintf(stderr, "WARNING: object %d clump %d: range of random "
-                    "positions (%zu) along dimension %zu for upper-limit "
-                    "calculations is smaller than double of its size (%zu) "
-                    "in this dimension.\n\n", pp->object, clumplab,
-                    max[d]-min[d], ndim-d, 2*tile->dsize[d]);
+            fprintf(stderr, "WARNING-UPPERLIMIT: object %d clump %d, "
+                    "dimension %zu: range (%zu) < 2*size (%zu).\n",
+                    pp->object, clumplab, ndim-d, max[d]-min[d],
+                    2*tile->dsize[d]);
           else
-            fprintf(stderr, "WARNING: object %d: range of random "
-                    "positions (%zu) along dimension %zu for upper-limit "
-                    "calculations is smaller than double of its size (%zu) "
-                    "in this dimension.\n\n", pp->object, max[d]-min[d],
-                    ndim-d, 2*tile->dsize[d]);
+            fprintf(stderr, "WARNING-UPPERLIMIT: object %d, dimension %zu: "
+                    "range (%zu) < 2*size (%zu).\n", pp->object, ndim-d,
+                    max[d]-min[d], 2*tile->dsize[d]);
         }
     }
 }
@@ -250,7 +252,7 @@ upperlimit_random_position(struct mkcatalog_passparams *pp, gal_data_t *tile,
      maximum of the particular generator. It may happen that the labeled
      region extends the full range of a dimension. In that case, the only
      possible starting point would be 0. */
-  if( (int)(p->input->dsize[dim]) - (int)(tile->dsize[dim]) > 0 )
+  if( (int)(p->objects->dsize[dim]) - (int)(tile->dsize[dim]) > 0 )
     {
       r=gsl_rng_get(pp->rng); /* For easy reading. */
       return lrint( (float)(min[dim])
@@ -259,6 +261,172 @@ upperlimit_random_position(struct mkcatalog_passparams *pp, gal_data_t *tile,
     }
   else
     return 0;
+}
+
+
+
+
+
+/* It is necessary to write the upperlimit parameters into the output
+   tables. The same set of information will thus be necessary both in the
+   upperlimit check table and also the final output. This function will do
+   the job in both cases.
+
+   Note that in the check output, the sigma-clipping information is not
+   used/necessary, so to avoid confusion, we won't write it.
+*/
+void
+upperlimit_write_comments(struct mkcatalogparams *p,
+                          gal_list_str_t **comments, int withsigclip)
+{
+  char *str;
+
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      if(asprintf(&str, "--------- Upper-limit measurement ---------")<0)
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if( asprintf(&str, "Number of usable random samples: %zu", p->upnum)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_list_str_add(comments, str, 0);
+
+  if(p->uprange)
+    {
+      if( asprintf(&str, "Range of random samples about target: %zu, %zu",
+                   p->uprange[1], p->uprange[0])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+    }
+
+  if( asprintf(&str, "Random number generator name: %s", p->rngname)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_list_str_add(comments, str, 0);
+
+  if( asprintf(&str, "Random number generator seed: %"PRIu64, p->seed)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_list_str_add(comments, str, 0);
+
+  if(withsigclip)
+    {
+      if( asprintf(&str, "Multiple of STD used for sigma-clipping: %.3f",
+                   p->upsigmaclip[0])<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(comments, str, 0);
+
+      if(p->upsigmaclip[1]>=1.0f)
+        {
+          if( asprintf(&str, "Number of clips for sigma-clipping: %.0f",
+                       p->upsigmaclip[1])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&str, "Tolerance level to sigma-clipping: %.3f",
+                       p->upsigmaclip[1])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      gal_list_str_add(comments, str, 0);
+
+      if( p->oiflag[ OCOL_UPPERLIMIT_B ] )
+        {
+          if( asprintf(&str, "Multiple of sigma-clipped STD for upper-limit: "
+                       "%.3f", p->upnsigma)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          gal_list_str_add(comments, str, 0);
+        }
+    }
+}
+
+
+
+
+
+/* Write the values into a table for the user */
+static void
+upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
+                        gal_list_sizet_t *check_y, gal_list_f32_t *check_s)
+{
+  float *sarr;
+  gal_data_t *x, *y, *s;
+  char *tmp=NULL, *tmp2=NULL;
+  gal_list_str_t *comments=NULL;
+  size_t *xarr, *yarr, tnum, num;
+
+
+  /* Convert the lists to an array. */
+  xarr=gal_list_sizet_to_array(check_x, 1, &num);
+  yarr=gal_list_sizet_to_array(check_y, 1, &tnum);
+  if(tnum!=num)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. For some reason the size of the input lists don't "
+          "match (%zu, %zu)", __func__, PACKAGE_BUGREPORT, tnum, num);
+  sarr=gal_list_f32_to_array(check_s, 1, &tnum);
+  if(tnum!=num)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. For some reason the size of the input lists don't "
+          "match (%zu, %zu)", __func__, PACKAGE_BUGREPORT, tnum, num);
+
+
+  /* Put the arrays into a data container. */
+  x=gal_data_alloc(xarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0, p->cp.minmapsize,
+                   "RANDOM_X", "pixel",
+                   "X-axis position of random footprint's first pixel.");
+  y=gal_data_alloc(yarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0, p->cp.minmapsize,
+                   "RANDOM_Y", "pixel",
+                   "Y-axis position of random footprint's first pixel.");
+  s=gal_data_alloc(sarr, GAL_TYPE_FLOAT32, 1, &num, NULL, 0, p->cp.minmapsize,
+                   "RANDOM_SUM",
+                   p->values->unit ? p->values->unit : "input-units",
+                   "Sum of pixel values over random footprint.");
+
+
+  /* Convert the unsigned 64-bit values to 32-bit because the FITS table
+     format doesn't recognize 64-bit integers.*/
+  x=gal_data_copy_to_new_type_free(x, GAL_TYPE_UINT32);
+  y=gal_data_copy_to_new_type_free(y, GAL_TYPE_UINT32);
+
+
+  /* Write exactly what object/clump this table is for. */
+  if( p->checkupperlimit[1]!=GAL_BLANK_INT32 )
+    if( asprintf(&tmp2, ", Clump %d", p->checkupperlimit[1]) <0 )
+      error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  if( asprintf(&tmp, "Upperlimit distribution for Object %d%s",
+               p->checkupperlimit[0],
+               ( p->checkupperlimit[1]==GAL_BLANK_INT32
+                 ? "" : tmp2) ) <0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_list_str_add(&comments, tmp, 0);
+  if(tmp2) {free(tmp2); tmp2=NULL;}
+
+
+  /* Write the basic info, and conclude the comments. */
+  mkcatalog_write_inputs_in_comments(p, &comments, 0, 0);
+  upperlimit_write_comments(p, &comments, 0);
+  if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
+    {
+      if( asprintf(&tmp, "--------- Table columns ---------")<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_list_str_add(&comments, tmp, 0);
+    }
+
+
+  /* Define a list from the containers and write them into a table. */
+  x->next=y;
+  y->next=s;
+  gal_list_str_reverse(&comments);
+  gal_table_write(x, comments, p->cp.tableformat, p->upcheckout,
+                  "UPPERLIMIT_CHECK");
+
+  /* Inform the user. */
+  if(!p->cp.quiet)
+    printf("  - Upperlimit check table: %s\n", p->upcheckout);
+
+  /* Clean up. */
+  gal_data_free(x);
+  gal_data_free(y);
+  gal_data_free(s);
 }
 
 
@@ -355,8 +523,8 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
     }
   else
     {
-      o[ clumplab ? CCOL_UPPERLIMIT_S : OCOL_UPPERLIMIT_S ] = NAN;
       o[ clumplab ? CCOL_UPPERLIMIT_B : OCOL_UPPERLIMIT_B ] = NAN;
+      o[ clumplab ? CCOL_UPPERLIMIT_S : OCOL_UPPERLIMIT_S ] = NAN;
       o[ clumplab ? CCOL_UPPERLIMIT_Q : OCOL_UPPERLIMIT_Q ] = NAN;
     }
 }
@@ -370,20 +538,36 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
                     unsigned long seed, int32_t clumplab)
 {
   struct mkcatalogparams *p=pp->p;
-  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+  size_t ndim=p->objects->ndim, *dsize=p->objects->dsize;
 
   double sum;
   void *tarray;
-  int continueparse;
   uint8_t *M=NULL, *st_m=NULL;
-  float *uparr=pp->up_vals->array;
-  float *I, *II, *SK, *st_i, *st_sky;
+  int continueparse, writecheck=0;
+  struct gal_list_f32_t *check_s=NULL;
+  float *V, *st_v, *uparr=pp->up_vals->array;
   size_t d, tcounter=0, counter=0, se_inc[2];
   size_t min[2], max[2], increment, num_increment;
-  int32_t *O, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
+  struct gal_list_sizet_t *check_x=NULL, *check_y=NULL;
+  int32_t *O, *OO, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
   size_t maxcount = p->upnum * MKCATALOG_UPPERLIMIT_STOP_MULTIP;
   size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
                                        "rcoord");
+
+  /* See if a check table must be created for this distribution. */
+  if( p->checkupperlimit[0]==pp->object )
+    {
+      /* We are on a clump */
+      if( clumplab )
+        {
+          if( p->checkupperlimit[1]==clumplab )
+            writecheck=1;
+        }
+      else
+        if( p->checkupperlimit[1]==GAL_BLANK_INT32 )
+          writecheck=1;
+    }
+
 
   /* Initializations. */
   tarray=tile->array;
@@ -410,9 +594,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
         rcoord[d] = upperlimit_random_position(pp, tile, d, min, max);
 
       /* Set the tile's new starting pointer. */
-      tile->array = gal_data_ptr_increment(p->input->array,
+      tile->array = gal_data_ptr_increment(p->objects->array,
                           gal_dimension_coord_to_index(ndim, dsize, rcoord),
-                                           p->input->type);
+                                           p->objects->type);
 
       /* Starting and ending coordinates for this random position, note
          that in `pp' we have the starting and ending coordinates of the
@@ -423,58 +607,73 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
       sum           = 0.0f;
 
       /* Starting pointers for the random tile. */
-      st_i   = gal_tile_start_end_ind_inclusive(tile, p->input, se_inc);
+      st_v   = gal_tile_start_end_ind_inclusive(tile, p->values, se_inc);
       st_o               = (int32_t *)(p->objects->array) + se_inc[0];
-      st_sky             = (float   *)(p->sky->array)     + se_inc[0];
       if(p->upmask) st_m = (uint8_t *)(p->upmask->array)  + se_inc[0];
 
       /* Parse over this object/clump. */
       while( se_inc[0] + increment <= se_inc[1] )
         {
           /* Set the pointers. */
-          I                = st_i   + increment;    /* Random tile.   */
-          SK               = st_sky + increment;    /* Random tile.   */
-          O                = st_o   + increment;    /* Random tile.   */
-          if(st_m) M       = st_m   + increment;    /* Random tile.   */
-          oO               = st_oo  + increment;    /* Original tile. */
-          if(clumplab) oC  = st_oc  + increment;    /* Original tile. */
+          V               = st_v  + increment;    /* Random tile.   */
+          O               = st_o  + increment;    /* Random tile.   */
+          if(st_m) M      = st_m  + increment;    /* Random tile.   */
+          oO              = st_oo + increment;    /* Original tile. */
+          if(clumplab) oC = st_oc + increment;    /* Original tile. */
 
 
           /* Parse over this contiguous region, similar to the first and
              second pass functions. */
-          II = I + tile->dsize[ndim-1];
+          OO = O + tile->dsize[ndim-1];
           do
             {
               /* Only use pixels over this object/clump. */
-              if( *oO==pp->object
-                  && ( oC==NULL || clumplab==0 || *oC==clumplab ) )
+              if( *oO==pp->object && ( oC==NULL || *oC==clumplab ) )
                 {
-                  if( *O || (M && *M) || ( p->hasblank && isnan(*I) ) )
+                  /* If this pixel is a non-zero object code, or is masked,
+                     or has a blank value, then stop parsing. */
+                  if( *O || (M && *M) || ( p->hasblank && isnan(*V) ) )
                     continueparse=0;
                   else
-                    sum += *I-*SK;
+                    sum += *V;
                 }
 
               /* Increment the other pointers. */
-              ++SK; ++O; ++oO; if(oC) ++oC;
+              ++V;
+              ++oO;
+              if(M) ++M;
+              if(oC) ++oC;
             }
-          while(continueparse && ++I<II);
+          while(continueparse && ++O<OO);
 
 
           /* Increment to the next contiguous region of this tile. */
           if(continueparse)
-            increment += ( gal_tile_block_increment(p->input, dsize,
+            increment += ( gal_tile_block_increment(p->objects, dsize,
                                                     num_increment++, NULL) );
           else break;
         }
 
-      /* Further processing is only necessary if this random tile
-         actually covered the sky region. */
+      /* Further processing is only necessary if this random tile was fully
+         parsed. */
       if(continueparse) uparr[ counter++ ] = sum;
+
+      /* If a check is necessary, write in the values. */
+      if(writecheck)
+        {
+          gal_list_sizet_add(&check_x, rcoord[1]+1);
+          gal_list_sizet_add(&check_y, rcoord[0]+1);
+          gal_list_f32_add(&check_s, continueparse ? sum : NAN);
+        }
+
 
       /* Increment the total-counter. */
       ++tcounter;
     }
+
+  /* If a check is necessary, then write the values. */
+  if(writecheck)
+    upperlimit_write_check(p, check_x, check_y, check_s);
 
   /* Do the measurement on the random distribution. */
   upperlimit_measure(pp, clumplab, counter==p->upnum);
@@ -482,6 +681,9 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   /* Reset the tile's array pointer, clean up and return. */
   tile->array=tarray;
   free(rcoord);
+  gal_list_f32_free(check_s);
+  gal_list_sizet_free(check_x);
+  gal_list_sizet_free(check_y);
 }
 
 
@@ -522,6 +724,17 @@ upperlimit_calculate(struct mkcatalog_passparams *pp)
      within this object. */
   if(p->clumps && pp->clumpsinobj)
     {
+      /* If an upper-limit check image is requested, then make sure that
+         the clump label is not more than the number of clumps in this
+         object. */
+      if( p->checkupperlimit[0] == pp->object
+          && p->checkupperlimit[1] != GAL_BLANK_INT32
+          && p->checkupperlimit[1] > pp->clumpsinobj )
+        error(EXIT_FAILURE, 0, "object %d has %zu clumps, but an upperlimit "
+              "check table (using the `--checkupperlimit' option) has been "
+              "requested for clump %d", pp->object, pp->clumpsinobj,
+              p->checkupperlimit[1]);
+
       /* Make tiles covering the clumps. */
       clumptiles=upperlimit_make_clump_tiles(pp);
 

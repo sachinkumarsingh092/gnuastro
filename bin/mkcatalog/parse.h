@@ -5,7 +5,7 @@ MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2015-2018, Free Software Foundation, Inc.
+Copyright (C) 2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,14 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef UPPERLIMIT_H
-#define UPPERLIMIT_H
+#ifndef PARSE_H
+#define PARSE_H
 
 void
-upperlimit_write_comments(struct mkcatalogparams *p,
-                          gal_list_str_t **comments, int withsigclip);
+parse_initialize(struct mkcatalog_passparams *pp);
 
 void
-upperlimit_calculate(struct mkcatalog_passparams *pp);
+parse_objects(struct mkcatalog_passparams *pp);
+
+void
+parse_clumps(struct mkcatalog_passparams *pp);
+
+void
+parse_median(struct mkcatalog_passparams *pp);
 
 #endif

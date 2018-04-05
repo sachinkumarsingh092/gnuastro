@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=mkcatalog
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+img=convolve_spatial_noised_labeled_segmented.fits
 
 
 
@@ -50,4 +50,4 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # Actual test script
 # ==================
 $execname $img --x --y --ra --dec --magnitude --upperlimitmag --sn  \
-          --tableformat=txt
+          --tableformat=txt --clumpscat --output=objects-clumps.txt
