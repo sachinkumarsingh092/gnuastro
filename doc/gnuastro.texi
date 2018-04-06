@@ -10089,6 +10089,37 @@ dataset. This operator and its necessary operands are almost identical to
 median value (which is less affected by outliers than the mean) is added
 back to the stack.
 
+@item connected-components
+@cindex Connected components
+Find the connected components in the input dataset (second popped
+operand). The first popped is the connectivity used in the connected
+components algorithm. The second popped operand is the dataset where
+connected components are to be found. It is assumed to be a binary image
+(with values of 0 or 1). It must have an 8-bit unsigned integer type which
+is the format produced by conditional operators. This operator will return
+a labeled dataset where the non-zero pixels in the input will be labeled
+with a counter (starting from 1).
+
+The connectivity is a number between 1 and the number of dimensions in the
+dataset (inclusive). 1 corresponds to the weakest (symmetric) connectivity
+between elements and the number of dimensions the strongest. For example on
+a 2D image, a connectivity of 1 corresponds to 4-connected neighbors and 2
+corresponds to 8-connected neighbors.
+
+One example usage of this operator can be the identification of regions
+above a certain threshold, as in the command below. With this command,
+Arithmetic will first separate all pixels greater than 100 into a binary
+image (where pixels with a value of 1 are above that value). Afterwards, it
+will label all those that are connected.
+
+@example
+$ astarithmetic in.fits 100 gt 2 connected-components
+@end example
+
+If your input dataset doesn't have a binary type, but you know all its
+values are 0 or 1, you can use the @code{uint8} operator (below) to convert
+it to binary.
+
 @item lt
 Less than: If the second popped (or left operand in infix notation, see
 @ref{Reverse polish notation}) value is smaller than the first popped

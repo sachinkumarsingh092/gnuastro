@@ -13,6 +13,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - Segment: new program in charge of segmentation over detections.
 
   Arithmetic:
+    - connected-components: label the connected elements of the input.
     - filter-sigclip-mean: sigma-clipped, mean filter operator.
     - filter-sigclip-median: sigma-clipped, median filter operator.
 
