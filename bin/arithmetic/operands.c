@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
@@ -122,7 +123,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
       filename=operands->filename;
 
       /* Read the dataset. */
-      data=gal_fits_img_read(filename, hdu, p->cp.minmapsize);
+      data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
 
       /* In case this is the first image that is read, then keep the WCS
          information in the `refdata' structure.  */

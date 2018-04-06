@@ -583,10 +583,10 @@ gal_tiff_read(char *filename, size_t dir, size_t minmapsize)
 
           /* Close the TIFF file and return. */
           TIFFClose(tif);
-          error(EXIT_FAILURE, 0, "%s: `%s' has %zu director%s, and "
-                "directories are counted from 0. You have asked for "
+          error(EXIT_FAILURE, 0, "%s: `%s' has %zu director%s/extension%s, "
+                "and directories are counted from 0. You have asked for "
                 "directory %zu", __func__, filename, dircount,
-                dircount==1?"y":"ies", dir);
+                dircount==1?"y":"ies", dircount==1?"":"s", dir);
         }
     }
 

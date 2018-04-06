@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 
@@ -367,8 +368,9 @@ static void
 ui_prepare_inputs(struct segmentparams *p)
 {
   /* Read the input as a single precision floating point dataset. */
-  p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
+                                           GAL_TYPE_FLOAT32,
+                                           p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
   if(p->input->name) free(p->input->name);
@@ -390,8 +392,9 @@ ui_prepare_inputs(struct segmentparams *p)
   if(p->convolvedname)
     {
       /* Read the input convolved image. */
-      p->conv = gal_fits_img_read_to_type(p->convolvedname, p->chdu,
-                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->conv = gal_array_read_one_ch_to_type(p->convolvedname, p->chdu,
+                                              GAL_TYPE_FLOAT32,
+                                              p->cp.minmapsize);
       p->conv->wcs=gal_wcs_copy(p->input->wcs);
 
       /* Make sure it is the same size as the input. */
@@ -403,8 +406,8 @@ ui_prepare_inputs(struct segmentparams *p)
 
 
   /* Read the detected label image and check its type and size. */
-  p->olabel = gal_fits_img_read(p->useddetectionname, p->dhdu,
-                                p->cp.minmapsize);
+  p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
+                                    p->cp.minmapsize);
   if( gal_data_dsize_is_different(p->input, p->olabel) )
     error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
           "different dimension/size", p->useddetectionname, p->dhdu,
@@ -609,7 +612,7 @@ ui_read_std(struct segmentparams *p)
   gal_data_t *sky, *keys=gal_data_array_calloc(3);
 
   /* The standard devitaion image. */
-  p->std=gal_fits_img_read_to_type(p->usedstdname, p->stdhdu,
+  p->std=gal_array_read_one_ch_to_type(p->usedstdname, p->stdhdu,
                                    GAL_TYPE_FLOAT32, p->cp.minmapsize);
   ui_check_size(p->input, p->std, tl->tottiles, p->inputname, p->cp.hdu,
                 p->usedstdname, p->stdhdu);
@@ -620,8 +623,8 @@ ui_read_std(struct segmentparams *p)
   if(p->skyname)
     {
       /* Read the Sky dataset. */
-      sky=gal_fits_img_read_to_type(p->skyname, p->skyhdu, GAL_TYPE_FLOAT32,
-                                    p->cp.minmapsize);
+      sky=gal_array_read_one_ch_to_type(p->skyname, p->skyhdu,
+                                        GAL_TYPE_FLOAT32, p->cp.minmapsize);
 
       /* Check its size. */
       ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,

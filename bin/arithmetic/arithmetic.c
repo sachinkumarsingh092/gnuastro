@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
@@ -773,8 +774,8 @@ reversepolish(struct arithmeticparams *p)
       filename=p->operands->filename;
       if( gal_fits_name_is_fits(filename) )
         {
-          p->operands->data=gal_fits_img_read(filename, hdu,
-                                              p->cp.minmapsize);
+          p->operands->data=gal_array_read_one_ch(filename, hdu,
+                                                  p->cp.minmapsize);
           p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
           if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
         }

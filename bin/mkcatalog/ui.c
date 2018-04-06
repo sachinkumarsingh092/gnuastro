@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/array.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/arithmetic.h>
@@ -503,8 +504,8 @@ ui_read_labels(struct mkcatalogparams *p)
   gal_data_t *tmp, *keys=gal_data_array_calloc(2);
 
   /* Read it into memory. */
-  p->objects = gal_fits_img_read(p->objectsfile, p->cp.hdu,
-                                 p->cp.minmapsize);
+  p->objects = gal_array_read_one_ch(p->objectsfile, p->cp.hdu,
+                                     p->cp.minmapsize);
 
 
   /* Make sure it has an integer type. */
@@ -567,8 +568,8 @@ ui_read_labels(struct mkcatalogparams *p)
               "configuration file", p->usedclumpsfile);
 
       /* Read the clumps image. */
-      p->clumps = gal_fits_img_read(p->usedclumpsfile, p->clumpshdu,
-                                    p->cp.minmapsize);
+      p->clumps = gal_array_read_one_ch(p->usedclumpsfile, p->clumpshdu,
+                                        p->cp.minmapsize);
 
       /* Check its size. */
       if( gal_data_dsize_is_different(p->objects, p->clumps) )
@@ -864,8 +865,9 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
               "give the filename", p->usedvaluesfile);
 
       /* Read the values dataset. */
-      p->values=gal_fits_img_read_to_type(p->usedvaluesfile, p->valueshdu,
-                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->values=gal_array_read_one_ch_to_type(p->usedvaluesfile, p->valueshdu,
+                                              GAL_TYPE_FLOAT32,
+                                              p->cp.minmapsize);
 
       /* Make sure it has the correct size. */
       if( gal_data_dsize_is_different(p->objects, p->values) )
@@ -907,8 +909,9 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
               "the filename", p->usedskyfile);
 
       /* Read the sky image. */
-      p->sky=gal_fits_img_read_to_type(p->usedskyfile, p->skyhdu,
-                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
+                                           GAL_TYPE_FLOAT32,
+                                           p->cp.minmapsize);
 
       /* Check its size. */
       ui_preparation_check_size_read_tiles(p, p->sky, p->usedskyfile,
@@ -945,8 +948,9 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
               p->usedstdfile);
 
       /* Read the Sky standard deviation image into memory. */
-      p->std=gal_fits_img_read_to_type(p->usedstdfile, p->stdhdu,
-                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->std=gal_array_read_one_ch_to_type(p->usedstdfile, p->stdhdu,
+                                           GAL_TYPE_FLOAT32,
+                                           p->cp.minmapsize);
 
       /* Check its size. */
       ui_preparation_check_size_read_tiles(p, p->std, p->usedstdfile,
@@ -978,8 +982,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                   p->upmaskfile);
 
           /* Read the mask image. */
-          p->upmask = gal_fits_img_read(p->upmaskfile, p->upmaskhdu,
-                                        p->cp.minmapsize);
+          p->upmask = gal_array_read_one_ch(p->upmaskfile, p->upmaskhdu,
+                                            p->cp.minmapsize);
 
           /* Check its size. */
           if( gal_data_dsize_is_different(p->objects, p->upmask) )

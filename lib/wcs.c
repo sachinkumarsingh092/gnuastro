@@ -183,6 +183,10 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
   fitsfile *fptr;
   struct wcsprm *wcs;
 
+  /* Make sure we are dealing with a FITS file. */
+  if( gal_fits_name_is_fits(filename) == 0 )
+    return NULL;
+
   /* Check HDU for realistic conditions: */
   fptr=gal_fits_hdu_open_format(filename, hdu, 0);
 

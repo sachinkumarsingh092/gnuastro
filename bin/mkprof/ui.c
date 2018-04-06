@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/box.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
@@ -1030,9 +1031,9 @@ ui_prepare_canvas(struct mkprofparams *p)
       else
         {
           /* Read the image. */
-          p->out=gal_fits_img_read_to_type(p->backname, p->backhdu,
-                                           GAL_TYPE_FLOAT32,
-                                           p->cp.minmapsize);
+          p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
+                                               GAL_TYPE_FLOAT32,
+                                               p->cp.minmapsize);
           p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0,
                                    &p->out->nwcs);
 

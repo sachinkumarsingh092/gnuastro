@@ -104,3 +104,41 @@ gal_array_read_to_type(char *filename, char *extension, uint8_t type,
   gal_list_data_reverse(&out);
   return out;
 }
+
+
+
+
+
+/* Read the input array and make sure it is only one channel. */
+gal_data_t *
+gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize)
+{
+  gal_data_t *out;
+  out=gal_array_read(filename, extension, minmapsize);
+
+  if(out->next)
+    error(EXIT_FAILURE, 0, "%s (hdu %s): contains %zu channels (it isn't "
+          "monochrome).\n\n"
+          "You can use Gnuastro's ConvertType program to separate the "
+          "(color) channels into separate extensions of a FITS file, with "
+          "a command like this:\n\n"
+          "    $ astconvertt %s -h%s --output=sep-ch.fits",
+          filename, extension, gal_list_data_number(out), filename,
+          extension);
+
+  return out;
+}
+
+
+
+
+
+/* Read a single-channel dataset into a specific type. */
+gal_data_t *
+gal_array_read_one_ch_to_type(char *filename, char *extension, uint8_t type,
+                              size_t minmapsize)
+{
+  gal_data_t *out=gal_array_read_one_ch(filename, extension, minmapsize);
+
+  return gal_data_copy_to_new_type_free(out, type);
+}

@@ -5,6 +5,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  All programs:
+    - Input datasets can now be given in any of the formats recognized by
+      Gnuastro (and with libraries available on the system).
+
   New program:
     - Segment: new program in charge of segmentation over detections.
 
@@ -47,6 +51,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Libraries:
     gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
+    gal_array_read_one_ch: Read in the data and make sure it is in one channel.
+    gal_array_read_one_ch_to_type: Make sure input is in one channel and type.
     gal_blank_is: check to see if argument is blank in its type or not.
     gal_eps_name_is_eps: Returns 1 if given filename is EPS.
     gal_eps_suffix_is_eps: Returns 1 if given suffix is EPS.

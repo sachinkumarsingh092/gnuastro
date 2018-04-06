@@ -59,6 +59,13 @@ gal_data_t *
 gal_array_read_to_type(char *filename, char *extension, uint8_t type,
                        size_t minmapsize);
 
+gal_data_t *
+gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize);
+
+gal_data_t *
+gal_array_read_one_ch_to_type(char *filename, char *extension, uint8_t type,
+                              size_t minmapsize);
+
 
 __END_C_DECLS    /* From C++ preparations */
 

@@ -21967,7 +21967,24 @@ Similar to @code{gal_array_read}, but the output data structure(s) will
 have a numeric data type of @code{type}, see @ref{Numeric data types}.
 @end deftypefun
 
+@deftypefun void gal_array_read_one_ch (char @code{*filename}, char @code{*extension}, size_t @code{minmapsize})
+@cindex Channel
+@cindex Color channel
+Read the dataset within @code{filename} (extension/hdu/dir
+@code{extension}) and make sure it is only a single channel. Formats like
+JPEG or TIFF support multiple channels per input, but it may happen that
+your program only works on a single dataset. This function can be a
+convenient way to make sure that the data that comes into your program is
+only one channel. It is just a very simple wrapper around
+@code{gal_array_read} that checks if there was more than one dataset and
+aborts with an informative error if there is more than one channel in the
+dataset.
+@end deftypefun
 
+@deftypefun void gal_array_read_one_ch_to_type (char @code{*filename}, char @code{*extension}, uint8_t @code{type}, size_t @code{minmapsize})
+Similar to @code{gal_array_read_one_ch}, but the output data structure will
+has a numeric data type of @code{type}, see @ref{Numeric data types}.
+@end deftypefun
 
 @node Table input output, FITS files, Array input output, Gnuastro library
 @subsection Table input output (@file{table.h})

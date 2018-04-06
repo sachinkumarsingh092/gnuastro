@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/table.h>
 
 #include <gnuastro-internal/timing.h>
@@ -281,7 +282,7 @@ void
 ui_preparations(struct mknoiseparams *p)
 {
   /* Read the input image as a double type */
-  p->input=gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
+  p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
                                      GAL_TYPE_FLOAT64, p->cp.minmapsize);
   p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 

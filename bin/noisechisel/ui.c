@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
@@ -524,8 +525,9 @@ ui_preparations(struct noisechiselparams *p)
 
 
   /* Read the input as a single precision floating point dataset. */
-  p->input = gal_fits_img_read_to_type(p->inputname, p->cp.hdu,
-                                       GAL_TYPE_FLOAT32, p->cp.minmapsize);
+  p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
+                                           GAL_TYPE_FLOAT32,
+                                           p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
   if(p->input->name==NULL)
@@ -544,8 +546,9 @@ ui_preparations(struct noisechiselparams *p)
   if(p->convolvedname)
     {
       /* Read the input convolved image. */
-      p->conv = gal_fits_img_read_to_type(p->convolvedname, p->chdu,
-                                          GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      p->conv = gal_array_read_one_ch_to_type(p->convolvedname, p->chdu,
+                                              GAL_TYPE_FLOAT32,
+                                              p->cp.minmapsize);
 
       /* Make sure the convolved image is the same size as the input. */
       if( gal_data_dsize_is_different(p->input, p->conv) )
