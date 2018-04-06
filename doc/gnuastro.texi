@@ -21977,6 +21977,11 @@ library, for example @ref{FITS files} or @ref{TIFF files}. If the file type
 of the input/output file is already known, you can use the functions in
 those sections respectively.
 
+@deftypefun int gal_array_name_recognized (char @code{*filename})
+Return 1 if the given file name corresponds to one of the recognized file
+types for reading arrays.
+@end deftypefun
+
 @deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, size_t @code{minmapsize})
 Read the array within the given extension (@code{extension}) of
 @code{filename}. If the array is larger than @code{minmapsize} bytes, then

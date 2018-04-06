@@ -597,7 +597,7 @@ reversepolish(struct arithmeticparams *p)
 
   /* Prepare the processing: */
   p->operands=NULL;
-  p->addcounter=p->popcounter=0;
+  p->popcounter=0;
 
 
   /* Go over each input token and do the work. */
@@ -606,7 +606,7 @@ reversepolish(struct arithmeticparams *p)
       /* If we have a name or number, then add it to the operands linked
          list. Otherwise, pull out two members and do the specified
          operation on them. */
-      if(gal_fits_name_is_fits(token->v))
+      if(gal_array_name_recognized(token->v))
         operands_add(p, token->v, NULL);
       else if( (d1=gal_data_copy_string_to_number(token->v)) )
         operands_add(p, NULL, d1);
@@ -744,8 +744,8 @@ reversepolish(struct arithmeticparams *p)
           /* Finished checks with known operators */
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
-                  "interpretted as a FITS file, number, or operator",
-                  token->v);
+                  "interpretted as a recognized input file name, number, or "
+                  "operator", token->v);
 
 
           /* See if the arithmetic library must be called or not. */

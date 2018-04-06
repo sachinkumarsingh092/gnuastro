@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/tiff.h>
 #include <gnuastro/array.h>
 #include <gnuastro-internal/checkset.h>
 
@@ -78,17 +79,18 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
       newnode->data=data;
       newnode->filename=filename;
 
-      if(filename != NULL && gal_fits_name_is_fits(filename))
+      /* See if a HDU must be read or not. */
+      if(filename != NULL
+         && ( gal_fits_name_is_fits(filename)
+              || gal_tiff_name_is_tiff(filename) ) )
         {
           /* Set the HDU for this filename. */
           if(p->globalhdu)
             gal_checkset_allocate_copy(p->globalhdu, &newnode->hdu);
           else
             newnode->hdu=gal_list_str_pop(&p->hdus);
-
-          /* Increment the FITS counter. */
-          ++p->addcounter;
         }
+      else newnode->hdu=NULL;
 
       /* Make the link to the previous list. */
       newnode->next=p->operands;

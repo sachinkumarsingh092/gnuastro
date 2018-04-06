@@ -45,6 +45,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /*****************        High-level functions        ****************/
 /*********************************************************************/
+int
+gal_array_name_recognized(char *name)
+{
+  if(       gal_fits_name_is_fits(name) ) return 1;
+  else if ( gal_tiff_name_is_tiff(name) ) return 1;
+  else if ( gal_jpeg_name_is_jpeg(name) ) return 1;
+  else                                    return 0;
+
+  /* Control should not get to here, but just to avoid compiler warnings,
+     we'll return a NULL. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to solve the "
+        "problem. Control must not reach the end of this function", __func__,
+        PACKAGE_BUGREPORT);
+  return 0;
+}
+
+
+
+
+
 /* Read (all the possibly existing) color channels within each
    extension/dir of the given file. */
 gal_data_t *
@@ -113,18 +133,28 @@ gal_array_read_to_type(char *filename, char *extension, uint8_t type,
 gal_data_t *
 gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize)
 {
+  char *fname;
   gal_data_t *out;
   out=gal_array_read(filename, extension, minmapsize);
 
   if(out->next)
-    error(EXIT_FAILURE, 0, "%s (hdu %s): contains %zu channels (it isn't "
-          "monochrome).\n\n"
-          "You can use Gnuastro's ConvertType program to separate the "
-          "(color) channels into separate extensions of a FITS file, with "
-          "a command like this:\n\n"
-          "    $ astconvertt %s -h%s --output=sep-ch.fits",
-          filename, extension, gal_list_data_number(out), filename,
-          extension);
+    {
+      if(extension)
+        {
+          if( asprintf(&fname, "%s (hdu %s)", filename, extension)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation error", __func__);
+        }
+      else
+        fname=filename;
+
+      error(EXIT_FAILURE, 0, "%s: contains %zu channels (it isn't "
+            "monochrome).\n\n"
+            "You can use Gnuastro's ConvertType program to separate the "
+            "(color) channels into separate extensions of a FITS file, with "
+            "a command like this:\n\n"
+            "    $ astconvertt %s -h%s --output=sep-ch.fits",
+            fname, gal_list_data_number(out), filename, extension);
+    }
 
   return out;
 }

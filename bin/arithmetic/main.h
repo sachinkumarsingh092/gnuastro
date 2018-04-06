@@ -70,7 +70,6 @@ struct arithmeticparams
   /* Input: */
   gal_list_str_t     *hdus;  /* List of all given HDU strings.          */
   gal_list_str_t   *tokens;  /* List of all arithmetic tokens.          */
-  size_t        addcounter;  /* The number of FITS images added.        */
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */
   char          *globalhdu;  /* Single HDU for all inputs.              */
