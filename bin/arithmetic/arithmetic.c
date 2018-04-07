@@ -539,10 +539,18 @@ arithmetic_connected_components(struct arithmeticparams *p, char *token)
   conn=gal_data_copy_to_new_type_free(conn, GAL_TYPE_INT32);
   conn_int = *((int32_t *)(conn->array));
   if(conn_int>in->ndim)
-    error(EXIT_FAILURE, 0, "the first0popped operand to "
+    error(EXIT_FAILURE, 0, "the first popped operand of "
           "`connected-components' (%d) is larger than the number of "
           "dimensions in the second-popped operand (%zu)", conn_int,
           in->ndim);
+
+  /* Make sure the array has an unsigned 8-bit type. */
+  if(in->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "the second popped operand of "
+          "`connected-components' doesn't have an 8-bit unsigned "
+          "integer type. It must be a binary dataset (only being equal "
+          "to zero is checked). You can use the `uint8' operator to "
+          "convert the type of this operand.");
 
   /* Do the connected components labeling. */
   gal_binary_connected_components(in, &out, 1);
@@ -553,6 +561,39 @@ arithmetic_connected_components(struct arithmeticparams *p, char *token)
   /* Clean up. */
   gal_data_free(in);
   gal_data_free(conn);
+}
+
+
+
+
+
+static void
+arithmetic_invert(struct arithmeticparams *p, char *token)
+{
+  gal_data_t *in = operands_pop(p, token);
+
+  uint8_t *u8  = in->array, *u8f  = u8  + in->size;
+  uint8_t *u16 = in->array, *u16f = u16 + in->size;
+  uint8_t *u32 = in->array, *u32f = u32 + in->size;
+  uint8_t *u64 = in->array, *u64f = u64 + in->size;
+
+  /* Do the inversion based on type. */
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:  do *u8  = UINT8_MAX-*u8;   while(++u8<u8f);   break;
+    case GAL_TYPE_UINT16: do *u16 = UINT16_MAX-*u16; while(++u16<u16f); break;
+    case GAL_TYPE_UINT32: do *u32 = UINT32_MAX-*u32; while(++u32<u32f); break;
+    case GAL_TYPE_UINT64: do *u64 = UINT64_MAX-*u64; while(++u64<u64f); break;
+    default:
+      error(EXIT_FAILURE, 0, "`invert' operand has %s type. `invert' can "
+            "only take unsigned integer types.\n\nYou can use any of the "
+            "`uint8', `uint16', `uint32', or `uint64' operators to chage "
+            "the type before calling `invert'",
+            gal_type_name(in->type, 1));
+    }
+
+  /* Push the result onto the stack. */
+  operands_add(p, NULL, in);
 }
 
 
@@ -739,6 +780,8 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN; nop=0;  }
           else if (!strcmp(token->v, "connected-components"))
             { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  nop=0;  }
+          else if (!strcmp(token->v, "invert"))
+            { op=ARITHMETIC_OP_INVERT;                nop=0;  }
 
 
           /* Finished checks with known operators */
@@ -815,6 +858,10 @@ reversepolish(struct arithmeticparams *p)
 
                 case ARITHMETIC_OP_CONNECTED_COMPONENTS:
                   arithmetic_connected_components(p, token->v);
+                  break;
+
+                case ARITHMETIC_OP_INVERT:
+                  arithmetic_invert(p, token->v);
                   break;
 
                 default:

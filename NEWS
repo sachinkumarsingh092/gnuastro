@@ -6,16 +6,20 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** New features
 
   All programs:
-    - Input datasets can now be given in any of the formats recognized by
-      Gnuastro (and with libraries available on the system).
+    - Input image dataset(s) can be in any of the formats recognized by
+      Gnuastro (e.g., FITS, TIFF, JPEG), provided that their libraries
+      (optional dependencies) were present at installation time.
 
   New program:
-    - Segment: new program in charge of segmentation over detections.
+    - Segment: new program in charge of segmentation over detections. This
+      operation was previously done by NoiseChisel. NoiseChisel is now ONLY
+      in charge of detection.
 
   Arithmetic:
     - connected-components: label the connected elements of the input.
     - filter-sigclip-mean: sigma-clipped, mean filter operator.
     - filter-sigclip-median: sigma-clipped, median filter operator.
+    - invert: subtract the maximum of unsigned types (absorption to emission).
 
   ConvertType:
     - TIFF images can also be used as input.

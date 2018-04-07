@@ -10120,6 +10120,19 @@ If your input dataset doesn't have a binary type, but you know all its
 values are 0 or 1, you can use the @code{uint8} operator (below) to convert
 it to binary.
 
+@item invert
+Invert an unsigned integer dataset. This is the only operator that ignores
+blank values (which are set to be the maximum values in the unsigned
+integer types).
+
+This is useful in cases where the target(s) has(have) been imaged in
+absorption as raw formats (which are unsigned integer types). With this
+option, the maximum value for the given type will be subtracted from each
+pixel value, thus ``inverting'' the image, so the target(s) can be treated
+as emission. This can be useful when the higher-level analysis
+methods/tools only work on emission (positive skew in the noise, not
+negative).
+
 @item lt
 Less than: If the second popped (or left operand in infix notation, see
 @ref{Reverse polish notation}) value is smaller than the first popped
