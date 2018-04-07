@@ -893,6 +893,7 @@ ui_preparations(struct warpparams *p)
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
 {
+  double *matrix;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -940,7 +941,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
   /* Everything is ready, notify the user of the program starting. */
   if(!p->cp.quiet)
     {
-      double *matrix=p->matrix->array;
+      matrix=p->matrix->array;
       printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
       printf(" Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");

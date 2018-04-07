@@ -414,7 +414,7 @@ correct_wcs_save_output(struct warpparams *p)
   double *m=p->matrix->array, diff;
   struct wcsprm *wcs=p->output->wcs;
   gal_fits_list_key_t *headers=NULL;
-  double *crpix=wcs->crpix, *w=p->inwcsmatrix;
+  double *crpix=wcs?wcs->crpix:NULL, *w=p->inwcsmatrix;
 
   /* `tinv' is the 2 by 2 inverse matrix. Recall that `p->inverse' is 3 by
      3 to account for homogeneous coordinates. */
@@ -422,28 +422,41 @@ correct_wcs_save_output(struct warpparams *p)
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
 
   /* Make the WCS corrections if necessary. */
-  if(p->keepwcs==0 && wcs)
+  if(wcs)
     {
-      /* Correct the input WCS matrix. Since we are re-writing the PC
-         matrix from the full rotation matrix (including pixel scale),
-         we'll also have to set the CDELT fields to 1. Just to be sure that
-         the PC matrix is used in the end by WCSLIB, we'll also set altlin
-         to 1.*/
-      wcs->altlin=1;
-      wcs->cdelt[0] = wcs->cdelt[1] = 1.0f;
-      wcs->pc[0] = w[0]*tinv[0] + w[1]*tinv[2];
-      wcs->pc[1] = w[0]*tinv[1] + w[1]*tinv[3];
-      wcs->pc[2] = w[2]*tinv[0] + w[3]*tinv[2];
-      wcs->pc[3] = w[2]*tinv[1] + w[3]*tinv[3];
+      if(p->keepwcs==0)
+        {
+          /* Correct the input WCS matrix. Since we are re-writing the PC
+             matrix from the full rotation matrix (including pixel scale),
+             we'll also have to set the CDELT fields to 1. Just to be sure
+             that the PC matrix is used in the end by WCSLIB, we'll also
+             set altlin to 1.*/
+          wcs->altlin=1;
+          wcs->cdelt[0] = wcs->cdelt[1] = 1.0f;
+          wcs->pc[0] = w[0]*tinv[0] + w[1]*tinv[2];
+          wcs->pc[1] = w[0]*tinv[1] + w[1]*tinv[3];
+          wcs->pc[2] = w[2]*tinv[0] + w[3]*tinv[2];
+          wcs->pc[3] = w[2]*tinv[1] + w[3]*tinv[3];
 
-      /* Correct the CRPIX point. The +1 in the end of the last two
-         lines is because FITS counts from 1. */
-      tcrpix[0] = m[0]*crpix[0]+m[1]*crpix[1]+m[2];
-      tcrpix[1] = m[3]*crpix[0]+m[4]*crpix[1]+m[5];
-      tcrpix[2] = m[6]*crpix[0]+m[7]*crpix[1]+m[8];
+          /* Correct the CRPIX point. The +1 in the end of the last two
+             lines is because FITS counts from 1. */
+          tcrpix[0] = m[0]*crpix[0]+m[1]*crpix[1]+m[2];
+          tcrpix[1] = m[3]*crpix[0]+m[4]*crpix[1]+m[5];
+          tcrpix[2] = m[6]*crpix[0]+m[7]*crpix[1]+m[8];
 
-      crpix[0] = tcrpix[0]/tcrpix[2] - p->outfpixval[0] + 1;
-      crpix[1] = tcrpix[1]/tcrpix[2] - p->outfpixval[1] + 1;
+          crpix[0] = tcrpix[0]/tcrpix[2] - p->outfpixval[0] + 1;
+          crpix[1] = tcrpix[1]/tcrpix[2] - p->outfpixval[1] + 1;
+        }
+
+      /* Due to floating point errors extremely small values of PC matrix
+         can be set to zero and extremely small differences between PC1_1
+         and PC2_2 can be ignored. The reason for all the `fabs' functions
+         is because the signs are usually different.*/
+      if( fabs(wcs->pc[1])<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
+      if( fabs(wcs->pc[2])<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
+      diff=fabs(wcs->pc[0])-fabs(wcs->pc[3]);
+      if( fabs(diff/p->pixelscale[0])<RELATIVEFLTERROR )
+        wcs->pc[3]=( (wcs->pc[3] < 0.0f ? -1.0f : 1.0f) * fabs(wcs->pc[0]) );
     }
 
   /* Add the appropriate headers: */
@@ -455,16 +468,6 @@ correct_wcs_save_output(struct warpparams *p)
                                 &keyword[i*FLEN_KEYWORD], 0, &m[i], 0,
                                 "Warp matrix element value", 0, NULL);
     }
-
-  /* Due to floating point errors extremely small values of PC matrix can
-     be set to zero and extremely small differences between PC1_1 and PC2_2
-     can be ignored. The reason for all the `fabs' functions is because the
-     signs are usually different.*/
-  if( fabs(wcs->pc[1])<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
-  if( fabs(wcs->pc[2])<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;
-  diff=fabs(wcs->pc[0])-fabs(wcs->pc[3]);
-  if( fabs(diff/p->pixelscale[0])<RELATIVEFLTERROR )
-    wcs->pc[3] =  ( (wcs->pc[3] < 0.0f ? -1.0f : 1.0f) * fabs(wcs->pc[0]) );
 
   /* Save the output into the proper type and write it. */
   if(p->cp.type!=p->output->type)
@@ -522,7 +525,7 @@ warp(struct warpparams *p)
   gal_threads_dist_in_threads(p->output->size, nt, &indexs, &thrdcols);
 
 
-  /* Start the convolution. */
+  /* Start the warp. */
   if(nt==1)
     {
       iwp[0].p=p;

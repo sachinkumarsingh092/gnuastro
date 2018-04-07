@@ -5,6 +5,7 @@ Nima Dehdilani
 Antonio Diaz Diaz
 Lee Kelvin
 Guillaume Mahler
+Bertrand Pain
 Ole Streicher
 Michel Tallon
 Juan C. Tello
