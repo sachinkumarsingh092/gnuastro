@@ -70,8 +70,8 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   size_t ndiffuse=0, coord[2], *dindexs;
   double wcoord[2]={0.0f,0.0f}, sum=0.0f;
   size_t *s, *sf, *dsize=input->dsize, ndim=input->ndim;
-  float glimit, *imgss=input->array, *std=p->std->array;
   int32_t *olabel=p->olabel->array, *clabel=p->clabel->array;
+  float glimit, *imgss=input->array, *std=p->std?p->std->array:NULL;
 
 
   /* Find the flux weighted center (meaningful only for positive valued
@@ -107,12 +107,16 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   coord[1] = GAL_DIMENSION_FLT_TO_INT(wcoord[1]/sum);
 
 
-  /* Find the growth limit. Note that the STD image may be a full sized
-     image or a tessellation. We'll check through the number of elements it
-     has. */
-  cltprm->std = ( p->std->size==p->input->size
-                  ? std[ gal_dimension_coord_to_index(ndim, dsize, coord) ]
-                  : std[ gal_tile_full_id_from_coord(&p->cp.tl, coord)    ] );
+  /* Find the growth limit. Note that the STD may be a value, or a dataset
+     (which may be a full sized image or a tessellation). If its a dataset,
+     `stdval==NAN', and we'll check through the number of elements to see
+     what kind of dataset it is.. */
+  cltprm->std = ( p->std
+                  ? ( p->std->size==p->input->size
+                      ? std[gal_dimension_coord_to_index(ndim, dsize, coord)]
+                      : std[gal_tile_full_id_from_coord(&p->cp.tl, coord)] )
+                  : p->stdval );
+  if(p->variance) cltprm->std = sqrt(cltprm->std);
 
 
   /* From the standard deviation, find the growth limit. */
@@ -235,9 +239,9 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   double *row, *info=cltprm->info->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
-  float *arr=p->input->array, *std=p->std->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
+  float *arr=p->input->array, *std=p->std?p->std->array:NULL;
 
   /* Allocate the array to keep the neighbor labels of river pixels. */
   ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
@@ -320,12 +324,15 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
             {
               coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
               coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
-              row[INFO_INSTD]=( p->std->size==p->input->size
-                                ? std[ gal_dimension_coord_to_index(ndim,
-                                                                    dsize,
-                                                                    coord) ]
-                                : std[ gal_tile_full_id_from_coord(tl,
-                                                                   coord)] );
+              row[INFO_INSTD]=( p->std
+                                ? ( p->std->size==p->input->size
+                                    ? std[gal_dimension_coord_to_index(ndim,
+                                                               dsize, coord)]
+                                    : std[gal_tile_full_id_from_coord(tl,
+                                                                    coord)] )
+                                : p->stdval );
+              if(p->variance) row[INFO_INSTD] = sqrt(row[INFO_INSTD]);
+
               /* For a check
               printf("---------\n");
               printf("\t%f --> %zu\n", row[INFO_Y]/row[INFO_SFF], coord[1]);
@@ -900,11 +907,35 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
     if(clprm.sn[i].ndim)  /* Only on tiles were an S/N was calculated. */
       numsn+=clprm.sn[i].size;
   if( numsn < p->minnumfalse )
-    error(EXIT_FAILURE, 0, "only %zu clumps could be identified in the "
-          "undetected regions. This is less than %zu (value to "
-          "`--minnumfalse' option). Please either decrease this value or "
-          "other options to change prior processing steps", numsn,
-          p->minnumfalse);
+    error(EXIT_FAILURE, 0, "%zu usable clumps found in the undetected "
+          "regions. This is smaller than the requested minimum number of "
+          "false/reference clumps (%zu, value to the `--minnumfalse' "
+          "option).\n\n"
+          "There are several ways to address the problem. The best and most "
+          "highly recommended is to use a larger input if possible (when the "
+          "input is a crop from a larger dataset). If that is not the case, "
+          "or it doesn't solve the problem, you need to loosen the "
+          "parameters (and therefore cause more scatter/bias in the final "
+          "result). Thus don't loosen them too much. Recall that you can "
+          "see all the option values to Gnuastro's programs by appending "
+          "`-P' to the end of your command.\n\n"
+          "  * Slightly decrease `--largetilesize' to have more tiles.\n"
+          "  * Decrease `--minskyfrac' (currently %g) to look into more "
+          "tiles.\n"
+          "  * Slightly decrease `--snminarea' (currently %zu) to "
+          "measure more clumps.\n"
+          "  * If Segment already works on a dataset with similar noise "
+          "properties, you can directly pass the 'true' clump "
+          "signal-to-noise ratio found there to `--clumpsnthresh' and "
+          "avoid having to study the undetected regions any more.\n\n"
+          "Append your previous command with `--checksegmentation' to see "
+          "the steps and get a better feeling of the cause/solution. Note "
+          "that the output is a multi-extension FITS file).\n\n"
+          "To better understand the segmentation process and options, "
+          "please run the following command (press `SPACE'/arrow-keys to "
+          "navigate and `Q' to return back to the command-line):\n\n"
+          "    $ info gnuastro \"Segmentation options\"\n",
+          numsn, p->minnumfalse, p->minskyfrac, p->snminarea);
 
 
   /* Allocate the space to keep all the S/N values. */

@@ -53,12 +53,13 @@ if COND_HASGNULIBTOOL
 endif
 if COND_ARITHMETIC
   MAYBE_ARITHMETIC_TESTS = arithmetic/snimage.sh arithmetic/onlynumbers.sh \
-  arithmetic/where.sh arithmetic/or.sh
+  arithmetic/where.sh arithmetic/or.sh arithmetic/connected-components.sh
 
   arithmetic/onlynumbers.sh: prepconf.sh.log
+  arithmetic/connected-components.sh: noisechisel/noisechisel.sh.log
   arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
   arithmetic/where.sh: noisechisel/noisechisel.sh.log
-  arithmetic/or.sh: noisechisel/noisechisel.sh.log
+  arithmetic/or.sh: segment/segment.sh.log
 endif
 if COND_BUILDPROG
   MAYBE_BUILDPROG_TESTS = buildprog/simpleio.sh
@@ -128,7 +129,7 @@ if COND_MKCATALOG
   mkcatalog/objects-clumps.sh mkcatalog/aperturephot.sh
 
   mkcatalog/objects-clumps.sh: segment/segment.sh.log
-  mkcatalog/detections.sh: noisechisel/noisechisel.sh.log
+  mkcatalog/detections.sh: arithmetic/connected-components.sh.log
   mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
                              mkprof/clearcanvas.sh.log
 endif

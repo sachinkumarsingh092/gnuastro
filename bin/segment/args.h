@@ -33,6 +33,71 @@ struct argp_option program_options[] =
   {
     /* Input options. */
     {
+      "sky",
+      UI_KEY_SKY,
+      "STR/FLT",
+      0,
+      "Filename of Sky values image to subtract.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skyname,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "skyhdu",
+      UI_KEY_SKYHDU,
+      "STR",
+      0,
+      "HDU containing Sky value to subtract.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->skyhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "std",
+      UI_KEY_STD,
+      "STR/FLT",
+      0,
+      "Filename of Sky standard deviation.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->stdname,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "stdhdu",
+      UI_KEY_STDHDU,
+      "STR",
+      0,
+      "HDU containing Sky standard deviation.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->stdhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "variance",
+      UI_KEY_VARIANCE,
+      0,
+      0,
+      "STD input is actually variance.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->variance,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "detection",
       UI_KEY_DETECTION,
       "STR",
@@ -55,59 +120,7 @@ struct argp_option program_options[] =
       &p->dhdu,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "sky",
-      UI_KEY_SKY,
-      "STR",
-      0,
-      "Filename of Sky values image to subtract.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->skyname,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "skyhdu",
-      UI_KEY_SKYHDU,
-      "STR",
-      0,
-      "HDU containing Sky value to subtract.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->skyhdu,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "std",
-      UI_KEY_STD,
-      "STR",
-      0,
-      "Filename of Sky standard deviation.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->stdname,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "stdhdu",
-      UI_KEY_STDHDU,
-      "STR",
-      0,
-      "HDU containing Sky standard deviation.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->stdhdu,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
@@ -176,6 +189,32 @@ struct argp_option program_options[] =
       "Output only object and clump labels.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->rawoutput,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "grownclumps",
+      UI_KEY_GROWNCLUMPS,
+      0,
+      0,
+      "Save grown clumps instead of original.",
+      UI_GROUP_SEGMENTATION,
+      &p->grownclumps,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "continueaftercheck",
+      UI_KEY_CONTINUEAFTERCHECK,
+      0,
+      0,
+      "Continue processing after checks.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->continueaftercheck,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -342,19 +381,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "grownclumps",
-      UI_KEY_GROWNCLUMPS,
-      0,
-      0,
-      "Save grown clumps instead of original.",
-      UI_GROUP_SEGMENTATION,
-      &p->grownclumps,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
       "checksegmentation",
       UI_KEY_CHECKSEGMENTATION,
       0,
@@ -373,19 +399,6 @@ struct argp_option program_options[] =
 
 
     /* Operating mode options. */
-    {
-      "continueaftercheck",
-      UI_KEY_CONTINUEAFTERCHECK,
-      0,
-      0,
-      "Continue processing after checks.",
-      GAL_OPTIONS_GROUP_OPERATING_MODE,
-      &p->continueaftercheck,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
 

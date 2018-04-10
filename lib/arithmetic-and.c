@@ -47,5 +47,5 @@ arithmetic_and(gal_data_t *l, gal_data_t *r, gal_data_t *o)
 {
   int checkblank=gal_arithmetic_binary_checkblank(l, r);
 
-  BINARY_SET_LT( ARITHMETIC_BINARY_OUT_TYPE_UINT8, && );
+  BINARY_SET_LT( ARITHMETIC_BINARY_OUT_TYPE_INCR_SEP, && );
 }

@@ -161,6 +161,7 @@ struct mkcatalogparams
   char                *stdhdu;  /* HDU of sky STD image.                */
 
   uint8_t           clumpscat;  /* ==1: create clumps catalog.          */
+  uint8_t         noclumpsort;  /* Don't sort the clumps catalog.       */
   float             zeropoint;  /* Zero-point magnitude of object.      */
   uint8_t            variance;  /* Input STD file is actually variance. */
   uint8_t         subtractsky;  /* ==1: subtract the Sky from values.   */
@@ -205,6 +206,8 @@ struct mkcatalogparams
   size_t               rngmin;  /* Minimum possible value of RNG.       */
   size_t              rngdiff;  /* Difference of RNG max and min.       */
   uint8_t      uprangewarning;  /* A warning must be printed.           */
+  size_t         *hostobjid_c;  /* To sort the clumps table by Obj.ID.  */
+  size_t         *numclumps_c;  /* To sort the clumps table by Obj.ID.  */
 
   char        *usedvaluesfile;  /* Ptr to final name used for values.   */
   char        *usedclumpsfile;  /* Ptr to final name used for clumps.   */

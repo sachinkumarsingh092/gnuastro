@@ -34,6 +34,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
+/* Macros */
+#define DETECTION_ALL  "all"
+
 
 
 
@@ -56,6 +59,7 @@ struct segmentparams
   char                *skyhdu;  /* Filename of Sky image.                 */
   char               *stdname;  /* File name of Standard deviation image. */
   char                *stdhdu;  /* HDU of Stanard deviation image.        */
+  uint8_t            variance;  /* The input STD is actually variance.    */
   uint8_t           rawoutput;  /* Output only object and clump labels.   */
 
   float            minskyfrac;  /* Undetected area min. frac. in tile.    */
@@ -64,6 +68,7 @@ struct segmentparams
   size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
   float               snquant;  /* Quantile of clumps in sky for true S/N.*/
   uint8_t    keepmaxnearriver;  /* Keep clumps with a peak near a river.  */
+  float         clumpsnthresh;  /* Clump S/N threshold.                   */
   float               gthresh;  /* Multiple of STD to stop growing clumps.*/
   size_t       minriverlength;  /* Min, len of good grown clump rivers.   */
   float           objbordersn;  /* Minimum S/N for grown clumps to be one.*/
@@ -83,12 +88,13 @@ struct segmentparams
   gal_data_t          *olabel;  /* Object labels.                         */
   gal_data_t          *clabel;  /* Clumps labels.                         */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
+  float                stdval;  /* Single value to use for std deviation. */
+  float                skyval;  /* Single value to use for Sky.           */
 
   float               cpscorr;  /* Counts/second correction.              */
   size_t        numdetections;  /* Number of final detections.            */
   size_t            numclumps;  /* Number of true clumps.                 */
   size_t           numobjects;  /* Number of objects.                     */
-  float         clumpsnthresh;  /* Clump S/N threshold.                   */
 
   char     *useddetectionname;  /* Name of file USED for detection image. */
   char           *usedstdname;  /* Name of file USED for sky STD image.   */

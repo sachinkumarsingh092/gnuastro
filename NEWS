@@ -32,9 +32,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     the values file, but the object labels file. Please see the
     "MakeCatalog inputs and basic settings" section of the book for
     more. Here is the summary of the the options:
+    --insky: Sky value as a single value or file (dataset).
+    --instd: Sky standard deviation as a single value or file (dataset).
     --valuesfile: filename containing the values dataset.
     --valueshdu: HDU/extension containing the values dataset.
     --clumpscat: Make a clumps catalog also (`WCLUMPS' keyword not used anymore).
+    --noclumpsort: Don't sort the clumps catalog by host object ID.
     --subtractsky: Subtract the given Sky from the values dataset.
     --variance: input standard deviation image is actually variance.
     --checkupperlimit: make a table for random positions and measurements.
@@ -49,6 +52,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel:
     --rawoutput: only output the detection labels and Sky and its STD.
+    --label: label the connected detections. Until now this was the default
+      behavior. However, from this release, NoiseChisel is only in charge
+      of detection. Segmentation is done by a new program (Segment). Since
+      detection is ultimately just a binary operator, the default output
+      now has an 8-bit unsigned integer type with values of 0 or 1. With
+      this option, you can ask for it to label/count the connected
+      detections instead of the default binary output.
 
   Statistics:
     --manualbinrange: histogram or CFP range can be outside of distribution.
@@ -98,8 +108,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --comment: can be called/written multiple times in one run.
 
   NoiseChisel:
-    Many of the changes below are because NoiseChisel doesn't do
-    segmentation any more.
+    From this release, NoiseChisel is only in charge of detection and won't
+    do segmentation any more. The new Segment program is in charge of
+    segmentation. Many of the changes below are due to this new limited
+    scope of NoiseChisel.
     --kernel: value `none' will disable convolution.
     - Renamed options:
       --convolvedhdu ==> --chdu
@@ -107,6 +119,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       --detsnminarea ==> --snminarea
       --checkdetsn   ==> --checksn
       --detquant     ==> --snquant
+    - By default the detection map is a binary image (values of 0 or 1).
+    - With no output name, the output has a `_detected.fits' suffix.
 
   MakeCatalog:
     - Estimation of noise-level is now done per-pixel over the whole

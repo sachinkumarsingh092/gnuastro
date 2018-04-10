@@ -31,8 +31,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
+#include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -113,6 +115,8 @@ ui_initialize_options(struct segmentparams *p,
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
+  p->skyval              = NAN;
+  p->stdval              = NAN;
   p->medstd              = NAN;
   p->minstd              = NAN;
   p->maxstd              = NAN;
@@ -220,10 +224,47 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct segmentparams *p)
 {
+  char *tailptr;
+
+  /* If the full area is to be used as a single detection, we can't find
+     the S/N value from the un-detected regions, so the user must have
+     given the `clumpsnthresh' option. */
+  if( p->detectionname
+      && !strcmp(p->detectionname, DETECTION_ALL)
+      && isnan(p->clumpsnthresh) )
+    error(EXIT_FAILURE, 0, "`--clumpsnthresh' (`-%c') not given.\n\n"
+          "When `--detection=all' (the whole input dataset is assumed to "
+          "be a detection), Segment can't use the undetected pixels to find "
+          "the signal-to-noise ratio of true clumps. Therefore it is "
+          "mandatory to provide a signal-to-noise ratio manually",
+          UI_KEY_CLUMPSNTHRESH);
+
+  /* See if `--sky' is a filename or a value. When the string is only a
+     number (and nothing else), `tailptr' will point to the end of the
+     string (`\0'). When the string doesn't start with a number, it will
+     point to the start of the string. However, file names might also be
+     things like `1_sky.fits'. In such cases, `strtod' will return `1.0'
+     and `tailptr' will be `_std.fits', so we need to reset `p->stdval' to
+     NaN. */
+  if(p->skyname)
+    {
+      p->skyval=strtod(p->skyname, &tailptr);
+      if(tailptr==p->skyname || *tailptr!='\0')
+        p->skyval=NAN;
+    }
+
+  /* Similar to `--sky' above. */
+  if(p->stdname)
+    {
+      p->stdval=strtod(p->stdname, &tailptr);
+      if(tailptr==p->stdname || *tailptr!='\0')
+        p->stdval=NAN;
+    }
+
   /* If the convolved HDU is given. */
   if(p->convolvedname && p->chdu==NULL)
     error(EXIT_FAILURE, 0, "no value given to `--convolvedhdu'. When the "
-          "`--convolved' option is called (to specify a convolved image "
+          "`--convolved' option is called (to specify a convolved dataset "
           "and avoid convolution) it is mandatory to also specify a HDU "
           "for it");
 
@@ -308,7 +349,8 @@ ui_set_used_names(struct segmentparams *p)
 
   p->usedstdname = ( p->stdname
                      ? p->stdname
-                     : ( p->detectionname
+                     : ( ( p->detectionname
+                           && strcmp(p->detectionname, DETECTION_ALL) )
                          ? p->detectionname
                          : p->inputname ) );
 }
@@ -367,6 +409,9 @@ ui_set_output_names(struct segmentparams *p)
 static void
 ui_prepare_inputs(struct segmentparams *p)
 {
+  int32_t *i, *ii;
+  gal_data_t *maxd, *ccin, *ccout=NULL;
+
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
                                            GAL_TYPE_FLOAT32,
@@ -405,24 +450,68 @@ ui_prepare_inputs(struct segmentparams *p)
     }
 
 
-  /* Read the detected label image and check its type and size. */
-  p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
-                                    p->cp.minmapsize);
-  if( gal_data_dsize_is_different(p->input, p->olabel) )
-    error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
-          "different dimension/size", p->useddetectionname, p->dhdu,
-          p->inputname, p->cp.hdu);
-  if(p->olabel->type==GAL_TYPE_FLOAT32 || p->olabel->type==GAL_TYPE_FLOAT64)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s) has a `%s' type. The detection "
-          "(labeled) map must have an integer type (labels/classes can only "
-          "be integers). If the pixel values are integers, but only the "
-          "numerical type of the image is floating-point, you can use the "
-          "command below to convert it to a 32-bit (signed) integer type:\n\n"
-          "    $ astarithmetic %s int32 -h%s\n\n", p->useddetectionname,
-          p->dhdu, gal_type_name(p->olabel->type, 1), p->useddetectionname,
-          p->dhdu);
-  p->olabel = gal_data_copy_to_new_type_free(p->olabel, GAL_TYPE_INT32);
-  p->olabel->wcs=gal_wcs_copy(p->input->wcs);
+  /* Read the detected label image and check its size. When the user gives
+     `--detection=all', then the whole input is assumed to be a single
+     detection. */
+  if( strcmp(p->useddetectionname, DETECTION_ALL) )
+    {
+      /* Read the dataset into memory. */
+      p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
+                                        p->cp.minmapsize);
+      if( gal_data_dsize_is_different(p->input, p->olabel) )
+        error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
+              "different dimension/size", p->useddetectionname, p->dhdu,
+              p->inputname, p->cp.hdu);
+
+      /* Make sure the detected labels are not floating point. */
+      if(p->olabel->type==GAL_TYPE_FLOAT32
+         || p->olabel->type==GAL_TYPE_FLOAT64)
+        error(EXIT_FAILURE, 0, "%s (hdu: %s) has a `%s' type. The detection "
+              "(labeled) map must have an integer type (labels/classes can "
+              "only be integers). If the pixel values are integers, but only "
+              "the numerical type of the image is floating-point, you can "
+              "use the command below to convert it to a 32-bit (signed) "
+              "integer type:\n\n"
+              "    $ astarithmetic %s int32 -h%s\n\n", p->useddetectionname,
+              p->dhdu, gal_type_name(p->olabel->type, 1),
+              p->useddetectionname, p->dhdu);
+
+      /* Get the maximum value of the input (total number of labels if they
+         are separate). If the maximum is 1 (the image is a binary image),
+         then apply the connected components algorithm to separate the
+         connected regions. The user is allowed to supply a simple binary
+         image.*/
+      maxd=gal_statistics_maximum(p->olabel);
+      maxd=gal_data_copy_to_new_type_free(maxd, GAL_TYPE_INT64);
+      p->numdetections = *((uint64_t *)(maxd->array));
+      if( p->numdetections == 1 )
+        {
+          ccin=gal_data_copy_to_new_type_free(p->olabel, GAL_TYPE_UINT8);
+          p->numdetections=gal_binary_connected_components(ccin, &ccout,
+                                                           ccin->ndim);
+          gal_data_free(ccin);
+          p->olabel=ccout;
+        }
+      else
+        p->olabel = gal_data_copy_to_new_type_free(p->olabel, GAL_TYPE_INT32);
+
+
+      /* Write the WCS into the objects dataset too. */
+      p->olabel->wcs=gal_wcs_copy(p->input->wcs);
+    }
+  else
+    {
+      /* Set the total number of detections to 1. */
+      p->numdetections=1;
+
+      /* Allocate the array. */
+      p->olabel=gal_data_alloc(NULL, GAL_TYPE_INT32, p->input->ndim,
+                               p->input->dsize, p->input->wcs, 0,
+                               p->cp.minmapsize, NULL, NULL, NULL);
+
+      /* Initialize it to 1. */
+      ii=(i=p->olabel->array)+p->olabel->size; do *i++=1; while(i<ii);
+    }
 }
 
 
@@ -562,18 +651,19 @@ ui_check_size(gal_data_t *base, gal_data_t *comp, size_t numtiles,
    the whole array or a tile-values array).. */
 static void
 ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
-                           struct gal_tile_two_layer_params *tl)
+                struct gal_tile_two_layer_params *tl)
 {
   size_t tid;
   gal_data_t *tile;
-  float *f, *s, *sf, *skyarr=sky->array;
+  float *s, *f, *ff, *skyarr=sky->array;
 
-  /* It is the same size as the input. */
-  if( gal_data_dsize_is_different(in, sky)==0 )
+  /* It is the same size as the input or a single value. */
+  if( gal_data_dsize_is_different(in, sky)==0 || sky->size==1)
     {
-      f=in->array;
-      sf=(s=sky->array)+sky->size;
-      do *f++-=*s; while(++s<sf);
+      s=sky->array;
+      ff=(f=in->array)+in->size;
+      if(sky->size==1) { if(*s!=0.0) do *f-=*s;   while(++f<ff); }
+      else                           do *f-=*s++; while(++f<ff);
     }
 
   /* It is the same size as the number of tiles. */
@@ -606,29 +696,67 @@ ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
    image (only one element/pixel for a tile). So we need to do some extra
    checks on them (after reading the tessellation). */
 static void
-ui_read_std(struct segmentparams *p)
+ui_read_std_and_sky(struct segmentparams *p)
 {
+  size_t one=1;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
   gal_data_t *sky, *keys=gal_data_array_calloc(3);
 
-  /* The standard devitaion image. */
-  p->std=gal_array_read_one_ch_to_type(p->usedstdname, p->stdhdu,
-                                   GAL_TYPE_FLOAT32, p->cp.minmapsize);
-  ui_check_size(p->input, p->std, tl->tottiles, p->inputname, p->cp.hdu,
-                p->usedstdname, p->stdhdu);
+  /* Read the standard devitaion image (if it isn't a single number). */
+  if(isnan(p->stdval))
+    {
+      /* Make sure a HDU is also given. */
+      if(p->stdhdu==NULL)
+        error(EXIT_FAILURE, 0, "no value given to `--stdhdu'.\n\n"
+              "When the Sky standard deviation is a dataset, it is mandatory "
+              "specify which HDU/extension it is present in. The file can "
+              "be specified explicitly with `--std'. If not, segment will "
+              "use the file given to `--detection'. If that is also not "
+              "called, it will look into the main input file (with no "
+              "option)");
+
+      /* Read the STD image. */
+      p->std=gal_array_read_one_ch_to_type(p->usedstdname, p->stdhdu,
+                                           GAL_TYPE_FLOAT32,
+                                           p->cp.minmapsize);
+
+      /* Make sure it has the correct size. */
+      ui_check_size(p->input, p->std, tl->tottiles, p->inputname, p->cp.hdu,
+                    p->usedstdname, p->stdhdu);
+    }
 
 
   /* If a Sky image is given, subtract it from the values and convolved
-     images, then free it. */
+     images immediately and free it. */
   if(p->skyname)
     {
-      /* Read the Sky dataset. */
-      sky=gal_array_read_one_ch_to_type(p->skyname, p->skyhdu,
-                                        GAL_TYPE_FLOAT32, p->cp.minmapsize);
+      /* If its a file, read it into memory. */
+      if( isnan(p->skyval) )
+        {
+          /* Make sure a HDU is also given. */
+          if(p->skyhdu==NULL)
+            error(EXIT_FAILURE, 0, "no value given to `--skyhdu'.\n\n"
+                  "When the Sky is a dataset, it is mandatory specify "
+                  "which HDU/extension it is present in. The file can be "
+                  "specified explicitly with `--sky'. If it is a single "
+                  "value, you can just pass the value to `--sky' and no "
+                  "HDU will be necessary");
 
-      /* Check its size. */
-      ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,
-                    p->skyname, p->skyhdu);
+          /* Read the Sky dataset. */
+          sky=gal_array_read_one_ch_to_type(p->skyname, p->skyhdu,
+                                            GAL_TYPE_FLOAT32,
+                                            p->cp.minmapsize);
+
+          /* Check its size. */
+          ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,
+                        p->skyname, p->skyhdu);
+        }
+      else
+        {
+          sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+                             NULL, NULL, NULL);
+          *((float *)(sky->array)) = p->skyval;
+        }
 
       /* Subtract it from the input. */
       ui_subtract_sky(p->input, sky, tl);
@@ -639,6 +767,7 @@ ui_read_std(struct segmentparams *p)
 
       /* Clean up. */
       gal_data_free(sky);
+      p->skyval=NAN;
     }
 
 
@@ -650,7 +779,7 @@ ui_read_std(struct segmentparams *p)
      more accurate estimate of the noise level. So if they are present, we
      will read them here and write them to the STD output (which is created
      when `--rawoutput' is not given). */
-  if(!p->rawoutput)
+  if(!p->rawoutput && p->std)
     {
       keys[0].next=&keys[1];
       keys[1].next=&keys[2];
@@ -694,7 +823,7 @@ ui_preparations(struct segmentparams *p)
   ui_prepare_tiles(p);
 
   /* Prepare the (optional Sky, and) Sky Standard deviation image. */
-  ui_read_std(p);
+  ui_read_std_and_sky(p);
 }
 
 
@@ -721,6 +850,7 @@ ui_preparations(struct segmentparams *p)
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
 {
+  char *stdunit;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -773,12 +903,30 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
   /* Let the user know that processing has started. */
   if(!p->cp.quiet)
     {
+      /* Basic inputs. */
       printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
       printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf("  - Input: %s (hdu: %s)\n", p->inputname, p->cp.hdu);
+
+      /* Sky value information. */
       if(p->skyname)
-        printf("  - Sky: %s (hdu: %s)\n", p->skyname, p->skyhdu);
+        {
+          if( isnan(p->skyval) )
+            printf("  - Sky: %s (hdu: %s)\n", p->skyname, p->skyhdu);
+          else
+            printf("  - Sky: %g\n", p->skyval);
+        }
+
+      /* Sky Standard deviation information. */
+      stdunit = p->variance ? "variance" : "STD";
+      if(p->std)
+        printf("  - Sky %s: %s (hdu: %s)\n", stdunit, p->usedstdname,
+               p->stdhdu);
+      else
+        printf("  - Sky %s: %g\n", stdunit, p->stdval);
+
+      /* Convolution information. */
       if(p->convolvedname)
         printf("  - Convolved input: %s (hdu: %s)\n", p->convolvedname,
                p->chdu);
@@ -795,7 +943,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
             printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
         }
       printf("  - Detection: %s (hdu: %s)\n", p->useddetectionname, p->dhdu);
-      printf("  - Sky STD: %s (hdu: %s)\n", p->usedstdname, p->stdhdu);
     }
 }
 

@@ -38,6 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
+#include <gnuastro/permutation.h>
 
 #include <gnuastro-internal/timing.h>
 
@@ -308,8 +309,9 @@ mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
                                    gal_list_str_t **comments, int withsky,
                                    int withstd)
 {
-  char *str;
+  char *tmp, *str;
 
+  /* Basic classifiers for plain text outputs. */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       if( asprintf(&str, "--------- Input files ---------")<0 )
@@ -317,10 +319,12 @@ mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
       gal_list_str_add(comments, str, 0);
     }
 
+  /* Object labels. */
   if( asprintf(&str, "Objects: %s (hdu: %s).", p->objectsfile, p->cp.hdu)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(comments, str, 0);
 
+  /* Clump labels. */
   if(p->clumps)
     {
       if(asprintf(&str, "Clumps:  %s (hdu: %s).", p->usedclumpsfile,
@@ -329,6 +333,7 @@ mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
       gal_list_str_add(comments, str, 0);
     }
 
+  /* Values dataset. */
   if(p->values)
     {
       if( asprintf(&str, "Values:  %s (hdu: %s).", p->usedvaluesfile,
@@ -337,22 +342,43 @@ mkcatalog_write_inputs_in_comments(struct mkcatalogparams *p,
       gal_list_str_add(comments, str, 0);
     }
 
+  /* Sky dataset. */
   if(withsky && p->sky)
     {
-      if( asprintf(&str, "Sky:     %s (hdu: %s).", p->usedskyfile,
-                   p->skyhdu)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if(p->sky->size==1)
+        {
+          if( asprintf(&str, "Sky:     %g.", *((float *)(p->sky->array)) )<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&str, "Sky:     %s (hdu: %s).", p->usedskyfile,
+                       p->skyhdu)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       gal_list_str_add(comments, str, 0);
     }
 
+  /* Sky standard deviation dataset. */
+  tmp = p->variance ? "VAR" : "STD";
   if(withstd && p->std)
     {
-      if( asprintf(&str, "Sky STD: %s (hdu: %s).", p->usedstdfile,
-                   p->stdhdu)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if(p->std->size==1)
+        {
+          if( asprintf(&str, "Sky %s: %g.", tmp,
+                       *((float *)(p->std->array)) )<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&str, "Sky %s: %s (hdu: %s).", tmp, p->usedstdfile,
+                       p->stdhdu)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       gal_list_str_add(comments, str, 0);
     }
 
+  /* Upper limit mask. */
   if(p->upmaskfile)
     {
       if( asprintf(&str, "Upperlimit mask: %s (hdu: %s).", p->upmaskfile,
@@ -509,6 +535,61 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
 
 
 
+
+/* Since all the measurements were done in parallel (and we didn't know the
+   number of clumps per object a-priori), the clumps informtion is just
+   written in as they are measured. Here, we'll sort the clump columns by
+   object ID. There is an option to disable this. */
+static void
+sort_clumps_by_objid(struct mkcatalogparams *p)
+{
+  gal_data_t *col;
+  size_t o, i, j, *permute, *rowstart;
+
+  /* Make sure everything is fine. */
+  if(p->hostobjid_c==NULL || p->numclumps_c==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. `p->hostobjid_c' and `p->numclumps_c' must not be "
+          "NULL.", __func__, PACKAGE_BUGREPORT);
+
+
+  /* Allocate the necessary arrays. */
+  rowstart=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->numobjects, __func__,
+                                 "rowstart");
+  permute=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->numclumps, __func__,
+                                "permute");
+
+
+  /* The objects array is already sorted by object ID. So we should just
+     add up the number of clumps to find the row where each object's clumps
+     should start from in the final sorted clumps catalog. */
+  rowstart[0] = 0;
+  for(i=1;i<p->numobjects;++i)
+    rowstart[i] = p->numclumps_c[i-1] + rowstart[i-1];
+
+  /* Fill the permutation array. Note that WE KNOW that all the objects for
+     one clump are after each other.*/
+  i=0;
+  while(i<p->numclumps)
+    {
+      o=p->hostobjid_c[i]-1;
+      for(j=0; j<p->numclumps_c[o]; ++j)
+        permute[i++] = rowstart[o] + j;
+    }
+
+  /* Permute all the clump columns. */
+  for(col=p->clumpcols; col!=NULL; col=col->next)
+    gal_permutation_apply_inverse(col, permute);
+
+  /* Clean up */
+  free(permute);
+  free(rowstart);
+}
+
+
+
+
+
 /* Write the produced columns into the output */
 static void
 mkcatalog_write_outputs(struct mkcatalogparams *p)
@@ -538,9 +619,8 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
      ============== */
   if(p->clumps)
     {
+      /* Make the comments. */
       comments=mkcatalog_outputs_same_start(p, 1, "Clumps");
-
-
 
       /* Write objects catalog
          ---------------------
@@ -603,6 +683,11 @@ mkcatalog(struct mkcatalogparams *p)
   /* Post-thread processing, for example to convert image coordinates to RA
      and Dec. */
   mkcatalog_wcs_conversion(p);
+
+  /* If the columns need to be sorted (by object ID), then some adjustments
+     need to be made (possibly to both the objects and clumps catalogs). */
+  if(p->hostobjid_c)
+    sort_clumps_by_objid(p);
 
   /* Write the filled columns into the output. */
   mkcatalog_write_outputs(p);

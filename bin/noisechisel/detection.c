@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
@@ -1117,28 +1118,22 @@ detection(struct noisechiselparams *p)
 
 
   /* Update the user on the progress, if necessary. */
-  if(!p->cp.quiet)
+  if(!p->cp.quiet && p->detgrowquant!=1.0f && num_expanded!=GAL_BLANK_SIZE_T )
     {
-      if(p->detgrowquant==1.0f)
+      /* If the user hasn't asked for a labeled image, then don't confuse
+         them with the number of detections, just let them know that growth
+         is complete. */
+      if(p->label)
         {
-          if( asprintf(&msg, "%zu detections with no growth.",
-                       num_true_initial)<0 )
+          if( asprintf(&msg, "%zu detections after growth to %.3f "
+                       "quantile.", num_true_initial, p->detgrowquant)<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
       else
         {
-          if(num_expanded==GAL_BLANK_SIZE_T)
-            {
-              if(asprintf(&msg, "%zu detections (no growth to %.3f "
-                          "quantile).", num_true_initial, p->detgrowquant)<0)
-                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-            }
-          else
-            {
-              if( asprintf(&msg, "%zu detections after growth to %.3f "
-                           "quantile.", num_true_initial, p->detgrowquant)<0 )
-                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-            }
+          if( asprintf(&msg, "Growth to %.3f quantile complete.",
+                       p->detgrowquant)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
       gal_timing_report(&t1, msg, 2);
       free(msg);
@@ -1157,8 +1152,17 @@ detection(struct noisechiselparams *p)
                        : num_true_initial );
   if(!p->cp.quiet)
     {
-      if( asprintf(&msg, "%zu final true detections.", p->numdetections)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      /* If the user hasn't asked for a labeled image, then don't confuse
+         them with the number of detections, just let them know that growth
+         is complete. */
+      if(p->label)
+        {
+          if( asprintf(&msg, "%zu final true detections.",
+                       p->numdetections)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        gal_checkset_allocate_copy("Detection complete.", &msg);
       gal_timing_report(&t0, msg, 1);
       free(msg);
     }

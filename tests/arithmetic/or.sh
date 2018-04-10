@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=arithmetic
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+img=convolve_spatial_noised_detected_segmented.fits
 
 
 
@@ -49,4 +49,4 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img 6 eq $img 3 eq or -h2 -h2 --output=or.fits
+$execname $img 1 eq $img 3 eq or -gOBJECTS --output=or.fits

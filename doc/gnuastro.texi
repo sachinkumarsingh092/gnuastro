@@ -452,9 +452,9 @@ NoiseChisel
 
 Invoking NoiseChisel
 
-* General NoiseChisel options::  General NoiseChisel preprocessing.
+* NoiseChisel input::           NoiseChisel's input options.
 * Detection options::           Configure detection in NoiseChisel.
-* NoiseChisel output::          NoiseChisel's output format.
+* NoiseChisel output::          NoiseChisel's output options and format.
 
 Segment
 
@@ -462,7 +462,7 @@ Segment
 
 Invoking Segment
 
-* Segment inputs and general settings::  Input files and general options.
+* Segment input::               Input files and options.
 * Segmentation options::        Parameters of the segmentation process.
 * Segment output::              Outputs of Segment
 
@@ -2718,8 +2718,7 @@ shown. GNU AWK (the most common implementation) comes with a free and
 wonderful @url{https://www.gnu.org/software/gawk/manual/, book} in the same
 format as this book which will allow you to master it nicely. Just like
 this manual, you can also access GNU AWK's manual on the command-line
-whenever necessary without taking your hands off the keyboard as described
-above.
+whenever necessary without taking your hands off the keyboard.
 @end cartouche
 
 This takes us to the second question that you have probably asked yourself
@@ -3085,324 +3084,388 @@ $ rm *.fits
 @end example
 
 @noindent
-To detect the objects in the image, we'll run NoiseChisel:
+To detect the signal in the image (separate interesting pixels from noise),
+we'll run NoiseChisel (@ref{NoiseChisel}):
 
 @example
-$ mkdir noisechisel
-$ astnoisechisel flat-ir/xdf-f160w.fits -onoisechisel/xdf-f160w.fits
+$ astnoisechisel flat-ir/xdf-f160w.fits --output=nc-test.fits
 @end example
-
-Read what NoiseChisel writes on the command-line. The curious thing you
-will notice is that while there were more than 3000 pseudo detections to
-find the pseudo-detection S/N, but there were only slightly more than 100
-clumps to find the false clump S/N. We will see what caused this after a
-short review on the output of NoiseChisel.
 
 NoiseChisel's output is a single file containing multiple extensions. You
 can get basic information about the extensions in a FITS file with
-Gnuastro's Fits program (see @ref{Fits}) as shown below. It contains 6
-extensions and the first (counted as zero) is blank (has no data).
+Gnuastro's Fits program (see @ref{Fits}):
 
 @example
-$ astfits noisechisel/xdf-f160w.fits
+$ astfits nc-test.fits
+@end example
+
+From the output list, you see NoiseChisel's output contains 5 extensions
+and the first (counted as zero) is blank: it has value of @code{0} in the
+last/size column, showing that it contains no data, it just contains
+meta-data. All of Gnuastro's programs follow this convention of writing no
+data in the first HDU/extension. This allows the first extension to keep
+meta-data about all the extensions and is recommended by the FITS standard,
+see @ref{Fits}.
+
+The name of each extension describes its contents: the first
+(@code{INPUT-NO-SKY}) is the Sky-subtracted input that you provided. The
+second (NoiseChisel's main output, @code{DETECTIONS}) has a numeric data
+type of @code{uint8} with only two possible values for all pixels: 0 for
+noise and 1 for signal. The third and fourth (called @code{SKY} and
+@code{SKY_STD}), have the Sky and its standard deviation values of the
+input on a tessellation and were calculated over the un-detected regions.
+
+@cindex DS9
+@cindex GNOME
+@cindex SAO DS9
+To better understand NoiseChisel's output and the extensions described
+above, let's visually inspect it (here, we'll use SAO DS9). Since the file
+contains multiple related extensions, the easiest way to view all of them
+in DS9 is to open it as a ``Multi-extension data cube'' with the
+@option{-mecube} option as shown below@footnote{You can configure your
+graphic user interface to open DS9 in multi-extension cube mode by default
+when using the GUI (double clicking on the file). If your graphic user
+interface is GNOME (another GNU software, it is most common in GNU/Linux
+operating systems), a full description is given in @ref{Viewing
+multiextension FITS images}}.
+
+@example
+$ ds9 -mecube nc-test.fits -zscale -zoom to fit
+@end example
+
+The buttons and horizontal scroll bar in the ``cube'' window can be used to
+navigate between the extensions. In this mode, all DS9's settings (for
+example zoom or color-bar) will be identical between the extensions. Try
+zooming into to one part and seeing how the galaxies were detected along
+with the Sky and Sky standard deviation values. Just have in mind that
+NoiseChisel's job is @emph{only} detection (separating signal from noise),
+We'll segment this result later.
+
+One good way to see if you have missed any signal is to mask all the
+detected pixels and inspect the noise pixels. For this, you can use
+Gnuastro's Arithmetic program (in particular its @code{where} operator, see
+@ref{Arithmetic operators}). With the command below, all detected pixels
+(in the @code{DETECTIONS} extension) will be set to NaN in the output
+(@file{nc-masked.fits}). To make the command easier to read/write, let's
+just put the file name in a shell variable (@code{img}) first. A shell
+variable's value can be retrieved by adding a @code{$} before its name.
+
+@example
+$ img=nc-test.fits
+$ astarithmetic $img $img nan where -hINPUT-NO-SKY -hDETECTIONS      \
+                --output=nc-masked.fits
+@end example
+
+@noindent
+To invert the result (only keep the values of detected pixels), you can
+flip the detected pixel values (from 0 to 1 and vice-versa) by adding a
+@code{not} after the second @code{$img}:
+
+@example
+$ astarithmetic $img $img not nan where -hINPUT-NO-SKY -hDETECTIONS  \
+                --output=nc-masked.fits
+@end example
+
+NoiseChisel can produce ``Check images'' to help you visualize and inspect
+how each step is completed. You can see all the check images it can produce
+with this command.
+
+@example
+$ astnoisechisel --help | grep check
+@end example
+
+Let's see how the quantile threshold (the first step after convolution) has
+been found and applied in our previous run of NoiseChisel:
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --checkqthresh
+@end example
+
+The check images/tables are also multi-extension FITS files.  As you see,
+when check datasets are requested, NoiseChisel won't go to the end and
+abort as soon as all its extensions are ready. Try listing the extensions
+with @command{astfits} and then opening them with @command{ds9} as we done
+above. It is @emph{strongly} encouraged to play with the different
+parameters and use the respective check images to see which step is
+affected by your change.
+
+One major factor determining NoiseChisel's the quantile threshold is
+NoiseChisel's ability to identify signal in a tile (the threshold is only
+found on those tiles with no major signal). Therefore the larger the tiles
+are, number-statistics will cause less scatter, therefore helping
+NoiseChisel find the quantile threshold. However, if the tiles are too
+large, there might not be enough over the dataset or they won't be able to
+deal with possible gradients. Let's see what the default (small) tile size
+was with the following command.
+
+@example
+$ astnoisechisel -P | grep tilesize
+@end example
+
+Its a 50 by 50 box. Flip back and forth between the @code{CONVOLVED} and
+@code{QTHRESH_ERODE} extensions of the check image to get a feeling of
+which tiles succeeded (have non-blank values)@footnote{The other extensions
+don't matter much for the check here. They show the qthresh values for the
+other thresholds (on the same tiles), followed by the interpolated values
+for all the thresholds and afterwards the smoothed values that are used for
+the next steps. The final extension (@code{QTHRESH-APPLIED}, shows the
+result of applying the erode and no-erode thresholds.}. Since this is a
+relatively large image and we don't have any gradients, let's increase the
+tile size to 100 by 100
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=100,100    \
+                 --checkqthresh
+@end example
+
+Inspecting the check image, you see that there are now only a handful of
+useful tiles in the central parts. This shows the field is too crowded, and
+we should slightly decrease the tile size for a more robust result that
+also covers more of the dataset. Let's set it to a 75 by 75 pixel box:
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=75,75    \
+                 --checkqthresh
+@end example
+
+The result seems reasonable now: we have a larger tile size than the
+default value, but less scatter, @emph{and} the tiles cover a sufficiently
+wide area of the dataset. So, we'll use this tile size for the next
+steps. But first, let's clean all the temporary files and make a directory
+for the NoiseChisel outputs:
+
+@example
+$ rm *.fits
+$ mkdir nc
+$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=75,75    \
+                 --output=nc/xdf-f160w.fits
+$ astnoisechisel flat-ir/xdf-f105w.fits --tilesize=75,75    \
+                 --output=nc/xdf-f105w.fits
+@end example
+
+Before continuing with the higher-level processing of this dataset, we'll
+pause to use NoiseChisel's multi-extension output for showing how the Fits
+program can make it very easy to work with this wonderful data container
+(see @ref{Fits}). Let's say you need to copy a HDU/extension from one FITS
+file to another. Try the command below to make an @file{objects.fits} file
+that contains only NoiseChisel's binary detection map. There are similar
+options to conveniently cut or delete HDUs from a FITS file also.
+
+@example
+$ astfits nc/xdf-f160w.fits --copy=DETECTIONS -odetections.fits
 @end example
 
 NoiseChisel puts some general information on its outputs in the FITS header
-of the respective extension. To see the full list of keywords, you can
-again use the Fits program like above, but also give it your desired
-extension/HDU. You can also give the extension number (as listed in the
-output above), for example @option{-h2} instead of @option{-hOBJECTS}.
+of the respective extension. To see the full list of keywords in an
+extension, you can again use the Fits program like above. But instead of
+HDU manipulation options, give it the HDU you are interested in with
+@option{-h}. You can also give the HDU number (as listed in the output
+above), for example @option{-h2} instead of @option{-hDETECTIONS}.
 
 @example
-$ astfits noisechisel/xdf-f160w.fits -hOBJECTS
+$ astfits nc/xdf-f160w.fits -hDETECTIONS
 @end example
 
 @cindex GNU Grep
-The @code{NUMLABS} keyword in NoiseChisel's @code{OBJECTS} extension
-contains the number of objects that was found by NoiseChisel in that
-run. Try to visually find it in the header keywords you saw above.
-
-To simplify the process, you can pipe the output of the command above into
-@code{grep} (a program for matching lines which is available on almost all
-Unix-like operating systems).
+The @code{DETSN} keyword in NoiseChisel's @code{DETECTIONS} extension
+contains the true pseudo-detection signal-to-noise ratio that was found by
+NoiseChisel on the dataset. It is not easy to find it in the middle of all
+the other keywords printed by the command above (especially in files that
+have many more keywords). To fix the problem, you can pipe the output of
+the command above into @code{grep} (a program for matching lines which is
+available on almost all Unix-like operating systems).
 
 @example
-$ astfits noisechisel/xdf-f160w.fits -hOBJECTS | grep NUMLABS
+$ astfits nc/xdf-f160w.fits -hDETECTIONS | grep DETSN
 @end example
 
 @cindex GNU Grep
 If you just want the value of the keyword and not the full FITS keyword
 line, you can use AWK. In the example below, AWK will print the third word
 (separated by white space characters) in any line that has a first column
-value of @code{NUMLABS}. You can also try this for the third HDU (called
-@code{CLUMPS}) to see the number of clumps.
+value of @code{DETSN}.
 
 @example
-$ astfits noisechisel/xdf-f160w.fits -h2                             \
-          | awk '$1=="NUMLABS" @{print $3@}'
+$ astfits nc/xdf-f160w.fits -h2 | awk '$1=="DETSN" @{print $3@}'
 @end example
 
-Grep and AWK are simple, but very powerful command-line software for
-processing text files. Learning them properly can greatly simplify your
-processing, while improving your creativity, productivity and speed. When
-you get time, it is highly recommended to master them. The most common
-implementation of both is from GNU. Like almost all GNU software, both GNU
-Grep and GNU AWK have wonderful manuals which come with the program for
-free. You don't have to read the whole manual at once, they both start with
-great generic introductions to get you going fast. As described above, you
-can read both manuals or refresh your memory on your command-line with
-these commands:
+The main output of NoiseChisel is the binary detection map
+(@code{DETECTIONS} extension), which only has two values of 1 or 0. This is
+useful when studying the noise, but hardly of any use when you actually
+want to study the targets/galaxies in the image, especially in such a deep
+field where the detection map of almost everything is connected. To find
+the galaxies over the detections, we'll use Gnuastro's @ref{Segment}
+program:
 
 @example
-$ info awk
-$ info grep
+$ rm *.fits
+$ mkdir segment
+$ astsegment nc/xdf-f160w.fits -osegment/xdf-f160w.fits
 @end example
 
-@cindex GNOME
-You can now open NoiseChisel's output with SAO DS9 and visually inspect
-it. Just note that since there are multiple extensions, the easiest way to
-view the whole file is to open it as a ``Multi-extension data cube'' with
-the @option{-mecube} option as shown below. If you use GNOME (another GNU
-software, most common graphic user interface in GNU/Linux operating
-systems), please see @ref{Viewing multiextension FITS images} to open DS9
-in multi-extension cube mode by default when using the GUI (double clicking
-on the file).
+Segment's operation is very much like NoiseChisel (in fact, prior to
+version 0.6, it was part of NoiseChisel), for example the output is a
+multi-extension FITS file, it has check images and uses the signal-to-noise
+ratio of undetected regions as a reference. Please have a look at Segment's
+multi-extension output with @command{ds9} to get a good feeling of what it
+has done. Like NoiseChisel, the first extension is the input. The
+@code{CLUMPS} extension shows the true ``clumps'' with values that are
+@mymath{\ge1}, and the diffuse regions labeled as @mymath{-1}. In the
+@code{OBJECTS} extension, we see that the large detections of NoiseChisel
+(that may have contained many galaxies) are now broken up into separate
+labels. see @ref{Segment} for more.
 
+Having localized the regions of interest in the dataset, we are ready to do
+measurements on them with @ref{MakeCatalog}. Besides the IDs, we want to
+measure the Right Ascension (with @option{--ra}), Declination
+(@option{--dec}, magnitude (@option{--magnitude} and signal-to-noise ratio
+(@option{--sn}) of the objects and clumps. The following command will make
+these measurements on Segment's F160W output:
+
+@c Keep the `--zeropoint' on a single line, because later, we'll add
+@c `--valuesfile' in that line also, and it would be more clear if both
+@c catalogs follow the same format.
 @example
-$ ds9 -mecube noisechisel/xdf-f160w.fits -zscale -zoom to fit
-@end example
-
-Using Gnuastro's Fits program, you can also copy a HDU from one FITS file
-to another (for more, see @ref{HDU manipulation}). So if you want to have a
-FITS file with only the detected objects, you can run this command:
-
-@example
-$ astfits noisechisel/xdf-f160w.fits --copy=OBJECTS -oobjects.fits
-@end example
-
-One good way to see if you have missed any signal is to mask all the
-detected pixels and inspect the noise pixels. For this, you can use
-Gnuastro's Arithmetic program (in particular its @code{where} operator as
-shown below, see @ref{Arithmetic operators}). With this command, all input
-pixels that have a value larger than zero in the @code{OBJECTS} extension
-will be set to NaN in the output (written in @file{det-masked.fits}). If
-you change the @code{gt} (for ``greater than'') operator to @code{eq} (for
-``equal''), all the un-detected (sky) pixels will be masked and you can see
-the detections.
-
-@example
-$ astarithmetic noisechisel/xdf-f160w.fits                         \
-                noisechisel/xdf-f160w.fits 0 gt nan where -h1 -h2  \
-                --output=nc-masked.fits
-@end example
-
-In some cases, you might want to use a different kernel with NoiseChisel
-(not the default one). To do that, you can use MakeProfiles (see
-@ref{MakeProfiles}) in the following manner to build a 2D Gaussian kernel
-with a FWHM of 3 pixels that extends 5 times the FWHM. This new kernel can
-later be fed into NoiseChisel with the @option{--kernel} option.
-
-@example
-$ astmkprof --kernel=gaussian,3,5 --oversample=1 -okernel-g-3-5.fits
-$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel-g-3-5.fits   \
-                 --output=nc-my-kernel.fits
-@end example
-
-NoiseChisel can produce ``Check images'' to help you visualize how each
-step is completed. You can see all the check images it can produce with
-this command.
-
-@example
-$ astnoisechisel --help | grep check
-@end example
-
-The check images are also multi-extension FITS files. After each check
-image is produced, open it with ds9 like NoiseChisel's output above and
-flip through the extensions to see each processing in detail. It is
-@emph{strongly} encouraged to play with the different parameters and use
-the respective check images to see which step is affected by your
-change. The three most useful check images are @option{--checkqthresh},
-@option{--checkdetection}, and @option{--checksegmentation}.
-
-We can now get back to the curious situation we noticed after running
-NoiseChisel: the number of false clumps to find an S/N limit was very small
-(given the extent of this image). This is bad, because we use quantiles in
-NoiseChisel and such a small number will result in a relatively large
-scatter. Since this is a segmentation issue, let's see why this happens with
-@option{--checksegmentation}.
-
-@example
-$ astnoisechisel flat-ir/xdf-f160w.fits --checksegmentation
-@end example
-
-To help you get a result faster, when check images are requested,
-NoiseChisel doesn't finish its processing (unless you also call
-@option{--continueaftercheck}). NoiseChisel aborts with an explanation of
-why it stopped without finishing and the file name of the check image that
-it produced. The first five extensions are: the input image, the convolved
-image, the initially labeled detected regions, all the sky region (false)
-clumps, and those that will be used for S/N. The sky clumps are found over
-NoiseChisel's ``large tiles'' independently. When inspecting the fourth
-extension of the check image, it is interesting how NoiseChisel has ignored
-most large tiles and only used the few that we see, mostly on the edge.
-
-The reason that almost all internal large tiles are ignored is that
-galaxies are extended and this is a very deep (and small) image. Thanks to
-the PSF (see @ref{PSF}), no object will have a sharp truncation. We have
-not seen any abrupt break in the light profile of any galaxy: galaxies are
-always larger when we get deeper datasets. Therefore, in a noisy image,
-some light will always be left un-detected. To be less affected by this
-un-detected light, NoiseChisel has the @option{--minskyfrac} option (see
-@ref{General NoiseChisel options}): any tile that has a larger fraction of
-detected pixels will be ignored. So let's see what the default value of
-this option is (recall that with @option{-P}, you can list all the options
-with their values in Gnuastro's programs):
-
-@example
-$ astnoisechisel -P | grep minskyfrac
+$ mkdir cat
+$ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
+               --zeropoint=25.94                                    \
+               --clumpscat --output=cat/xdf-f160w.fits
 @end example
 
 @noindent
-Try decreasing this value and re-running NoiseChisel to see the effect on
-the fraction of large tiles that will be used for finding false/sky
-clumps. Play a little with this parameter (give it different values and
-check the result).
+From the printed statements on the command-line, you see that MakeCatalog
+read all the extensions in Segment's output for the various measurements it
+needed.
+
+The output of the MakeCatalog command above is a FITS table. The two clump
+and object catalogs are available in the two extensions of the single FITS
+file@footnote{MakeCatalog can also output plain text tables. However, in
+the plain text format you can only have one table per file. Therefore, if
+you also request measurements on clumps, two plain text tables will be
+created (suffixed with @file{_o.txt} and @file{_c.txt}).}. Let's inspect
+the separate extensions with the Fits program like before (as shown
+below). Later, we'll inspect the table in each extension with Gnuastro's
+Table program (see @ref{Table}). Note that we could have used
+@option{-hOBJECTS} and @option{-hCLUMPS} instead of @option{-h1} and
+@option{-h2} respectively.
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --minskyfrac=0.5           \
-                 --checksegmentation
+$ astfits  cat/xdf-f160w.fits              # Extension information
+$ asttable cat/xdf-f160w.fits -h1 --info   # Objects catalog info.
+$ asttable cat/xdf-f160w.fits -h1          # Objects catalog columns.
+$ asttable cat/xdf-f160w.fits -h2 -i       # Clumps catalog info.
+$ asttable cat/xdf-f160w.fits -h2          # Clumps catalog columns.
 @end example
 
-The smaller the value to @option{--minskyfrac}, the more probable that
-un-detected light in the wings of galaxies will bias/affect the derived
-false clump S/N. So it is always important to find a good balance between a
-larger @option{--minskyfrac} while having a sufficient number of resulting
-clumps (to avoid scatter).
+As you see above, when given a specific table (file name and extension),
+Table will print the full contents of all the columns. To see basic
+information about each column (for example name, units and comments),
+simply append a @option{--info} (or @option{-i}).
 
-NoiseChisel doesn't just find the labeled pixels, it also finds the Sky
-value and the Sky standard deviation in the final two extensions of its
-output. To generate a catalog of the colors, we will be using the
-NoiseChisel labeled image from the F160W image. But the Sky and Sky
-standard deviation values for each different filter will also be
-necessary. So we'll run NoiseChisel with our finalized parameters value on
-both filters (you can also put this option's value in a configuration file
-to avoid repeating it).
+To print the contents of special column(s), just specify the column
+number(s) (counting from @code{1}) or the column name(s) (if they have
+one). For example, if you just want the magnitude and signal-to-noise ratio
+of the clumps (in @option{-h2}), you can get it with any of the following
+commands
 
 @example
-$ astnoisechisel flat-ir/xdf-f105w.fits -onoisechisel/xdf-f105w.fits \
-                 --minskyfrac=0.5
-$ astnoisechisel flat-ir/xdf-f160w.fits -onoisechisel/xdf-f160w.fits \
-                 --minskyfrac=0.5
+$ asttable cat/xdf-f160w.fits -h2 -c5,6
+$ asttable cat/xdf-f160w.fits -h2 -c5,SN
+$ asttable cat/xdf-f160w.fits -h2 -c5         -c6
+$ asttable cat/xdf-f160w.fits -h2 -cMAGNITUDE -cSN
 @end example
 
-Now, we are ready to make a catalog. We want the object and clump labels
-from the F160W image. But the input, Sky and Sky standard deviation images
-should come from each filter. So, we'll run MakeCatalog on NoiseChisel's
-output differently for each filter. When making the F105W catalog, we'll
-use the @option{--objectsfile} and @option{--clumpsfile} options to tell
-MakeCatalog to read the object and clump labels from the F160W NoiseChisel
-output. When these options aren't given, MakeCatalog will look into the
-same input file for object and clump labels.
-
-For both filters, we'll ask for the ID, RA, Dec, Magnitude and
-signal-to-noise ratio (see @ref{Quantifying measurement limits}). To see a
-list of all the parameters that MakeCatalog can measure for you, run it
-with @option{--help} option.
-
-@example
-$ mkdir catalog
-
-$ astmkcatalog noisechisel/xdf-f160w.fits --zeropoint=25.94     \
-               --ids --ra --dec --magnitude --sn                \
-               --output=catalog/xdf-f160w.fits
-
-$ astmkcatalog noisechisel/xdf-f105w.fits --zeropoint=26.27     \
-               --objectsfile=noisechisel/xdf-f160w.fits         \
-               --clumpsfile=noisechisel/xdf-f160w.fits          \
-               --ids --ra --dec --magnitude --sn                \
-               --output=catalog/xdf-f105w.fits
-@end example
-
-MakeCatalog can also produce catalogs in plain text format. Please run the
-MakeCatalog commands above again and replace the @file{.fits} suffix, in
-the value to @option{--output}, with @file{.txt} (we will also be using the
-text file outputs later).
-
-When a clumps image is also given@footnote{MakeCatalog will look at the
-@code{WCLUMPS} keyword in the objects image to see if it should also use a
-clumps image or not.}, like this example, two catalogs will be made. If you
-asked for a plain text file output, two files will be made with the
-@file{_c.txt} and @file{_o.txt} suffixes. If MakeCatalog's output is
-requested to be FITS, the two catalogs will be in separate extensions of a
-single file. You can inspect the separate extensions with the Fits program
-like before (as shown below). Afterwards, you can inspect the table in each
-extension with Gnuastro's Table program (see @ref{Table}) as shown below.
-
-@example
-$ astfits catalog/xdf-f105w.fits             # Extension information
-$ asttable catalog/xdf-f105w.fits -h1 --info # Objects catalog info.
-$ asttable catalog/xdf-f105w.fits -h1        # Objects catalog columns.
-$ asttable catalog/xdf-f105w.fits -h2 -i     # Clumps catalog info.
-$ asttable catalog/xdf-f105w.fits -h2        # Clumps catalog columns.
-@end example
-
-As you see above, to see the column contents of each table, you can just
-remove the @option{--info} (or @option{-i}) option. If you want to print
-the contents of special column(s), just specify the column number(s)
-(counting from @code{1}, same as output of the command above) or the column
-name(s) (if they have one). For example, if you just want the objects and
-clumps magnitude and signal-to-noise ratio in the F160W filter. You can get
-it with the following commands.
-
-@example
-$ asttable catalog/xdf-f160w.fits -h1 -cMAGNITUDE -cSN
-$ asttable catalog/xdf-f160w.fits -h2 -cMAGNITUDE -cSN
-@end example
-
-The clumps catalog has two ID columns (one for the over-all clump ID and
-one for the ID of the clump in its host object), the magnitude column
-numbers differ between the object and clumps catalog. So if you want to
-specify the columns by number, you will need to change the numbers when
-viewing the clump and objects catalogs. This is a useful advantage of
-having/using column names.
+In the example above, the clumps catalog has two ID columns (one for the
+over-all clump ID and one for the ID of the clump in its host object),
+while the objects catalog only has one ID column. Therefore, the location
+of the magnitude column differs between the object and clumps catalog. So
+if you want to specify the columns by number, you will need to change the
+numbers when viewing the clump and objects catalogs. This is a useful
+advantage of having/using column names@footnote{Column meta-data (including
+a name) can also be specified in plain text tables, see @ref{Gnuastro text
+table format}.}.
 
 @example
 $ asttable catalog/xdf-f160w.fits -h1 -c4 -c5
 $ asttable catalog/xdf-f160w.fits -h2 -c5 -c6
 @end example
 
-Finally, the comments in MakeCatalog's output (in FITS headers or lines
-starting with @code{#} in plain text) contain some important information
-about the dataset that can be useful. Open @file{catalog/xdf-f160w_o.txt}
-in a text editor to see them.
-
-Since we used the same labeled image on both filters, the number of rows in
-both catalogs are the same. So, let's measure the colors of the objects in
-this image. We'll merge the two clump catalogs together into one using the
-@code{paste} program on the command-line. The output file will have each
-line of both catalogs merged into a single line.
+Finally, the comments in MakeCatalog's output (@code{COMMENT} keywords in
+the FITS headers, or lines starting with @code{#} in plain text) contain
+some important information about the input dataset that can be useful (for
+example pixel area or per-pixel surface brightness limit). For example have
+a look at the output of this command:
 
 @example
-$ paste catalog/xdf-f160w_c.txt catalog/xdf-f105w_c.txt           \
-        > xdf-f160w-f105w_c_p.txt
+$ astfits cat/xdf-f160w.fits -h1 | grep COMMENT
 @end example
 
-Open @file{xdf-f160w-f105w_c_p.txt} after making it to see how
-@command{paste} has operated. We can now use AWK to find the colors. We'll
-ask AWK to only use lines that don't start with @code{#} and don't have a
-NaN magnitude in the 9th column (F105W magnitude@footnote{Recall that the
-objects and clumps labels were made on the F160W image. On the F105W image,
-there might not be enough signal, so random scatter may give a negative
-total brightness and thus a NaN magnitude.}). We will also ignore columns
-which don't have reliable F105W magnitudes (with a S/N less than
-7@footnote{The value of 7 is taken from the clump S/N threshold in F160W
-(where the clumps were defined).}). For the other lines, AWK will print the
-ID, positional columns and the difference between the respective magnitude
-columns.
+To calculate colors, we also need magnitude measurements on the F105W
+filter. However, the galaxy properties might differ between the filters
+(which is the whole purpose behind measuring colors). Also, the noise
+properties and depth of the datasets differ. Therefore, if we simply follow
+the same Segment and MakeCatalog calls above for the F105W filter, we are
+going to get a different number of objects and clumps. Matching the two
+catalogs is possible (for example with @ref{Match}), but the fact that the
+measurements will be done on different pixels, can bias the result. Since
+the Point Spread Function (PSF) of both images is very similar, an accurate
+color calculation can only be done when magnitudes are measured from the
+same pixels on both images.
+
+The F160W image is deeper, thus providing better detection/segmentation,
+and redder, thus observing smaller/older stars and representing more of the
+mass in the galaxies. We will thus use the pixel labels generated on the
+F160W filter, but do the measurements on the F105W filter (using the
+@option{--valuesfile} option) in the command below. Notice how the only
+difference between this call to MakeCatalog and the previous one is
+@option{--valuesfile}, the value given to @code{--zeropoint} and the output
+name.
 
 @example
-$ awk '!/^#/ && $11!="nan" && $12>7  @{print $1, $2, $3, $4, $11-$5@}' \
-      xdf-f160w-f105w_c_p.txt > catalog/xdf-f105w-f160w_c.txt
+$ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
+               --valuesfile=nc/xdf-f105w.fits --zeropoint=26.27     \
+               --clumpscat --output=cat/xdf-f105w.fits
+@end example
+
+Look into what MakeCatalog printed on the command-line. You can see that
+(as requested) the object and clump labels were taken from the respective
+extensions in @file{seg/xdf-f160w.fits}, while the values and Sky standard
+deviation were done on @file{nc/xdf-f105w.fits}.
+
+Since we used the same labeled image on both filters, the number of rows in
+both catalogs are the same. The clumps are not affected by the
+hard-to-deblend and low signal-to-noise diffuse regions, they are more
+robust for calculating the colors (compared to objects). Therefore from
+this step onward, we'll continue with clumps.
+
+We can finally calculate the colors of the objects from these two
+datasets. We'll merge them into one table using the @command{paste} program
+on the command-line. But, we only want the magntitude from the F105W
+dataset, so we'll only pull out the @code{MAGNITUDE} and @code{SN}
+column. The output of @command{paste} will have each line of both catalogs
+merged into a single line.
+
+@example
+$ asttable cat/xdf-f160w.fits -h2                > xdf-f160w.txt
+$ asttable cat/xdf-f105w.fits -h2 -cMAGNITUDE,SN > xdf-f105w.txt
+$ paste xdf-f160w.txt xdf-f105w.txt              > xdf-f160w-f105w.txt
+@end example
+
+Open @file{xdf-f160w-f105w.txt} to see how @command{paste} has operated. We
+can now use AWK to find the colors. We'll ask AWK to only use lines that
+don't have a NaN magnitude in the 7th column (F105W
+magnitude@footnote{Recall that the objects and clumps labels were made on
+the F160W image. On the F105W image, there might not be enough signal, so
+random scatter may give a negative total brightness and thus a NaN
+magnitude.}). We will also ignore columns which don't have reliable F105W
+measurement (with a S/N less than 7@footnote{The value of 7 is taken from
+the clump S/N threshold in F160W (where the clumps were defined).}). For
+the other lines, AWK will print the IDs, positional columns and the
+difference between the respective magnitude columns.
+
+@example
+$ awk '$7!="nan" && $8>7  @{print $1, $2, $3, $4, $7-$5@}' \
+      xdf-f160w-f105w.txt > cat/xdf-f105w-f160w_c.txt
 @end example
 
 Gnuastro has a simple program for basic statistical analysis. The command
@@ -3416,14 +3479,15 @@ working on a server (where you may not have graphic user interface), and
 finally, its fast.
 
 @example
-$ aststatistics catalog/xdf-f105w-f160w_c.txt -c5
+$ aststatistics cat/xdf-f105w-f160w_c.txt -c5
 @end example
 
 You can later use Gnuastro's Statistics program with the
 @option{--histogram} option to build a much more fine-grained histogram as
 a table to feed into your favorite plotting program for a much more
-accurate/appealing plot. If you just want a specific measure, for example
-the mean, median and standard deviation, you can ask for them specifically:
+accurate/appealing plot (for example with PGFPlots in @LaTeX{}). If you
+just want a specific measure, for example the mean, median and standard
+deviation, you can ask for them specifically:
 
 @example
 $ aststatistics catalog/xdf-f105w-f160w_c.txt -c5 --mean --median --std
@@ -3431,21 +3495,23 @@ $ aststatistics catalog/xdf-f105w-f160w_c.txt -c5 --mean --median --std
 
 Some researchers prefer to have colors in a fixed aperture for all the
 objects. The colors we calculated above used a different segmentation map
-for each object. This might not satisfy some science cases. To make a fixed
-aperture catalog, we should make a labeled image which has a fixed label
-for each aperture. That labeled image can be given to MakeCatalog instead
-of NoiseChisel's labeled detection image.
+for each object. This might not satisfy some science cases. So, let's make
+a fixed aperture catalog. To make an catalog from fixed apertures, we
+should make a labeled image which has a fixed label for each aperture. That
+labeled image can be given to MakeCatalog instead of Segment's labeled
+detection image.
 
 @cindex GNU AWK
-We'll use the objects catalog in the F160W catalog we generated before for
-the positions and set the other parameters of each profile to be a fixed
-circle of radius 5 pixels (we want all apertures to be fixed
-after all). AWK is a wonderful tool for such jobs as the command below
-shows.
+To generate the apertures catalog, we'll first read the positions from
+F160W catalog we generated before for the positions and set the other
+parameters of each profile to be a fixed circle of radius 5 pixels (we want
+all apertures to be identical after all).
 
 @example
-$ awk '!/^#/@{print $1, $2, $3, 5, 5, 0, 0, 1, $1, 1@}'                \
-      catalog/xdf-f160w_c.txt > catalog/apertures.txt
+$ rm *.txt
+$ $ asttable cat/xdf-f160w.fits -h2 -cRA,DEC                       \
+             | awk '!/^#/@{print NR, $1, $2, 5, 5, 0, 0, 1, NR, 1@}' \
+             > apertures.txt
 @end example
 
 We can now feed this catalog into MakeProfiles to build the apertures for
@@ -3458,15 +3524,14 @@ a @emph{magnitude} (in log-scale) of the value given in that column (what
 you would expect when simulating a galaxy for example).
 
 @example
-$ astmkprof catalog/apertures.txt --background=flat-ir/xdf-f160w.fits \
-            --clearcanvas --replace --type=int16 --mforflatpix        \
+$ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits     \
+            --clearcanvas --replace --type=int16 --mforflatpix    \
             --mode=wcs
 @end example
 
 The first thing you might notice in the printed information is that the
 profiles are not built in order. This is because MakeProfiles works in
-parallel and parallel CPU operations are asynchronous. Without
-@option{--replace}, the output is the same in any case. You can try running
+parallel, and parallel CPU operations are asynchronous. You can try running
 MakeProfiles with one thread (using @option{--numthreads=1} to see how
 order is respected in that case.
 
@@ -3478,99 +3543,102 @@ are interested, please join us in completing Gnuastro with added
 improvements like this (see task 14750
 @footnote{@url{https://savannah.gnu.org/task/index.php?14750}}).
 
-@file{apertures.fits} labeled image can now be fed input into
-MakeCatalog. Similar to how we used the F160W labels for the F105W catalog:
-the labels don't have to be produced by NoiseChisel. In comparison with the
-previous MakeCatalog call, notice how 1) we have no more clumps image, 2)
-that we have set @option{--objectshdu=1} (since @file{apertures.fits} is
-not the output of NoiseChisel where the labeled image is in the third
-extension), and 3) that we are now using @option{--objid} instead of
-@option{--ids} to avoid warnings that some ID columns are only for clumps.
+We can now feed the labeled @file{apertures.fits} labeled image into
+MakeCatalog instead of Segment's output as shown below. In comparison with
+the previous MakeCatalog call, you will notice that there is no more
+@option{--clumpscat} option, since each aperture is treated as a separate
+object.
 
 @example
-$ astmkcatalog noisechisel/xdf-f105w.fits --zeropoint=26.27        \
-               --objectsfile=apertures.fits --objectshdu=1         \
-               --objid --ra --dec --magnitude --sn                 \
-               --output=catalog/xdf-f105w-aper.fits
+$ astmkcatalog apertures.fits -h1 --zeropoint=26.27        \
+               --valuesfile=nc/xdf-f105w.fits              \
+               --ids --ra --dec --magnitude --sn           \
+               --output=cat/xdf-f105w-aper.fits
 @end example
 
-Change the filter name and zeropoint magnitudes and run this command again
-to have the fixed aperture magnitude in the F160W filter also. From this
-point on, you can follow the previous steps to derive the color in a fixed
-aperture.
+This catalog has the same number of rows as the catalog produced from
+clumps, therefore similar to how we found colors, you can compare the
+aperutre and clump magnitudes for example. You can also change the filter
+name and zeropoint magnitudes and run this command again to have the fixed
+aperture magnitude in the F160W filter and measure colors on apertures.
 
-We will now find some of the objects with the strongest color difference
-and make a cutout to inspect them visually: let's see what the objects with
-a color more than two magnitudes look like.
-
-@cindex AWK
-We'll use the @file{catalog/xdf-f105w-f160w_c.txt} file that we produced
-above. With the command below, all lines with a color value more than 2
-will be put in @file{reddest.txt} and inspect it using @command{cat}.
+@cindex GNU AWK
+Let's find some of the objects with the strongest color difference and make
+a cutout to inspect them visually: let's see what the objects with a color
+more than two magnitudes look like. We'll use the
+@file{cat/xdf-f105w-f160w_c.txt} file that we made above. With the command
+below, all lines with a color more than 1.5 will be put in @file{reddest.txt}
 
 @example
-$ awk '$5>1' catalog/xdf-f105w-f160w_c.txt > reddest.txt
-$ cat reddest.txt
+$ awk '$5>1.5' cat/xdf-f105w-f160w_c.txt > red.txt
 @end example
 
-We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
+We can now feed @file{red.txt} into Gnuastro's crop to see what these
 objects look like. To keep things clean, we'll make a directory called
-@file{reddest} and ask Crop to save the crops in this directory. We'll also
-add a @file{-f160w.fits} suffix to the crops.
+@file{crop-red} and ask Crop to save the crops in this directory. We'll
+also add a @file{-f160w.fits} suffix to the crops (to remind us which image
+they came from).
 
 @example
-$ mkdir crop
-$ astcrop --mode=wcs --coordcol=3 --coordcol=4 flat-ir/xdf-f160w.fits  \
-          --catalog=reddest.txt --width=15/3600,15/3600                \
-          --suffix=-f160w.fits --output=crop
+$ mkdir crop-red
+$ astcrop --mode=wcs --coordcol=3 --coordcol=4 flat-ir/xdf-f160w.fits \
+          --catalog=red.txt --width=15/3600,15/3600                   \
+          --suffix=-f160w.fits --output=crop-red
 @end example
 
 Like the MakeProfiles command above, you might notice that the crops aren't
-made in order. Since each crop is independent of the rest, the crops are
-done in parallel and parallel operations are asynchronous. In the command
-above, change @file{f160w} to @file{f105w} to make the crops in both
-filters.
+made in order. This is because each crop is independent of the rest,
+therefore crops are done in parallel, and parallel operations are
+asynchronous. In the command above, you can change @file{f160w} to
+@file{f105w} to make the crops in both filters.
 
 To view the crops more easily (not having to open ds9 for each image), you
-can convert the FITS crops into the JPEG format.
+can convert the FITS crops into the JPEG format with a shell loop like
+below.
 
 @example
+$ cd crop-red
 $ for f in *.fits; do                                                  \
     astconvertt $f --fluxlow=-0.001 --fluxhigh=0.005 --invert -ojpg;   \
   done
+$ cd ..
 @end example
 
-The loop above is in series: each file is processed only after the previous
-ones are complete. If you have @url{https://www.gnu.org/software/parallel,
-GNU Parallel}, you can greatly speed up this conversion. GNU Parallel will
-run the separate commands simultaneously on different CPU threads in
-parallel. For more information on efficiently using your threads, see
-@ref{Multi-threaded operations}.
+You can now easily use your general graphic user interface image viewer to
+flip through the images more easily. On GNOME, you can use the ``Eye of
+GNOME'' image viewer (with executable name of @file{eog}). Run the command
+below and by pressing the @key{<SPACE>} key, you can flip through the
+images and compare them visually more easily. Of course, the flux ranges
+have been chosen generically here for seeing the fainter parts. Therefore,
+brighter objects will be fully black.
 
 @example
+$ eog 1-f160w.jpg
+@end example
+
+@cindex GNU Parallel
+The @code{for} loop above to convert the images will do the job in series:
+each file is converted only after the previous ones are complete. If you
+have @url{https://www.gnu.org/software/parallel, GNU Parallel}, you can
+greatly speed up this conversion. GNU Parallel will run the separate
+commands simultaneously on different CPU threads in parallel. For more
+information on efficiently using your threads, see @ref{Multi-threaded
+operations}. Here is a replacement for the shell @code{for} loop above
+using GNU Parallel.
+
+@example
+$ cd crop-red
 $ parallel astconvertt --fluxlow=-0.001 --fluxhigh=0.005 --invert      \
            -ojpg ::: *.fits
-@end example
-
-You can now easily use your general GUI image viewer to flip through the
-images more easily. On GNOME, you can use the ``Eye of GNOME'' image viewer
-(with executable name of @file{eog}). Run the command below and by pressing
-the @key{<SPACE>} key, you can flip through the images and compare them
-visually more easily. Of course, the flux ranges have been chosen
-generically here for seeing the fainter parts. Therefore, brighter objects
-will be fully black.
-
-@example
-$ eog 1-f105w.jpg
+$ cd ..
 @end example
 
 Another thing that is commonly needed is to visually mark these objects on
-the image. DS9 has ``Region''s for this purpose. You just have to convert
-your catalog into a ``region file'' to feed into DS9. To do that, you can
-use AWK again as shown below.
+the image. DS9 has the ``Region''s concept for this purpose. You just have
+to convert your catalog into a ``region file'' to feed into DS9. To do
+that, you can use AWK again as shown below.
 
 @example
-$ cd ..
 $ awk 'BEGIN@{print "# Region file format: DS9 version 4.1";     \
              print "global color=green width=2";                \
              print "fk5";@}                                      \
@@ -3579,20 +3647,25 @@ $ awk 'BEGIN@{print "# Region file format: DS9 version 4.1";     \
 @end example
 
 This region file can be loaded into DS9 with its @option{-regions} option
-as shown below (see above for the other options):
+to display over any image (that has world coordinate system). In the
+example below, we'll open Segment's output and load the regions over all
+the extensions (to see the image and the respective clump):
 
 @example
-$ ds9 -mecube noisechisel/xdf-f160w.fits -zscale -zoom to fit    \
+$ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
       -regions load all reddest.reg
 @end example
 
 Finally, if this book or any of the programs in Gnuastro have been useful
-for your research, please cite the respective papers. All Gnuastro programs
-have a @option{--cite} option to help you cite the authors' work more
-easily. For example:
+for your research, please cite the respective papers and share your
+thoughts and suggestions with us (it can be very encouraging). All Gnuastro
+programs have a @option{--cite} option to help you cite the authors' work
+more easily. Just note that it may be necessary to cite additional papers
+for different programs, so please try it out for any program you use.
 
 @example
 $ astmkcatalog --cite
+$ astnoisechisel --cite
 @end example
 
 
@@ -7709,7 +7782,7 @@ $ ls
 ABC01.jpg ABC02.jpg
 $ astnoisechisel /mnt/data/DEFproject/DEF01.fits              # Prog 2
 $ ls
-ABC01.jpg ABC02.jpg DEF01_labeled.fits
+ABC01.jpg ABC02.jpg DEF01_detected.fits
 @end example
 
 
@@ -13641,60 +13714,78 @@ non-random factors (for example light from a distant galaxy) are
 present. This classification of a dataset is formally known as
 @emph{detection}.
 
-In a dataset, signal is inherently mixed with noise: only mock/simulated
-datasets are free of noise. Therefore detection, or the process of
-separating signal from noise, determines the number of objects you study
-and the accuracy of any higher-level measurement you do on them. Detection
-is thus the most important step of any analysis and is not trivial. In
-particular, the most scientifically interesting astronomical targets are
-faint, can have a large variety of morphologies, along with a large
-distribution in brightness and size, and are deeply drowned in an ocean of
-noise. Therefore when noise is significant, detection is the uniquely
-decisive step of your scientific result.
+In an observational/experimental dataset, signal is always burried in
+noise: only mock/simulated datasets are free of noise. Therefore detection,
+or the process of separating signal from noise, determines the number of
+objects you study and the accuracy of any higher-level measurement you do
+on them. Detection is thus the most important step of any analysis and is
+not trivial. In particular, the most scientifically interesting
+astronomical targets are faint, can have a large variety of morphologies,
+along with a large distribution in brightness and size. Therefore when
+noise is significant, detection is the uniquely decisive step of your
+scientific result.
 
 @cindex Erosion
-NoiseChisel is Gnuastro's program for detection. NoiseChisel uses a
-noise-based paradigm to signal detection that was initially introduced in
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. The
-name of NoiseChisel is derived from the first thing it does after
-thresholding the dataset: to erode it. In mathematical morphology, erosion
-on pixels can be pictured as carving off boundary pixels. Hence, what
-NoiseChisel does is similar to what a wood chisel or stone chisel do. It is
-just not a hardware, but a software. In fact, looking at it as a chisel and
-your dataset as a solid cube of rock will greatly help in best using it:
-with NoiseChisel you literally carve your targets out of the noise. Try
-running it with the @option{--checkdetection} option to see each step of
-the carving process on your input dataset.
+NoiseChisel is Gnuastro's program for detection of targets that don't have
+a sharp border (almost all astronomical objects). When the targets have a
+sharp edges/border, a simple threshold is enough to separate them from
+noise and each other (if they are not touching). For detection of such
+targets, you can use Gnuastro's Arithmetic program in a command like below
+(assuming the threshold is @code{100}, see @ref{Arithmetic}):
+
+@example
+$ astarithmetic in.fits 100 gt 2 connected-components
+@end example
+
+NoiseChisel uses a new noise-based paradigm for detection of very exteded
+and diffuse targets that are drowned deeply in the ocean of noise. It was
+initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and
+Ichikawa [2015]}. The name of NoiseChisel is derived from the first thing
+it does after thresholding the dataset: to erode it. In mathematical
+morphology, erosion on pixels can be pictured as carving-off boundary
+pixels. Hence, what NoiseChisel does is similar to what a wood chisel or
+stone chisel do. It is just not a hardware, but a software. In fact,
+looking at it as a chisel and your dataset as a solid cube of rock will
+greatly help in effectively understanding and optimally using it: with
+NoiseChisel you literally carve your targets out of the noise. Try running
+it with the @option{--checkdetection} option to see each step of the
+carving process on your input dataset.
 
 @cindex Segmentation
-NoiseChisel's primary output is a dataset with the same size as the input
-but with integer values that identify each pixel's label (class). Pixels
-that don't harbor any detected signal (noise) are given a label (or value)
-of zero and those with a positive integer have been identified as hosting
-signal. Segmentation is the process of classifing the signal into
-higher-level constructs, for example if you have two separate galaxies in
-one image, you give them separate labels. NoiseChisel does a first order
-segmentation by labeling detections that aren't touching each other as
-separate detections. Each physically separate detection is thus given a
-different label (or counter, starting from 1).
+NoiseChisel's primary output is a binary detection map with the same size
+as the input but only with two values: 0 and 1. Pixels that don't harbor
+any detected signal (noise) are given a label (or value) of zero and those
+with a value of 1 have been identified as hosting signal. Segmentation is
+the process of classifing the signal into higher-level constructs, for
+example if you have two separate galaxies in one image, after segmentation,
+they will get separate labels. NoiseChisel is only focused on detection
+(separating signal from noise), to segment the signal (into separate
+galaxies for example), Gnuastro has a separate specialized program
+@ref{Segment}. NoiseChisel's output can be directly/readily fed into
+Segment.
 
-For more on NoiseChisel's particular output format and its benefits
-(especially in conjunction with @ref{MakeCatalog}), please see
-@url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. The output is
-designed to be generic enough to be easily used in any higher-level
-analysis: Higher-level segmentation (for example classifying a large
-detected body as multiple nearby galaxies), you can feed NoiseChisel's
-output to Gnuastro's Segment program (see @ref{Segment}). If NoiseChisel's
-first order segmentation is enough for your analysis, you can feed it
-directly into MakeCatalog to do measurements over the detections and
-produce a catalog (see @ref{MakeCatalog}).
+For more on NoiseChisel's output format and its benefits (especially in
+conjunction with @ref{Segment} and later @ref{MakeCatalog}), please see
+@url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. Just note that
+when that paper was published, Segment was not yet spinned-off, and
+NoiseChisel done both detection and segmentation. The output is designed to
+be generic enough to be easily used in any higher-level analysis. If your
+targets are not touching after running NoiseChisel and you aren't
+interested in their sub-structure, you don't need the Segment program at
+all. You can ask NoiseChisel to find the connected pixels in the output
+with the @option{--label} option. In this case, the output won't be a
+binary image any more, the signal will have counters/labels starting from 1
+for each connected group of pixels. You can then directly feed
+NoiseChisel's output into MakeCatalog for measurements over the detections
+and the production of a catalog (see @ref{MakeCatalog}).
 
 Thanks to the published papers mentioned above, there is no need to provide
-a more complete introduction in this book. However, published papers cannot
-be updated any more, but the software has evolved/changed. The changes
-since publication are documented in @ref{NoiseChisel changes after
-publication}. Afterwards, in @ref{Invoking astnoisechisel}, the details of
-running NoiseChisel and its options are discussed.
+a more complete introduction to NoiseChisel in this book. However,
+published papers cannot be updated any more, but the software has
+evolved/changed. The changes since publication are documented in
+@ref{NoiseChisel changes after publication}. Afterwards, in @ref{Invoking
+astnoisechisel}, the details of running NoiseChisel and its options are
+discussed.
 
 As discussed above, detection is the single most important step for your
 scientific result. It is therefore very important to obtain a good
@@ -13703,15 +13794,23 @@ understanding of NoiseChisel (and afterwards @ref{Segment} and
 papers above and the respective sections of Gnuastro's book, you play a
 little with the settings (in the order presented in @ref{Invoking
 astnoisechisel}) on a dataset you are familiar with and inspect all the
-check images (produced with options starting with @option{--check}) to see
-the effect of each parameter.
+check images (options starting with @option{--check}) to see the effect of
+each parameter.
 
 @ref{General program usage tutorial} is also a good place to get a feeling
-of how Gnuastro's programs are built to complement, and build upon, each
-other. This tutorial culminates culminating in using NoiseChisel to detect
-galaxies and use its outputs to find the galaxy colors. This is a common
-use case, so please also complete that tutorial for most effectively using
-NoiseChisel in conjunction with all of the other Gnuastro programs.
+of the modular principle behind Gnuastro's programs and how they are built
+to complement, and build upon, each other. The tutorial culminates in using
+NoiseChisel to detect galaxies and use its outputs to find the galaxy
+colors. Defining colors is a very common process in most
+science-cases. Therefore it is also recommended to (patiently) complete
+that tutorial for optimal usage of NoiseChisel in conjunction with all the
+other Gnuastro programs.
+
+In @ref{NoiseChisel changes after publication}, we'll review the changes in
+NoiseChisel since the publication of @url{https://arxiv.org/abs/1611.06387,
+Akhlaghi [2016]}. We will then review NoiseChisel's input, detection, and
+output options in @ref{NoiseChisel input}, @ref{Detection options}, and
+@ref{NoiseChisel output}.
 
 @menu
 * NoiseChisel changes after publication::  Changes to the software after publication.
@@ -13832,11 +13931,12 @@ of false detections, see the descriptions under this option in
 @node Invoking astnoisechisel,  , NoiseChisel changes after publication, NoiseChisel
 @subsection Invoking NoiseChisel
 
-NoiseChisel will detect signal in noise producing a multi-extension labeled
-image. Its output can be readily used for input into @ref{Segment}, for
-higher-level segmentation, or @ref{MakeCatalog} to generate a catalog. The
-executable name is @file{astnoisechisel} with the following general
-template
+NoiseChisel will detect signal in noise producing a multi-extension dataset
+containing a binary detection map which is the same size as the input. Its
+output can be readily used for input into @ref{Segment}, for higher-level
+segmentation, or @ref{MakeCatalog} to do measurements and generate a
+catalog. The executable name is @file{astnoisechisel} with the following
+general template
 
 @example
 $ astnoisechisel [OPTION ...] InputImage.fits
@@ -13852,9 +13952,9 @@ $ astnoisechisel input.fits
 ## Inspect all the detection steps after changing a parameter.
 $ astnoisechisel input.fits --qthresh=0.4 --checkdetection
 
-## Detect signal assuming input has 4 channels along first dimension
-## and 1 along the second. Also set the regular tile size to 100 along
-## both dimensions:
+## Detect signal assuming input has 4 amplifier channels along first
+## dimension and 1 along the second. Also set the regular tile size
+## to 100 along both dimensions:
 $ astnoisechisel --numchannels=4,1 --tilesize=100,100 input.fits
 @end example
 
@@ -13928,26 +14028,26 @@ $ astnoisechisel --help | grep check
 @end cartouche
 
 Below, we'll discuss NoiseChisel's options, classified into two general
-classes, to help in easy navigation. @ref{General NoiseChisel options}
-mainly discusses the options relating to inputs and prior to
-detection. Afterwards, @ref{Detection options} fully describes every
-configuration parameter (option) related to detection and how they affect
-the final result. The order of options in this section follow the logical
-order within NoiseChisel. On first reading (while you are still new to
-NoiseChisel), it is therefore strongly recommended to read the options in
-the given order below. The output of @option{--printparams} (or
+classes, to help in easy navigation. @ref{NoiseChisel input} mainly
+discusses the basic options relating to inputs and prior to the detection
+process detection. Afterwards, @ref{Detection options} fully describes
+every configuration parameter (option) related to detection and how they
+affect the final result. The order of options in this section follow the
+logical order within NoiseChisel. On first reading (while you are still new
+to NoiseChisel), it is therefore strongly recommended to read the options
+in the given order below. The output of @option{--printparams} (or
 @option{-P}) also has this order. However, the output of @option{--help} is
 sorted alphabetically. Finally, in @ref{NoiseChisel output} the format of
 NoiseChisel's output is discussed.
 
 @menu
-* General NoiseChisel options::  General NoiseChisel preprocessing.
+* NoiseChisel input::           NoiseChisel's input options.
 * Detection options::           Configure detection in NoiseChisel.
-* NoiseChisel output::          NoiseChisel's output format.
+* NoiseChisel output::          NoiseChisel's output options and format.
 @end menu
 
-@node General NoiseChisel options, Detection options, Invoking astnoisechisel, Invoking astnoisechisel
-@subsubsection General NoiseChisel options
+@node NoiseChisel input, Detection options, Invoking astnoisechisel, Invoking astnoisechisel
+@subsubsection NoiseChisel input
 
 The options here can be used to configure the inputs and output of
 NoiseChisel, along with some general processing options. Recall that you
@@ -14067,56 +14167,9 @@ sizes. Except for the tile size, all the other parameters for this
 tessellation are taken from the common options described in @ref{Processing
 options}. The format is identical to that of the @option{--tilesize} option
 that is discussed in that section.
-
-@item --continueaftercheck
-Continue NoiseChisel after any of the options starting with
-@option{--check}. NoiseChisel involves many steps and as a result, there
-are many checks, allowing to inspect the status of the processing. The
-results of each step affect the next steps of processing. Therefore, when
-you want to check the status of the processing at one step, the time spent
-to complete NoiseChisel is just wasted/distracting time.
-
-To encourage easier experimentation with the option values, when you use
-any of the NoiseChisel options that start with @option{--check},
-NoiseChisel will abort once all the desired check file is complete. With
-the @option{--continueaftercheck} option, you can disable this behavior and
-ask NoiseChisel to continue with the rest of the processing, even after
-completing the requested check files are complete.
-
-@item --rawoutput
-Don't include the Sky-subtracted input image as the first extension of the
-output. By default, the Sky-subtracted input image is put in the first
-extension of the output. The next extensions are NoiseChisel's main output:
-a labeled image with the detected pixels having positive values and the Sky
-and Sky standard deviation images, see @ref{NoiseChisel output}.
-
-The extra Sky-subtracted input can help in checking NoiseChisel's
-configuration by comparing the detections with the input image: visually
-see if everything you expected is detected (reasonable completeness) and
-that you don't have too many false detections (reasonable purity). This
-visual inspection is simplified if you use SAO DS9 to view NoiseChisel's
-output as a multi-extension datacube, see @ref{Viewing multiextension FITS
-images}.
-
-However, when you are satisfied with your NoiseChisel configuration
-(therefore you don't need to check on every run), the datasets become
-large, or you are running NoiseChisel as part of a pipeline, this
-Sky-subtracted input image can be significant burden (take up a large
-volume). In such cases, @option{--rawoutput} can be used to avoid this
-extra extension. It is always possible to easily produce the Sky-subtracted
-image from the input (assuming it is in extension @code{1} of
-@file{in.fits}) and the @code{SKY} extension of NoiseChisel's output (let's
-call it @file{nc.fits}) with a command like below (assuming NoiseChisel
-wasn't run with @option{--oneelempertile}, see @ref{Tessellation}):
-
-@example
-$ astarithmetic in.fits nc.fits - -h1 -hSKY
-@end example
-
-
 @end table
 
-@node Detection options, NoiseChisel output, General NoiseChisel options, Invoking astnoisechisel
+@node Detection options, NoiseChisel output, NoiseChisel input, Invoking astnoisechisel
 @subsubsection Detection options
 
 Detection is the process of separating the pixels in the image into two
@@ -14462,48 +14515,26 @@ have the same pixel size as the input, but with the
 @node NoiseChisel output,  , Detection options, Invoking astnoisechisel
 @subsubsection NoiseChisel output
 
-The main output of NoiseChisel is the detected pixels (labeled with
-integers starting from 1) over the input dataset along with the Sky and Sky
-standard deviation that are all returned as multiple extensions of a FITS
-file. The name of the output file can be set by giving a value to
-@option{--output}. If @option{--output} is not used, the output will be
-input name but with a @file{_labeled.fits} suffix, see @ref{Automatic
-output}. If any of the options starting with @option{--check*} are given,
-NoiseChisel won't complete and will abort as soon as the respective check
-images are created. See the descriptions in @ref{Detection options} for a
-description of the extensions in each of the check images when the
-@option{--check*} options are called. With the
-@option{--continueaftercheck} option, NoiseChisel will produce the check
-images without aborting and will continue to finish the detection.
+NoiseChisel's output is a multi-extension FITS file. The main
+extension/dataset is a (binary) detection map. It has the same size as the
+input but with only two possible values for all pixels: 0 (for pixels
+identified as noise) and 1 (for those identified as signal/detections). The
+detection map is followed by a Sky and Sky standard deviation dataset
+(which are calculated from the binary image). By default (when
+@option{--rawoutput} isn't called), NoiseChisel will also subtract the Sky
+value from the input and save the sky-subtracted input as the first
+extension in the output.
 
-The default output can have three or four extensions based on the
-@option{--rawoutput} option. If it is called on the command-line or given a
-value of 1 in any of the configuration files, then the output will only
-contain the three raw outputs (Labeled image, Sky and Sky Standard
-deviation). This can be useful when you are calling NoiseChisel as part of
-a large script and on large files where the extra extension is redundant,
-but will take up a large volume.
-
-When @option{--rawoutput} is not called, the first extension will be the
-input image subtracted by the Sky value. When playing-with/testing
-NoiseChisel on a new dataset, having this extra image can greatly simplify
-the inspection of the results. By flipping through the extensions, you can
-check how accurate or effective the change in parameters was.
-
-To inspect NoiseChisel's output, you can configure SAO DS9 in your Graphic
-User Interface (GUI) to open NoiseChisel's output as a multi-extension data
-cube. This will allow you to flip through the different extensions and
-visually inspect the results. This process has been described for the GNOME
-GUI (most common GUI in GNU/Linux operating systems) in @ref{Viewing
-multiextension FITS images}.
-
-The main output (present in any case) is thus the labeled dataset. In this
-image, the non-detected (Sky) pixels of the input are given a label of zero
-and the detected pixel are given positive label (starting from one, based
-on connectivity).  The total number of labels is stored as the value to the
-@code{NUMLABS} keyword in the header of this extension. This number (along
-with other important information) is also printed by NoiseChisel in verbose
-mode (when @option{--quiet} is not called).
+The name of the output file can be set by giving a value to
+@option{--output} (this is a common option between all programs and is
+therefore discussed in @ref{Input output options}). If @option{--output}
+isn't used, the input name will be suffixed with @file{_detected.fits} and
+used as output, see @ref{Automatic output}. If any of the options starting
+with @option{--check*} are given, NoiseChisel won't complete and will abort
+as soon as the respective check images are created. For more information on
+the different check images, see the description for the @option{--check*}
+options in @ref{Detection options} (this can be disabled with
+@option{--continueaftercheck}).
 
 The last two extensions of the output are the Sky and its Standard
 deviation, see @ref{Sky value} for a complete explanation. They are
@@ -14513,17 +14544,110 @@ pixels in one tile given one value. To be more space-efficient (keep only
 one pixel per tile), you can use the @option{--oneelempertile} option, see
 @ref{Tessellation}.
 
+@cindex GNOME
+To inspect any of NoiseChisel's output files, assuming you use SAO DS9, you
+can configure your Graphic User Interface (GUI) to open NoiseChisel's
+output as a multi-extension data cube. This will allow you to flip through
+the different extensions and visually inspect the results. This process has
+been described for the GNOME GUI (most common GUI in GNU/Linux operating
+systems) in @ref{Viewing multiextension FITS images}.
+
+NoiseChisel's output configuration options are described in detail below.
+
+@table @option
+@item --continueaftercheck
+Continue NoiseChisel after any of the options starting with
+@option{--check} (see @ref{Detection options}. NoiseChisel involves many
+steps and as a result, there are many checks, allowing you to inspect the
+status of the processing. The results of each step affect the next steps of
+processing. Therefore, when you want to check the status of the processing
+at one step, the time spent to complete NoiseChisel is just
+wasted/distracting time.
+
+To encourage easier experimentation with the option values, when you use
+any of the NoiseChisel options that start with @option{--check},
+NoiseChisel will abort once its desired extensions have been written. With
+@option{--continueaftercheck} option, you can disable this behavior and ask
+NoiseChisel to continue with the rest of the processing, even after the
+requested check files are complete.
+
+@item -l
+@itemx --label
+Run a connected-components algorithm on the finally detected pixels to
+identify which pixels are connected to which. By default the main output is
+a binary dataset with only two values: 0 (for noise) and 1 (for
+signal/detections). See @ref{NoiseChisel output} for more.
+
+The purpose of Noisechisel is to detect targets that are extended and
+diffuse, with outer parts that sink into the noise very gradually (galaxies
+and stars for example). Since NoiseChisel digs down to extremely low
+surface brightness values, many such targets will commonly be detected
+together as a single large body of connected pixels.
+
+To properly separte connected objects, sophisticated segmentation methods
+are commonly necessary on NoiseChisel's output. Gnuastro has the dedicated
+@ref{Segment} program for this job. Since input images are commonly large
+and can take a significant volume, the extra volume necessary to store the
+labels of the connected components in the detection map (which will be
+created with this @option{--label} option, in 32-bit signed integer type)
+can thus be a major waste of space. Since the default output is just a
+binary dataset, an 8-bit unsigned dataset is enough.
+
+The binary output will also encourage users to segment the result
+separately prior to doing higher-level analysis. As an alternative to
+@option{--label}, if you have the binary detection image, you can use the
+@code{connected-components} operator in Gnuastro's Arithmetic program to
+identify regions that are connected with each other. For example with this
+command (assuming NoiseChisel's output is called @file{nc.fits}):
+
+@example
+$ astarithmetic nc.fits connected-components -hDETECTIONS
+@end example
+
+@item --rawoutput
+Don't include the Sky-subtracted input image as the first extension of the
+output. By default, the Sky-subtracted input is put in the first extension
+of the output. The next extensions are NoiseChisel's main outputs described
+above.
+
+The extra Sky-subtracted input can be convenient in checking NoiseChisel's
+output and comparing the detection map with the input: visually see if
+everything you expected is detected (reasonable completeness) and that you
+don't have too many false detections (reasonable purity). This visual
+inspection is simplified if you use SAO DS9 to view NoiseChisel's output as
+a multi-extension datacube, see @ref{Viewing multiextension FITS images}.
+
+When you are satisfied with your NoiseChisel configuration (therefore you
+don't need to check on every run), or you want to archive/transfer the
+outputs, or the datasets become large, or you are running NoiseChisel as
+part of a pipeline, this Sky-subtracted input image can be a significant
+burden (take up a large volume). The fact that the input is also noisy,
+makes it hard to compress it efficiently.
+
+In such cases, this @option{--rawoutput} can be used to avoid the extra
+sky-subtracted input in the output. It is always possible to easily produce
+the Sky-subtracted dataset from the input (assuming it is in extension
+@code{1} of @file{in.fits}) and the @code{SKY} extension of NoiseChisel's
+output (let's call it @file{nc.fits}) with a command like below (assuming
+NoiseChisel wasn't run with @option{--oneelempertile}, see
+@ref{Tessellation}):
+
+@example
+$ astarithmetic in.fits nc.fits - -h1 -hSKY
+@end example
+@end table
+
 @cartouche
 @noindent
 @cindex Compression
 @strong{Save space:} with the @option{--rawoutput} and
-@option{--oneelempertile}, NoiseChisel's output will only be one labeled
-datasets (only containing integers) and two much smaller arrays with one
-value per tile. Since they have no noise, integer datasets can be
-compressed very effectively (without any loss of data) with exceptionally
-high compression ratios. You can therefore use the following command to
-keep NoiseChisel's output in a much more efficient manner (take up less
-volume).
+@option{--oneelempertile}, NoiseChisel's output will only be one binary
+detection map and two much smaller arrays with one value per tile. Since
+none of these have noise they can be compressed very effectively (without
+any loss of data) with exceptionally high compression ratios. This makes it
+easy to archive, or transfer, NoiseChisel's output even on huge
+datasets. To compress it with the most efficient method (take up less
+volume), run the following command:
 
 @cindex GNU Gzip
 @example
@@ -14532,14 +14656,9 @@ $ gzip --best noisechisel_output.fits
 
 @noindent
 The resulting @file{.fits.gz} file can then be fed into any of Gnuastro's
-programs directly, without having to decompress it separately (it will just
-take them a little longer, because they have to decompress it before use).
-
-Alternatively, you can also tell NoiseChisel to directly build a
-@file{.fits.gz} output (for example with @option{--output=nc.fits.gz}). But
-CFITSIO (which reads and writes FITS files for Gnuastro) puts more emphasis
-on compression/decompression speed. So it doesn't use the most efficient
-compression settings (which can take slightly longer).
+programs directly, or viewed in viewers like SAO DS9, without having to
+decompress it separately (they will just take a little longer, because they
+have to internally decompress it before starting).
 @end cartouche
 
 
@@ -14557,53 +14676,89 @@ compression settings (which can take slightly longer).
 Once signal is separated from noise (for example with @ref{NoiseChisel}),
 you have a binary dataset: each pixel is either signal (1) or noise
 (0). Signal (for example every galaxy in your image) has been ``detected'',
-but they all have a label of 1. This still doesn't answer our scientific
-questions, for example, to count how many galaxies there are in the image
-and measure their properties. At the lowest level, detection is a kind of
-segmentation (segmenting the the whole dataset into signal and noise, see
-@ref{NoiseChisel}). Here, we'll define segmentation only on signal: to
-separate and find sub-structure within the detections.
+but all detections have a label of 1. Therefore while we know which pixels
+contain signal, we still can't find out how many galaxies they contain or
+which detected pixels correspond to which galaxy. At the lowest (most
+generic) level, detection is a kind of segmentation (segmenting the the
+whole dataset into signal and noise, see @ref{NoiseChisel}). Here, we'll
+define segmentation only on signal: to separate and find sub-structure
+within the detections.
 
 @cindex Connected component labeling
 If the targets are clearly separated in the dataset (image), a simple
 @emph{connected
 components}@footnote{@url{https://en.wikipedia.org/wiki/Connected-component_labeling}}
 algorithm (very basic segmentation) is enough to separate the regions that
-are touching/connected. This is such a basic form of segmentation that
-detection programs (for example NoiseChisel) do this for you. However, in
-most real situations our targets are not nicely separated: they touch (for
-example merging galaxies), or are simply in the same line-of-sight, causing
-their images to overlap. In particular, when you do your detection with
-NoiseChisel, you will detect signal to very low surface brightness limits
-(the faint wings of galaxies or bright stars). Therefore, it often happens
-that several galaxies are detected as one large detection. To continue your
-scientific analysis, it is therefore necessary to separate/segment each
-detection into multiple targets as best as possible.
+are touching/connected. This is such a basic and simple form of
+segmentation that Gnuastro's Arithmetic program has an operator for it: see
+@code{connected-components} in @ref{Arithmetic operators}. Assuming the
+binary dataset is called @file{binary.fits}, you can use it with a command
+like this:
+
+@example
+$ astarithmetic binary.fits 2 connected-components
+@end example
+
+@noindent
+You can even do a very basic detection (a threshold, say at value
+@code{100}) @emph{and} segmentation in Arithmetic with a single command
+like below to apply:
+
+@example
+$ astarithmetic in.fits 100 gt 2 connected-components
+@end example
+
+However, in most astronomical situations our targets are not nicely
+separated or have a sharp boundary/edge (for a threshold to suffice): they
+touch (for example merging galaxies), or are simply in the same
+line-of-sight, causing their images to overlap. In particular, when you do
+your detection with NoiseChisel, you will detect signal to very low surface
+brightness limits: deep into the faint wings of galaxies or bright stars
+(which can extend very far and irregularly from their center). Therefore,
+it often happens that several galaxies are detected as one large
+detection. To continue your scientific analysis, a simple connected
+components algorithm will not suffice. It is therefore necessary to do a
+more sophisticated segmentation and break up the detected pixels (even
+those that are touching) into multiple target objects as accurately as
+possible.
 
 Segment will use a detection map and its corresponding dataset to find
-sub-structure over the detected areas. Segment was originally part of
-@ref{NoiseChisel}. To help in modularity and improved creativity,
-NoiseChisel's segmentation features have been brought into a separate
-program. Therefore, as with NoiseChisel, the best place to start reading
-about Segment and understanding what it does (with many illustrative
-figures) is Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi
-and Ichikawa [2015]}.
+sub-structure over the detected areas and use them for its
+segmentation. Until Gnuastro version 0.6 (released in 2018), Segment was
+part of @ref{NoiseChisel}. Therefore, similar to NoiseChisel, the best
+place to start reading about Segment and understanding what it does (with
+many illustrative figures) is Section 3.2 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
-Segment will first find the @emph{true} local maxima over the detections in
-the given dataset along with all the pixels in their vicinity before
-reaching a local minimum. These regions over a detection are called
-@emph{clumps}. Afterwards, the clumps are grown up to a certain
-threshold. Based on the connectivity of these grown clumps, they are
-considered parts of one @emph{object} or as separate @emph{object}s. See
-Section 3.2 of Akhlaghi and Ichikawa [2015] (link above) for more. In
-short, Segment's main output are two labeled datasets: 1) clumps, and 2)
-objects. The the clumps output will only have positive integers on the true
-clumps, the rest of the detected regions will get a fixed negative
-value. The clump labels start counting from 1 within their host object, so
-if two objects have two and four clumps respectively, the clumps in the
-first will will be labeled 1 and 2 and in the second, they will be labeled
-1, 2, 3, and 4. The objects output has a positive integer (counting from 1)
-for all detected pixels.
+As a summary, Segment first finds true @emph{clump}s over the
+detections. Clumps are associated with local maxima and extend over the
+neighboring pixels until they reach a local minimum (@emph{river}). Segment
+will use the distribution of clump signal-to-noise ratios over the
+undetected regions as reference to find ``true'' clumps over the
+detections. Using the undetected regions can be disabled by directly giving
+a signal-to-noise ratio to @option{--clumpsnthresh}.
+
+The true clumps are then grown to a certain threshold over the
+detections. Based on the strength of the connections between the grown
+clumps, they are considered parts of one @emph{object} or as separate
+@emph{object}s. See Section 3.2 of Akhlaghi and Ichikawa [2015] (link
+above) for more. Segment's main output are thus two labeled datasets: 1)
+clumps, and 2) objects. See @ref{Segment output} for more.
+
+To start learning about Segment, especially in relation to detection
+(@ref{NoiseChisel}) and measurement (@ref{MakeCatalog}), the recommended
+references are @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+[2015]} and @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. Just
+have in mind that Segment became a separate program in 2018 (after those
+papers). Therefore we don't currently need to extend the introduction any
+further and can directly dive into the invocation details in @ref{Invoking
+astsegment}.
+
+Those papers cannot be updated any more but the software will
+evolve. Therefore this book is the definitive reference. Major changes from
+those papers will be documented here when the software starts to diverge
+from them the future, similar what we have already done for NoiseChisel in
+@ref{NoiseChisel changes after publication}.
 
 
 @menu
@@ -14613,11 +14768,10 @@ for all detected pixels.
 @node Invoking astsegment,  , Segment, Segment
 @subsection Invoking Segment
 
-Segment will identify substructure within a detected region using its
-corresponding image. Its output can be readily used for input into
-@ref{MakeCatalog} to generate a catalog of the objects and clumps. The
-executable name is @file{astsegment} with the following general
-template
+Segment will identify substructure within the detected regions of an input
+image. Segment's output labels can be directly used for measurements (for
+example with @ref{MakeCatalog}). The executable name is @file{astsegment}
+with the following general template
 
 @example
 $ astsegment [OPTION ...] InputImage.fits
@@ -14628,7 +14782,7 @@ One line examples:
 
 @example
 ## Segment NoiseChisel's detected regions.
-$ astsegment full-noisechisel-output.fits
+$ astsegment default-noisechisel-output.fits
 
 ## Use a hand-input S/N value for keeping true clumps
 ## (avoid finding the S/N using the undetected regions).
@@ -14636,59 +14790,80 @@ $ astsegment nc-out.fits --clumpsnthresh=10
 
 ## Inspect all the segmentation steps after changing a parameter.
 $ astsegment input.fits --snquant=0.9 --checksegmentaion
+
+## Use the fixed value of 0.01 for the input's Sky standard deviation
+## (in the units of the input), and assume all the pixels are a
+## detection (for example a large structure extending over the whole
+## image), and only keep clumps with S/N>10 as true clumps.
+$ astsegment in.fits --std=0.01 --detection=all --clumpsnthresh=10
 @end example
 
 @cindex Gaussian
 @noindent
 If Segment is to do processing (for example you don't want to get help, or
-see the values to each input parameter), an input image should be provided
-with the recognized extensions (see @ref{Arguments}). NoiseChisel shares a
+see the values of each option), at least one input dataset is necessary
+along with detection and error information, either as separate datasets
+(per-pixel) or fixed values, see @ref{Segment input}. Segment shares a
 large set of common operations with other Gnuastro programs, mainly
 regarding input/output, general processing steps, and general operating
 modes. To help in a unified experience between all of Gnuastro's programs,
-these operations have the same command-line options, see @ref{Common
-options} for a full list/description (they are not repeated here).
+these common operations have the same names and defined in @ref{Common
+options}.
 
 As in all Gnuastro programs, options can also be given to Segment in
-configuration files. For a thorough description on Gnuastro's configuration
+configuration files. For a thorough description of Gnuastro's configuration
 file parsing, please see @ref{Configuration files}. All of Segment's
 options with a short description are also always available on the
 command-line with the @option{--help} option, see @ref{Getting help}. To
 inspect the option values without actually running Segment, append your
 command with @option{--printparams} (or @option{-P}).
 
-To help in easy navigation between Segment's options, they are separated
-discussed in two separate sub-sections: @ref{Segment inputs and general
-settings} discusses how you can customize the inputs to Segment along with
-other general Segment options. Another section (@ref{Segmentation options})
-is devoted to options specific to the segmentation process. Finally, in
-@ref{Segment output}, we'll discuss the format of Segment's output file.
+To help in easy navigation between Segment's options, they are separately
+discussed in the three sub-sections below: @ref{Segment input} discusses
+how you can customize the inputs to Segment. @ref{Segmentation options} is
+devoted to options specific to the high-level segmentation
+process. Finally, in @ref{Segment output}, we'll discuss options that
+affect Segment's output.
 
 @menu
-* Segment inputs and general settings::  Input files and general options.
+* Segment input::               Input files and options.
 * Segmentation options::        Parameters of the segmentation process.
 * Segment output::              Outputs of Segment
 @end menu
 
-@node Segment inputs and general settings, Segmentation options, Invoking astsegment, Invoking astsegment
-@subsubsection Segment inputs and general settings
+@node Segment input, Segmentation options, Invoking astsegment, Invoking astsegment
+@subsubsection Segment input
 
-Segment needs atleast three datasets as input: 1) Sky-subtracted values
-(actual image), 2) detection labels, and 3) standard deviation. If the
-values dataset is not Sky-subtracted, you can ask Segment to subtract the
-Sky from it by giving a file name to the @option{--sky} option, see
-below. For the rest of this discussion, we'll assume it is already sky
-subtracted.
+Besides the input dataset (for example astronomical image), Segment also
+needs to know the Sky standard deviation and the regions of the dataset
+that it should segment. The values dataset is assumed to be Sky subtracted
+by default. If it isn't, you can ask Segment to subtract the Sky internally
+by calling @option{--sky}. For the rest of this discussion, we'll assume it
+is already sky subtracted.
 
-These three necessary datasets must ofcourse be related: derived from the
-same basic input in steps prior to running Segment. By default, Segment
-will assume they are multiple extensions of a single file, for example see
-@ref{NoiseChisel output}. When the Sky-subtracted values are in one file,
-and the detection and Sky standard deviation are in another, you just need
-to use @option{--detection}: in the absence of @option{--std}, Segment will
-look for both the detection labels and Sky standard deviation in the file
-given to @option{--detection}. Ultimately, if all three are in separate
-files, you need to call both @option{--detection} and @option{--std}.
+The Sky and its standard deviation can be a single value (to be used for
+the whole dataset) or a separate dataset (for a separate value per
+pixel). If a dataset is used for the Sky and its standard deviation, they
+must either be the size of the input image, or have a single value per tile
+(generated with @option{--oneelempertile}, see @ref{Processing options} and
+@ref{Tessellation}).
+
+The detected regions/pixels can be specified as a detection map (for
+example see @ref{NoiseChisel output}). If @option{--detection=all}, Segment
+won't read any detection map and assume the whole input is a single
+detection. For example when the dataset is fully covered by a large nearby
+galaxy/globular cluster.
+
+When dataset are to be used for any of the inputs, Segment will assume they
+are multiple extensions of a single file by default (when @option{--std} or
+@option{--detection} aren't called). For example NoiseChisel's default
+output @ref{NoiseChisel output}. When the Sky-subtracted values are in one
+file, and the detection and Sky standard deviation are in another, you just
+need to use @option{--detection}: in the absence of @option{--std}, Segment
+will look for both the detection labels and Sky standard deviation in the
+file given to @option{--detection}. Ultimately, if all three are in
+separate files, you need to call both @option{--detection} and
+@option{--std}.
 
 The extensions of the three mandatory inputs can be speicified with
 @option{--hdu}, @option{--dhdu}, and @option{--stdhdu}. For a full
@@ -14704,73 +14879,117 @@ for HDUs on your system, run this command:
 $ astsegment -P | grep hdu
 @end example
 
-To help in identifying the true clumps, Segment can also work on a
-convolved image (see Section 3.2.1 and Figure 8 of
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}). If
-you have already convolved your input image, you can use the
-@option{--convolved} and @option{--chdu} options to specify the file name
-and HDU/extension that it is stored in. Just don't forget that the
-convolved image must also be sky-subtracted before calling
-Segment. However, if a value/file is given to @option{--sky}, the convolved
-values will also be Sky subtracted internally. Alternatively, if you would
-prefer to give a kernel, so Segment does the convolution internally, you
-can use the @option{--kernel} and @option{--khdu}. To disable convolution,
-use @option{--kernel=none}.
+By default Segment will convolve the input with a kernel to improve the
+signal-to-noise ratio of true peaks. If you already have the convolved
+input dataset, you can pass it directly to Segment for faster processing
+(using the @option{--convolved} and @option{--chdu} options). Just don't
+forget that the convolved image must also be Sky-subtracted before calling
+Segment. If a value/file is given to @option{--sky}, the convolved values
+will also be Sky subtracted internally. Alternatively, if you prefer to
+give a kernel (with @option{--kernel} and @option{--khdu}), Segment can do
+the convolution internally. To disable convolution, use
+@option{--kernel=none}.
 
 @table @option
 
-@item --sky=STR
-The optional file name containing the Sky values dataset. The extension can
-be specified with @option{--skyhdu}. This dataset must either have the same
-size as the output or the same size as the tessellation (so there is one
-pixel per tile, see @ref{Tessellation}).
+@item --sky=STR/FLT
+The Sky value(s) to subtract from the input. This option can either be
+given a constant number or a file name containing a dataset (multiple
+values, per pixel or per tile). By default, Segment will assume the input
+dataset is Sky subtracted, so this option is not mandatory.
 
-When this option is given, its values will be subtraced from the input and
-(the optional) dataset given to @option{--convolved} prior to starting the
-segmentation process.
+If the value can't be read as a number, it is assumed to be a file
+name. When the value is a file, the extension can be specified with
+@option{--skyhdu}. When its not a single number, the given dataset must
+either have the same size as the output or the same size as the
+tessellation (so there is one pixel per tile, see @ref{Tessellation}).
 
-@item --skyhdu
-The HDU/extension containing the Sky value (when @option{--sky} is
-called). For acceptable values, please see the description of
-@option{--hdu} in @ref{Input output options}.
+When this option is given, its value(s) will be subtraced from the input
+and the (optional) convolved dataset (given to @option{--convolved}) prior
+to starting the segmentation process.
+
+@item --skyhdu=STR/INT
+The HDU/extension containing the Sky values. This is mandatory when the
+value given to @option{--sky} is not a number. Please see the description
+of @option{--hdu} in @ref{Input output options} for the different ways you
+can identify a special extension.
+
+@item --std=STR/FLT
+The Sky standard deviation value(s) corresponding to the input. The value
+can either be a constant number or a file name containing a dataset
+(multiple values, per pixel or per tile). The Sky standard deviation is
+mandatory for Segment to operate.
+
+If the value can't be read as a number, it is assumed to be a file
+name. When the value is a file, the extension can be specified with
+@option{--skyhdu}. When its not a single number, the given dataset must
+either have the same size as the output or the same size as the
+tessellation (so there is one pixel per tile, see @ref{Tessellation}).
+
+When this option is not called, Segment will assume the standard deviation
+is a dataset and in a HDU/extension (@option{--stdhdu}) of another one of
+the input file(s). If a file is given to @option{--detection}, it will
+assume that file contains the standard deviation dataset, otherwise, it
+will look into input filename (the main argument, without any option).
+
+@item --stdhdu=INT/STR
+The HDU/extension containing the Sky standard deviation values, when the
+value given to @option{--std} is a file name. Please see the description of
+@option{--hdu} in @ref{Input output options} for the different ways you can
+identify a special extension.
+
+@item --variance
+The input Sky standard deviation value/dataset is actually variance. When
+this option is called, the square root of input Sky standard deviation (see
+@option{--std}) is used internally, not its raw value(s).
 
 @item -d STR
 @itemx --detection=STR
-The file name containing the labeled dataset. The extension can be
-specified with @option{--dhdu}. Segmentation (clumps or objects) will only
-take place over the non-zero pixels of this image. The dataset must have
-the same size as the input image. Only datasets with an integer type are
-acceptable for the labeled image, see @ref{Numeric data types}.
+Detection map to use for segmentation. If given a value of @option{all},
+Segment will assume the whole dataset must be segmented, see below. If a
+detection map is given, the extension can be specified with
+@option{--dhdu}. If not given, Segment will assume the desired
+HDU/extension is in the main input argument (input file specified with no
+option).
 
-If your labeled image only has integer values, but it is stored in a
-floating point container, you can use Gnuastro's Arithmetic program (see
-@ref{Arithmetic}) to convert it to an integer container, like the example
-below:
+Segmentation (clumps or objects) will only take place over the non-zero
+pixels of this detection map. The dataset must have the same size as the
+input image. Only datasets with an integer type are acceptable for the
+labeled image, see @ref{Numeric data types}. If your detection map only has
+integer values, but it is stored in a floating point container, you can use
+Gnuastro's Arithmetic program (see @ref{Arithmetic}) to convert it to an
+integer container, like the example below:
 
 @example
 $ astarithmetic float.fits int32 --output=int.fits
 @end example
 
+It may happen that the whole input dataset is covered by signal, for
+example when working on parts of the Andromeda galaxy, or nearby globular
+clusters (that cover the whole field of view). In such cases, segmentation
+is necessary over the complete dataset, not just specific regions
+(detections). By default Segment will first use the undetected regions as a
+reference to find the proper signal-to-noise ratio of ``true'' clumps (give
+a purity level specified with @option{--snquant}). Therefore, in such
+scenarios you also need to manually give a ``true'' clump signal-to-noise
+ratio with the @option{--clumpsnthresh} option to disable looking into the
+undetected regions, see @ref{Segmentation options}. In such cases, is
+possible to make a detection map that only has the value @code{1} for all
+pixels (for example using @ref{Arithmetic}), but for convenience, you can
+also use @option{--detection=all}.
+
 @item --dhdu
-The HDU/extension containing the detection labels. For acceptable values,
-please see the description of @option{--hdu} in @ref{Input output options}.
-
-@item --std=STR
-The file name containing the Sky standard deviation dataset. The extension
-can be specified with @option{--stdhdu}. This dataset must either have the
-same size as the output or the same size as the tessellation (so there is
-one pixel per tile, see @ref{Tessellation}).
-
-@item --stdhdu=INT/STR
-The HDU/extension containing the Sky standard deviation. For acceptable
-values, please see the description of @option{--hdu} in @ref{Input output
-options}.
+The HDU/extension containing the detection map given to
+@option{--detection}. Please see the description of @option{--hdu} in
+@ref{Input output options} for the different ways you can identify a
+special extension.
 
 @item -k STR
 @itemx --kernel=STR
 The kernel used to convolve the input image. The usage of this option is
-identical to NoiseChisel's @option{--kernel} option (@ref{General
-NoiseChisel options}). Please see the descriptions there for more.
+identical to NoiseChisel's @option{--kernel} option (@ref{NoiseChisel
+input}). Please see the descriptions there for more. To disable
+convolution, you can give it a value of @option{none}.
 
 @item --khdu
 The HDU/extension containing the kernel used for convolution. For
@@ -14780,41 +14999,33 @@ acceptable values, please see the description of @option{--hdu} in
 @item --convolved
 The convolved image to avoid internal convolution by Segment. The usage of
 this option is identical to NoiseChisel's @option{--convolved} option
-(@ref{General NoiseChisel options}). Please see the descriptions there for
-more.
+(@ref{NoiseChisel input}). Please see the descriptions there for more.
 
 @item --chdu
 The HDU/extension containing the convolved image (given to
 @option{--convolved}). For acceptable values, please see the description of
 @option{--hdu} in @ref{Input output options}.
 
-@item --rawoutput
-Only output the clumps and objects labeled images. Without this option, the
-first and last extensions of the output will the sky-subtracted dataset and
-the Sky standard deviation dataset (that were inputs to Segment). When the
-datasets are small, this can help in conveniently using the output of
-Segment in @ref{MakeCatalog}. However, when the inputs are large, these
-extra dataset can be burden, and you can use this option to only make the
-raw images and provide the other necessary inputs to MakeCatalog (or any
-other software) with extra options. See @ref{Segment output} for more.
-
 @item -L INT[,INT]
 @itemx --largetilesize=INT[,INT]
-The size of the large tiles to use for identifying the clump S/N
-threshold. The usage of this option is identical to NoiseChisel's
-@option{--largetilesize} option (@ref{General NoiseChisel options}). Please
-see the descriptions there for more.
+The size of the large tiles to use for identifying the clump S/N threshold
+over the undetected regions. The usage of this option is identical to
+NoiseChisel's @option{--largetilesize} option (@ref{NoiseChisel
+input}). Please see the descriptions there for more.
 
-@item --continueaftercheck
-Don't abort Segment after producing the check image(s). The usage of this
-option is identical to NoiseChisel's @option{--continueaftercheck} option
-(@ref{General NoiseChisel options}). Please see the descriptions there for
-more.
+The undetected regions can be a significant fraction of the dataset and
+finding clumps requires sorting of the desired regions, which can be
+slow. To speed up the processing, Segment finds clumps in the undetected
+regions over separate large tiles. This allows it to have to sort a much
+smaller set of pixels and also to treat them independently and in
+parallel. Both these issues greatly speed it up. Just be sure to not
+decrease the large tile sizes too much (less than 100 pixels in each
+dimension). It is important for them to be much larger than the clumps.
 
 @end table
 
 
-@node Segmentation options, Segment output, Segment inputs and general settings, Invoking astsegment
+@node Segmentation options, Segment output, Segment input, Invoking astsegment
 @subsubsection Segmentation options
 
 The options below can be used to configure every step of the segmentation
@@ -14952,13 +15163,6 @@ NoiseChisel. The `true' detections and clumps can be objectively
 identified from the noise characteristics of the image, so you don't
 have to give any hand input Signal to noise ratio.
 
-@item --grownclumps
-In the output (see @ref{NoiseChisel output}) store the grown clumps (or
-full detected region if only one clump was present in that detection). By
-default the original clumps are stored as the third extension of the
-output, if this option is called, it is replaced with the grown clump
-labels.
-
 @item --checksegmentation
 A file with the suffix @file{_seg.fits} will be created. This file keeps
 all the relevant steps in finding true clumps and segmenting the detections
@@ -14981,69 +15185,79 @@ The main output of Segment are two label datasets (with integer types,
 separating the dataset's elements into different classes) with
 HDU/extension names of @code{CLUMPS} and @code{OBJECTS}. For a complete
 definition of clumps and objects, please see Section 3.2 of
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and
+@ref{Segmentation options}.
 
 The clumps are ``true'' local maxima and their surrounding pixels until a
 local minimum (caused by noise fluctuations, or another ``true''
 clump). Therefore it may happen that some of the input detections aren't
-covered by clumps at all (a very diffuse object without a strong central
-peak), while some objects may contain many clumps. Even in those that have
-clumps, there will be regions that are too diffuse. In other words, the
-peaks in those regions are too similar to the peaks in the un-detected
-regions. Those diffuse regions (within the input detected regions) are
-given a negative label (-1) to help you separate them from the undetected
-regions (with a value of zero).
+covered by clumps at all (very diffuse objects without any strong peak),
+while some objects may contain many clumps. Even in those that have clumps,
+there will be regions that are too diffuse. The diffuse regions (within the
+input detected regions) are given a negative label (-1) to help you
+separate them from the undetected regions (with a value of zero).
 
-Each clump is labeled respective to its host object. Therefore, if an
+Each clump is labeled with respect to its host object. Therefore, if an
 object has three clumps for example, the clumps within it have labels 1, 2
-or 3. As a result, if an initial detected region has multiple objects, each
-with a single clump, all the clumps will have a label of 1. The total
+and 3. As a result, if an initial detected region has multiple objects,
+each with a single clump, all the clumps will have a label of 1. The total
 number of clumps in the dataset is stored in the @code{NCLUMPS} keyword of
-the @code{CLUMPS} extension and printed in the verbose output of Segment.
-
-If the @option{--grownclumps} option is called (or a value of @code{1} is
-given to it in any of the configuration files) the grown clumps will be
-stored in the @code{CLUMPS} extension instead of the original clump
-regions. Note with @option{--grownclumps}, if there is only one clump, or
-no clumps, over a detected region, the whole detected region is given a
-label of 1.
+the @code{CLUMPS} extension and printed in the verbose output of Segment
+(when @option{--quiet} is not called).
 
 The @code{OBJECTS} extension of the output will give a positive
-counter/label to every positive pixel in the input. As described in
-Akhlaghi and Ichikawa [2015], the clumps are grown and based on the
-signal-to-noise ratio of their connections, they may be considered as part
-of a single object.
+counter/label to every detected pixel in the input. As described in
+Akhlaghi and Ichikawa [2015], the true clumps are grown until a certain
+threshold. If the grown clumps touch other clumps and the connection is
+strong enough, they are considered part of the same @emph{object}. Once
+objects (grown clumps) are identified, they are grown to cover the whole
+detected area.
+
+@cindex DS9
+@cindex SAO DS9
+By default, besides the @code{CLUMPS} and @code{OBJECTS} extensions,
+Segment's output will also contain the (technically redundant) input
+dataset and the sky standard deviation dataset (if it wasn't a constant
+number). This can help in visually inspecting the result when viewing the
+images as a ``Multi-extension data cube'' in SAO DS9 for example (see
+@ref{Viewing multiextension FITS images}). You can simply flip through the
+exetensions and see the same region of the image and its corresponding
+clumps/object labels. It also makes it easy to feed the output (as one
+file) into MakeCatalog when you intend to make a catalog afterwards (see
+@ref{MakeCatalog}. To remove these redundant extensions from the output
+(for example when designing a pipeline), you can use
+@option{--rawoutput}.
 
 The @code{OBJECTS} and @code{CLUMPS} extensions can be used as input into
 @ref{MakeCatalog} to generate a catalog for higher-level analysis. If you
 want to treat each clump separately, you can give a very large value (or
 even a NaN, which will always fail) to the @option{--gthresh} option (for
 example @code{--gthresh=1e10} or @code{--gthresh=nan}), see
-@ref{Segmentation options}.
+@ref{Segmentation options}. The options to configure the output of Segment
+are listed below:
 
-@cindex DS9
-@cindex SAO DS9
-By default, besides the @code{CLUMPS} and @code{OBJECTS} extensions, the
-output will be supplimented with the input dataset and the sky standard
-deviation dataset. This can help in visually inspecting the result when
-viewing the images as a ``Multi-extension data cube'' in SAO DS9 for
-example (see @ref{Viewing multiextension FITS images}). You can simply flip
-through the exetensions and see the same region of the image and its
-corresponding clumps/object labels. It also makes it easy to feed the
-output (as one file) into MakeCatalog when you intend to make a catalog
-afterwards (see @ref{MakeCatalog}.
+@table @option
+@item --continueaftercheck
+Don't abort Segment after producing the check image(s). The usage of this
+option is identical to NoiseChisel's @option{--continueaftercheck} option
+(@ref{NoiseChisel input}). Please see the descriptions there for more.
 
-Therefore, these two default extra extensions of the output are redundant
-(you already had them before calling Segment) and just help in convenience
-when your dataset is small. However, as you start to expand your project to
-larger datasets or more images, the extra volume taken by these extra
-extensions can cause a large burden in your archives and processing. When
-this happens, you can use the @option{--rawoutput} option to avoid such
-excessive waste of precious space (see @ref{Segment inputs and general
-settings}). With this option, the output will only contain the
-@code{CLUMPS} and @code{OBJECTS} datasets. You can then use MakeCatalog's
-@option{--objectsfile} and @option{--clumpsfile} to let it know where to
-find these extensions.
+@item --grownclumps
+In the output @code{CLUMPS} extension, store the grown clumps. If a
+detected region contains no clumps or only one clump, then it will be fully
+given a label of @code{1} (no negative valued pixels).
+
+@item --rawoutput
+Only write the @code{CLUMPS} and @code{OBJECTS} datasets in the output
+file. Without this option (by default), the first and last extensions of
+the output will the Sky-subtracted input dataset and the Sky standard
+deviation dataset (if it wasn't a number). When the datasets are small,
+these redundant extensions can make it convenient to inspect the results
+visually or feed the output to @ref{MakeCatalog} for
+measurements. Ultimately both the input and Sky standard deviation datasets
+are redundant (you had them before running Segment). When the inputs are
+large/numerous, these extra dataset can be a burden.
+@end table
 
 @cartouche
 @noindent
@@ -15062,14 +15276,8 @@ $ gzip --best segment_output.fits
 @noindent
 The resulting @file{.fits.gz} file can then be fed into any of Gnuastro's
 programs directly, without having to decompress it separately (it will just
-take them a little longer, because they have to decompress it before use).
-
-Alternatively, you can also tell Segment to directly build a
-@file{.fits.gz} output (for example with
-@option{--output=seg.fits.gz}). But CFITSIO (which reads and writes FITS
-files for Gnuastro) puts more emphasis on compression/decompression
-speed. So it doesn't use the most efficient compression settings (which can
-take slightly longer).
+take them a little longer, because they have to decompress it internally
+before use).
 @end cartouche
 
 
@@ -15766,15 +15974,15 @@ $ astmkcatalog --ra --dec --magnitude --magnitudeerr seg-out.fits
 $ asmkcatalog -rdmG seg-out.fits
 
 ## Write the catalog to a text table:
-$ astmkcatalog -mpQ input_labeled.fits --output=cat.txt
+$ astmkcatalog -mpQ seg-out.fits --output=cat.txt
 
-## Read the columns to create from `columns.conf':
-$ astmkcatalog --config=columns.conf input_labeled.fits
+## Output columns specified in `columns.conf':
+$ astmkcatalog --config=columns.conf seg-out.fits
 
 ## Use object and clump labels from a K-band image, but pixel values
 ## from an i-band image.
-$ astmkcatalog K_labeled.fits --hdu=1 --clumpscat         \
-               --clumpsfile=K_labeled.fits --clumpshdu=2  \
+$ astmkcatalog K_segmented.fits --hdu=DETECTIONS --clumpscat     \
+               --clumpsfile=K_segmented.fits --clumpshdu=CLUMPS  \
                --valuesfile=i_band.fits
 @end example
 
@@ -15888,6 +16096,21 @@ options and general setting options are described below.
 
 @table @option
 
+@item -l STR
+@itemx --clumpsfile=STR
+The file containing the labeled clumps dataset when @option{--clumpscat} is
+called (see @ref{MakeCatalog output file}). When @option{--clumpscat} is
+called, but this option isn't, MakeCatalog will look into the main input
+file (given as an argument) for the required extension/HDU (value to
+@option{--clumpshdu}).
+
+@item --clumpshdu=STR
+The HDU/extension of the clump labels dataset. Only pixels with values
+above zero will be considered. The clump lables dataset has to be an
+integer data type (see @ref{Numeric data types}) and only pixels with a
+value larger than zero will be used. See @ref{Segment output} for a
+description of the expected format.
+
 @item -v STR
 @itemx --valuesfile=STR
 The file name of the (sky-subtracted) values dataset. When any of the
@@ -15904,91 +16127,57 @@ The name or number (counting from zero) of the extension containing the
 ``values'' dataset, see the descriptions above and those in
 @option{--valuesfile} for more.
 
-@item -l STR
-@itemx --clumpsfile=STR
-The file containing the labeled clumps dataset when @option{--clumpscat} is
-called. For more, see the description of @option{--clumpscat}. When
-@option{--clumpscat} is called, but this option isn't, MakeCatalog will
-look into the main input file (given as an argument) for the required
-(@option{--clumpshdu}).
+@item -s STR/FLT
+@itemx --insky=STR/FLT
+Sky value as a single number, or the file name containing a dataset
+(different values per pixel or tile). The Sky dataset is only necessary
+when @option{--subtractsky} is called or when a column directly related to
+the Sky value is requested (currently @option{--sky}).
 
-@item --clumpshdu=STR
-The HDU/extension of the clump labels dataset. Only pixels with values
-above zero will be considered. The clump lables dataset has to be an
-integer data type (see @ref{Numeric data types}) and only pixels with a
-value larger than zero will be used. See @ref{Segment output} for a
-description of the expected format.
+When the Sky dataset is necessary and this option is not called,
+MakeCatalog will assume it is a dataset first look into the
+@option{--valuesfile} (if it is given) and then the main input file (given
+as an argument). By default the values dataset is assumed to be already Sky
+subtracted, so this dataset is not necessary for many of the columns.
 
-@item -s STR
-@itemx --skyfile=STR
-File name of dataset keeping the Sky value for each pixel. The Sky dataset
-is only necessary when @option{--subtractsky} is called or when a column
-directly related to the Sky value is requested (currently
-@option{--sky}). When the Sky dataset is necessary and this option is not
-called, MakeCatalog will first look into the @option{--valuesfile} (if it
-is given) and then the main input file (given as an argument). By default
-the values dataset is assumed to be already Sky subtracted, so this dataset
-is not necessary for many of the columns.
-
-This dataset may be a tessellation values dataset with one element per tile
-(see @option{--oneelempertile} of @ref{Processing options}).
+This dataset may be tessellation, with one element per tile (see
+@option{--oneelempertile} of @ref{Processing options}).
 
 @item --skyhdu=STR
 HDU/extension of the Sky dataset, see @option{--skyfile}.
 
-@item -t STR
-@itemx --stdfile=STR
-File name of image keeping the @emph{Sky value} standard deviation for each
-pixel. With the @option{--variance} option you can tell MakeCatalog to
-interpret this image as a variance image, not standard deviation.
+@item --subtractsky
+Subtract the sky value or dataset from the values file prior to any
+processing.
 
-@strong{Important note:} This must only be the Sky standard deviation or
-variance, without the signal's contribution. In other words, for each pixel
-that harbors signal, the final standard deviation is more than those
-without signal. MakeCatalog will find the amount of signal within each
-pixel using the Sky image and account for the extra error that it
-needs. Therefore if the input standard deviation (or variance) image also
-contains the contribution of signal to the error, then the final error
-measurements will be over-estimated.
+@item -t STR/FLT
+@itemx --instd=STR/FLT
+Sky standard deviation value as a single number, or the file name
+containing a dataset (different values per pixel or tile). With the
+@option{--variance} option you can tell MakeCatalog to interpret this
+value/dataset as a variance image, not standard deviation.
+
+@strong{Important note:} This must only be the SKY standard deviation or
+variance (not including the signal's contribution to the error). In other
+words, the final standard deviation of a pixel depends on how much signal
+there is in it. MakeCatalog will find the amount of signal within each
+pixel (while subtracting the Sky, if @option{--subtractsky} is called) and
+account for the extra error due to it's value (signal). Therefore if the
+input standard deviation (or variance) image also contains the contribution
+of signal to the error, then the final error measurements will be
+over-estimated.
 
 @item --stdhdu=STR
 The HDU of the Sky value standard deviation image.
-
-@item -z FLT
-@itemx --zeropoint=FLT
-The zero point magnitude for the input image, see @ref{Flux Brightness and
-magnitude}.
 
 @item --variance
 The dataset given to @option{--stdfile} (and @option{--stdhdu} has the Sky
 variance of every pixel, not the Sky standard deviation.
 
-@item -C
-@itemx --clumpscat
-Produce a clumps catalog also. When this option is given, MakeCatalog will
-also look for secondary (sub-structure) labeled dataset and produce a
-catalog from that. If @option{--clumpsfile} isn't given, it will look into
-the main input argument/file for the HDU/extension containing the
-dataset. The extension can be specified with @option{--clumpshdu}. For more
-on the definition of ``clumps'', see @ref{Segment}.
-
-@item --sfmagnsigma=FLT
-The median standard deviation (from a @command{MEDSTD} keyword in the Sky
-standard deviation image) will be multiplied by the value to this option
-and its magnitude will be reported in the comments of the output
-catalog. This value is a per-pixel value, not per object/clump and is not
-found over an area or aperture, like the common @mymath{5\sigma} values
-that are commonly reported as a measure of depth or the upper-limit
-measurements (see @ref{Quantifying measurement limits}).
-
-@item --sfmagarea=FLT
-Area (in arcseconds squared) to convert the per-pixel estimation of
-@option{--sfmagnsigma} in the comments section of the output tables. Note
-that this is just a unit conversion using the World Coordinate System (WCS)
-information in the input's header. It does not actually do any measurements
-on this area. For random measurements on any area, please use the
-upper-limit columns of MakeCatalog (see the discussion on upper-limit
-measurements in @ref{Quantifying measurement limits}).
+@item -z FLT
+@itemx --zeropoint=FLT
+The zero point magnitude for the input image, see @ref{Flux Brightness and
+magnitude}.
 
 @end table
 
@@ -16473,28 +16662,86 @@ with the first FITS axis in degrees.
 @node MakeCatalog output file,  , MakeCatalog output columns, Invoking astmkcatalog
 @subsubsection MakeCatalog output file
 
-When a clump catalog is also desired, two catalogs will be made: one for
-the objects (suffixed with @file{_o.txt} or @file{_o.fits}) and another for
-the clumps (suffixed with @file{_c.txt} or @file{_c.fits}). Therefore if
-any value is given to the @option{--output} option, MakeCatalogs will
-replace these two suffixes with any existing suffix in the given value. If
-no output value is given, MakeCatalog will use the input name, see
-@ref{Automatic output}. The format of the output table is specified with
-the @option{--tableformat} option, see @ref{Input output options}.
+When complete, MakeCatalog will store its measurements as a table. If an
+output filename is given (see @option{--output} in @ref{Input output
+options}), the format of the table will be deduced from the name. When it
+isn't given, the input name will be appended with a @file{_cat} suffix (see
+@ref{Automatic output}) and its format will be determined from the
+@option{--tableformat} option, which is also discussed in @ref{Input output
+options}. @option{--tableformat} is also necessary when the requested
+output name is a FITS table (recall that FITS can accept ASCII and binary
+tables, see @ref{Table}).
 
-When MakeCatalog is run on multiple threads, the clumps catalog rows will
-not be sorted by object since each object is processed independently by one
-thread and threaded applications are asynchronous. The clumps in each
-object will be sorted based on their labels, but you will find lower-index
-objects come after higher-index ones (especially if they have more clumps
-and thus take more time). If the order is very important for you, you can
-run the following command to sort the rows by object ID (and clump ID with
-each object):
+By default only a single catalog/table will be created for ``objects'',
+however, if @option{--clumpscat} is called, a secondary catalog/table will
+also be created. For more on ``objects'' and ``clumps'', see
+@ref{Segment}. In short, if you only have one set of labeled images, you
+don't have to worry about clumps (they are deactivated by default). Here is
+a full description of MakeCatalog's output options:
+
+@table @option
+@item -C
+@itemx --clumpscat
+Do measurements on clumps and produce a second catalog (only devoted to
+clumps). When this option is given, MakeCatalog will also look for a
+secondary labeled dataset (identifying substructure) and produce a catalog
+from that. For more on the definition on ``clumps'', see @ref{Segment}.
+
+When the output is a FITS file, the objects and clumps catalogs/tables will
+be stored as multiple extensions of one FITS file. You can use @ref{Table}
+to inspect the column meta-data and contents in this case. However, in
+plain text format (see @ref{Gnuastro text table format}), it is only
+possible to keep one table per file. Therefore, if the output is a text
+file, two ouput files will be created, ending in @file{_o.txt} (for
+objects) and @file{_c.txt} (for clumps).
+
+@item --noclumpsort
+Don't sort the clumps catalog based on object ID (only relevant with
+@option{--clumpscat}). This option will benefit the
+performance@footnote{The performance boost due to @option{--noclumpsort}
+can only be felt when there are a huge number of objects. Therefore, by
+default the output is sorted to avoid miss-understandings or bugs in the
+user's scripts when the user forgets to sort the outputs.} of MakeCatalog
+when it is run on multiple threads @emph{and} the position of the rows in
+the clumps catalog is irrelevant (for example you just want the
+number-counts).
+
+MakeCatalog does all its measurements on each @emph{object} independently
+and in parallel. As a result, while it is writing the measurements on each
+object's clumps, it doesn't know how many clumps there were in previous
+objects. Each thread will just fetch the first available row and write the
+information of clumps (in order) starting from that row. After all the
+measurements are done, by default (when this option isn't called),
+MakeCatalog will reorder/permute the clumps catalog to have both the object
+and clump ID in an ascending order.
+
+If you would like to order the catalog later (when its a plain text file),
+you can run the following command to sort the rows by object ID (and clump
+ID within each object), assuming they are respectively the first and second
+columns:
 
 @example
 $ awk '!/^#/' out_c.txt | sort -g -k1,1 -k2,2
 @end example
 
+@item --sfmagnsigma=FLT
+The median standard deviation (from a @command{MEDSTD} keyword in the Sky
+standard deviation image) will be multiplied by the value to this option
+and its magnitude will be reported in the comments of the output
+catalog. This value is a per-pixel value, not per object/clump and is not
+found over an area or aperture, like the common @mymath{5\sigma} values
+that are commonly reported as a measure of depth or the upper-limit
+measurements (see @ref{Quantifying measurement limits}).
+
+@item --sfmagarea=FLT
+Area (in arcseconds squared) to convert the per-pixel estimation of
+@option{--sfmagnsigma} in the comments section of the output tables. Note
+that this is just a unit conversion using the World Coordinate System (WCS)
+information in the input's header. It does not actually do any measurements
+on this area. For random measurements on any area, please use the
+upper-limit columns of MakeCatalog (see the discussion on upper-limit
+measurements in @ref{Quantifying measurement limits}).
+@end table
 
 
 

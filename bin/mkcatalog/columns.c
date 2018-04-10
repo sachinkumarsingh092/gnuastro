@@ -1170,8 +1170,15 @@ columns_define_alloc(struct mkcatalogparams *p)
 
           /* If this is a clumps-only column and no clumps image was
              given. Add the column to the list of similar columns to inform
-             the user. */
-          else if(otype==GAL_TYPE_INVALID)
+             the user.
+
+             We'll just ignore the clump-specific ID-related columns,
+             because the `--ids' (generic for both objects and clumps) is a
+             simple generic solution for identifiers. Also, ultimately,
+             they aren't measurements. */
+          else if( otype==GAL_TYPE_INVALID
+                   && colcode->v!=UI_KEY_HOSTOBJID
+                   && colcode->v!=UI_KEY_IDINHOSTOBJ )
             gal_list_str_add(&noclumpimg, name, 1);
         }
     }
@@ -1449,6 +1456,11 @@ columns_fill(struct mkcatalog_passparams *pp)
       key=column->status;
       colarr=column->array;
 
+      /* Put the number of clumps in the internal array which we will need
+         later to order the clump table by object ID. */
+      if(p->numclumps_c)
+        p->numclumps_c[oind]=pp->clumpsinobj;
+
       /* Go over all the columns. */
       switch(key)
         {
@@ -1677,6 +1689,11 @@ columns_fill(struct mkcatalog_passparams *pp)
         colarr = column->array;
         key    = column->status;
         ci     = &pp->ci[ coind * CCOL_NUMCOLS ];
+
+        /* Put the object ID of this clump into the temporary array that we
+           will later need to sort the final clumps catalog. */
+        if(p->hostobjid_c)
+          p->hostobjid_c[cind]=pp->object;
 
         /* Parse columns */
         switch(key)

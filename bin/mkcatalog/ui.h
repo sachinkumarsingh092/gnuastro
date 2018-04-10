@@ -56,8 +56,8 @@ enum option_keys_enum
   UI_KEY_CLUMPSCAT       = 'C',         /* General settings. */
   UI_KEY_VALUESFILE      = 'v',
   UI_KEY_CLUMPSFILE      = 'l',
-  UI_KEY_SKYFILE         = 's',
-  UI_KEY_STDFILE         = 't',
+  UI_KEY_INSKY           = 's',
+  UI_KEY_INSTD           = 't',
   UI_KEY_ENVSEED         = 'e',
 
   UI_KEY_IDS             = 'i',         /* Catalog columns. */
@@ -97,6 +97,7 @@ enum option_keys_enum
   UI_KEY_UPSIGMACLIP,
   UI_KEY_UPNSIGMA,
   UI_KEY_CHECKUPPERLIMIT,
+  UI_KEY_NOCLUMPSORT,
 
   UI_KEY_OBJID,                         /* Catalog columns. */
   UI_KEY_IDINHOSTOBJ,

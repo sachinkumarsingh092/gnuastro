@@ -149,6 +149,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "label",
+      UI_KEY_LABEL,
+      0,
+      0,
+      "Label/count detected pixels that are connected.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->label,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

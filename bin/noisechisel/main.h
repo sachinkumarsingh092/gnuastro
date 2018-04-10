@@ -53,6 +53,7 @@ struct noisechiselparams
 
   uint8_t  continueaftercheck;  /* Don't abort after the check steps.     */
   uint8_t           rawoutput;  /* Only detection & 1 elem/tile output.   */
+  uint8_t               label;  /* Label detections that are connected.   */
 
   float            mirrordist;  /* Maximum distance to check mode sym.    */
   float           modmedqdiff;  /* Difference between mode and median.    */

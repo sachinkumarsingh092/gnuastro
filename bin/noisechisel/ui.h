@@ -50,7 +50,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b f g i j l n u v x y z
+   a b f g i j n u v x y z
    A E G H J O W X Y
 */
 enum option_keys_enum
@@ -71,6 +71,7 @@ enum option_keys_enum
   UI_KEY_SNQUANT            = 'c',
   UI_KEY_DETGROWQUANT       = 'd',
   UI_KEY_CONTINUEAFTERCHECK = 'C',
+  UI_KEY_LABEL              = 'l',
 
 
   /* Only with long version (start with a value 1000, the rest will be set

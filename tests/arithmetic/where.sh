@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=arithmetic
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+img=convolve_spatial_noised_detected.fits
 
 
 

@@ -106,8 +106,7 @@ segment_initialize(struct segmentparams *p)
   uint8_t *b;
   float *f, minv;
   gal_data_t *min;
-  gal_data_t *forcc;
-  int32_t *o, *c, *cf, maxlab=0;
+  int32_t *o, *c, *cf;
 
   /* Allocate the clump labels image and the binary image. */
   p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
@@ -139,45 +138,25 @@ segment_initialize(struct segmentparams *p)
                   "Each non-zero pixel in this image must be positive (a "
                   "counter, counting from 1).", p->useddetectionname,
                   p->dhdu);
-
-          /* Set the largest value. */
-          if(*o>maxlab) maxlab=*o;
         }
       ++o;
       ++b;
     }
   while(++c<cf);
 
-  /* prepare the labeled image. */
-  switch(maxlab)
-    {
-    /* No positive values. */
-    case 0:
-      error(EXIT_FAILURE, 0, "%s (hdu: %s): contains no detections "
-            "(positive valued pixels)", p->useddetectionname, p->dhdu);
 
-    /* This is a binary image, probably it was the result of a
-       threshold. In this case, we need to separate the connected
-       components. */
-    case 1:
-      forcc=gal_data_copy_to_new_type(p->olabel, GAL_TYPE_UINT8);
-      p->numdetections=gal_binary_connected_components(forcc, &p->olabel,
-                                                       p->olabel->ndim);
-      break;
-
-    /* There is more than one label in the image, so just set the maximum
-       number to the number of detections. */
-    default:
-      p->numdetections=maxlab;
-    }
-
-  /* If the minimum standard deviation is less than 1, then the units of
+  /* If the (minimum) standard deviation is less than 1, then the units of
      the input are in units of counts/time. As described in the NoiseChisel
      paper, we need to correct the S/N equation later. */
-  min=gal_statistics_minimum(p->std);
-  minv=*(float *)(min->array);
+  if(p->std)
+    {
+      min=gal_statistics_minimum(p->std);
+      minv=*(float *)(min->array);
+      gal_data_free(min);
+    }
+  else minv=p->stdval;
+  if(p->variance) minv=sqrt(minv);
   p->cpscorr = minv>1 ? 1.0 : minv;
-  gal_data_free(min);
 }
 
 
@@ -1018,6 +997,7 @@ segment_detections(struct segmentparams *p)
 void
 segment_output(struct segmentparams *p)
 {
+  float *f, *ff;
   gal_fits_list_key_t *keys=NULL;
 
   /* The Sky-subtracted input (if requested). */
@@ -1048,8 +1028,8 @@ segment_output(struct segmentparams *p)
   keys=NULL;
 
 
-  /* The Standard deviation image. */
-  if(!p->rawoutput)
+  /* The Standard deviation image (if one was actually given). */
+  if( !p->rawoutput && p->std)
     {
       /* See if any keywords should be written (possibly inherited from the
          detection program). */
@@ -1069,6 +1049,12 @@ segment_output(struct segmentparams *p)
                               "Median raw tile standard deviation", 0,
                               p->input->unit);
 
+      /* If the input was actually a variance dataset, we'll need to take
+         its square root before writing it. We want this output to be a
+         standard deviation dataset. */
+      if(p->variance)
+        { ff=(f=p->std->array)+p->std->size; do *f=sqrt(*f); while(++f<ff); }
+
       /* Write the STD dataset into the output file. */
       p->std->name="SKY_STD";
       if(p->std->size == p->input->size)
@@ -1078,6 +1064,10 @@ segment_output(struct segmentparams *p)
                                    PROGRAM_NAME);
       p->std->name=NULL;
     }
+
+  /* Let the user know that the output is written. */
+  if(!p->cp.quiet)
+    printf("  - Output written to `%s'.\n", p->cp.output);
 }
 
 
@@ -1131,7 +1121,8 @@ segment(struct segmentparams *p)
       p->olabel->name=NULL;
     }
   if(!p->cp.quiet)
-    printf("  - Input number of detections: %zu\n", p->numdetections);
+    printf("  - Input number of connected components: %zu\n",
+           p->numdetections);
 
 
   /* Find the clump S/N threshold. */

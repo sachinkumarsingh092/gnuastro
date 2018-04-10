@@ -24,7 +24,8 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=mkcatalog
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+labels=connected-components.fits
+base=convolve_spatial_noised_detected.fits
 
 
 
@@ -40,8 +41,9 @@ img=convolve_spatial_noised_labeled.fits
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
-if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
+if [ ! -f $execname ]; then echo "$execname not created.";  exit 77; fi
+if [ ! -f $labels   ]; then echo "$labels does not exist."; exit 77; fi
+if [ ! -f $base     ]; then echo "$base does not exist.";   exit 77; fi
 
 
 
@@ -49,5 +51,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --x --y --ra --dec --magnitude --upperlimitmag --sn  \
-          --tableformat=txt --hdu=DETECTIONS
+$execname $labels -h1 --valuesfile=$base --tableformat=txt            \
+          --output=detections.txt --x --y --ra --dec --magnitude --sn

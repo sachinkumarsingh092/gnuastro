@@ -118,9 +118,9 @@ parse_objects(struct mkcatalog_passparams *pp)
   int32_t *O, *OO, *C=NULL, *objects=p->objects->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
-  /* If a any tile processing is necessary. */
-  size_t tid = ( ( (p->sky     && pp->st_sky == NULL )
-                   || ( p->std && pp->st_std == NULL ) )
+  /* If tile processing isn't necessary, set `tid' to a blank value. */
+  size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
+                   || ( p->std && p->std->size>1 && pp->st_std == NULL ) )
                  ? 0 : GAL_BLANK_SIZE_T );
 
   /* Coordinate shift. */
@@ -258,13 +258,17 @@ parse_objects(struct mkcatalog_passparams *pp)
               /* Sky value based measurements. */
               if(p->sky)
                 if(oif[ OCOL_SUMSKY ])
-                  oi[ OCOL_SUMSKY  ] += pp->st_sky ? *SK : sky[tid];
+                  oi[ OCOL_SUMSKY  ] += ( pp->st_sky
+                                          ? *SK             /* Full array   */
+                                          : ( p->sky->size>1
+                                              ? sky[tid]    /* Tile         */
+                                              : sky[0] ) ); /* Single value */
 
 
               /* Sky standard deviation based measurements.*/
               if(p->std)
                 {
-                  sval = pp->st_std ? *ST : std[tid];
+                  sval = pp->st_std ? *ST : (p->std->size>1?std[tid]:std[0]);
                   st = p->variance ? sqrt(sval) : sval;
                   if(oif[ OCOL_SUMSTD ]) oi[ OCOL_SUMSTD  ] += st;
                   /* For each pixel, we have a sky contribution to the
@@ -321,9 +325,9 @@ parse_clumps(struct mkcatalog_passparams *pp)
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
-  /* If a any tile processing is necessary. */
-  size_t tid = ( ( (p->sky     && pp->st_sky == NULL )
-                   || ( p->std && pp->st_std == NULL ) )
+  /* If tile processing isn't necessary, set `tid' to a blank value. */
+  size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
+                   || ( p->std && p->std->size>1 && pp->st_std == NULL ) )
                  ? 0 : GAL_BLANK_SIZE_T );
 
   /* Coordinate shift. */
@@ -432,13 +436,19 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   /* Sky based measurements. */
                   if(p->sky)
                     if(cif[ CCOL_SUMSKY ])
-                      ci[ CCOL_SUMSKY  ] += pp->st_sky ? *SK : sky[tid];
+                      ci[ CCOL_SUMSKY  ] += ( pp->st_sky
+                                              ? *SK             /* Full */
+                                              : ( p->sky->size>1
+                                                  ? sky[tid]    /* Tile */
+                                                  : sky[0] ) ); /* 1 value */
 
                   /* Sky Standard deviation based measurements, see
                      `parse_objects' for comments. */
                   if(p->std)
                     {
-                      sval = pp->st_std ? *ST : std[tid];
+                      sval = ( pp->st_std
+                               ? *ST
+                               : (p->std->size>1 ? std[tid] : std[0]) );
                       st = p->variance ? sqrt(sval) : sval;
                       if(cif[ CCOL_SUMSTD  ]) ci[ CCOL_SUMSTD  ] += st;
                       if(cif[ CCOL_SUM_VAR ])
@@ -500,7 +510,11 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
                                if(cif[ CCOL_RIV_SUM_VAR  ])
                                  {
-                                   sval = pp->st_std ? *ST : std[tid];
+                                   sval = ( pp->st_std
+                                            ? *ST
+                                            : ( p->std->size>1
+                                                ? std[tid]
+                                                : std[0] )     );
                                    cir[ CCOL_RIV_SUM_VAR ] += fabs(*V)
                                      + (p->variance ? sval : sval*sval);
                                  }

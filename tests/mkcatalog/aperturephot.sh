@@ -25,7 +25,7 @@
 prog=mkcatalog
 objimg=clearcanvas.fits
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled.fits
+img=convolve_spatial_noised_detected.fits
 
 
 

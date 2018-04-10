@@ -1,4 +1,4 @@
-# Make an S/N image to test Arithmetic.
+# Find the connected components in NoiseChisel's output.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -24,8 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=arithmetic
 execname=../bin/$prog/ast$prog
-imgin=convolve_spatial_noised.fits
-imgnc=convolve_spatial_noised_detected.fits
+img=convolve_spatial_noised_detected.fits
 
 
 
@@ -42,8 +41,7 @@ imgnc=convolve_spatial_noised_detected.fits
 #   - The input data was not made (for example the test that created the
 #     data file failed).
 if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
-if [ ! -f $imgin    ]; then echo "$imgin does not exist."; exit 77; fi
-if [ ! -f $imgnc    ]; then echo "$imgnc does not exist."; exit 77; fi
+if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 
 
@@ -51,5 +49,5 @@ if [ ! -f $imgnc    ]; then echo "$imgnc does not exist."; exit 77; fi
 
 # Actual test script
 # ==================
-$execname $imgin $imgnc - $imgnc / --hdu=1 --hdu=SKY --hdu=SKY_STD  \
-          --output=snimage.fits
+$execname $img 2 connected-components -hDETECTIONS   \
+          --output=connected-components.fits

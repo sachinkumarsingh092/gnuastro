@@ -357,6 +357,10 @@ ui_check_upperlimit(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct mkcatalogparams *p)
 {
+  float tmp;
+  size_t one=1;
+  char *tailptr;
+
   /* If an upper-limit check table is requested with a specific clump, but
      no clump catalog has been requested, then abort and inform the
      user. */
@@ -368,6 +372,38 @@ ui_read_check_only_options(struct mkcatalogparams *p)
           "command calling MakeCatalog.\n\n"
           "If you want the upperlimit check table for an object, only give "
           "one value (the object's label) to `--checkupperlimit'.");
+
+  /* See if `--skyin' is a filename or a value. When the string is ONLY a
+     number (and nothing else), `tailptr' will point to the end of the
+     string (`\0'). */
+  if(p->skyfile)
+    {
+      tmp=strtod(p->skyfile, &tailptr);
+      if(*tailptr=='\0')
+        {
+          /* Allocate the data structure. */
+          p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+                                NULL, NULL, NULL);
+
+          /* Write the value inside it. */
+          *((float *)(p->sky->array))=tmp;
+        }
+    }
+
+  /* Similar to the case for Sky above. */
+  if(p->stdfile)
+    {
+      tmp=strtod(p->stdfile, &tailptr);
+      if(*tailptr=='\0')
+        {
+          /* Allocate the data structure. */
+          p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+                                NULL, NULL, NULL);
+
+          /* Write the value inside it. */
+          *((float *)(p->std->array))=tmp;
+        }
+    }
 }
 
 
@@ -512,8 +548,8 @@ ui_read_labels(struct mkcatalogparams *p)
   ui_check_type_int(p->objectsfile, p->cp.hdu, p->objects->type);
 
 
-  /* Conver it to `int32' type (if it already isn't). */
-  gal_data_copy_to_new_type_free(p->objects, GAL_TYPE_INT32);
+  /* Convert it to `int32' type (if it already isn't). */
+  p->objects=gal_data_copy_to_new_type_free(p->objects, GAL_TYPE_INT32);
 
 
   /* Currently MakeCatalog is only implemented for 2D images. */
@@ -521,7 +557,6 @@ ui_read_labels(struct mkcatalogparams *p)
     error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions, MakeCatalog "
           "currently only supports 2D inputs", p->objectsfile, p->cp.hdu,
           p->objects->ndim);
-
 
   /* See if the total number of objects is given in the header keywords. */
   keys[0].name="NUMLABS";
@@ -534,7 +569,6 @@ ui_read_labels(struct mkcatalogparams *p)
       p->numobjects=*((int32_t *)(tmp->array)); /*numobjects is in int32_t.*/
       gal_data_free(tmp);
     }
-
 
   /* If there were no objects in the input, then inform the user with an
      error (it is pointless to build a catalog). */
@@ -797,23 +831,24 @@ ui_preparation_check_size_read_tiles(struct mkcatalogparams *p,
 /* Subtract `sky' from the input dataset depending on its size (it may be
    the whole array or a tile-values array).. */
 static void
-ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
-                struct gal_tile_two_layer_params *tl)
+ui_subtract_sky(struct mkcatalogparams *p)
 {
   size_t tid;
   gal_data_t *tile;
-  float *f, *s, *sf, *skyarr=sky->array;
+  float *s, *f, *ff, *skyarr=p->sky->array;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
-  /* It is the same size as the input. */
-  if( gal_data_dsize_is_different(in, sky)==0 )
+  /* It is the same size as the input or a single value. */
+  if( gal_data_dsize_is_different(p->values, p->sky)==0 || p->sky->size==1)
     {
-      f=in->array;
-      sf=(s=sky->array)+sky->size;
-      do *f++-=*s; while(++s<sf);
+      s=p->sky->array;
+      ff = (f=p->values->array) + p->values->size;
+      if(p->sky->size==1) { if(*s!=0.0) do *f-=*s;   while(++f<ff); }
+      else                              do *f-=*s++; while(++f<ff);
     }
 
   /* It is the same size as the number of tiles. */
-  else if( tl->tottiles==sky->size )
+  else if( tl->tottiles==p->sky->size )
     {
       /* Go over all the tiles. */
       for(tid=0; tid<tl->tottiles; ++tid)
@@ -822,8 +857,7 @@ ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
           tile=&tl->tiles[tid];
 
           /* Subtract the Sky value from the input image. */
-          GAL_TILE_PO_OISET(int32_t, float, tile, in, 1, 1,
-                            {*o-=skyarr[tid];});
+          GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=skyarr[tid];});
         }
     }
 
@@ -898,53 +932,46 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
   /* Read the Sky image and check its size. */
   if(p->subtractsky || need_sky)
     {
-      /* Make sure the HDU is also given. */
-      if(p->skyhdu==NULL)
-        error(EXIT_FAILURE, 0, "%s: no HDU/extension provided for the "
-              "SKY dataset. Atleast one column needs this dataset, or you "
-              "have asked to subtract the Sky from the values.\n\n"
-              "Please use the `--skyhdu' option to give a specific HDU "
-              "using its number (counting from zero) or name. If the "
-              "dataset is in another file, please use `--skyfile' to give "
-              "the filename", p->usedskyfile);
+      /* If it wasn't a number, read the dataset into memory. */
+      if(p->sky==NULL)
+        {
+          /* Make sure the HDU is also given. */
+          if(p->skyhdu==NULL)
+            error(EXIT_FAILURE, 0, "%s: no HDU/extension provided for the "
+                  "SKY dataset. Atleast one column needs this dataset, or "
+                  "you have asked to subtract the Sky from the values.\n\n"
+                  "Please use the `--skyhdu' option to give a specific HDU "
+                  "using its number (counting from zero) or name. If the "
+                  "dataset is in another file, please use `--skyin' to "
+                  "give the filename", p->usedskyfile);
 
-      /* Read the sky image. */
-      p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
-                                           GAL_TYPE_FLOAT32,
-                                           p->cp.minmapsize);
+          /* Read the Sky dataset. */
+          p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
+                                               GAL_TYPE_FLOAT32,
+                                               p->cp.minmapsize);
 
-      /* Check its size. */
-      ui_preparation_check_size_read_tiles(p, p->sky, p->usedskyfile,
-                                           p->skyhdu);
+          /* Check its size and prepare tile structure. */
+          ui_preparation_check_size_read_tiles(p, p->sky, p->usedskyfile,
+                                               p->skyhdu);
+        }
 
       /* Subtract the Sky value. */
-      if(p->subtractsky && need_sky==0)
-        {
-          /* Subtract the Sky value. */
-          ui_subtract_sky(p->values, p->sky, &p->cp.tl);
-
-          /* If we don't need the Sky value, then free it here. */
-          if(need_sky==0)
-            {
-              gal_data_free(p->sky);
-              p->sky=NULL;
-            }
-        }
+      if(p->subtractsky) ui_subtract_sky(p);
     }
 
 
-  /* Read the Sky standard deviation image and check its size. */
-  if(need_std)
+  /* Read the Sky standard deviation dataset (if it wasn't already given as
+     a number) and check its size. */
+  if(need_std && p->std==NULL)
     {
       /* Make sure the HDU is also given. */
       if(p->stdhdu==NULL)
         error(EXIT_FAILURE, 0, "%s: no HDU/extension provided for the "
-              "SKY STANDARD DEVIATION dataset. Atleast one column needs "
-              "this dataset. Please use the `--stdhdu' option to give "
-              "a specific HDU using its number (counting from zero) or "
-              "name. If the dataset is in another file, please use "
-              "`--stdfile' to give the filename. If its actually the Sky's "
-              "variance dataset, run MakeCatalog with `--variance'",
+              "SKY STANDARD DEVIATION dataset.\n\n"
+              "Atleast one column needs this dataset. Please use the "
+              "`--stdhdu' option to give a specific HDU using its number "
+              "(counting from zero) or name. If the dataset is in another "
+              "file, please use `--stdin' to give the filename",
               p->usedstdfile);
 
       /* Read the Sky standard deviation image into memory. */
@@ -952,7 +979,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                                            GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
 
-      /* Check its size. */
+      /* Check its size and prepare tile structure. */
       ui_preparation_check_size_read_tiles(p, p->std, p->usedstdfile,
                                            p->stdhdu);
     }
@@ -1029,7 +1056,8 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
   gal_data_t *tmp;
   gal_data_t *keys=NULL;
 
-  if(p->std)
+  /* When a Sky standard deviation dataset (not number) is given. */
+  if(p->std && p->std->size>1)
     {
       /* Read the keywords from the standard deviation image. */
       keys=gal_data_array_calloc(2);
@@ -1101,9 +1129,9 @@ ui_preparations_both_names(struct mkcatalogparams *p)
     }
   else
     {
-      /* Note that suffix is not used in the text table outputs, so it
+      /* Note that the suffix is not used in the text table outputs, so it
          doesn't matter if the output table is not FITS. */
-      suffix="_catalog.fits";
+      suffix="_cat.fits";
       basename = p->objectsfile;
     }
 
@@ -1328,27 +1356,35 @@ ui_preparations(struct mkcatalogparams *p)
     error(EXIT_FAILURE, 0, "no columns requested, please run again with "
           "`--help' for the full list of columns you can ask for");
 
+
   /* Set the actual filenames to use. */
   ui_set_filenames(p);
+
 
   /* Read the main input (the objects image). */
   ui_read_labels(p);
 
+
   /* Prepare the output columns. */
   columns_define_alloc(p);
 
+
   /* Read the inputs. */
   ui_preparations_read_inputs(p);
+
 
   /* Read the helper keywords from the inputs and if they aren't present
      then calculate the necessary parameters. */
   ui_preparations_read_keywords(p);
 
+
   /* Set the output filename(s). */
   ui_preparations_outnames(p);
 
+
   /* Make the tiles that cover each object. */
   ui_one_tile_per_object(p);
+
 
   /* Allocate the reference random number generator and seed values. It
      will be cloned once for every thread. If the user hasn't called
@@ -1358,6 +1394,24 @@ ui_preparations(struct mkcatalogparams *p)
 
   if( p->hasmag && isnan(p->zeropoint) )
     error(EXIT_FAILURE, 0, "no zeropoint specified");
+
+
+  /* Prepare the two internal arrays necessary to sort the clumps catalog
+     by object and clump IDs. We are allocating and filling these in
+     separately (and not using the actual output columns that have the same
+     values), because playing with the output columns can cause bad
+     bugs. If the user wants performance, they are encouraged to run
+     MakeCatalog with `--noclumpsort' and avoid the whole process all
+     together. */
+  if(p->clumps && !p->noclumpsort && p->cp.numthreads>1)
+    {
+      p->hostobjid_c=gal_data_malloc_array(GAL_TYPE_SIZE_T,
+                                           p->clumpcols->size, __func__,
+                                           "p->hostobjid_c");
+      p->numclumps_c=gal_data_malloc_array(GAL_TYPE_SIZE_T,
+                                           p->objectcols->size, __func__,
+                                           "p->numclumps_c");
+    }
 }
 
 
@@ -1385,6 +1439,7 @@ ui_preparations(struct mkcatalogparams *p)
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
 {
+  char *tmp;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -1448,10 +1503,25 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
       if(p->values)
         printf("  - Values:  %s (hdu: %s)\n", p->usedvaluesfile,
                p->valueshdu);
+
       if(p->subtractsky || p->sky)
-        printf("  - Sky:     %s (hdu: %s)\n", p->usedskyfile, p->skyhdu);
+        {
+          if(p->sky->size==1)
+            printf("  - Sky: %g\n", *((float *)(p->sky->array)) );
+          else
+            printf("  - Sky: %s (hdu: %s)\n", p->usedskyfile, p->skyhdu);
+        }
+
       if(p->std)
-        printf("  - Sky STD: %s (hdu: %s)\n", p->usedstdfile, p->stdhdu);
+        {
+          tmp = p->variance ? "VAR" : "STD";
+          if(p->std->size==1)
+            printf("  - Sky %s: %g\n", tmp, *((float *)(p->std->array)) );
+          else
+            printf("  - Sky %s: %s (hdu: %s)\n", tmp, p->usedstdfile,
+                   p->stdhdu);
+        }
+
       if(p->upmaskfile)
         printf("  - Upper limit magnitude mask: %s (hdu: %s)\n",
                p->upmaskfile, p->cp.hdu);
@@ -1526,6 +1596,8 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   free(p->valueshdu);
   free(p->clumpsfile);
   free(p->valuesfile);
+  free(p->hostobjid_c);
+  free(p->numclumps_c);
   gal_data_free(p->sky);
   gal_data_free(p->std);
   gal_data_free(p->values);

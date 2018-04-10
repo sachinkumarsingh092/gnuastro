@@ -762,18 +762,17 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
           "Thus don't loosen them too much. Recall that you can see all the "
           "option values to Gnuastro's programs by appending `-P' to the "
           "end of your command.\n\n"
-          " - Decrease `--interpnumngb' to be smaller than the number "
-          "mentioned above.\n"
-          " - Slightly decrease `--tilesize' to have more tiles.\n"
-          " - Slightly increase `--modmedqdiff' to accept more tiles.\n\n"
+          "  * Decrease `--interpnumngb' to be smaller than %zu.\n"
+          "  * Slightly decrease `--tilesize' to have more tiles.\n"
+          "  * Slightly increase `--modmedqdiff' to accept more tiles.\n\n"
           "Try appending your command with `--checkqthresh' to see the "
-          "successful tiles (and get a feeling of the cause/solution, note "
-          "that the output is a multi-extension FITS file). To better "
-          "understand this important step, please run the following "
-          "command (press `SPACE'/arrow-keys to navigate and `Q'-key to "
-          "return back to the command-line):\n\n"
+          "successful tiles (and get a feeling of the cause/solution. Note "
+          "that the output is a multi-extension FITS file).\n\n"
+          "To better understand this important step, please run the "
+          "following command (press `SPACE'/arrow-keys to navigate and "
+          "`Q' to return back to the command-line):\n\n"
           "    $ info gnuastro \"Quantifying signal in a tile\"\n",
-          nval, cp->interpnumngb);
+          nval, cp->interpnumngb, cp->interpnumngb);
 
 
   /* Interpolate and smooth the derived values. */
@@ -789,7 +788,11 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
   /* Write the binary image if check is requested. */
   if(p->qthreshname && !tl->oneelempertile)
-    gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_NAME);
+    {
+      p->binary->name="QTHRESH-APPLIED";
+      gal_fits_img_write(p->binary, p->qthreshname, NULL, PROGRAM_NAME);
+      p->binary->name=NULL;
+    }
 
 
   /* Set the expansion quantile if necessary. */

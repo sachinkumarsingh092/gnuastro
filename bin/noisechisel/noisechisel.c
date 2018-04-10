@@ -158,15 +158,24 @@ noisechisel_output(struct noisechiselparams *p)
 
 
   /* Write the object labels and useful information into it's header. */
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
-                        &p->numdetections, 0, "Total number of labels "
-                        "(inclusive)", 0, "counter");
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
                         0, "Minimum S/N of true pseudo-detections", 0,
                         "ratio");
-  p->olabel->name = "DETECTIONS";
-  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
-  p->olabel->name=NULL;
+  if(p->label)
+    {
+      gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                            &p->numdetections, 0, "Total number of labels "
+                            "(inclusive)", 0, "counter");
+      p->olabel->name = "DETECTIONS";
+      gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
+      p->olabel->name=NULL;
+    }
+  else
+    {
+      p->binary->name = "DETECTIONS";
+      gal_fits_img_write(p->binary, p->cp.output, keys, PROGRAM_NAME);
+      p->binary->name=NULL;
+    }
   keys=NULL;
 
 
@@ -192,6 +201,10 @@ noisechisel_output(struct noisechiselparams *p)
   gal_tile_full_values_write(p->std, &p->cp.tl, 1, p->cp.output, keys,
                              PROGRAM_NAME);
   p->std->name=NULL;
+
+  /* Let the user know that the output is written. */
+  if(!p->cp.quiet)
+    printf("  - Output written to `%s'.\n", p->cp.output);
 }
 
 

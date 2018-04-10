@@ -347,7 +347,7 @@ ui_set_output_names(struct noisechiselparams *p)
     }
   else
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
-                                               "_labeled.fits");
+                                               "_detected.fits");
 
   /* Tile check. */
   if(p->cp.tl.checktiles)

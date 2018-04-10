@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=mkcatalog
 execname=../bin/$prog/ast$prog
-img=convolve_spatial_noised_labeled_segmented.fits
+img=convolve_spatial_noised_detected_segmented.fits
 
 
 
