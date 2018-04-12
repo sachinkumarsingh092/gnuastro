@@ -22232,7 +22232,7 @@ Getting arrays (commonly images or cubes) from a file into your program or
 writing them after the processing into an output file are some of the most
 common operations. The functions in this section are designed for such
 operations with the known file types. The functions here are thus just
-wrappers around funcitons of lower-level file type functions of this
+wrappers around functions of lower-level file type functions of this
 library, for example @ref{FITS files} or @ref{TIFF files}. If the file type
 of the input/output file is already known, you can use the functions in
 those sections respectively.
@@ -24020,7 +24020,7 @@ must have the same size. When @code{OTHER} is a tile it must have the same
 size as @code{IN} and parsing will start from its starting element/pixel.
 Also, the respective allocated blocks of @code{OTHER} and @code{IN} (if
 different) may have different sizes. Using @code{OTHER} (along with
-@code{PARSE_OTHER}), this funciton-like macro will thus enable you to parse
+@code{PARSE_OTHER}), this function-like macro will thus enable you to parse
 and define your own operation on two fixed size regions in one or two
 blocks of memory. In the latter case, they may have different numeric
 datatypes, see @ref{Numeric data types}).

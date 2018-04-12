@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.inx
 ##
 ## Original author:
-##     Mohammad Akhlaghi <akhlaghi@gnu.org>
+##     Mohammad Akhlaghi <mohammad@akhlaghi.org>
 ## Contributing author(s):
 ## Copyright (C) 2015-2018, Free Software Foundation, Inc.
 ##

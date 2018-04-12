@@ -993,7 +993,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
          is not larger than the maximum number of labels. */
       if(p->checkupperlimit[0] != GAL_BLANK_INT32
          && p->checkupperlimit[0] > p->numobjects)
-        error(EXIT_FAILURE, 0, "%d (object identifer for the "
+        error(EXIT_FAILURE, 0, "%d (object identifier for the "
               "`--checkupperlimit' option) is larger than the number of "
               "objects in the input labels (%zu)", p->checkupperlimit[0],
               p->numobjects);

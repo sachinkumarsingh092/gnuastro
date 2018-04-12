@@ -706,7 +706,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
 
 
 /*********************************************************************/
-/*******************     High level funciton      ********************/
+/*******************     High level function      ********************/
 /*********************************************************************/
 void
 upperlimit_calculate(struct mkcatalog_passparams *pp)

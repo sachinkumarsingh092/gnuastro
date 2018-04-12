@@ -154,7 +154,7 @@ gal_blank_is(void *pointer, uint8_t type)
   /* Control should not reach here, so print an error if it does, then
      return a 0 (just to avoid compiler warnings). */
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address the "
-        "problem. Control should not reach the end of this funciton",
+        "problem. Control should not reach the end of this function",
         __func__, PACKAGE_BUGREPORT);
   return 0;
 }

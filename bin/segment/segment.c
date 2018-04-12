@@ -199,7 +199,7 @@ segment_relab_noseg(struct clumps_thread_params *cltprm)
 
 /* Find the adjacency matrixs (number, sum and signal to noise) for the
    rivers between potentially separate objects in a detection region. They
-   have to be allocated prior to entering this funciton.
+   have to be allocated prior to entering this function.
 
    The way to find connected objects is through an adjacency matrix. It is
    a square matrix with a side equal to numobjs. So to see if regions `a`
