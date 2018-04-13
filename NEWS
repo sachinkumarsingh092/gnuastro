@@ -68,6 +68,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
     gal_array_read_one_ch: Read in the data and make sure it is in one channel.
     gal_array_read_one_ch_to_type: Make sure input is in one channel and type.
+    gal_binary_label_holes: label the holes within the foreground.
     gal_blank_is: check to see if argument is blank in its type or not.
     gal_eps_name_is_eps: Returns 1 if given filename is EPS.
     gal_eps_suffix_is_eps: Returns 1 if given suffix is EPS.
@@ -145,6 +146,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
     gal_statistics_number: the output dataset now has a `size_t' type. Until
         now it was `uint64_t'.
+
+  Library:
+    - gal_binary_holes_fill: new name for `gal_binary_fill_holes'.
+    - gal_data_num_between: new name for `gal_data_ptr_dist'.
 
 ** Bug fixes
 

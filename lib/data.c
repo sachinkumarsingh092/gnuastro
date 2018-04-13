@@ -109,10 +109,10 @@ gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type)
 
 
 
-/* Find the distance between two void pointers with a given type. See the
-   explanations before `gal_data_ptr_increment'. */
+/* Find the number of values between two void pointers with a given
+   type. See the explanations before `gal_data_ptr_increment'. */
 size_t
-gal_data_ptr_dist(void *earlier, void *later, uint8_t type)
+gal_data_num_between(void *earlier, void *later, uint8_t type)
 {
   char *e=(char *)earlier, *l=(char *)later;
   return (l-e)/gal_type_sizeof(type);

@@ -618,6 +618,82 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
 
 
 
+gal_data_t *
+gal_binary_holes_label(gal_data_t *input, int connectivity,
+                       size_t *numholes)
+{
+  size_t d;
+  int32_t *lab;
+  gal_data_t *inv, *tile, *holelabs=NULL;
+
+  /* A small sanity check. */
+  if( input->type != GAL_TYPE_UINT8 )
+    error(EXIT_FAILURE, 0, "%s: input must have `uint8' type, but its "
+          "input dataset has `%s' type", __func__,
+          gal_type_name(input->type, 1));
+
+
+  /* Make the inverse image. */
+  inv=binary_make_padded_inverse(input, &tile);
+
+
+  /* Label the holes. Recall that the first label is just the undetected
+     regions, so we should subtract that from the total number.*/
+  *numholes=gal_binary_connected_components(inv, &holelabs, connectivity);
+  *numholes -= 1;
+
+
+  /* Any pixel with a label larger than 1 is a hole in the input image and
+     we should invert the respective pixel. To do it, we'll use the tile
+     that was defined before, just change its block and array.*/
+  tile->array=gal_tile_block_relative_to_other(tile, holelabs);
+  tile->block=holelabs; /* has to be after correcting `tile->array'. */
+
+
+  /* The type of the tile is already known (it is `int32_t') and we have no
+     output/other, so we'll just put `int' as a place-holder. In this way
+     we can avoid the switch statement of GAL_TILE_PARSE_OPERATE, and
+     directly use the workhorse macro `GAL_TILE_PO_OISET'. */
+  lab=(holelabs)->array;
+  GAL_TILE_PO_OISET(int32_t, int, tile, NULL, 0, 0, {
+      *lab++ = ( *i
+                 ? ( *i==1
+                     ? 0        /* Originally, was background. */
+                     : *i-1 )   /* Real label: -1 (background has 1). */
+                 : -1 );        /* Originally, was foreground. */
+    });
+
+
+  /* Clean up */
+  tile->array=NULL;
+  gal_data_free(inv);
+  gal_data_free(tile);
+
+
+  /* Correct the sizes of the hole labels array. We have already filled the
+     from the start, effectively removing the paddings. Therefore, ee will
+     just correct the sizes and we won't bother actually re-allocating the
+     array size in memory. According to the GNU C library's description
+     after `realloc': "In several allocation implementations, making a
+     block smaller sometimes necessitates copying it, so it can fail if no
+     other space is available.". The extra padding is only 2 pixels wide,
+     thus, the extra space is negligible compared to the actual array. So
+     it isn't worth possibly having to copy the whole array to another
+     location. Later, when we free the space, the kernel knows how much the
+     allocated size is. */
+  for(d=0;d<input->ndim;++d)
+    holelabs->dsize[d] = input->dsize[d];
+  holelabs->size=input->size;
+
+
+  /* Return the number of holes.  */
+  return holelabs;
+}
+
+
+
+
+
 /* Fill all the holes in an input unsigned char array.
 
    The basic method is this:
@@ -641,7 +717,7 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
       Any pixel with a label larger than 1, is therefore a bounded
       hole that is not 8-connected to the rest of the holes.  */
 void
-gal_binary_fill_holes(gal_data_t *input, int connectivity, size_t maxsize)
+gal_binary_holes_fill(gal_data_t *input, int connectivity, size_t maxsize)
 {
   uint8_t *in;
   uint32_t *i, *fi;

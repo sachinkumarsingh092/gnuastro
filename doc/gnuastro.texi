@@ -21108,10 +21108,10 @@ function will use the given @code{type} to calculate where the incremented
 element is located in memory.
 @end deftypefun
 
-@deftypefun size_t gal_data_ptr_dist (void @code{*earlier}, void @code{*later}, uint8_t @code{type})
-Return the number of elements between @code{earlier} and @code{later}
-assuming each element has a type defined by @code{type} (for the type
-codes, see @ref{Library data types}).
+@deftypefun size_t gal_data_num_between (void @code{*earlier}, void @code{*later}, uint8_t @code{type})
+Return the number of elements (in the given @code{type}) between
+@code{earlier} and @code{later}. For the type codes, see @ref{Library data
+types}).
 @end deftypefun
 
 @deftypefun {void *} gal_data_malloc_array (uint8_t @code{type}, size_t @code{size}, const char @code{*funcname}, const char @code{*varname})
@@ -25234,7 +25234,19 @@ Although the adjacency matrix as used here is symmetric, currently this
 function assumes that it is filled on both sides of the diagonal.
 @end deftypefun
 
-@deftypefun void gal_binary_fill_holes (gal_data_t @code{*input}, int @code{connectivity})
+@deftypefun {gal_data_t *} gal_binary_holes_label (gal_data_t @code{*input}, int @code{connectivity}, size_t @code{*numholes})
+Label all the holes in the foreground (non-zero elements in input) as
+independent regions. Holes are background regions (zero-valued in input)
+that are fully surrounded by the foreground, as defined by
+@code{connectivity}. The returned dataset has a 32-bit signed integer type
+with the size of the input. All holes in the input will have
+labels/counters greater or equal to @code{1}. The rest of the background
+regions will still have a value of @code{0} and the initial foreground
+pixels will have a value of @code{-1}. The total number of holes will be
+written where @code{numholes} points to.
+@end deftypefun
+
+@deftypefun void gal_binary_holes_fill (gal_data_t @code{*input}, int @code{connectivity})
 Fill all the holes (0 valued pixels surrounded by 1 valued pixels) within a
 region of the binary @code{input} dataset. The connectivity of the holes
 can be set with @code{connectivity}. This function currently only works on

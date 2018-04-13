@@ -249,7 +249,7 @@ detection_fill_holes_open(void *in_prm)
 
       /* Fill the holes in this tile: holes with maximal connectivity means
          that they are most strongly bounded. */
-      gal_binary_fill_holes(copy, copy->ndim, -1);
+      gal_binary_holes_fill(copy, copy->ndim, -1);
       if(fho_prm->step==1)
         {
           detection_write_in_large(tile, copy);
@@ -1010,7 +1010,7 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
       bf=(b=workbin->array)+workbin->size;
       do *b = (*o++ == 1); while(++b<bf);
       workbin=gal_binary_dilate(workbin, 1, 1, 1);
-      gal_binary_fill_holes(workbin, 1, p->detgrowmaxholesize);
+      gal_binary_holes_fill(workbin, 1, p->detgrowmaxholesize);
 
       /* Get the labeled image. */
       numexpanded=gal_binary_connected_components(workbin, &p->olabel,

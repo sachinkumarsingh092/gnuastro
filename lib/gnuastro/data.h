@@ -239,7 +239,7 @@ void *
 gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type);
 
 size_t
-gal_data_ptr_dist(void *earlier, void *later, uint8_t type);
+gal_data_num_between(void *earlier, void *later, uint8_t type);
 
 void *
 gal_data_malloc_array(uint8_t type, size_t size, const char *funcname,

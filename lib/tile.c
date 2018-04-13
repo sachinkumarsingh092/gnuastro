@@ -65,7 +65,7 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
   else
     {
       /* Calculate the coordinates of the first pixel of the tile. */
-      ind = gal_data_ptr_dist(block->array, tile->array, block->type);
+      ind = gal_data_num_between(block->array, tile->array, block->type);
       gal_dimension_index_to_coord(ind, ndim, block->dsize, start_coord);
     }
 }
@@ -97,7 +97,7 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
 
   /* Get the starting index. Note that for the type we need the allocated
      block dataset and can't rely on the tiles. */
-  start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
+  start_ind=gal_data_num_between(block->array, tile->array, block->type);
 
   /* Get the coordinates of the starting point relative to the allocated
      block. */
@@ -108,7 +108,7 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
   if(host!=block)
     {
       /* Get the host's starting coordinates. */
-      start_ind=gal_data_ptr_dist(block->array, host->array, block->type);
+      start_ind=gal_data_num_between(block->array, host->array, block->type);
 
       /* Temporarily put the host's coordinates in the place held for the
          ending coordinates. */
@@ -145,7 +145,8 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
   /* The starting index can be found from the distance of the `tile->array'
      pointer and `block->array' pointer. IMPORTANT: with the type of the
      block array.  */
-  start_end_inc[0]=gal_data_ptr_dist(block->array, tile->array, block->type);
+  start_end_inc[0]=gal_data_num_between(block->array, tile->array,
+                                        block->type);
 
 
   /* To find the end index, we need to know the coordinates of the starting
@@ -515,8 +516,9 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
 {
   gal_data_t *block=gal_tile_block(tile);
   return gal_data_ptr_increment(other->array,
-                                gal_data_ptr_dist(block->array,
-                                                  tile->array, block->type),
+                                gal_data_num_between(block->array,
+                                                     tile->array,
+                                                     block->type),
                                 other->type);
 }
 

@@ -621,9 +621,9 @@ clumps_find_make_sn_table(void *in_prm)
              rivers and not include them in the list of indexs to set
              clumps. To do that, we need this tile's starting
              coordinates. */
-          gal_dimension_index_to_coord(gal_data_ptr_dist(p->clabel->array,
-                                                         tile->array,
-                                                         p->clabel->type),
+          gal_dimension_index_to_coord(gal_data_num_between(p->clabel->array,
+                                                            tile->array,
+                                                            p->clabel->type),
                                        ndim, dsize, scoord);
 
 
@@ -661,16 +661,16 @@ clumps_find_make_sn_table(void *in_prm)
                     {
                       if(cltprm.id==282) *i+=2;
                   */
-                      indarr[c++]=gal_data_ptr_dist(p->clabel->array, i,
-                                                    p->clabel->type);
+                      indarr[c++]=gal_data_num_between(p->clabel->array, i,
+                                                       p->clabel->type);
                   /*
                     }
                   else
                     if(cltprm.id==282)
                       {
                         int32_t *clabel=p->clabel->array;
-                        size_t kjd=gal_data_ptr_dist(p->clabel->array, i,
-                                                     p->clabel->type);
+                        size_t kjd=gal_data_num_between(p->clabel->array, i,
+                                                        p->clabel->type);
                         printf("%zu, %zu: %u\n", kjd%dsize[1]+1,
                                kjd/dsize[1]+1, clabel[kjd]);
                       }

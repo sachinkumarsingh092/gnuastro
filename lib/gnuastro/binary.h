@@ -97,8 +97,12 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
 /*********************************************************************/
 /*****************            Fill holes          ********************/
 /*********************************************************************/
+gal_data_t *
+gal_binary_holes_label(gal_data_t *input, int connectivity,
+                       size_t *numholes);
+
 void
-gal_binary_fill_holes(gal_data_t *input, int connectivity, size_t maxsize);
+gal_binary_holes_fill(gal_data_t *input, int connectivity, size_t maxsize);
 
 
 

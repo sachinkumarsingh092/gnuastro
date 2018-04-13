@@ -280,7 +280,7 @@ gal_wcs_on_tile(gal_data_t *tile)
       tile->wcs=gal_wcs_copy(block->wcs);
 
       /* Find the coordinates of the tile's starting index. */
-      start_ind=gal_data_ptr_dist(block->array, tile->array, block->type);
+      start_ind=gal_data_num_between(block->array, tile->array, block->type);
       gal_dimension_index_to_coord(start_ind, ndim, block->dsize, coord);
 
       /* Correct the copied WCS structure. Note that crpix is indexed in
