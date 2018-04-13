@@ -250,7 +250,8 @@ Steps necessary to Package Gnuastro for Debian.
    changed to an `underscore' and an `orig' is added), then go into the
    cloned directory.
 
-     $ ln -s gnuastro-$ver-XXXX.tar.gz gnuastro_$ver.orig.tar.gz
+     $ mv gnuastro-$ver-XXXX.tar.gz      gnuastro_$ver.orig.tar.gz
+     $ mv gnuastro-$ver-XXXX..tar.gz.sig gnuastro_$ver.orig.tar.gz.asc
      $ cd gnuastro
 
 
@@ -272,7 +273,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ git commit -m "Upstream Gnuastro $ver"
      $ git tag upstream/$ver
      $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz          \
-                    -s ../gnuastro-$ver.tar.gz.sig
+                    -s ../gnuastro_$ver.orig.tar.gz.asc
 
 
  - We are done with the `upstream' and `pristine-tar' branches and can

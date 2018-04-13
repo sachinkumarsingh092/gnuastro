@@ -267,7 +267,7 @@ tiff_read_contig_strip_data(TIFF *tif, char *filename, size_t dir,
   size_t ostart=0;
   unsigned char *buf;
   uint32_t row, rowsperstrip = (uint32_t)-1;
-  size_t nrow, scanline=TIFFScanlineSize(tif);
+  size_t nrow=0, scanline=TIFFScanlineSize(tif);
   uint32 h=out->ndim==2?out->dsize[0]:out->dsize[1];
 
   /* Allocate the buffer. */
