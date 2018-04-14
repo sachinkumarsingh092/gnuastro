@@ -70,8 +70,8 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   size_t ndiffuse=0, coord[2], *dindexs;
   double wcoord[2]={0.0f,0.0f}, sum=0.0f;
   size_t *s, *sf, *dsize=input->dsize, ndim=input->ndim;
+  float glimit, *imgss=input->array, *std=p->std->array;
   int32_t *olabel=p->olabel->array, *clabel=p->clabel->array;
-  float glimit, *imgss=input->array, *std=p->std?p->std->array:NULL;
 
 
   /* Find the flux weighted center (meaningful only for positive valued
@@ -108,14 +108,14 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
 
 
   /* Find the growth limit. Note that the STD may be a value, or a dataset
-     (which may be a full sized image or a tessellation). If its a dataset,
-     `stdval==NAN', and we'll check through the number of elements to see
-     what kind of dataset it is.. */
-  cltprm->std = ( p->std
+     (which may be a full sized image or a tessellation). If its not a
+     single value, we'll check through the number of elements to see what
+     kind of dataset it is (if its a tile or full image). */
+  cltprm->std = ( p->std->size>1
                   ? ( p->std->size==p->input->size
                       ? std[gal_dimension_coord_to_index(ndim, dsize, coord)]
                       : std[gal_tile_full_id_from_coord(&p->cp.tl, coord)] )
-                  : p->stdval );
+                  : std[0] );
   if(p->variance) cltprm->std = sqrt(cltprm->std);
 
 
@@ -239,9 +239,9 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   double *row, *info=cltprm->info->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
+  float *arr=p->input->array, *std=p->std->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
-  float *arr=p->input->array, *std=p->std?p->std->array:NULL;
 
   /* Allocate the array to keep the neighbor labels of river pixels. */
   ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
@@ -324,13 +324,13 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
             {
               coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
               coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
-              row[INFO_INSTD]=( p->std
+              row[INFO_INSTD]=( p->std->size>1
                                 ? ( p->std->size==p->input->size
                                     ? std[gal_dimension_coord_to_index(ndim,
                                                                dsize, coord)]
                                     : std[gal_tile_full_id_from_coord(tl,
                                                                     coord)] )
-                                : p->stdval );
+                                : std[0] );
               if(p->variance) row[INFO_INSTD] = sqrt(row[INFO_INSTD]);
 
               /* For a check

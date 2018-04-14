@@ -115,8 +115,6 @@ ui_initialize_options(struct segmentparams *p,
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
-  p->skyval              = NAN;
-  p->stdval              = NAN;
   p->medstd              = NAN;
   p->minstd              = NAN;
   p->maxstd              = NAN;
@@ -224,8 +222,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct segmentparams *p)
 {
-  char *tailptr;
-
   /* If the full area is to be used as a single detection, we can't find
      the S/N value from the un-detected regions, so the user must have
      given the `clumpsnthresh' option. */
@@ -238,28 +234,6 @@ ui_read_check_only_options(struct segmentparams *p)
           "the signal-to-noise ratio of true clumps. Therefore it is "
           "mandatory to provide a signal-to-noise ratio manually",
           UI_KEY_CLUMPSNTHRESH);
-
-  /* See if `--sky' is a filename or a value. When the string is only a
-     number (and nothing else), `tailptr' will point to the end of the
-     string (`\0'). When the string doesn't start with a number, it will
-     point to the start of the string. However, file names might also be
-     things like `1_sky.fits'. In such cases, `strtod' will return `1.0'
-     and `tailptr' will be `_std.fits', so we need to reset `p->stdval' to
-     NaN. */
-  if(p->skyname)
-    {
-      p->skyval=strtod(p->skyname, &tailptr);
-      if(tailptr==p->skyname || *tailptr!='\0')
-        p->skyval=NAN;
-    }
-
-  /* Similar to `--sky' above. */
-  if(p->stdname)
-    {
-      p->stdval=strtod(p->stdname, &tailptr);
-      if(tailptr==p->stdname || *tailptr!='\0')
-        p->stdval=NAN;
-    }
 
   /* If the convolved HDU is given. */
   if(p->convolvedname && p->chdu==NULL)
@@ -695,15 +669,32 @@ ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
 /* The Sky and Sky standard deviation images can be a `oneelempertile'
    image (only one element/pixel for a tile). So we need to do some extra
    checks on them (after reading the tessellation). */
-static void
+static float
 ui_read_std_and_sky(struct segmentparams *p)
 {
   size_t one=1;
+  char *tailptr;
+  float tmpval, skyval=NAN;
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
   gal_data_t *sky, *keys=gal_data_array_calloc(3);
 
-  /* Read the standard devitaion image (if it isn't a single number). */
-  if(isnan(p->stdval))
+  /* See if the name used for the standard deviation is a filename or a
+     value. When the string is only a number (and nothing else), `tailptr'
+     will point to the end of the string (`\0'). When the string doesn't
+     start with a number, it will point to the start of the
+     string. However, file names might also be things like `1_std.fits'. In
+     such cases, `strtod' will return `1.0' and `tailptr' will be
+     `_std.fits'. Thus the most robust test is to see if `tailptr' is the
+     NULL string character. */
+  tmpval=strtod(p->usedstdname, &tailptr);
+  if(*tailptr=='\0')
+    {
+      /* Allocate the dataset to keep the value and write it in. */
+      p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0,
+                            -1, NULL, NULL, NULL);
+      *(float *)(p->std->array) = tmpval;
+    }
+  else
     {
       /* Make sure a HDU is also given. */
       if(p->stdhdu==NULL)
@@ -725,13 +716,44 @@ ui_read_std_and_sky(struct segmentparams *p)
                     p->usedstdname, p->stdhdu);
     }
 
+  /* When the Standard deviation dataset (not single value) is made by
+     NoiseChisel, it puts three basic statistics of the pre-interpolation
+     distribution of standard deviations in `MEDSTD', `MINSTD' and
+     `MAXSTD'. The `MEDSTD' in particular is most important because it
+     can't be inferred after the interpolations and it can be useful in
+     MakeCatalog later to give a more accurate estimate of the noise
+     level. So if they are present, we will read them here and write them
+     to the STD output (which is created when `--rawoutput' is not
+     given). */
+  if(!p->rawoutput && p->std->size>1)
+    {
+      keys[0].next=&keys[1];
+      keys[1].next=&keys[2];
+      keys[2].next=NULL;
+      keys[0].array=&p->medstd;     keys[0].name="MEDSTD";
+      keys[1].array=&p->minstd;     keys[1].name="MINSTD";
+      keys[2].array=&p->maxstd;     keys[2].name="MAXSTD";
+      keys[0].type=keys[1].type=keys[2].type=GAL_TYPE_FLOAT32;
+      gal_fits_key_read(p->usedstdname, p->stdhdu, keys, 0, 0);
+      if(keys[0].status) p->medstd=NAN;
+      if(keys[1].status) p->minstd=NAN;
+      if(keys[2].status) p->maxstd=NAN;
+      keys[0].name=keys[1].name=keys[2].name=NULL;
+      keys[0].array=keys[1].array=keys[2].array=NULL;
+      gal_data_array_free(keys, 3, 1);
+    }
 
-  /* If a Sky image is given, subtract it from the values and convolved
-     images immediately and free it. */
+  /* Similar to `--std' above. */
   if(p->skyname)
     {
-      /* If its a file, read it into memory. */
-      if( isnan(p->skyval) )
+      tmpval=strtod(p->skyname, &tailptr);
+      if(*tailptr=='\0')
+        {
+          sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
+                             NULL, NULL, NULL);
+          *(float *)(sky->array) = skyval = tmpval;
+        }
+      else
         {
           /* Make sure a HDU is also given. */
           if(p->skyhdu==NULL)
@@ -751,14 +773,8 @@ ui_read_std_and_sky(struct segmentparams *p)
           ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,
                         p->skyname, p->skyhdu);
         }
-      else
-        {
-          sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
-                             NULL, NULL, NULL);
-          *((float *)(sky->array)) = p->skyval;
-        }
 
-      /* Subtract it from the input. */
+      /* Subtract the sky from the input. */
       ui_subtract_sky(p->input, sky, tl);
 
       /* If a convolved image is given, subtract the Sky from that too. */
@@ -767,42 +783,17 @@ ui_read_std_and_sky(struct segmentparams *p)
 
       /* Clean up. */
       gal_data_free(sky);
-      p->skyval=NAN;
     }
 
-
-  /* When the Standard deviation image is made by NoiseChisel, it puts
-     three basic statistics of the pre-interpolation distribution of
-     standard deviations in `MEDSTD', `MINSTD' and `MAXSTD'. The `MEDSTD'
-     in particular is most important because it can't be inferred after the
-     interpolations and it can be useful in MakeCatalog later to give a
-     more accurate estimate of the noise level. So if they are present, we
-     will read them here and write them to the STD output (which is created
-     when `--rawoutput' is not given). */
-  if(!p->rawoutput && p->std)
-    {
-      keys[0].next=&keys[1];
-      keys[1].next=&keys[2];
-      keys[2].next=NULL;
-      keys[0].array=&p->medstd;     keys[0].name="MEDSTD";
-      keys[1].array=&p->minstd;     keys[1].name="MINSTD";
-      keys[2].array=&p->maxstd;     keys[2].name="MAXSTD";
-      keys[0].type=keys[1].type=keys[2].type=GAL_TYPE_FLOAT32;
-      gal_fits_key_read(p->usedstdname, p->stdhdu, keys, 0, 0);
-      if(keys[0].status) p->medstd=NAN;
-      if(keys[1].status) p->minstd=NAN;
-      if(keys[2].status) p->maxstd=NAN;
-      keys[0].name=keys[1].name=keys[2].name=NULL;
-      keys[0].array=keys[1].array=keys[2].array=NULL;
-      gal_data_array_free(keys, 3, 1);
-    }
+  /* Return the sky value (possibly necessary in verbose mode). */
+  return skyval;
 }
 
 
 
 
 
-static void
+static float
 ui_preparations(struct segmentparams *p)
 {
   /* Set the input names. */
@@ -823,7 +814,7 @@ ui_preparations(struct segmentparams *p)
   ui_prepare_tiles(p);
 
   /* Prepare the (optional Sky, and) Sky Standard deviation image. */
-  ui_read_std_and_sky(p);
+  return ui_read_std_and_sky(p);
 }
 
 
@@ -850,6 +841,7 @@ ui_preparations(struct segmentparams *p)
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
 {
+  float sky;
   char *stdunit;
   struct gal_options_common_params *cp=&p->cp;
 
@@ -897,7 +889,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
 
 
   /* Read/allocate all the necessary starting arrays. */
-  ui_preparations(p);
+  sky=ui_preparations(p);
 
 
   /* Let the user know that processing has started. */
@@ -912,19 +904,19 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
       /* Sky value information. */
       if(p->skyname)
         {
-          if( isnan(p->skyval) )
+          if( isnan(sky) )
             printf("  - Sky: %s (hdu: %s)\n", p->skyname, p->skyhdu);
           else
-            printf("  - Sky: %g\n", p->skyval);
+            printf("  - Sky: %g\n", sky);
         }
 
       /* Sky Standard deviation information. */
-      stdunit = p->variance ? "variance" : "STD";
-      if(p->std)
+      stdunit = p->variance ? "VAR" : "STD";
+      if(p->std->size>1)
         printf("  - Sky %s: %s (hdu: %s)\n", stdunit, p->usedstdname,
                p->stdhdu);
       else
-        printf("  - Sky %s: %g\n", stdunit, p->stdval);
+        printf("  - Sky %s: %g\n", stdunit, *(float *)(p->std->array) );
 
       /* Convolution information. */
       if(p->convolvedname)
@@ -1015,6 +1007,7 @@ ui_free_report(struct segmentparams *p, struct timeval *t1)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
+  gal_data_free(p->std);
   gal_data_free(p->input);
   gal_data_free(p->kernel);
   gal_data_free(p->binary);

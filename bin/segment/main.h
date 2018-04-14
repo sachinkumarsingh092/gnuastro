@@ -88,8 +88,6 @@ struct segmentparams
   gal_data_t          *olabel;  /* Object labels.                         */
   gal_data_t          *clabel;  /* Clumps labels.                         */
   gal_data_t             *std;  /* STD of undetected pixels, per tile.    */
-  float                stdval;  /* Single value to use for std deviation. */
-  float                skyval;  /* Single value to use for Sky.           */
 
   float               cpscorr;  /* Counts/second correction.              */
   size_t        numdetections;  /* Number of final detections.            */

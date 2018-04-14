@@ -148,13 +148,13 @@ segment_initialize(struct segmentparams *p)
   /* If the (minimum) standard deviation is less than 1, then the units of
      the input are in units of counts/time. As described in the NoiseChisel
      paper, we need to correct the S/N equation later. */
-  if(p->std)
+  if(p->std->size>1)
     {
       min=gal_statistics_minimum(p->std);
       minv=*(float *)(min->array);
       gal_data_free(min);
     }
-  else minv=p->stdval;
+  else minv=*(float *)(p->std->array);
   if(p->variance) minv=sqrt(minv);
   p->cpscorr = minv>1 ? 1.0 : minv;
 }
@@ -1029,7 +1029,7 @@ segment_output(struct segmentparams *p)
 
 
   /* The Standard deviation image (if one was actually given). */
-  if( !p->rawoutput && p->std)
+  if( !p->rawoutput && p->std->size>1 )
     {
       /* See if any keywords should be written (possibly inherited from the
          detection program). */
