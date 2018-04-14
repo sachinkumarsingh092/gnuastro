@@ -542,7 +542,8 @@ segment_on_threads(void *in_prm)
 
       /* Find the clumps over this region. */
       cltprm.numinitclumps=gal_label_oversegment(p->conv, cltprm.indexs,
-                                                 p->clabel, cltprm.topinds);
+                                                 p->clabel, cltprm.topinds,
+                                                 !p->minima);
 
 
       /* Set all the river pixels to zero (we don't need them any more in

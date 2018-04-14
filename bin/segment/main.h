@@ -60,6 +60,7 @@ struct segmentparams
   char               *stdname;  /* File name of Standard deviation image. */
   char                *stdhdu;  /* HDU of Stanard deviation image.        */
   uint8_t            variance;  /* The input STD is actually variance.    */
+  uint8_t              minima;  /* Build clumps from their minima, maxima.*/
   uint8_t           rawoutput;  /* Output only object and clump labels.   */
 
   float            minskyfrac;  /* Undetected area min. frac. in tile.    */

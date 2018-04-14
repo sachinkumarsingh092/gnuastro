@@ -264,6 +264,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "minima",
+      UI_KEY_MINIMA,
+      0,
+      0,
+      "Built internal clumps from minima.",
+      UI_GROUP_SEGMENTATION,
+      &p->minima,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "snminarea",
       UI_KEY_SNMINAREA,
       "INT",

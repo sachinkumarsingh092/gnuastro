@@ -60,7 +60,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Functions. */
 size_t
 gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
-                      gal_data_t *label, size_t *topinds);
+                      gal_data_t *label, size_t *topinds,
+                      int min0_max1);
 
 void
 gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,

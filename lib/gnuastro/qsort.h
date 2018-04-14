@@ -55,7 +55,8 @@ extern float *gal_qsort_index_arr;
 int
 gal_qsort_index_float_decreasing(const void * a, const void * b);
 
-
+int
+gal_qsort_index_float_increasing(const void * a, const void * b);
 
 
 

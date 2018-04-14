@@ -14731,12 +14731,14 @@ many illustrative figures) is Section 3.2 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
 As a summary, Segment first finds true @emph{clump}s over the
-detections. Clumps are associated with local maxima and extend over the
-neighboring pixels until they reach a local minimum (@emph{river}). Segment
-will use the distribution of clump signal-to-noise ratios over the
-undetected regions as reference to find ``true'' clumps over the
-detections. Using the undetected regions can be disabled by directly giving
-a signal-to-noise ratio to @option{--clumpsnthresh}.
+detections. Clumps are associated with local maxima/minima@footnote{By
+default the maximum is used as the first clump pixel, to define clumps
+based on local minima, use the @option{--minima} option.})  and extend over
+the neighboring pixels until they reach a local minimum/maximum
+(@emph{river}). Segment will use the distribution of clump signal-to-noise
+ratios over the undetected regions as reference to find ``true'' clumps
+over the detections. Using the undetected regions can be disabled by
+directly giving a signal-to-noise ratio to @option{--clumpsnthresh}.
 
 The true clumps are then grown to a certain threshold over the
 detections. Based on the strength of the connections between the grown
@@ -15054,6 +15056,13 @@ fields. Operationally, this is almost identical to NoiseChisel's
 @option{--minskyfrac} option (@ref{Detection options}). Please see the
 descriptions there for more.
 
+@item --minima
+Build the clumps based on the local minima, not maxima. By default, clumps
+are built starting from local maxima (see Figure 8 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+[2015]}). Therefore, this option can be useful when you are searching for
+true local minima (for example absorption features).
+
 @item -m INT
 @itemx --snminarea=INT
 The minimum area which a clump in the undetected regions should have in
@@ -15103,14 +15112,14 @@ option and visually inspected with @option{--checksegmentation}.
 
 @item -v
 @itemx --keepmaxnearriver
-Keep a clump whose maximum flux is 8-connected to a river pixel. By default
-such clumps over detections are considered to be noise and are removed
-irrespective of their brightness (see @ref{Flux Brightness and
-magnitude}). Over large profiles, that sink into the noise very slowly,
-noise can cause part of the profile (which was flat without noise) to
-become a very large and with a very high Signal to noise ratio. In such
-cases, the pixel with the maximum flux in the clump will be immediately
-touching a river pixel.
+Keep a clump whose maximum (minimum if @option{--minima} is called) flux is
+8-connected to a river pixel. By default such clumps over detections are
+considered to be noise and are removed irrespective of their brightness
+(see @ref{Flux Brightness and magnitude}). Over large profiles, that sink
+into the noise very slowly, noise can cause part of the profile (which was
+flat without noise) to become a very large and with a very high Signal to
+noise ratio. In such cases, the pixel with the maximum flux in the clump
+will be immediately touching a river pixel.
 
 @item -s FLT
 @itemx --clumpsnthresh=FLT
@@ -15188,14 +15197,15 @@ definition of clumps and objects, please see Section 3.2 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and
 @ref{Segmentation options}.
 
-The clumps are ``true'' local maxima and their surrounding pixels until a
-local minimum (caused by noise fluctuations, or another ``true''
-clump). Therefore it may happen that some of the input detections aren't
-covered by clumps at all (very diffuse objects without any strong peak),
-while some objects may contain many clumps. Even in those that have clumps,
-there will be regions that are too diffuse. The diffuse regions (within the
-input detected regions) are given a negative label (-1) to help you
-separate them from the undetected regions (with a value of zero).
+The clumps are ``true'' local maxima (minima if @option{--minima} is
+called) and their surrounding pixels until a local minimum/maximum (caused
+by noise fluctuations, or another ``true'' clump). Therefore it may happen
+that some of the input detections aren't covered by clumps at all (very
+diffuse objects without any strong peak), while some objects may contain
+many clumps. Even in those that have clumps, there will be regions that are
+too diffuse. The diffuse regions (within the input detected regions) are
+given a negative label (-1) to help you separate them from the undetected
+regions (with a value of zero).
 
 Each clump is labeled with respect to its host object. Therefore, if an
 object has three clumps for example, the clumps within it have labels 1, 2
@@ -24601,6 +24611,12 @@ main (void)
 
 @noindent
 The output will be: @code{2, 0, 1, 3}.
+@end deftypefun
+
+@deftypefun int gal_qsort_index_float_increasing (const void @code{*a}, const void @code{*b})
+Similar to @code{gal_qsort_index_float_decreasing}, but will sort the
+indexes such that the values of @code{gal_qsort_index_arr} are in
+increasing order.
 @end deftypefun
 
 

@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/qsort.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/label.h>
 #include <gnuastro/threads.h>
@@ -423,7 +422,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
          noise cases) or the area is smaller than the minimum area to
          calculate signal-to-noise, then set the S/N of this segment to
          zero. */
-      if( I>O && Ni>p->snminarea )
+      if( (p->minima ? O>I : I>O) && Ni>p->snminarea )
         {
           /* For easy reading, define `var' for variance.  */
           var = row[INFO_INSTD] * row[INFO_INSTD];
@@ -435,7 +434,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
              equal to i. */
           ind = sky0_det1 ? i : counter++;
           if(cltprm->snind) indarr[ind]=i;
-          snarr[ind]=( sqrt(Ni/p->cpscorr) * (I-O)
+          snarr[ind]=( sqrt(Ni/p->cpscorr) * ( p->minima ? O-I : I-O)
                        / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) );
         }
       else
@@ -686,7 +685,8 @@ clumps_find_make_sn_table(void *in_prm)
           /* Generate the clumps over this region. */
           cltprm.numinitclumps=gal_label_oversegment(p->conv, cltprm.indexs,
                                                      p->clabel,
-                                                     cltprm.topinds);
+                                                     cltprm.topinds,
+                                                     !p->minima);
 
 
           /* Set all river pixels to GAL_LABEL_INIT (to be distinguishable

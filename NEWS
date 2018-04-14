@@ -36,7 +36,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --instd: Sky standard deviation as a single value or file (dataset).
     --valuesfile: filename containing the values dataset.
     --valueshdu: HDU/extension containing the values dataset.
-    --clumpscat: Make a clumps catalog also (`WCLUMPS' keyword not used anymore).
+    --clumpscat: Make a clumps catalog also.
     --noclumpsort: Don't sort the clumps catalog by host object ID.
     --subtractsky: Subtract the given Sky from the values dataset.
     --variance: input standard deviation image is actually variance.
@@ -66,7 +66,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Libraries:
     gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
-    gal_array_read_one_ch: Read in the data and make sure it is in one channel.
+    gal_array_read_one_ch: Read a dataset, abort if it has multiple channels.
     gal_array_read_one_ch_to_type: Make sure input is in one channel and type.
     gal_binary_label_holes: label the holes within the foreground.
     gal_blank_is: check to see if argument is blank in its type or not.
@@ -83,6 +83,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_pdf_name_is_pdf: Returns 1 if given filename is PDF.
     gal_pdf_suffix_is_pdf: Returns 1 if given suffix is PDF.
     gal_pdf_write: Writes a dataset into an PDF file.
+    gal_qsort_index_float_increasing: Sort indexs in increasing value order.
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
     gal_tiff_dir_string_read: convert a string to a TIFF directory number.
@@ -124,6 +125,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - With no output name, the output has a `_detected.fits' suffix.
 
   MakeCatalog:
+
+    - The `WCLUMPS' keyword in the objects labeled image is no longer used
+         to see if a clumps catalog should also be made. To build a clumps
+         catalog, you can now use the `--clumpscat' option.
     - Estimation of noise-level is now done per-pixel over the whole
          label. Until now the average noise level was used.
     --objectsfile has been removed. The main input argument is now assumed
@@ -166,6 +171,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #53407: Instrumental noise in MakeNoise should be squared.
   bug #53424: Sigma-clipping seg-faults when there are no more elements.
   bug #53580: Warp crash when no WCS present.
+
 
 
 

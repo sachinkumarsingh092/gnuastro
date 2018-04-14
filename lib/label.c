@@ -54,7 +54,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 */
 size_t
 gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
-                      gal_data_t *label, size_t *topinds)
+                      gal_data_t *label, size_t *topinds,
+                      int min0_max1)
 {
   size_t ndim=input->ndim;
 
@@ -101,7 +102,9 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
      defined as static in `gnuastro/qsort.h') */
   gal_qsort_index_arr=input->array;
   qsort(indexs->array, indexs->size, sizeof(size_t),
-        gal_qsort_index_float_decreasing);
+        min0_max1
+        ? gal_qsort_index_float_decreasing
+        : gal_qsort_index_float_increasing );
 
 
   /* Initialize the region we want to over-segment. */

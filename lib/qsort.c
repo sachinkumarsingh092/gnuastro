@@ -40,6 +40,14 @@ gal_qsort_index_float_decreasing(const void * a, const void * b)
   return (tb > ta) - (tb < ta);
 }
 
+int
+gal_qsort_index_float_increasing(const void * a, const void * b)
+{
+  float ta=gal_qsort_index_arr[ *(size_t *)a ];
+  float tb=gal_qsort_index_arr[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
 
 
 
