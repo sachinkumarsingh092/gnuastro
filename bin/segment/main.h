@@ -70,6 +70,7 @@ struct segmentparams
   float               snquant;  /* Quantile of clumps in sky for true S/N.*/
   uint8_t    keepmaxnearriver;  /* Keep clumps with a peak near a river.  */
   float         clumpsnthresh;  /* Clump S/N threshold.                   */
+  uint8_t          onlyclumps;  /* Finish after finding true clumps.      */
   float               gthresh;  /* Multiple of STD to stop growing clumps.*/
   size_t       minriverlength;  /* Min, len of good grown clump rivers.   */
   float           objbordersn;  /* Minimum S/N for grown clumps to be one.*/

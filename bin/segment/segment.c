@@ -453,8 +453,11 @@ static void
 segment_relab_overall(struct clumps_thread_params *cltprm)
 {
   struct clumps_params *clprm=cltprm->clprm;
-  int32_t startinglab, *olabel=clprm->p->olabel->array;
+
+  int32_t startinglab;
+  uint8_t onlyclumps=clprm->p->onlyclumps;
   size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
+  int32_t *clabel=clprm->p->clabel->array, *olabel=clprm->p->olabel->array;
 
   /* Lock the mutex if we are working on more than one thread. NOTE: it is
      very important to keep the number of operations within the mutex to a
@@ -462,18 +465,31 @@ segment_relab_overall(struct clumps_thread_params *cltprm)
   if(clprm->p->cp.numthreads>1)
     pthread_mutex_lock(&clprm->labmutex);
 
-  /* Save the total number of objects found so far into `startinglab', then
-     increment the total number of objects and clumps. */
-  startinglab        = clprm->totobjects;
-  clprm->totobjects += cltprm->numobjects;
+  /* Set the starting label for re-labeling (THIS HAS TO BE BEFORE
+     CORRECTING THE TOTAL NUMBER OF CLUMPS/OBJECTS). */
+  startinglab = onlyclumps ? clprm->totclumps : clprm->totobjects;
+
+  /* Save the total number of clumps and objects. */
   clprm->totclumps  += cltprm->numtrueclumps;
+  if( !onlyclumps ) clprm->totobjects += cltprm->numobjects;
 
   /* Unlock the mutex (if it was locked). */
   if(clprm->p->cp.numthreads>1)
     pthread_mutex_unlock(&clprm->labmutex);
 
   /* Increase all the object labels by `startinglab'. */
-  do olabel[*s] += startinglab; while(++s<sf);
+  if( onlyclumps )
+    {
+      if(cltprm->numtrueclumps>0)
+        {
+          do
+            if(clabel[*s]>0)
+              clabel[*s] += startinglab;
+          while(++s<sf);
+        }
+    }
+  else
+    do olabel[*s] += startinglab; while(++s<sf);
 }
 
 
@@ -512,7 +528,7 @@ segment_on_threads(void *in_prm)
   int32_t *clabel=p->clabel->array, *olabel=p->olabel->array;
 
   /* Initialize the general parameters for this thread. */
-  cltprm.clprm   = clprm;
+  cltprm.clprm = clprm;
 
   /* Go over all the detections given to this thread (counting from zero.) */
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
@@ -522,6 +538,7 @@ segment_on_threads(void *in_prm)
          the ID given to this thread. */
       cltprm.id     = tprm->indexs[i]+1;
       cltprm.indexs = &clprm->labindexs[ cltprm.id ];
+      cltprm.numinitclumps = cltprm.numtrueclumps = cltprm.numobjects = 0;
 
 
       /* The `topinds' array is only necessary when the user wants to
@@ -574,102 +591,107 @@ segment_on_threads(void *in_prm)
       if(clprm->step==1 || p->checksn)
         { gal_data_free(topinds); continue; }
 
-      /* Only keep true clumps. */
+      /* Only keep true clumps and abort if the user only wants clumps. */
       clumps_det_keep_true_relabel(&cltprm);
       gal_data_free(topinds);
       if(clprm->step==2) continue;
 
-
-      /* Set the internal (with the detection) clump and object
-         labels. Segmenting a detection into multiple objects is only
-         defined when there is more than one true clump over the
-         detection. When there is only one true clump
-         (cltprm->numtrueclumps==1) or none (p->numtrueclumps==0), then
-         just set the required preliminaries to make the next steps be
-         generic for all cases. */
-      if(cltprm.numtrueclumps<=1)
+      /* When only clumps are desired ignore the rest of the process. */
+      if(!p->onlyclumps)
         {
-          /* Set the basics. */
-          cltprm.numobjects=1;
-          segment_relab_noseg(&cltprm);
-
-          /* If the user wanted a check image, this object doesn't
-             change. */
-          if( clprm->step >= 3 && clprm->step <= 6) continue;
-
-          /* If the user has asked for grown clumps in the clumps image
-             instead of the raw clumps, then replace the indexs in the
-             `clabel' array is well. In this case, there will always be one
-             "clump". */
-          if(p->grownclumps)
+          /* Set the internal (with the detection) clump and object
+             labels. Segmenting a detection into multiple objects is only
+             defined when there is more than one true clump over the
+             detection. When there is only one true clump
+             (cltprm->numtrueclumps==1) or none (p->numtrueclumps==0), then
+             just set the required preliminaries to make the next steps be
+             generic for all cases. */
+          if(cltprm.numtrueclumps<=1)
             {
-              sf=(s=cltprm.indexs->array)+cltprm.indexs->size;
-              do clabel[ *s++ ] = 1; while(s<sf);
-              cltprm.numtrueclumps=1;
-            }
-        }
-      else
-        {
-          /* Grow the true clumps over the detection. */
-          clumps_grow_prepare_initial(&cltprm);
-          if(cltprm.diffuseindexs->size)
-            gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 1, 1);
-          if(clprm->step==3)
-            { gal_data_free(cltprm.diffuseindexs); continue; }
+              /* Set the basics. */
+              cltprm.numobjects=1;
+              segment_relab_noseg(&cltprm);
 
-          /* If grown clumps are desired instead of the raw clumps, then
-             replace all the grown clumps with those in clabel. */
-          if(p->grownclumps)
-            {
-              sf=(s=cltprm.indexs->array)+cltprm.indexs->size;
-              do
-                if(olabel[*s]>0) clabel[*s]=olabel[*s];
-              while(++s<sf);
-            }
+              /* If the user wanted a check image, this object doesn't
+                 change. */
+              if( clprm->step >= 3 && clprm->step <= 6) continue;
 
-          /* Identify the objects in this detection using the grown clumps
-             and correct the grown clump labels into new object labels. */
-          segment_relab_to_objects(&cltprm);
-          if(clprm->step==4)
-            {
-              gal_data_free(cltprm.clumptoobj);
-              gal_data_free(cltprm.diffuseindexs);
-              continue;
+              /* If the user has asked for grown clumps in the clumps image
+                 instead of the raw clumps, then replace the indexs in the
+                 `clabel' array is well. In this case, there will always be
+                 one "clump". */
+              if(p->grownclumps)
+                {
+                  sf=(s=cltprm.indexs->array)+cltprm.indexs->size;
+                  do clabel[ *s++ ] = 1; while(s<sf);
+                  cltprm.numtrueclumps=1;
+                }
             }
-
-          /* Continue the growth and cover the whole area, we don't need
-             the diffuse indexs any more, so after filling the detected
-             region, free the indexs. */
-          if( cltprm.numobjects == 1 )
-            segment_relab_noseg(&cltprm);
           else
             {
-              /* Correct the labels so every non-labeled pixel can be
-                 grown. */
-              clumps_grow_prepare_final(&cltprm);
-
-              /* Cover the whole area (using maximum connectivity to not
-                 miss any pixels). */
-              gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 0,
-                                    p->olabel->ndim);
-
-              /* Make sure all diffuse pixels are labeled. */
+              /* Grow the true clumps over the detection. */
+              clumps_grow_prepare_initial(&cltprm);
               if(cltprm.diffuseindexs->size)
-                error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to "
-                      "fix it. %zu pixels of detection %zu have not been "
-                      "labeled (as an object)", PACKAGE_BUGREPORT,
-                      cltprm.diffuseindexs->size, cltprm.id);
-            }
-          gal_data_free(cltprm.diffuseindexs);
-          if(clprm->step==5) { gal_data_free(cltprm.clumptoobj); continue; }
+                gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 1, 1);
+              if(clprm->step==3)
+                { gal_data_free(cltprm.diffuseindexs); continue; }
 
-          /* Correct the clump labels. Note that this is only necessary
-             when there is more than object over the detection or when
-             there were multiple clumps over the detection. */
-          if(cltprm.numobjects>1)
-            segment_relab_clumps_in_objects(&cltprm);
-          gal_data_free(cltprm.clumptoobj);
-          if(clprm->step==6) {continue;}
+              /* If grown clumps are desired instead of the raw clumps,
+                 then replace all the grown clumps with those in clabel. */
+              if(p->grownclumps)
+                {
+                  sf=(s=cltprm.indexs->array)+cltprm.indexs->size;
+                  do
+                    if(olabel[*s]>0) clabel[*s]=olabel[*s];
+                  while(++s<sf);
+                }
+
+              /* Identify the objects in this detection using the grown
+                 clumps and correct the grown clump labels into new object
+                 labels. */
+              segment_relab_to_objects(&cltprm);
+              if(clprm->step==4)
+                {
+                  gal_data_free(cltprm.clumptoobj);
+                  gal_data_free(cltprm.diffuseindexs);
+                  continue;
+                }
+
+              /* Continue the growth and cover the whole area, we don't
+                 need the diffuse indexs any more, so after filling the
+                 detected region, free the indexs. */
+              if( cltprm.numobjects == 1 )
+                segment_relab_noseg(&cltprm);
+              else
+                {
+                  /* Correct the labels so every non-labeled pixel can be
+                     grown. */
+                  clumps_grow_prepare_final(&cltprm);
+
+                  /* Cover the whole area (using maximum connectivity to
+                     not miss any pixels). */
+                  gal_label_grow_indexs(p->olabel, cltprm.diffuseindexs, 0,
+                                        p->olabel->ndim);
+
+                  /* Make sure all diffuse pixels are labeled. */
+                  if(cltprm.diffuseindexs->size)
+                    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s "
+                          "to fix it. %zu pixels of detection %zu have not "
+                          "been labeled (as an object)", PACKAGE_BUGREPORT,
+                          cltprm.diffuseindexs->size, cltprm.id);
+                }
+              gal_data_free(cltprm.diffuseindexs);
+              if(clprm->step==5)
+                { gal_data_free(cltprm.clumptoobj); continue; }
+
+              /* Correct the clump labels. Note that this is only necessary
+                 when there is more than object over the detection or when
+                 there were multiple clumps over the detection. */
+              if(cltprm.numobjects>1)
+                segment_relab_clumps_in_objects(&cltprm);
+              gal_data_free(cltprm.clumptoobj);
+              if(clprm->step==6) {continue;}
+            }
         }
 
       /* Convert the object labels to their final value */
@@ -772,6 +794,7 @@ static void
 segment_detections(struct segmentparams *p)
 {
   char *msg;
+  int continuecheck=1;
   struct clumps_params clprm;
   gal_data_t *labindexs, *claborig, *demo=NULL;
 
@@ -810,7 +833,7 @@ segment_detections(struct segmentparams *p)
 
 
       /* Do each step. */
-      while(clprm.step<8)
+      while(clprm.step<8 && continuecheck)
         {
           /* Reset the temporary copy of clabel back to its original. */
           if(clprm.step>1)
@@ -853,18 +876,28 @@ segment_detections(struct segmentparams *p)
               break;
 
             case 3:
-              demo=p->olabel;
-              demo->name = "DET_CLUMPS_GROWN";
-              if(!p->cp.quiet)
+              /* If the user only wanted clumps, there is no point in
+                 continuing after this point. We DON'T WANT this at the end
+                 of `2', otherwise, the `DET_CLUMPS_TRUE' extension will be
+                 different when `--onlyclumps' is called and when it
+                 isn't.*/
+              if(p->onlyclumps)
+                continuecheck=0;
+              else
                 {
-                  gal_timing_report(NULL, "Identify objects...",
-                                    1);
-                  if( asprintf(&msg, "True clumps grown                  "
-                               "(HDU: `%s').", demo->name)<0 )
-                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
-                          __func__);
-                  gal_timing_report(NULL, msg, 2);
-                  free(msg);
+                  demo=p->olabel;
+                  demo->name = "DET_CLUMPS_GROWN";
+                  if(!p->cp.quiet)
+                    {
+                      gal_timing_report(NULL, "Identify objects...",
+                                        1);
+                      if( asprintf(&msg, "True clumps grown                  "
+                                   "(HDU: `%s').", demo->name)<0 )
+                        error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                              __func__);
+                      gal_timing_report(NULL, msg, 2);
+                      free(msg);
+                    }
                 }
               break;
 
@@ -935,7 +968,8 @@ segment_detections(struct segmentparams *p)
              default values are hard to view, so we'll make a copy of the
              demo, set all Sky regions to blank and all clump macro values
              to zero. */
-          gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_NAME);
+          if(continuecheck)
+            gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_NAME);
 
           /* If the user wanted to check the clump S/N values, then break
              out of the loop, we don't need the rest of the process any
@@ -962,6 +996,7 @@ segment_detections(struct segmentparams *p)
   /* Save the final number of objects and clumps. */
   p->numclumps=clprm.totclumps;
   p->numobjects=clprm.totobjects;
+
 
   /* If the user wanted to see the S/N table, then make the S/N table. */
   if(p->checksn) segment_save_sn_table(&clprm);
@@ -1020,14 +1055,16 @@ segment_output(struct segmentparams *p)
 
 
   /* The object labels. */
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
-                        &p->numobjects, 0, "Total number of objects", 0,
-                        "counter");
-  p->olabel->name="OBJECTS";
-  gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
-  p->olabel->name=NULL;
-  keys=NULL;
-
+  if(!p->onlyclumps)
+    {
+      gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                            &p->numobjects, 0, "Total number of objects", 0,
+                            "counter");
+      p->olabel->name="OBJECTS";
+      gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
+      p->olabel->name=NULL;
+      keys=NULL;
+    }
 
   /* The Standard deviation image (if one was actually given). */
   if( !p->rawoutput && p->std->size>1 )
@@ -1154,10 +1191,19 @@ segment(struct segmentparams *p)
   /* Report the results and timing to the user. */
   if(!p->cp.quiet)
     {
-      if( asprintf(&msg, "%zu object%s""containing %zu clump%sfound.",
-                   p->numobjects, p->numobjects==1 ? " " : "s ",
-                   p->numclumps,  p->numclumps ==1 ? " " : "s ")<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if(p->onlyclumps)
+        {
+          if( asprintf(&msg, "%zu clump%sfound.",
+                       p->numclumps,  p->numclumps ==1 ? " " : "s ")<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&msg, "%zu object%s""containing %zu clump%sfound.",
+                       p->numobjects, p->numobjects==1 ? " " : "s ",
+                       p->numclumps,  p->numclumps ==1 ? " " : "s ")<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
       gal_timing_report(&t1, msg, 1);
       free(msg);
     }

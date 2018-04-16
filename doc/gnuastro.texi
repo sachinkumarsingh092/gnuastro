@@ -15252,6 +15252,18 @@ Don't abort Segment after producing the check image(s). The usage of this
 option is identical to NoiseChisel's @option{--continueaftercheck} option
 (@ref{NoiseChisel input}). Please see the descriptions there for more.
 
+@item --onlyclumps
+Abort Segment after finding true clumps and don't continue with finding
+options. Therefore, no @code{OBJECTS} extension will be present in the
+output. Each true clump in @code{CLUMPS} will get a unique label, but
+diffuse regions will still have a negative value.
+
+To make a catalog of the clumps, the input detection map (where all the
+labels are one) can be fed into @ref{MakeCatalog} along with the input
+detection map to Segment (that only had a value of @code{1} for all
+detected pixels) with @option{--clumpscat}. In this way, MakeCatalog will
+assume all the clumps belong to a single ``object''.
+
 @item --grownclumps
 In the output @code{CLUMPS} extension, store the grown clumps. If a
 detected region contains no clumps or only one clump, then it will be fully

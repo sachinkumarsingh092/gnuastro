@@ -195,6 +195,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "onlyclumps",
+      UI_KEY_ONLYCLUMPS,
+      0,
+      0,
+      "Finish after finding true clumps.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->onlyclumps,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "grownclumps",
       UI_KEY_GROWNCLUMPS,
       0,
