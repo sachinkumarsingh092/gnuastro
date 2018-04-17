@@ -27674,72 +27674,153 @@ computer's file structure.
 
 @cindex @option{-mecube} (ds9)
 The method above is a little tedious to do every time you want view a
-multi-extension FITS file. Fortunately SAO ds9 also provides options
-that you can use to specify a particular behavior. One of those
-options is @option{-mecube} which opens a FITS image as a
-multi-extension data cube. So on the command-line, if you run
-@command{$ds9 -mecube foo.fits} a small window will also be opened,
-which allows you to switch between the image extensions that
-@file{foo.fits} might have. If @file{foo.fits} only consists of one
-extension, then SAO ds9 will open as usual.
+multi-extension FITS file. Fortunately SAO ds9 also provides command-line
+options that you can use to specify a particular behavior. One of those
+options is @option{-mecube} which opens a FITS image as a multi-extension
+data cube (treating each 2D extension as a slice in a 3D cube). This allows
+you to flip through the extensions easily while keeping all the settings
+similar.
 
-Just to avoid confusion, note that SAO ds9 does not follow the GNU
-style of separating long and short options as explained in
-@ref{Arguments and options}. In the GNU style, this `long' option
-should have been called like @option{--mecube}, but SAO ds9 does
-follow those conventions and has its own.
+Try running @command{$ds9 -mecube foo.fits} to see the effect (for example
+on the output of @ref{NoiseChisel}). If the file has multiple extensions, a
+small window will also be opened along with the main ds9 window. This small
+window allows you to slide through the image extensions of
+@file{foo.fits}. If @file{foo.fits} only consists of one extension, then
+SAO ds9 will open as usual. Just to avoid confusion, note that SAO ds9 does
+not follow the GNU style of separating long and short options as explained
+in @ref{Arguments and options}. In the GNU style, this `long'
+(multi-character) option should have been called like @option{--mecube},
+but SAO ds9 follows its own conventions.
+
+Recall the @option{-mecube} opens each 2D input extension as a slice in
+3D. Therefore, when you want to inspect a multi-extension FITS file
+containing a 3D dataset, the @option{-mecube} option is no good any more
+(it only opens the first slice of the 3D cube in each extension). In that
+case, we have to use SAO ds9's @option{-multiframe} option to open each
+extension as a separate frame. Since the input is a 3D dataset, we get the
+same small window as the 2D case above for scrolling through the 3D
+slices. We then have to also ask ds9 to match the frames and lock the
+slices, so for example zooming in one, will also zoom the others.
+
+Since opening a multi-extension file (that contains similarly sized
+datasets) differs between a 2D and 3D dataset, we will have to define a
+script to decide which path to go based on the input. After the following
+steps, when clicking on a FITS file in your graphic user interface, ds9
+will open in the respective mode and a shell function will also be
+available to open it on the command-line. Note that the following solution
+assumes you already have Gnuastro installed (in particular @ref{Fits}).
+
+We will use a shell script for the conditional call of ds9. Let's assume
+that you want to put it in @file{BINDIR} (that is in your @file{PATH}
+environment variable, see @ref{Installation directory}). Tip: a good place
+would be @file{~/.local/bin}. Afterwards using your favorite text editor,
+put the following script into a file called
+@file{BINDIR/ds9-multi-ext}. You can change the size of the opened ds9
+window by changing the @code{1800x3000} part of the script below.
+
+@example
+#! /bin/bash
+
+# Make sure an input file is given.
+if [ "x$1" == "x" ]; then
+  echo "No input file given."
+else
+  # Make sure we are dealing with a FITS file. We are using shell
+  # redirection here to make sure that nothing is printed in the
+  # terminal (to standard output when we have a FITS file, or to
+  # standard error when we don't). Since we've used redirection,
+  # we'll also have to echo the return value of `astfits'.
+  check=$(astfits $1 -h0 > /dev/null 2>&1; echo $?)
+
+  # If the file was a FITS file, then `check' will be 0.
+  if [ "$check" == "0" ]; then
+
+    # Read the number of dimensions.
+    n0=$(astfits $1 -h0 | awk '$1=="NAXIS"@{print $3@}')
+
+    # Find the number of dimensions.
+    if [ "$n0" == "0" ]; then
+      ndim=$(astfits $1 -h1 | awk '$1=="NAXIS"@{print $3@}')
+    else
+      ndim=$n0
+    fi;
+
+    # Open DS9 based on the number of dimension.
+    if [ "$ndim" = "2" ]; then
+      ds9 -zscale -geometry 1800x3000 -mecube $1 -zoom to fit    \
+          -wcs degrees
+    else
+      ds9 -zscale -geometry 1800x3000 -tile -wcs degrees         \
+          -multiframe $1 -zoom to fit -match frame image         \
+          -lock slice image -lock frame image
+    fi
+  else
+    if [ -f $1 ]; then
+      echo "'$1' isn't a FITS file."
+    else
+      echo "'$1' doesn't exist."
+    fi
+  fi
+fi
+@end example
+
+@noindent
+To be able to run it, you have to activate its executable flag with this
+command:
+
+@example
+$ chmod +x BINDIR/ds9-multi-ext
+@end example
+
+If @file{BINDIR} is within your system's @file{PATH} environment variable
+(see @ref{Installation directory}), you can now open ds9 conditionally
+(depending on dimensions of the input, as described above) with a command
+like this:
+
+@example
+$ ds9-multi-ext foo.fits
+@end example
 
 @cindex GNOME 3
-It is really convenient if you set ds9 to always run with the
-@option{-mecube} option on your graphical display. On GNOME 3 (the
-most popular graphic user interface for GNU/Linux systems) you can do
-this by taking the following steps:
-
-@itemize
-
-@item
 @cindex @file{.desktop}
-Open your favorite text editor and put the following text in a file
-that ends with @file{.desktop}, for example @file{saods9.desktop}. The
-file is very descriptive.
+For the graphic user interface, we'll assume you are using GNOME (the most
+popular graphic user interface for GNU/Linux systems), version 3. For GNOME
+2, see below. You can customize GNOME to open specific files with
+@file{.desktop} files. For each user, they are stored in
+@file{~/.local/share/applications/}. In case you don't have the directory,
+make it your self (with @command{mkdir}). Using your favorite text editor,
+you can now create @file{~/.local/share/applications/saods9.desktop} with
+the following contents. Just don't forget to correct @file{BINDIR}. If you
+would also like to have ds9's logo/icon in GNOME, download it, uncomment
+the @code{Icon} line, and write its address in the value.
+
 @example
 [Desktop Entry]
 Type=Application
 Version=1.0
 Name=SAO ds9
 Comment=View FITS images
-Exec=ds9 -mecube %f
 Terminal=false
-Categories=Graphic;FITS;
+Categories=Graphics;RasterGraphics;2DGraphics;3DGraphics
+#Icon=/PATH/TO/DS9/ICON/ds9.png
+Exec=BINDIR/ds9-multi-ext %f
 @end example
 
-@item
-Copy this file into your local (user) applications directory:
-@example
-$ cp saods9.desktop ~/.local/share/applications/
-@end example
-In case you don't have the directory, you can make it yourself:
-
-@example
-$ mkdir -p ~/.local/share/applications/
-@end example
-
-@item
-The steps above will add SAO ds9 as one of your applications. To make
-it default for every time you click on a FITS file. Right click on a
-FITS file and select ``Open With'', then go into ``Other
-Application...'' and choose ``SAO ds9''.
-@end itemize
+The steps above will add SAO ds9 as one of your applications. To make it
+default, take the following steps (just once is enough). Right click on a
+FITS file and select @clicksequence{Open with other application@click{}View
+all applications@click{}SAO ds9}.
 
 @cindex GNOME 2
-In case you are using GNOME 2 you can take the following steps: right
-click on a FITS file and choose @clicksequence{Properties@click{}Open
-With@click{}Add} button. A list of applications will show up, ds9
-might already be present in the list, but don't choose it because it
-will run with no options. Below the list is an option ``Use a custom
-command''. Click on it and write the following command: @command{ds9
--mecube} in the box and click ``Add''. Then finally choose the command
-you just added as the default and click the ``Close'' button.
+In case you are using GNOME 2 you can take the following steps: right click
+on a FITS file and choose @clicksequence{Properties@click{}Open
+With@click{}Add} button. A list of applications will show up, ds9 might
+already be present in the list, but don't choose it because it will run
+with no options. Below the list is an option ``Use a custom
+command''. Click on it and write the following command:
+@command{BINDIR/ds9-multi-ext} in the box and click ``Add''. Then finally
+choose the command you just added as the default and click the ``Close''
+button.
 
 
 
