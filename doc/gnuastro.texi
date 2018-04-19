@@ -10193,6 +10193,24 @@ If your input dataset doesn't have a binary type, but you know all its
 values are 0 or 1, you can use the @code{uint8} operator (below) to convert
 it to binary.
 
+@item erode
+@cindex Erosion
+Erode the foreground (non-zero) pixels of the input dataset (second popped
+operand). The first popped operand is the connectivity (see description in
+@command{connected-components}). Erosion is simply a flipping of all
+foreground pixels (to background) that are ``touching'' background
+pixels. ``Touching'' is defined by the connectivity. In effect, this carves
+off the outer borders of the foreground.
+
+@item dilate
+@cindex Dilation
+Dilate the foreground (non-zero) pixels of the input dataset (second popped
+operand). The first popped operand is the connectivity (see description in
+@command{connected-components}). Erosion is simply a flipping of all
+background pixels (to foreground) that are ``touching'' foreground
+pixels. ``Touching'' is defined by the connectivity. In effect, this
+expands the outer borders of the foreground.
+
 @item invert
 Invert an unsigned integer dataset. This is the only operator that ignores
 blank values (which are set to be the maximum values in the unsigned

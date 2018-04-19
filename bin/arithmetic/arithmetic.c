@@ -513,6 +513,85 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 /***************************************************************/
 /*************            Other functions          *************/
 /***************************************************************/
+static int
+arithmetic_binary_conn_sanity_checks(gal_data_t *in, gal_data_t *conn,
+                                     char *operator)
+{
+  int conn_int;
+
+  /* Do proper sanity checks on `conn'. */
+  if(conn->size!=1)
+    error(EXIT_FAILURE, 0, "the first popped operand to `%s' must be a "
+          "single number. However, it has %zu elements", operator,
+          conn->size);
+  if(conn->type==GAL_TYPE_FLOAT32 || conn->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "the first popped operand to `%s' is the "
+          "connectivity (a value between 1 and the number of dimensions) "
+          "therefore, it must NOT be a floating point", operator);
+
+  /* Convert the connectivity value to a 32-bit integer and read it in and
+     make sure it is not larger than the number of dimensions. */
+  conn=gal_data_copy_to_new_type_free(conn, GAL_TYPE_INT32);
+  conn_int = *((int32_t *)(conn->array));
+  if(conn_int>in->ndim)
+    error(EXIT_FAILURE, 0, "the first popped operand of `%s' (%d) is "
+          "larger than the number of dimensions in the second-popped "
+          "operand (%zu)", operator, conn_int, in->ndim);
+
+  /* Make sure the array has an unsigned 8-bit type. */
+  if(in->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "the second popped operand of `%s' doesn't "
+          "have an 8-bit unsigned integer type. It must be a binary "
+          "dataset (only being equal to zero is checked). You can use "
+          "the `uint8' operator for type conversion", operator);
+
+  /* Clean up and return the integer value of `conn'. */
+  gal_data_free(conn);
+  return conn_int;
+}
+
+
+
+
+
+static void
+arithmetic_erode_dilate(struct arithmeticparams *p, char *token, int op)
+{
+  int conn_int;
+
+  /* Pop the two necessary operands. */
+  gal_data_t *conn = operands_pop(p, token);
+  gal_data_t *in   = operands_pop(p, token);
+
+  /* Do the sanity checks and  */
+  switch(op)
+    {
+    case ARITHMETIC_OP_ERODE:
+      conn_int=arithmetic_binary_conn_sanity_checks(in, conn, "erode");
+      gal_binary_erode(in, 1, conn_int, 1);
+      break;
+
+    case ARITHMETIC_OP_DILATE:
+      conn_int=arithmetic_binary_conn_sanity_checks(in, conn, "dilate");
+      gal_binary_dilate(in, 1, conn_int, 1);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+            "problem. The operator code %d not recognized", __func__,
+            PACKAGE_BUGREPORT, op);
+    }
+
+  /* Push the result onto the stack. */
+  operands_add(p, NULL, in);
+
+  /* Recall that`conn' was freed in the sanity check. */
+}
+
+
+
+
+
 static void
 arithmetic_connected_components(struct arithmeticparams *p, char *token)
 {
@@ -523,44 +602,18 @@ arithmetic_connected_components(struct arithmeticparams *p, char *token)
   gal_data_t *conn = operands_pop(p, token);
   gal_data_t *in   = operands_pop(p, token);
 
-  /* Do proper sanity checks on `conn'. */
-  if(conn->size!=1)
-    error(EXIT_FAILURE, 0, "the first popped operand to "
-          "`connected-components' must be a single number. However, it has "
-          "%zu elements", conn->size);
-  if(conn->type==GAL_TYPE_FLOAT32 || conn->type==GAL_TYPE_FLOAT64)
-    error(EXIT_FAILURE, 0, "the first popped operand to "
-          "`connected-components' is the connectivity (a value between 1 "
-          "and the number of dimensions) therefore, it must NOT be a "
-          "floating point");
-
-  /* Convert the connectivity value to a 32-bit integer and read it in and
-     make sure it is not larger than the number of dimensions. */
-  conn=gal_data_copy_to_new_type_free(conn, GAL_TYPE_INT32);
-  conn_int = *((int32_t *)(conn->array));
-  if(conn_int>in->ndim)
-    error(EXIT_FAILURE, 0, "the first popped operand of "
-          "`connected-components' (%d) is larger than the number of "
-          "dimensions in the second-popped operand (%zu)", conn_int,
-          in->ndim);
-
-  /* Make sure the array has an unsigned 8-bit type. */
-  if(in->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "the second popped operand of "
-          "`connected-components' doesn't have an 8-bit unsigned "
-          "integer type. It must be a binary dataset (only being equal "
-          "to zero is checked). You can use the `uint8' operator to "
-          "convert the type of this operand.");
+  /* Basic sanity checks. */
+  conn_int=arithmetic_binary_conn_sanity_checks(in, conn,
+                                                "connected-components");
 
   /* Do the connected components labeling. */
-  gal_binary_connected_components(in, &out, 1);
+  gal_binary_connected_components(in, &out, conn_int);
 
   /* Push the result onto the stack. */
   operands_add(p, NULL, out);
 
-  /* Clean up. */
+  /* Clean up (`conn' was freed in the sanity check). */
   gal_data_free(in);
-  gal_data_free(conn);
 }
 
 
@@ -778,6 +831,10 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEAN;   nop=0;  }
           else if (!strcmp(token->v, "filter-sigclip-median"))
             { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN; nop=0;  }
+          else if (!strcmp(token->v, "erode"))
+            { op=ARITHMETIC_OP_ERODE;                 nop=0;  }
+          else if (!strcmp(token->v, "dilate"))
+            { op=ARITHMETIC_OP_DILATE;                nop=0;  }
           else if (!strcmp(token->v, "connected-components"))
             { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  nop=0;  }
           else if (!strcmp(token->v, "invert"))
@@ -854,6 +911,11 @@ reversepolish(struct arithmeticparams *p)
                 case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
                 case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
                   wrapper_for_filter(p, token->v, op);
+                  break;
+
+                case ARITHMETIC_OP_ERODE:
+                case ARITHMETIC_OP_DILATE:
+                  arithmetic_erode_dilate(p, token->v, op);
                   break;
 
                 case ARITHMETIC_OP_CONNECTED_COMPONENTS:
