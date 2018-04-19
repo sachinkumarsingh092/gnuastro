@@ -10162,6 +10162,28 @@ dataset. This operator and its necessary operands are almost identical to
 median value (which is less affected by outliers than the mean) is added
 back to the stack.
 
+@item erode
+@cindex Erosion
+Erode the foreground pixels (with value @code{1}) of the input dataset
+(second popped operand). The first popped operand is the connectivity (see
+description in @command{connected-components}). Erosion is simply a
+flipping of all foreground pixels (to background; with value @code{0}) that
+are ``touching'' background pixels. ``Touching'' is defined by the
+connectivity. In effect, this carves off the outer borders of the
+foreground, making them thinner. This operator assumes a binary dataset
+(all pixels are @code{0} and @code{1}).
+
+@item dilate
+@cindex Dilation
+Dilate the foreground pixels (with value @code{1}) of the input dataset
+(second popped operand). The first popped operand is the connectivity (see
+description in @command{connected-components}). Erosion is simply a
+flipping of all background pixels (with value @code{0}) to foreground that
+are ``touching'' foreground pixels. ``Touching'' is defined by the
+connectivity. In effect, this expands the outer borders of the
+foreground. This operator assumes a binary dataset (all pixels are @code{0}
+and @code{1}).
+
 @item connected-components
 @cindex Connected components
 Find the connected components in the input dataset (second popped
@@ -10192,24 +10214,6 @@ $ astarithmetic in.fits 100 gt 2 connected-components
 If your input dataset doesn't have a binary type, but you know all its
 values are 0 or 1, you can use the @code{uint8} operator (below) to convert
 it to binary.
-
-@item erode
-@cindex Erosion
-Erode the foreground (non-zero) pixels of the input dataset (second popped
-operand). The first popped operand is the connectivity (see description in
-@command{connected-components}). Erosion is simply a flipping of all
-foreground pixels (to background) that are ``touching'' background
-pixels. ``Touching'' is defined by the connectivity. In effect, this carves
-off the outer borders of the foreground.
-
-@item dilate
-@cindex Dilation
-Dilate the foreground (non-zero) pixels of the input dataset (second popped
-operand). The first popped operand is the connectivity (see description in
-@command{connected-components}). Erosion is simply a flipping of all
-background pixels (to foreground) that are ``touching'' foreground
-pixels. ``Touching'' is defined by the connectivity. In effect, this
-expands the outer borders of the foreground.
 
 @item invert
 Invert an unsigned integer dataset. This is the only operator that ignores
@@ -25734,7 +25738,8 @@ main(void)
   /* Read the image into memory as a float32 data type. We are using
    * `-1' for `minmapsize' to ensure that the image is read into
    * memory. */
-  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
+                                    -1);
 
 
   /* Print some basic information before the actual contents: */

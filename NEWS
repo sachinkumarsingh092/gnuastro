@@ -16,9 +16,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       in charge of detection.
 
   Arithmetic:
-    - connected-components: label the connected elements of the input.
+    - erode: Erode the foreground of a binary dataset.
+    - dilate: Dilate the foreground of a binary dataset.
     - filter-sigclip-mean: sigma-clipped, mean filter operator.
     - filter-sigclip-median: sigma-clipped, median filter operator.
+    - connected-components: label the connected elements of the input.
     - invert: subtract the maximum of unsigned types (absorption to emission).
 
   ConvertType:
