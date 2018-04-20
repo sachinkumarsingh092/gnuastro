@@ -107,6 +107,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
+  Arithmetic:
+    - filter-mean: a blank value in the input can be non-blank in the
+         output when non-blank elements present in filter.
+    - filter-median: similar to filter-mean.
+
   Fits:
     --history: can be called/written multiple times in one run.
     --comment: can be called/written multiple times in one run.

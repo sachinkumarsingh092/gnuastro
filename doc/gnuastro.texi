@@ -10118,6 +10118,13 @@ The final effect of mean filtering is to smooth the input image, it is
 essentially a convolution with a kernel that has identical values for all
 its pixels (is flat), see @ref{Convolution process}.
 
+Note that blank pixels will also be affected by this operator: if there are
+any non-blank elements in the box surrounding a blank pixel, in the
+flitered image, it will have the mean of the non-blank elements, therefore
+it won't be blank any more. If blank elements are important for your
+analysis, you can use the @code{isblank} with the @code{where} operator to
+set them back to blank after filtering.
+
 @item filter-median
 Apply @url{https://en.wikipedia.org/wiki/Median_filter, median filtering}
 on the input dataset. This is very similar to @command{filter-mean}, except
@@ -25375,7 +25382,7 @@ nature. The produced values are also always within the range of the known
 values and strong outliers do not get created. We will hopefully implement
 other methods too (wrappers around the GNU Scientific Library's very
 complete set of functions), but currently the developers are too busy. So
-if you do have the chance to help your contribution would be very welcome
+if you do have the chance to help, your contribution would be very welcome
 and appreciated.
 
 @deftypefun {gal_data_t *} gal_interpolate_close_neighbors (gal_data_t @code{*input}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numneighbors}, size_t @code{numthreads}, int @code{onlyblank}, int @code{aslinkedlist})

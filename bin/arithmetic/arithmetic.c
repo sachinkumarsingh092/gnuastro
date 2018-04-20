@@ -179,121 +179,110 @@ arithmetic_filter(void *in_prm)
       /* For easy reading, put the index in `ind'. */
       ind=tprm->indexs[i];
 
-      /* If we are on a blank element, then just set the output to blank
-         also. */
-      if( afp->hasblank
-          && gal_blank_is(gal_data_ptr_increment(input->array, ind,
-                                                 input->type), input->type) )
-        gal_blank_write(gal_data_ptr_increment(afp->out->array, ind,
-                                               afp->out->type),
-                        afp->out->type);
-      else
+      /* Get the coordinate of the pixel. */
+      gal_dimension_index_to_coord(ind, ndim, dsize, coord);
+
+      /* See which dimensions need trimming. */
+      tile->size=1;
+      for(j=0;j<ndim;++j)
         {
-          /* Get the coordinate of the pixel. */
-          gal_dimension_index_to_coord(ind, ndim, dsize, coord);
-
-          /* See which dimensions need trimming. */
-          tile->size=1;
-          for(j=0;j<ndim;++j)
+          /* Estimate the coordinate of the filter's starting point. Note
+             that we are dealing with size_t (unsigned int) type here, so
+             there are no negatives. A negative result will produce an
+             extremely large number, so instead of checking for negative,
+             we can just see if the result of a subtraction is less than
+             the width of the input. */
+          if( (coord[j] - hnfsize[j] > dsize[j])
+              || (coord[j] + hpfsize[j] >= dsize[j]) )
             {
-              /* Estimate the coordinate of the filter's starting
-                 point. Note that we are dealing with size_t (unsigned int)
-                 type here, so there are no negatives. A negative result
-                 will produce an extremely large number, so instead of
-                 checking for negative, we can just see if the result of a
-                 subtraction is less than the width of the input. */
-              if( (coord[j] - hnfsize[j] > dsize[j])
-                  || (coord[j] + hpfsize[j] >= dsize[j]) )
-                {
-                  start[j] = ( (coord[j] - hnfsize[j] > dsize[j])
-                               ? 0 : coord[j] - hnfsize[j] );
-                  end[j]   = ( (coord[j] + hpfsize[j] >= dsize[j])
-                               ? dsize[j]
-                               : coord[j] + hpfsize[j] + 1);
-                  tsize[j] = end[j] - start[j];
-                }
-              else  /* NOT on the edge (given requested filter width). */
-                {
-                  tsize[j] = fsize[j];
-                  start[j] = coord[j] - hnfsize[j];
-                }
-              tile->size *= tsize[j];
+              start[j] = ( (coord[j] - hnfsize[j] > dsize[j])
+                           ? 0 : coord[j] - hnfsize[j] );
+              end[j]   = ( (coord[j] + hpfsize[j] >= dsize[j])
+                           ? dsize[j]
+                           : coord[j] + hpfsize[j] + 1);
+              tsize[j] = end[j] - start[j];
             }
+          else  /* NOT on the edge (given requested filter width). */
+            {
+              tsize[j] = fsize[j];
+              start[j] = coord[j] - hnfsize[j];
+            }
+          tile->size *= tsize[j];
+        }
 
-          /* For a test.
-             printf("coord: %zu, %zu\n", coord[1]+1, coord[0]+1);
-             printf("\tstart: %zu, %zu\n", start[1]+1, start[0]+1);
-             printf("\ttsize: %zu, %zu\n", tsize[1], tsize[0]);
-          */
+      /* For a test.
+         printf("coord: %zu, %zu\n", coord[1]+1, coord[0]+1);
+         printf("\tstart: %zu, %zu\n", start[1]+1, start[0]+1);
+         printf("\ttsize: %zu, %zu\n", tsize[1], tsize[0]);
+      */
 
-          /* Set the tile's starting pointer. */
-          index=gal_dimension_coord_to_index(ndim, dsize, start);
-          tile->array=gal_data_ptr_increment(input->array, index,
-                                             input->type);
+      /* Set the tile's starting pointer. */
+      index=gal_dimension_coord_to_index(ndim, dsize, start);
+      tile->array=gal_data_ptr_increment(input->array, index,
+                                         input->type);
 
-          /* Do the necessary calculation. */
+      /* Do the necessary calculation. */
+      switch(afp->operator)
+        {
+        case ARITHMETIC_OP_FILTER_MEDIAN:
+          result=gal_statistics_median(tile, 0);
+          break;
+
+
+        case ARITHMETIC_OP_FILTER_MEAN:
+          result=gal_statistics_mean(tile);
+          break;
+
+
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
+          /* Find the sigma-clipped results. */
+          sigclip=gal_statistics_sigma_clip(tile, afp->sclip_multip,
+                                            afp->sclip_param, 0, 1);
+
+          /* Set the required index. */
           switch(afp->operator)
             {
-            case ARITHMETIC_OP_FILTER_MEDIAN:
-              result=gal_statistics_median(tile, 0);
-              break;
-
-
-            case ARITHMETIC_OP_FILTER_MEAN:
-              result=gal_statistics_mean(tile);
-              break;
-
-
-            case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
-            case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
-              /* Find the sigma-clipped results. */
-              sigclip=gal_statistics_sigma_clip(tile, afp->sclip_multip,
-                                                afp->sclip_param, 0, 1);
-
-              /* Set the required index. */
-              switch(afp->operator)
-                {
-                case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:   sind = 2; break;
-                case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN: sind = 1; break;
-                default:
-                  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at "
-                        "%s to fix the problem. The `afp->operator' value "
-                        "%d is not recognized as sigma-clipped median or "
-                        "mean", __func__, PACKAGE_BUGREPORT, afp->operator);
-                }
-
-              /* Allocate the output and write the value into it. */
-              result=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
-                                    0, -1, NULL, NULL, NULL);
-              ((float *)(result->array))[0] =
-                ((float *)(sigclip->array))[sind];
-
-              /* Clean up. */
-              gal_data_free(sigclip);
-              break;
-
-
+            case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:   sind = 2; break;
+            case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN: sind = 1; break;
             default:
-              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
-                    "to fix the problem. `afp->operator' code %d is not "
-                    "recognized", PACKAGE_BUGREPORT, __func__,
-                    afp->operator);
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at "
+                    "%s to fix the problem. The `afp->operator' value "
+                    "%d is not recognized as sigma-clipped median or "
+                    "mean", __func__, PACKAGE_BUGREPORT, afp->operator);
             }
 
-          /* Make sure the output array type and result's type are the
-             same. */
-          if(result->type!=afp->out->type)
-            result=gal_data_copy_to_new_type_free(result, afp->out->type);
+          /* Allocate the output and write the value into it. */
+          result=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
+                                0, -1, NULL, NULL, NULL);
+          ((float *)(result->array))[0] =
+            ((float *)(sigclip->array))[sind];
+
+          /* Clean up. */
+          gal_data_free(sigclip);
+          break;
 
 
-          /* Copy the result into the output array. */
-          memcpy(gal_data_ptr_increment(afp->out->array, ind,
-                                        afp->out->type),
-                 result->array, gal_type_sizeof(afp->out->type));
-
-          /* Clean up for this pixel. */
-          gal_data_free(result);
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
+                "to fix the problem. `afp->operator' code %d is not "
+                "recognized", PACKAGE_BUGREPORT, __func__,
+                afp->operator);
         }
+
+      /* Make sure the output array type and result's type are the
+         same. */
+      if(result->type!=afp->out->type)
+        result=gal_data_copy_to_new_type_free(result, afp->out->type);
+
+
+      /* Copy the result into the output array. */
+      memcpy(gal_data_ptr_increment(afp->out->array, ind,
+                                    afp->out->type),
+             result->array, gal_type_sizeof(afp->out->type));
+
+      /* Clean up for this pixel. */
+      gal_data_free(result);
     }
 
 
