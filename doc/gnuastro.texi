@@ -10169,6 +10169,13 @@ dataset. This operator and its necessary operands are almost identical to
 median value (which is less affected by outliers than the mean) is added
 back to the stack.
 
+@item interpolate-medianngb
+Interpolate all the blank elements of the second popped operand with the
+median of its nearest non-blank neighbors. The number of the nearest
+non-blank neighbors used to calculate the median is given by the first
+popped operand. Note that the distance of the nearest non-blank neighbors
+is irrelevant in this interpolation.
+
 @item erode
 @cindex Erosion
 Erode the foreground pixels (with value @code{1}) of the input dataset

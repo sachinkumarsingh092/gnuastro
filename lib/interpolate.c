@@ -333,8 +333,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   int permute=(tl && tl->totchannels>1 && tl->workoverch);
 
 
-  /* If there are no blank values in the array we should only fill blank
-     values, then simply copy the input and abort. */
+  /* If there are no blank values in the array, AND we should only fill
+     blank values, then simply copy the input and abort. */
   if( (input->flag | GAL_DATA_FLAG_BLANK_CH)     /* Zero bit is meaningful.*/
       && !(input->flag | GAL_DATA_FLAG_HASBLANK) /* There are no blanks.   */
       && onlyblank )                             /* Only interpolate blank.*/

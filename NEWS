@@ -22,6 +22,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - filter-sigclip-median: sigma-clipped, median filter operator.
     - connected-components: label the connected elements of the input.
     - invert: subtract the maximum of unsigned types (absorption to emission).
+    - interpolate-medianngb: Interpolate (only blanks) with nearest neighbors.
 
   ConvertType:
     - TIFF images can also be used as input.

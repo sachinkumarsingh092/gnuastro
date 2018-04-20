@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
+#include <gnuastro/interpolate.h>
 
 #include <gnuastro-internal/checkset.h>
 
@@ -642,6 +643,49 @@ arithmetic_invert(struct arithmeticparams *p, char *token)
 
 
 
+static void
+arithmetic_interpolate(struct arithmeticparams *p, char *token)
+{
+  int num_int;
+  gal_data_t *interpolated;
+
+  /* First pop the number of nearby neighbors.*/
+  gal_data_t *num = operands_pop(p, token);
+
+  /* Then pop the actual dataset to interpolate. */
+  gal_data_t *in = operands_pop(p, token);
+
+  /* Do proper sanity checks on `num'. */
+  if(num->size!=1)
+    error(EXIT_FAILURE, 0, "the first popped operand to "
+          "`interpolate-medianngb' must be a single number. However, "
+          "it has %zu elements", num->size);
+  if(num->type==GAL_TYPE_FLOAT32 || num->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "the first popped operand to "
+          "`interpolate-medianngb' is the number of nearby neighbors (a "
+          "counter, an integer). It must NOT be a floating point.\n\n"
+          "If its already an integer, but in a floating point container, "
+          "you can use the `int32' operator to convert it to a 32-bit "
+          "integer for example");
+
+  /* Convert the given number to a 32-bit integer and read it in. */
+  num=gal_data_copy_to_new_type_free(num, GAL_TYPE_INT32);
+  num_int = *((int32_t *)(num->array));
+
+  /* Call the interpolation function. */
+  interpolated=gal_interpolate_close_neighbors(in, NULL, num_int,
+                                               p->cp.numthreads, 1, 0);
+
+  /* Clean up and push the interpolated array onto the stack. */
+  gal_data_free(in);
+  gal_data_free(num);
+  operands_add(p, NULL, interpolated);
+}
+
+
+
+
+
 
 
 
@@ -828,6 +872,8 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  nop=0;  }
           else if (!strcmp(token->v, "invert"))
             { op=ARITHMETIC_OP_INVERT;                nop=0;  }
+          else if (!strcmp(token->v, "interpolate-medianngb"))
+            { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; nop=0;  }
 
 
           /* Finished checks with known operators */
@@ -913,6 +959,10 @@ reversepolish(struct arithmeticparams *p)
 
                 case ARITHMETIC_OP_INVERT:
                   arithmetic_invert(p, token->v);
+                  break;
+
+                case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
+                  arithmetic_interpolate(p, token->v);
                   break;
 
                 default:
