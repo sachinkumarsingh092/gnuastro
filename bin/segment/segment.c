@@ -591,10 +591,12 @@ segment_on_threads(void *in_prm)
       if(clprm->step==1 || p->checksn)
         { gal_data_free(topinds); continue; }
 
+
       /* Only keep true clumps and abort if the user only wants clumps. */
       clumps_det_keep_true_relabel(&cltprm);
       gal_data_free(topinds);
       if(clprm->step==2) continue;
+
 
       /* When only clumps are desired ignore the rest of the process. */
       if(!p->onlyclumps)
@@ -717,14 +719,16 @@ segment_save_sn_table(struct clumps_params *clprm)
   int32_t *oiarr, *cioarr;
   gal_list_str_t *comments=NULL;
   size_t i, j, c=0, totclumps=0;
-  gal_data_t *sn, *objind, *clumpinobj;
   struct segmentparams *p=clprm->p;
+  gal_data_t *sn, *objind, *clumpinobj;
 
 
   /* Find the total number of clumps in all the initial detections. Recall
      that the `size' values were one more than the actual number because
      the labelings start from 1. */
-  for(i=1;i<p->numdetections+1;++i) totclumps += clprm->sn[i].size-1;
+  for(i=1;i<p->numdetections+1;++i)
+    if( clprm->sn[i].size > 1 )
+      totclumps += clprm->sn[i].size-1;
 
 
   /* Allocate the columns for the table. */
@@ -744,13 +748,14 @@ segment_save_sn_table(struct clumps_params *clprm)
   oiarr=objind->array;
   cioarr=clumpinobj->array;
   for(i=1;i<p->numdetections+1;++i)
-    for(j=1;j<clprm->sn[i].size;++j)
-      {
-        oiarr[c]  = i;
-        cioarr[c] = j;
-        sarr[c]   = ((float *)(clprm->sn[i].array))[j];
-        ++c;
-      }
+    if( clprm->sn[i].size > 1 )
+      for(j=1;j<clprm->sn[i].size;++j)
+        {
+          oiarr[c]  = i;
+          cioarr[c] = j;
+          sarr[c]   = ((float *)(clprm->sn[i].array))[j];
+          ++c;
+        }
 
 
   /* Write the comments. */

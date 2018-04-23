@@ -493,10 +493,8 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
 
   /* Get the Git description in the running folder. */
   tmp=gal_git_describe();
-  if(tmp) sprintf(gitdescribe, " from %s,", tmp);
-  else    gitdescribe[0]='\0';
-  free(tmp);
-
+  if(tmp) { sprintf(gitdescribe, " from %s,", tmp); free(tmp); }
+  else      gitdescribe[0]='\0';
 
   /* Git version and time of program's starting, this will be the second
      line. Note that ctime puts a `\n' at the end of its string, so we'll
@@ -506,7 +504,6 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   tmp[ strlen(tmp)-1 ]='\0';
   gal_list_str_add(comments, tmp, 0);
-
 
   /* Program name: this will be the top of the list (first line). We will
      need to set the allocation flag for this one, because program_string
