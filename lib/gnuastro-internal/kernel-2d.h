@@ -34,22 +34,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Make the kernel
    ---------------
 
-   We'll first make the kernel using MakeProfiles, then crop the outer
-   layers that are zero. Put these lines into a script and run it.
+   We'll first make the kernel using MakeProfiles with the following
+   commands. IMPORTANT NOTE: because the kernel is so sharp, random
+   sampling is going to be used for all the pixels (the center won't be
+   used). So it is important to have a large number of random points to
+   make the very slight differences between symmetric parts of the profile
+   even less significant.
 
-     set -o errexit           # Stop if a program returns false.
-     export GSL_RNG_TYPE=ranlxs2
      export GSL_RNG_SEED=1
-     astmkprof --kernel=gaussian,2,5 --oversample=1 --envseed -ok2.fits
-     astcrop k2.fits --section=2:*-1,2:*-1 --zeroisnotblank    \
-             --mode=img --output=fwhm2.fits
-     rm k2.fits
+     export GSL_RNG_TYPE=ranlxs2
+     astmkprof --kernel=gaussian,2,5 --oversample=1 --envseed --numrandom=100000
 
    Convert it to C code
    --------------------
 
-   We'll use this tiny C program to convert the FITS file into the two
-   important C variables:
+   Put the following C program into a file called `kernel.c'.
 
      #include <stdio.h>
      #include <stdlib.h>
@@ -60,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
      {
        size_t i;
        float *arr;
-       gal_data_t *img=gal_fits_img_read_to_type("fwhm2.fits", "1",
+       gal_data_t *img=gal_fits_img_read_to_type("kernel.fits", "1",
                                                  GAL_TYPE_FLOAT32, -1);
 
        arr=img->array;
@@ -97,33 +96,34 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    -----------------
 
    We can now compile and run that C program and put the outputs in
-   `ready.c'. Once its created, copy the contents of `ready.c' after these
-   comments.
+   `kernel.c'. Once its created, copy the contents of `kernel-2d.h' after
+   these comments.
 
-     $ astbuildprog -q prepare.c > ready.c
+     $ astbuildprog -q kernel.c > kernel-2d.h
  */
 
 size_t kernel_2d_dsize[2]={11, 11};
-float kernel_2d[121]={0, 0, 0, 0, 0, 2.570758e-08, 0, 0, 0, 0, 0,
+float kernel_2d[121]={0, 0, 0, 0, 0, 2.599797e-08, 0, 0, 0, 0, 0,
 
-0, 0, 2.981546e-08, 7.249833e-07, 4.468747e-06, 8.409227e-06, 4.554846e-06, 7.034199e-07, 3.002102e-08, 0, 0,
+0, 0, 3.008479e-08, 6.938075e-07, 4.493532e-06, 8.276223e-06, 4.515019e-06, 6.947793e-07, 3.04628e-08, 0, 0,
 
-0, 3.054498e-08, 2.614154e-06, 5.891601e-05, 0.0003810036, 0.000708165, 0.0003842406, 5.963722e-05, 2.618934e-06, 2.990584e-08, 0,
+0, 3.009687e-08, 2.556034e-06, 5.936867e-05, 0.0003808578, 0.0007126221, 0.0003827095, 5.902729e-05, 2.553342e-06, 2.978137e-08, 0,
 
-0, 7.199899e-07, 5.801019e-05, 0.001365485, 0.009023659, 0.01638159, 0.008892864, 0.001345278, 5.920425e-05, 6.984741e-07, 0,
+0, 7.021852e-07, 5.912285e-05, 0.00137637, 0.008863639, 0.01648383, 0.008855942, 0.001365171, 5.925718e-05, 7.021184e-07, 0,
 
-0, 4.584869e-06, 0.0003830431, 0.008917402, 0.05743425, 0.1061489, 0.05746412, 0.008902563, 0.0003849257, 4.448404e-06, 0,
+0, 4.490787e-06, 0.0003826718, 0.008857355, 0.05742518, 0.1062628, 0.05727194, 0.008880079, 0.0003826067, 4.478989e-06, 0,
 
-2.572769e-08, 8.414041e-06, 0.0007008284, 0.0164456, 0.1055995, 0.19753, 0.1061855, 0.01653461, 0.0007141303, 8.41643e-06, 2.550312e-08,
+2.595735e-08, 8.31301e-06, 0.0007113572, 0.01640853, 0.1061298, 0.1971036, 0.1062611, 0.01647962, 0.000708363, 8.379878e-06, 2.593496e-08,
 
-0, 4.582525e-06, 0.0003775396, 0.00898499, 0.05741534, 0.1062144, 0.05700329, 0.008838926, 0.0003822096, 4.543726e-06, 0,
+0, 4.516684e-06, 0.0003846966, 0.008860709, 0.05739478, 0.1062216, 0.05725683, 0.00881713, 0.000383981, 4.473017e-06, 0,
 
-0, 6.883925e-07, 6.09077e-05, 0.001339333, 0.008817007, 0.01636454, 0.008995386, 0.001407854, 6.004799e-05, 7.203602e-07, 0,
+0, 6.950547e-07, 5.920586e-05, 0.00137483, 0.00887785, 0.0164709, 0.008855232, 0.001372743, 5.939038e-05, 7.016624e-07, 0,
 
-0, 3.095966e-08, 2.575403e-06, 5.89859e-05, 0.0003804447, 0.0007091904, 0.0003810006, 5.903253e-05, 2.575202e-06, 2.934356e-08, 0,
+0, 3.006322e-08, 2.587011e-06, 5.92911e-05, 0.0003843824, 0.0007118155, 0.000386519, 5.974654e-05, 2.585581e-06, 3.048036e-08, 0,
 
-0, 0, 3.040937e-08, 7.018197e-07, 4.543086e-06, 8.296753e-06, 4.434901e-06, 6.659026e-07, 3.066215e-08, 0, 0,
+0, 0, 3.041056e-08, 7.05225e-07, 4.497418e-06, 8.388542e-06, 4.478833e-06, 7.018358e-07, 2.995504e-08, 0, 0,
 
-0, 0, 0, 0, 0, 2.603901e-08, 0, 0, 0, 0, 0};
+0, 0, 0, 0, 0, 2.567377e-08, 0, 0, 0, 0, 0};
+
 
 #endif

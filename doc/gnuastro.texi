@@ -24460,22 +24460,23 @@ vertical).
 @deftypefun void gal_box_bound_ellipse_extent (double @code{a}, double @code{b}, double @code{theta_deg}, double @code{*extent})
 Return the maximum extent along each dimension of the given ellipse from
 the center of the ellipse. Therefore this is half the extent of the box in
-each dimension. @code{a} is the ellipse major axis, @code{b} is the minor
-axis, @code{theta_deg} is the position angle in degrees. The extent in each
-dimension is in floating point format and stored in @code{extent} which
-must already be allocated before this function.
+each dimension. @code{a} is the ellipse semi-major axis, @code{b} is the
+semi-minor axis, @code{theta_deg} is the position angle in degrees. The
+extent in each dimension is in floating point format and stored in
+@code{extent} which must already be allocated before this function.
 @end deftypefun
 
 @deftypefun void gal_box_bound_ellipse (double @code{a}, double @code{b}, double @code{theta_deg}, long @code{*width})
-Any ellipse can be enclosed into a rectangular box. The purpose of this
-function is to give the height and width of that box assuming the center of
-the ellipse is in the box center. @code{a} is the ellipse major axis,
-@code{b} is the minor axis, @code{theta_deg} is the position angle in
-degrees. The @code{width} array will contain the output size in long
-integer type. @code{width[0]}, and @code{width[1]} are the number of pixels
-along the first and second FITS axis. Since the ellipse center is assumed
-to be in the center of the box, all the values in @code{width} will be an
-odd integer.
+Any ellipse can be enclosed into a rectangular box. This function will
+write the height and width of that box where @code{width} points to. It
+assumes the center of the ellipse is located within the central pixel of
+the box. @code{a} is the ellipse semi-major axis length, @code{b} is the
+semi-minor axis, @code{theta_deg} is the position angle in degrees. The
+@code{width} array will contain the output size in long integer
+type. @code{width[0]}, and @code{width[1]} are the number of pixels along
+the first and second FITS axis. Since the ellipse center is assumed to be
+in the center of the box, all the values in @code{width} will be an odd
+integer.
 @end deftypefun
 
 @deftypefun void gal_box_border_from_center (double @code{center}, size_t @code{ndim}, long @code{*width}, long @code{*fpixel}, long @code{*lpixel})
