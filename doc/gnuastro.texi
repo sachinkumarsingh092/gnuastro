@@ -581,6 +581,7 @@ Gnuastro library
 * Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
 * Binary datasets::             Datasets that can only have values of 0 or 1.
+* Labeled datasets::            Working with Segmented/labeled datasets.
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
@@ -20116,6 +20117,7 @@ documentation will correspond to your installed version.
 * Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
 * Binary datasets::             Datasets that can only have values of 0 or 1.
+* Labeled datasets::            Working with Segmented/labeled datasets.
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
@@ -20815,24 +20817,25 @@ below).
 @deftypefun int gal_blank_present (gal_data_t @code{*input}, int @code{updateflag})
 Return 1 if the dataset has a blank value and zero if it doesn't. Before
 checking the dataset, this function will look at @code{input}'s flags. If
-the @code{GAL_DATA_FLAG_HASBLANK} or @code{GAL_DATA_FLAG_DONT_CHECK_ZERO}
-bits of @code{input->flag} are set to 1, this function will not do any
-check and will just use the information in the flags. This can greatly
-speed up processing when a dataset needs to be checked multiple times.
+the @code{GAL_DATA_FLAG_BLANK_CH} bit of @code{input->flag} is on, this
+function will not do any check and will just use the information in the
+flags. This can greatly speed up processing when a dataset needs to be
+checked multiple times.
 
-If you want to re-check a dataset which has non-zero flags, then explicitly
-set the appropriate flag to zero before calling this function. When there
-are no other flags, you can just set @code{input->flags} to zero, otherwise
-you can use this expression:
+When the dataset's flags were not used and @code{updateflags} is non-zero,
+this function will set the flags appropriately to avoid having to re-check
+the dataset in future calls. When @code{updateflags==0}, this function has
+no side-effects on the dataset: it will not toggle the flags.
+
+If you want to re-check a dataset with the blank-value-check flag already
+set (for example if you have made changes to it), then explicitly set the
+@code{GAL_DATA_FLAG_BLANK_CH} bit to zero before calling this
+function. When there are no other flags, you can just set the flags to zero
+(@code{input->flags=0}), otherwise you can use this expression:
 
 @example
-input->flags &= ~(GAL_DATA_FLAG_HASBLANK | GAL_DATA_FLAG_USE_ZERO);
+input->flags &= ~GAL_DATA_FLAG_BLANK_CH;
 @end example
-
-When @code{updateflags} is zero, this function has no side-effects on the
-dataset: it will not toggle the flags. When the dataset's flags were not
-used and @code{updateflags} is non-zero, this function will set the flags
-appropriately to avoid having to re-check the dataset in future calls.
 @end deftypefun
 
 
@@ -20844,16 +20847,18 @@ those that aren't.
 
 
 @deftypefun void gal_blank_remove (gal_data_t @code{*input})
-Remove blank elements from a dataset, convert it to a 1D dataset, and
-adjust the size properly (the number of non-blank elements). In practice
-this function doesn't @code{realloc} the input array, it just shifts the
-blank elements to the end and adjusts the size elements of the
-@code{gal_data_t}, see @ref{Generic data container}.
+Remove blank elements from a dataset, convert it to a 1D dataset, adjust
+the size properly (the number of non-blank elements), and toggle the
+blank-value-related bit-flags. In practice this function doesn't
+@code{realloc} the input array, it just shifts the blank elements to the
+end and adjusts the size elements of the @code{gal_data_t}, see
+@ref{Generic data container}.
 
 If all the elements were blank, then @code{input->size} will be zero. This
 is thus a good parameter to check after calling this function to see if
 there actually were any non-blank elements in the input or not and take the
-appropriate measure. This can help avoid strange bugs in later steps.
+appropriate measure. This check is highly recommended because it will avoid
+strange bugs in later steps.
 @end deftypefun
 
 @deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
@@ -24850,14 +24855,6 @@ symmetricity of the derived mode is less than this value, all the returned
 values by @code{gal_statistics_mode} will have a value of NaN.
 @end deffn
 
-@deffn  Macro GAL_STATISTICS_SORTED_NOT
-@deffnx Macro GAL_STATISTICS_SORTED_INVALID
-@deffnx Macro GAL_STATISTICS_SORTED_INCREASING
-@deffnx Macro GAL_STATISTICS_SORTED_DECREASING
-Macros used to identify if the dataset is sorted and increasing, sorted and
-decreasing or not sorted.
-@end deffn
-
 @deffn  Macro GAL_STATISTICS_BINS_INVALID
 @deffnx Macro GAL_STATISTICS_BINS_REGULAR
 @deffnx Macro GAL_STATISTICS_BINS_IRREGULAR
@@ -24997,25 +24994,55 @@ plot (with a maximum of one).
 @end deftypefun
 
 
-@deftypefun int gal_statistics_is_sorted (gal_data_t @code{*input})
-Return the respective sort macro (see above) for the @code{input}
-dataset. If the dataset has zero elements, then
-@code{GAL_STATISTICS_SORTED_INVALID} is returned.
+@deftypefun int gal_statistics_is_sorted (gal_data_t @code{*input}, int @code{updateflags})
+Return @code{0} if the input is not sorted, if it is sorted, this function
+will return @code{1} and @code{2} if it is increasing or decreasing,
+respectively. This function will abort with an error if @code{input} has
+zero elements. This function will only look into the dataset if the
+@code{GAL_DATA_FLAG_SORT_CH} bit of @code{input->flag} is @code{0}, see
+@ref{Generic data container}.
+
+When the flags don't indicate a previous check @emph{and}
+@code{updateflags} is non-zero, this function will set the flags
+appropriately to avoid having to re-check the dataset in future calls (this
+can be very useful when repeated checks are necessary). When
+@code{updateflags==0}, this function has no side-effects on the dataset: it
+will not toggle the flags.
+
+If you want to re-check a dataset with the blank-value-check flag already
+set (for example if you have made changes to it), then explicitly set the
+@code{GAL_DATA_FLAG_SORT_CH} bit to zero before calling this function. When
+there are no other flags, you can simply set the flags to zero (with
+@code{input->flags=0}), otherwise you can use this expression:
+
+@example
+input->flags &= ~GAL_DATA_FLAG_SORT_CH;
+@end example
+
 @end deftypefun
 
 @deftypefun void gal_statistics_sort_increasing (gal_data_t @code{*input})
-Sort the input dataset (in place) in an increasing order.
+Sort the input dataset (in place) in an increasing order and toggle the
+sort-related bit flags accordingly.
 @end deftypefun
 
 @deftypefun void gal_statistics_sort_decreasing (gal_data_t @code{*input})
-Sort the input dataset (in place) in a decreasing order.
+Sort the input dataset (in place) in a decreasing order and toggle the
+sort-related bit flags accordingly.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_no_blank_sorted (gal_data_t @code{*input}, int @code{inplace})
 Remove all the blanks and sort the input dataset. If @code{inplace} is
-non-zero this will happen on the input dataset (and the output will be the
-same as the input). However, if @code{inplace} is zero, this function will
-allocate a new copy of the dataset that is sorted and has no blank values.
+non-zero this will happen on the input dataset (and the output dataset will
+be the input dataset). However, if @code{inplace} is zero, this function
+will allocate a new copy of the dataset that is sorted and has no blank
+values.
+
+This function uses the bit flags of the input, so if you have modified the
+dataset, set @code{input->flags=0} before calling this function. Also note
+that @code{inplace} is only for the dataset elements. Therefore even when
+@code{inplace==0}, if the input is already sorted @emph{and} has no blank
+values, then the flags will be updated to show this.
 
 If all the elements were blank, then the returned dataset's @code{size}
 will be zero. This is thus a good parameter to check after calling this
@@ -25125,7 +25152,7 @@ above.
 
 
 
-@node Binary datasets, Convolution functions, Statistical operations, Gnuastro library
+@node Binary datasets, Labeled datasets, Statistical operations, Gnuastro library
 @subsection Binary datasets (@file{binary.h})
 
 @cindex Thresholding
@@ -25318,7 +25345,184 @@ can be set with @code{connectivity}. This function currently only works on
 a 2D dataset.
 @end deftypefun
 
-@node Convolution functions, Interpolation, Binary datasets, Gnuastro library
+@node Labeled datasets, Convolution functions, Binary datasets, Gnuastro library
+@subsection Labeled datasets (@file{label.h})
+
+A labeled dataset is one where each element/pixel has an integer label (or
+counter). The label identifies the group/class that the element belongs
+to. This form of labeling allows the higher-level study of all pixels
+within a certain class.
+
+For example, to detect objects/targets in an image/dataset, you can apply a
+threshold to separate the noise from the signal (to detect diffuse signal,
+a threshold is useless and more advanced methods are necessary, for example
+@ref{NoiseChisel}). But the output of detection is a binary dataset (which
+is just a very low-level labeling of @code{0} for noise and @code{1} for
+signal).
+
+The raw detection map is therefore hardly useful for any kind of analysis
+on objects/targets in the image. One solution is to use a
+connected-components algorithm (see @code{gal_binary_connected_components}
+in @ref{Binary datasets}). It is a simple and useful way to separate/label
+connected patches in the foreground. This higher-level (but still
+elementary) labeling therefore allows you to count how many connected
+patches of signal there are in the dataset and is a major improvement
+compared to the raw detection.
+
+However, when your objects/targets are touching, the simple connected
+components algorithm is not enough and a still higher-level labeling
+mechanism is necessary. This brings us to the necessity of the functions in
+this part of Gnuastro's library. The main inputs to the functions in this
+section are already labeled datasets (for example with the connected
+components algorithm above).
+
+Each of the labeled regions are independent of each other (the labels
+specify different classes of targets). Therefore, especially in large
+datasets, it is often useful to process each label on independent CPU
+threads in parallel rather than in series. Therefore the functions of this
+section actually use an array of pixel/element indexs (belonging to each
+label/class) as the main identifier of a region. Using indexs will also
+allow processing of overlapping labels (for example in deblending
+problems). Just note that overlapping labels are not yet implemented, but
+planned. You can use @code{gal_label_indexs} to generate lists of indexs
+belonging to separate classes from the labeled input.
+
+@deffn  Macro GAL_LABEL_INIT
+@deffnx Macro GAL_LABEL_RIVER
+@deffnx Macro GAL_LABEL_TMPCHECK
+Special negative integer values used internally by some of the functions in
+this section. Recall that meaningful labels are considered to be positive
+integers (@mymath{\geq1}). Zero is conventionally kept for regions with no
+labels, therefore negative integers can be used for any extra
+classification in the labeled datasets.
+@end deffn
+
+@deftypefun {gal_data_t *} gal_label_indexs (gal_data_t @code{*labels}, size_t @code{numlabs}, size_t @code{minmapsize})
+
+Return an array of @code{gal_data_t} containers, each containing the pixel
+indexs of the respective label (see @ref{Generic data
+container}). @code{labels} contains the label of each element and has to
+have an @code{GAL_TYPE_INT32} type (see @ref{Library data types}). Only
+positive (greater than zero) values in @code{labels} will be used/indexed,
+other elements will be ignored.
+
+Meaningful labels start from @code{1} and not @code{0}, therefore the
+output array of @code{gal_data_t} will contain @code{numlabs+1} elements.
+The first (zero-th) element of the output (@code{indexs[0]} in the example
+below) will be initialized to a dataset with zero elements. This will allow
+easy (non-confusing) access to the indexs of each (meaningful) label.
+
+@code{numlabs} is the number of labels in the dataset. If it is given a
+value of zero, then the maximum value in the input (largest label) will be
+found and used. Therefore if it is given, but smaller than the actual
+number of labels, this function may/will crash (it will write in
+un-allocated space). @code{numlabs} is therefore useful in a highly
+optimized/checked environment.
+
+For example, if the returned array is called @code{indexs}, then
+@code{indexs[10].size} contains the number of elements that have a label of
+@code{10} in @code{labels} and @code{indexs[10].array} is an array (after
+casting to @code{size_t *}) containing the indexs of each one of those
+elements/pixels.
+
+By @emph{index} we mean the 1D position: the input number of dimentions is
+irrelevant (any dimensionality is supported). In other words, each
+element's index is the number of elements/pixels between it and the
+dataset's first element/pixel. Therefore it is always greater or equal to
+zero and stored in @code{size_t} type.
+@end deftypefun
+
+@deftypefun size_t gal_label_oversegment (gal_data_t @code{*values}, gal_data_t @code{*indexs}, gal_data_t @code{*label}, size_t @code{*topinds}, int @code{min0_max1})
+@cindex Watershed algorithm
+@cindex Algorithm: watershed
+Use the watershed algorithm@footnote{The watershed algorithm was initially
+introduced by @url{https://doi.org/10.1109/34.87344, Vincent and
+Soille}. It starts from the minima and puts the pixels in, one by one, to
+grow them until the touch (create a watershed). For more, also see the
+Wikipedia article:
+@url{https://en.wikipedia.org/wiki/Watershed_%28image_processing%29}.} to
+``over-segment'' the pixels in the @code{indexs} dataset based on values in
+the @code{values} dataset. Internally, each local extrema (maximum or
+minimum, based on @code{min0_max1}) and its surrounding pixels will be
+given a unique label. For demonstration, see Figures 8 and 9 of
+@url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. If
+@code{topinds!=NULL}, it is assumed to point to an already allocated space
+to write the indexs of the local extrema, otherwise, it is ignored.
+
+The @code{values} dataset must have a 32-bit floating point type
+(@code{GAL_TYPE_FLOAT32}, see @ref{Library data types}) and will only be
+read by this function. @code{indexs} must contain the indexs of the
+elements/pixels that will be over-segmented by this function and have a
+@code{GAL_TYPE_SIZE_T} type, see the description of
+@code{gal_label_indexs}, above. After this function, @code{indexs} will be
+sorted by the values of the respective pixel in @code{values}. The final
+labels will be written in the respective positions of @code{labels}, which
+must have a @code{GAL_TYPE_INT32} type and be the same size as
+@code{values}. All local minima (maxima), when @code{min0_max1} is @code{1}
+(@code{0}), are considered rivers (watersheds) and given a label of
+@code{GAL_LABEL_RIVER} (see above).
+@end deftypefun
+
+@deftypefun void gal_label_grow_indexs (gal_data_t @code{*labels}, gal_data_t @code{*indexs}, int @code{withrivers}, int @code{connectivity})
+Grow the (positive) labels of @code{labels} over the pixels in
+@code{indexs} (see description of @code{gal_label_indexs}). The pixels
+(position in @code{indexs}, values in @code{labels}) that must be ``grown''
+must have a value of @code{GAL_LABEL_INIT} in @code{labels} before calling
+this function. For a demonstration see Columns 2 and 3 of Figure 10 in
+@url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+
+In many aspects, this function is very similar to over-segmentation
+(watershed algorithm, @code{gal_label_oversegment}). The big difference is
+that in over-segmentation local maximums (that aren't touching any already
+labeled pixel) get a separate label. However, here the final number of
+labels will not change. All pixels that aren't directly touching a labeled
+pixel just get pushed back to the start of the loop, and the loop iterates
+until its size doesn't change any more. This is because in a generic
+scenario some of the indexed pixels might not be reachable through other
+indexed pixels.
+
+The next major difference with over-segmentation is that when there is only
+one label in growth region(s), it is not mandatory for @code{indexs} to be
+sorted by values. If there are multiple labeled regions in growth
+region(s), then values are important and you can use @code{qsort} with
+@code{gal_qsort_index_float_decreasing} to sort the indexs by values in a
+separate array (see @ref{Qsort functions}).
+
+This function looks for positive-valued neighbors of each pixel in
+@code{indexs} and will label a pixel if it touches one. Therefore, it is
+very important that only pixels/labels that are intended for growth have
+positive values in @code{labels} before calling this function. Any
+non-positive (zero or negative) value will be ignored as a label by this
+function. Thus, it is recommended that while filling in the `indexs' array
+values, you initialize all the pixels that are in @code{indexs} with
+@code{GAL_LABEL_INIT}, and set non-labeled pixels that you don't want to
+grow to @code{0}.
+
+This function will write into both the input datasets. After this function,
+some of the non-positive @code{labels} pixels will have a new positive
+label and the number of useful elements in @code{indexs} will have
+decreased. The index of those pixels that couldn't be labeled will remain
+inside @code{indexs}. If @code{withrivers} is non-zero, then pixels that
+are immediately touching more than one positive value will be given a
+@code{GAL_LABEL_RIVER} label.
+
+@cindex GNU C Library
+Note that the @code{indexs->array} is not re-allocated to its new size at
+the end@footnote{Note that according to the GNU C Library, even a
+@code{realloc} to a smaller size can also cause a re-write of the whole
+array, which is not a cheap operation.}. But since @code{indexs->dsize[0]}
+and @code{indexs->size} have new values after this function is returned,
+the extra elements just won't be used until they are ultimately freed by
+@code{gal_data_free}.
+
+Connectivity is a value between @code{1} (fewest number of neighbors) and
+the number of dimensions in the input (most number of neighbors). For
+example in a 2D dataset, a connectivity of @code{1} and @code{2}
+corresponds to 4-connected and 8-connected neighbors.
+@end deftypefun
+
+
+@node Convolution functions, Interpolation, Labeled datasets, Gnuastro library
 @subsection Convolution functions (@file{convolve.h})
 
 Convolution is a very common operation during data analysis and is

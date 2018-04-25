@@ -95,7 +95,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Removed features
 
   NoiseChisel:
-
     - Segmentation (and thus the options below) moved to the new Segment
       program: --onlydetection, --segsnminarea, --checkclumpsn, --segquant,
       --keepmaxnearriver, --gthresh, --minriverlength, --objbordersn,
@@ -105,6 +104,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   MakeCatalog:
     --skysubtracted: no longer necessary, included in noise measuremnts.
+
+  Library:
+    - The macros `GAL_STATISTICS_SORTED_NOT',
+      `GAL_STATISTICS_SORTED_INVALID', `GAL_STATISTICS_SORTED_INCREASING',
+      `GAL_STATISTICS_SORTED_DECREASING': these macros are removed because
+      we already have the `GAL_DATA_FLAG_SORT*'' bit-flags in `gal_data_t'.
+
 
 ** Changed features
 
@@ -151,6 +157,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_fits_img_read: now only reads the data not the WCS, therefore it no
         longer needs the last two arguments. A subsequent call to
         `gal_wcs_read' can be used to read the WCS information in the file.
+
+    gal_statistics_is_sorted: can now also update the bit-flags regarding
+        the sorted nature of the input (to optimize future calls to the
+        function).
 
     gal_statistics_quantile_function: returns `inf' or `-inf' if the given
         value is smaller than the minimum or larger than the maximum of the

@@ -128,7 +128,10 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
      grow. For most astronomical objects, the major part of the detection
      area is going to be diffuse flux, so we will just allocate the same
      size as `indexs' array (the `dsize' will be corrected after getting
-     the exact number. */
+     the exact number.
+
+     Also note that since `indexs' is already sorted, therefore
+     `diffuseindexs' will also be already sorted. */
   cltprm->diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1,
                                        cltprm->indexs->dsize, NULL, 0,
                                        p->cp.minmapsize, NULL, NULL, NULL);
@@ -1025,60 +1028,6 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
 /***********************************************************************/
 /*****************           Over detections           *****************/
 /***********************************************************************/
-/* Put the indexs of each labeled region into an array of `gal_data_t's
-   (where each element is a dataset containing the respective label's
-   indexs). */
-gal_data_t *
-clumps_det_label_indexs(struct segmentparams *p)
-{
-  size_t i, *areas;
-  int32_t *a, *l, *lf;
-  gal_data_t *labindexs=gal_data_array_calloc(p->numdetections+1);
-
-  /* Find the area in each detected object (to see how much space we need
-     to allocate). If blank values are present, an extra check is
-     necessary, so to get faster results when there aren't any blank
-     values, we'll also do a check. */
-  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->numdetections+1, __func__,
-                              "areas");
-  lf=(l=p->olabel->array)+p->olabel->size;
-  do
-    if(*l>0)  /* Only labeled regions: *l==0 (undetected), *l<0 (blank). */
-      ++areas[*l];
-  while(++l<lf);
-
-  /* For a check.
-  for(i=0;i<p->numdetections+1;++i)
-    printf("detection %zu: %zu\n", i, areas[i]);
-  exit(0);
-  */
-
-  /* Allocate/Initialize the dataset containing the indexs of each
-     object. We don't want the labels of the non-detected regions
-     (areas[0]). So we'll set that to zero.*/
-  for(i=1;i<p->numdetections+1;++i)
-    gal_data_initialize(&labindexs[i], NULL, GAL_TYPE_SIZE_T, 1,
-                        &areas[i], NULL, 0, p->cp.minmapsize, NULL, NULL,
-                        NULL);
-
-  /* Put the indexs into each dataset. We will use the areas array again,
-     but this time, use it as a counter. */
-  memset(areas, 0, (p->numdetections+1)*sizeof *areas);
-  lf=(a=l=p->olabel->array)+p->olabel->size;
-  do
-    if(*l>0)  /* No undetected regions (*l==0), or blank (<0) */
-      ((size_t *)(labindexs[*l].array))[ areas[*l]++ ] = l-a;
-  while(++l<lf);
-
-  /* Clean up and return. */
-  free(areas);
-  return labindexs;
-}
-
-
-
-
-
 /* Only keep true clumps over detections. */
 void
 clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)

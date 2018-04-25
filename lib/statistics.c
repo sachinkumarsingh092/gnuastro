@@ -1153,32 +1153,48 @@ gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
 /****************************************************************
  ********                      Sort                       *******
  ****************************************************************/
-/* Check if the given dataset is sorted. Output values are:
-
-     - 0: Dataset is not sorted.
-     - 1: Dataset is sorted and increasing or equal.
-     - 2: dataset is sorted and decreasing.                  */
+/* Check if the given dataset is sorted. */
+enum is_sorted_return
+{
+  STATISTICS_IS_SORTED_NOT,                 /* ==0: by C standard. */
+  STATISTICS_IS_SORTED_INCREASING,
+  STATISTICS_IS_SORTED_DECREASING,
+};
 
 #define IS_SORTED(IT) {                                                 \
-    IT *aa=input->array, *a=input->array, *af=a+input->size-1;          \
-    if(a[1]>=a[0]) do if( *(a+1) < *a ) break; while(++a<af);           \
-    else           do if( *(a+1) > *a ) break; while(++a<af);           \
-    return ( a==af                                                      \
-             ? ( aa[1]>=aa[0]                                           \
-                 ? GAL_STATISTICS_SORTED_INCREASING                     \
-                 : GAL_STATISTICS_SORTED_DECREASING )                   \
-             : GAL_STATISTICS_SORTED_NOT );                             \
+  IT *aa=input->array, *a=input->array, *af=a+input->size-1;            \
+  if(a[1]>=a[0]) do if( *(a+1) < *a ) break; while(++a<af);             \
+  else           do if( *(a+1) > *a ) break; while(++a<af);             \
+  out=( a==af                   /* It reached the end of the array. */  \
+          ? ( aa[1]>=aa[0]                                              \
+                ? STATISTICS_IS_SORTED_INCREASING                       \
+                : STATISTICS_IS_SORTED_DECREASING )                     \
+          : STATISTICS_IS_SORTED_NOT );                                 \
   }
 
 int
-gal_statistics_is_sorted(gal_data_t *input)
+gal_statistics_is_sorted(gal_data_t *input, int updateflags)
 {
-  /* A one-element dataset can be considered, sorted, so we'll just return
-     1 (for sorted and increasing). */
+  int out;
+
+  /* If the flags are already set, don't bother going over the dataset. */
+  if( input->flag & GAL_DATA_FLAG_SORT_CH )
+    return ( input->flag & GAL_DATA_FLAG_SORTED_I
+             ? STATISTICS_IS_SORTED_INCREASING
+             : ( input->flag & GAL_DATA_FLAG_SORTED_D
+                 ? STATISTICS_IS_SORTED_DECREASING
+                 : STATISTICS_IS_SORTED_NOT ) );
+
+  /* Parse the array (if necessary). */
   switch(input->size)
     {
-    case 0: return GAL_STATISTICS_SORTED_INVALID;
-    case 1: return GAL_STATISTICS_SORTED_INCREASING;
+    case 0:
+      error(EXIT_FAILURE, 0, "%s: input dataset has 0 elements", __func__);
+
+    /* A one-element dataset can be considered, sorted, so we'll say its
+       increasing. */
+    case 1:
+      out=STATISTICS_IS_SORTED_INCREASING;
 
     /* Do the check. */
     default:
@@ -1200,11 +1216,34 @@ gal_statistics_is_sorted(gal_data_t *input)
         }
     }
 
-  /* Control shouldn't reach this point. */
-  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
-        "fix the problem. Control must not have reached the end of this "
-        "function", __func__, PACKAGE_BUGREPORT);
-  return GAL_STATISTICS_SORTED_INVALID;
+  /* Update the flags, if required. */
+  if(updateflags)
+    {
+      input->flag |= GAL_DATA_FLAG_SORT_CH;
+      switch(out)
+        {
+        case STATISTICS_IS_SORTED_NOT:
+          input->flag &= ~GAL_DATA_FLAG_SORTED_I;
+          input->flag &= ~GAL_DATA_FLAG_SORTED_D;
+          break;
+
+        case STATISTICS_IS_SORTED_INCREASING:
+          input->flag |=  GAL_DATA_FLAG_SORTED_I;
+          input->flag &= ~GAL_DATA_FLAG_SORTED_D;
+          break;
+
+        case STATISTICS_IS_SORTED_DECREASING:
+          input->flag &= ~GAL_DATA_FLAG_SORTED_I;
+          input->flag |=  GAL_DATA_FLAG_SORTED_D;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+                "the problem. The value %d is not recognized for `out'",
+                __func__, PACKAGE_BUGREPORT, out);
+        }
+    }
+  return out;
 }
 
 
@@ -1219,6 +1258,7 @@ gal_statistics_is_sorted(gal_data_t *input)
 void
 gal_statistics_sort_increasing(gal_data_t *input)
 {
+  /* Do the sorting. */
   if(input->size)
     switch(input->type)
       {
@@ -1246,6 +1286,11 @@ gal_statistics_sort_increasing(gal_data_t *input)
         error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
               __func__, input->type);
       }
+
+  /* Set the flags. */
+  input->flag |=  GAL_DATA_FLAG_SORT_CH;
+  input->flag |=  GAL_DATA_FLAG_SORTED_I;
+  input->flag &= ~GAL_DATA_FLAG_SORTED_D;
 }
 
 
@@ -1256,6 +1301,7 @@ gal_statistics_sort_increasing(gal_data_t *input)
 void
 gal_statistics_sort_decreasing(gal_data_t *input)
 {
+  /* Do the sorting. */
   if(input->size)
     switch(input->type)
       {
@@ -1283,6 +1329,11 @@ gal_statistics_sort_decreasing(gal_data_t *input)
         error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
               __func__, input->type);
       }
+
+  /* Set the flags. */
+  input->flag |=  GAL_DATA_FLAG_SORT_CH;
+  input->flag |=  GAL_DATA_FLAG_SORTED_D;
+  input->flag &= ~GAL_DATA_FLAG_SORTED_I;
 }
 
 
@@ -1301,7 +1352,6 @@ gal_statistics_sort_decreasing(gal_data_t *input)
 gal_data_t *
 gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 {
-  int sortstatus;
   gal_data_t *contig, *noblank, *sorted;
 
   /* We need to account for the case that there are no elements in the
@@ -1324,23 +1374,15 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       else contig=input;
 
 
-      /* Make sure there is no blanks in the array that will be used. After
-         this step, we won't be dealing with `input' any more, but with
-         `noblank'. */
-      if( gal_blank_present(contig, inplace) )
+      /* Make sure there are no blanks in the array that will be
+         used. After this step, we won't be dealing with `input' any more,
+         but with `noblank'. */
+      if( gal_blank_present(contig, 1) )
         {
           /* See if we should allocate a new dataset to remove blanks or if
              we can use the actual contiguous patch of memory. */
           noblank = inplace ? contig : gal_data_copy(contig);
           gal_blank_remove(noblank);
-
-          /* If we are working in place, then mark that there are no blank
-             pixels. */
-          if(inplace)
-            {
-              noblank->flag |= GAL_DATA_FLAG_BLANK_CH;
-              noblank->flag &= ~GAL_DATA_FLAG_HASBLANK;
-            }
         }
       else noblank=contig;
 
@@ -1350,12 +1392,8 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
          more but with `sorted'. */
       if(noblank->size)
         {
-          sortstatus=gal_statistics_is_sorted(noblank);
-          if( sortstatus )
-            {
-              sorted=noblank;
-              sorted->status=sortstatus;
-            }
+          if( gal_statistics_is_sorted(noblank, 1) )
+            sorted=noblank;
           else
             {
               if(inplace) sorted=noblank;
@@ -1367,7 +1405,6 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
                     sorted=gal_data_copy(noblank);
                 }
               gal_statistics_sort_increasing(sorted);
-              sorted->status=GAL_STATISTICS_SORTED_INCREASING;
             }
         }
       else
@@ -1847,7 +1884,7 @@ gal_statistics_cfp(gal_data_t *input, gal_data_t *bins, int normalize)
     IT *bf = nbs->array, *b  = bf + nbs->size - 1;                      \
                                                                         \
     /* Remove all out-of-range elements from the start of the array. */ \
-    if(sortstatus==GAL_STATISTICS_SORTED_INCREASING)                    \
+    if( nbs->flag & GAL_DATA_FLAG_SORTED_I )                            \
       do if( *a > (*med - (multip * *std)) )                            \
            { start=a; break; }                                          \
       while(++a<af);                                                    \
@@ -1857,7 +1894,7 @@ gal_statistics_cfp(gal_data_t *input, gal_data_t *bins, int normalize)
       while(++a<af);                                                    \
                                                                         \
     /* Remove all out-of-range elements from the end of the array. */   \
-    if(sortstatus==GAL_STATISTICS_SORTED_INCREASING)                    \
+    if( nbs->flag & GAL_DATA_FLAG_SORTED_I )                            \
       do if( *b < (*med + (multip * *std)) )                            \
            { size=b-a+1; break; }                                       \
       while(--b>=bf);                                                   \
@@ -1874,11 +1911,11 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   float *oa;
   void *start, *nbs_array;
   double *med, *mean, *std;
+  uint8_t type=gal_tile_block(input)->type;
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
   double oldmed=NAN, oldmean=NAN, oldstd=NAN;
   size_t num=0, one=1, four=4, size, oldsize;
   gal_data_t *median_i, *median_d, *out, *meanstd;
-  int sortstatus, type=gal_tile_block(input)->type;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   size_t maxnum = param>=1.0f ? param : GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE;
 
@@ -1894,6 +1931,14 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
     error(EXIT_FAILURE, 0, "%s: when `param' is larger than 1.0, it is "
           "interpretted as an absolute number of clips. So it must be an "
           "integer. However, your given value %g", __func__, param);
+  if( (nbs->flag & GAL_DATA_FLAG_SORT_CH)==0 )
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. `nbs->flag', doesn't have the `GAL_DATA_FLAG_SORT_CH' "
+          "bit activated", __func__, PACKAGE_BUGREPORT);
+  if( (nbs->flag & GAL_DATA_FLAG_SORTED_I)==0
+      && (nbs->flag & GAL_DATA_FLAG_SORTED_D)==0 )
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. `nbs' isn't sorted", __func__, PACKAGE_BUGREPORT);
 
 
   /* Allocate the necessary spaces. */
@@ -1926,7 +1971,6 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
          array's size. */
       size=nbs->size;
       start=nbs->array;
-      sortstatus=nbs->status;
       while(num<maxnum && size)
         {
           /* Find the median. */

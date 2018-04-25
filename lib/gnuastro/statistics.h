@@ -57,17 +57,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Enumerators */
-enum is_sorted_outputs
-{
-  GAL_STATISTICS_SORTED_NOT,             /* ==0 by C standard. */
-
-  GAL_STATISTICS_SORTED_INVALID,
-  GAL_STATISTICS_SORTED_INCREASING,
-  GAL_STATISTICS_SORTED_DECREASING,
-};
-
-
 enum bin_status
 {
   GAL_STATISTICS_BINS_INVALID,           /* ==0 by C standard.  */
@@ -144,7 +133,7 @@ gal_statistics_mode_mirror_plots(gal_data_t *input, gal_data_t *value,
  ****************************************************************/
 
 int
-gal_statistics_is_sorted(gal_data_t *input);
+gal_statistics_is_sorted(gal_data_t *input, int updateflags);
 
 void
 gal_statistics_sort_increasing(gal_data_t *input);

@@ -704,7 +704,7 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
      point it to the input.*/
   if(is_necessary)
     {
-      if( gal_statistics_is_sorted(p->input) )
+      if( gal_statistics_is_sorted(p->input, 1) )
         p->sorted=p->input;
       else
         {

@@ -805,7 +805,7 @@ segment_detections(struct segmentparams *p)
 
 
   /* Get the indexs of all the pixels in each label. */
-  labindexs=clumps_det_label_indexs(p);
+  labindexs=gal_label_indexs(p->olabel, p->numdetections, p->cp.minmapsize);
 
 
   /* Initialize the necessary thread parameters. Note that since the object

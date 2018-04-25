@@ -980,11 +980,11 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
                                    NULL);
 
       /* Fill in the diffuse indexs and initialize the objects dataset. */
-      b=workbin->array;
-      arr=p->conv->array;
-      d=diffuseindexs->array;
-      e_th=p->exp_thresh_full->array;
-      of=(o=p->olabel->array)+p->olabel->size;
+      b    = workbin->array;
+      arr  = p->conv->array;
+      d    = diffuseindexs->array;
+      e_th = p->exp_thresh_full->array;
+      of   = (o=p->olabel->array) + p->olabel->size;
       do
         {
           /* If the binary value is 1, then we want an initial label of 1
@@ -1001,7 +1001,9 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
         }
       while(++o<of);
 
-      /* Expand the detections. */
+      /* Expand the detections. Note that because we are only concerned
+         with those regions that are touching a detected region, it is
+         irrelevant to sort the dataset. */
       gal_label_grow_indexs(p->olabel, diffuseindexs, 0, p->olabel->ndim);
 
       /* Only keep the 1 valued pixels in the binary array and fill its

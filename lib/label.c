@@ -25,12 +25,135 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include <gnuastro/list.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/label.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/statistics.h>
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************         Internal          ********************
+ ****************************************************************/
+static void
+label_check_type(gal_data_t *in, uint8_t needed_type, char *variable,
+                 const char *func)
+{
+  if(in->type!=needed_type)
+    error(EXIT_FAILURE, 0, "%s: the `%s' dataset has `%s' type, but it "
+          "must have a `%s' type.\n\n"
+          "You can use `gal_data_copy_to_new_type' or "
+          "`gal_data_copy_to_new_type_free' to convert your input dataset "
+          "to this type before calling this function", func, variable,
+          gal_type_name(in->type, 1), gal_type_name(needed_type, 1));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************          Indexs           ********************
+ ****************************************************************/
+/* Put the indexs of each labeled region into an array of `gal_data_t's
+   (where each element is a dataset containing the respective label's
+   indexs). */
+gal_data_t *
+gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize)
+{
+  size_t i, *areas;
+  int32_t *a, *l, *lf;
+  gal_data_t *max, *labindexs;
+
+  /* Sanity check. */
+  label_check_type(labels, GAL_TYPE_INT32, "labels", __func__);
+
+  /* If the user hasn't given the number of labels, find it (maximum
+     label). */
+  if(numlabs==0)
+    {
+      max=gal_statistics_maximum(labels);
+      numlabs=*((int32_t *)(max->array));
+      gal_data_free(max);
+    }
+  labindexs=gal_data_array_calloc(numlabs+1);
+
+  /* Find the area in each detected object (to see how much space we need
+     to allocate). If blank values are present, an extra check is
+     necessary, so to get faster results when there aren't any blank
+     values, we'll also do a check. */
+  areas=gal_data_calloc_array(GAL_TYPE_SIZE_T, numlabs+1, __func__, "areas");
+  lf=(l=labels->array)+labels->size;
+  do
+    if(*l>0)  /* Only labeled regions: *l==0 (undetected), *l<0 (blank). */
+      ++areas[*l];
+  while(++l<lf);
+
+  /* For a check.
+  for(i=0;i<numlabs+1;++i)
+    printf("detection %zu: %zu\n", i, areas[i]);
+  exit(0);
+  */
+
+  /* Allocate/Initialize the dataset containing the indexs of each
+     object. We don't want the labels of the non-detected regions
+     (areas[0]). So we'll set that to zero.*/
+  for(i=1;i<numlabs+1;++i)
+    gal_data_initialize(&labindexs[i], NULL, GAL_TYPE_SIZE_T, 1,
+                        &areas[i], NULL, 0, minmapsize, NULL, NULL, NULL);
+
+  /* Put the indexs into each dataset. We will use the areas array again,
+     but this time, use it as a counter. */
+  memset(areas, 0, (numlabs+1)*sizeof *areas);
+  lf=(a=l=labels->array)+labels->size;
+  do
+    if(*l>0)  /* No undetected regions (*l==0), or blank (<0) */
+      ((size_t *)(labindexs[*l].array))[ areas[*l]++ ] = l-a;
+  while(++l<lf);
+
+  /* Clean up and return. */
+  free(areas);
+  return labindexs;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -53,17 +176,29 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 */
 size_t
-gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
-                      gal_data_t *label, size_t *topinds,
-                      int min0_max1)
+gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
+                      gal_data_t *labels, size_t *topinds, int min0_max1)
 {
-  size_t ndim=input->ndim;
+  size_t ndim=values->ndim;
 
-  float *arr=input->array;
+  float *arr=values->array;
   gal_list_sizet_t *Q=NULL, *cleanup=NULL;
-  size_t *a, *af, ind, *dsize=input->dsize;
+  size_t *a, *af, ind, *dsize=values->dsize;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
-  int32_t n1, nlab, rlab, curlab=1, *clabel=label->array;
+  int32_t n1, nlab, rlab, curlab=1, *labs=labels->array;
+
+
+  /* Sanity checks */
+  label_check_type(values, GAL_TYPE_FLOAT32, "values", __func__);
+  label_check_type(indexs, GAL_TYPE_SIZE_T,  "indexs", __func__);
+  label_check_type(labels, GAL_TYPE_INT32,   "labels", __func__);
+  if( gal_data_dsize_is_different(values, labels) )
+    error(EXIT_FAILURE, 0, "%s: the `values' and `labels' arguments must "
+          "have the same size", __func__);
+  if(indexs->ndim!=1)
+    error(EXIT_FAILURE, 0, "%s: `indexs' has to be a 1D array, but it is "
+          "%zuD", __func__, indexs->ndim);
+
 
   /*********************************************
    For checks and debugging:*
@@ -75,22 +210,19 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
   char *filename="clumpbuild.fits";
   size_t checkstartind=gal_dimension_coord_to_index(2, dsize, checkstart);
   gal_data_t *tile=gal_data_alloc(gal_data_ptr_increment(arr, checkstartind,
-                                                         input->type),
+                                                         values->type),
                                   GAL_TYPE_INVALID, 2, checkdsize,
                                   NULL, 0, 0, NULL, NULL, NULL);
-  tile->block=input;
+  tile->block=values;
   gal_checkset_writable_remove(filename, 0, 0);
-  if(p->cp.numthreads!=1)
-    error(EXIT_FAILURE, 0, "in the debugging mode of `clumps_oversegment' "
-          "only one thread must be used");
   crop=gal_data_copy(tile);
   gal_fits_img_write(crop, filename, NULL, PROGRAM_NAME);
   gal_data_free(crop);
   printf("blank: %u\nriver: %u\ntmpcheck: %u\ninit: %u\n",
          (int32_t)GAL_BLANK_INT32, (int32_t)GAL_LABEL_RIVER,
          (int32_t)GAL_LABEL_TMPCHECK, (int32_t)GAL_LABEL_INIT);
-  tile->array=gal_tile_block_relative_to_other(tile, clabel);
-  tile->block=clabel;
+  tile->array=gal_tile_block_relative_to_other(tile, labels);
+  tile->block=labels;
   **********************************************/
 
 
@@ -100,7 +232,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
 
   /* Sort the given indexs based on their flux (`gal_qsort_index_arr' is
      defined as static in `gnuastro/qsort.h') */
-  gal_qsort_index_arr=input->array;
+  gal_qsort_index_arr=values->array;
   qsort(indexs->array, indexs->size, sizeof(size_t),
         min0_max1
         ? gal_qsort_index_float_decreasing
@@ -109,7 +241,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
 
   /* Initialize the region we want to over-segment. */
   af=(a=indexs->array)+indexs->size;
-  do clabel[*a]=GAL_LABEL_INIT; while(++a<af);
+  do labs[*a]=GAL_LABEL_INIT; while(++a<af);
 
 
   /* Go over all the given indexs and pull out the clumps. */
@@ -118,7 +250,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
     /* When regions of a constant flux or masked regions exist, some later
        indexs (although they have same flux) will be filled before hand. If
        they are done, there is no need to do them again. */
-    if(clabel[*a]==GAL_LABEL_INIT)
+    if(labs[*a]==GAL_LABEL_INIT)
       {
         /* It might happen where one or multiple regions of the pixels
            under study have the same flux. So two equal valued pixels of
@@ -148,7 +280,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
             /* Add this pixel to a queue. */
             gal_list_sizet_add(&Q, *a);
             gal_list_sizet_add(&cleanup, *a);
-            clabel[*a] = GAL_LABEL_TMPCHECK;
+            labs[*a] = GAL_LABEL_TMPCHECK;
 
             /* Find all the pixels that have the same flux and are
                connected. */
@@ -166,7 +298,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                      if(n1!=GAL_LABEL_RIVER)
                        {
                          /* For easy reading. */
-                         nlab=clabel[ nind ];
+                         nlab=labs[ nind ];
 
                          /* This neighbor's label isn't zero. */
                          if(nlab)
@@ -176,7 +308,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                                 to expand the studied region.*/
                              if( nlab==GAL_LABEL_INIT && arr[nind]==arr[*a] )
                                {
-                                 clabel[nind]=GAL_LABEL_TMPCHECK;
+                                 labs[nind]=GAL_LABEL_TMPCHECK;
                                  gal_list_sizet_add(&Q, nind);
                                  gal_list_sizet_add(&cleanup, nind);
                                }
@@ -204,7 +336,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                                        outside this loop, for datasets with
                                        no blank element this last step will
                                        be completley ignored. */
-                                    : ( ( (input->flag
+                                    : ( ( (values->flag
                                            & GAL_DATA_FLAG_HASBLANK)
                                           && nlab==GAL_BLANK_INT32 )
                                         ? GAL_LABEL_RIVER : n1 ) );
@@ -214,10 +346,10 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                             are on the edge of the indexed region (the
                             neighbor is not in the initial list of pixels
                             to segment). When over-segmenting the noise and
-                            the detections, `clabel' is zero for the parts
+                            the detections, `label' is zero for the parts
                             of the image that we are not interested in
                             here. */
-                         else clabel[*a]=GAL_LABEL_RIVER;
+                         else labs[*a]=GAL_LABEL_RIVER;
                        }
                    } );
               }
@@ -242,7 +374,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                 ind=gal_list_sizet_pop(&cleanup);
                 /* If it was on the sides of the image, it has been
                    changed to a river pixel. */
-                if( clabel[ ind ]==GAL_LABEL_TMPCHECK ) clabel[ ind ]=rlab;
+                if( labs[ ind ]==GAL_LABEL_TMPCHECK ) labs[ ind ]=rlab;
               }
           }
 
@@ -268,7 +400,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                  if(n1!=GAL_LABEL_RIVER)
                    {
                      /* For easy reading. */
-                     nlab=clabel[ nind ];
+                     nlab=labs[ nind ];
 
                      /* If this neighbor is on a non-processing label, then
                         set the first neighbor accordingly. Note that we
@@ -294,7 +426,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
                                    doesn't have blank values,
                                    `nlab==GAL_BLANK_INT32' will never be
                                    checked. */
-                                : ( (input->flag & GAL_DATA_FLAG_HASBLANK)
+                                : ( (values->flag & GAL_DATA_FLAG_HASBLANK)
                                     && nlab==GAL_BLANK_INT32
                                     ? GAL_LABEL_RIVER : n1 ) )
 
@@ -322,7 +454,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
               }
 
             /* Put the found label in the pixel. */
-            clabel[ *a ] = rlab;
+            labs[ *a ] = rlab;
           }
 
         /*********************************************
@@ -334,7 +466,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
           {
             printf("%zu (%zu: %zu, %zu): %u\n", ++extcount, *a,
                    (*a%dsize[1])-checkstart[1], (*a/dsize[1])-checkstart[0],
-                   clabel[*a]);
+                   labs[*a]);
             crop=gal_data_copy(tile);
             crf=(cr=crop->array)+crop->size;
             do if(*cr==GAL_LABEL_RIVER) *cr=0; while(++cr<crf);
@@ -363,48 +495,7 @@ gal_label_oversegment(gal_data_t *input, gal_data_t *indexs,
 
 
 
-/* Grow the given labels over the list of indexs. In over-segmentation
-   (watershed algorithm), the indexs have to be sorted by pixel value and
-   local maximums (that aren't touching any already labeled pixel) get a
-   separate label. However, here the final number of labels will not
-   change. All pixels that aren't directly touching a labeled pixel just
-   get pushed back to the start of the loop, and the loop iterates until
-   its size doesn't change any more. This is because in a generic scenario
-   some of the indexed pixels might not be reachable. As a result, it is
-   not necessary for the given indexs to be sorted here.
-
-   This function looks for positive-valued neighbors and will label a pixel
-   if it touches one. Therefore, it is is very important that only
-   pixels/labels that are intended for growth have positive values before
-   calling this function. Any non-positive (zero or negative) value will be
-   ignored by this function. Thus, it is recommended that while filling in
-   the `indexs' array values, you initialize all those pixels with
-   `GAL_LABEL_INIT', and set non-labeled pixels that you don't want to grow
-   to 0.
-
-   This function will write into both the input datasets. After this
-   function, some of the non-positive `labels' pixels will have a new
-   positive label and the number of useful elements in `indexs' will have
-   decreased. Those indexs that couldn't be labeled will remain inside
-   `indexs'. If `withrivers' is non-zero, then pixels that are immediately
-   touching more than one positive value will be given a `GAL_LABEL_RIVER'
-   label.
-
-   Note that the `indexs->array' is not re-allocated to its new size at the
-   end. But since `indexs->dsize[0]' and `indexs->size' have new values,
-   the extra elements just won't be used until they are ultimately freed by
-   `gal_data_free'.
-
-   Input:
-
-     labels: The labels array that must be operated on. The pixels that
-             must be "grown" must have the value `GAL_LABEL_INIT' (negative).
-
-     sorted_indexs: The indexs of the pixels that must be grown.
-
-     withrivers: as described above.
-
-     connectivity: connectivity to define neighbors for growth.  */
+/* Grow the given labels without creating new ones. */
 void
 gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
                       int connectivity)
@@ -416,12 +507,8 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
   size_t *dinc=gal_dimension_increment(labels->ndim, labels->dsize);
 
   /* Some basic sanity checks: */
-  if(labels->type!=GAL_TYPE_INT32)
-    error(EXIT_FAILURE, 0, "%s: `labels' has to have type of int32_t",
-          __func__);
-  if(indexs->type!=GAL_TYPE_SIZE_T)
-    error(EXIT_FAILURE, 0, "%s: `indexs' must be `size_t' type but it is "
-          "`%s'", __func__, gal_type_name(indexs->type,1));
+  label_check_type(indexs, GAL_TYPE_SIZE_T, "indexs", __func__);
+  label_check_type(labels, GAL_TYPE_INT32,  "labels", __func__);
   if(indexs->ndim!=1)
     error(EXIT_FAILURE, 0, "%s: `indexs' has to be a 1D array, but it is "
           "%zuD", __func__, indexs->ndim);
