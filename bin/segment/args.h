@@ -337,7 +337,7 @@ struct argp_option program_options[] =
       UI_GROUP_SEGMENTATION,
       &p->snquant,
       GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
