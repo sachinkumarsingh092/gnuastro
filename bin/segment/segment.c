@@ -588,19 +588,21 @@ segment_on_threads(void *in_prm)
       /* If the user wanted to check the segmentation steps or the clump
          S/N values in a table, then we have to stop the process at this
          point. */
-      if(clprm->step==1 || p->checksn)
+      if( clprm->step==1 || (p->checksn && !p->continueaftercheck ) )
         { gal_data_free(topinds); continue; }
 
 
-      /* Only keep true clumps and abort if the user only wants clumps. */
+      /* Only keep true clumps. */
       clumps_det_keep_true_relabel(&cltprm);
       gal_data_free(topinds);
-      if(clprm->step==2) continue;
 
 
       /* When only clumps are desired ignore the rest of the process. */
       if(!p->onlyclumps)
         {
+          /* Abort the looping here if we don't only want clumps. */
+          if(clprm->step==2) continue;
+
           /* Set the internal (with the detection) clump and object
              labels. Segmenting a detection into multiple objects is only
              defined when there is more than one true clump over the
@@ -799,7 +801,6 @@ static void
 segment_detections(struct segmentparams *p)
 {
   char *msg;
-  int continuecheck=1;
   struct clumps_params clprm;
   gal_data_t *labindexs, *claborig, *demo=NULL;
 
@@ -838,7 +839,16 @@ segment_detections(struct segmentparams *p)
 
 
       /* Do each step. */
-      while(clprm.step<8 && continuecheck)
+      while( clprm.step<8
+
+             /* When the user only wanted clumps, there is no point in
+                continuing beyond step 2. */
+             && !(p->onlyclumps && clprm.step>2)
+
+             /* When the user just wants to check the clump S/N values,
+                then break out of the loop, we don't need the rest of the
+                process any more. */
+             && !( (p->checksn && !p->continueaftercheck) && clprm.step>1 ) )
         {
           /* Reset the temporary copy of clabel back to its original. */
           if(clprm.step>1)
@@ -881,28 +891,18 @@ segment_detections(struct segmentparams *p)
               break;
 
             case 3:
-              /* If the user only wanted clumps, there is no point in
-                 continuing after this point. We DON'T WANT this at the end
-                 of `2', otherwise, the `DET_CLUMPS_TRUE' extension will be
-                 different when `--onlyclumps' is called and when it
-                 isn't.*/
-              if(p->onlyclumps)
-                continuecheck=0;
-              else
+              demo=p->olabel;
+              demo->name = "DET_CLUMPS_GROWN";
+              if(!p->cp.quiet)
                 {
-                  demo=p->olabel;
-                  demo->name = "DET_CLUMPS_GROWN";
-                  if(!p->cp.quiet)
-                    {
-                      gal_timing_report(NULL, "Identify objects...",
-                                        1);
-                      if( asprintf(&msg, "True clumps grown                  "
-                                   "(HDU: `%s').", demo->name)<0 )
-                        error(EXIT_FAILURE, 0, "%s: asprintf allocation",
-                              __func__);
-                      gal_timing_report(NULL, msg, 2);
-                      free(msg);
-                    }
+                  gal_timing_report(NULL, "Identify objects...",
+                                    1);
+                  if( asprintf(&msg, "True clumps grown                  "
+                               "(HDU: `%s').", demo->name)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
+                  gal_timing_report(NULL, msg, 2);
+                  free(msg);
                 }
               break;
 
@@ -969,18 +969,8 @@ segment_detections(struct segmentparams *p)
                     clprm.step);
             }
 
-          /* Write the demonstration array into the check image. The
-             default values are hard to view, so we'll make a copy of the
-             demo, set all Sky regions to blank and all clump macro values
-             to zero. */
-          if(continuecheck)
-            gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_NAME);
-
-          /* If the user wanted to check the clump S/N values, then break
-             out of the loop, we don't need the rest of the process any
-             more. */
-          if( clprm.step==1
-              && ( p->checksn && !p->continueaftercheck ) ) break;
+          /* Write the demonstration array into the check image.  */
+          gal_fits_img_write(demo, p->segmentationname, NULL, PROGRAM_NAME);
 
           /* Increment the step counter. */
           ++clprm.step;
@@ -998,13 +988,15 @@ segment_detections(struct segmentparams *p)
     }
 
 
-  /* Save the final number of objects and clumps. */
+  /* If the user wanted to see the S/N table, then make the S/N table and
+     abort Segment if necessary. */
+  if(p->checksn) segment_save_sn_table(&clprm);
+
+
+  /* Write the final number of objects and clumps to be used beyond this
+     function. */
   p->numclumps=clprm.totclumps;
   p->numobjects=clprm.totobjects;
-
-
-  /* If the user wanted to see the S/N table, then make the S/N table. */
-  if(p->checksn) segment_save_sn_table(&clprm);
 
 
   /* Clean up allocated structures and destroy the mutex. */
