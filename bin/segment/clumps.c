@@ -241,7 +241,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   double *row, *info=cltprm->info->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
-  float *arr=p->input->array, *std=p->std->array;
+  float *values=p->input->array, *std=p->std->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
 
@@ -251,19 +251,19 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   /* Go over all the pixels in this region. */
   af=(a=cltprm->indexs->array)+cltprm->indexs->size;
   do
-    if( !isnan(arr[ *a ]) )
+    if( !isnan(values[ *a ]) )
       {
         /* This pixel belongs to a clump. */
         if( clabel[ *a ]>0 )
           {
             lab=clabel[*a];
             ++info[ lab * INFO_NCOLS + INFO_INAREA ];
-            info[   lab * INFO_NCOLS + INFO_INFLUX ] += arr[*a];
-            if( arr[*a]>0.0f )
+            info[   lab * INFO_NCOLS + INFO_INFLUX ] += values[*a];
+            if( values[*a]>0.0f )
               {
-                info[ lab * INFO_NCOLS + INFO_SFF ] += arr[*a];
-                info[ lab * INFO_NCOLS + INFO_X ] += arr[*a] * (*a/dsize[1]);
-                info[ lab * INFO_NCOLS + INFO_Y ] += arr[*a] * (*a%dsize[1]);
+                info[ lab * INFO_NCOLS + INFO_SFF ] += values[*a];
+                info[ lab * INFO_NCOLS + INFO_X   ] += values[*a] * (*a/dsize[1]);
+                info[ lab * INFO_NCOLS + INFO_Y   ] += values[*a] * (*a%dsize[1]);
               }
           }
 
@@ -300,8 +300,8 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
                     if(i==ii)
                       {
                         ngblabs[ii++] = nlab;
-                        ++info[ nlab * INFO_NCOLS + INFO_RIVAREA ];
-                        info[   nlab * INFO_NCOLS + INFO_RIVFLUX ] += arr[*a];
+                        ++info[nlab * INFO_NCOLS + INFO_RIVAREA];
+                        info[  nlab * INFO_NCOLS + INFO_RIVFLUX]+=values[*a];
                       }
                   }
               } );
@@ -309,23 +309,31 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
       }
   while(++a<af);
 
-
-  /* Do the final preparations. All the calculations are only necessary for
-     the clumps that satisfy the minimum area. So there is no need to waste
-     time on the smaller ones. */
+  /* Based on the position of each clump, find a representative standard
+     deviation. */
   for(lab=1; lab<=cltprm->numinitclumps; ++lab)
     {
+      /* To help in reading. */
       row = &info [ lab * INFO_NCOLS ];
+
+      /* The calculations are only necessary for the clumps that satisfy
+         the minimum area. There is no need to waste time on the smaller
+         ones. */
       if ( row[INFO_INAREA] > p->snminarea )
         {
-          /* Especially over the undetected regions, it might happen that
-             none of the pixels were positive. In that case, set the total
-             area of the clump to zero so it is no longer considered.*/
-          if( row[INFO_SFF]==0.0f ) row[INFO_INAREA]=0;
+          /* It might happen that none of the pixels were positive
+             (especially over the undetected regions). In that case, set
+             the total area of the clump to zero so it is no longer
+             considered.*/
+          if( row[INFO_SFF]==0.0f )
+            row[INFO_INAREA]=0;
           else
             {
+              /* Find the coordinates of the clump's weighted center. */
               coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
               coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
+
+              /* Find the corresponding standard deviation. */
               row[INFO_INSTD]=( p->std->size>1
                                 ? ( p->std->size==p->input->size
                                     ? std[gal_dimension_coord_to_index(ndim,
@@ -345,7 +353,6 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
             }
         }
     }
-
 
   /* Clean up. */
   free(dinc);
