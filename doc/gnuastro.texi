@@ -21630,7 +21630,7 @@ remain. Here is one short/simple example of initializing and adding
 elements to a string list:
 
 @example
-gal_list_str_t *strlist;
+gal_list_str_t *strlist=NULL;
 gal_list_str_add(&strlist, "bottom of list.");
 gal_list_str_add(&strlist, "second last element of list.");
 @end example
