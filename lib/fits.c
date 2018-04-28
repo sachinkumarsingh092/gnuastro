@@ -2350,7 +2350,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                   gal_data_t *allcols, gal_list_sizet_t *indexll,
-                  int minmapsize)
+                  size_t minmapsize)
 {
   size_t i=0;
   void *blank;

@@ -404,7 +404,7 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
    on. */
 gal_data_t *
 gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
-               int searchin, int ignorecase, int minmapsize,
+               int searchin, int ignorecase, size_t minmapsize,
                size_t *colmatch)
 {
   int tableformat;

@@ -138,7 +138,7 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 /************************************************************************/
 gal_data_t *
 gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
-               int searchin, int ignorecase, int minmapsize,
+               int searchin, int ignorecase, size_t minmapsize,
                size_t *colmatch);
 
 

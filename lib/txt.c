@@ -856,7 +856,7 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
 static gal_data_t *
 gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
-             gal_list_sizet_t *indexll, int minmapsize, int format)
+             gal_list_sizet_t *indexll, size_t minmapsize, int format)
 {
   FILE *fp;
   char *line;

@@ -22456,7 +22456,7 @@ $ asttable --info table.fits
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, int @code{minmapsize}, size_t @code{colmatch})
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{colmatch})
 Read the specified columns in a text file (named @code{filename}) into a
 linked list of data structures. If the file is FITS, then @code{hdu} will
 also be used, otherwise, @code{hdu} is ignored.
@@ -23075,7 +23075,7 @@ reading tables in FITS format. To be generic, it is recommended to use
 of table formats based on the filename (see @ref{Table input output}).
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, int @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
 Read the columns given in the list @code{indexll} from a FITS table into a
 linked list of data structures, see @ref{List of size_t} and @ref{List of
 gal_data_t}. If the necessary space for each column is larger than
