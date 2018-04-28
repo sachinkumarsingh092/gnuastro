@@ -20006,7 +20006,8 @@ list. Some of the most common values to this option are: @option{pedantic}
 (Warnings related to standard C) and @option{all} (all issues the compiler
 confronts).
 
-@item --tag=STR
+@item -t
+@itemx --tag=STR
 The language configuration information. Libtool can build objects and
 libraries in many languages. In many cases, it can identify the language
 automatically, but when it doesn't you can use this option to explicitly
@@ -20021,7 +20022,8 @@ all these languages.
 Only build the program, don't run it. By default, the built program is
 immediately run afterwards.
 
-@item --deletecompiled
+@item -d
+@itemx --deletecompiled
 Delete the compiled binary file after running it. This option is only
 relevant when the compiled program is run after being built. In other
 words, it is only relevant when @option{--onlybuild} is not called. It can
