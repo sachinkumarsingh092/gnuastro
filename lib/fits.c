@@ -2343,6 +2343,65 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
 
 
+/* Read CFITSIO un-readable (INF, -INF or NAN) floating point values in
+   FITS ASCII tables. */
+static void
+fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
+                                  gal_data_t *out, size_t colnum,
+                                  size_t numrows, size_t minmapsize)
+{
+  double tmp;
+  char **strarr;
+  char *tailptr;
+  gal_data_t *strrows;
+  size_t i, colwidth=50;
+  int anynul=0, status=0;
+
+  /* Allocate the dataset to keep the string values. */
+  strrows=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &numrows, NULL, 0,
+                         minmapsize, NULL, NULL, NULL);
+
+  /* Allocate the space to keep the string values. */
+  strarr=strrows->array;
+  for(i=0;i<numrows;++i)
+    {
+      errno=0;
+      strarr[i]=calloc(colwidth, sizeof *strarr[i]);
+      if(strarr[i]==NULL)
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+              "strarr[%zu]", __func__, colwidth * sizeof *strarr[i], i);
+    }
+
+  /* Read the column as a string. */
+  fits_read_col(fptr, TSTRING, colnum, 1, 1, out->size, NULL, strrows->array,
+                &anynul, &status);
+  gal_fits_io_error(status, NULL);
+
+  /* Convert the strings to float. */
+  for(i=0;i<numrows;++i)
+    {
+      /* Parse the string. */
+      tmp=strtod(strarr[i], &tailptr);
+      if(tailptr==strarr[i])
+        error(EXIT_FAILURE, 0, "%s (hdu %s): couldn't parse row %zu of "
+              "column %zu (with value `%s') as a floating point number",
+              filename, hdu, i+1, colnum, strarr[i]);
+
+      /* Write it into the output dataset. */
+      if(out->type==GAL_TYPE_FLOAT32)
+        ((float *)(out->array))[i]=tmp;
+      else
+        ((double *)(out->array))[i]=tmp;
+    }
+
+  /* Clean up. */
+  gal_data_free(strrows);
+}
+
+
+
+
+
 /* Read the column indexs given in the `indexll' linked list from a FITS
    table into a linked list of data structures, note that this is a
    low-level function, so the output data linked list is the inverse of the
@@ -2358,11 +2417,16 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
   char **strarr;
   fitsfile *fptr;
   gal_data_t *out=NULL;
-  int status=0, anynul=0;
   gal_list_sizet_t *ind;
+  int isfloat, status=0, anynul=0, hdutype;
 
   /* Open the FITS file */
   fptr=gal_fits_hdu_open_format(filename, hdu, 1);
+
+  /* See if its a Binary or ASCII table (necessary for floating point blank
+     values). */
+  if (fits_get_hdu_type(fptr, &hdutype, &status) )
+    gal_fits_io_error(status, NULL);
 
   /* Pop each index and read/store the array. */
   for(ind=indexll; ind!=NULL; ind=ind->next)
@@ -2379,35 +2443,53 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
          disp_width element of the data structure, which is done
          automatically in `gal_fits_table_info'. */
       if(out->type==GAL_TYPE_STRING)
-        for(i=0;i<numrows;++i)
-          {
-            strarr=out->array;
-            errno=0;
-            strarr[i]=calloc(allcols[ind->v].disp_width+1, sizeof *strarr[i]);
-            if(strarr[i]==NULL)
-              error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
-                    "strarr[%zu]", __func__,
-                    (allcols[ind->v].disp_width+1) * sizeof *strarr[i], i);
-          }
+        {
+          strarr=out->array;
+          for(i=0;i<numrows;++i)
+            {
+              errno=0;
+              strarr[i]=calloc(allcols[ind->v].disp_width+1,
+                               sizeof *strarr[i]);
+              if(strarr[i]==NULL)
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                      "strarr[%zu]", __func__,
+                      (allcols[ind->v].disp_width+1) * sizeof *strarr[i], i);
+            }
+        }
 
       /* Allocate a blank value for the given type and read/store the
-         column using CFITSIO. Afterwards, free the blank value. Note that
-         we only need blank values for integer types. For floating point
-         types, the FITS standard defines blanks as NaN (same as almost any
-         other software like Gnuastro). However if a blank value is
-         specified, CFITSIO will convert other special numbers like `inf'
-         to NaN also. We want to be able to distringuish `inf' and NaN
-         here, so for floating point types, we won't define any blank
-         value. */
-      blank = ( (out->type==GAL_TYPE_FLOAT32 || out->type==GAL_TYPE_FLOAT64)
+         column using CFITSIO. Note that for binary tables, we only need
+         blank values for integer types. For binary floating point types,
+         the FITS standard defines blanks as NaN (same as almost any other
+         software like Gnuastro). However if a blank value is specified,
+         CFITSIO will convert other special numbers like `inf' to NaN
+         also. We want to be able to distringuish `inf' and NaN here, so
+         for floating point types in binary tables, we won't define any
+         blank value. In ASCII tables, CFITSIO doesn't read the `NAN'
+         values (that it has written itself) unless we specify a blank
+         pointer/value. */
+      isfloat = out->type==GAL_TYPE_FLOAT32 || out->type==GAL_TYPE_FLOAT64;
+      blank = ( ( hdutype==BINARY_TBL && isfloat )
                 ? NULL
                 : gal_blank_alloc_write(out->type) );
       fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
                     1, 1, out->size, blank, out->array, &anynul, &status);
-      gal_fits_io_error(status, NULL);
 
-      /* Clean up. */
+      /* In the ASCII table format, CFITSIO might not be able to read `INF'
+         or `-INF'. In this case, it will set status to `BAD_C2D' or
+         `BAD_C2F'. So, we'll use our own parser for the column values. */
+      if( hdutype==ASCII_TBL
+          && isfloat
+          && (status==BAD_C2D || status==BAD_C2F) )
+        {
+          fits_tab_read_ascii_float_special(filename, hdu, fptr, out,
+                                            ind->v+1, numrows, minmapsize);
+          status=0;
+        }
+
+      /* Clean up and sanity check. */
       if(blank) free(blank);
+      gal_fits_io_error(status, NULL);
     }
 
   /* Close the FITS file */

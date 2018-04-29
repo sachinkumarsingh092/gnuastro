@@ -22801,8 +22801,8 @@ Here is one example of using this function:
 /* Allocate an array of datasets. */
 gal_data_t *keysll=gal_data_array_calloc(N);
 
-/* Use the array as a list.*/
-for(i=0;i<N-2;++i) keysll[i].next=keysll[i+1];
+/* Make the array usable as a list too (by setting `next'). */
+for(i=0;i<N-1;++i) keysll[i].next=keysll[i+1];
 
 /* Fill the datasets with a `name' and a `type'. */
 keysll[0].name="NAME1";     keysll[0].type=GAL_TYPE_INT32;
@@ -22815,7 +22815,10 @@ gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
 
 /* Use the values as you like... */
 
-/* Free all the allocated spaces. */
+/* Free all the allocated spaces. Note that `name' wasn't allocated
+   in this example, so we should explicitly set it to NULL before
+   calling `gal_data_array_free'. */
+for(i=0;i<N;++i) keysll[i].name=NULL;
 gal_data_array_free(keysll, N, 1);
 @end example
 
