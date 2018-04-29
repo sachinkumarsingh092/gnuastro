@@ -181,12 +181,12 @@ gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
 {
   size_t ndim=values->ndim;
 
+  int hasblank;
   float *arr=values->array;
   gal_list_sizet_t *Q=NULL, *cleanup=NULL;
   size_t *a, *af, ind, *dsize=values->dsize;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t n1, nlab, rlab, curlab=1, *labs=labels->array;
-
 
   /* Sanity checks */
   label_check_type(values, GAL_TYPE_FLOAT32, "values", __func__);
@@ -198,6 +198,10 @@ gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
   if(indexs->ndim!=1)
     error(EXIT_FAILURE, 0, "%s: `indexs' has to be a 1D array, but it is "
           "%zuD", __func__, indexs->ndim);
+
+
+  /* See if there are blank values in the input dataset. */
+  hasblank=gal_blank_present(values, 0);
 
 
   /*********************************************
@@ -328,18 +332,18 @@ gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
                                         ? (n1==nlab ? n1 : GAL_LABEL_RIVER)
                                         : nlab )
 
-                                    /* If the data has blank pixels (recall
-                                       that blank in int32 is negative),
-                                       see if the neighbor is blank and if
-                                       so, set the label to a river. Since
-                                       the flag checking can be done
-                                       outside this loop, for datasets with
-                                       no blank element this last step will
-                                       be completley ignored. */
-                                    : ( ( (values->flag
-                                           & GAL_DATA_FLAG_HASBLANK)
-                                          && nlab==GAL_BLANK_INT32 )
-                                        ? GAL_LABEL_RIVER : n1 ) );
+                                    /* If the data has blank pixels, see if
+                                       the neighbor is blank. If so, set
+                                       the label to a river. Checking for
+                                       the presence of blank values in the
+                                       dataset can be done outside this
+                                       loop (or even outside this function
+                                       if flags are set). So to help the
+                                       compiler optimize the program, we'll
+                                       first use the pre-checked value. */
+                                    : ( ( hasblank && isnan(arr[nind]) )
+                                        ? GAL_LABEL_RIVER
+                                        : n1 ) );
                            }
 
                          /* If this neigbour has a label of zero, then we
@@ -419,16 +423,17 @@ gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
                                     ? ( nlab==n1 ? n1 : GAL_LABEL_RIVER )
                                     : nlab )
 
-                                /* If the dataset has blank values and this
-                                   neighbor is blank, then the pixel should
-                                   be a river. Note that the blank checking
-                                   can be optimized out, so if the input
-                                   doesn't have blank values,
-                                   `nlab==GAL_BLANK_INT32' will never be
-                                   checked. */
-                                : ( (values->flag & GAL_DATA_FLAG_HASBLANK)
-                                    && nlab==GAL_BLANK_INT32
-                                    ? GAL_LABEL_RIVER : n1 ) )
+                                /* If the data has blank pixels, see if the
+                                   neighbor is blank. If so, set the label
+                                   to a river. Checking for the presence of
+                                   blank values in the dataset can be done
+                                   outside this loop (or even outside this
+                                   function if flags are set). So to help
+                                   the compiler optimize the program, we'll
+                                   first use the pre-checked value. */
+                                : ( ( hasblank && isnan(arr[nind]) )
+                                    ? GAL_LABEL_RIVER
+                                    : n1 ) )
 
                             /* `nlab==0' (the neighbor lies in the other
                                domain (sky or detections). To avoid the

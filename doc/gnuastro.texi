@@ -21051,11 +21051,18 @@ these flags. The currently recognized bits are stored in these macros:
 
 @cindex Blank data
 @item GAL_DATA_FLAG_BLANK_CH
-Marking that the dataset has been checked for blank values. Therefore, the
-value of the bit in @code{GAL_DATA_FLAG_HASBLANK} is reliable. Without
-this bit, when a dataset doesn't have any blank values (and this has been
-checked), the @code{GAL_DATA_FLAG_HASBLANK} bit will be zero so a checker
-has no way to know if this zero is real or if no check has been done yet.
+Marking that the dataset has been checked for blank values or not. When a
+dataset doesn't have any blank values, the @code{GAL_DATA_FLAG_HASBLANK}
+bit will be zero. But upon initialization, all bits also get a value of
+zero. Therefore, a checker needs this flag to see if the value in
+@code{GAL_DATA_FLAG_HASBLANK} is reliable (dataset has actually been parsed
+for a blank value) or not.
+
+Also, if it is necessary to re-check the presence of flags, you just have
+to set this flag to zero and call @code{gal_blank_present} for example to
+parse the dataset and check for blank values. Note that for improved
+efficiency, when this flag is set, @code{gal_blank_present} will not
+actually parse the dataset, it will just use @code{GAL_DATA_FLAG_HASBLANK}.
 
 @item GAL_DATA_FLAG_HASBLANK
 This bit has a value of @code{1} when the given dataset has blank
@@ -21066,7 +21073,8 @@ values, so there is no more need for further checks.
 @item GAL_DATA_FLAG_SORT_CH
 Marking that the dataset is already checked for being sorted or not and
 thus that the possible @code{0} values in @code{GAL_DATA_FLAG_SORTED_I} and
-@code{GAL_DATA_FLAG_SORTED_D} are meaningful.
+@code{GAL_DATA_FLAG_SORTED_D} are meaningful. The logic behind this is
+similar to that in @code{GAL_DATA_FLAG_BLANK_CH}.
 
 @item GAL_DATA_FLAG_SORTED_I
 This bit has a value of @code{1} when the given dataset is sorted in an
@@ -25466,6 +25474,24 @@ must have a @code{GAL_TYPE_INT32} type and be the same size as
 @code{values}. All local minima (maxima), when @code{min0_max1} is @code{1}
 (@code{0}), are considered rivers (watersheds) and given a label of
 @code{GAL_LABEL_RIVER} (see above).
+
+Note that rivers/watersheds will also be formed on the edges of the labeled
+regions or when the labeled pixels touch a blank pixel. Therefore this
+function will need to check for the presence of blank values. To be most
+efficient, it is thus recommended to use @code{gal_blank_present} (with
+@code{updateflag=1}) prior to calling this function (see @ref{Library blank
+values}. Once the flag has been set, no other function (including this one)
+that needs special behavior for blank pixels will have to parse the dataset
+any more.
+
+If you are sure your dataset doesn't have blank values (by the design of
+your software), to avoid an extra parsing of the dataset and improve
+performance, you can set the two bits manually (see the description of
+@code{flags} in @ref{Generic data container}):
+@example
+input->flags |=  GAL_DATA_FLAG_BLANK_CH; /* Set bit to 1. */
+input->flags &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
+@end example
 @end deftypefun
 
 @deftypefun void gal_label_grow_indexs (gal_data_t @code{*labels}, gal_data_t @code{*indexs}, int @code{withrivers}, int @code{connectivity})
