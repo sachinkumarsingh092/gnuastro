@@ -7956,14 +7956,20 @@ save them into another plain text or FITS table.
 @section Fits
 
 The ``Flexible Image Transport System'', or FITS, is by far the most common
-data container format in astronomy. Although the full name of the standard
-invokes the idea that it is only for images, it also contains very complete
-and robust features for tables. It started off in the 1970s and was
-formally published as a standard in 1981, it was adopted by the
-International Astronomical Union (IAU) in 1982 and an IAU working group to
-maintain its future was defined in 1988. The FITS 2.0 and 3.0 standards
-were approved in 2000 and 2008 respectively, and the 4.0 draft has also
-been released recently, please see the
+data container format in astronomy and in constant use since the
+1970s. Archivability (future usage, simplicity) has been one of the primary
+design principles of this format. In the last few decades it has proved so
+useful and robust that the Vatican Library has also chosen FITS for its
+``long-term digital preservation''
+project@footnote{@url{https://www.vaticanlibrary.va/home.php?pag=progettodigit}}.
+
+Although the full name of the standard invokes the idea that it is only for
+images, it also contains very complete and robust features for tables. It
+started off in the 1970s and was formally published as a standard in 1981,
+it was adopted by the International Astronomical Union (IAU) in 1982 and an
+IAU working group to maintain its future was defined in 1988. The FITS 2.0
+and 3.0 standards were approved in 2000 and 2008 respectively, and the 4.0
+draft has also been released recently, please see the
 @url{https://fits.gsfc.nasa.gov/fits_standard.html, FITS standard document
 webpage} for the full text of all versions. Also see the
 @url{https://doi.org/10.1051/0004-6361/201015362, FITS 3.0 standard paper}
