@@ -251,8 +251,13 @@ sky(struct statisticsparams *p)
                                         ( p->cp.output
                                           ? p->cp.output
                                           : p->inputname ), "_sky.fits");
-  gal_tile_full_values_write(p->sky_t, tl, 1, outname, NULL, PROGRAM_NAME);
-  gal_tile_full_values_write(p->std_t, tl, 1, outname, NULL, PROGRAM_NAME);
+  p->sky_t->name="SKY";
+  p->std_t->name="SKY_STD";
+  gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky, outname,
+                             NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky, outname,
+                             NULL, PROGRAM_NAME);
+  p->sky_t->name = p->std_t->name = NULL;
   if(!cp->quiet)
     printf("  - Written to `%s'.\n", outname);
 

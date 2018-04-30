@@ -90,6 +90,7 @@ struct statisticsparams
   size_t       smoothwidth;  /* Width of flat kernel to smooth interpd.  */
   uint8_t         checksky;  /* Save the steps for deriving the Sky.     */
   double    sclipparams[2];  /* Muliple and parameter of sigma clipping. */
+  uint8_t ignoreblankinsky;  /* Ignore input's blank values.             */
 
 
   /* Internal */

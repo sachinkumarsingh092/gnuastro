@@ -52,6 +52,7 @@ struct noisechiselparams
   char                  *whdu;  /* Wide kernel HDU.                       */
 
   uint8_t  continueaftercheck;  /* Don't abort after the check steps.     */
+  uint8_t    ignoreblankinsky;  /* Ignore input's blank values.           */
   uint8_t           rawoutput;  /* Only detection & 1 elem/tile output.   */
   uint8_t               label;  /* Label detections that are connected.   */
 

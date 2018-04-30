@@ -137,6 +137,19 @@ struct argp_option program_options[] =
 
     /* Output options. */
     {
+      "ignoreblankinsky",
+      UI_KEY_IGNOREBLANKINSKY,
+      0,
+      0,
+      "Don't write input's blanks in the Sky output.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->ignoreblankinsky,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "rawoutput",
       UI_KEY_RAWOUTPUT,
       0,

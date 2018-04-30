@@ -55,6 +55,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   NoiseChisel:
     --rawoutput: only output the detection labels and Sky and its STD.
+    --ignoreblankinsky: don't set the pixels that are blank in the input to
+      blank in the Sky and Sky standard deviation outputs (when
+      `--oneelempertile' is not called).
     --label: label the connected detections. Until now this was the default
       behavior. However, from this release, NoiseChisel is only in charge
       of detection. Segmentation is done by a new program (Segment). Since
@@ -65,6 +68,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Statistics:
     --manualbinrange: histogram or CFP range can be outside of distribution.
+    --ignoreblankinsky: similar to same option in NoiseChisel.
 
   Libraries:
     gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).

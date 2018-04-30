@@ -13730,6 +13730,14 @@ discontinuities do not show up in the final Sky values. The smoothing is
 done through convolution (see @ref{Convolution process}) with a flat
 kernel, so the value to this option must be an odd number.
 
+@item --ignoreblankinsky
+Don't set the input's blank pixels to blank in the output Sky and Sky
+standard deviation datasets. This is only applicable when the output has
+the same size as the input, in other words, when @option{--oneelempertile}
+isn't called. By default, blank values in the input (commonly on the edges
+which are outside the survey/field area) will be set to blank in the output
+Sky and Sky standard deviation also.
+
 @item --checksky
 Create a multi-extension FITS file showing the steps that were used to
 estimate the Sky value over the input, see @ref{Quantifying signal in a
@@ -14613,6 +14621,14 @@ NoiseChisel will abort once its desired extensions have been written. With
 @option{--continueaftercheck} option, you can disable this behavior and ask
 NoiseChisel to continue with the rest of the processing, even after the
 requested check files are complete.
+
+@item --ignoreblankinsky
+Don't set the input's blank pixels to blank in the output Sky and Sky
+standard deviation datasets. This is only applicable when the output has
+the same size as the input, in other words, when @option{--oneelempertile}
+isn't called. By default, blank values in the input (commonly on the edges
+which are outside the survey/field area) will be set to blank in the output
+Sky and Sky standard deviation also.
 
 @item -l
 @itemx --label
