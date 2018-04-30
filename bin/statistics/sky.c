@@ -131,6 +131,7 @@ sky(struct statisticsparams *p)
   char *msg, *outname;
   struct timeval t0, t1;
   gal_data_t *num, *tmp;
+  uint8_t keepinputdir=p->cp.keepinputdir;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&cp->tl;
 
@@ -246,13 +247,18 @@ sky(struct statisticsparams *p)
     }
 
 
-  /* Save the Sky and its standard deviation */
+  /* Save the Sky and its standard deviation. We want the output to have a
+     `_sky.fits' suffix. So we'll temporarily re-set `p->cp.keepinputdir'
+     if the user asked for a specific name. Note that we copied the actual
+     value in the `keepinputdir' above (in the definition). */
+  p->cp.keepinputdir = p->cp.output ? 1 : keepinputdir;
   outname=gal_checkset_automatic_output(&p->cp,
                                         ( p->cp.output
                                           ? p->cp.output
                                           : p->inputname ), "_sky.fits");
   p->sky_t->name="SKY";
   p->std_t->name="SKY_STD";
+  p->cp.keepinputdir=keepinputdir;
   gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky, outname,
                              NULL, PROGRAM_NAME);
   gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky, outname,
