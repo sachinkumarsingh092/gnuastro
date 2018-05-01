@@ -13755,15 +13755,17 @@ one for the Sky standard deviation).
 Once instrumental signatures are removed from the raw data (image) in the
 initial reduction process (see @ref{Data manipulation}). You are naturally
 eager to start answering the scientific questions that motivated the data
-collection. However, the raw dataset/image is just an array of
-values/pixels, that is all! These raw values cannot directly be used to
-answer your scientific questions (for example ``how many galaxies are there
-in the image?''). Therefore, the first high-level step will be to classify,
-or label, the dataset elements (pixels) into two classes: 1) noise, where
-random effects are the major contributor to the value, and 2) signal, where
-non-random factors (for example light from a distant galaxy) are
-present. This classification of a dataset is formally known as
-@emph{detection}.
+collection in the first place. However, the raw dataset/image is just an
+array of values/pixels, that is all! These raw values cannot directly be
+used to answer your scientific questions: for example ``how many galaxies
+are there in the image?''.
+
+The first high-level step in your analysis of your targets will thus be to
+classify, or label, the dataset elements (pixels) into two classes: 1)
+noise, where random effects are the major contributor to the value, and 2)
+signal, where non-random factors (for example light from a distant galaxy)
+are present. This classification of the elements in a dataset is formally
+known as @emph{detection}.
 
 In an observational/experimental dataset, signal is always burried in
 noise: only mock/simulated datasets are free of noise. Therefore detection,
@@ -13773,62 +13775,69 @@ on them. Detection is thus the most important step of any analysis and is
 not trivial. In particular, the most scientifically interesting
 astronomical targets are faint, can have a large variety of morphologies,
 along with a large distribution in brightness and size. Therefore when
-noise is significant, detection is the uniquely decisive step of your
-scientific result.
+noise is significant, proper detection of your targets is a uniquely
+decisive step in your final scientific analysis/result.
 
 @cindex Erosion
 NoiseChisel is Gnuastro's program for detection of targets that don't have
 a sharp border (almost all astronomical objects). When the targets have a
-sharp edges/border, a simple threshold is enough to separate them from
-noise and each other (if they are not touching). For detection of such
-targets, you can use Gnuastro's Arithmetic program in a command like below
-(assuming the threshold is @code{100}, see @ref{Arithmetic}):
+sharp edges/border (for example cells in biological imaging), a simple
+threshold is enough to separate them from noise and each other (if they are
+not touching). To detect such sharp-edged targets, you can use Gnuastro's
+Arithmetic program in a command like below (assuming the threshold is
+@code{100}, see @ref{Arithmetic}):
 
 @example
 $ astarithmetic in.fits 100 gt 2 connected-components
 @end example
 
-NoiseChisel uses a new noise-based paradigm for detection of very exteded
-and diffuse targets that are drowned deeply in the ocean of noise. It was
-initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and
-Ichikawa [2015]}. The name of NoiseChisel is derived from the first thing
-it does after thresholding the dataset: to erode it. In mathematical
-morphology, erosion on pixels can be pictured as carving-off boundary
-pixels. Hence, what NoiseChisel does is similar to what a wood chisel or
-stone chisel do. It is just not a hardware, but a software. In fact,
-looking at it as a chisel and your dataset as a solid cube of rock will
-greatly help in effectively understanding and optimally using it: with
-NoiseChisel you literally carve your targets out of the noise. Try running
-it with the @option{--checkdetection} option to see each step of the
-carving process on your input dataset.
+Since almost no astronomical target has such sharp edges, we need a more
+advanced detection methodology. NoiseChisel uses a new noise-based paradigm
+for detection of very exteded and diffuse targets that are drowned deeply
+in the ocean of noise. It was initially introduced in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. The
+name of NoiseChisel is derived from the first thing it does after
+thresholding the dataset: to erode it. In mathematical morphology, erosion
+on pixels can be pictured as carving-off boundary pixels. Hence, what
+NoiseChisel does is similar to what a wood chisel or stone chisel do. It is
+just not a hardware, but a software. In fact, looking at it as a chisel and
+your dataset as a solid cube of rock will greatly help in effectively
+understanding and optimally using it: with NoiseChisel you literally carve
+your targets out of the noise. Try running it with the
+@option{--checkdetection} option to see each step of the carving process on
+your input dataset.
 
 @cindex Segmentation
 NoiseChisel's primary output is a binary detection map with the same size
 as the input but only with two values: 0 and 1. Pixels that don't harbor
 any detected signal (noise) are given a label (or value) of zero and those
-with a value of 1 have been identified as hosting signal. Segmentation is
-the process of classifing the signal into higher-level constructs, for
-example if you have two separate galaxies in one image, after segmentation,
-they will get separate labels. NoiseChisel is only focused on detection
-(separating signal from noise), to segment the signal (into separate
-galaxies for example), Gnuastro has a separate specialized program
-@ref{Segment}. NoiseChisel's output can be directly/readily fed into
-Segment.
+with a value of 1 have been identified as hosting signal.
+
+Segmentation is the process of classifing the signal into higher-level
+constructs. For example if you have two separate galaxies in one image, by
+default NoiseChisel will give a value of 1 to the pixels of both, but after
+segmentation, the pixels in each will get separate labels. NoiseChisel is
+only focused on detection (separating signal from noise), to @emph{segment}
+the signal (into separate galaxies for example), Gnuastro has a separate
+specialized program @ref{Segment}. NoiseChisel's output can be
+directly/readily fed into Segment.
 
 For more on NoiseChisel's output format and its benefits (especially in
 conjunction with @ref{Segment} and later @ref{MakeCatalog}), please see
 @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. Just note that
 when that paper was published, Segment was not yet spinned-off, and
-NoiseChisel done both detection and segmentation. The output is designed to
-be generic enough to be easily used in any higher-level analysis. If your
-targets are not touching after running NoiseChisel and you aren't
-interested in their sub-structure, you don't need the Segment program at
-all. You can ask NoiseChisel to find the connected pixels in the output
-with the @option{--label} option. In this case, the output won't be a
-binary image any more, the signal will have counters/labels starting from 1
-for each connected group of pixels. You can then directly feed
-NoiseChisel's output into MakeCatalog for measurements over the detections
-and the production of a catalog (see @ref{MakeCatalog}).
+NoiseChisel done both detection and segmentation.
+
+NoiseChisel's output is designed to be generic enough to be easily used in
+any higher-level analysis. If your targets are not touching after running
+NoiseChisel and you aren't interested in their sub-structure, you don't
+need the Segment program at all. You can ask NoiseChisel to find the
+connected pixels in the output with the @option{--label} option. In this
+case, the output won't be a binary image any more, the signal will have
+counters/labels starting from 1 for each connected group of pixels. You can
+then directly feed NoiseChisel's output into MakeCatalog for measurements
+over the detections and the production of a catalog (see
+@ref{MakeCatalog}).
 
 Thanks to the published papers mentioned above, there is no need to provide
 a more complete introduction to NoiseChisel in this book. However,
@@ -13838,15 +13847,15 @@ evolved/changed. The changes since publication are documented in
 astnoisechisel}, the details of running NoiseChisel and its options are
 discussed.
 
-As discussed above, detection is the single most important step for your
+As discussed above, detection is one of the most important steps for your
 scientific result. It is therefore very important to obtain a good
 understanding of NoiseChisel (and afterwards @ref{Segment} and
 @ref{MakeCatalog}). We thus strongly recommend that after reading the
 papers above and the respective sections of Gnuastro's book, you play a
-little with the settings (in the order presented in @ref{Invoking
-astnoisechisel}) on a dataset you are familiar with and inspect all the
-check images (options starting with @option{--check}) to see the effect of
-each parameter.
+little with the settings (in the order presented in the paper and
+@ref{Invoking astnoisechisel}) on a dataset you are familiar with and
+inspect all the check images (options starting with @option{--check}) to
+see the effect of each parameter.
 
 @ref{General program usage tutorial} is also a good place to get a feeling
 of the modular principle behind Gnuastro's programs and how they are built
@@ -13858,10 +13867,10 @@ that tutorial for optimal usage of NoiseChisel in conjunction with all the
 other Gnuastro programs.
 
 In @ref{NoiseChisel changes after publication}, we'll review the changes in
-NoiseChisel since the publication of @url{https://arxiv.org/abs/1611.06387,
-Akhlaghi [2016]}. We will then review NoiseChisel's input, detection, and
-output options in @ref{NoiseChisel input}, @ref{Detection options}, and
-@ref{NoiseChisel output}.
+NoiseChisel since the publication of @url{https://arxiv.org/abs/1505.01664,
+Akhlaghi and Ichikawa [2015]}. We will then review NoiseChisel's input,
+detection, and output options in @ref{NoiseChisel input}, @ref{Detection
+options}, and @ref{NoiseChisel output}.
 
 @menu
 * NoiseChisel changes after publication::  Changes to the software after publication.
@@ -13873,10 +13882,10 @@ output options in @ref{NoiseChisel input}, @ref{Detection options}, and
 
 NoiseChisel was initially introduced in
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. It is
-thus strongly recommended to read it for a good understanding of what it
-does and how each parameter influences the output. To help in understanding
-how it works, that paper has a large number of figures showing every step
-on multiple mock and real examples.
+thus strongly recommended to read this paper for a good understanding of
+what it does and how each parameter influences the output. To help in
+understanding how it works, that paper has a large number of figures
+showing every step on multiple mock and real examples.
 
 However, the paper cannot be updated anymore, but NoiseChisel has evolved
 (and will continue to do so): better algorithms or steps have been found,
