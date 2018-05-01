@@ -19585,57 +19585,71 @@ this function is actually defined here, @code{U} says that it is undefined
 here). Try opening the @file{.c} file to check some of these functions for
 your self. Run @command{info nm} for more information.
 
-@cindex Static linking
-@cindex Linking: Static
+@cindex Linking
 To recap, the @emph{compiler} created the separate object files mentioned
 above for each @file{.c} file. The @emph{linker} will then combine all the
 symbols of the various object files (and libraries) into one program or
 library. In the case of Arithmetic (a program) the contents of the object
 files in @file{bin/arithmetic/} are copied (and re-ordered) into one final
-executable file which we can run from the operating system. When the
-symbols (computer-readable function definitions in most cases) are copied
-into the output like this, we call the process @emph{static} linking. Let's
-have a closer look at static linking: we'll assume you have installed
+executable file which we can run from the operating system.
+
+@cindex Static linking
+@cindex Linking: Static
+@cindex Dynamic linking
+@cindex Linking: Dynamic
+There are two ways to @emph{link} all the necessary symbols: static and
+dynamic/shared. When the symbols (computer-readable function definitions in
+most cases) are copied into the output, it is called @emph{static}
+linking. When the symbols are kept in their original file and only a
+reference to them is kept in the executable, it is called @emph{dynamic},
+or @emph{shared} linking.
+
+Let's have a closer look at the executable to understand this better: we'll
+assume you have built Gnuastro without any customization and installed
 Gnuastro into the default @file{/usr/local/} directory (see
 @ref{Installation directory}). If you tried the @command{nm} command on one
 of Arithmetic's object files above, then with the command below you can
-confirm that all the functions that were defined in the object files (had a
-@code{T} in the second column) are also defined in the @file{astarithmetic}
-executable:
+confirm that all the functions that were defined in the object file above
+(had a @code{T} in the second column) are also defined in the
+@file{astarithmetic} executable:
 
 @example
 $ nm /usr/local/bin/astarithmetic
 @end example
 
 @noindent
-But you will notice that there are still many undefined symbols (have a
-@code{U} in the second column). One class of such functions are Gnuastro's
-own library functions that start with `@code{gal_}':
+These symbols/function have been statically linked (copied) in the final
+executable. But you will notice that there are still many undefined symbols
+in the executable (those with a @code{U} in the second column). One class
+of such functions are Gnuastro's own library functions that start with
+`@code{gal_}':
 
 @example
 $ nm /usr/local/bin/astarithmetic | grep gal_
 @end example
 
+@cindex Plugin
 @cindex GNU Libtool
 @cindex Shared library
 @cindex Library: shared
 @cindex Dynamic linking
 @cindex Linking: dynamic
-These undefined symbols (functions) will be linked to the executable
-every time you run arithmetic. Therefore they are known as dynamically
-@emph{linked} libraries @footnote{Do not confuse dynamically @emph{linked}
-libraries with dynamically @emph{loaded} libraries. The former (that is
-discussed here) are only loaded once at the program startup. However, the
-latter can be loaded anytime during the program's execution, they are also
-known as plugins.}. When the functions of a library need to be dynamically
-linked, the library is known as a shared library. As we saw above, static
-linking is done when the executable is being built. However, when a library
-is linked dynamically, its symbols are only checked with the available
-libraries at build time: they are not actually copied into the
-executable. Every time you run the program, the linker will be activated and
-will try to link the program to the installed library before it starts. If
-you want all the libraries to be statically linked to the executables, you
-have to tell Libtool (which Gnuastro uses for the linking) to disable
+These undefined symbols (functions) are present in another file and will be
+linked to the Arithmetic program every time you run it. Therefore they are
+known as dynamically @emph{linked} libraries @footnote{Do not confuse
+dynamically @emph{linked} libraries with dynamically @emph{loaded}
+libraries. The former (that is discussed here) are only loaded once at the
+program startup. However, the latter can be loaded anytime during the
+program's execution, they are also known as plugins.}. As we saw above,
+static linking is done when the executable is being built. However, when a
+program is dynamically linked to a library, at build-time, the library's
+symbols are only checked with the available libraries: they are not
+actually copied into the program's executable. Every time you run the
+program, the (dynamic) linker will be activated and will try to link the
+program to the installed library before the program starts.
+
+If you want all the libraries to be statically linked to the executables,
+you have to tell Libtool (which Gnuastro uses for the linking) to disable
 shared libraries at configure time@footnote{Libtool is very common and is
 commonly used. Therefore, you can use this option to configure on most
 programs using the GNU build system if you want static linking.}:
@@ -19645,12 +19659,12 @@ $ configure --disable-shared
 @end example
 
 @noindent
-Try configuring, statically building and installing Gnuastro with the
-command above. Then check the @code{gal_} symbols in the installed
-Arithmetic executable like before. You will see that they are actually
-copied this time (have a @code{T} in the second column). If the second
-column doesn't convince you, look at the executable file size with the
-following command:
+Try configuring Gnuastro with the command above, then build and install it
+(as described in @ref{Quick start}). Afterwards, check the @code{gal_}
+symbols in the installed Arithmetic executable like before. You will see
+that they are actually copied this time (have a @code{T} in the second
+column). If the second column doesn't convince you, look at the executable
+file size with the following command:
 
 @example
 $ ls -lh /usr/local/bin/astarithmetic
@@ -19659,19 +19673,20 @@ $ ls -lh /usr/local/bin/astarithmetic
 @noindent
 It should be around 4.2 Megabytes with this static linking. If you
 configure and build Gnuastro again with shared libraries enabled (which is
-the default), you will notice that it is roughly 100 Kilobytes! This huge
-difference would have been very significant in the old days, but with the
-roughly Terabyte storage drives commonly in use today, it is
+the default), you will notice that it is roughly 100 Kilobytes!
+
+This huge difference would have been very significant in the old days, but
+with the roughly Terabyte storage drives commonly in use today, it is
 negligible. Fortunately, output file size is not the only benefit of
 dynamic linking: since it links to the libraries at run-time (rather than
 build-time), you don't have to re-build a higher-level program or library
 when an update comes for one of the lower-level libraries it depends
 on. You just install the new low-level library and it will automatically be
-used next time in your higher-level tools. To be fair, this also creates a
-few complications@footnote{Both of these can be avoided by joining the
-mailing lists of the lower-level libraries and checking the changes in
-newer versions before installing them. Updates that result in such
-behaviors are generally heavily emphasized in the release notes.}:
+used/linked next time in the programs that use it. To be fair, this also
+creates a few complications@footnote{Both of these can be avoided by
+joining the mailing lists of the lower-level libraries and checking the
+changes in newer versions before installing them. Updates that result in
+such behaviors are generally heavily emphasized in the release notes.}:
 
 @itemize
 @item
@@ -19685,7 +19700,7 @@ you need to re-build your higher-level program or library.
 
 @cindex GNU C library
 To see a list of all the shared libraries that are needed for a program or
-a shared library to run, you can use the GNU C library's
+a shared library to run, you can use GNU C library's
 @command{ldd}@footnote{If your operating system is not using the GNU C
 library, you might need another tool.} program, for example:
 
@@ -19693,46 +19708,61 @@ library, you might need another tool.} program, for example:
 $ ldd /usr/local/bin/astarithmetic
 @end example
 
-Library file names start with a @file{lib} and end with a suffix depending
-on their type as described below. In between these two is the name of the
-library, for example @file{libgnuastro.a} (Gnuastro's static library) and
-@file{libgsl.so.0.0.0} (GSL's shared library).
+Library file names (in their installation directory) start with a
+@file{lib} and their ending (suffix) shows if they are static (@file{.a})
+or dynamic (@file{.so}), as described below. The name of the library is in
+the middle of these two, for example @file{libgsl.a} or
+@file{libgnuastro.a} (GSL and Gnuastro's static libraries), and
+@file{libgsl.so.23.0.0} or @file{libgnuastro.so.4.0.0} (GSL and Gnuastro's
+shared library, the numbers may be different).
 
 @itemize
 @item
-A static library is known as an archive file and has a @file{.a} suffix. A
-static library is not an executable file.
+A static library is known as an archive file and has the @file{.a}
+suffix. A static library is not an executable file.
 
 @item
 @cindex Shared library versioning
 @cindex Versioning: Shared library
-A shared library ends with a @file{.so.X.Y.Z} suffix and is executable. The
-three numbers in the prefix are the version of the shared library. Shared
-library versions are defined to allow multiple versions of a shared library
-simultaneously on a system and to help detect possible updates in the
-library and programs that depend on it by the linker. It is very important
-to mention that this version number is different from from the software
-version number (see @ref{Version numbering}), so do not confuse the
-two. See the ``Library interface versions'' chapter of GNU Libtool for
-more.
+A shared library ends with the @file{.so.X.Y.Z} suffix and is
+executable. The three numbers in the suffix, describe the version of the
+shared library. Shared library versions are defined to allow multiple
+versions of a shared library simultaneously on a system and to help detect
+possible updates in the library and programs that depend on it by the
+linker.
+
+It is very important to mention that this version number is different from
+the software version number (see @ref{Version numbering}), so do not
+confuse the two. See the ``Library interface versions'' chapter of GNU
+Libtool for more.
 
 For each shared library, we also have two symbolic links ending with
 @file{.so.X} and @file{.so}. They are automatically set by the installer,
 but you can change them (point them to another version of the library) when
-you have multiple versions on your system.
+you have multiple versions of a library on your system.
 
 @end itemize
 
 @cindex GNU Libtool
-For those libraries that use GNU Libtool (including Gnuastro and its
-dependencies), both static and dynamic libraries are built and installed in
-the @file{prefix/lib/} directory (see @ref{Installation directory}). In
-this way other programs can make which ever kind of link that they want.
+Libraries that are built with GNU Libtool (including Gnuastro and its
+dependencies), build both static and dynamic libraries by default and
+install them in @file{prefix/lib/} directory (for more on @file{prefix},
+see @ref{Installation directory}). In this way, programs depending on the
+libraries can link with them however they prefer. See the contents of
+@file{/usr/local/lib} with the command below to see both the static and
+shared libraries available there, along with their executable nature and
+the symbolic links:
+
+@example
+$ ls -l /usr/local/lib/
+@end example
 
 To link with a library, the linker needs to know where to find the
 library. @emph{At compilation time}, these locations can be passed to the
 linker with two separate options (see @ref{Summary and example on
-libraries} for an example) as described below.
+libraries} for an example) as described below. You can see these options
+and their usage in practice while building Gnuastro (after running
+@command{make}):
 
 @table @option
 @item -L DIR
@@ -19740,21 +19770,22 @@ Will tell the linker to look into @file{DIR} for the libraries. For example
 @file{-L/usr/local/lib}, or @file{-L/home/yourname/.local/lib}. You can
 make multiple calls to this option, so the linker looks into several
 directories at compilation time. Note that the space between @key{L} and
-the directory is optional and commonly not used.
+the directory is optional and commonly ignored (written as @option{-LDIR}).
 
 @item -lLIBRARY
-Specify the unique name of a library to be linked. As discussed above,
-library file names have fixed parts which must not be given to this
+Specify the unique library identifier/name (not containing directory or
+shared/dynamic nature) to be linked with the executable. As discussed
+above, library file names have fixed parts which must not be given to this
 option. So @option{-lgsl} will guide the linker to either look for
 @file{libgsl.a} or @file{libgsl.so} (depending on the type of linking it is
 suppose to do). You can link many libraries by repeated calls to this
 option.
 
-@strong{Very important: } The place of this option on the command line
-matters. This is often a source of confusion for beginners, so let's assume
-you have asked the linker to link with library A using this option. As soon
-as the linker confronts this option, it looks into the list of the
-undefined symbols it has found until that point and does a search in
+@strong{Very important: } The place of this option on the compiler's
+command matters. This is often a source of confusion for beginners, so
+let's assume you have asked the linker to link with library A using this
+option. As soon as the linker confronts this option, it looks into the list
+of the undefined symbols it has found until that point and does a search in
 library A for any of those symbols. If any pending undefined symbol is
 found in library A, it is used. After the search in undefined symbols is
 complete, the contents of library A are completely discarded from the
@@ -19762,22 +19793,30 @@ linker's memory. Therefore, if a later object file or library uses an
 unlinked symbol in library A, the linker will abort after it has finished
 its search in all the input libraries or object files.
 
-As an example, Gnuastro's @code{gal_array_dlog10_array} function depends on
-the @code{log10} function of the C Math library (specified with
-@option{-lm}). So the proper way to link something that uses this function
-is @option{-lgnuastro -lm}. If instead, you give: @option{-lm -lgnuastro}
-the linker will complain and abort.
+As an example, Gnuastro's @code{gal_fits_img_read} function depends on the
+@code{fits_read_pix} function of CFITSIO (specified with
+@option{-lcfitsio}, which in turn depends on the cURL library, called with
+@option{-lcurl}). So the proper way to link something that uses this
+function is @option{-lgnuastro -lcfitsio -lcurl}. If instead, you give:
+@option{-lcfitsio -lgnuastro} the linker will complain and abort. To avoid
+such linking complexities when using Gnuastro's library, we recommend using
+@ref{BuildProgram}.
 
 @end table
 
 If you have compiled and linked your program with a dynamic library, then
-the linker needs to know the location of the libraries @emph{every time}
-the final program is run. For this purpose, the linker looks into the
-@code{LD_LIBRARY_PATH} environment variable. Therefore, if you don't get
-any errors when compiling/linking, but are unable to run your program
-because of a failure to find a library, it is because the linker hasn't
-found the dynamic library @emph{at run time}. See @ref{Installation
-directory} on how to add any directory to @code{LD_LIBRARY_PATH}.
+the dynamic linker also needs to know the location of the libraries after
+building the program: @emph{every time} the program is run
+afterwards. Therefore, it may happen that you don't get any errors when
+compiling/linking a program, but are unable to run your program because of
+a failure to find a library. This happens because the dynamic linker hasn't
+found the dynamic library @emph{at run time}.
+
+To find the dynamic libraries at run-time, the linker looks into the paths,
+or directories, in the @code{LD_LIBRARY_PATH} environment variable. For a
+discussion on environment variables, especially search paths like
+@code{LD_LIBRARY_PATH}, and how you can add new directories to them, see
+@ref{Installation directory}.
 
 
 
