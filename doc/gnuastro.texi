@@ -25992,8 +25992,8 @@ system and you can safely use it as a guide.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "gnuastro/fits.h"
-#include "gnuastro/threads.h"
+#include <gnuastro/fits.h>
+#include <gnuastro/threads.h>
 
 
 /* This structure can keep all information you want to pass onto the
