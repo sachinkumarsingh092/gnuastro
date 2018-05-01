@@ -4321,10 +4321,10 @@ added or changed, also some updates that are not yet officially released
 might be in it.
 
 We use Git for the version control of Gnuastro. For those who are not
-familiar with it, we recommend the Pro
-Git@footnote{@url{https://progit.org/}} book. The whole book is publicly
-available for online reading and downloading and does a wonderful job at
-explaining the concepts and best practices.
+familiar with it, we recommend the @url{https://git-scm.com/book/en, ProGit
+book}. The whole book is publicly available for online reading and
+downloading and does a wonderful job at explaining the concepts and best
+practices.
 
 Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO} directory
 (can be any directory, change the value below). The full version controlled
@@ -4350,13 +4350,14 @@ and @file{README}) or mainly written in small-caps (for example
 @file{configure.ac} and @file{Makefile.am}). The former are
 non-programming, standard writing for human readers containing high-level
 information about the whole package. The latter are instructions to
-customize the GNU build system for Gnuastro.
+customize the GNU build system for Gnuastro. For more on Gnuastro's source
+code structure, please see @ref{Developing}. We won't go any deeper here.
 
 The cloned Gnuastro source cannot immediately be configured, compiled, or
 installed since it only contains hand-written files, not automatically
 generated or imported files which do all the hard work of the build
 process. See @ref{Bootstrapping} for the process of generating and
-importing those files (it is very easy!). Once you have bootstrapped
+importing those files (its not too hard!). Once you have bootstrapped
 Gnuastro, you can run the standard procedures (in @ref{Quick start}). Very
 soon after you have cloned it, Gnuastro's main @file{master} branch will be
 updated on the main repository (since the developers are actively working
