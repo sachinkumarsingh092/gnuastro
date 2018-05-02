@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/qsort.h>
 
 /* Initialize the array for sorting indexs to NULL. */
-float *gal_qsort_index_arr;
+float *gal_qsort_index_arr=NULL;
 
 int
 gal_qsort_index_float_decreasing(const void * a, const void * b)
