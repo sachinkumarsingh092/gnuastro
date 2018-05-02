@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -54,11 +55,11 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
   size_t increment=0, num_increment=1;
   size_t i, d, *min, *max, width=2*ndim;
   int32_t *O, *OO, *C, *start=objects->array;
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                      "coord");
-  size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                       width*pp->clumpsinobj, __func__,
-                                       "minmax");
+  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                     "coord");
+  size_t *minmax=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                      width*pp->clumpsinobj, 0, __func__,
+                                      "minmax");
 
   /* Initialize the minimum and maximum position for each tile/clump. So,
      we'll initialize the minimum coordinates to the maximum possible
@@ -160,8 +161,8 @@ upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
   /* Set the minimum and maximum acceptable value for the range.  */
   if(p->uprange)
     {
-      tstart=gal_data_num_between(tile->block->array, tile->array,
-                                  p->objects->type);
+      tstart=gal_pointer_num_between(tile->block->array, tile->array,
+                                     p->objects->type);
       gal_dimension_index_to_coord(tstart, ndim, dsize, coord);
     }
 
@@ -551,8 +552,8 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   struct gal_list_sizet_t *check_x=NULL, *check_y=NULL;
   int32_t *O, *OO, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
   size_t maxcount = p->upnum * MKCATALOG_UPPERLIMIT_STOP_MULTIP;
-  size_t *rcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                       "rcoord");
+  size_t *rcoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                      "rcoord");
 
   /* See if a check table must be created for this distribution. */
   if( p->checkupperlimit[0]==pp->object )
@@ -594,7 +595,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
         rcoord[d] = upperlimit_random_position(pp, tile, d, min, max);
 
       /* Set the tile's new starting pointer. */
-      tile->array = gal_data_ptr_increment(p->objects->array,
+      tile->array = gal_pointer_increment(p->objects->array,
                           gal_dimension_coord_to_index(ndim, dsize, rcoord),
                                            p->objects->type);
 

@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 
 
@@ -49,13 +50,35 @@ gal_dimension_total_size(size_t ndim, size_t *dsize)
 
 
 
+int
+gal_dimension_is_different(gal_data_t *first, gal_data_t *second)
+{
+  size_t i;
+
+  /* First make sure that the dimensionality is the same. */
+  if(first->ndim!=second->ndim)
+    return 1;
+
+  /* Check if the sizes along all dimensions are the same: */
+  for(i=0;i<first->ndim;++i)
+    if( first->dsize[i] != second->dsize[i] )
+      return 1;
+
+  /* If it got to here, we know the dimensions have the same length. */
+  return 0;
+}
+
+
+
+
+
 /* Calculate the values necessary to increment/decrement along each
    dimension of a dataset with size `dsize'. */
 size_t *
 gal_dimension_increment(size_t ndim, size_t *dsize)
 {
   int i;
-  size_t *out=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "out");
+  size_t *out=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__, "out");
 
   /* Along the fastest dimension, it is 1. */
   out[ndim-1]=1;

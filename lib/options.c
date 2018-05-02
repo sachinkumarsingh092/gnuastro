@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/arithmetic.h>
 
 #include <gnuastro-internal/timing.h>
@@ -815,7 +816,8 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
       /* Write the values into an allocated size_t array and finish it with
          a `-1' so the total number can be found later.*/
       num=values->size;
-      array=gal_data_malloc_array(GAL_TYPE_SIZE_T, num+1, __func__, "array");
+      array=gal_pointer_allocate(GAL_TYPE_SIZE_T, num+1, 0, __func__,
+                                 "array");
       for(i=0;i<num;++i) array[num-1-i]=v[i];
       array[num] = GAL_BLANK_SIZE_T;
 

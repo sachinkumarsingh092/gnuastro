@@ -417,7 +417,7 @@ ui_prepare_inputs(struct segmentparams *p)
       p->conv->wcs=gal_wcs_copy(p->input->wcs);
 
       /* Make sure it is the same size as the input. */
-      if( gal_data_dsize_is_different(p->input, p->conv) )
+      if( gal_dimension_is_different(p->input, p->conv) )
         error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
               "`--chdu', is not the same size as the input (%s, hdu: %s)",
               p->convolvedname, p->chdu, p->inputname, p->cp.hdu);
@@ -432,7 +432,7 @@ ui_prepare_inputs(struct segmentparams *p)
       /* Read the dataset into memory. */
       p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
                                         p->cp.minmapsize);
-      if( gal_data_dsize_is_different(p->input, p->olabel) )
+      if( gal_dimension_is_different(p->input, p->olabel) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->useddetectionname, p->dhdu,
               p->inputname, p->cp.hdu);
@@ -600,7 +600,7 @@ static void
 ui_check_size(gal_data_t *base, gal_data_t *comp, size_t numtiles,
               char *bname, char *bhdu, char *cname, char *chdu)
 {
-  if( gal_data_dsize_is_different(base, comp) && numtiles!=comp->size)
+  if( gal_dimension_is_different(base, comp) && numtiles!=comp->size )
     error(EXIT_FAILURE, 0, "%s (hdu: %s): doesn't have the right size "
           "(%zu elements or pixels).\n\n"
           "It must either be the same size as `%s' (hdu: `%s'), or "
@@ -632,7 +632,7 @@ ui_subtract_sky(gal_data_t *in, gal_data_t *sky,
   float *s, *f, *ff, *skyarr=sky->array;
 
   /* It is the same size as the input or a single value. */
-  if( gal_data_dsize_is_different(in, sky)==0 || sky->size==1)
+  if( gal_dimension_is_different(in, sky)==0 || sky->size==1)
     {
       s=sky->array;
       ff=(f=in->array)+in->size;

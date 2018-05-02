@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/permutation.h>
 
@@ -269,8 +270,8 @@ gal_wcs_on_tile(gal_data_t *tile)
 {
   size_t i, start_ind, ndim=tile->ndim;
   gal_data_t *block=gal_tile_block(tile);
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                      "coord");
+  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                     "coord");
 
   /* If the tile already has a WCS structure, don't do anything. */
   if(tile->wcs) return;
@@ -280,7 +281,8 @@ gal_wcs_on_tile(gal_data_t *tile)
       tile->wcs=gal_wcs_copy(block->wcs);
 
       /* Find the coordinates of the tile's starting index. */
-      start_ind=gal_data_num_between(block->array, tile->array, block->type);
+      start_ind=gal_pointer_num_between(block->array, tile->array,
+                                        block->type);
       gal_dimension_index_to_coord(start_ind, ndim, block->dsize, coord);
 
       /* Correct the copied WCS structure. Note that crpix is indexed in
@@ -445,9 +447,9 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   int warning_printed;
   size_t i, j, maxj, n=wcs->naxis;
   double jvmax, *a, *out, maxrow, minrow;
-  double *v=gal_data_malloc_array(GAL_TYPE_FLOAT64, n*n, __func__, "v");
-  size_t *permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, n, __func__,
-                                            "permutation");
+  double *v=gal_pointer_allocate(GAL_TYPE_FLOAT64, n*n, 0, __func__, "v");
+  size_t *permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, n, 0, __func__,
+                                           "permutation");
   gal_data_t *pixscale=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &n, NULL,
                                       0, -1, NULL, NULL, NULL);
 
@@ -665,15 +667,18 @@ wcs_convert_sanity_check_alloc(gal_data_t *coords, struct wcsprm *wcs,
           ndim, wcs->naxis);
 
   /* Allocate all the necessary arrays. */
-  *phi    = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "phi");
-  *stat   = gal_data_calloc_array( GAL_TYPE_INT32,   size, __func__, "stat");
-  *theta  = gal_data_malloc_array( GAL_TYPE_FLOAT64, size, __func__, "theta");
-  *world  = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
-                                   "world");
-  *imgcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
-                                   "imgcrd");
-  *pixcrd = gal_data_malloc_array( GAL_TYPE_FLOAT64, ndim*size, __func__,
-                                   "pixcrd");
+  *phi    = gal_pointer_allocate( GAL_TYPE_FLOAT64, size,      0, __func__,
+                                  "phi");
+  *stat   = gal_pointer_allocate( GAL_TYPE_INT32,   size,      1, __func__,
+                                  "stat");
+  *theta  = gal_pointer_allocate( GAL_TYPE_FLOAT64, size,      0, __func__,
+                                  "theta");
+  *world  = gal_pointer_allocate( GAL_TYPE_FLOAT64, ndim*size, 0, __func__,
+                                  "world");
+  *imgcrd = gal_pointer_allocate( GAL_TYPE_FLOAT64, ndim*size, 0, __func__,
+                                  "imgcrd");
+  *pixcrd = gal_pointer_allocate( GAL_TYPE_FLOAT64, ndim*size, 0, __func__,
+                                  "pixcrd");
 }
 
 

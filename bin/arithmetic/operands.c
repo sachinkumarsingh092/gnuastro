@@ -138,7 +138,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
          checks. */
       if(p->refdata.ndim)
         {
-          if(gal_data_dsize_is_different(&p->refdata, data))
+          if( gal_dimension_is_different(&p->refdata, data) )
             error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
                   "compared to previous images. All the images must be "
                   "the same size in order for Arithmetic to work",

@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/label.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -309,9 +310,9 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
      thread. `maxltcontig' is the maximum contiguous patch of memory needed
      to store all tiles. Finally, since we are working on a `uint8_t' type,
      the size of each element is only 1 byte. */
-  fho_prm.copyspace=gal_data_malloc_array(GAL_TYPE_UINT8,
-                                          p->cp.numthreads*p->maxltcontig,
-                                          __func__, "fho_prm.copyspace");
+  fho_prm.copyspace=gal_pointer_allocate(GAL_TYPE_UINT8,
+                                         p->cp.numthreads*p->maxltcontig, 0,
+                                         __func__, "fho_prm.copyspace");
 
 
   /* Fill the holes and open on each large tile. When no check image is
@@ -463,7 +464,7 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
   size_t i, *area, counter=0, *dsize=p->input->dsize;
   float *img=p->input->array, *f=p->input->array, *ff=f+p->input->size;
   int32_t *plab = worklab->array, *dlab = s0d1D2 ? NULL : p->olabel->array;
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                       "coord");
 
 
@@ -483,14 +484,14 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
   /* Allocate all the necessary arrays, note that since we want to put each
      object's information into the same index, the number of allocated
      spaces has to be `tablen=num+1'. */
-  area       = gal_data_calloc_array(GAL_TYPE_SIZE_T,  tablen, __func__,
-                                     "area");
-  brightness = gal_data_calloc_array(GAL_TYPE_FLOAT64, tablen, __func__,
+  area       = gal_pointer_allocate(GAL_TYPE_SIZE_T,  tablen, 1, __func__,
+                                    "area");
+  brightness = gal_pointer_allocate(GAL_TYPE_FLOAT64, tablen, 1, __func__,
                                      "brightness");
-  xy         = gal_data_calloc_array(GAL_TYPE_FLOAT64, xyncols*tablen,
+  xy         = gal_pointer_allocate(GAL_TYPE_FLOAT64, xyncols*tablen, 1,
                                      __func__, "xy");
   flag       = ( s0d1D2==0
-                 ? gal_data_calloc_array(GAL_TYPE_UINT8, tablen, __func__,
+                 ? gal_pointer_allocate(GAL_TYPE_UINT8, tablen, 1, __func__,
                                          "flag")
                  : NULL );
   sn         = gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &tablen, NULL, 1,
@@ -650,8 +651,8 @@ detection_pseudo_remove_low_sn(struct noisechiselparams *p,
   float *snarr=sn->array;
   uint8_t *b=workbin->array;
   int32_t *l=worklab->array, *lf=l+worklab->size;
-  uint8_t *keep=gal_data_calloc_array(GAL_TYPE_UINT8, sn->size, __func__,
-                                      "keep");
+  uint8_t *keep=gal_pointer_allocate(GAL_TYPE_UINT8, sn->size, 1, __func__,
+                                     "keep");
 
   /* Specify the new labels for those that must be kept/changed. Note that
      when an object didn't have an S/N, its S/N was given a value of NaN
@@ -769,8 +770,8 @@ detection_final_remove_small_sn(struct noisechiselparams *p,
   gal_data_t *sn, *snind;
   int32_t *l, *lf, curlab=1;
   gal_list_str_t *comments=NULL;
-  int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_INT32, num+1, __func__,
-                                         "newlabs");
+  int32_t *newlabs=gal_pointer_allocate(GAL_TYPE_INT32, num+1, 1, __func__,
+                                        "newlabs");
 
   /* Get the Signal to noise ratio of all detections. */
   sn=detection_sn(p, p->olabel, num, 2, "DILATED");
@@ -859,9 +860,9 @@ detection_remove_false_initial(struct noisechiselparams *p,
   uint8_t *b=workbin->array;
   float *e_th, *arr=p->conv->array;
   int32_t *l=p->olabel->array, *lf=l+p->olabel->size, curlab=1;
-  int32_t *newlabels=gal_data_calloc_array(GAL_TYPE_UINT32,
-                                           p->numinitialdets+1, __func__,
-                                           "newlabels");
+  int32_t *newlabels=gal_pointer_allocate(GAL_TYPE_UINT32,
+                                          p->numinitialdets+1, 1, __func__,
+                                          "newlabels");
 
   /* Find the new labels for all the existing labels. Recall that
      `newlabels' was initialized to zero, so any label that is not given a

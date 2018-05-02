@@ -30,6 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/pointer.h>
+#include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
 
@@ -553,7 +555,7 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
-  if(gal_data_dsize_is_different(out, cond))
+  if( gal_dimension_is_different(out, cond) )
     error(EXIT_FAILURE, 0, "%s: the output and condition data sets of the "
           "must be the same size", __func__);
 
@@ -785,7 +787,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
     int use;                                                            \
     size_t n, j=0;                                                      \
-    TYPE *pixs=gal_data_malloc_array(list->type, dnum, __func__, "pixs"); \
+    TYPE *pixs=gal_pointer_allocate(list->type, dnum, 0, __func__,      \
+                                    "pixs");                            \
                                                                         \
     /* Loop over each pixel */                                          \
     do                                                                  \
@@ -919,7 +922,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list)
               gal_arithmetic_operator_string(operator));
 
       /* Check the sizes. */
-      if( gal_data_dsize_is_different(list, tmp) )
+      if( gal_dimension_is_different(list, tmp) )
         error(EXIT_FAILURE, 0, "%s: the sizes of all operands to the %s "
               "operator must be same", __func__,
               gal_arithmetic_operator_string(operator));
@@ -936,7 +939,8 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list)
 
   /* hasblank is used to see if a blank value should be checked for each
      list element or not. */
-  hasblank=gal_data_malloc_array(GAL_TYPE_UINT8, dnum, __func__, "hasblank");
+  hasblank=gal_pointer_allocate(GAL_TYPE_UINT8, dnum, 0, __func__,
+                                "hasblank");
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     hasblank[i++]=gal_blank_present(tmp, 0);
 
@@ -1071,7 +1075,7 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 
   /* Simple sanity check on the input sizes */
   if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
-      && gal_data_dsize_is_different(l, r) )
+      && gal_dimension_is_different(l, r) )
     error(EXIT_FAILURE, 0, "%s: the non-number inputs to %s don't have the "
           "same dimension/size", __func__,
           gal_arithmetic_operator_string(operator));
@@ -1230,7 +1234,7 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
 
   /* Simple sanity check on the input sizes */
   if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
-      && gal_data_dsize_is_different(l, r) )
+      && gal_dimension_is_different(l, r) )
     error(EXIT_FAILURE, 0, "%s: the input datasets don't have the same "
           "dimension/size", __func__);
 

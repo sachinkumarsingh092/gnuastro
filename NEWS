@@ -90,6 +90,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_pdf_name_is_pdf: Returns 1 if given filename is PDF.
     gal_pdf_suffix_is_pdf: Returns 1 if given suffix is PDF.
     gal_pdf_write: Writes a dataset into an PDF file.
+    gal_pointer_allocate_mmap: Allocate space in a file, not in RAM.
     gal_qsort_index_float_increasing: Sort indexs in increasing value order.
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
@@ -143,7 +144,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - With no output name, the output has a `_detected.fits' suffix.
 
   MakeCatalog:
-
     - The `WCLUMPS' keyword in the objects labeled image is no longer used
          to see if a clumps catalog should also be made. To build a clumps
          catalog, you can now use the `--clumpscat' option.
@@ -158,25 +158,25 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
          still acceptable also).
 
   Libraries:
+    gal_binary_holes_fill: new name for `gal_binary_fill_holes'.
+    gal_dimension_is_different: new name for `gal_data_dsize_is_different'.
     gal_fits_img_read: now only reads the data not the WCS, therefore it no
         longer needs the last two arguments. A subsequent call to
         `gal_wcs_read' can be used to read the WCS information in the file.
-
+    gal_pointer_increment: new name for `gal_data_ptr_increment'.
+    gal_pointer_num_between: new name for `gal_data_ptr_dist'.
+    gal_pointer_allocate: replaces `gal_data_malloc_array' and
+        `gal_data_calloc_array', through an argument you can ask for the
+        allocated memory to be cleared or not.
     gal_statistics_is_sorted: can now also update the bit-flags regarding
         the sorted nature of the input (to optimize future calls to the
         function).
-
     gal_statistics_quantile_function: returns `inf' or `-inf' if the given
         value is smaller than the minimum or larger than the maximum of the
         input dataset's range. Until now, it would return blank in such
         cases.
-
     gal_statistics_number: the output dataset now has a `size_t' type. Until
         now it was `uint64_t'.
-
-  Library:
-    - gal_binary_holes_fill: new name for `gal_binary_fill_holes'.
-    - gal_data_num_between: new name for `gal_data_ptr_dist'.
 
 ** Bug fixes
 

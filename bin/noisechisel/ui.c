@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 
 #include <gnuastro-internal/timing.h>
@@ -448,8 +449,8 @@ ui_prepare_tiles(struct noisechiselparams *p)
   /* Check the tile parameters for the small tile sizes and make the tile
      structure. We will also need the dimensions of the tile with the
      maximum required memory. */
-  p->maxtsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
-                                    __func__, "p->maxtsize");
+  p->maxtsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->input->ndim, 0,
+                                   __func__, "p->maxtsize");
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, tl);
   gal_tile_full_two_layers(p->input, tl);
   gal_tile_full_permutation(tl);
@@ -468,8 +469,8 @@ ui_prepare_tiles(struct noisechiselparams *p)
   ltl->workoverch     = tl->workoverch;
   ltl->checktiles     = tl->checktiles;
   ltl->oneelempertile = tl->oneelempertile;
-  p->maxltsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->input->ndim,
-                                     __func__, "p->maxltsize");
+  p->maxltsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->input->ndim, 0,
+                                    __func__, "p->maxltsize");
   gal_tile_full_sanity_check(p->inputname, p->cp.hdu, p->input, ltl);
   gal_tile_full_two_layers(p->input, ltl);
   gal_tile_full_permutation(ltl);
@@ -551,7 +552,7 @@ ui_preparations(struct noisechiselparams *p)
                                               p->cp.minmapsize);
 
       /* Make sure the convolved image is the same size as the input. */
-      if( gal_data_dsize_is_different(p->input, p->conv) )
+      if( gal_dimension_is_different(p->input, p->conv) )
         error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
               "`--convolvehdu', is not the same size as NoiseChisel's "
               "input: %s (hdu: %s)", p->convolvedname, p->chdu,

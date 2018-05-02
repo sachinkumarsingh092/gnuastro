@@ -39,6 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/checkset.h>
 #include <gnuastro-internal/tableintern.h>
@@ -843,7 +844,7 @@ gal_fits_key_img_blank(uint8_t type)
      type. */
   if(tocopy)
     {
-      out = gal_data_malloc_array(type, 1, __func__, "out");
+      out = gal_pointer_allocate(type, 1, 0, __func__, "out");
       memcpy(out, tocopy, gal_type_sizeof(type));
     }
 
@@ -955,8 +956,8 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
            set the size and ndim to 1. But first allocate dsize if it
            wasn't already allocated. */
         if(tmp->dsize==NULL)
-          tmp->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 1, __func__,
-                                           "tmp->dsize");
+          tmp->dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
+                                          "tmp->dsize");
         tmp->ndim=tmp->size=tmp->dsize[0]=1;
 
         /* When the type is a string, `tmp->array' is an array of pointers
@@ -968,9 +969,9 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
           case GAL_TYPE_STRING:
             tmp->array=strarray=( tmp->array
                                   ? tmp->array
-                                  : gal_data_malloc_array(tmp->type, 1,
-                                                          __func__,
-                                                          "tmp->array") );
+                                  : gal_pointer_allocate(tmp->type, 1, 0,
+                                                         __func__,
+                                                         "tmp->array") );
             errno=0;
             valueptr=strarray[0]=malloc(FLEN_VALUE * sizeof *strarray[0]);
             if(strarray[0]==NULL)
@@ -981,9 +982,9 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
           default:
             tmp->array=valueptr=( tmp->array
                                   ? tmp->array
-                                  : gal_data_malloc_array(tmp->type, 1,
-                                                          __func__,
-                                                          "tmp->array") );
+                                  : gal_pointer_allocate(tmp->type, 1, 0,
+                                                         __func__,
+                                                         "tmp->array") );
           }
 
         /* Allocate space for the keyword comment if necessary.*/
@@ -1489,7 +1490,7 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
 
   /* Allocate the array to keep the dimension size and fill it in, note
      that its order is the opposite of naxes. */
-  *dsize=gal_data_malloc_array(GAL_TYPE_INT64, *ndim, __func__, "dsize");
+  *dsize=gal_pointer_allocate(GAL_TYPE_INT64, *ndim, 0, __func__, "dsize");
   for(i=0; i<*ndim; ++i)
     (*dsize)[i]=naxes[*ndim-1-i];
 
@@ -1542,7 +1543,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
      problem, the space will be written/read as 32-bit `long' any way,
      we'll just have a few empty bytes that will be freed anyway at the end
      of this function. */
-  fpixel=gal_data_malloc_array(GAL_TYPE_INT64, ndim, __func__, "fpixel");
+  fpixel=gal_pointer_allocate(GAL_TYPE_INT64, ndim, 0, __func__, "fpixel");
   for(i=0;i<ndim;++i) fpixel[i]=1;
 
 
@@ -1680,9 +1681,10 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   hasblank=gal_blank_present(towrite, 0);
 
   /* Allocate the naxis area. */
-  naxes=gal_data_malloc_array( ( sizeof(long)==8
-                                 ? GAL_TYPE_INT64
-                                 : GAL_TYPE_INT32 ), ndim, __func__, "naxes");
+  naxes=gal_pointer_allocate( ( sizeof(long)==8
+                                ? GAL_TYPE_INT64
+                                : GAL_TYPE_INT32 ), ndim, 0, __func__,
+                              "naxes");
 
 
   /* Open the file for writing */

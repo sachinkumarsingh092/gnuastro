@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/convolve.h>
 #include <gnuastro/statistics.h>
@@ -95,19 +96,19 @@ sky_on_thread(void *in_prm)
           /* Put the mean and its standard deviation into the respective
              place for this tile. */
           sigmaclip=gal_data_copy_to_new_type_free(sigmaclip, stype);
-          memcpy(gal_data_ptr_increment(p->sky_t->array, tind, stype),
-                 gal_data_ptr_increment(sigmaclip->array, 2, stype), twidth);
-          memcpy(gal_data_ptr_increment(p->std_t->array, tind, stype),
-                 gal_data_ptr_increment(sigmaclip->array, 3, stype), twidth);
+          memcpy(gal_pointer_increment(p->sky_t->array, tind, stype),
+                 gal_pointer_increment(sigmaclip->array, 2, stype), twidth);
+          memcpy(gal_pointer_increment(p->std_t->array, tind, stype),
+                 gal_pointer_increment(sigmaclip->array, 3, stype), twidth);
 
           /* Clean up. */
           gal_data_free(sigmaclip);
         }
       else
         {
-          gal_blank_write(gal_data_ptr_increment(p->sky_t->array, tind,
+          gal_blank_write(gal_pointer_increment(p->sky_t->array, tind,
                                                  stype), stype);
-          gal_blank_write(gal_data_ptr_increment(p->std_t->array, tind,
+          gal_blank_write(gal_pointer_increment(p->std_t->array, tind,
                                                  stype), stype);
         }
 

@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/interpolate.h>
 
@@ -400,8 +401,8 @@ qthresh_on_tile(void *in_prm)
 
   /* Put the temporary usage space for this thread into a data set for easy
      processing. */
-  usage=gal_data_alloc(gal_data_ptr_increment(qprm->usage,
-                                              tprm->id*p->maxtcontig, type),
+  usage=gal_data_alloc(gal_pointer_increment(qprm->usage,
+                                             tprm->id*p->maxtcontig, type),
                        type, ndim, p->maxtsize, NULL, 0, p->cp.minmapsize,
                        NULL, NULL, NULL);
 
@@ -462,13 +463,13 @@ qthresh_on_tile(void *in_prm)
           /* Get the erosion quantile for this tile and save it. Note that
              the type of `qvalue' is the same as the input dataset. */
           qvalue=gal_statistics_quantile(usage, p->qthresh, 1);
-          memcpy(gal_data_ptr_increment(qprm->erode_th->array, tind, type),
+          memcpy(gal_pointer_increment(qprm->erode_th->array, tind, type),
                  qvalue->array, twidth);
           gal_data_free(qvalue);
 
           /* Same for the no-erode quantile. */
           qvalue=gal_statistics_quantile(usage, p->noerodequant, 1);
-          memcpy(gal_data_ptr_increment(qprm->noerode_th->array, tind, type),
+          memcpy(gal_pointer_increment(qprm->noerode_th->array, tind, type),
                  qvalue->array, twidth);
           gal_data_free(qvalue);
 
@@ -476,7 +477,7 @@ qthresh_on_tile(void *in_prm)
           if(p->detgrowquant!=1.0f)
             {
               qvalue=gal_statistics_quantile(usage, p->detgrowquant, 1);
-              memcpy(gal_data_ptr_increment(qprm->expand_th->array, tind,
+              memcpy(gal_pointer_increment(qprm->expand_th->array, tind,
                                             type),
                      qvalue->array, twidth);
               gal_data_free(qvalue);
@@ -484,12 +485,12 @@ qthresh_on_tile(void *in_prm)
         }
       else
         {
-          gal_blank_write(gal_data_ptr_increment(qprm->erode_th->array,
+          gal_blank_write(gal_pointer_increment(qprm->erode_th->array,
                                                  tind, type), type);
-          gal_blank_write(gal_data_ptr_increment(qprm->noerode_th->array,
+          gal_blank_write(gal_pointer_increment(qprm->noerode_th->array,
                                                  tind, type), type);
           if(p->detgrowquant!=1.0f)
-            gal_blank_write(gal_data_ptr_increment(qprm->expand_th->array,
+            gal_blank_write(gal_pointer_increment(qprm->expand_th->array,
                                                    tind, type), type);
         }
 
@@ -538,11 +539,11 @@ threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
       if(third) oa3=third->array;
 
       /* Increment the array pointers. */
-      first->array=gal_data_ptr_increment(first->array, start, first->type);
-      second->array=gal_data_ptr_increment(second->array, start,
+      first->array=gal_pointer_increment(first->array, start, first->type);
+      second->array=gal_pointer_increment(second->array, start,
                                            second->type);
       if(third)
-        third->array=gal_data_ptr_increment(third->array, start, third->type);
+        third->array=gal_pointer_increment(third->array, start, third->type);
 
       /* Correct their sizes. */
       first->size=number;
@@ -697,9 +698,9 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
 
   /* Allocate temporary space for processing in each tile. */
-  qprm.usage=gal_data_malloc_array(p->input->type,
-                                   cp->numthreads * p->maxtcontig,
-                                   __func__, "qprm.usage");
+  qprm.usage=gal_pointer_allocate(p->input->type,
+                                  cp->numthreads * p->maxtcontig, 0,
+                                  __func__, "qprm.usage");
 
 
   /* Find the threshold on each tile, free the temporary processing space

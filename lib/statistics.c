@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 
@@ -358,13 +359,13 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
       /* Write the value at this index into the output. */
       if(index==GAL_BLANK_SIZE_T)
         {
-          blank=gal_data_malloc_array(nbs->type, 1, __func__, "blank");
+          blank=gal_pointer_allocate(nbs->type, 1, 0, __func__, "blank");
           memcpy(out->array, blank, gal_type_sizeof(nbs->type));
           free(blank);
         }
       else
         memcpy(out->array,
-               gal_data_ptr_increment(nbs->array, index, nbs->type),
+               gal_pointer_increment(nbs->array, index, nbs->type),
                gal_type_sizeof(nbs->type));
     }
   else
@@ -997,7 +998,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
      same type as the input. */
   modeindex = mode_golden_section(&p);
   memcpy( tmptype->array,
-          gal_data_ptr_increment(p.data->array, modeindex, p.data->type),
+          gal_pointer_increment(p.data->array, modeindex, p.data->type),
           gal_type_sizeof(p.data->type) );
 
 

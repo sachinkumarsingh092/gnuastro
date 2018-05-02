@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -125,8 +126,8 @@ parse_objects(struct mkcatalog_passparams *pp)
 
   /* Coordinate shift. */
   size_t *sc = ( pp->shift
-                 ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                         "sc")
+                 ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                        "sc")
                  : NULL );
 
   /* If any coordinate columns are requested. */
@@ -143,7 +144,7 @@ parse_objects(struct mkcatalog_passparams *pp)
                     the coordinate to find which tile a pixel belongs
                     to. */
                  || tid==GAL_BLANK_SIZE_T )
-               ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c")
+               ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__, "c")
                : NULL );
 
 
@@ -332,8 +333,8 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
   /* Coordinate shift. */
   size_t *sc = ( pp->shift
-                 ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                         "sc")
+                 ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                        "sc")
                  : NULL );
 
   /* If any coordinate columns are requested. */
@@ -343,15 +344,16 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   || cif[ CCOL_VY   ]
                   || sc
                   || tid==GAL_BLANK_SIZE_T )
-                ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__, "c")
+                ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                       "c")
                 : NULL );
 
   /* Preparations for neighbor parsing. */
   int32_t *ngblabs=( ( cif[    CCOL_RIV_NUM     ]
                        || cif[ CCOL_RIV_SUM     ]
                        || cif[ CCOL_RIV_SUM_VAR ] )
-                     ? gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__,
-                                             "ngblabs")
+                     ? gal_pointer_allocate(GAL_TYPE_INT32, nngb, 0,
+                                             __func__, "ngblabs")
                      : NULL );
   size_t *dinc = ngblabs ? gal_dimension_increment(ndim, dsize) : NULL;
 
@@ -575,8 +577,8 @@ parse_median(struct mkcatalog_passparams *pp)
 
 
       /* Allocate the array necessary to keep the values of each clump. */
-      ccounter=gal_data_calloc_array(GAL_TYPE_SIZE_T, pp->clumpsinobj,
-                                     __func__, "ccounter");
+      ccounter=gal_pointer_allocate(GAL_TYPE_SIZE_T, pp->clumpsinobj, 1,
+                                    __func__, "ccounter");
       for(i=0;i<pp->clumpsinobj;++i)
         {
           tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
@@ -604,13 +606,13 @@ parse_median(struct mkcatalog_passparams *pp)
           if( *O==pp->object && !( p->hasblank && isnan(*V) ) )
             {
               /* Copy the value for the whole object. */
-              memcpy( gal_data_ptr_increment(objmed->array, counter++,
+              memcpy( gal_pointer_increment(objmed->array, counter++,
                                              p->values->type), V,
                       gal_type_sizeof(p->values->type) );
 
               /* We are also on a clump. */
               if(p->clumps && *C>0)
-                memcpy( gal_data_ptr_increment(clumpsmed[*C-1]->array,
+                memcpy( gal_pointer_increment(clumpsmed[*C-1]->array,
                                                ccounter[*C-1]++,
                                                p->values->type), V,
                         gal_type_sizeof(p->values->type) );

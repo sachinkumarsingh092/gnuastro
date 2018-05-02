@@ -230,25 +230,8 @@ typedef struct gal_data_t
 
 
 /*********************************************************************/
-/*************         Size and allocation         *******************/
+/*************              allocation             *******************/
 /*********************************************************************/
-int
-gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
-
-void *
-gal_data_ptr_increment(void *pointer, size_t increment, uint8_t type);
-
-size_t
-gal_data_num_between(void *earlier, void *later, uint8_t type);
-
-void *
-gal_data_malloc_array(uint8_t type, size_t size, const char *funcname,
-                      const char *varname);
-
-void *
-gal_data_calloc_array(uint8_t type, size_t size, const char *funcname,
-                      const char *varname);
-
 void
 gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
                     size_t *dsize, struct wcsprm *wcs, int clear,

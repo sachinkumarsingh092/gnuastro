@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
@@ -92,12 +93,12 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   size_t ngb_counter, dist, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
-  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                       "icoord");
-  size_t *ncoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                       "ncoord");
   size_t size = (correct_index ? tl->tottilesinch : input->size);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
+  size_t *icoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                      "icoord");
+  size_t *ncoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                      "ncoord");
   uint8_t *fullflag=&prm->thread_flags[tprm->id*input->size], *flag=fullflag;
 
 
@@ -113,8 +114,8 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   tin=input;
   for(tvll=prm->ngb_vals; tvll!=NULL; tvll=tvll->next)
     {
-      nv=gal_data_ptr_increment(tvll->v, tprm->id*prm->numneighbors,
-                                input->type);
+      nv=gal_pointer_increment(tvll->v, tprm->id*prm->numneighbors,
+                               input->type);
       gal_list_data_add_alloc(&nearest, nv, tin->type, 1, &prm->numneighbors,
                               NULL, 0, -1, NULL, NULL, NULL);
       tin=tin->next;
@@ -138,8 +139,8 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           tin=input;
           for(tout=prm->out; tout!=NULL; tout=tout->next)
             {
-              memcpy(gal_data_ptr_increment(tout->array, fullind, tin->type),
-                     gal_data_ptr_increment(tin->array,  fullind, tin->type),
+              memcpy(gal_pointer_increment(tout->array, fullind, tin->type),
+                     gal_pointer_increment(tin->array,  fullind, tin->type),
                      gal_type_sizeof(tin->type));
               tin=tin->next;
             }
@@ -163,7 +164,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           chstart = (fullind / tl->tottilesinch) * tl->tottilesinch;
 
           /* Set the channel's starting pointer for the flags. */
-          flag = gal_data_ptr_increment(fullflag, chstart, GAL_TYPE_UINT8);
+          flag = gal_pointer_increment(fullflag, chstart, GAL_TYPE_UINT8);
         }
       else
         {
@@ -200,10 +201,10 @@ interpolate_close_neighbors_on_thread(void *in_prm)
               tin=input;
               for(tnear=nearest; tnear!=NULL; tnear=tnear->next)
                 {
-                  memcpy(gal_data_ptr_increment(tnear->array, ngb_counter,
-                                                tin->type),
-                         gal_data_ptr_increment(tin->array, chstart+pind,
-                                                tin->type),
+                  memcpy(gal_pointer_increment(tnear->array, ngb_counter,
+                                               tin->type),
+                         gal_pointer_increment(tin->array, chstart+pind,
+                                               tin->type),
                          gal_type_sizeof(tin->type));
                   tin=tin->next;
                 }
@@ -257,7 +258,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
         {
           /* Find the median and copy it. */
           median=gal_statistics_median(tnear, 1);
-          memcpy(gal_data_ptr_increment(tout->array, fullind, tout->type),
+          memcpy(gal_pointer_increment(tout->array, fullind, tout->type),
                  median->array, gal_type_sizeof(tout->type));
 
           /* Clean up and go to next array. */
@@ -377,8 +378,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                          input->wcs, 0, input->minmapsize, NULL,
                          input->unit, NULL);
   gal_list_void_add(&prm.ngb_vals,
-                    gal_data_malloc_array(input->type, ngbvnum, __func__,
-                                          "prm.ngb_vals"));
+                    gal_pointer_allocate(input->type, ngbvnum, 0, __func__,
+                                         "prm.ngb_vals"));
 
 
   /* If we are given a list of datasets, make the necessary
@@ -390,7 +391,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
     for(tin=input->next; tin!=NULL; tin=tin->next)
       {
         /* A small sanity check. */
-        if( gal_data_dsize_is_different(input, tin) )
+        if( gal_dimension_is_different(input, tin) )
           error(EXIT_FAILURE, 0, "%s: all datasets in the list must have "
                 "the same dimension and size", __func__);
 
@@ -401,8 +402,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
         /* Allocate the space for the neighbor values of this input. */
         gal_list_void_add(&prm.ngb_vals,
-                          gal_data_malloc_array(tin->type, ngbvnum, __func__,
-                                                "prm.ngb_vals"));
+                          gal_pointer_allocate(tin->type, ngbvnum, 0,
+                                               __func__, "prm.ngb_vals"));
       }
   gal_list_data_reverse(&prm.out);
   gal_list_void_reverse(&prm.ngb_vals);
@@ -410,9 +411,9 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
   /* Allocate space for all the flag values of all the threads here (memory
      in each thread is limited) and this is cleaner. */
-  prm.thread_flags=gal_data_malloc_array(GAL_TYPE_UINT8,
-                                         numthreads*input->size, __func__,
-                                         "prm.thread_flags");
+  prm.thread_flags=gal_pointer_allocate(GAL_TYPE_UINT8,
+                                        numthreads*input->size, 0, __func__,
+                                        "prm.thread_flags");
 
 
   /* Spin off the threads. */

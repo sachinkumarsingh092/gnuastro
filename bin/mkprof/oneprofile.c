@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
 #include <gnuastro/fits.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -357,9 +358,9 @@ oneprofile_pix_by_pix(struct mkonthread *mkp)
 
   /* Allocate the `byt' array. It is used as a flag to make sure that we
      don't re-calculate the profile value on a pixel more than once. */
-  byt = gal_data_calloc_array(GAL_TYPE_UINT8,
-                              gal_dimension_total_size(ndim, dsize),
-                              __func__, "byt");
+  byt = gal_pointer_allocate(GAL_TYPE_UINT8,
+                             gal_dimension_total_size(ndim, dsize), 1,
+                             __func__, "byt");
 
   /* Start the queue: */
   byt[p]=1;

@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/match.h>
 #include <gnuastro/table.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/permutation.h>
 
 #include <gnuastro-internal/checkset.h>
@@ -60,9 +61,9 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
   /* When the output contains columns from both inputs, we need to keep the
      number of columns matched against each column identifier. */
   if(p->outcols)
-    *numcolmatch=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                       gal_list_str_number(cols), __func__,
-                                       "numcolmatch");
+    *numcolmatch=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                      gal_list_str_number(cols), 0,
+                                      __func__, "numcolmatch");
 
   /* Read the full table. */
   cat=gal_table_read(filename, hdu, cols, p->cp.searchin, p->cp.ignorecase,
@@ -87,8 +88,7 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
 
           /* Reset the data structure's array element to start where the
              non-matched elements start. */
-          tmp->array=gal_data_ptr_increment(tmp->array, nummatched,
-                                            tmp->type);
+          tmp->array=gal_pointer_increment(tmp->array, nummatched, tmp->type);
 
           /* Correct the size of the tile. */
           tmp->size = tmp->dsize[0] = tmp->size - nummatched;

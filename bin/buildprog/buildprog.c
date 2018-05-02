@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/list.h>
+#include <gnuastro/pointer.h>
 
 #include <main.h>
 
@@ -50,7 +51,7 @@ buildprog_as_one_string(char *opt, gal_list_str_t *list)
         len += 1 + (opt ? strlen(opt) : 0) + strlen(tmp->v);
 
       /* Allocate space for the string. */
-      out=gal_data_malloc_array(GAL_TYPE_UINT8, len+1, __func__, "out");
+      out=gal_pointer_allocate(GAL_TYPE_UINT8, len+1, 0, __func__, "out");
 
       /* Write all the strings into the allocated space. */
       len=0;

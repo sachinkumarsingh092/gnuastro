@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/label.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -246,7 +247,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
 
   /* Allocate the array to keep the neighbor labels of river pixels. */
-  ngblabs=gal_data_malloc_array(GAL_TYPE_INT32, nngb, __func__, "ngblabs");
+  ngblabs=gal_pointer_allocate(GAL_TYPE_INT32, nngb, 0, __func__, "ngblabs");
 
   /* Go over all the pixels in this region. */
   af=(a=cltprm->indexs->array)+cltprm->indexs->size;
@@ -384,22 +385,22 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
   cltprm->sn        = &cltprm->clprm->sn[ cltprm->id ];
   cltprm->sn->ndim  = 1;                        /* Depends on `cltprm->sn' */
   cltprm->sn->type  = GAL_TYPE_FLOAT32;
-  cltprm->sn->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1, __func__,
-                                            "cltprm->sn->dsize");
-  cltprm->sn->array = gal_data_malloc_array(cltprm->sn->type, tablen,
-                                            __func__, "cltprm->sn->array");
+  cltprm->sn->dsize = gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
+                                           "cltprm->sn->dsize");
+  cltprm->sn->array = gal_pointer_allocate(cltprm->sn->type, tablen, 0,
+                                           __func__, "cltprm->sn->array");
   cltprm->sn->size  = cltprm->sn->dsize[0] = tablen;       /* After dsize. */
   if( cltprm->clprm->snind )
     {
       cltprm->snind        = &cltprm->clprm->snind [ cltprm->id ];
       cltprm->snind->ndim  = 1;              /* Depends on `cltprm->snind' */
       cltprm->snind->type  = GAL_TYPE_INT32;
-      cltprm->snind->dsize = gal_data_malloc_array(GAL_TYPE_SIZE_T, 1,
-                                                   __func__,
-                                                   "cltprm->snind->dsize");
+      cltprm->snind->dsize = gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0,
+                                                  __func__,
+                                                  "cltprm->snind->dsize");
       cltprm->snind->size  = cltprm->snind->dsize[0]=tablen;/* After dsize */
-      cltprm->snind->array = gal_data_malloc_array(cltprm->snind->type,
-                                                   tablen, __func__,
+      cltprm->snind->array = gal_pointer_allocate(cltprm->snind->type,
+                                                   tablen, 0, __func__,
                                                    "cltprm->snind->array");
     }
   else cltprm->snind=NULL;
@@ -556,9 +557,9 @@ clumps_find_make_sn_table(void *in_prm)
   uint8_t *binary=p->binary->array;
   struct clumps_thread_params cltprm;
   size_t i, c, ind, tind, num, numsky, *indarr;
-  size_t *scoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+  size_t *scoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                        "scoord");
-  size_t *icoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+  size_t *icoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                        "icoord");
 
 
@@ -630,9 +631,8 @@ clumps_find_make_sn_table(void *in_prm)
              rivers and not include them in the list of indexs to set
              clumps. To do that, we need this tile's starting
              coordinates. */
-          gal_dimension_index_to_coord(gal_data_num_between(p->clabel->array,
-                                                            tile->array,
-                                                            p->clabel->type),
+          gal_dimension_index_to_coord(gal_pointer_num_between(
+                           p->clabel->array, tile->array, p->clabel->type),
                                        ndim, dsize, scoord);
 
 
@@ -670,8 +670,8 @@ clumps_find_make_sn_table(void *in_prm)
                     {
                       if(cltprm.id==282) *i+=2;
                   */
-                      indarr[c++]=gal_data_num_between(p->clabel->array, i,
-                                                       p->clabel->type);
+                      indarr[c++]=gal_pointer_num_between(p->clabel->array,
+                                                          i, p->clabel->type);
                   /*
                     }
                   else
@@ -1053,9 +1053,9 @@ clumps_det_keep_true_relabel(struct clumps_thread_params *cltprm)
   if(cltprm->sn)
     {
       /* Allocate the necessary arrays. */
-      newlabs=gal_data_malloc_array(GAL_TYPE_INT32,
-                                    cltprm->numinitclumps+1, __func__,
-                                    "newlabs");
+      newlabs=gal_pointer_allocate(GAL_TYPE_INT32,
+                                   cltprm->numinitclumps+1, 0, __func__,
+                                   "newlabs");
       dinc=gal_dimension_increment(ndim, dsize);
 
       /* Initialize the new labels with GAL_LABEL_INIT (so the diffuse area

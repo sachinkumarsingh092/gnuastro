@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/binary.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 
 
@@ -367,7 +368,7 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
       lab=*out;
 
       /* Make sure the given dataset has the same size as the input. */
-      if( gal_data_dsize_is_different(binary, lab) )
+      if( gal_dimension_is_different(binary, lab) )
         error(EXIT_FAILURE, 0, "%s: the `binary' and `out' datasets must "
               "have the same size", __func__);
 
@@ -561,10 +562,10 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
   uint8_t *in;
   size_t i, startind;
   gal_data_t *inv, *tile;
-  size_t *startcoord=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim,
-                                           __func__, "startcoord");
-  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, input->ndim, __func__,
-                                      "dsize");
+  size_t *startcoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, input->ndim, 0,
+                                          __func__, "startcoord");
+  size_t *dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, input->ndim, 0,
+                                     __func__, "dsize");
 
 
   /* Set the size of the padded inverse image and the coordinates of the
@@ -591,7 +592,7 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
 
   /* Define a tile to fill the central regions of the inverse. */
   startind=gal_dimension_coord_to_index(input->ndim, inv->dsize, startcoord);
-  tile=gal_data_alloc(gal_data_ptr_increment(inv->array, startind, inv->type),
+  tile=gal_data_alloc(gal_pointer_increment(inv->array, startind, inv->type),
                       inv->type, input->ndim, input->dsize, NULL, 0, 0, NULL,
                       NULL, NULL);
   *outtile=tile;
@@ -751,8 +752,8 @@ gal_binary_holes_fill(gal_data_t *input, int connectivity, size_t maxsize)
   if(maxsize<-1)
     {
       /* Allocate space to keep the size of each hole: */
-      sizes=gal_data_calloc_array(GAL_TYPE_SIZE_T, numholes+1, __func__,
-                                  "sizes");
+      sizes=gal_pointer_allocate(GAL_TYPE_SIZE_T, numholes+1, 1, __func__,
+                                 "sizes");
       fi=(i=holelabs->array)+holelabs->size; do ++sizes[*i]; while(++i<fi);
 
       /* Set those labels with a larger size to 1 (treat it as

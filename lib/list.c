@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/list.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/checkset.h>
 
@@ -268,7 +269,7 @@ gal_list_i32_to_array(gal_list_i32_t *list, int reverse, size_t *num)
 
   if(*num)
     {
-      out=gal_data_malloc_array(GAL_TYPE_SIZE_T, *num, __func__, "out");
+      out=gal_pointer_allocate(GAL_TYPE_SIZE_T, *num, 0, __func__, "out");
 
       i = reverse ? *num-1: 0;
       if(reverse)
@@ -417,7 +418,7 @@ gal_list_sizet_to_array(gal_list_sizet_t *list, int reverse, size_t *num)
 
   if(*num)
     {
-      out=gal_data_malloc_array(GAL_TYPE_SIZE_T, *num, __func__, "out");
+      out=gal_pointer_allocate(GAL_TYPE_SIZE_T, *num, 0, __func__, "out");
 
       i = reverse ? *num-1: 0;
       if(reverse)
@@ -572,7 +573,7 @@ gal_list_f32_to_array(gal_list_f32_t *list, int reverse, size_t *num)
   if(*num)
     {
       /* Allocate the space: */
-      out=gal_data_malloc_array(GAL_TYPE_FLOAT32, *num, __func__, "out");
+      out=gal_pointer_allocate(GAL_TYPE_FLOAT32, *num, 0, __func__, "out");
 
       /* Fill in the array. */
       i = reverse ? *num-1: 0;
@@ -729,7 +730,7 @@ gal_list_f64_to_array(gal_list_f64_t *list, int reverse, size_t *num)
   if(*num)
     {
       /* Allocate the space: */
-      out=gal_data_malloc_array(GAL_TYPE_FLOAT64, *num, __func__, "out");
+      out=gal_pointer_allocate(GAL_TYPE_FLOAT64, *num, 0, __func__, "out");
 
       /* Fill in the array. */
       i = reverse ? *num-1: 0;

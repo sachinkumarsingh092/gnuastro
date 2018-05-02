@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/dimension.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -203,7 +204,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
       {                                                                 \
         if( OTHER==tpo_oblock )    /* `OTHER' is a block. */            \
           {                                                             \
-            if(gal_data_dsize_is_different(tpo_iblock, tpo_oblock) )    \
+            if( gal_dimension_is_different(tpo_iblock, tpo_oblock) )    \
               {                                                         \
                 /* `error' function, is a GNU extension, see above. */  \
                 fprintf(stderr, "GAL_TILE_PO_OISET: when "              \
@@ -216,7 +217,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
               }                                                         \
           }                                                             \
         else                                                            \
-          if(gal_data_dsize_is_different(IN, OTHER) )                   \
+          if( gal_dimension_is_different(IN, OTHER) )                   \
             {                                                           \
               /* The `error' function, is a GNU extension and this */   \
               /* is a header, not a library which the user has to  */   \

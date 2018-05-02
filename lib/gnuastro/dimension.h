@@ -53,6 +53,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 size_t
 gal_dimension_total_size(size_t ndim, size_t *dsize);
 
+int
+gal_dimension_is_different(gal_data_t *first, gal_data_t *second);
+
 size_t *
 gal_dimension_increment(size_t ndim, size_t *dsize);
 

@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/permutation.h>
@@ -105,8 +106,8 @@ mkcatalog_single_object(void *in_prm)
   pp.p               = p;
   pp.clumpstartindex = 0;
   pp.rng             = p->rng ? gsl_rng_clone(p->rng) : NULL;
-  pp.oi              = gal_data_malloc_array(GAL_TYPE_FLOAT64, OCOL_NUMCOLS,
-                                             __func__, "pp.oi");
+  pp.oi              = gal_pointer_allocate(GAL_TYPE_FLOAT64, OCOL_NUMCOLS,
+                                            0, __func__, "pp.oi");
 
   /* If we have second order measurements, allocate the array keeping the
      temporary shift values for each object of this thread. Note that the
@@ -118,7 +119,7 @@ mkcatalog_single_object(void *in_prm)
                  || oif[ OCOL_VXX ]
                  || oif[ OCOL_VYY ]
                  || oif[ OCOL_VXY ] )
-               ? gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+               ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                        "pp.shift")
                : NULL );
 
@@ -150,9 +151,9 @@ mkcatalog_single_object(void *in_prm)
       if(p->clumps)
         {
           /* Allocate space for the properties of each clump. */
-          pp.ci = gal_data_calloc_array(GAL_TYPE_FLOAT64,
-                                        pp.clumpsinobj * CCOL_NUMCOLS,
-                                        __func__, "pp.ci");
+          pp.ci = gal_pointer_allocate(GAL_TYPE_FLOAT64,
+                                       pp.clumpsinobj * CCOL_NUMCOLS, 1,
+                                       __func__, "pp.ci");
 
           /* Get the starting row of this object's clumps in the final
              catalog. This index is also necessary for the unique random
@@ -554,9 +555,9 @@ sort_clumps_by_objid(struct mkcatalogparams *p)
 
 
   /* Allocate the necessary arrays. */
-  rowstart=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->numobjects, __func__,
+  rowstart=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->numobjects, 0, __func__,
                                  "rowstart");
-  permute=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->numclumps, __func__,
+  permute=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->numclumps, 0, __func__,
                                 "permute");
 
 

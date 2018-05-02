@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/polygon.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
@@ -743,7 +744,7 @@ onecrop(struct onecropparams *crp)
          the desired pixels onto it. */
       status=0;
       for(i=0;i<ndim;++i) cropsize *= ( lpixel_i[i] - fpixel_i[i] + 1 );
-      array=gal_data_malloc_array(p->type, cropsize, __func__, "array");
+      array=gal_pointer_allocate(p->type, cropsize, 0, __func__, "array");
       if(fits_read_subset(ifp, gal_fits_type_to_datatype(p->type),
                           fpixel_i, lpixel_i, inc, p->bitnul, array,
                           &anynul, &status))
@@ -870,7 +871,7 @@ onecrop_center_filled(struct onecropparams *crp)
   */
 
   /* Allocate the array and read in the pixels. */
-  array=gal_data_malloc_array(type, size, __func__, "array");
+  array=gal_pointer_allocate(type, size, 0, __func__, "array");
   if( fits_read_subset(ofp, gal_fits_type_to_datatype(type), fpixel, lpixel,
                        inc, p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);

@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
@@ -146,7 +147,8 @@ fits_print_extension_info(struct fitsparams *p)
         case BINARY_TBL:
           ndim=2;
           tstr = hdutype==ASCII_TBL ? "table_ascii" : "table_binary";
-          dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, 2, __func__, "dsize");
+          dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, 2, 0, __func__,
+                                     "dsize");
           gal_fits_tab_size(fptr, dsize+1, dsize);
           break;
 

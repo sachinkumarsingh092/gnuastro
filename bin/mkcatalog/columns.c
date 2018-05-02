@@ -30,6 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <pthread.h>
 
+#include <gnuastro/pointer.h>
+
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
@@ -275,10 +277,10 @@ columns_define_alloc(struct mkcatalogparams *p)
      smaller domain of raw measurements. So to avoid having to calculate
      something multiple times, each parameter will flag the intermediate
      parameters it requires in these arrays. */
-  oiflag = p->oiflag = gal_data_calloc_array(GAL_TYPE_UINT8, OCOL_NUMCOLS,
-                                             __func__, "oiflag");
-  ciflag = p->ciflag = gal_data_calloc_array(GAL_TYPE_UINT8, CCOL_NUMCOLS,
-                                             __func__, "ciflag");
+  oiflag = p->oiflag = gal_pointer_allocate(GAL_TYPE_UINT8, OCOL_NUMCOLS, 1,
+                                            __func__, "oiflag");
+  ciflag = p->ciflag = gal_pointer_allocate(GAL_TYPE_UINT8, CCOL_NUMCOLS, 1,
+                                            __func__, "ciflag");
 
   /* Allocate the columns. */
   for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)

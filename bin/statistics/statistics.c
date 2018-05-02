@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/interpolate.h>
@@ -61,7 +62,7 @@ statistics_pull_out_element(gal_data_t *input, size_t index)
   gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
                                  NULL, 1, -1, NULL, NULL, NULL);
   memcpy( out->array,
-          gal_data_ptr_increment(input->array, index, input->type),
+          gal_pointer_increment(input->array, index, input->type),
           gal_type_sizeof(input->type) );
   return out;
 }
@@ -384,7 +385,7 @@ statistics_on_tile(struct statisticsparams *p)
 
           /* Put the output value into the `values' array and clean up. */
           tmp=gal_data_copy_to_new_type_free(tmp, type);
-          memcpy(gal_data_ptr_increment(values->array, tind++, values->type),
+          memcpy(gal_pointer_increment(values->array, tind++, values->type),
                  tmp->array, gal_type_sizeof(type));
           gal_data_free(tmp);
         }

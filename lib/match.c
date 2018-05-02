@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/box.h>
 #include <gnuastro/list.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/permutation.h>
 
 
@@ -196,8 +197,8 @@ static size_t *
 match_coordinates_prepare_sort(gal_data_t *coords, size_t minmapsize)
 {
   gal_data_t *tmp;
-  size_t *permutation=gal_data_malloc_array(GAL_TYPE_SIZE_T, coords->size,
-                                            __func__, "permutation");
+  size_t *permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, coords->size, 0,
+                                           __func__, "permutation");
 
   /* Get the permutation necessary to sort all the columns (based on the
      first column). */
@@ -651,8 +652,8 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
   /* Allocate the `Bmatched' array which is a flag for which rows of the
      second catalog were matched. The columns that had a match will get a
      value of one while we are parsing them below. */
-  Bmatched=gal_data_calloc_array(GAL_TYPE_UINT8, B->size, __func__,
-                                 "Bmatched");
+  Bmatched=gal_pointer_allocate(GAL_TYPE_UINT8, B->size, 1, __func__,
+                                "Bmatched");
 
 
   /* Initialize the indexs. We want the first `nummatched' indexs in both

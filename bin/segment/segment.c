@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/label.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/convolve.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
@@ -229,7 +230,7 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   size_t *s, *sf, i, j, ii, rpnum, *nums=nums_d->array;
   double ave, rpsum, c=sqrt(1/p->cpscorr), *sums=sums_d->array;
-  int32_t *ngblabs=gal_data_malloc_array(GAL_TYPE_UINT32, nngb, __func__,
+  int32_t *ngblabs=gal_pointer_allocate(GAL_TYPE_UINT32, nngb, 0, __func__,
                                          "ngblabs");
 
 
@@ -421,10 +422,10 @@ segment_relab_clumps_in_objects(struct clumps_thread_params *cltprm)
   int32_t *clumptoobj=cltprm->clumptoobj->array;
   int32_t *clabel=cltprm->clprm->p->clabel->array;
   size_t i, *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
-  size_t *nclumpsinobj=gal_data_calloc_array(GAL_TYPE_SIZE_T, numobjects+1,
-                                             __func__, "nclumpsinobj");
-  int32_t *newlabs=gal_data_calloc_array(GAL_TYPE_UINT32, numtrueclumps+1,
-                                         __func__, "newlabs");
+  size_t *nclumpsinobj=gal_pointer_allocate(GAL_TYPE_SIZE_T, numobjects+1,
+                                             1, __func__, "nclumpsinobj");
+  int32_t *newlabs=gal_pointer_allocate(GAL_TYPE_UINT32, numtrueclumps+1,
+                                         1, __func__, "newlabs");
 
   /* Fill both arrays. */
   for(i=1;i<numtrueclumps+1;++i)

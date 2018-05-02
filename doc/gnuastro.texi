@@ -563,6 +563,7 @@ Gnuastro library
 * Configuration information::   General information about library config.
 * Multithreaded programming::   Tools for easy multi-threaded operations.
 * Library data types::          Definitions and functions for types.
+* Pointers::                    Wrappers for easy working with pointers.@strong{}
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
 * Dimensions::                  Dealing with coordinates and dimensions.
@@ -595,7 +596,7 @@ Multithreaded programming (@file{threads.h})
 Data container (@file{data.h})
 
 * Generic data container::      Definition of Gnuastro's generic container.
-* Dataset size and allocation::  Functions for size and allocation.
+* Dataset allocation::          Allocate, initialize and free a dataset.
 * Arrays of datasets::          Functions to help with array of datasets.
 * Copying datasets::            Functions to copy a dataset to a new one.
 
@@ -20172,6 +20173,7 @@ documentation will correspond to your installed version.
 * Configuration information::   General information about library config.
 * Multithreaded programming::   Tools for easy multi-threaded operations.
 * Library data types::          Definitions and functions for types.
+* Pointers::                    Wrappers for easy working with pointers.@strong{}
 * Library blank values::        Blank values and functions to deal with them.
 * Library data container::      General data container in Gnuastro.
 * Dimensions::                  Dealing with coordinates and dimensions.
@@ -20480,7 +20482,7 @@ program in @file{tests/lib/multithread.c} for a demonstration.
 
 @end deftypefun
 
-@node Library data types, Library blank values, Multithreaded programming, Gnuastro library
+@node Library data types, Pointers, Multithreaded programming, Gnuastro library
 @subsection Library data types (@file{type.h})
 
 Data in astronomy can have many types, numeric (numbers) and strings
@@ -20752,8 +20754,6 @@ if( gal_type_from_string(&out, string, GAL_TYPE_FLOAT32) )
 @end example
 @end deftypefun
 
-
-
 @deftypefun {void *} gal_type_string_to_number (char @code{*string}, uint8_t @code{*type})
 Read @code{string} into smallest type that can host the number, the
 allocated space for the number will be returned and the type of the number
@@ -20766,7 +20766,84 @@ the number of significant digits and determine if the given string is
 single or double precision as described in that section.
 @end deftypefun
 
-@node Library blank values, Library data container, Library data types, Gnuastro library
+@node Pointers, Library blank values, Library data types, Gnuastro library
+@subsection Pointers (@file{pointer.h})
+
+@cindex Pointers
+Pointers play an important role in the C programming language. As the name
+suggests, they @emph{point} to a byte in memory (like an address in a
+city). The C programming language gives you complete freedom in how to use
+the byte (and the bytes that follow it). Pointers are thus a very powerful
+feature of C. However, as the saying goes: ``With great power comes great
+responsability'', so they must be approached with care. The functions in
+this header are not very complex, they are just wrappers over some basic
+pointer functionality regarding pointer arithmetic and allocation (in
+memory or HDD/SSD).
+
+@deftypefun {void *} gal_pointer_increment (void @code{*pointer}, size_t @code{increment}, uint8_t @code{type})
+Return a pointer to an element that is @code{increment} elements ahead of
+@code{pointer}, assuming each element has type of @code{type}. For the type
+codes, see @ref{Library data types}.
+
+When working with the @code{array} elements of @code{gal_data_t}, we are
+actually dealing with @code{void *} pointers. However, pointer arithmetic
+doesn't apply to @code{void *}, because the system doesn't know how many
+bytes there are in each element to increment the pointer respectively. This
+function will use the given @code{type} to calculate where the incremented
+element is located in memory.
+@end deftypefun
+
+@deftypefun size_t gal_pointer_num_between (void @code{*earlier}, void @code{*later}, uint8_t @code{type})
+Return the number of elements (in the given @code{type}) between
+@code{earlier} and @code{later}. For the type codes, see @ref{Library data
+types}).
+@end deftypefun
+
+@deftypefun {void *} gal_pointer_allocate (uint8_t @code{type}, size_t @code{size}, int @code{clear}, const char @code{*funcname}, const char @code{*varname})
+Allocate an array of type @code{type} with @code{size} elements in RAM (for
+the type codes, see @ref{Library data types}). If @code{clear!=0}, then the
+allocated space is set to zero (cleared). This is effectively just a
+wrapper around C's @code{malloc} or @code{calloc} functions but takes
+Gnuastro's integer type codes and will also abort with a clear error if
+there the allocation was not successful.
+
+@cindex C99
+When space cannot be allocated, this function will abort the program with a
+message containing the reason for the failure. @code{funcname} (name of the
+function calling this function) and @code{varname} (name of variable that
+needs this space) will be used in this error message if they are not
+@code{NULL}. In most modern compilers, you can use the generic
+@code{__func__} variable for @code{funcname}. In this way, you don't have
+to manually copy and paste the function name or worry about it changing
+later (@code{__func__} was standardized in C99).
+@end deftypefun
+
+@deftypefun {void *} gal_pointer_allocate_mmap (size_t @code{size}, uint8_t @code{type}, int @code{clear}, char @code{**mmapname})
+Allocate the necessary space to keep @code{size} elements of type
+@code{type} in HDD/SSD (a file, not in RAM). for the type codes, see
+@ref{Library data types}. If @code{clear!=0}, then the allocated space will
+also be cleared. The allocation is done using C's @code{mmap} function. The
+name of the file containing the allocated space is an allocated string that
+will be put in @code{*mmapname}.
+
+Note that the kernel doesn't allow an infinite number of memory mappings to
+files. So it is not recommended to use this function with every
+allocation. The best case scenario to use this function is for large arrays
+that are very large and can fill up the RAM. Keep the smaller arrays in
+RAM, which is faster and can have a (theoretically) unlimited number of
+allocations.
+
+When you are done with the dataset and don't need it anymore, don't use
+@code{free} (the dataset isn't in RAM). Just delete the file (and the
+allocated space for the filename) with the commands below:
+
+@example
+remove(mmapname);
+free(mmapname);
+@end example
+@end deftypefun
+
+@node Library blank values, Library data container, Pointers, Gnuastro library
 @subsection Library blank values (@file{blank.h})
 When the position of an element in a dataset is important (for example a
 pixel in an image), a place-holder is necessary for the element if we don't
@@ -20956,12 +21033,12 @@ and some comments. To deal with any generic dataset, Gnuastro defines the
 
 @menu
 * Generic data container::      Definition of Gnuastro's generic container.
-* Dataset size and allocation::  Functions for size and allocation.
+* Dataset allocation::          Allocate, initialize and free a dataset.
 * Arrays of datasets::          Functions to help with array of datasets.
 * Copying datasets::            Functions to copy a dataset to a new one.
 @end menu
 
-@node Generic data container, Dataset size and allocation, Library data container, Library data container
+@node Generic data container, Dataset allocation, Library data container, Library data container
 @subsubsection Generic data container (@code{gal_data_t})
 
 To be able to deal with any dataset (various dimensions, numeric data
@@ -21224,62 +21301,14 @@ tiles that are created from this pointer.
 @end table
 
 
-@node Dataset size and allocation, Arrays of datasets, Generic data container, Library data container
-@subsubsection Dataset size and allocation
+@node Dataset allocation, Arrays of datasets, Generic data container, Library data container
+@subsubsection Dataset allocation
 
 Gnuastro's main data container was defined in @ref{Generic data container}.
 The functions listed in this section describe the most basic operations on
-@code{gal_data_t}: those related to the size, pointers, allocation and
-freeing. These functions are declared in @file{gnuastro/data.h} which is
-also visible from the function names (see @ref{Gnuastro library}).
-
-@deftypefun int gal_data_dsize_is_different (gal_data_t @code{*first}, gal_data_t @code{*second})
-Return @code{1} (one) if the two datasets don't have the same size along
-all dimensions. This function will also return @code{1} when the number of
-dimensions of the two datasets are different.
-@end deftypefun
-
-@deftypefun {void *} gal_data_ptr_increment (void @code{*pointer}, size_t @code{increment}, uint8_t @code{type})
-Return a pointer to an element that is @code{increment} elements ahead of
-@code{pointer}, assuming each element has type of @code{type} (for the type
-codes, see @ref{Library data types}).
-
-When working with the @code{array} elements of @code{gal_data_t}, we are
-actually dealing with @code{void *} pointers. However, pointer arithmetic
-doesn't apply to @code{void *}, because the system doesn't know how many
-bytes there are in each element to increment the pointer respectively. This
-function will use the given @code{type} to calculate where the incremented
-element is located in memory.
-@end deftypefun
-
-@deftypefun size_t gal_data_num_between (void @code{*earlier}, void @code{*later}, uint8_t @code{type})
-Return the number of elements (in the given @code{type}) between
-@code{earlier} and @code{later}. For the type codes, see @ref{Library data
-types}).
-@end deftypefun
-
-@deftypefun {void *} gal_data_malloc_array (uint8_t @code{type}, size_t @code{size}, const char @code{*funcname}, const char @code{*varname})
-Allocate an array of type @code{type} with @code{size} elements in RAM (for
-the type codes, see @ref{Library data types}). This is effectively just a
-wrapper around C's @code{malloc} function but takes Gnuastro's integer type
-codes and will also abort with an error if there the allocation was not
-successful.
-
-@cindex C99
-When space cannot be allocated, this function will abort the program with a
-message containing the reason for the failure. @code{funcname} (name of the
-function calling this function) and @code{varname} (name of variable that
-needs this space) will be used in this error message if they are not
-@code{NULL}. In most modern compilers, you can use the generic
-@code{__func__} variable for @code{funcname}. In this way, you don't have
-to manually copy and paste the function name or worry about it changing
-later (@code{__func__} was standardized in C99).
-@end deftypefun
-
-@deftypefun {void *} gal_data_calloc_array (uint8_t @code{type}, size_t @code{size}, const char @code{*funcname}, const char @code{*varname})
-Similar to @code{gal_data_malloc_array}, but the space is cleared (set to
-0) after allocation.
-@end deftypefun
+@code{gal_data_t}: those related to allocation and freeing. These functions
+are declared in @file{gnuastro/data.h} which is also visible from the
+function names (see @ref{Gnuastro library}).
 
 @deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
 
@@ -21334,7 +21363,7 @@ Free all the non-@code{NULL} pointers in @code{gal_data_t}, then free the
 actual data structure.
 @end deftypefun
 
-@node Arrays of datasets, Copying datasets, Dataset size and allocation, Library data container
+@node Arrays of datasets, Copying datasets, Dataset allocation, Library data container
 @subsubsection Arrays of datasets
 
 Gnuastro's generic data container (@code{gal_data_t}) is a very versatile
@@ -21468,6 +21497,12 @@ multi-dimensional context.
 @deftypefun size_t gal_dimension_total_size (size_t @code{ndim}, size_t @code{*dsize})
 Return the total number of elements for a dataset with @code{ndim}
 dimensions that has @code{dsize} elements along each dimension.
+@end deftypefun
+
+@deftypefun int gal_dimension_is_different (gal_data_t @code{*first}, gal_data_t @code{*second})
+Return @code{1} (one) if the two datasets don't have the same size along
+all dimensions. This function will also return @code{1} when the number of
+dimensions of the two datasets are different.
 @end deftypefun
 
 @deftypefun {size_t *} gal_dimension_increment (size_t @code{ndim}, size_t @code{*dsize})
@@ -22341,7 +22376,7 @@ gal_list_data_add( &list, tmp );
 @end deftypefun
 
 @deftypefun void gal_list_data_add_alloc (gal_data_t @code{**list}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
-Allocate a new dataset (with @code{gal_data_alloc} in @ref{Dataset size and
+Allocate a new dataset (with @code{gal_data_alloc} in @ref{Dataset
 allocation}) and put it as the first element of @code{list}. Note that if
 this is the first node to be added to the list, @code{list} must be
 @code{NULL}.

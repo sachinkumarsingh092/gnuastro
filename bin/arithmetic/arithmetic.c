@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
@@ -219,8 +220,7 @@ arithmetic_filter(void *in_prm)
 
       /* Set the tile's starting pointer. */
       index=gal_dimension_coord_to_index(ndim, dsize, start);
-      tile->array=gal_data_ptr_increment(input->array, index,
-                                         input->type);
+      tile->array=gal_pointer_increment(input->array, index, input->type);
 
       /* Do the necessary calculation. */
       switch(afp->operator)
@@ -278,8 +278,7 @@ arithmetic_filter(void *in_prm)
 
 
       /* Copy the result into the output array. */
-      memcpy(gal_data_ptr_increment(afp->out->array, ind,
-                                    afp->out->type),
+      memcpy(gal_pointer_increment(afp->out->array, ind, afp->out->type),
              result->array, gal_type_sizeof(afp->out->type));
 
       /* Clean up for this pixel. */

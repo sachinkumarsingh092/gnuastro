@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/statistics.h>
 
@@ -113,10 +114,10 @@ sky_mean_std_undetected(void *in_prm)
 
           /* Copy the mean and STD to their respective places in the tile
              arrays. */
-          memcpy(gal_data_ptr_increment(p->sky->array, tind, type),
+          memcpy(gal_pointer_increment(p->sky->array, tind, type),
                  meanstd->array, gal_type_sizeof(type));
-          memcpy(gal_data_ptr_increment(p->std->array, tind, type),
-                 gal_data_ptr_increment(meanstd->array, 1, type),
+          memcpy(gal_pointer_increment(p->std->array, tind, type),
+                 gal_pointer_increment(meanstd->array, 1, type),
                  gal_type_sizeof(type));
 
           /* Clean up. */
@@ -124,9 +125,9 @@ sky_mean_std_undetected(void *in_prm)
         }
       else
         {
-          gal_blank_write(gal_data_ptr_increment(p->sky->array, tind, type),
+          gal_blank_write(gal_pointer_increment(p->sky->array, tind, type),
                           type);
-          gal_blank_write(gal_data_ptr_increment(p->std->array, tind, type),
+          gal_blank_write(gal_pointer_increment(p->std->array, tind, type),
                           type);
         }
     }

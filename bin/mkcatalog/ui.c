@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/array.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
@@ -606,7 +607,7 @@ ui_read_labels(struct mkcatalogparams *p)
                                         p->cp.minmapsize);
 
       /* Check its size. */
-      if( gal_data_dsize_is_different(p->objects, p->clumps) )
+      if( gal_dimension_is_different(p->objects, p->clumps) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->usedclumpsfile, p->clumpshdu,
               p->objectsfile, p->cp.hdu);
@@ -790,7 +791,7 @@ ui_preparation_check_size_read_tiles(struct mkcatalogparams *p,
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* See if we should treat this dataset as tile values or not. */
-  if( gal_data_dsize_is_different(p->objects, in) )
+  if( gal_dimension_is_different(p->objects, in) )
     {
       /* The `tl' structure is initialized here. But this function may be
          called multiple times. So, first check if the `tl' structure has
@@ -839,7 +840,7 @@ ui_subtract_sky(struct mkcatalogparams *p)
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
 
   /* It is the same size as the input or a single value. */
-  if( gal_data_dsize_is_different(p->values, p->sky)==0 || p->sky->size==1)
+  if( gal_dimension_is_different(p->values, p->sky)==0 || p->sky->size==1)
     {
       s=p->sky->array;
       ff = (f=p->values->array) + p->values->size;
@@ -904,7 +905,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                                               p->cp.minmapsize);
 
       /* Make sure it has the correct size. */
-      if( gal_data_dsize_is_different(p->objects, p->values) )
+      if( gal_dimension_is_different(p->objects, p->values) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->usedvaluesfile, p->valueshdu,
               p->objectsfile, p->cp.hdu);
@@ -1013,7 +1014,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
                                             p->cp.minmapsize);
 
           /* Check its size. */
-          if( gal_data_dsize_is_different(p->objects, p->upmask) )
+          if( gal_dimension_is_different(p->objects, p->upmask) )
             error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
                   "different dimension/size", p->upmaskfile, p->upmaskhdu,
                   p->objectsfile, p->cp.hdu);
@@ -1232,10 +1233,10 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
 
   int32_t *l, *lf, *start;
   size_t i, d, *min, *max, width=2*ndim;
-  size_t *minmax=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                       width*p->numobjects, __func__,
-                                       "minmax");
-  size_t *coord=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
+  size_t *minmax=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                      width*p->numobjects, 0, __func__,
+                                      "minmax");
+  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                       "coord");
 
 
@@ -1405,12 +1406,12 @@ ui_preparations(struct mkcatalogparams *p)
      together. */
   if(p->clumps && !p->noclumpsort && p->cp.numthreads>1)
     {
-      p->hostobjid_c=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                           p->clumpcols->size, __func__,
-                                           "p->hostobjid_c");
-      p->numclumps_c=gal_data_malloc_array(GAL_TYPE_SIZE_T,
-                                           p->objectcols->size, __func__,
-                                           "p->numclumps_c");
+      p->hostobjid_c=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                          p->clumpcols->size, 0, __func__,
+                                          "p->hostobjid_c");
+      p->numclumps_c=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                          p->objectcols->size, 0, __func__,
+                                          "p->numclumps_c");
     }
 }
 

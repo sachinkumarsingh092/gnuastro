@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/convolve.h>
 #include <gnuastro/dimension.h>
 
@@ -271,8 +272,8 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
   /* Set the starting point of the dataset overlap tile. */
   increment=gal_dimension_coord_to_index(ndim, block->dsize,
                                          pprm->overlap_start);
-  pprm->i_overlap->array=gal_data_ptr_increment(block->array, increment,
-                                                block->type);
+  pprm->i_overlap->array=gal_pointer_increment(block->array, increment,
+                                               block->type);
 
 
   /* Set the starting point of the kernel overlap tile. */
@@ -281,8 +282,8 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
                 : gal_dimension_coord_to_index(ndim,
                                                kernel->dsize,
                                                pprm->kernel_start) );
-  pprm->k_overlap->array=gal_data_ptr_increment(kernel->array, increment,
-                                                kernel->type);
+  pprm->k_overlap->array=gal_pointer_increment(kernel->array, increment,
+                                               kernel->type);
   return full_overlap;
 }
 
@@ -423,8 +424,8 @@ convolve_spatial_on_thread(void *inparam)
   size_t i;
   size_t ndim=block->ndim;
   struct per_thread_spatial_prm *pprm=&cprm->pprm[tprm->id];
-  size_t *dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim, __func__,
-                                      "dsize");
+  size_t *dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                     "dsize");
 
 
   /* Set all dsize values to 1 (the values within `overlap->dsize' will be
@@ -434,15 +435,14 @@ convolve_spatial_on_thread(void *inparam)
 
   /* Initialize/Allocate necessary items for this thread. */
   pprm->cprm          = cprm;
-  pprm->pix           = gal_data_malloc_array(GAL_TYPE_SIZE_T, 2*ndim,
-                                              __func__, "pprm->pix");
-  pprm->host_start    = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
-                                              __func__, "pprm->host_start");
-  pprm->kernel_start  = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
-                                              __func__, "pprm->kernel_start");
-  pprm->overlap_start = gal_data_malloc_array(GAL_TYPE_SIZE_T, ndim,
-                                               __func__,
-                                              "pprm->overlap_start");
+  pprm->pix           = gal_pointer_allocate(GAL_TYPE_SIZE_T, 2*ndim, 0,
+                                             __func__, "pprm->pix");
+  pprm->host_start    = gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0,
+                                             __func__, "pprm->host_start");
+  pprm->kernel_start  = gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0,
+                                             __func__, "pprm->kernel_start");
+  pprm->overlap_start = gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0,
+                                             __func__, "pprm->overlap_start");
   pprm->i_overlap     = gal_data_alloc(NULL, block->type, ndim, dsize,
                                        NULL, 0, -1, NULL, NULL, NULL);
   pprm->k_overlap     = gal_data_alloc(NULL, cprm->kernel->type, ndim, dsize,
@@ -582,7 +582,7 @@ gal_convolve_spatial_correct_ch_edge(gal_data_t *tiles, gal_data_t *kernel,
   gal_data_t *block=gal_tile_block(tiles);
 
   /* Some small sanity checks. */
-  if( gal_data_dsize_is_different(block, tocorrect) )
+  if( gal_dimension_is_different(block, tocorrect) )
     error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the "
           "same dimensions/size as the block of the `tiles' input", __func__);
   if( block->type != tocorrect->type )

@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 
 #include <gnuastro-internal/timing.h>
@@ -703,9 +704,9 @@ ui_prepare_center(struct cropparams *p)
       carray=p->center->array;
       for(i=0;i<ndim;++i)
         {
-          p->centercoords[i]=gal_data_malloc_array(GAL_TYPE_FLOAT64,
-                                                   1, __func__,
-                                                   "p->centercoords[i]");
+          p->centercoords[i]=gal_pointer_allocate(GAL_TYPE_FLOAT64,
+                                                  1, 0, __func__,
+                                                  "p->centercoords[i]");
           p->centercoords[i][0]=carray[i];
         }
     }

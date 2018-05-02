@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/git.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 
@@ -152,7 +153,8 @@ saveindividual(struct mkonthread *mkp)
     {
       /* Allocate space for the corrected crpix and fill it in. Both
          `crpix' and `fpixel_i' are in FITS order. */
-      crpix=gal_data_malloc_array(GAL_TYPE_FLOAT64, ndim, __func__, "crpix");
+      crpix=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
+                                 "crpix");
       for(i=0;i<ndim;++i)
         crpix[i] = ((double *)(p->crpix->array))[i] - os*(mkp->fpixel_i[i]-1);
 
@@ -259,8 +261,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
           /* If a crop is needed, set the starting pointer. */
           ind=gal_dimension_coord_to_index(ndim, ibq->image->dsize,
                                            start_indiv);
-          ptr=gal_data_ptr_increment(ibq->image->array, ind,
-                                     ibq->image->type);
+          ptr=gal_pointer_increment(ibq->image->array, ind, ibq->image->type);
         }
       else ptr=ibq->image->array;
       ibq->overlap_i=gal_data_alloc(ptr, ibq->image->type, ndim, dsize, NULL,
@@ -270,7 +271,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
 
       /* Define the merged overlap tile. */
       ind=gal_dimension_coord_to_index(ndim, p->out->dsize, start_mrg);
-      ptr=gal_data_ptr_increment(p->out->array, ind, p->out->type);
+      ptr=gal_pointer_increment(p->out->array, ind, p->out->type);
       ibq->overlap_m=gal_data_alloc(ptr, p->out->type, ndim, dsize, NULL,
                                     0, -1, NULL, NULL, NULL);
       ibq->overlap_m->block=p->out;
@@ -645,7 +646,7 @@ mkprof(struct mkprofparams *p)
      ignore it. */
   if(p->out)
     {
-      onaxes=gal_data_malloc_array(GAL_TYPE_LONG, ndim, __func__, "onaxes");
+      onaxes=gal_pointer_allocate(GAL_TYPE_LONG, ndim, 0, __func__, "onaxes");
       for(fi=0; fi < ndim; ++fi)
         {
           i=ndim-fi-1;

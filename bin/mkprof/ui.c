@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -656,8 +657,8 @@ ui_read_cols(struct mkprofparams *p)
         case 3:
           if(tmp->type==GAL_TYPE_STRING)
             {
-              p->f=gal_data_malloc_array(GAL_TYPE_UINT8, p->num,
-                                         __func__, "p->f");
+              p->f=gal_pointer_allocate(GAL_TYPE_UINT8, p->num, 0,
+                                        __func__, "p->f");
               strarr=tmp->array;
               for(i=0;i<p->num;++i)
                 p->f[i]=ui_profile_name_read(strarr[i], i+1);
@@ -802,15 +803,15 @@ ui_prepare_columns(struct mkprofparams *p)
       p->num=1;
 
       /* Allocate the necessary columns. */
-      p->x = gal_data_calloc_array(GAL_TYPE_FLOAT64, 1, __func__, "p->x");
-      p->y = gal_data_calloc_array(GAL_TYPE_FLOAT64, 1, __func__, "p->y");
-      p->f = gal_data_calloc_array(GAL_TYPE_UINT8,   1, __func__, "p->f");
-      p->r = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->r");
-      p->n = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->n");
-      p->p = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->p");
-      p->q = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->q");
-      p->m = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->m");
-      p->t = gal_data_calloc_array(GAL_TYPE_FLOAT32, 1, __func__, "p->t");
+      p->x = gal_pointer_allocate(GAL_TYPE_FLOAT64, 1, 1, __func__, "p->x");
+      p->y = gal_pointer_allocate(GAL_TYPE_FLOAT64, 1, 1, __func__, "p->y");
+      p->f = gal_pointer_allocate(GAL_TYPE_UINT8,   1, 1, __func__, "p->f");
+      p->r = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->r");
+      p->n = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->n");
+      p->p = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->p");
+      p->q = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->q");
+      p->m = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->m");
+      p->t = gal_pointer_allocate(GAL_TYPE_FLOAT32, 1, 1, __func__, "p->t");
 
       /* For profiles that need a different number of input values. Note
          that when a profile doesn't need a value, it will be ignored. */
@@ -1051,8 +1052,8 @@ ui_prepare_canvas(struct mkprofparams *p)
           if( p->dsize ) free(p->dsize);
 
           /* Write the size of the background image into `dsize'. */
-          p->dsize=gal_data_malloc_array(GAL_TYPE_SIZE_T, p->ndim, __func__,
-                                         "p->dsize");
+          p->dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 0,
+                                        __func__, "p->dsize");
           for(i=0;i<p->ndim;++i) p->dsize[i] = p->out->dsize[i];
 
           /* Set all pixels to zero if the user wanted a clear canvas. */
@@ -1072,8 +1073,8 @@ ui_prepare_canvas(struct mkprofparams *p)
          there is no shifts. */
       p->oversample=1;
       if(p->shift) free(p->shift);
-      p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->ndim, __func__,
-                                     "p->shift (1)");
+      p->shift=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 1, __func__,
+                                    "p->shift (1)");
     }
   else
     {
@@ -1133,8 +1134,8 @@ ui_prepare_canvas(struct mkprofparams *p)
                  shifts (from zero). So, we'll just free it and reset
                  it. */
               if(p->shift) free(p->shift);
-              p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->ndim,
-                                             __func__, "p->shift (2)");
+              p->shift=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 1,
+                                            __func__, "p->shift (2)");
               if(setshift)
                 {
                   p->shift[0]  = (width[0]/2)*p->oversample;
@@ -1145,8 +1146,8 @@ ui_prepare_canvas(struct mkprofparams *p)
 
       /* If shift has not been set until now, set it. */
       if(p->shift==NULL)
-        p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->ndim, __func__,
-                                       "p->shift (3)");
+        p->shift=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 1,
+                                      __func__, "p->shift (3)");
 
       /* Prepare the sizes of the final merged image (if it is to be
          made). Note that even if we don't want a merged image, we still
@@ -1346,8 +1347,8 @@ ui_preparations(struct mkprofparams *p)
       p->individual=1;
 
       /* Set the shift array. */
-      p->shift=gal_data_calloc_array(GAL_TYPE_SIZE_T, p->ndim,
-                                     __func__, "p->shift");
+      p->shift=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 1,
+                                    __func__, "p->shift");
     }
   else
     ui_prepare_canvas(p);

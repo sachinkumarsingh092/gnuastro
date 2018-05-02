@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 #include <gnuastro/list.h>
 #include <gnuastro/tiff.h>
-
+#include <gnuastro/pointer.h>
 
 
 
@@ -433,7 +433,8 @@ tiff_reverse_rows(gal_data_t *out)
   gal_data_t *ch=out;
   size_t c, i, j, numch=gal_list_data_number(out);
   size_t width=out->dsize[1]*gal_type_sizeof(out->type);
-  void *tmp=gal_data_malloc_array(out->type, out->dsize[1], __func__, "tmp");
+  void *tmp=gal_pointer_allocate(out->type, out->dsize[1], 0, __func__,
+                                 "tmp");
 
   /* A small sanity check. */
   if(out->ndim==3)

@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/wcs.h>
+#include <gnuastro/pointer.h>
 
 #include "main.h"
 
@@ -344,8 +345,8 @@ fillcrpipolygon(struct onecropparams *crp)
 
   /* Allocate the image polygon array, and put the image polygon vertice
      values into it. */
-  crp->ipolygon=gal_data_malloc_array(GAL_TYPE_FLOAT64, ndim*p->nvertices,
-                                      __func__, "crp->ipolygon");
+  crp->ipolygon=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim*p->nvertices, 0,
+                                     __func__, "crp->ipolygon");
   for(i=0;i<p->nvertices;++i)
     {
       d=0;
