@@ -949,34 +949,34 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list)
   switch(list->type)
     {
     case GAL_TYPE_UINT8:
-      MULTIOPERAND_TYPE_SET(uint8_t,   gal_qsort_uint8_increasing);
+      MULTIOPERAND_TYPE_SET(uint8_t,   gal_qsort_uint8_i);
       break;
     case GAL_TYPE_INT8:
-      MULTIOPERAND_TYPE_SET(int8_t,    gal_qsort_int8_increasing);
+      MULTIOPERAND_TYPE_SET(int8_t,    gal_qsort_int8_i);
       break;
     case GAL_TYPE_UINT16:
-      MULTIOPERAND_TYPE_SET(uint16_t,  gal_qsort_uint16_increasing);
+      MULTIOPERAND_TYPE_SET(uint16_t,  gal_qsort_uint16_i);
       break;
     case GAL_TYPE_INT16:
-      MULTIOPERAND_TYPE_SET(int16_t,   gal_qsort_int16_increasing);
+      MULTIOPERAND_TYPE_SET(int16_t,   gal_qsort_int16_i);
       break;
     case GAL_TYPE_UINT32:
-      MULTIOPERAND_TYPE_SET(uint32_t,  gal_qsort_uint32_increasing);
+      MULTIOPERAND_TYPE_SET(uint32_t,  gal_qsort_uint32_i);
       break;
     case GAL_TYPE_INT32:
-      MULTIOPERAND_TYPE_SET(int32_t,   gal_qsort_int32_increasing);
+      MULTIOPERAND_TYPE_SET(int32_t,   gal_qsort_int32_i);
       break;
     case GAL_TYPE_UINT64:
-      MULTIOPERAND_TYPE_SET(uint64_t,  gal_qsort_uint64_increasing);
+      MULTIOPERAND_TYPE_SET(uint64_t,  gal_qsort_uint64_i);
       break;
     case GAL_TYPE_INT64:
-      MULTIOPERAND_TYPE_SET(int64_t,   gal_qsort_int64_increasing);
+      MULTIOPERAND_TYPE_SET(int64_t,   gal_qsort_int64_i);
       break;
     case GAL_TYPE_FLOAT32:
-      MULTIOPERAND_TYPE_SET(float,     gal_qsort_float32_increasing);
+      MULTIOPERAND_TYPE_SET(float,     gal_qsort_float32_i);
       break;
     case GAL_TYPE_FLOAT64:
-      MULTIOPERAND_TYPE_SET(double,    gal_qsort_float64_increasing);
+      MULTIOPERAND_TYPE_SET(double,    gal_qsort_float64_i);
       break;
     default:
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized",

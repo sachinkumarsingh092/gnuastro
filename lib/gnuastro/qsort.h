@@ -1,5 +1,5 @@
 /*********************************************************************
-forqsort -- Functions used by qsort to sort an array.
+qsort -- Functions used by qsort to sort an array.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -48,77 +48,104 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Pointer used to sort the indexs of an array based on their flux
-   (value in this array). */
-extern float *gal_qsort_index_arr;
+
+
+/*****************************************************************/
+/**********        Sorting of actual array        ****************/
+/*****************************************************************/
+int
+gal_qsort_uint8_d(const void *a, const void *b);
 
 int
-gal_qsort_index_float_decreasing(const void * a, const void * b);
+gal_qsort_uint8_i(const void *a, const void *b);
 
 int
-gal_qsort_index_float_increasing(const void * a, const void * b);
-
-
+gal_qsort_int8_d(const void *a, const void *b);
 
 int
-gal_qsort_uint8_decreasing(const void *a, const void *b);
+gal_qsort_int8_i(const void *a, const void *b);
 
 int
-gal_qsort_uint8_increasing(const void *a, const void *b);
+gal_qsort_uint16_d(const void *a, const void *b);
 
 int
-gal_qsort_int8_decreasing(const void *a, const void *b);
+gal_qsort_uint16_i(const void *a, const void *b);
 
 int
-gal_qsort_int8_increasing(const void *a, const void *b);
+gal_qsort_int16_d(const void *a, const void *b);
 
 int
-gal_qsort_uint16_decreasing(const void *a, const void *b);
+gal_qsort_int16_i(const void *a, const void *b);
 
 int
-gal_qsort_uint16_increasing(const void *a, const void *b);
+gal_qsort_uint32_d(const void *a, const void *b);
 
 int
-gal_qsort_int16_decreasing(const void *a, const void *b);
+gal_qsort_uint32_i(const void *a, const void *b);
 
 int
-gal_qsort_int16_increasing(const void *a, const void *b);
+gal_qsort_int32_d(const void *a, const void *b);
 
 int
-gal_qsort_uint32_decreasing(const void *a, const void *b);
+gal_qsort_int32_i(const void *a, const void *b);
 
 int
-gal_qsort_uint32_increasing(const void *a, const void *b);
+gal_qsort_uint64_d(const void *a, const void *b);
 
 int
-gal_qsort_int32_decreasing(const void *a, const void *b);
+gal_qsort_uint64_i(const void *a, const void *b);
 
 int
-gal_qsort_int32_increasing(const void *a, const void *b);
+gal_qsort_int64_d(const void *a, const void *b);
 
 int
-gal_qsort_uint64_decreasing(const void *a, const void *b);
+gal_qsort_int64_i(const void *a, const void *b);
 
 int
-gal_qsort_uint64_increasing(const void *a, const void *b);
+gal_qsort_float32_d(const void *a, const void *b);
 
 int
-gal_qsort_int64_decreasing(const void *a, const void *b);
+gal_qsort_float32_i(const void *a, const void *b);
 
 int
-gal_qsort_int64_increasing(const void *a, const void *b);
+gal_qsort_float64_d(const void *a, const void *b);
 
 int
-gal_qsort_float32_decreasing(const void *a, const void *b);
+gal_qsort_float64_i(const void *a, const void *b);
+
+
+
+
+
+/*****************************************************************/
+/***************          Sorting indexs        ******************/
+/*****************************************************************/
+/* Pointer used to sort the indexs of an array based on their flux (value
+   in this array). Note: when EACH THREAD USES A DIFFERENT ARRAY, this is
+   not thread-safe . */
+extern float *gal_qsort_index_single;
+
+
+/* When each thread is working on a different array, we'll need to keep the
+   pointer to the array in question for every index. */
+struct gal_qsort_index_multi
+{
+  float *values; /* Array of values (pointer, so original is not touched). */
+                 /* This should be identical in all elements.              */
+  size_t  index; /* Index of each element to be sorted.                    */
+};
 
 int
-gal_qsort_float32_increasing(const void *a, const void *b);
+gal_qsort_index_single_d(const void *a, const void *b);
 
 int
-gal_qsort_float64_decreasing(const void *a, const void *b);
+gal_qsort_index_single_i(const void *a, const void *b);
 
 int
-gal_qsort_float64_increasing(const void *a, const void *b);
+gal_qsort_index_multi_d(const void *a, const void *b);
+
+int
+gal_qsort_index_multi_i(const void *a, const void *b);
 
 
 

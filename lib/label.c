@@ -236,13 +236,18 @@ gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
   if(indexs->size==0) return 0;
 
 
-  /* Sort the given indexs based on their flux (`gal_qsort_index_arr' is
+  /* If the indexs aren't already sorted (by the value they correspond to),
+     sort them given indexs based on their flux (`gal_qsort_index_arr' is
      defined as static in `gnuastro/qsort.h') */
-  gal_qsort_index_arr=values->array;
-  qsort(indexs->array, indexs->size, sizeof(size_t),
-        min0_max1
-        ? gal_qsort_index_float_decreasing
-        : gal_qsort_index_float_increasing );
+  if( !( (indexs->flag & GAL_DATA_FLAG_SORT_CH)
+        && ( indexs->flag
+             & (GAL_DATA_FLAG_SORTED_I
+                | GAL_DATA_FLAG_SORTED_D) ) ) )
+    {
+      gal_qsort_index_single=values->array;
+      qsort(indexs->array, indexs->size, sizeof(size_t),
+            min0_max1 ? gal_qsort_index_single_d : gal_qsort_index_single_i);
+    }
 
 
   /* Initialize the region we want to over-segment. */
