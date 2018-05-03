@@ -518,14 +518,11 @@ ui_prepare_tiles(struct noisechiselparams *p)
 
 
 
+/* Read the input image and do the basic checks */
 static void
-ui_preparations(struct noisechiselparams *p)
+ui_preparations_read_input(struct noisechiselparams *p)
 {
   float *f;
-
-  /* Prepare the names of the outputs. */
-  ui_set_output_names(p);
-
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
@@ -566,6 +563,20 @@ ui_preparations(struct noisechiselparams *p)
           "your analysis, please ignore this warming message.\n"
           "--------------------------",
           p->inputname, p->cp.hdu, p->inputname, p->inputname, p->cp.hdu);
+}
+
+
+
+
+
+static void
+ui_preparations(struct noisechiselparams *p)
+{
+  /* Prepare the names of the outputs. */
+  ui_set_output_names(p);
+
+  /* Read the input datasets and do the basic checks.*/
+  ui_preparations_read_input(p);
 
   /* If a convolved image was given, read it in. Otherwise, read the given
      kernel. */
@@ -586,14 +597,11 @@ ui_preparations(struct noisechiselparams *p)
   else
     ui_prepare_kernel(p);
 
-
   /* Check for blank values to help later processing.  */
   gal_blank_present(p->input, 1);
 
-
   /* Prepare the tessellation. */
   ui_prepare_tiles(p);
-
 
   /* Allocate space for the over-all necessary arrays. */
   p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
