@@ -198,6 +198,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #53407: Instrumental noise in MakeNoise should be squared.
   bug #53424: Sigma-clipping seg-faults when there are no more elements.
   bug #53580: Warp crash when no WCS present.
+  bug #53825: NoiseChisel not accounting for fully zero-valued tiles.
 
 
 

@@ -612,7 +612,6 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
           }
     }
 
-
   /* If we are in Sky mode, the sizes have to be corrected */
   if(s0d1D2==0)
     {

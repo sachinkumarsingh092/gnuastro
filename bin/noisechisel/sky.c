@@ -57,7 +57,7 @@ sky_mean_std_undetected(void *in_prm)
   struct noisechiselparams *p=(struct noisechiselparams *)tprm->params;
 
   double *darr, s, s2;
-  int type=p->sky->type;
+  int setblank, type=p->sky->type;
   size_t i, tind, numsky, dsize=2;
   gal_data_t *tile, *meanstd_d, *meanstd, *bintile;
 
@@ -94,6 +94,7 @@ sky_mean_std_undetected(void *in_prm)
 
       /* Only continue, if the fraction of Sky values are less than the
          requested fraction. */
+      setblank=0;
       if( (float)(numsky)/(float)(tile->size) > p->minskyfrac)
         {
           /* Calculate the mean and STD over this tile. */
@@ -108,22 +109,37 @@ sky_mean_std_undetected(void *in_prm)
           darr[0]=s/numsky;
           darr[1]=sqrt( (s2-s*s/numsky)/numsky );
 
-          /* Convert the mean and std into the same type as the sky and std
-             arrays. */
-          meanstd=gal_data_copy_to_new_type(meanstd_d, type);
+          /* When there are zero-valued pixels on the edges of the dataset
+             (that have not been set to NaN/blank), given special
+             conditions, the whole zero-valued region can get a binary
+             value of 1 and so the Sky and its standard deviation can
+             become zero. So, we need ignore such tiles. */
+          if(darr[1]==0.0f)
+            setblank=1;
+          else
+            {
+              /* Convert the mean and std into the same type as the sky and
+                 std arrays. */
+              meanstd=gal_data_copy_to_new_type(meanstd_d, type);
 
-          /* Copy the mean and STD to their respective places in the tile
-             arrays. */
-          memcpy(gal_pointer_increment(p->sky->array, tind, type),
-                 meanstd->array, gal_type_sizeof(type));
-          memcpy(gal_pointer_increment(p->std->array, tind, type),
-                 gal_pointer_increment(meanstd->array, 1, type),
-                 gal_type_sizeof(type));
+              /* Copy the mean and STD to their respective places in the
+                 tile arrays. */
+              memcpy(gal_pointer_increment(p->sky->array, tind, type),
+                     meanstd->array, gal_type_sizeof(type));
+              memcpy(gal_pointer_increment(p->std->array, tind, type),
+                     gal_pointer_increment(meanstd->array, 1, type),
+                     gal_type_sizeof(type));
 
-          /* Clean up. */
-          gal_data_free(meanstd);
+              /* Clean up. */
+              gal_data_free(meanstd);
+            }
         }
       else
+        setblank=1;
+
+      /* If the tile is marked as being blank, write blank values into
+         it. */
+      if(setblank==1)
         {
           gal_blank_write(gal_pointer_increment(p->sky->array, tind, type),
                           type);
@@ -203,6 +219,7 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
      correct it in the S/N calculation. So, we'll calculate the correction
      factor here. */
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
+
 
   /* Interpolate and smooth the derived values. */
   threshold_interp_smooth(p, &p->sky, &p->std, NULL, checkname);
