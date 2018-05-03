@@ -68,8 +68,8 @@ args_doc[] = "ASTRdata";
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" Detects and segments signal "
   "that is deeply burried in noise. It employs a noise-based detection and "
-  "segmentation method enabling it to be very resilient to the rich diversity "
-  "of shapes in astronomical targets.\n"
+  "segmentation method enabling it to be very resilient to the rich "
+  "diversity of shapes in astronomical targets.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -521,6 +521,8 @@ ui_prepare_tiles(struct noisechiselparams *p)
 static void
 ui_preparations(struct noisechiselparams *p)
 {
+  float *f;
+
   /* Prepare the names of the outputs. */
   ui_set_output_names(p);
 
@@ -541,6 +543,29 @@ ui_preparations(struct noisechiselparams *p)
           "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
           p->input->ndim);
 
+  /* A small check to see if the edges of the dataset aren't zero valued:
+     they should be masked. */
+  f=p->input->array;
+  if( (f[0]==0.0 && f[1]==0.0)
+      || (f[ p->input->size-1 ]==0.0 && f[ p->input->size-2 ]==0.0) )
+    error(0, 0, "%s (hdu %s): [*** WARNING ***]: The first and/or last few "
+          "pixels have a value of 0.0. As described below, the result of "
+          "this run may thus not be reasonable/optimal.\n\n"
+          "Some data reduction pipelines put 0.0 where there isn't data "
+          "(most commonly on the edges). However, NoiseChisel's "
+          "noise-based detection paradigm starts from the lower values of "
+          "the dataset (not high S/N peaks): its initial threshold is "
+          "mostly below the Sky value (0.0 in processed images). Therefore "
+          "0.0 is meaningful for NoiseChisel and must not be used for a "
+          "blank value.\n\n"
+          "To ignore certain pixels, they must have a blank/NaN value. "
+          "To mask (set to blank/NaN) the 0.0 valued elements, you can use "
+          "Gnuastro's Arithmetic program with a command like this:\n\n"
+          "    $ astarithmetic %s %s 0.0 eq nan where -g%s\n\n"
+          "If the few 0.0 valued pixels on the edges are meaningful for "
+          "your analysis, please ignore this warming message.\n"
+          "--------------------------",
+          p->inputname, p->cp.hdu, p->inputname, p->inputname, p->cp.hdu);
 
   /* If a convolved image was given, read it in. Otherwise, read the given
      kernel. */
