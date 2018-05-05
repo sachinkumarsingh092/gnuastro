@@ -880,7 +880,7 @@ software/statistical-method really does (especially as it gets more
 complicated), and thus the scientific interpretation of the result. This
 attitude is further encouraged through non-free
 software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}},
-poorly written (or non-existant) scientific software manuals, and
+poorly written (or non-existent) scientific software manuals, and
 non-reproducible papers@footnote{Where the authors omit many of the
 analysis/processing ``details'' from the paper by arguing that they would
 make the paper too long/unreadable. However, software methods do allows us
@@ -1588,7 +1588,7 @@ updated/new features, or dependencies (see @ref{Dependencies}).
 To subscribe to this list, please visit
 @url{https://lists.gnu.org/mailman/listinfo/info-gnuastro}. Traffic (number
 of mails per unit time) in this list is designed to be very low: only a
-handful of mails per year. Previous annoucements are available on
+handful of mails per year. Previous announcements are available on
 @url{http://lists.gnu.org/archive/html/info-gnuastro/, its archive}.
 
 
@@ -2001,8 +2001,8 @@ technique.  The general outline of the steps he wants to take are:
 @enumerate
 
 @item
-Make some mock profiles in an oversampled image. The initial mock
-image has to be oversampled prior to convolution or other forms of
+Make some mock profiles in an over-sampled image. The initial mock
+image has to be over-sampled prior to convolution or other forms of
 transformation in the image. Through his experiences, Sufi knew that
 this is because the image of heavenly bodies is actually transformed
 by the atmosphere or other sources outside the atmosphere (for example
@@ -2012,7 +2012,7 @@ should do all the work on a finer pixel grid. In the end he can
 re-sample the result to the initially desired grid size.
 
 @item
-Convolve the image with a PSF image that is oversampled to the same
+Convolve the image with a PSF image that is over-sampled to the same
 value as the mock image. Since he wants to finish in a reasonable time
 and the PSF kernel will be very large due to oversampling, he has to
 use frequency domain convolution which has the side effect of dimming
@@ -2194,7 +2194,7 @@ and showed the effect of convolution to his student and explained to him
 how a PSF with a larger FWHM would make the points even wider. With the
 convolved image ready, they were prepared to re-sample it to the original
 pixel scale Sufi had planned [from the @command{$ astmkprof -P} command
-above, recall that MakeProfiles had oversampled the image by 5 times]. Sufi
+above, recall that MakeProfiles had over-sampled the image by 5 times]. Sufi
 explained the basic concepts of warping the image to his student and ran
 Warp with the following command:
 
@@ -2428,8 +2428,10 @@ AWK@footnote{@url{https://www.gnu.org/software/gawk}.}).
 @cartouche
 @noindent
 @strong{Type the example commands:} Try to type the example commands on
-your terminal and don't simply copy and paste them. This will help simulate
-future situations when you are processing your own datasets.
+your terminal and use the history feature of your command-line (with the
+``up'' button). Don't simply copy and paste the commands shown here. This
+will help simulate future situations when you are processing your own
+datasets.
 @end cartouche
 
 A handy feature of Gnuastro is that all program names start with
@@ -3562,7 +3564,7 @@ $ astmkcatalog apertures.fits -h1 --zeropoint=26.27        \
 
 This catalog has the same number of rows as the catalog produced from
 clumps, therefore similar to how we found colors, you can compare the
-aperutre and clump magnitudes for example. You can also change the filter
+aperture and clump magnitudes for example. You can also change the filter
 name and zeropoint magnitudes and run this command again to have the fixed
 aperture magnitude in the F160W filter and measure colors on apertures.
 
@@ -3689,11 +3691,12 @@ gradually and can have a large variety of shapes (for example due to tidal
 interactions). Therefore separating the outer boundaries of the galaxies
 from the noise can be particularly tricky. Besides causing an
 under-estimation in the total estimated brightness of the target, failure
-to detect such faint wings will also cause a bias in the noise measurements
-(and thus hamper your scientific accuracy even further). Therefore even if
-they don't constitute a significant fraction of the target's light, these
-regions must not be ignored. In this tutorial, we'll walk you through the
-strategy of detecting with such targets using @ref{NoiseChisel}.
+to detect such faint wings will also cause a bias in the noise
+measurements, thereby hampering the accuracy of any measurement on the
+dataset. Therefore even if they don't constitute a significant fraction of
+the target's light, or aren't your primary target, these regions must not
+be ignored. In this tutorial, we'll walk you through the strategy of
+detecting such targets using @ref{NoiseChisel}.
 
 @cartouche
 @noindent
@@ -3720,19 +3723,21 @@ dwarf companion galaxy of the group (or NGC 5195). To get the image, you
 can use SDSS's @url{https://dr12.sdss.org/fields, Simple field search}
 tool. In the ``Object Name'' field, write @code{NGC5195}. After pressing
 the ``Submit'' button, you will see a color image of the field we will be
-investigating. As you can see, with this tool, you can also search for a
-target through its coordinates (as long as it is covered by the SDSS).
+investigating. With this tool, you can also search for a target through its
+coordinates (as long as it is covered by the SDSS).
 
 @cartouche
 @noindent
 @strong{Type the example commands:} Try to type the example commands on
-your terminal and don't simply copy and paste them. This will help simulate
-future situations when you are processing your own datasets.
+your terminal and use the history feature of your command-line (with the
+``up'' button). Don't simply copy and paste the commands shown here. This
+will help simulate future situations when you are processing your own
+datasets.
 @end cartouche
 
 @cindex GNU Wget
 For this demonstration, we'll use the image of the r-band filter. You can
-see the list of available filters right under the image. By clicking on the
+see the list of available filters under the image. By clicking on the
 ``r-band FITS'' link, you can download the image. Alternatively, you can
 just run the following command to download it with GNU Wget@footnote{To
 make the command easier to view on screen or in a page, we have defined the
@@ -3755,7 +3760,7 @@ $ wget $topurl/301/3716/6/frame-r-003716-6-0117.fits.bz2 -Or.fits.bz2
 @noindent
 This server keeps the files in the Bzip2 compressed file format. So we'll
 first decompress it with the following command. By convention, compression
-programs delete the original file (compressed when uncompressing, or
+programs delete the original file (compressed when un-compressing, or
 un-compressed when compressing). To keep the original file, you can use the
 @option{--keep} or @option{-k} option which is available in most
 compression programs for this job. Here, we don't need the compressed file
@@ -3791,7 +3796,7 @@ The fact that signal has been detected as Sky shows that you haven't done a
 good detection. Generally, any time your target is much larger than the
 tile size and the signal is almost flat (like this case), this @emph{will}
 happen, even if it isn't dramatic enough to be seen in the first
-extension. Therefore, @strong{the best place} to check the accuracey of
+extension. Therefore, @strong{the best place} to check the accuracy of
 your detection is the noise extensions (third and fourth extension) of
 NoiseChisel's output. The reason for this is to deal with gradients which
 can appear in the processing of raw images. NoiseChisel will assume that
@@ -4065,20 +4070,51 @@ $ astarithmetic r_detected.fits boundary.fits not nan where \
 The outer wings where therefore non-parametrically detected until
 @mymath{\rm{S/N}\approx0.05}.
 
-In interpretting this value, you should just have in mind that NoiseChisel
+In interpreting this value, you should just have in mind that NoiseChisel
 works based on the contiguity of signal in the pixels. Therefore the larger
-the object, the deeper NoiseChisel can carve it out of the noise. This
-depth, is only for this particular object and dataset, processed with the
-settings found above: if the M51 group in this image was larger/smaller
-than this, or if the image was larger/smaller, we would go
+the object, the deeper NoiseChisel can carve it out of the noise. In other
+words, this reported depth, is only for this particular object and dataset,
+processed with this particular NoiseChisel configuration: if the M51 group
+in this image was larger/smaller than this, or if the image was
+larger/smaller, or if we had used a different configuration, we would go
 deeper/shallower.
 
-To continue processing, you can use @ref{Segment} to identify all the
-``clumps'' over the diffuse regions and mask them out (with Arithmetic,
-like above). This will enable the accurate study of the diffuse region or
-the background objects. But to keep this tutorial short, we'll stop
-here. See @ref{General program usage tutorial} and @ref{Segment} for more
-on Segment and producing catalogs.
+@cartouche
+@noindent
+@strong{The NoiseChisel configuration found here is NOT GENERIC for any
+large object:} As you saw above, the reason we chose this particular
+configuration for NoiseChisel to detect the wings of the M51 group was
+strongly influenced by this particular object in this particular
+image. When signal takes over such a large fraction of your dataset, you
+will need some manual checking, intervention, or customization, to make
+sure that it is successfully detected. In other words, to make sure that
+your noise measurements are least affected by the signal@footnote{In the
+future, we may add capabilities to optionally automate some of the choices
+made here, please join us in doing this if you are interested. However,
+given the many problems in existing ``smart'' solutions, such automatic
+changing of the configuration may cause more problems than they solve. So
+even when they are implemented, we would strongly recommend manual checks
+and intervention for a robust analysis.}.
+@end cartouche
+
+To avoid the necessity of writing all these options every time you run
+NoiseChisel on this image, you can use configuration files, see
+@ref{General program usage tutorial} and @ref{Configuration files} for
+more.
+
+To continue your analysis of such datasets with extended emission, you can
+use @ref{Segment} to identify all the ``clumps'' over the diffuse
+regions. The properties of the background objects can then easily be
+measured using @ref{MakeCatalog}@footnote{To measure the properties of the
+background objects (detected as clumps over the diffuse region), you
+shouldn't mask the diffuse region. When measuing clump properties with
+@ref{MakeCatalog}, the ambient flux (from the diffuse region) is calculated
+and subtracted. If the diffuse region is masked, its effect on the clump
+brightness cannot be calculated and subtracted.}. With Arithmetic, you can
+mask the clumps over the diffuse region, thus enabling the accurate study
+of this extended and very diffuse tidal feature. But to keep this tutorial
+short, we'll stop here. See @ref{General program usage tutorial} and
+@ref{Segment} for more on Segment and producing catalogs.
 
 Finally, if this book or any of the programs in Gnuastro have been useful
 for your research, please cite the respective papers and share your
