@@ -2428,10 +2428,10 @@ AWK@footnote{@url{https://www.gnu.org/software/gawk}.}).
 @cartouche
 @noindent
 @strong{Type the example commands:} Try to type the example commands on
-your terminal and use the history feature of your command-line (with the
-``up'' button). Don't simply copy and paste the commands shown here. This
-will help simulate future situations when you are processing your own
-datasets.
+your terminal and use the history feature of your command-line (by pressing
+the ``up'' button to retrieve previous commands). Don't simply copy and
+paste the commands shown here. This will help simulate future situations
+when you are processing your own datasets.
 @end cartouche
 
 A handy feature of Gnuastro is that all program names start with
@@ -3700,44 +3700,44 @@ detecting such targets using @ref{NoiseChisel}.
 
 @cartouche
 @noindent
-@strong{Don't start with this tutorial:} If you have just started with
-Gnuastro/NoiseChisel, we strongly recommend that you go through
-@ref{General program usage tutorial} before starting this one. Basic
-features like access to this book on the command line, the configuration
-files of Gnuastro's programs, benefiting from the modular nature of the
-programs, or viewing multi-extension FITS files easily, are discussed in
-much better detail there to help you get started and understand this
-tutorial more effectively.
+@strong{Don't start with this tutorial:} If you haven't already done the
+@ref{General program usage tutorial}, we strongly recommend going through
+that tutorial before starting this one. Basic features like access to this
+book on the command-line, the configuration files of Gnuastro's programs,
+benefiting from the modular nature of the programs, or viewing
+multi-extension FITS files easily, are discussed in much better detail
+there. Doing that tutorial first will thus help you better understand and
+benefit from this tutorial.
 @end cartouche
 
 @cindex M51
 @cindex NGC5195
 @cindex SDSS, Sloan Digital Sky Survey
 @cindex Sloan Digital Sky Survey, SDSS
-For the demonstration dataset, we'll use a public
-@url{http://www.sdss.org/, Sloan Digital Sky Survey}, or SDSS, image of the
-beautiful M51
-group@footnote{@url{https://en.wikipedia.org/wiki/M51_Group}}. Due to its
+We'll try to detect the faint tidal wings of the beautiful M51
+group@footnote{@url{https://en.wikipedia.org/wiki/M51_Group}} in this
+tutorial. We'll use a dataset/image from the public
+@url{http://www.sdss.org/, Sloan Digital Sky Survey}, or SDSS. Due to its
 more peculiar low surface brightness structure/features, we'll focus on the
 dwarf companion galaxy of the group (or NGC 5195). To get the image, you
 can use SDSS's @url{https://dr12.sdss.org/fields, Simple field search}
-tool. In the ``Object Name'' field, write @code{NGC5195}. After pressing
-the ``Submit'' button, you will see a color image of the field we will be
-investigating. With this tool, you can also search for a target through its
-coordinates (as long as it is covered by the SDSS).
+tool. As long as it is covered by the SDSS, you can find an image
+containing your desired target either by providing a standard name (if it
+has one), or its coordinates. To access the dataset we will use here, write
+@code{NGC5195} in the ``Object Name'' field and press ``Submit'' button.
 
 @cartouche
 @noindent
 @strong{Type the example commands:} Try to type the example commands on
-your terminal and use the history feature of your command-line (with the
-``up'' button). Don't simply copy and paste the commands shown here. This
-will help simulate future situations when you are processing your own
-datasets.
+your terminal and use the history feature of your command-line (by pressing
+the ``up'' button to retrieve previous commands). Don't simply copy and
+paste the commands shown here. This will help simulate future situations
+when you are processing your own datasets.
 @end cartouche
 
 @cindex GNU Wget
-For this demonstration, we'll use the image of the r-band filter. You can
-see the list of available filters under the image. By clicking on the
+You can see the list of available filters under the color image. For this
+demonstration, we'll use the r-band filter image.  By clicking on the
 ``r-band FITS'' link, you can download the image. Alternatively, you can
 just run the following command to download it with GNU Wget@footnote{To
 make the command easier to view on screen or in a page, we have defined the
@@ -3758,7 +3758,7 @@ $ wget $topurl/301/3716/6/frame-r-003716-6-0117.fits.bz2 -Or.fits.bz2
 
 @cindex Bzip2
 @noindent
-This server keeps the files in the Bzip2 compressed file format. So we'll
+This server keeps the files in a Bzip2 compressed file format. So we'll
 first decompress it with the following command. By convention, compression
 programs delete the original file (compressed when un-compressing, or
 un-compressed when compressing). To keep the original file, you can use the
@@ -3798,49 +3798,52 @@ tile size and the signal is almost flat (like this case), this @emph{will}
 happen, even if it isn't dramatic enough to be seen in the first
 extension. Therefore, @strong{the best place} to check the accuracy of
 your detection is the noise extensions (third and fourth extension) of
-NoiseChisel's output. The reason for this is to deal with gradients which
-can appear in the processing of raw images. NoiseChisel will assume that
-the gradient is flat over the tile and later subtract the gradient, for
-example see Figure 11 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi
-and Ichikawa [2015]}.
+NoiseChisel's output.
 
-In Gnuastro, you can see the option values (tile size in this case) by
-adding the @option{-P} option to your last command. Doing so, you will see
-that the default tile size is indeed much smaller than this (huge) dwarf
-galaxy. With this configuration, NoiseChisel is therefore unable to
-identify signal within the tiles under NGC 5159. Recall that NoiseChisel
-only uses tiles with no signal to define its threshold.  Because of this,
-the threshold has been over-estimated and further exacerbated the
-non-detection of the diffuse regions.
+When dominated by the background, noise has a symmetric
+distribution. However, signal is not symmetric (we don't have negative
+signal). Therefore when non-constant signal is present in a noisy dataset,
+the distribution will be positively skewed. This skewness is a good measure
+of how much signal we have in the distribution. The skewness can be
+accurately measured by the difference in the mode and median, for more see
+@ref{Quantifying signal in a tile}, and Appendix C
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
-To identify the presence of signal in a tile, NoiseChisel uses a novel
-algorithm to find the mode of a distribution. When dominated by the
-background, noise has a symmetric distribution. However, signal is not
-symmetric (we don't have negative signal). Therefore when non-flat signal
-is present in a noisy dataset, the distribution will be positively
-skewed. This skewness can be accurately measured by the difference in the
-mode and median, for more see @ref{Quantifying signal in a tile}, and
-Appendix C @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-[2015]}.
+Skewness is only a proxy for signal when the signal has structure (varies
+per pixel). Therefore, when it is approximately constant over a whole tile,
+or sub-set of the image, the signal's effect is just to shift the symmetric
+center of the noise distribution to the positive and there won't be any
+skewness: this positive@footnote{In processed images, where the Sky value
+can be over-estimated, this constant shift can be negative.}  shift that
+preserves the symmetric distribution is the Sky value. When there is a
+gradient over the dataset, different tiles will have different constant
+shifts/Sky-values, for example see Figure 11 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
-The reasoning above is only applicable when the signal has structure
-(varies per pixel). Therefore, when it is approximately constant over the
-whole tile, its effect is just to shift the symmetric center of the noise
-distribution and there won't be any skewness: this is how we define the Sky
-value! To see which tiles were used for estimating the quantile threshold,
-you can use NoiseChisel's @option{--checkqthresh} option:
+To get less scatter in measuring the mode and median (and thus better
+estimate the skewness), you will need a larger tile. In Gnuastro, you can
+see the option values (@option{--tilesize} in this case) by adding the
+@option{-P} option to your last command. Try it. You can clearly see that
+the default tile size is indeed much smaller than this (huge) dwarf
+galaxy. Therefore NoiseChisel was unable to identify the skewness within
+the tiles under NGC 5159. Recall that NoiseChisel only uses tiles with no
+signal/skewness to define its threshold. Because of this, the threshold has
+been over-estimated on those tiles and further exacerbated the
+non-detection of the diffuse regions. To see which tiles were used for
+estimating the quantile threshold (no skewness was measured), you can use
+NoiseChisel's @option{--checkqthresh} option:
 
 @example
 $ astnoisechisel r.fits -h0 --checkqthresh
 @end example
 
-Notice how this option doesn't allow NoiseChisel to finish. It aborted
-after finding the quantile thresholds. When you call any of NoiseChisel's
-@option{--check*} options, by default, it will abort as soon as all the
-check steps have been written in the check file (a multi-extension FITS
-file). To optimize the threshold-related settings for this image, we'll be
-playing with this tile for the majority of this tutorial. So let's have a
-closer look at it.
+Notice how this option doesn't allow NoiseChisel to finish. NoiseChisel
+aborted after finding the quantile thresholds. When you call any of
+NoiseChisel's @option{--check*} options, by default, it will abort as soon
+as all the check steps have been written in the check file (a
+multi-extension FITS file). To optimize the threshold-related settings for
+this image, we'll be playing with this tile for the majority of this
+tutorial. So let's have a closer look at it.
 
 The first extension of @file{r_qthresh.fits} (@code{CONVOLVED}) is the
 convolved input image (where the threshold is defined and applied), for
