@@ -54,6 +54,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --upperlimitskew: (mean-median)/sigma or skewness of random distribution.
 
   NoiseChisel:
+    - New tutorial on detecting large and extended targets.
     --rawoutput: only output the detection labels and Sky and its STD.
     --ignoreblankinsky: don't set the pixels that are blank in the input to
       blank in the Sky and Sky standard deviation outputs (when
