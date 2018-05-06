@@ -3700,14 +3700,13 @@ detecting such targets using @ref{NoiseChisel}.
 
 @cartouche
 @noindent
-@strong{Don't start with this tutorial:} If you haven't already done the
+@strong{Don't start with this tutorial:} If you haven't already completed
 @ref{General program usage tutorial}, we strongly recommend going through
 that tutorial before starting this one. Basic features like access to this
 book on the command-line, the configuration files of Gnuastro's programs,
-benefiting from the modular nature of the programs, or viewing
-multi-extension FITS files easily, are discussed in much better detail
-there. Doing that tutorial first will thus help you better understand and
-benefit from this tutorial.
+benefiting from the modular nature of the programs, viewing multi-extension
+FITS files, or using NoiseChisel's outputs are discussed in more detail
+there.
 @end cartouche
 
 @cindex M51
@@ -3864,6 +3863,18 @@ filled/interpolated. The subsequent three extensions show the smoothed tile
 values. Finally in the last extension (@code{QTHRESH-APPLIED}), you can see
 the effect of applying @code{QTHRESH_ERODE} on @code{CONVOLVED} (pixels
 with a value of 0 were below the threshold).
+
+@cartouche
+@noindent
+@strong{Skipping convolution for faster tests:} The slowest step of
+NoiseChisel is the convolution of the input dataset. Therefore when your
+dataset is large (unlike the one in this test), and you are not changing
+the input dataset or kernel in multiple runs (as in the tests of this
+tutorial), it is faster to do the convolution separately once (using
+@ref{Convolve}) and use NoiseChisel's @option{--convolved} option to
+directly feed the convolved image and avoid convolution. For more on
+@option{--convolved}, see @ref{NoiseChisel input}.
+@end cartouche
 
 Fortunately this image is large and has a nice and clean region also
 (filled with very small/distant stars and galaxies). So our first solution
