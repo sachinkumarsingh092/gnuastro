@@ -237,10 +237,10 @@ New to GNU/Linux?
 
 Tutorials
 
-* Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
 * General program usage tutorial::  Usage of all programs in a good way.
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
+* Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
 
 Installation
 
@@ -448,7 +448,7 @@ Sky value
 
 NoiseChisel
 
-* NoiseChisel changes after publication::  Changes to the software after publication.
+* NoiseChisel changes after publication::  NoiseChisel updates after paper's publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Invoking NoiseChisel
@@ -459,6 +459,7 @@ Invoking NoiseChisel
 
 Segment
 
+* Segment changes after publication::  Segment updates after paper's publication.
 * Invoking astsegment::         Inputs, outputs and options to Segment
 
 Invoking Segment
@@ -710,10 +711,9 @@ environment. Gnuastro also comes with a large set of libraries, so you can
 write your own programs using Gnuastro's building blocks, see @ref{Review
 of library fundamentals} for an introduction.
 
-Finally it must be mentioned that in Gnuastro, no change to any
-program will be released before it has been fully documented in this
-here first. As discussed in @ref{Science and its tools} this is the
-founding basis of the Gnuastro.
+In Gnuastro, no change to any program or library will be commited to its
+history, before it has been fully documented here first. As discussed in
+@ref{Science and its tools} this is a founding principle of the Gnuastro.
 
 @menu
 * Quick start::                 A quick start to installation.
@@ -914,38 +914,42 @@ engineering courses and thus used in most software. The GNU Astronomy
 Utilities are an effort to tackle this issue.
 
 Gnuastro is not just a software, this book is as important to the idea
-behind Gnuastro as the source code (software). This book has tried to
-learn from the success of the ``Numerical Recipes'' book in educating
-those who are not software engineers and computer scientists but still
-heavy users of computational algorithms, like astronomers. There are
-two major differences: the code and the explanations are segregated:
-the code is moved within the actual Gnuastro software source code and
-the underlying explanations are given here. In the source code every
-non-trivial step is heavily commented and correlated with this book,
-it follows the same logic of this book, and all the programs follow a
-similar internal data, function and file structure, see @ref{Program
-source}. Complementing the code, this book focuses on thoroughly
-explaining the concepts behind those codes (history, mathematics,
-science, software and usage advise when necessary) along with detailed
-instructions on how to run the programs. At the expense of frustrating
-``professionals'' or ``experts'', this book and the comments in the
-code also intentionally avoid jargon and abbreviations. The source
-code and this book are thus intimately linked, and when considered as
-a single entity can be thought of as a real (an actual software
-accompanying the algorithms) ``Numerical Recipes'' for astronomy.
+behind Gnuastro as the source code (software). This book has tried to learn
+from the success of the ``Numerical Recipes'' book in educating those who
+are not software engineers and computer scientists but still heavy users of
+computational algorithms, like astronomers. There are two major
+differences.
 
-The other major and arguably more important difference is that ``Numerical
-Recipes'' does not allow you to distribute any code that you have learned
-from it. So while it empowers the privileged individual who has access to
-it, it exacerbates social ignorance. For example it does not allow you to
-release your software's source code if you have used their codes, you can
-only publicly release binaries (a black box) to the community. Exactly at
-the opposite end of the spectrum, Gnuastro's source code is released under
-the GNU general public license (GPL) and this book is released under the
-GNU free documentation license. You are therefore free to distribute any
-software you create using parts of Gnuastro's source code or text, or
-figures from this book, see @ref{Your rights}. While developing the source
-code and this book together, the developers of Gnuastro aim to impose the
+The first difference is that Gnuastro's code and the background information
+are segregated: the code is moved within the actual Gnuastro software
+source code and the underlying explanations are given here in this book. In
+the source code, every non-trivial step is heavily commented and correlated
+with this book, it follows the same logic of this book, and all the
+programs follow a similar internal data, function and file structure, see
+@ref{Program source}. Complementing the code, this book focuses on
+thoroughly explaining the concepts behind those codes (history,
+mathematics, science, software and usage advise when necessary) along with
+detailed instructions on how to run the programs. At the expense of
+frustrating ``professionals'' or ``experts'', this book and the comments in
+the code also intentionally avoid jargon and abbreviations. The source code
+and this book are thus intimately linked, and when considered as a single
+entity can be thought of as a real (an actual software accompanying the
+algorithms) ``Numerical Recipes'' for astronomy.
+
+The second major, and arguably more important, difference is that
+``Numerical Recipes'' does not allow you to distribute any code that you
+have learned from it. In other words, it does not allow you to release your
+software's source code if you have used their codes, you can only publicly
+release binaries (a black box) to the community. Therefore, while it
+empowers the privileged individual who has access to it, it exacerbates
+social ignorance. Exactly at the opposite end of the spectrum, Gnuastro's
+source code is released under the GNU general public license (GPL) and this
+book is released under the GNU free documentation license. You are
+therefore free to distribute any software you create using parts of
+Gnuastro's source code or text, or figures from this book, see @ref{Your
+rights}.
+
+With these principles in mind, Gnuastro's developers aim to impose the
 minimum requirements on you (in computer science, engineering and even the
 mathematics behind the tools) to understand and modify any step of Gnuastro
 if you feel the need to do so, see @ref{Why C} and @ref{Program design
@@ -954,15 +958,21 @@ philosophy}.
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
 telescope. Astronomical objects could not be seen with the Dutch military
-design of the telescope. In the beginning of his ``The Sidereal Messenger''
-(1610) he cautions the readers on this issue and instructs them on how to
-build a suitable instrument: without a detailed description of @emph{how}
-he made his observations, no one would believe him. The same is true today,
-science cannot progress with a black box. Before he actually saw the moons
-of Jupiter, the mountains on the Moon or the crescent of Venus, he was
-“evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
-A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing company,
-first edition, 2008.}. Science is not independent of its tools.
+design of the telescope. In other words, he couldn't have asked a lens
+maker to build a modified version. It is hard to imagine having the idea of
+modifying the optics for astronomy, if he wasn't already faimilar, and
+experienced, in optics @emph{guided} by his astronomical curiosity. In the
+beginning of his ``The Sidereal Messenger'' (published in 1610) he cautions
+the readers on this issue and instructs them on how to build a suitable
+instrument: without a detailed description of @emph{how} he made his
+observations, no one would believe him. The same is true today: science
+cannot progress with a black box, and technical knowledge (to experiment on
+its tool tools, software in this context), is critical to scientific
+vitality. Before he actually saw the moons of Jupiter, the mountains on the
+Moon or the crescent of Venus, he was “evasive” to Kepler@footnote{Galileo
+G. (Translated by Maurice A. Finocchiaro). @emph{The essential
+Galileo}. Hackett publishing company, first edition, 2008.}. Science is not
+independent of its tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -972,13 +982,14 @@ Thomson (the designer or the Unix operating system) says ``@emph{I abhor a
 system designed for the `user' if that word is a coded pejorative meaning
 `stupid and unsophisticated'}.'' Certainly no scientist (user of a
 scientific software) would want to be considered a believer in magic, or
-stupid and unsophisticated. However, this often happen when scientists get
-too distant from the raw data and methods and are mainly indulging
-themselves in their own high-level (abstract) models (creations).
+stupid and unsophisticated.
 
-Roughly five years before special relativity and about two decades before
-quantum mechanics fundamentally changed Physics, Kelvin is quoted as
-saying:
+However, this can happen when scientists get too distant from the raw data
+and methods and are mainly indulging themselves in their own high-level
+(abstract) models (creations) and are happy with the data acquisition and
+analysis methods in vogue. For example, roughly five years before special
+relativity and about two decades before quantum mechanics fundamentally
+changed Physics, Kelvin is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin
@@ -989,7 +1000,7 @@ is more and more precise measurement.
 @end quotation
 
 @noindent
-A few years earlier, in a speech Albert. A. Michelson said:
+A few years earlier Albert. A. Michelson made the following statement:
 
 @quotation
 @cindex Albert. A. Michelson
@@ -1698,276 +1709,94 @@ Centre de Recherche Astrophysique de Lyon, University of Lyon 1, France.@*
 
 @cindex Tutorial
 @cindex Cookbook
-In this chapter we give several tutorials or cookbooks on how to use
-the various tools in Gnuastro for your scientific purposes. In these
-tutorials, we have intentionally avoided too many cross references to
-make it more easily readable. To get more information about a
-particular program, you can visit the section with the same name as
-the program in this book. Each program section starts by explaining
-the general concepts behind what it does. If you only want to see an
-explanation of the options and arguments of any program, see the
-subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
-an explanation of the conventions we use in the example codes through
-the book.
+To help new users get started smoothly with Gnuastro, in this chapter
+several thoroughly elaborated tutorials or cookbooks are provided in this
+chapter to demonstrate the capabilities of Gnuastro and the best practices
+of using them.
 
-The tutorials in this section use a fictional setting of some
-historical figures in the history of astronomy. We have tried to show
-how Gnuastro would have been helpful for them in making their
-discoveries if there were GNU/Linux computers in their times! Please
-excuse us for any historical inaccuracy, this is not intended to be a
-historical reference. This form of presentation can make the tutorials
-more pleasant and entertaining to read while also being more practical
-(explaining from a user's point of view)@footnote{This form of
-presenting a tutorial was influenced by the PGF/TikZ and Beamer
-manuals. The first provides graphic capabilities, while with the
-second you can make presentation slides in @TeX{} and @LaTeX{}. In
-these manuals, Till Tantau (author of the manual) uses Euclid as the
-protagonist. There are also some nice words of wisdom for Unix-like
-systems called ``Rootless Root'':
-@url{http://catb.org/esr/writings/unix-koans/}. These also have a
-similar style but they use a mythical figure named Master Foo. If you
-already have some experience in Unix-like systems, you will definitely
-find these ``Unix Koans'' very entertaining.}. The main reference for
-the historical facts mentioned in these fictional settings was
-Wikipedia.
+We strongly recommend going through these tutorials to get a good feeling
+of how the programs are related (built in a modular design to be used
+together in a pipeline) and demonstrate the Unix-based tought-process that
+went into creating them. Therefore these tutorials will greatly help in
+using Gnuastro's programs (and generally the Unix-like command-line
+environment) effectively.
+
+In @ref{Sufi simulates a detection}, we'll start with a
+fictional@footnote{The two historically motivated tutorials (@ref{Sufi
+simulates a detection} and @ref{Hubble visually checks and classifies his
+catalog}) are not intended to be a historical reference (the historical
+facts of this fictional tutorial used Wikipedia as a reference). This form
+of presenting a tutorial was influenced by the PGF/TikZ and Beamer
+manuals. The first provides graphic capabilities in @TeX{} and @LaTeX{},
+while with the second you can make presentation slides. In these manuals,
+Till Tantau (author of the manual) uses Euclid as the protagonist. On a
+similar topic, there are also some nice words of wisdom for Unix-like
+systems called @url{http://catb.org/esr/writings/unix-koans, Rootless
+Root}. These also have a similar style but they use a mythical figure named
+Master Foo. If you already have some experience in Unix-like systems, you
+will definitely find these Unix Koans very entertaining/educative.}
+tutorial explaining how Abd al-rahman Sufi (903 -- 986 A.D., the first
+recorded description of ``nebulous'' objects in the heavens is attributed
+to him) could have used some of Gnuastro's programs for a realistic
+simulation of his observations and see if his detection of nebulous objects
+was trustable. Because all conditions are under control in a simulated
+environment/dataset, they can be a very valuable tool to inspect the
+limitations of your data analysis and processing. But they need to be as
+realistic as possible, so the first tutorial is dedicated to this important
+step of an analysis.
+
+The next two tutorials (@ref{General program usage tutorial} and
+@ref{Detecting large extended targets}) use real input datasets from some
+of the deep Hubble Space Telescope (HST) images and the Sloan Digital Sky
+Survey (SDSS) respectively. Their aim is to demonstrate some real-world
+problems that can be solved with Gnuastro's programs.
+
+The ultimate aim of @ref{General program usage tutorial} is to detect
+galaxies in a deep HST image, measure their positions and brightness and
+select those with the strongest colors. In the process it takes many
+detours to introduce you to the useful capabilities of many of the
+programs. If you don't have much time and can only try one of the
+tutorials, we recommend this one.
+
+@cindex PSF
+@cindex Point spread function
+@ref{Detecting large extended targets} deals with a major problem in
+astronomy: effectively detecting the faint outer wings of bright (and
+large) nearby galaxies to extremely low surface brightness levels (roughly
+1/20th of the local noise level in the example discussed). This is an
+important issue, especially in wide surveys. Because bright/large galaxies
+and stars@footnote{Stars also have similarly large and extended wings due
+to the point spread function, see @ref{PSF}.}, cover a significant fraction
+of the survey area. Besides the interesting scientific questions in these
+low-surface brightness features, failure to properly detect them will bias
+the measurements of the background objects and the survey's noise
+estimates.
+
+Finally, in @ref{Hubble visually checks and classifies his catalog}, we go
+into the historical/fictional world again to see how Hubble could use
+Gnuastro's programs to visually check and classify his sample of galaxies
+which ultimately lead him to the ``Hubble fork'' classification of galaxy
+morphologies.
+
+In these tutorials, we have intentionally avoided too many cross references
+to make it more easily readable. For more information about a particular
+program, you can visit the section with the same name as the program in
+this book. Each program section in the subsequent chapters starts by
+explaining the general concepts behind what it does. If you only want to
+see an explanation of the options and arguments of any program, see the
+subsection titled ``Invoking ProgramName'', for example @ref{Invoking
+astnoisechisel}. See @ref{Conventions}, for an explanation of the
+conventions we use in the example codes through the book.
 
 @menu
-* Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
 * General program usage tutorial::  Usage of all programs in a good way.
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
+* Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
 @end menu
 
-@node Hubble visually checks and classifies his catalog, Sufi simulates a detection, Tutorials, Tutorials
-@section Hubble visually checks and classifies his catalog
 
-@cindex Edwin Hubble
-In 1924 Hubble@footnote{Edwin Powell Hubble (1889 -- 1953 A.D.) was an
-American astronomer who can be considered as the father of
-extra-galactic astronomy, by proving that some nebulae are too distant
-to be within the Galaxy. He then went on to show that the universe
-appears to expand and also done a visual classification of the
-galaxies that is known as the Hubble fork.} announced his discovery
-that some of the known nebulous objects are too distant to be within
-the the Milky Way (or Galaxy) and that they were probably distant
-Galaxies@footnote{Note that at that time, ``Galaxy'' was a proper noun
-used to refer to the Milky way. The concept of a galaxy as we define
-it today had not yet become common. Hubble played a major role in
-creating today's concept of a galaxy.} in their own right. He had also
-used them to show that the redshift of the nebulae increases with
-their distance. So now he wants to study them more accurately to see
-what they actually are. Since they are nebulous or amorphous, they
-can't be modeled (like stars that are always a point) easily. So there
-is no better way to distinguish them than to visually inspect them and
-see if it is possible to classify these nebulae or not.
-
-Hubble has stored all the FITS images of the objects he wants to visually
-inspect in his @file{/mnt/data/images} directory. He has also stored his
-catalog of extra-galactic nebulae in
-@file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
-GNU/Linux system (including himself) only has read access to the contents
-of the @file{/mnt/data} directory. He has done this by running this command
-as root:
-
-@example
-# chmod -R 755 /mnt/data
-@end example
-
-@noindent
-Hubble has done this intentionally to avoid mistakenly deleting or
-modifying the valuable images he has taken at Mount Wilson while he is
-working as an ordinary user. Retaking all those images and data is
-simply not an option. In fact they are also in another hard disk
-(@file{/dev/sdb1}). So if the hard disk which stores his GNU/Linux
-distribution suddenly malfunctions due to work load, his data is not
-in harms way. That hard disk is only mounted to this directory when he
-wants to use it with the command:
-
-@example
-# mount /dev/sdb1 /mnt/data
-@end example
-
-@noindent
-In short, Hubble wants to keep his data safe and fortunately by
-default Gnuastro allows for this.  Hubble creates a temporary
-@file{visualcheck} directory in his home directory for this check. He
-runs the following commands to make the directory and change to
-it@footnote{The @code{pwd} command is short for ``Print Working
-Directory'' and @code{ls} is short for ``list'' which shows the
-contents of a directory.}:
-
-@example
-$ mkdir ~/visualcheck
-$ cd ~/visualcheck
-$ pwd
-/home/edwin/visualcheck
-$ ls
-@end example
-
-Hubble has multiple images in @file{/mnt/data/images}, some of his targets
-might be on the edges of an image and so several images need to be stitched
-to give a good view of them. Also his extra-galactic targets belong to
-various pointings in the sky, so they are not in one large
-image. Gnuastro's Crop is just the program he wants. The catalog in
-@file{extragalactic.txt} is a plain text file which stores the basic
-information of all his known 200 extra-galactic nebulae. In its second
-column it has each object's Right Ascension (the first column is a label he
-has given to each object) and in the third the object's declination.
-
-@example
-$ astcrop --coordcol=2 --coordcol=3 /mnt/data/images/*.fits     \
-          --mode=wcs /mnt/data/catalogs/extragalactic.txt
-Crop started on Tue Jun  14 10:18:11 1932
-  ---- ./4_crop.fits                  1 1
-  ---- ./2_crop.fits                  1 1
-  ---- ./1_crop.fits                  1 1
-[[[ Truncated middle of list ]]]
-  ---- ./198_crop.fits                1 1
-  ---- ./195_crop.fits                1 1
-  - 200 images created.
-  - 200 were filled in the center.
-  - 0 used more than one input.
-Crop finished in:  2.429401 (seconds)
-@end example
-
-
-@cindex Asynchronous thread allocation
-@noindent
-Hubble already knows that thread allocation to the the CPU cores is
-asynchronous. Hence each time you run it, the order of which job gets done
-first differs. When using Crop the order of outputs is irrelevant since
-each crop is independent of the rest. This is why the crops are not
-necessarily created in the same input order. He is satisfied with the
-default width of the outputs (which he inspected by running @code{$ astcrop
--P}). If he wanted a different width for the cropped images, he could do
-that with the @option{--wwidth} option which accepts a value in
-arc-seconds.  When he lists the contents of the directory again he finds
-his 200 objects as separate FITS images.
-
-@example
-$ ls
-1_crop.fits 2_crop.fits ... 200_crop.fits
-@end example
-
-@cindex GNU Parallel
-The FITS image format was not designed for efficient/fast viewing, but
-mainly for accurate storing of the data. So he chooses to convert the
-cropped images to a more common image format to view them more quickly and
-easily through standard image viewers (which load much faster than FITS
-image viewer). JPEG is one of the most recognized image formats that is
-supported by most image viewers. Fortunately Gnuastro has just such a tool
-to convert various types of file types to and from each other:
-ConvertType. Hubble has already heard of GNU Parallel from one of his
-colleagues at Mount Wilson Observatory. It allows multiple instances of a
-command to be run simultaneously on the system, so he uses it in
-conjunction with ConvertType to convert all the images to JPEG.
-@example
-$ parallel astconvertt -ojpg ::: *_crop.fits
-@end example
-
-@pindex eog
-@cindex Eye of GNOME
-For his graphical user interface Hubble is using GNOME which is the default
-in most distributions in GNU/Linux. The basic image viewer in GNOME is the
-Eye of GNOME, which has the executable file name @command{eog}
-@footnote{Eye of GNOME is only available for users of the GNOME graphical
-desktop environment which is the default in most GNU/Linux
-distributions. If you use another graphical desktop environment, replace
-@command{eog} with any other image viewer.}. Since he has used it before,
-he knows that once it opens an image, he can use the @key{ENTER} or
-@key{SPACE} keys on the keyboard to go to the next image in the directory
-or the @key{Backspace} key to go the previous image. So he opens the image
-of the first object with the command below and with his cup of coffee in
-his other hand, he flips through his targets very fast to get a good
-initial impression of the morphologies of these extra-galactic nebulae.
-
-@example
-$ eog 1_crop.jpg
-@end example
-
-@cindex GNU Bash
-@cindex GNU Emacs
-@cindex Spiral galaxies
-@cindex Elliptical galaxies
-Hubble's cup of coffee is now finished and he also got a nice general
-impression of the shapes of the nebulae. He tentatively/mentally
-classified the objects into three classes while doing the visual
-inspection. One group of the nebulae have a very simple elliptical
-shape and seem to have no internal special structure, so he gives them
-code 1. Another clearly different class are those which have spiral
-arms which he associates with code 2 and finally there seems to be a
-class of nebulae in between which appear to have a disk but no spiral
-arms, he gives them code 3.
-
-Now he wants to know how many of the nebulae in his extra-galactic sample
-are within each class. Repeating the same process above and writing the
-results on paper is very time consuming and prone to errors. Fortunately
-Hubble knows the basics of GNU Bash shell programming, so he writes the
-following short script with a loop to help him with the job. After all,
-computers are made for us to operate and knowing basic shell programming
-gives Hubble this ability to creatively operate the computer as he
-wants. So using GNU Emacs@footnote{This can be done with any text editor}
-(his favorite text editor) he puts the following text in a file named
-@file{classify.sh}.
-
-@example
-for name in *.jpg
-do
-    eog $name &
-    processid=$!
-    echo -n "$name belongs to class: "
-    read class
-    echo $name $class >> classified.txt
-    kill $processid
-done
-@end example
-
-@cindex Gedit
-@cindex GNU Emacs
-Fortunately GNU Emacs or even simpler editors like Gedit (part of the
-GNOME graphical user interface) will display the variables and shell
-constructs in different colors which can really help in understanding
-the script. Put simply, the @code{for} loop gets the name of each JPEG
-file in the directory this script is run in and puts it in
-@code{name}. In the shell, the value of a variable is used by putting
-a @code{$} sign before the variable name. Then Eye of GNOME is run on
-the image in the background to show him that image and its process ID
-is saved internally (this is necessary to close Eye of GNOME
-later). The shell then prompts the user to specify a class and after
-saving it in @code{class}, it prints the file name and the given class
-in the next line of a file named @file{classified.txt}. To make the
-script executable (so he can run it later any time he wants) he runs:
-
-@example
-$ chmod +x classify.sh
-@end example
-
-@noindent
-Now he is ready to do the classification, so he runs the script:
-
-@example
-$ ./classify.sh
-@end example
-
-@noindent
-In the end he can delete all the JPEG and FITS files along with Crop's log
-file with the following short command. The only files remaining are the
-script and the result of the classification.
-
-@example
-$ rm *.jpg *.fits astcrop.txt
-$ ls
-classified.txt   classify.sh
-@end example
-
-@noindent
-He can now use @file{classified.txt} as input to a plotting program to
-plot the histogram of the classes and start making interpretations
-about what these nebulous objects that are outside of the Galaxy are.
-
-
-
-@node Sufi simulates a detection, General program usage tutorial, Hubble visually checks and classifies his catalog, Tutorials
+@node Sufi simulates a detection, General program usage tutorial, Tutorials, Tutorials
 @section Sufi simulates a detection
 
 It is the year 953 A.D.  and Sufi@footnote{Abd al-rahman Sufi (903 --
@@ -3414,7 +3243,7 @@ the same Segment and MakeCatalog calls above for the F105W filter, we are
 going to get a different number of objects and clumps. Matching the two
 catalogs is possible (for example with @ref{Match}), but the fact that the
 measurements will be done on different pixels, can bias the result. Since
-the Point Spread Function (PSF) of both images is very similar, an accurate
+the Point spread function (PSF) of both images is very similar, an accurate
 color calculation can only be done when magnitudes are measured from the
 same pixels on both images.
 
@@ -3683,7 +3512,7 @@ $ astnoisechisel --cite
 
 
 
-@node Detecting large extended targets,  , General program usage tutorial, Tutorials
+@node Detecting large extended targets, Hubble visually checks and classifies his catalog, General program usage tutorial, Tutorials
 @section Detecting large extended targets
 
 The outer wings of large and extended objects can sink into the noise very
@@ -4111,24 +3940,170 @@ even when they are implemented, we would strongly recommend manual checks
 and intervention for a robust analysis.}.
 @end cartouche
 
-To avoid the necessity of writing all these options every time you run
-NoiseChisel on this image, you can use configuration files, see
-@ref{General program usage tutorial} and @ref{Configuration files} for
-more.
+To avoid typing all these options every time you run NoiseChisel on this
+image, you can use Gnuastro's configuration files, see @ref{Configuration
+files}. For an applied example of setting/using them, see @ref{General
+program usage tutorial}.
 
 To continue your analysis of such datasets with extended emission, you can
-use @ref{Segment} to identify all the ``clumps'' over the diffuse
-regions. The properties of the background objects can then easily be
-measured using @ref{MakeCatalog}@footnote{To measure the properties of the
-background objects (detected as clumps over the diffuse region), you
-shouldn't mask the diffuse region. When measuing clump properties with
-@ref{MakeCatalog}, the ambient flux (from the diffuse region) is calculated
-and subtracted. If the diffuse region is masked, its effect on the clump
-brightness cannot be calculated and subtracted.}. With Arithmetic, you can
-mask the clumps over the diffuse region, thus enabling the accurate study
-of this extended and very diffuse tidal feature. But to keep this tutorial
-short, we'll stop here. See @ref{General program usage tutorial} and
-@ref{Segment} for more on Segment and producing catalogs.
+use @ref{Segment} to identify all the ``clumps'' over the diffuse regions:
+background galaxies and foreground stars.
+
+@example
+$ astsegment r_detected.fits
+@end example
+
+@cindex DS9
+@cindex SAO DS9
+Open the output @file{r_detected_segmented.fits} as a multi-extension data
+cube like before and flip through the first and second extensions to see
+the detected clumps (all pixels with a value larger than 1). To optimize
+the parameters and make sure you have detected what you wanted, its highly
+recommended to visually inspect the detected clumps on the input image.
+
+For visual inspection, you can make a simple shell script like below. It
+will first call MakeCatalog to estimate the positions of the clumps, then
+make an SAO ds9 region file and open ds9 with the image and region
+file. Recall that in a shell script, the numeric variables (like @code{$1},
+@code{$2}, and @code{$3} in the example below) represent the arguments
+given to the script. But when used in the AWK arguments, they refer to
+column numbers.
+
+To create the shell script, using your favorite text editor, put the
+contents below into a file called @file{check-clumps.sh}. Recall that
+everything after a @code{#} is just comments to help you understand the
+command (so read them!). Also note that if you are copying from the PDF
+version of this book, fix the single quotes in the AWK command.
+
+@example
+#! /bin/bash
+set -e	   # Stop execution when there is an error.
+set -u	   # Stop execution when a variable is not initialized.
+
+# Run MakeCatalog to write the coordinates into a FITS table.
+# Default output is `$1_cat.fits'.
+astmkcatalog $1.fits --clumpscat --ids --ra --dec
+
+# Use Gnuastro's Table program to read the RA and Dec columns of the
+# clumps catalog (in the `CLUMPS' extension). Then pipe the columns
+# to AWK for saving as a DS9 region file.
+asttable $1"_cat.fits" -hCLUMPS -cRA,DEC                               \
+         | awk 'BEGIN @{ print "# Region file format: DS9 version 4.1"; \
+                        print "global color=green width=1";            \
+                        print "fk5" @}                                  \
+                @{ printf "circle(%s,%s,1\")\n", $1, $2 @}' > $1.reg
+
+# Show the image (with the requested color scale) and the region file.
+ds9 -geometry 1800x3000 -mecube $1.fits -zoom to fit                   \
+    -scale limits $2 $3 -regions load all $1.reg
+
+# Clean up (delete intermediate files).
+rm $1"_cat.fits" $1.reg
+@end example
+
+@noindent
+Finally, you just have to activate its executable flag with the command
+below. This will enable you to directly call the script as a command.
+
+@example
+$ chmod +x check-clumps.sh
+@end example
+
+This script doesn't expect the @file{.fits} suffix of the input's filename
+as the first argument. Because the script produces intermediate files (a
+catalog and DS9 region file, which are later deleted). However, we don't
+want multiple instances of the script (on different files in the same
+directory) to collide (read/write to the same intermediate
+files). Therefore, we have used suffixes added to the input's name to
+identify the intermediate files. Note how all the @code{$1} instances in
+the commands (not within the AWK command where @code{$1} refers to the
+first column) are followed by a suffix. If you want to keep the
+intermediate files, put a @code{#} at the start of the last line.
+
+The few, but high-valued, bright pixels in the central parts of the
+galaxies can hinder easy visual inspection of the fainter parts of the
+image. With the second and third arguments to this script, you can set the
+numerical values of the color map (first is minimum/black, second is
+maximum/white). You can call this script with any@footnote{Some
+modifications are necessary based on the input dataset: depending on the
+dynamic range, you have to adjust the second and third arguments. But more
+importantly, depending on the dataset's world coordinate system, you have
+to change the region @code{width}, in the AWK command. Otherwise the circle
+regions can be too small/large.} output of Segment (when
+@option{--rawoutput} is @emph{not} used) with a command like this:
+
+@example
+$ ./check-clumps.sh r_detected_segmented -0.1 2
+@end example
+
+Go ahead and run this command. You will see the intermediate processing
+being done and finally it opens SAO DS9 for you with the regions
+superimposed on all the extensions of Segment's output. The script will
+only finish (and give you control of the command-line) when you close
+DS9. If you need your access to the command-line before closing DS9, you
+can add a @code{&} after the end of the command above.
+
+@cindex Purity
+@cindex Completeness
+While DS9 is open, slide the dynamic range (values for black and white, or
+minimum/maximum values in different color schemes) and zoom into various
+regions of the M51 group to see if you are satisfied with the detected
+clumps. Don't forget that through the ``Cube'' window that is opened along
+with DS9, you can flip through the extensions and see the actual clumps
+also. The questions you should be asking your self are these: 1) Which real
+clumps (as you visually @emph{feel}) have been missed? In other words, is
+the @emph{completeness} good? 2) Are there any clumps which you @emph{feel}
+are false? In other words, is the @emph{purity} good?
+
+Note that completeness and purity are not independent of each other, they
+are anti-correlated: the higher your purity, the lower your completeness
+and vice-versa. You can see this by playing with the purity level using the
+@option{--snquant} option. Run Segment as shown above again with @code{-P}
+and see its default value. Then increase/decrease it for higher/lower
+purity and check the result as before. You will see that if you want the
+best purity, you have to sacrifice completeness and vice versa.
+
+One interesting region to inspect in this image is the many bright peaks
+around the central parts of M51. Zoom into that region and inspect how many
+of them have actually been detected as true clumps, do you have a good
+balance between completeness and purity? Also look out far into the wings
+of the group and inspect the completeness and purity there.
+
+An easer way to inspect completness (and only completeness) is to mask all
+the pixels detected as clumps and see what is left over. You can do this
+with a command like below. For easy reading of the command, we'll define
+the shell variable @code{i} for the image name and save the output in
+@file{masked.fits}.
+
+@example
+$ i=r_detected_segmented.fits
+$ astarithmetic $i $i 0 gt nan where -hINPUT -hCLUMPS -omasked.fits
+@end example
+
+Inspecting @file{masked.fits}, you can see some very diffuse peaks that
+have been missed, especially as you go farther away from the group center
+and into the diffuse wings. This is due to the fact that with this
+configuration we have focused more on the sharper clumps. To put the focus
+more on diffuse clumps, can use a wider convolution kernel. Using a larger
+kernel can also help in detecting larger clumps (thus better separating
+them from the underlying signal).
+
+You can make any kernel easily using the @option{--kernel} option in
+@ref{MakeProfiles}. But note that a larger kernel is also going to wash-out
+many of the sharp/small clumps close to the center of M51 and also some
+smaller peaks on the wings. Please continue playing with Segment's
+configuration to obtain a more complete result (while keeping reasonable
+purity). We'll finish the discussion on finding true clumps here.
+
+The properties of the background objects can then easily be measured using
+@ref{MakeCatalog}. To measure the properties of the background objects
+(detected as clumps over the diffuse region), you shouldn't mask the
+diffuse region. When measuing clump properties with @ref{MakeCatalog}, the
+ambient flux (from the diffuse region) is calculated and subtracted. If the
+diffuse region is masked, its effect on the clump brightness cannot be
+calculated and subtracted. But to keep this tutorial short, we'll stop
+here. See @ref{General program usage tutorial} and @ref{Segment} for more
+on Segment, producing catalogs with MakeCatalog and using those catalogs.
 
 Finally, if this book or any of the programs in Gnuastro have been useful
 for your research, please cite the respective papers and share your
@@ -4141,6 +4116,247 @@ for different programs, so please try it out for any program you use.
 $ astmkcatalog --cite
 $ astnoisechisel --cite
 @end example
+
+
+
+
+@node Hubble visually checks and classifies his catalog,  , Detecting large extended targets, Tutorials
+@section Hubble visually checks and classifies his catalog
+
+@cindex Edwin Hubble
+In 1924 Hubble@footnote{Edwin Powell Hubble (1889 -- 1953 A.D.) was an
+American astronomer who can be considered as the father of
+extra-galactic astronomy, by proving that some nebulae are too distant
+to be within the Galaxy. He then went on to show that the universe
+appears to expand and also done a visual classification of the
+galaxies that is known as the Hubble fork.} announced his discovery
+that some of the known nebulous objects are too distant to be within
+the the Milky Way (or Galaxy) and that they were probably distant
+Galaxies@footnote{Note that at that time, ``Galaxy'' was a proper noun
+used to refer to the Milky way. The concept of a galaxy as we define
+it today had not yet become common. Hubble played a major role in
+creating today's concept of a galaxy.} in their own right. He had also
+used them to show that the redshift of the nebulae increases with
+their distance. So now he wants to study them more accurately to see
+what they actually are. Since they are nebulous or amorphous, they
+can't be modeled (like stars that are always a point) easily. So there
+is no better way to distinguish them than to visually inspect them and
+see if it is possible to classify these nebulae or not.
+
+Hubble has stored all the FITS images of the objects he wants to visually
+inspect in his @file{/mnt/data/images} directory. He has also stored his
+catalog of extra-galactic nebulae in
+@file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
+GNU/Linux system (including himself) only has read access to the contents
+of the @file{/mnt/data} directory. He has done this by running this command
+as root:
+
+@example
+# chmod -R 755 /mnt/data
+@end example
+
+@noindent
+Hubble has done this intentionally to avoid mistakenly deleting or
+modifying the valuable images he has taken at Mount Wilson while he is
+working as an ordinary user. Retaking all those images and data is
+simply not an option. In fact they are also in another hard disk
+(@file{/dev/sdb1}). So if the hard disk which stores his GNU/Linux
+distribution suddenly malfunctions due to work load, his data is not
+in harms way. That hard disk is only mounted to this directory when he
+wants to use it with the command:
+
+@example
+# mount /dev/sdb1 /mnt/data
+@end example
+
+@noindent
+In short, Hubble wants to keep his data safe and fortunately by
+default Gnuastro allows for this.  Hubble creates a temporary
+@file{visualcheck} directory in his home directory for this check. He
+runs the following commands to make the directory and change to
+it@footnote{The @code{pwd} command is short for ``Print Working
+Directory'' and @code{ls} is short for ``list'' which shows the
+contents of a directory.}:
+
+@example
+$ mkdir ~/visualcheck
+$ cd ~/visualcheck
+$ pwd
+/home/edwin/visualcheck
+$ ls
+@end example
+
+Hubble has multiple images in @file{/mnt/data/images}, some of his targets
+might be on the edges of an image and so several images need to be stitched
+to give a good view of them. Also his extra-galactic targets belong to
+various pointings in the sky, so they are not in one large
+image. Gnuastro's Crop is just the program he wants. The catalog in
+@file{extragalactic.txt} is a plain text file which stores the basic
+information of all his known 200 extra-galactic nebulae. If you don't have
+any particular catalog and accompanying image, you can use one the Hubble
+Space Telescope F160W catalog that we produced in @ref{General program
+usage tutorial} along with the accompanying image (specify the exact image
+name, not @file{/mnt/data/images/*.fits}). You can select the brightest
+galaxies for an easier classification.
+
+@cindex WCS
+@cindex World coordinate system
+In its second column, the catalog has each object's Right Ascension (the
+first column is a label he has given to each object), and in the third, the
+object's declination (which he specifies with the @option{--coordcol}
+option). Also, since the coordinates are in the world coordinate system
+(WCS, not pixel positions) units, he adds @option{--mode=wcs}.
+
+@example
+$ astcrop --coordcol=2 --coordcol=3 /mnt/data/images/*.fits     \
+          --mode=wcs /mnt/data/catalogs/extragalactic.txt
+Crop started on Tue Jun  14 10:18:11 1932
+  ---- ./4_crop.fits                  1 1
+  ---- ./2_crop.fits                  1 1
+  ---- ./1_crop.fits                  1 1
+[[[ Truncated middle of list ]]]
+  ---- ./198_crop.fits                1 1
+  ---- ./195_crop.fits                1 1
+  - 200 images created.
+  - 200 were filled in the center.
+  - 0 used more than one input.
+Crop finished in:  2.429401 (seconds)
+@end example
+
+
+@cindex Asynchronous thread allocation
+@noindent
+Hubble already knows that thread allocation to the the CPU cores is
+asynchronous. Hence each time you run it, the order of which job gets done
+first differs. When using Crop the order of outputs is irrelevant since
+each crop is independent of the rest. This is why the crops are not
+necessarily created in the same input order. He is satisfied with the
+default width of the outputs (which he inspected by running @code{$ astcrop
+-P}). If he wanted a different width for the cropped images, he could do
+that with the @option{--wwidth} option which accepts a value in
+arc-seconds.  When he lists the contents of the directory again he finds
+his 200 objects as separate FITS images.
+
+@example
+$ ls
+1_crop.fits 2_crop.fits ... 200_crop.fits
+@end example
+
+@cindex GNU Parallel
+The FITS image format was not designed for efficient/fast viewing, but
+mainly for accurate storing of the data. So he chooses to convert the
+cropped images to a more common image format to view them more quickly and
+easily through standard image viewers (which load much faster than FITS
+image viewer). JPEG is one of the most recognized image formats that is
+supported by most image viewers. Fortunately Gnuastro has just such a tool
+to convert various types of file types to and from each other:
+ConvertType. Hubble has already heard of GNU Parallel from one of his
+colleagues at Mount Wilson Observatory. It allows multiple instances of a
+command to be run simultaneously on the system, so he uses it in
+conjunction with ConvertType to convert all the images to JPEG.
+@example
+$ parallel astconvertt -ojpg ::: *_crop.fits
+@end example
+
+@pindex eog
+@cindex Eye of GNOME
+For his graphical user interface Hubble is using GNOME which is the default
+in most distributions in GNU/Linux. The basic image viewer in GNOME is the
+Eye of GNOME, which has the executable file name @command{eog}
+@footnote{Eye of GNOME is only available for users of the GNOME graphical
+desktop environment which is the default in most GNU/Linux
+distributions. If you use another graphical desktop environment, replace
+@command{eog} with any other image viewer.}. Since he has used it before,
+he knows that once it opens an image, he can use the @key{ENTER} or
+@key{SPACE} keys on the keyboard to go to the next image in the directory
+or the @key{Backspace} key to go the previous image. So he opens the image
+of the first object with the command below and with his cup of coffee in
+his other hand, he flips through his targets very fast to get a good
+initial impression of the morphologies of these extra-galactic nebulae.
+
+@example
+$ eog 1_crop.jpg
+@end example
+
+@cindex GNU Bash
+@cindex GNU Emacs
+@cindex Spiral galaxies
+@cindex Elliptical galaxies
+Hubble's cup of coffee is now finished and he also got a nice general
+impression of the shapes of the nebulae. He tentatively/mentally
+classified the objects into three classes while doing the visual
+inspection. One group of the nebulae have a very simple elliptical
+shape and seem to have no internal special structure, so he gives them
+code 1. Another clearly different class are those which have spiral
+arms which he associates with code 2 and finally there seems to be a
+class of nebulae in between which appear to have a disk but no spiral
+arms, he gives them code 3.
+
+Now he wants to know how many of the nebulae in his extra-galactic sample
+are within each class. Repeating the same process above and writing the
+results on paper is very time consuming and prone to errors. Fortunately
+Hubble knows the basics of GNU Bash shell programming, so he writes the
+following short script with a loop to help him with the job. After all,
+computers are made for us to operate and knowing basic shell programming
+gives Hubble this ability to creatively operate the computer as he
+wants. So using GNU Emacs@footnote{This can be done with any text editor}
+(his favorite text editor) he puts the following text in a file named
+@file{classify.sh}.
+
+@example
+for name in *.jpg
+do
+    eog $name &
+    processid=$!
+    echo -n "$name belongs to class: "
+    read class
+    echo $name $class >> classified.txt
+    kill $processid
+done
+@end example
+
+@cindex Gedit
+@cindex GNU Emacs
+Fortunately GNU Emacs or even simpler editors like Gedit (part of the
+GNOME graphical user interface) will display the variables and shell
+constructs in different colors which can really help in understanding
+the script. Put simply, the @code{for} loop gets the name of each JPEG
+file in the directory this script is run in and puts it in
+@code{name}. In the shell, the value of a variable is used by putting
+a @code{$} sign before the variable name. Then Eye of GNOME is run on
+the image in the background to show him that image and its process ID
+is saved internally (this is necessary to close Eye of GNOME
+later). The shell then prompts the user to specify a class and after
+saving it in @code{class}, it prints the file name and the given class
+in the next line of a file named @file{classified.txt}. To make the
+script executable (so he can run it later any time he wants) he runs:
+
+@example
+$ chmod +x classify.sh
+@end example
+
+@noindent
+Now he is ready to do the classification, so he runs the script:
+
+@example
+$ ./classify.sh
+@end example
+
+@noindent
+In the end he can delete all the JPEG and FITS files along with Crop's log
+file with the following short command. The only files remaining are the
+script and the result of the classification.
+
+@example
+$ rm *.jpg *.fits astcrop.txt
+$ ls
+classified.txt   classify.sh
+@end example
+
+@noindent
+He can now use @file{classified.txt} as input to a plotting program to
+plot the histogram of the classes and start making interpretations
+about what these nebulous objects that are outside of the Galaxy are.
 
 
 
@@ -14350,7 +14566,7 @@ detection, and output options in @ref{NoiseChisel input}, @ref{Detection
 options}, and @ref{NoiseChisel output}.
 
 @menu
-* NoiseChisel changes after publication::  Changes to the software after publication.
+* NoiseChisel changes after publication::  NoiseChisel updates after paper's publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 @end menu
 
@@ -14367,19 +14583,21 @@ showing every step on multiple mock and real examples.
 However, the paper cannot be updated anymore, but NoiseChisel has evolved
 (and will continue to do so): better algorithms or steps have been found,
 thus options will be added or removed. This book is thus the final and
-definitive guide to NoiseChisel. For a more detailed list of changes in
-each release, please follow the @file{NEWS} file. The @file{NEWS} file is
-present in the released Gnuastro tarball (see @ref{Release tarball}). It is
-also included as a post-script to Gnuastro's announcements, see
-@ref{Announcements}.
+definitive guide to NoiseChisel. The aim of this section is to make the
+transition from the paper to the installed version on your system, as
+smooth as possible with the list below. For a more detailed list of changes
+in previous Gnuastro releases/versions, please see the @file{NEWS}
+file@footnote{The @file{NEWS} file is present in the released Gnuastro
+tarball, see @ref{Release tarball}.}.
 
-The most important change since the publication of that papaer is that
-NoiseChisel is now focused on detection: in spirit with Gnuastro's modular
-design (see @ref{Program design philosophy}), segmentation of the detected
-signal has been spinned-off to Gnuastro's Segment program (see
-@ref{Segment}). Below you can see the major changes since that paper was
-published. First, the removed options/features are discussed, then we
-review the new features that have been added.
+The most important change since the publication of that paper is that from
+Gnuastro 0.6, NoiseChisel is only in charge on detection. Segmentation of
+the detected signal was spun-off into a separate program:
+@ref{Segment}. This spin-off allows much greater creativity and is in the
+spirit of Gnuastro's modular design (see @ref{Program design philosophy}).
+Below you can see the major changes since that paper was published. First,
+the removed options/features are discussed, then we review the new features
+that have been added.
 
 @noindent
 Removed features/options:
@@ -15231,9 +15449,9 @@ define segmentation only on signal: to separate and find sub-structure
 within the detections.
 
 @cindex Connected component labeling
-If the targets are clearly separated in the dataset (image), a simple
-@emph{connected
-components}@footnote{@url{https://en.wikipedia.org/wiki/Connected-component_labeling}}
+If the targets are clearly separated, or their detected regions aren't
+touching, a simple connected
+components@footnote{@url{https://en.wikipedia.org/wiki/Connected-component_labeling}}
 algorithm (very basic segmentation) is enough to separate the regions that
 are touching/connected. This is such a basic and simple form of
 segmentation that Gnuastro's Arithmetic program has an operator for it: see
@@ -15248,7 +15466,7 @@ $ astarithmetic binary.fits 2 connected-components
 @noindent
 You can even do a very basic detection (a threshold, say at value
 @code{100}) @emph{and} segmentation in Arithmetic with a single command
-like below to apply:
+like below:
 
 @example
 $ astarithmetic in.fits 100 gt 2 connected-components
@@ -15257,16 +15475,18 @@ $ astarithmetic in.fits 100 gt 2 connected-components
 However, in most astronomical situations our targets are not nicely
 separated or have a sharp boundary/edge (for a threshold to suffice): they
 touch (for example merging galaxies), or are simply in the same
-line-of-sight, causing their images to overlap. In particular, when you do
-your detection with NoiseChisel, you will detect signal to very low surface
-brightness limits: deep into the faint wings of galaxies or bright stars
-(which can extend very far and irregularly from their center). Therefore,
-it often happens that several galaxies are detected as one large
-detection. To continue your scientific analysis, a simple connected
-components algorithm will not suffice. It is therefore necessary to do a
-more sophisticated segmentation and break up the detected pixels (even
-those that are touching) into multiple target objects as accurately as
-possible.
+line-of-sight (which is much more common). This causes their images to
+overlap.
+
+In particular, when you do your detection with NoiseChisel, you will detect
+signal to very low surface brightness limits: deep into the faint wings of
+galaxies or bright stars (which can extend very far and irregularly from
+their center). Therefore, it often happens that several galaxies are
+detected as one large detection. Since they are touching, a simple
+connected components algorithm will not suffice. It is therefore necessary
+to do a more sophisticated segmentation and break up the detected pixels
+(even those that are touching) into multiple target objects as accurately
+as possible.
 
 Segment will use a detection map and its corresponding dataset to find
 sub-structure over the detected areas and use them for its
@@ -15276,44 +15496,128 @@ place to start reading about Segment and understanding what it does (with
 many illustrative figures) is Section 3.2 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
+@cindex river
+@cindex Watershed
 As a summary, Segment first finds true @emph{clump}s over the
 detections. Clumps are associated with local maxima/minima@footnote{By
 default the maximum is used as the first clump pixel, to define clumps
-based on local minima, use the @option{--minima} option.})  and extend over
+based on local minima, use the @option{--minima} option.} and extend over
 the neighboring pixels until they reach a local minimum/maximum
-(@emph{river}). Segment will use the distribution of clump signal-to-noise
-ratios over the undetected regions as reference to find ``true'' clumps
-over the detections. Using the undetected regions can be disabled by
-directly giving a signal-to-noise ratio to @option{--clumpsnthresh}.
+(@emph{river}/@emph{watershed}). By default, Segment will use the
+distribution of clump signal-to-noise ratios over the undetected regions as
+reference to find ``true'' clumps over the detections. Using the undetected
+regions can be disabled by directly giving a signal-to-noise ratio to
+@option{--clumpsnthresh}.
 
 The true clumps are then grown to a certain threshold over the
-detections. Based on the strength of the connections between the grown
-clumps, they are considered parts of one @emph{object} or as separate
-@emph{object}s. See Section 3.2 of Akhlaghi and Ichikawa [2015] (link
-above) for more. Segment's main output are thus two labeled datasets: 1)
-clumps, and 2) objects. See @ref{Segment output} for more.
+detections. Based on the strength of the connections (rivers/watersheds)
+between the grown clumps, they are considered parts of one @emph{object} or
+as separate @emph{object}s. See Section 3.2 of Akhlaghi and Ichikawa [2015]
+(link above) for more. Segment's main output are thus two labeled datasets:
+1) clumps, and 2) objects. See @ref{Segment output} for more.
 
 To start learning about Segment, especially in relation to detection
 (@ref{NoiseChisel}) and measurement (@ref{MakeCatalog}), the recommended
 references are @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-[2015]} and @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. Just
-have in mind that Segment became a separate program in 2018 (after those
-papers). Therefore we don't currently need to extend the introduction any
-further and can directly dive into the invocation details in @ref{Invoking
-astsegment}.
+[2015]} and @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}.
 
-Those papers cannot be updated any more but the software will
-evolve. Therefore this book is the definitive reference. Major changes from
-those papers will be documented here when the software starts to diverge
-from them the future, similar what we have already done for NoiseChisel in
-@ref{NoiseChisel changes after publication}.
+Those papers cannot be updated any more but the software will evolve. For
+example Segment became a separate program (from NoiseChisel) in 2018 (after
+those papers were published). Therefore this book is the definitive
+reference. To help in the transition from those papers to the software you
+are using, see @ref{Segment changes after publication}. Finally, in
+@ref{Invoking astsegment}, we'll discuss Segment's inputs, outputs and
+configuration options.
 
 
 @menu
+* Segment changes after publication::  Segment updates after paper's publication.
 * Invoking astsegment::         Inputs, outputs and options to Segment
 @end menu
 
-@node Invoking astsegment,  , Segment, Segment
+@node Segment changes after publication, Invoking astsegment, Segment, Segment
+@subsection Segment changes after publication
+
+Segment's main algorithm and working strategy was initially defined and
+introduced in Section 3.2 of @url{https://arxiv.org/abs/1505.01664,
+Akhlaghi and Ichikawa [2015]}. At that time it was part of
+@ref{NoiseChisel}, NoiseChisel's detection program@footnote{Until Gnuastro
+version 0.6 (May 2018), NoiseChisel was in charge of detection @emph{and}
+segmentation. For increased creativity and modularity, NoiseChisel's
+segmentation features were spun-off into separate program (Segment).}. It
+is strongly recommended to read this paper for a good understanding of what
+Segment does and how each parameter influences the output. To help in
+understanding how Segment works, that paper has a large number of figures
+showing every step on multiple mock and real examples.
+
+However, the paper cannot be updated anymore, but Segment has evolved (and
+will continue to do so): better algorithms or steps have been (and will be)
+found. This book is thus the final and definitive guide to Segment. The aim
+of this section is to make the transition from the paper to your installed
+version, as smooth as possible through the list below. For a more detailed
+list of changes in previous Gnuastro releases/versions, please follow the
+@file{NEWS} file@footnote{The @file{NEWS} file is present in the released
+Gnuastro tarball, see @ref{Release tarball}}.
+
+@itemize
+
+@item
+Since the spin-off from NoiseChisel, the default kernel to smooth the input
+for convolution has a FWHM of 1.5 pixels (still a Gaussian). This is
+slightly less than NoiseChisel's default kernel (which has a FWHM of 2
+pixels). This enables the better detection of sharp clumps: as the kernel
+gets wider, the lower signal-to-noise (but sharp/small) clumps will be
+washed away into the noise. You can use MakeProfiles to build your own
+kernel if this is too sharp/wide for your purpose, see the
+@option{--kernel} option in @ref{Segment input}.
+
+The ability to use a different convolution kernel for detection and
+segmentation is one example of how separating detection from segmentation
+into separate programs can increase creativity. In detection, you want to
+detect the diffuse and extended emission, but in segmentation, you want to
+detect sharp peaks.
+
+@item
+The criteria to select true from false clumps is the peak signal-to-noise
+ratio. This value is calculated from a clump's peak value (@mymath{C_c})
+and the highest valued river pixel around that clump (@mymath{R_c}). Both
+are calculated on the convolved image (signified by the @mymath{c}
+subscript). To avoid absolute differences, it is then divided by the input
+Sky standard deviation under that clump @mymath{\sigma} as shown below.
+
+@dispmath{C_c-R_c\over \sigma}
+
+The input Sky standard deviation dataset (@option{--std}) is assumed to be
+for the unconvolved image. Therefore a constant factor (related to the
+convolution kernel) is necessary to convert this into an absolute peak
+signal-to-noise ratio@footnote{You can mask all detections on the convolved
+image with @ref{Arithmetic}, then calculate the standard deviation of the
+(masked) convolved with the @option{--sky} option of @ref{Statistics} and
+compare values on the same tile with NoiseChisel's output.}. But as far as
+Segment is concerned, this absolute value is irrelevant: because it uses
+the ambient noise (undetected regions) to find the numerical threshold of
+this fraction and applies that over the detected regions.
+
+The convolved image has much less scatter, and the peak (maximum when
+@option{--minima} is not called) value of a distribution is strongly
+affected by scatter. Therefore the @mymath{C_c-R_c} is a more reliable
+(with less scatter) measure to identify signal than @mymath{C-R} (on the
+un-convolved image).
+
+Initially, the total clump signal-to-noise ratio of each clump was used,
+see Section 3.2.1 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and
+Ichikawa [2015]}. Therefore its completeness decreased dramatically when
+clumps were present on gradients. In tests, this measure proved to be more
+successful in detecting clumps on gradients and on flatter regions.
+
+@item
+With the new @option{--minima} option, it is now possible to detect inverse
+clumps (for example absorption features), where the clump building should
+begin from its smallest value.
+@end itemize
+
+
+@node Invoking astsegment,  , Segment changes after publication, Segment
 @subsection Invoking Segment
 
 Segment will identify substructure within the detected regions of an input
@@ -15500,7 +15804,7 @@ detection map is given, the extension can be specified with
 HDU/extension is in the main input argument (input file specified with no
 option).
 
-Segmentation (clumps or objects) will only take place over the non-zero
+The final segmentation (clumps or objects) will only be over the non-zero
 pixels of this detection map. The dataset must have the same size as the
 input image. Only datasets with an integer type are acceptable for the
 labeled image, see @ref{Numeric data types}. If your detection map only has
@@ -15548,6 +15852,18 @@ acceptable values, please see the description of @option{--hdu} in
 The convolved image to avoid internal convolution by Segment. The usage of
 this option is identical to NoiseChisel's @option{--convolved} option
 (@ref{NoiseChisel input}). Please see the descriptions there for more.
+
+If you want to use the same convolution kernel for detection (with
+@ref{NoiseChisel}) and segmentation, you can use the same convolved image
+with this option (that is also available in NoiseChisel). However, just be
+careful to use the input to NoiseChisel as the input to Segment also, then
+use the @option{--sky} and @option{--std} to specify the Sky and its
+standard deviation (from NoiseChisel's output). Recall that when
+NoiseChisel is not called with @option{--rawoutput}, the first extention of
+NoiseChisel's output is the @emph{Sky-subtracted} input (see
+@ref{NoiseChisel output}. So if you use the same convolved image that you
+fed to NoiseChisel, but use NoiseChisel's output with Segment's
+@option{--convolved}, then the convolved image won't be Sky subtracted.
 
 @item --chdu
 The HDU/extension containing the convolved image (given to
@@ -17704,12 +18020,12 @@ dimensions we are dealing with.
 
 
 @node PSF, Stars, Defining an ellipse, Modeling basics
-@subsubsection Point Spread Function
+@subsubsection Point spread function
 
 @cindex PSF
 @cindex Point source
 @cindex Diffraction limited
-@cindex Point Spread Function
+@cindex Point spread function
 @cindex Spread of a point source
 Assume we have a `point' source, or a source that is far smaller
 than the maximum resolution (a pixel). When we take an image of it, it

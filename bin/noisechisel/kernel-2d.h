@@ -1,5 +1,5 @@
 /*********************************************************************
-The default 2D kernel to be used in NoiseChisel and Segment.
+The default 2D kernel to be used in NoiseChisel.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:

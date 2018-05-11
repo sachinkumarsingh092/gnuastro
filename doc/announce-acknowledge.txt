@@ -1,6 +1,7 @@
 People who's help must be acknowledged in the next release.
 
 Leindert Boogaard
+Nushkia Chamba
 Nima Dehdilani
 Antonio Diaz Diaz
 Lee Kelvin

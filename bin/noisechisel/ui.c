@@ -398,10 +398,8 @@ ui_prepare_kernel(struct noisechiselparams *p)
 {
   float *f, *ff, *k;
 
-/* Since the default kernel has to be identical between NoiseChisel and
-   Segment, we have defined it in a shared header file to be accessible by
-   both programs. */
-#include <gnuastro-internal/kernel-2d.h>
+/* Impor the default kernel. */
+#include "kernel-2d.h"
 
   /* If a kernel file is given, then use it. Otherwise, use the default
      kernel. */

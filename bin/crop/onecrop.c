@@ -697,7 +697,16 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
 
 
 /* The starting and ending points are set in the onecropparams structure
-   for one crop from one image. Crop that region out of the input. */
+   for one crop from one image. Crop that region out of the input.
+
+   On`basekeyname': To be safe, GCC 8.1 (and persumably later versions)
+   assumes that we are writing the full statically allocated space into
+   `regioinkey'! So it prints a warning that you may be writing outside the
+   allocated space! With these variables, we are ultimately just writing
+   the file counters, so we can never (with current techologies!!!) exceed
+   `FLEN_KEYWORD' (which is 75 characters). To avoid compiler warnings, we
+   are just removing a few characters (`FLEN_KEYWORD-5') to allow the
+   suffix and remove the warnings. */
 void
 onecrop(struct onecropparams *crp)
 {
@@ -706,9 +715,9 @@ onecrop(struct onecropparams *crp)
 
   void *array;
   int status=0, anynul=0;
-  char basename[FLEN_KEYWORD];
   fitsfile *ifp=crp->infits, *ofp;
-  gal_fits_list_key_t *headers=NULL;
+  char basekeyname[FLEN_KEYWORD-5];     /* `-5': avoid gcc 8.1+ warnings! */
+  gal_fits_list_key_t *headers=NULL;    /* See above comment for more.    */
   size_t i, j, cropsize=1, ndim=img->ndim;
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
   long fpixel_o[MAXDIM], lpixel_o[MAXDIM], inc[MAXDIM];
@@ -790,9 +799,9 @@ onecrop(struct onecropparams *crp)
 
       /* A section has been added to the cropped image from this input
          image, so save the information of this image. */
-      sprintf(basename, "ICF%zu", crp->numimg);
-      gal_fits_key_write_filename(basename, img->name, &headers);
-      sprintf(regionkey, "%sPIX", basename);
+      sprintf(basekeyname, "ICF%zu", crp->numimg);
+      gal_fits_key_write_filename(basekeyname, img->name, &headers);
+      sprintf(regionkey, "%sPIX", basekeyname);
       gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, regionkey,
                                 0, region, 0, "Range of pixels used for "
                                 "this output.", 0, NULL);

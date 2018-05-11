@@ -221,16 +221,16 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
    below.*/
 enum infocols
   {
-    INFO_X,              /* Flux weighted X center col, 0 by C std. */
-    INFO_Y,              /* Flux weighted Y center col.             */
-    INFO_SFF,            /* Sum of non-negative pixels (for X,Y).   */
-    INFO_INFLUX,         /* Tatal flux within clump.                */
-    INFO_INAREA,         /* Tatal area within clump.                */
-    INFO_RIVFLUX,        /* Tatal flux within rivers around clump.  */
-    INFO_RIVAREA,        /* Tatal area within rivers around clump.  */
-    INFO_INSTD,          /* Standard deviation at clump center.     */
+    INFO_X,              /* Flux weighted X center col, 0 by C std.       */
+    INFO_Y,              /* Flux weighted Y center col.                   */
+    INFO_SFF,            /* Sum of non-negative pixels (for X,Y).         */
+    INFO_INSTD,          /* Standard deviation at clump center.           */
+    INFO_INAREA,         /* Tatal area within clump.                      */
+    INFO_RIVAREA,        /* Tatal area within rivers around clump.        */
+    INFO_PEAK_RIVER,     /* Peak (min or max) river value around a clump. */
+    INFO_PEAK_CENTER,    /* Peak (min or max) clump value.                */
 
-    INFO_NCOLS,          /* Total number of columns.                */
+    INFO_NCOLS,          /* Total number of columns in the `info' table.  */
   };
 static void
 clumps_get_raw_info(struct clumps_thread_params *cltprm)
@@ -242,7 +242,7 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
   double *row, *info=cltprm->info->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   struct gal_tile_two_layer_params *tl=&p->cp.tl;
-  float *values=p->input->array, *std=p->std->array;
+  float *values=p->conv->array, *std=p->std->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   int32_t lab, nlab, *ngblabs, *clabel=p->clabel->array;
 
@@ -257,15 +257,24 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
         /* This pixel belongs to a clump. */
         if( clabel[ *a ]>0 )
           {
-            lab=clabel[*a];
-            ++info[ lab * INFO_NCOLS + INFO_INAREA ];
-            info[   lab * INFO_NCOLS + INFO_INFLUX ] += values[*a];
+            /* For easy reading. */
+            row = &info [ clabel[*a] * INFO_NCOLS ];
+
+            /* Get the area and flux. */
+            ++row[ INFO_INAREA ];
             if( values[*a]>0.0f )
               {
-                info[ lab * INFO_NCOLS + INFO_SFF ] += values[*a];
-                info[ lab * INFO_NCOLS + INFO_X   ] += values[*a] * (*a/dsize[1]);
-                info[ lab * INFO_NCOLS + INFO_Y   ] += values[*a] * (*a%dsize[1]);
+                row[ INFO_SFF ] += values[*a];
+                row[ INFO_X   ] += ( values[*a] * (*a/dsize[1]) );
+                row[ INFO_Y   ] += ( values[*a] * (*a%dsize[1]) );
               }
+
+            /* In the loop `INFO_INAREA' is just the pixel counter of this
+               clump. The pixels are sorted by flux (decreasing for
+               positive clumps and increasing for negative). So the second
+               extremum value is just the second pixel of the clump. */
+            if( row[ INFO_INAREA ]==1.0f )
+              row[ INFO_PEAK_CENTER ] = values[*a];
           }
 
         /* This pixel belongs to a river (has a value of zero and isn't
@@ -301,8 +310,11 @@ clumps_get_raw_info(struct clumps_thread_params *cltprm)
                     if(i==ii)
                       {
                         ngblabs[ii++] = nlab;
-                        ++info[nlab * INFO_NCOLS + INFO_RIVAREA];
-                        info[  nlab * INFO_NCOLS + INFO_RIVFLUX]+=values[*a];
+                        row = &info[ nlab * INFO_NCOLS ];
+
+                        ++row[INFO_RIVAREA];
+                        if( row[INFO_RIVAREA]==1.0f )
+                          row[INFO_PEAK_RIVER] = values[*a];
                       }
                   }
               } );
@@ -372,7 +384,7 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
 
   float *snarr;
   int32_t *indarr=NULL;
-  double I, O, Ni, var, *row;
+  double C, R, std, Ni, *row;
   int sky0_det1=cltprm->clprm->sky0_det1;
   size_t i, ind, counter=0, infodsize[2]={tablen, INFO_NCOLS};
 
@@ -424,33 +436,31 @@ clumps_make_sn_table(struct clumps_thread_params *cltprm)
     {
       /* For readability. */
       row = &( ((double *)(cltprm->info->array))[ i * INFO_NCOLS ] );
-      Ni  = row[ INFO_INAREA ];
-      I   = row[ INFO_INFLUX ]  / row[ INFO_INAREA ];
-      O   = row[ INFO_RIVFLUX ] / row[ INFO_RIVAREA ];
+      Ni  = row[ INFO_INAREA      ];
+      R   = row[ INFO_PEAK_RIVER  ];
+      C   = row[ INFO_PEAK_CENTER ];
 
 
       /* If the inner flux is smaller than the outer flux (happens only in
          noise cases) or the area is smaller than the minimum area to
          calculate signal-to-noise, then set the S/N of this segment to
          zero. */
-      if( (p->minima ? O>I : I>O) && Ni>p->snminarea )
+      if( Ni>p->snminarea )
         {
-          /* For easy reading, define `var' for variance.  */
-          var = row[INFO_INSTD] * row[INFO_INSTD];
-
           /* Calculate the Signal to noise ratio, if we are on the noise
              regions, we don't care about the IDs of the clumps anymore, so
              store the Signal to noise ratios contiguously (for easy
              sorting and etc). Note that counter will always be smaller and
              equal to i. */
+          std=row[INFO_INSTD];
           ind = sky0_det1 ? i : counter++;
           if(cltprm->snind) indarr[ind]=i;
-          snarr[ind]=( sqrt(Ni/p->cpscorr) * ( p->minima ? O-I : I-O)
-                       / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + var ) );
+          snarr[ind] = ( p->minima ? R-C : C-R ) / std;
         }
       else
         {
-          /* Only over detections, we should put a NaN when the S/N  */
+          /* Only over detections, we should put a NaN when the S/N isn't
+             calculated.  */
           if(sky0_det1)
             {
               snarr[i]=NAN;
@@ -999,7 +1009,7 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
   p->clumpsnthresh = *((float *)(quant->array));
   if(!p->cp.quiet)
     {
-      if( asprintf(&msg, "Clump S/N: %.2f (%.3f quant of %zu).",
+      if( asprintf(&msg, "Clump peak S/N: %g (%.3f quant of %zu).",
                    p->clumpsnthresh, p->snquant, sn->size)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);

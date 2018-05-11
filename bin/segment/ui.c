@@ -498,10 +498,8 @@ ui_prepare_kernel(struct segmentparams *p)
 {
   float *f, *ff, *k;
 
-/* Since the default kernel has to be identical between NoiseChisel and
-   Segment, we have defined it in a shared header file to be accessible by
-   both programs. */
-#include <gnuastro-internal/kernel-2d.h>
+/* Import the default kernel. */
+#include "kernel-2d.h"
 
   /* If a kernel file is given, then use it. Otherwise, use the default
      kernel. */
@@ -932,7 +930,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct segmentparams *p)
                 printf("  - No convolution requested.\n");
             }
           else
-            printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
+            printf("  - Kernel: FWHM=1.5 pixel Gaussian.\n");
         }
       printf("  - Detection: %s (hdu: %s)\n", p->useddetectionname, p->dhdu);
     }

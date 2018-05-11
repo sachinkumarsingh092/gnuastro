@@ -345,6 +345,7 @@ gal_data_t *
 gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
 {
   void *blank;
+  int increasing;
   size_t dsize=1, index;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize,
@@ -353,8 +354,16 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
   /* Only continue processing if there are non-blank elements. */
   if(nbs->size)
     {
-      /* Find the index of the quantile. */
-      index=gal_statistics_quantile_index(nbs->size, quantile);
+      /* Set the increasing value. */
+      increasing = nbs->flag & GAL_DATA_FLAG_SORTED_I;
+
+      /* Find the index of the quantile, note that if it sorted in
+         decreasing order, then we'll need to get the index of the inverse
+         quantile. */
+      index=gal_statistics_quantile_index(nbs->size,
+                                          ( increasing
+                                            ? quantile
+                                            : (1.0f - quantile) ) );
 
       /* Write the value at this index into the output. */
       if(index==GAL_BLANK_SIZE_T)

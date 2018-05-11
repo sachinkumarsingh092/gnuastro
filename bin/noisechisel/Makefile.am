@@ -34,7 +34,7 @@ astnoisechisel_SOURCES = main.c ui.c detection.c noisechisel.c sky.c     \
   threshold.c
 
 EXTRA_DIST = main.h authors-cite.h args.h ui.h detection.h noisechisel.h \
-  sky.h threshold.h
+  sky.h threshold.h kernel-2d.h
 
 
 

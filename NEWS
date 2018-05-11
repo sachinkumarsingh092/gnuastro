@@ -132,6 +132,15 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --history: can be called/written multiple times in one run.
     --comment: can be called/written multiple times in one run.
 
+  MakeCatalog:
+    - The `WCLUMPS' keyword in the objects labeled image is no longer used
+         to see if a clumps catalog should also be made. To build a clumps
+         catalog, you can now use the `--clumpscat' option.
+    - Estimation of noise-level is now done per-pixel over the whole
+         label. Until now the average noise level was used.
+    --objectsfile has been removed. The main input argument is now assumed
+         to be the objects file.
+
   NoiseChisel:
     From this release, NoiseChisel is only in charge of detection and won't
     do segmentation any more. The new Segment program is in charge of
@@ -144,17 +153,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       --detsnminarea ==> --snminarea
       --checkdetsn   ==> --checksn
       --detquant     ==> --snquant
-    - By default the detection map is a binary image (values of 0 or 1).
+    - By default the output detection map is a binary image (values of 0 or 1).
     - With no output name, the output has a `_detected.fits' suffix.
-
-  MakeCatalog:
-    - The `WCLUMPS' keyword in the objects labeled image is no longer used
-         to see if a clumps catalog should also be made. To build a clumps
-         catalog, you can now use the `--clumpscat' option.
-    - Estimation of noise-level is now done per-pixel over the whole
-         label. Until now the average noise level was used.
-    --objectsfile has been removed. The main input argument is now assumed
-         to be the objects file.
+    - [Now in Segment]: For finding true clumps, the difference in the peak
+      of the clump and the highest valued river pixel, divided by the noise
+      standard deviation are used, not the total signal-to-noise ratio. In
+      initial tests, this algorithm was much more promising in detecting
+      clumps over strong gradients.
 
   Table:
     --column: multiple columns (comma separated) can be used in one
