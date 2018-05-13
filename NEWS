@@ -34,7 +34,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     CPU usage. As a result, the input argument is no longer assumed to be
     the values file, but the object labels file. Please see the
     "MakeCatalog inputs and basic settings" section of the book for
-    more. Here is the summary of the the options:
+    more. Here is the summary of the new options:
     --insky: Sky value as a single value or file (dataset).
     --instd: Sky standard deviation as a single value or file (dataset).
     --valuesfile: filename containing the values dataset.
@@ -72,7 +72,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --ignoreblankinsky: similar to same option in NoiseChisel.
 
   Libraries:
-    gal_array_read: read array from any of known formats (FITS,TIFF,JPEG,...).
+    gal_array_read: read array from any of known formats (FITS, TIFF, JPEG,...).
     gal_array_read_to_type: similar to `gal_array_read', but to given type.
     gal_array_read_one_ch: Read a dataset, abort if it has multiple channels.
     gal_array_read_one_ch_to_type: Make sure input is in one channel and type.
