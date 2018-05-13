@@ -27972,48 +27972,53 @@ been updated. The following procedure can be a good suggestion to take when
 you have a new idea and are about to start implementing it.
 
 The steps below are not a requirement, the important thing is that when you
-send the program to be included in Gnuastro, the book and the code have to
-both be fully up-to-date and compatible and the purpose should be very
-clearly explained. You can follow any path you choose to do this, the
-following path was what we have found to be most successful until now.
+send your work to be included in Gnuastro, the book and the code have to
+both be fully up-to-date and compatible, with the purpose of the update
+very clearly explained. You can follow any strategy you like, the following
+strategy was what we have found to be most useful until now.
 
 @enumerate
 @item
-Edit the book and fully explain your desired change, such that your
-idea is completely embedded in the general context of the book with
-no sense of discontinuity for a first time reader. This will allow you
-to plan the idea much more accurately and in the general context of
-Gnuastro or a particular program. Later on, when you are coding, this
-general context will significantly help you as a road-map.
+Edit the book and fully explain your desired change, such that your idea is
+completely embedded in the general context of the book with no sense of
+discontinuity for a first time reader. This will allow you to plan the idea
+much more accurately and in the general context of Gnuastro (a particular
+program or library). Later on, when you are coding, this general context
+will significantly help you as a road-map.
 
-A very important part of this process is the program introduction, which
-explains the purposes of the program. Before actually starting to code,
-explain your idea's purpose thoroughly in the start of the program section
-you wish to add or edit. While actually writing its purpose for a new
-reader, you will probably get some very valuable ideas that you hadn't
+A very important part of this process is the program/library introduction.
+These first few paragraphs explain the purposes of the program or libirary
+and are fundamental to Gnuastro. Before actually starting to code, explain
+your idea's purpose thoroughly in the start of the respective/new section
+you wish to work on. While actually writing its purpose for a new reader,
+you will probably get some valuable and interesting ideas that you hadn't
 thought of before. This has occurred several times during the creation of
-Gnuastro. If an introduction already exists, embed or blend your idea's
-purpose with the existing purposes. We emphasize that doing this is equally
-useful for you (as the programmer) as it is useful for the user
-(reader). Recall that the purpose of a program is very important, see
-@ref{Program design philosophy}.
+Gnuastro.
 
-As you have already noticed for every program, it is very important that
-the basics of the science and technique be explained in separate
+If an introduction already exists, embed or blend your idea's purpose with
+the existing introduction. We emphasize that doing this is equally useful
+for you (as the programmer) as it is useful for the user (reader). Recall
+that the purpose of a program is very important, see @ref{Program design
+philosophy}.
+
+As you have already noticed for every program/library, it is very important
+that the basics of the science and technique be explained in separate
 subsections prior to the `Invoking Programname' subsection. If you are
 writing a new program or your addition to an existing program involves a
 new concept, also include such subsections and explain the concepts so a
 person completely unfamiliar with the concepts can get a general initial
 understanding. You don't have to go deep into the details, just enough to
-get an interested person (with absolutely no background) started. If you
-feel you can't do that, then you have probably not understood the concept
-yourself! If you feel you don't have the time, then think about yourself as
-the reader in one year: you will forget almost all the details, so now that
-you have done all the theoretical preparations, add a few more hours and
-document it, so next time you don't have to prepare as much. Have in mind
-that your only limitation in length is the fatigue of the reader after
-reading a long text, nothing else. So as long as you keep it
-relevant/interesting for the reader, there is no page number limit/cost!
+get an interested person (with absolutely no background) started with some
+good pointers/links to where they can continue studying if they are more
+interested. If you feel you can't do that, then you have probably not
+understood the concept yourself. If you feel you don't have the time, then
+think about yourself as the reader in one year: you will forget almost all
+the details, so now that you have done all the theoretical preparations,
+add a few more hours and document it. Therefore in one year, when you find
+a bug or want to add a new feature, you don't have to prepare as much. Have
+in mind that your only limitation in length is the fatigue of the reader
+after reading a long text, nothing else. So as long as you keep it
+relevant/interesting for the reader, there is no page number limit/cost.
 
 It might also help if you start discussing the usage of your idea in the
 `Invoking ProgramName' subsection (explaining the options and arguments you
@@ -28033,6 +28038,9 @@ After your work has been fully implemented, read the section documentation
 from the start and see if you didn't miss any change in the coding and to
 see if the context is fairly continuous for a first time reader (who hasn't
 seen the book or had known Gnuastro before you made your change).
+
+@item
+If the change is notable, also update the @file{NEWS} file.
 @end enumerate
 
 
