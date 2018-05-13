@@ -3928,16 +3928,17 @@ deeper/shallower.
 large object:} As you saw above, the reason we chose this particular
 configuration for NoiseChisel to detect the wings of the M51 group was
 strongly influenced by this particular object in this particular
-image. When signal takes over such a large fraction of your dataset, you
-will need some manual checking, intervention, or customization, to make
-sure that it is successfully detected. In other words, to make sure that
-your noise measurements are least affected by the signal@footnote{In the
-future, we may add capabilities to optionally automate some of the choices
-made here, please join us in doing this if you are interested. However,
-given the many problems in existing ``smart'' solutions, such automatic
-changing of the configuration may cause more problems than they solve. So
-even when they are implemented, we would strongly recommend manual checks
-and intervention for a robust analysis.}.
+image. When low surface brightness signal takes over such a large fraction
+of your dataset (and you want to accurately detect/account for it), to make
+sure that it is successfully detected, you will need some manual checking,
+intervention, or customization. In other words, to make sure that your
+noise measurements are least affected by the signal@footnote{In the future,
+we may add capabilities to optionally automate some of the choices made
+here, please join us in doing this if you are interested. However, given
+the many problems in existing ``smart'' solutions, such automatic changing
+of the configuration may cause more problems than they solve. So even when
+they are implemented, we would strongly recommend manual checks and
+intervention for a robust analysis.}.
 @end cartouche
 
 To avoid typing all these options every time you run NoiseChisel on this
@@ -4002,13 +4003,16 @@ rm $1"_cat.fits" $1.reg
 @end example
 
 @noindent
-Finally, you just have to activate its executable flag with the command
-below. This will enable you to directly call the script as a command.
+Finally, you just have to activate the script's executable flag with the
+command below. This will enable you to directly/easily call the script as a
+command.
 
 @example
 $ chmod +x check-clumps.sh
 @end example
 
+@cindex AWK
+@cindex GNU AWK
 This script doesn't expect the @file{.fits} suffix of the input's filename
 as the first argument. Because the script produces intermediate files (a
 catalog and DS9 region file, which are later deleted). However, we don't
@@ -4016,9 +4020,10 @@ want multiple instances of the script (on different files in the same
 directory) to collide (read/write to the same intermediate
 files). Therefore, we have used suffixes added to the input's name to
 identify the intermediate files. Note how all the @code{$1} instances in
-the commands (not within the AWK command where @code{$1} refers to the
-first column) are followed by a suffix. If you want to keep the
-intermediate files, put a @code{#} at the start of the last line.
+the commands (not within the AWK command@footnote{In AWK, @code{$1} refers
+to the first column, while in the shell script, it refers to the first
+argument.}) are followed by a suffix. If you want to keep the intermediate
+files, put a @code{#} at the start of the last line.
 
 The few, but high-valued, bright pixels in the central parts of the
 galaxies can hinder easy visual inspection of the fainter parts of the
@@ -4040,8 +4045,8 @@ Go ahead and run this command. You will see the intermediate processing
 being done and finally it opens SAO DS9 for you with the regions
 superimposed on all the extensions of Segment's output. The script will
 only finish (and give you control of the command-line) when you close
-DS9. If you need your access to the command-line before closing DS9, you
-can add a @code{&} after the end of the command above.
+DS9. If you need your access to the command-line before closing DS9, add a
+@code{&} after the end of the command above.
 
 @cindex Purity
 @cindex Completeness
@@ -4065,15 +4070,15 @@ best purity, you have to sacrifice completeness and vice versa.
 
 One interesting region to inspect in this image is the many bright peaks
 around the central parts of M51. Zoom into that region and inspect how many
-of them have actually been detected as true clumps, do you have a good
+of them have actually been detected as true clumps. Do you have a good
 balance between completeness and purity? Also look out far into the wings
 of the group and inspect the completeness and purity there.
 
 An easer way to inspect completness (and only completeness) is to mask all
-the pixels detected as clumps and see what is left over. You can do this
-with a command like below. For easy reading of the command, we'll define
-the shell variable @code{i} for the image name and save the output in
-@file{masked.fits}.
+the pixels detected as clumps and visually inspecting the rest of the
+pixels. You can do this using Arithmetic in a command like below. For easy
+reading of the command, we'll define the shell variable @code{i} for the
+image name and save the output in @file{masked.fits}.
 
 @example
 $ i=r_detected_segmented.fits
@@ -4083,17 +4088,17 @@ $ astarithmetic $i $i 0 gt nan where -hINPUT -hCLUMPS -omasked.fits
 Inspecting @file{masked.fits}, you can see some very diffuse peaks that
 have been missed, especially as you go farther away from the group center
 and into the diffuse wings. This is due to the fact that with this
-configuration we have focused more on the sharper clumps. To put the focus
-more on diffuse clumps, can use a wider convolution kernel. Using a larger
-kernel can also help in detecting larger clumps (thus better separating
-them from the underlying signal).
+configuration, we have focused more on the sharper clumps. To put the focus
+more on diffuse clumps, you can use a wider convolution kernel. Using a
+larger kernel can also help in detecting the existing clumps to fainter
+levels (thus better separating them from the surrounding diffuse signal).
 
 You can make any kernel easily using the @option{--kernel} option in
 @ref{MakeProfiles}. But note that a larger kernel is also going to wash-out
 many of the sharp/small clumps close to the center of M51 and also some
 smaller peaks on the wings. Please continue playing with Segment's
 configuration to obtain a more complete result (while keeping reasonable
-purity). We'll finish the discussion on finding true clumps here.
+purity). We'll finish the discussion on finding true clumps at this point.
 
 The properties of the background objects can then easily be measured using
 @ref{MakeCatalog}. To measure the properties of the background objects
@@ -4101,16 +4106,19 @@ The properties of the background objects can then easily be measured using
 diffuse region. When measuing clump properties with @ref{MakeCatalog}, the
 ambient flux (from the diffuse region) is calculated and subtracted. If the
 diffuse region is masked, its effect on the clump brightness cannot be
-calculated and subtracted. But to keep this tutorial short, we'll stop
-here. See @ref{General program usage tutorial} and @ref{Segment} for more
-on Segment, producing catalogs with MakeCatalog and using those catalogs.
+calculated and subtracted.
+
+To keep this tutorial short, we'll stop here. See @ref{General program
+usage tutorial} and @ref{Segment} for more on using Segment, producing
+catalogs with MakeCatalog and using those catalogs.
 
 Finally, if this book or any of the programs in Gnuastro have been useful
 for your research, please cite the respective papers and share your
 thoughts and suggestions with us (it can be very encouraging). All Gnuastro
 programs have a @option{--cite} option to help you cite the authors' work
 more easily. Just note that it may be necessary to cite additional papers
-for different programs, so please try it out for any program you use.
+for different programs, so please use @option{--cite} with any program that
+has been useful in your work.
 
 @example
 $ astmkcatalog --cite
@@ -15538,17 +15546,16 @@ configuration options.
 @node Segment changes after publication, Invoking astsegment, Segment, Segment
 @subsection Segment changes after publication
 
-Segment's main algorithm and working strategy was initially defined and
+Segment's main algorithm and working strategy were initially defined and
 introduced in Section 3.2 of @url{https://arxiv.org/abs/1505.01664,
-Akhlaghi and Ichikawa [2015]}. At that time it was part of
-@ref{NoiseChisel}, NoiseChisel's detection program@footnote{Until Gnuastro
-version 0.6 (May 2018), NoiseChisel was in charge of detection @emph{and}
-segmentation. For increased creativity and modularity, NoiseChisel's
-segmentation features were spun-off into separate program (Segment).}. It
-is strongly recommended to read this paper for a good understanding of what
-Segment does and how each parameter influences the output. To help in
-understanding how Segment works, that paper has a large number of figures
-showing every step on multiple mock and real examples.
+Akhlaghi and Ichikawa [2015]}. Prior to Gnuastro version 0.6 (released
+2018), one program (NoiseChisel) was in charge of detection @emph{and}
+segmentation. to increase creativity and modularity, NoiseChisel's
+segmentation features were spun-off into a separate program (Segment). It
+is strongly recommended to read that paper for a good understanding of what
+Segment does, how it relates to detection, and how each parameter
+influences the output. That paper has a large number of figures showing
+every step on multiple mock and real examples.
 
 However, the paper cannot be updated anymore, but Segment has evolved (and
 will continue to do so): better algorithms or steps have been (and will be)
@@ -15557,7 +15564,7 @@ of this section is to make the transition from the paper to your installed
 version, as smooth as possible through the list below. For a more detailed
 list of changes in previous Gnuastro releases/versions, please follow the
 @file{NEWS} file@footnote{The @file{NEWS} file is present in the released
-Gnuastro tarball, see @ref{Release tarball}}.
+Gnuastro tarball, see @ref{Release tarball}.}.
 
 @itemize
 
@@ -15568,7 +15575,7 @@ slightly less than NoiseChisel's default kernel (which has a FWHM of 2
 pixels). This enables the better detection of sharp clumps: as the kernel
 gets wider, the lower signal-to-noise (but sharp/small) clumps will be
 washed away into the noise. You can use MakeProfiles to build your own
-kernel if this is too sharp/wide for your purpose, see the
+kernel if this is too sharp/wide for your purpose. For more, see the
 @option{--kernel} option in @ref{Segment input}.
 
 The ability to use a different convolution kernel for detection and
@@ -15583,37 +15590,48 @@ ratio. This value is calculated from a clump's peak value (@mymath{C_c})
 and the highest valued river pixel around that clump (@mymath{R_c}). Both
 are calculated on the convolved image (signified by the @mymath{c}
 subscript). To avoid absolute differences, it is then divided by the input
-Sky standard deviation under that clump @mymath{\sigma} as shown below.
+(not convolved) Sky standard deviation under that clump (@mymath{\sigma})
+as shown below.
 
 @dispmath{C_c-R_c\over \sigma}
 
 The input Sky standard deviation dataset (@option{--std}) is assumed to be
 for the unconvolved image. Therefore a constant factor (related to the
 convolution kernel) is necessary to convert this into an absolute peak
-signal-to-noise ratio@footnote{You can mask all detections on the convolved
-image with @ref{Arithmetic}, then calculate the standard deviation of the
-(masked) convolved with the @option{--sky} option of @ref{Statistics} and
-compare values on the same tile with NoiseChisel's output.}. But as far as
-Segment is concerned, this absolute value is irrelevant: because it uses
-the ambient noise (undetected regions) to find the numerical threshold of
-this fraction and applies that over the detected regions.
+signal-to-noise ratio@footnote{To get an estimate of the standard deviation
+correction factor between the input and convolved images, you can take the
+following steps: 1) Mask (set to NaN) all detections on the convolved image
+with the @code{where} operator or @ref{Arithmetic}. 2) Calculate the
+standard deviation of the undetected (non-masked) pixels of the convolved
+image with the @option{--sky} option of @ref{Statistics} (which also
+calculates the Sky standard deviation). Just make sure the tessellation
+settings of Statistics and NoiseChisel are the same (you can check with the
+@option{-P} option). 3) Divide the two standard deviation datasets to get
+the correction factor.}. As far as Segment is concerned, the absolute value
+of this correction factor is irrelevant: because it uses the ambient noise
+(undetected regions) to find the numerical threshold of this fraction and
+applies that over the detected regions.
 
-The convolved image has much less scatter, and the peak (maximum when
-@option{--minima} is not called) value of a distribution is strongly
-affected by scatter. Therefore the @mymath{C_c-R_c} is a more reliable
-(with less scatter) measure to identify signal than @mymath{C-R} (on the
-un-convolved image).
+A distribution's extremum (maximum or minimum) values, used in the new
+critera, are strongly affected by scatter. On the other hand, the convolved
+image has much less scatter@footnote{For more on the effect of convolution
+on a distribution, see Section 3.1.1 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+[2015]}.}. Therefore @mymath{C_c-R_c} is a more reliable (with less
+scatter) measure to identify signal than @mymath{C-R} (on the un-convolved
+image).
 
 Initially, the total clump signal-to-noise ratio of each clump was used,
 see Section 3.2.1 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and
 Ichikawa [2015]}. Therefore its completeness decreased dramatically when
 clumps were present on gradients. In tests, this measure proved to be more
-successful in detecting clumps on gradients and on flatter regions.
+successful in detecting clumps on gradients and on flatter regions
+simultaneously.
 
 @item
 With the new @option{--minima} option, it is now possible to detect inverse
-clumps (for example absorption features), where the clump building should
-begin from its smallest value.
+clumps (for example absorption features). In such cases, the clump should
+be built from its smallest value.
 @end itemize
 
 
