@@ -207,7 +207,8 @@ sub-component to a title is present.
 * Developing::                  The development environment.
 * Gnuastro programs list::      List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
-* GNU Free Doc. License::       GNU Free documentation license.
+* GNU Free Doc. License::       Full text of the GNU Free documentation license.
+* GNU General Public License::  Full text of the GNU General public license.
 * Index::                       Index of terms
 
 @detailmenu
@@ -1086,12 +1087,11 @@ reputation.
 
 @cindex GNU General Public License
 @cindex GNU Free Documentation License
-The precise conditions of the licenses for the programs currently
-being distributed that relate to Gnuastro are found in the
-@url{http://www.gnu.org/copyleft/gpl.html, GNU General Public license}
-that accompany them.  This book is covered by the
-@url{http://www.gnu.org/copyleft/fdl.html, GNU Free Documentation
-License}.
+The full text of the licenses for the Gnuastro book and software can be
+respectively found in @ref{GNU General Public License}@footnote{Also
+available in @url{http://www.gnu.org/copyleft/gpl.html}} and @ref{GNU Free
+Doc. License}@footnote{Also available in
+@url{http://www.gnu.org/copyleft/fdl.html}}.
 
 
 
@@ -5087,12 +5087,14 @@ confusion (since they are not changed by Gnuastro developers).
 The process of automatically building and importing necessary files into
 the cloned directory is known as @emph{bootstrapping}. All the instructions
 for an automatic bootstrapping are available in @file{bootstrap} and
-configured using @file{bootstrap.conf}. @file{bootstrap} is the only file
-not written by Gnuastro developers but is under version control to enable
-simple bootstrapping immediately after cloning. It is maintained by the GNU
-Portability Library (Gnulib) and this file is an identical copy, so do not
-make any changes in this file since it will be replaced when Gnulib
-releases an update. Make all your changes in @file{bootstrap.conf}.
+configured using @file{bootstrap.conf}. @file{bootstrap} and @file{COPYING}
+(which contains the software copyright notice) are the only files not
+written by Gnuastro developers but under version control to enable simple
+bootstrapping and legal information on usage immediately after
+cloning. @file{bootstrap.conf} is maintained by the GNU Portability Library
+(Gnulib) and this file is an identical copy, so do not make any changes in
+this file since it will be replaced when Gnulib releases an update. Make
+all your changes in @file{bootstrap.conf}.
 
 The bootstrapping process has its own separate set of dependencies, the
 full list is given in @ref{Bootstrapping dependencies}. They are generally
@@ -29216,7 +29218,7 @@ $ ./pgdemoXX
 
 
 
-@node GNU Free Doc. License, Index, Other useful software, Top
+@node GNU Free Doc. License, GNU General Public License, Other useful software, Top
 @appendix GNU Free Doc. License
 
 @cindex GNU Free Documentation License
@@ -29224,10 +29226,21 @@ $ ./pgdemoXX
 
 
 
+@node GNU General Public License, Index, GNU Free Doc. License, Top
+@appendix GNU Gen. Pub. License v3
+
+@cindex GPL
+@cindex GNU GPL
+@cindex GNU General public license
+@include gpl-3.0.texi
+
+
+
+
 
 
 @c Print the index and finish:
-@node Index,  , GNU Free Doc. License, Top
+@node Index,  , GNU General Public License, Top
 @unnumbered Index: Macros, structures and functions
 All Gnuastro library's exported macros start with @code{GAL_}, and its
 exported structures and functions start with @code{gal_}. This abbreviation

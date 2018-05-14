@@ -47,8 +47,8 @@ TEXI2DVI = texi2dvi -I $(bootstrpdoc) -I $(srcdir)
 
 ## Commands to make the texinfo tools.
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi formath.texi	\
-                    $(srcdir)/authors.texi
+gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi $(bootstrpdoc)/gpl-3.0.texi \
+                    $(srcdir)/authors.texi formath.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
