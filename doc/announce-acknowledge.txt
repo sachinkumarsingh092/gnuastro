@@ -12,6 +12,7 @@ Ole Streicher
 Michel Tallon
 Juan C. Tello
 Éric Thiébaut
+David Valls-Gabaud
 Aaron Watkins
 Sara Yousefi Taemeh
 Johannes Zabl
