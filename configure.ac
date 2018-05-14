@@ -98,10 +98,17 @@ AC_SUBST(IN_CPPFLAGS, "$CPPFLAGS")
 
 
 # Generic compiler flags for all sub-directories.
+#
+# IMPORTANT note: we need to add the `./lib/' directory to `LDFLAGS' and
+# `CPPFLAGS', since all Gnuastro needs to use the library headers and link
+# with them. But we need to use the absolute address of `./lib/'. So we
+# need to use the Autoconf variables with an `abs_' prefix. Otherwise (if
+# we use `top_builddir' istead of `abs_top_builddir'), we are going to have
+# problems in special conditions (most specifically: in `make distcheck').
 CFLAGS="-Wall -O3 $CFLAGS"
 CXXFLAGS="-Wall -O3 $CXXFLAGS"
-LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
-CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
+LDFLAGS="-L\$(abs_top_builddir)/lib $LDFLAGS"
+CPPFLAGS="-I\$(abs_top_srcdir)/lib $CPPFLAGS"
 
 
 
