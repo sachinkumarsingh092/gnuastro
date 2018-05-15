@@ -629,3 +629,397 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
   /* Clean up. */
   free(dinc);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/*************            Clump peak intensity            *************/
+/**********************************************************************/
+static int
+label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
+                                gal_data_t *label, gal_data_t *indexs,
+                                struct gal_tile_two_layer_params *tl,
+                                gal_data_t *sig, const char *func)
+{
+  size_t *a, *af;
+  float first=NAN, second=NAN, *f=values->array;
+
+  /* Type of values. */
+  if( values->type!=GAL_TYPE_FLOAT32 )
+    error(EXIT_FAILURE, 0, "%s: the values dataset must have a `float' "
+          "type, but it has a `%s' type", func,
+          gal_type_name(values->type, 1));
+
+  /* Type of standard deviation. */
+  if( std->type!=GAL_TYPE_FLOAT32 )
+    error(EXIT_FAILURE, 0, "%s: the standard deviation dataset must have a "
+          "`float' (`float32') type, but it has a `%s' type", func,
+          gal_type_name(std->type, 1));
+
+  /* Type of labels image. */
+  if( label->type!=GAL_TYPE_INT32 )
+    error(EXIT_FAILURE, 0, "%s: the labels dataset must have an `int32' "
+          "type, but it has a `%s' type", func,
+          gal_type_name(label->type, 1));
+
+  /* Dimentionality of the values dataset. */
+  if( values->ndim>2 )
+    error(EXIT_FAILURE, 0, "%s: currently only supports 1 or 2 "
+          "dimensional datasets, but a %zu-dimensional dataset is given",
+          func, values->ndim);
+
+  /* Type of indexs image. */
+  if( indexs->type!=GAL_TYPE_SIZE_T )
+    error(EXIT_FAILURE, 0, "%s: the indexs dataset must have a `size_t' "
+          "type, but it has a `%s' type", func,
+          gal_type_name(label->type, 1));
+
+  /* Dimensionality of indexs (must be 1D). */
+  if( indexs->ndim!=1 )
+    error(EXIT_FAILURE, 0, "%s: the indexs dataset must be a 1D dataset, "
+          "but it has %zu dimensions", func, indexs->ndim);
+
+  /* Similar sizes between values and standard deviation. */
+  if( gal_dimension_is_different(values, label) )
+    error(EXIT_FAILURE, 0, "%s: the values and label arrays don't have the "
+          "same size.", func);
+
+  /* Size of the standard deviation. */
+  if( !( std->size==1
+         || std->size==values->size
+         || (tl && std->size==tl->tottiles) ) )
+    error(EXIT_FAILURE, 0, "%s: the standard deviation dataset has %zu "
+          "elements. But it can only have one of these sizes: 1) a "
+          "single value (used for the whole dataset), 2) The size of "
+          "the values dataset (%zu elements, one value for each "
+          "element), 3) The size of the number of tiles in the input "
+          "tessellation (when a tessellation is given)",
+          func, std->size, values->size);
+
+  /* If the `array' and `dsize' elements of `sig' have already been set. */
+  if(sig->array)
+    error(EXIT_FAILURE, 0, "%s: the dataset that will contain the "
+          "significance values must have NULL pointers for its `array' "
+          "and `dsize' pointers (they will be allocated here)", func);
+
+  /* See if the clumps are to be build starting from local maxima or local
+     minima. */
+  af=(a=indexs->array)+indexs->size;
+  do
+    /* A label may have NAN values. */
+    if( !isnan(f[*a]) )
+      {
+        if( isnan(first) )
+          first=f[*a];
+        else
+          {
+            /* Note that the elements may have equal values, so for
+               `second', we want the first non-blank AND different
+               value. */
+            if( isnan(second) && f[*a]!=first )
+              second=f[*a];
+            else
+              break;
+          }
+      }
+  while(++a<af);
+
+  /* Note that if all the values are blank or there is only one value
+     covered by all the indexs, then both (or one) of `first' or `second'
+     will be NAN. In either case, the significance measure is not going to
+     be meaningful if we assume the clumps start from the maxima or
+     minima. So we won't check if they are NaN or not.*/
+  return first>second ? 1 : 0;
+}
+
+
+
+
+
+/* In this function we want to find the general information for each clump
+   in an over-segmented labeled array. The signal in each clump is the
+   average signal inside it subtracted by the average signal in the river
+   pixels around it. So this function will go over all the pixels in the
+   object (already found in deblendclumps()) and add them appropriately.
+
+   The output is an array of size cltprm->numinitial*INFO_NCOLS. as listed
+   below.*/
+enum infocols
+  {
+    INFO_X,              /* Flux weighted X center col, 0 by C std.       */
+    INFO_Y,              /* Flux weighted Y center col.                   */
+    INFO_SFF,            /* Sum of non-negative pixels (for X,Y).         */
+    INFO_INSTD,          /* Standard deviation at clump center.           */
+    INFO_INAREA,         /* Tatal area within clump.                      */
+    INFO_RIVAREA,        /* Tatal area within rivers around clump.        */
+    INFO_PEAK_RIVER,     /* Peak (min or max) river value around a clump. */
+    INFO_PEAK_CENTER,    /* Peak (min or max) clump value.                */
+
+    INFO_NCOLS,          /* Total number of columns in the `info' table.  */
+  };
+static void
+label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
+                             gal_data_t *label_d, gal_data_t *indexs,
+                             struct gal_tile_two_layer_params *tl,
+                             double *info, size_t numclumps, size_t minarea,
+                             int variance)
+{
+  size_t ndim=values_d->ndim, *dsize=values_d->dsize;
+
+  double *row;
+  size_t i, *a, *af, ii, coord[2];
+  size_t nngb=gal_dimension_num_neighbors(ndim);
+  float *values=values_d->array, *std=std_d->array;
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
+  int32_t lab, nlab, *ngblabs, *label=label_d->array;
+
+  /* Allocate the array to keep the neighbor labels of river pixels. */
+  ngblabs=gal_pointer_allocate(GAL_TYPE_INT32, nngb, 0, __func__, "ngblabs");
+
+  /* Go over all the pixels in this region. */
+  af=(a=indexs->array)+indexs->size;
+  do
+    if( !isnan(values[ *a ]) )
+      {
+        /* This pixel belongs to a clump. */
+        if( label[ *a ]>0 )
+          {
+            /* For easy reading. */
+            row = &info [ label[*a] * INFO_NCOLS ];
+
+            /* Get the area and flux. */
+            ++row[ INFO_INAREA ];
+            if( values[*a]>0.0f )
+              {
+                row[ INFO_SFF ] += values[*a];
+                row[ INFO_X   ] += ( values[*a] * (*a/dsize[1]) );
+                row[ INFO_Y   ] += ( values[*a] * (*a%dsize[1]) );
+              }
+
+            /* In the loop `INFO_INAREA' is just the pixel counter of this
+               clump. The pixels are sorted by flux (decreasing for
+               positive clumps and increasing for negative). So the second
+               extremum value is just the second pixel of the clump. */
+            if( row[ INFO_INAREA ]==1.0f )
+              row[ INFO_PEAK_CENTER ] = values[*a];
+          }
+
+        /* This pixel belongs to a river (has a value of zero and isn't
+           blank). */
+        else
+          {
+            /* We are on a river pixel. So the value of this pixel has to
+               be added to any of the clumps in touches. But since it might
+               touch a labeled region more than once, we use `ngblabs' to
+               keep track of which label we have already added its value
+               to. `ii` is the number of different labels this river pixel
+               has already been considered for. `ngblabs' will keep the list
+               labels. */
+            ii=0;
+            memset(ngblabs, 0, nngb*sizeof *ngblabs);
+
+            /* Look into the 8-connected neighbors (recall that a
+               connectivity of `ndim' means all pixels touching it (even on
+               one vertice). */
+            GAL_DIMENSION_NEIGHBOR_OP(*a, ndim, dsize, ndim, dinc, {
+                /* This neighbor's label. */
+                nlab=label[ nind ];
+
+                /* We only want those neighbors that are not rivers (>0) or
+                   any of the flag values. */
+                if(nlab>0)
+                  {
+                    /* Go over all already checked labels and make sure
+                       this clump hasn't already been considered. */
+                    for(i=0;i<ii;++i) if(ngblabs[i]==nlab) break;
+
+                    /* This neighbor clump hasn't been considered yet: */
+                    if(i==ii)
+                      {
+                        ngblabs[ii++] = nlab;
+                        row = &info[ nlab * INFO_NCOLS ];
+
+                        ++row[INFO_RIVAREA];
+                        if( row[INFO_RIVAREA]==1.0f )
+                          row[INFO_PEAK_RIVER] = values[*a];
+                      }
+                  }
+              } );
+          }
+      }
+  while(++a<af);
+
+  /* Based on the position of each clump, find a representative standard
+     deviation. */
+  for(lab=1; lab<=numclumps; ++lab)
+    {
+      /* To help in reading. */
+      row = &info [ lab * INFO_NCOLS ];
+
+      /* The calculations are only necessary for the clumps that satisfy
+         the minimum area. There is no need to waste time on the smaller
+         ones. */
+      if ( row[INFO_INAREA] > minarea )
+        {
+          /* It might happen that none of the pixels were positive
+             (especially over the undetected regions). In that case, set
+             the total area of the clump to zero so it is no longer
+             considered.*/
+          if( row[INFO_SFF]==0.0f )
+            row[INFO_INAREA]=0;
+          else
+            {
+              /* Find the coordinates of the clump's weighted center. */
+              coord[0]=GAL_DIMENSION_FLT_TO_INT(row[INFO_X]/row[INFO_SFF]);
+              coord[1]=GAL_DIMENSION_FLT_TO_INT(row[INFO_Y]/row[INFO_SFF]);
+
+              /* Find the corresponding standard deviation. */
+              row[INFO_INSTD]=( std_d->size>1
+                                ? ( std_d->size==values_d->size
+                                    ? std[gal_dimension_coord_to_index(ndim,
+                                                             dsize, coord)]
+                                    : std[gal_tile_full_id_from_coord(tl,
+                                                                    coord)] )
+                                : std[0] );
+              if(variance) row[INFO_INSTD] = sqrt(row[INFO_INSTD]);
+
+              /* For a check
+              printf("---------\n");
+              printf("\t%f --> %zu\n", row[INFO_Y]/row[INFO_SFF], coord[1]);
+              printf("\t%f --> %zu\n", row[INFO_X]/row[INFO_SFF], coord[0]);
+              printf("%u: (%zu, %zu): %.3f\n", lab, coord[1]+1,
+                     coord[0]+1, row[INFO_INSTD]);
+              */
+            }
+        }
+    }
+
+  /* Clean up. */
+  free(dinc);
+  free(ngblabs);
+}
+
+
+
+
+/* Make an S/N table for the clumps in a given region. */
+void
+gal_label_clump_significance(gal_data_t *values, gal_data_t *std,
+                             gal_data_t *label, gal_data_t *indexs,
+                             struct gal_tile_two_layer_params *tl,
+                             size_t numclumps, size_t minarea, int variance,
+                             int keepsmall, gal_data_t *sig,
+                             gal_data_t *sigind)
+{
+  double *info;
+  int max1_min0;
+  float *sigarr;
+  int32_t *indarr=NULL;
+  size_t i, ind, counter=0;
+  double C, R, S, Ni, *row;
+  size_t tablen=numclumps+1;
+
+  /* If there were no initial clumps, then ignore this function. */
+  if(numclumps==0) { sig->size=0; return; }
+
+  /* Basic sanity checks. */
+  max1_min0=label_clump_significance_sanity(values, std, label, indexs,
+                                            tl, sig, __func__);
+
+  /* Allocate the arrays to keep the final significance measure (and
+     possibly the indexs). */
+  sig->ndim  = 1;                        /* Depends on `cltprm->sn' */
+  sig->type  = GAL_TYPE_FLOAT32;
+  if(sig->dsize==NULL)
+    sig->dsize = gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
+                                      "sig->dsize");
+  sig->array = gal_pointer_allocate(sig->type, tablen, 0, __func__,
+                                    "sig->array");
+  sig->size  = sig->dsize[0] = tablen;  /* MUST BE AFTER dsize. */
+  info=gal_pointer_allocate(GAL_TYPE_FLOAT64, tablen*INFO_NCOLS, 1,
+                            __func__, "info");
+  if( sigind )
+    {
+      sigind->ndim  = 1;
+      sigind->type  = GAL_TYPE_INT32;
+      sigind->dsize = gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
+                                           "sigind->dsize");
+      sigind->size  = sigind->dsize[0] = tablen;/* After dsize */
+      sigind->array = gal_pointer_allocate(sigind->type, tablen, 0, __func__,
+                                           "sigind->array");
+    }
+
+
+  /* First, get the raw information necessary for making the S/N table. */
+  label_clump_significance_raw(values, std, label, indexs, tl, info,
+                               numclumps, minarea, variance);
+
+
+  /* Calculate the signal to noise ratio for successful clumps */
+  sigarr=sig->array;
+  if(sigind) indarr=sigind->array;
+  for(i=1;i<tablen;++i)
+    {
+      /* For readability. */
+      row = &info[ i * INFO_NCOLS ];
+
+      /* If we have a sufficient area and any rivers were actually found
+         for this clump, then do the measurement. */
+      Ni=row[ INFO_INAREA ];
+      if( Ni>minarea && row[ INFO_RIVAREA ])
+        {
+          /* Calculate the significance ratio, if `keepsmall' is not
+             called, we don't care about the IDs of the clumps anymore, so
+             store the Signal to noise ratios contiguously (for easy
+             sorting and etc). Note that counter will always be smaller and
+             equal to i. */
+          S   = row[ INFO_INSTD       ];
+          R   = row[ INFO_PEAK_RIVER  ];
+          C   = row[ INFO_PEAK_CENTER ];
+          ind = keepsmall ? i : counter++;
+
+          if(sigind) indarr[ind]=i;
+          sigarr[ind] = ( max1_min0 ? (C-R) : (R-C) ) / S;
+        }
+      else
+        {
+          /* Only over detections, we should put a NaN when the S/N isn't
+             calculated.  */
+          if(keepsmall)
+            {
+              sigarr[i]=NAN;
+              if(sigind) indarr[i]=i;
+            }
+        }
+    }
+
+
+  /* If we don't want to keep the small clumps, the size of the S/N table
+     has to be corrected. */
+  if(keepsmall==0)
+    {
+      sig->dsize[0] = sig->size = counter;
+      if(sigind) sigind->dsize[0] = sigind->size = counter;
+    }
+
+
+  /* Clean up. */
+  free(info);
+}

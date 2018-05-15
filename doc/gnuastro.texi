@@ -26422,7 +26422,7 @@ minimum, based on @code{min0_max1}) and its surrounding pixels will be
 given a unique label. For demonstration, see Figures 8 and 9 of
 @url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. If
 @code{topinds!=NULL}, it is assumed to point to an already allocated space
-to write the indexs of the local extrema, otherwise, it is ignored.
+to write the index of each clump's local extrema, otherwise, it is ignored.
 
 The @code{values} dataset must have a 32-bit floating point type
 (@code{GAL_TYPE_FLOAT32}, see @ref{Library data types}) and will only be
@@ -26467,6 +26467,71 @@ performance, you can set the two bits manually (see the description of
 input->flags |=  GAL_DATA_FLAG_BLANK_CH; /* Set bit to 1. */
 input->flags &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
 @end example
+@end deftypefun
+
+@deftypefun void gal_label_clump_significance (gal_data_t @code{*values}, gal_data_t @code{*std}, gal_data_t @code{*label}, gal_data_t @code{*indexs}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numclumps}, size_t @code{minarea}, int @code{variance}, int @code{keepsmall}, gal_data_t @code{*sig}, gal_data_t @code{*sigind})
+@cindex Clump
+This function is usually called after @code{gal_label_oversegment}, and is
+used as a measure to idenfity which over-segmented ``clumps'' are real and
+which are noise.
+
+A measurement is done on each clump (using the @code{values} and @code{std}
+datasets, see below). To help in multi-threaded environments, the operation
+is only done on pixels which are indexed in @code{indexs}. It is expected
+for @code{indexs} to be sorted by their values in @code{values}. If not
+sorted, the measurement may not be reliable. If sorted in a decreasing
+order, then clump building will start from their highest value and
+vice-versa. See the description of @code{gal_label_oversegment} for more on
+@code{indexs}.
+
+Each ``clump'' (identified by a positive integer) is assumed to be
+surrounded by atleast one river/watershed pixel (with a non-positive
+label). This function will parse the pixels identified in @code{indexs} and
+make a measurement on each clump and over all the river/watershed
+pixels. The number of clumps (@code{numclumps}) must be given as an input
+argument and any clump that is smaller than @code{minarea} is ignored
+(because of scatter). If @code{variance} is non-zero, then the @code{std}
+dataset is interpretted as variance, not standard deviation.
+
+The @code{values} and @code{std} datasets must have a @code{float} (32-bit
+floating point) type. Also, @code{label} and @code{indexs} must
+respectively have @code{int32} and @code{size_t} types. @code{values} and
+@code{label} must have the same size, but @code{std} can have three
+possible sizes: 1) a single element (which will be used for the whole
+dataset, 2) the same size as @code{values} (so a different error can be
+assigned to every pixel), 3) a single value for each tile, based on the
+@code{tl} tessellation (see @ref{Tile grid}). In the last case, a
+tile/value will be associated to each clump based on its flux-weighted
+(only positive values) center.
+
+The main output is an internally allocated, 1-dimensional array with one
+value per label. The array information (length, type and etc) will be
+written into the @code{sig} generic data container. Therefore
+@code{sig->array} must be @code{NULL} when this function is called. After
+this function, the details of the array (number of elements, type and size
+and etc) will be written in to the various components of @code{sig}, see
+the definition of @code{gal_data_t} in @ref{Generic data
+container}. Therefore @code{sig} must already be allocated before calling
+this function.
+
+Optionally (when @code{sigind!=NULL}, similar to @code{sig}) the clump
+labels of each measurement in @code{sig} will be written in
+@code{sigind->array}. If @code{keepsmall} zero, small clumps (where no
+measurement is made) will not be included in the output table.
+
+This function is initially intended for a multi-threaded environment. In
+such cases, you will be writing arrays of clump measures from different
+regions in parallel into an array of @code{gal_data_t}s. You can simply
+allocate (and initialize), such an array with the
+@code{gal_data_array_calloc} function in @ref{Arrays of datasets}. For
+example if the @code{gal_data_t} array is called @code{array}, you can pass
+@code{&array[i]} as @code{sig}.
+
+Along with some other functions in @code{label.h}, this function was
+initially written for @ref{Segment}. The description of the parameter used
+to measure a clump's significance is fully given in @ref{Segment changes
+after publication}.
+
 @end deftypefun
 
 @deftypefun void gal_label_grow_indexs (gal_data_t @code{*labels}, gal_data_t @code{*indexs}, int @code{withrivers}, int @code{connectivity})

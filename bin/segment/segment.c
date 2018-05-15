@@ -95,6 +95,11 @@ segment_convolve(struct segmentparams *p)
       if(p->conv->name) free(p->conv->name);
       gal_checkset_allocate_copy("CONVOLVED", &p->conv->name);
     }
+
+  /* Set the values to build clumps on. We are mainly doing this to avoid
+     the accidentially using different arrays when building clumps on the
+     undetected and detected regions. */
+  p->clumpvals=p->conv;
 }
 
 
@@ -582,7 +587,22 @@ segment_on_threads(void *in_prm)
          the user wants to inspect the steps, this function is called
          multiple times. So we need to avoid over-writing the allocations. */
       if( clprm->sn[ cltprm.id ].dsize==NULL )
-        clumps_make_sn_table(&cltprm);
+        {
+          /* Calculate the S/N table. */
+          cltprm.sn    = &cltprm.clprm->sn[ cltprm.id ];
+          cltprm.snind = ( cltprm.clprm->snind
+                           ? &cltprm.clprm->snind[ cltprm.id ]
+                           : NULL );
+          gal_label_clump_significance(p->clumpvals, p->std, p->clabel,
+                                       cltprm.indexs, &p->cp.tl,
+                                       cltprm.numinitclumps, p->snminarea,
+                                       p->variance, clprm->sky0_det1,
+                                       cltprm.sn, cltprm.snind);
+
+          /* If it didn't succeed, then just set the S/N table to NULL. */
+          if( cltprm.clprm->sn[ cltprm.id ].size==0 )
+            cltprm.snind=cltprm.sn=NULL;
+        }
       else cltprm.sn=&clprm->sn[ cltprm.id ];
 
 

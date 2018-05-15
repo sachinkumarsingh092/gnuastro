@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
+#include <gnuastro/tile.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -64,6 +65,14 @@ gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize);
 size_t
 gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
                       gal_data_t *label, size_t *topinds, int min0_max1);
+
+void
+gal_label_clump_significance(gal_data_t *values, gal_data_t *std,
+                             gal_data_t *label, gal_data_t *indexs,
+                             struct gal_tile_two_layer_params *tl,
+                             size_t numclumps, size_t minarea, int variance,
+                             int keepsmall, gal_data_t *sig,
+                             gal_data_t *sigind);
 
 void
 gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
