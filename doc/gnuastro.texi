@@ -26407,7 +26407,7 @@ dataset's first element/pixel. Therefore it is always greater or equal to
 zero and stored in @code{size_t} type.
 @end deftypefun
 
-@deftypefun size_t gal_label_oversegment (gal_data_t @code{*values}, gal_data_t @code{*indexs}, gal_data_t @code{*label}, size_t @code{*topinds}, int @code{min0_max1})
+@deftypefun size_t gal_label_watershed (gal_data_t @code{*values}, gal_data_t @code{*indexs}, gal_data_t @code{*label}, size_t @code{*topinds}, int @code{min0_max1})
 @cindex Watershed algorithm
 @cindex Algorithm: watershed
 Use the watershed algorithm@footnote{The watershed algorithm was initially
@@ -26471,7 +26471,7 @@ input->flags &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
 
 @deftypefun void gal_label_clump_significance (gal_data_t @code{*values}, gal_data_t @code{*std}, gal_data_t @code{*label}, gal_data_t @code{*indexs}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numclumps}, size_t @code{minarea}, int @code{variance}, int @code{keepsmall}, gal_data_t @code{*sig}, gal_data_t @code{*sigind})
 @cindex Clump
-This function is usually called after @code{gal_label_oversegment}, and is
+This function is usually called after @code{gal_label_watershed}, and is
 used as a measure to idenfity which over-segmented ``clumps'' are real and
 which are noise.
 
@@ -26481,7 +26481,7 @@ is only done on pixels which are indexed in @code{indexs}. It is expected
 for @code{indexs} to be sorted by their values in @code{values}. If not
 sorted, the measurement may not be reliable. If sorted in a decreasing
 order, then clump building will start from their highest value and
-vice-versa. See the description of @code{gal_label_oversegment} for more on
+vice-versa. See the description of @code{gal_label_watershed} for more on
 @code{indexs}.
 
 Each ``clump'' (identified by a positive integer) is assumed to be
@@ -26543,7 +26543,7 @@ this function. For a demonstration see Columns 2 and 3 of Figure 10 in
 @url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
 In many aspects, this function is very similar to over-segmentation
-(watershed algorithm, @code{gal_label_oversegment}). The big difference is
+(watershed algorithm, @code{gal_label_watershed}). The big difference is
 that in over-segmentation local maximums (that aren't touching any already
 labeled pixel) get a separate label. However, here the final number of
 labels will not change. All pixels that aren't directly touching a labeled

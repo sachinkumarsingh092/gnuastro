@@ -87,7 +87,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_jpeg_read: Reads input JPEG image into `gal_data_t'.
     gal_jpeg_write: Writes a `gal_data_t' into a JPEG file.
     gal_label_grow_indexs: grow known indexs into desired areas.
-    gal_label_oversegment: apply over-segmentation to an input dataset.
+    gal_label_watershed: apply watershed algorithm on desired region.
     gal_label_clump_significance: measure significance of all clumps in region.
     gal_pdf_name_is_pdf: Returns 1 if given filename is PDF.
     gal_pdf_suffix_is_pdf: Returns 1 if given suffix is PDF.

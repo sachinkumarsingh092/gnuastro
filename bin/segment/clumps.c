@@ -428,10 +428,10 @@ clumps_find_make_sn_table(void *in_prm)
 
 
           /* Generate the clumps over this region. */
-          cltprm.numinitclumps=gal_label_oversegment(p->conv, cltprm.indexs,
-                                                     p->clabel,
-                                                     cltprm.topinds,
-                                                     !p->minima);
+          cltprm.numinitclumps=gal_label_watershed(p->conv, cltprm.indexs,
+                                                   p->clabel,
+                                                   cltprm.topinds,
+                                                   !p->minima);
 
 
           /* Set all river pixels to GAL_LABEL_INIT (to be distinguishable

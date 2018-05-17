@@ -178,8 +178,8 @@ gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize)
 
 */
 size_t
-gal_label_oversegment(gal_data_t *values, gal_data_t *indexs,
-                      gal_data_t *labels, size_t *topinds, int min0_max1)
+gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
+                    gal_data_t *labels, size_t *topinds, int min0_max1)
 {
   size_t ndim=values->ndim;
 
