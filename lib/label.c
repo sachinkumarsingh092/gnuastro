@@ -639,9 +639,6 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
    below.*/
 enum infocols
   {
-    INFO_X,              /* Flux weighted X center col, 0 by C std.       */
-    INFO_Y,              /* Flux weighted Y center col.                   */
-    INFO_SFF,            /* Sum of non-negative pixels (for X,Y).         */
     INFO_STD,            /* Standard deviation.                           */
     INFO_INAREA,         /* Tatal area within clump.                      */
     INFO_RIVAREA,        /* Tatal area within rivers around clump.        */
@@ -681,14 +678,6 @@ label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
 
             /* Get the area and flux. */
             ++row[ INFO_INAREA ];
-            if( values[*a]>0.0f )
-              {
-                gal_dimension_index_to_coord(*a, ndim, dsize, coord);
-                row[   INFO_SFF ] += values[*a];
-                row[   INFO_X   ] += values[*a] * coord[0];
-                if(ndim>1)
-                  row[ INFO_Y   ] += values[*a] * coord[1];
-              }
 
             /* In the loop `INFO_INAREA' is just the pixel counter of this
                clump. The pixels are sorted by flux (decreasing for
