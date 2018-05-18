@@ -239,6 +239,13 @@ Steps necessary to Package Gnuastro for Debian.
      $ export ver=A.B.CCC
 
 
+ - [ALPHA] Build an ASCII-armored, detached signature for the tarball with
+   this command (it will make a `.asc' file by default, so use that instead
+   of `.sig' in the two following steps).
+
+     $ gpg -b --armor gnuastro-X.Y.ZZZZ-ZZZZ.tar.gz
+
+
  - Put a copy of the TARBALL and its SIGNATURE to be packaged in this
    directory (use a different address for the experimental releases)
 

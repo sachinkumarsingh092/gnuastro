@@ -315,8 +315,8 @@ tiff_read_separate_strip_data(TIFF* tif, char *filename, size_t dir,
   gal_data_t *ch;
   tstrip_t strip;
   unsigned char *buf;
-  uint32_t rowsperstrip = (uint32_t)-1;
-  size_t nrow, scanline = TIFFScanlineSize(tif);
+  uint32_t rowsperstrip=(uint32_t)-1;
+  size_t nrow=0, scanline=TIFFScanlineSize(tif);
   size_t ostart=0, numch=gal_list_data_number(out);
   uint32 row, h=out->ndim==2?out->dsize[0]:out->dsize[1];
 

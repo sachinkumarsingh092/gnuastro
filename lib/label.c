@@ -676,7 +676,7 @@ label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
             /* For easy reading. */
             row = &info [ label[*a] * INFO_NCOLS ];
 
-            /* Get the area and flux. */
+            /* Add this pixel to this clump's area. */
             ++row[ INFO_INAREA ];
 
             /* In the loop `INFO_INAREA' is just the pixel counter of this
