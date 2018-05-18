@@ -156,11 +156,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       --detquant     ==> --snquant
     - By default the output detection map is a binary image (values of 0 or 1).
     - With no output name, the output has a `_detected.fits' suffix.
-    - [Now in Segment]: For finding true clumps, the difference in the peak
-      of the clump and the highest valued river pixel, divided by the noise
-      standard deviation are used, not the total signal-to-noise ratio. In
-      initial tests, this algorithm was much more promising in detecting
-      clumps over strong gradients.
+
+  Segment:
+    - [Previously in NoiseChisel]: For finding true clumps, the difference
+      in the peak of the clump and the highest valued river pixel, divided
+      by the noise standard deviation are used. Until now, the total
+      signal-to-noise ratio was used as a criteria. In initial tests, this
+      algorithm was much more promising in detecting clumps over strong
+      gradients and also on flatter gradients.
 
   Table:
     --column: multiple columns (comma separated) can be used in one

@@ -15587,20 +15587,23 @@ detect the diffuse and extended emission, but in segmentation, you want to
 detect sharp peaks.
 
 @item
-The criteria to select true from false clumps is the peak signal-to-noise
-ratio. This value is calculated from a clump's peak value (@mymath{C_c})
-and the highest valued river pixel around that clump (@mymath{R_c}). Both
-are calculated on the convolved image (signified by the @mymath{c}
-subscript). To avoid absolute differences, it is then divided by the input
-(not convolved) Sky standard deviation under that clump (@mymath{\sigma})
-as shown below.
+The criteria to select true from false clumps is the peak significance. It
+is defined to be the difference between the clump's peak value
+(@mymath{C_c}) and the highest valued river pixel around that clump
+(@mymath{R_c}). Both are calculated on the convolved image (signified by
+the @mymath{c} subscript). To avoid absolute values (differing from dataset
+to dataset), @mymath{C_c-R_c} is then divided by the Sky standard deviation
+under the river pixel used (@mymath{\sigma_r}) as shown below:
 
-@dispmath{C_c-R_c\over \sigma}
+@dispmath{C_c-R_c\over \sigma_r}
+
+When @option{--minima} is given, the nominator becomes
+@mymath{R_c-C_c}.
 
 The input Sky standard deviation dataset (@option{--std}) is assumed to be
 for the unconvolved image. Therefore a constant factor (related to the
 convolution kernel) is necessary to convert this into an absolute peak
-signal-to-noise ratio@footnote{To get an estimate of the standard deviation
+significance@footnote{To get an estimate of the standard deviation
 correction factor between the input and convolved images, you can take the
 following steps: 1) Mask (set to NaN) all detections on the convolved image
 with the @code{where} operator or @ref{Arithmetic}. 2) Calculate the
