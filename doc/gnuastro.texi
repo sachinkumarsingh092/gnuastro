@@ -19161,12 +19161,17 @@ discussed.  MakeNoise options and argument are then discussed in
 
 @cindex Noise
 @cindex Image noise
-Deep astronomical images, like those used in extragalactic studies
-seriously suffer from noise in the data. Generally speaking, the
-sources of noise in an astronomical image are photon counting noise
-and Instrumental noise which are discussed in detail below. We finish
-with a short introduction on how random numbers are generated and how
-you can determine the random number generator and seed value.
+Deep astronomical images, like those used in extragalactic studies,
+seriously suffer from noise in the data. Generally speaking, the sources of
+noise in an astronomical image are photon counting noise and Instrumental
+noise which are discussed in @ref{Photon counting noise} and
+@ref{Instrumental noise}. This review finishes with @ref{Generating random
+numbers} which is a short introduction on how random numbers are generated.
+We will see that while software random number generators are not perfect,
+they allow us to obtain a reproducible series of random numbers through
+setting the random number generator function and seed value. Therefore in
+this section, we'll also discuss how you can set these two parameters in
+Gnuastro's programs (including MakeNoise).
 
 @menu
 * Photon counting noise::       Poisson noise
@@ -19179,92 +19184,95 @@ you can determine the random number generator and seed value.
 @subsubsection Photon counting noise
 
 @cindex Counting error
+@cindex de Moivre, Abraham
+@cindex Poisson distribution
 @cindex Photon counting noise
-Thanks to the very accurate electronics used in today's detectors,
-this type of noise is the main cause of concern for extra galactic
-studies.  It can generally be associate with the counting error that
-is known to have a Poisson distribution. The Poisson distribution is
-about counting. But counting is a discrete operation with only
-positive values, for example we can't count @mymath{3.2} or
-@mymath{-2} of anything. We only count @mymath{0}, @mymath{1},
-@mymath{2}, @mymath{3} and so on. Therefore the Poisson distribution
-is also a discrete distribution, only applying to whole positive
-integers.
+@cindex Poisson, Sim@'eon Denis
+With the very accurate electronics used in today's detectors, photon
+counting noise@footnote{In practice, we are actually counting the electrons
+that are produced by each photon, not the actual photons.} is the most
+significant source of uncertainty in most datasets. To understand this
+noise (error in counting), we need to take a closer look at how a
+distribution produced by counting can be modeled as a parametric function.
+
+Counting is an inherently discrete operation, which can only produce
+positive (including zero) interger outputs. For example we can't count
+@mymath{3.2} or @mymath{-2} of anything. We only count @mymath{0},
+@mymath{1}, @mymath{2}, @mymath{3} and so on. The distribution of values,
+as a result of counting efforts is formally known as the
+@url{https://en.wikipedia.org/wiki/Poisson_distribution, Poisson
+distribution}. It is associated to Sim@'eon Denis Poisson, because he
+discussed it while working on the number of wrongful convictions in court
+cases in his 1837 book@footnote{[From Wikipedia] Poisson's result was also
+derived in a previous study by Abraham de Moivre in 1711. Therefore some
+people suggest it should rightly be called the de Moivre distribution.}.
 
 @cindex Probability density function
-Let's assume the mean value of counting something is known. In this case,
-we are counting the number of electrons that are produced by photons in a
-detector (for example CCD) pixel. Let's call this mean
-@mymath{\lambda}. Furthermore, let's take @mymath{k} to represent the
-result of one particular counting attempt. The probability density function
-of @mymath{k} can be written as:
+Let's take @mymath{\lambda} to represent the expected mean count of
+something. Furthermore, let's take @mymath{k} to represent the result of
+one particular counting attempt. The probability density function of
+getting @mymath{k} counts (in each attempt, given the expected/mean count
+of @mymath{\lambda}) can be written as:
 
 @cindex Poisson distribution
 @dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in @{0, 1, 2,
 3, \dots @}}
 
 @cindex Skewed Poisson distribution
-Because the Poisson distribution is only applicable to positive values,
+Because the Poisson distribution is only applicable to positive values
+(note the factorial operator, which only applies to non-negative integers),
 naturally it is very skewed when @mymath{\lambda} is near zero. One
-qualitative way to explain it is that there simply aren't enough integers
-smaller than @mymath{\lambda}, than integers that are larger than
-it. Therefore to accommodate all possibilities, it has to be skewed when
-@mymath{\lambda} is small.
+qualitative way to understand this behavior is that there simply aren't
+enough integers smaller than @mymath{\lambda}, than integers that are
+larger than it. Therefore to accommodate all possibilities/counts, it has
+to be strongly skewed when @mymath{\lambda} is small.
 
 @cindex Compare Poisson and Gaussian
-But as @mymath{\lambda} becomes larger and larger, the distribution
-becomes more and more symmetric. One very useful property of the
-Poisson distribution is that the mean value is also its variance.
-When @mymath{\lambda} is very large, say @mymath{\lambda>1000}, then
-the normal (Gaussian) distribution, see @ref{PSF}, is an excellent
-approximation of the Poisson distribution with mean
-@mymath{\mu=\lambda} and standard deviation
-@mymath{\sigma=\sqrt{\lambda}}.
-
-We see that the variance or dispersion of the distribution depends on
-the mean value, and when it is large it can be approximated with a
-Gaussian that only has one free parameter (@mymath{\mu=\lambda} and
-@mymath{\sigma=\sqrt{\lambda}}) instead of two that it originally has.
+As @mymath{\lambda} becomes larger, the distribution becomes more and more
+symmetric. A very useful property of the Poisson distribution is that the
+mean value is also its variance.  When @mymath{\lambda} is very large, say
+@mymath{\lambda>1000}, then the
+@url{https://en.wikipedia.org/wiki/Normal_distribution, Normal (Gaussian)
+distribution}, is an excellent approximation of the Poisson distribution
+with mean @mymath{\mu=\lambda} and standard deviation
+@mymath{\sigma=\sqrt{\lambda}}. In other words, a Poisson distribution
+(with a sufficiently large @mymath{\lambda}) is simply a Gaussian that only
+has one free parameter (@mymath{\mu=\lambda} and
+@mymath{\sigma=\sqrt{\lambda}}), instead of the two parameters (independent
+@mymath{\mu} and @mymath{\sigma}) that it originally has.
 
 @cindex Sky value
 @cindex Background flux
 @cindex Undetected objects
-The astronomical objects after convolution with the PSF of the
-instrument, lie above a certain background flux. This background flux
-is defined to be the average flux of a region in the image that has
-absolutely no objects. The physical origin of this background value is
-the brightness of the atmosphere or possible stray light within the
-imaging instrument. It is thus an ideal definition, because in
-practice, what lies deep in the noise far lower than the detection
-limit is never known@footnote{See the section on sky in Akhlaghi M.,
-Ichikawa. T. 2015. Astrophysical Journal Supplement Series.}. However,
-in a real image, a relatively large number of very faint objects can
-been fully buried in the noise. These undetected objects will bias the
-background measurement to slightly larger values. The sky value is
-therefore defined to be the average of the undetected regions in the
-image, so in an ideal case where all the objects have been detected,
-the sky value and background value are the same.
-
-@cindex Background flux gradients
-@cindex Gradients in background flux
-@cindex Variation of background flux
-As longer wavelengths are used, the background value becomes more
-significant and also varies over a wide image field. Such variations
-are not currently implemented in MakeProfiles, but will be in the
-future. In a mock image, we have the luxury of setting the background
-value.
+In real situations, the photons/flux from our targets are added to a
+certain background flux (observationally, the @emph{Sky} value). The Sky
+value is defined to be the average flux of a region in the dataset with no
+targets. Its physical origin can be the brightness of the atmosphere (for
+ground-based instruments), possible stray light within the imaging
+instrument, the average flux of undetected targets, or etc. The Sky value
+is thus an ideal definition, because in real datasets, what lies deep in
+the noise (far lower than the detection limit) is never known@footnote{In a
+real image, a relatively large number of very faint objects can been fully
+buried in the noise and never detected. These undetected objects will bias
+the background measurement to slightly larger values. Our best
+approximation is thus to simply assume they are uniform, and consider their
+average effect. See Figure 1 (a.1 and a.2) and Section 2.2 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.}. To
+account for all of these, the sky value is defined to be the average
+count/value of the undetected regions in the image. In a mock
+image/dataset, we have the luxury of setting the background (Sky) value.
 
 @cindex Simulating noise
 @cindex Noise simulation
-In each pixel of the canvas of pixels, the flux is the sum of
-contributions from various sources after convolution. Let's name this
-flux of the convolved sum of possibly overlapping objects,
+In each element of the dataset (pixel in an image), the flux is the sum of
+contributions from various sources (after convolution by the PSF, see
+@ref{PSF}). Let's name the convolved sum of possibly overlapping objects,
 @mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now, let's
-assume the background is constant and represented by @mymath{B}. In
-practice the background values are larger than @mymath{\sim1,000}
-counts. Then the flux after adding noise is a random value taken from
-a Gaussian distribution with the following mean (@mymath{\mu}) and
-standard deviation (@mymath{\sigma}):
+assume the background (@mymath{B}) is constant and sufficiently high for
+the Poisson distribution to be approximated by a Gaussian. Then the flux
+after adding noise is a random value taken from a Gaussian distribution
+with the following mean (@mymath{\mu}) and standard deviation
+(@mymath{\sigma}):
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
@@ -19279,16 +19287,18 @@ then internally converted to the flux scale for further processing.
 @cindex Readout noise
 @cindex Instrumental noise
 @cindex Noise, instrumental
-While taking images with a camera, a dark current is fed to the
-pixels, the variation of the value of this dark current over the
-pixels, also adds to the final image noise. Another source of noise is
-the readout noise that is produced by the electronics in the CCD that
+While taking images with a camera, a dark current is fed to the pixels, the
+variation of the value of this dark current over the pixels, also adds to
+the final image noise. Another source of noise is the readout noise that is
+produced by the electronics in the detector. Specifically, the parts that
 attempt to digitize the voltage produced by the photo-electrons in the
-analog to digital converter. In deep extra-galactic studies these
-sources of noise are not as significant as the noise of the background
-sky. Let @mymath{C} represent the combined standard deviation of all
-these sources of noise. If only this source of noise is present, the
-noised pixel value would be a random value chosen from a Gaussian
+analog to digital converter. With the current generation of instruments,
+this source of noise is not as significant as the noise due to the
+background Sky discussed in @ref{Photon counting noise}.
+
+Let @mymath{C} represent the combined standard deviation of all these
+instrumental sources of noise. When only this source of noise is present,
+the noised pixel value would be a random value chosen from a Gaussian
 distribution with
 
 @dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
@@ -19299,15 +19309,16 @@ distribution with
 This type of noise is independent of the signal in the dataset, it is only
 determined by the instrument. So the flux scale (and not magnitude scale)
 is most commonly used for this type of noise. In practice, this value is
-usually reported in ADUs not flux or electron counts. The gain value of the
-device can be used to convert between these two, see @ref{Flux Brightness
-and magnitude}.
+usually reported in analog-to-digital units or ADUs, not flux or electron
+counts. The gain value of the device can be used to convert between these
+two, see @ref{Flux Brightness and magnitude}.
 
 @node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
 @subsubsection Final noised pixel value
-Depending on the values you specify for @mymath{B} and @mymath{C} from
-the above, the final noised value for each pixel is a random value
-chosen from a Gaussian distribution with
+Based on the discussions in @ref{Photon counting noise} and
+@ref{Instrumental noise}, depending on the values you specify for
+@mymath{B} and @mymath{C} from the above, the final noised value for each
+pixel is a random value chosen from a Gaussian distribution with
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{C^2+B+I_{nn}}}
 
