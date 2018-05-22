@@ -1085,7 +1085,7 @@ their recipients to know that what they have is not what we distributed,
 so that any problems introduced by others will not reflect on our
 reputation.
 
-@cindex GNU General Public License
+@cindex GNU General Public License (GPL)
 @cindex GNU Free Documentation License
 The full text of the licenses for the Gnuastro book and software can be
 respectively found in @ref{GNU General Public License}@footnote{Also
@@ -2231,10 +2231,9 @@ night's measurements on the ecliptic.
 @node General program usage tutorial, Detecting large extended targets, Sufi simulates a detection, Tutorials
 @section General program usage tutorial
 
-@cindex HST
 @cindex XDF survey
-@cindex Hubble Space Telescope
-@cindex Extreme Deep Field survey
+@cindex Hubble Space Telescope (HST)
+@cindex eXtreme Deep Field (XDF) survey
 Measuring colors of astronomical objects in broad-band or narrow-band
 images is one of the most basic and common steps in astronomical
 analysis. Here, we will use Gnuastro's programs to detect objects in a
@@ -4519,8 +4518,7 @@ KISS principle ("keep it simple, stupid") as the general guideline, and
 focuses on elegance, code correctness, minimalism and simplicity, and
 expects the user to be willing to make some effort to understand the
 system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
-manage its packages. Please run the following command to install Gnuastro's
-mandatory and optional dependencies:
+manage its packages.
 @example
 $ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
                                                              \
@@ -8117,7 +8115,7 @@ statistics).
 @cindex Bias current
 @cindex Subaru Telescope
 @cindex Hyper Suprime-Cam
-@cindex Hubble Space Telescope
+@cindex Hubble Space Telescope (HST)
 For raw image processing, a single tessellation/grid is not sufficient. Raw
 images are the unprocessed outputs of the camera detectors. Modern
 detectors usually have multiple readout channels each with its own
@@ -9912,7 +9910,7 @@ to significantly reduce the run time.
 @cindex Image mosaic
 @cindex COSMOS survey
 @cindex Imaging surveys
-@cindex Hubble Space Telescope
+@cindex Hubble Space Telescope (HST)
 Astronomical surveys are usually extremely large. So large in fact, that
 the whole survey will not fit into a reasonably sized file. Because of
 this, surveys usually cut the final image into separate tiles and store
@@ -12863,8 +12861,8 @@ those distortions prior to the analysis.
 @cindex WFC3
 @cindex Wide Field Camera 3
 @cindex Charge-coupled device
-@cindex Hubble Space Telescope
 @cindex Advanced camera for surveys
+@cindex Hubble Space Telescope (HST)
 @item
 @strong{Detector not on focal plane:} In some cases (like the Hubble
 Space Telescope ACS and WFC3 cameras), the CCD might be tilted
@@ -12943,8 +12941,8 @@ combinations of these transformations can be displayed with one
 @dispmath{\left[\matrix{a&b\cr c&d}\right]}
 
 @cindex Wide Field Camera 3
-@cindex Hubble Space Telescope
 @cindex Advanced Camera for Surveys
+@cindex Hubble Space Telescope (HST)
 The transformations above can cover a lot of the needs of most
 coordinate transformations. However they are limited to mapping the
 point @mymath{[\matrix{0&0}]} to @mymath{[\matrix{0&0}]}. Therefore
@@ -15551,7 +15549,7 @@ many illustrative figures) is Section 3.2 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
 @cindex river
-@cindex Watershed
+@cindex Watershed algorithm
 As a summary, Segment first finds true @emph{clump}s over the
 detections. Clumps are associated with local maxima/minima@footnote{By
 default the maximum is used as the first clump pixel, to define clumps
@@ -16469,8 +16467,9 @@ multiple of @mymath{\sigma_m} as (see @ref{Flux Brightness and magnitude}):
 
 @dispmath{SB_{\rm Pixel}=-2.5\times\log_{10}{(n\sigma_m)}+z}
 
-@cindex XDF
-@cindex CANDELS
+@cindex XDF survey
+@cindex CANDELS survey
+@cindex eXtreme Deep Field (XDF) survey
 As an example, the XDF survey covers part of the sky that the Hubble space
 telescope has observed the most (for 85 orbits) and is consequently very
 small (@mymath{\sim4} arcmin@mymath{^2}). On the other hand, the CANDELS
@@ -29353,8 +29352,7 @@ $ ./pgdemoXX
 @appendix GNU Gen. Pub. License v3
 
 @cindex GPL
-@cindex GNU GPL
-@cindex GNU General public license
+@cindex GNU General Public License (GPL)
 @include gpl-3.0.texi
 
 
