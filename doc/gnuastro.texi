@@ -4445,6 +4445,89 @@ controlled source}), an additional bootstrapping step is required before
 configuration and its dependencies are explained in @ref{Bootstrapping
 dependencies}.
 
+@cindex Building from source
+@cindex Compiling from source
+@cindex Source code building
+@cindex Source code compilation
+@cindex Package managers
+The most basic way to install a package on your system is to build the
+packages from source yourself. Alternatively, you can use your operating
+system's package manager to download pre-compiled files and install
+them. The latter choice is easier and faster. However, we recommend that
+you build the @ref{Mandatory dependencies} yourself from source (all
+necessary commands and links are given in the respective section). Here are
+some basic reasons behind this recommendation.
+
+@enumerate
+
+@item
+Your distribution's pre-built package might not be the most recent
+release.
+
+@item
+For each package, Gnuastro might preform better (or require) certain
+configuration options that your distribution's package managers didn't add
+for you. If present, these configuration options are explained during the
+installation of each in the sections below (for example in
+@ref{CFITSIO}). When the proper configuration has not been set, the
+programs should complain and inform you.
+
+@item
+For the libraries, they might separate the binary file from the header
+files which can cause confusion, see @ref{Known issues}.
+
+@item
+Like any other tool, the science you derive from Gnuastro's tools highly
+depend on these lower level dependencies, so generally it is much better to
+have a close connection with them. By reading their manuals, installing
+them and staying up to date with changes/bugs in them, your scientific
+results and understanding (of what is going on, and thus how you interpret
+your scientific results) will also correspondingly improve.
+@end enumerate
+
+Based on your operating system's package manager, you can use any of the
+following commands to install the mandatory and optional dependencies. If
+your operating system is not included, please send us the respective
+command, so we add it here. Gnuastro itself if also already packaged in
+some package managers (for example Debian).
+
+As discussed above, we recommed installing the @emph{mandatory}
+dependencies manually from source. Therefore, in each command below, first
+the optional dependencies are given. The mandatory dependencies are
+included after an empty line. If you would like to install the mandatory
+dependencies with your package manager, just ignore the empty line.
+
+@table @asis
+@item Debian-based (@command{apt-get})
+Debian-based GNU/Linux
+distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
+(for example Ubuntu or its derivates) are arguably the largest, and most
+used, class of GNU/Linux distributions. All such GNU/Linux distributions
+use Debian's Advanced Packaging Tool (APT, for example @command{apt-get})
+for managing packages.
+@example
+$ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
+                       libtiff-dev libgit2-dev              \
+                                                            \
+                       libgsl0-dev libcfitsio-dev wcslib-dev
+@end example
+
+@item Arch Linux (@command{pacman})
+Arch Linux is a smaller GNU/Linux distribution. As discussed in
+@url{https://en.wikipedia.org/wiki/Arch_Linux, Wikipedia}, it follows ``the
+KISS principle ("keep it simple, stupid") as the general guideline, and
+focuses on elegance, code correctness, minimalism and simplicity, and
+expects the user to be willing to make some effort to understand the
+system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
+manage its packages. Please run the following command to install Gnuastro's
+mandatory and optional dependencies:
+@example
+$ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
+                                                             \
+                 gsl cfitsio wcslib
+@end example
+@end table
+
 
 @menu
 * Mandatory dependencies::      Gnuastro will not install without these.
@@ -4462,45 +4545,6 @@ tools. They all follow the same basic GNU based build system (like that
 shown in @ref{Quick start}), so even if you don't have them, installing
 them should be pretty straightforward. In this section we explain each
 program and any specific note that might be necessary in the installation.
-
-@cindex Building from source
-@cindex Compiling from source
-@cindex Source code building
-@cindex Source code compilation
-@cindex Package managers
-The most basic choice is to build the packages from source yourself,
-instead of relying on your distribution's package management system. While
-the latter choice is indeed possible, we recommend that you build these
-dependencies yourself as discussed below. We will send out notifications in
-the @command{info-gnuastro} mailing list, see @ref{Announcements} when we
-find out that these requirements are updated.
-
-@enumerate
-
-@item
-For each package, Gnuastro might preform better (or require) certain
-configuration options that your distribution's package managers didn't add
-for you. If present, these configuration options are explained during the
-installation of each in the sections below. When the proper configuration
-has not been set, the programs should complain and inform you.
-
-@item
-Your distribution's pre-built package might not be the most recent
-release.
-
-@item
-For the libraries, they might separate the binary file from the header
-files, see @ref{Known issues}.
-
-@item
-Like any other tool, the science you derive from Gnuastro's tools
-highly depend on these lower level dependencies, so generally it is
-much better to have a close connection with them. By reading their
-manuals, installing them and staying up to date with changes/bugs in
-them, your scientific results and understanding will also
-correspondingly improve.
-@end enumerate
-
 
 
 @menu
