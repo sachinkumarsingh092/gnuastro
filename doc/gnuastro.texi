@@ -1711,17 +1711,18 @@ Centre de Recherche Astrophysique de Lyon, University of Lyon 1, France.@*
 
 @cindex Tutorial
 @cindex Cookbook
-To help new users get started smoothly with Gnuastro, in this chapter
-several thoroughly elaborated tutorials or cookbooks are provided in this
-chapter to demonstrate the capabilities of Gnuastro and the best practices
-of using them.
+To help new users have a smooth and easy start with Gnuastro, in this
+chapter several thoroughly elaborated tutorials, or cookbooks, are
+provided. These tutorials demonstrate the capabilities of different
+Gnuastro programs and libraries, along with tips and guidelines for the
+best practices of using them in various realistic situations.
 
 We strongly recommend going through these tutorials to get a good feeling
 of how the programs are related (built in a modular design to be used
-together in a pipeline) and demonstrate the Unix-based thought-process that
-went into creating them. Therefore these tutorials will greatly help in
-using Gnuastro's programs (and generally the Unix-like command-line
-environment) effectively.
+together in a pipeline), very similar to the core Unix-based programs that
+they were modeled on. Therefore these tutorials will greatly help in
+optimally using Gnuastro's programs (and generally, the Unix-like
+command-line environment) effectively for your research.
 
 In @ref{Sufi simulates a detection}, we'll start with a
 fictional@footnote{The two historically motivated tutorials (@ref{Sufi
@@ -1729,66 +1730,67 @@ simulates a detection} and @ref{Hubble visually checks and classifies his
 catalog}) are not intended to be a historical reference (the historical
 facts of this fictional tutorial used Wikipedia as a reference). This form
 of presenting a tutorial was influenced by the PGF/TikZ and Beamer
-manuals. The first provides graphic capabilities in @TeX{} and @LaTeX{},
-while with the second you can make presentation slides. In these manuals,
-Till Tantau (author of the manual) uses Euclid as the protagonist. On a
-similar topic, there are also some nice words of wisdom for Unix-like
-systems called @url{http://catb.org/esr/writings/unix-koans, Rootless
-Root}. These also have a similar style but they use a mythical figure named
-Master Foo. If you already have some experience in Unix-like systems, you
-will definitely find these Unix Koans entertaining/educative.} tutorial
-explaining how Abd al-rahman Sufi (903 -- 986 A.D., the first recorded
-description of ``nebulous'' objects in the heavens is attributed to him)
-could have used some of Gnuastro's programs for a realistic simulation of
-his observations and see if his detection of nebulous objects was
-trust-able. Because all conditions are under control in a simulated
-environment/dataset, they can be a valuable tool to inspect the limitations
-of your data analysis and processing. But they need to be as realistic as
-possible, so the first tutorial is dedicated to this important step of an
-analysis.
+manuals. They are both packages in in @TeX{} and @LaTeX{}, the first is a
+high-level vector graphic programming environment, while with the second
+you can make presentation slides. On a similar topic, there are also some
+nice words of wisdom for Unix-like systems called
+@url{http://catb.org/esr/writings/unix-koans, Rootless Root}. These also
+have a similar style but they use a mythical figure named Master Foo. If
+you already have some experience in Unix-like systems, you will definitely
+find these Unix Koans entertaining/educative.} tutorial explaining how Abd
+al-rahman Sufi (903 -- 986 A.D., the first recorded description of
+``nebulous'' objects in the heavens is attributed to him) could have used
+some of Gnuastro's programs for a realistic simulation of his observations
+and see if his detection of nebulous objects was trust-able. Because all
+conditions are under control in a simulated/mock environment/dataset, mock
+datasets can be a valuable tool to inspect the limitations of your data
+analysis and processing. But they need to be as realistic as possible, so
+the first tutorial is dedicated to this important step of an analysis.
 
 The next two tutorials (@ref{General program usage tutorial} and
 @ref{Detecting large extended targets}) use real input datasets from some
 of the deep Hubble Space Telescope (HST) images and the Sloan Digital Sky
 Survey (SDSS) respectively. Their aim is to demonstrate some real-world
-problems that can be solved with Gnuastro's programs.
+problems that many astronomers often face and how they can be be solved
+with Gnuastro's programs.
 
 The ultimate aim of @ref{General program usage tutorial} is to detect
 galaxies in a deep HST image, measure their positions and brightness and
-select those with the strongest colors. In the process it takes many
+select those with the strongest colors. In the process, it takes many
 detours to introduce you to the useful capabilities of many of the
-programs. If you don't have much time and can only try one of the
-tutorials, we recommend this one.
+programs. So please be patient in reading it. If you don't have much time
+and can only try one of the tutorials, we recommend this one.
 
 @cindex PSF
 @cindex Point spread function
 @ref{Detecting large extended targets} deals with a major problem in
 astronomy: effectively detecting the faint outer wings of bright (and
 large) nearby galaxies to extremely low surface brightness levels (roughly
-1/20th of the local noise level in the example discussed). This is an
-important issue, especially in wide surveys. Because bright/large galaxies
-and stars@footnote{Stars also have similarly large and extended wings due
-to the point spread function, see @ref{PSF}.}, cover a significant fraction
-of the survey area. Besides the interesting scientific questions in these
-low-surface brightness features, failure to properly detect them will bias
-the measurements of the background objects and the survey's noise
-estimates.
+1/20th of the local noise level in the example discussed). Besides the
+interesting scientific questions in these low-surface brightness features,
+failure to properly detect them will bias the measurements of the
+background objects and the survey's noise estimates. This is an important
+issue, especially in wide surveys. Because bright/large galaxies and
+stars@footnote{Stars also have similarly large and extended wings due to
+the point spread function, see @ref{PSF}.}, cover a significant fraction of
+the survey area.
 
 Finally, in @ref{Hubble visually checks and classifies his catalog}, we go
-into the historical/fictional world again to see how Hubble could use
-Gnuastro's programs to visually check and classify his sample of galaxies
+into the historical/fictional world again to see how Hubble could have used
+Gnuastro's programs to visually check and classify a sample of galaxies
 which ultimately lead him to the ``Hubble fork'' classification of galaxy
 morphologies.
 
 In these tutorials, we have intentionally avoided too many cross references
-to make it more easily readable. For more information about a particular
+to make it more easy to read. For more information about a particular
 program, you can visit the section with the same name as the program in
 this book. Each program section in the subsequent chapters starts by
-explaining the general concepts behind what it does. If you only want to
-see an explanation of the options and arguments of any program, see the
-subsection titled ``Invoking ProgramName'', for example @ref{Invoking
-astnoisechisel}. See @ref{Conventions}, for an explanation of the
-conventions we use in the example codes through the book.
+explaining the general concepts behind what it does, for example see
+@ref{Convolve}. If you only want practical information on running a
+program, for example its options/configuration, input(s) and output(s),
+please consult the subsection titled ``Invoking ProgramName'', for example
+see @ref{Invoking astnoisechisel}. For an explanation of the conventions we
+use in the example codes through the book, please see @ref{Conventions}.
 
 @menu
 * Sufi simulates a detection::  Simulating a detection.
@@ -2237,14 +2239,31 @@ night's measurements on the ecliptic.
 @node General program usage tutorial, Detecting large extended targets, Sufi simulates a detection, Tutorials
 @section General program usage tutorial
 
-@cindex XDF survey
 @cindex Hubble Space Telescope (HST)
-@cindex eXtreme Deep Field (XDF) survey
+@cindex Colors, broad-band photometry
 Measuring colors of astronomical objects in broad-band or narrow-band
 images is one of the most basic and common steps in astronomical
-analysis. Here, we will use Gnuastro's programs to detect objects in a
-Hubble Space Telescope (HST) image and measure their colors. We will use
-the @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
+analysis. Here, we will use Gnuastro's programs to get a physical scale
+(area at certain redshifts) of the field we are studying, detect objects in
+a Hubble Space Telescope (HST) image, measure their colors and identify the
+ones with the largest colors to visual inspection and their spatial
+position in the image. After this tutorial, you can also try the
+@ref{Detecting large extended targets} tutorial which goes into a little
+more detail on optimally configuring NoiseChisel (Gnuastro's detection
+tool) in special situations.
+
+During the tutorial, we will take many detours to explain, and practically
+demonstrate, the many capabilities of Gnuastro's programs. In the end you
+will see that the things you learned during this toturial are much more
+generic than this particular problem and can be used in solving a wide
+variety of problems involving the analysis of data (images or tables). So
+please don't rush, and go through the steps patiently to optimally master
+Gnuastro.
+
+@cindex XDF survey
+@cindex eXtreme Deep Field (XDF) survey
+In this tutorial, we'll use the HST
+@url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
 dataset. Like almost all astronomical surveys, this dataset is free for
 download and usable by the public. This tutorial was first prepared for the
 ``Exploring the Ultra-Low Surface Brightness Universe'' workshop (November
@@ -2261,11 +2280,11 @@ AWK@footnote{@url{https://www.gnu.org/software/gawk}.}).
 
 @cartouche
 @noindent
-@strong{Type the example commands:} Try to type the example commands on
-your terminal and use the history feature of your command-line (by pressing
-the ``up'' button to retrieve previous commands). Don't simply copy and
-paste the commands shown here. This will help simulate future situations
-when you are processing your own datasets.
+@strong{Write the example commands manually:} Try to type the example
+commands on your terminal manually and use the history feature of your
+command-line (by pressing the ``up'' button to retrieve previous
+commands). Don't simply copy and paste the commands shown here. This will
+help simulate future situations when you are processing your own datasets.
 @end cartouche
 
 A handy feature of Gnuastro is that all program names start with
@@ -21034,17 +21053,20 @@ The names of all constructs in @file{headername.h} are prefixed with
 @code{gal_} prefix stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary.
 
 Gnuastro library functions are compiled into a single file which can be
-linked on the command-line with the @option{-lgnuastro} option, (see
+linked on the command-line with the @option{-lgnuastro} option. See
 @ref{Linking} and @ref{Summary and example on libraries} for an
-introduction on linking and example). Gnuastro library is a high-level
-library which depends on lower level libraries for some operations (see
-@ref{Dependencies}). Therefore if at least one of Gnuastro's functions in
-your program use functions from the dependencies, you will also need to
-link those dependencies after linking with Gnuastro. The outside libraries
-that need to be linked for such functions are mentioned following the
-function name. See @ref{BuildProgram} for a small Gnuastro program that will
-take care of the libraries to link against and lets you focus on your
-exciting science.
+introduction on linking and some fully working examples of the
+libraries.
+
+Gnuastro's library is a high-level library which depends on lower level
+libraries for some operations (see @ref{Dependencies}). Therefore if at
+least one of Gnuastro's functions in your program use functions from the
+dependencies, you will also need to link those dependencies after linking
+with Gnuastro. See @ref{BuildProgram} for a convenient way to deal with the
+dependencies. BuildProgram will take care of the libraries to link with
+your program (which uses the Gnuastro library), and can even run the built
+program afterwards. Therefore it allows you to conveniently focus on your
+exciting science/research when using Gnuastro's libraries.
 
 
 
