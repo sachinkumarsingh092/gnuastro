@@ -806,8 +806,9 @@ gal_label_clump_significance(gal_data_t *values, gal_data_t *std,
   label_clump_significance_raw(values, std, label, indexs, tl, info);
 
 
-  /* Calculate the signal to noise ratio for successful clumps */
+  /* Calculate the signficance value for successful clumps */
   sigarr=sig->array;
+  if(keepsmall) sigarr[0]=NAN;
   if(sigind) indarr=sigind->array;
   for(i=1;i<tablen;++i)
     {
