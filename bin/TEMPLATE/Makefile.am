@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.inx
 ##
 ## Original author:
-##      Mohammad akhlaghi <mohammad@akhlaghi.org>
+##     Mohammad akhlaghi <mohammad@akhlaghi.org>
 ## Contributing author(s):
 ## Copyright (C) 2016-2018, Free Software Foundation, Inc.
 ##
@@ -19,9 +19,9 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-## Pre-processer flags (for Gnulib's headers). Recall that the compiled
-## Gnulib library was statically linked to (copied in) Gnuastro's library.
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+## Necessary pre-processer and linker flags.
+AM_LDFLAGS = -L\$(top_builddir)/lib
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 
 
 

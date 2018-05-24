@@ -19,14 +19,15 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-## Pre-processer flags (for Gnulib's headers). Recall that the compiled
-## Gnulib library was statically linked to (copied in) Gnuastro's library.
+## Necessary pre-processer and linker flags.
 ##
 ## Buildprog will also need some system-specific information that is
 ## gathered at compile time (for example the library installation directory
 ## (LIBDIR) and the executive file suffix (EXEEXT).
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -DLIBDIR=\"$(libdir)\"  \
-              -DINCLUDEDIR=\"$(includedir)\" -DEXEEXT=\"$(EXEEXT)\"
+AM_LDFLAGS = -L\$(top_builddir)/lib
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib \
+              -DLIBDIR=\"$(libdir)\" -DINCLUDEDIR=\"$(includedir)\"      \
+              -DEXEEXT=\"$(EXEEXT)\"
 
 
 
@@ -41,18 +42,16 @@ EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h astbuildprog.conf.in
 
 
 
-
-
-# Build the final configuration file. The main problem is the possible
-# CPPFLAGS and LDFLAGS that the user might have given at configure time
-# (stored in `IN_CPPFLAGS' and `IN_LDFLAGS' Makefile
-# variables). BuildProgram also needs to know these directories in order to
-# compile its programs. Thus with the rule below, the directories in these
-# variables will be written into the final BuildProgram configuration file.
+# Build the BuildProgram configuration file. The main problem is the
+# possible CPPFLAGS and LDFLAGS that the user might have given at
+# Gnuastro's configure time. BuildProgram also needs to know these
+# directories in order to compile its programs. With the rule below, the
+# directories in these variables will be written into the final
+# BuildProgram configuration file.
 astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	cp $< $@
 	infoadded="no";                                \
-	for i in $(IN_CPPFLAGS); do                    \
+	for i in $(CPPFLAGS); do                       \
 	  if test $$infoadded = "no"; then             \
 	    echo "" >> $@;                             \
 	    echo "# Installation information" >> $@;   \
@@ -61,7 +60,7 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	  v=$$(echo $$i | sed -e 's/-I//');            \
 	  echo " includedir $$v" >> $@;                \
 	done;                                          \
-	for i in $(IN_LDFLAGS); do                     \
+	for i in $(LDFLAGS); do                        \
 	  if test $$infoadded = "no"; then             \
 	    echo "" >> $@;                             \
 	    echo "# Installation information" >> $@;   \
@@ -70,8 +69,6 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	  v=$$(echo $$i | sed -e 's/-L//');            \
 	  echo " linkdir $$v" >> $@;                   \
 	done
-
-
 
 
 

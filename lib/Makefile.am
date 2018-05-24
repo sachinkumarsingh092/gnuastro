@@ -156,20 +156,3 @@ gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	'$(srcdir)/$@.in' >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
-
-
-
-
-
-# Remove the two local directories we needed during installation from the
-# library search paths of the installed `libgnuastro.la'.
-#
-# Note that this hook is executed after every installation command
-# (including `make uninstall'). So we should only do it if the library
-# actually exists.
-install-exec-hook:
-	if [ -f $(libdir)/libgnuastro.la ]; then                   \
-	  $(SED) -e 's/ -L..\/lib//g' -e 's/ -L..\/..\/lib//g'     \
-	         $(libdir)/libgnuastro.la > libgnuastro.la_tmp;    \
-	  mv libgnuastro.la_tmp $(libdir)/libgnuastro.la;          \
-	fi
