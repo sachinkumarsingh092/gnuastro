@@ -28,7 +28,12 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astTEMPLATE
 
-astTEMPLATE_LDADD = -lgnuastro
+## We are linking with `libgnu' first eventhough `libgnu' is already linked
+## to `libgnuastro'. The reason is that some linkers (Mac OS for example),
+## don't keep external variables (needed in Argp) after the first link. So
+## the `libgnu' (that is indirectly linked through `libgnuastro') can't see
+## those variables. We thus need to explicitly link with `libgnu' first.
+astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astTEMPLATE_SOURCES = main.c ui.c TEMPLATE.c
 

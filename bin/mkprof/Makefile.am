@@ -28,7 +28,8 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astmkprof
 
-astmkprof_LDADD = -lgnuastro
+## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
+astmkprof_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astmkprof_SOURCES = main.c ui.c mkprof.c oneprofile.c profiles.c
 

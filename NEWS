@@ -195,6 +195,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Bug fixes
 
+  bug #50957: --version output not possible on Mac OS X
   bug #52979: Many unused result warnings for asprintf in some compilers.
   bug #53122: Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram.
   bug #53142: Crash when printing values with the `--onlyversion' option.

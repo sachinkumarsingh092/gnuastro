@@ -6,6 +6,7 @@ Nima Dehdilani
 Antonio Diaz Diaz
 Lee Kelvin
 Brandon Kelly
+Alan Lefor
 Guillaume Mahler
 Bertrand Pain
 Ole Streicher
