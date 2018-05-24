@@ -5285,33 +5285,54 @@ lists}).  Subscribing to them can help you decide when to synchronize with
 the official repository.
 
 To pull all the most recent work in Gnuastro, run the following command
-from the top Gnuastro directory:
+from the top Gnuastro directory. If you don't already have a built system,
+ignore @command{make distclean}. The separate steps are described in detail
+afterwards.
 
 @example
-$ git pull && autoconf -f
+$ make distclean && git pull && autoreconf -f
+@end example
+
+@noindent
+You can also run the commands separately:
+
+@example
+$ make distclean
+$ git pull
+$ autoreconf -f
 @end example
 
 @cindex GNU Autoconf
 @cindex Mailing list: info-gnuastro
 @cindex @code{info-gnuastro@@gnu.org}
-GNU Autoconf is part of the GNU build system and will update the
-@file{./configure} script based on the hand-written configurations (in
-@file{configure.ac}, which is version controlled in Gnuastro). The pulled
-changes might contain changes in the build system configurations. However,
-The most important reason for running this command is to generate a version
-number for your Gnuastro snapshot. This generated version number will
-include the commit information if you are building Gnuastro from any point
-in Gnuastro's history (see @ref{Version numbering}). Since the version
-number is included in nearly all outputs of the programs, this can help
-you later exactly reproduce an old result by checking out the exact point
-in Gnuastro's history that produced those results. Therefore, be sure to
-run `@file{autoconf -f}' after every synchronization. You can also run them
-separately:
+If Gnuastro was already built in this directory, you don't want some
+outputs from the previous version being mixed with outputs from the newly
+pulled work. Therefore, the first step is to clean/delete all the built
+files with @command{make distclean}. Fortunately the GNU build system
+allows the separation of source and built files (in separate
+directories). You can use it to avoid the cleaning step. Gnuastro already
+has script for this, see @ref{Configure and build in RAM}.
 
-@example
-$ git pull
-$ autoconf -f
-@end example
+After the pull, we must re-configure Gnuastro with @command{autoreconf -f}
+(part of GNU Autoconf). It will update the @file{./configure} script and
+all the @file{Makefile.in}@footnote{In the GNU build system,
+@command{./configure} will use the @file{Makefile.in} files to create the
+necessary @file{Makefile} files that are later read by @command{make} to
+build the package.} files based on the hand-written configurations (in
+@file{configure.ac} and the @file{Makefile.am} files). After running
+@command{autoreconf -f}, a warning about @code{TEXI2DVI} might show up, you
+can ignore that.
+
+The most important reason for re-building Gnuastro's build system is to
+generate/update the version number for your updated Gnuastro snapshot. This
+generated version number will include the commit information (see
+@ref{Version numbering}). The version number is included in nearly all
+outputs of Gnuastro's programs, therefore it is vital for reproducing an
+old result.
+
+As a summary, be sure to run `@command{autoreconf -f}' after every change
+in the Git history. This includes synchronization with the main server or
+even a commit you have made yourself.
 
 If you would like to see what has changed since you last synchronized your
 local clone, you can take the following steps instead of the simple command
@@ -5322,7 +5343,7 @@ $ git checkout master             # Confirm if you are on master.
 $ git fetch origin                # Fetch all new commits from server.
 $ git log master..origin/master   # See all the new commit messages.
 $ git merge origin/master         # Update your master branch.
-$ autoconf -f                     # Update ./configure.
+$ autoreconf -f                   # Update the build system.
 @end example
 
 @noindent
@@ -5331,19 +5352,17 @@ By default @command{git log} prints the most recent commit first, add the
 exactly what has been changed in the source code along with the commit
 message, add a @option{-p} option to the @command{git log}.
 
-If you intend make changes in the code, have a look at @ref{Developing} to
+If you want to make changes in the code, have a look at @ref{Developing} to
 get started easily. Be sure to commit your changes in a separate branch
 (keep your @code{master} branch to follow the official repository) and
-re-run @command{autoconf -f} after the commit. If you intend to send your
-changes to us (see @ref{Contributing to Gnuastro}) for the benefit of the
-whole community. If you send your work to us, you can safely use your
-commit since it will be ultimately recorded in Gnuastro's official
-history. If not, please upload your separate branch to a public hosting
-service, for example @url{https://gitlab.com, GitLab} (see @ref{Forking
-tutorial}), and link to it in your report. Alternatively, run @command{make
-distcheck} and upload the output @file{gnuastro-X.X.X.XXXX.tar.gz} to a
-publicly accessible webpage so your results can be considered scientific
-(reproducible).
+re-run @command{autoreconf -f} after the commit. If you intend to send your
+work to us, you can safely use your commit since it will be ultimately
+recorded in Gnuastro's official history. If not, please upload your
+separate branch to a public hosting service, for example
+@url{https://gitlab.com, GitLab}, and link to it in your
+report/paper. Alternatively, run @command{make distcheck} and upload the
+output @file{gnuastro-X.X.X.XXXX.tar.gz} to a publicly accessible webpage
+so your results can be considered scientific (reproducible) later.
 
 
 
