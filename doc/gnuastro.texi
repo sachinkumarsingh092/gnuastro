@@ -955,24 +955,33 @@ mathematics behind the tools) to understand and modify any step of Gnuastro
 if you feel the need to do so, see @ref{Why C} and @ref{Program design
 philosophy}.
 
-@cindex Galileo, G.
-Imagine if Galileo did not have the technical knowledge to build a
-telescope. Astronomical objects could not be seen with the Dutch military
-design of the telescope. In other words, he couldn't have asked a lens
-maker to build a modified version. It is hard to imagine having the idea of
-modifying the optics for astronomy, if he wasn't already familiar, and
-experienced, in optics @emph{guided} by his astronomical curiosity. In the
-beginning of his ``The Sidereal Messenger'' (published in 1610) he cautions
-the readers on this issue and instructs them on how to build a suitable
-instrument: without a detailed description of @emph{how} he made his
-observations, no one would believe him. The same is true today: science
-cannot progress with a black box, and technical knowledge (to experiment on
-its tool tools, software in this context), is critical to scientific
-vitality. Before he actually saw the moons of Jupiter, the mountains on the
-Moon or the crescent of Venus, he was “evasive” to Kepler@footnote{Galileo
-G. (Translated by Maurice A. Finocchiaro). @emph{The essential
-Galileo}. Hackett publishing company, first edition, 2008.}. Science is not
-independent of its tools.
+@cindex Brahe, Tycho
+@cindex Galileo, Galilei
+It is hard to imagine how, without prior familiarity and experience with
+optics, Galileo could have come up with the idea of modifying the Dutch
+military telescope optics for astronomy. Astronomical objects could not be
+seen with the Dutch military design of the telescope. In other words, it is
+unlikely that Galileo could have asked a random optician to make
+modifications (not understood by Galileo) to the Dutch design, to do
+something no one took seriously. In the paradigm of the day, what could be
+the purpose of enlarging geometric spheres (planets) or points (stars)? In
+that paradigm only the position and movement of the heavenly bodies was
+important, and that had already been accurately studied (recently by Tyco
+Brahe).
+
+In the beginning of his ``The Sidereal Messenger'' (published in 1610) he
+cautions the readers on this issue and @emph{before} describing his
+results/observations, Galileo instructs us on how to build a suitable
+instrument. Without a detailed description of @emph{how} he made his
+observations, no reasonable person would believe him.
+
+The same is true today: science cannot progress with a black box. Technical
+knowledge (to experiment on its tools, or software in this context), is
+critical to scientific vitality. Before he actually saw the moons of
+Jupiter, the mountains on the Moon or the crescent of Venus, Galileo was
+“evasive”@footnote{Galileo G. (Translated by Maurice
+A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing company,
+first edition, 2008.} to Kepler. Science is not independent of its tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -989,7 +998,7 @@ and methods and are mainly indulging themselves in their own high-level
 (abstract) models (creations) and are happy with the data acquisition and
 analysis methods in vogue. For example, roughly five years before special
 relativity and about two decades before quantum mechanics fundamentally
-changed Physics, Kelvin is quoted as saying:
+changed Physics, Lord Kelvin is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin
@@ -1015,18 +1024,18 @@ looked for in the sixth place of decimals.
 
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
-If scientists are considered to be more than mere ``puzzle
-solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
-Revolutions}, University of Chicago Press, 1962.} (simply adding to
-the decimals of existing values or observing a feature in 10, 100, or
-100000 more galaxies or stars, as Kelvin and Michelson clearly
-believed), they cannot just passively sit back and uncritically repeat
-the previous (observational or theoretical) methods/tools on new
-data. Today there is a wealth of raw telescope images ready (mostly
-for free) at the finger tips of anyone who is interested with a fast
-enough internet connection to download them. The only thing lacking is
-new ways to analyze this data and dig out the treasure that is lying
-hidden in them to existing methods and techniques.
+If scientists are considered to be more than mere ``puzzle''
+solvers@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
+Revolutions}, University of Chicago Press, 1962.} (simply adding to the
+decimals of existing values or observing a feature in 10, 100, or 100000
+more galaxies or stars, as Kelvin and Michelson clearly believed), they
+cannot just passively sit back and uncritically repeat the previous
+(observational or theoretical) methods/tools on new data. Today there is a
+wealth of raw telescope images ready (mostly for free) at the finger tips
+of anyone who is interested with a fast enough internet connection to
+download them. The only thing lacking is new ways to analyze this data and
+dig out the treasure that is lying hidden in them to existing methods and
+techniques.
 
 @quotation
 @cindex Jaynes E. T.
