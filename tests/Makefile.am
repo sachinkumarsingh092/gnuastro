@@ -186,13 +186,6 @@ endif
 
 
 
-# `config.h' is built by `../lib/Makefile.am' and is only meant for outside
-# users (internally `config.h' has everything). Thus, we need to add it to
-# the include directories of the test programs in this directory.
-AM_CPPFLAGS = -I../lib
-
-
-
 
 
 # Environment variables for the test scripts.
@@ -217,11 +210,21 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 # by `check_PROGRAMS' are compiled prior to actually running the targets of
 # `TESTS'. So they do not need to be specified as any dependency, they will
 # be present when the `.sh' based tests are run.
+
+# The `gnuastro/config.h' (needed by Gnuastro's library) is built by
+# `../lib/Makefile.am' and is only meant for outside users (to be tested
+# here). Thus (unlike the programs, which use `config.h') we need to add
+# the top build directory to the include search directories (`-I').
+AM_LDFLAGS = -L\$(top_builddir)/lib
+AM_CPPFLAGS = -I\$(top_srcdir)/lib -I\$(top_builddir)/lib
+
+# Rest of library check settings.
 LDADD = -lgnuastro
 check_PROGRAMS = multithread versioncxx
 multithread_SOURCES = lib/multithread.c
 versioncxx_SOURCES  = lib/versioncxx.cpp
 lib/multithread.sh: mkprof/mosaic1.sh.log
+
 
 
 
