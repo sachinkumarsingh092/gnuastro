@@ -957,31 +957,41 @@ philosophy}.
 
 @cindex Brahe, Tycho
 @cindex Galileo, Galilei
-It is hard to imagine how, without prior familiarity and experience with
-optics, Galileo could have come up with the idea of modifying the Dutch
-military telescope optics for astronomy. Astronomical objects could not be
-seen with the Dutch military design of the telescope. In other words, it is
-unlikely that Galileo could have asked a random optician to make
-modifications (not understood by Galileo) to the Dutch design, to do
-something no one took seriously. In the paradigm of the day, what could be
-the purpose of enlarging geometric spheres (planets) or points (stars)? In
-that paradigm only the position and movement of the heavenly bodies was
-important, and that had already been accurately studied (recently by Tyco
-Brahe).
+Without prior familiarity and experience with optics, it is hard to imagine
+how, Galileo could have come up with the idea of modifying the Dutch
+military telescope optics to use in astronomy. Astronomical objects could
+not be seen with the Dutch military design of the telescope. In other
+words, it is unlikely that Galileo could have asked a random optician to
+make modifications (not understood by Galileo) to the Dutch design, to do
+something no astronomer of the time took seriously. In the paradigm of the
+day, what could be the purpose of enlarging geometric spheres (planets) or
+points (stars)? In that paradigm only the position and movement of the
+heavenly bodies was important, and that had already been accurately studied
+(recently by Tyco Brahe).
 
 In the beginning of his ``The Sidereal Messenger'' (published in 1610) he
 cautions the readers on this issue and @emph{before} describing his
 results/observations, Galileo instructs us on how to build a suitable
-instrument. Without a detailed description of @emph{how} he made his
-observations, no reasonable person would believe him.
+instrument. Without a detailed description of @emph{how} he made his tools
+and done his observations, no reasonable person would believe his
+results. Before he actually saw the moons of Jupiter, the mountains on the
+Moon or the crescent of Venus, Galileo was “evasive”@footnote{Galileo
+G. (Translated by Maurice A. Finocchiaro). @emph{The essential
+Galileo}. Hackett publishing company, first edition, 2008.} to
+Kepler. Science is defined by its tools/methods, @emph{not} its
+results@footnote{For example, take the following two results on the age of
+the universe: roughly 14 billion years (suggested by the current consensus
+of the standard model of cosmology) and less than 10,000 years (suggested
+from some interpretations of the Bible). Both these numbers are
+@emph{results}. What distinguishes these two results, is the tools/methods
+used to derive them. Therefore, as the term ``Scientific method'' also
+signifies, it is the @emph{method} that defines a scientific statement, not
+the result of one implementation of the method.}.
 
 The same is true today: science cannot progress with a black box. Technical
-knowledge (to experiment on its tools, or software in this context), is
-critical to scientific vitality. Before he actually saw the moons of
-Jupiter, the mountains on the Moon or the crescent of Venus, Galileo was
-“evasive”@footnote{Galileo G. (Translated by Maurice
-A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing company,
-first edition, 2008.} to Kepler. Science is not independent of its tools.
+knowledge and experience (to experiment on its tools, or software in this
+context@footnote{Of course, this also applies to hardware.}), is critical
+to scientific vitality.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -993,12 +1003,13 @@ system designed for the `user' if that word is a coded pejorative meaning
 scientific software) would want to be considered a believer in magic, or
 stupid and unsophisticated.
 
-However, this can happen when scientists get too distant from the raw data
-and methods and are mainly indulging themselves in their own high-level
-(abstract) models (creations) and are happy with the data acquisition and
-analysis methods in vogue. For example, roughly five years before special
-relativity and about two decades before quantum mechanics fundamentally
-changed Physics, Lord Kelvin is quoted as saying:
+This can happen when scientists get too distant from the raw data and
+methods, and are mainly discussing results. In other words, when they feel
+they have tamed Nature into their own high-level (abstract) models
+(creations), and are mainly concerned with scaling up, or industrializing
+science. Roughly five years before special relativity, and about two
+decades before quantum mechanics fundamentally changed Physics, Lord Kelvin
+is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin
