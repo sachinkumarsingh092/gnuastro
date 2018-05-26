@@ -4573,6 +4573,26 @@ $ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
                                                              \
                  gsl cfitsio wcslib
 @end example
+
+@item macOS (@command{brew})
+@cindex macOS
+macOS is the operating system used on Apple devices
+(@url{https://en.wikipedia.org/wiki/MacOS}). macOS does not come with a
+package manager pre-installed, but several widely used, third-party package
+managers exist, such as Homebrew or MacPorts.  Installation with Homebrew
+is tested and therefore recommended by the Gnuastro developers.  If not
+already installed, first obtain Homebrew by following the instructions at
+@url{https://brew.sh}.  Homebrew manages packages in different `taps'.  If
+you plan to install @command{wcslib} via Homebrew you will need to
+@command{tap} into @command{brewsci/science} first (the tap may change in
+the future, but can be found by calling @command{brew search wcslib}).
+@example
+$ brew install ghostscript libtool libjpeg libtiff libgit2 \
+                                                           \
+               gsl cfitsio
+$ brew tap brewsci/science
+$ brew install wcslib
+@end example
 @end table
 
 
