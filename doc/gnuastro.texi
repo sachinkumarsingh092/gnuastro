@@ -5007,7 +5007,7 @@ macOS is the operating system used on Apple devices
 package manager pre-installed, but several widely used, third-party package
 managers exist, such as Homebrew or MacPorts. Both are free
 software. Currently we have only tested Gnuastro's installation with
-Homebrew and described below.
+Homebrew as described below.
 
 If not already installed, first obtain Homebrew by following the
 instructions at @url{https://brew.sh}. Homebrew manages packages in
