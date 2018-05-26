@@ -254,6 +254,7 @@ Dependencies
 * Mandatory dependencies::      Gnuastro will not install without these.
 * Optional dependencies::       Adding more functionality.
 * Bootstrapping dependencies::  If you have the version controlled source.
+* Dependencies from package managers::  Installing from OS package managers.
 
 Mandatory dependencies
 
@@ -4472,134 +4473,31 @@ Gnuastro but might be useful in conjunction with it is discussed.
 @node Dependencies, Downloading the source, Installation, Installation
 @section Dependencies
 
-The dependencies needed to build and install Gnuastro are defined by the
-features you want and how you would like to obtain the source code (see
-@ref{Downloading the source}). A minimal set of dependencies are mandatory,
-if they are not present you cannot get passed the configuration step. Such
-mandatory dependencies are therefore very basic (low-level) tools which are
-easy to obtain, build and install, see @ref{Mandatory dependencies} for a
-full discussion.
+A minimal set of dependencies are mandatory for building Gnuastro from the
+standard tarball release. If they are not present you cannot pass
+Gnuastro's configuration step. The mandatory dependencies are therefore
+very basic (low-level) tools which are easy to obtain, build and install,
+see @ref{Mandatory dependencies} for a full discussion.
 
 If you have the packages of @ref{Optional dependencies}, Gnuastro will have
 additional functionality (for example converting FITS images to JPEG or
 PDF). If you are installing from a tarball as explained in @ref{Quick
-start}, you can stop reading after this section. However, if you decided to
-use the version controlled source instead of the tarball (see @ref{Version
-controlled source}), an additional bootstrapping step is required before
-configuration and its dependencies are explained in @ref{Bootstrapping
-dependencies}.
+start}, you can stop reading after this section. If you are cloning the
+version controlled source (see @ref{Version controlled source}), an
+additional bootstrapping step is required before configuration and its
+dependencies are explained in @ref{Bootstrapping dependencies}.
 
-@cindex Package managers
-@cindex Source code building
-@cindex Building from source
-@cindex Compiling from source
-@cindex Source code compilation
-@cindex Distributions, GNU/Linux
-The most basic way to install a package on your system is to build the
-packages from source yourself. Alternatively, you can use your operating
-system's package manager to download pre-compiled files and install
-them. The latter choice is easier and faster. However, we recommend that
-you build the @ref{Mandatory dependencies} yourself from source (all
-necessary commands and links are given in the respective section). Here are
-some basic reasons behind this recommendation.
-
-@enumerate
-
-@item
-Your distribution's pre-built package might not be the most recent
-release.
-
-@item
-For each package, Gnuastro might preform better (or require) certain
-configuration options that your distribution's package managers didn't add
-for you. If present, these configuration options are explained during the
-installation of each in the sections below (for example in
-@ref{CFITSIO}). When the proper configuration has not been set, the
-programs should complain and inform you.
-
-@item
-For the libraries, they might separate the binary file from the header
-files which can cause confusion, see @ref{Known issues}.
-
-@item
-Like any other tool, the science you derive from Gnuastro's tools highly
-depend on these lower level dependencies, so generally it is much better to
-have a close connection with them. By reading their manuals, installing
-them and staying up to date with changes/bugs in them, your scientific
-results and understanding (of what is going on, and thus how you interpret
-your scientific results) will also correspondingly improve.
-@end enumerate
-
-Based on your operating system's package manager, you can use any of the
-following commands to install the mandatory and optional dependencies. If
-your operating system is not included, please send us the respective
-command, so we add it here. Gnuastro itself if also already packaged in
-some package managers (for example Debian).
-
-As discussed above, we recommend installing the @emph{mandatory}
-dependencies manually from source. Therefore, in each command below, first
-the optional dependencies are given. The mandatory dependencies are
-included after an empty line. If you would like to install the mandatory
-dependencies with your package manager, just ignore the empty line.
-
-@table @asis
-@item Debian-based (@command{apt-get})
-@cindex Debian
-@cindex Ubuntu
-Debian-based GNU/Linux
-distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
-(for example Ubuntu or its derivatives) are arguably the largest, and most
-used, class of GNU/Linux distributions. All such GNU/Linux distributions
-use Debian's Advanced Packaging Tool (APT, for example @command{apt-get})
-for managing packages.
-@example
-$ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
-                       libtiff-dev libgit2-dev              \
-                                                            \
-                       libgsl0-dev libcfitsio-dev wcslib-dev
-@end example
-
-@item Arch Linux (@command{pacman})
-@cindex Arch Linux
-Arch Linux is a smaller GNU/Linux distribution. As discussed in
-@url{https://en.wikipedia.org/wiki/Arch_Linux, Wikipedia}, it follows ``the
-KISS principle ("keep it simple, stupid") as the general guideline, and
-focuses on elegance, code correctness, minimalism and simplicity, and
-expects the user to be willing to make some effort to understand the
-system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
-manage its packages.
-@example
-$ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
-                                                             \
-                 gsl cfitsio wcslib
-@end example
-
-@item macOS (@command{brew})
-@cindex macOS
-macOS is the operating system used on Apple devices
-(@url{https://en.wikipedia.org/wiki/MacOS}). macOS does not come with a
-package manager pre-installed, but several widely used, third-party package
-managers exist, such as Homebrew or MacPorts.  Installation with Homebrew
-is tested and therefore recommended by the Gnuastro developers.  If not
-already installed, first obtain Homebrew by following the instructions at
-@url{https://brew.sh}.  Homebrew manages packages in different `taps'.  If
-you plan to install @command{wcslib} via Homebrew you will need to
-@command{tap} into @command{brewsci/science} first (the tap may change in
-the future, but can be found by calling @command{brew search wcslib}).
-@example
-$ brew install ghostscript libtool libjpeg libtiff libgit2 \
-                                                           \
-               gsl cfitsio
-$ brew tap brewsci/science
-$ brew install wcslib
-@end example
-@end table
-
+Your operating system's package manager is an easy and convenient way to
+download and install the dependencies that are already pre-built for your
+operating system. In @ref{Dependencies from package managers}, we'll list
+some common operating system package manager commands to install the
+optional and mandatory dependencies.
 
 @menu
 * Mandatory dependencies::      Gnuastro will not install without these.
 * Optional dependencies::       Adding more functionality.
 * Bootstrapping dependencies::  If you have the version controlled source.
+* Dependencies from package managers::  Installing from OS package managers.
 @end menu
 
 @node Mandatory dependencies, Optional dependencies, Dependencies, Dependencies
@@ -4874,7 +4772,7 @@ package managers for this.
 
 
 
-@node Bootstrapping dependencies,  , Optional dependencies, Dependencies
+@node Bootstrapping dependencies, Dependencies from package managers, Optional dependencies, Dependencies
 @subsection Bootstrapping dependencies
 
 Bootstrapping is only necessary if you have decided to obtain the full
@@ -5023,6 +4921,122 @@ ImageMagick is a wonderful and robust program for image manipulation on the
 command-line. @file{bootsrap} uses it to convert the book images into the
 formats necessary for the various book formats.
 
+@end table
+
+
+
+@node Dependencies from package managers,  , Bootstrapping dependencies, Dependencies
+@subsection Dependencies from package managers
+
+@cindex Package managers
+@cindex Source code building
+@cindex Building from source
+@cindex Compiling from source
+@cindex Source code compilation
+@cindex Distributions, GNU/Linux
+The most basic way to install a package on your system is to build the
+packages from source yourself. Alternatively, you can use your operating
+system's package manager to download pre-compiled files and install
+them. The latter choice is easier and faster. However, we recommend that
+you build the @ref{Mandatory dependencies} yourself from source (all
+necessary commands and links are given in the respective section). Here are
+some basic reasons behind this recommendation.
+
+@enumerate
+
+@item
+Your distribution's pre-built package might not be the most recent
+release.
+
+@item
+For each package, Gnuastro might preform better (or require) certain
+configuration options that your distribution's package managers didn't add
+for you. If present, these configuration options are explained during the
+installation of each in the sections below (for example in
+@ref{CFITSIO}). When the proper configuration has not been set, the
+programs should complain and inform you.
+
+@item
+For the libraries, they might separate the binary file from the header
+files which can cause confusion, see @ref{Known issues}.
+
+@item
+Like any other tool, the science you derive from Gnuastro's tools highly
+depend on these lower level dependencies, so generally it is much better to
+have a close connection with them. By reading their manuals, installing
+them and staying up to date with changes/bugs in them, your scientific
+results and understanding (of what is going on, and thus how you interpret
+your scientific results) will also correspondingly improve.
+@end enumerate
+
+Based on your operating system and its package manager, you can use any of
+the following commands to install the mandatory and optional
+dependencies. If your operating system or package manager are not included,
+please send us the respective command, so we add it here. Gnuastro itself
+if also already packaged in some package managers (for example Debian or
+Homebrew).
+
+As discussed above, we recommend installing the @emph{mandatory}
+dependencies manually from source. Therefore, in each command below, first
+the optional dependencies are given. The mandatory dependencies are
+included after an empty line. If you would also like to install the
+mandatory dependencies with your package manager, just ignore the empty
+line.
+
+@table @asis
+@item Debian-based OSs (@command{apt-get})
+@cindex Debian
+@cindex Ubuntu
+Debian-based GNU/Linux
+distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
+(for example Ubuntu or its derivatives) are arguably the largest, and most
+used, class of GNU/Linux distributions. All such GNU/Linux distributions
+use Debian's Advanced Packaging Tool (APT, for example @command{apt-get})
+for managing packages.
+@example
+$ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
+                       libtiff-dev libgit2-dev              \
+                                                            \
+                       libgsl0-dev libcfitsio-dev wcslib-dev
+@end example
+
+@item macOS (@command{brew})
+@cindex macOS
+macOS is the operating system used on Apple devices
+(@url{https://en.wikipedia.org/wiki/MacOS}). macOS does not come with a
+package manager pre-installed, but several widely used, third-party package
+managers exist, such as Homebrew or MacPorts. Both are free
+software. Currently we have only tested Gnuastro's installation with
+Homebrew and described below.
+
+If not already installed, first obtain Homebrew by following the
+instructions at @url{https://brew.sh}. Homebrew manages packages in
+different `taps'. To install WCSLIB (discussed in @ref{Mandatory
+dependencies}) via Homebrew you will need to @command{tap} into
+@command{brewsci/science} first (the tap may change in the future, but can
+be found by calling @command{brew search wcslib}).
+@example
+$ brew install ghostscript libtool libjpeg libtiff libgit2 \
+                                                           \
+               gsl cfitsio
+$ brew tap brewsci/science
+$ brew install wcslib
+@end example
+
+@item Arch Linux (@command{pacman})
+@cindex Arch Linux
+Arch Linux is a smaller GNU/Linux distribution. As discussed in
+@url{https://en.wikipedia.org/wiki/Arch_Linux, Wikipedia}, it follows ``the
+KISS principle ("keep it simple, stupid") as the general guideline, and
+focuses on elegance, code correctness, minimalism and simplicity, and
+expects the user to be willing to make some effort to understand the
+system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
+manage its packages.
+@example
+$ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
+                                                             \
+                 gsl cfitsio wcslib
+@end example
 @end table
 
 
