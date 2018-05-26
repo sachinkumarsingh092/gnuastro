@@ -53,7 +53,7 @@ all the commits needed for this release have been completed.
 
      $ git clean -fxd
      $ ./bootstrap --copy --gnulib-srcdir=/path/to/gnulib
-     $ ./tmpfs-config-make
+     $ ./developer-build
      $ cd build
      $ make distcheck -j8
 
@@ -77,7 +77,7 @@ all the commits needed for this release have been completed.
 
      $ rm -rf ./build/*
      $ autoreconf -f
-     $ ./tmpfs-config-make
+     $ ./developer-build
      $ cd build
      $ make distcheck -j8
      $ make dist-lzip

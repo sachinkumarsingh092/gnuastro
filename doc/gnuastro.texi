@@ -274,6 +274,7 @@ Version controlled source
 Build and install
 
 * Configuring::                 Configure Gnuastro
+* Separate build and source directories::  Keeping derivate/build files separate.
 * Tests::                       Run tests to see if it is working.
 * A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
@@ -5413,6 +5414,7 @@ encounter in the installation steps and ways you can solve them.
 
 @menu
 * Configuring::                 Configure Gnuastro
+* Separate build and source directories::  Keeping derivate/build files separate.
 * Tests::                       Run tests to see if it is working.
 * A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
@@ -5422,7 +5424,7 @@ encounter in the installation steps and ways you can solve them.
 
 
 
-@node Configuring, Tests, Build and install, Build and install
+@node Configuring, Separate build and source directories, Build and install, Build and install
 @subsection Configuring
 
 @pindex ./configure
@@ -5990,11 +5992,11 @@ $ ./configure --program-transform-name='s/ast/ /'
 
 @cindex File I/O
 @cindex Input/Output, file
-The configure and build process involves the creation, reading, and
-modification of a large number of files (input/output, or I/O). Therefore
-file I/O issues can directly affect the work of developers who need to
-configure and build Gnuastro numerous times. Some of these issues are
-listed below:
+Gnuastro's configure and build process (the GNU build system) involves the
+creation, reading, and modification of a large number of files
+(input/output, or I/O). Therefore file I/O issues can directly affect the
+work of developers who need to configure and build Gnuastro numerous
+times. Some of these issues are listed below:
 
 @itemize
 @cindex HDD
@@ -6030,44 +6032,161 @@ considered as an automatic cleanup.
 @cindex Linux kernel
 @cindex GNU C library
 @cindex GNU build system
-The modern GNU C library (and thus the Linux kernel) define the
-@file{/dev/shm} directory for this purpose (POSIX shared memory). So using
-GNU Build System's ability to build in a separate directory (not
-necessarily in the source directory), we can configure and build the
-programs in @file{/dev/shm} to benefit from the RAM. To simplify the
-process, Gnuastro comes with a @file{tmpfs-config-make} script. This script
-will create a directory in the shared memory, and put a symbolic link to it
-(called @file{build}) in the top source directory (the backup/sync software
-therefore only needs to ignore this single link/file). The script will then
-internally change to that directory and configure and build (@command{make
--kjN}, where @command{N} is the number of threads for a parallel build)
-Gnuastro in there. To benefit from this script, simply run the following
-command instead of @command{./configure} and @command{make}:
+The modern GNU C library (and thus the Linux kernel) defines the
+@file{/dev/shm} directory for this purpose in the RAM (POSIX shared
+memory). To build in it, you can use the GNU build system's ability to
+build in a separate directory (not necessarily in the source directory) as
+shown below. Just set @file{SRCDIR} as the address of Gnuastro's top source
+directory (for example, the unpacked tarball).
 
 @example
-$ ./tmpfs-config-make
+$ mkdir /dev/shm/tmp-gnuastro-build
+$ cd /dev/shm/tmp-gnuastro-build
+$ SRCDIR/configure --srcdir=SRCDIR
+$ make
 @end example
 
-@cindex GNU Emacs
-After this script is finished, you can `@command{cd build}' and run other
-Make commands (for example, `@command{make check}', `@command{make
-install}', or `@command{make pdf}') from there. In Emacs, the command to be
-run with the @command{M-x compile} command (by default: @command{make -k})
-can be changed to `@command{cd build; make -kjN}', or `@command{make -C
-build -kjN}' (@command{N} is the number of threads; an integer
-@mymath{\geq1}). For subsequent builds (during development) the
-@command{M-x recompile} command will also do all the building in the RAM
-while you modify the clean, and backed-up source files and make
-minimal/efficient use of your non-volatile HDD or SSD.
+Gnuastro comes with a script to simplify this process of configuring and
+building in a different directory (a ``clean'' build), for more see
+@ref{Separate build and source directories}.
 
-This script can be used in any software which is configured and built using
-the GNU Build System. Just copy it in the top source directory of that
-software and run it from there. The default number of threads and location
-of the shared memory (@file{/dev/shm}) are currently hard-coded within the
-script. If you need to change them, please open the script with a text
-editor and set their values manually.
+@node Separate build and source directories, Tests, Configuring, Build and install
+@subsection Separate build and source directories
 
-@node Tests, A4 print book, Configuring, Build and install
+The simple steps of @ref{Quick start} will mix the source and built files.
+This can cause inconvenience for developers or enthusiasts following the
+the most recent work (see @ref{Version controlled source}). The current
+section is mainly focused on this later group of Gnuastro users. If you
+just install Gnuastro on major releases (following @ref{Announcements}),
+you can safely ignore this section.
+
+@cindex GNU build system
+When it is necessary to keep the source (which is under version control),
+but not the derivative (built) files (after checking or installing), the
+best solution is to keep the source and the built files in separate
+directories. One application of this is already discussed in @ref{Configure
+and build in RAM}.
+
+To facilitate this process of configuring and building in a separate
+directory, Gnuastro comes with the @file{developer-build} script. It is
+available in the top source directory and is @emph{not} installed. It will
+make a directory under a given top-level directory (given to
+@option{--top-build-dir}) and build Gnuastro in there directory. It thus
+keeps the source completely separated from the built files. For easy access
+to the built files, it also makes a symbolic link to the built directory in
+the top source files called @file{build}.
+
+When run without any options, default values will be used for its
+configuration. As with Gnuastro's programs, you can inspect the default
+values with @option{-P} (or @option{--printparams}, the output just looks a
+little different here). The default top-level build directory is
+@file{/dev/shm}: the shared memory directory in RAM on GNU/Linux systems as
+described in @ref{Configure and build in RAM}.
+
+@cindex Debug
+Besides these, it also has some features to facilitate the job of
+developers or bleeding edge users like the @option{--debug} option to do a
+fast build, with debug information, no optimization, and no shared
+libraries. Here is the full list of options you can feed to this script to
+configure its operations.
+
+@cartouche
+@noindent
+@strong{Not all Gnuastro's common program behavior usable here:}
+@file{developer-build} is just a non-installed script with a very limited
+scope as described above. It thus doesn't have all the common option
+behaviors or configuration files for example.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{White space between option and value:} @file{developer-build}
+doesn't accept an @key{=} sign between the options and their values. It
+also needs atleast one character between the option and its
+value. Therefore @option{-n 4} or @option{--numthreads 4} are acceptable,
+while @option{-n4}, @option{-n=4}, or @option{--numthreads=4}
+aren't. Finally multiple short option names cannot be merged: for example
+you can say @option{-c -n 4}, but unlike Gnuastro's programs, @option{-cn4}
+is not acceptable.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{Reusable for other packages:} This script can be used in any
+software which is configured and built using the GNU Build System. Just
+copy it in the top source directory of that software and run it from there.
+@end cartouche
+
+@table @option
+
+@item -b STR
+@itemx --top-build-dir STR
+The top build directory to make a directory for the build. If this option
+isn't called, the top build directory is @file{/dev/shm} (only available in
+GNU/Linux operating systems, see @ref{Configure and build in RAM}).
+
+@item -V
+@itemx --version
+Print the version string of Gnuastro that will be used in the build. This
+string will be appended to the directory name containing the built files.
+
+@item -c
+@itemx --clean
+@cindex GNU Autoreconf
+Delete the contents of the build directory (clean it) before starting the
+configuration and building of this run.
+
+This is useful when you have recently pulled changes from the main Git
+repository, or commited a change your self and ran @command{autoreconf -f},
+see @ref{Synchronizing}. After running GNU Autoconf, the version will be
+updated and you need to do a clean build.
+
+@item -d
+@itemx --debug
+@cindex Valgrind
+@cindex GNU Debugger (GDB)
+Build with debugging flags (for example to use in GNU Debugger, also known
+as GDB, or Valgrind), disable optimization and also the building of shared
+libraries. Similar to running the configure script of below
+
+@example
+$ ./configure CFLAGS="-g -O0" --disable-shared
+@end example
+
+Besides all the debugging advantages of building with this option, it will
+also be significantly speed up the build (at the cost of slower built
+programs). So when you are testing something small or working on the build
+system itself, it will be much faster to test your work with this option.
+
+@item -j INT
+@itemx --jobs INT
+The maximum number of threads/jobs for Make to build at any moment. As the
+name suggests (Make has an identical option), the number given to this
+option is directly passed on to any call of Make with its @option{-j}
+option.
+
+@item -C
+@itemx --check
+After finishing the build, also run @command{make check}. By default,
+@command{make check} isn't run because the developer usually has their own
+checks to work on (for example defined in @file{tests/during-dev.sh}).
+
+@item -i
+@itemx --install
+After finishing the build, also run @command{make install}.
+
+@item -h
+@itemx --help
+@itemx -P
+@itemx --printparams
+Print a description of this script along with all the options and their
+current values.
+
+@end table
+
+
+
+@node Tests, A4 print book, Separate build and source directories, Build and install
 @subsection Tests
 
 @cindex @command{make check}
@@ -28279,8 +28398,8 @@ source}). To facilitate the building and testing of your work during
 development, Gnuastro comes with two useful scripts:
 
 @table @file
-@cindex @file{tmpfs-config-make}
-@item tmpfs-config-make
+@cindex @file{developer-build}
+@item developer-build
 This is more fully described in @ref{Configure and build in RAM}. During
 development, you will usually run this command only once (at the start of
 your work).
@@ -28316,8 +28435,8 @@ $ ./configure --disable-shared CFLAGS="-g -O0"
 @end example
 
 @noindent
-In @file{tmpfs-config-make} you can ask for this behavior by setting
-@code{debug_noshared} to @code{1}.
+In @file{developer-build} you can ask for this behavior through the
+@option{--debug} option, see @ref{Separate build and source directories}.
 
 In order to understand the building process, you can go through the
 Autoconf, Automake and Libtool manuals, like all GNU manuals they provide
@@ -28356,15 +28475,15 @@ executable.
 
 @cindex Build tree
 @cindex Source tree
-@cindex @file{tmpfs-config-make}
+@cindex @file{developer-build}
 The most important thing to have in mind about all the test scripts is that
 they are run from inside the @file{tests/} directory in the ``build
 tree''. Which can be different from the directory they are stored in (known
-as the ``source tree'')@footnote{The @file{tmpfs-config-make} script also
+as the ``source tree'')@footnote{The @file{developer-build} script also
 uses this feature to keep the source and build directories separate (see
-@ref{Configure and build in RAM}).}. This distinction is made by GNU
-Autoconf and Automake (which configure, build and install Gnuastro) so that
-you can install the program even if you don't have write access to the
+@ref{Separate build and source directories}).}. This distinction is made by
+GNU Autoconf and Automake (which configure, build and install Gnuastro) so
+that you can install the program even if you don't have write access to the
 directory keeping the source files. See the ``Parallel build trees (a.k.a
 VPATH builds)'' in the Automake manual for a nice explanation.
 

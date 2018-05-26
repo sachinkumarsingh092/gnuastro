@@ -1,0 +1,318 @@
+#! /bin/sh
+
+# This script will configure and build Gnuastro in parallel inside another
+# directory (to keep the source and build directories separate). By default
+# it is in the tmpfs directory of the RAM. Please see the "Configure and
+# build in RAM" section of the Gnuastro book/documentation for a full
+# explanation.
+#
+# Original author:
+#   Mohammad Akhlaghi <mohammad@akhlaghi.org>
+# Contributing author(s):
+#   Mosè Giordano <mose@gnu.org>
+# Copyright (C) 2016-2018, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
+
+# Default values for variables.
+jobs=8
+debug=0
+clean=0
+check=0
+install=0
+top_build_dir=/dev/shm
+if [ -f .version ]; then
+    version=$(cat .version)
+else
+    version=""
+fi
+
+
+
+
+
+# Output of help.
+me=$0                           # Executable file name.
+help_print() {
+
+    # See if debug is enabled or not.
+    if [ $debug = "0" ]; then
+        debug_status="DISABLED"
+    else
+        debug_status="ENABLED"
+    fi
+
+    # See if clean is enabled or not.
+    if [ $clean = "0" ]; then
+        clean_status="DISABLED"
+    else
+        clean_status="ENABLED"
+    fi
+
+    # See if check is enabled or not.
+    if [ $check = "0" ]; then
+        check_status="DISABLED"
+    else
+        check_status="ENABLED"
+    fi
+
+    # See if install is enabled or not.
+    if [ $install = "0" ]; then
+        install_status="DISABLED"
+    else
+        install_status="ENABLED"
+    fi
+
+    # Print the output.
+    cat <<EOF
+
+Usage: $me [OPTION]...
+
+Configure and make the package in a separate directory and put a symbolic
+link to that directory in the current directory. A top build directory must
+be given to host the build directory for this script (see 'top-build-dir'
+option below). The symbolic link to the build directory in this directory
+will be called 'build'.
+
+Options:
+
+ -b, --top-build-dir STR  Address to host the top build directory.
+                          Current value: $top_build_dir
+
+ -V, --version            Print current version to be used in absolute
+                          build directory name.
+                          Current value: $version
+
+ -c, --clean              Delete (with `rm') all its contents of the build
+                          directory before starting new configuration.
+                          Current status: $clean_status
+
+ -d, --debug              Build Gnuastro with debugging information,
+                          no optimization flags, and without shared
+                          libraries.
+                          Current status: $debug_status
+
+ -j, --jobs INT           Number of threads to use in 'make'.
+                          Current value: $jobs
+
+ -C, --check              Run 'make check' after the build.
+                          Current status: $check_status
+
+ -i, --install            Run `sudo make install' after the build.
+                          Current status: $install_status
+
+ -P, --printparams        Another name for `--help', for similarity with
+                          Gnuastro's programs. Note that the output of
+                          `--help' also includes the variable values.
+
+ -h, --help               Print this help list.
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+GNU Astronomy Utilities home page: http://www.gnu.org/software/gnuastro/
+
+Report bugs to bug-gnuastro@gnu.org.
+EOF
+}
+
+
+
+
+
+# Parse the arguments.
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -b|--top-build-dir)
+            top_build_dir="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        -V|--version)
+            echo $version
+            exit 0
+            ;;
+        -c|--clean)
+            clean=1
+            shift # past argument
+            ;;
+        -d|--debug)
+            debug=1
+            shift # past argument
+            ;;
+        -j|--jobs)
+            jobs="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        -C|--check)
+            check=1
+            shift # past argument
+            ;;
+        -i|--install)
+            install=1
+            shift # past argument
+            ;;
+        -h|-P|--help|--printparams)
+            help_print
+            exit 0
+            ;;
+        *)    # unknown option
+            echo "'$1' isn't a recognized option. Aborted."
+            echo
+            echo "Recall that for this script, options and their values must be"
+            echo "separated by atleast one white-space character."
+            exit 1
+            ;;
+    esac
+done
+
+
+
+
+
+# Check if top_build_dir exists
+if [ ! -d $top_build_dir ]; then
+    echo "$top_build_dir doesn't exist. Aborted."
+    exit 1
+fi
+
+
+
+
+
+# Keep the address of this source directory (where this script is being run
+# from) which we will need later.
+srcdir=$(pwd)
+
+
+
+
+
+# Set the build directory name in tmpfs. If the .version file exists, use
+# it to allow multiple version builds there (which might happen during
+# development).
+basedir=$(basename -- "$srcdir")
+if [ -f .version ]; then
+    build_dir=$top_build_dir/"$basedir"-$version
+else
+    build_dir=$top_build_dir/"$basedir"
+fi
+
+
+
+
+
+# Make the build directory in tmpfs (if it doesn't already exist).
+if [ ! -d $build_dir ]; then
+    mkdir $build_dir
+fi
+
+
+
+
+
+# Make a symbolic link to the tmpfs build directory for users to easily
+# access the built files and also follow the progress. We are first
+# deleting any existing symbolic link and remaking it since the possible
+# deletion of $build_dir during the development can complicate the
+# pre-existing symbolic link.
+build_sym=build
+if [ -h $build_sym ]; then
+    # Delete a harmless symbolic link, if present.
+    rm $build_sym
+fi
+
+
+
+
+
+# Create the link only if the symbolic link doesn't exist.
+if [ ! -e $build_sym ]; then
+    ln -s $build_dir $build_sym
+else
+    echo "$build_sym already exists here and is not a symbolic link."
+    echo "Aborted."
+    exit 1
+fi
+
+
+
+
+
+# Clean the contents of the build directory if requested.
+if [ x$clean = x1 ]; then
+    rm -rf $build_sym/*
+fi
+
+
+
+
+
+# Go into the build directory to start the configure and/or build:
+cd $build_dir
+
+
+
+
+
+# If a 'Makefile' doesn't exist, then configure Gnuastro.
+#
+# FOR DEBUGGING: uncomment the second half of this line. Gnuastro uses GNU
+# Libtool to build shared libraries for highly portable and maintainable
+# usage on a wide variety of systems. While this is great for binaries,
+# shared libraries can be a pain when debuggin. For this reason,
+# compilation of shared libraries can be turned off by specifying the
+# --disable-shared option to configure. With static libraries, compilation
+# (the `make' command) will also significantly speed up. Also, by default
+# (in `configure.ac'), we have set optimization flags which have to be
+# cancelled in debugging.
+if [ ! -f Makefile ]; then
+    if [ x$debug = x1 ]; then
+        $srcdir/configure --srcdir=$srcdir CFLAGS="-g -O0" --disable-shared
+    else
+        $srcdir/configure --srcdir=$srcdir
+    fi
+fi
+
+
+
+
+
+# Build Gnuastro in that directory with the specified number of threads
+make -kj$jobs
+
+
+
+
+
+# If requested, also run `make check'.
+if [ x$check = x1 ]; then
+    make check -kj$jobs
+fi
+
+
+
+
+
+# If requested, also run `sudo make install'.
+if [ x$install = x1 ]; then
+    sudo make install -kj$jobs
+fi

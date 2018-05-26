@@ -142,7 +142,7 @@ dist_sysconf_DATA = bin/gnuastro.conf
 
 ## Files that are only distributed
 ## ===============================
-EXTRA_DIST = genauthors .dir-locals.el .version tmpfs-config-make     \
+EXTRA_DIST = genauthors .dir-locals.el .version developer-build     \
   bootstrapped/README .autom4te.cfg
 
 
