@@ -45,6 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /*********************************************************************/
 /********************      Nearest neighbor       ********************/
+/***************         (Dimension agnostic)         ****************/
 /*********************************************************************/
 /* These are bit-flags, so we're using hexadecimal notation. */
 #define INTERPOLATE_FLAGS_NO       0
@@ -446,4 +447,292 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   gal_data_free(prm.blanks);
   gal_list_void_free(prm.ngb_vals, 1);
   return prm.out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************          1D on grid         ********************/
+/*********************************************************************/
+gsl_spline *
+gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d)
+{
+  size_t i, c;
+  double *x, *y;
+  gal_data_t *Xd, *Yd;
+  gsl_spline *spline=NULL;
+  const gsl_interp_type *itype=NULL;
+  int Yhasblank=gal_blank_present(Y, 0);
+
+  /* A small sanity check. */
+  if(Y->ndim!=1)
+    error(EXIT_FAILURE, 0, "%s: input dataset is not 1D (it is %zuD)",
+          __func__, Y->ndim);
+  if(X)
+    {
+      if( gal_dimension_is_different(X, Y) )
+        error(EXIT_FAILURE, 0, "%s: when two inputs are given, they must "
+              "have the same dimensions. X has %zu elements, while Y has "
+              "%zu", __func__, X->size, Y->size);
+      if(gal_blank_present(X, 0))
+        error(EXIT_FAILURE, 0, "%s: the X dataset has blank elements",
+              __func__);
+    }
+
+  /* Set the interpolation type. */
+  switch(type_1d)
+    {
+    case GAL_INTERPOLATE_1D_LINEAR:
+      itype=gsl_interp_linear;           break;
+    case GAL_INTERPOLATE_1D_POLYNOMIAL:
+      itype=gsl_interp_polynomial;       break;
+    case GAL_INTERPOLATE_1D_CSPLINE:
+      itype=gsl_interp_cspline;          break;
+    case GAL_INTERPOLATE_1D_CSPLINE_PERIODIC:
+      itype=gsl_interp_cspline_periodic; break;
+    case GAL_INTERPOLATE_1D_AKIMA:
+      itype=gsl_interp_akima;            break;
+    case GAL_INTERPOLATE_1D_AKIMA_PERIODIC:
+      itype=gsl_interp_akima_periodic;   break;
+    case GAL_INTERPOLATE_1D_STEFFEN:
+      itype=gsl_interp_steffen;          break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: code %d not recognizable for the GSL "
+            "interpolation type", __func__, type_1d);
+    }
+
+  /* Initializations. Note that if Y doesn't have any blank elements and is
+     already in `double' type, then we don't need to make a copy. */
+  Yd = ( (Yhasblank || Y->type!=GAL_TYPE_FLOAT64)
+         ? gal_data_copy_to_new_type(Y, GAL_TYPE_FLOAT64)
+         : Y );
+  Xd = ( X
+         /* Has to be `Yhasblank', we KNOW X doesn't have blank values. */
+         ? ( (Yhasblank || X->type!=GAL_TYPE_FLOAT64)
+             ? gal_data_copy_to_new_type(X, GAL_TYPE_FLOAT64)
+             : X )
+         : gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, Y->dsize, NULL,
+                          0, -1, NULL, NULL, NULL) );
+
+  /* Fill in the X axis values while also removing NaN/blank elements. */
+  c=0;
+  x=Xd->array;
+  y=Yd->array;
+  for(i=0;i<Yd->size;++i)
+    if( !isnan(y[i]) )
+      {
+        y[ c   ] = y[i];
+	x[ c++ ] = X ? x[i] : i;
+      }
+
+  /* Make sure we have enough valid points for interpolation. */
+  if( c>=gsl_interp_type_min_size(itype) )
+    {
+      spline=gsl_spline_alloc(itype, c);
+      gsl_spline_init(spline, x, y, c);
+    }
+  else
+    spline=NULL;
+
+  /* Clean up and return. */
+  if(Xd!=X) gal_data_free(Xd);
+  if(Yd!=Y) gal_data_free(Yd);
+  return spline;
+}
+
+
+
+
+
+/* Return 0 if all blanks were filled. */
+static int
+interpolate_1d_blank_write(gal_data_t *in, gsl_spline *spline,
+			   gsl_interp_accel *acc)
+{
+  double tmp;
+  int hasblank;
+  uint8_t  *su8 =in->array, *u8 =in->array, *u8f =u8 +in->size;
+  int8_t   *si8 =in->array, *i8 =in->array, *i8f =i8 +in->size;
+  uint16_t *su16=in->array, *u16=in->array, *u16f=u16+in->size;
+  int16_t  *si16=in->array, *i16=in->array, *i16f=i16+in->size;
+  uint32_t *su32=in->array, *u32=in->array, *u32f=u32+in->size;
+  int32_t  *si32=in->array, *i32=in->array, *i32f=i32+in->size;
+  uint64_t *su64=in->array, *u64=in->array, *u64f=u64+in->size;
+  int64_t  *si64=in->array, *i64=in->array, *i64f=i64+in->size;
+  float    *sf32=in->array, *f32=in->array, *f32f=f32+in->size;
+  double   *sf64=in->array, *f64=in->array, *f64f=f64+in->size;
+
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:
+      do
+        if(*u8==GAL_BLANK_UINT8)
+          {
+            /* If the evaluation is good, this function will return 0. */
+            if( gsl_spline_eval_e(spline, u8-su8, acc, &tmp)==0 )
+              *u8=tmp;
+            else hasblank=1;
+          }
+      while(++u8<u8f);
+      break;
+    case GAL_TYPE_INT8:
+      do
+        if(*i8==GAL_BLANK_INT8)
+          {
+            if( gsl_spline_eval_e(spline, i8-si8, acc, &tmp)==0 )
+              *u16=tmp;
+            else hasblank=1;
+          }
+      while(++i8<i8f);
+      break;
+    case GAL_TYPE_UINT16:
+      do
+        if(*u16==GAL_BLANK_UINT16)
+          {
+            if( gsl_spline_eval_e(spline, u16-su16, acc, &tmp)==0 )
+              *u16=tmp;
+            else hasblank=1;
+          }
+      while(++u16<u16f);
+      break;
+    case GAL_TYPE_INT16:
+      do
+        if(*i16==GAL_BLANK_INT16)
+          {
+            if( gsl_spline_eval_e(spline, i16-si16, acc, &tmp)==0 )
+              *i16=tmp;
+            else hasblank=1;
+          }
+      while(++i16<i16f);
+      break;
+    case GAL_TYPE_UINT32:
+      do
+        if(*u32==GAL_BLANK_UINT32)
+          {
+            if( gsl_spline_eval_e(spline, u32-su32, acc, &tmp)==0 )
+              *u32=tmp;
+            else hasblank=1;
+          }
+      while(++u32<u32f);
+      break;
+    case GAL_TYPE_INT32:
+      do
+        if(*i32==GAL_BLANK_INT32)
+          {
+            if( gsl_spline_eval_e(spline, i32-si32, acc, &tmp)==0 )
+              *i32=tmp;
+            else hasblank=1;
+          }
+      while(++i32<i32f);
+      break;
+    case GAL_TYPE_UINT64:
+      do
+        if(*u64==GAL_BLANK_UINT64)
+          {
+            if( gsl_spline_eval_e(spline, u64-su64, acc, &tmp)==0 )
+              *u64=tmp;
+            else hasblank=1;
+          }
+      while(++u64<u64f);
+      break;
+    case GAL_TYPE_INT64:
+      do
+        if(*i64==GAL_BLANK_INT64)
+          {
+            if( gsl_spline_eval_e(spline, i64-si64, acc, &tmp)==0 )
+              *i64=tmp;
+            else hasblank=1;
+          }
+      while(++i64<i64f);
+      break;
+    case GAL_TYPE_FLOAT32:
+      do
+        if(isnan(*f32))
+          {
+            if( gsl_spline_eval_e(spline, f32-sf32, acc, &tmp)==0 )
+              *f32=tmp;
+            else hasblank=1;
+          }
+      while(++f32<f32f);
+      break;
+    case GAL_TYPE_FLOAT64:
+      do
+        if(isnan(*f64))
+          {
+            if( gsl_spline_eval_e(spline, f64-sf64, acc, f64) )
+              hasblank=1;
+          }
+      while(++f64<f64f);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: code %d is not a recognized data type",
+	    __func__, in->type);
+    }
+  return hasblank;
+}
+
+
+
+
+
+void
+gal_interpolate_1d_blank(gal_data_t *in, int type_1d)
+{
+  int hasblank;
+  gsl_spline *spline;
+  gsl_interp_accel *acc;
+
+  /* If there are no blank elements, just return. */
+  if(!gal_blank_present(in, 1)) return;
+
+  /* Initialize the necessary structures. */
+  spline=gal_interpolate_1d_make_gsl_spline(NULL, in, type_1d);
+
+  /* If any interpolation structure was actually made. */
+  if(spline)
+    {
+      /* Write the values in the blank elements. */
+      acc=gsl_interp_accel_alloc();
+      hasblank=interpolate_1d_blank_write(in, spline, acc);
+
+      /* For a check.
+      {
+        size_t i;
+        double *d;
+        gal_data_t *check=gal_data_copy_to_new_type(in, GAL_TYPE_FLOAT64);
+        d=check->array;
+        for(i=0;i<check->size;++i)
+          printf("%-10zu%f\n", i, d[i]);
+        gal_data_free(check);
+      }
+      */
+
+      /* Set the blank flags, note that `GAL_DATA_FLAG_BLANK_CH' is already set
+         by the top call to `gal_blank_present'. */
+      if(hasblank)
+        in->flag |=  GAL_DATA_FLAG_HASBLANK;
+      else
+        in->flag &= ~GAL_DATA_FLAG_HASBLANK;
+
+      /* Clean up. */
+      gsl_spline_free(spline);
+      gsl_interp_accel_free(acc);
+    }
 }

@@ -82,6 +82,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_eps_suffix_is_eps: Returns 1 if given suffix is EPS.
     gal_eps_to_pt: Converts dataset size to PostScript points.
     gal_eps_write: Writes a dataset into an EPS file.
+    gal_interpolate_1d_blank: Fill blank elements through interpolation.
+    gal_interpolate_1d_make_gsl_spline: Allocate and initalize `gsl_spline'.
     gal_jpeg_name_is_jpeg: Returns 1 if given filename is JPEG.
     gal_jpeg_suffix_is_jpeg: Returns 1 if given suffix is JPEG.
     gal_jpeg_read: Reads input JPEG image into `gal_data_t'.
@@ -95,8 +97,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_pointer_allocate_mmap: Allocate space in a file, not in RAM.
     gal_qsort_index_single_d: Sort indexs of single array in decreasing order.
     gal_qsort_index_single_i: Sort indexs of single array in decreasing order.
-    gal_qsort_index_multi_d: Sort indexs in multiple arrays (on different threads).
-    gal_qsort_index_multi_i: Sort indexs in multiple arrays (on different threads).
+    gal_qsort_index_multi_d: Sort indexs in multiple arrays (different threads).
+    gal_qsort_index_multi_i: Sort indexs in multiple arrays (different threads).
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
     gal_tiff_dir_string_read: convert a string to a TIFF directory number.

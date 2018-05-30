@@ -1423,13 +1423,13 @@ tablets which allow you to do this.
 @cindex Inconsistent results
 According to Wikipedia ``a software bug is an error, flaw, failure, or
 fault in a computer program or system that causes it to produce an
-incorrect or unexpected result, or to behave in unintended ways''. So
-when you see that a program is crashing, not reading your input
-correctly, giving the wrong results, or not writing your output
-correctly, you have found a bug. In such cases, it is best if you
-report the bug to the developers. The programs will also report bugs
-in known impossible situations (which are caused by something
-unexpected) and will ask the users to report the bug.
+incorrect or unexpected result, or to behave in unintended ways''. So when
+you see that a program is crashing, not reading your input correctly,
+giving the wrong results, or not writing your output correctly, you have
+found a bug. In such cases, it is best if you report the bug to the
+developers. The programs will also inform you if known impossible
+situations occur (which are caused by something unexpected) and will ask
+the users to report the bug issue.
 
 @cindex Bug reporting
 Prior to actually filing a bug report, it is best to search previous
@@ -4987,6 +4987,8 @@ line.
 @item Debian-based OSs (@command{apt-get})
 @cindex Debian
 @cindex Ubuntu
+@cindex @command{apt-get}
+@cindex Advanced Packaging Tool (APT, Debian)
 Debian-based GNU/Linux
 distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
 (for example Ubuntu or its derivatives) are arguably the largest, and most
@@ -5002,6 +5004,9 @@ $ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
 
 @item macOS (@command{brew})
 @cindex macOS
+@cindex Homebrew
+@cindex MacPorts
+@cindex @command{brew}
 macOS is the operating system used on Apple devices
 (@url{https://en.wikipedia.org/wiki/MacOS}). macOS does not come with a
 package manager pre-installed, but several widely used, third-party package
@@ -5025,6 +5030,7 @@ $ brew install wcslib
 
 @item Arch Linux (@command{pacman})
 @cindex Arch Linux
+@cindex @command{pacman}
 Arch Linux is a smaller GNU/Linux distribution. As discussed in
 @url{https://en.wikipedia.org/wiki/Arch_Linux, Wikipedia}, it follows ``the
 KISS principle ("keep it simple, stupid") as the general guideline, and
@@ -23677,7 +23683,7 @@ $ asttable --info table.fits
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{colmatch})
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{*colmatch})
 Read the specified columns in a text file (named @code{filename}) into a
 linked list of data structures. If the file is FITS, then @code{hdu} will
 also be used, otherwise, @code{hdu} is ignored.
@@ -26872,7 +26878,7 @@ inside @code{indexs}. If @code{withrivers} is non-zero, then pixels that
 are immediately touching more than one positive value will be given a
 @code{GAL_LABEL_RIVER} label.
 
-@cindex GNU C Library
+@cindex GNU C library
 Note that the @code{indexs->array} is not re-allocated to its new size at
 the end@footnote{Note that according to the GNU C Library, even a
 @code{realloc} to a smaller size can also cause a re-write of the whole
@@ -26942,34 +26948,35 @@ is much faster.
 @node Interpolation, Git wrappers, Convolution functions, Gnuastro library
 @subsection Interpolation (@file{interpolate.h})
 
-During data analysis, it often happens that parts of the data cannot be
-given a value. For example your image was saturated due to a very bright
-start and you have to mask that star's footprint. One other common
-situation in Gnuastro is when we do processing on tiles (for example to
-estimate the Sky value and its Standard deviation, see @ref{Sky
-value}). Some tiles must not be used for the estimation of the Sky value,
-for example because they cover a large galaxy. So we need to fill them in
-with blank values. But ultimately, we need a Sky value for every
-pixel. This job (assigning a value to blank element(s) based on their
-nearby neighbors with a value) is known as interpolation.
+@cindex Sky line
+@cindex Interpolation
+During data analysis, it happens that parts of the data cannot be given a
+value, but one is necessary for the higher-level analysis. For example a
+very bright star saturated part of your image and you need to fill in the
+saturated pixels with some values. Another common usage case are masked
+sky-lines in 1D specra that similarly need to be assigned a value for
+higher-level analysis. In other situations, you might want a value in an
+arbitrary point: between the elements/pixels where you have data. The
+functions described in this section are for such operations.
 
-There are many ways to do interpolation, but (mainly due to lack of time),
-currently Gnuastro only contains the (median of) nearest-neighbor
-method. The power of this method of interpolation is its non-parametric
-nature. The produced values are also always within the range of the known
-values and strong outliers do not get created. We will hopefully implement
-other methods too (wrappers around the GNU Scientific Library's very
-complete set of functions), but currently the developers are too busy. So
-if you do have the chance to help, your contribution would be very welcome
-and appreciated.
+@cindex GNU Scientific Library
+The parametric interpolations discussed below are wrappers around the
+interpolation functions of the GNU Scientific Library (or GSL, see @ref{GNU
+Scientific Library}). To identify the different GSL interpolation types,
+Gnuastro's @file{gnuastro/interpolate.h} header file contains macros that
+are discussed below. The GSL wrappers provided here are not yet complete
+because we are too busy. If you need them, please consider helping us in
+adding them to Gnuastro's library. Your would be very welcome and
+appreciated.
 
 @deftypefun {gal_data_t *} gal_interpolate_close_neighbors (gal_data_t @code{*input}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numneighbors}, size_t @code{numthreads}, int @code{onlyblank}, int @code{aslinkedlist})
 Interpolate the values in the image using the median value of their
-@code{numneighbors} closest neighbors. If @code{onlyblank} is non-zero,
-then only blank elements will be interpolated and pixels that already have
-a value will be left untouched. This function is multi-threaded and will
-run on @code{numthreads} threads (see @code{gal_threads_number} in
-@ref{Multithreaded programming}).
+@code{numneighbors} closest neighbors. This function is non-parametric and
+thus agnostic to the input's number of dimension. If @code{onlyblank} is
+non-zero, then only blank elements will be interpolated and pixels that
+already have a value will be left untouched. This function is
+multi-threaded and will run on @code{numthreads} threads (see
+@code{gal_threads_number} in @ref{Multithreaded programming}).
 
 @code{tl} is Gnuastro's two later tessellation structure used to define
 tiles over an image and is fully described in @ref{Tile grid}. When
@@ -26979,11 +26986,177 @@ properties, for example to not interpolate over channel borders.
 
 If several datasets have the same set of blank values, you don't need to
 call this function multiple times. When @code{aslinkedlist} is non-zero,
-then @code{input} will be seen as a @ref{List of gal_data_t} and for all
-the same neighbor position checking will be done for all the datasets in
-the list. Of course, the values for each dataset will be different, so a
-different value will be written in the each dataset, but the neighbor
-checking that is the most CPU intensive part will only be done once.
+then @code{input} will be seen as a @ref{List of gal_data_t}. In this case,
+the same neighbors will be used for all the datasets in the list. Of
+course, the values for each dataset will be different, so a different value
+will be written in the each dataset, but the neighbor checking that is the
+most CPU intensive part will only be done once.
+
+This is a non-parametric and robust function for interpolation. The
+interpolated values are also always within the range of the non-blank
+values and strong outliers do not get created. However, this type of
+interpolation must be used with care when there are gradients. This is
+because it is non-parametric and if there aren't enough neighbors,
+step-like features can be created.
+@end deftypefun
+
+@deffn Macro GAL_INTERPOLATE_1D_INVALID
+This is just a place holder to manage errors.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_LINEAR
+[From GSL:] Linear interpolation. This interpolation method does not
+require any additional memory.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_POLYNOMIAL
+@cindex Polynomial interpolation
+@cindex Interpolation: Polynomial
+[From GSL:] Polynomial interpolation. This method should only be used for
+interpolating small numbers of points because polynomial interpolation
+introduces large oscillations, even for well-behaved datasets. The number
+of terms in the interpolating polynomial is equal to the number of points.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_CSPLINE
+@cindex Interpolation: Spline
+@cindex Cubic spline interpolation
+@cindex Spline (cubic) interpolation
+[From GSL:] Cubic spline with natural boundary conditions. The resulting
+curve is piecewise cubic on each interval, with matching first and second
+derivatives at the supplied data-points.  The second derivative is chosen
+to be zero at the first point and last point.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_CSPLINE_PERIODIC
+[From GSL:] Cubic spline with periodic boundary conditions.  The resulting
+curve is piecewise cubic on each interval, with matching first and second
+derivatives at the supplied data-points.  The derivatives at the first and
+last points are also matched.  Note that the last point in the data must
+have the same y-value as the first point, otherwise the resulting periodic
+interpolation will have a discontinuity at the boundary.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_AKIMA
+@cindex Interpolation: Akima spline
+@cindex Akima spline interpolation
+@cindex Spline (Akima) interpolation
+[From GSL:] Non-rounded Akima spline with natural boundary conditions. This
+method uses the non-rounded corner algorithm of Wodicka.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_AKIMA_PERIODIC
+[From GSL:] Non-rounded Akima spline with periodic boundary
+conditions. This method uses the non-rounded corner algorithm of Wodicka.
+@end deffn
+@deffn Macro GAL_INTERPOLATE_1D_STEFFEN
+@cindex Steffen interpolation
+@cindex Interpolation: Steffen
+@cindex Interpolation: monotonic
+[From GSL:] Steffen’s
+method@footnote{@url{http://adsabs.harvard.edu/abs/1990A%26A...239..443S}}
+guarantees the monotonicity of the interpolating function between the given
+data points. Therefore, minima and maxima can only occur exactly at the
+data points, and there can never be spurious oscillations between data
+points. The interpolated function is piecewise cubic in each interval. The
+resulting curve and its first derivative are guaranteed to be continuous,
+but the second derivative may be discontinuous.
+@end deffn
+
+@deftypefun {gsl_spline *} gal_interpolate_1d_make_gsl_spline (gal_data_t @code{*X}, gal_data_t @code{*Y}, int @code{type_1d})
+@cindex GNU Scientific Library
+Allocate and initialize a GNU Scientific Library (GSL) 1D @code{gsl_spline}
+structure using the non-blank elements of @code{Y}. @code{type_1d}
+identifies the interpolation scheme and must be one of the
+@code{GAL_INTERPOLATE_1D_*} macros defined above.
+
+If @code{X==NULL}, the X-axis is assumed to be integers starting from zero
+(the index of each element in @code{Y}). Otherwise, the values in @code{X}
+will be used to initialize the interpolation structure. Note that when
+given, @code{X} must @emph{not} contain any blank elements and it must be
+sorted (in increasing order).
+
+Each interpolation scheme needs a minimum number of elements to
+successfully operate. If the number of non-blank values in @code{Y} is less
+than this number, this function will return a @code{NULL} pointer.
+
+To be as generic and modular as possible, GSL's tools are low-level.
+Therefore before doing the interpolation, many steps are necessary (like
+preparing your dataset, then allocating and initializing
+@code{gsl_spline}). The metadata available in Gnuastro's @ref{Generic data
+container} make it easy to hide all those preparations within this
+function.
+
+Once @code{gsl_spline} has been initialized by this function, the
+interpolation can be evaluated for any X value within the non-blank range
+of the input using @code{gsl_spline_eval} or @code{gsl_spline_eval_e}.
+
+For example in the small program below, we read the first two columns of
+the table in @file{table.txt} and feed them to this function to later estimate
+the values in the second column for three selected points. You can use
+@ref{BuildProgram} to compile and run this function, see @ref{Library demo
+programs} for more.
+
+@cindex first-in-first-out
+@example
+#include <stdio.h>
+#include <stdlib.h>
+#include <gnuastro/table.h>
+#include <gnuastro/interpolate.h>
+
+int
+main(void)
+@{
+  size_t i;
+  gal_data_t *X, *Y;
+  gsl_spline *spline;
+  gsl_interp_accel *acc;
+  gal_list_str_t *cols=NULL;
+
+  /* Change the values based on your input table. */
+  double points[]=@{1.8, 2.5, 10.3@};
+
+  /* Read the first two columns from `tab.txt'.
+     IMPORTANT: the list is first-in-first-out, so the output
+     column order is the inverse of the input order. */
+  gal_list_str_add(&cols, "1", 0);
+  gal_list_str_add(&cols, "2", 0);
+  Y=gal_table_read("table.txt", NULL, cols, GAL_TABLE_SEARCH_NAME,
+                   0, -1, NULL);
+  X=Y->next;
+
+  /* Allocate the GSL interpolation accelerator and make the
+     `gsl_spline' structure. */
+  acc=gsl_interp_accel_alloc();
+  spline=gal_interpolate_1d_make_gsl_spline(X, Y,
+                                 GAL_INTERPOLATE_1D_STEFFEN);
+
+  /* Calculate the respective value for all the given points,
+     if `spline' could be allocated. */
+  if(spline)
+    for(i=0; i<(sizeof points)/(sizeof *points); ++i)
+      printf("%f: %f\n", points[i],
+             gsl_spline_eval(spline, points[i], acc));
+
+  /* Clean up and return. */
+  gal_data_free(X);
+  gal_data_free(Y);
+  gsl_spline_free(spline);
+  gsl_interp_accel_free(acc);
+  gal_list_str_free(cols, 0);
+  return EXIT_SUCCESS;
+@}
+@end example
+@end deftypefun
+
+@deftypefun void gal_interpolate_1d_blank (gal_data_t @code{*in}, int @code{type_1d})
+Fill the blank elements of @code{in} using the rest of the elements and the
+given interpolation. The interpolation scheme can be set through
+@code{type_1d}, which accepts any of the @code{GAL_INTERPOLATE_1D_*} macros
+above. The interpolation is internally done in 64-bit floating point type
+(@code{double}). However the evaluated/interpolated values (originally
+blank) will be written (in @code{in}) with its original numeric datatype,
+using C's standard type conversion.
+
+By definition, interpolation is only defined ``between'' valid
+points. Therefore, if any number of elements on the start or end of the 1D
+array are blank, those elements will not be interpolated and will remain
+blank. To see if any blank (non-interpolated) elements remain, you can use
+@code{gal_blank_present} on @code{in} after this function is finished.
 @end deftypefun
 
 

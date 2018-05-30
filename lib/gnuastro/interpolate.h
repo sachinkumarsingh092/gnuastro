@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
 #include <gnuastro/tile.h>
+#include <gsl/gsl_spline.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -45,6 +46,20 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Types of interpolation. */
+enum gal_interpolate_1D_types
+{
+ GAL_INTERPOLATE_1D_INVALID,
+
+ GAL_INTERPOLATE_1D_LINEAR,
+ GAL_INTERPOLATE_1D_POLYNOMIAL,
+ GAL_INTERPOLATE_1D_CSPLINE,
+ GAL_INTERPOLATE_1D_CSPLINE_PERIODIC,
+ GAL_INTERPOLATE_1D_AKIMA,
+ GAL_INTERPOLATE_1D_AKIMA_PERIODIC,
+ GAL_INTERPOLATE_1D_STEFFEN,
+};
+
 
 
 gal_data_t *
@@ -53,8 +68,11 @@ gal_interpolate_close_neighbors(gal_data_t *input,
                                 size_t numneighbors, size_t numthreads,
                                 int onlyblank, int aslinkedlist);
 
+gsl_spline *
+gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d);
 
-
+void
+gal_interpolate_1d_blank(gal_data_t *in, int type_1d);
 
 
 __END_C_DECLS    /* From C++ preparations */

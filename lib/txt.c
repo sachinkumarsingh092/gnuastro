@@ -546,7 +546,7 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
   fp=fopen(filename, "r");
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "%s: couldn't open to read as a plain "
-          "text %s in %s", filename, format_err, __func__);
+          "text %s (from Gnuastro's `%s')", filename, format_err, __func__);
 
 
   /* Allocate the space necessary to keep each line as we parse it. Note
