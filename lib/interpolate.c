@@ -567,7 +567,7 @@ interpolate_1d_blank_write(gal_data_t *in, gsl_spline *spline,
 			   gsl_interp_accel *acc)
 {
   double tmp;
-  int hasblank;
+  int hasblank=0;
   uint8_t  *su8 =in->array, *u8 =in->array, *u8f =u8 +in->size;
   int8_t   *si8 =in->array, *i8 =in->array, *i8f =i8 +in->size;
   uint16_t *su16=in->array, *u16=in->array, *u16f=u16+in->size;
