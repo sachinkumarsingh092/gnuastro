@@ -29,12 +29,20 @@
 
 
 
+# Exit the script if any of the commands fail
+set -e
+
+
+
+
+
 # Default values for variables.
 jobs=8
 debug=0
 clean=0
 check=0
 install=0
+tar_pdf_upload=0
 top_build_dir=/dev/shm
 if [ -f .version ]; then
     version=$(cat .version)
@@ -78,6 +86,13 @@ help_print() {
         install_status="ENABLED"
     fi
 
+    # See if tar_pdf_upload is enabled or not.
+    if [ $tar_pdf_upload = "0" ]; then
+        tpu_status="DISABLED"
+    else
+        tpu_status="ENABLED"
+    fi
+
     # Print the output.
     cat <<EOF
 
@@ -98,7 +113,7 @@ Options:
                           build directory name.
                           Current value: $version
 
- -c, --clean              Delete (with `rm') all its contents of the build
+ -c, --clean              Delete (with 'rm') all its contents of the build
                           directory before starting new configuration.
                           Current status: $clean_status
 
@@ -113,12 +128,17 @@ Options:
  -C, --check              Run 'make check' after the build.
                           Current status: $check_status
 
- -i, --install            Run `sudo make install' after the build.
+ -i, --install            Run 'sudo make install' after the build.
                           Current status: $install_status
 
- -P, --printparams        Another name for `--help', for similarity with
+ -u, --tar-pdf-upload STR Build a tar.lz tarball and PDF manual, then
+                          upload them to the given server:folder.
+                          For example: -u my-server:folder
+                          Current status: $tpu_status
+
+ -P, --printparams        Another name for '--help', for similarity with
                           Gnuastro's programs. Note that the output of
-                          `--help' also includes the variable values.
+                          '--help' also includes the variable values.
 
  -h, --help               Print this help list.
 
@@ -142,6 +162,10 @@ do
     case $key in
         -b|--top-build-dir)
             top_build_dir="$2"
+            if [ x"top_build_dir" = x ]; then
+                echo "No argument given to '--top-build-dir' ('-b')."
+                exit 1;
+            fi
             shift # past argument
             shift # past value
             ;;
@@ -159,6 +183,10 @@ do
             ;;
         -j|--jobs)
             jobs="$2"
+            if [ x"jobs" = x ]; then
+                echo "No argument given to '--jobs' ('-j')."
+                exit 1;
+            fi
             shift # past argument
             shift # past value
             ;;
@@ -169,6 +197,16 @@ do
         -i|--install)
             install=1
             shift # past argument
+            ;;
+        -u|--tar-pdf-upload)
+            tar_pdf_upload=1
+            url="$2"
+            if [ x"$url" = x ]; then
+                echo "No argument given to '--tar-pdf-upload' ('-u')."
+                exit 1;
+            fi
+            shift # past argument
+            shift # past value
             ;;
         -h|-P|--help|--printparams)
             help_print
@@ -281,8 +319,8 @@ cd $build_dir
 # shared libraries can be a pain when debuggin. For this reason,
 # compilation of shared libraries can be turned off by specifying the
 # --disable-shared option to configure. With static libraries, compilation
-# (the `make' command) will also significantly speed up. Also, by default
-# (in `configure.ac'), we have set optimization flags which have to be
+# (the 'make' command) will also significantly speed up. Also, by default
+# (in 'configure.ac'), we have set optimization flags which have to be
 # cancelled in debugging.
 if [ ! -f Makefile ]; then
     if [ x$debug = x1 ]; then
@@ -303,7 +341,7 @@ make -kj$jobs
 
 
 
-# If requested, also run `make check'.
+# If requested, also run 'make check'.
 if [ x$check = x1 ]; then
     make check -kj$jobs
 fi
@@ -312,7 +350,25 @@ fi
 
 
 
-# If requested, also run `sudo make install'.
+# If requested, also run 'sudo make install'.
 if [ x$install = x1 ]; then
     sudo make install -kj$jobs
+fi
+
+
+
+
+
+# Build a tarball, and upload it to the requested server.
+if [ x$tar_pdf_upload = x1 ]; then
+
+    # Make the distribution tarball and pdf manual.
+    make dist-lzip pdf
+
+    # Get the base package name, and use it to make a generic tarball name.
+    base=$(ls *.tar.lz | sed -e's/-/ /' | awk '{print $1}')
+    mv *.tar.lz $base"-latest.tar.lz"
+
+    # Copy the files to the given URL (must include folders).
+    scp $base"-latest.tar.lz" doc/$base.pdf $url
 fi

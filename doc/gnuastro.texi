@@ -6215,6 +6215,16 @@ checks to work on (for example defined in @file{tests/during-dev.sh}).
 @itemx --install
 After finishing the build, also run @command{make install}.
 
+@item -u STR
+@item --tar-pdf-upload STR
+After finishing the build, run @command{make dist-lzip pdf} to build an
+Lzip tarball and pdf manual. Then rename the tarball suffix to
+@file{-latest.tar.lz} (instead of the version number). Then use secure copy
+(@command{scp}, part of the SSH tools) to copy the tarball and PDF to the
+server and directory specified in the value to this option. For example
+@command{--tar-pdf-upload my-server:dir}, will copy the two files to the
+@file{dir} directory of @code{my-server}.
+
 @item -h
 @itemx --help
 @itemx -P
