@@ -2,9 +2,8 @@
 
 # This script will configure and build Gnuastro in parallel inside another
 # directory (to keep the source and build directories separate). By default
-# it is in the tmpfs directory of the RAM. Please see the "Configure and
-# build in RAM" section of the Gnuastro book/documentation for a full
-# explanation.
+# it is in the tmpfs directory of the RAM. Run with `--help' for a more
+# complete description.
 #
 # Original author:
 #   Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -103,6 +102,11 @@ link to that directory in the current directory. A top build directory must
 be given to host the build directory for this script (see 'top-build-dir'
 option below). The symbolic link to the build directory in this directory
 will be called 'build'.
+
+Through the options, it also possible to request further operations after
+the build (for example checking, making distribution files or
+installing). See the "Separate build and source directories" section of the
+Gnuastro manual for a more complete introduction to this script.
 
 Options:
 
