@@ -142,6 +142,7 @@ if make -j$numjobs -C "$builddir"; then
     # of the last line).
     if [ $utilname = buildprog ]; then
         extraopts="--la=$builddir/lib/libgnuastro.la"
+        extraopts="$extraopts -I$srcdir/lib -L$builddir/lib"
         topconfdir="$builddir"
     else
         topconfdir="$srcdir"
