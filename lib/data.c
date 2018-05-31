@@ -63,6 +63,35 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /*************              Allocation             *******************/
 /*********************************************************************/
+/* Allocate a data structure based on the given parameters. If you want to
+   force the array into the hdd/ssd (mmap it), then set minmapsize=-1
+   (largest possible size_t value), in this way, no file will be larger. */
+gal_data_t *
+gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
+               struct wcsprm *wcs, int clear, size_t minmapsize,
+               char *name, char *unit, char *comment)
+{
+  gal_data_t *out;
+
+  /* Allocate the space for the actual structure. */
+  errno=0;
+  out=malloc(sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for gal_data_t",
+          __func__, sizeof *out);
+
+  /* Initialize the allocated array. */
+  gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
+                      name, unit, comment);
+
+  /* Return the final structure. */
+  return out;
+}
+
+
+
+
+
 /* Initialize the data structure.
 
    Some notes:
@@ -179,35 +208,6 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
       data->array=NULL;
       data->dsize=NULL;
     }
-}
-
-
-
-
-
-/* Allocate a data structure based on the given parameters. If you want to
-   force the array into the hdd/ssd (mmap it), then set minmapsize=-1
-   (largest possible size_t value), in this way, no file will be larger. */
-gal_data_t *
-gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
-               struct wcsprm *wcs, int clear, size_t minmapsize,
-               char *name, char *unit, char *comment)
-{
-  gal_data_t *out;
-
-  /* Allocate the space for the actual structure. */
-  errno=0;
-  out=malloc(sizeof *out);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%s: %zu bytes for gal_data_t",
-          __func__, sizeof *out);
-
-  /* Initialize the allocated array. */
-  gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
-                      name, unit, comment);
-
-  /* Return the final structure. */
-  return out;
 }
 
 

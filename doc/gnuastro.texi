@@ -22433,6 +22433,17 @@ The functions listed in this section describe the most basic operations on
 are declared in @file{gnuastro/data.h} which is also visible from the
 function names (see @ref{Gnuastro library}).
 
+@deftypefun {gal_data_t *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+
+Dynamically allocate a @code{gal_data_t} and initialize it will all the
+given values. See the description of @code{gal_data_initialize} and
+@ref{Generic data container} for more information. This function will often
+be the most frequently used because it allocates the @code{gal_data_t}
+hosting all the values @emph{and} initializes it. Once you are done with
+the dataset, be sure to clean up all the allocated spaces with
+@code{gal_data_free}.
+@end deftypefun
+
 @deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
 
 Initialize the given data structure (@code{data}) with all the given
@@ -22463,21 +22474,10 @@ memory or it is used in multiple datasets, be sure to set it to @code{NULL}
 not have any zero values (a dimension of length zero is not defined).
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
-
-Dynamically allocate a @code{gal_data_t} and initialize it will all the
-given values. See the description of @code{gal_data_initialize} and
-@ref{Generic data container} for more information. This function will often
-be the most frequently used because it allocates the @code{gal_data_t}
-hosting all the values @emph{and} initializes it. Once you are done with
-the dataset, be sure to clean up all the allocated spaces with
-@code{gal_data_free}.
-@end deftypefun
-
 @deftypefun void gal_data_free_contents (gal_data_t @code{*data})
 Free all the non-@code{NULL} pointers in @code{gal_data_t}. If @code{data}
 is actually a tile (@code{data->block!=NULL}, see @ref{Tessellation
-library}), then @code{tile->array} is not freed. For a complete description
+library}), then @code{data->array} is not freed. For a complete description
 of @code{gal_data_t} and its contents, see @ref{Generic data container}.
 @end deftypefun
 

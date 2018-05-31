@@ -232,15 +232,15 @@ typedef struct gal_data_t
 /*********************************************************************/
 /*************              allocation             *******************/
 /*********************************************************************/
-void
-gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
-                    size_t *dsize, struct wcsprm *wcs, int clear,
-                    size_t minmapsize, char *name, char *unit, char *comment);
-
 gal_data_t *
 gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment);
+
+void
+gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
+                    size_t *dsize, struct wcsprm *wcs, int clear,
+                    size_t minmapsize, char *name, char *unit, char *comment);
 
 void
 gal_data_free_contents(gal_data_t *data);
