@@ -25,12 +25,6 @@ all the commits needed for this release have been completed.
        $ git checkout master
 
 
- - [ALPHA] Only in the first alpha release after a stable release: update
-   the library version (the values starting with `GAL_' in
-   `configure.ac'). See the `Updating library version information' section
-   of the GNU Libtool manual as a guide.
-
-
  - [STABLE] Run a spell-check (in emacs with `M-x ispell') on the whole book.
 
 
@@ -180,6 +174,10 @@ all the commits needed for this release have been completed.
    (only for STABLE) and Savannah news (only for STABLE).
 
 
+ - Open `configure.ac' and increment `GAL_CURRENT' for the next
+   release. See the `Updating library version information' section of the
+   GNU Libtool manual as a guide. Note that we are assuming that until the
+   next release some change will be made in the library.
 
 
 
