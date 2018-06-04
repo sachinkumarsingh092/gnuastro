@@ -1698,7 +1698,7 @@ Kelvin, Brandon Kelly, Mohammad-Reza Khellat, Floriane Leclercq, Alan
 Lefor, Guillaume Mahler, Francesco Montanari, Bertrand Pain, William Pence,
 Bob Proulx, Yahya Sefidbakht, Alejandro Serrano Borlaff, Lee Spitler,
 Richard Stallman, Ole Streicher, Alfred M. Szmidt, Michel Tallon, Juan
-C. Tello, E@'ric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron
+C. Tello, @'Eric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron
 Watkins, Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The GNU
 French Translation Team is also managing the French version of the top
 Gnuastro webpage which we highly appreciate. Finally we should thank all

@@ -329,7 +329,7 @@ Steps necessary to Package Gnuastro for Debian.
      - In `debian/control', change all the old sonames to the new value.
 
 
- - Update `debian/changeLog' with all the Debian-related changes (since
+ - Update `debian/changelog' with all the Debian-related changes (since
    merging with the upstream branch). Gnuastro's changes don't need to be
    mentioned here. If there was no major changes, just say "New upstream
    version".
@@ -377,4 +377,5 @@ Steps necessary to Package Gnuastro for Debian.
      $ git push --tags
 
 
- - Inform Debian Astro.
+ - Inform Debian Astro: Ole Streicher (olebole@debian.org) has been
+   uploading Gnuastro to Debian until now.
