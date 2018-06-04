@@ -699,7 +699,7 @@ to expect a fully familiar experience in the source code, building,
 installing and command-line user interaction that they have seen in all the
 other GNU software that they use. The official and always up to date
 version of this book (or manual) is freely available under @ref{GNU Free
-Doc. License} in various formats (pdf, html, plain text, info, and as its
+Doc. License} in various formats (PDF, HTML, plain text, info, and as its
 Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
@@ -801,7 +801,6 @@ $ sudo make install
 @end example
 
 @noindent
-
 See @ref{Known issues} if you confront any complications. For each program
 there is an `Invoke ProgramName' sub-section in this book which explains
 how the programs should be run on the command-line (for example
@@ -830,16 +829,16 @@ is precisely these that will ultimately allow future generations to
 advance the existing experimental and theoretical knowledge through
 their new solutions and corrections.
 
-In the past, scientists would gather data and process them
-individually to achieve an analysis thus having a much more intricate
-knowledge of the data and analysis. The theoretical models also
-required little (if any) simulations to compare with the data. Today
-both methods are becoming increasingly more dependent on pre-written
-software. Scientists are dissociating themselves from the intricacies
-of reducing raw observational data in experimentation or from bringing
-the theoretical models to life in simulations. These `intricacies'
-are precisely those unseen faults, hidden assumptions, simplifications
-and approximations that define scientific progress.
+In the past, scientists would gather data and process them individually to
+achieve an analysis thus having a much more intricate knowledge of the data
+and analysis. The theoretical models also required little (if any)
+simulations to compare with the data. Today both methods are becoming
+increasingly more dependent on pre-written software. Scientists are
+dissociating themselves from the intricacies of reducing raw observational
+data in experimentation or from bringing the theoretical models to life in
+simulations. These `intricacies' are precisely those unseen faults, hidden
+assumptions, simplifications and approximations that define scientific
+progress.
 
 @quotation
 @cindex Anscombe F. J.
@@ -938,6 +937,8 @@ and this book are thus intimately linked, and when considered as a single
 entity can be thought of as a real (an actual software accompanying the
 algorithms) ``Numerical Recipes'' for astronomy.
 
+@cindex GNU free documentation license
+@cindex GNU General Public License (GPL)
 The second major, and arguably more important, difference is that
 ``Numerical Recipes'' does not allow you to distribute any code that you
 have learned from it. In other words, it does not allow you to release your
@@ -969,7 +970,7 @@ something no astronomer of the time took seriously. In the paradigm of the
 day, what could be the purpose of enlarging geometric spheres (planets) or
 points (stars)? In that paradigm only the position and movement of the
 heavenly bodies was important, and that had already been accurately studied
-(recently by Tyco Brahe).
+(recently by Tycho Brahe).
 
 In the beginning of his ``The Sidereal Messenger'' (published in 1610) he
 cautions the readers on this issue and @emph{before} describing his
@@ -1697,7 +1698,7 @@ Kelvin, Brandon Kelly, Mohammad-Reza Khellat, Floriane Leclercq, Alan
 Lefor, Guillaume Mahler, Francesco Montanari, Bertrand Pain, William Pence,
 Bob Proulx, Yahya Sefidbakht, Alejandro Serrano Borlaff, Lee Spitler,
 Richard Stallman, Ole Streicher, Alfred M. Szmidt, Michel Tallon, Juan
-C. Tello, Éric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron
+C. Tello, E@'ric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron
 Watkins, Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The GNU
 French Translation Team is also managing the French version of the top
 Gnuastro webpage which we highly appreciate. Finally we should thank all
@@ -2276,7 +2277,7 @@ tool) in special situations.
 
 During the tutorial, we will take many detours to explain, and practically
 demonstrate, the many capabilities of Gnuastro's programs. In the end you
-will see that the things you learned during this toturial are much more
+will see that the things you learned during this tutorial are much more
 generic than this particular problem and can be used in solving a wide
 variety of problems involving the analysis of data (images or tables). So
 please don't rush, and go through the steps patiently to optimally master
@@ -2993,7 +2994,7 @@ second (NoiseChisel's main output, @code{DETECTIONS}) has a numeric data
 type of @code{uint8} with only two possible values for all pixels: 0 for
 noise and 1 for signal. The third and fourth (called @code{SKY} and
 @code{SKY_STD}), have the Sky and its standard deviation values of the
-input on a tessellation and were calculated over the un-detected regions.
+input on a tessellation and were calculated over the undetected regions.
 
 @cindex DS9
 @cindex GNOME
@@ -6142,7 +6143,7 @@ behaviors or configuration files for example.
 @noindent
 @strong{White space between option and value:} @file{developer-build}
 doesn't accept an @key{=} sign between the options and their values. It
-also needs atleast one character between the option and its
+also needs at least one character between the option and its
 value. Therefore @option{-n 4} or @option{--numthreads 4} are acceptable,
 while @option{-n4}, @option{-n=4}, or @option{--numthreads=4}
 aren't. Finally multiple short option names cannot be merged: for example
@@ -6177,7 +6178,7 @@ Delete the contents of the build directory (clean it) before starting the
 configuration and building of this run.
 
 This is useful when you have recently pulled changes from the main Git
-repository, or commited a change your self and ran @command{autoreconf -f},
+repository, or committed a change your self and ran @command{autoreconf -f},
 see @ref{Synchronizing}. After running GNU Autoconf, the version will be
 updated and you need to do a clean build.
 
@@ -14757,16 +14758,16 @@ signal, where non-random factors (for example light from a distant galaxy)
 are present. This classification of the elements in a dataset is formally
 known as @emph{detection}.
 
-In an observational/experimental dataset, signal is always burried in
-noise: only mock/simulated datasets are free of noise. Therefore detection,
-or the process of separating signal from noise, determines the number of
-objects you study and the accuracy of any higher-level measurement you do
-on them. Detection is thus the most important step of any analysis and is
-not trivial. In particular, the most scientifically interesting
-astronomical targets are faint, can have a large variety of morphologies,
-along with a large distribution in brightness and size. Therefore when
-noise is significant, proper detection of your targets is a uniquely
-decisive step in your final scientific analysis/result.
+In an observational/experimental dataset, signal is always buried in noise:
+only mock/simulated datasets are free of noise. Therefore detection, or the
+process of separating signal from noise, determines the number of objects
+you study and the accuracy of any higher-level measurement you do on
+them. Detection is thus the most important step of any analysis and is not
+trivial. In particular, the most scientifically interesting astronomical
+targets are faint, can have a large variety of morphologies, along with a
+large distribution in brightness and size. Therefore when noise is
+significant, proper detection of your targets is a uniquely decisive step
+in your final scientific analysis/result.
 
 @cindex Erosion
 NoiseChisel is Gnuastro's program for detection of targets that don't have
@@ -14783,7 +14784,7 @@ $ astarithmetic in.fits 100 gt 2 connected-components
 
 Since almost no astronomical target has such sharp edges, we need a more
 advanced detection methodology. NoiseChisel uses a new noise-based paradigm
-for detection of very exteded and diffuse targets that are drowned deeply
+for detection of very extended and diffuse targets that are drowned deeply
 in the ocean of noise. It was initially introduced in
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. The
 name of NoiseChisel is derived from the first thing it does after
@@ -14803,7 +14804,7 @@ as the input but only with two values: 0 and 1. Pixels that don't harbor
 any detected signal (noise) are given a label (or value) of zero and those
 with a value of 1 have been identified as hosting signal.
 
-Segmentation is the process of classifing the signal into higher-level
+Segmentation is the process of classifying the signal into higher-level
 constructs. For example if you have two separate galaxies in one image, by
 default NoiseChisel will give a value of 1 to the pixels of both, but after
 segmentation, the pixels in each will get separate labels. NoiseChisel is
@@ -14815,8 +14816,8 @@ directly/readily fed into Segment.
 For more on NoiseChisel's output format and its benefits (especially in
 conjunction with @ref{Segment} and later @ref{MakeCatalog}), please see
 @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}. Just note that
-when that paper was published, Segment was not yet spinned-off, and
-NoiseChisel done both detection and segmentation.
+when that paper was published, Segment was not yet spun-off into a separate
+program, and NoiseChisel done both detection and segmentation.
 
 NoiseChisel's output is designed to be generic enough to be easily used in
 any higher-level analysis. If your targets are not touching after running
@@ -15286,7 +15287,7 @@ This option is useful when a large and diffuse (almost flat within each
 tile) signal exists with very small regions of Sky. The flatness of the
 profile will cause it to successfully pass the tests of @ref{Quantifying
 signal in a tile}. As a result, without this option the flat and diffuse
-signal will be interpretted as sky. In such cases, you can see the status
+signal will be interpreted as sky. In such cases, you can see the status
 of the tiles with the @option{--checkqthresh} option (first image extension
 is enough) and select a quantile through this option to ignore the measured
 values in the higher-valued tiles.
@@ -15645,13 +15646,13 @@ identify which pixels are connected to which. By default the main output is
 a binary dataset with only two values: 0 (for noise) and 1 (for
 signal/detections). See @ref{NoiseChisel output} for more.
 
-The purpose of Noisechisel is to detect targets that are extended and
+The purpose of NoiseChisel is to detect targets that are extended and
 diffuse, with outer parts that sink into the noise very gradually (galaxies
 and stars for example). Since NoiseChisel digs down to extremely low
 surface brightness values, many such targets will commonly be detected
 together as a single large body of connected pixels.
 
-To properly separte connected objects, sophisticated segmentation methods
+To properly separate connected objects, sophisticated segmentation methods
 are commonly necessary on NoiseChisel's output. Gnuastro has the dedicated
 @ref{Segment} program for this job. Since input images are commonly large
 and can take a significant volume, the extra volume necessary to store the
@@ -15682,7 +15683,7 @@ output and comparing the detection map with the input: visually see if
 everything you expected is detected (reasonable completeness) and that you
 don't have too many false detections (reasonable purity). This visual
 inspection is simplified if you use SAO DS9 to view NoiseChisel's output as
-a multi-extension datacube, see @ref{Viewing multiextension FITS images}.
+a multi-extension data-cube, see @ref{Viewing multiextension FITS images}.
 
 When you are satisfied with your NoiseChisel configuration (therefore you
 don't need to check on every run), or you want to archive/transfer the
@@ -15911,7 +15912,7 @@ of this correction factor is irrelevant: because it uses the ambient noise
 applies that over the detected regions.
 
 A distribution's extremum (maximum or minimum) values, used in the new
-critera, are strongly affected by scatter. On the other hand, the convolved
+criteria, are strongly affected by scatter. On the other hand, the convolved
 image has much less scatter@footnote{For more on the effect of convolution
 on a distribution, see Section 3.1.1 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
@@ -16033,7 +16034,7 @@ file given to @option{--detection}. Ultimately, if all three are in
 separate files, you need to call both @option{--detection} and
 @option{--std}.
 
-The extensions of the three mandatory inputs can be speicified with
+The extensions of the three mandatory inputs can be specified with
 @option{--hdu}, @option{--dhdu}, and @option{--stdhdu}. For a full
 discussion on what to give to these options, see the description of
 @option{--hdu} in @ref{Input output options}. To see their default values
@@ -16072,7 +16073,7 @@ name. When the value is a file, the extension can be specified with
 either have the same size as the output or the same size as the
 tessellation (so there is one pixel per tile, see @ref{Tessellation}).
 
-When this option is given, its value(s) will be subtraced from the input
+When this option is given, its value(s) will be subtracted from the input
 and the (optional) convolved dataset (given to @option{--convolved}) prior
 to starting the segmentation process.
 
@@ -16175,7 +16176,7 @@ with this option (that is also available in NoiseChisel). However, just be
 careful to use the input to NoiseChisel as the input to Segment also, then
 use the @option{--sky} and @option{--std} to specify the Sky and its
 standard deviation (from NoiseChisel's output). Recall that when
-NoiseChisel is not called with @option{--rawoutput}, the first extention of
+NoiseChisel is not called with @option{--rawoutput}, the first extension of
 NoiseChisel's output is the @emph{Sky-subtracted} input (see
 @ref{NoiseChisel output}. So if you use the same convolved image that you
 fed to NoiseChisel, but use NoiseChisel's output with Segment's
@@ -16409,7 +16410,7 @@ dataset and the sky standard deviation dataset (if it wasn't a constant
 number). This can help in visually inspecting the result when viewing the
 images as a ``Multi-extension data cube'' in SAO DS9 for example (see
 @ref{Viewing multiextension FITS images}). You can simply flip through the
-exetensions and see the same region of the image and its corresponding
+extensions and see the same region of the image and its corresponding
 clumps/object labels. It also makes it easy to feed the output (as one
 file) into MakeCatalog when you intend to make a catalog afterwards (see
 @ref{MakeCatalog}. To remove these redundant extensions from the output
@@ -16495,7 +16496,7 @@ properties: its position (relative to the rest) and its value. In
 higher-level analysis, an entire dataset (an image for example) is rarely
 treated as a singular entity@footnote{You can derive the over-all
 properties of a complete dataset (1D table column, 2D image, or 3D
-datacube) treated as a single entity with Gnuastro's Statistics program
+data-cube) treated as a single entity with Gnuastro's Statistics program
 (see @ref{Statistics}).}. You usually want to know/measure the properties
 of the (separate) scientifically interesting targets that are embedded in
 it. For example the magnitudes, positions and elliptical properties of the
@@ -16515,7 +16516,7 @@ It is important to define your regions of interest @emph{before} running
 MakeCatalog. MakeCatalog is specialized in doing measurements accurately
 and efficiently. Therefore MakeCatalog will not do detection, segmentation,
 or defining apertures on requested positions in your dataset. Following
-Gnuastro's modularity principle, There are separate and higly specialized
+Gnuastro's modularity principle, There are separate and highly specialized
 and customizable programs in Gnuastro for these other jobs:
 
 @itemize
@@ -16549,12 +16550,12 @@ MakeCatalog's output is already known before running it.
 
 Before getting into the details of running MakeCatalog (in @ref{Invoking
 astmkcatalog}, we'll start with a discussion on the basics of its approach
-to separating detection from measuremens in @ref{Detection and catalog
+to separating detection from measurements in @ref{Detection and catalog
 production}. A very important factor in any measurement is understanding
 its validity range, or limits. Therefore in @ref{Quantifying measurement
 limits}, we'll discuss how to estimate the reliability of the detection and
 basic measurements. This section will continue with a derivation of
-elliptical parameters from the labelled datasets in @ref{Measuring
+elliptical parameters from the labeled datasets in @ref{Measuring
 elliptical parameters}. For those who feel MakeCatalog's existing
 measurements/columns aren't enough and would like to add further
 measurements, in @ref{Adding new columns to MakeCatalog}, a checklist of
@@ -16696,7 +16697,7 @@ of clear water increases, the parts of the hills with lower heights (parts
 with lower surface brightness) can be seen more clearly. In this analogy,
 height (from the ground) is @emph{surface brightness}@footnote{Note that
 this muddy water analogy is not perfect, because while the water-level
-remains the same all over a peak, in data analysis, the poisson noise
+remains the same all over a peak, in data analysis, the Poisson noise
 increases with the level of data.} and the height of the muddy water is
 your surface brightness limit.
 
@@ -16870,7 +16871,7 @@ result. Fortunately, with the much more advanced hardware and software of
 today, we can make customized segmentation maps for each object.
 
 
-If requested, MakeCatalog will estimate teh the upper limit magnitude is
+If requested, MakeCatalog will estimate the the upper limit magnitude is
 found for each object in the image separately, the procedure is fully
 configurable with the options in @ref{Upper-limit settings}. If one value
 for the whole image is required, you can either use the surface brightness
@@ -17307,7 +17308,7 @@ file (given as an argument) for the required extension/HDU (value to
 
 @item --clumpshdu=STR
 The HDU/extension of the clump labels dataset. Only pixels with values
-above zero will be considered. The clump lables dataset has to be an
+above zero will be considered. The clump labels dataset has to be an
 integer data type (see @ref{Numeric data types}) and only pixels with a
 value larger than zero will be used. See @ref{Segment output} for a
 description of the expected format.
@@ -17400,12 +17401,12 @@ One very important consideration in Gnuastro is reproducibility. Therefore,
 the values to all of these parameters along with others (like the random
 number generator type and seed) are also reported in the comments of the
 final catalog when the upper limit magnitude column is desired. The random
-seed that is used to define the random positionings for each object or
-clump is unique and set based on the given seed, the total number of
-objects and clumps and also the labels of the clumps and objects. So with
-identical inputs, an identical upper-limit magnitude will be found. But
-even if the ordering of the object/clump labels differs (and the seed is
-the same) the result will not be the same.
+seed that is used to define the random positions for each object or clump
+is unique and set based on the given seed, the total number of objects and
+clumps and also the labels of the clumps and objects. So with identical
+inputs, an identical upper-limit magnitude will be found. But even if the
+ordering of the object/clump labels differs (and the seed is the same) the
+result will not be the same.
 
 MakeCatalog will randomly place the object/clump footprint over the image
 and when the footprint doesn't fall on any object or masked region (see
@@ -17482,7 +17483,7 @@ faint undetected wings of bright/large objects in the image). This option
 takes two values: the first is the multiple of @mymath{\sigma}, and the
 second is the termination criteria. If the latter is larger than 1, it is
 read as an integer number and will be the number of times to clip. If it is
-smaller than 1, it is interpretted as the tolerance level to stop
+smaller than 1, it is interpreted as the tolerance level to stop
 clipping. See @ref{Sigma clipping} for a complete explanation.
 
 @item --upnsigma=FLT
@@ -17493,9 +17494,9 @@ magnitude.
 @item --checkupperlimit=INT[,INT]
 Print a table of positions and measured values for all the full random
 distribution used for one particular object or clump. If only one integer
-is given to this option, it is interpretted to be an object's label. If two
+is given to this option, it is interpreted to be an object's label. If two
 values are given, the first is the object label and the second is the ID of
-requested clump wihtin it.
+requested clump within it.
 
 The output is a table with three columns (its type is determined with the
 @option{--tableformat} option, see @ref{Input output options}). The first
@@ -17647,8 +17648,8 @@ images.
 The brightness (sum of all pixel values), see @ref{Flux Brightness and
 magnitude}. For clumps, the ambient brightness (flux of river pixels around
 the clump multiplied by the area of the clump) is removed, see
-@option{--riverflux}. So the sum of clump brightnesses in the clump catalog
-will be smaller than the total clump brightness in the
+@option{--riverflux}. So the sum of all the clumps brightness in the clump
+catalog will be smaller than the total clump brightness in the
 @option{--clumpbrightness} column of the objects catalog.
 
 If no usable pixels (blank or below the threshold) are present over the
@@ -17755,7 +17756,7 @@ than the minimum, a value of @code{-inf} is reported.
 
 @item --upperlimitskew
 @cindex Skewness
-This column contains the nonparametric skew of the sigma-clipped random
+This column contains the non-parametric skew of the sigma-clipped random
 distribution that was used to estimate the upper-limit magnitude. Taking
 @mymath{\mu} as the mean, @mymath{\nu} as the median and @mymath{\sigma} as
 the standard deviation, the traditional definition of skewness is defined
@@ -17893,7 +17894,7 @@ be stored as multiple extensions of one FITS file. You can use @ref{Table}
 to inspect the column meta-data and contents in this case. However, in
 plain text format (see @ref{Gnuastro text table format}), it is only
 possible to keep one table per file. Therefore, if the output is a text
-file, two ouput files will be created, ending in @file{_o.txt} (for
+file, two output files will be created, ending in @file{_o.txt} (for
 objects) and @file{_c.txt} (for clumps).
 
 @item --noclumpsort
@@ -17993,7 +17994,7 @@ $ astmatch --aperture=2 input1.txt input2.fits
 
 ## Similar to before, but the output is created by merging various
 ## columns from the two inputs: columns 1, RA, DEC from the first
-## input, followed by all columns starting with MAG and the BRG
+## input, followed by all columns starting with `MAG' and the `BRG'
 ## column from second input and finally the 10th from first input.
 $ astmatch --aperture=2 input1.txt input2.fits                   \
            --outcols=a1,aRA,aDEC,b/^MAG/,bBRG,a10
@@ -18320,7 +18321,7 @@ an image) in the dataset to the profile center. The profile value is
 calculated for that central pixel using monte carlo integration, see
 @ref{Sampling from a function}. The next pixel is the next nearest neighbor
 to the central pixel as defined by @mymath{r_{el}}. This process goes on
-until the profile is fully built upto the trunctation radius. This is done
+until the profile is fully built upto the truncation radius. This is done
 fairly efficiently using a breadth first parsing
 strategy@footnote{@url{http://en.wikipedia.org/wiki/Breadth-first_search}}
 which is implemented through an ordered linked list.
@@ -18884,7 +18885,7 @@ In MakeProfiles, profile centers do not have to be in (overlap with) the
 final image.  Even if only one pixel of the profile within the truncation
 radius overlaps with the final image size, the profile is built and
 included in the final image image. Profiles that are completely out of the
-image will not be created (unless you explicity ask for it with the
+image will not be created (unless you explicitly ask for it with the
 @option{--individual} option). You can use the output log file (created
 with @option{--log} to see which profiles were within the image, see
 @ref{Common options}.
@@ -18955,7 +18956,7 @@ the @option{--circumwidth}).
 @item
 Radial distance profile with `@code{distance}' or `@code{7}'. At the lowest
 level, each pixel only has an elliptical radial distance given the
-profile's shape and orentiation (see @ref{Defining an ellipse}). When this
+profile's shape and orientation (see @ref{Defining an ellipse}). When this
 profile is chosen, the pixel's elliptical radial distance from the profile
 center is written as its value. For this profile, the value in the
 magnitude column (@option{--mcol}) will be ignored.
@@ -19076,7 +19077,7 @@ your catalog.
 
 @item --mcolisbrightness
 The value given in the ``magnitude column'' (specified by @option{--mcol},
-see @ref{MakeProfiles catalog}) must be interpretted as brightness, not
+see @ref{MakeProfiles catalog}) must be interpreted as brightness, not
 magnitude. The zeropoint magnitude (value to the @option{--zeropoint}
 option) is ignored and the given value must have the same units as the
 input dataset's pixels.
@@ -19329,11 +19330,11 @@ they overlap with it.
 
 @noindent
 The options below can be used to define the world coordinate system (WCS)
-properties of the MakeProfiles outputs. The option names are delibarately
+properties of the MakeProfiles outputs. The option names are deliberately
 chosen to be the same as the FITS standard WCS keywords. See Section 8 of
 @url{https://doi.org/10.1051/0004-6361/201015362, Pence et al [2010]} for a
 short introduction to WCS in the FITS standard@footnote{The world
-coordinate standard in FITS is a very beatiful and powerful concept to
+coordinate standard in FITS is a very beautiful and powerful concept to
 link/associate datasets with the outside world (other datasets). The
 description in the FITS standard (link above) only touches the tip of the
 ice-burg. To learn more please see
@@ -19490,7 +19491,7 @@ noise (error in counting), we need to take a closer look at how a
 distribution produced by counting can be modeled as a parametric function.
 
 Counting is an inherently discrete operation, which can only produce
-positive (including zero) interger outputs. For example we can't count
+positive (including zero) integer outputs. For example we can't count
 @mymath{3.2} or @mymath{-2} of anything. We only count @mymath{0},
 @mymath{1}, @mymath{2}, @mymath{3} and so on. The distribution of values,
 as a result of counting efforts is formally known as the
@@ -21491,7 +21492,7 @@ other functions are also finished.
 
 @deftypefun int pthread_barrier_destroy (pthread_barrier_t @code{*b})
 Destroy all the information in the barrier structure. This should be called
-by the function that spinned-off the threads after all the threads have
+by the function that spun-off the threads after all the threads have
 finished.
 
 @cartouche
@@ -21854,7 +21855,7 @@ allocated and the value will be simply put the memory. If
 string will be read into that type.
 
 Note that when we are dealing with a string type, @code{*out} should be
-interpretted as @code{char **} (one element in an array of pointers to
+interpreted as @code{char **} (one element in an array of pointers to
 different strings). In other words, @code{out} should be @code{char ***}.
 
 This function can be used to fill in arrays of numbers from strings (in an
@@ -21898,7 +21899,7 @@ suggests, they @emph{point} to a byte in memory (like an address in a
 city). The C programming language gives you complete freedom in how to use
 the byte (and the bytes that follow it). Pointers are thus a very powerful
 feature of C. However, as the saying goes: ``With great power comes great
-responsability'', so they must be approached with care. The functions in
+responsibility'', so they must be approached with care. The functions in
 this header are not very complex, they are just wrappers over some basic
 pointer functionality regarding pointer arithmetic and allocation (in
 memory or HDD/SSD).
@@ -24071,7 +24072,7 @@ allocations may be done by this function (one if
 @code{array!=NULL}).
 
 Therefore, when using the values of strings after this function,
-@code{keysll[i].array} must be interpretted as @code{char **}: one
+@code{keysll[i].array} must be interpreted as @code{char **}: one
 allocation for the pointer, one for the actual characters. If you use
 something like the example, above you don't have to worry about the
 freeing, @code{gal_data_array_free} will free both allocations. So to read
@@ -24374,7 +24375,9 @@ files. They can be viewed and edited on any text editor or even on the
 command-line. This section are describes some functions that help in
 reading from and writing to plain text files.
 
-Lines are one of the most basic buiding blocks (delimiters) of a text
+@cindex CRLF line terminator
+@cindex Line terminator, CRLF
+Lines are one of the most basic building blocks (delimiters) of a text
 file. Some operating systems like Microsoft Windows, terminate their ASCII
 text lines with a carriage return character and a new-line character (two
 characters, also known as CRLF line terminators). While Unix-like operating
@@ -24534,7 +24537,7 @@ algorithm, JPEG files can have low volumes, making it used heavily on the
 internet. For more on this file format, and a comparison with others,
 please see @ref{Recognized file formats}.
 
-For scientific purposes, the lossy compression and very limited dymanic
+For scientific purposes, the lossy compression and very limited dynamic
 range (8-bit integers) make JPEG very un-attractive for storing of valuable
 data. However, because of its commonality, it will inevitably be needed in
 some situations. The functions here can be used to read and write JPEG
@@ -24591,7 +24594,7 @@ aren't defined in their context.
 To display rasterized images, PostScript does allow arrays of
 pixels. However, since the over-all EPS file may contain many vectorized
 elements (for example borders, text, or other lines over the text) and
-interpretting them is not trivial or necessary within Gnuastro's scope,
+interpreting them is not trivial or necessary within Gnuastro's scope,
 Gnuastro only provides some functions to write a dataset (in the
 @code{gal_data_t} format, see @ref{Generic data container}) into EPS.
 
@@ -24621,7 +24624,7 @@ Write the @code{in} dataset into an EPS file called
 (@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
 the image in human/non-pixel units (to help the displayer) can be set with
 the @code{widthincm} argument. If @code{borderwidth} is non-zero, it is
-interpretted as the width (in points) of a solid black border around the
+interpreted as the width (in points) of a solid black border around the
 image. A border can helpful when importing the EPS file into a document.
 
 @cindex ASCII85 encoding
@@ -24630,7 +24633,7 @@ EPS files are plain-text (can be opened/edited in a text editor), therefore
 there are different encodings to store the data (pixel values) within
 them. Gnuastro supports the Hexadecimal and ASCII85 encoding. ASCII85 is
 more efficient (producing small file sizes), so it is the default
-encoding. To use Hexademical encoding, set @code{hex} to a non-zero
+encoding. To use Hexadecimal encoding, set @code{hex} to a non-zero
 value. Currently If you don't directly want to import the EPS file into a
 PostScript document but want to later compile it into a PDF file, set the
 @code{forpdf} argument to @code{1}.
@@ -24668,14 +24671,13 @@ Write the @code{in} dataset into an EPS file called
 (@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
 the image in human/non-pixel units (to help the displayer) can be set with
 the @code{widthincm} argument. If @code{borderwidth} is non-zero, it is
-interpretted as the width (in points) of a solid black border around the
-image. A border can helpful when importing the PDF file into a
-document.
+interpreted as the width (in points) of a solid black border around the
+image. A border can helpful when importing the PDF file into a document.
 
 This function is just a wrapper for the @code{gal_eps_write} function in
 @ref{EPS files}. After making the EPS file, Ghostscript (with a version of
 9.10 or above, see @ref{Optional dependencies}) will be used to compile the
-EPS file to a PDF file. Therfore if GhostScript doesn't exist, doesn't have
+EPS file to a PDF file. Therefore if GhostScript doesn't exist, doesn't have
 the proper version, or fails for any other reason, the EPS file will
 remain. It can be used to find the cause, or use another converter or
 PostScript compiler.
@@ -25001,7 +25003,7 @@ Unary operand absolute-value operator.
 @deffnx Macro GAL_ARITHMETIC_OP_MEDIAN
 Multi-operand statistical operations. When @code{gal_arithmetic} is called
 with any of these operators, it will expect only a single operand that will
-be interpretted as a list of datasets (see @ref{List of gal_data_t}. The
+be interpreted as a list of datasets (see @ref{List of gal_data_t}. The
 output will be a single dataset with each of its elements replaced by the
 respective statistical operation on the whole list. See the discussion
 under the @code{min} operator in @ref{Arithmetic operators}.
@@ -25313,7 +25315,7 @@ operation will be done on @code{numthreads} threads.
 @deffn {Function-like macro} GAL_TILE_PARSE_OPERATE (@code{IN}, @code{OTHER}, @code{PARSE_OTHER}, @code{CHECK_BLANK}, @code{OP})
 Parse @code{IN} (which can be a tile or a fully allocated block of memory)
 and do the @code{OP} operation on it. @code{OP} can be any combination of C
-expressions. If @code{OTHER!=NULL}, @code{OTHER} will be interpretted as a
+expressions. If @code{OTHER!=NULL}, @code{OTHER} will be interpreted as a
 dataset and this macro will allow access to its element(s) and it can
 optionally be parsed while parsing over @code{IN}.
 
@@ -25328,7 +25330,7 @@ different) may have different sizes. Using @code{OTHER} (along with
 @code{PARSE_OTHER}), this function-like macro will thus enable you to parse
 and define your own operation on two fixed size regions in one or two
 blocks of memory. In the latter case, they may have different numeric
-datatypes, see @ref{Numeric data types}).
+data types, see @ref{Numeric data types}).
 
 The input arguments to this macro are explained below, the expected type of
 each argument are also written following the argument name:
@@ -25738,7 +25740,7 @@ An @code{ndim}-dimensional dataset of size @code{naxes} (along each
 dimension, in FITS order) and a box with first and last (inclusive)
 coordinate of @code{fpixel_i} and @code{lpixel_i} is given. This box
 doesn't necessarily have to lie within the dataset, it can be outside of
-it, or only patially overlap. This function will change the values of
+it, or only partially overlap. This function will change the values of
 @code{fpixel_i} and @code{lpixel_i} to exactly cover the overlap in the
 input dataset's coordinates.
 
@@ -26419,8 +26421,8 @@ round of clipping).
 
 The role of @code{param} is determined based on its value. If @code{param}
 is larger than @code{1} (one), it must be an integer and will be
-interpretted as the number clips to do. If it is less than @code{1} (one),
-it is interpretted as the tolerance level to stop the iteration.
+interpreted as the number clips to do. If it is less than @code{1} (one),
+it is interpreted as the tolerance level to stop the iteration.
 
 The output dataset has the following elements with a
 @code{GAL_TYPE_FLOAT32} type:
@@ -26711,7 +26713,7 @@ For example, if the returned array is called @code{indexs}, then
 casting to @code{size_t *}) containing the indexs of each one of those
 elements/pixels.
 
-By @emph{index} we mean the 1D position: the input number of dimentions is
+By @emph{index} we mean the 1D position: the input number of dimensions is
 irrelevant (any dimensionality is supported). In other words, each
 element's index is the number of elements/pixels between it and the
 dataset's first element/pixel. Therefore it is always greater or equal to
@@ -26783,7 +26785,7 @@ input->flags &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
 @deftypefun void gal_label_clump_significance (gal_data_t @code{*values}, gal_data_t @code{*std}, gal_data_t @code{*label}, gal_data_t @code{*indexs}, struct gal_tile_two_layer_params @code{*tl}, size_t @code{numclumps}, size_t @code{minarea}, int @code{variance}, int @code{keepsmall}, gal_data_t @code{*sig}, gal_data_t @code{*sigind})
 @cindex Clump
 This function is usually called after @code{gal_label_watershed}, and is
-used as a measure to idenfity which over-segmented ``clumps'' are real and
+used as a measure to identify which over-segmented ``clumps'' are real and
 which are noise.
 
 A measurement is done on each clump (using the @code{values} and @code{std}
@@ -26802,7 +26804,7 @@ make a measurement on each clump and over all the river/watershed
 pixels. The number of clumps (@code{numclumps}) must be given as an input
 argument and any clump that is smaller than @code{minarea} is ignored
 (because of scatter). If @code{variance} is non-zero, then the @code{std}
-dataset is interpretted as variance, not standard deviation.
+dataset is interpreted as variance, not standard deviation.
 
 The @code{values} and @code{std} datasets must have a @code{float} (32-bit
 floating point) type. Also, @code{label} and @code{indexs} must
@@ -26964,7 +26966,7 @@ During data analysis, it happens that parts of the data cannot be given a
 value, but one is necessary for the higher-level analysis. For example a
 very bright star saturated part of your image and you need to fill in the
 saturated pixels with some values. Another common usage case are masked
-sky-lines in 1D specra that similarly need to be assigned a value for
+sky-lines in 1D spectra that similarly need to be assigned a value for
 higher-level analysis. In other situations, you might want a value in an
 arbitrary point: between the elements/pixels where you have data. The
 functions described in this section are for such operations.
@@ -28470,9 +28472,9 @@ $ mv TEMPLATE.h myprog.h
 
 @item
 @cindex GNU Grep
-Correct all occurances of @code{TEMPLATE} in the input files to
+Correct all occurrences of @code{TEMPLATE} in the input files to
 @code{myprog} (in short or long format). You can get a list of all
-occurances with the following command. If you use Emacs, it will be able to
+occurrences with the following command. If you use Emacs, it will be able to
 parse the Grep output and open the proper file and line automatically. So
 this step can be very easy.
 
@@ -28532,7 +28534,7 @@ program or library). Later on, when you are coding, this general context
 will significantly help you as a road-map.
 
 A very important part of this process is the program/library introduction.
-These first few paragraphs explain the purposes of the program or libirary
+These first few paragraphs explain the purposes of the program or library
 and are fundamental to Gnuastro. Before actually starting to code, explain
 your idea's purpose thoroughly in the start of the respective/new section
 you wish to work on. While actually writing its purpose for a new reader,
@@ -29590,7 +29592,7 @@ popular graphic user interface for GNU/Linux systems), version 3. For GNOME
 make it your self (with @command{mkdir}). Using your favorite text editor,
 you can now create @file{~/.local/share/applications/saods9.desktop} with
 the following contents. Just don't forget to correct @file{BINDIR}. If you
-would also like to have ds9's logo/icon in GNOME, download it, uncomment
+would also like to have ds9's logo/icon in GNOME, download it, un-comment
 the @code{Icon} line, and write its address in the value.
 
 @example

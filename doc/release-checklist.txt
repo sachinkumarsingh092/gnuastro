@@ -6,6 +6,25 @@ set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
 
+ - Build the Debian distribution (just for a test) and correct any build or
+   Lintian warnings. This is recommended, even if you don't actually want
+   to make a release before the alpha or main release. Because the warnings
+   are very useful in making the package build cleanly on other systems.
+
+   If you don't actually want to make a Debian release, in the end, instead
+   of running `git push', just delete the top commits that you made in the
+   three branchs with the following command
+
+       $ git checkout master
+       $ git reset --hard HEAD~1
+       $ git checkout pristine-tar
+       $ git reset --hard HEAD~1
+       $ git checkout upstream
+       $ git tag -d upstream/$ver
+       $ git reset --hard HEAD~1
+       $ git checkout master
+
+
  - [ALPHA] Only in the first alpha release after a stable release: update
    the library version (the values starting with `GAL_' in
    `configure.ac'). See the `Updating library version information' section
@@ -22,7 +41,11 @@ all the commits needed for this release have been completed.
 
 
  - Check if THANKS and the book's Acknowledgments section have everyone in
-   `doc/announce-acknowledge.txt' in them.
+   `doc/announce-acknowledge.txt' in them. To see who has been added in the
+   `THANKS' file since the last stable release (to add in the book), you
+   can use this command:
+
+     $ git diff gnuastro_vP.P..HEAD THANKS
 
 
  - [STABLE] Correct the links in the webpage (`doc/gnuastro.en.html' and
@@ -41,7 +64,6 @@ all the commits needed for this release have been completed.
             > doc/announce-acknowledge.txt
 
 
-
  - Commit all these changes:
 
      $ git add -u
@@ -53,7 +75,7 @@ all the commits needed for this release have been completed.
 
      $ git clean -fxd
      $ ./bootstrap --copy --gnulib-srcdir=/path/to/gnulib
-     $ ./developer-build
+     $ ./developer-build -c -C -d     # using `-d' to speed up the build.
      $ cd build
      $ make distcheck -j8
 
@@ -75,12 +97,11 @@ all the commits needed for this release have been completed.
  - [STABLE] The tag will cause a change in the tarball version. So clean
    the build directory, and repeat the steps for the final release:
 
-     $ rm -rf ./build/*
      $ autoreconf -f
-     $ ./developer-build
+     $ ./developer-build -c -C -d
      $ cd build
-     $ make distcheck -j8
-     $ make dist-lzip
+     $ make dist                      # to build `tar.gz'.
+     $ make dist-lzip                 # to build `tar.lz'.
 
 
  - Upload the tarball with the command below: Note that `gnupload'
@@ -183,6 +204,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ sudo apt-get update
      $ sudo apt-get upgrade
 
+
  - If this is the first time you are packaging on this system, you will
    need to install the following programs. The first group of packages are
    general for package building, and the second are only for Gnuastro.
@@ -232,13 +254,6 @@ Steps necessary to Package Gnuastro for Debian.
      $ rm -f gnuastro_* gnuastro-*
 
 
- - To keep things clean, define Gnuastro's version as a variable (if this
-   isn't a major release, we won't use the last four or five characters
-   that are the first commit hash characters):
-
-     $ export ver=A.B.CCC
-
-
  - [ALPHA] Build an ASCII-armored, detached signature for the tarball with
    this command (it will make a `.asc' file by default, so use that instead
    of `.sig' in the two following steps).
@@ -247,10 +262,17 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - Put a copy of the TARBALL and its SIGNATURE to be packaged in this
-   directory (use a different address for the experimental releases)
+   directory (use a different address for the experimental releases).
 
-     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-$ver.tar.gz
-     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-$ver.tar.gz.sig
+     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-XXXXX.tar.gz
+     $ wget https://ftp.gnu.org/gnu/gnuastro/gnuastro-XXXXX.tar.gz.sig
+
+
+ - To keep things clean, define Gnuastro's version as a variable (if this
+   isn't a major release, we won't use the last four or five characters
+   that are the first commit hash characters):
+
+     $ export ver=A.B.CCC
 
 
  - Make a standard symbolic link to the tarball (IMPORTANT: the `dash' is

@@ -1,19 +1,1 @@
 People who's help must be acknowledged in the next release.
-
-Leindert Boogaard
-Nushkia Chamba
-Nima Dehdilani
-Antonio Diaz Diaz
-Lee Kelvin
-Brandon Kelly
-Alan Lefor
-Guillaume Mahler
-Bertrand Pain
-Ole Streicher
-Michel Tallon
-Juan C. Tello
-Éric Thiébaut
-David Valls-Gabaud
-Aaron Watkins
-Sara Yousefi Taemeh
-Johannes Zabl

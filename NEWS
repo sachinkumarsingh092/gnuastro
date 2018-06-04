@@ -1,9 +1,12 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 
-* Noteworthy changes in release A.A (library 4.0.0) (YYYY-MM-DD) [stable]
+* Noteworthy changes in release 0.6 (library 4.0.0) (2018-06-04) [stable]
 
 ** New features
+
+  Building:
+    - New optional dependency: The TIFF library (libtiff).
 
   All programs:
     - Input image dataset(s) can be in any of the formats recognized by

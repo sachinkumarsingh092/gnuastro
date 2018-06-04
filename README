@@ -19,18 +19,19 @@ sections). There is also a separate chapter devoted to tutorials for
 effectively use Gnuastro combined with other software already available on
 your Unix-like operating system (see Chapter 2).
 
-If you have already installed gnuastro, you can read the full book by
-running the following command. You can go through the whole book by
-pressing the 'SPACE' key, and leave the Info environment at any time by
-pressing 'q' key. See the "Getting help" section below (in this file) or in
-the book for more.
+To install Gnuastro, follow the instructions in the "Install Gnuastro"
+section below. If you have already installed gnuastro, you can read the
+full book by running the following command. You can go through the whole
+book by pressing the 'SPACE' key, and leave the Info environment at any
+time by pressing 'q' key. See the "Getting help" section below (in this
+file) or in the book for more.
 
     info gnuastro
 
-The programs released in version 0.2 are listed below followed by their
-executable name in parenthesis and a short description. This list is
-ordered alphabetically. In the book, they are grouped and ordered by
-context under categories/chapters.
+Gnuastro's programs are listed below followed by their executable name in
+parenthesis and a short description. This list is ordered
+alphabetically. In the book, they are grouped and ordered by context under
+categories/chapters.
 
   - Arithmetic (astarithmetic): For arithmetic operations on multiple
     (theoretically unlimited) number of datasets (images). It has a large
@@ -120,16 +121,31 @@ Installing Gnuastro
 -------------------
 
 The mandatory dependencies which are required to install Gnuastro from the
-tarball are listed below. See the "Dependencies" section of the book for
-their detailed installation guides and optional dependencies to enable
-extra features. If you have just cloned Gnuastro and want to install from
-the version controlled source, please read the 'README-hacking' file (not
-available in the tarball) or the "Bootstrapping dependencies" subsection of
-the manual before continuing.
+tarball are listed below.
 
   - GNU Scientific Library (GSL): https://www.gnu.org/software/gsl/
   - CFITSIO: http://heasarc.gsfc.nasa.gov/fitsio/
   - WCSLIB: http://www.atnf.csiro.au/people/mcalabre/WCS/
+
+The optional dependencies are:
+
+  - GNU Libtool: https://www.gnu.org/software/libtool/
+  - Git library (libgit2): https://libgit2.github.com/
+  - JPEG library (libjpeg): http://ijg.org/
+  - TIFF library (libtiff): http://simplesystems.org/libtiff/
+  - Ghostscript: https://www.ghostscript.com/
+
+See the "Dependencies" section of the book for their detailed installation
+guides and optional dependencies to enable extra features. Prior to
+installation, you can find it in the `doc/gnuastro.texi' file (source of
+the book), or on the web:
+
+  https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies.html
+
+If you have just cloned Gnuastro and want to install from the version
+controlled source, please read the 'README-hacking' file (not available in
+the tarball) or the "Bootstrapping dependencies" subsection of the manual
+before continuing.
 
 The most recent stable Gnuastro release can be downloaded from the
 following link. Please see the "Downloading the source" section of the
@@ -142,8 +158,8 @@ the standard GNU Build system as shown below. After the './configure'
 command, Gnuastro will print messages upon the successful completion of
 each step, giving further information and suggestions for the next steps.
 
-    tar xf gnuastro-latest.tar.gz        # Also works for `tar.lz' files
-    cd gnuastro-0.1
+    tar xf gnuastro-latest.tar.lz        # Also works for `tar.gz' files
+    cd gnuastro-X.X
     ./configure
     make
     make check
