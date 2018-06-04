@@ -100,8 +100,7 @@ all the commits needed for this release have been completed.
      $ autoreconf -f
      $ ./developer-build -c -C -d
      $ cd build
-     $ make dist                      # to build `tar.gz'.
-     $ make dist-lzip                 # to build `tar.lz'.
+     $ make dist dist-lzip       # to build `tar.gz' and `tar.lz'.
 
 
  - Upload the tarball with the command below: Note that `gnupload'
@@ -129,7 +128,7 @@ all the commits needed for this release have been completed.
    that you will need to configure and build Gnuastro in the main source
    directory to build the full webpage with this script.
 
-       $ ./configure
+       $ ./configure CFLAGS="-g -O0" --disable-shared
        $ make -j8
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
@@ -161,8 +160,8 @@ all the commits needed for this release have been completed.
      $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX          \
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=$mykeyid                  \
-              --url-directory=http://YYYY.gnu.org/gnu/gnuastro             \
-              --archive-suffix=tar.lz > announcement.txt
+              --url-directory=https://YYYY.gnu.org/gnu/gnuastro             \
+              --archive-suffix=tar.lz > ~/announcement.txt
 
 
  - Based on previous announcements, add an intro, the NEWS file and the
