@@ -512,7 +512,14 @@ gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d)
     case GAL_INTERPOLATE_1D_AKIMA_PERIODIC:
       itype=gsl_interp_akima_periodic;   break;
     case GAL_INTERPOLATE_1D_STEFFEN:
+#if HAVE_DECL_GSL_INTERP_STEFFEN
       itype=gsl_interp_steffen;          break;
+#else
+      error(EXIT_FAILURE, 0, "%s: Steffen interpolation isn't available "
+            "in the system's GNU Scientific Library (GSL). Please install "
+            "a more recent GSL (version >= 2.0, released in October 2015) "
+            "and rebuild Gnuastro", __func__);
+#endif
     default:
       error(EXIT_FAILURE, 0, "%s: code %d not recognizable for the GSL "
             "interpolation type", __func__, type_1d);

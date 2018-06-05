@@ -192,7 +192,7 @@ PATH=$(AS_ECHO([$PATH]) | $SED -e 's|'"$currpwd"'||g' \
                                -e 's|^:||'            \
                                -e 's|:$||' )
 AS_IF([test $oldPATH = $PATH],
-      [ path_warning=no ],
+      [ path_warning=no                   ],
       [ path_warning=yes; anywarnings=yes ])
 AC_MSG_RESULT( $path_warning )
 
@@ -213,6 +213,10 @@ AC_SEARCH_LIBS([cblas_sdsdot], [gslcblas], [],
     [AC_MSG_ERROR([GSL CBLAS not present, cannot continue.])])
 AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
     [AC_MSG_ERROR([GSL not found, cannot continue.])])
+AC_CHECK_DECLS(gsl_interp_steffen,
+               [ gsl_version_old=no                   ],
+               [ gsl_version_old=yes; anywarnings=yes ],
+               [[#include <gsl/gsl_interp.h>]])
 
 # Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
 # and thus it will be necessary to explicitly link with libcurl also. If it
@@ -656,6 +660,14 @@ AS_IF([test x$enable_guide_message = xyes],
       [
         AS_ECHO(["Configuration warning(s):"])
         AS_ECHO([])
+
+        AS_IF([test "x$gsl_version_old" = "xyes"],
+              [AS_ECHO(["  - The version of GNU Scientific Library (GSL) on this system doesn't"])
+               AS_ECHO(["    have some features that can be useful in Gnuastro. This build"])
+               AS_ECHO(["    won't crash, but Gnuastro will have less functionality afterwards."])
+               AS_ECHO(["    We thus recommend building and installing a more recent version"])
+               AS_ECHO(["    of GSL (version >= 2.0, released in October 2015)."])
+               AS_ECHO([]) ])
 
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])

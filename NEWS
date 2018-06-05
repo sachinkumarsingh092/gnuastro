@@ -1,6 +1,23 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 
+* Noteworthy changes in release X.X (library 5.0.0) (YYYY-MM-DD) [alpha]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bug fixes
+
+  bug #54057: Building failure due to not finding gsl_interp_steffen.
+
+
+
+
+
+
 * Noteworthy changes in release 0.6 (library 4.0.0) (2018-06-04) [stable]
 
 ** New features

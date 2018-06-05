@@ -1,1 +1,4 @@
-People who's help must be acknowledged in the next release.
+Alphabetically ordered list to acknowledge in the next release.
+
+Takashi Ichikawa
+Alan Lefor
