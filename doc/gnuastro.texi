@@ -3390,9 +3390,9 @@ all apertures to be identical after all).
 
 @example
 $ rm *.txt
-$ $ asttable cat/xdf-f160w.fits -h2 -cRA,DEC                       \
-             | awk '!/^#/@{print NR, $1, $2, 5, 5, 0, 0, 1, NR, 1@}' \
-             > apertures.txt
+$ asttable cat/xdf-f160w.fits -h2 -cRA,DEC                       \
+           | awk '!/^#/@{print NR, $1, $2, 5, 5, 0, 0, 1, NR, 1@}' \
+           > apertures.txt
 @end example
 
 We can now feed this catalog into MakeProfiles to build the apertures for

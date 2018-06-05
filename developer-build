@@ -244,7 +244,7 @@ do
             upload=1
             url="$2"
             if [ x"$url" = x ]; then
-                echo "No argument given to '--upload' ('-u')."
+                echo "No SERVER:DIR given to '--upload' ('-u') ."
                 exit 1;
             fi
             shift # past argument
@@ -259,7 +259,7 @@ do
             upload=1
             url="$2"
             if [ x"$url" = x ]; then
-                echo "No argument given to '--publish' ('-u')."
+                echo "No SERVER:DIR given to '--publish' ('-p') ."
                 exit 1;
             fi
             shift # past argument
