@@ -7278,6 +7278,15 @@ file. When this option is called in those programs, the log file will also
 be printed. If the program doesn't generate a log file, this option is
 ignored.
 
+@cartouche
+@noindent
+@strong{@option{--log} isn't thread-safe}: The log file usually has a fixed
+name. Therefore if two simultaneous calls (with @option{--log}) of a
+program are made in the same directory, the program will try to write to
+the same file. This will cause problems like unreasonable log file,
+un-defined behavior, or a crash.
+@end cartouche
+
 @cindex CPU threads, set number
 @cindex Number of CPU threads to use
 @item -N INT
@@ -18049,6 +18058,16 @@ positions. The units of the distance are the same as the given coordinates
 below). When @option{--logasoutput} is called, no log file (with a fixed
 name) will be created. In this case, the output file (possibly given by the
 @option{--output} option) will have the contents of this log file.
+
+@cartouche
+@noindent
+@strong{@option{--log} isn't thread-safe}: As described above, when
+@option{--logasoutput} is not called, the Log file has a fixed name for all
+calls to Match. Therefore if a separate log is requested in two
+simultaneous calls to Match in the same directory, Match will try to write
+to the same file. This will cause problems like unreasonable log file,
+un-defined behavior, or a crash.
+@end cartouche
 
 @table @option
 @item -H STR

@@ -12,7 +12,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Bug fixes
 
   bug #54057: Building failure due to not finding gsl_interp_steffen.
-
+  bug #54063: Match tests in make check fail randomly.
 
 
 

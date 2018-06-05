@@ -49,5 +49,5 @@ if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat1 $cat2 --aperture=0.5 --log --output=match-positions.fits \
-          --outcols=a1,aEFGH,bACCU1,aIJKL,bACCU2 -omatch-merged-cols.txt
+$execname $cat1 $cat2 --aperture=0.5 -omatch-merged-cols.txt \
+          --outcols=a1,aEFGH,bACCU1,aIJKL,bACCU2
