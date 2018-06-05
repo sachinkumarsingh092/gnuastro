@@ -37,11 +37,13 @@ set -e
 
 # Default values for variables.
 jobs=8
+dist=0
 debug=0
 clean=0
 check=0
+reconf=0
+upload=0
 install=0
-tar_pdf_upload=0
 top_build_dir=/dev/shm
 if [ -f .version ]; then
     version=$(cat .version)
@@ -56,6 +58,13 @@ fi
 # Output of help.
 me=$0                           # Executable file name.
 help_print() {
+
+    # See if autoreconf is enabled or not.
+    if [ $reconf = "0" ]; then
+        reconf_status="DISABLED"
+    else
+        reconf_status="ENABLED"
+    fi
 
     # See if debug is enabled or not.
     if [ $debug = "0" ]; then
@@ -85,11 +94,18 @@ help_print() {
         install_status="ENABLED"
     fi
 
-    # See if tar_pdf_upload is enabled or not.
-    if [ $tar_pdf_upload = "0" ]; then
-        tpu_status="DISABLED"
+    # See dist is enabled or not.
+    if [ $dist = "0" ]; then
+        dist_status="DISABLED"
     else
-        tpu_status="ENABLED"
+        dist_status="ENABLED"
+    fi
+
+    # See if upload is enabled or not.
+    if [ $upload = "0" ]; then
+        upload_status="DISABLED"
+    else
+        upload_status="ENABLED"
     fi
 
     # Print the output.
@@ -117,6 +133,10 @@ Options:
                           build directory name.
                           Current value: $version
 
+ -a, --autoreconf         Run 'autoreconf -f' (to set the version and
+                          update the build system) before anything else.
+                          Current status: $reconf_status
+
  -c, --clean              Delete (with 'rm') all its contents of the build
                           directory before starting new configuration.
                           Current status: $clean_status
@@ -135,10 +155,19 @@ Options:
  -i, --install            Run 'sudo make install' after the build.
                           Current status: $install_status
 
- -u, --tar-pdf-upload STR Build a tar.lz tarball and PDF manual, then
-                          upload them to the given server:folder.
+ -D, --dist               Build a tar.lz tarball and PDF manual.
+                          Current status: $dist_status
+
+ -u, --upload STR         First run '--dist', then upload tarball and PDF
+                          manual to the given 'server:folder'.
                           For example: -u my-server:folder
-                          Current status: $tpu_status
+                          Current status: $upload_status
+
+ -p, --publish STR        Short for '-a -c -d -C -u STR'. '-d' is added
+                          because it will greatly speed up the build. It
+                          will have no effect on the produced tarball.
+
+ -I, --install-archive    Short for '-a -c -C -i -D'.
 
  -P, --printparams        Another name for '--help', for similarity with
                           Gnuastro's programs. Note that the output of
@@ -177,6 +206,10 @@ do
             echo $version
             exit 0
             ;;
+        -a|--autoreconf)
+            reconf=1
+            shift # past argument
+            ;;
         -c|--clean)
             clean=1
             shift # past argument
@@ -202,15 +235,43 @@ do
             install=1
             shift # past argument
             ;;
-        -u|--tar-pdf-upload)
-            tar_pdf_upload=1
+        -D|--dist)
+            dist=1
+            shift # past argument
+            ;;
+        -u|--upload)
+            dist=1
+            upload=1
             url="$2"
             if [ x"$url" = x ]; then
-                echo "No argument given to '--tar-pdf-upload' ('-u')."
+                echo "No argument given to '--upload' ('-u')."
                 exit 1;
             fi
             shift # past argument
             shift # past value
+            ;;
+        -p|--publish)
+            dist=1
+            clean=1
+            debug=1
+            check=1
+            reconf=1
+            upload=1
+            url="$2"
+            if [ x"$url" = x ]; then
+                echo "No argument given to '--publish' ('-u')."
+                exit 1;
+            fi
+            shift # past argument
+            shift # past value
+            ;;
+        -I|--install-archive)
+            dist=1
+            clean=1
+            check=1
+            reconf=1
+            install=1
+            shift # past argument
             ;;
         -h|-P|--help|--printparams)
             help_print
@@ -234,6 +295,15 @@ done
 if [ ! -d $top_build_dir ]; then
     echo "$top_build_dir doesn't exist. Aborted."
     exit 1
+fi
+
+
+
+
+
+# If reconfiguration was requested, do it.
+if [ $reconf = 1 ]; then
+    autoreconf -f
 fi
 
 
@@ -363,13 +433,22 @@ fi
 
 
 
-# Build a tarball, and upload it to the requested server.
-if [ x$tar_pdf_upload = x1 ]; then
-
-    # Make the distribution tarball and pdf manual.
+# Make the tarball and PDF for distribution.
+if [ x$dist = x1 ]; then
     make dist-lzip pdf
+fi
 
-    # Get the base package name, and use it to make a generic tarball name.
+
+
+
+
+# Build a tarball, and upload it to the requested server.
+if [ x$upload = x1 ]; then
+
+    # Get the base package name, and use it to make a generic tarball
+    # name. Note that with the `--upload' option, `--dist' is also
+    # activated, so the tarball is already built and ready by this
+    # step.
     base=$(ls *.tar.lz | sed -e's/-/ /' | awk '{print $1}')
     mv *.tar.lz $base"-latest.tar.lz"
 

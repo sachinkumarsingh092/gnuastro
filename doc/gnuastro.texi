@@ -6171,6 +6171,13 @@ GNU/Linux operating systems, see @ref{Configure and build in RAM}).
 Print the version string of Gnuastro that will be used in the build. This
 string will be appended to the directory name containing the built files.
 
+@item -a
+@itemx --autoreconf
+Run @command{autoreconf -f} before building the package. In Gnuastro, this
+is necessary when a new commit has been made to the project history. In
+Gnuastro's build system, the Git description will be used as the version,
+see @ref{Version numbering} and @ref{Synchronizing}.
+
 @item -c
 @itemx --clean
 @cindex GNU Autoreconf
@@ -6216,15 +6223,44 @@ checks to work on (for example defined in @file{tests/during-dev.sh}).
 @itemx --install
 After finishing the build, also run @command{make install}.
 
+@item -D
+@itemx --dist
+Run @code{make dist-lzip pdf} to build a distribution tarball (in
+@file{.tar.lz} format) and a PDF manual. This can be useful for archiving,
+or sending to colleagues who don't use Git for an easy build and manual.
+
 @item -u STR
-@item --tar-pdf-upload STR
-After finishing the build, run @command{make dist-lzip pdf} to build an
-Lzip tarball and pdf manual. Then rename the tarball suffix to
-@file{-latest.tar.lz} (instead of the version number). Then use secure copy
-(@command{scp}, part of the SSH tools) to copy the tarball and PDF to the
-server and directory specified in the value to this option. For example
-@command{--tar-pdf-upload my-server:dir}, will copy the two files to the
-@file{dir} directory of @code{my-server}.
+@item --upload STR
+Activate the @option{--dist} (@option{-D}) option, but also rename the
+tarball suffix to @file{-latest.tar.lz} (instead of the version
+number). Then use secure copy (@command{scp}, part of the SSH tools) to
+copy the tarball and PDF to the server and directory specified in the value
+to this option. For example @command{--upload my-server:dir}, will copy the
+two files to the @file{dir} directory of @code{my-server} server.
+
+@item -p
+@itemx --publish
+Short for @option{--autoreconf --clean --debug --check --upload
+STR}. @option{--debug} is added because it will greatly speed up the
+build. It will have no effect on the produced tarball. This is good when
+you have made a commit and are ready to publish it on your server (if
+nothing crashes). Recall that if any of the previous steps fail the script
+aborts.
+
+@item -I
+@item --install-archive
+Short for @option{--autoreconf --clean --check --install --dist}. This is
+useful when you actually want to install the commit you just made (if the
+build and checks succeed). It will also produce a distribution tarball and
+PDF manual for easy access to the installed tarball on your system at a
+later time.
+
+Ideally, Gnuastro's Git version history makes it easy for a prepared system
+to revert back to a different point in history. But Gnuastro also needs to
+bootstrap files and also your collaborators might (usually do!) find it too
+much of a burden to do the bootstrapping themselves. So it is convenient to
+have a tarball and PDF manual of the version you have installed (and are
+using in your reserach) handily available.
 
 @item -h
 @itemx --help
