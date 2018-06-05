@@ -297,7 +297,7 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ git add --all
      $ git commit -m "Upstream Gnuastro $ver"
-     $ git tag upstream/$ver
+     $ git tag -a upstream/$ver
      $ pristine-tar commit ../gnuastro_$ver.orig.tar.gz          \
                     -s ../gnuastro_$ver.orig.tar.gz.asc
 
@@ -368,6 +368,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ git add --all
      $ git status                         # For a visual check
      $ git commit -m "Gnuastro $ver"
+     $ git tag -a debian/$ver-1
 
 
  - Push all the changes to the repository (you can't call `--all' and
