@@ -873,7 +873,7 @@ will probably be a false positive.
 
 Users of statistical (scientific) methods (software) are therefore not
 passive (objective) agents in their result. Therefore, it is necessary to
-actually understand the method not just use it as a black box. The
+actually understand the method, not just use it as a black box. The
 subjective experience gained by frequently using a method/software is not
 sufficient to claim an understanding of how the tool/method works and how
 relevant it is to the data and analysis. This kind of subjective experience
@@ -885,11 +885,12 @@ software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}},
 poorly written (or non-existent) scientific software manuals, and
 non-reproducible papers@footnote{Where the authors omit many of the
 analysis/processing ``details'' from the paper by arguing that they would
-make the paper too long/unreadable. However, software methods do allows us
-to supplement papers with all the details necessary to exactly reproduce
-the result. For example see @url{https://doi.org/10.5281/zenodo.1163746,
-zenodo.1163746} and @url{https://doi.org/10.5281/zenodo.1164774,
-zenodo.1164774} and this @url{
+make the paper too long/unreadable. However, software engineers have been
+dealing with such issues for a long time. There are thus software
+management solutions that allow us to supplement papers with all the
+details necessary to exactly reproduce the result. For example see
+@url{https://doi.org/10.5281/zenodo.1163746, zenodo.1163746} and
+@url{https://doi.org/10.5281/zenodo.1164774, zenodo.1164774} and this @url{
 http://akhlaghi.org/reproducible-science.html, general discussion}.}. This
 approach to scientific software and methods only helps in producing dogmas
 and an ``@emph{obscurantist faith in the expert's special skill, and in his
@@ -987,14 +988,24 @@ the universe: roughly 14 billion years (suggested by the current consensus
 of the standard model of cosmology) and less than 10,000 years (suggested
 from some interpretations of the Bible). Both these numbers are
 @emph{results}. What distinguishes these two results, is the tools/methods
-used to derive them. Therefore, as the term ``Scientific method'' also
-signifies, it is the @emph{method} that defines a scientific statement, not
-the result of one implementation of the method.}.
+that were used to derive them. Therefore, as the term ``Scientific method''
+also signifies, a scientific statement it defined by its @emph{method}, not
+its result.}
 
-The same is true today: science cannot progress with a black box. Technical
-knowledge and experience (to experiment on its tools, or software in this
-context@footnote{Of course, this also applies to hardware.}), is critical
-to scientific vitality.
+The same is true today: science cannot progress with a black box, or poorly
+released code. Technical knowledge and experience (to experiment on its
+tools, or software in this context@footnote{Of course, this also applies to
+hardware.}), is critical to scientific vitality. Scientific research are
+only considered for peer review and publication if they have a sufficiently
+high standard of English style. A similar level of quality assessment is
+necessary regarding the codes/methods scientists use to derive their
+results. Therefore, when a scientist says ``software is not my specialty, I
+am not a software engineer. So the quality of my code/processing doesn't
+matter. Why should I master good coding style, or release my code, when I
+am hired to do Astronomy/Biology?''. This statement is akin to a French
+scientist saying that "English is not my language, I am not Shakespeare. So
+the quality of my English writing doesn't matter. Why should I master good
+English style, when I am hired to do Astronomy/Biology?"
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -1010,7 +1021,7 @@ This can happen when scientists get too distant from the raw data and
 methods, and are mainly discussing results. In other words, when they feel
 they have tamed Nature into their own high-level (abstract) models
 (creations), and are mainly concerned with scaling up, or industrializing
-science. Roughly five years before special relativity, and about two
+those results. Roughly five years before special relativity, and about two
 decades before quantum mechanics fundamentally changed Physics, Lord Kelvin
 is quoted as saying:
 
@@ -1243,32 +1254,24 @@ astronomer or astronomical facility or project.
 @node New to GNU/Linux?, Report a bug, Version numbering, Introduction
 @section New to GNU/Linux?
 
-Some astronomers initially install and use the GNU/Linux operating systems
-because the software that their research community use can only be run in
-this environment, the transition is not necessarily easy. To encourage you
-in investing the patience and time to make this transition, we define the
-GNU/Linux system and argue for the command-line interface of scientific
-software and how it is worth the (apparently steep) learning curve.
-@ref{Command-line interface} contains a short overview of the powerful
-command-line user interface. @ref{Tutorials} is a complete chapter with
-some real world example applications of Gnuastro making good use of
-GNU/Linux capabilities written for newcomers to this environment. It is
-fully explained, easy and (hopefully) entertaining.
+Some astronomers initially install and use a GNU/Linux operating system
+because their necessary tools can only be installed in this environment.
+However, the transition is not necessarily easy. To encourage you in
+investing the patience and time to make this transition, and actually enjoy
+it, we will first start with a basic introduction to GNU/Linux operating
+systems. Afterwards, in @ref{Command-line interface} we'll discuss the
+wonderful benefits of the command-line interface, how it beautifully
+complements the graphic user interface, and why it is worth the (apparently
+steep) learning curve. Finally a complete chapter (@ref{Tutorials}) is
+devoted to real world scenarios of using Gnuastro (on the
+command-line). Therefore if you don't yet feel comfortable with the
+command-line we strongly recommend going through that chapter after
+finishing this section.
 
-@cindex Linux
-@cindex GNU/Linux
-@cindex GNU C library
-@cindex GNU Compiler Collection
 You might have already noticed that we are not using the name ``Linux'',
 but ``GNU/Linux''. Please take the time to have a look at the following
 essays and FAQs for a complete understanding of this very important
-distinction. In short, the Linux kernel is built using the GNU C library
-(glibc) and GNU compiler collection (gcc). The Linux kernel software alone
-is useless, in order have an operating system you need many more packages
-and the majority of such low-level packages in most distributions are
-developed as part of the GNU project: ``the whole system is basically GNU
-with Linux loaded''. In the form of an analogy: to say “running Linux”, is
-like saying “driving your carburetor”.
+distinction.
 
 @itemize
 
@@ -1286,6 +1289,24 @@ like saying “driving your carburetor”.
 
 @end itemize
 
+@cindex Linux
+@cindex GNU/Linux
+@cindex GNU C library
+@cindex GNU Compiler Collection
+In short, the Linux kernel@footnote{In Unix-like operating systems, the
+kernel connects software and hardware worlds.} is built using the GNU C
+library (glibc) and GNU compiler collection (gcc). The Linux kernel
+software alone is just a means for other software to access the hardware
+resources, it is useless alone: to say “running Linux”, is like saying
+“driving your carburetor”.
+
+To have an operating system, you need lower-level (to build the kernel),
+and higher-level (to use it) software packages. The majority of such
+software in most Unix-like operating systems are GNU software: ``the whole
+system is basically GNU with Linux loaded''. Therefore to acknowledge GNU's
+instrumental role in the creation and usage of the Linux kernel and the
+operating systems that use it, we should call these operating systems
+``GNU/Linux''.
 
 
 @menu
@@ -1300,24 +1321,25 @@ like saying “driving your carburetor”.
 @cindex GUI: graphic user interface
 @cindex CLI: command-line user interface
 One aspect of Gnuastro that might be a little troubling to new GNU/Linux
-users is that (at least for the time being) it only has a command-line
-user interface (CLI). This might be contrary to the mostly graphical user
-interface (GUI) experience with proprietary operating systems. To a first
-time user, the command-line does appear much more complicated and adapting
-to it might not be easy and a little frustrating at first. This is
-understandable and also experienced by anyone who started using the
-computer (from childhood) in a graphical user interface. Here we hope to
-convince you of the unique benefits of this interface which can greatly
-enhance your productivity while complementing your GUI experience.
+users is that (at least for the time being) it only has a command-line user
+interface (CLI). This might be contrary to the mostly graphical user
+interface (GUI) experience with proprietary operating systems. Since the
+various actions available aren't always on the screen, the command-line
+interface can be complicated, intimidating, and frustrating for a
+first-time user. This is understandable and also experienced by anyone who
+started using the computer (from childhood) in a graphical user interface
+(this includes most of Gnuastro's authors). Here we hope to convince you of
+the unique benefits of this interface which can greatly enhance your
+productivity while complementing your GUI experience.
 
 @cindex GNOME 3
 Through GNOME 3@footnote{@url{http://www.gnome.org/}}, most GNU/Linux based
 operating systems now have an advanced and useful GUI. Since the GUI was
 created long after the command-line, some wrongly consider the command line
-to be obsolete. Both interfaces are useful for different tasks (for example
+to be obsolete. Both interfaces are useful for different tasks. For example
 you can't view an image, video, pdf document or web page on the
-command-line!), on the other hand you can't reproduce your results easily
-in the GUI. Therefore they should not be regarded as rivals but as
+command-line. On the other hand you can't reproduce your results easily in
+the GUI. Therefore they should not be regarded as rivals but as
 complementary user interfaces, here we will outline how the CLI can be
 useful in scientific programs.
 
