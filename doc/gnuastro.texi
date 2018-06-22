@@ -5385,8 +5385,10 @@ outputs from the previous version being mixed with outputs from the newly
 pulled work. Therefore, the first step is to clean/delete all the built
 files with @command{make distclean}. Fortunately the GNU build system
 allows the separation of source and built files (in separate
-directories). You can use it to avoid the cleaning step. Gnuastro already
-has script for this, see @ref{Configure and build in RAM}.
+directories). This is a great feature to keep your source directory clean
+and you can use it to avoid the cleaning step. Gnuastro comes with a script
+with some useful options for this job. It is useful if you regularly pull
+recent changes, see @ref{Separate build and source directories}.
 
 After the pull, we must re-configure Gnuastro with @command{autoreconf -f}
 (part of GNU Autoconf). It will update the @file{./configure} script and
