@@ -797,7 +797,7 @@ segment_save_sn_table(struct clumps_params *clprm)
   objind->next=clumpinobj;
   gal_checkset_writable_remove(p->clumpsn_d_name, 0, 1);
   gal_table_write(objind, comments, p->cp.tableformat, p->clumpsn_d_name,
-                  "CLUMPS_SN");
+                  "CLUMPS_SN", 0);
 
 
   /* Clean up. */

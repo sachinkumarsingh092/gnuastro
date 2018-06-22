@@ -49,14 +49,28 @@ struct argp_option program_options[] =
 
 
 
+    /* Output. */
     {
       "information",
       UI_KEY_INFORMATION,
       0,
       0,
       "Only print table and column information.",
-      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      GAL_OPTIONS_GROUP_OUTPUT,
       &p->information,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "colinfoinstdout",
+      UI_KEY_COLINFOINSTDOUT,
+      0,
+      0,
+      "Column info/metadata when printing to stdout.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->colinfoinstdout,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -64,6 +78,10 @@ struct argp_option program_options[] =
     },
 
 
+
+
+
+    /* End. */
     {0}
   };
 

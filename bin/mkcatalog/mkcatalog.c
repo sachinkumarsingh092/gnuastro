@@ -611,7 +611,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
      write the objects catalog and free the comments. */
   gal_list_str_reverse(&comments);
   gal_table_write(p->objectcols, comments, p->cp.tableformat, p->objectsout,
-                  "OBJECTS");
+                  "OBJECTS", 0);
   gal_list_str_free(comments, 1);
 
 
@@ -630,7 +630,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
          write the objects catalog and free the comments. */
       gal_list_str_reverse(&comments);
       gal_table_write(p->clumpcols, comments, p->cp.tableformat, p->clumpsout,
-                      "CLUMPS");
+                      "CLUMPS", 0);
       gal_list_str_free(comments, 1);
     }
 

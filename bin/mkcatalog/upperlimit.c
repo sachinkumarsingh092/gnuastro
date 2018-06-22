@@ -418,7 +418,7 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
   y->next=s;
   gal_list_str_reverse(&comments);
   gal_table_write(x, comments, p->cp.tableformat, p->upcheckout,
-                  "UPPERLIMIT_CHECK");
+                  "UPPERLIMIT_CHECK", 0);
 
   /* Inform the user. */
   if(!p->cp.quiet)

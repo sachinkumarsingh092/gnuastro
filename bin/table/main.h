@@ -46,7 +46,8 @@ struct tableparams
   struct gal_options_common_params cp; /* Common parameters.            */
   char              *filename;  /* Input filename.                      */
   gal_list_str_t     *columns;  /* List of given columns.               */
-  uint8_t         information;  /* ==1, only print FITS information.    */
+  uint8_t         information;  /* ==1: only print FITS information.    */
+  uint8_t     colinfoinstdout;  /* ==1: print column metadata in CL.    */
 
   /* Output: */
   gal_data_t           *table;  /* Linked list of output table columns. */

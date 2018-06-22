@@ -588,7 +588,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
   /* Write the table. */
   gal_checkset_writable_remove(output, 0, p->cp.dontdelete);
-  gal_table_write(table, comments, p->cp.tableformat, output, "TABLE");
+  gal_table_write(table, comments, p->cp.tableformat, output, "TABLE", 0);
 
 
   /* Let the user know, if we aren't in quiet mode. */

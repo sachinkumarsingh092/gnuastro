@@ -120,10 +120,16 @@ ui_initialize_options(struct tableparams *p,
       /* Select individually. */
       switch(cp->coptions[i].key)
         {
+        /* Mandatory options. */
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_MINMAPSIZE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+          break;
+
+        /* Options to ignore. */
+        case GAL_OPTIONS_KEY_TYPE:
+          cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
 

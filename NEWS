@@ -5,9 +5,16 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Table:
+   - `--colinfoinstdout': column information when writing to standard output.
+
 ** Removed features
 
 ** Changed features
+
+  Library:
+    - gal_txt_write: new `colinfoinstdout' argument.
+    - gal_table_write: new `colinfoinstdout' argument.
 
 ** Bug fixes
 

@@ -1141,35 +1141,13 @@ txt_print_value(FILE *fp, void *array, int type, size_t ind, char *fmt)
 
 
 
-static FILE *
-txt_open_file_write_info(gal_data_t *datall, char **fmts,
-                         gal_list_str_t *comment, char *filename)
+static void
+txt_write_metadata(FILE *fp, gal_data_t *datall, char **fmts)
 {
-  FILE *fp;
   gal_data_t *data;
   char *tmp, *nstr;
   size_t i, j, num=0;
-  gal_list_str_t *strt;
   int nlen, nw=0, uw=0, tw=0, bw=0;
-
-  /* Make sure the file doesn't already eixist. */
-  if( gal_checkset_check_file_return(filename) )
-    error(EXIT_FAILURE, 0, "%s: %s already exists. For safety, this "
-          "function will not over-write an existing file. Please delete "
-          "it before calling this function", __func__, filename);
-
-  /* Open the output file. */
-  errno=0;
-  fp=fopen(filename, "w");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
-          "table by %s", filename, __func__);
-
-
-  /* Write the comments if there were any. */
-  for(strt=comment; strt!=NULL; strt=strt->next)
-    fprintf(fp, "# %s\n", strt->v);
-
 
   /* Get the maximum width for each information field. */
   for(data=datall;data!=NULL;data=data->next)
@@ -1187,14 +1165,7 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
     }
 
 
-  /* Write the column information if the output is a file. When the
-     output is directed to standard output (the command-line), it is
-     most probably intended for piping into another program (for
-     example AWK for further processing, or sort, or anything) so the
-     user already has the column information and is probably going to
-     change them, so they are just a nuisance.
-
-     When there are more than 9 columns, we don't want to have cases
+  /* When there are more than 9 columns, we don't want to have cases
      like `# Column 1 :' (note the space between `1' and `:', this
      space won't exist for the 2 digit colum numbers).
 
@@ -1231,7 +1202,6 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
   /* Clean up and return. */
   free(nstr);
-  return fp;
 }
 
 
@@ -1239,10 +1209,12 @@ txt_open_file_write_info(gal_data_t *datall, char **fmts,
 
 
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename)
+gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
+              uint8_t colinfoinstdout)
 {
   FILE *fp;
   char **fmts;
+  gal_list_str_t *strt;
   size_t i, j, num=0, fmtlen;
   gal_data_t *data, *next2d=NULL;
 
@@ -1290,10 +1262,31 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename)
 
   /* Set the output FILE pointer: if it isn't NULL, its an actual file,
      otherwise, its the standard output. */
-  fp = ( filename
-         ? txt_open_file_write_info(input, fmts, comment, filename)
-         : stdout );
+  if(filename)
+    {
+      /* Make sure the file doesn't already exist. */
+      if( gal_checkset_check_file_return(filename) )
+        error(EXIT_FAILURE, 0, "%s: %s already exists. For safety, this "
+              "function will not over-write an existing file. Please delete "
+              "it before calling this function", __func__, filename);
 
+      /* Open the output file. */
+      errno=0;
+      fp=fopen(filename, "w");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
+              "table by %s", filename, __func__);
+
+      /* Write the comments if there were any. */
+      for(strt=comment; strt!=NULL; strt=strt->next)
+        fprintf(fp, "# %s\n", strt->v);
+    }
+  else
+    fp=stdout;
+
+  /* Write the meta-data if necessary. */
+  if(filename ? 1 : colinfoinstdout)
+    txt_write_metadata(fp, input, fmts);
 
   /* Print the dataset */
   switch(input->ndim)

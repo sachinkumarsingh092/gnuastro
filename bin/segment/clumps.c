@@ -532,7 +532,7 @@ clumps_write_sn_table(struct segmentparams *p, gal_data_t *insn,
 
   /* write the table. */
   gal_checkset_writable_remove(filename, 0, 1);
-  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN");
+  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN", 0);
 
 
   /* Clean up (if necessary). */

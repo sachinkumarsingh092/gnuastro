@@ -47,5 +47,6 @@ void
 table(struct tableparams *p)
 {
   gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
-  gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output, "TABLE");
+  gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,
+                  "TABLE", p->colinfoinstdout);
 }

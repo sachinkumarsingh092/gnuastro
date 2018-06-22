@@ -23821,21 +23821,34 @@ this line is ignored.
 @end itemize
 @end deftypefun
 
-@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname})
-Write the @code{cols} list of datasets into a table in @code{filename} (see
-@ref{List of gal_data_t}). The format of the table can be determined with
-@code{tableformat} that accepts the macros defined above. If
-@code{comments} is not @code{NULL}, then the list of comments will also be
-printed into the output table. When the output table is a plain text file,
-each node's string will be printed after a @code{#} (so it can be
-considered as a comment) and in FITS table they will follow a
-@code{COMMENT} keyword. If @file{filename} is a FITS file, the table
-extension that will be written will have the name @code{extname}.
+@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname}, uint8_t @code{colinfoinstdout})
+Write @code{cols} (a list of datasets, see @ref{List of gal_data_t}) into a
+table stored in @code{filename}. The format of the table can be determined
+with @code{tableformat} that accepts the macros defined above. When
+@code{filename==NULL}, the column information will be printed on the
+standard output (command-line).
 
-If a file named @file{filename} already exists, the operation depends on
-the type of output. When @file{filename} is a FITS file, the table will be
-added as a new extension after all existing ones. If @file{filename} is a
-plain text file, this function will abort with an error.
+If @code{comments!=NULL}, the list of comments (see @ref{List of strings})
+will also be printed into the output table. When the output table is a
+plain text file, every node of @code{comments} will be printed after a
+@code{#} (so it can be considered as a comment) and in FITS table they will
+follow a @code{COMMENT} keyword.
+
+If a file named @code{filename} already exists, the operation depends on
+the type of output. When @code{filename} is a FITS file, the table will be
+added as a new extension after all existing extensions. If @code{filename}
+is a plain text file, this function will abort with an error.
+
+If @code{filename} is a FITS file, the table extension will have the name
+@code{extname}.
+
+When @code{colinfoinstdout!=0} and @code{filename==NULL} (columns are
+printed in the standard output), the dataset metadata will also printed in
+the standard output. When printing to the standard output, the column
+information can be piped into another program for futher processing and
+thus the meta-data (lines starting with a @code{#}) must be ignored. In
+such cases, you only print the column values by passing @code{0} to
+@code{colinfoinstdout}.
 @end deftypefun
 
 @deftypefun void gal_table_write_log (gal_data_t @code{*logll}, char @code{*program_string}, time_t @code{*rawtime}, gal_list_str_t @code{*comments}, char @code{*filename}, int @code{quiet})
@@ -24522,7 +24535,7 @@ the dataset. If the necessary space for the image is larger than
 see the description under the same name in @ref{Generic data container}.
 @end deftypefun
 
-@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename})
+@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, uint8_t @code{colinfoinstdout})
 Write @code{cols} in a plain text file @code{filename}. @code{cols} may
 have one or two dimensions which determines the output:
 
@@ -24539,16 +24552,25 @@ table.
 be written.
 @end table
 
-If @code{filename} already exists this function will abort with an error
-and will not write over the existing file. Please make sure if the file
-exists or not and take the appropriate action before calling this
-function. If @code{comments!=NULL}, a @code{#} will be put at the start of
-each node of the list of strings and will be written in the file before the
-column meta-data in @code{filename} (see @ref{List of strings}).
-
 This is a low-level function for tables. It is recommended to use
 @code{gal_table_write} for generic writing of tables in a variety of
 formats, see @ref{Table input output}.
+
+If @code{filename} already exists this function will abort with an error
+and will not write over the existing file. Before calling this function
+make sure if the file exists or not. If @code{comments!=NULL}, a @code{#}
+will be put at the start of each node of the list of strings and will be
+written in the file before the column meta-data in @code{filename} (see
+@ref{List of strings}).
+
+When @code{filename==NULL}, the column information will be printed on the
+standard output (command-line). When @code{colinfoinstdout!=0} and
+@code{filename==NULL} (columns are printed in the standard output), the
+dataset metadata will also printed in the standard output. When printing to
+the standard output, the column information can be piped into another
+program for futher processing and thus the meta-data (lines starting with a
+@code{#}) must be ignored. In such cases, you only print the column values
+by passing @code{0} to @code{colinfoinstdout}.
 @end deftypefun
 
 
