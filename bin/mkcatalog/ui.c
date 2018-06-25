@@ -1164,6 +1164,7 @@ static void
 ui_preparations_outnames(struct mkcatalogparams *p)
 {
   char *suffix;
+  uint8_t keepinputdir=p->cp.keepinputdir;
 
   /* The process differs if an output filename has been given. */
   if(p->cp.output)
@@ -1205,13 +1206,22 @@ ui_preparations_outnames(struct mkcatalogparams *p)
   /* If an upperlimit check image is requsted, then set its filename. */
   if(p->checkupperlimit)
     {
+      /* See if the directory should be respected. */
+      p->cp.keepinputdir = p->cp.output ? 1 : p->cp.keepinputdir;
+
+      /* Set the suffix. */
       suffix = ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
                  ? "_upcheck.txt" : "_upcheck.fits" );
+
+      /* Set the file name. */
       p->upcheckout=gal_checkset_automatic_output(&p->cp,
                                                   ( p->cp.output
                                                     ? p->cp.output
                                                     : p->objectsfile),
                                                   suffix);
+
+      /* Set `keepinputdir' to what it was before. */
+      p->cp.keepinputdir=keepinputdir;
     }
 
   /* Just to avoid bugs (`p->cp.output' must no longer be used), we'll free

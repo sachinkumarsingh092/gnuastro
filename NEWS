@@ -16,10 +16,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - gal_txt_write: new `colinfoinstdout' argument.
     - gal_table_write: new `colinfoinstdout' argument.
 
-** Bug fixes
+** Bugs fixed
 
   bug #54057: Building failure due to not finding gsl_interp_steffen.
   bug #54063: Match tests in make check fail randomly.
+  bug #54186: MakeCatalog's --checkupperlimit not keeping output's name.
 
 
 
@@ -222,7 +223,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_statistics_number: the output dataset now has a `size_t' type. Until
         now it was `uint64_t'.
 
-** Bug fixes
+** Bugs fixed
 
   bug #50957: --version output not possible on Mac OS X
   bug #52979: Many unused result warnings for asprintf in some compilers.
@@ -405,7 +406,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   the input coordinates, thus their API has been greatly simplified and
   their functionality increased.
 
-** Bug fixes
+** Bugs fixed
 
   ConvertType crash when changing values (bug #52010).
 
@@ -542,7 +543,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   not their allocated blocks of memory). Until now, it was necessary for
   the two blocks to have the same size and this is no longer the case.
 
-** Bug fixes
+** Bugs fixed
 
   MakeProfiles long options on 32bit big endian systems (bug #51341).
 
@@ -862,7 +863,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   this to set edge pixels that are not fully covered in the new grid to
   blank and have a flat warped image.
 
-** Bug fixes
+** Bugs fixed
 
   Using `%zu' to print `size_t' variables for clean build on 32-bit
   systems.
@@ -898,7 +899,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 * Noteworthy changes in release 0.2 (library 0.0.0) (2016-10-03) [stable]
 
-** Bug fixes
+** Bugs fixed
 
   Linker errors on some operating systems have been fixed (bug #48076).
 
@@ -985,7 +986,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 * Noteworthy changes in release 0.1 (2016-05-30) [stable]
 
-** Bug fixes
+** Bugs fixed
 
   MakeCatalog's problem in checking the sizes of all input images is now
   fixed.
