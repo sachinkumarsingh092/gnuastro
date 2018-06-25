@@ -15276,15 +15276,23 @@ The HDU/extension containing the convolved image in the file given to
 @itemx --widekernel=STR
 File name of a wider kernel to use in estimating the difference of the mode
 and median in a tile (this difference is used to identify the significance
-of signal in that tile, see @ref{Quantifying signal in a tile}). This
-convolved image is only used for this purpose. Once the mode is found to be
+of signal in that tile, see @ref{Quantifying signal in a tile}). As
+displayed in Figure 4 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi
+and Ichikawa [2015]}, a wider kernel will help in identifying the skewness
+caused by data in noise. The image that is convolved with this kernel is
+@emph{only} used for this purpose. Once the mode is found to be
 sufficiently close to the median, the quantile threshold is found on the
 image convolved with the sharper kernel (@option{--kernel}), see
 @option{--qthresh}).
 
-Since convolution will significantly slow down the processing, this option
-is optional. If it isn't given, a single convolved image will be used in
-all situations.
+Since convolution will significantly slow down the processing, this feature
+is optional. When it isn't given, the image that is convolved with
+@option{--kernel} will be used to identify good tiles @emph{and} apply the
+quantile threshold. This option is mainly useful in conditions were you
+have a very large, extended, diffuse signal that is still present in the
+usable tiles when using @option{--kernel}. See @ref{Detecting large
+extended targets} for a practical demonstration on how to inspect the tiles
+used in identifying the quantile threshold.
 
 @item --whdu=STR
 HDU containing the kernel file given to the @option{--widekernel} option.
@@ -15583,17 +15591,24 @@ water in all such rivers and lakes into soil. See
 The maximum hole size to fill during the final expansion of the true
 detections as described in @option{--detgrowquant}. This is necessary when
 the input contains many smaller objects and can be used to avoid marking
-blank sky regions as detections. For example multiple galaxies can be
-positioned such that they surround an empty region of sky. If all the holes
-are filled, the Sky region in between them will be taken as a detection
-which is not desired. To avoid such cases, the integer given to this option
-must be smaller than the hole between the objects.
+blank sky regions as detections.
+
+For example multiple galaxies can be positioned such that they surround an
+empty region of sky. If all the holes are filled, the Sky region in between
+them will be taken as a detection which is not desired. To avoid such
+cases, the integer given to this option must be smaller than the hole
+between such objects. However, we should caution that unless the ``hole''
+is very large, the combined faint wings of the galaxies might actually be
+present in between them, so be very careful in not filling such holes.
 
 On the other hand, if you have a very large (and extended) galaxy, the
-diffuse wings of the galaxy may create very large holes. In such cases, a
-larger value to this option will cause the whole region to be detected as
-part of the large galaxy and thus detect it to extremely low surface
-brightness limits.
+diffuse wings of the galaxy may create very large holes over the
+detections. In such cases, a large enough value to this option will cause
+all such holes to be detected as part of the large galaxy and thus help in
+detecting it to extremely low surface brightness limits. Therefore,
+especially when large and extended objects are present in the image, it is
+recommended to give this option (very) large values. For one real-world
+example, see @ref{Detecting large extended targets}.
 
 @item --cleangrowndet
 After dilation, if the signal-to-noise ratio of a detection is less than

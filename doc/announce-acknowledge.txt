@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Leindert Boogaard
+Nushkia Chamba
 Takashi Ichikawa
 Alan Lefor
