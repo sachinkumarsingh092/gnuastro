@@ -175,7 +175,7 @@ struct mkcatalogparams
   uint8_t             envseed;  /* Use the environment for random seed. */
   double       upsigmaclip[2];  /* Sigma clip to measure upper limit.   */
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */
-  int32_t  checkupperlimit[2];  /* Object & clump ID to check dist.     */
+  int32_t       checkuplim[2];  /* Object & clump ID to check dist.     */
 
   /* Internal. */
   time_t              rawtime;  /* Starting time of the program.        */

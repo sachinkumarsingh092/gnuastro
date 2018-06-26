@@ -701,7 +701,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_C_SUM ] = 1;
           break;
 
-        case UI_KEY_NORIVERBRIGHTNESS:
+        case UI_KEY_BRIGHTNESSNORIVER:
           name           = "NO_RIVER_BRIGHTNESS";
           unit           = MKCATALOG_NO_UNIT;
           ocomment       = NULL;
@@ -1764,7 +1764,7 @@ columns_fill(struct mkcatalog_passparams *pp)
                                         : NAN );
             break;
 
-          case UI_KEY_NORIVERBRIGHTNESS:
+          case UI_KEY_BRIGHTNESSNORIVER:
             ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
                                         ? ci[ CCOL_SUM ] : NAN );
             break;

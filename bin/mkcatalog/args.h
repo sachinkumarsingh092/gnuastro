@@ -334,13 +334,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "checkupperlimit",
-      UI_KEY_CHECKUPPERLIMIT,
+      "checkuplim",
+      UI_KEY_CHECKUPLIM,
       "INT[,INT]",
       0,
       "Check random distribution for one label.",
       UI_GROUP_UPPERLIMIT,
-      &p->checkupperlimit,
+      &p->checkuplim,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_GT_0,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -743,8 +743,8 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
-      "noriverbrightness",
-      UI_KEY_NORIVERBRIGHTNESS,
+      "brightnessnoriver",
+      UI_KEY_BRIGHTNESSNORIVER,
       0,
       0,
       "Sky (not river) subtracted clump brightness.",

@@ -12,6 +12,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
+  MakeCatalog:
+    - `--checkuplim': new name for `--checkupperlimit'.
+    - `--brightnessnoriver': new name for `--noriverbrightness'.
+
   Library:
     - gal_txt_write: new `colinfoinstdout' argument.
     - gal_table_write: new `colinfoinstdout' argument.

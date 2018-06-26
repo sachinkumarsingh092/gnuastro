@@ -17575,7 +17575,7 @@ The multiple of the final (@mymath{\sigma}-clipped) standard deviation (or
 @mymath{\sigma}) used to measure the upper-limit brightness or
 magnitude.
 
-@item --checkupperlimit=INT[,INT]
+@item --checkuplim=INT[,INT]
 Print a table of positions and measured values for all the full random
 distribution used for one particular object or clump. If only one integer
 is given to this option, it is interpreted to be an object's label. If two
@@ -17751,7 +17751,7 @@ usable pixels (blank or below the threshold) are present over the clump or
 object, the stored value will be NaN, because zero (note that zero is
 meaningful).
 
-@item --noriverbrightness
+@item --brightnessnoriver
 [Clumps] The Sky (not river) subtracted clump brightness. By definition,
 for the clumps, the average brightness of the rivers surrounding it are
 subtracted from it for a first order accounting for contamination by

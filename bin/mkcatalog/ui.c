@@ -121,15 +121,15 @@ ui_initialize_options(struct mkcatalogparams *p,
   cp->coptions           = gal_commonopts_options;
 
   /* Specific to this program. */
-  p->medstd              = NAN;
-  p->sfmagnsigma         = NAN;
-  p->sfmagarea           = NAN;
-  p->upnsigma            = NAN;
-  p->zeropoint           = NAN;
-  p->upsigmaclip[0]      = NAN;
-  p->upsigmaclip[1]      = NAN;
-  p->checkupperlimit[0]  = GAL_BLANK_INT32;
-  p->checkupperlimit[1]  = GAL_BLANK_INT32;
+  p->medstd         = NAN;
+  p->sfmagnsigma    = NAN;
+  p->sfmagarea      = NAN;
+  p->upnsigma       = NAN;
+  p->zeropoint      = NAN;
+  p->upsigmaclip[0] = NAN;
+  p->upsigmaclip[1] = NAN;
+  p->checkuplim[0]  = GAL_BLANK_INT32;
+  p->checkuplim[1]  = GAL_BLANK_INT32;
 
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -264,14 +264,13 @@ ui_check_upperlimit(struct argp_option *option, char *arg,
   /* Write. */
   if(lineno==-1)
     {
-      if(p->checkupperlimit[1]==GAL_BLANK_INT32)
+      if(p->checkuplim[1]==GAL_BLANK_INT32)
         {
-          if( asprintf(&str, "%d", p->checkupperlimit[0])<0 )
+          if( asprintf(&str, "%d", p->checkuplim[0])<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
         }
       else
-        if( asprintf(&str, "%d,%d", p->checkupperlimit[0],
-                     p->checkupperlimit[1])<0 )
+        if( asprintf(&str, "%d,%d", p->checkuplim[0], p->checkuplim[1])<0 )
           error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       return str;
     }
@@ -322,8 +321,8 @@ ui_check_upperlimit(struct argp_option *option, char *arg,
         }
 
       /* Write the values in. */
-      p->checkupperlimit[0] = d[0];
-      p->checkupperlimit[1] = raw->size==2 ? d[1] : GAL_BLANK_INT32;
+      p->checkuplim[0] = d[0];
+      p->checkuplim[1] = raw->size==2 ? d[1] : GAL_BLANK_INT32;
 
       /* For no un-used variable warning. This function doesn't need the
          pointer.*/
@@ -365,14 +364,14 @@ ui_read_check_only_options(struct mkcatalogparams *p)
   /* If an upper-limit check table is requested with a specific clump, but
      no clump catalog has been requested, then abort and inform the
      user. */
-  if( p->checkupperlimit[1]!=GAL_BLANK_INT32 && p->clumpscat==0 )
+  if( p->checkuplim[1]!=GAL_BLANK_INT32 && p->clumpscat==0 )
     error(EXIT_FAILURE, 0, "no clumps catalog is requested, hence "
-          "`--checkupperlimit' is only available for objects (one value "
+          "`--checkuplim' is only available for objects (one value "
           "must be given to it).\n\n"
           "To ask for a clumps catalog, please append `--clumpscat' to the "
           "command calling MakeCatalog.\n\n"
           "If you want the upperlimit check table for an object, only give "
-          "one value (the object's label) to `--checkupperlimit'.");
+          "one value (the object's label) to `--checkuplim'.");
 
   /* See if `--skyin' is a filename or a value. When the string is ONLY a
      number (and nothing else), `tailptr' will point to the end of the
@@ -992,11 +991,11 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
     {
       /* If an upperlimit check was requested, make sure the object number
          is not larger than the maximum number of labels. */
-      if(p->checkupperlimit[0] != GAL_BLANK_INT32
-         && p->checkupperlimit[0] > p->numobjects)
+      if(p->checkuplim[0] != GAL_BLANK_INT32
+         && p->checkuplim[0] > p->numobjects)
         error(EXIT_FAILURE, 0, "%d (object identifier for the "
-              "`--checkupperlimit' option) is larger than the number of "
-              "objects in the input labels (%zu)", p->checkupperlimit[0],
+              "`--checkuplim' option) is larger than the number of "
+              "objects in the input labels (%zu)", p->checkuplim[0],
               p->numobjects);
 
       /* Read the mask file if it was given. */
@@ -1204,7 +1203,7 @@ ui_preparations_outnames(struct mkcatalogparams *p)
     }
 
   /* If an upperlimit check image is requsted, then set its filename. */
-  if(p->checkupperlimit)
+  if(p->checkuplim)
     {
       /* See if the directory should be respected. */
       p->cp.keepinputdir = p->cp.output ? 1 : p->cp.keepinputdir;
@@ -1634,7 +1633,7 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
             "input is less than double their length. If the input is taken "
             "from a larger dataset, this issue can be solved by using a "
             "larger part of it. You can also run MakeCatalog with "
-            "`--checkupperlimit' to see the distribution for a special "
+            "`--checkuplim' to see the distribution for a special "
             "object or clump as a table and personally inspect its "
             "reliability. \n\n");
 
