@@ -464,7 +464,8 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
             case UI_KEY_UPPERLIMITSIGMA:
             case UI_KEY_UPPERLIMITONESIGMA:
 
-              /* We only need to do this once. */
+              /* We only need to do this once, but the columns can be
+                 requested in any order. */
               if(sigclip==NULL)
                 {
                   /* Calculate the sigma-clipped standard deviation. Since
@@ -474,7 +475,7 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
                   init_size=pp->up_vals->size;
                   sigclip=gal_statistics_sigma_clip(pp->up_vals,
                                                     p->upsigmaclip[0],
-                                                    p->upsigmaclip[1], 1, 1);
+                                                    p->upsigmaclip[1],1,1);
                   pp->up_vals->size=pp->up_vals->dsize[0]=init_size;
                   scarr=sigclip->array;
 
@@ -573,6 +574,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   /* Initializations. */
   tarray=tile->array;
   gsl_rng_set(pp->rng, seed);
+  pp->up_vals->flag &= ~GAL_DATA_FLAG_SORT_CH;
 
 
   /* Set the range of random values for this tile. */

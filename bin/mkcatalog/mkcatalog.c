@@ -125,18 +125,29 @@ mkcatalog_single_object(void *in_prm)
 
   /* If we have upper-limit mode, then allocate the container to keep the
      values to calculate the standard deviation. */
-  pp.up_vals = ( p->upperlimit
-                 ? gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &p->upnum,
+  if(p->upperlimit)
+    {
+      /* Allocate the space to keep the upper-limit values. */
+      pp.up_vals = gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &p->upnum,
                                   NULL, 0, p->cp.minmapsize, NULL, NULL,
-                                  NULL)
-                 : NULL );
+                                  NULL);
+
+      /* Set the blank checked flag to 1. By definition, this dataset won't
+         have any blank values. Also `flag' is initialized to `0'. So we
+         just have to set the checked flag (`GAL_DATA_FLAG_BLANK_CH') to
+         one to inform later steps that there are no blank values. */
+      pp.up_vals->flag |= GAL_DATA_FLAG_BLANK_CH;
+    }
+  else
+    pp.up_vals=NULL;
+
 
   /* Fill the desired columns for all the objects given to this thread. */
   for(i=0; tprm->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
       /* For easy reading. Note that the object IDs start from one while
          the array positions start from 0. */
-      pp.ci=NULL;
+      pp.ci     = NULL;
       pp.object = tprm->indexs[i] + 1;
       pp.tile   = &p->tiles[ tprm->indexs[i] ];
 

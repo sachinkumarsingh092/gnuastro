@@ -2068,6 +2068,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
 
 
+
 #if 0
 /* Using the cumulative distribution function this function will
    remove outliers from a dataset. */

@@ -26540,9 +26540,11 @@ is larger than @code{1} (one), it must be an integer and will be
 interpreted as the number clips to do. If it is less than @code{1} (one),
 it is interpreted as the tolerance level to stop the iteration.
 
-The output dataset has the following elements with a
-@code{GAL_TYPE_FLOAT32} type:
+The returned dataset (let's call it @code{out}) contains a four-element
+array with type @code{GAL_TYPE_FLOAT32}. The final number of clips is
+stored in the @code{out->status}.
 @example
+float *array=out->array;
 array[0]: Number of points used.
 array[1]: Median.
 array[2]: Mean.

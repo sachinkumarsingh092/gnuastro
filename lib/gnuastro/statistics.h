@@ -167,21 +167,12 @@ gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize);
 
 
 /****************************************************************
- *****************        Sigma clip         ********************
+ *****************         Outliers          ********************
  ****************************************************************/
 gal_data_t *
 gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                           int inplace, int quiet);
 
-
-
-
-
-/****************************************************************/
-/*************         Identify outliers         ****************/
-/****************************************************************/
-void
-gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize);
 
 
 
