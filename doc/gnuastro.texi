@@ -736,6 +736,8 @@ history, before it has been fully documented here first. As discussed in
 @section Quick start
 
 @cindex Test
+@cindex Gzip
+@cindex Lzip
 @cindex Check
 @cindex Build
 @cindex Compile
@@ -749,18 +751,14 @@ and robust archival features, an @url{http://www.nongnu.org/lzip/lzip.html,
 Lzip} compressed tarball is also available at
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.lz,
 @file{gnuastro-latest.tar.lz}}, see @ref{Release tarball} for more details
-on the tarball release.
+on the tarball release@footnote{The Gzip library and program are commonly
+available on most systems. However, Gnuastro recommends Lzip as described
+above and the beta-releases are also only distributed in @file{tar.lz}. You
+can download and install Lzip's source (in @file{.tar.gz} format) from its
+webpage and follow the same process as below: Lzip has no dependencies, so
+simply decompress, then run @command{./configure}, @command{make},
+@command{sudo make install}.}.
 
-@cindex Gzip
-@cindex Lzip
-@cindex GNU Tar
-The Gzip library and program are commonly available on most
-systems. However, Gnuastro recommends Lzip as described above and the
-beta-releases are also only distributed in @file{tar.lz}. You can download
-and install Lzip's source (in @file{.tar.gz} format) from its webpage and
-follow the same process as below: Lzip has no dependencies, so simply
-decompress, then run @command{./configure}, @command{make}, @command{sudo
-make install}.
 
 Let's assume the downloaded tarball is in the @file{TOPGNUASTRO}
 directory. The first two commands below can be used to decompress the
@@ -786,9 +784,10 @@ $ tar xf gnuastro-latest.tar
 @end example
 
 Gnuastro has three mandatory dependencies and some optional dependencies
-for extra functionality, see @ref{Dependencies} for the full list. Links to
-the dependency sources and instructions on installing each are fully
-described there. When the mandatory dependencies are ready, you can
+for extra functionality, see @ref{Dependencies} for the full list. In
+@ref{Dependencies from package managers} we have prepared the command to
+easily install Gnuastro's dependencies using the package manager of some
+operating systems. When the mandatory dependencies are ready, you can
 configure, compile, check and install Gnuastro on your system with the
 following commands.
 
@@ -4992,12 +4991,11 @@ results and understanding (of what is going on, and thus how you interpret
 your scientific results) will also correspondingly improve.
 @end enumerate
 
-Based on your operating system and its package manager, you can use any of
-the following commands to install the mandatory and optional
-dependencies. If your operating system or package manager are not included,
-please send us the respective command, so we add it here. Gnuastro itself
-if also already packaged in some package managers (for example Debian or
-Homebrew).
+Based on your package manager, you can use any of the following commands to
+install the mandatory and optional dependencies. If your package manager
+isn't included in the list below, please send us the respective command, so
+we add it. Gnuastro itself if also already packaged in some package
+managers (for example Debian or Homebrew).
 
 As discussed above, we recommend installing the @emph{mandatory}
 dependencies manually from source. Therefore, in each command below, first
@@ -5007,7 +5005,7 @@ mandatory dependencies with your package manager, just ignore the empty
 line.
 
 @table @asis
-@item Debian-based OSs (@command{apt-get})
+@item @command{apt-get} (Debian-based OSs: Ubuntu, Linux Mint and etc)
 @cindex Debian
 @cindex Ubuntu
 @cindex @command{apt-get}
@@ -5025,7 +5023,7 @@ $ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
                        libgsl0-dev libcfitsio-dev wcslib-dev
 @end example
 
-@item macOS (@command{brew})
+@item @command{brew} (macOS)
 @cindex macOS
 @cindex Homebrew
 @cindex MacPorts
@@ -5051,7 +5049,7 @@ $ brew tap brewsci/science
 $ brew install wcslib
 @end example
 
-@item Arch Linux (@command{pacman})
+@item @command{pacman} (Arch Linux)
 @cindex Arch Linux
 @cindex @command{pacman}
 Arch Linux is a smaller GNU/Linux distribution. As discussed in
@@ -5060,7 +5058,7 @@ KISS principle ("keep it simple, stupid") as the general guideline, and
 focuses on elegance, code correctness, minimalism and simplicity, and
 expects the user to be willing to make some effort to understand the
 system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
-manage its packages.
+manage its packages/components.
 @example
 $ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
                                                              \
