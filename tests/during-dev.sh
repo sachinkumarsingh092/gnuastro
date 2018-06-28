@@ -89,13 +89,24 @@ options=
 # RUN THE PROCEDURES
 # ==================
 
+# Stop the script if there are any errors.
+set -e
+
+
 # First, make sure the variables are set. Note that arguments and options
 # are not absolutly vital! so they are not checked here. The utility will
 # warn and halt if it needs them.
-if [ x"$outdir" = x ];     then echo "outdir is not set.";      exit 1; fi
-if [ x$utilname = x ];     then echo "utilname is not set.";    exit 1; fi
-if [ x"$numjobs" = x ];    then echo "numjobs is not set.";     exit 1; fi
-if [ x"$builddir" = x ];   then echo "builddir is not set.";    exit 1; fi
+if [ x"$outdir"   = x ]; then echo "outdir is not set.";   exit 1; fi
+if [ x"$numjobs"  = x ]; then echo "numjobs is not set.";  exit 1; fi
+if [ x"$utilname" = x ]; then echo "utilname is not set."; exit 1; fi
+if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
+
+
+# Make sure `utilname' doesn't start with `ast' (a common mistake).
+nameprefix="${utilname:0:3}"
+if [ x"$nameprefix" = x"ast" ]; then
+    echo "'utilname' must not start with 'ast'."; exit 1;
+fi
 
 
 # If builddir is relative, then append the current directory to make it
