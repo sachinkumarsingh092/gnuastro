@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 
@@ -264,4 +265,428 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim)
   size_t i, out=0;
   for(i=0;i<ndim;++i) out += (a[i] > b[i]) ? (a[i]-b[i]) : (b[i]-a[i]);
   return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/********************    Collapsing a dimension    **********************/
+/************************************************************************/
+enum dimension_collapse_operation
+{
+ DIMENSION_COLLAPSE_INVALID,    /* ==0 by C standard. */
+
+ DIMENSION_COLLAPSE_SUM,
+ DIMENSION_COLLAPSE_MEAN,
+ DIMENSION_COLLAPSE_NUMBER,
+};
+
+
+
+
+
+static gal_data_t *
+dimension_collapse_sanity_check(gal_data_t *in, gal_data_t *weight,
+                                size_t c_dim, int hasblank, size_t *cnum,
+                                double **warr)
+{
+  gal_data_t *wht=NULL;
+
+  /* The requested dimension to collapse cannot be larger than the input's
+     number of dimensions. */
+  if( c_dim > (in->ndim-1) )
+    error(EXIT_FAILURE, 0, "%s: the input has %zu dimensions, but you have "
+          "asked to collapse dimension %zu", __func__, in->ndim, c_dim);
+
+  /* If there is no blank value, there is no point in calculating the
+     number of points in each collapsed dataset (when necessary). In that
+     case, `cnum!=0'. */
+  if(hasblank==0)
+    *cnum=in->dsize[c_dim];
+
+  /* Weight sanity checks */
+  if(weight)
+    {
+      if( weight->ndim!=1 )
+        error(EXIT_FAILURE, 0, "%s: the weight dataset has %zu dimensions, "
+              "it must be one-dimensional", __func__, weight->ndim);
+      if( in->dsize[c_dim]!=weight->size )
+        error(EXIT_FAILURE, 0, "%s: the weight dataset has %zu elements, "
+              "but the input dataset has %zu elements in dimension %zu",
+              __func__, weight->size, in->dsize[c_dim], c_dim);
+      wht = ( weight->type == GAL_TYPE_FLOAT64
+              ? weight
+              : gal_data_copy_to_new_type(weight, GAL_TYPE_FLOAT64) );
+      *warr = wht->array;
+    }
+
+  /* Return the weight data structure. */
+  return wht;
+}
+
+
+
+
+/* Set the collapsed output sizes. */
+static void
+dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
+                         size_t *outdsize)
+{
+  size_t i, a=0;
+
+  if(in->ndim==1)
+    *outndim=outdsize[0]=1;
+  else
+    {
+      *outndim=in->ndim-1;
+      for(i=0;i<in->ndim;++i)
+        if(i!=c_dim) outdsize[a++]=in->dsize[i];
+    }
+}
+
+
+
+
+
+/* Depending on the operator, write the result into the output. */
+#define COLLAPSE_WRITE(OIND,IIND) {                                     \
+    /* We need the sum when number operator is requested. */            \
+    if(farr) farr[ OIND ] += (warr ? warr[w] : 1) * inarr[ IIND ];      \
+                                                                        \
+    /* We don't need the number when the sum operator is requested. */  \
+    if(iarr)                                                            \
+      {                                                                 \
+        if(num->type==GAL_TYPE_UINT8) iarr[ OIND ] = 1;                 \
+        else                          ++iarr[ OIND ];                   \
+      }                                                                 \
+                                                                        \
+    /* If the sum of weights for is needed, add it. */                  \
+    if(wsumarr) wsumarr[ OIND ] += warr[w];                             \
+  }
+
+
+
+/* Deal properly with blanks. */
+#define COLLAPSE_CHECKBLANK(OIND,IIND) {                                \
+    if(hasblank)                                                        \
+      {                                                                 \
+        if(B==B) /* An integer type: blank can be checked with `=='. */ \
+          {                                                             \
+            if( inarr[IIND] != B )           COLLAPSE_WRITE(OIND,IIND); \
+          }                                                             \
+        else     /* A floating point type where NAN != NAN. */          \
+          {                                                             \
+            if( inarr[IIND] == inarr[IIND] ) COLLAPSE_WRITE(OIND,IIND); \
+          }                                                             \
+      }                                                                 \
+    else                                     COLLAPSE_WRITE(OIND,IIND); \
+  }
+
+
+
+#define COLLAPSE_DIM(IT) {                                              \
+    IT B, *inarr=in->array;                                             \
+    if(hasblank) gal_blank_write(&B, in->type);                         \
+    switch(in->ndim)                                                    \
+      {                                                                 \
+      /* 1D input dataset. */                                           \
+      case 1:                                                           \
+        for(i=0;i<in->dsize[0];++i)                                     \
+          {                                                             \
+            if(weight) w=i;                                             \
+            COLLAPSE_CHECKBLANK(0,i);                                   \
+          }                                                             \
+        break;                                                          \
+                                                                        \
+      /* 2D input dataset. */                                           \
+      case 2:                                                           \
+        for(i=0;i<in->dsize[0];++i)                                     \
+          for(j=0;j<in->dsize[1];++j)                                   \
+            {                                                           \
+              /* In a more easy to understand format:                   \
+                 dim==0 --> a=j;                                        \
+                 dim==1 --> a=i; */                                     \
+              a = c_dim==0 ? j : i;                                     \
+              if(weight) w = c_dim == 0 ? i : j;                        \
+              COLLAPSE_CHECKBLANK(a, i*in->dsize[1] + j);               \
+            }                                                           \
+        break;                                                          \
+                                                                        \
+      /* 3D input dataset. */                                           \
+      case 3:                                                           \
+        slice=in->dsize[1]*in->dsize[2];                                \
+        for(i=0;i<in->dsize[0];++i)                                     \
+          for(j=0;j<in->dsize[1];++j)                                   \
+            for(k=0;k<in->dsize[2];++k)                                 \
+              {                                                         \
+                /* In a more easy to understand format:                 \
+                   dim==0 --> a=j; b=k;                                 \
+                   dim==1 --> a=i; b=k;                                 \
+                   dim==2 --> a=i; b=j;   */                            \
+                a = c_dim==0 ? j : i;                                   \
+                b = c_dim==2 ? j : k;                                   \
+                if(weight) w = c_dim==0 ? i : (c_dim==1 ? j : k);       \
+                COLLAPSE_CHECKBLANK(a*outdsize[1]+b,                    \
+                                    i*slice + j*in->dsize[2] + k);      \
+              }                                                         \
+        break;                                                          \
+                                                                        \
+        /* Input dataset's dimensionality not yet supported. */         \
+      default:                                                          \
+        error(EXIT_FAILURE, 0, "%s: %zu-dimensional datasets not yet "  \
+              "supported, please contact us at %s to add this feature", \
+              __func__, in->ndim, PACKAGE_BUGREPORT);                   \
+      }                                                                 \
+  }
+
+
+
+
+
+gal_data_t *
+gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
+{
+  double *wsumarr=NULL;
+  int8_t *ii, *iarr=NULL;
+  size_t a, b, i, j, k, w, cnum=0;
+  size_t outdsize[10], slice, outndim;
+  int hasblank=gal_blank_present(in, 0);
+  double *dd, *df, *warr=NULL, *farr=NULL;
+  gal_data_t *wht=NULL, *sum=NULL, *num=NULL;
+
+  /* Basic sanity checks. */
+  wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
+                                      &cnum, &warr);
+
+  /* Set the size of the collapsed output. */
+  dimension_collapse_sizes(in, c_dim, &outndim, outdsize);
+
+  /* Allocate the sum (output) dataset. */
+  sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, outndim, outdsize, in->wcs,
+                     1, in->minmapsize, NULL, NULL, NULL);
+
+  /* The number dataset (when there are blank values).*/
+  if(hasblank)
+    num=gal_data_alloc(NULL, GAL_TYPE_INT8, outndim, outdsize, NULL,
+                       1, in->minmapsize, NULL, NULL, NULL);
+
+  /* Set the array pointers. */
+  if(sum) farr=sum->array;
+  if(num) iarr=num->array;
+
+  /* Parse the dataset. */
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:     COLLAPSE_DIM( uint8_t  );   break;
+    case GAL_TYPE_INT8:      COLLAPSE_DIM( int8_t   );   break;
+    case GAL_TYPE_UINT16:    COLLAPSE_DIM( uint16_t );   break;
+    case GAL_TYPE_INT16:     COLLAPSE_DIM( int16_t  );   break;
+    case GAL_TYPE_UINT32:    COLLAPSE_DIM( uint32_t );   break;
+    case GAL_TYPE_INT32:     COLLAPSE_DIM( int32_t  );   break;
+    case GAL_TYPE_UINT64:    COLLAPSE_DIM( uint64_t );   break;
+    case GAL_TYPE_INT64:     COLLAPSE_DIM( int64_t  );   break;
+    case GAL_TYPE_FLOAT32:   COLLAPSE_DIM( float    );   break;
+    case GAL_TYPE_FLOAT64:   COLLAPSE_DIM( double   );   break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, in->type);
+    }
+
+  /* If `num' is zero on any element, set its sum to NaN. */
+  if(num)
+    {
+      ii = num->array;
+      df = (dd=sum->array) + sum->size;
+      do if(*ii++==0) *dd=NAN; while(++dd<df);
+    }
+
+  /* Remove the respective dimension in the WCS structure also (if any
+     exists). Note that `sum->ndim' has already been changed. So we'll use
+     `in->wcs'. */
+  gal_wcs_remove_dimension(sum->wcs, in->ndim-c_dim);
+
+  /* Clean up and return. */
+  if(wht!=weight) gal_data_free(wht);
+  if(num) gal_data_free(num);
+  return sum;
+}
+
+
+
+
+
+gal_data_t *
+gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
+                            gal_data_t *weight)
+{
+  double wsum=NAN;
+  double *wsumarr=NULL;
+  int8_t *ii, *iarr=NULL;
+  size_t outdsize[10], slice, outndim;
+  int hasblank=gal_blank_present(in, 0);
+  size_t a, b, i, j, k, w, cnum=0;
+  gal_data_t *wht=NULL, *sum=NULL, *num=NULL;
+  double *dd, *dw, *df, *warr=NULL, *farr=NULL;
+
+  /* Basic sanity checks. */
+  wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
+                                      &cnum, &warr);
+
+  /* Set the size of the collapsed output. */
+  dimension_collapse_sizes(in, c_dim, &outndim, outdsize);
+
+  /* The sum array. */
+  sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, outndim, outdsize, in->wcs,
+                     1, in->minmapsize, NULL, NULL, NULL);
+
+  /* If a weighted mean is requested. */
+  if( weight )
+    {
+      /* There are blank values, so we'll need to keep the sums of the
+         weights for each collapsed dimension */
+      if( hasblank )
+        wsumarr=gal_pointer_allocate(GAL_TYPE_FLOAT64, sum->size, 1,
+                                     __func__, "wsumarr");
+
+      /* There aren't any blank values, so one summation over the
+         weights is enough to calculate the weighted mean. */
+      else
+        {
+          wsum=0.0f;
+          df=(dd=weight->array)+weight->size;
+          do wsum += *dd++; while(dd<df);
+        }
+    }
+  /* No weight is given, so we'll need the number of elements. */
+  else if( hasblank )
+    num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, NULL,
+                       1, in->minmapsize, NULL, NULL, NULL);
+
+  /* Set the array pointers. */
+  if(sum) farr=sum->array;
+  if(num) iarr=num->array;
+
+  /* Parse the dataset. */
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:     COLLAPSE_DIM( uint8_t  );   break;
+    case GAL_TYPE_INT8:      COLLAPSE_DIM( int8_t   );   break;
+    case GAL_TYPE_UINT16:    COLLAPSE_DIM( uint16_t );   break;
+    case GAL_TYPE_INT16:     COLLAPSE_DIM( int16_t  );   break;
+    case GAL_TYPE_UINT32:    COLLAPSE_DIM( uint32_t );   break;
+    case GAL_TYPE_INT32:     COLLAPSE_DIM( int32_t  );   break;
+    case GAL_TYPE_UINT64:    COLLAPSE_DIM( uint64_t );   break;
+    case GAL_TYPE_INT64:     COLLAPSE_DIM( int64_t  );   break;
+    case GAL_TYPE_FLOAT32:   COLLAPSE_DIM( float    );   break;
+    case GAL_TYPE_FLOAT64:   COLLAPSE_DIM( double   );   break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, in->type);
+    }
+
+  /* If `num' is zero on any element, set its sum to NaN. */
+  if(num)
+    {
+      ii = num->array;
+      df = (dd=sum->array) + sum->size;
+      do if(*ii++==0) *dd=NAN; while(++dd<df);
+    }
+
+  /* Divide the sum by the number. */
+  df = (dd=sum->array) + sum->size;
+  if(weight)
+    {
+      if(hasblank) { dw=wsumarr;  do *dd /= *dw++; while(++dd<df); }
+      else                        do *dd /= wsum;  while(++dd<df);
+    }
+  else
+    if(num) { ii = num->array;    do *dd /= *ii++; while(++dd<df); }
+    else                          do *dd /= cnum;  while(++dd<df);
+
+  /* Correct the WCS, clean up and return. */
+  gal_wcs_remove_dimension(sum->wcs, in->ndim-c_dim);
+  if(wht!=weight) gal_data_free(wht);
+  if(wsumarr) free(wsumarr);
+  gal_data_free(num);
+  return sum;
+}
+
+
+
+
+
+gal_data_t *
+gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
+{
+  double *wsumarr=NULL;
+  double *warr=NULL, *farr=NULL;
+  int32_t *ii, *iif, *iarr=NULL;
+  size_t a, b, i, j, k, w, cnum=0;
+  size_t outdsize[10], slice, outndim;
+  int hasblank=gal_blank_present(in, 0);
+  gal_data_t *weight=NULL, *wht=NULL, *num=NULL;
+
+  /* Basic sanity checks. */
+  wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
+                                      &cnum, &warr);
+
+  /* Set the size of the collapsed output. */
+  dimension_collapse_sizes(in, c_dim, &outndim, outdsize);
+
+  /* The number dataset (when there are blank values).*/
+  num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, in->wcs,
+                     1, in->minmapsize, NULL, NULL, NULL);
+
+  /* Set the array pointers. */
+  iarr=num->array;
+
+  /* Parse the input dataset (if necessary). */
+  if(hasblank)
+    switch(in->type)
+      {
+      case GAL_TYPE_UINT8:     COLLAPSE_DIM( uint8_t  );   break;
+      case GAL_TYPE_INT8:      COLLAPSE_DIM( int8_t   );   break;
+      case GAL_TYPE_UINT16:    COLLAPSE_DIM( uint16_t );   break;
+      case GAL_TYPE_INT16:     COLLAPSE_DIM( int16_t  );   break;
+      case GAL_TYPE_UINT32:    COLLAPSE_DIM( uint32_t );   break;
+      case GAL_TYPE_INT32:     COLLAPSE_DIM( int32_t  );   break;
+      case GAL_TYPE_UINT64:    COLLAPSE_DIM( uint64_t );   break;
+      case GAL_TYPE_INT64:     COLLAPSE_DIM( int64_t  );   break;
+      case GAL_TYPE_FLOAT32:   COLLAPSE_DIM( float    );   break;
+      case GAL_TYPE_FLOAT64:   COLLAPSE_DIM( double   );   break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+              __func__, in->type);
+      }
+  else
+    {
+      iif=(ii=num->array)+num->size;
+      do *ii++ = cnum; while(ii<iif);
+    }
+
+  /* Remove the respective dimension in the WCS structure also (if any
+     exists). Note that `sum->ndim' has already been changed. So we'll use
+     `in->wcs'. */
+  gal_wcs_remove_dimension(num->wcs, in->ndim-c_dim);
+
+  /* Return. */
+  if(wht!=weight) gal_data_free(wht);
+  return num;
 }

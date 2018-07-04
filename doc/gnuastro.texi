@@ -5010,7 +5010,7 @@ line.
 @cindex Ubuntu
 @cindex @command{apt-get}
 @cindex Advanced Packaging Tool (APT, Debian)
-Debian-based GNU/Linux
+@url{https://en.wikipedia.org/wiki/Debian,Debian}-based GNU/Linux
 distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
 (for example Ubuntu or its derivatives) are arguably the largest, and most
 used, class of GNU/Linux distributions. All such GNU/Linux distributions
@@ -5028,12 +5028,11 @@ $ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
 @cindex Homebrew
 @cindex MacPorts
 @cindex @command{brew}
-macOS is the operating system used on Apple devices
-(@url{https://en.wikipedia.org/wiki/MacOS}). macOS does not come with a
-package manager pre-installed, but several widely used, third-party package
-managers exist, such as Homebrew or MacPorts. Both are free
-software. Currently we have only tested Gnuastro's installation with
-Homebrew as described below.
+@url{https://en.wikipedia.org/wiki/MacOS,macOS} is the operating system
+used on Apple devices. macOS does not come with a package manager
+pre-installed, but several widely used, third-party package managers exist,
+such as Homebrew or MacPorts. Both are free software. Currently we have
+only tested Gnuastro's installation with Homebrew as described below.
 
 If not already installed, first obtain Homebrew by following the
 instructions at @url{https://brew.sh}. Homebrew manages packages in
@@ -5052,13 +5051,12 @@ $ brew install wcslib
 @item @command{pacman} (Arch Linux)
 @cindex Arch Linux
 @cindex @command{pacman}
-Arch Linux is a smaller GNU/Linux distribution. As discussed in
-@url{https://en.wikipedia.org/wiki/Arch_Linux, Wikipedia}, it follows ``the
-KISS principle ("keep it simple, stupid") as the general guideline, and
-focuses on elegance, code correctness, minimalism and simplicity, and
-expects the user to be willing to make some effort to understand the
-system's operation''. Arch Linux uses ``Package manager'' (Pacman) to
-manage its packages/components.
+@url{https://en.wikipedia.org/wiki/Arch_Linux,Arch Linux} is a smaller
+GNU/Linux distribution, which follows the KISS principle (``keep it simple,
+stupid'') as a general guideline. It ``focuses on elegance, code
+correctness, minimalism and simplicity, and expects the user to be willing
+to make some effort to understand the system's operation''. Arch Linux uses
+``Package manager'' (Pacman) to manage its packages/components.
 @example
 $ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
                                                              \
@@ -11229,6 +11227,55 @@ median of its nearest non-blank neighbors. The number of the nearest
 non-blank neighbors used to calculate the median is given by the first
 popped operand. Note that the distance of the nearest non-blank neighbors
 is irrelevant in this interpolation.
+
+@item collapse-sum
+Collapse the given dataset (second popped operand), by summing all elements
+along the first popped operand (a dimension in FITS standard: counting from
+one, from fastest dimension). The returned dataset has one dimension less
+compared to the input.
+
+The output will have a double-precision floating point type irrespective of
+the input dataset's type. Doing the operation in double-precision (64-bit)
+floating point will help the collapse (summation) be affected less by
+floating point errors. But afterwards, single-precision floating points are
+usually enough in real (noisy) datasets. So depending on the type of the
+input and its nature, it is recommended to use one of the type conversion
+operators on the returned dataset.
+
+@cindex World Coordinate System (WCS)
+If any WCS is present, the returned dataset will also lack the respective
+dimension in its WCS matrix. Therefore, when the WCS is important for later
+processing, be sure that the input is aligned with the respective axises: all non-diagonal elements in the WCS matrix are zero.
+
+@cindex IFU
+@cindex Data cubes
+@cindex 3D data-cubes
+@cindex Cubes (3D data)
+@cindex Narrow-band image
+@cindex Integral field unit (IFU)
+One common application of this operator is the creation of pseudo
+broad-band or narrow-band 2D images from 3D data cubes. For example
+integral field unit (IFU) data products that have two spatial dimensions
+(first two FITS dimensions) and one spectral dimension (third FITS
+dimension). The command below will collapse the whole third dimension into
+a 2D array the size of the first two dimensions, and then convert the
+output to single-precision floating point (as discussed above).
+
+@example
+$ astarithmetic cube.fits 3 collapse-sum float32
+@end example
+
+@item collapse-mean
+Similar to @option{collapse-sum}, but the returned dataset will be the mean
+value along the collapsed dimension, not the sum.
+
+@item collapse-number
+Similar to @option{collapse-sum}, but the returned dataset will be the
+number of non-blank values along the collapsed dimension. The output will
+have a 32-bit signed integer type. If the input dataset doesn't have blank
+values, all the elements in the returned dataset will have a single value
+(the length of the collapsed dimension). Therefore this is mostly relevant
+when there are blank values in the dataset.
 
 @item erode
 @cindex Erosion
@@ -22769,6 +22816,40 @@ Return the manhattan distance (see
 @url{https://en.wikipedia.org/wiki/Taxicab_geometry, Wikipedia}) between
 the two coordinates @code{a} and @code{b} (each an array of @code{ndim}
 elements).
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_dimension_collapse_sum (gal_data_t @code{*in}, size_t @code{c_dim}, gal_data_t @code{*weight})
+Collapse the input dataset (@code{in}) along the given dimension
+(@code{c_dim}, in C definition: starting from zero, from the slowest
+dimension), by summing all elements in that direction. If
+@code{weight!=NULL}, it must be a single-dimensional array, with the same
+size as the dimension to be collapsed. The respective weight will be
+multiplied to each element during the collapse.
+
+For generality, the returned dataset will have a @code{GAL_TYPE_FLOAT64}
+type. See @ref{Copying datasets} for converting the returned dataset to a
+desired type. Also, for more on the application of this function, see the
+Arithmetic program's @option{collapse-sum} operator (which uses this
+function) in @ref{Arithmetic operators}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_dimension_collapse_mean (gal_data_t @code{*in}, size_t @code{c_dim}, gal_data_t @code{*weight})
+Similar to @code{gal_dimension_collapse_sum} (above), but the collapse will
+be done by calculating the mean along the requested dimension, not summing
+over it.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_dimension_collapse_number (gal_data_t @code{*in}, size_t @code{c_dim})
+Collapse the input dataset (@code{in}) along the given dimension
+(@code{c_dim}, in C definition: starting from zero, from the slowest
+dimension), by counting how many non-blank elements there are along that
+dimension.
+
+For generality, the returned dataset will have a @code{GAL_TYPE_INT32}
+type. See @ref{Copying datasets} for converting the returned dataset to a
+desired type. Also, for more on the application of this function, see the
+Arithmetic program's @option{collapse-number} operator (which uses this
+function) in @ref{Arithmetic operators}.
 @end deftypefun
 
 @deffn {Function-like macro} GAL_DIMENSION_NEIGHBOR_OP (@code{index}, @code{ndim}, @code{dsize}, @code{connectivity}, @code{dinc}, @code{operation})

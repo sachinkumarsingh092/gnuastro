@@ -97,6 +97,23 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
 
 
 /************************************************************************/
+/********************    Collapsing a dimension    **********************/
+/************************************************************************/
+gal_data_t *
+gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight);
+
+gal_data_t *
+gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
+                            gal_data_t *weight);
+
+gal_data_t *
+gal_dimension_collapse_number(gal_data_t *in, size_t c_dim);
+
+
+
+
+
+/************************************************************************/
 /********************          Neighbors           **********************/
 /************************************************************************/
 /* Purpose

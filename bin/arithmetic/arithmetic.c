@@ -685,6 +685,82 @@ arithmetic_interpolate(struct arithmeticparams *p, char *token)
 
 
 
+static void
+arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
+{
+  long dim;
+  gal_data_t *collapsed=NULL;
+
+  /* First popped operand is the dimension. */
+  gal_data_t *dimension = operands_pop(p, token);
+
+  /* The second popped operand is the desired input dataset. */
+  gal_data_t *input = operands_pop(p, token);
+
+
+  /* Small sanity check. */
+  if( dimension->ndim!=1 || dimension->size!=1)
+    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+          "(dimension to collapse) must be a single number (single-element, "
+          "one-dimensional dataset). But it has %zu dimension(s) and %zu "
+          "element(s).", dimension->ndim, dimension->size);
+  if(dimension->type==GAL_TYPE_FLOAT32 || dimension->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+          "(dimension to collapse) must have an integer type, but it has "
+          "a floating point type (`%s')", gal_type_name(dimension->type,1));
+  dimension=gal_data_copy_to_new_type_free(dimension, GAL_TYPE_LONG);
+  dim=((long *)(dimension->array))[0];
+  if(dim<0 || dim==0)
+    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+          "(dimension to collapse) must be positive (larger than zero), it "
+          "is %ld", dim);
+
+
+  /* If a WCS structure has been read, we'll need to pass it to
+     `gal_dimension_collapse', so it modifies it respectively. */
+  input->wcs=p->refdata.wcs;
+
+
+  /* Run the relevant library function. */
+  switch(operator)
+    {
+    case ARITHMETIC_OP_COLLAPSE_SUM:
+      collapsed=gal_dimension_collapse_sum(input, input->ndim-dim, NULL);
+      break;
+
+    case ARITHMETIC_OP_COLLAPSE_MEAN:
+      collapsed=gal_dimension_collapse_mean(input, input->ndim-dim, NULL);
+      break;
+
+    case ARITHMETIC_OP_COLLAPSE_NUMBER:
+      collapsed=gal_dimension_collapse_number(input, input->ndim-dim);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+            "problem. The operator code %d is not recognized", __func__,
+            PACKAGE_BUGREPORT, operator);
+    }
+
+
+  /* If a WCS structure existed, a modified WCS is now present in
+     `collapsed->wcs'. So we'll let the freeing of `input' free the old
+     `p->refdata.wcs' structure and we'll put the new one there, then we'll
+     set `collapsed->wcs' to `NULL', so the new one isn't freed. */
+  p->refdata.wcs = collapsed->wcs;
+  collapsed->wcs = NULL;
+
+
+  /* Clean up and add the collapsed dataset to the top of the operands. */
+  gal_data_free(input);
+  gal_data_free(dimension);
+  operands_add(p, NULL, collapsed);
+}
+
+
+
+
+
 
 
 
@@ -854,7 +930,7 @@ reversepolish(struct arithmeticparams *p)
           else if (!strcmp(token->v, "float64"))
             { op=GAL_ARITHMETIC_OP_TO_FLOAT64;        nop=1;  }
 
-          /* Filters. */
+          /* Library wrappers. */
           else if (!strcmp(token->v, "filter-mean"))
             { op=ARITHMETIC_OP_FILTER_MEAN;           nop=0;  }
           else if (!strcmp(token->v, "filter-median"))
@@ -873,6 +949,12 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_INVERT;                nop=0;  }
           else if (!strcmp(token->v, "interpolate-medianngb"))
             { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; nop=0;  }
+          else if (!strcmp(token->v, "collapse-sum"))
+            { op=ARITHMETIC_OP_COLLAPSE_SUM;          nop=0; }
+          else if (!strcmp(token->v, "collapse-mean"))
+            { op=ARITHMETIC_OP_COLLAPSE_MEAN;         nop=0; }
+          else if (!strcmp(token->v, "collapse-number"))
+            { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       nop=0; }
 
 
           /* Finished checks with known operators */
@@ -962,6 +1044,12 @@ reversepolish(struct arithmeticparams *p)
 
                 case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
                   arithmetic_interpolate(p, token->v);
+                  break;
+
+                case ARITHMETIC_OP_COLLAPSE_SUM:
+                case ARITHMETIC_OP_COLLAPSE_MEAN:
+                case ARITHMETIC_OP_COLLAPSE_NUMBER:
+                  arithmetic_collapse(p, token->v, op);
                   break;
 
                 default:

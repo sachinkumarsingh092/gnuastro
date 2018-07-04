@@ -258,6 +258,176 @@ gal_wcs_copy(struct wcsprm *wcs)
 
 
 
+/* Remove the algorithm part of CTYPE (anything after, and including, a
+   `-') if necessary. */
+static void
+wcs_ctype_noalgorithm(char *str)
+{
+  size_t i, len=strlen(str);
+  for(i=0;i<len;++i) if(str[i]=='-') { str[i]='\0'; break; }
+}
+
+
+
+
+/* See if the CTYPE string ends with TAN. */
+static int
+wcs_ctype_has_tan(char *str)
+{
+  size_t len=strlen(str);
+
+  return !strcmp(&str[len-3], "TAN");
+}
+
+
+
+
+
+/* Remove dimension. */
+#define WCS_REMOVE_DIM_CHECK 0
+void
+gal_wcs_remove_dimension(struct wcsprm *wcs, size_t fitsdim)
+{
+  size_t c, i, j, naxis=wcs->naxis;
+
+  /* Sanity check. */
+  if(fitsdim==0 || fitsdim>wcs->naxis)
+    error(EXIT_FAILURE, 0, "%s: requested dimension (fitsdim=%zu) must be "
+          "larger than zero and smaller than the number of dimensions in "
+          "the given WCS structure (%zu)", __func__, fitsdim, naxis);
+
+  /* If the WCS structure is NULL, just return. */
+  if(wcs==NULL) return;
+
+  /**************************************************/
+#if WCS_REMOVE_DIM_CHECK
+  printf("\n\nfitsdim: %zu\n", fitsdim);
+  printf("\n##################\n");
+  /*
+  wcs->pc[0]=0;   wcs->pc[1]=1;   wcs->pc[2]=2;
+  wcs->pc[3]=3;   wcs->pc[4]=4;   wcs->pc[5]=5;
+  wcs->pc[6]=6;   wcs->pc[7]=7;   wcs->pc[8]=8;
+  */
+  for(i=0;i<wcs->naxis;++i)
+    {
+      for(j=0;j<wcs->naxis;++j)
+        printf("%-5g", wcs->pc[i*wcs->naxis+j]);
+      printf("\n");
+    }
+#endif
+  /**************************************************/
+
+
+  /* First loop over the arrays. */
+  for(i=0;i<naxis;++i)
+    {
+      /* The dimensions are in FITS order, but counting starts from 0, so
+         we'll have to subtract 1 from `fitsdim'. */
+      if(i>fitsdim-1)
+        {
+          /* 1-D arrays. */
+          if(wcs->crpix) wcs->crpix[i-1] = wcs->crpix[i];
+          if(wcs->cdelt) wcs->cdelt[i-1] = wcs->cdelt[i];
+          if(wcs->crval) wcs->crval[i-1] = wcs->crval[i];
+          if(wcs->crota) wcs->crota[i-1] = wcs->crota[i];
+          if(wcs->crder) wcs->crder[i-1] = wcs->crder[i];
+          if(wcs->csyer) wcs->csyer[i-1] = wcs->csyer[i];
+
+          /* The strings are all statically allocated, so we don't need to
+             check. */
+          memcpy(wcs->cunit[i-1], wcs->cunit[i], 72);
+          memcpy(wcs->ctype[i-1], wcs->ctype[i], 72);
+          memcpy(wcs->cname[i-1], wcs->cname[i], 72);
+
+          /* For 2-D arrays, just bring up all the rows. We'll fix the
+             columns in a second loop. */
+          for(j=0;j<naxis;++j)
+            {
+              if(wcs->pc) wcs->pc[ (i-1)*naxis+j ] = wcs->pc[ i*naxis+j ];
+              if(wcs->cd) wcs->cd[ (i-1)*naxis+j ] = wcs->cd[ i*naxis+j ];
+            }
+        }
+    }
+
+
+  /**************************************************/
+#if WCS_REMOVE_DIM_CHECK
+  printf("\n###### Respective row removed (replaced).\n");
+  for(i=0;i<wcs->naxis;++i)
+    {
+      for(j=0;j<wcs->naxis;++j)
+        printf("%-5g", wcs->pc[i*wcs->naxis+j]);
+      printf("\n");
+    }
+#endif
+  /**************************************************/
+
+
+  /* Second loop for 2D arrays. */
+  c=0;
+  for(i=0;i<naxis;++i)
+    for(j=0;j<naxis;++j)
+      if(j!=fitsdim-1)
+        {
+          if(wcs->pc) wcs->pc[ c ] = wcs->pc[ i*naxis+j ];
+          if(wcs->cd) wcs->cd[ c ] = wcs->cd[ i*naxis+j ];
+          ++c;
+        }
+
+
+  /* Correct the total number of dimensions in the WCS structure. */
+  naxis = wcs->naxis -= 1;
+
+
+  /* The `TAN' algorithm needs two dimensions. So we need to remove it when
+     it can cause confusion. */
+  switch(naxis)
+    {
+    /* The `TAN' algorithm cannot be used for any single-dimensional
+       dataset. So we'll have to remove it if it exists. */
+    case 1:
+      wcs_ctype_noalgorithm(wcs->ctype[0]);
+      break;
+
+    /* For any other dimensionality, `TAN' should be kept only when exactly
+       two dimensions have it. */
+    default:
+
+      c=0;
+      for(i=0;i<naxis;++i)
+        if( wcs_ctype_has_tan(wcs->ctype[i]) )
+          ++c;
+
+      if(c!=2)
+        for(i=0;i<naxis;++i)
+          if( wcs_ctype_has_tan(wcs->ctype[i]) )
+            wcs_ctype_noalgorithm(wcs->ctype[i]);
+      break;
+    }
+
+
+
+  /**************************************************/
+#if WCS_REMOVE_DIM_CHECK
+  printf("\n###### Respective column removed.\n");
+  for(i=0;i<naxis;++i)
+    {
+      for(j=0;j<naxis;++j)
+        printf("%-5g", wcs->pc[i*naxis+j]);
+      printf("\n");
+    }
+  printf("\n###### One final string\n");
+  for(i=0;i<naxis;++i)
+    printf("%s\n", wcs->ctype[i]);
+  exit(0);
+#endif
+  /**************************************************/
+}
+
+
+
+
+
 /* Using the block data structure of the tile, add a WCS structure for
    it. In many cases, tiles are created for internal processing, so there
    is no need to keep their WCS. Hence for preformance reasons, when

@@ -5,8 +5,19 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Arithmetic:
+    - `collapse-sum': collapse/remove a dimension by summing over it.
+    - `collapse-mean': collapse/remove a dimension by averaging over it.
+    - `collapse-number': Number of elements included in the collapse.
+
   Table:
-   - `--colinfoinstdout': column information when writing to standard output.
+    --colinfoinstdout: column information when writing to standard output.
+
+  Library:
+    - gal_dimension_collapse_sum: collapse/remove a dimension by summing.
+    - gal_dimension_collapse_mean: collapse/remove a dimension by averaging.
+    - gal_dimension_collapse_number: collapse/remove a dimension by number.
+    - gal_wcs_remove_dimension: Remove a dimension in the given WCS structure.
 
 ** Removed features
 

@@ -74,6 +74,9 @@ struct wcsprm *
 gal_wcs_copy(struct wcsprm *wcs);
 
 void
+gal_wcs_remove_dimension(struct wcsprm *wcs, size_t fitsdim);
+
+void
 gal_wcs_on_tile(gal_data_t *tile);
 
 double *

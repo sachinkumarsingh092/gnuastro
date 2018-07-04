@@ -183,16 +183,16 @@ arithmetic_not(gal_data_t *data, int flags)
   /* Go over the pixels and set the output values. */
   switch(data->type)
     {
-    case GAL_TYPE_UINT8:   TYPE_CASE_FOR_NOT(uint8_t);   break;
-    case GAL_TYPE_INT8:    TYPE_CASE_FOR_NOT(int8_t);    break;
-    case GAL_TYPE_UINT16:  TYPE_CASE_FOR_NOT(uint16_t);  break;
-    case GAL_TYPE_INT16:   TYPE_CASE_FOR_NOT(int16_t);   break;
-    case GAL_TYPE_UINT32:  TYPE_CASE_FOR_NOT(uint32_t);  break;
-    case GAL_TYPE_INT32:   TYPE_CASE_FOR_NOT(int32_t);   break;
-    case GAL_TYPE_UINT64:  TYPE_CASE_FOR_NOT(uint64_t);  break;
-    case GAL_TYPE_INT64:   TYPE_CASE_FOR_NOT(int64_t);   break;
-    case GAL_TYPE_FLOAT32: TYPE_CASE_FOR_NOT(float);     break;
-    case GAL_TYPE_FLOAT64: TYPE_CASE_FOR_NOT(double);    break;
+    case GAL_TYPE_UINT8:   TYPE_CASE_FOR_NOT( uint8_t  );   break;
+    case GAL_TYPE_INT8:    TYPE_CASE_FOR_NOT( int8_t   );   break;
+    case GAL_TYPE_UINT16:  TYPE_CASE_FOR_NOT( uint16_t );   break;
+    case GAL_TYPE_INT16:   TYPE_CASE_FOR_NOT( int16_t  );   break;
+    case GAL_TYPE_UINT32:  TYPE_CASE_FOR_NOT( uint32_t );   break;
+    case GAL_TYPE_INT32:   TYPE_CASE_FOR_NOT( int32_t  );   break;
+    case GAL_TYPE_UINT64:  TYPE_CASE_FOR_NOT( uint64_t );   break;
+    case GAL_TYPE_INT64:   TYPE_CASE_FOR_NOT( int64_t  );   break;
+    case GAL_TYPE_FLOAT32: TYPE_CASE_FOR_NOT( float    );   break;
+    case GAL_TYPE_FLOAT64: TYPE_CASE_FOR_NOT( double   );   break;
 
     case GAL_TYPE_BIT:
       error(EXIT_FAILURE, 0, "%s: bit datatypes are not yet supported, "
@@ -1330,63 +1330,63 @@ gal_arithmetic_operator_string(int operator)
 {
   switch(operator)
     {
-    case GAL_ARITHMETIC_OP_PLUS:         return "+";
-    case GAL_ARITHMETIC_OP_MINUS:        return "-";
-    case GAL_ARITHMETIC_OP_MULTIPLY:     return "*";
-    case GAL_ARITHMETIC_OP_DIVIDE:       return "/";
-    case GAL_ARITHMETIC_OP_MODULO:       return "%";
+    case GAL_ARITHMETIC_OP_PLUS:            return "+";
+    case GAL_ARITHMETIC_OP_MINUS:           return "-";
+    case GAL_ARITHMETIC_OP_MULTIPLY:        return "*";
+    case GAL_ARITHMETIC_OP_DIVIDE:          return "/";
+    case GAL_ARITHMETIC_OP_MODULO:          return "%";
 
-    case GAL_ARITHMETIC_OP_LT:           return "<";
-    case GAL_ARITHMETIC_OP_LE:           return "<=";
-    case GAL_ARITHMETIC_OP_GT:           return ">";
-    case GAL_ARITHMETIC_OP_GE:           return ">=";
-    case GAL_ARITHMETIC_OP_EQ:           return "==";
-    case GAL_ARITHMETIC_OP_NE:           return "!=";
-    case GAL_ARITHMETIC_OP_AND:          return "and";
-    case GAL_ARITHMETIC_OP_OR:           return "or";
-    case GAL_ARITHMETIC_OP_NOT:          return "not";
-    case GAL_ARITHMETIC_OP_ISBLANK:      return "isblank";
-    case GAL_ARITHMETIC_OP_WHERE:        return "where";
+    case GAL_ARITHMETIC_OP_LT:              return "<";
+    case GAL_ARITHMETIC_OP_LE:              return "<=";
+    case GAL_ARITHMETIC_OP_GT:              return ">";
+    case GAL_ARITHMETIC_OP_GE:              return ">=";
+    case GAL_ARITHMETIC_OP_EQ:              return "==";
+    case GAL_ARITHMETIC_OP_NE:              return "!=";
+    case GAL_ARITHMETIC_OP_AND:             return "and";
+    case GAL_ARITHMETIC_OP_OR:              return "or";
+    case GAL_ARITHMETIC_OP_NOT:             return "not";
+    case GAL_ARITHMETIC_OP_ISBLANK:         return "isblank";
+    case GAL_ARITHMETIC_OP_WHERE:           return "where";
 
-    case GAL_ARITHMETIC_OP_BITAND:       return "bitand";
-    case GAL_ARITHMETIC_OP_BITOR:        return "bitor";
-    case GAL_ARITHMETIC_OP_BITXOR:       return "bitxor";
-    case GAL_ARITHMETIC_OP_BITLSH:       return "lshift";
-    case GAL_ARITHMETIC_OP_BITRSH:       return "rshift";
-    case GAL_ARITHMETIC_OP_BITNOT:       return "bitnot";
+    case GAL_ARITHMETIC_OP_BITAND:          return "bitand";
+    case GAL_ARITHMETIC_OP_BITOR:           return "bitor";
+    case GAL_ARITHMETIC_OP_BITXOR:          return "bitxor";
+    case GAL_ARITHMETIC_OP_BITLSH:          return "lshift";
+    case GAL_ARITHMETIC_OP_BITRSH:          return "rshift";
+    case GAL_ARITHMETIC_OP_BITNOT:          return "bitnot";
 
-    case GAL_ARITHMETIC_OP_ABS:          return "abs";
-    case GAL_ARITHMETIC_OP_POW:          return "pow";
-    case GAL_ARITHMETIC_OP_SQRT:         return "sqrt";
-    case GAL_ARITHMETIC_OP_LOG:          return "log";
-    case GAL_ARITHMETIC_OP_LOG10:        return "log10";
+    case GAL_ARITHMETIC_OP_ABS:             return "abs";
+    case GAL_ARITHMETIC_OP_POW:             return "pow";
+    case GAL_ARITHMETIC_OP_SQRT:            return "sqrt";
+    case GAL_ARITHMETIC_OP_LOG:             return "log";
+    case GAL_ARITHMETIC_OP_LOG10:           return "log10";
 
-    case GAL_ARITHMETIC_OP_MINVAL:       return "minvalue";
-    case GAL_ARITHMETIC_OP_MAXVAL:       return "maxvalue";
-    case GAL_ARITHMETIC_OP_NUMVAL:       return "numvalue";
-    case GAL_ARITHMETIC_OP_SUMVAL:       return "sumvalue";
-    case GAL_ARITHMETIC_OP_MEANVAL:      return "meanvalue";
-    case GAL_ARITHMETIC_OP_STDVAL:       return "stdvalue";
-    case GAL_ARITHMETIC_OP_MEDIANVAL:    return "medianvalue";
+    case GAL_ARITHMETIC_OP_MINVAL:          return "minvalue";
+    case GAL_ARITHMETIC_OP_MAXVAL:          return "maxvalue";
+    case GAL_ARITHMETIC_OP_NUMVAL:          return "numvalue";
+    case GAL_ARITHMETIC_OP_SUMVAL:          return "sumvalue";
+    case GAL_ARITHMETIC_OP_MEANVAL:         return "meanvalue";
+    case GAL_ARITHMETIC_OP_STDVAL:          return "stdvalue";
+    case GAL_ARITHMETIC_OP_MEDIANVAL:       return "medianvalue";
 
-    case GAL_ARITHMETIC_OP_MIN:          return "min";
-    case GAL_ARITHMETIC_OP_MAX:          return "max";
-    case GAL_ARITHMETIC_OP_NUM:          return "num";
-    case GAL_ARITHMETIC_OP_SUM:          return "sum";
-    case GAL_ARITHMETIC_OP_MEAN:         return "mean";
-    case GAL_ARITHMETIC_OP_STD:          return "std";
-    case GAL_ARITHMETIC_OP_MEDIAN:       return "median";
+    case GAL_ARITHMETIC_OP_MIN:             return "min";
+    case GAL_ARITHMETIC_OP_MAX:             return "max";
+    case GAL_ARITHMETIC_OP_NUM:             return "num";
+    case GAL_ARITHMETIC_OP_SUM:             return "sum";
+    case GAL_ARITHMETIC_OP_MEAN:            return "mean";
+    case GAL_ARITHMETIC_OP_STD:             return "std";
+    case GAL_ARITHMETIC_OP_MEDIAN:          return "median";
 
-    case GAL_ARITHMETIC_OP_TO_UINT8:     return "uchar";
-    case GAL_ARITHMETIC_OP_TO_INT8:      return "char";
-    case GAL_ARITHMETIC_OP_TO_UINT16:    return "ushort";
-    case GAL_ARITHMETIC_OP_TO_INT16:     return "short";
-    case GAL_ARITHMETIC_OP_TO_UINT32:    return "uint";
-    case GAL_ARITHMETIC_OP_TO_INT32:     return "int";
-    case GAL_ARITHMETIC_OP_TO_UINT64:    return "ulong";
-    case GAL_ARITHMETIC_OP_TO_INT64:     return "long";
-    case GAL_ARITHMETIC_OP_TO_FLOAT32:   return "float32";
-    case GAL_ARITHMETIC_OP_TO_FLOAT64:   return "float64";
+    case GAL_ARITHMETIC_OP_TO_UINT8:        return "uchar";
+    case GAL_ARITHMETIC_OP_TO_INT8:         return "char";
+    case GAL_ARITHMETIC_OP_TO_UINT16:       return "ushort";
+    case GAL_ARITHMETIC_OP_TO_INT16:        return "short";
+    case GAL_ARITHMETIC_OP_TO_UINT32:       return "uint";
+    case GAL_ARITHMETIC_OP_TO_INT32:        return "int";
+    case GAL_ARITHMETIC_OP_TO_UINT64:       return "ulong";
+    case GAL_ARITHMETIC_OP_TO_INT64:        return "long";
+    case GAL_ARITHMETIC_OP_TO_FLOAT32:      return "float32";
+    case GAL_ARITHMETIC_OP_TO_FLOAT64:      return "float64";
 
     default:
       error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
@@ -1412,7 +1412,7 @@ gal_arithmetic(int operator, int flags, ...)
   /* Prepare the variable arguments (starting after the flags argument). */
   va_start(va, flags);
 
-  /* Depending on the operator do the job: */
+  /* Depending on the operator, do the job: */
   switch(operator)
     {
 
@@ -1474,12 +1474,11 @@ gal_arithmetic(int operator, int flags, ...)
       out=arithmetic_from_statistics(operator, flags, d1);
       break;
 
-    /* Absolute operator */
+    /* Absolute operator. */
     case GAL_ARITHMETIC_OP_ABS:
       d1 = va_arg(va, gal_data_t *);
       out=arithmetic_abs(flags, d1);
       break;
-
 
     /* Multi-operand operators */
     case GAL_ARITHMETIC_OP_MIN:
