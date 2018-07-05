@@ -370,11 +370,11 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
     /* We need the sum when number operator is requested. */            \
     if(farr) farr[ OIND ] += (warr ? warr[w] : 1) * inarr[ IIND ];      \
                                                                         \
-    /* We don't need the number when the sum operator is requested. */  \
+    /* We don't need the number in some situations. */                  \
     if(iarr)                                                            \
       {                                                                 \
         if(num->type==GAL_TYPE_UINT8) iarr[ OIND ] = 1;                 \
-        else                          ++iarr[ OIND ];                   \
+        else                        ++iarr[ OIND ];                     \
       }                                                                 \
                                                                         \
     /* If the sum of weights for is needed, add it. */                  \
@@ -464,8 +464,8 @@ gal_data_t *
 gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
 {
   double *wsumarr=NULL;
-  int8_t *ii, *iarr=NULL;
-  size_t a, b, i, j, k, w, cnum=0;
+  uint8_t *ii, *iarr=NULL;
+  size_t a, b, i, j, k, w=-1, cnum=0;
   size_t outdsize[10], slice, outndim;
   int hasblank=gal_blank_present(in, 0);
   double *dd, *df, *warr=NULL, *farr=NULL;
@@ -538,12 +538,13 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
 {
   double wsum=NAN;
   double *wsumarr=NULL;
-  int8_t *ii, *iarr=NULL;
+  int32_t *ii, *iarr=NULL;
+  size_t a, b, i, j, k, w=-1, cnum=0;
   size_t outdsize[10], slice, outndim;
   int hasblank=gal_blank_present(in, 0);
-  size_t a, b, i, j, k, w, cnum=0;
   gal_data_t *wht=NULL, *sum=NULL, *num=NULL;
   double *dd, *dw, *df, *warr=NULL, *farr=NULL;
+
 
   /* Basic sanity checks. */
   wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
