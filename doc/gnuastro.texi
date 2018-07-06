@@ -15273,28 +15273,37 @@ un-predictable. So please use this option with care and in a highly
 controlled environment, for example in the scenario discussed below.
 
 In almost all situations, as the input gets larger, the single most CPU
-(and time) consuming step in NoiseChisel is convolution (the first step in
-its processing). To test NoiseChisel for the best parameters in a given
-analysis, you have to run NoiseChisel multiple times and see the effect of
-each change. Therefore, once the kernel is finalized, re-convolving the
-input on every change will greatly hinder, or discourage, testing of
-higher-level parameters. With this option, you can convolve the input image
-with your chosen kernel once before running NoiseChisel, then feed it to
-NoiseChisel on each test run and thus save valuable time for better/more
-tests.
+(and time) consuming step in NoiseChisel (and other programs that need a
+convolved image) is convolution. Therefore minimizing the number of
+convolutions can save a significant amount of time in some scenarios. One
+such scenario is when you want to segment NoiseChisel's detections using
+the same kernel (with @ref{Segment}, which also supports this
+@option{--convolved} option). This scenario would require two convolutions
+of the same dataset: once by NoiseChisel and once by Segment. Using this
+option in both programs, only one convolution (prior to running
+NoiseChisel) is enough.
+
+Another common scenario where this option can be convenient is when you are
+testing NoiseChisel (or Segment) for the best parameters. You have to run
+NoiseChisel multiple times and see the effect of each change. However, once
+you are happy with the kernel, re-convolving the input on every change of
+higher-level parameters will greatly hinder, or discourage, further
+testing. With this option, you can convolve the input image with your
+chosen kernel once before running NoiseChisel, then feed it to NoiseChisel
+on each test run and thus save valuable time for better/more tests.
 
 To build your desired convolution kernel, you can use
 @ref{MakeProfiles}. To convolve the image with a given kernel you can use
-@ref{Convolve}. Spatial domain convolution is mandatory. In the frequency
+@ref{Convolve}. Spatial domain convolution is mandatory: in the frequency
 domain, blank pixels (if present) will cover the whole image and gradients
 will appear on the edges, see @ref{Spatial vs. Frequency domain}.
 
-Below you can see an example of such a scenario: you want to see how
+Below you can see an example of the second scenario: you want to see how
 variation of the growth level (through the @option{--detgrowquant} option)
 will affect the final result. Recall that you can ignore all the extra
 spaces, new lines, and backslash's (`@code{\}') if you are typing in the
-terminal (in a shell script, remove the @code{$} signs at the start of the
-lines).
+terminal. In a shell script, remove the @code{$} signs at the start of the
+lines.
 
 @example
 ## Make the kernel to convolve with.
@@ -16296,20 +16305,22 @@ acceptable values, please see the description of @option{--hdu} in
 
 @item --convolved
 The convolved image to avoid internal convolution by Segment. The usage of
-this option is identical to NoiseChisel's @option{--convolved} option
-(@ref{NoiseChisel input}). Please see the descriptions there for more.
+this option is identical to NoiseChisel's @option{--convolved}
+option. Please see @ref{NoiseChisel input} for a thorough discussion of the
+usefulness and best practices of using this option.
 
 If you want to use the same convolution kernel for detection (with
-@ref{NoiseChisel}) and segmentation, you can use the same convolved image
-with this option (that is also available in NoiseChisel). However, just be
-careful to use the input to NoiseChisel as the input to Segment also, then
-use the @option{--sky} and @option{--std} to specify the Sky and its
-standard deviation (from NoiseChisel's output). Recall that when
-NoiseChisel is not called with @option{--rawoutput}, the first extension of
-NoiseChisel's output is the @emph{Sky-subtracted} input (see
-@ref{NoiseChisel output}. So if you use the same convolved image that you
-fed to NoiseChisel, but use NoiseChisel's output with Segment's
-@option{--convolved}, then the convolved image won't be Sky subtracted.
+@ref{NoiseChisel}) and segmentation, with this option, you can use the same
+convolved image (that is also available in NoiseChisel) and avoid two
+convolutions. However, just be careful to use the input to NoiseChisel as
+the input to Segment also, then use the @option{--sky} and @option{--std}
+to specify the Sky and its standard deviation (from NoiseChisel's
+output). Recall that when NoiseChisel is not called with
+@option{--rawoutput}, the first extension of NoiseChisel's output is the
+@emph{Sky-subtracted} input (see @ref{NoiseChisel output}). So if you use
+the same convolved image that you fed to NoiseChisel, but use NoiseChisel's
+output with Segment's @option{--convolved}, then the convolved image won't
+be Sky subtracted.
 
 @item --chdu
 The HDU/extension containing the convolved image (given to
