@@ -751,6 +751,15 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
   collapsed->wcs = NULL;
 
 
+  /* We'll also need to correct the size of the reference dataset. We'll
+     use `memcpy' to write the new `dsize' values into the old ones. The
+     dimensions have decreased, so we won't be writing outside of allocated
+     space that `p->refdata.dsize' points to. */
+  p->refdata.ndim -= 1;
+  memcpy( p->refdata.dsize, collapsed->dsize,
+           p->refdata.ndim * (sizeof *p->refdata.dsize) );
+
+
   /* Clean up and add the collapsed dataset to the top of the operands. */
   gal_data_free(input);
   gal_data_free(dimension);
