@@ -2839,7 +2839,7 @@ format, a white-space character is also enough.
 
 @example
 $ astcosmiccal -H70    -z2
-$ astcosmiccal --H0 70 -z2 --arcsectandisk
+$ astcosmiccal --H0 70 -z2 --arcsectandist
 @end example
 
 Let's assume that in one project, you want to only use rounded cosmological
