@@ -2605,7 +2605,7 @@ $ echo $n $r
 ## (9)  Use the number of pixels (first number passed to AWK) and
 ##      length of each pixel's edge (second number passed to AWK)
 ##      to estimate the area of the field in arc-minutes squared.
-$ area=(echo $n $r | awk '@{print $1 * ($2^2) * 3600@}')
+$ area=$(echo $n $r | awk '@{print $1 * ($2^2) * 3600@}')
 @end example
 
 The area of this field is 4.03817 (or 4.04) arc-minutes squared. Just for
