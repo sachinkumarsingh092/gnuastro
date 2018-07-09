@@ -2309,18 +2309,20 @@ Gnuastro.
 In this tutorial, we'll use the HST
 @url{https://archive.stsci.edu/prepds/xdf, eXtreme Deep Field}
 dataset. Like almost all astronomical surveys, this dataset is free for
-download and usable by the public. This tutorial was first prepared for the
-``Exploring the Ultra-Low Surface Brightness Universe'' workshop (November
-2017) at the International Space Science Institute (ISSI) in Bern,
-Switzerland. We would like to thank them and the attendees for a very
-fruitful week.
-
-You will need the following tools in this tutorial: Gnuastro, SAO DS9
-@footnote{See @ref{SAO ds9}, available at
-@url{http://ds9.si.edu/site/Home.html}.}, GNU
-Wget@footnote{@url{https://www.gnu.org/software/wget}.}, and AWK (most
+download and usable by the public. You will need the following tools in
+this tutorial: Gnuastro, SAO DS9 @footnote{See @ref{SAO ds9}, available at
+@url{http://ds9.si.edu/site/Home.html}}, GNU
+Wget@footnote{@url{https://www.gnu.org/software/wget}}, and AWK (most
 common implementation is GNU
-AWK@footnote{@url{https://www.gnu.org/software/gawk}.}).
+AWK@footnote{@url{https://www.gnu.org/software/gawk}}).
+
+This tutorial was first prepared for the ``Exploring the Ultra-Low Surface
+Brightness Universe'' workshop (November 2017) at the ISSI in Bern,
+Switzerland. It was further extended in the ``4th Indo-French Astronomy
+School'' (July 2018) organized by LIO, CRAL CNRS UMR5574, UCBL, and IUCAA
+in Lyon, France. We are very greatful to the organizers of these workshops
+and the attendees for the very fruitful discussions and suggestions that
+made this tutorial possible.
 
 @cartouche
 @noindent
@@ -3207,15 +3209,15 @@ $ astsegment nc/xdf-f160w.fits -oseg/xdf-f160w.fits
 
 Segment's operation is very much like NoiseChisel (in fact, prior to
 version 0.6, it was part of NoiseChisel), for example the output is a
-multi-extension FITS file, it has check images and uses the signal-to-noise
-ratio of undetected regions as a reference. Please have a look at Segment's
-multi-extension output with @command{ds9} to get a good feeling of what it
-has done. Like NoiseChisel, the first extension is the input. The
-@code{CLUMPS} extension shows the true ``clumps'' with values that are
-@mymath{\ge1}, and the diffuse regions labeled as @mymath{-1}. In the
-@code{OBJECTS} extension, we see that the large detections of NoiseChisel
-(that may have contained many galaxies) are now broken up into separate
-labels. see @ref{Segment} for more.
+multi-extension FITS file, it has check images and uses the undetected
+regions as a reference. Please have a look at Segment's multi-extension
+output with @command{ds9} to get a good feeling of what it has done. Like
+NoiseChisel, the first extension is the input. The @code{CLUMPS} extension
+shows the true ``clumps'' with values that are @mymath{\ge1}, and the
+diffuse regions labeled as @mymath{-1}. In the @code{OBJECTS} extension, we
+see that the large detections of NoiseChisel (that may have contained many
+galaxies) are now broken up into separate labels. see @ref{Segment} for
+more.
 
 Having localized the regions of interest in the dataset, we are ready to do
 measurements on them with @ref{MakeCatalog}. Besides the IDs, we want to
@@ -3341,34 +3343,123 @@ robust for calculating the colors (compared to objects). Therefore from
 this step onward, we'll continue with clumps.
 
 We can finally calculate the colors of the objects from these two
-datasets. We'll merge them into one table using the @command{paste} program
-on the command-line. But, we only want the magnitude from the F105W
-dataset, so we'll only pull out the @code{MAGNITUDE} and @code{SN}
-column. The output of @command{paste} will have each line of both catalogs
-merged into a single line.
+datasets. If you inspect the contents of the two catalogs, you'll notice
+that because they were both derived from the same segmentation maps, the
+rows are ordered identically (they correspond to the same object/clump in
+both filters). But to be generic (usable even when the rows aren't ordered
+similarly) and display another useful program in Gnuastro, we'll use
+@ref{Match}.
+
+As the name suggests, Gnuastro's Match program will match rows based on
+distance (or aperture in 2D) in one (or two) columns. In the command below,
+the options relating to each catalog are placed under it for easy
+understanding. You give Match two catalogs (from the two different filters
+we derived above) as argument, and the HDUs containing them (if they are
+FITS files) with the @option{--hdu} and @option{--hdu2} options. The
+@option{--ccol1} and @option{--ccol2} options specify which columns should
+be matched with which in the two catalogs. With @option{--aperture} you
+specify the acceptable error (radius in 2D), in the same units as the
+columns (see below for why we have requested an aperture of 0.35
+arcseconds, or less than 6 HST pixels).
+
+The @option{--outcols} is a very convenient feature in Match: you can use
+it to specify which columns from the two catalogs you want in the
+output. If the first character is an `@key{a}', the respective matched
+column (number or name, similar to Table above) in the first catalog will
+be written in the output table. When the first character is a `@key{b}',
+the respective column from the second catalog will be written in the
+output. You can use this to mix the desired matched columns from both
+catalogs in the output.
 
 @example
-$ asttable cat/xdf-f160w.fits -h2                > xdf-f160w.txt
-$ asttable cat/xdf-f105w.fits -h2 -cMAGNITUDE,SN > xdf-f105w.txt
-$ paste xdf-f160w.txt xdf-f105w.txt              > xdf-f160w-f105w.txt
+$ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
+           --hdu=CLUMPS                 --hdu2=CLUMPS              \
+           --ccol1=RA,DEC               --ccol2=RA,DEC             \
+           --aperture=0.35/3600                                    \
+           --outcols=a1,a2,aRA,aDEC,aMAGNITUDE,aSN,bMAGNITUDE,bSN  \
+           --log --output=cat/xdf-f160w-f105w.fits
 @end example
 
-Open @file{xdf-f160w-f105w.txt} to see how @command{paste} has operated. We
-can now use AWK to find the colors. We'll ask AWK to only use lines that
-don't have a NaN magnitude in the 7th column (F105W
-magnitude@footnote{Recall that the objects and clumps labels were made on
-the F160W image. On the F105W image, there might not be enough signal, so
-random scatter may give a negative total brightness and thus a NaN
-magnitude.}). We will also ignore columns which don't have reliable F105W
-measurement (with a S/N less than 7@footnote{The value of 7 is taken from
-the clump S/N threshold in F160W (where the clumps were defined).}). For
-the other lines, AWK will print the IDs, positional columns and the
-difference between the respective magnitude columns.
+By default (when @option{--quiet} isn't called), the Match program will
+just print the number of matched rows in the standard output. If you have a
+look at your input catalogs, this should be the same as the number of rows
+in them. Let's have a look at the columns in the matched catalog:
 
 @example
-$ awk '$7!="nan" && $8>7  @{print $1, $2, $3, $4, $7-$5@}' \
-      xdf-f160w-f105w.txt > cat/xdf-f105w-f160w_c.txt
+$ asttable cat/xdf-f160w-f105w.fits -i
 @end example
+
+Indeed, its exactly the columns we wanted. There is just one confusion
+however: there are two @code{MAGNITUDE} and @code{SN} columns. Right now,
+you know that the first one was from the F160W filter, and the second was
+for F105W. But in one hour, you'll start doubting your self: going through
+your command history, trying to answer this question: ``which magnitude
+corresponds to which filter?''. You should never torture your future-self
+(or colleagues) like this! So, let's rename these confusing columns in the
+matched catalog. The FITS standard for tables stores the column names in
+the @code{TTYPE} header keywords, so let's have a look:
+
+@example
+$ astfits cat/xdf-f160w-f105w.fits -h1 | grep TTYPE
+@end example
+
+Changing/updating the column names is as easy as updating the values to
+these options with the first command below, and with the second, confirm
+this change:
+
+@example
+$ astfits cat/xdf-f160w-f105w.fits -h1                          \
+          --update=TTYPE5,MAG_F160W   --update=TTYPE6,SN_F160W  \
+          --update=TTYPE7,MAG_F105W   --update=TTYPE8,SN_F105W
+$ asttable cat/xdf-f160w-f105w.fits -i
+@end example
+
+
+If you noticed, when running Match, the previous command, we also asked for
+@option{--log}. Many Gnuastro programs have this option to provide some
+detailed information on their operation in case you are curious. Here, we
+are using it to justify the value we gave to @option{--aperture}. Even
+though you asked for the output to be written in the @file{cat} directory,
+a listing of the contents of your current directory will show you an extra
+@file{astmatch.fits} file. Let's have a look at what columns it contains.
+
+@example
+$ ls
+$ asttable astmatch.log -i
+@end example
+
+@c********************************
+@c We'll merge them into one table using the @command{paste} program
+@c on the command-line. But, we only want the magnitude from the F105W
+@c dataset, so we'll only pull out the @code{MAGNITUDE} and @code{SN}
+@c column. The output of @command{paste} will have each line of both catalogs
+@c merged into a single line.
+
+@c @example
+@c $ asttable cat/xdf-f160w.fits -h2                > xdf-f160w.txt
+@c $ asttable cat/xdf-f105w.fits -h2 -cMAGNITUDE,SN > xdf-f105w.txt
+@c $ paste xdf-f160w.txt xdf-f105w.txt              > xdf-f160w-f105w.txt
+@c @end example
+
+@c Open @file{xdf-f160w-f105w.txt} to see how @command{paste} has operated.
+@c ********************************
+
+@cindex Flux-weighted
+@cindex SED, Spectral Energy Distribution
+@cindex Spectral Energy Distribution, SED
+The @file{MATCH_DIST} column contains the distance of the matched rows,
+let's have a look at the distribution of values in this column. You might
+be asking yourself ``why should the positions of the two filters differ
+when I gave MakeCatalog the same segmentation map?'' The reason is that the
+central positions are @emph{flux-weighted}. Therefore the
+@option{--valuesfile} dataset you give to MakeCatalog will also affect the
+center measurements@footnote{To only measure the center based on the
+labeled pixels (and ignore the pixel values), you can ask for the columns
+that contain @option{geo} (for geometric) in them. For example
+@option{--geow1} or @option{--geow2} for the RA and Declination (first and
+second world-coordinates).}. Recall that the Spectral Energy Distribution
+(SED) of galaxies is not flat and they have substructure, therefore, they
+can have different shapes/morphologies in different filters.
 
 Gnuastro has a simple program for basic statistical analysis. The command
 below will print some basic information about the distribution (minimum,
@@ -3381,7 +3472,36 @@ working on a server (where you may not have graphic user interface), and
 finally, its fast.
 
 @example
-$ aststatistics cat/xdf-f105w-f160w_c.txt -c5
+$ aststatistics astmatch.fits -cMATCH_DIST
+@end example
+
+The units of this column are the same as the columns you gave to Match: in
+degrees. You see that while almost all the objects matched very nicely, the
+maximum distance is roughly 0.31 arcseconds. This is why we asked for an
+aperture of 0.35 arcseconds when doing the match.
+
+We can now use AWK to find the colors. We'll ask AWK to only use rows that
+don't have a NaN magnitude in either filter@footnote{This can happen even
+on the reference image. It is because of the current way clumps are defined
+in Segment when they are placed on strong gradients. It is because of high
+``river'' values on such gradients. See @ref{Segment changes after
+publication}. To avoid this problem, you can currently ask for the
+@option{--brighntessnoriver} output column.}. We will also ignore columns
+which don't have reliable F105W measurement (with a S/N less than
+7@footnote{The value of 7 is taken from the clump S/N threshold in F160W
+(where the clumps were defined).}).
+
+@example
+$ asttable cat/xdf-f160w-f105w.fits -cMAG_F160W,MAG_F105W,SN_F105W  \
+           | awk '$1!="nan" && $2!="nan" && $3>7 @{print $2-$1@}'     \
+           > f105w-f160w.txt
+@end example
+
+You can inspect the distribution of colors with the Statistics program
+again:
+
+@example
+$ aststatistics f105w-f160w.txt -c1
 @end example
 
 You can later use Gnuastro's Statistics program with the
@@ -3389,10 +3509,10 @@ You can later use Gnuastro's Statistics program with the
 a table to feed into your favorite plotting program for a much more
 accurate/appealing plot (for example with PGFPlots in @LaTeX{}). If you
 just want a specific measure, for example the mean, median and standard
-deviation, you can ask for them specifically:
+deviation, you can ask for them specifically with this command:
 
 @example
-$ aststatistics catalog/xdf-f105w-f160w_c.txt -c5 --mean --median --std
+$ aststatistics f105w-f160w.txt -c1 --mean --median --std
 @end example
 
 Some researchers prefer to have colors in a fixed aperture for all the
@@ -3405,13 +3525,13 @@ detection image.
 
 @cindex GNU AWK
 To generate the apertures catalog, we'll first read the positions from
-F160W catalog we generated before for the positions and set the other
-parameters of each profile to be a fixed circle of radius 5 pixels (we want
-all apertures to be identical after all).
+F160W catalog and set the other parameters of each profile to be a fixed
+circle of radius 5 pixels (we want all apertures to be identical in this
+scenario).
 
 @example
-$ rm *.txt
-$ asttable cat/xdf-f160w.fits -h2 -cRA,DEC                       \
+$ rm *.fits *.txt
+$ asttable cat/xdf-f160w.fits -hCLUMPS -cRA,DEC                    \
            | awk '!/^#/@{print NR, $1, $2, 5, 5, 0, 0, 1, NR, 1@}' \
            > apertures.txt
 @end example
@@ -3434,7 +3554,7 @@ $ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits     \
 The first thing you might notice in the printed information is that the
 profiles are not built in order. This is because MakeProfiles works in
 parallel, and parallel CPU operations are asynchronous. You can try running
-MakeProfiles with one thread (using @option{--numthreads=1} to see how
+MakeProfiles with one thread (using @option{--numthreads=1}) to see how
 order is respected in that case.
 
 Open the output @file{apertures.fits} file and see the result. Where the
@@ -3445,11 +3565,11 @@ are interested, please join us in completing Gnuastro with added
 improvements like this (see task 14750
 @footnote{@url{https://savannah.gnu.org/task/index.php?14750}}).
 
-We can now feed the labeled @file{apertures.fits} labeled image into
-MakeCatalog instead of Segment's output as shown below. In comparison with
-the previous MakeCatalog call, you will notice that there is no more
+We can now feed the @file{apertures.fits} labeled image into MakeCatalog
+instead of Segment's output as shown below. In comparison with the previous
+MakeCatalog call, you will notice that there is no more
 @option{--clumpscat} option, since each aperture is treated as a separate
-object.
+``object'' here.
 
 @example
 $ astmkcatalog apertures.fits -h1 --zeropoint=26.27        \
@@ -3465,21 +3585,29 @@ name and zeropoint magnitudes and run this command again to have the fixed
 aperture magnitude in the F160W filter and measure colors on apertures.
 
 @cindex GNU AWK
-Let's find some of the objects with the strongest color difference and make
-a cutout to inspect them visually: let's see what the objects with a color
-more than two magnitudes look like. We'll use the
-@file{cat/xdf-f105w-f160w_c.txt} file that we made above. With the command
-below, all lines with a color more than 1.5 will be put in @file{reddest.txt}
+As a final step, let's go back to the original clumps-based catalogs we
+generated before. We'll find the objects with the strongest color and make
+a cutout to inspect them visually and finally, we'll see how they are
+located on the image.
+
+First, let's see what the objects with a color more than two magnitudes
+look like. As you see, this is very much like the command above for
+selecting the colors, only instead of printing the color, we'll print the
+RA and Dec. With the command below, the positions of all lines with a color
+more than 1.5 will be put in @file{reddest.txt}
 
 @example
-$ awk '$5>1.5' cat/xdf-f105w-f160w_c.txt > reddest.txt
+$ asttable cat/xdf-f160w-f105w.fits                                \
+           -cMAG_F160W,MAG_F105W,SN_F105W,RA,DEC                   \
+           | awk '$1!="nan" && $2!="nan" && $3>7 @{print $4,$5@}'    \
+           > reddest.txt
 @end example
 
 We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
 objects look like. To keep things clean, we'll make a directory called
 @file{crop-red} and ask Crop to save the crops in this directory. We'll
 also add a @file{-f160w.fits} suffix to the crops (to remind us which image
-they came from).
+they came from). The width of the crops will be 15 arcseconds.
 
 @example
 $ mkdir crop-red
@@ -3506,45 +3634,50 @@ $ for f in *.fits; do                                                  \
 $ cd ..
 @end example
 
-You can now easily use your general graphic user interface image viewer to
-flip through the images more easily. On GNOME, you can use the ``Eye of
-GNOME'' image viewer (with executable name of @file{eog}). Run the command
-below and by pressing the @key{<SPACE>} key, you can flip through the
-images and compare them visually more easily. Of course, the flux ranges
-have been chosen generically here for seeing the fainter parts. Therefore,
-brighter objects will be fully black.
+You can now use your general graphic user interface image viewer to flip
+through the images more easily. On GNOME, you can use the ``Eye of GNOME''
+image viewer (with executable name of @file{eog}). Run the command below to
+open the first one (if you aren't using GNOME, use the command of your
+image viewer instead of @code{eog}):
 
 @example
 $ eog 1-f160w.jpg
 @end example
 
+In Eye of GNOME, you can flip through the images and compare them visually
+more easily by pressing the @key{<SPACE>} key. Of course, the flux ranges
+have been chosen generically here for seeing the fainter parts. Therefore,
+brighter objects will be fully black.
+
 @cindex GNU Parallel
 The @code{for} loop above to convert the images will do the job in series:
-each file is converted only after the previous ones are complete. If you
-have @url{https://www.gnu.org/software/parallel, GNU Parallel}, you can
-greatly speed up this conversion. GNU Parallel will run the separate
-commands simultaneously on different CPU threads in parallel. For more
-information on efficiently using your threads, see @ref{Multi-threaded
+each file is converted only after the previous one is complete. If you have
+@url{https://www.gnu.org/s/parallel, GNU Parallel}, you can greatly speed
+up this conversion. GNU Parallel will run the separate commands
+simultaneously on different CPU threads in parallel. For more information
+on efficiently using your threads, see @ref{Multi-threaded
 operations}. Here is a replacement for the shell @code{for} loop above
 using GNU Parallel.
 
 @example
 $ cd crop-red
-$ parallel astconvertt --fluxlow=-0.001 --fluxhigh=0.005 --invert      \
+$ parallel astconvertt --fluxlow=-0.001 --fluxhigh=0.005 --invert   \
            -ojpg ::: *.fits
 $ cd ..
 @end example
 
-Another thing that is commonly needed is to visually mark these objects on
-the image. DS9 has the ``Region''s concept for this purpose. You just have
-to convert your catalog into a ``region file'' to feed into DS9. To do
-that, you can use AWK again as shown below.
+@cindex DS9
+@cindex SAO DS9
+As the final action, let's see how these objects are positioned over the
+dataset. DS9 has the ``Region''s concept for this purpose. You just have to
+convert your catalog into a ``region file'' to feed into DS9. To do that,
+you can use AWK again as shown below.
 
 @example
 $ awk 'BEGIN@{print "# Region file format: DS9 version 4.1";     \
              print "global color=green width=2";                \
              print "fk5";@}                                      \
-       @{printf "circle(%s,%s,1\")\n", $3, $4;@}' reddest.txt     \
+       @{printf "circle(%s,%s,1\")\n", $1, $2;@}' reddest.txt     \
        > reddest.reg
 @end example
 
@@ -3558,12 +3691,14 @@ $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
       -regions load all reddest.reg
 @end example
 
-Finally, if this book or any of the programs in Gnuastro have been useful
-for your research, please cite the respective papers and share your
-thoughts and suggestions with us (it can be very encouraging). All Gnuastro
-programs have a @option{--cite} option to help you cite the authors' work
-more easily. Just note that it may be necessary to cite additional papers
-for different programs, so please try it out for any program you use.
+In conclusion, we hope this extended tutorial has been a good starting
+point to help in your exciting research. If this book or any of the
+programs in Gnuastro have been useful for your research, please cite the
+respective papers and share your thoughts and suggestions with us (it can
+be very encouraging). All Gnuastro programs have a @option{--cite} option
+to help you cite the authors' work more easily. Just note that it may be
+necessary to cite additional papers for different programs, so please try
+it out for any program you used.
 
 @example
 $ astmkcatalog --cite
