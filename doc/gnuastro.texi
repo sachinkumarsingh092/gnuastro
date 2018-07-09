@@ -3472,10 +3472,10 @@ more than two magnitudes look like. We'll use the
 below, all lines with a color more than 1.5 will be put in @file{reddest.txt}
 
 @example
-$ awk '$5>1.5' cat/xdf-f105w-f160w_c.txt > red.txt
+$ awk '$5>1.5' cat/xdf-f105w-f160w_c.txt > reddest.txt
 @end example
 
-We can now feed @file{red.txt} into Gnuastro's crop to see what these
+We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
 objects look like. To keep things clean, we'll make a directory called
 @file{crop-red} and ask Crop to save the crops in this directory. We'll
 also add a @file{-f160w.fits} suffix to the crops (to remind us which image
@@ -3484,7 +3484,7 @@ they came from).
 @example
 $ mkdir crop-red
 $ astcrop --mode=wcs --coordcol=3 --coordcol=4 flat-ir/xdf-f160w.fits \
-          --catalog=red.txt --width=15/3600,15/3600                   \
+          --catalog=reddest.txt --width=15/3600,15/3600               \
           --suffix=-f160w.fits --output=crop-red
 @end example
 
