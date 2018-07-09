@@ -3201,8 +3201,8 @@ program:
 
 @example
 $ rm *.fits
-$ mkdir segment
-$ astsegment nc/xdf-f160w.fits -osegment/xdf-f160w.fits
+$ mkdir seg
+$ astsegment nc/xdf-f160w.fits -oseg/xdf-f160w.fits
 @end example
 
 Segment's operation is very much like NoiseChisel (in fact, prior to
