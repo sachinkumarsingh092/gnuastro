@@ -3599,8 +3599,8 @@ more than 1.5 will be put in @file{reddest.txt}
 @example
 $ asttable cat/xdf-f160w-f105w.fits                                \
            -cMAG_F160W,MAG_F105W,SN_F105W,RA,DEC                   \
-           | awk '$1!="nan" && $2!="nan" && $3>7 @{print $4,$5@}'    \
-           > reddest.txt
+           | awk '$1!="nan" && $2!="nan" && $2-$1>1.5 && $3>7      \
+                  @{print $4,$5@}' > reddest.txt
 @end example
 
 We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
