@@ -601,6 +601,10 @@ ui_read_cols(struct cropparams *p)
   /* Read the desired columns from the file. */
   cols=gal_table_read(p->catname, p->cathdu, colstrs, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
+  if(cols==NULL)
+    error(EXIT_FAILURE, 0, "%s: is empty! No usable information "
+          "(un-commented lines) could be read from this file",
+          gal_fits_name_save_as_string(p->catname, p->cathdu));
 
 
   /* Set the number of objects (rows in each column). */
