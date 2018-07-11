@@ -1203,7 +1203,7 @@ ui_preparations_outnames(struct mkcatalogparams *p)
     }
 
   /* If an upperlimit check image is requsted, then set its filename. */
-  if(p->checkuplim)
+  if(p->checkuplim[0]!=GAL_BLANK_INT32)
     {
       /* See if the directory should be respected. */
       p->cp.keepinputdir = p->cp.output ? 1 : p->cp.keepinputdir;
