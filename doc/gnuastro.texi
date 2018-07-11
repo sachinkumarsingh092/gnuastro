@@ -5140,23 +5140,61 @@ mandatory dependencies with your package manager, just ignore the empty
 line.
 
 @table @asis
-@item @command{apt-get} (Debian-based OSs: Ubuntu, Linux Mint and etc)
+@item @command{apt-get} (Debian-based OSs: Debian, Ubuntu, Linux Mint and etc)
 @cindex Debian
 @cindex Ubuntu
+@cindex Linux Mint
 @cindex @command{apt-get}
 @cindex Advanced Packaging Tool (APT, Debian)
-@url{https://en.wikipedia.org/wiki/Debian,Debian}-based GNU/Linux
-distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}
-(for example Ubuntu or its derivatives) are arguably the largest, and most
-used, class of GNU/Linux distributions. All such GNU/Linux distributions
-use Debian's Advanced Packaging Tool (APT, for example @command{apt-get})
-for managing packages.
+@url{https://en.wikipedia.org/wiki/Debian,Debian} is one of the oldest
+GNU/Linux
+distributions@footnote{@url{https://en.wikipedia.org/wiki/List_of_Linux_distributions#Debian-based}}. It
+thus has a very extended user community and a robust internal structure and
+standards. All of it is free software and based on the work of volunteers
+around the world. Many distributions are thus derived from it, for example
+Ubuntu and Linux Mint. This arguably makes Debian-based OSs the largest,
+and most used, class of GNU/Linux distributions. All of them use Debian's
+Advanced Packaging Tool (APT, for example @command{apt-get}) for managing
+packages.
 @example
 $ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
                        libtiff-dev libgit2-dev              \
                                                             \
                        libgsl0-dev libcfitsio-dev wcslib-dev
 @end example
+
+@item @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux and etc)
+@cindex RHEL
+@cindex Fedora
+@cindex CentOS
+@cindex Red Hat
+@cindex @command{yum}
+@cindex Scientific Linux
+@url{https://en.wikipedia.org/wiki/Red_Hat,Red Hat Enterprise Linux} (RHEL)
+is released by Red Hat Inc. RHEL requires paid subscriptions for use of
+binaries and support. But since it is free software, many other teams use
+its code to spin-off their own distributions based on RHEL. All Red
+Hat-based GNU/Linux distributions use the Yellowdog Updated, Modifier (YUM)
+package manager.
+@example
+$ sudo yum install ghostscript libtool libjpeg-devel        \
+                   libtiff-devel libgit2-devel              \
+                                                            \
+                   gsl-devel cfitsio-devel wcslib-devel
+@end example
+
+@cartouche
+@noindent
+@strong{CFITSIO's header installation directory:} As of July 2018, by
+default YUM puts CFITSIO's headers in @file{/usr/include/cfitsio}. This is
+not in the default search directories for headers (see @ref{Installation
+directory}). If you have installed CFITSIO with YUM, but Gnuastro's
+configure complains about not finding CFITSIO, please configure Gnuastro
+with an additional @code{CFLAGS} environment variable like this:
+@example
+$ ./configure CFLAGS="-I/usr/include/cfitsio"
+@end example
+@end cartouche
 
 @item @command{brew} (macOS)
 @cindex macOS
