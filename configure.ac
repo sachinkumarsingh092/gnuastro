@@ -95,6 +95,23 @@ CXXFLAGS="-Wall -O3 $CXXFLAGS"
 
 
 
+# See if the C++ compiler was present. `CXX' has already been set by
+# `AC_PROG_CXX' (above). According to the Autoconf manual: "if none of the
+# [AC_PROG_CXX] checks succeed, then as a last resort [it will] set `CXX'
+# to `g++'". Therefore, we can't rely on it to see if the compiler
+# executable is actually usable. Therefore tests that rely on it will
+# fail. Unfortunately some OSs (like Fedora), don't install `g++' with
+# `gcc', so it may not always be present. To fix this, here we are just
+# using `AC_CHECK_PROG' to see if the `CXX' executable is reachable in the
+# search path and if it isn't, we'll disable the C++ check during `make
+# check' with an Automake conditional.
+AC_CHECK_PROG(has_cxx, $CXX, "yes", "no")
+AM_CONDITIONAL([COND_HASCXX], [test "x$has_cxx" = "xyes"])
+
+
+
+
+
 # Check for pthreads and add the appropriate compilation flags. AX_PTHREAD
 # comes from the GNU Autoconf Archive's ax_pthread.m4, see there for the
 # documentation. Note that
@@ -254,6 +271,7 @@ AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
 
 # Gnulib checks:
 gl_INIT
+
 
 
 
