@@ -37,8 +37,10 @@ bin_PROGRAMS = astbuildprog
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
 astbuildprog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
-astbuildprog_SOURCES = main.c ui.c buildprog.c astbuildprog.conf
+# Basic program sources.
+astbuildprog_SOURCES = main.c ui.c buildprog.c
 
+# Extra files that must be distributed in the tarball.
 EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h astbuildprog.conf.in
 
 
@@ -73,7 +75,13 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 
 
 
-## The configuration file (clean, distribute and install).
+## The configuration file in BuildProgram must be built on the users's
+## system (see above). The built configuration file is needed during `make
+## check'. But the (built) configuration file should NOT be distributed in a
+## tarball. Since all built files are distributed, the only way to avoid
+## the configuration file being distributed it so use a `nodist_' prefix.
+##
 ## NOTE: the man page is created in doc/Makefile.am
+nodist_sysconf_DATA = astbuildprog.conf
+check_DATA = astbuildprog.conf
 CLEANFILES = astbuildprog.conf
-dist_sysconf_DATA = astbuildprog.conf

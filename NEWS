@@ -39,6 +39,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54188: MakeCatalog's Upperlimit not being sigma-clipped properly.
   bug #54284: Crop segrault when catalog contains no data.
   bug #54285: make check fails if g++ not present.
+  bug #54286: BuildProgram's configuration file, not built by default.
 
 
 
