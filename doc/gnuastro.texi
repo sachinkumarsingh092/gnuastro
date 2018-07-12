@@ -18331,15 +18331,15 @@ identify the extension. When the second input is FITS, the extension must
 be specified with @option{--hdu2}.
 
 When @option{--quiet} is not called, Match will print the number of matches
-found in standard output (on the command-line). If no match was found, no
-output file will be created (table or log file). When matches are found, by
+found in standard output (on the command-line). When matches are found, by
 default, the output file(s) will be the re-arranged input tables such that
 the rows match each other: both output tables will have the same number of
 rows which are matched with each other. If @option{--outcols} is called,
 the output is a single table with rows chosen from either of the two inputs
 in any order, see the description of @option{--outcols}. If the
 @option{--logasoutput} option is called, the output will be a single table
-with the contents of the log file, see below.
+with the contents of the log file, see below. If no matches are found, the
+columns of the output table(s) will have zero rows (with proper meta-data).
 
 If no output file name is given with the @option{--output} option, then
 automatic output @ref{Automatic output} will be used to determine the
@@ -18351,17 +18351,18 @@ file. With @option{--outcols} and @option{--logasoutput}, the FITS output
 will be a single table (in one extension).
 
 When the @option{--log} option is called (see @ref{Operating mode
-options}), Match will also create a file named @file{astmatch.fits} (or
-@file{astmatch.txt}, depending on @option{--tableformat}, see @ref{Input
-output options}) in the directory it is run in. This log table will have
-three columns. The first and second columns show the matching row/record
-number (counting from 1) of the first and second input catalogs
-respectively. The third column is the distance between the two matched
-positions. The units of the distance are the same as the given coordinates
-(given the possible ellipticity, see description of @option{--aperture}
-below). When @option{--logasoutput} is called, no log file (with a fixed
-name) will be created. In this case, the output file (possibly given by the
-@option{--output} option) will have the contents of this log file.
+options}), and there was a match, Match will also create a file named
+@file{astmatch.fits} (or @file{astmatch.txt}, depending on
+@option{--tableformat}, see @ref{Input output options}) in the directory it
+is run in. This log table will have three columns. The first and second
+columns show the matching row/record number (counting from 1) of the first
+and second input catalogs respectively. The third column is the distance
+between the two matched positions. The units of the distance are the same
+as the given coordinates (given the possible ellipticity, see description
+of @option{--aperture} below). When @option{--logasoutput} is called, no
+log file (with a fixed name) will be created. In this case, the output file
+(possibly given by the @option{--output} option) will have the contents of
+this log file.
 
 @cartouche
 @noindent

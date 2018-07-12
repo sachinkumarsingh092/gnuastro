@@ -40,6 +40,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54284: Crop segrault when catalog contains no data.
   bug #54285: make check fails if g++ not present.
   bug #54286: BuildProgram's configuration file, not built by default.
+  bug #54297: No Match output when --notmatched called and no match.
 
 
 

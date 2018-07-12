@@ -72,31 +72,46 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
 
 
   /* Go over each column and permute its contents. */
-  for(tmp=cat; tmp!=NULL; tmp=tmp->next)
-    {
-      /* Do the permutation. */
-      gal_permutation_apply(tmp, permutation);
+  if(permutation)
+    for(tmp=cat; tmp!=NULL; tmp=tmp->next)
+      {
+        /* Do the permutation. */
+        gal_permutation_apply(tmp, permutation);
 
-      /* Correct the size of the array so only the matching columns are
-         saved as output. This is only Gnuastro's convention, it has no
-         effect on later freeing of the array in the memory. */
-      if(p->notmatched)
-        {
-          /* Add the original array pointer to a list (we need to reset it
-             later). */
-          gal_list_void_add(&arrays, tmp->array);
+        /* Correct the size of the array so only the matching columns are
+           saved as output. This is only Gnuastro's convention, it has no
+           effect on later freeing of the array in the memory. */
+        if(p->notmatched)
+          {
+            /* Add the original array pointer to a list (we need to reset it
+               later). */
+            gal_list_void_add(&arrays, tmp->array);
 
-          /* Reset the data structure's array element to start where the
-             non-matched elements start. */
-          tmp->array=gal_pointer_increment(tmp->array, nummatched, tmp->type);
+            /* Reset the data structure's array element to start where the
+               non-matched elements start. */
+            tmp->array=gal_pointer_increment(tmp->array, nummatched,
+                                             tmp->type);
 
-          /* Correct the size of the tile. */
-          tmp->size = tmp->dsize[0] = tmp->size - nummatched;
-        }
-      else
-        tmp->size=tmp->dsize[0]=nummatched;
-    }
+            /* Correct the size of the tile. */
+            tmp->size = tmp->dsize[0] = tmp->size - nummatched;
+          }
+        else
+          tmp->size=tmp->dsize[0]=nummatched;
+      }
 
+  /* If no match was found (`permutation==NULL'), and the matched columns
+     are requested, empty all the columns that are to be written (only
+     keeping the meta-data). */
+  else
+    if(p->notmatched==0)
+      {
+        for(tmp=cat; tmp!=NULL; tmp=tmp->next)
+          {
+            tmp->size=0;
+            free(tmp->dsize); tmp->dsize=NULL;
+            free(tmp->array); tmp->array=NULL;
+          }
+      }
 
   /* Write the catalog to the output. */
   if(p->outcols)
@@ -189,80 +204,79 @@ match_catalog(struct matchparams *p)
   mcols=gal_match_coordinates(p->cols1, p->cols2, p->aperture->array, 0, 1,
                               p->cp.minmapsize, &nummatched);
 
-  /* If a match was found, then make the output files. */
-  if(mcols)
+  /* If the output is to be taken from the input columns (it isn't just the
+     log), then do the job. */
+  if(p->logasoutput==0)
     {
-      /* Read all the first catalog columns. */
-      if(p->logasoutput==0)
+      /* Read (and possibly write) the outputs. Note that we only need to
+         read the table when it is necessary for the output (the user might
+         have asked for `--outcols', only with columns of one of the two
+         inputs). */
+      if(p->outcols==NULL || p->acols)
+        a=match_catalog_read_write_all(p, mcols?mcols->array:NULL,
+                                       nummatched, 1, &acolmatch);
+      if(p->outcols==NULL || p->bcols)
+        b=match_catalog_read_write_all(p, mcols?mcols->next->array:NULL,
+                                       nummatched, 2, &bcolmatch);
+
+      /* If one catalog (with specific columns from either of the two
+         inputs) was requested, then write it out. */
+      if(p->outcols)
         {
-          /* Read (and possibly write) the outputs. Note that we only need
-             to read the table when it is necessary for the output (the
-             user user might have asked for `--outcols', only with columns
-             of one of the two inputs. */
-          if(p->outcols==NULL || p->acols)
-            a=match_catalog_read_write_all(p, mcols->array, nummatched,
-                                           1, &acolmatch);
-          if(p->outcols==NULL || p->bcols)
-            b=match_catalog_read_write_all(p, mcols->next->array, nummatched,
-                                           2, &bcolmatch);
+          /* Arrange the columns and write the output. */
+          match_catalog_write_one(p, a, b, acolmatch, bcolmatch);
 
-          /* If one catalog (with specific columns from either of the two
-             inputs) was requested, then write it out. */
-          if(p->outcols)
-            {
-              /* Arrange the columns and write the output. */
-              match_catalog_write_one(p, a, b, acolmatch, bcolmatch);
-
-              /* Clean up. */
-              if(acolmatch) free(acolmatch);
-              if(bcolmatch) free(bcolmatch);
-            }
+          /* Clean up. */
+          if(acolmatch) free(acolmatch);
+          if(bcolmatch) free(bcolmatch);
         }
-
-      /* Write the raw information in a log file if necessary.  */
-      if(p->logname)
-        {
-          /* Note that unsigned 64-bit integers are not recognized in FITS
-             tables. So if the log file is a FITS table, covert the two
-             index columns to uint32. */
-          tmp=gal_data_copy_to_new_type(mcols, GAL_TYPE_UINT32);
-          tmp->next=mcols->next;
-          tmp->size=nummatched;
-          gal_data_free(mcols);
-          mcols=tmp;
-
-          /* We also want everything to be incremented by one. In a C
-             program, counting starts with zero, so `gal_match_coordinates'
-             will return indexs starting from zero. But outside a C
-             program, on the command-line people expect counting to start
-             from 1 (for example with AWK). */
-          uf = (u=mcols->array) + tmp->size; do (*u)++; while(++u<uf);
-
-          /* Same for the second set of indexs. */
-          tmp=gal_data_copy_to_new_type(mcols->next, GAL_TYPE_UINT32);
-          uf = (u=tmp->array) + tmp->size; do (*u)++; while(++u<uf);
-          tmp->next=mcols->next->next;
-          gal_data_free(mcols->next);
-          tmp->size=nummatched;
-          mcols->next=tmp;
-
-          /* Correct the comments. */
-          free(mcols->comment);
-          mcols->comment="Row index in first catalog (counting from 1).";
-          free(mcols->next->comment);
-          mcols->next->comment="Row index in second catalog (counting "
-            "from 1).";
-
-          /* Write them into the table. */
-          gal_table_write(mcols, NULL, p->cp.tableformat, p->logname,
-                          "LOG_INFO", 0);
-
-          /* Set the comment pointer to NULL: they weren't allocated. */
-          mcols->comment=NULL;
-          mcols->next->comment=NULL;
-        }
-      gal_list_data_free(mcols);
     }
+
+  /* Write the raw information in a log file if necessary.  */
+  if(p->logname && mcols)
+    {
+      /* Note that unsigned 64-bit integers are not recognized in FITS
+         tables. So if the log file is a FITS table, covert the two
+         index columns to uint32. */
+      tmp=gal_data_copy_to_new_type(mcols, GAL_TYPE_UINT32);
+      tmp->next=mcols->next;
+      tmp->size=nummatched;
+      gal_data_free(mcols);
+      mcols=tmp;
+
+      /* We also want everything to be incremented by one. In a C
+         program, counting starts with zero, so `gal_match_coordinates'
+         will return indexs starting from zero. But outside a C
+         program, on the command-line people expect counting to start
+         from 1 (for example with AWK). */
+      uf = (u=mcols->array) + tmp->size; do (*u)++; while(++u<uf);
+
+      /* Same for the second set of indexs. */
+      tmp=gal_data_copy_to_new_type(mcols->next, GAL_TYPE_UINT32);
+      uf = (u=tmp->array) + tmp->size; do (*u)++; while(++u<uf);
+      tmp->next=mcols->next->next;
+      gal_data_free(mcols->next);
+      tmp->size=nummatched;
+      mcols->next=tmp;
+
+      /* Correct the comments. */
+      free(mcols->comment);
+      mcols->comment="Row index in first catalog (counting from 1).";
+      free(mcols->next->comment);
+      mcols->next->comment="Row index in second catalog (counting "
+        "from 1).";
+
+      /* Write them into the table. */
+      gal_table_write(mcols, NULL, p->cp.tableformat, p->logname,
+                      "LOG_INFO", 0);
+
+      /* Set the comment pointer to NULL: they weren't allocated. */
+      mcols->comment=NULL;
+      mcols->next->comment=NULL;
+    }
+
+  /* Clean up. */
+  gal_list_data_free(mcols);
 
   /* Print the number of matches if not in quiet mode. */
   if(!p->cp.quiet)

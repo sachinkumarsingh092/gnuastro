@@ -60,10 +60,14 @@ gal_dimension_is_different(gal_data_t *first, gal_data_t *second)
   if(first->ndim!=second->ndim)
     return 1;
 
-  /* Check if the sizes along all dimensions are the same: */
-  for(i=0;i<first->ndim;++i)
-    if( first->dsize[i] != second->dsize[i] )
-      return 1;
+  /* If the sizes are not zero, check if each dimension also has the same
+     length. */
+  if(first->size==0 && first->size==second->size)
+    return 0;
+  else
+    for(i=0;i<first->ndim;++i)
+      if( first->dsize[i] != second->dsize[i] )
+        return 1;
 
   /* If it got to here, we know the dimensions have the same length. */
   return 0;
