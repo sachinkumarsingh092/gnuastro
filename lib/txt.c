@@ -863,7 +863,7 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
   char **tokens;
   gal_data_t *out=NULL;
   gal_list_sizet_t *ind;
-  size_t maxcolnum=0, rowind=0, lineno=0, ndim;
+  size_t one=1, maxcolnum=0, rowind=0, lineno=0, ndim;
   size_t linelen=10;        /* `linelen' will be increased by `getline'. */
 
   /* Open the file. */
@@ -892,13 +892,27 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
     case TXT_FORMAT_TABLE:
       for(ind=indexll; ind!=NULL; ind=ind->next)
         {
+          /* Allocate the necessary space. We are setting a 1-element array
+             to avoid any allocation errors. Then we are freeing the
+             allocated spaces and correcting the sizes.*/
           ndim=1;
           maxcolnum = maxcolnum>ind->v+1 ? maxcolnum : ind->v+1;
-          gal_list_data_add_alloc(&out, NULL, info[ind->v].type, ndim, dsize,
-                                  NULL, 0, minmapsize, info[ind->v].name,
-                                  info[ind->v].unit, info[ind->v].comment);
+          gal_list_data_add_alloc(&out, NULL, info[ind->v].type, ndim,
+                                  dsize[0]?dsize:&one, NULL, 0, minmapsize,
+                                  info[ind->v].name, info[ind->v].unit,
+                                  info[ind->v].comment);
           out->disp_width=info[ind->v].disp_width;
           out->status=ind->v+1;
+
+          /* If there were no actual rows (dsize[0]==0), free the allocated
+             spaces and correct the size. */
+          if(dsize[0]==0)
+            {
+              out->size=0;
+              free(out->array);
+              free(out->dsize);
+              out->dsize=out->array=NULL;
+            }
         }
       break;
 

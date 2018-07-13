@@ -2404,10 +2404,7 @@ fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
 
 
 
-/* Read the column indexs given in the `indexll' linked list from a FITS
-   table into a linked list of data structures, note that this is a
-   low-level function, so the output data linked list is the inverse of the
-   input indexs linked list. */
+/* Read the column indexs into a dataset. */
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                   gal_data_t *allcols, gal_list_sizet_t *indexll,
@@ -2415,88 +2412,121 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 {
   size_t i=0;
   void *blank;
-  size_t dsize;
   char **strarr;
   fitsfile *fptr;
   gal_data_t *out=NULL;
   gal_list_sizet_t *ind;
   int isfloat, status=0, anynul=0, hdutype;
 
-  /* Open the FITS file */
-  fptr=gal_fits_hdu_open_format(filename, hdu, 1);
-
-  /* See if its a Binary or ASCII table (necessary for floating point blank
-     values). */
-  if (fits_get_hdu_type(fptr, &hdutype, &status) )
-    gal_fits_io_error(status, NULL);
-
-  /* Pop each index and read/store the array. */
-  for(ind=indexll; ind!=NULL; ind=ind->next)
+  /* We actually do have columns to read. */
+  if(numrows)
     {
-      /* Allocate the necessary data structure (including the array) for
-         this column. */
-      dsize=numrows;
-      gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1, &dsize,
-                              NULL, 0, minmapsize, allcols[ind->v].name,
-                              allcols[ind->v].unit, allcols[ind->v].comment);
+      /* Open the FITS file */
+      fptr=gal_fits_hdu_open_format(filename, hdu, 1);
 
-      /* For a string column, we need an allocated array for each element,
-         even in binary values. This value should be stored in the
-         disp_width element of the data structure, which is done
-         automatically in `gal_fits_table_info'. */
-      if(out->type==GAL_TYPE_STRING)
+      /* See if its a Binary or ASCII table (necessary for floating point
+         blank values). */
+      if (fits_get_hdu_type(fptr, &hdutype, &status) )
+        gal_fits_io_error(status, NULL);
+
+      /* Pop each index and read/store the array. */
+      for(ind=indexll; ind!=NULL; ind=ind->next)
         {
-          strarr=out->array;
-          for(i=0;i<numrows;++i)
+          /* Allocate the necessary data structure (including the array)
+             for this column. */
+          gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1,
+                                  &numrows, NULL, 0, minmapsize,
+                                  allcols[ind->v].name, allcols[ind->v].unit,
+                                  allcols[ind->v].comment);
+
+          /* For a string column, we need an allocated array for each element,
+             even in binary values. This value should be stored in the
+             disp_width element of the data structure, which is done
+             automatically in `gal_fits_table_info'. */
+          if(out->type==GAL_TYPE_STRING)
             {
-              errno=0;
-              strarr[i]=calloc(allcols[ind->v].disp_width+1,
-                               sizeof *strarr[i]);
-              if(strarr[i]==NULL)
-                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
-                      "strarr[%zu]", __func__,
-                      (allcols[ind->v].disp_width+1) * sizeof *strarr[i], i);
+              strarr=out->array;
+              for(i=0;i<numrows;++i)
+                {
+                  errno=0;
+                  strarr[i]=calloc(allcols[ind->v].disp_width+1,
+                                   sizeof *strarr[i]);
+                  if(strarr[i]==NULL)
+                    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                          "strarr[%zu]", __func__,
+                          (allcols[ind->v].disp_width+1) * sizeof *strarr[i],
+                          i);
+                }
             }
+
+          /* Allocate a blank value for the given type and read/store the
+             column using CFITSIO. Note that for binary tables, we only
+             need blank values for integer types. For binary floating point
+             types, the FITS standard defines blanks as NaN (same as almost
+             any other software like Gnuastro). However if a blank value is
+             specified, CFITSIO will convert other special numbers like
+             `inf' to NaN also. We want to be able to distringuish `inf'
+             and NaN here, so for floating point types in binary tables, we
+             won't define any blank value. In ASCII tables, CFITSIO doesn't
+             read the `NAN' values (that it has written itself) unless we
+             specify a blank pointer/value. */
+          isfloat = ( out->type==GAL_TYPE_FLOAT32
+                      || out->type==GAL_TYPE_FLOAT64 );
+          blank = ( ( hdutype==BINARY_TBL && isfloat )
+                    ? NULL
+                    : gal_blank_alloc_write(out->type) );
+          fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
+                        1, 1, out->size, blank, out->array, &anynul, &status);
+
+          /* In the ASCII table format, CFITSIO might not be able to read
+             `INF' or `-INF'. In this case, it will set status to `BAD_C2D'
+             or `BAD_C2F'. So, we'll use our own parser for the column
+             values. */
+          if( hdutype==ASCII_TBL
+              && isfloat
+              && (status==BAD_C2D || status==BAD_C2F) )
+            {
+              fits_tab_read_ascii_float_special(filename, hdu, fptr, out,
+                                                ind->v+1, numrows,
+                                                minmapsize);
+              status=0;
+            }
+
+          /* Clean up and sanity check. */
+          if(blank) free(blank);
+          gal_fits_io_error(status, NULL);
         }
 
-      /* Allocate a blank value for the given type and read/store the
-         column using CFITSIO. Note that for binary tables, we only need
-         blank values for integer types. For binary floating point types,
-         the FITS standard defines blanks as NaN (same as almost any other
-         software like Gnuastro). However if a blank value is specified,
-         CFITSIO will convert other special numbers like `inf' to NaN
-         also. We want to be able to distringuish `inf' and NaN here, so
-         for floating point types in binary tables, we won't define any
-         blank value. In ASCII tables, CFITSIO doesn't read the `NAN'
-         values (that it has written itself) unless we specify a blank
-         pointer/value. */
-      isfloat = out->type==GAL_TYPE_FLOAT32 || out->type==GAL_TYPE_FLOAT64;
-      blank = ( ( hdutype==BINARY_TBL && isfloat )
-                ? NULL
-                : gal_blank_alloc_write(out->type) );
-      fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
-                    1, 1, out->size, blank, out->array, &anynul, &status);
-
-      /* In the ASCII table format, CFITSIO might not be able to read `INF'
-         or `-INF'. In this case, it will set status to `BAD_C2D' or
-         `BAD_C2F'. So, we'll use our own parser for the column values. */
-      if( hdutype==ASCII_TBL
-          && isfloat
-          && (status==BAD_C2D || status==BAD_C2F) )
-        {
-          fits_tab_read_ascii_float_special(filename, hdu, fptr, out,
-                                            ind->v+1, numrows, minmapsize);
-          status=0;
-        }
-
-      /* Clean up and sanity check. */
-      if(blank) free(blank);
+      /* Close the FITS file */
+      fits_close_file(fptr, &status);
       gal_fits_io_error(status, NULL);
     }
 
-  /* Close the FITS file */
-  fits_close_file(fptr, &status);
-  gal_fits_io_error(status, NULL);
+  /* There are no rows to read (`numrows==NULL'). Make an empty-sized
+     array. */
+  else
+    {
+      /* We are setting a 1-element array to avoid any allocation
+         errors. Then we are freeing the allocated spaces and correcting
+         the sizes. */
+      numrows=1;
+      for(ind=indexll; ind!=NULL; ind=ind->next)
+        {
+          /* Do the allocation. */
+          gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1,
+                                  &numrows, NULL, 0, minmapsize,
+                                  allcols[ind->v].name, allcols[ind->v].unit,
+                                  allcols[ind->v].comment);
+
+          /* Correct the array and sizes. */
+          out->size=0;
+          free(out->array);
+          free(out->dsize);
+          out->dsize=out->array=NULL;
+        }
+    }
+
+  /* Return the output. */
   return out;
 }
 

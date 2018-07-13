@@ -1,6 +1,5 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-
 * Noteworthy changes in release X.X (library 5.0.0) (YYYY-MM-DD) [alpha]
 
 ** New features
@@ -41,6 +40,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54285: make check fails if g++ not present.
   bug #54286: BuildProgram's configuration file, not built by default.
   bug #54297: No Match output when --notmatched called and no match.
+  bug #54298: Table not writing array when there are no rows.
 
 
 

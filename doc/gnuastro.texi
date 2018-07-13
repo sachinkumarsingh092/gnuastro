@@ -24688,16 +24688,19 @@ of table formats based on the filename (see @ref{Table input output}).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
-Read the columns given in the list @code{indexll} from a FITS table into a
-linked list of data structures, see @ref{List of size_t} and @ref{List of
+Read the columns given in the list @code{indexll} from a FITS table (in
+@file{filename} and HDU/extension @code{hdu}) into the returned linked list
+of data structures, see @ref{List of size_t} and @ref{List of
 gal_data_t}. If the necessary space for each column is larger than
 @code{minmapsize}, don't keep it in the RAM, but in a file in the HDD/SSD,
 see the description under the same name in @ref{Generic data container}.
 
-Note that this is a low-level function, so the output data linked list is
-the inverse of the input indexs linked list. It is recommended to use
-@code{gal_table_read} for generic reading of tables, see @ref{Table input
-output}.
+Each column will have @code{numrows} rows and @code{colinfo} contains any
+further information about the columns (returned by
+@code{gal_fits_tab_info}, described above). Note that this is a low-level
+function, so the output data linked list is the inverse of the input indexs
+linked list. It is recommended to use @code{gal_table_read} for generic
+reading of tables, see @ref{Table input output}.
 @end deftypefun
 
 @deftypefun void gal_fits_tab_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename})
