@@ -5133,14 +5133,19 @@ we add it. Gnuastro itself if also already packaged in some package
 managers (for example Debian or Homebrew).
 
 As discussed above, we recommend installing the @emph{mandatory}
-dependencies manually from source. Therefore, in each command below, first
-the optional dependencies are given. The mandatory dependencies are
-included after an empty line. If you would also like to install the
-mandatory dependencies with your package manager, just ignore the empty
-line.
+dependencies manually from source (see @ref{Mandatory
+dependencies}). Therefore, in each command below, first the optional
+dependencies are given. The mandatory dependencies are included after an
+empty line. If you would also like to install the mandatory dependencies
+with your package manager, just ignore the empty line.
+
+For better archivability and compression ratios, Gnuastro's recommended
+tarball compression format is with the
+@url{http://lzip.nongnu.org/lzip.html, Lzip} program, see @ref{Release
+tarball}. Therefore, the package manager commands below also contain Lzip.
 
 @table @asis
-@item @command{apt-get} (Debian-based OSs: Debian, Ubuntu, Linux Mint and etc)
+@item @command{apt-get} (Debian-based OSs: Debian, Ubuntu, Linux Mint, and etc)
 @cindex Debian
 @cindex Ubuntu
 @cindex Linux Mint
@@ -5157,44 +5162,35 @@ and most used, class of GNU/Linux distributions. All of them use Debian's
 Advanced Packaging Tool (APT, for example @command{apt-get}) for managing
 packages.
 @example
-$ sudo apt-get install ghostscript libtool-bin  libjpeg-dev \
-                       libtiff-dev libgit2-dev              \
+$ sudo apt-get install ghostscript libtool-bin libjpeg-dev  \
+                       libtiff-dev libgit2-dev lzip         \
                                                             \
                        libgsl0-dev libcfitsio-dev wcslib-dev
 @end example
 
-@item @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux and etc)
+@item @command{dnf}
+@itemx @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux, and etc)
 @cindex RHEL
 @cindex Fedora
 @cindex CentOS
 @cindex Red Hat
+@cindex @command{dnf}
 @cindex @command{yum}
 @cindex Scientific Linux
 @url{https://en.wikipedia.org/wiki/Red_Hat,Red Hat Enterprise Linux} (RHEL)
-is released by Red Hat Inc. RHEL requires paid subscriptions for use of
+is released by Red Hat Inc. RHEL requires paid subscriptions for use of its
 binaries and support. But since it is free software, many other teams use
-its code to spin-off their own distributions based on RHEL. All Red
-Hat-based GNU/Linux distributions use the Yellowdog Updated, Modifier (YUM)
-package manager.
+its code to spin-off their own distributions based on RHEL. Red Hat-based
+GNU/Linux distributions initially used the ``Yellowdog Updated, Modifier''
+(YUM) package manager, which has been replaced by ``Dandified yum''
+(DNF). If the latter isn't available on your system, you can use
+@command{yum} instead of @command{dnf} in the command below.
 @example
-$ sudo yum install ghostscript libtool libjpeg-devel        \
-                   libtiff-devel libgit2-devel              \
+$ sudo dnf install ghostscript libtool libjpeg-devel        \
+                   libtiff-devel libgit2-devel lzip         \
                                                             \
                    gsl-devel cfitsio-devel wcslib-devel
 @end example
-
-@cartouche
-@noindent
-@strong{CFITSIO's header installation directory:} As of July 2018, by
-default YUM puts CFITSIO's headers in @file{/usr/include/cfitsio}. This is
-not in the default search directories for headers (see @ref{Installation
-directory}). If you have installed CFITSIO with YUM, but Gnuastro's
-configure complains about not finding CFITSIO, please configure Gnuastro
-with an additional @code{CFLAGS} environment variable like this:
-@example
-$ ./configure CFLAGS="-I/usr/include/cfitsio"
-@end example
-@end cartouche
 
 @item @command{brew} (macOS)
 @cindex macOS
@@ -5214,8 +5210,9 @@ dependencies}) via Homebrew you will need to @command{tap} into
 @command{brewsci/science} first (the tap may change in the future, but can
 be found by calling @command{brew search wcslib}).
 @example
-$ brew install ghostscript libtool libjpeg libtiff libgit2 \
-                                                           \
+$ brew install ghostscript libtool libjpeg libtiff          \
+               libgit2 lzip                                 \
+                                                            \
                gsl cfitsio
 $ brew tap brewsci/science
 $ brew install wcslib
@@ -5231,12 +5228,55 @@ correctness, minimalism and simplicity, and expects the user to be willing
 to make some effort to understand the system's operation''. Arch Linux uses
 ``Package manager'' (Pacman) to manage its packages/components.
 @example
-$ sudo pacman -S ghostscript libtool libjpeg libtiff libgit2 \
-                                                             \
+$ sudo pacman -S ghostscript libtool libjpeg libtiff        \
+                 libgit2 lzip                               \
+                                                            \
                  gsl cfitsio wcslib
 @end example
 @end table
 
+Usually, when libraries are installed by operating system package managers,
+there should be no problems when configuring and building other programs
+from source (that depend on the libraries: Gnuastro in this case). However,
+in some special conditions, problems may pop-up during the configuration,
+building, or checking/running any of Gnuastro's programs. The most common
+of such problems and their solution are discussed below.
+
+@cartouche
+@noindent
+@strong{Not finding library during configuration:} If a library is
+installed, but during Gnuastro's @command{configre} step the library isn't
+found, then configure Gnuastro like the command below (correcting
+@file{/path/to/lib}). For more, see @ref{Known issues} and
+@ref{Installation directory}.
+@example
+$ ./configure LDFLAGS="-I/path/to/lib"
+@end example
+@end cartouche
+
+@cartouche
+@noindent
+@strong{Not finding header (.h) files while building:} If a library is
+installed, but during Gnuastro's @command{make} step, the library's header
+(file with a @file{.h} suffix) isn't found, then configure Gnuastro like
+the command below (correcting @file{/path/to/include}). For more, see
+@ref{Known issues} and @ref{Installation directory}.
+@example
+$ ./configure CPPFLAGS="-I/path/to/include"
+@end example
+@end cartouche
+
+@cartouche
+@noindent
+@strong{Gnuastro's programs don't run during check or after install:} If a
+library is installed, but the programs don't run due to linking problems,
+set the @code{LD_LIBRARY_PATH} variable like below (assuming Gnuastro is
+installed in @file{/path/to/installed}). For more, see @ref{Known issues}
+and @ref{Installation directory}.
+@example
+$ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/path/to/installed/lib"
+@end example
+@end cartouche
 
 
 
@@ -6591,13 +6631,18 @@ from source, the headers are also installed.
 @cindex @command{LDFLAGS}
 From source. Then your linker is not looking where you installed the
 library. If you followed the instructions in this chapter, all the
-libraries will be installed in @file{/usr/local/lib}. So you have to
-tell your linker to look in this directory. To do so, add
-@command{LDFLAGS=-L/usr/local/lib} to the Gnuastro configure
-script. If you want to use the libraries for your other programming
-projects, then export this environment variable similar to the case
-for @file{LD_LIBRARY_PATH} explained below.
+libraries will be installed in @file{/usr/local/lib}. So you have to tell
+your linker to look in this directory. To do so, configure Gnuastro like
+this:
 
+@example
+$ ./configure LDFLAGS="-I/usr/local/lib"
+@end example
+
+If you want to use the libraries for your other programming projects, then
+export this environment variable in a start-up script similar to the case
+for @file{LD_LIBRARY_PATH} explained below, also see @ref{Installation
+directory}.
 @end itemize
 
 @item
@@ -6620,11 +6665,19 @@ available in Gnulib, it can be fixed immediately.
 
 @item
 @cindex @command{CPPFLAGS}
-@command{$ make}: @emph{Can't find the headers (.h files) of libraries
-installed from source.} Similar to the case for @file{LDFLAGS}
-(above), your compiler is not looking in the right place, add
-@command{CPPFLAGS=-I/usr/local/include} to @command{./configure} to
-re-configure Gnuastro, then re-run make.
+@command{$ make}: @emph{Can't find the headers (.h files) of installed
+libraries.} Your C pre-processor (CPP) isn't looking in the right place. To
+fix this, configure Gnuastro with an additional @code{CPPFLAGS} like below
+(assuming the library is installed in @file{/usr/local/include}:
+
+@example
+$ ./configure CPPFLAGS="-I/usr/local/include"
+@end example
+
+If you want to use the libraries for your other programming projects, then
+export this environment variable in a start-up script similar to the case
+for @file{LD_LIBRARY_PATH} explained below, also see @ref{Installation
+directory}.
 
 @cindex Tests, only one passes
 @cindex @file{LD_LIBRARY_PATH}
