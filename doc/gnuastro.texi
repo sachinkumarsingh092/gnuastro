@@ -21738,6 +21738,14 @@ of @code{0} (zero). Gnuastro also comes with some wrappers to make it
 easier to use libgit2 (see @ref{Git wrappers}).
 @end deffn
 
+@deffn Macro GAL_CONFIG_HAVE_FITS_IS_REENTRANT
+@cindex CFITSIO
+This macro will have a value of 1 when the CFITSIO of the host system has
+the @code{fits_is_reentrant} function (available from CFITSIO version
+3.30). This function is used to see if CFITSIO was configured to read a
+FITS file simultaneously on different threads.
+@end deffn
+
 
 @deffn Macro GAL_CONFIG_HAVE_WCSLIB_VERSION
 WCSLIB is the reference library for world coordinate system transformation

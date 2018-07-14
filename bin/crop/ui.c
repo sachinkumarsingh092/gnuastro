@@ -404,16 +404,33 @@ ui_check_options_and_arguments(struct cropparams *p)
   if(p->catname)
     {
       /* When multiple threads need to access a file, CFITSIO needs to be
-         configured with the `--enable-reentrant` option. */
+         configured with the `--enable-reentrant` option and we can only
+         know from the `fits_is_reentrant' function that came from CFITSIO
+         version 3.30. */
+#if GAL_CONFIG_HAVE_FITS_IS_REENTRANT == 1
       if(p->cp.numthreads>1 && fits_is_reentrant()==0)
-        error(EXIT_FAILURE, 0, "CFITSIO was not configured with the "
-              "`--enable-reentrant` option but you have asked to crop "
-              "on %zu threads.\n\nPlease configure, make and install CFITSIO "
-              "again with this flag. Alternatively, to avoid this error "
-              "you can set the number of threads to 1 by adding the "
-              "`--numthreads=1` or `-N1` options. Please run the following "
-              "command to learn more about configuring CFITSIO:\n\n"
-              "    $ info gnuastro CFITSIO", p->cp.numthreads);
+        {
+          fprintf(stderr, "WARNING: CFITSIO was not configured with the "
+                  "`--enable-reentrant' option but you have asked to crop "
+                  "on %zu threads. Therefore only one thread will be used.\n\n"
+                  "Please run the following command to learn more about "
+                  "configuring CFITSIO:\n\n"
+                  "    $ info gnuastro CFITSIO", p->cp.numthreads);
+          p->cp.numthreads=1;
+        }
+#else
+      if(p->cp.numthreads>1)
+        {
+          fprintf(stderr, "WARNING: the installed CFITSIO version doesn't "
+                  "have `fits_is_reentrant' function (it is older than "
+                  "version 3.30). But you have asked to crop on %zu threads."
+                  "Therefore only one thread will be used.\n\n"
+                  "To avoid this warning, you can set the number of threads "
+                  "to one with `-N1' or update your installation of CFITSIO.",
+                  p->cp.numthreads);
+          p->cp.numthreads=1;
+        }
+#endif
 
       /* Make sure the given output is a directory. */
       gal_checkset_check_dir_write_add_slash(&p->cp.output);

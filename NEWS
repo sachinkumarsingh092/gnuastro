@@ -41,6 +41,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54286: BuildProgram's configuration file, not built by default.
   bug #54297: No Match output when --notmatched called and no match.
   bug #54298: Table not writing array when there are no rows.
+  bug #54312: Crash when CFITSIO doesn't have fits_is_reentrant function.
 
 
 

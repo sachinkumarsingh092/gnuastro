@@ -50,5 +50,4 @@ if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat --naxis=100,100
-mv 0_mkprofcat1.fits psf.fits
+$execname $cat --naxis=100,100 && mv 0_mkprofcat1.fits psf.fits
