@@ -65,4 +65,9 @@ fi
 #
 # Except for `gnuastro/config.h', all headers are installed in
 # `$topsrc/lib' and `gnuastro/config.h' is in "../lib/"
-$execname $source $img 1 --la=../lib/libgnuastro.la -I$topsrc/lib -I../lib/
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $source $img 1 --la=../lib/libgnuastro.la \
+                              -I$topsrc/lib -I../lib/

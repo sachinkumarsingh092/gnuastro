@@ -53,4 +53,8 @@ if [ "x$haslibjpeg" != "xyes" ];then echo "libjpeg not present.";  exit 77;fi
 
 # Actual test script
 # ==================
-$execname $img --output=jpegtotxt.txt
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $img --output=jpegtotxt.txt

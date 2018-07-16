@@ -49,5 +49,10 @@ if [ ! -f $execname ]; then echo "$execname not created."; exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat1 $cat2 --aperture=0.5 -omatch-merged-cols.txt \
-          --outcols=a1,aEFGH,bACCU1,aIJKL,bACCU2
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $cat1 $cat2 --aperture=0.5             \
+                              -omatch-merged-cols.txt                \
+                              --outcols=a1,aEFGH,bACCU1,aIJKL,bACCU2

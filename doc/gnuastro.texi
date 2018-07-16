@@ -5755,6 +5755,9 @@ program using the GNU build system (through the configure script).
 @vtable @option
 
 @item --enable-debug
+@cindex Valgrind
+@cindex Debugging
+@cindex GNU Debugger
 Compile/build Gnuastro with debugging information and no optimization. In
 order to allow more efficient programs when using Gnuastro (after the
 installation), by default Gnuastro is built with a 3rd level (a very high
@@ -5763,6 +5766,22 @@ crashes or un-expected behavior, debugging flags and disabling optimization
 can greatly help in localizing the problem. This configuration option is
 identical to manually calling the configuration script with
 @code{CFLAGS="-g -O0"}.
+
+@item --enable-check-with-valgrind
+@cindex Valgrind
+Do the @command{make check} tests through Valgrind. Therefore, if any
+crashes or memory-related issues (segmentation faults in particular) occur
+in the tests, the output of Valgrind will also be put in the
+@file{tests/test-suite.log} file without having to manually modify the
+check scripts. This option will also build Gnuastro with no optimization
+and enable debugging flags (as if you also call @option{--enable-debug}).
+
+Valgrind is free software. It is a program for easy checking of
+memory-related issues in programs. It runs a program within its own
+controlled environment and can thus identify the exact line-number in the
+program's source where a memory-related issue occurs. However, it can
+significantly slow-down the tests. So this option is only useful when a
+segmentation fault is found during @command{make check}.
 
 @item --enable-progname
 Only build and install @file{progname} along with any other program that is
@@ -6448,6 +6467,13 @@ Besides all the debugging advantages of building with this option, it will
 also be significantly speed up the build (at the cost of slower built
 programs). So when you are testing something small or working on the build
 system itself, it will be much faster to test your work with this option.
+
+@item -v
+@itemx --valgrind
+@cindex Valgrind
+Build all @command{make check} tests within Valgrind. For more, see the
+description of @option{--enable-check-with-valgrind} in @ref{Gnuastro
+configure options}.
 
 @item -j INT
 @itemx --jobs INT

@@ -49,6 +49,12 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
 cp $img fitstest.fits
-$execname fitstest.fits --write=ABSJUNK,10.92,"A Fits keyword Test.",m/s \
-          --date --write=ABSJNK2,2343fdsa,"Another absolute junk test!"
+$check_with_program $execname fitstest.fits                                    \
+                              --write=ABSJUNK,10.92,"A Fits keyword Test.",m/s \
+                              --date                                           \
+                              --write=ABSJNK2,2343fdsa,"Another absolute junk test!"

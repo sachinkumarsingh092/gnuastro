@@ -44,6 +44,7 @@ check=0
 reconf=0
 upload=0
 install=0
+valgrind=0
 top_build_dir=/dev/shm
 if [ -f .version ]; then
     version=$(cat .version)
@@ -71,6 +72,13 @@ help_print() {
         debug_status="DISABLED"
     else
         debug_status="ENABLED"
+    fi
+
+    # See if valgrind is enabled or not.
+    if [ $valgrind = "0" ]; then
+        valgrind_status="DISABLED"
+    else
+        valgrind_status="ENABLED"
     fi
 
     # See if clean is enabled or not.
@@ -146,6 +154,9 @@ Options:
                           libraries.
                           Current status: $debug_status
 
+ -v, --valgrind           Build with `--enable-check-with-valgrind'.
+                          Current status: $valgrind_status
+
  -j, --jobs INT           Number of threads to use in 'make'.
                           Current value: $jobs
 
@@ -216,6 +227,10 @@ do
             ;;
         -d|--debug)
             debug=1
+            shift # past argument
+            ;;
+        -v|--valgrind)
+            valgrind=1
             shift # past argument
             ;;
         -j|--jobs)
@@ -397,11 +412,17 @@ cd $build_dir
 # (in 'configure.ac'), we have set optimization flags which have to be
 # cancelled in debugging.
 if [ ! -f Makefile ]; then
+
+    # Set the proper flags.
     if [ x$debug = x1 ]; then
-        $srcdir/configure --srcdir=$srcdir --enable-debug --disable-shared
-    else
-        $srcdir/configure --srcdir=$srcdir
+        confopts="--enable-debug --disable-shared"
     fi
+    if [ x$valgrind = x1 ]; then
+        confopts="--enable-check-with-valgrind --disable-shared"
+    fi
+
+    # Run the configure script.
+    $srcdir/configure --srcdir=$srcdir $confopts
 fi
 
 

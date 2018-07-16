@@ -42,6 +42,9 @@
 ## .log file is created. The check if the input for a test exists or not
 ## should be checked in the test that depends on it, it can't be done here
 ## in the Makefile.
+if COND_CHECK_WITH_VALGRIND
+  MAYBE_CHECK_WITH_PROGRAM = "valgrind"
+endif
 if COND_HASGHOSTSCRIPT
   MAYBE_HASGHOSTSCRIPT = "yes"
 endif
@@ -194,13 +197,14 @@ endif
 
 
 # Environment variables for the test scripts.
-AM_TESTS_ENVIRONMENT =                              \
-export mkdir_p="$(MKDIR_P)";                        \
-export topsrc=$(top_srcdir);                        \
-export topbuild=$(top_builddir);                    \
-export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
-export hasgnulibtool=$(MAYBE_HASGNULIBTOOL);        \
-export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
+AM_TESTS_ENVIRONMENT =                                   \
+export mkdir_p="$(MKDIR_P)";                             \
+export topsrc=$(top_srcdir);                             \
+export topbuild=$(top_builddir);                         \
+export haslibjpeg=$(MAYBE_HASLIBJPEG);                   \
+export hasgnulibtool=$(MAYBE_HASGNULIBTOOL);             \
+export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);           \
+export check_with_program=$(MAYBE_CHECK_WITH_PROGRAM);
 
 
 

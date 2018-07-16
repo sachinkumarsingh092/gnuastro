@@ -54,5 +54,10 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
-$execname $img --center=500,500 --noblank --numthreads=1              \
-          --output=crop_imgcenternoblank.fits --mode=img --width=201
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $img --center=500,500 --noblank --numthreads=1 \
+                              --output=crop_imgcenternoblank.fits --mode=img \
+                              --width=201

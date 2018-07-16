@@ -54,4 +54,8 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # result will not be too accurate! Here we just want to see if the full
 # tessellation, estimation, interpolation and smoothing go nicely without
 # any errors.
-$execname $img --sky --checksky
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $img --sky --checksky

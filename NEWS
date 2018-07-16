@@ -6,6 +6,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Installation:
     --enable-debug: enable debugging flags and disable optimization.
+    --enable-check-with-valgrind: Run `make check' tests within Valgrind.
 
   Arithmetic:
     - `collapse-sum': collapse/remove a dimension by summing over it.

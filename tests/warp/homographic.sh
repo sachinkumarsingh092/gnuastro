@@ -49,5 +49,9 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img --output=homographic.fits \
-          --matrix="0.707106781,-0.707106781,0,  0.707106781, 0.707106781,0,  0.001,0.002,1" --coveredfrac=0.5
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $img --output=homographic.fits --coveredfrac=0.5 \
+                              --matrix="0.707106781,-0.707106781,0,  0.707106781, 0.707106781,0,  0.001,0.002,1"

@@ -54,7 +54,12 @@ done
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
 cat=$topsrc/tests/$prog/cat.txt
-$execname $img --catalog=$cat --suffix=_wcscat.fits            \
-          --zeroisnotblank --coordcol=4 --coordcol=DEC_CENTER  \
-          --numthreads=1 --mode=wcs --width=3/3600
+$check_with_program $execname $img --catalog=$cat --suffix=_wcscat.fits  \
+                              --zeroisnotblank --coordcol=4 --mode=wcs   \
+                              --coordcol=DEC_CENTER --numthreads=1       \
+                              --width=3/3600

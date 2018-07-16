@@ -50,5 +50,10 @@ done
 
 # Actual test script
 # ==================
-$execname $img --mode=wcs --zeroisnotblank --output=wcspolygon.fits         \
-        --polygon=0.99980497,1.0001967:0.998378,1.0012267:0.9999766,1.0013217
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $img --mode=wcs --zeroisnotblank   \
+                              --output=wcspolygon.fits           \
+                              --polygon=0.99980497,1.0001967:0.998378,1.0012267:0.9999766,1.0013217

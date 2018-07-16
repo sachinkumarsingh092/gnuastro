@@ -87,13 +87,35 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
+# See if `make check' should be made with Valgrind. This should be done
+# before checking the compilation flags because it can re-write
+# `enable-debug').
+AC_ARG_ENABLE(check-with-valgrind,
+              [AS_HELP_STRING([--enable-check-with-valgrind],
+                              [Run `make check' programs within Valgrind])],
+              [AS_IF([test "x$enable_check_with_valgrind" != xno],
+                     [enable_check_with_valgrind=yes])],
+              [enable_check_with_valgrind=no])
+AS_IF([test "x$enable_check_with_valgrind" = "xyes"],
+      [
+        enable_debug=yes;
+        AC_CHECK_PROG(has_valgrind, valgrind, [yes], [no])
+        AS_IF([test "x$has_valgrind" = "xno"],
+              [AC_MSG_ERROR([Valgrind not found. Please install it or don't use `--enable-check-with-valgrind'])])
+      ])
+AM_CONDITIONAL([COND_CHECK_WITH_VALGRIND], [test "x$enable_check_with_valgrind" = "xyes"])
+
+
+
+
+
 # Set the compilation flags.
 AC_ARG_ENABLE(debug,
               [AS_HELP_STRING([--enable-debug],
                               [No optimization, build with debug flags.])],
               [AS_IF([test "x$enable_debug" != xno], [enable_debug=yes])],
               [enable_debug=no])
-AS_IF([test "x$enable_debug" == "xyes"],
+AS_IF([test "x$enable_debug" = "xyes"],
       [cflags_add="-g -O0"],
       [cflags_add="-O3"])
 CFLAGS="-Wall $cflags_add $CFLAGS"

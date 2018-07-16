@@ -56,7 +56,11 @@ if [ ! -f $img2     ]; then echo "$img2 does not exist.";    exit 77; fi
 
 # Actual test script
 # ==================
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
 export GSL_RNG_SEED=1
 export GSL_RNG_TYPE=ranlxs2
-$execname --envseed $img1
-$execname --envseed $img2
+$check_with_program $execname --envseed $img1
+$check_with_program $execname --envseed $img2

@@ -48,4 +48,9 @@ if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat --ccol=RA --ccol=Dec --mode=wcs --naxis=100,100
+#
+# `check_with_program' can be something like `Valgrind' or an empty
+# string. Such programs will execute the command if present and help in
+# debugging when the developer doesn't have access to the user's system.
+$check_with_program $execname $cat --ccol=RA --ccol=Dec --mode=wcs   \
+                              --naxis=100,100
