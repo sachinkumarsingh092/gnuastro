@@ -87,9 +87,17 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
-# Add warnings and high optimization flags for all builds.
-CFLAGS="-Wall -O3 $CFLAGS"
-CXXFLAGS="-Wall -O3 $CXXFLAGS"
+# Set the compilation flags.
+AC_ARG_ENABLE(debug,
+              [AS_HELP_STRING([--enable-debug],
+                              [No optimization, build with debug flags.])],
+              [AS_IF([test "x$enable_debug" != xno], [enable_debug=yes])],
+              [enable_debug=no])
+AS_IF([test "x$enable_debug" == "xyes"],
+      [cflags_add="-g -O0"],
+      [cflags_add="-O3"])
+CFLAGS="-Wall $cflags_add $CFLAGS"
+CXXFLAGS="-Wall $cflags_add $CXXFLAGS"
 
 
 

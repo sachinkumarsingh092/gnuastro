@@ -398,7 +398,7 @@ cd $build_dir
 # cancelled in debugging.
 if [ ! -f Makefile ]; then
     if [ x$debug = x1 ]; then
-        $srcdir/configure --srcdir=$srcdir CFLAGS="-g -O0" --disable-shared
+        $srcdir/configure --srcdir=$srcdir --enable-debug --disable-shared
     else
         $srcdir/configure --srcdir=$srcdir
     fi

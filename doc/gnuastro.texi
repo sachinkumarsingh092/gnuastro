@@ -5754,6 +5754,16 @@ program using the GNU build system (through the configure script).
 
 @vtable @option
 
+@item --enable-debug
+Compile/build Gnuastro with debugging information and no optimization. In
+order to allow more efficient programs when using Gnuastro (after the
+installation), by default Gnuastro is built with a 3rd level (a very high
+level) optimization and no debugging information. But when there are
+crashes or un-expected behavior, debugging flags and disabling optimization
+can greatly help in localizing the problem. This configuration option is
+identical to manually calling the configuration script with
+@code{CFLAGS="-g -O0"}.
+
 @item --enable-progname
 Only build and install @file{progname} along with any other program that is
 enabled in this fashion. @file{progname} is the name of the executable
@@ -6431,7 +6441,7 @@ as GDB, or Valgrind), disable optimization and also the building of shared
 libraries. Similar to running the configure script of below
 
 @example
-$ ./configure CFLAGS="-g -O0" --disable-shared
+$ ./configure --enable-debug --disable-shared
 @end example
 
 Besides all the debugging advantages of building with this option, it will
@@ -29096,7 +29106,7 @@ significantly slow down the compilation (the @command{make} command). So
 during development it is recommended to configure Gnuastro as follows:
 
 @example
-$ ./configure --disable-shared CFLAGS="-g -O0"
+$ ./configure --enable-debug --disable-shared
 @end example
 
 @noindent

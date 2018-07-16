@@ -4,6 +4,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Installation:
+    --enable-debug: enable debugging flags and disable optimization.
+
   Arithmetic:
     - `collapse-sum': collapse/remove a dimension by summing over it.
     - `collapse-mean': collapse/remove a dimension by averaging over it.
