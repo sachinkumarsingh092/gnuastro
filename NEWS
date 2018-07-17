@@ -26,6 +26,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
+  Crop:
+    --checkcenter: the units of value depend on mode (image or WCS).
+
   MakeCatalog:
     - `--checkuplim': new name for `--checkupperlimit'.
     - `--brightnessnoriver': new name for `--noriverbrightness'.

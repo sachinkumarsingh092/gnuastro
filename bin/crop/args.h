@@ -128,15 +128,16 @@ struct argp_option program_options[] =
     {
       "checkcenter",
       UI_KEY_CHECKCENTER,
-      "INT",
+      "FLT/INT",
       0,
       "Width (in pixels) of box at center to check.",
       UI_GROUP_CENTER_GENERAL,
-      &p->checkcenter,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_0_OR_ODD,
+      &p->incheckcenter,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
     },
     {
       "width",

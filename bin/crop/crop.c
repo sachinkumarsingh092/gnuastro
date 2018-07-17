@@ -135,7 +135,7 @@ crop_verbose_final(struct cropparams *p)
       /* Only if the user wanted to check the center. */
       if(p->checkcenter)
         {
-          if( asprintf(&msg, "%zu filled in the center.", numcfilled)<0 )
+          if( asprintf(&msg,"%zu pixels filled in the center.",numcfilled)<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_timing_report(NULL, msg, 1);
           free(msg);
@@ -469,7 +469,7 @@ crop(struct cropparams *p)
     {
       if(p->checkcenter)
         {
-          if( asprintf(&tmp, "Width of central check box: %zu",
+          if( asprintf(&tmp, "Width of central check box (in pixels): %zu",
                        p->checkcenter)<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           gal_list_str_add(&comments, tmp, 0);

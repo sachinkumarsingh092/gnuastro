@@ -87,7 +87,7 @@ struct cropparams
   uint8_t       zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */
   uint8_t              noblank;  /* ==1: no blank (out of image) pixels.  */
   char                 *suffix;  /* Ending of output file name.           */
-  size_t           checkcenter;  /* width of a box to check for zeros     */
+  gal_data_t    *incheckcenter;  /* Value given to `--checkcenter'.       */
   gal_data_t           *center;  /* Center position of crop.              */
   gal_data_t            *width;  /* Width of crop when defined by center. */
   char                *catname;  /* Name of input catalog.                */
@@ -102,6 +102,7 @@ struct cropparams
   size_t                 numin;  /* Number of input images.               */
   size_t                numout;  /* Number of output images.              */
   double        **centercoords;  /* The center coordinates.               */
+  size_t           checkcenter;  /* width of a box to check for zeros     */
   char                  **name;  /* filename of crop in row.              */
   double             *wpolygon;  /* Array of WCS polygon vertices.        */
   double             *ipolygon;  /* Array of image polygon vertices.      */

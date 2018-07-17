@@ -11021,15 +11021,22 @@ instead.
 Output options:
 @table @option
 
-@item -c INT
-@itemx --checkcenter=INT
+@item -c FLT/INT
+@itemx --checkcenter=FLT/INT
 @cindex Check center of crop
-Box width (odd number of pixels) of region in the center of the image to
-check for blank values. If the value to this option is zero, no checking is
-done. This option is only relevant when the cropped region(s) are defined
-by their center (not by the vertices, see @ref{Crop modes}). If any of the
-pixels in this central region of a crop (defined by its center) are blank,
-then it will not be created.
+Square box width of region in the center of the image to check for blank
+values. If any of the pixels in this central region of a crop (defined by
+its center) are blank, then it will not be stored in an output file. If the
+value to this option is zero, no checking is done. This check is only
+applied when the cropped region(s) are defined by their center (not by the
+vertices, see @ref{Crop modes}).
+
+The units of the value are interpretted based on the @option{--mode} value
+(in WCS or pixel units). The ultimate checked region size (in pixels) will
+be an odd integer around the center (converted from WCS, or when an even
+number of pixels are given to this option). In WCS mode, the value can be
+given as fractions, for example if the WCS untis are in degrees,
+@code{0.1/3600} will correspond to a check size of 0.1 arcseconds.
 
 Because survey regions don't often have a clean square or rectangle shape,
 some of the pixels on the sides of the survey FITS image don't commonly
@@ -11037,13 +11044,13 @@ have any data and are blank (see @ref{Blank pixels}). So when the catalog
 was not generated from the input image, it often happens that the image
 does not have data over some of the points.
 
-When the given center of a crop falls in such regions and this option has a
-non-zero, odd value, no crop will be created. Therefore with this option,
-you can specify a width of a small box (3 pixels is often good enough)
-around the central pixel of the cropped image. You can check which crops
-were created and which weren't from the command-line (if @option{--quiet}
-was not called, see @ref{Operating mode options}), or in Crop's log file
-(see @ref{Crop output}).
+When the given center of a crop falls in such regions or outside the
+dataset, and this option has a non-zero value, no crop will be
+created. Therefore with this option, you can specify a width of a small box
+(3 pixels is often good enough) around the central pixel of the cropped
+image. You can check which crops were created and which weren't from the
+command-line (if @option{--quiet} was not called, see @ref{Operating mode
+options}), or in Crop's log file (see @ref{Crop output}).
 
 @item -p STR
 @itemx --suffix=STR
