@@ -37,8 +37,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Multiple of given number to stop searching for upper-limit magnitude. */
-#define MKCATALOG_UPPERLIMIT_STOP_MULTIP 50
-#define MKCATALOG_UPPERLIMIT_MINIMUM_NUM 20
+#define MKCATALOG_UPPERLIMIT_MINIMUM_NUM     20
+#define MKCATALOG_UPPERLIMIT_MAXFAILS_MULTIP 10
 
 
 /* Unit string to use if values dataset doesn't have any. */

@@ -17240,9 +17240,7 @@ Due to the noisy nature of data, it is possible to get arbitrarily low
 values for a faint object's brightness (or arbitrarily high
 @emph{magnitudes}). Given the scatter caused by the dataset's noise, values
 fainter than a certain level are meaningless: another similar depth
-observation will give a radically different value. This problem is usually
-becomes relevant when the detection and measurement images are not the same
-(for example when you are estimating colors, see @ref{NoiseChisel output}).
+observation will give a radically different value.
 
 For example, while the depth of the image is 32 magnitudes/pixel, a
 measurement that gives a magnitude of 36 for a @mymath{\sim100} pixel
@@ -17251,22 +17249,25 @@ measure a magnitude of 30 for it, and yet another might give
 33. Furthermore, due to the noise scatter so close to the depth of the
 data-set, the total brightness might actually get measured as a negative
 value, so no magnitude can be defined (recall that a magnitude is a base-10
-logarithm).
+logarithm). This problem usually becomes relevant when the detection labels
+were not derived from the values being measured (for example when you are
+estimating colors, see @ref{MakeCatalog}).
 
 @cindex Upper limit magnitude
 @cindex Magnitude, upper limit
 Using such unreliable measurements will directly affect our analysis, so we
-must not use the raw measurements. However, all is not lost! Given our
-limited depth, there is one thing we can deduce about the object's
-magnitude: we can say that if something actually exists here (possibly
-buried deep under the noise), it must have a magnitude that is fainter than
-an @emph{upper limit magnitude}. To find this upper limit magnitude, we
-place the object's footprint (segmentation map) over random parts of the
-image where there are no detections, so we only have pure (possibly
-correlated) noise and undetected objects. Doing this a large number of
-times will give us a distribution of brightness values. The standard
-deviation (@mymath{\sigma}) of that distribution can be used to quantify
-the upper limit magnitude.
+must not use the raw measurements. But how can we know how reliable a
+measurement on a given dataset is?
+
+When we confront such unreasonably faint magnitudes, there is one thing we
+can deduce: that if something actually exists here (possibly buried deep
+under the noise), it's inherent magnitude is fainter than an @emph{upper
+limit magnitude}. To find this upper limit magnitude, we place the object's
+footprint (segmentation map) over random parts of the image where there are
+no detections, so we only have pure (possibly correlated) noise, along with
+undetected objects. Doing this a large number of times will give us a
+distribution of brightness values. The standard deviation (@mymath{\sigma})
+of that distribution can be used to quantify the upper limit magnitude.
 
 @cindex Correlated noise
 Traditionally, faint/small object photometry was done using fixed circular
@@ -17279,13 +17280,20 @@ patters, so the shape of the object can also affect the final result
 result. Fortunately, with the much more advanced hardware and software of
 today, we can make customized segmentation maps for each object.
 
-
-If requested, MakeCatalog will estimate the the upper limit magnitude is
-found for each object in the image separately, the procedure is fully
-configurable with the options in @ref{Upper-limit settings}. If one value
-for the whole image is required, you can either use the surface brightness
-limit above or make a circular aperture and feed it into MakeCatalog to
-request an upper-limit magnitude for it.
+When requested, MakeCatalog will randomly place each target's footprint
+over the dataset as described above and estimate the resulting
+distribution's properties (like the upper limit magnitude). The procedure
+is fully configurable with the options in @ref{Upper-limit settings}. If
+one value for the whole image is required, you can either use the surface
+brightness limit above or make a circular aperture and feed it into
+MakeCatalog to request an upper-limit magnitude for it@footnote{If you
+intend to make apertures manually and not use a detection map (for example
+from @ref{Segment}), don't forget to use the @option{--upmaskfile} to give
+NoiseChisel's output (or any a binary map, marking detected pixels, see
+@ref{NoiseChisel output}) as a mask. Otherwise, the footprints may randomly
+fall over detections, giving higly skewed distributions, with wrong
+upper-limit distributions. See The description of @option{--upmaskfile} in
+@ref{Upper-limit settings} for more.}.
 
 @end table
 
@@ -17796,14 +17804,13 @@ magnitude}.
 @node Upper-limit settings, MakeCatalog output columns, MakeCatalog inputs and basic settings, Invoking astmkcatalog
 @subsubsection Upper-limit settings
 
-
-The upper limit magnitude was discussed in @ref{Quantifying measurement
+The upper-limit magnitude was discussed in @ref{Quantifying measurement
 limits}. Unlike other measured values/columns in MakeCatalog, the upper
-limit magnitude needs several defined parameters which are discussed
-here. All the upper limit magnitude specific options start with @option{up}
-for upper-limit, except for @option{--envseed} that is also present in
-other programs and is general for any job requiring random number
-generation (see @ref{Generating random numbers}).
+limit magnitude needs several extra parameters which are discussed
+here. All the options specific to the upper-limit measurements start with
+@option{up} for ``upper-limit''. The only exception is @option{--envseed}
+that is also present in other programs and is general for any job requiring
+random number generation in Gnuastro (see @ref{Generating random numbers}).
 
 @cindex Reproducibility
 One very important consideration in Gnuastro is reproducibility. Therefore,
@@ -17811,29 +17818,41 @@ the values to all of these parameters along with others (like the random
 number generator type and seed) are also reported in the comments of the
 final catalog when the upper limit magnitude column is desired. The random
 seed that is used to define the random positions for each object or clump
-is unique and set based on the given seed, the total number of objects and
-clumps and also the labels of the clumps and objects. So with identical
-inputs, an identical upper-limit magnitude will be found. But even if the
-ordering of the object/clump labels differs (and the seed is the same) the
-result will not be the same.
+is unique and set based on the (optionally) given seed, the total number of
+objects and clumps and also the labels of the clumps and objects. So with
+identical inputs, an identical upper-limit magnitude will be
+found. However, even if the seed is identical, when the ordering of the
+object/clump labels differs between different runs, the result of
+upper-limit measurements will not be identical.
 
-MakeCatalog will randomly place the object/clump footprint over the image
-and when the footprint doesn't fall on any object or masked region (see
-@option{--upmaskfile}) it will be used until the desired number
-(@option{--upnum}) of samples are found to estimate the distribution's
-standard deviation (see @ref{Quantifying measurement limits}). Otherwise it
-will be ignored and another random position will be generated. But when the
-profile is very large or the image is significantly covered by detections,
-it might not be possible to find the desired number of
-samplings. MakeProfiles will continue searching until 50 times the value
-given to @option{--upnum}. If @option{--upnum} good samples cannot be found
-until this limit, it will set the upper-limit magnitude for that object to
-NaN (blank).
+MakeCatalog will randomly place the object/clump footprint over the
+dataset. When the randomly placed footprint doesn't fall on any object or
+masked region (see @option{--upmaskfile}) it will be used in the final
+distribution. Otherwise that particular random position will be ignored and
+another random position will be generated. Finally, when the distribution
+has the desired number of successfully measured random samples
+(@option{--upnum}) the distribution's properties will be measured and
+placed in the catalog.
+
+When the profile is very large or the image is significantly covered by
+detections, it might not be possible to find the desired number of
+samplings in a reasonable time. MakeProfiles will continue searching until
+it is unable to find a successful position (since the last successful
+measurement@footnote{The counting of failed positions restarts on every
+successful measurement.}), for a large multiple of @option{--upnum}
+(currently@footnote{In Gnuastro's source, this constant number is defined
+as the @code{MKCATALOG_UPPERLIMIT_MAXFAILS_MULTIP} macro in
+@file{bin/mkcatalog/main.h}, see @ref{Downloading the source}.} this is
+10). If @option{--upnum} successful samples cannot be found until this
+limit is reached, MakeCatalog will set the upper-limit magnitude for that
+object to NaN (blank).
 
 MakeCatalog will also print a warning if the range of positions available
 for the labeled region is smaller than double the size of the region. In
 such cases, the limited range of random positions can artificially decrease
-the standard deviation of the final distribution.
+the standard deviation of the final distribution. If your dataset can allow
+it (it is large enough), it is recommended to use a larger range if you see
+such warnings.
 
 @table @option
 
