@@ -231,9 +231,9 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
         error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `newnode'",
               __func__, sizeof *newnode);
 
-      /* If the `filename' is an already set name, then put a copy,
+      /* If the `filename' is the name of a dataset, then use a copy of it.
          otherwise, do the basic analysis. */
-      if( operands_is_name(p, filename) )
+      if( filename && operands_is_name(p, filename) )
         {
           newnode->filename=NULL;
           newnode->data=operands_copy_named(p, filename);
@@ -286,69 +286,64 @@ operands_pop(struct arithmeticparams *p, char *operator)
      and fill in the array, if not then just set the array. */
   if(operands->filename)
     {
-      if( operands_is_name(p, operands->filename) )
-        data=operands_copy_named(p, operands->filename);
+      /* Set the HDU and filename */
+      hdu=operands->hdu;
+      filename=operands->filename;
+
+      /* Read the dataset. */
+      data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
+
+      /* Arithmetic changes the contents of a dataset, so the existing name
+         (in the FITS `EXTNAME' keyword) should not be passed on beyond
+         this point. Also, in Arithmetic, the `name' element is used to
+         identify variables. */
+      if(data->name) { free(data->name); data->name=NULL; }
+
+      /* In case this is the first image that is read, then keep the WCS
+         information in the `refdata' structure.  */
+      if(p->popcounter==0)
+        p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0,
+                                    &p->refdata.nwcs);
+
+      /* When the reference data structure's dimensionality is non-zero, it
+         means that this is not the first image read. So, write its basic
+         information into the reference data structure for future
+         checks. */
+      if(p->refdata.ndim)
+        {
+          if( gal_dimension_is_different(&p->refdata, data) )
+            error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
+                  "compared to previous images. All the images must be "
+                  "the same size in order for Arithmetic to work",
+                  filename, hdu);
+        }
       else
         {
-          /* Set the HDU and filename */
-          hdu=operands->hdu;
-          filename=operands->filename;
+          /* Set the dimensionality. */
+          p->refdata.ndim=(data)->ndim;
 
-          /* Read the dataset. */
-          data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
+          /* Allocate the dsize array. */
+          errno=0;
+          p->refdata.dsize=malloc(p->refdata.ndim
+                                  * sizeof *p->refdata.dsize);
+          if(p->refdata.dsize==NULL)
+            error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                  "p->refdata.dsize", __func__,
+                  p->refdata.ndim * sizeof *p->refdata.dsize);
 
-          /* Arithmetic changes the contents of a dataset, so the existing
-             name (in the FITS `EXTNAME' keyword) should not be passed on
-             beyond this point. Also, in Arithmetic, the `name' element is
-             used to identify variables. */
-          if(data->name) { free(data->name); data->name=NULL; }
-
-          /* In case this is the first image that is read, then keep the
-             WCS information in the `refdata' structure.  */
-          if(p->popcounter==0)
-            p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0,
-                                        &p->refdata.nwcs);
-
-          /* When the reference data structure's dimensionality is
-             non-zero, it means that this is not the first image read. So,
-             write its basic information into the reference data structure
-             for future checks. */
-          if(p->refdata.ndim)
-            {
-              if( gal_dimension_is_different(&p->refdata, data) )
-                error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
-                      "compared to previous images. All the images must be "
-                      "the same size in order for Arithmetic to work",
-                      filename, hdu);
-            }
-          else
-            {
-              /* Set the dimensionality. */
-              p->refdata.ndim=(data)->ndim;
-
-              /* Allocate the dsize array. */
-              errno=0;
-              p->refdata.dsize=malloc(p->refdata.ndim
-                                      * sizeof *p->refdata.dsize);
-              if(p->refdata.dsize==NULL)
-                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
-                      "p->refdata.dsize", __func__,
-                      p->refdata.ndim * sizeof *p->refdata.dsize);
-
-              /* Write the values into it. */
-              for(i=0;i<p->refdata.ndim;++i)
-                p->refdata.dsize[i]=data->dsize[i];
-            }
-
-          /* Report the read image if desired: */
-          if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
-
-          /* Free the HDU string: */
-          if(hdu) free(hdu);
-
-          /* Add to the number of popped FITS images: */
-          ++p->popcounter;
+          /* Write the values into it. */
+          for(i=0;i<p->refdata.ndim;++i)
+            p->refdata.dsize[i]=data->dsize[i];
         }
+
+      /* Report the read image if desired: */
+      if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
+
+      /* Free the HDU string: */
+      if(hdu) free(hdu);
+
+      /* Add to the number of popped FITS images: */
+      ++p->popcounter;
     }
   else
     data=operands->data;
