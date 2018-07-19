@@ -817,10 +817,14 @@ reversepolish(struct arithmeticparams *p)
       /* If we have a name or number, then add it to the operands linked
          list. Otherwise, pull out two members and do the specified
          operation on them. */
-      if(gal_array_name_recognized(token->v))
+      if( gal_array_name_recognized(token->v)
+          || operands_is_name(p, token->v) )
         operands_add(p, token->v, NULL);
       else if( (d1=gal_data_copy_string_to_number(token->v)) )
         operands_add(p, NULL, d1);
+      else if( !strncmp(token->v, SET_OPERATOR_PREFIX,
+                        SET_OPERATOR_PREFIX_LENGTH) )
+        operands_set_name(p, token->v);
       else
         {
 
@@ -969,7 +973,7 @@ reversepolish(struct arithmeticparams *p)
           /* Finished checks with known operators */
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
-                  "interpretted as a recognized input file name, number, or "
+                  "interpretted as a file name, named dataset, number, or "
                   "operator", token->v);
 
 
@@ -1069,7 +1073,17 @@ reversepolish(struct arithmeticparams *p)
                 }
             }
         }
+
+      /* Increment the token counter. */
+      ++p->tokencounter;
     }
+
+
+  /* If there aren't any more operands (a variable has been set but not
+     used), then there is nothing to create. */
+  if(p->operands==NULL)
+    error(EXIT_FAILURE, 0, "no operands on the stack to write (as output)");
+
 
   /* If there is more than one node in the operands stack then the user has
      given too many operands which is an error. */
@@ -1130,6 +1144,7 @@ reversepolish(struct arithmeticparams *p)
      into `d1', so it is freed when freeing d1. */
   gal_data_free(d1);
   free(p->refdata.dsize);
+  gal_list_data_free(p->named);
 
   /* Clean up. Note that the tokens were taken from the command-line
      arguments, so the string within each token linked list must not be

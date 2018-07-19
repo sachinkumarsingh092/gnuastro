@@ -11813,6 +11813,52 @@ Convert the type of the popped operand to 64-bit (double precision)
 floating point (see @ref{Numeric data types}). The internal conversion of C
 will be used.
 
+@item set-AAA
+Set a name (all characters after the dash, @code{AAA} in the case shown
+here) for the first popped operand on the stack. The name can be any
+string, but avoid strings ending with standard filename suffixes (for
+example @file{.fits})@footnote{A dataset name like @file{a.fits} (which can
+be set with @command{set-a.fits}) will cause confusion in the the initial
+parser of Arithmetic. It will assume this name is a FITS file, and if it is
+used multiple times, Arithmetic will abort, complaining that you haven't
+provided enough HDUs.}. The named dataset will be freed from memory as soon
+as it is no longer needed in the rest of the command. This operator thus
+enables re-usability of a dataset without having to re-read it from a file
+everytime its necessary during a process.
+
+The name to give the popped dataset is part of the operator's name. For
+example the @code{set-a} operator of the command below, gives the name of
+``@code{a}'' to the contents of @file{image.fits}. This name is then used
+instead of the actual filename to multiply the dataset by two.
+
+@example
+$ astarithmetic image.fits set-a a 2 x
+@end example
+
+This is a unique operator, because it doesn't actually do anything to the
+contents of the popped dataset, it just assigns a name to the dataset. This
+makes it very easy to use a single dataset on the command-line multiple
+times and avoid extra attempts at reading it into memory.
+
+One example of the usefulness of this operator is in the @code{where}
+operator. For example, let's assume you want to mask all pixels larger than
+@code{5} in @file{image.fits} (extension number 1) with a NaN
+value. Without using this operator, you have to run
+
+@example
+$ astarithmetic image.fits image.fits 5 gt nan where -g1
+@end example
+
+But with this operator you can simply give @file{image.fits} the name
+@code{i} and simplify the command above:
+
+@example
+$ astarithmetic image.fits set-i   i i 5 gt nan where
+@end example
+
+This operator can thus help simplify reading/writing on the command-line
+(avoid potential bugs), while also speeding up your processing.
+
 @end table
 
 @cartouche
@@ -24024,6 +24070,12 @@ those sections respectively.
 @deftypefun int gal_array_name_recognized (char @code{*filename})
 Return 1 if the given file name corresponds to one of the recognized file
 types for reading arrays.
+@end deftypefun
+
+@deftypefun int gal_array_name_recognized_multiext (char @code{*filename})
+Return 1 if the given file name corresponds to one of the recognized file
+types for reading arrays which may contain multiple extesions (for example
+FITS or TIFF) formats.
 @end deftypefun
 
 @deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, size_t @code{minmapsize})

@@ -38,9 +38,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
 /* Constants: */
 #define NEG_DASH_REPLACE 11 /* Vertical tab (ASCII=11) for negative dash */
+#define SET_OPERATOR_PREFIX        "set-"
+#define SET_OPERATOR_PREFIX_LENGTH strlen(SET_OPERATOR_PREFIX)
 
 
 
@@ -73,6 +74,8 @@ struct arithmeticparams
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */
   char          *globalhdu;  /* Single HDU for all inputs.              */
+  gal_data_t        *named;  /* List containing variables.              */
+  size_t      tokencounter;  /* Counter for finding place in tokens.    */
 
   /* Operating mode: */
 

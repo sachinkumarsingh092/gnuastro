@@ -9,6 +9,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --enable-check-with-valgrind: Run `make check' tests within Valgrind.
 
   Arithmetic:
+    - `set-A': Set a name (`A' in this case) for the popped dataset. This
+               allows only reading the dataset it into memory once and
+               possibly using it many times.
     - `collapse-sum': collapse/remove a dimension by summing over it.
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.
@@ -17,6 +20,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --colinfoinstdout: column information when writing to standard output.
 
   Library:
+    - gal_array_name_recognized_multiext: If format contains multiple datasets.
     - gal_dimension_collapse_sum: collapse/remove a dimension by summing.
     - gal_dimension_collapse_mean: collapse/remove a dimension by averaging.
     - gal_dimension_collapse_number: collapse/remove a dimension by number.

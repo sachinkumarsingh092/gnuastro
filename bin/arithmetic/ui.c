@@ -26,10 +26,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
+#include <gnuastro/array.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -229,7 +231,7 @@ static void
 ui_check_options_and_arguments(struct arithmeticparams *p)
 {
   int output_checked=0;
-  size_t numfits=0, numhdus=0;
+  size_t nummultiext=0, numhdus=0;
   gal_list_str_t *token, *hdu;
 
   /* First, make sure that any tokens are actually given. */
@@ -247,19 +249,21 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
      was done in `gal_options_read_config_set'. */
   gal_list_str_reverse(&p->tokens);
 
-  /* Set the output file name (if any is needed). Note that since the
-     lists are already reversed, the first FITS file encountered, is
-     the first FITS file given by teh user. Also, notet that these
-     file name operations are only necessary for the first FITS file
-     in the token list. */
+  /* Set the output file name (if any is needed). Note that since the lists
+     are already reversed, the first FITS file encountered, is the first
+     FITS file given by the user. Also, note that these file name
+     operations are only necessary for the first FITS file in the token
+     list. */
   for(token=p->tokens; token!=NULL; token=token->next)
     {
-      /* This token is a FITS file, count them and use it to set the output
-         filename if it has not been set. */
-      if(gal_fits_name_is_fits(token->v))
+      /* This token is a file, count how many mult-extension files we haev
+         and use the first to set the output filename (if it has not been
+         set). */
+      if( gal_array_name_recognized(token->v) )
         {
           /* Increment the counter for FITS files. */
-          ++numfits;
+          if( gal_array_name_recognized_multiext(token->v) )
+            ++nummultiext;
 
           /* If the output filename isn't set yet, then set it. */
           if(output_checked==0)
@@ -288,13 +292,15 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
   else
     {
       for(hdu=p->hdus; hdu!=NULL; hdu=hdu->next) ++numhdus;
-      if(numhdus<numfits)
-        error(EXIT_FAILURE, 0, "not enough HDUs. There are %zu input FITS "
-              "files, so the `--hdu' (`-h') option must be called %zu "
-              "times (once for each FITS file). If the HDU value is the "
-              "same for all the files, you may use `--globalhdu' (`-g') to "
-              "specify a single HDU to be used for any number of input "
-              "files", numfits, numfits);
+      if(numhdus<nummultiext)
+        error(EXIT_FAILURE, 0, "not enough HDUs. There are %zu input "
+              "files in formats that may contain multiple extensions (for "
+              "example FITS or TIFF). Therefore, the `--hdu' (`-h') option "
+              "must be called atleaset %zu times (once for each "
+              "multi-extension file). If the HDU value is the same for all "
+              "the files, you may use `--globalhdu' (`-g') to specify a "
+              "single HDU to be used for any number of input files",
+              nummultiext, nummultiext);
     }
 }
 

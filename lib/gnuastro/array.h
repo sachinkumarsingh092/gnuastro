@@ -55,6 +55,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 int
 gal_array_name_recognized(char *name);
 
+int
+gal_array_name_recognized_multiext(char *name);
+
 gal_data_t *
 gal_array_read(char *filename, char *extension, size_t minmapsize);
 

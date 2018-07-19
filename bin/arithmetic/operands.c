@@ -58,6 +58,162 @@ operands_num(struct arithmeticparams *p)
 
 
 
+static int
+operands_name_is_used_later(struct arithmeticparams *p, char *name)
+{
+  size_t counter=0;
+  gal_list_str_t *token;
+
+  /* If the name indeed exists afterwards, then just return 1. */
+  for(token=p->tokens;token!=NULL;token=token->next)
+    if( counter++ > p->tokencounter && !strcmp(token->v, name) )
+      return 1;
+
+  /* If we get to this point, it means that the name doesn't exist. */
+  return 0;
+}
+
+
+
+
+
+/* Pop a dataset and keep it in the `named' list for later use. */
+void
+operands_set_name(struct arithmeticparams *p, char *token)
+{
+  gal_data_t *tmp;
+  char *varname=&token[ SET_OPERATOR_PREFIX_LENGTH ];
+
+  /* Make sure the variable name hasn't been set before. */
+  for(tmp=p->named; tmp!=NULL; tmp=tmp->next)
+    if( !strcmp(varname, tmp->name) )
+      error(EXIT_FAILURE, 0, "`%s' was previously set as a name",
+            varname);
+
+  /* Pop the top operand, then add it to the list of named datasets, but
+     only if it is used in later tokens. If it isn't, free the popped
+     dataset. The latter case (to define a name, but not use it), is
+     obviously a redundant operation, but that is upto the user, we
+     shouldn't worry about it here. We should just have everything in
+     place, so no crashes occur or no extra memory is consumed. */
+  if( operands_name_is_used_later(p, varname) )
+    {
+      /* Add the top popped operand to the list of names. */
+      gal_list_data_add(&p->named, operands_pop(p, "set"));
+
+      /* Write the requested name into this dataset. But note that `name'
+         MUST be already empty. So to be safe, we'll do a sanity check. */
+      if(p->named->name)
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. The `name' element should be NULL at this "
+              "point, but it isn't", __func__, PACKAGE_BUGREPORT);
+      gal_checkset_allocate_copy(varname, &p->named->name);
+    }
+  else
+    {
+      /* Pop the top operand, then free it. */
+      tmp=operands_pop(p, "set");
+      gal_data_free(tmp);
+    }
+}
+
+
+
+
+
+/* See if a given token is the name of a variable. */
+int
+operands_is_name(struct arithmeticparams *p, char *token)
+{
+  gal_data_t *tmp;
+
+  /* Make sure the variable name hasn't been set before. */
+  for(tmp=p->named; tmp!=NULL; tmp=tmp->next)
+    if( !strcmp(token, tmp->name) )
+      return 1;
+
+  /* If control reaches here, then there was no match*/
+  return 0;
+}
+
+
+
+
+
+/* Remove a name from the list of names and retrun the dataset it points
+   to. */
+static gal_data_t *
+operands_remove_name(struct arithmeticparams *p, char *name)
+{
+  gal_data_t *tmp, *removed=NULL, *prev=NULL;
+
+  /* Go over all the given names. */
+  for(tmp=p->named;tmp!=NULL;tmp=tmp->next)
+    {
+      if( !strcmp(tmp->name, name) )
+        {
+          removed=tmp;
+          if(prev) prev->next = tmp->next;
+          else     p->named   = tmp->next;
+        }
+
+      /* Set this node as the `prev' pointer. */
+      prev=tmp;
+    }
+
+  /* A small sanity check. */
+  if(removed==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. `removed' must not be NULL at this point", __func__,
+          PACKAGE_BUGREPORT);
+
+  /* Nothing in the list points to it now. So we can safely modify and
+     return it. */
+  free(removed->name);
+  removed->name=NULL;
+  return removed;
+}
+
+
+
+
+
+/* Return a copy of the named dataset. */
+static gal_data_t *
+operands_copy_named(struct arithmeticparams *p, char *name)
+{
+  gal_data_t *out=NULL, *tmp;
+
+  /* Find the proper named element to use. */
+  for(tmp=p->named;tmp!=NULL;tmp=tmp->next)
+    if( !strcmp(tmp->name, name) )
+      {
+        /* If the named operand is used later, then copy it into the
+           output. */
+        if( operands_name_is_used_later(p, name) )
+          {
+            out=gal_data_copy(tmp);
+            free(out->name);
+            out->name=NULL;
+          }
+        /* The named operand is not used any more. Remove it from the list
+           of named datasets and continue. */
+        else out=operands_remove_name(p, name);
+      }
+
+  /* A small sanity check. */
+  if(out==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix the "
+          "problem. The requested name `%s' couldn't be found in the list",
+          __func__, PACKAGE_BUGREPORT, name);
+
+  /* Return. */
+  return out;
+}
+
+
+
+
 void
 operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
 {
@@ -75,22 +231,32 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
         error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `newnode'",
               __func__, sizeof *newnode);
 
-      /* Fill in the values. */
-      newnode->data=data;
-      newnode->filename=filename;
-
-      /* See if a HDU must be read or not. */
-      if(filename != NULL
-         && ( gal_fits_name_is_fits(filename)
-              || gal_tiff_name_is_tiff(filename) ) )
+      /* If the `filename' is an already set name, then put a copy,
+         otherwise, do the basic analysis. */
+      if( operands_is_name(p, filename) )
         {
-          /* Set the HDU for this filename. */
-          if(p->globalhdu)
-            gal_checkset_allocate_copy(p->globalhdu, &newnode->hdu);
-          else
-            newnode->hdu=gal_list_str_pop(&p->hdus);
+          newnode->filename=NULL;
+          newnode->data=operands_copy_named(p, filename);
         }
-      else newnode->hdu=NULL;
+      else
+        {
+          /* Set the basic parameters. */
+          newnode->data=data;
+          newnode->filename=filename;
+
+          /* See if a HDU must be read or not. */
+          if(filename != NULL
+             && ( gal_fits_name_is_fits(filename)
+                  || gal_tiff_name_is_tiff(filename) ) )
+            {
+              /* Set the HDU for this filename. */
+              if(p->globalhdu)
+                gal_checkset_allocate_copy(p->globalhdu, &newnode->hdu);
+              else
+                newnode->hdu=gal_list_str_pop(&p->hdus);
+            }
+          else newnode->hdu=NULL;
+        }
 
       /* Make the link to the previous list. */
       newnode->next=p->operands;
@@ -116,63 +282,77 @@ operands_pop(struct arithmeticparams *p, char *operator)
     error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" operator",
           operator);
 
-
   /* Set the dataset. If filename is present then read the file
      and fill in the array, if not then just set the array. */
   if(operands->filename)
     {
-      hdu=operands->hdu;
-      filename=operands->filename;
-
-      /* Read the dataset. */
-      data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
-
-      /* In case this is the first image that is read, then keep the WCS
-         information in the `refdata' structure.  */
-      if(p->popcounter==0)
-        p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
-
-      /* When the reference data structure's dimensionality is non-zero, it
-         means that this is not the first image read. So, write its basic
-         information into the reference data structure for future
-         checks. */
-      if(p->refdata.ndim)
-        {
-          if( gal_dimension_is_different(&p->refdata, data) )
-            error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
-                  "compared to previous images. All the images must be "
-                  "the same size in order for Arithmetic to work",
-                  filename, hdu);
-        }
+      if( operands_is_name(p, operands->filename) )
+        data=operands_copy_named(p, operands->filename);
       else
         {
-          /* Set the dimensionality. */
-          p->refdata.ndim=(data)->ndim;
+          /* Set the HDU and filename */
+          hdu=operands->hdu;
+          filename=operands->filename;
 
-          /* Allocate the dsize array. */
-          errno=0;
-          p->refdata.dsize=malloc(p->refdata.ndim * sizeof *p->refdata.dsize);
-          if(p->refdata.dsize==NULL)
-            error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
-                  "p->refdata.dsize", __func__,
-                  p->refdata.ndim * sizeof *p->refdata.dsize);
+          /* Read the dataset. */
+          data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
 
-          /* Write the values into it. */
-          for(i=0;i<p->refdata.ndim;++i)
-            p->refdata.dsize[i]=data->dsize[i];
+          /* Arithmetic changes the contents of a dataset, so the existing
+             name (in the FITS `EXTNAME' keyword) should not be passed on
+             beyond this point. Also, in Arithmetic, the `name' element is
+             used to identify variables. */
+          if(data->name) { free(data->name); data->name=NULL; }
+
+          /* In case this is the first image that is read, then keep the
+             WCS information in the `refdata' structure.  */
+          if(p->popcounter==0)
+            p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0,
+                                        &p->refdata.nwcs);
+
+          /* When the reference data structure's dimensionality is
+             non-zero, it means that this is not the first image read. So,
+             write its basic information into the reference data structure
+             for future checks. */
+          if(p->refdata.ndim)
+            {
+              if( gal_dimension_is_different(&p->refdata, data) )
+                error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
+                      "compared to previous images. All the images must be "
+                      "the same size in order for Arithmetic to work",
+                      filename, hdu);
+            }
+          else
+            {
+              /* Set the dimensionality. */
+              p->refdata.ndim=(data)->ndim;
+
+              /* Allocate the dsize array. */
+              errno=0;
+              p->refdata.dsize=malloc(p->refdata.ndim
+                                      * sizeof *p->refdata.dsize);
+              if(p->refdata.dsize==NULL)
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
+                      "p->refdata.dsize", __func__,
+                      p->refdata.ndim * sizeof *p->refdata.dsize);
+
+              /* Write the values into it. */
+              for(i=0;i<p->refdata.ndim;++i)
+                p->refdata.dsize[i]=data->dsize[i];
+            }
+
+          /* Report the read image if desired: */
+          if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
+
+          /* Free the HDU string: */
+          if(hdu) free(hdu);
+
+          /* Add to the number of popped FITS images: */
+          ++p->popcounter;
         }
-
-      /* Report the read image if desired: */
-      if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
-
-      /* Free the HDU string: */
-      free(hdu);
-
-      /* Add to the number of popped FITS images: */
-      ++p->popcounter;
     }
   else
     data=operands->data;
+
 
   /* Remove this node from the queue, return the data structure. */
   p->operands=operands->next;

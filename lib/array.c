@@ -48,9 +48,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 gal_array_name_recognized(char *name)
 {
+  if( gal_array_name_recognized_multiext(name) ) return 1;
+  else if ( gal_jpeg_name_is_jpeg(name)        ) return 1;
+  else                                           return 0;
+
+  /* Control should not get to here, but just to avoid compiler warnings,
+     we'll return a NULL. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to solve the "
+        "problem. Control must not reach the end of this function", __func__,
+        PACKAGE_BUGREPORT);
+  return 0;
+}
+
+
+
+
+
+int
+gal_array_name_recognized_multiext(char *name)
+{
   if(       gal_fits_name_is_fits(name) ) return 1;
   else if ( gal_tiff_name_is_tiff(name) ) return 1;
-  else if ( gal_jpeg_name_is_jpeg(name) ) return 1;
   else                                    return 0;
 
   /* Control should not get to here, but just to avoid compiler warnings,

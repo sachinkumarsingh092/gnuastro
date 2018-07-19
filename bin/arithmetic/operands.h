@@ -32,5 +32,10 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data);
 gal_data_t *
 operands_pop(struct arithmeticparams *p, char *operator);
 
+void
+operands_set_name(struct arithmeticparams *p, char *token);
+
+int
+operands_is_name(struct arithmeticparams *p, char *token);
 
 #endif
