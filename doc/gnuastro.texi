@@ -22124,10 +22124,10 @@ are fixed width types, these types are portable to all systems and are
 defined in the standard C header @file{stdint.h}. You don't need to include
 this header, it is included by any Gnuastro header that deals with the
 different types. However, the most commonly used types in a C (or C++)
-program (for example @code{int} or @code{long} are not defined by their
-exact width (storage), but by their minimum storage. So for example on some
-systems, @code{int} may be 2 bytes (16-bits, the minimum required by the
-standard) and on others it may be 4 bytes (32-bits, common in modern
+program (for example @code{int} or @code{long}) are not defined by their
+exact width (storage size), but by their minimum storage. So for example on
+some systems, @code{int} may be 2 bytes (16-bits, the minimum required by
+the standard) and on others it may be 4 bytes (32-bits, common in modern
 systems).
 
 With every type, a unique ``blank'' value (or place holder showing the
@@ -28396,7 +28396,7 @@ language, but it can be considered one of the lowest-level languages among
 all high-level languages.} (closer to the hardware), it is much less
 complex for both the human reader @emph{and} the computer. The benefits of
 simplicity for a human were discussed above. Simplicity for the computer
-translates into more efficiently (faster) programs. This creates a much
+translates into more efficient (faster) programs. This creates a much
 closer relation between the scientist/programmer (or their program) and the
 actual data and processing. The GNU coding
 standards@footnote{@url{http://www.gnu.org/prep/standards/}} also encourage
