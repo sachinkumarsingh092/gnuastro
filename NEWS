@@ -47,7 +47,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54063: Match tests in make check fail randomly.
   bug #54186: MakeCatalog's --checkupperlimit not keeping output's name.
   bug #54188: MakeCatalog's Upperlimit not being sigma-clipped properly.
-  bug #54284: Crop segrault when catalog contains no data.
+  bug #54284: Crop segfault when catalog contains no data.
   bug #54285: make check fails if g++ not present.
   bug #54286: BuildProgram's configuration file, not built by default.
   bug #54297: No Match output when --notmatched called and no match.
