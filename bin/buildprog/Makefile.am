@@ -51,26 +51,37 @@ EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h astbuildprog.conf.in
 # directories in order to compile its programs. With the rule below, the
 # directories in these variables will be written into the final
 # BuildProgram configuration file.
+#
+# The user might give non-`-I' arguments to CPPFLAGS and non-`-L' arguments
+# to LDFLAGS (see bug #54346). But here, we only want these two options,
+# and nothing else. To make the check, we'll see if `$i' (the input string)
+# is the same as `$v' or not. If the string starts with `-I' or `-L', it
+# will change between the two (the `-I' or `-L' have been removed), so it
+# shouldn't be the same.
 astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	cp $< $@
 	infoadded="no";                                \
 	for i in $(CPPFLAGS); do                       \
-	  if test $$infoadded = "no"; then             \
-	    echo "" >> $@;                             \
-	    echo "# Installation information" >> $@;   \
-	    infoadded="yes";                           \
+	  v=$$(echo $$i | sed -e 's/^-I//');           \
+	  if test $$i != $$v; then                     \
+	    if test $$infoadded = "no"; then           \
+	      echo "" >> $@;                           \
+	      echo "# Installation information" >> $@; \
+	      infoadded="yes";                         \
+	    fi;                                        \
+	    echo " includedir $$v" >> $@;              \
 	  fi;                                          \
-	  v=$$(echo $$i | sed -e 's/-I//');            \
-	  echo " includedir $$v" >> $@;                \
 	done;                                          \
 	for i in $(LDFLAGS); do                        \
-	  if test $$infoadded = "no"; then             \
-	    echo "" >> $@;                             \
-	    echo "# Installation information" >> $@;   \
-	    infoadded="yes";                           \
+	  v=$$(echo $$i | sed -e 's/^-L//');           \
+	  if test $$i != $$v; then                     \
+	    if test $$infoadded = "no"; then           \
+	      echo "" >> $@;                           \
+	      echo "# Installation information" >> $@; \
+	      infoadded="yes";                         \
+	    fi;                                        \
+	    echo " linkdir $$v" >> $@;                 \
 	  fi;                                          \
-	  v=$$(echo $$i | sed -e 's/-L//');            \
-	  echo " linkdir $$v" >> $@;                   \
 	done
 
 
