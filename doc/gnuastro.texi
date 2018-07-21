@@ -24413,9 +24413,9 @@ One important issue to consider is that CFITSIO's types are not fixed width
 (for example @code{long} may be 32-bits or 64-bits on different
 systems). However, Gnuastro's types are defined by their width. These
 functions will use information on the host system to do the proper
-conversion, so it strongly recommended to use these functions for
-portability of your code and not to assume a fixed correspondence between
-CFITSIO and Gnuastro's types.
+conversion. To have a portable (usable on different systems) code, is thus
+recommended to use these functions and not to assume a fixed correspondence
+between CFITSIO and Gnuastro's types.
 
 @deftypefun uint8_t gal_fits_bitpix_to_type (int @code{bitpix})
 Return the Gnuastro type identifier that corresponds to CFITSIO's
