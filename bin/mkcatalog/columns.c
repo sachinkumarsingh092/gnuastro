@@ -1382,8 +1382,9 @@ columns_second_order(struct mkcatalog_passparams *pp, double *row,
 
     /* Error. */
     default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Code %d not a recognized key",
-            __func__, key);
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+            "problem. %d is not a recognized key", __func__, PACKAGE_BUGREPORT,
+            key);
     }
 
   /* Return the output. */
@@ -1466,14 +1467,15 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, size_t *coord, int key)
     case UI_KEY_MINY: return coord[0] + 1;              break;
     case UI_KEY_MAXY: return coord[0] + tile->dsize[0]; break;
     default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
             "problem. The value %d is not a recognized value", __func__,
-            key);
+            PACKAGE_BUGREPORT, key);
     }
 
   /* Control should not reach here. */
-  error(EXIT_FAILURE, 0, "%s: a bug! please contact us to fix the problem. "
-        "Control should not reach the end of this function", __func__);
+  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
   return GAL_BLANK_UINT32;
 }
 
