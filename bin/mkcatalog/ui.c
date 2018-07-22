@@ -764,6 +764,10 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_GXX:              /* Only clump labels. */     break;
           case CCOL_GYY:              /* Only clump labels. */     break;
           case CCOL_GXY:              /* Only clump labels. */     break;
+          case CCOL_MINX:             /* Only clump labels. */     break;
+          case CCOL_MAXX:             /* Only clump labels. */     break;
+          case CCOL_MINY:             /* Only clump labels. */     break;
+          case CCOL_MAXY:             /* Only clump labels. */     break;
           case CCOL_UPPERLIMIT_B:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_S:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_Q:     *values        = 1;          break;

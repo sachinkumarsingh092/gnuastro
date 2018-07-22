@@ -130,6 +130,10 @@ enum clumpcols
     CCOL_GXX,            /* Second order geometric moment.            */
     CCOL_GYY,            /* Second order geometric moment.            */
     CCOL_GXY,            /* Second order geometric moment.            */
+    CCOL_MINX,           /* Minimum X value of clump.                 */
+    CCOL_MAXX,           /* Maximum X value of clump.                 */
+    CCOL_MINY,           /* Minimum Y value of clump.                 */
+    CCOL_MAXY,           /* Maximum Y value of clump.                 */
     CCOL_UPPERLIMIT_B,   /* Upper limit brightness.                   */
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/

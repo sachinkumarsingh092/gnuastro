@@ -18043,6 +18043,18 @@ irrespective of their pixel values.
 The geometric center of all objects and clumps along the second FITS
 axis axis, see @option{--geox}.
 
+@item --minx
+The minimum position of all objects and clumps along the first FITS axis.
+
+@item --maxx
+The maximum position of all objects and clumps along the first FITS axis.
+
+@item --miny
+The minimum position of all objects and clumps along the second FITS axis.
+
+@item --maxy
+The maximum position of all objects and clumps along the second FITS axis.
+
 @item --clumpsx
 [Objects] The flux weighted center of all the clumps in this
 object along the first FITS axis. See @option{--x}.

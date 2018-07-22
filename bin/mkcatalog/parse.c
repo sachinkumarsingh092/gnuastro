@@ -310,6 +310,19 @@ parse_objects(struct mkcatalog_passparams *pp)
 
 
 
+/* Macro to help in finding the minimum and maximum coordinates. */
+#define CMIN(COL, DIM) ( ci[ CCOL_NUMALL ]==1.0f                        \
+                         ? (c[ DIM ]+1)                                 \
+                         : ( (c[ DIM ]+1) < ci[ COL ]                   \
+                             ? (c[ DIM ]+1) : ci[ COL ] ) )
+#define CMAX(COL, DIM) ( ci[ CCOL_NUMALL ]==1.0f                        \
+                         ? (c[ DIM ]+1)                                 \
+                         : ( (c[ DIM ]+1) > ci[ COL ]                   \
+                             ? (c[ DIM ]+1) : ci[ COL ] ) )
+
+
+
+
 /* Parse over the clumps within an object.  */
 void
 parse_clumps(struct mkcatalog_passparams *pp)
@@ -342,6 +355,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   || cif[ CCOL_GY   ]
                   || cif[ CCOL_VX   ]
                   || cif[ CCOL_VY   ]
+                  || cif[ CCOL_MINX ]
+                  || cif[ CCOL_MAXX ]
+                  || cif[ CCOL_MINY ]
+                  || cif[ CCOL_MAXY ]
                   || sc
                   || tid==GAL_BLANK_SIZE_T )
                 ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
@@ -384,13 +401,22 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   ci=&pp->ci[ (*C-1) * CCOL_NUMCOLS ];
 
                   /* Add to the area of this object. */
-                  if(cif[ CCOL_NUMALL ]) ci[ CCOL_NUMALL ]++;
+                  if( cif[ CCOL_NUMALL ]
+                      || cif[ CCOL_MINX ] || cif[ CCOL_MAXX ]
+                      || cif[ CCOL_MINY ] || cif[ CCOL_MAXY ] )
+                    ci[ CCOL_NUMALL ]++;
 
                   /* Raw-position related measurements. */
                   if(c)
                     {
                       /* Get "C" the coordinates of this point. */
                       gal_dimension_index_to_coord(O-objects, ndim, dsize, c);
+
+                      /* Position extrema measurements. */
+                      if(cif[ CCOL_MINX ]) ci[CCOL_MINX]=CMIN(CCOL_MINX, 1);
+                      if(cif[ CCOL_MAXX ]) ci[CCOL_MAXX]=CMAX(CCOL_MAXX, 1);
+                      if(cif[ CCOL_MINY ]) ci[CCOL_MINY]=CMIN(CCOL_MINY, 0);
+                      if(cif[ CCOL_MAXY ]) ci[CCOL_MAXY]=CMAX(CCOL_MAXY, 0);
 
                       /* If we need tile-ID, get the tile ID now. */
                       if(tid!=GAL_BLANK_SIZE_T)

@@ -515,6 +515,58 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_C_NUMALL ] = 1;
           break;
 
+        case UI_KEY_MINX:
+          name           = "MIN_X";
+          unit           = "pixel";
+          ocomment       = "Minimum X axis pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          ciflag[ CCOL_MINX ] = 1;
+          break;
+
+        case UI_KEY_MAXX:
+          name           = "MAX_X";
+          unit           = "pixel";
+          ocomment       = "Maximum X axis pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          ciflag[ CCOL_MAXX ] = 1;
+          break;
+
+        case UI_KEY_MINY:
+          name           = "MIN_Y";
+          unit           = "pixel";
+          ocomment       = "Minimum Y axis pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          ciflag[ CCOL_MINY ] = 1;
+          break;
+
+        case UI_KEY_MAXY:
+          name           = "MAX_Y";
+          unit           = "pixel";
+          ocomment       = "Maximum Y axis pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          ciflag[ CCOL_MAXY ] = 1;
+          break;
+
         case UI_KEY_W1:
           name           = p->ctype[0];
           unit           = p->objects->wcs->cunit[0];
@@ -1389,6 +1441,46 @@ columns_clump_brightness(double *ci)
 
 
 
+/* Measure the minimum and maximum positions. */
+static uint32_t
+columns_xy_extrema(struct mkcatalog_passparams *pp, size_t *coord, int key)
+{
+  gal_data_t *tile=pp->tile, *block=tile->block;
+
+  /* We only want to do the coordinate estimation once: in `columns_fill',
+     we initialized the coordinates with `GAL_BLANK_SIZE_T'. When the
+     coordinate has already been measured already, it won't have this value
+     any more. */
+  if(coord[0]==GAL_BLANK_SIZE_T)
+    gal_dimension_index_to_coord(gal_pointer_num_between(block->array,
+                                                         tile->array,
+                                                         block->type),
+                                 block->ndim, block->dsize, coord);
+
+  /* Return the proper value: note that `coord' is in C standard: starting
+     from the slowest dimension and counting from zero.*/
+  switch(key)
+    {
+    case UI_KEY_MINX: return coord[1] + 1;              break;
+    case UI_KEY_MAXX: return coord[1] + tile->dsize[1]; break;
+    case UI_KEY_MINY: return coord[0] + 1;              break;
+    case UI_KEY_MAXY: return coord[0] + tile->dsize[0]; break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
+            "problem. The value %d is not a recognized value", __func__,
+            key);
+    }
+
+  /* Control should not reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! please contact us to fix the problem. "
+        "Control should not reach the end of this function", __func__);
+  return GAL_BLANK_UINT32;
+}
+
+
+
+
+
 /* The magnitude error is directly derivable from the S/N:
 
    To derive the error in measuring the magnitude from the S/N, let's take
@@ -1443,6 +1535,8 @@ columns_fill(struct mkcatalog_passparams *pp)
   void *colarr;
   gal_data_t *column;
   double *ci, *oi=pp->oi;
+  size_t coord[2]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
+
   size_t sr=pp->clumpstartindex, cind, coind;
   size_t oind=pp->object-1; /* IDs start from 1, indexs from 0. */
   double **vo=NULL, **vc=NULL, **go=NULL, **gc=NULL, **vcc=NULL, **gcc=NULL;
@@ -1526,6 +1620,13 @@ columns_fill(struct mkcatalog_passparams *pp)
         case UI_KEY_CLUMPSGEOY:
           ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_GY],
                                                oi[OCOL_C_NUMALL] );
+          break;
+
+        case UI_KEY_MINX:
+        case UI_KEY_MAXX:
+        case UI_KEY_MINY:
+        case UI_KEY_MAXY:
+          ((uint32_t *)colarr)[oind]=columns_xy_extrema(pp, coord, key);
           break;
 
         case UI_KEY_W1:
@@ -1738,6 +1839,22 @@ columns_fill(struct mkcatalog_passparams *pp)
           case UI_KEY_GEOY:
             ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GY],
                                                  ci[CCOL_NUMALL] );
+            break;
+
+         case UI_KEY_MINX:
+            ((uint32_t *)colarr)[cind] = ci[CCOL_MINX];
+            break;
+
+         case UI_KEY_MAXX:
+            ((uint32_t *)colarr)[cind] = ci[CCOL_MAXX];
+            break;
+
+         case UI_KEY_MINY:
+            ((uint32_t *)colarr)[cind] = ci[CCOL_MINY];
+            break;
+
+         case UI_KEY_MAXY:
+            ((uint32_t *)colarr)[cind] = ci[CCOL_MAXY];
             break;
 
           case UI_KEY_W1:

@@ -16,6 +16,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.
 
+  MakeCatalog:
+    --minx: minimum position along first FITS axis.
+    --maxx: maximum position along first FITS axis.
+    --miny: minimum position along second FITS axis.
+    --maxy: maximum position along second FITS axis.
+
   Table:
     --colinfoinstdout: column information when writing to standard output.
 
