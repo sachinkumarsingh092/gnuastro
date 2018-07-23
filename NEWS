@@ -60,6 +60,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54298: Table not writing array when there are no rows.
   bug #54312: Crash when CFITSIO doesn't have fits_is_reentrant function.
   bug #54346: Non '-I' or non '-L' strings in CPPFLAGS or LDFLAGS cause crash.
+  bug #54358: Arithmetic's where, not ignoring blank values in condition.
+
 
 
 

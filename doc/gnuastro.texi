@@ -11681,12 +11681,12 @@ $ astarithmetic modify.fits binary.fits if-true.fits where
 @end example
 
 The value of any pixel in @file{modify.fits} that corresponds to a non-zero
-pixel of @file{binary.fits} will be changed to the value of the same pixel
-in @file{if-true.fits} (this may also be a number). The 3rd and 2nd popped
-operands (@file{modify.fits} and @file{binary.fits} respectively, see
-@ref{Reverse polish notation}) have to have the same
-dimensions/size. @file{if-true.fits} can be either a number, or have the
-same dimension/size as the other two.
+@emph{and} non-blank pixel of @file{binary.fits} will be changed to the
+value of the same pixel in @file{if-true.fits} (this may also be a
+number). The 3rd and 2nd popped operands (@file{modify.fits} and
+@file{binary.fits} respectively, see @ref{Reverse polish notation}) have to
+have the same dimensions/size. @file{if-true.fits} can be either a number,
+or have the same dimension/size as the other two.
 
 The 2nd popped operand (@file{binary.fits}) has to have @code{uint8} (or
 @code{unsigned char} in standard C) type (see @ref{Numeric data types}). It

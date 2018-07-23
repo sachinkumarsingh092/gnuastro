@@ -494,25 +494,27 @@ arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 /***********************************************************************/
 /***************                  Where                   **************/
 /***********************************************************************/
-
 /* When the `iftrue' dataset only has one element and the element is blank,
    then it will be replaced with the blank value of the type of the output
    data. */
-#define DO_WHERE_OPERATION(ITT, OT) {                                \
-    ITT *it=iftrue->array;                                           \
-    OT b, *o=out->array, *of=o+out->size;                            \
-    if(iftrue->size==1)                                              \
-      {                                                              \
-        if( gal_blank_present(iftrue, 0) )                           \
-          {                                                          \
-            gal_blank_write(&b, out->type);                          \
-            do { *o = *c++ ? b : *o;        } while(++o<of);         \
-          }                                                          \
-        else                                                         \
-          do   { *o = *c++ ? *it : *o;       } while(++o<of);        \
-      }                                                              \
-    else                                                             \
-      do       { *o = *c++ ? *it : *o; ++it; } while(++o<of);        \
+#define DO_WHERE_OPERATION(ITT, OT) {                                   \
+    ITT *it=iftrue->array;                                              \
+    OT b, *o=out->array, *of=o+out->size;                               \
+    gal_blank_write(&b, out->type);                                     \
+    if(iftrue->size==1)                                                 \
+      {                                                                 \
+        if( gal_blank_is(it, iftrue->type) )                            \
+          {                                                             \
+            do{*o = (chb && *c==cb) ? *o : (*c ? b   : *o); ++c;      } \
+            while(++o<of);                                              \
+          }                                                             \
+        else                                                            \
+          do  {*o = (chb && *c==cb) ? *o : (*c ? *it : *o); ++c;      } \
+          while(++o<of);                                                \
+      }                                                                 \
+    else                                                                \
+      do      {*o = (chb && *c==cb) ? *o : (*c ? *it : *o); ++it; ++c;} \
+      while(++o<of);                                                    \
 }
 
 
@@ -545,7 +547,8 @@ static void
 arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
                  gal_data_t *iftrue)
 {
-  unsigned char *c=cond->array;
+  int chb;    /* Read as: "Condition-Has-Blank" */
+  unsigned char *c=cond->array, cb=GAL_BLANK_UINT8;
 
   /* The condition operator has to be unsigned char. */
   if(cond->type!=GAL_TYPE_UINT8)
@@ -558,6 +561,9 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
   if( gal_dimension_is_different(out, cond) )
     error(EXIT_FAILURE, 0, "%s: the output and condition data sets of the "
           "must be the same size", __func__);
+
+  /* See if the condition array has blank values. */
+  chb=gal_blank_present(cond, 0);
 
   /* Do the operation. */
   switch(out->type)
