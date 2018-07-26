@@ -12,6 +12,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - `set-A': Set a name (`A' in this case) for the popped dataset. This
                allows only reading the dataset it into memory once and
                possibly using it many times.
+    - `fill-holes': Flip background (0) pixels surrounded by foreground (1).
     - `collapse-sum': collapse/remove a dimension by summing over it.
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.

@@ -503,8 +503,8 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 /*************            Other functions          *************/
 /***************************************************************/
 static int
-arithmetic_binary_conn_sanity_checks(gal_data_t *in, gal_data_t *conn,
-                                     char *operator)
+arithmetic_binary_sanity_checks(gal_data_t *in, gal_data_t *conn,
+                                char *operator)
 {
   int conn_int;
 
@@ -552,19 +552,14 @@ arithmetic_erode_dilate(struct arithmeticparams *p, char *token, int op)
   gal_data_t *conn = operands_pop(p, token);
   gal_data_t *in   = operands_pop(p, token);
 
-  /* Do the sanity checks and  */
+  /* Do the sanity checks. */
+  conn_int=arithmetic_binary_sanity_checks(in, conn, token);
+
+  /* Do the operation. */
   switch(op)
     {
-    case ARITHMETIC_OP_ERODE:
-      conn_int=arithmetic_binary_conn_sanity_checks(in, conn, "erode");
-      gal_binary_erode(in, 1, conn_int, 1);
-      break;
-
-    case ARITHMETIC_OP_DILATE:
-      conn_int=arithmetic_binary_conn_sanity_checks(in, conn, "dilate");
-      gal_binary_dilate(in, 1, conn_int, 1);
-      break;
-
+    case ARITHMETIC_OP_ERODE:  gal_binary_erode(in,  1, conn_int, 1); break;
+    case ARITHMETIC_OP_DILATE: gal_binary_dilate(in, 1, conn_int, 1); break;
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
             "problem. The operator code %d not recognized", __func__,
@@ -573,8 +568,6 @@ arithmetic_erode_dilate(struct arithmeticparams *p, char *token, int op)
 
   /* Push the result onto the stack. */
   operands_add(p, NULL, in);
-
-  /* Recall that`conn' was freed in the sanity check. */
 }
 
 
@@ -592,8 +585,7 @@ arithmetic_connected_components(struct arithmeticparams *p, char *token)
   gal_data_t *in   = operands_pop(p, token);
 
   /* Basic sanity checks. */
-  conn_int=arithmetic_binary_conn_sanity_checks(in, conn,
-                                                "connected-components");
+  conn_int=arithmetic_binary_sanity_checks(in, conn, token);
 
   /* Do the connected components labeling. */
   gal_binary_connected_components(in, &out, conn_int);
@@ -603,6 +595,29 @@ arithmetic_connected_components(struct arithmeticparams *p, char *token)
 
   /* Clean up (`conn' was freed in the sanity check). */
   gal_data_free(in);
+}
+
+
+
+
+
+static void
+arithmetic_fill_holes(struct arithmeticparams *p, char *token)
+{
+  int conn_int;
+
+  /* Pop the two necessary operands. */
+  gal_data_t *conn = operands_pop(p, token);
+  gal_data_t *in   = operands_pop(p, token);
+
+  /* Basic sanity checks. */
+  conn_int=arithmetic_binary_sanity_checks(in, conn, token);
+
+  /* Fill the holes */
+  gal_binary_holes_fill(in, conn_int, -1);
+
+  /* Push the result onto the stack. */
+  operands_add(p, NULL, in);
 }
 
 
@@ -958,6 +973,8 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_DILATE;                nop=0;  }
           else if (!strcmp(token->v, "connected-components"))
             { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  nop=0;  }
+          else if (!strcmp(token->v, "fill-holes"))
+            { op=ARITHMETIC_OP_FILL_HOLES;            nop=0;  }
           else if (!strcmp(token->v, "invert"))
             { op=ARITHMETIC_OP_INVERT;                nop=0;  }
           else if (!strcmp(token->v, "interpolate-medianngb"))
@@ -1049,6 +1066,10 @@ reversepolish(struct arithmeticparams *p)
 
                 case ARITHMETIC_OP_CONNECTED_COMPONENTS:
                   arithmetic_connected_components(p, token->v);
+                  break;
+
+                case ARITHMETIC_OP_FILL_HOLES:
+                  arithmetic_fill_holes(p, token->v);
                   break;
 
                 case ARITHMETIC_OP_INVERT:

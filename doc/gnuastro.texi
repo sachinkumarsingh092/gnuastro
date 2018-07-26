@@ -11599,6 +11599,13 @@ If your input dataset doesn't have a binary type, but you know all its
 values are 0 or 1, you can use the @code{uint8} operator (below) to convert
 it to binary.
 
+@item fill-holes
+Flip background (0) pixels surrounded by foreground (1) in a binary
+dataset. This operator takes two operands (similar to
+@code{connected-components}): the first popped operand is the connectivity
+(to define a hole) and the second is the binary (0 or 1 valued) dataset to
+fill holes in.
+
 @item invert
 Invert an unsigned integer dataset. This is the only operator that ignores
 blank values (which are set to be the maximum values in the unsigned
@@ -27204,11 +27211,11 @@ pixels will have a value of @code{-1}. The total number of holes will be
 written where @code{numholes} points to.
 @end deftypefun
 
-@deftypefun void gal_binary_holes_fill (gal_data_t @code{*input}, int @code{connectivity})
-Fill all the holes (0 valued pixels surrounded by 1 valued pixels) within a
-region of the binary @code{input} dataset. The connectivity of the holes
-can be set with @code{connectivity}. This function currently only works on
-a 2D dataset.
+@deftypefun void gal_binary_holes_fill (gal_data_t @code{*input}, int @code{connectivity}, size_t @code{maxsize})
+Fill all the holes (0 valued pixels surrounded by 1 valued pixels) of the
+binary @code{input} dataset. The connectivity of the holes can be set with
+@code{connectivity}. Holes larger than @code{maxsize} are not filled. This
+function currently only works on a 2D dataset.
 @end deftypefun
 
 @node Labeled datasets, Convolution functions, Binary datasets, Gnuastro library
