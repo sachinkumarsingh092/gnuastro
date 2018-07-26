@@ -59,7 +59,7 @@ EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h astbuildprog.conf.in
 # will change between the two (the `-I' or `-L' have been removed), so it
 # shouldn't be the same.
 astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
-	cp $< $@
+	cat $< > $@
 	infoadded="no";                                \
 	for i in $(CPPFLAGS); do                       \
 	  v=$$(echo $$i | sed -e 's/^-I//');           \
