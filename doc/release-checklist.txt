@@ -120,9 +120,10 @@ all the commits needed for this release have been completed.
 
  - [STABLE] Build the manual in all the formats and upload everything. Note
    that you will need to configure and build Gnuastro in the main source
-   directory to build the full webpage with this script.
+   directory to build the full webpage with this script. We will build with
+   debug flags so the build completes fast.
 
-       $ ./configure CFLAGS="-g -O0" --disable-shared
+       $ ./configure --enable-debug
        $ make -j8
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
