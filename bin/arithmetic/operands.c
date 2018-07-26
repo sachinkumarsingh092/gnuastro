@@ -43,7 +43,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
+/**********************************************************************/
+/************            General info on operands       ***************/
+/**********************************************************************/
 size_t
 operands_num(struct arithmeticparams *p)
 {
@@ -58,6 +60,24 @@ operands_num(struct arithmeticparams *p)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/************                Named operands             ***************/
+/**********************************************************************/
 static int
 operands_name_is_used_later(struct arithmeticparams *p, char *name)
 {
@@ -77,18 +97,59 @@ operands_name_is_used_later(struct arithmeticparams *p, char *name)
 
 
 
+/* Remove a name from the list of names and return the dataset it points
+   to. */
+static gal_data_t *
+operands_remove_name(struct arithmeticparams *p, char *name)
+{
+  gal_data_t *tmp, *removed=NULL, *prev=NULL;
+
+  /* Go over all the given names. */
+  for(tmp=p->named;tmp!=NULL;tmp=tmp->next)
+    {
+      if( !strcmp(tmp->name, name) )
+        {
+          removed=tmp;
+          if(prev) prev->next = tmp->next;
+          else     p->named   = tmp->next;
+        }
+
+      /* Set this node as the `prev' pointer. */
+      prev=tmp;
+    }
+
+  /* A small sanity check. */
+  if(removed==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "problem. `removed' must not be NULL at this point", __func__,
+          PACKAGE_BUGREPORT);
+
+  /* Nothing in the list points to it now. So we can safely modify and
+     return it. */
+  free(removed->name);
+  removed->name=NULL;
+  return removed;
+}
+
+
+
+
+
 /* Pop a dataset and keep it in the `named' list for later use. */
 void
 operands_set_name(struct arithmeticparams *p, char *token)
 {
-  gal_data_t *tmp;
+  gal_data_t *tmp, *tofree;
   char *varname=&token[ SET_OPERATOR_PREFIX_LENGTH ];
 
-  /* Make sure the variable name hasn't been set before. */
+  /* If a dataset with this name already exists, it will be removed/deleted
+     so we can use the name for the newly designated dataset. */
   for(tmp=p->named; tmp!=NULL; tmp=tmp->next)
     if( !strcmp(varname, tmp->name) )
-      error(EXIT_FAILURE, 0, "`%s' was previously set as a name",
-            varname);
+      {
+        tofree=operands_remove_name(p, varname);
+        gal_data_free(tofree);
+      }
 
   /* Pop the top operand, then add it to the list of named datasets, but
      only if it is used in later tokens. If it isn't, free the popped
@@ -140,44 +201,6 @@ operands_is_name(struct arithmeticparams *p, char *token)
 
 
 
-/* Remove a name from the list of names and retrun the dataset it points
-   to. */
-static gal_data_t *
-operands_remove_name(struct arithmeticparams *p, char *name)
-{
-  gal_data_t *tmp, *removed=NULL, *prev=NULL;
-
-  /* Go over all the given names. */
-  for(tmp=p->named;tmp!=NULL;tmp=tmp->next)
-    {
-      if( !strcmp(tmp->name, name) )
-        {
-          removed=tmp;
-          if(prev) prev->next = tmp->next;
-          else     p->named   = tmp->next;
-        }
-
-      /* Set this node as the `prev' pointer. */
-      prev=tmp;
-    }
-
-  /* A small sanity check. */
-  if(removed==NULL)
-    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-          "problem. `removed' must not be NULL at this point", __func__,
-          PACKAGE_BUGREPORT);
-
-  /* Nothing in the list points to it now. So we can safely modify and
-     return it. */
-  free(removed->name);
-  removed->name=NULL;
-  return removed;
-}
-
-
-
-
-
 /* Return a copy of the named dataset. */
 static gal_data_t *
 operands_copy_named(struct arithmeticparams *p, char *name)
@@ -214,6 +237,25 @@ operands_copy_named(struct arithmeticparams *p, char *name)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/************      Adding to and popping from stack     ***************/
+/**********************************************************************/
 void
 operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
 {

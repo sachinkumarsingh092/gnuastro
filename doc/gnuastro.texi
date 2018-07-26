@@ -11814,20 +11814,25 @@ floating point (see @ref{Numeric data types}). The internal conversion of C
 will be used.
 
 @item set-AAA
-Set a name (all characters after the dash, @code{AAA} in the case shown
-here) for the first popped operand on the stack. The name can be any
-string, but avoid strings ending with standard filename suffixes (for
-example @file{.fits})@footnote{A dataset name like @file{a.fits} (which can
-be set with @command{set-a.fits}) will cause confusion in the the initial
-parser of Arithmetic. It will assume this name is a FITS file, and if it is
-used multiple times, Arithmetic will abort, complaining that you haven't
-provided enough HDUs.}. The named dataset will be freed from memory as soon
-as it is no longer needed in the rest of the command. This operator thus
+Set the characters after the dash (@code{AAA} in the case shown here) as a
+name for the first popped operand on the stack. The named dataset will be
+freed from memory as soon as it is no longer needed, or if the name is
+reset to refer to another dataset later in the command. This operator thus
 enables re-usability of a dataset without having to re-read it from a file
-everytime its necessary during a process.
+everytime it is necessary during a process. When a dataset is necessary
+more than once, this operator can thus help simplify reading/writing on the
+command-line (thus avoiding potential bugs), while also speeding up the
+processing.
+
+Like all operators, this operator pops the top operand off of the main
+processing stack, but unlike other operands, it won't add anything back to
+the stack immediately. It will keep the popped dataset in memory through a
+separate list of named datasets (not on the main stack). That list will be
+used to add/copy any requested dataset to the main processing stack when
+the name is called.
 
 The name to give the popped dataset is part of the operator's name. For
-example the @code{set-a} operator of the command below, gives the name of
+example the @code{set-a} operator of the command below, gives the name
 ``@code{a}'' to the contents of @file{image.fits}. This name is then used
 instead of the actual filename to multiply the dataset by two.
 
@@ -11835,29 +11840,30 @@ instead of the actual filename to multiply the dataset by two.
 $ astarithmetic image.fits set-a a 2 x
 @end example
 
-This is a unique operator, because it doesn't actually do anything to the
-contents of the popped dataset, it just assigns a name to the dataset. This
-makes it very easy to use a single dataset on the command-line multiple
-times and avoid extra attempts at reading it into memory.
+The name can be any string, but avoid strings ending with standard filename
+suffixes (for example @file{.fits})@footnote{A dataset name like
+@file{a.fits} (which can be set with @command{set-a.fits}) will cause
+confusion in the the initial parser of Arithmetic. It will assume this name
+is a FITS file, and if it is used multiple times, Arithmetic will abort,
+complaining that you haven't provided enough HDUs.}.
 
 One example of the usefulness of this operator is in the @code{where}
 operator. For example, let's assume you want to mask all pixels larger than
 @code{5} in @file{image.fits} (extension number 1) with a NaN
-value. Without using this operator, you have to run
+value. Without setting a name for the dataset, you have to read the file
+two times from memory in a command like this:
 
 @example
 $ astarithmetic image.fits image.fits 5 gt nan where -g1
 @end example
 
 But with this operator you can simply give @file{image.fits} the name
-@code{i} and simplify the command above:
+@code{i} and simplify the command above to the more readable one below
+(which greatly helps when the filename is long):
 
 @example
 $ astarithmetic image.fits set-i   i i 5 gt nan where
 @end example
-
-This operator can thus help simplify reading/writing on the command-line
-(avoid potential bugs), while also speeding up your processing.
 
 @end table
 
