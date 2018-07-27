@@ -778,7 +778,8 @@ gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
      `in->wcs'. */
   gal_wcs_remove_dimension(minmax->wcs, in->ndim-c_dim);
 
-  /* Return. */
+  /* Clean up and return. */
   if(wht!=weight) gal_data_free(wht);
+  if(num) gal_data_free(num);
   return minmax;
 }
