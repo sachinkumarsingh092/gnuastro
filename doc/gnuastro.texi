@@ -11546,6 +11546,16 @@ values, all the elements in the returned dataset will have a single value
 (the length of the collapsed dimension). Therefore this is mostly relevant
 when there are blank values in the dataset.
 
+@item collapse-min
+Similar to @option{collapse-sum}, but the returned dataset will have the
+same numeric type as the input and will contain the minimum value for each
+pixel along the collapsed dimension.
+
+@item collapse-max
+Similar to @option{collapse-sum}, but the returned dataset will have the
+same numeric type as the input and will contain the maximum value for each
+pixel along the collapsed dimension.
+
 @item erode
 @cindex Erosion
 Erode the foreground pixels (with value @code{1}) of the input dataset
@@ -23229,6 +23239,15 @@ type. See @ref{Copying datasets} for converting the returned dataset to a
 desired type. Also, for more on the application of this function, see the
 Arithmetic program's @option{collapse-number} operator (which uses this
 function) in @ref{Arithmetic operators}.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_dimension_collapse_minmax (gal_data_t @code{*in}, size_t @code{c_dim}, int @code{max1_min0})
+Collapse the input dataset (@code{in}) along the given dimension
+(@code{c_dim}, in C definition: starting from zero, from the slowest
+dimension), by using the largest/smallest non-blank value along that
+dimension. If @code{max1_min0} is non-zero, then the collapsed dataset will
+have the maximum value along the given dimension and if it is zero, the
+minimum.
 @end deftypefun
 
 @deffn {Function-like macro} GAL_DIMENSION_NEIGHBOR_OP (@code{index}, @code{ndim}, @code{dsize}, @code{connectivity}, @code{dinc}, @code{operation})

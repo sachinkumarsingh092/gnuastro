@@ -298,6 +298,8 @@ enum dimension_collapse_operation
  DIMENSION_COLLAPSE_INVALID,    /* ==0 by C standard. */
 
  DIMENSION_COLLAPSE_SUM,
+ DIMENSION_COLLAPSE_MAX,
+ DIMENSION_COLLAPSE_MIN,
  DIMENSION_COLLAPSE_MEAN,
  DIMENSION_COLLAPSE_NUMBER,
 };
@@ -371,20 +373,26 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
 
 /* Depending on the operator, write the result into the output. */
 #define COLLAPSE_WRITE(OIND,IIND) {                                     \
-    /* We need the sum when number operator is requested. */            \
-    if(farr) farr[ OIND ] += (warr ? warr[w] : 1) * inarr[ IIND ];      \
+    /* Sum */                                                           \
+    if(farr)                                                            \
+      farr[ OIND ] += (warr ? warr[w] : 1) * inarr[ IIND ];             \
                                                                         \
-    /* We don't need the number in some situations. */                  \
+    /* Number */                                                        \
     if(iarr)                                                            \
       {                                                                 \
         if(num->type==GAL_TYPE_UINT8) iarr[ OIND ] = 1;                 \
         else                        ++iarr[ OIND ];                     \
       }                                                                 \
                                                                         \
-    /* If the sum of weights for is needed, add it. */                  \
+    /* Sum of weights. */                                               \
     if(wsumarr) wsumarr[ OIND ] += warr[w];                             \
+                                                                        \
+    /* Minimum or maximum. */                                           \
+    if(mmarr)                                                           \
+      mmarr[OIND] = ( max1_min0                                         \
+                      ? (mmarr[OIND]>inarr[IIND]?mmarr[OIND]:inarr[IIND]) \
+                      : (mmarr[OIND]<inarr[IIND]?mmarr[OIND]:inarr[IIND]) ); \
   }
-
 
 
 /* Deal properly with blanks. */
@@ -406,8 +414,18 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
 
 
 #define COLLAPSE_DIM(IT) {                                              \
-    IT B, *inarr=in->array;                                             \
+    IT m, B, *inarr=in->array, *mmarr=minmax?minmax->array:NULL;        \
     if(hasblank) gal_blank_write(&B, in->type);                         \
+                                                                        \
+    /* Initialize the array for minimum or maximum. */                  \
+    if(mmarr)                                                           \
+      {                                                                 \
+        if(max1_min0) gal_type_min(in->type, &m);                       \
+        else          gal_type_max(in->type, &m);                       \
+        for(i=0;i<minmax->size;++i) mmarr[i]=m;                         \
+      }                                                                 \
+                                                                        \
+    /* Collapse the dataset. */                                         \
     switch(in->ndim)                                                    \
       {                                                                 \
       /* 1D input dataset. */                                           \
@@ -458,6 +476,10 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
               "supported, please contact us at %s to add this feature", \
               __func__, in->ndim, PACKAGE_BUGREPORT);                   \
       }                                                                 \
+                                                                        \
+    /* For minimum or maximum, elements with no input must be blank. */ \
+    if(mmarr && iarr)                                                   \
+      for(i=0;i<minmax->size;++i) if(iarr[i]==0) mmarr[i]=B;            \
   }
 
 
@@ -467,13 +489,14 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
 gal_data_t *
 gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
 {
+  int max1_min0=0;
   double *wsumarr=NULL;
   uint8_t *ii, *iarr=NULL;
   size_t a, b, i, j, k, w=-1, cnum=0;
   size_t outdsize[10], slice, outndim;
   int hasblank=gal_blank_present(in, 0);
   double *dd, *df, *warr=NULL, *farr=NULL;
-  gal_data_t *wht=NULL, *sum=NULL, *num=NULL;
+  gal_data_t *sum=NULL, *wht=NULL, *num=NULL, *minmax=NULL;
 
   /* Basic sanity checks. */
   wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
@@ -540,14 +563,15 @@ gal_data_t *
 gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
                             gal_data_t *weight)
 {
+  int max1_min0=0;
   double wsum=NAN;
   double *wsumarr=NULL;
   int32_t *ii, *iarr=NULL;
   size_t a, b, i, j, k, w=-1, cnum=0;
   size_t outdsize[10], slice, outndim;
   int hasblank=gal_blank_present(in, 0);
-  gal_data_t *wht=NULL, *sum=NULL, *num=NULL;
   double *dd, *dw, *df, *warr=NULL, *farr=NULL;
+  gal_data_t *sum=NULL, *wht=NULL, *num=NULL, *minmax=NULL;
 
 
   /* Basic sanity checks. */
@@ -640,13 +664,14 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
 gal_data_t *
 gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
 {
+  int max1_min0=0;
   double *wsumarr=NULL;
   double *warr=NULL, *farr=NULL;
   int32_t *ii, *iif, *iarr=NULL;
   size_t a, b, i, j, k, w, cnum=0;
   size_t outdsize[10], slice, outndim;
   int hasblank=gal_blank_present(in, 0);
-  gal_data_t *weight=NULL, *wht=NULL, *num=NULL;
+  gal_data_t *weight=NULL, *wht=NULL, *num=NULL, *minmax=NULL;
 
   /* Basic sanity checks. */
   wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
@@ -694,4 +719,66 @@ gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
   /* Return. */
   if(wht!=weight) gal_data_free(wht);
   return num;
+}
+
+
+
+
+
+gal_data_t *
+gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
+{
+  int32_t *iarr=NULL;
+  double *wsumarr=NULL;
+  double *warr=NULL, *farr=NULL;
+  size_t a, b, i, j, k, w, cnum=0;
+  size_t outdsize[10], slice, outndim;
+  int hasblank=gal_blank_present(in, 0);
+  gal_data_t *weight=NULL, *wht=NULL, *num=NULL, *minmax=NULL;
+
+  /* Basic sanity checks. */
+  wht=dimension_collapse_sanity_check(in, weight, c_dim, hasblank,
+                                      &cnum, &warr);
+
+  /* Set the size of the collapsed output. */
+  dimension_collapse_sizes(in, c_dim, &outndim, outdsize);
+
+  /* Allocate the necessary datasets. If there are blank pixels, we'll need
+     to count how many elements whent into the calculation so we can set
+     them to blank. */
+  minmax=gal_data_alloc(NULL, in->type, outndim, outdsize, in->wcs,
+                        0, in->minmapsize, NULL, NULL, NULL);
+  if(hasblank)
+    {
+      num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, in->wcs,
+                         1, in->minmapsize, NULL, NULL, NULL);
+      iarr=num->array;
+    }
+
+  /* Parse the input dataset (if necessary). */
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:     COLLAPSE_DIM( uint8_t  );   break;
+    case GAL_TYPE_INT8:      COLLAPSE_DIM( int8_t   );   break;
+    case GAL_TYPE_UINT16:    COLLAPSE_DIM( uint16_t );   break;
+    case GAL_TYPE_INT16:     COLLAPSE_DIM( int16_t  );   break;
+    case GAL_TYPE_UINT32:    COLLAPSE_DIM( uint32_t );   break;
+    case GAL_TYPE_INT32:     COLLAPSE_DIM( int32_t  );   break;
+    case GAL_TYPE_UINT64:    COLLAPSE_DIM( uint64_t );   break;
+    case GAL_TYPE_INT64:     COLLAPSE_DIM( int64_t  );   break;
+    case GAL_TYPE_FLOAT32:   COLLAPSE_DIM( float    );   break;
+    case GAL_TYPE_FLOAT64:   COLLAPSE_DIM( double   );   break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, in->type);
+    }
+
+  /* Remove the respective dimension in the WCS structure also (if any
+     exists). Note that `sum->ndim' has already been changed. So we'll use
+     `in->wcs'. */
+  gal_wcs_remove_dimension(minmax->wcs, in->ndim-c_dim);
+
+  /* Return. */
+  if(wht!=weight) gal_data_free(wht);
+  return minmax;
 }

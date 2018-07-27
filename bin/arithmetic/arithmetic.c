@@ -751,6 +751,14 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
       collapsed=gal_dimension_collapse_number(input, input->ndim-dim);
       break;
 
+    case ARITHMETIC_OP_COLLAPSE_MIN:
+      collapsed=gal_dimension_collapse_minmax(input, input->ndim-dim, 0);
+      break;
+
+    case ARITHMETIC_OP_COLLAPSE_MAX:
+      collapsed=gal_dimension_collapse_minmax(input, input->ndim-dim, 1);
+      break;
+
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
             "problem. The operator code %d is not recognized", __func__,
@@ -981,6 +989,10 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; nop=0;  }
           else if (!strcmp(token->v, "collapse-sum"))
             { op=ARITHMETIC_OP_COLLAPSE_SUM;          nop=0; }
+          else if (!strcmp(token->v, "collapse-min"))
+            { op=ARITHMETIC_OP_COLLAPSE_MIN;          nop=0; }
+          else if (!strcmp(token->v, "collapse-max"))
+            { op=ARITHMETIC_OP_COLLAPSE_MAX;          nop=0; }
           else if (!strcmp(token->v, "collapse-mean"))
             { op=ARITHMETIC_OP_COLLAPSE_MEAN;         nop=0; }
           else if (!strcmp(token->v, "collapse-number"))
@@ -1081,6 +1093,8 @@ reversepolish(struct arithmeticparams *p)
                   break;
 
                 case ARITHMETIC_OP_COLLAPSE_SUM:
+                case ARITHMETIC_OP_COLLAPSE_MIN:
+                case ARITHMETIC_OP_COLLAPSE_MAX:
                 case ARITHMETIC_OP_COLLAPSE_MEAN:
                 case ARITHMETIC_OP_COLLAPSE_NUMBER:
                   arithmetic_collapse(p, token->v, op);

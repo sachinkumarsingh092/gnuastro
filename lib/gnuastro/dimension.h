@@ -109,7 +109,8 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
 gal_data_t *
 gal_dimension_collapse_number(gal_data_t *in, size_t c_dim);
 
-
+gal_data_t *
+gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0);
 
 
 

@@ -14,6 +14,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
                possibly using it many times.
     - `fill-holes': Flip background (0) pixels surrounded by foreground (1).
     - `collapse-sum': collapse/remove a dimension by summing over it.
+    - `collapse-min': collapse/remove a dimension by using maximum value.
+    - `collapse-max': collapse/remove a dimension by using minimum value.
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.
 
@@ -31,6 +33,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - gal_dimension_collapse_sum: collapse/remove a dimension by summing.
     - gal_dimension_collapse_mean: collapse/remove a dimension by averaging.
     - gal_dimension_collapse_number: collapse/remove a dimension by number.
+    - gal_dimension_collapse_minmax: collapse/remove a dimension by extremum.
     - gal_wcs_remove_dimension: Remove a dimension in the given WCS structure.
 
 ** Removed features
