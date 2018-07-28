@@ -728,7 +728,7 @@ gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
 gal_data_t *
 gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
 {
-  int32_t *iarr=NULL;
+  uint8_t *iarr=NULL;
   double *wsumarr=NULL;
   double *warr=NULL, *farr=NULL;
   size_t a, b, i, j, k, w, cnum=0;
@@ -750,7 +750,7 @@ gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
                         0, in->minmapsize, NULL, NULL, NULL);
   if(hasblank)
     {
-      num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, in->wcs,
+      num=gal_data_alloc(NULL, GAL_TYPE_UINT8, outndim, outdsize, in->wcs,
                          1, in->minmapsize, NULL, NULL, NULL);
       iarr=num->array;
     }
