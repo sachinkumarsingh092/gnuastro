@@ -846,6 +846,7 @@ mode_golden_section(struct statistics_mode_params *p)
     /* Set the values at the mirror and at `a' (see above). */          \
     mf=a[m];                                                            \
     af=a[ gal_statistics_quantile_index(2*m+1, MODE_SYM_LOW_Q) ];       \
+    if(mf<=af) return 0;                                                \
                                                                         \
     /* This loop is very similar to that of */                          \
     /* `mode_mirror_max_index_diff'. It will find the index where the */\
@@ -883,7 +884,7 @@ mode_golden_section(struct statistics_mode_params *p)
     /*printf("%zu: %f,%f,%f\n", m, (double)af, (double)mf, (double)bf);*/ \
                                                                         \
     /* For a bad result, return 0 (which will not output any mode). */  \
-    return bf==af ? 0 : (bf-mf)/(mf-af);                                \
+    return bf==af ? 0 : (double)(bf-mf)/(double)(mf-af);                \
   }
 static double
 mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
