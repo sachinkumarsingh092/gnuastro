@@ -51,9 +51,6 @@ endif
 if COND_HASLIBJPEG
   MAYBE_HASLIBJPEG = "yes"
 endif
-if COND_HASGNULIBTOOL
-  MAYBE_HASGNULIBTOOL = "yes"
-endif
 if COND_HASCXX
   MAYBE_CXX_PROGS    = versioncxx
   MAYBE_CXX_TESTS    = lib/versioncxx.sh
@@ -202,7 +199,6 @@ export mkdir_p="$(MKDIR_P)";                             \
 export topsrc=$(top_srcdir);                             \
 export topbuild=$(top_builddir);                         \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);                   \
-export hasgnulibtool=$(MAYBE_HASGNULIBTOOL);             \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);           \
 export check_with_program=$(MAYBE_CHECK_WITH_PROGRAM);
 

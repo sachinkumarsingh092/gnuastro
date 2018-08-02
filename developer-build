@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # This script will configure and build Gnuastro in parallel inside another
 # directory (to keep the source and build directories separate). By default

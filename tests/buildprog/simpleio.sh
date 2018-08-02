@@ -41,18 +41,10 @@ source=$topsrc/tests/$prog/simpleio.c
 #
 #   - The input data was not made (for example the test that created the
 #     data file failed).
-#
-#   - Gnuastro ships with its own version of Libtool for the building of
-#     the libraries and programs. But here, we want to test the user's
-#     libtool (and how it works with BuildProgram). So if libtool wasn't
-#     found at configure time, we need to skip this test.
 if [ ! -f $execname ]; then echo "$execname not created.";  exit 77; fi
 if [ ! -f $img      ]; then echo "$img does not exist.";    exit 77; fi
 if [ ! -f $source   ]; then echo "$source does not exist."; exit 77; fi
-if [ "x$hasgnulibtool" != "xyes" ];then
-    echo "GNU libtool not present.";
-    exit 77;
-fi
+
 
 
 

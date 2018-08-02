@@ -66,7 +66,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54346: Non '-I' or non '-L' strings in CPPFLAGS or LDFLAGS cause crash.
   bug #54358: Arithmetic's where, not ignoring blank values in condition.
   bug #54406: Insufficient sanity checks in mode symmetricity calculation.
-
+  bug #54430: BuildProgram fails with older Libtool versions on dash.
 
 
 

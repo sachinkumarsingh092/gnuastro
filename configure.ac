@@ -278,6 +278,9 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
     [AC_MSG_ERROR([WCSLIB not found, cannot continue.])])
 
 
+
+
+
 # These are secondary tests for more fine-grained control in libraries that
 # have already been checked. We don't need to add them to the LIBS
 # variable, so we are using AC_CHECK_LIB for these tests.
@@ -306,27 +309,6 @@ AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
                    [System has pthread_barrier])
 AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
-
-
-
-
-
-
-# Gnulib checks:
-gl_INIT
-
-
-
-
-
-# Gnulib checks for the proper name for the C99 equivalent `restrict'
-# keyword and puts it in the `ac_cv_c_restrict' variable. If none exists,
-# it will put a `no' inside of this variable. As described in the output
-# `bootstrapped/m4/gnulib-common.m4', this is only necessary until Autoconf
-# 2.70 is released. Afterwards, we can use AC_C_RESTRICT.
-AS_IF([test "x$ac_cv_c_restrict" = "xno"],
-      [gal_restrict_replace=], [gal_restrict_replace=$ac_cv_c_restrict])
-AC_SUBST(RESTRICT_REPLACEMENT, [$gal_restrict_replace])
 
 
 
@@ -379,8 +361,11 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 # Check the libtool executable on the system. Note that Gnuastro also ships
 # with a version of Libtool. We don't want Gnuastro's Libtool, here we want
 # to see if the system has libtool independent of Gnuastro so BuildProgram
-# can use it later.
+# can use it later. We also need to check some shells to run libtool within
+# them.
 AC_CHECK_PROG(has_libtool, libtool, [yes], [no])
+AC_CHECK_PROG(has_bash,    bash,    [yes], [no])
+AC_CHECK_PROG(has_zsh,     zsh,     [yes], [no])
 
 # If Libtool is present, make sure it is GNU Libtool
 AS_IF([test "x$has_libtool" = "xyes"],
@@ -399,10 +384,46 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
                [has_gnulibtool=yes; gnulibtool_exec=glibtool],
                [has_gnulibtool=no; anywarnings=yes] ) ])
 
-# Write the test results in the Makefiles and `config.h'.
-AM_CONDITIONAL([COND_HASGNULIBTOOL], [test "x$has_gnulibtool" = "xyes"])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_EXEC], ["$gnulibtool_exec"],
-                   [The executable to call GNU Libtool])
+# Older versions of GNU Libtool have problems with the `dash' shell (a
+# minimalist shell) and will crash (due to not having the `+=' operator),
+# see bug #54430. So we need to check if the system's libtool and shell
+# (called by `sh' as in C's `system' function within BuildProgram) can work
+# with each other. If not, we need to search for Bash and tell BuildProgram
+# to use Bash instead of the default. But older versions of Bash also don't
+# support this operator, so we'll have to check with Bash is well.
+libtool_shell="none"
+AS_IF([test "x$has_gnulibtool" = "xyes"],
+      [
+        AC_MSG_CHECKING(for shell to use with libtool)
+        cprog=libtool_shell_test.c
+        echo "#include <stdio.h>"                                 > $cprog
+        echo "int main(void){printf(\"success\\n\"); return 0;}" >> $cprog
+        ltargs="--quiet --tag=CC --mode=link $CC $cprog -O3 -o test"
+        AS_IF( sh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+               [libtool_shell="sh"],
+               [AS_IF([test "x$has_bash" = "xyes"],
+                      [AS_IF(bash -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+                             [libtool_shell="bash"]) ],
+                      [AS_IF([test "x$has_zsh" = "xyes"],
+                             [AS_IF(zsh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+                                    [libtool_shell="zsh"]) ])
+                       ] )
+               ] )
+        rm $cprog
+        AC_MSG_RESULT($libtool_shell)
+      ])
+
+# If a good shell to call Libtool could be found, then Libtool is usable
+# within a program (BuildProgram in this case).
+AS_IF([test "x$libtool_shell" = "xnone"],
+      [usable_libtool=no; anywarnings=yes],
+      [
+        usable_libtool=yes
+        AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_SHELL], ["$libtool_shell"],
+                           [Shell program to use with GNU Libtool])
+        AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_EXEC], ["$gnulibtool_exec"],
+                           [The executable to call GNU Libtool])
+      ])
 
 
 
@@ -430,6 +451,12 @@ AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
 
 
 
+# Gnulib checks:
+gl_INIT
+
+
+
+
 
 # Check if Gnulib tests should be done:
 AC_ARG_ENABLE([gnulibcheck],
@@ -437,6 +464,19 @@ AC_ARG_ENABLE([gnulibcheck],
   	            [In `make check', also test GNU Gnulib.])],
 	      [enable_gnulibcheck=yes], [enable_gnulibcheck=no])
 AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
+
+
+
+
+
+# Gnulib checks for the proper name for the C99 equivalent `restrict'
+# keyword and puts it in the `ac_cv_c_restrict' variable. If none exists,
+# it will put a `no' inside of this variable. As described in the output
+# `bootstrapped/m4/gnulib-common.m4', this is only necessary until Autoconf
+# 2.70 is released. Afterwards, we can use AC_C_RESTRICT.
+AS_IF([test "x$ac_cv_c_restrict" = "xno"],
+      [gal_restrict_replace=], [gal_restrict_replace=$ac_cv_c_restrict])
+AC_SUBST(RESTRICT_REPLACEMENT, [$gal_restrict_replace])
 
 
 
@@ -616,7 +656,7 @@ AS_IF([test $ayes = true ],
 
 # BuildProgram depends on the presence of GNU Libtool, if it isn't present,
 # then don't build it.
-AS_IF([test "x$has_gnulibtool" = "xno"], [enable_buildprog=no])
+AS_IF([test "x$usable_libtool" = "xno"], [enable_buildprog=no])
 
 
 
@@ -749,8 +789,8 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    version controlled directory to help in reproducibility."])
                AS_ECHO([]) ])
 
-        AS_IF([test "x$has_gnulibtool" = "xno"],
-              [AS_ECHO(["  - GNU Libtool, could not be found in your search path."])
+        AS_IF([test "x$usable_libtool" = "xno"],
+              [AS_ECHO(["  - GNU Libtool can't be used on this system (see below)."])
                AS_ECHO(["    Gnuastro's BuildProgram uses GNU libtool to link your source code"])
                AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Therefore"])
                AS_ECHO(["    BuildProgram will not be built or installed. Please note that"])
@@ -759,12 +799,14 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    internal implementation of GNU Libtool to build its self. This"])
                AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
                AS_ECHO(["    part of this build. The executable names searched were \`libtool'"])
-               AS_ECHO(["    and \`glibtool'."])
+               AS_ECHO(["    and \`glibtool'. The shells searched were \`sh', \`bash' and \`zsh'."])
                AS_ECHO([])
-               AS_IF([test "x$has_libtool" = "xyes"],
-                     [AS_ECHO(["    -- A libtool implementation was found, but it isn't GNU."])
-                      AS_ECHO([])
-                     ])
+               AS_IF([test "x$has_gnulibtool" = "xyes"],
+                     [AS_ECHO(["    -- GNU Libtool is present, but couldn't be run in tested shells."])
+                      AS_ECHO([])],
+                     [AS_IF([test "x$has_libtool" = "xyes"],
+                            [AS_ECHO(["    -- A libtool implementation was found, but it isn't GNU."])
+                             AS_ECHO([]) ]) ])
               ])
 
         AS_IF([test "x$has_ghostscript" = "xno"],

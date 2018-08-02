@@ -102,9 +102,10 @@ buildprog(struct buildprogparams *p)
     if( asprintf(&fullla, "%s/libgnuastro.la", LIBDIR)<0 )
       error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
-  /* Put the command to run into a string. */
-  if( asprintf(&command, "%s %s %s%s --mode=link gcc %s %s %s %s %s %s %s "
-               "-I%s %s -o %s",
+  /* Write the full Libtool command into a string (to run afterwards). */
+  if( asprintf(&command, "%s -c \"%s %s %s%s --mode=link gcc %s %s "
+               "%s %s %s %s %s -I%s %s -o %s\"",
+               GAL_CONFIG_GNULIBTOOL_SHELL,
                GAL_CONFIG_GNULIBTOOL_EXEC,
                p->cp.quiet ? "--quiet" : "",
                p->tag      ? "--tag="   : "",
