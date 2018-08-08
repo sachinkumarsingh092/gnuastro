@@ -84,6 +84,7 @@ configure
 .gnuastro
 astmkprof
 astheader
+astsegment
 runtest.sh
 astmknoise
 config.sub
@@ -116,6 +117,8 @@ doc/gnuastro.vrs
 tests/versioncxx
 tests/multithread
 lib/gnuastro/config.h
+bin/buildprog/astbuildprog.conf
+
 
 
 
