@@ -1,14 +1,1 @@
 Alphabetically ordered list to acknowledge in the next release.
-
-Valentina Abril-melgarejo
-Leindert Boogaard
-Nushkia Chamba
-Takashi Ichikawa
-Oryna Ivashtenko
-Geoffry Krouchi
-Alan Lefor
-Juan Molina Tobar
-Dmitrii Oparin
-Teymoor Saifollahi
-Jenny Sorce
-Aaron Watkins

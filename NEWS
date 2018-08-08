@@ -1,11 +1,11 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release X.X (library 5.0.0) (YYYY-MM-DD) [alpha]
+* Noteworthy changes in release 0.7 (library 5.0.0) (2018-08-08) [stable]
 
 ** New features
 
   Installation:
-    --enable-debug: enable debugging flags and disable optimization.
+    --enable-debug: debugging flags, no optimization, no shared libraries.
     --enable-check-with-valgrind: Run `make check' tests within Valgrind.
 
   Arithmetic:
@@ -20,7 +20,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - `collapse-number': Number of elements included in the collapse.
 
   CosmicCalculator:
-    - Default cosmology set to ESO's Plank 2018 results (Paper VI).
+    - Default cosmology set to Plank 2018 results (Paper VI).
 
   MakeCatalog:
     --minx: minimum position along first FITS axis.

@@ -1710,21 +1710,23 @@ generic programs and libraries it is today.
 @c (alphabetical, except for the names in the paragraph above).
 In general, we would like to gratefully thank the following people for
 their useful and constructive comments and suggestions (in alphabetical
-order by family name): Marjan Akbari, Roland Bacon, Karl Berry, Leindert
-Boogaard, Nicolas Bouch@'e, Fernando Buitrago, Adrian Bunk, Rosa Calvi,
-Nushkia Chamba, Benjamin Clement, Nima Dehdilani, Antonio Diaz Diaz,
-Th@'er@`ese Godefroy, Madusha Gunawardhana, Stephen Hamer, Takashi
-Ichikawa, Ra@'ul Infante Sainz, Brandon Invergo, Aur@'elien Jarno, Lee
-Kelvin, Brandon Kelly, Mohammad-Reza Khellat, Floriane Leclercq, Alan
-Lefor, Guillaume Mahler, Francesco Montanari, Bertrand Pain, William Pence,
-Bob Proulx, Yahya Sefidbakht, Alejandro Serrano Borlaff, Lee Spitler,
-Richard Stallman, Ole Streicher, Alfred M. Szmidt, Michel Tallon, Juan
-C. Tello, @'Eric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron
-Watkins, Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The GNU
-French Translation Team is also managing the French version of the top
-Gnuastro webpage which we highly appreciate. Finally we should thank all
-the (sometimes anonymous) people in various online forums which patiently
-answered all our small (but important) technical questions.
+order by family name): Valentina Abril-melgarejo, Marjan Akbari, Roland
+Bacon, Karl Berry, Leindert Boogaard, Nicolas Bouch@'e, Fernando Buitrago,
+Adrian Bunk, Rosa Calvi, Nushkia Chamba, Benjamin Clement, Nima Dehdilani,
+Antonio Diaz Diaz, Th@'er@`ese Godefroy, Madusha Gunawardhana, Stephen
+Hamer, Takashi Ichikawa, Ra@'ul Infante Sainz, Brandon Invergo, Oryna
+Ivashtenko, Aur@'elien Jarno, Lee Kelvin, Brandon Kelly, Mohammad-Reza
+Khellat, Geoffry Krouchi, Floriane Leclercq, Alan Lefor, Guillaume Mahler,
+Juan Molina Tobar, Francesco Montanari, Dmitrii Oparin, Bertrand Pain,
+William Pence, Bob Proulx, Teymoor Saifollahi, Yahya Sefidbakht, Alejandro
+Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard Stallman, Ole Streicher,
+Alfred M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric Thi@'ebaut, Ignacio
+Trujillo, David Valls-Gabaud, Aaron Watkins, Christopher Willmer, Sara
+Yousefi Taemeh, Johannes Zabl. The GNU French Translation Team is also
+managing the French version of the top Gnuastro webpage which we highly
+appreciate. Finally we should thank all the (sometimes anonymous) people in
+various online forums which patiently answered all our small (but
+important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in

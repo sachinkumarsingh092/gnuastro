@@ -49,10 +49,6 @@ all the commits needed for this release have been completed.
      $ git diff gnuastro_vP.P..HEAD THANKS
 
 
- - [STABLE] Correct the links in the webpage (`doc/gnuastro.en.html' and
-   `doc/gnuastro.fr.html').
-
-
  - Run the following commands to keep the list of people who contributed
    code and those that must be acknowledged for the announcement (`P.P' is
    the previous version).
@@ -61,8 +57,13 @@ all the commits needed for this release have been completed.
      $ cat doc/announce-acknowledge.txt >> ~/people.txt
 
      [STABLE] Clean `doc/announce-acknowledge.txt':
-     $ echo "People who's help must be acknowledged in the next release." \
+     $ echo "Alphabetically ordered list to acknowledge in the next release." \
             > doc/announce-acknowledge.txt
+
+
+ - [STABLE] Correct the version links in the webpage
+   (`doc/gnuastro.en.html' and `doc/gnuastro.fr.html'). Note that this is
+   not for upload at this stage, it is only for the version control.
 
 
  - Commit all these changes:
@@ -95,11 +96,10 @@ all the commits needed for this release have been completed.
      $ git tag -a gnuastro_vX.X
 
 
- - [STABLE] The tag will cause a change in the tarball version. So clean
-   the build directory, and repeat the steps for the final release:
+ - [STABLE] The tag will cause a change in the tarball version. Run the
+   following commands to build the final tarball.
 
-     $ autoreconf -f
-     $ ./developer-build -c -C -d
+     $ ./developer-build -a -c -C -d
      $ cd build
      $ make dist dist-lzip       # to build `tar.gz' and `tar.lz'.
 
