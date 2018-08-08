@@ -23,13 +23,16 @@ all the commits needed for this release have been completed.
    three branchs with the following command
 
        $ git checkout master
-       $ git reset --hard HEAD~1
+       $ git tag -d debian/$ver-1
+       $ git reset --hard HEAD~1        # To go to the merge with upstream.
+       $ git reset --hard HEAD~1            # To go to last Debian release.
        $ git checkout pristine-tar
        $ git reset --hard HEAD~1
        $ git checkout upstream
        $ git tag -d upstream/$ver
        $ git reset --hard HEAD~1
        $ git checkout master
+       $ git log --oneline --graph --decorate --all   # For a visual check.
 
 
  - [STABLE] Update the versions in the NEWS file.
