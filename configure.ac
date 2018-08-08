@@ -112,11 +112,11 @@ AM_CONDITIONAL([COND_CHECK_WITH_VALGRIND], [test "x$enable_check_with_valgrind" 
 # Set the compilation flags.
 AC_ARG_ENABLE(debug,
               [AS_HELP_STRING([--enable-debug],
-                              [No optimization, build with debug flags.])],
+                              [No optimization, debug flags, no shared lib.])],
               [AS_IF([test "x$enable_debug" != xno], [enable_debug=yes])],
               [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [cflags_add="-g -O0"],
+      [cflags_add="-g -O0"; enable_shared=no],
       [cflags_add="-O3"])
 CFLAGS="-Wall $cflags_add $CFLAGS"
 CXXFLAGS="-Wall $cflags_add $CXXFLAGS"
@@ -395,10 +395,14 @@ libtool_shell="none"
 AS_IF([test "x$has_gnulibtool" = "xyes"],
       [
         AC_MSG_CHECKING(for shell to use with libtool)
+
+        # Make a C source file and run Libtool on it with the specified
+        # shells.
+        outname=libtool_shell_test
         cprog=libtool_shell_test.c
         echo "#include <stdio.h>"                                 > $cprog
         echo "int main(void){printf(\"success\\n\"); return 0;}" >> $cprog
-        ltargs="--quiet --tag=CC --mode=link $CC $cprog -O3 -o test"
+        ltargs="--quiet --tag=CC --mode=link $CC $cprog -O3 -o $outname"
         AS_IF( sh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
                [libtool_shell="sh"],
                [AS_IF([test "x$has_bash" = "xyes"],
@@ -409,7 +413,13 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
                                     [libtool_shell="zsh"]) ])
                        ] )
                ] )
+
+        # Clean up: note that no output might have been generated (when no
+        # proper shell was found). Therefore, for deleting the output file,
+        # we'll call `rm' with `-f' so it doesn't complain with an error in
+        # such cases.
         rm $cprog
+        rm -f $outname
         AC_MSG_RESULT($libtool_shell)
       ])
 

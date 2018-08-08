@@ -5758,14 +5758,24 @@ program using the GNU build system (through the configure script).
 @cindex Valgrind
 @cindex Debugging
 @cindex GNU Debugger
-Compile/build Gnuastro with debugging information and no optimization. In
-order to allow more efficient programs when using Gnuastro (after the
+Compile/build Gnuastro with debugging information, no optimization and
+without shared libraries.
+
+In order to allow more efficient programs when using Gnuastro (after the
 installation), by default Gnuastro is built with a 3rd level (a very high
-level) optimization and no debugging information. But when there are
-crashes or unexpected behavior, debugging flags and disabling optimization
-can greatly help in localizing the problem. This configuration option is
-identical to manually calling the configuration script with
-@code{CFLAGS="-g -O0"}.
+level) optimization and no debugging information. By default, libraries are
+also built for static @emph{and} shared linking (see
+@ref{Linking}). However, when there are crashes or unexpected behavior,
+these three features can hinder the process of localizing the problem. This
+configuration option is identical to manually calling the configuration
+script with @code{CFLAGS="-g -O0" --disable-shared}.
+
+In the (rare) situations where you need to do your debugging on the shared
+libraries, don't use this option. Instead run the configure script by
+explicitly setting @code{CFLAGS} like this:
+@example
+$ ./configure CFLAGS="-g -O0"
+@end example
 
 @item --enable-check-with-valgrind
 @cindex Valgrind
@@ -5773,8 +5783,8 @@ Do the @command{make check} tests through Valgrind. Therefore, if any
 crashes or memory-related issues (segmentation faults in particular) occur
 in the tests, the output of Valgrind will also be put in the
 @file{tests/test-suite.log} file without having to manually modify the
-check scripts. This option will also build Gnuastro with no optimization
-and enable debugging flags (as if you also call @option{--enable-debug}).
+check scripts. This option will also activate Gnuastro's debug mode (see
+the @option{--enable-debug} configure-time option described above).
 
 Valgrind is free software. It is a program for easy checking of
 memory-related issues in programs. It runs a program within its own
@@ -6460,7 +6470,7 @@ as GDB, or Valgrind), disable optimization and also the building of shared
 libraries. Similar to running the configure script of below
 
 @example
-$ ./configure --enable-debug --disable-shared
+$ ./configure --enable-debug
 @end example
 
 Besides all the debugging advantages of building with this option, it will
@@ -29249,7 +29259,7 @@ significantly slow down the compilation (the @command{make} command). So
 during development it is recommended to configure Gnuastro as follows:
 
 @example
-$ ./configure --enable-debug --disable-shared
+$ ./configure --enable-debug
 @end example
 
 @noindent
