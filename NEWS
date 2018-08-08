@@ -19,6 +19,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.
 
+  CosmicCalculator:
+    - Default cosmology set to ESO's Plank 2018 results (Paper VI).
+
   MakeCatalog:
     --minx: minimum position along first FITS axis.
     --maxx: maximum position along first FITS axis.
