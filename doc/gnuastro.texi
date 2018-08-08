@@ -2320,7 +2320,7 @@ This tutorial was first prepared for the ``Exploring the Ultra-Low Surface
 Brightness Universe'' workshop (November 2017) at the ISSI in Bern,
 Switzerland. It was further extended in the ``4th Indo-French Astronomy
 School'' (July 2018) organized by LIO, CRAL CNRS UMR5574, UCBL, and IUCAA
-in Lyon, France. We are very greatful to the organizers of these workshops
+in Lyon, France. We are very grateful to the organizers of these workshops
 and the attendees for the very fruitful discussions and suggestions that
 made this tutorial possible.
 
@@ -2710,8 +2710,8 @@ main(void)
   double area=4.03817;          /* Area of field (arcmin^2). */
   double z, adist, tandist;     /* Temporary variables.      */
 
-  /* Constants from Plank 2015 (Paper XIII, A&A 594, 2016) */
-  double H0=67.74, olambda=0.6911, omatter=0.3089, oradiation=0;
+  /* Constants from Plank 2018 (arXiv:1807.06209, Table 2) */
+  double H0=67.66, olambda=0.6889, omatter=0.3111, oradiation=0;
 
   /* Do the same thing for all redshifts (z) between 0.1 and 5. */
   for(z=0.1; z<5; z+=0.1)
@@ -3790,8 +3790,8 @@ $ wget $topurl/301/3716/6/frame-r-003716-6-0117.fits.bz2 -Or.fits.bz2
 @noindent
 This server keeps the files in a Bzip2 compressed file format. So we'll
 first decompress it with the following command. By convention, compression
-programs delete the original file (compressed when un-compressing, or
-un-compressed when compressing). To keep the original file, you can use the
+programs delete the original file (compressed when uncompressing, or
+uncompressed when compressing). To keep the original file, you can use the
 @option{--keep} or @option{-k} option which is available in most
 compression programs for this job. Here, we don't need the compressed file
 any more, so we'll just let @command{bunzip} delete it for us and keep the
@@ -5245,7 +5245,7 @@ of such problems and their solution are discussed below.
 @cartouche
 @noindent
 @strong{Not finding library during configuration:} If a library is
-installed, but during Gnuastro's @command{configre} step the library isn't
+installed, but during Gnuastro's @command{configure} step the library isn't
 found, then configure Gnuastro like the command below (correcting
 @file{/path/to/lib}). For more, see @ref{Known issues} and
 @ref{Installation directory}.
@@ -5512,7 +5512,7 @@ $ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 @cindex GNU build system
 Since Gnulib and Autoconf archives are now available in your local
 directories, you don't need an internet connection every time you decide to
-remove all un-tracked files and redo the bootstrap (see box below). You can
+remove all untracked files and redo the bootstrap (see box below). You can
 also use the same command on any other project that uses Gnulib. All the
 necessary GNU C library functions, Autoconf macros and Automake inputs are
 now available along with the book figures. The standard GNU build system
@@ -5762,7 +5762,7 @@ Compile/build Gnuastro with debugging information and no optimization. In
 order to allow more efficient programs when using Gnuastro (after the
 installation), by default Gnuastro is built with a 3rd level (a very high
 level) optimization and no debugging information. But when there are
-crashes or un-expected behavior, debugging flags and disabling optimization
+crashes or unexpected behavior, debugging flags and disabling optimization
 can greatly help in localizing the problem. This configuration option is
 identical to manually calling the configuration script with
 @code{CFLAGS="-g -O0"}.
@@ -6529,7 +6529,7 @@ to revert back to a different point in history. But Gnuastro also needs to
 bootstrap files and also your collaborators might (usually do!) find it too
 much of a burden to do the bootstrapping themselves. So it is convenient to
 have a tarball and PDF manual of the version you have installed (and are
-using in your reserach) handily available.
+using in your research) handily available.
 
 @item -h
 @itemx --help
@@ -6610,9 +6610,8 @@ this line:
 @end example
 
 @noindent
-In Texinfo, a line is commented with @code{@@c}. Therefore, un-comment
-this line by deleting the first two characters such that it changes
-to:
+In Texinfo, a line is commented with @code{@@c}. Therefore, uncomment this
+line by deleting the first two characters such that it changes to:
 
 @example
 @@afourpaper
@@ -7602,7 +7601,7 @@ ignored.
 name. Therefore if two simultaneous calls (with @option{--log}) of a
 program are made in the same directory, the program will try to write to
 the same file. This will cause problems like unreasonable log file,
-un-defined behavior, or a crash.
+undefined behavior, or a crash.
 @end cartouche
 
 @cindex CPU threads, set number
@@ -7739,7 +7738,7 @@ parameters.
 In each step, there can also be a configuration file containing the common
 options in all the programs: @file{gnuastro.conf} (see @ref{Common
 options}). If options specific to one program are specified in this file,
-there will be un-recognized option errors, or unexpected behavior if the
+there will be unrecognized option errors, or unexpected behavior if the
 option has different behavior in another program. On the other hand, there
 is no problem with @file{astprogname.conf} containing common
 options@footnote{As an example, the @option{--setdirconf} and
@@ -8145,7 +8144,7 @@ are inclusive.
 @table @code
 @item u8
 @itemx uint8
-8-bit un-signed integers, range:@*
+8-bit unsigned integers, range:@*
 @mymath{[0\rm{\ to\ }2^8-1]} or @mymath{[0\rm{\ to\ }255]}.
 
 @item i8
@@ -8155,7 +8154,7 @@ are inclusive.
 
 @item u16
 @itemx uint16
-16-bit un-signed integers, range:@*
+16-bit unsigned integers, range:@*
 @mymath{[0\rm{\ to\ }2^{16}-1]} or @mymath{[0\rm{\ to\ }65535]}.
 
 @item i16
@@ -8165,7 +8164,7 @@ are inclusive.
 
 @item u32
 @itemx uint32
-32-bit un-signed integers, range:@* @mymath{[0\rm{\ to\ }2^{32}-1]} or
+32-bit unsigned integers, range:@* @mymath{[0\rm{\ to\ }2^{32}-1]} or
 @mymath{[0\rm{\ to\ }4294967295]}.
 
 @item i32
@@ -8175,7 +8174,7 @@ are inclusive.
 
 @item u64
 @itemx uint64
-64-bit un-signed integers, range@* @mymath{[0\rm{\ to\ }2^{64}-1]} or
+64-bit unsigned integers, range@* @mymath{[0\rm{\ to\ }2^{64}-1]} or
 @mymath{[0\rm{\ to\ }18446744073709551615]}.
 
 @item i64
@@ -11031,11 +11030,11 @@ value to this option is zero, no checking is done. This check is only
 applied when the cropped region(s) are defined by their center (not by the
 vertices, see @ref{Crop modes}).
 
-The units of the value are interpretted based on the @option{--mode} value
+The units of the value are interpreted based on the @option{--mode} value
 (in WCS or pixel units). The ultimate checked region size (in pixels) will
 be an odd integer around the center (converted from WCS, or when an even
 number of pixels are given to this option). In WCS mode, the value can be
-given as fractions, for example if the WCS untis are in degrees,
+given as fractions, for example if the WCS units are in degrees,
 @code{0.1/3600} will correspond to a check size of 0.1 arcseconds.
 
 Because survey regions don't often have a clean square or rectangle shape,
@@ -11514,7 +11513,8 @@ operators on the returned dataset.
 @cindex World Coordinate System (WCS)
 If any WCS is present, the returned dataset will also lack the respective
 dimension in its WCS matrix. Therefore, when the WCS is important for later
-processing, be sure that the input is aligned with the respective axises: all non-diagonal elements in the WCS matrix are zero.
+processing, be sure that the input is aligned with the respective axises:
+all non-diagonal elements in the WCS matrix are zero.
 
 @cindex IFU
 @cindex Data cubes
@@ -11793,7 +11793,7 @@ bitnot} will give @code{11010111}. Note that the bitwise operators only
 work on integer type datasets/numbers.
 
 @item uint8
-Convert the type of the popped operand to 8-bit un-signed integer type (see
+Convert the type of the popped operand to 8-bit unsigned integer type (see
 @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item int8
@@ -11801,7 +11801,7 @@ Convert the type of the popped operand to 8-bit signed integer type (see
 @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item uint16
-Convert the type of the popped operand to 16-bit un-signed integer type
+Convert the type of the popped operand to 16-bit unsigned integer type
 (see @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item int16
@@ -11809,7 +11809,7 @@ Convert the type of the popped operand to 16-bit signed integer (see
 @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item uint32
-Convert the type of the popped operand to 32-bit un-signed integer type
+Convert the type of the popped operand to 32-bit unsigned integer type
 (see @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item int32
@@ -11817,7 +11817,7 @@ Convert the type of the popped operand to 32-bit signed integer type (see
 @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item uint64
-Convert the type of the popped operand to 64-bit un-signed integer (see
+Convert the type of the popped operand to 64-bit unsigned integer (see
 @ref{Numeric data types}). The internal conversion of C will be used.
 
 @item float32
@@ -11836,7 +11836,7 @@ name for the first popped operand on the stack. The named dataset will be
 freed from memory as soon as it is no longer needed, or if the name is
 reset to refer to another dataset later in the command. This operator thus
 enables re-usability of a dataset without having to re-read it from a file
-everytime it is necessary during a process. When a dataset is necessary
+every time it is necessary during a process. When a dataset is necessary
 more than once, this operator can thus help simplify reading/writing on the
 command-line (thus avoiding potential bugs), while also speeding up the
 processing.
@@ -12157,22 +12157,20 @@ following sub-sections.
 @node Spatial domain convolution, Frequency domain and Fourier operations, Convolve, Convolve
 @subsection Spatial domain convolution
 
-The pixels in an input image represent different ``spatial''
-positions, therefore when convolution is done only using the actual
-input pixel values, we name the process as being done in the ``Spatial
-domain''. In particular this is in contrast to the ``frequency
-domain'' that we will discuss later in @ref{Frequency domain and
-Fourier operations}. In the spatial domain (and in realistic
-situations where the image and the convolution kernel don't extend to
-infinity), convolution is the process of changing the value of one
-pixel to the @emph{weighted} average of all the pixels in its
-@emph{neighborhood}.
+The pixels in an input image represent different ``spatial'' positions,
+therefore when convolution is done only using the actual input pixel
+values, we name the process as being done in the ``Spatial domain''. In
+particular this is in contrast to the ``frequency domain'' that we will
+discuss later in @ref{Frequency domain and Fourier operations}. In the
+spatial domain (and in realistic situations where the image and the
+convolution kernel don't extend to infinity), convolution is the process of
+changing the value of one pixel to the @emph{weighted} average of all the
+pixels in its @emph{neighborhood}.
 
-The `neighborhood' of each pixel (how many pixels in which direction)
-and the `weight' function (how much each neighboring pixel should
-contribute depending on its position) are given through a second image
-which is known as a ``kernel''@footnote{Also known as filter, here we
-will use `kernel'.}.
+The `neighborhood' of each pixel (how many pixels in which direction) and
+the `weight' function (how much each neighboring pixel should contribute
+depending on its position) are given through a second image which is known
+as a ``kernel''@footnote{Also known as filter, here we will use `kernel'.}.
 
 @menu
 * Convolution process::         More basic explanations.
@@ -12184,43 +12182,41 @@ will use `kernel'.}.
 
 In convolution, the kernel specifies the weight and positions of the
 neighbors of each pixel. To find the convolved value of a pixel, the
-central pixel of the kernel is placed on that pixel. The values of
-each overlapping pixel in the kernel and image are multiplied by each
-other and summed for all the kernel pixels. To have one pixel in the
-center, the sides of the convolution kernel have to be an odd
-number. This process effectively mixes the pixel values of each pixel
-with its neighbors, resulting in a blurred image compared to the
-sharper input image.
+central pixel of the kernel is placed on that pixel. The values of each
+overlapping pixel in the kernel and image are multiplied by each other and
+summed for all the kernel pixels. To have one pixel in the center, the
+sides of the convolution kernel have to be an odd number. This process
+effectively mixes the pixel values of each pixel with its neighbors,
+resulting in a blurred image compared to the sharper input image.
 
 @cindex Linear spatial filtering
-Formally, convolution is one kind of linear `spatial filtering' in
-image processing texts. If we assume that the kernel has @mymath{2a+1}
-and @mymath{2b+1} pixels on each side, the convolved value of a pixel
-placed at @mymath{x} and @mymath{y} (@mymath{C_{x,y}}) can be
-calculated from the neighboring pixel values in the input image
-(@mymath{I}) and the kernel (@mymath{K}) from
+Formally, convolution is one kind of linear `spatial filtering' in image
+processing texts. If we assume that the kernel has @mymath{2a+1} and
+@mymath{2b+1} pixels on each side, the convolved value of a pixel placed at
+@mymath{x} and @mymath{y} (@mymath{C_{x,y}}) can be calculated from the
+neighboring pixel values in the input image (@mymath{I}) and the kernel
+(@mymath{K}) from
 
 @dispmath{C_{x,y}=\sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t}.}
 
 @cindex Correlation
 @cindex Convolution
-Any pixel coordinate that is outside of the image in the equation
-above will be considered to be zero. When the kernel is symmetric
-about its center the blurred image has the same orientation as the
-original image. However, if the kernel is not symmetric, the image
-will be affected in the opposite manner, this is a natural consequence
-of the definition of spatial filtering. In order to avoid this we can
-rotate the kernel about its center by 180 degrees so the convolved
-output can have the same original orientation. Technically speaking,
-only if the kernel is flipped the process is known
-@emph{Convolution}. If it isn't it is known as @emph{Correlation}.
+Any pixel coordinate that is outside of the image in the equation above
+will be considered to be zero. When the kernel is symmetric about its
+center the blurred image has the same orientation as the original
+image. However, if the kernel is not symmetric, the image will be affected
+in the opposite manner, this is a natural consequence of the definition of
+spatial filtering. In order to avoid this we can rotate the kernel about
+its center by 180 degrees so the convolved output can have the same
+original orientation. Technically speaking, only if the kernel is flipped
+the process is known @emph{Convolution}. If it isn't it is known as
+@emph{Correlation}.
 
-To be a weighted average, the sum of the weights (the pixels in the
-kernel) have to be unity. This will have the consequence that the
-convolved image of an object and un-convolved object will have the same
-brightness (see @ref{Flux Brightness and magnitude}), which is
-natural, because convolution should not eat up the object photons, it
-only disperses them.
+To be a weighted average, the sum of the weights (the pixels in the kernel)
+have to be unity. This will have the consequence that the convolved image
+of an object and unconvolved object will have the same brightness (see
+@ref{Flux Brightness and magnitude}), which is natural, because convolution
+should not eat up the object photons, it only disperses them.
 
 
 
@@ -12901,13 +12897,13 @@ image), where @mymath{k} is an integer, can thus be represented as:
 
 Note that in practice, our discrete data points are not found in this
 fashion. Each detector pixel (in an image for example) has an area and
-averages the signal it receives over that area, not a mathematical
-point as the Dirac @mymath{\delta} function defines. However, as long
-as the variation in the signal over one detector pixel is not
-significant, this can be a good approximation. Having put this issue
-to the side, we can now try to find the relation between the Fourier
-transforms of the un-sampled @mymath{f(l)} and the sampled
-@mymath{f_s(l)}. For a more clear notation, let's define:
+averages the signal it receives over that area, not a mathematical point as
+the Dirac @mymath{\delta} function defines. However, as long as the
+variation in the signal over one detector pixel is not significant, this
+can be a good approximation. Having put this issue to the side, we can now
+try to find the relation between the Fourier transforms of the unsampled
+@mymath{f(l)} and the sampled @mymath{f_s(l)}. For a more clear notation,
+let's define:
 
 @dispmath{F_s(\omega)\equiv{\cal F}[f_s]}
 
@@ -13791,7 +13787,7 @@ defined in @ref{Warping basics}, we have to `guess' the flux value of each
 pixel on the new grid based on the old grid, or re-sample it. Because of
 the `guessing', any form of warping on the data is going to degrade the
 image and mix the original pixel values with each other. So if an analysis
-can be done on an un-warped data image, it is best to leave the image
+can be done on an unwarped data image, it is best to leave the image
 untouched and pursue the analysis. However as discussed in @ref{Warp} this
 is not possible most of the times, so we have to accept the problem and
 re-sample the image.
@@ -14347,7 +14343,7 @@ the astronomical literature, researchers use a variety of methods to
 estimate the Sky value, so in @ref{Sky value misconceptions}) we review
 those and discuss their biases. From the definition of the Sky value, the
 most accurate way to estimate the Sky value is to run a detection algorithm
-(for example @ref{NoiseChisel}) over the dataset and use the un-detected
+(for example @ref{NoiseChisel}) over the dataset and use the undetected
 pixels. However, there is also a more crude method that maybe useful when
 good direct detection is not initially possible (for example due to too
 many cosmic rays in a shallow image). A more crude (but simpler method)
@@ -15607,7 +15603,7 @@ Use this file as the convolved image and don't do convolution (ignore
 @option{--kernel}). NoiseChisel will just check the size of the given
 dataset is the same as the input's size. If a wrong image (with the same
 size) is given to this option, the results (errors, bugs, and etc) are
-un-predictable. So please use this option with care and in a highly
+unpredictable. So please use this option with care and in a highly
 controlled environment, for example in the scenario discussed below.
 
 In almost all situations, as the input gets larger, the single most CPU
@@ -15729,7 +15725,7 @@ The quantile threshold to apply to the convolved image. The detection
 process begins with applying a quantile threshold to each of the tiles in
 the small tessellation. The quantile is only calculated for tiles that
 don't have any significant signal within them, see @ref{Quantifying signal
-in a tile}. Interpolation is then used to give a value to the un-successful
+in a tile}. Interpolation is then used to give a value to the unsuccessful
 tiles and it is finally smoothed.
 
 @cindex Quantile
@@ -15905,7 +15901,7 @@ only one pixel will be used for each tile (see @ref{Processing options}).
 The detection threshold: a multiple of the initial sky standard deviation
 added with the initial sky approximation (which you can inspect with
 @option{--checkdetsky}). This flux threshold is applied to the initially
-undetected regions on the un-convolved image. The background pixels that are
+undetected regions on the unconvolved image. The background pixels that are
 completely engulfed in a 4-connected foreground region are converted to
 background (holes are filled) and one opening (depth of 1) is applied over
 both the initially detected and undetected regions. The Signal to noise
@@ -15941,7 +15937,7 @@ threshold, this behavior (to abort NoiseChisel) can be disabled with
 @option{--continueaftercheck}.
 
 @item --minnumfalse=INT
-The minimum number of `pseudo-detections' over the un-detected regions to
+The minimum number of `pseudo-detections' over the undetected regions to
 identify a Signal-to-Noise ratio threshold. The Signal to noise ratio (S/N)
 of false pseudo-detections in each tile is found using the quantile of the
 S/N distribution of the psudo-detections over the undetected pixels in each
@@ -16388,12 +16384,12 @@ of this correction factor is irrelevant: because it uses the ambient noise
 applies that over the detected regions.
 
 A distribution's extremum (maximum or minimum) values, used in the new
-criteria, are strongly affected by scatter. On the other hand, the convolved
-image has much less scatter@footnote{For more on the effect of convolution
-on a distribution, see Section 3.1.1 of
+criteria, are strongly affected by scatter. On the other hand, the
+convolved image has much less scatter@footnote{For more on the effect of
+convolution on a distribution, see Section 3.1.1 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
 [2015]}.}. Therefore @mymath{C_c-R_c} is a more reliable (with less
-scatter) measure to identify signal than @mymath{C-R} (on the un-convolved
+scatter) measure to identify signal than @mymath{C-R} (on the unconvolved
 image).
 
 Initially, the total clump signal-to-noise ratio of each clump was used,
@@ -17360,7 +17356,7 @@ intend to make apertures manually and not use a detection map (for example
 from @ref{Segment}), don't forget to use the @option{--upmaskfile} to give
 NoiseChisel's output (or any a binary map, marking detected pixels, see
 @ref{NoiseChisel output}) as a mask. Otherwise, the footprints may randomly
-fall over detections, giving higly skewed distributions, with wrong
+fall over detections, giving highly skewed distributions, with wrong
 upper-limit distributions. See The description of @option{--upmaskfile} in
 @ref{Upper-limit settings} for more.}.
 
@@ -18001,8 +17997,8 @@ two columns are the position of the first pixel in each random sampling of
 this particular object/clump. The the third column is the measured flux
 over that region. If the region overlapped with a detection or masked
 pixel, then its measured value will be a NaN (not-a-number). The total
-number of rows is thus un-known, but you can be sure that the number of
-rows with non-NaN measurements is the number given to the @option{--upnum}
+number of rows is thus unknown, but you can be sure that the number of rows
+with non-NaN measurements is the number given to the @option{--upnum}
 option.
 
 @end table
@@ -18217,7 +18213,7 @@ The magnitude of clumps or objects, see @option{--brightness}.
 @itemx --magnitudeerr
 The magnitude error of clumps or objects. The magnitude error is calculated
 from the signal-to-noise ratio (see @option{--sn} and @ref{Quantifying
-measurement limits}). Note that until now this error assumes un-correlated
+measurement limits}). Note that until now this error assumes uncorrelated
 pixel values and also does not include the error in estimating the aperture
 (or error in generating the labeled image).
 
@@ -18274,7 +18270,7 @@ as: @mymath{(\mu-\nu)/\sigma}.
 This can be a good measure to see how much you can trust the random
 measurements, or in other words, how accurately the regions with signal
 have been masked/detected. If the skewness is strong (and to the positive),
-then you can tell that you have a lot of un-detected signal in the dataset,
+then you can tell that you have a lot of undetected signal in the dataset,
 and therefore that the upper-limit measurement (and other measurements) are
 not reliable.
 
@@ -18567,7 +18563,7 @@ this log file.
 calls to Match. Therefore if a separate log is requested in two
 simultaneous calls to Match in the same directory, Match will try to write
 to the same file. This will cause problems like unreasonable log file,
-un-defined behavior, or a crash.
+undefined behavior, or a crash.
 @end cartouche
 
 @table @option
@@ -18598,7 +18594,7 @@ to retrieve your desired information and do the match at the same time.
 
 @item -l
 @itemx --logasoutput
-The output file will have the contents of the log file: indexs in the two
+The output file will have the contents of the log file: indexes in the two
 catalogs that match with each other along with their distance. See
 description above. When this option is called, a log file called
 @file{astmatch.txt} will not be created. With this option, the default
@@ -19138,14 +19134,13 @@ the atmospheric and instrument PSF in a continuous space and then it
 is sampled on the discrete pixels of the camera.
 
 @cindex PSF over-sample
-In order to more accurately simulate this process, the un-convolved
-image and the PSF are created on a finer pixel grid. In other words,
-the output image is a certain odd-integer multiple of the desired
-size, we can call this `oversampling'. The user can specify this
-multiple as a command-line option. The reason this has to be an odd
-number is that the PSF has to be centered on the center of its
-image. An image with an even number of pixels on each side does not
-have a central pixel.
+In order to more accurately simulate this process, the unconvolved image
+and the PSF are created on a finer pixel grid. In other words, the output
+image is a certain odd-integer multiple of the desired size, we can call
+this `oversampling'. The user can specify this multiple as a command-line
+option. The reason this has to be an odd number is that the PSF has to be
+centered on the center of its image. An image with an even number of pixels
+on each side does not have a central pixel.
 
 The image can then be convolved with the PSF (which should also be
 oversampled on the same scale). Finally, image can be sub-sampled to
@@ -24118,7 +24113,7 @@ types for reading arrays.
 
 @deftypefun int gal_array_name_recognized_multiext (char @code{*filename})
 Return 1 if the given file name corresponds to one of the recognized file
-types for reading arrays which may contain multiple extesions (for example
+types for reading arrays which may contain multiple extensions (for example
 FITS or TIFF) formats.
 @end deftypefun
 
@@ -24345,7 +24340,7 @@ If @code{filename} is a FITS file, the table extension will have the name
 When @code{colinfoinstdout!=0} and @code{filename==NULL} (columns are
 printed in the standard output), the dataset metadata will also printed in
 the standard output. When printing to the standard output, the column
-information can be piped into another program for futher processing and
+information can be piped into another program for further processing and
 thus the meta-data (lines starting with a @code{#}) must be ignored. In
 such cases, you only print the column values by passing @code{0} to
 @code{colinfoinstdout}.
@@ -25071,9 +25066,9 @@ standard output (command-line). When @code{colinfoinstdout!=0} and
 @code{filename==NULL} (columns are printed in the standard output), the
 dataset metadata will also printed in the standard output. When printing to
 the standard output, the column information can be piped into another
-program for futher processing and thus the meta-data (lines starting with a
-@code{#}) must be ignored. In such cases, you only print the column values
-by passing @code{0} to @code{colinfoinstdout}.
+program for further processing and thus the meta-data (lines starting with
+a @code{#}) must be ignored. In such cases, you only print the column
+values by passing @code{0} to @code{colinfoinstdout}.
 @end deftypefun
 
 
@@ -25140,7 +25135,7 @@ internet. For more on this file format, and a comparison with others,
 please see @ref{Recognized file formats}.
 
 For scientific purposes, the lossy compression and very limited dynamic
-range (8-bit integers) make JPEG very un-attractive for storing of valuable
+range (8-bit integers) make JPEG very unattractive for storing of valuable
 data. However, because of its commonality, it will inevitably be needed in
 some situations. The functions here can be used to read and write JPEG
 images into Gnuastro's @ref{Generic data container}. If the JPEG file has
@@ -27308,7 +27303,7 @@ easy (non-confusing) access to the indexs of each (meaningful) label.
 value of zero, then the maximum value in the input (largest label) will be
 found and used. Therefore if it is given, but smaller than the actual
 number of labels, this function may/will crash (it will write in
-un-allocated space). @code{numlabs} is therefore useful in a highly
+unallocated space). @code{numlabs} is therefore useful in a highly
 optimized/checked environment.
 
 For example, if the returned array is called @code{indexs}, then
@@ -28737,7 +28732,7 @@ programming}.
 The last two conventions are not common and might benefit from a short
 discussion here. With a good experience in advanced text editor operations,
 the last two are redundant for a professional developer. However, recall
-that Gnuastro aspires to be friendly to un-familiar, and un-experienced (in
+that Gnuastro aspires to be friendly to unfamiliar, and inexperienced (in
 programming) eyes. In other words, as discussed in @ref{Science and its
 tools}, we want the code to appear welcoming to someone who is completely
 new to coding (and text editors) and only has a scientific curiosity.
@@ -28884,7 +28879,7 @@ parameters while @code{p->threshold} is in the program's parameters.
 @cindex Operator, structure de-reference
 With this basic root structure, source code of functions can potentially
 become full of structure de-reference operators (@command{->}) which can
-make the code very un-readable. In order to avoid this, whenever a
+make the code very unreadable. In order to avoid this, whenever a
 structure element is used more than a couple of times in a function, a
 variable of the same type and with the same name (so it can be searched) as
 the desired structure element should be defined with the value of the root
@@ -30196,7 +30191,7 @@ popular graphic user interface for GNU/Linux systems), version 3. For GNOME
 make it your self (with @command{mkdir}). Using your favorite text editor,
 you can now create @file{~/.local/share/applications/saods9.desktop} with
 the following contents. Just don't forget to correct @file{BINDIR}. If you
-would also like to have ds9's logo/icon in GNOME, download it, un-comment
+would also like to have ds9's logo/icon in GNOME, download it, uncomment
 the @code{Icon} line, and write its address in the value.
 
 @example

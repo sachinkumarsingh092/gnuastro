@@ -5,6 +5,13 @@ This file is primarily intended for the Gnuastro maintainer and lists the
 set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
+ - [STABLE] Run a spell-check (in emacs, with `M-x ispell') on the new
+   parts of the book. You can put them in a test file with this command,
+   just replace X.X with the previous version:
+
+       $ git diff gnuastro_vX.X..HEAD doc/gnuastro.texi | grep ^\+  \
+             > ~/gnuastro_book_new_parts.txt
+
 
  - Build the Debian distribution (just for a test) and correct any build or
    Lintian warnings. This is recommended, even if you don't actually want
@@ -23,9 +30,6 @@ all the commits needed for this release have been completed.
        $ git tag -d upstream/$ver
        $ git reset --hard HEAD~1
        $ git checkout master
-
-
- - [STABLE] Run a spell-check (in emacs with `M-x ispell') on the whole book.
 
 
  - [STABLE] Update the versions in the NEWS file.
