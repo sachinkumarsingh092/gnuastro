@@ -1,5 +1,19 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
+* Noteworthy changes in release X.X (library X.X.X) (YYYY-MM-DD) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+
+
+
+
+
 * Noteworthy changes in release 0.7 (library 5.0.0) (2018-08-08) [stable]
 
 ** New features
@@ -14,8 +28,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
                possibly using it many times.
     - `fill-holes': Flip background (0) pixels surrounded by foreground (1).
     - `collapse-sum': collapse/remove a dimension by summing over it.
-    - `collapse-min': collapse/remove a dimension by using maximum value.
-    - `collapse-max': collapse/remove a dimension by using minimum value.
+    - `collapse-min': collapse/remove a dimension by using minimum value.
+    - `collapse-max': collapse/remove a dimension by using maximum value.
     - `collapse-mean': collapse/remove a dimension by averaging over it.
     - `collapse-number': Number of elements included in the collapse.
 

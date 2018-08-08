@@ -162,7 +162,7 @@ all the commits needed for this release have been completed.
      $ /path/to/gnulib/build-aux/announce-gen --release-type=XXXX          \
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=$mykeyid                  \
-              --url-directory=https://YYYY.gnu.org/gnu/gnuastro             \
+              --url-directory=https://YYYY.gnu.org/gnu/gnuastro            \
               --archive-suffix=tar.lz > ~/announcement.txt
 
 
@@ -382,8 +382,7 @@ Steps necessary to Package Gnuastro for Debian.
  - Push all the changes to the repository (you can't call `--all' and
    `--tags' together):
 
-     $ git push --all
-     $ git push --tags
+     $ git push --follow-tags
 
 
  - Inform Debian Astro: Ole Streicher (olebole@debian.org) has been
