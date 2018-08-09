@@ -379,10 +379,9 @@ Steps necessary to Package Gnuastro for Debian.
      $ git tag -a debian/$ver-1
 
 
- - Push all the changes to the repository (you can't call `--all' and
-   `--tags' together):
+ - Push all the commits and tags to the repository.
 
-     $ git push --follow-tags
+     $ git push --all --follow-tags
 
 
  - Inform Debian Astro: Ole Streicher (olebole@debian.org) has been
