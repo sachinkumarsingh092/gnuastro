@@ -16080,6 +16080,19 @@ the different check images, see the description for the @option{--check*}
 options in @ref{Detection options} (this can be disabled with
 @option{--continueaftercheck}).
 
+Similar to all Gnuastro's FITS outputs, the zero-th extension/HDU of the
+main output file only contains header keywords and image or table. It
+contains the NoiseChisel input files and parameters (option names and
+values) as FITS keywords. Note that if an option name is longer than 8
+characters, the keyword name is the second word. The first word is
+@code{HIERARCH}. Also note that according to the FITS standard, the keyword
+names must be in capital letters, therefore, if you want to use Grep to
+inspect these keywords, use the @option{-i} option, like the example below.
+
+@example
+$ astfits image_detected.fits -h0 | grep -i snquant
+@end example
+
 The last two extensions of the output are the Sky and its Standard
 deviation, see @ref{Sky value} for a complete explanation. They are
 calculated on the tile grid that you defined for NoiseChisel. By default
@@ -16856,37 +16869,21 @@ created. This behavior can be disabled with @option{--continueaftercheck}.
 @subsubsection Segment output
 
 The main output of Segment are two label datasets (with integer types,
-separating the dataset's elements into different classes) with
-HDU/extension names of @code{CLUMPS} and @code{OBJECTS}. For a complete
-definition of clumps and objects, please see Section 3.2 of
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and
-@ref{Segmentation options}.
+separating the dataset's elements into different classes). They have
+HDU/extension names of @code{CLUMPS} and @code{OBJECTS}.
 
-The clumps are ``true'' local maxima (minima if @option{--minima} is
-called) and their surrounding pixels until a local minimum/maximum (caused
-by noise fluctuations, or another ``true'' clump). Therefore it may happen
-that some of the input detections aren't covered by clumps at all (very
-diffuse objects without any strong peak), while some objects may contain
-many clumps. Even in those that have clumps, there will be regions that are
-too diffuse. The diffuse regions (within the input detected regions) are
-given a negative label (-1) to help you separate them from the undetected
-regions (with a value of zero).
+Similar to all Gnuastro's FITS outputs, the zero-th extension/HDU of the
+main output file only contains header keywords and image or table. It
+contains the Segment input files and parameters (option names and values)
+as FITS keywords. Note that if an option name is longer than 8 characters,
+the keyword name is the second word. The first word is
+@code{HIERARCH}. Also note that according to the FITS standard, the keyword
+names must be in capital letters, therefore, if you want to use Grep to
+inspect these keywords, use the @option{-i} option, like the example below.
 
-Each clump is labeled with respect to its host object. Therefore, if an
-object has three clumps for example, the clumps within it have labels 1, 2
-and 3. As a result, if an initial detected region has multiple objects,
-each with a single clump, all the clumps will have a label of 1. The total
-number of clumps in the dataset is stored in the @code{NCLUMPS} keyword of
-the @code{CLUMPS} extension and printed in the verbose output of Segment
-(when @option{--quiet} is not called).
-
-The @code{OBJECTS} extension of the output will give a positive
-counter/label to every detected pixel in the input. As described in
-Akhlaghi and Ichikawa [2015], the true clumps are grown until a certain
-threshold. If the grown clumps touch other clumps and the connection is
-strong enough, they are considered part of the same @emph{object}. Once
-objects (grown clumps) are identified, they are grown to cover the whole
-detected area.
+@example
+$ astfits image_segmented.fits -h0 | grep -i snquant
+@end example
 
 @cindex DS9
 @cindex SAO DS9
@@ -16908,8 +16905,37 @@ The @code{OBJECTS} and @code{CLUMPS} extensions can be used as input into
 want to treat each clump separately, you can give a very large value (or
 even a NaN, which will always fail) to the @option{--gthresh} option (for
 example @code{--gthresh=1e10} or @code{--gthresh=nan}), see
-@ref{Segmentation options}. The options to configure the output of Segment
-are listed below:
+@ref{Segmentation options}.
+
+For a complete definition of clumps and objects, please see Section 3.2 of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and
+@ref{Segmentation options}. The clumps are ``true'' local maxima (minima if
+@option{--minima} is called) and their surrounding pixels until a local
+minimum/maximum (caused by noise fluctuations, or another ``true''
+clump). Therefore it may happen that some of the input detections aren't
+covered by clumps at all (very diffuse objects without any strong peak),
+while some objects may contain many clumps. Even in those that have clumps,
+there will be regions that are too diffuse. The diffuse regions (within the
+input detected regions) are given a negative label (-1) to help you
+separate them from the undetected regions (with a value of zero).
+
+Each clump is labeled with respect to its host object. Therefore, if an
+object has three clumps for example, the clumps within it have labels 1, 2
+and 3. As a result, if an initial detected region has multiple objects,
+each with a single clump, all the clumps will have a label of 1. The total
+number of clumps in the dataset is stored in the @code{NCLUMPS} keyword of
+the @code{CLUMPS} extension and printed in the verbose output of Segment
+(when @option{--quiet} is not called).
+
+The @code{OBJECTS} extension of the output will give a positive
+counter/label to every detected pixel in the input. As described in
+Akhlaghi and Ichikawa [2015], the true clumps are grown until a certain
+threshold. If the grown clumps touch other clumps and the connection is
+strong enough, they are considered part of the same @emph{object}. Once
+objects (grown clumps) are identified, they are grown to cover the whole
+detected area.
+
+The options to configure the output of Segment are listed below:
 
 @table @option
 @item --continueaftercheck
@@ -24722,6 +24748,19 @@ the end of the list. Use this function if you want the keywords to be
 written in the same order that you add nodes to the list of keywords.
 @end deftypefun
 
+@deftypefun void gal_fits_key_list_reverse (gal_fits_list_key_t @code{**list})
+Reverse the input list of keywords.
+@end deftypefun
+
+@deftypefun void gal_fits_key_write_title_in_ptr (char @code{*title}, fitsfile @code{*fptr})
+Add two lines of ``title'' keywords to the given CFITSIO @code{fptr}
+pointer. The first line will be blank and the second will have the string
+in @code{title} roughly in the middle of the line (a fixed distance from
+the start of the keyword line). A title in the list of keywords helps in
+classifying the keywords into groups and inspecting them by eye. If
+@code{title==NULL}, this function won't do anything.
+@end deftypefun
+
 @deftypefun void gal_fits_key_write_filename (char @code{*keynamebase}, char @code{*filename}, gal_fits_list_key_t @code{**list})
 Put @file{filename} into the @code{gal_fits_list_key_t} list (possibly
 broken up into multiple keywords) to later write into a HDU header. The
@@ -24744,12 +24783,24 @@ keyword lines along with a comment @code{WCS information} before writing
 each keyword record.
 @end deftypefun
 
-@deftypefun void gal_fits_key_write (fitsfile @code{*fptr}, gal_fits_list_key_t @code{**keylist})
-Write the list of keywords in @code{keylist} into the CFITSIO
-@code{fitsfile}.
+@deftypefun void gal_fits_key_write (gal_fits_list_key_t @code{**keylist}, char @code{*title}, char @code{*filename}, char @code{*hdu})
+Write the list of keywords in @code{keylist} into the @code{hdu} extension
+of the file called @code{filename} (it must already exist).
 @end deftypefun
 
-@deftypefun void gal_fits_key_write_version (fitsfile @code{*fptr}, gal_fits_list_key_t @code{*headers}, char @code{*program_name})
+@deftypefun void gal_fits_key_write_in_ptr (gal_fits_list_key_t @code{**keylist}, fitsfile @code{*fptr})
+Write the list of keywords in @code{keylist} into the given CFITSIO
+@code{fitsfile} pointer.
+@end deftypefun
+
+@deftypefun void gal_fits_key_write_version (gal_fits_list_key_t @code{**keylist}, char @code{*title}, char @code{*filename}, char @code{*hdu})
+Write the (optional, when @code{keylist!=NULL}) given list of keywords
+under the optional FITS keyword @code{title}, then print all the important
+version and date information. This is basically, just a wrapper over
+@code{gal_fits_key_write_version_in_ptr}.
+@end deftypefun
+
+@deftypefun void gal_fits_key_write_version_in_ptr (gal_fits_list_key_t @code{**keylist}, char @code{*title}, fitsfile @code{*fptr})
 Write or update (all the) keyword(s) in @code{headers} into the FITS
 pointer, but also the date, name of your program (@code{program_name}),
 along with the versions of CFITSIO, WCSLIB (when available), GSL, Gnuastro,

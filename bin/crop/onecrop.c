@@ -805,7 +805,7 @@ onecrop(struct onecropparams *crp)
       gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, regionkey,
                                 0, region, 0, "Range of pixels used for "
                                 "this output.", 0, NULL);
-      gal_fits_key_write(ofp, &headers);
+      gal_fits_key_write_in_ptr(&headers, ofp);
 
 
       /* Free the allocated array. */

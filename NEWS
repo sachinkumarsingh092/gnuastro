@@ -4,9 +4,25 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  NoiseChisel:
+   - Input files and parameters written in first FITS extension.
+
+  Segment:
+   - Input files and parameters written in first FITS extension.
+
+  Library:
+    -- gal_fits_key_list_reverse: Reverse the given list of FITS keywords.
+    -- gal_fits_key_write_title_in_ptr: Write a two-line title in FITS keywords.
+    -- gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
+    -- gal_fits_key_write_version_in_ptr: new name of gal_fits_key_write_version.
+
 ** Removed features
 
 ** Changed features
+
+  Library:
+    -- gal_fits_key_write: filename and hdu instead of FITS pointer.
+    -- gal_fits_key_write_version: filename and hdu instead of FITS pointer.
 
 ** Bugs fixed
 

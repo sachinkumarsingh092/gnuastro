@@ -136,6 +136,144 @@ noisechisel_convolve(struct noisechiselparams *p)
 /***********************************************************************/
 /*************                   Output                  ***************/
 /***********************************************************************/
+static void
+noisechisel_params_in_keywords(struct noisechiselparams *p)
+{
+  gal_fits_list_key_t *keys=NULL;
+  struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
+
+  /* Define the Keywords to write, in the same order as `main.h'. */
+  gal_fits_key_write_filename("input", p->inputname, &keys);
+  gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "hdu", 0, p->cp.hdu,
+                        0, "Extension name or number of input data.", 0,
+                        NULL);
+  if(p->kernelname)
+    {
+      gal_fits_key_write_filename("kernel", p->kernelname, &keys);
+      if(p->khdu)
+        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "khdu", 0, p->khdu,
+                              0, "HDU/extension of kernel.", 0, NULL);
+    }
+  if(p->convolvedname)
+    {
+      gal_fits_key_write_filename("convolved", p->convolvedname, &keys);
+      if(p->chdu)
+        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "chdu", 0, p->chdu,
+                              0, "HDU of convolved input.", 0, NULL);
+    }
+  if(p->widekernelname)
+    {
+      gal_fits_key_write_filename("widekernel", p->widekernelname, &keys);
+      if(p->whdu)
+        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "whdu", 0, p->whdu,
+                              0, "HDU of wide kernel.", 0, NULL);
+    }
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "tilesize_d1", 0,
+                        &tl->tilesize[0], 0,
+                        "Regular tile size on dim.1 (FITS order).", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "tilesize_d2", 0,
+                        &tl->tilesize[1], 0,
+                        "Regular tile size on dim.2 (FITS order).", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "largetilesize_d1", 0,
+                        &ltl->tilesize[0], 0,
+                        "Regular large tile size on dim.1 (FITS order).",
+                        0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "largetilesize_d2", 0,
+                        &ltl->tilesize[1], 0,
+                        "Regular large tile size on dim.2 (FITS order).",
+                        0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "numchannels_d1", 0,
+                        &tl->numchannels[0], 0,
+                        "No. of channels in dim.1 (FITS order).", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "numchannels_d2", 0,
+                        &tl->numchannels[1], 0,
+                        "No. of channels in dim.2 (FITS order).", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "remainderfrac", 0,
+                        &tl->remainderfrac, 0,
+                        "Fraction of remainder to split last tile.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "workoverch", 0,
+                        &tl->workoverch, 0,
+                        "Work (not tile) over channel edges.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "interponlyblank", 0,
+                        &p->cp.interponlyblank, 0,
+                        "Only interpolate over the blank tiles.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "interpnumngb", 0,
+                        &p->cp.interpnumngb, 0,
+                        "No. of neighbors to use for interpolation.",
+                        0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "mirrordist", 0,
+                        &p->mirrordist, 0,
+                        "Max. dist. (error multip.) to find mode.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "modmedqdiff", 0,
+                        &p->modmedqdiff, 0,
+                        "Max. mode and median quant diff. per tile.",
+                        0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "qthresh", 0,
+                        &p->qthresh, 0,
+                        "Quantile threshold on convolved image.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "qthreshtilequant", 0,
+                        &p->qthreshtilequant, 0,
+                        "Remove tiles at higher quantiles.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "smoothwidth", 0,
+                        &p->smoothwidth, 0,
+                        "Flat kernel width to smooth interpolated.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "erode", 0,
+                        &p->erode, 0,
+                        "Number of erosions after thresholding.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "erodengb", 0,
+                        &p->erodengb, 0,
+                        "4 or 8 connectivity in erosion.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "noerodequant", 0,
+                        &p->noerodequant, 0,
+                        "Quantile for no erosion.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "opening", 0,
+                        &p->opening, 0,
+                        "Depth of opening after erosion.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "openingngb", 0,
+                        &p->openingngb, 0,
+                        "4 or 8 connectivity in opening.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT64, "sigmaclipmultip", 0,
+                        &p->sigmaclip[0], 0,
+                        "Multiple of sigma for sigma-clipping.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT64, "sigmaclipend", 0,
+                        &p->sigmaclip[1], 0,
+                        "Termination criteria for sigma-clipping", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "minskyfrac", 0,
+                        &p->minskyfrac, 0,
+                        "Min. fraction of undetected area in tile.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "dthresh", 0,
+                        &p->dthresh, 0,
+                        "Sigma threshold for Pseudo-detections.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "snminarea", 0,
+                        &p->snminarea, 0,
+                        "Min. pseudo-detection area for S/N dist.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "minnumfalse", 0,
+                        &p->minnumfalse, 0,
+                        "Minimum number for S/N estimation.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "snquant", 0,
+                        &p->snquant, 0,
+                        "Quantile in pseudo-det. to define true.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "detgrowquant", 0,
+                        &p->detgrowquant, 0,
+                        "Minimum quant. to expand true detections.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "detgrowmaxholesize", 0,
+                        &p->detgrowmaxholesize, 0,
+                        "Max. area of holes after growth to fill.", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "cleangrowndet", 0,
+                        &p->cleangrowndet, 0,
+                        "Remove small S/N grown detections.", 0, NULL);
+
+  /* Reverse the list and write them. */
+  gal_fits_key_list_reverse(&keys);
+  gal_fits_key_write_version(&keys, "NoiseChisel input parameters",
+                             p->cp.output, "0");
+
+}
+
+
+
+
+
 /* Write the output file. */
 static void
 noisechisel_output(struct noisechiselparams *p)
@@ -201,6 +339,10 @@ noisechisel_output(struct noisechiselparams *p)
   gal_tile_full_values_write(p->std, &p->cp.tl, !p->ignoreblankinsky,
                              p->cp.output, keys, PROGRAM_NAME);
   p->std->name=NULL;
+
+  /* Write NoiseChisel's parameters as keywords into the first extension of
+     the output. */
+  noisechisel_params_in_keywords(p);
 
   /* Let the user know that the output is written. */
   if(!p->cp.quiet)

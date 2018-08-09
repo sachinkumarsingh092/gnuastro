@@ -118,6 +118,7 @@ ui_initialize_options(struct segmentparams *p,
   p->medstd              = NAN;
   p->minstd              = NAN;
   p->maxstd              = NAN;
+  p->snquant             = NAN;
   p->clumpsnthresh       = NAN;
 
   /* Modify common options. */

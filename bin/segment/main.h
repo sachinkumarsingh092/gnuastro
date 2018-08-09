@@ -60,10 +60,10 @@ struct segmentparams
   char               *stdname;  /* File name of Standard deviation image. */
   char                *stdhdu;  /* HDU of Stanard deviation image.        */
   uint8_t            variance;  /* The input STD is actually variance.    */
-  uint8_t              minima;  /* Build clumps from their minima, maxima.*/
   uint8_t           rawoutput;  /* Output only object and clump labels.   */
 
   float            minskyfrac;  /* Undetected area min. frac. in tile.    */
+  uint8_t              minima;  /* Build clumps from their minima, maxima.*/
   size_t            snminarea;  /* Minimum area for segmentation.         */
   uint8_t             checksn;  /* Save the clump S/N values to a file.   */
   size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */
