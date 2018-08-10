@@ -1163,9 +1163,9 @@ segment_params_in_keywords(struct segmentparams *p)
                         "Store segmentation steps in a file.", 0, NULL);
 
 
-  /* Reverse the list and write them. */
+  /* Reverse the list and write the keywords into the zero-th HDU. */
   gal_fits_key_list_reverse(&keys);
-  gal_fits_key_write_version(&keys, "NoiseChisel input parameters",
+  gal_fits_key_write_version(&keys, "Segment configuration",
                              p->cp.output, "0");
 
 }
