@@ -54,7 +54,7 @@ enum option_keys_enum
   /* With short-option version. */
   UI_KEY_BACKGROUND      = 'k',
   UI_KEY_BACKHDU         = 'B',
-  UI_KEY_NAXIS           = 'x',
+  UI_KEY_MERGEDSIZE      = 'x',
   UI_KEY_CLEARCANVAS     = 'C',
   UI_KEY_KERNEL          = 'E',
   UI_KEY_OVERSAMPLE      = 's',

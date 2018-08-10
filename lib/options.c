@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/git.h>
 #include <gnuastro/txt.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/list.h>
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
@@ -2194,4 +2195,84 @@ gal_options_print_state(struct gal_options_common_params *cp)
       error(EXIT_FAILURE, 0, "only one of the `printparams', `setdirconf' "
             "and `setusrconf' options can be called in each run");
     }
+}
+
+
+
+
+
+/* Main working function for common and program specific options. */
+static void
+options_as_fits_keywords_write(gal_fits_list_key_t **keys,
+                               struct argp_option *options,
+                               struct gal_options_common_params *cp)
+{
+  size_t i;
+  void *vptr;
+  uint8_t vtype;
+  char *name, *doc;
+  gal_list_str_t *tmp;
+
+  for(i=0; !gal_options_is_last(&options[i]); ++i)
+    if( options[i].set && option_is_printable(&options[i]) )
+      {
+        /* Linked lists (multiple calls to an option). */
+        if(gal_type_is_list(options[i].type))
+          for(tmp=*(gal_list_str_t **)(options[i].value);
+              tmp!=NULL; tmp=tmp->next)
+            {
+              /* `name' and `doc' have a `const' qualifier. */
+              gal_checkset_allocate_copy(options[i].name, &name);
+              gal_checkset_allocate_copy(options[i].doc,  &doc);
+              gal_fits_key_list_add(keys, GAL_TYPE_STRING, name, 1, tmp->v,
+                                    0, doc, 1, NULL);
+            }
+        /* Normal types. */
+        else
+          {
+            /* If the option is associated with a special function for
+               reading and writing, we'll need to write the value as a
+               string. */
+            if(options[i].func)
+              {
+                vtype=GAL_TYPE_STRING;
+                vptr=options[i].func(&options[i], NULL, NULL, (size_t)(-1),
+                                      cp->program_struct);
+              }
+            else
+              {
+                vtype=options[i].type;
+                vptr = ( vtype==GAL_TYPE_STRING
+                         ? *((char **)(options[i].value))
+                         : options[i].value );
+              }
+
+            /* Write the keyword. Note that `name' and `doc' have a `const'
+               qualifier. */
+            gal_checkset_allocate_copy(options[i].name, &name);
+            if(vtype==GAL_TYPE_STRING && strlen(vptr)>FLEN_KEYWORD)
+              gal_fits_key_write_filename(name, vptr, keys, 1);
+            else
+              {
+                gal_checkset_allocate_copy(options[i].doc,  &doc);
+                gal_fits_key_list_add(keys, vtype, name, 1, vptr, 0, doc, 1,
+                                      NULL);
+              }
+          }
+      }
+}
+
+
+
+
+/* Write all options as FITS keywords. */
+void
+gal_options_as_fits_keywords(struct gal_options_common_params *cp)
+{
+  /* Write all the command and program-specific options. */
+  options_as_fits_keywords_write(&cp->okeys, cp->coptions, cp);
+  options_as_fits_keywords_write(&cp->okeys, cp->poptions, cp);
+
+  /* Reverse the list (its a first-in-first-out list). */
+  gal_fits_key_list_reverse(&cp->okeys);
 }

@@ -1222,7 +1222,7 @@ gal_fits_key_write_title_in_ptr(char *title, fitsfile *fptr)
 /* Write a filename into keyword values. */
 void
 gal_fits_key_write_filename(char *keynamebase, char *filename,
-                            gal_fits_list_key_t **list)
+                            gal_fits_list_key_t **list, int top1end0)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -1245,7 +1245,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
         error(EXIT_FAILURE, errno, "%s: %d bytes for `keyname'", __func__,
               FLEN_KEYWORD);
       if(len<maxlength)
-        gal_checkset_allocate_copy(keynamebase, &keyname);
+        strcpy(keyname, keynamebase);
       else
         sprintf(keyname, "%s_%zu", keynamebase, numkey++);
 
@@ -1264,8 +1264,12 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
          length was copied. */
       if(value[maxlength-1]=='\0')
         {
-          gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
-                                    value, 1, NULL, 0, NULL);
+          if(top1end0)
+            gal_fits_key_list_add(list, GAL_TYPE_STRING, keyname, 1,
+                                  value, 1, NULL, 0, NULL);
+          else
+            gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
+                                      value, 1, NULL, 0, NULL);
           break;
         }
       else
@@ -1280,14 +1284,28 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
                 break;
               }
           if(j==0)
-            error(EXIT_FAILURE, 0, "%s: the filename `%sP has at least one "
-                  "span of %zu characters without a `/`. It cannot be "
-                  "written to the header of the output fits file", __func__,
-                  filename, maxlength);
+            {
+              /* So the loop doesn't continue after this. */
+              i=len+1;
+
+              /* There will only be one keyword, so we'll just use the
+                 basename. */
+              strcpy(keyname, keynamebase);
+
+              /* Let the user know that  */
+              error(0,0, "%s: WARNING: `%s' is too long to fit "
+                    "into a FITS keyword value (max of %zu characters), "
+                    "it will be truncated", __func__, filename,
+                    maxlength);
+            }
 
           /* Convert the last useful character and save the file name.*/
-          gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
-                                    value, 1, NULL, 0, NULL);
+          if(top1end0)
+            gal_fits_key_list_add(list, GAL_TYPE_STRING, keyname, 1,
+                                  value, 1, NULL, 0, NULL);
+          else
+            gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
+                                      value, 1, NULL, 0, NULL);
           i+=j+1;
         }
     }
@@ -1478,6 +1496,43 @@ gal_fits_key_write_version_in_ptr(gal_fits_list_key_t **keylist, char *title,
 
   /* Report any error if a problem came up */
   gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+
+/* Write the given keywords into the given extension of the given file,
+   ending it with version information. This is primarily intended for
+   writing configuration settings of a program into the zero-th extension
+   of the FITS file (which is empty when the FITS file is created by
+   Gnuastro's program and this library). */
+void
+gal_fits_key_write_config(gal_fits_list_key_t **keylist, char *title,
+                          char *extname, char *filename, char *hdu)
+{
+  int status=0;
+  fitsfile *fptr=gal_fits_hdu_open(filename, hdu, READWRITE);
+
+  /* Delete the two extra comment lines describing the FITS standard that
+     CFITSIO puts in when it creates a new extension. We'll set status to 0
+     afterwards so even if they don't exist, the program continues
+     normally. */
+  fits_delete_key(fptr, "COMMENT", &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+  status=0;
+
+  /* Put a name for the zero-th extension. */
+  if(fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status))
+    gal_fits_io_error(status, NULL);
+
+  /* Write all the given keywords. */
+  gal_fits_key_write_version_in_ptr(keylist, title, fptr);
+
+  /* Close the FITS file. */
+  if( fits_close_file(fptr, &status) )
+    gal_fits_io_error(status, NULL);
 }
 
 

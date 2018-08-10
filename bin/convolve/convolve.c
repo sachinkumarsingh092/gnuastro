@@ -797,4 +797,10 @@ convolve(struct convolveparams *p)
   /* Save the output (which is in p->input) array. */
   gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_NAME,
                              cp->type);
+
+  /* Write Convolve's parameters as keywords into the first extension of
+     the output. */
+  gal_fits_key_write_filename("input", p->filename, &cp->okeys, 1);
+  gal_fits_key_write_config(&cp->okeys, "Convolve configuration",
+                            "CONVOLVE-CONFIG", cp->output, "0");
 }

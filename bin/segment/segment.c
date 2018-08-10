@@ -1048,132 +1048,6 @@ segment_detections(struct segmentparams *p)
 /***********************************************************************/
 /*****************                Output               *****************/
 /***********************************************************************/
-static void
-segment_params_in_keywords(struct segmentparams *p)
-{
-  gal_fits_list_key_t *keys=NULL;
-  struct gal_tile_two_layer_params *tl=&p->cp.tl, *ltl=&p->ltl;
-
-  /* Define the Keywords to write, in the same order as `main.h'. */
-  gal_fits_key_write_filename("input", p->inputname, &keys);
-  gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "hdu", 0, p->cp.hdu,
-                        0, "Extension name or number of input data.", 0,
-                        NULL);
-  if(p->skyname)
-    {
-      gal_fits_key_write_filename("sky", p->skyname, &keys);
-      if(p->skyhdu)
-        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "skyhdu", 0, p->skyhdu,
-                              0, "HDU containing Sky value to subtract.", 0,
-                              NULL);
-    }
-  if(p->stdname)
-    {
-      gal_fits_key_write_filename("std", p->stdname, &keys);
-      if(p->stdhdu)
-        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "stdhdu", 0, p->stdhdu,
-                              0, "HDU containing Sky standard deviation.", 0,
-                              NULL);
-    }
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "variance", 0,
-                        &p->variance, 0,
-                        "STD input is actually variance.", 0, NULL);
-  if(p->detectionname)
-    {
-      gal_fits_key_write_filename("detection", p->detectionname, &keys);
-      if(p->khdu)
-        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "dhdu", 0, p->dhdu,
-                              0, "HDU containing detection image.", 0, NULL);
-    }
-  if(p->kernelname)
-    {
-      gal_fits_key_write_filename("kernel", p->kernelname, &keys);
-      if(p->khdu)
-        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "khdu", 0, p->khdu,
-                              0, "HDU/extension of kernel.", 0, NULL);
-    }
-  if(p->convolvedname)
-    {
-      gal_fits_key_write_filename("convolved", p->convolvedname, &keys);
-      if(p->chdu)
-        gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "chdu", 0, p->chdu,
-                              0, "HDU of convolved input.", 0, NULL);
-    }
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "onlyclumps", 0,
-                        &p->onlyclumps, 0,
-                        "Finish after finding true clumps.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "grownclumps", 0,
-                        &p->grownclumps, 0,
-                        "Save grown clumps instead of original.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "tilesize_d1", 0,
-                        &tl->tilesize[0], 0,
-                        "Regular tile size on dim.1 (FITS order).", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "tilesize_d2", 0,
-                        &tl->tilesize[1], 0,
-                        "Regular tile size on dim.2 (FITS order).", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "largetilesize_d1", 0,
-                        &ltl->tilesize[0], 0,
-                        "Regular large tile size on dim.1 (FITS order).",
-                        0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "largetilesize_d2", 0,
-                        &ltl->tilesize[1], 0,
-                        "Regular large tile size on dim.2 (FITS order).",
-                        0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "numchannels_d1", 0,
-                        &tl->numchannels[0], 0,
-                        "No. of channels in dim.1 (FITS order).", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "numchannels_d2", 0,
-                        &tl->numchannels[1], 0,
-                        "No. of channels in dim.2 (FITS order).", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "minskyfrac", 0,
-                        &p->minskyfrac, 0,
-                        "Min. fraction of undetected area in tile.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "minima", 0,
-                        &p->minima, 0,
-                        "Built internal clumps from minima.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "snminarea", 0,
-                        &p->snminarea, 0,
-                        "Minimum area of clumps for S/N estimation.",
-                        0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "minnumfalse", 0,
-                        &p->minnumfalse, 0,
-                        "Minimum number for S/N estimation.", 0, NULL);
-  if( !isnan(p->snquant) )
-    gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "snquant", 0,
-                          &p->snquant, 0,
-                          "S/N Quantile of true sky clumps.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "keepmaxnearriver", 0,
-                        &p->keepmaxnearriver, 0,
-                        "Keep clumps with peak touching a river.", 0, NULL);
-  if( isnan(p->snquant) )
-    gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "clumpsnthresh", 0,
-                          &p->clumpsnthresh, 0,
-                          "S/N threshold of true clumps.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "gthresh", 0,
-                        &p->gthresh, 0,
-                        "Multiple of STD to stop growing clumps.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "minriverlength", 0,
-                        &p->minriverlength, 0,
-                        "Minimum len of useful grown clump rivers.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "objbordersn", 0,
-                        &p->objbordersn, 0,
-                        "Min. S/N for grown clumps as one object.", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_UINT8, "checksegmentation", 0,
-                        &p->checksegmentation, 0,
-                        "Store segmentation steps in a file.", 0, NULL);
-
-
-  /* Reverse the list and write the keywords into the zero-th HDU. */
-  gal_fits_key_list_reverse(&keys);
-  gal_fits_key_write_version(&keys, "Segment configuration",
-                             p->cp.output, "0");
-
-}
-
-
-
-
-
 void
 segment_output(struct segmentparams *p)
 {
@@ -1247,9 +1121,10 @@ segment_output(struct segmentparams *p)
       p->std->name=NULL;
     }
 
-  /* Write the input parameters as FITS keyword in the first extension of
-     the output file. */
-  segment_params_in_keywords(p);
+  /* Write the configuration keywords. */
+  gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+  gal_fits_key_write_config(&p->cp.okeys, "Segment configuration",
+                            "SEGMENT-CONFIG", p->cp.output, "0");
 
   /* Let the user know that the output is written. */
   if(!p->cp.quiet)
@@ -1358,7 +1233,7 @@ segment(struct segmentparams *p)
 
 
   /* If the user wanted to check the segmentation and hasn't called
-     `continueaftercheck', then stop NoiseChisel. */
+     `continueaftercheck', then stop Segment. */
   if(p->segmentationname && !p->continueaftercheck)
     ui_abort_after_check(p, p->segmentationname, NULL,
                          "showing all segmentation steps");

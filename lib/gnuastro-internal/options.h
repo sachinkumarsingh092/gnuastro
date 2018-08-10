@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/tile.h>
 #include <gnuastro/list.h>
+#include <gnuastro/fits.h>
 
 
 
@@ -203,6 +204,9 @@ struct gal_options_common_params
   uint8_t           setusrconf; /* To write teh user config config file.  */
   uint8_t           lastconfig; /* This is the last configuration file.   */
 
+  /* Output files. */
+  gal_fits_list_key_t  *okeys;  /* Configuration as FITS keys in output.  */
+
   /* For internal (to option processing) purposes. */
   uint8_t                 keep; /* Output file can exist.                 */
   void         *program_struct; /* Host program's main variable struct.   */
@@ -318,5 +322,8 @@ gal_options_read_config_set(struct gal_options_common_params *cp);
 /**********************************************************************/
 void
 gal_options_print_state(struct gal_options_common_params *cp);
+
+void
+gal_options_as_fits_keywords(struct gal_options_common_params *cp);
 
 #endif

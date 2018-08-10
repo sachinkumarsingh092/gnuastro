@@ -297,7 +297,7 @@ Common program behavior
 * Tessellation::                Tile the dataset into non-overlapping bins.
 * Getting help::                Getting more information on the go.
 * Automatic output::            About automatic output names.
-* Output headers::              Common headers to all FITS outputs.
+* Output FITS files::           Common properties when outputs are FITS.
 
 Command-line
 
@@ -1936,7 +1936,7 @@ $ astmkprof -P
 
 # Output:
  type         float32     # Type of output: e.g., int16, float32, etc...
- naxis        1000,1000   # Number of pixels along first FITS axis.
+ mergedsize   1000,1000   # Number of pixels along first FITS axis.
  oversample   5           # Scale of oversampling (>0 and odd).
 
 [[[ ... Truncated lines ... ]]]
@@ -2019,7 +2019,7 @@ necessary parameters and runs MakeProfiles with the following command:
 
 @example
 
-$ astmkprof --prepforconv --naxis=500,500 --zeropoint=18.0 cat.txt
+$ astmkprof --prepforconv --mergedsize=500,500 --zeropoint=18.0 cat.txt
 MakeProfiles started on Sat Oct  6 16:26:56 953
   - 6 profiles read from cat.txt
   - Random number generator (RNG) type: mt19937
@@ -2184,7 +2184,8 @@ base=cat
 rm out.fits
 
 # Run MakeProfiles to create an oversampled FITS image.
-astmkprof --prepforconv --naxis=500,500 --zeropoint=18.0 "$base".txt
+astmkprof --prepforconv --mergedsize=500,500 --zeropoint=18.0   \
+          "$base".txt
 
 # Convolve the created image with the kernel.
 astconvolve --kernel=0_"$base".fits "$base".fits
@@ -4890,7 +4891,7 @@ controlled source}). When @file{libgit2} is present, and Gnuastro's
 programs are run within a version controlled directory, outputs will
 contain the version number of the working directory's repository for future
 reproducibility. See the @command{COMMIT} keyword header in @ref{Output
-headers} for a discussion.
+FITS files} for a discussion.
 
 @item libjpeg
 @pindex libjpeg
@@ -6832,7 +6833,7 @@ command-line.
 * Tessellation::                Tile the dataset into non-overlapping bins.
 * Getting help::                Getting more information on the go.
 * Automatic output::            About automatic output names.
-* Output headers::              Common headers to all FITS outputs.
+* Output FITS files::           Common properties when outputs are FITS.
 @end menu
 
 @node Command-line, Configuration files, Common program behavior, Common program behavior
@@ -9050,7 +9051,7 @@ list. We have other mailing lists and tools for those purposes, see
 
 
 
-@node Automatic output, Output headers, Getting help, Common program behavior
+@node Automatic output, Output FITS files, Getting help, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -9105,15 +9106,57 @@ ABC01.jpg ABC02.jpg DEF01_detected.fits
 
 
 
-@node Output headers,  , Automatic output, Common program behavior
-@section Output headers
+@node Output FITS files,  , Automatic output, Common program behavior
+@section Output FITS files
 
+@cindex FITS
 @cindex Output FITS headers
 @cindex CFITSIO version on outputs
-The output FITS files created by Gnuastro's programs have some or all of
-the following standard keywords to keep the basic date and version
-information of Gnuastro, its dependencies and the pipeline that is using
-Gnuastro.
+The output of many of Gnuastro's programs are (or can be) FITS files. The
+FITS format has many useful features for storing scientific datasets
+(cubes, images and tables) along with a robust features for
+archivability. For more on this standard, please see @ref{Fits}.
+
+As a community convention described in @ref{Fits}, the first extension of
+all FITS files produced by Gnuastro's programs only contains the meta-data
+that is intended for the file's extension(s). For a Gnuastro program, this
+generic meta-data (that is stored as FITS keyword records) is its
+configuration when it produced this dataset: file name(s) of input(s) and
+option names, values and comments. Note that when the configuration is too
+trivial (only input filename, for example the program @ref{Table}) no
+meta-data is written in this extension.
+
+FITS keywords have the following limitations in regards to generic option
+names and values which are described below:
+
+@itemize
+@item
+If a keyword (option name) is longer than 8 characters, the first word in
+the record (80 character line) is @code{HIERARCH} which is followed by the
+keyword name.
+
+@item
+Values can be at most 75 characters, but for strings, this changes to 73
+(because of the two extra @key{'} characters that are necessary). However,
+if the value is a file name, containing slash (@key{/}) characters to
+separate directories, Gnuastro will break the value into multiple keywords.
+
+@item
+Keyword names ignore case, therefore they are all in capital letters.
+Therefore, if you want to use Grep to inspect these keywords, use the
+@option{-i} option, like the example below.
+
+@example
+$ astfits image_detected.fits -h0 | grep -i snquant
+@end example
+@end itemize
+
+The keywords above are classified (separated by an empty line and title) as
+a group titled ``ProgramName configuration''. This meta-data extension, as
+well as all the other extensions (which contain data), also contain have
+final group of keywords to keep the basic date and version information of
+Gnuastro, its dependencies and the pipeline that is using Gnuastro (if its
+under version control).
 
 @table @command
 
@@ -9193,10 +9236,10 @@ Here is one example of the last few lines of an example output.
               / Versions and date
 DATE    = '...'                / file creation date
 COMMIT  = 'v0-8-g547f6eb'      / Commit description in running dir.
-CFITSIO = '3.41    '           / CFITSIO version.
-WCSLIB  = '5.16    '           / WCSLIB version.
-GSL     = '2.3     '           / GNU Scientific Library version.
-GNUASTRO= '0.3'                / GNU Astronomy Utilities version.
+CFITSIO = '3.45    '           / CFITSIO version.
+WCSLIB  = '5.19    '           / WCSLIB version.
+GSL     = '2.5     '           / GNU Scientific Library version.
+GNUASTRO= '0.7     '           / GNU Astronomy Utilities version.
 END
 @end example
 
@@ -9293,19 +9336,20 @@ webpage} for the full text of all versions. Also see the
 for a nice introduction and history along with the full standard.
 
 @cindex Meta-data
-Other formats, for example a JPEG image, only have one image/dataset per
-file, however one great advantage of the FITS standard is that it allows
-you to keep multiple datasets (images or tables along with their meta-data)
-in one file. Each data + metadata is known as an extension, or more
-formally a header data unit or HDU, in the FITS standard. In theory the
-HDUs can be completely independent: you can have multiple images of
-different dimensions/sizes or tables as separate extensions in one
+Many common image formats, for example a JPEG, only have one image/dataset
+per file, however one great advantage of the FITS standard is that it
+allows you to keep multiple datasets (images or tables along with their
+separate meta-data) in one file. In the FITS standard, each data + metadata
+is known as an extension, or more formally a header data unit or HDU. The
+HDUs in a file can be completely independent: you can have multiple images
+of different dimensions/sizes or tables as separate extensions in one
 file. However, while the standard doesn't impose any constraints on the
 relation between the datasets, it is strongly encouraged to group data that
 are contextually related with each other in one file. For example an image
 and the table/catalog of objects and their measured properties in that
-image. Another example can be multiple images of one patch of sky in
-different colors (filters).
+image. Other examples can be images of one patch of sky in different colors
+(filters), or one raw telescope image along with its calibration data
+(tables or images).
 
 As discussed above, the extensions in a FITS file can be completely
 independent. To keep some information (meta-data) about the group of
@@ -9314,15 +9358,16 @@ convention: put no data in the first extension, so it is just
 meta-data. This extension can thus be used to store Meta-data regarding the
 whole file (grouping of extensions). Subsequent extensions may contain data
 along with their own separate meta-data. All of Gnuastro's programs also
-follow this convention: the main dataset (image or table) is in the second
-extension. See the example list of extension properties in @ref{Invoking
-astfits}.
+follow this convention: the main output dataset(s) are placed in the second
+(or later) extension(s). The first extension contains no data the program's
+configuration (input file name, along with all its option values) are
+stored as its meta-data, see @ref{Output FITS files}.
 
 The meta-data contain information about the data, for example which region
 of the sky an image corresponds to, the units of the data, what telescope,
-camera, and filter the data were taken with, the software that produced it,
-or it observation or processing date. Hence without the meta-data, the raw
-dataset is practically just a collection of numbers and really hard to
+camera, and filter the data were taken with, it observation date, or the
+software that produced it and its configuration. Without the meta-data, the
+raw dataset is practically just a collection of numbers and really hard to
 understand, or connect with the real world (other datasets). It is thus
 strongly encouraged to supplement your data (at any level of processing)
 with as much meta-data about your processing/science as possible.
@@ -16067,7 +16112,9 @@ detection map is followed by a Sky and Sky standard deviation dataset
 (which are calculated from the binary image). By default (when
 @option{--rawoutput} isn't called), NoiseChisel will also subtract the Sky
 value from the input and save the sky-subtracted input as the first
-extension in the output.
+extension in the output with data. The zero-th extension (that contains no
+data), contains NoiseChisel's configuration as FITS keywords, see
+@ref{Output FITS files}.
 
 The name of the output file can be set by giving a value to
 @option{--output} (this is a common option between all programs and is
@@ -16079,19 +16126,6 @@ as soon as the respective check images are created. For more information on
 the different check images, see the description for the @option{--check*}
 options in @ref{Detection options} (this can be disabled with
 @option{--continueaftercheck}).
-
-Similar to all Gnuastro's FITS outputs, the zero-th extension/HDU of the
-main output file only contains header keywords and image or table. It
-contains the NoiseChisel input files and parameters (option names and
-values) as FITS keywords. Note that if an option name is longer than 8
-characters, the keyword name is the second word. The first word is
-@code{HIERARCH}. Also note that according to the FITS standard, the keyword
-names must be in capital letters, therefore, if you want to use Grep to
-inspect these keywords, use the @option{-i} option, like the example below.
-
-@example
-$ astfits image_detected.fits -h0 | grep -i snquant
-@end example
 
 The last two extensions of the output are the Sky and its Standard
 deviation, see @ref{Sky value} for a complete explanation. They are
@@ -19362,7 +19396,7 @@ $ astmkprof --ccol=RA_CENTER --ccol=DEC_CENTER --mode=wcs catalog.txt
 
 ## Make a 1500x1500 merged image (oversampled 500x500) image along
 ## with an individual image for all the profiles in catalog:
-$ astmkprof --individual --oversample 3 --naxis=500,500 catalog.txt
+$ astmkprof --individual --oversample 3 --mergedsize=500,500 cat.txt
 @end example
 
 @noindent
@@ -19388,8 +19422,8 @@ that image are used as the background value for every pixel. The flux value
 of each profile pixel will be added to the pixel in that background
 value. In this case, the values to all options relating to the output size
 and WCS will be ignored if specified (for example @option{--oversample},
-@option{--naxis}, and @option{--prepforconv}) on the command-line or in the
-configuration files.
+@option{--mergedsize}, and @option{--prepforconv}) on the command-line or
+in the configuration files.
 
 The sections below discuss the options specific to MakeProfiles based on
 context: the input catalog settings which can have many rows for different
@@ -19743,9 +19777,10 @@ A background image FITS file to build the profiles on. The extension that
 contains the image should be specified with the @option{--backhdu} option,
 see below. When a background image is specified, it will be used to derive
 all the information about the output image. Hence, the following options
-will be ignored: @option{--naxis}, @option{--oversample}, @option{--crpix},
-@option{--crval} (generally, all other WCS related parameters) and the
-output's data type (see @option{--type} in @ref{Input output options}).
+will be ignored: @option{--mergedsize}, @option{--oversample},
+@option{--crpix}, @option{--crval} (generally, all other WCS related
+parameters) and the output's data type (see @option{--type} in @ref{Input
+output options}).
 
 The image will act like a canvas to build the profiles on: profile pixel
 values will be summed with the background image pixel values. With the
@@ -19810,14 +19845,15 @@ A Gaussian kernel with FWHM of 2 pixels and truncated at 3 times the FWHM.
 @end table
 
 @item -x INT,INT
-@itemx --naxis=INT,INT
-The number of pixels along each dimension axis of the output in FITS
-order. This is before over-sampling. For example if you call MakeProfiles
-with @option{--naxis=100,150 --oversample=5} (assuming no shift due for
+@itemx --mergedsize=INT,INT
+The number of pixels along each axis of the output, in FITS order. This is
+before over-sampling. For example if you call MakeProfiles with
+@option{--mergedsize=100,150 --oversample=5} (assuming no shift due for
 later convolution), then the final image size along the first axis will be
 500 by 750 pixels. Fractions are acceptable as values for each dimension,
-however, they must reduce to an integer, so @option{--naxis=150/3,300/3} is
-acceptable but @option{--naxis=150/4,300/4} is not.
+however, they must reduce to an integer, so
+@option{--mergedsize=150/3,300/3} is acceptable but
+@option{--mergedsize=150/4,300/4} is not.
 
 When viewing a FITS image in DS9, the first FITS dimension is in the
 horizontal direction and the second is vertical. As an example, the image
@@ -19875,8 +19911,8 @@ number position: The center of a pixel has fractional value
 @item -m
 @itemx --nomerged
 Don't make a merged image. By default after making the profiles, they are
-added to a final image with side lengths specified by @option{--naxis}if
-they overlap with it.
+added to a final image with side lengths specified by @option{--mergedsize}
+if they overlap with it.
 
 @end table
 
@@ -24339,7 +24375,7 @@ information includes the following information
 @item
 If the program is run in a Git version controlled directory, Git's
 description is printed (see description under @code{COMMIT} in @ref{Output
-headers}).
+FITS files}).
 @item
 The calendar time that is stored in @code{rawtime} (@code{time_t} is C's
 calendar time format defined in @file{time.h}). You can calculate the time
@@ -24761,11 +24797,12 @@ classifying the keywords into groups and inspecting them by eye. If
 @code{title==NULL}, this function won't do anything.
 @end deftypefun
 
-@deftypefun void gal_fits_key_write_filename (char @code{*keynamebase}, char @code{*filename}, gal_fits_list_key_t @code{**list})
+@deftypefun void gal_fits_key_write_filename (char @code{*keynamebase}, char @code{*filename}, gal_fits_list_key_t @code{**list}, int @code{top1end0})
 Put @file{filename} into the @code{gal_fits_list_key_t} list (possibly
 broken up into multiple keywords) to later write into a HDU header. The
 @code{keynamebase} string will be appended with a @code{_N} (N>0) and used
-as the keyword name.
+as the keyword name. If @code{top1end0!=0}, then the keywords containing
+the filename will be added to the top of the list.
 
 The FITS standard sets a maximum length for the value of a keyword. This
 creates problems with file names (which include directories). Because file
@@ -24805,13 +24842,29 @@ Write or update (all the) keyword(s) in @code{headers} into the FITS
 pointer, but also the date, name of your program (@code{program_name}),
 along with the versions of CFITSIO, WCSLIB (when available), GSL, Gnuastro,
 and (the possible) commit information into the header as described in
-@ref{Output headers}.
+@ref{Output FITS files}.
 
 Since the data processing depends on the versions of the libraries you have
 used, it is strongly recommended to include this information in every FITS
 output. @code{gal_fits_img_write} and @code{gal_fits_tab_write} will
 automatically use this function.
 @end deftypefun
+
+@deftypefun void gal_fits_key_write_config (gal_fits_list_key_t @code{**keylist}, char @code{*title}, char @code{*extname}, char @code{*filename}, char @code{*hdu})
+Write the given keyword list (@code{keylist}) into the @code{hdu} extension
+of @code{filename}, ending it with version information. This function will
+write @code{extname} as the name of the extension (value to the standard
+@code{EXTNAME} FITS keyword). The list of keywords will then be printed
+under a title called @code{title}.
+
+This function is used by many Gnuastro programs and is primarily intended
+for writing configuration settings of a program into the zero-th extension
+of their FITS outputs (which is empty when the FITS file is created by
+Gnuastro's program and this library).
+@end deftypefun
+
+
+
 
 
 @node FITS arrays, FITS tables, FITS header keywords, FITS files
@@ -27841,7 +27894,7 @@ blank. To see if any blank (non-interpolated) elements remain, you can use
 @cindex libgit2
 Git is one of the most common tools for version control and it can often be
 useful during development, for example see @code{COMMIT} keyword in
-@ref{Output headers}. At installation time, Gnuastro will also check for
+@ref{Output FITS files}. At installation time, Gnuastro will also check for
 the existence of libgit2, and store the value in the
 @code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration information} and
 @ref{Optional dependencies}. @file{gnuastro/git.h} includes
@@ -27856,8 +27909,8 @@ commit description (similar to Gnuastro's unofficial version number, see
 directory, it will add a `@code{-dirty}' prefix to the description. When
 there is no tagged point in the previous commit, this function will return
 a uniquely abbreviated commit object as fallback. This function is used for
-generating the value of the @code{COMMIT} keyword in @ref{Output
-headers}. The output string is similar to the output of the following
+generating the value of the @code{COMMIT} keyword in @ref{Output FITS
+files}. The output string is similar to the output of the following
 command:
 
 @example

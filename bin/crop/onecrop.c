@@ -800,7 +800,7 @@ onecrop(struct onecropparams *crp)
       /* A section has been added to the cropped image from this input
          image, so save the information of this image. */
       sprintf(basekeyname, "ICF%zu", crp->numimg);
-      gal_fits_key_write_filename(basekeyname, img->name, &headers);
+      gal_fits_key_write_filename(basekeyname, img->name, &headers, 0);
       sprintf(regionkey, "%sPIX", basekeyname);
       gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, regionkey,
                                 0, region, 0, "Range of pixels used for "

@@ -4,25 +4,32 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
-  NoiseChisel:
-   - Input files and parameters written in first FITS extension.
-
-  Segment:
-   - Input files and parameters written in first FITS extension.
+  All programs:
+   - Input files and parameters written as keywords in the first extension
+     of output when it is FITS. This is only relevant for some programs,
+     (for example not the Fits or Table programs).
 
   Library:
     -- gal_fits_key_list_reverse: Reverse the given list of FITS keywords.
     -- gal_fits_key_write_title_in_ptr: Write a two-line title in FITS keywords.
     -- gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
     -- gal_fits_key_write_version_in_ptr: new name of gal_fits_key_write_version.
+    -- gal_fits_key_write_config: write key list and version as config header.
 
 ** Removed features
 
 ** Changed features
 
+  MakeProfiles:
+    --mergedsize: new name for the old `--naxis' option. Since the option
+          names and values are now written into the FITS header of the
+          output, this option's name would get confused with the mandatory
+          FITS keyword `NAXIS'.
+
   Library:
     -- gal_fits_key_write: filename and hdu instead of FITS pointer.
     -- gal_fits_key_write_version: filename and hdu instead of FITS pointer.
+    -- gal_fits_key_write_filename: write at the top or end of the input list.
 
 ** Bugs fixed
 

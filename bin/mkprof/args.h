@@ -89,8 +89,8 @@ struct argp_option program_options[] =
 
 
     {
-      "naxis",
-      UI_KEY_NAXIS,
+      "mergedsize",
+      UI_KEY_MERGEDSIZE,
       "INT[,INT,...]",
       0,
       "Merged image size along each dimension.",

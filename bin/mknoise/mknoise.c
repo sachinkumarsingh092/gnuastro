@@ -61,7 +61,7 @@ convertsaveoutput(struct mknoiseparams *p)
 
 
   /* Add the proper information to the header of the output: */
-  gal_fits_key_write_filename("INF", p->inputname, &headers);
+  gal_fits_key_write_filename("INF", p->inputname, &headers, 0);
   if( !isnan(p->background_mag) )
     {
       strcpy(keyname1, "BCKGRND");
@@ -97,7 +97,14 @@ convertsaveoutput(struct mknoiseparams *p)
 
   /* Save the output: */
   p->input=gal_data_copy_to_new_type_free(p->input, p->cp.type);
+  p->input->name="NOISED";
   gal_fits_img_write(p->input, p->cp.output, headers, PROGRAM_NAME);
+  p->input->name=NULL;
+
+  /* Write the configuration keywords. */
+  gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+  gal_fits_key_write_config(&p->cp.okeys, "MakeNoise configuration",
+                            "MKNOISE-CONFIG", p->cp.output, "0");
 }
 
 

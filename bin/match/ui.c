@@ -493,9 +493,8 @@ ui_read_columns(struct matchparams *p)
      names. */
   for(i=0;i<ccol1n;++i)
     {
-      gal_list_str_add(&cols1, strarr1[i], 0);
-      gal_list_str_add(&cols2, strarr2[i], 0);
-      strarr1[i]=strarr2[i]=NULL;  /* So they are not freed later. */
+      gal_list_str_add(&cols1, strarr1[i], 1);
+      gal_list_str_add(&cols2, strarr2[i], 1);
     }
   gal_list_str_reverse(&cols1);
   gal_list_str_reverse(&cols2);
@@ -518,9 +517,6 @@ ui_read_columns(struct matchparams *p)
   /* Free the extra spaces. */
   gal_list_str_free(cols1, 1);
   gal_list_str_free(cols2, 1);
-  gal_data_free(p->ccol1);
-  gal_data_free(p->ccol2);
-  p->ccol1=p->ccol2=NULL;
 }
 
 
@@ -570,7 +566,6 @@ ui_preparations_out_name(struct matchparams *p)
   /* Set the output file(s) name(s). */
   if(p->logasoutput)
     {
-      /* Set the logname (as output). */
       if(p->cp.output)
         gal_checkset_allocate_copy(p->cp.output, &p->logname);
       else
@@ -584,17 +579,24 @@ ui_preparations_out_name(struct matchparams *p)
         }
 
       /* Make sure a file with this name doesn't exist. */
-      gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
+      gal_checkset_writable_remove(p->logname, 0, p->cp.dontdelete);
+
+      /* The main output name needs to be available in p->out1name (for the
+         final step when we want to write the input configurations as FITS
+         keywords). */
+      gal_checkset_allocate_copy(p->logname, &p->out1name);
     }
   else
     {
       if(p->outcols)
         {
-          if(p->cp.output==NULL)
-            p->cp.output = gal_checkset_automatic_output(&p->cp,
+          if(p->cp.output)
+            gal_checkset_allocate_copy(p->cp.output, &p->out1name);
+          else
+            p->out1name = gal_checkset_automatic_output(&p->cp,
                  p->input1name, ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
                                   ? "_matched.txt" : "_matched.fits") );
-          gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+          gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
         }
       else
         {
@@ -756,6 +758,13 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct matchparams *p)
 
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
+
+
+  /* If the output is a FITS table, prepare all the options as FITS
+     keywords to write in output later. */
+  if(gal_fits_name_is_fits(p->out1name))
+      gal_options_as_fits_keywords(&p->cp);
+
 }
 
 
@@ -788,6 +797,8 @@ ui_free_report(struct matchparams *p, struct timeval *t1)
   free(p->out1name);
   free(p->out2name);
   free(p->cp.output);
+  gal_data_free(p->ccol1);
+  gal_data_free(p->ccol2);
 
   /* Print the final message.
   if(!p->cp.quiet)

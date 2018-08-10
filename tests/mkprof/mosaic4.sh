@@ -57,4 +57,4 @@ if [ ! -f $cat      ]; then echo "$cat does not exist.";   exit 77; fi
 # `check_with_program' can be something like `Valgrind' or an empty
 # string. Such programs will execute the command if present and help in
 # debugging when the developer doesn't have access to the user's system.
-$check_with_program $execname $cat --naxis=100,100 --crpix=-99,-99
+$check_with_program $execname $cat --mergedsize=100,100 --crpix=-99,-99

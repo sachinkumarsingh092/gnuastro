@@ -255,6 +255,9 @@ statistics_interpolate_and_write(struct statisticsparams *p,
 
   /* Write the values. */
   gal_tile_full_values_write(values, &cp->tl, 1, output, NULL, PROGRAM_NAME);
+  gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+  gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
+                            "STATISTICS-CONFIG", output, "0");
 }
 
 
@@ -589,6 +592,12 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   /* Write the table. */
   gal_checkset_writable_remove(output, 0, p->cp.dontdelete);
   gal_table_write(table, comments, p->cp.tableformat, output, "TABLE", 0);
+
+
+  /* Write the configuration information. */
+  gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+  gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
+                            "STATISTICS-CONFIG", output, "0");
 
 
   /* Let the user know, if we aren't in quiet mode. */

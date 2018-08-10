@@ -578,6 +578,11 @@ mkprof_write(struct mkprofparams *p)
       /* Clean up */
       gal_data_free(out);
 
+      /* Write the configuration keywords. */
+      gal_fits_key_write_filename("input", p->catname, &p->cp.okeys, 1);
+      gal_fits_key_write_config(&p->cp.okeys, "MakeProfiles configuration",
+                                "MKPROF-CONFIG", p->mergedimgname, "0");
+
       /* In verbose mode, print the information. */
       if(!p->cp.quiet)
         {

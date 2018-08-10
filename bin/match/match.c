@@ -184,7 +184,7 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
 
   /* Reverse the table and write it out. */
   gal_list_data_reverse(&cat);
-  gal_table_write(cat, NULL, p->cp.tableformat, p->cp.output, "MATCHED", 0);
+  gal_table_write(cat, NULL, p->cp.tableformat, p->out1name, "MATCHED", 0);
 }
 
 
@@ -308,6 +308,17 @@ match_catalog(struct matchparams *p)
 void
 match(struct matchparams *p)
 {
+  /* Do the correct type of matching. */
   if(p->mode==MATCH_MODE_CATALOG)
     match_catalog(p);
+
+  /* Write Match's configuration as keywords into the first extension of
+     the output. */
+  if(gal_fits_name_is_fits(p->out1name))
+    {
+      gal_fits_key_write_filename("input1", p->input1name, &p->cp.okeys, 1);
+      gal_fits_key_write_filename("input2", p->input2name, &p->cp.okeys, 1);
+      gal_fits_key_write_config(&p->cp.okeys, "Match configuration",
+                                "MATCH-CONFIG", p->out1name, "0");
+    }
 }

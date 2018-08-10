@@ -192,7 +192,7 @@ gal_fits_key_write_title_in_ptr(char *title, fitsfile *fptr);
 
 void
 gal_fits_key_write_filename(char *keynamebase, char *filename,
-                            gal_fits_list_key_t **list);
+                            gal_fits_list_key_t **list, int top1end0);
 
 void
 gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec);
@@ -211,6 +211,10 @@ gal_fits_key_write_version(gal_fits_list_key_t **keylist, char *title,
 void
 gal_fits_key_write_version_in_ptr(gal_fits_list_key_t **keylist, char *title,
                                   fitsfile *fptr);
+
+void
+gal_fits_key_write_config(gal_fits_list_key_t **keylist, char *title,
+                          char *extname, char *filename, char *hdu);
 
 
 

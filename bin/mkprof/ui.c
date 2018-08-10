@@ -487,13 +487,13 @@ ui_read_check_only_options(struct mkprofparams *p)
           "a magnitude, not brightness).");
 
 
-  /* Make sure no zero value is given for the `--naxis' option (only when
-     it is necessary). */
+  /* Make sure no zero value is given for the `--mergedsize' option (only
+     when it is necessary). */
   if(p->dsize && p->backname==NULL)
     for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i)
       if(p->dsize[i]==0)
-        error(EXIT_FAILURE, 0, "values to `--naxes' option must not be "
-              "zero");
+        error(EXIT_FAILURE, 0, "values to `--mergedsize' option must not "
+              "be zero");
 }
 
 
@@ -1085,7 +1085,7 @@ ui_prepare_canvas(struct mkprofparams *p)
 
       /* Currently, things are only implemented for 2D. */
       if(p->ndim!=2)
-        error(EXIT_FAILURE, 0, "%zu numbers given to `--naxis', only 2 "
+        error(EXIT_FAILURE, 0, "%zu numbers given to `--mergedsize', only 2 "
               "values may be given", p->ndim);
 
       /* If any of the shift elements are zero, the others should be too!*/
@@ -1499,6 +1499,10 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
      after the sanity check so un-sane values are not printed in the output
      state. */
   gal_options_print_state(&p->cp);
+
+
+  /* Prepare all the options as FITS keywords to write in output later. */
+  gal_options_as_fits_keywords(&p->cp);
 
 
   /* Check that the options and arguments fit well with each other. Note

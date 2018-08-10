@@ -1503,6 +1503,12 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
   ui_preparations(p);
 
 
+  /* If the output is a FITS table, prepare all the options as FITS
+     keywords to write in output later. */
+  if(gal_fits_name_is_fits(p->objectsout))
+      gal_options_as_fits_keywords(&p->cp);
+
+
   /* Inform the user. */
   if(!p->cp.quiet)
     {
