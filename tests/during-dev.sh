@@ -70,7 +70,7 @@
 # space characters in them, quote the full value
 numjobs=8
 builddir=build
-outdir=~/.tmp
+outdir=
 
 
 # Set the utility name, along with its arguments and options. NOTE, for
@@ -80,9 +80,9 @@ outdir=~/.tmp
 # script, and once for the utility. In such cases it might be easier to
 # just add the argument/option to the final script that runs the utility
 # rather than these variables.
-utilname=match
-arguments="positions-1.txt positions-2.txt"
-options="--aperture=0.5 --log --output=match-positions.fits"
+utilname=
+arguments=
+options=
 
 
 
