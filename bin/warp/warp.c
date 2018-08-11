@@ -470,7 +470,7 @@ correct_wcs_save_output(struct warpparams *p)
     }
 
   /* Save the output into the proper type and write it. */
-  if(p->cp.type!=p->output->type)
+  if(p->cp.type && p->cp.type!=p->output->type)
     p->output=gal_data_copy_to_new_type_free(p->output, p->cp.type);
   gal_fits_img_write(p->output, p->cp.output, headers, PROGRAM_NAME);
 

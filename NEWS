@@ -32,6 +32,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     -- gal_fits_key_write_filename: write at the top or end of the input list.
 
 ** Bugs fixed
+  bug #54493: Warp crashes when type isn't set.
 
 
 
