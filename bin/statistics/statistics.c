@@ -594,10 +594,13 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   gal_table_write(table, comments, p->cp.tableformat, output, "TABLE", 0);
 
 
-  /* Write the configuration information. */
-  gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
-  gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
-                            "STATISTICS-CONFIG", output, "0");
+  /* Write the configuration information if we have a FITS output. */
+  if(!strcmp(fix, "fits"))
+    {
+      gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+      gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
+                                "STATISTICS-CONFIG", output, "0");
+    }
 
 
   /* Let the user know, if we aren't in quiet mode. */
@@ -669,7 +672,6 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 
   /* Set the output file name. */
   write_output_table(p, bins, suf, contents);
-
 
   /* Clean up. */
   gal_data_free(range);
