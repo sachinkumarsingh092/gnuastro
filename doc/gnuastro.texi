@@ -5236,6 +5236,28 @@ $ sudo pacman -S ghostscript libtool libjpeg libtiff        \
                                                             \
                  gsl cfitsio wcslib
 @end example
+
+@item @command{zypper} (openSUSE and SUSE Linux Enterprise Server)
+@cindex openSUSE
+@cindex SUSE Linux Enterprise Server
+@cindex @command{zypper}
+@url{https://www.opensuse.org/,openSUSE} is a community project supported
+by @url{https://www.suse.com/,SUSE} with both stable and rolling releases.
+@url{https://www.suse.com/products/server/,SUSE Linux Enterprise Server} is
+the commmercial offering which shares code and tools. Many additional
+packages are offered in the @url{https://build.opensuse.org/,Build
+Service}.  openSUSE and SLES use @command{zypper} (cli) and YaST (GUI) for
+managing repositories and packages.
+@url{https://software.opensuse.org/package/gnuastro,Current verions} are
+usually available for installation or may be available in the distribution.
+
+@example
+$ sudo zypper install ghostscript_any libtool pkgconfig    \
+              cfitsio-devel gsl-devel libcurl-devel        \
+              libgit2-devel libjpeg62-devel libtiff-devel  \
+              wcslib-devel
+$ ./configure CPPFLAGS="-I/usr/include/cfitsio"
+@end example
 @end table
 
 Usually, when libraries are installed by operating system package managers,
