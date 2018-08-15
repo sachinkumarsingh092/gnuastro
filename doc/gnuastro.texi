@@ -5171,6 +5171,12 @@ $ sudo apt-get install ghostscript libtool-bin libjpeg-dev  \
                        libgsl0-dev libcfitsio-dev wcslib-dev
 @end example
 
+@noindent
+Gnuastro is @url{https://tracker.debian.org/pkg/gnuastro,packaged} in
+Debian (and thus some of its derivate operating systems). Just make sure it
+is the most recent version.
+
+
 @item @command{dnf}
 @itemx @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux, and etc)
 @cindex RHEL
@@ -5241,23 +5247,32 @@ $ sudo pacman -S ghostscript libtool libjpeg libtiff        \
 @cindex openSUSE
 @cindex SUSE Linux Enterprise Server
 @cindex @command{zypper}
-@url{https://www.opensuse.org/,openSUSE} is a community project supported
-by @url{https://www.suse.com/,SUSE} with both stable and rolling releases.
-@url{https://www.suse.com/products/server/,SUSE Linux Enterprise Server} is
-the commmercial offering which shares code and tools. Many additional
-packages are offered in the @url{https://build.opensuse.org/,Build
-Service}.  openSUSE and SLES use @command{zypper} (cli) and YaST (GUI) for
-managing repositories and packages.
-@url{https://software.opensuse.org/package/gnuastro,Current verions} are
-usually available for installation or may be available in the distribution.
+@url{https://www.opensuse.org,openSUSE} is a community project supported by
+@url{https://www.suse.com,SUSE} with both stable and rolling releases.
+SUSE Linux Enterprise
+Server@footnote{@url{https://www.suse.com/products/server}} (SLES) is the
+commmercial offering which shares code and tools. Many additional packages
+are offered in the Build
+Service@footnote{@url{https://build.opensuse.org}}. openSUSE and SLES use
+@command{zypper} (cli) and YaST (GUI) for managing repositories and
+packages.
 
 @example
 $ sudo zypper install ghostscript_any libtool pkgconfig    \
               cfitsio-devel gsl-devel libcurl-devel        \
               libgit2-devel libjpeg62-devel libtiff-devel  \
               wcslib-devel
+@end example
+@noindent
+When building Gnuastro, run the configure script with the following
+@code{CPPFLAGS} environment variable:
+
+@example
 $ ./configure CPPFLAGS="-I/usr/include/cfitsio"
 @end example
+
+@c Gnuastro is @url{https://software.opensuse.org/package/gnuastro,packaged}
+@c in @command{zypper}. Just make sure it is the most recent version.
 @end table
 
 Usually, when libraries are installed by operating system package managers,
