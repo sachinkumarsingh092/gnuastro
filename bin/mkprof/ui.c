@@ -696,10 +696,11 @@ ui_read_cols(struct mkprofparams *p)
 
           /* Check if there is no negative or zero-radius profile. */
           for(i=0;i<p->num;++i)
-            if(p->r[i]<=0.0f)
+            if(p->f[i]!=PROFILE_POINT && p->r[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the radius value %g is "
-                    "not acceptable. It has to be larger than 0", p->catname,
-                    i+1, p->r[i]);
+                    "not acceptable for a `%s' profile. It has to be larger "
+                    "than 0", p->catname, i+1, p->r[i],
+                    ui_profile_name_write(p->f[i]));
           break;
 
 
@@ -724,10 +725,11 @@ ui_read_cols(struct mkprofparams *p)
 
           /* Check if there is no negative or >1.0f axis ratio. */
           for(i=0;i<p->num;++i)
-            if(p->q[i]<=0.0f || p->q[i]>1.0f)
+            if( p->f[i]!=PROFILE_POINT && (p->q[i]<=0.0f || p->q[i]>1.0f) )
               error(EXIT_FAILURE, 0, "%s: row %zu, the axis ratio value %g "
-                    "is not acceptable. It has to be >0 and <=1", p->catname,
-                    i+1, p->q[i]);
+                    "is not acceptable for a `%s' profile. It has to be >0 "
+                    "and <=1", p->catname, i+1, p->q[i],
+                    ui_profile_name_write(p->f[i]));
           break;
 
 
@@ -746,10 +748,11 @@ ui_read_cols(struct mkprofparams *p)
 
           /* Check if there is no negative or zero truncation radius. */
           for(i=0;i<p->num;++i)
-            if(p->t[i]<=0.0f)
+            if(p->f[i]!=PROFILE_POINT && p->t[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the truncation radius "
-                    "value %g is not acceptable. It has to be larger than 0",
-                    p->catname, i+1, p->t[i]);
+                    "value %g is not acceptable for a `%s' profile. It has "
+                    "to be larger than 0", p->catname, i+1, p->t[i],
+                    ui_profile_name_write(p->f[i]));
           break;
 
 

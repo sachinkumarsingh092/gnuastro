@@ -33,6 +33,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Bugs fixed
   bug #54493: Warp crashes when type isn't set.
+  bug #54526: Invalid r, q and truncation of point profiles in MakeProfiles.
 
 
 
