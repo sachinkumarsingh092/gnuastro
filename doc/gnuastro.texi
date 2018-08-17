@@ -27191,6 +27191,46 @@ above.
 @end deftypefun
 
 
+@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace})
+Find the first positive outlier in the @code{input} distribution. The
+returned dataset contains a single element: the first positive outlier. It
+is one of the dataset's elements, in the same type as the input. If the
+process fails for any reason (for example @code{window_size} is larger than
+the number of @code{input}'s non-blank elements, or no outlier was found),
+a @code{NULL} pointer will be returned.
+
+All (possibly existing) blank elements are first removed from the input
+dataset, then it is sorted. A sliding window of @code{window_size} elements
+is parsed over the dataset and is used as a reference to identify the
+outlier. The first element where the distance to the previous (sorted)
+element is @code{sigma} units away from the distribution of distances of
+the @code{window_size} previous elements is considered an outlier and
+returned by this function.
+
+Formally, Let's take @mymath{v_i} to be the @mymath{i}-th element of the
+sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as
+the @mymath{\sigma}-clipped median and standard deviation from the
+distances of the previous @code{window_size} elements. If the value given
+to @code{sigma} is displayed with @mymath{s}, the returned outlier is the
+first (sorted) elemented where the following condition becomes true:
+
+@dispmath{{(v_i-v_{i-1})-m\over \sigma}>s}
+
+The @code{sigclip_multip} and @code{sigclip_param} arguments specify the
+properties of the @mymath{\sigma}-clipping. You see that by this
+definition, the outlier cannot be any of the first @code{window_size}
+elements, since they constitute the window that is used for the first
+checked element.
+
+If @code{inplace!=0}, the removing of blank elements and sorting will be
+done within the input dataset's allocated space. Otherwise, this function
+will internally allocate (and later free) the necessary space to keep the
+intermediate space that this process requires.
+
+@end deftypefun
+
+
+
 
 @node Binary datasets, Labeled datasets, Statistical operations, Gnuastro library
 @subsection Binary datasets (@file{binary.h})

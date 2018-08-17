@@ -15,6 +15,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     -- gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
     -- gal_fits_key_write_version_in_ptr: new name of gal_fits_key_write_version.
     -- gal_fits_key_write_config: write key list and version as config header.
+    -- gal_statistics_outlier_positive: Find the first positive outlier.
 
 ** Removed features
 
