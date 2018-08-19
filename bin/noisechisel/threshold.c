@@ -517,10 +517,11 @@ threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
                              gal_data_t *second, gal_data_t *third,
                              size_t start, size_t number)
 {
-  gal_data_t *quantile;
+  char *msg;
+  gal_data_t *outlier;
   size_t i, osize=first->size;
   float *oa1=NULL, *oa2=NULL, *oa3=NULL;
-  float q, *arr1=NULL, *arr2=NULL, *arr3=NULL;
+  float o, *arr1=NULL, *arr2=NULL, *arr3=NULL;
 
   /* A small sanity check. */
   if(first->type!=GAL_TYPE_FLOAT32)
@@ -554,38 +555,58 @@ threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
   /* Find the quantile and remove all tiles that are more than it in the
      first array. */
   arr1=first->array;
-  quantile=gal_statistics_quantile(first, p->qthreshtilequant, 0);
-  q=*((float *)(quantile->array));
-  for(i=0;i<first->size;++i)
-    /* Just note that we have blank (NaN) values, so to avoid doing a
-       NaN check with `isnan', we will check if the value is below the
-       quantile, if it succeeds (isn't NaN and is below the quantile),
-       then we'll put it's actual value, otherwise, a NaN. */
-    arr1[i] = arr1[i]<q ? arr1[i] : NAN;
-  gal_data_free(quantile);
+  outlier=gal_statistics_outlier_positive(first, p->qthreshoutnum,
+                                          p->qthreshoutsigma,
+                                          p->qthreshoutsclip[0],
+                                          p->qthreshoutsclip[1], 0, 1);
+  if(outlier)
+    {
+      p->qthresh1out=o=*((float *)(outlier->array));
+      for(i=0;i<first->size;++i)
+        /* Just note that we have blank (NaN) values, so to avoid doing a
+           NaN check with `isnan', we will check if the value is below the
+           quantile, if it succeeds (isn't NaN and is below the quantile),
+           then we'll put it's actual value, otherwise, a NaN. */
+        arr1[i] = arr1[i]<o ? arr1[i] : NAN;
+      gal_data_free(outlier);
+    }
 
-  /* Second quantile threshold. */
+  /* Second quantile threshold. We are finding the outliers independently
+     on each dataset to later remove any tile that is blank in atleast one
+     of them. */
   arr2=second->array;
-  quantile=gal_statistics_quantile(second, p->qthreshtilequant, 0);
-  q=*((float *)(quantile->array));
-  for(i=0;i<second->size;++i)
-    arr2[i] = arr2[i]<q ? arr2[i] : NAN;
-  gal_data_free(quantile);
+  outlier=gal_statistics_outlier_positive(second, p->qthreshoutnum,
+                                          p->qthreshoutsigma,
+                                          p->qthreshoutsclip[0],
+                                          p->qthreshoutsclip[1], 0, 0);
+  if(outlier)
+    {
+      p->qthresh2out=o=*((float *)(outlier->array));
+      for(i=0;i<second->size;++i)
+        arr2[i] = arr2[i]<o ? arr2[i] : NAN;
+      gal_data_free(outlier);
+    }
 
   /* The third (if it exists). */
   if(third)
     {
       arr3=third->array;
-      quantile=gal_statistics_quantile(third, p->qthreshtilequant, 0);
-      q=*((float *)(quantile->array));
-      for(i=0;i<third->size;++i)
-        arr3[i] = arr3[i]<q ? arr3[i] : NAN;
-      gal_data_free(quantile);
+      outlier=gal_statistics_outlier_positive(third, p->qthreshoutnum,
+                                              p->qthreshoutsigma,
+                                              p->qthreshoutsclip[0],
+                                              p->qthreshoutsclip[1], 0, 0);
+      if(outlier)
+        {
+          p->qthresh3out=o=*((float *)(outlier->array));
+          for(i=0;i<third->size;++i)
+            arr3[i] = arr3[i]<o ? arr3[i] : NAN;
+          gal_data_free(outlier);
+        }
     }
 
   /* Make sure all three have the same NaN pixels. */
   for(i=0;i<first->size;++i)
-    if( isnan(arr1[i]) || isnan(arr2[i]) || isnan(arr3[i]) )
+    if( isnan(arr1[i]) || isnan(arr2[i]) || (third && isnan(arr3[i])) )
       {
         arr1[i] = arr2[i] = NAN;
         if(third) arr3[i] = NAN;
@@ -598,6 +619,16 @@ threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
       second->array=oa2;
       first->size = second->size = osize;
       if(third) { third->array=oa3; third->size=osize; }
+    }
+
+  /* Report the values if necessary. */
+  if(!p->cp.quiet)
+    {
+      if( asprintf(&msg, "quantile threshold outlier limit: %f",
+                   p->qthresh1out)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      gal_timing_report(NULL, msg, 2);
+      free(msg);
     }
 }
 
@@ -738,7 +769,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
 
   /* Remove higher thresholds if requested. */
-  if(p->qthreshtilequant!=1.0)
+  if(p->qthreshoutnum!=1.0)
     threshold_qthresh_clean(p, qprm.erode_th, qprm.noerode_th,
                             qprm.expand_th ? qprm.expand_th : NULL,
                             p->qthreshname);
@@ -751,7 +782,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   num=gal_statistics_number(qprm.erode_th);
   nval=((size_t *)(num->array))[0];
   if( nval < cp->interpnumngb)
-    error(EXIT_FAILURE, 0, "%zu tiles can be used for interpolation of the "
+    error(EXIT_FAILURE, 0, "%zu tile(s) can be used for interpolation of the "
           "quantile threshold values over the full dataset. This is smaller "
           "than the requested minimum value of %zu (value to the "
           "`--interpnumngb' option).\n\n"

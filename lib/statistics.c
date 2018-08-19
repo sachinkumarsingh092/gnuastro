@@ -2084,8 +2084,8 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                                         sigclip_param, 0, 1);           \
         sarr=sclip->array;                                              \
                                                                         \
-        /* For a check                                   */             \
-        /* printf("%f (%f, %f)\n",                       */             \
+        /* For a check */                                               \
+        /* printf("%f: %f (%f, %f)\n", (float)(arr[i]),  */             \
         /*        ((double)(arr[i]-arr[i-1])) - sarr[1], */             \
         /*        sarr[1], sigma*sarr[3]);               */             \
                                                                         \
@@ -2110,7 +2110,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 gal_data_t *
 gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
                                 float sigma, float sigclip_multip,
-                                float sigclip_param, int inplace)
+                                float sigclip_param, int inplace, int quiet)
 {
   float *sarr;
   double *darr;
@@ -2120,9 +2120,29 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
   /* Remove all blanks and sort the dataset. */
   nbs=gal_statistics_no_blank_sorted(input, inplace);
 
+  /* For a check.
+  if(nbs->type==GAL_TYPE_FLOAT32)
+    {
+      float *n=nbs->array;
+      for(i=0;i<nbs->size;++i)
+        printf("%f\n", n[i]);
+      exit(0);
+    }
+  */
+
   /* A small sanity check. */
   if(window_size<nbs->size && window_size!=0)
     {
+      /* Print a warning if necessary. */
+      if(quiet!=0 && window_size*2 > nbs->size)
+        error(EXIT_SUCCESS, 0, "%s: [WARNING] the number of elements in the "
+              "moving window size (%zu) is not much smaller than the number "
+              "of non-blank elements (%zu). This can cause a wrong outlier "
+              "estimation (the outlier may be at an earlier point in the "
+              "sorted array). For this dataset, it is recommended to "
+              "decrease the number of elements in the moving window",
+              __func__, window_size, nbs->size);
+
       /* Allocate space to keep the distances. */
       dist=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &window_size, NULL,
                           0, -1, NULL, NULL, NULL);
@@ -2145,10 +2165,12 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
           error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
                 __func__, input->type);
         }
+
+      /* Clean up. */
+      gal_data_free(dist);
     }
 
   /* Clean up and return. */
-  gal_data_free(dist);
   if(nbs!=input) gal_data_free(nbs);
   return out;
 }

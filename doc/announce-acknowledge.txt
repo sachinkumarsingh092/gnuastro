@@ -1,3 +1,4 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Pierre-Alain Duc
 Michael Stein

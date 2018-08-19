@@ -15470,7 +15470,7 @@ Segmentation has been completely moved to a new program: @ref{Segment}.
 @end itemize
 
 @noindent
-Added options:
+Added features/options:
 @itemize
 
 @item
@@ -15499,9 +15499,14 @@ give this option a value of 1 (only the largest valued pixel in the input
 will not be eroded).
 
 @item
-@option{--qthreshtilequant}: to manually remove the measured qthresh from
-some tiles. This feature helps in detecting large and extended diffuse
-(almost flat) signal when necessary, see @ref{Detection options}.
+Outlier rejection in quantile thresholds: When there are large galaxies or
+bright stars in the image, their gradient may be on a smaller scale than
+the selected tile size. In such cases, those tiles will be identified as
+tiles with no signal and thus preserved. An outlier identification
+algorithm has been added to NoiseChisel and can be configured with the
+following three options: @option{--qthreshoutnum},
+@option{--qthreshoutsigma} and @option{--qthreshoutsclip}. See their
+description in @ref{Detection options} for more.
 
 @item
 @option{--detgrowquant}: is used to grow the final true detections until a
@@ -15835,43 +15840,56 @@ is complete, we will have a binary (two valued) image. The pixels above the
 threshold are known as foreground pixels (have a value of 1) while those
 which lie below the threshold are known as background (have a value of 0).
 
-@item --qthreshtilequant=FLT
-Only keep tiles which have a q-thresh value above the given quantile of the
-all successful tiles. Hence, when given a value of @code{1}, this option
-will be ignored. When there is more than one channel (and
-@option{--workoverch} is not called), quantile calculation and application
-will be done on each channel independently.
+@item ----qthreshoutnum=INT
+Number of tiles (in sorted array) to use as a moving window when estimating
+the outlier tiles. If it is given a value of zero, no outlier rejection
+will take place.
 
-This option is useful when a large and diffuse (almost flat within each
-tile) signal exists with very small regions of Sky. The flatness of the
-profile will cause it to successfully pass the tests of @ref{Quantifying
-signal in a tile}. As a result, without this option the flat and diffuse
-signal will be interpreted as sky. In such cases, you can see the status
-of the tiles with the @option{--checkqthresh} option (first image extension
-is enough) and select a quantile through this option to ignore the measured
-values in the higher-valued tiles.
+This option is useful when the dataset contains a large and diffuse (almost
+flat within each tile) signal. The flatness of the profile will cause it to
+successfully pass the tests of @ref{Quantifying signal in a tile}. As a
+result, when outlier rejection is disabled, the flat and diffuse signal
+will be interpreted as sky. As a result, the quantile threshold in those
+tiles (and the ones around them) can be strongly over-estimated, causing a
+failure in their detection.
 
-This option can also be useful when there are large bright objects in the
-image with large flat wings which can also pass the tests and give outlier
-values. When there is a sky gradient over the image (mainly due to
-post-processing issues like bad flat fielding), this option must be set to
-@code{1} so it is completely ignored and the sky gradient is accurately
-measured and subtracted.
+Outlier identification proceeds as follows: all non-blank tile values are
+sorted by flux. A sliding window, with width equal to the value given to
+this option, is parsed over the dataset and is used as a reference to
+identify the first outlier element. The first element where the distance to
+the previous (sorted) element is sigma units (@option{--qthreshoutsigma})
+away from the distribution of distances of the element in the window is
+considered an outlier and all tiles larger than that value are ignored for
+the later step (interpolation).
 
-To get an estimate of the measured qthresh distribution, you can run the
-following commands. The first will create the qthresh check image with one
-value/pixel per tile (see @ref{Processing options}). Open the image in a
-FITS viewer and inspect it. The second command below will print the basic
-information about the distribution of values and the third will print the
-value at the 0.4 quantile. Recall that Gnuastro's Statistics program
-ignores blank values (in this case: tiles with significant signal), see
-@ref{Statistics}.
+Formally, Let's take @mymath{v_i} to be the @mymath{i}-th element of the
+sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as
+the @mymath{\sigma}-clipped median and standard deviation from the
+distances of the previous @mymath{N} elements (@mymath{N} is the value to
+this option). The @option{--qthreshoutsclip} option can be used to
+configure the @mymath{\sigma}-clipping. If the value given to
+@option{--qthreshoutsigma} is displayed with @mymath{s}, the returned
+outlier is the first (sorted) elemented where the following condition
+becomes true:
 
-@example
-$ astnoisechisel image.fits --checkqthresh --oneelempertile
-$ aststatistics image_qthresh.fits
-$ aststatistics image_qthresh.fits --quantile=0.4
-@end example
+@dispmath{(v_i−v_{i−1})−m>s\times\sigma}
+
+Note that by this definition, the outlier cannot be any of the first
+@mymath{N} elements, since they constitute the window that is used for the
+first checked element. It is therefore important that while @mymath{N}
+isn't too small, it also isn't larger than (approximately) half of the
+initially measured tiles. A warning will be printed if this condition
+doesn't hold. You can use @option{--checkqthresh} to inspect the steps.
+
+@item --qthreshoutsigma=FLT
+Multiple of sigma to define an outlier, see description of
+@option{--qthreshoutnum} for more.
+
+@item --qthreshoutsclip=FLT,FLT
+Sigma-clipping parameters for the outlier rejection of the quantile
+threshold. The format of the given values is similar to
+@option{--sigmaclip} below. see description of @option{--qthreshoutnum} for
+a description of the outlier rejection algorithm.
 
 @item --smoothwidth=INT
 Width of flat kernel used to smooth the interpolated quantile thresholds,
@@ -27191,7 +27209,7 @@ above.
 @end deftypefun
 
 
-@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace})
+@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace}, int @code{quiet})
 Find the first positive outlier in the @code{input} distribution. The
 returned dataset contains a single element: the first positive outlier. It
 is one of the dataset's elements, in the same type as the input. If the
@@ -27226,6 +27244,11 @@ If @code{inplace!=0}, the removing of blank elements and sorting will be
 done within the input dataset's allocated space. Otherwise, this function
 will internally allocate (and later free) the necessary space to keep the
 intermediate space that this process requires.
+
+If @code{quiet!=0}, this function will report a warning when the moving
+window size is not much smaller than the number of non-blank elements. In
+such cases, the outlier estimation may be wrong: the outlier point may lie
+before the first checked element.
 
 @end deftypefun
 

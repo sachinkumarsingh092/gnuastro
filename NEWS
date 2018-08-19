@@ -11,13 +11,25 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Library:
     -- gal_fits_key_list_reverse: Reverse the given list of FITS keywords.
-    -- gal_fits_key_write_title_in_ptr: Write a two-line title in FITS keywords.
+    -- gal_fits_key_write_title_in_ptr: Write a two-line title FITS keyword.
     -- gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
-    -- gal_fits_key_write_version_in_ptr: new name of gal_fits_key_write_version.
+    -- gal_fits_key_write_version_in_ptr: old gal_fits_key_write_version.
     -- gal_fits_key_write_config: write key list and version as config header.
     -- gal_statistics_outlier_positive: Find the first positive outlier.
 
+  NoiseChisel:
+    -- New outlier identification algorithm for the quantile threshold
+       step. It is very useful when there are extended and bright sources
+       in the dataset: the tiles containing their footprint (outliers) can
+       be identified and removed with the parameters/options below:
+       --qthreshoutnum: Number of elements to search for outliers.
+       --qthreshoutsigma: Multiple of sigma to define an outlier.
+       --qthreshoutsclip: Sigma-clipping parameters for the process.
+
 ** Removed features
+
+  NoiseChisel:
+    --qthreshtilequant: removed due to new outlier rejection algorithm.
 
 ** Changed features
 
