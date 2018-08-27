@@ -639,10 +639,12 @@ oneprof_set_prof_params(struct mkonthread *mkp)
       mkp->correction       = 0;
       break;
 
+
+
     default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can correct "
-            "this problem. The profile code %u is not recognized.", __func__,
-            mkp->func);
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can "
+            "correct this problem. The profile code %u is not recognized.",
+            __func__, mkp->func);
     }
 }
 

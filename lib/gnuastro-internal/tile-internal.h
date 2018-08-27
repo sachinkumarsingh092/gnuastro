@@ -1,11 +1,12 @@
 /*********************************************************************
-Arithmetic -- Preform arithmetic operations on datasets.
+Common tile operations used by some Gnuastro programs, but too specific
+to be in the general library.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2017-2018, Free Software Foundation, Inc.
+Copyright (C) 2018, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,12 +21,11 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_ARITHMETIC_INTERNAL_H__
-#define __GAL_ARITHMETIC_INTERNAL_H__
+#ifndef __GAL_TILE_INTERNAL_H__
+#define __GAL_TILE_INTERNAL_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
-#include <gnuastro/data.h>
 
 
 /* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
@@ -58,17 +58,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Actual header contants (the above were for the Pre-processor). */
 __BEGIN_C_DECLS  /* From C++ preparations */
 
-int
-gal_arithmetic_binary_checkblank(gal_data_t *l, gal_data_t *r);
 
-char *
-gal_arithmetic_operator_string(int operator);
-
-gal_data_t *
-gal_arithmetic_convert_to_compiled_type(gal_data_t *in, int flags);
-
-
+void
+gal_tileinternal_no_outlier(gal_data_t *first, gal_data_t *second,
+                            gal_data_t *third,
+                            struct gal_tile_two_layer_params *tl,
+                            double *outliersclip, float outliersigma,
+                            char *filename);
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_ARITHMETIC_INTERNAL_H__ */
+#endif           /* __GAL_TILE_INTERNAL_H__ */

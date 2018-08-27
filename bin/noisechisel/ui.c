@@ -115,10 +115,6 @@ ui_initialize_options(struct noisechiselparams *p,
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
-  p->qthresh1out         = NAN;
-  p->qthresh2out         = NAN;
-  p->qthresh3out         = NAN;
-
 
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)

@@ -42,6 +42,24 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
 
+
+
+
+
+    {
+      "onedasimage",
+      UI_KEY_ONEDASIMAGE,
+      0,
+      0,
+      "Write 1D outputs as an image, not a table.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->onedasimage,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
     {0}
   };
 

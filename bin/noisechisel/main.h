@@ -56,13 +56,11 @@ struct noisechiselparams
   uint8_t           rawoutput;  /* Only detection & 1 elem/tile output.   */
   uint8_t               label;  /* Label detections that are connected.   */
 
-  float            mirrordist;  /* Maximum distance to check mode sym.    */
-  float           modmedqdiff;  /* Difference between mode and median.    */
+  float          meanmedqdiff;  /* Difference between mode and median.    */
   float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   float               qthresh;  /* Quantile threshold on convolved image. */
-  size_t        qthreshoutnum;  /* Number of elements to find outliers.   */
-  float       qthreshoutsigma;  /* Multiple of sigma to define outlier.   */
-  double   qthreshoutsclip[2];  /* qthresh outlier Sigma-clipping params. */
+  float          outliersigma;  /* Multiple of sigma to define outlier.   */
+  double      outliersclip[2];  /* Outlier Sigma-clipping params.         */
   size_t          smoothwidth;  /* Interpolation: flat kernel to smooth.  */
   uint8_t        checkqthresh;  /* Save the quantile threhsold steps.     */
   size_t                erode;  /* Number of erosions after thresholding. */
@@ -97,9 +95,6 @@ struct noisechiselparams
   gal_data_t      *widekernel;  /* Wider kernel.                          */
   gal_data_t            *conv;  /* Convolved wth sharper kernel.          */
   gal_data_t           *wconv;  /* Convolved with wider kernel.           */
-  float           qthresh1out;  /* Outlier value for quantile thresh No.1.*/
-  float           qthresh2out;  /* Outlier value for quantile thresh No.2.*/
-  float           qthresh3out;  /* Outlier value for quantile thresh No.3.*/
   gal_data_t          *binary;  /* For binary operations.                 */
   gal_data_t          *olabel;  /* Labels of objects in the detection.    */
   gal_data_t   *expand_thresh;  /* Quantile threshold to expand per tile. */

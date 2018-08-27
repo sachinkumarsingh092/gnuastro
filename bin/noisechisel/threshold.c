@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tile-internal.h>
 
 #include "main.h"
 
@@ -392,12 +393,11 @@ qthresh_on_tile(void *in_prm)
   struct qthreshparams *qprm=(struct qthreshparams *)tprm->params;
   struct noisechiselparams *p=qprm->p;
 
-  double *darr;
   void *tarray=NULL;
   int type=qprm->erode_th->type;
-  gal_data_t *modeconv = p->wconv ? p->wconv : p->conv;
-  gal_data_t *tile, *mode, *qvalue, *usage, *tblock=NULL;
+  gal_data_t *meanconv = p->wconv ? p->wconv : p->conv;
   size_t i, tind, twidth=gal_type_sizeof(type), ndim=p->input->ndim;
+  gal_data_t *tile, *mean, *num, *meanquant, *qvalue, *usage, *tblock=NULL;
 
   /* Put the temporary usage space for this thread into a data set for easy
      processing. */
@@ -425,31 +425,36 @@ qthresh_on_tile(void *in_prm)
          the convolved image, then copy the desired contents into the
          already allocated `usage' array. */
       tarray=tile->array; tblock=tile->block;
-      tile->array=gal_tile_block_relative_to_other(tile, modeconv);
-      tile->block=modeconv;
+      tile->array=gal_tile_block_relative_to_other(tile, meanconv);
+      tile->block=meanconv;
       gal_data_copy_to_allocated(tile, usage);
-      tile->array=tarray; tile->block=tblock;
+      tile->array=tarray;
+      tile->block=tblock;
 
 
-      /* Find the mode on this tile, note that we have set the `inplace'
-         flag to `1' to avoid extra allocation. */
-      mode=gal_statistics_mode(usage, p->mirrordist, 1);
+      /* Find the mean's quantile on this tile, note that we have already
+         copied the tile's dataset to a newly allocated place. So we have
+         set the `inplace' flag to `1' to avoid extra allocation. */
+      mean=gal_statistics_mean(usage);
+      num=gal_statistics_number(usage);
+      mean=gal_data_copy_to_new_type_free(mean, usage->type);
+      meanquant = ( *(size_t *)(num->array)
+                    ? gal_statistics_quantile_function(usage, mean, 1)
+                    : NULL );
 
-
-      /* Check the mode value. Note that if the mode is not accurate, then
-         the contents of `darr' will be NaN and all conditions will
-         fail. In such cases, the tile will be ignored. */
-      darr=mode->array;
-      if( fabs(darr[1]-0.5f) < p->modmedqdiff )
+      /* Only continue if the mean's quantile is close enough to the
+         median.  */
+      if( meanquant
+          && fabs( *(double *)(meanquant->array)-0.5f) < p->meanmedqdiff )
         {
-          /* The mode was found on the wider convolved image, but the
+          /* The mean was found on the wider convolved image, but the
              qthresh values have to be found on the sharper convolved
              images. This is because the distribution becomes more skewed
              with a wider kernel, helping us find tiles with no data more
              easily. But for the quantile threshold, we want to use the
              sharper convolved image to loose less of the spatial
              information. */
-          if(modeconv!=p->conv)
+          if(meanconv!=p->conv)
             {
               tarray=tile->array; tblock=tile->block;
               tile->array=gal_tile_block_relative_to_other(tile, p->conv);
@@ -474,7 +479,7 @@ qthresh_on_tile(void *in_prm)
           gal_data_free(qvalue);
 
           /* Same for the expansion quantile. */
-          if(p->detgrowquant!=1.0f)
+          if(qprm->expand_th)
             {
               qvalue=gal_statistics_quantile(usage, p->detgrowquant, 1);
               memcpy(gal_pointer_increment(qprm->expand_th->array, tind,
@@ -489,13 +494,15 @@ qthresh_on_tile(void *in_prm)
                                                  tind, type), type);
           gal_blank_write(gal_pointer_increment(qprm->noerode_th->array,
                                                  tind, type), type);
-          if(p->detgrowquant!=1.0f)
+          if(qprm->expand_th)
             gal_blank_write(gal_pointer_increment(qprm->expand_th->array,
                                                    tind, type), type);
         }
 
       /* Clean up and fix the tile's pointers. */
-      gal_data_free(mode);
+      gal_data_free(num);
+      gal_data_free(mean);
+      gal_data_free(meanquant);
     }
 
   /* Clean up and wait for the other threads to finish, then return. */
@@ -503,180 +510,6 @@ qthresh_on_tile(void *in_prm)
   gal_data_free(usage);
   if(tprm->b) pthread_barrier_wait(tprm->b);
   return NULL;
-}
-
-
-
-
-
-/* The main working function for `threshold_qthresh_clean'. The main
-   purpose/problem is this: when we have channels, the qthresh values for
-   each channel should be treated independently. */
-static void
-threshold_qthresh_clean_work(struct noisechiselparams *p, gal_data_t *first,
-                             gal_data_t *second, gal_data_t *third,
-                             size_t start, size_t number)
-{
-  char *msg;
-  gal_data_t *outlier;
-  size_t i, osize=first->size;
-  float *oa1=NULL, *oa2=NULL, *oa3=NULL;
-  float o, *arr1=NULL, *arr2=NULL, *arr3=NULL;
-
-  /* A small sanity check. */
-  if(first->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "%s: datatype has to be float32", __func__);
-
-  /* Correct the arrays (if necessary). IMPORTANT: The datasets are
-     multi-dimensional. However, when estimating the quantile, their
-     dimensionality doesn't matter (only the `size' element is checked by
-     `gal_statistics_quantile', not `ndim' or `dsize'). So we just need to
-     correct `size' if channels are to be considered. */
-  if(start || number!=first->size)
-    {
-      /* Keep the original values for re-setting later. */
-      oa1=first->array;
-      oa2=second->array;
-      if(third) oa3=third->array;
-
-      /* Increment the array pointers. */
-      first->array=gal_pointer_increment(first->array, start, first->type);
-      second->array=gal_pointer_increment(second->array, start,
-                                           second->type);
-      if(third)
-        third->array=gal_pointer_increment(third->array, start, third->type);
-
-      /* Correct their sizes. */
-      first->size=number;
-      second->size=number;
-      if(third) third->size=number;
-    }
-
-  /* Find the quantile and remove all tiles that are more than it in the
-     first array. */
-  arr1=first->array;
-  outlier=gal_statistics_outlier_positive(first, p->qthreshoutnum,
-                                          p->qthreshoutsigma,
-                                          p->qthreshoutsclip[0],
-                                          p->qthreshoutsclip[1], 0, 1);
-  if(outlier)
-    {
-      p->qthresh1out=o=*((float *)(outlier->array));
-      for(i=0;i<first->size;++i)
-        /* Just note that we have blank (NaN) values, so to avoid doing a
-           NaN check with `isnan', we will check if the value is below the
-           quantile, if it succeeds (isn't NaN and is below the quantile),
-           then we'll put it's actual value, otherwise, a NaN. */
-        arr1[i] = arr1[i]<o ? arr1[i] : NAN;
-      gal_data_free(outlier);
-    }
-
-  /* Second quantile threshold. We are finding the outliers independently
-     on each dataset to later remove any tile that is blank in atleast one
-     of them. */
-  arr2=second->array;
-  outlier=gal_statistics_outlier_positive(second, p->qthreshoutnum,
-                                          p->qthreshoutsigma,
-                                          p->qthreshoutsclip[0],
-                                          p->qthreshoutsclip[1], 0, 0);
-  if(outlier)
-    {
-      p->qthresh2out=o=*((float *)(outlier->array));
-      for(i=0;i<second->size;++i)
-        arr2[i] = arr2[i]<o ? arr2[i] : NAN;
-      gal_data_free(outlier);
-    }
-
-  /* The third (if it exists). */
-  if(third)
-    {
-      arr3=third->array;
-      outlier=gal_statistics_outlier_positive(third, p->qthreshoutnum,
-                                              p->qthreshoutsigma,
-                                              p->qthreshoutsclip[0],
-                                              p->qthreshoutsclip[1], 0, 0);
-      if(outlier)
-        {
-          p->qthresh3out=o=*((float *)(outlier->array));
-          for(i=0;i<third->size;++i)
-            arr3[i] = arr3[i]<o ? arr3[i] : NAN;
-          gal_data_free(outlier);
-        }
-    }
-
-  /* Make sure all three have the same NaN pixels. */
-  for(i=0;i<first->size;++i)
-    if( isnan(arr1[i]) || isnan(arr2[i]) || (third && isnan(arr3[i])) )
-      {
-        arr1[i] = arr2[i] = NAN;
-        if(third) arr3[i] = NAN;
-      }
-
-  /* Correct the values if they were changed. */
-  if(start || number!=osize)
-    {
-      first->array=oa1;
-      second->array=oa2;
-      first->size = second->size = osize;
-      if(third) { third->array=oa3; third->size=osize; }
-    }
-
-  /* Report the values if necessary. */
-  if(!p->cp.quiet)
-    {
-      if( asprintf(&msg, "quantile threshold outlier limit: %f",
-                   p->qthresh1out)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_timing_report(NULL, msg, 2);
-      free(msg);
-    }
-}
-
-
-
-
-
-/* Clean higher valued quantile thresholds: useful when the diffuse (almost
-   flat) structures are much larger than the tile size. */
-static void
-threshold_qthresh_clean(struct noisechiselparams *p, gal_data_t *first,
-                        gal_data_t *second, gal_data_t *third,
-                        char *filename)
-{
-  size_t i;
-  struct gal_tile_two_layer_params *tl=&p->cp.tl;
-
-  /* A small sanity check: */
-  if(first->size!=tl->tottiles)
-    error(EXIT_FAILURE, 0, "%s: `first->size' and `tl->tottiles' must have "
-          "the same value, but they don't: %zu, %zu", __func__, first->size,
-          tl->tottiles);
-
-  /* If the input is from a tile structure and the user has asked to ignore
-     channels, then re-order the values. */
-  for(i=0;i<tl->totchannels;++i)
-    threshold_qthresh_clean_work(p, first, second, third,
-                                 i*tl->tottilesinch, tl->tottilesinch);
-
-  /* If the user wants to see the steps. */
-  if(p->qthreshname)
-    {
-      first->name="QTHRESH_ERODE_CLEAN";
-      second->name="QTHRESH_NOERODE_CLEAN";
-      gal_tile_full_values_write(first, tl, 1, p->qthreshname, NULL,
-                                 PROGRAM_NAME);
-      gal_tile_full_values_write(second, tl, 1, p->qthreshname, NULL,
-                                 PROGRAM_NAME);
-      first->name=second->name=NULL;
-
-      if(third)
-        {
-          third->name="QTHRESH_EXPAND_CLEAN";
-          gal_tile_full_values_write(third, tl, 1, p->qthreshname,
-                                     NULL, PROGRAM_NAME);
-          third->name=NULL;
-        }
-    }
 }
 
 
@@ -720,12 +553,11 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
                                  NULL, p->input->unit, NULL);
-  if(p->detgrowquant!=1.0f)
-    qprm.expand_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
-                                  tl->numtiles, NULL, 0, cp->minmapsize,
-                                  NULL, p->input->unit, NULL);
-  else
-    qprm.expand_th=NULL;
+  qprm.expand_th = ( p->detgrowquant!=1.0f
+                     ? gal_data_alloc(NULL, p->input->type, p->input->ndim,
+                                      tl->numtiles, NULL, 0, cp->minmapsize,
+                                      NULL, p->input->unit, NULL)
+                     : NULL );
 
 
   /* Allocate temporary space for processing in each tile. */
@@ -747,7 +579,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
       if(qprm.expand_th) qprm.expand_th->flag  |= GAL_DATA_FLAG_HASBLANK;
     }
   qprm.noerode_th->flag |= GAL_DATA_FLAG_BLANK_CH;
-  if(p->detgrowquant!=1.0f) qprm.expand_th->flag  |= GAL_DATA_FLAG_BLANK_CH;
+  if(qprm.expand_th) qprm.expand_th->flag  |= GAL_DATA_FLAG_BLANK_CH;
   if(p->qthreshname)
     {
       qprm.erode_th->name="QTHRESH_ERODE";
@@ -768,11 +600,11 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
     }
 
 
-  /* Remove higher thresholds if requested. */
-  if(p->qthreshoutnum!=1.0)
-    threshold_qthresh_clean(p, qprm.erode_th, qprm.noerode_th,
-                            qprm.expand_th ? qprm.expand_th : NULL,
-                            p->qthreshname);
+  /* Remove outliers if requested. */
+  if(p->outliersigma!=0.0)
+    gal_tileinternal_no_outlier(qprm.erode_th, qprm.noerode_th,
+                                qprm.expand_th, &p->cp.tl, p->outliersclip,
+                                p->outliersigma, p->qthreshname);
 
 
   /* Check if the number of acceptable tiles is more than the minimum
@@ -794,9 +626,10 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
           "Thus don't loosen them too much. Recall that you can see all the "
           "option values to Gnuastro's programs by appending `-P' to the "
           "end of your command.\n\n"
-          "  * Decrease `--interpnumngb' to be smaller than %zu.\n"
           "  * Slightly decrease `--tilesize' to have more tiles.\n"
-          "  * Slightly increase `--modmedqdiff' to accept more tiles.\n\n"
+          "  * Slightly increase `--meanmedqdiff' to accept more tiles.\n\n"
+          "  * Decrease `--outliersigma' to reject less tiles as outliers."
+          "  * Decrease `--interpnumngb' to be smaller than %zu.\n"
           "Try appending your command with `--checkqthresh' to see the "
           "successful tiles (and get a feeling of the cause/solution. Note "
           "that the output is a multi-extension FITS file).\n\n"

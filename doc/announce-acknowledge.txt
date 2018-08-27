@@ -1,4 +1,5 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Pierre-Alain Duc
+Gaspar Galaz
 Michael Stein

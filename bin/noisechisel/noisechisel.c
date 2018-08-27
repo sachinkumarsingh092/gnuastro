@@ -157,15 +157,17 @@ noisechisel_output(struct noisechiselparams *p)
     }
 
 
-  /* Write the object labels and useful information into it's header. */
+  /* Write the detected pixels and useful information into it's header. */
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
                         0, "Minimum S/N of true pseudo-detections", 0,
                         "ratio");
   if(p->label)
+    gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
+                          &p->numdetections, 0, "Total number of labels "
+                          "(inclusive)", 0, "counter");
+  gal_fits_key_list_reverse(&keys);
+  if(p->label)
     {
-      gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
-                            &p->numdetections, 0, "Total number of labels "
-                            "(inclusive)", 0, "counter");
       p->olabel->name = "DETECTIONS";
       gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
       p->olabel->name=NULL;

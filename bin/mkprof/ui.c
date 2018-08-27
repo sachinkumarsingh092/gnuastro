@@ -144,7 +144,7 @@ ui_profile_name_read(char *string, size_t row)
 
 
 
-static char *
+char *
 ui_profile_name_write(int profile_code)
 {
   switch(profile_code)
@@ -1366,6 +1366,7 @@ ui_preparations(struct mkprofparams *p)
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
   p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
+  p->rng_name=gsl_rng_name(p->rng);
 
   /* Make the log linked list. */
   ui_make_log(p);

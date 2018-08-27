@@ -39,6 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tile-internal.h>
 
 #include "main.h"
 
@@ -52,11 +53,10 @@ sky_on_thread(void *in_prm)
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct statisticsparams *p=(struct statisticsparams *)tprm->params;
 
-  double *darr;
-  int stype=p->sky_t->type;
   void *tblock=NULL, *tarray=NULL;
-  gal_data_t *tile, *mode, *sigmaclip;
-  size_t i, tind, twidth=gal_type_sizeof(stype);
+  int stype=p->sky_t->type, itype=p->input->type;
+  gal_data_t *num, *tile, *mean, *meanquant, *sigmaclip;
+  size_t i, tind, twidth=gal_type_sizeof(p->sky_t->type);
 
 
   /* Find the Sky and its standard deviation on the tiles given to this
@@ -67,25 +67,32 @@ sky_on_thread(void *in_prm)
       tind = tprm->indexs[i];
       tile = &p->cp.tl.tiles[tind];
 
-
       /* If we have a convolved image, temporarily (only for finding the
-         mode) change the tile's pointers so we can work on the convolved
-         image for the mode. */
+         mean) change the tile's pointers so we can work on the convolved
+         image for the mean. */
       if(p->kernel)
         {
           tarray=tile->array; tblock=tile->block;
           tile->array=gal_tile_block_relative_to_other(tile, p->convolved);
           tile->block=p->convolved;
         }
-      mode=gal_statistics_mode(tile, p->mirrordist, 1);
+
+      /* Calculate the mean's quantile. */
+      mean=gal_statistics_mean(tile);
+      num=gal_statistics_number(tile);
+      mean=gal_data_copy_to_new_type_free(mean, itype);
+      meanquant = ( *(size_t *)(num->array)
+                    ? gal_statistics_quantile_function(tile, mean, 1)
+                    : NULL );
+
+      /* Reset the pointers of `tile'. */
       if(p->kernel) { tile->array=tarray; tile->block=tblock; }
 
-
-      /* Check the mode value. Note that if the mode is in-accurate, then
-         the values will be NaN and all conditionals will fail. So, we'll
-         go onto finding values for this tile */
-      darr=mode->array;
-      if( fabs(darr[1]-0.5f) < p->modmedqdiff )
+      /* Check the mean quantile value. Note that if the mode is
+         in-accurate, then the values will be NaN and all conditionals will
+         fail. So, we'll go onto finding values for this tile */
+      if( meanquant
+          && fabs( *(double *)(meanquant->array)-0.5f) < p->meanmedqdiff )
         {
           /* Get the sigma-clipped mean and standard deviation. `inplace'
              is irrelevant here because this is a tile and it will be
@@ -113,7 +120,9 @@ sky_on_thread(void *in_prm)
         }
 
       /* Clean up. */
-      gal_data_free(mode);
+      gal_data_free(num);
+      gal_data_free(mean);
+      gal_data_free(meanquant);
     }
 
 
@@ -179,7 +188,6 @@ sky(struct statisticsparams *p)
                           "SKY STD", p->input->unit, NULL);
 
 
-
   /* Find the Sky and Sky standard deviation on the tiles. */
   if(!cp->quiet) gettimeofday(&t1, NULL);
   gal_threads_spin_off(sky_on_thread, p, tl->tottiles, cp->numthreads);
@@ -200,6 +208,13 @@ sky(struct statisticsparams *p)
       gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
                                  PROGRAM_NAME);
     }
+
+
+  /* Remove outliers if requested. */
+  if(p->outliersigma!=0.0)
+    gal_tileinternal_no_outlier(p->sky_t, p->std_t, NULL, &p->cp.tl,
+                                p->outliersclip, p->outliersigma,
+                                p->checkskyname);
 
 
   /* Interpolate the Sky and its standard deviation. */

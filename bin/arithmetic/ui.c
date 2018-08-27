@@ -140,7 +140,6 @@ ui_initialize_options(struct arithmeticparams *p,
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
-        case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 

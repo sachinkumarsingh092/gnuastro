@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Script to rebuild and test a utility during development.
 #
 # During the development of Gnuastro, you often make changes in a utility
@@ -59,6 +59,7 @@
 
 
 
+
 # SET INPUT PARAMETERS
 # ====================
 
@@ -71,6 +72,7 @@
 numjobs=8
 builddir=build
 outdir=
+
 
 
 # Set the utility name, along with its arguments and options. NOTE, for

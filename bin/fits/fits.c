@@ -140,7 +140,7 @@ fits_print_extension_info(struct fitsparams *p)
         {
         case IMAGE_HDU:
           gal_fits_img_info(fptr, &type, &ndim, &dsize, NULL, NULL);
-          tstr=gal_type_name(type , 1);
+          tstr = ndim==0 ? "no-data" : gal_type_name(type , 1);
           break;
 
         case ASCII_TBL:

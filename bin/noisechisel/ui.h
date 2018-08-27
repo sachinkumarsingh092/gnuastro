@@ -50,7 +50,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b f g i j n u v x y z
+   a b f g i j n r u v x y z
    A E G H J O W X Y
 */
 enum option_keys_enum
@@ -60,8 +60,7 @@ enum option_keys_enum
   UI_KEY_KERNEL             = 'k',
   UI_KEY_WIDEKERNEL         = 'w',
   UI_KEY_MINSKYFRAC         = 'B',
-  UI_KEY_MIRRORDIST         = 'r',
-  UI_KEY_MODMEDQDIFF        = 'Q',
+  UI_KEY_MEANMEDQDIFF       = 'Q',
   UI_KEY_QTHRESH            = 't',
   UI_KEY_ERODE              = 'e',
   UI_KEY_OPENING            = 'p',
@@ -83,9 +82,9 @@ enum option_keys_enum
   UI_KEY_MINNUMFALSE,
   UI_KEY_SMOOTHWIDTH,
   UI_KEY_QTHRESHTILEQUANT,
-  UI_KEY_QTHRESHOUTNUM,
-  UI_KEY_QTHRESHOUTSIGMA,
-  UI_KEY_QTHRESHOUTSCLIP,
+  UI_KEY_OUTLIERNUM,
+  UI_KEY_OUTLIERSIGMA,
+  UI_KEY_OUTLIERSCLIP,
   UI_KEY_CHECKQTHRESH,
   UI_KEY_ERODENGB,
   UI_KEY_NOERODEQUANT,

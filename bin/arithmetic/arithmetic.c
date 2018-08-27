@@ -1169,7 +1169,11 @@ reversepolish(struct arithmeticparams *p)
       /* Put a copy of the WCS structure from the reference image, it
          will be freed while freeing d1. */
       d1->wcs=p->refdata.wcs;
-      gal_fits_img_write(d1, p->cp.output, NULL, PROGRAM_NAME);
+      if(d1->ndim==1 && p->onedasimage==0)
+        gal_table_write(d1, NULL, p->cp.tableformat, p->cp.output,
+                        "ARITHMETIC", 0);
+      else
+        gal_fits_img_write(d1, p->cp.output, NULL, PROGRAM_NAME);
       if(!p->cp.quiet)
         printf(" - Output written to %s\n", p->cp.output);
     }

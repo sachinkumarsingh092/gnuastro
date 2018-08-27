@@ -86,7 +86,9 @@ struct statisticsparams
 
   char         *kernelname;  /* File name of kernel to convolve input.   */
   char               *khdu;  /* Kernel HDU.                              */
-  float        modmedqdiff;  /* Mode and median quantile difference.     */
+  float       meanmedqdiff;  /* Mode and median quantile difference.     */
+  float       outliersigma;  /* Multiple of sigma to define outlier.     */
+  double   outliersclip[2];  /* Outlier Sigma-clipping params.           */
   size_t       smoothwidth;  /* Width of flat kernel to smooth interpd.  */
   uint8_t         checksky;  /* Save the steps for deriving the Sky.     */
   double    sclipparams[2];  /* Muliple and parameter of sigma clipping. */

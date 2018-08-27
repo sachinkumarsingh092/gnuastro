@@ -186,26 +186,13 @@ struct argp_option program_options[] =
       UI_GROUP_DETECTION
     },
     {
-      "mirrordist",
-      UI_KEY_MIRRORDIST,
+      "meanmedqdiff",
+      UI_KEY_MEANMEDQDIFF,
       "FLT",
       0,
-      "Max. dist. (error multip.) to find mode.",
+      "Max. mean and median quant diff. per tile.",
       UI_GROUP_DETECTION,
-      &p->mirrordist,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "modmedqdiff",
-      UI_KEY_MODMEDQDIFF,
-      "FLT",
-      0,
-      "Max. mode and median quant diff. per tile.",
-      UI_GROUP_DETECTION,
-      &p->modmedqdiff,
+      &p->meanmedqdiff,
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_MANDATORY,
@@ -225,44 +212,31 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "qthreshoutnum",
-      UI_KEY_QTHRESHOUTNUM,
-      "INT",
-      0,
-      "Number of tiles to find outliers in qthresh.",
-      UI_GROUP_DETECTION,
-      &p->qthreshoutnum,
-      GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GE_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "qthreshoutsigma",
-      UI_KEY_QTHRESHOUTSIGMA,
-      "FLT",
-      0,
-      "Multiple of sigma to define outliers.",
-      UI_GROUP_DETECTION,
-      &p->qthreshoutsigma,
-      GAL_TYPE_FLOAT32,
-      GAL_OPTIONS_RANGE_GE_0,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "qthreshoutsclip",
-      UI_KEY_QTHRESHOUTSCLIP,
+      "outliersclip",
+      UI_KEY_OUTLIERSCLIP,
       "FLT,FLT",
       0,
       "Sigma-clip params for qthresh outliers.",
       UI_GROUP_DETECTION,
-      &p->qthreshoutsclip,
+      &p->outliersclip,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET,
       gal_options_read_sigma_clip
+    },
+    {
+      "outliersigma",
+      UI_KEY_OUTLIERSIGMA,
+      "FLT",
+      0,
+      "Multiple of sigma to define outliers.",
+      UI_GROUP_DETECTION,
+      &p->outliersigma,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "smoothwidth",
@@ -356,20 +330,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "sigmaclip",
-      UI_KEY_SIGMACLIP,
-      "FLT,FLT",
-      0,
-      "Sigma multiple and, tolerance or number.",
-      UI_GROUP_DETECTION,
-      &p->sigmaclip,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      gal_options_read_sigma_clip
-    },
-    {
       "minskyfrac",
       UI_KEY_MINSKYFRAC,
       "FLT",
@@ -394,6 +354,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
+    },
+    {
+      "sigmaclip",
+      UI_KEY_SIGMACLIP,
+      "FLT,FLT",
+      0,
+      "Sigma multiple and, tolerance or number.",
+      UI_GROUP_DETECTION,
+      &p->sigmaclip,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_sigma_clip
     },
     {
       "dthresh",

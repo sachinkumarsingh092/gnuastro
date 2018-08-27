@@ -74,6 +74,7 @@ struct arithmeticparams
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */
   char          *globalhdu;  /* Single HDU for all inputs.              */
+  uint8_t      onedasimage;  /* Write 1D outputs as an image not table. */
   gal_data_t        *named;  /* List containing variables.              */
   size_t      tokencounter;  /* Counter for finding place in tokens.    */
 

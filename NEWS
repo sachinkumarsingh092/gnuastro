@@ -9,29 +9,49 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      of output when it is FITS. This is only relevant for some programs,
      (for example not the Fits or Table programs).
 
-  Library:
-    -- gal_fits_key_list_reverse: Reverse the given list of FITS keywords.
-    -- gal_fits_key_write_title_in_ptr: Write a two-line title FITS keyword.
-    -- gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
-    -- gal_fits_key_write_version_in_ptr: old gal_fits_key_write_version.
-    -- gal_fits_key_write_config: write key list and version as config header.
-    -- gal_statistics_outlier_positive: Find the first positive outlier.
+  Arithmetic:
+    --onedasimage: write output as an image if it has one dimension, not table.
 
   NoiseChisel:
-    -- New outlier identification algorithm for the quantile threshold
-       step. It is very useful when there are extended and bright sources
-       in the dataset: the tiles containing their footprint (outliers) can
-       be identified and removed with the parameters/options below:
-       --qthreshoutnum: Number of elements to search for outliers.
-       --qthreshoutsigma: Multiple of sigma to define an outlier.
-       --qthreshoutsclip: Sigma-clipping parameters for the process.
+    - New outlier identification algorithm for quantile threshold and Sky
+      estimation. It is useful when there are extended and bright sources
+      in the dataset: the tiles containing very faint signal that pass the
+      general pixel-value distribution test due to the flatness of the
+      extended profiles (outliers), can be identified and removed in
+      comparison with the other passed tiles. The outlier finding algorithm
+      (`gal_statistics_outlier_positive': a new library function) uses the
+      distribution of distances between the sorted elements and is
+      configured with these three options.
+       --outliersclip: Sigma-clipping parameters for the process.
+       --outliersigma: Multiple of sigma to define an outlier.
+
+  Statistics:
+    - Sky estimation: new outlier estimation algorithm similar to NoiseChisel.
+
+  Library:
+    - gal_blank_flag_apply: Set all flagged/masked elements to blank.
+    - gal_fits_key_list_reverse: Reverse the given list of FITS keywords.
+    - gal_fits_key_write_title_in_ptr: Write a two-line title FITS keyword.
+    - gal_fits_key_write_in_ptr: New name of gal_fits_key_write.
+    - gal_fits_key_write_version_in_ptr: old gal_fits_key_write_version.
+    - gal_fits_key_write_config: write key list and version as config header.
+    - gal_statistics_outlier_positive: Find the first positive outlier.
 
 ** Removed features
 
   NoiseChisel:
+    --mirrordist: mean quantile is now used (not mode), see changes below.
     --qthreshtilequant: removed due to new outlier rejection algorithm.
 
+  Statistics:
+    --mirrordist: mean quantile is now used (not mode), see changes below.
+
 ** Changed features
+
+  Arithmetic:
+    - If the output has one dimension, it will be written as a table, not a
+      FITS image/array. This can be changed with the new `--onedasimage'
+      option.
 
   MakeProfiles:
     --mergedsize: new name for the old `--naxis' option. Since the option
@@ -39,14 +59,25 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
           output, this option's name would get confused with the mandatory
           FITS keyword `NAXIS'.
 
+  NoiseChisel:
+    --meanmedqdiff: new name for `--modmedqdiff'. Until now, the mode's
+      quantile was used to identify tiles with no significant signal. But
+      from this version, the mean's quantile in each tile is used
+      instead. The reason is that the mean is more sensative to outliers
+      (signal).
+
+  Statistics:
+    --meanmedqdiff: new name for `--modmedqdiff'. Similar to NoiseChisel.
+
   Library:
-    -- gal_fits_key_write: filename and hdu instead of FITS pointer.
-    -- gal_fits_key_write_version: filename and hdu instead of FITS pointer.
-    -- gal_fits_key_write_filename: write at the top or end of the input list.
+    - gal_fits_key_write: filename and hdu instead of FITS pointer.
+    - gal_fits_key_write_version: filename and hdu instead of FITS pointer.
+    - gal_fits_key_write_filename: write at the top or end of the input list.
 
 ** Bugs fixed
   bug #54493: Warp crashes when type isn't set.
   bug #54526: Invalid r, q and truncation of point profiles in MakeProfiles.
+  bug #54579: NoiseChisel pseudo-detection failure when dataset is negative.
 
 
 

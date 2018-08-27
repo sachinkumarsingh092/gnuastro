@@ -2515,9 +2515,10 @@ $ ds9 download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits     \
 The first thing you might notice is that the regions with no data have a
 value of zero in this image. The next thing might be that the dataset
 actually has two ``depth''s (see @ref{Quantifying measurement limits}). The
-exposure time of the inner region is more than 4 times of the outer
+exposure time of the deep inner region is more than 4 times of the outer
 parts. Fortunately the XDF survey webpage (above) contains the vertices of
-the deep flat WFC3-IR field. You can use those vertices in @ref{Crop} to
+the deep flat WFC3-IR field. With Gnuastro's Crop program@footnote{To learn
+more about the crop program see @ref{Crop}.}, you can use those vertices to
 cutout this deep infra-red region from the larger image. We'll make a
 directory called @file{flat-ir} and keep the flat infra-red regions in that
 directory (with a `@file{xdf-}' suffix for a shorter and easier filename).
@@ -2552,12 +2553,21 @@ $ for f in f105w f160w; do                                            \
   done
 @end example
 
-Please open these images and inspect them with the same ds9 commands you
-used above. You will see how it is completely flat now and doesn't have
-varying depths. Another important result of this crop is that regions with
-no data now have a NaN (blank) value, not zero. Zero is a meaningful value
-and especially when using NoiseChisel, the input should have NaN values for
-pixels with no data, not zero.
+Please open these images and inspect them with the same @command{ds9}
+command you used above. You will see how it is nicely flat now and doesn't
+have varying depths. Another important result of this crop is that regions
+with no data now have a NaN (Not-a-Number, or a blank value) value, not
+zero. Zero is a number, and thus a meaningful value, especially when you
+later want to NoiseChisel@footnote{As you will see below, unlike most other
+detection algorithms, NoiseChisel detects the objects from their faintest
+parts, it doesn't start with their high signal-to-noise ratio peaks. Since
+the Sky is already subtracted in many images and noise fluctuates around
+zero, zero is commonly higher than the initial threshold applied. Therefore
+not ignoring zero-valued pixels in this image, will cause them to part of
+the detections!}. Generally, when you want to ignore some pixels in a
+dataset, and avoid higher-level ambiguities or complications, it is always
+best to give them blank values (not zero, or some other absurdly large or
+small number).
 
 This is the deepest image we currently have of the sky. The first thing
 that comes to mind may be this: ``How large is this field?''. Let's find
@@ -2962,8 +2972,9 @@ $ astwarp flat-ir/xdf-f160w.fits --project=0.001,0.0005
 @end example
 
 @noindent
-You can also combine multiple warps in one command. For example to first
-rotate the image, then scale it, run this command:
+If you need to do multiple warps, you can combine them in one call to
+Warp. For example to first rotate the image, then scale it, run this
+command:
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --rotate=20 --scale=0.25
@@ -2995,40 +3006,85 @@ To detect the signal in the image (separate interesting pixels from noise),
 we'll run NoiseChisel (@ref{NoiseChisel}):
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --output=nc-test.fits
+$ astnoisechisel flat-ir/xdf-f160w.fits
 @end example
 
-NoiseChisel's output is a single file containing multiple extensions. You
-can get basic information about the extensions in a FITS file with
-Gnuastro's Fits program (see @ref{Fits}):
+NoiseChisel's output is a single FITS file containing multiple
+extensions. In the FITS format, each extension contains a separate dataset
+(image in this case). You can get basic information about the extensions in
+a FITS file with Gnuastro's Fits program (see @ref{Fits}):
 
 @example
-$ astfits nc-test.fits
+$ astfits xdf-f160w_detected.fits
 @end example
 
-From the output list, you see NoiseChisel's output contains 5 extensions
-and the first (counted as zero) is blank: it has value of @code{0} in the
-last/size column, showing that it contains no data, it just contains
-meta-data. All of Gnuastro's programs follow this convention of writing no
-data in the first HDU/extension. This allows the first extension to keep
-meta-data about all the extensions and is recommended by the FITS standard,
-see @ref{Fits}.
+From the output list, we see that NoiseChisel's output contains 5
+extensions and the first (counting from zero, with name
+@code{NOISECHISEL-CONFIG}) is empty: it has value of @code{0} in the last
+column (which shows its size). The first extension in all the outputs of
+Gnuastro's programs only contains meta-data: data about/describing the
+datasets within (all) the output's extension(s). This allows the first
+extension to keep meta-data about all the extensions and is recommended by
+the FITS standard, see @ref{Fits} for more. This generic meta-data (for the
+whole file) is very important for being able to reproduce this same result
+later.
 
-The name of each extension describes its contents: the first
-(@code{INPUT-NO-SKY}) is the Sky-subtracted input that you provided. The
-second (NoiseChisel's main output, @code{DETECTIONS}) has a numeric data
-type of @code{uint8} with only two possible values for all pixels: 0 for
-noise and 1 for signal. The third and fourth (called @code{SKY} and
-@code{SKY_STD}), have the Sky and its standard deviation values of the
-input on a tessellation and were calculated over the undetected regions.
+The second extension of NoiseChisel's output (numbered 1 and named
+@code{INPUT-NO-SKY}) is the Sky-subtracted input that you provided. The
+third (@code{DETECTIONS}) is NoiseChisel's main output which is a binary
+image with only two possible values for all pixels: 0 for noise and 1 for
+signal. Since it only has two values, to avoid taking too much space on
+your computer, its numeric datatype an unsigned 8-bit integer (or
+@code{uint8})@footnote{To learn more about numeric data types see
+@ref{Numeric data types}.}. The fourth and fifth (@code{SKY} and
+@code{SKY_STD}) extensions, have the Sky and its standard deviation values
+for the input on a tile grid and were calculated over the undetected
+regions (for more on the importance of the Sky value, see @ref{Sky value}).
+
+Reproducing your results later (or checking the configuration of the
+program that produced the dataset at a later time during your higher-level
+analysis) is very important in any research. Therefore, Let's first take a
+closer look at the @code{NOISECHISEL-CONFIG} extension. But first, we'll
+run NoiseChisel with @option{-P} to see the option values in a format we
+are already familiar with (to help in the comparison).
+
+@example
+$ astnoisechisel -P
+$ astfits xdf-f160w_detected.fits -h0
+@end example
+
+The first group of FITS header keywords are standard keywords (containing
+the @code{SIMPLE} and @code{BITPIX} keywords the first empty line). They
+are required by the FITS standard and must be present in any FITS
+extension. The second group contain the input file and all the options with
+their values in that run of NoiseChisel. Finally, the last group contain
+the date and version information of Gnuastro and its dependencies. The
+``versions and date'' group of keywords are present in all Gnuastro's FITS
+extension outputs, for more see @ref{Output FITS files}.
+
+Note that if a keyword name is larger than 8 characters, it is preceded by
+a @code{HIERARCH} keyword and that all keyword names are in capital
+letters. Therefore, if you want to see only one keyword's value by feeding
+the output to Grep, you should ask Grep to ignore case with its @option{-i}
+option (short name for @option{--ignore-case}). For example, below we'll
+check the value to the @option{--snminarea} option, note how we don't need
+Grep's @option{-i} option when it is fed with @command{astnoisechisel -P}
+since it is already in small-caps there. The extra white spaces in the
+first command are only to help in readability, you can ignore them when
+typing.
+
+@example
+$ astnoisechisel -P                   | grep    snminarea
+$ astfits xdf-f160w_detected.fits -h0 | grep -i snminarea
+@end example
 
 @cindex DS9
 @cindex GNOME
 @cindex SAO DS9
-To better understand NoiseChisel's output and the extensions described
-above, let's visually inspect it (here, we'll use SAO DS9). Since the file
-contains multiple related extensions, the easiest way to view all of them
-in DS9 is to open it as a ``Multi-extension data cube'' with the
+Let's continue with the extensions in NoiseChisel's output that contain a
+dataset by visually inspecting them (here, we'll use SAO DS9). Since the
+file contains multiple related extensions, the easiest way to view all of
+them in DS9 is to open the file as a ``Multi-extension data cube'' with the
 @option{-mecube} option as shown below@footnote{You can configure your
 graphic user interface to open DS9 in multi-extension cube mode by default
 when using the GUI (double clicking on the file). If your graphic user
@@ -3037,30 +3093,33 @@ operating systems), a full description is given in @ref{Viewing
 multiextension FITS images}}.
 
 @example
-$ ds9 -mecube nc-test.fits -zscale -zoom to fit
+$ ds9 -mecube xdf-f160w_detected.fits -zscale -zoom to fit
 @end example
 
-The buttons and horizontal scroll bar in the ``cube'' window can be used to
-navigate between the extensions. In this mode, all DS9's settings (for
-example zoom or color-bar) will be identical between the extensions. Try
-zooming into to one part and seeing how the galaxies were detected along
-with the Sky and Sky standard deviation values. Just have in mind that
-NoiseChisel's job is @emph{only} detection (separating signal from noise),
-We'll segment this result later.
+A ``cube'' window opens along with DS9's main window. The buttons and
+horizontal scroll bar in this small new window can be used to navigate
+between the extensions. In this mode, all DS9's settings (for example zoom
+or color-bar) will be identical between the extensions. Try zooming into to
+one part and flipping through the extensions to see how the galaxies were
+detected along with the Sky and Sky standard deviation values for that
+region. Just have in mind that NoiseChisel's job is @emph{only} detection
+(separating signal from noise), We'll do segmentation on this result later
+to find the individual galaxies/peaks over the detected pixels.
 
-One good way to see if you have missed any signal is to mask all the
-detected pixels and inspect the noise pixels. For this, you can use
-Gnuastro's Arithmetic program (in particular its @code{where} operator, see
-@ref{Arithmetic operators}). With the command below, all detected pixels
-(in the @code{DETECTIONS} extension) will be set to NaN in the output
-(@file{nc-masked.fits}). To make the command easier to read/write, let's
-just put the file name in a shell variable (@code{img}) first. A shell
-variable's value can be retrieved by adding a @code{$} before its name.
+One good way to see if you have missed any signal (small galaxies, or the
+wings of brighter galaxies) is to mask all the detected pixels and inspect
+the noise pixels. For this, you can use Gnuastro's Arithmetic program (in
+particular its @code{where} operator, see @ref{Arithmetic operators}). With
+the command below, all detected pixels (in the @code{DETECTIONS} extension)
+will be set to NaN in the output (@file{nc-masked.fits}). To make the
+command easier to read/write, let's just put the file name in a shell
+variable (@code{img}) first. A shell variable's value can be retrieved by
+adding a @code{$} before its name.
 
 @example
-$ img=nc-test.fits
+$ img=xdf-f160w_detected.fits
 $ astarithmetic $img $img nan where -hINPUT-NO-SKY -hDETECTIONS      \
-                --output=nc-masked.fits
+                --output=mask-det.fits
 @end example
 
 @noindent
@@ -3070,84 +3129,232 @@ flip the detected pixel values (from 0 to 1 and vice-versa) by adding a
 
 @example
 $ astarithmetic $img $img not nan where -hINPUT-NO-SKY -hDETECTIONS  \
-                --output=nc-masked.fits
+                --output=mask-sky.fits
 @end example
 
+Looking again at the detected pixels, we see that there are thin
+connections between many of the smaller objects or extending from larger
+objects. This shows that we have dug in too deep, and that we are following
+correlated noise.
+
+Correlated noise is created when we warp datasets from individual exposures
+(that are each slightly offest compared to each other) into the same pixel
+grid, then add them to form the final result. Because it mixes nearby pixel
+values, correlated noise is a form of convolution and it smooths the
+image. In terms of the number of exposures (and thus correlated noise), the
+XDF dataset is by no means an ordinary dataset. It is the result of warping
+and adding roughly 80 separate exposures which can create strong correlated
+noise/smoothing. In common surveys the number of exposures is usually 10 or
+less.
+
+Let's tweak NoiseChisel's configuration a little to get a better result on
+this dataset. Don't forget that ``@emph{Good statistical analysis is not a
+purely routine matter, and generally calls for more than one pass through
+the computer}'' (Anscombe 1973, see @ref{Science and its tools}). A good
+scientist must have a good understanding of her tools to make a meaningful
+analysis. So don't hesitate in playing with the default configuration and
+reviewing the manual when you have a new dataset infront of you. Robust
+data analysis is an art, therefore a good scientist must first be a good
+artist.
+
 NoiseChisel can produce ``Check images'' to help you visualize and inspect
-how each step is completed. You can see all the check images it can produce
-with this command.
+how each step is done. You can see all the check images it can produce with
+this command.
 
 @example
 $ astnoisechisel --help | grep check
 @end example
 
-Let's see how the quantile threshold (the first step after convolution) has
-been found and applied in our previous run of NoiseChisel:
+Let's check the overall detection process to get a better feeling of what
+NoiseChisel is doing with the following command. To learn the details of
+NoiseChisel in more detail, please see
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --checkqthresh
+$ astnoisechisel flat-ir/xdf-f160w.fits --checkdetection
 @end example
 
-The check images/tables are also multi-extension FITS files.  As you see,
-when check datasets are requested, NoiseChisel won't go to the end and
-abort as soon as all its extensions are ready. Try listing the extensions
-with @command{astfits} and then opening them with @command{ds9} as we done
-above. It is @emph{strongly} encouraged to play with the different
-parameters and use the respective check images to see which step is
-affected by your change.
+The check images/tables are also multi-extension FITS files.  As you saw
+from the command above, when check datasets are requested, NoiseChisel
+won't go to the end. It will abort as soon as all the extensions of the
+check image are ready. Try listing the extensions of the output with
+@command{astfits} and then opening them with @command{ds9} as we done
+above. In order to understand the parameters and their biases (especially
+as you are starting to use Gnuastro, or running it a new dataset), it is
+@emph{strongly} encouraged to play with the different parameters and use
+the respective check images to see which step is affected by your changes
+and how, for example see @ref{Detecting large extended targets}.
 
-One major factor determining NoiseChisel's the quantile threshold is
-NoiseChisel's ability to identify signal in a tile (the threshold is only
-found on those tiles with no major signal). Therefore the larger the tiles
-are, number-statistics will cause less scatter, therefore helping
-NoiseChisel find the quantile threshold. However, if the tiles are too
-large, there might not be enough over the dataset or they won't be able to
-deal with possible gradients. Let's see what the default (small) tile size
-was with the following command.
+@cindex FWHM
+The @code{OPENED_AND_LABELED} extension shows the initial detection step of
+NoiseChisel. We see these thin connections between smaller points are
+already present here (a relatively early stage in the processing). Such
+connections at the lowest surface brightness limits usually occur when the
+dataset is too smoothed. Because of correlated noise, the dataset is
+already artificially smoothed, therefore futher smoothing it with the
+default kernel may be the problem. Therefore, one solution is to use a
+sharper kernel (NoiseChisel's first step in its processing).
+
+By default NoiseChisel uses a Gaussian with full-width-half-maximum (FWHM)
+of 2 pixels. We can use Gnuastro's MakeProfiles to build a kernel with FWHM
+of 1.5 pixel (truncated at 5 times the FWHM, like the default) using the
+following command. MakeProfiles is a powerful tool to build any number of
+mock profiles on one image or independently, to learn more of its features
+and capabilities, see @ref{MakeProfiles}.
 
 @example
-$ astnoisechisel -P | grep tilesize
+$ astmkprof --kernel=gaussian,1.5,5 --oversample=1
 @end example
 
-Its a 50 by 50 box. Flip back and forth between the @code{CONVOLVED} and
-@code{QTHRESH_ERODE} extensions of the check image to get a feeling of
-which tiles succeeded (have non-blank values)@footnote{The other extensions
-don't matter much for the check here. They show the @option{--qthresh}
-values for the other thresholds (on the same tiles), followed by the
-interpolated values for all the thresholds and afterwards the smoothed
-values that are used for the next steps. The final extension
-(@code{QTHRESH-APPLIED}, shows the result of applying the erode and
-no-erode thresholds.}. Since this is a relatively large image and we don't
-have any gradients, let's increase the tile size to 100 by 100
+@noindent
+Please open the output @file{kernel.fits} and have a look (it is very small
+and sharp). We can now tell NoiseChisel to use this instead of the default
+kernel with the following command (we'll keep checking the detection steps)
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=100,100    \
-                 --checkqthresh
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
+                 --checkdetection
 @end example
 
-Inspecting the check image, you see that there are now only a handful of
-useful tiles in the central parts. This shows the field is too crowded, and
-we should slightly decrease the tile size for a more robust result that
-also covers more of the dataset. Let's set it to a 75 by 75 pixel box:
+Looking at the @code{OPENED_AND_LABELED} extension, we see that the thin
+connections between smaller peaks has now significantly decreased. Going
+two extensions/steps ahead (in the first @code{HOLES-FILLED}), you can see
+that during the process of finding false pseudo-detections, too many holes
+have been filled: see how the many of the brighter galaxies are connected?
+
+Try looking two extensions ahead (in @code{PSEUDOS-FOR-SN}), you can see
+that there aren't too many pseudo-detections because of all those extended
+filled holes. If you look closely, you can see the number of
+pseudo-detections in the result NoiseChisel prints (around 4000). This is
+another side-effect of correlated noise. To address it, we should slightly
+increase the pseudo-detection threhold (@option{--dthresh}, run with
+@option{-P} to see its default value):
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=75,75    \
-                 --checkqthresh
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
+                 --dthresh=0.2 --checkdetection
 @end example
 
-The result seems reasonable now: we have a larger tile size than the
-default value, but less scatter, @emph{and} the tiles cover a sufficiently
-wide area of the dataset. So, we'll use this tile size for the next
-steps. But first, let's clean all the temporary files and make a directory
-for the NoiseChisel outputs:
+Before visually inspecting the check image, you can see the effect of this
+change in NoiseChisel's command-line output: notice how the number of
+pseudos has increased to roughly 5500. Open the check image now and have a
+look, you can see how the pseudo-detections are distributed much more
+evenly in the image. The signal-to-noise ratio of pseudo-detections define
+NoiseChisel's reference for removing false detections, so they are very
+important to get right. Let's have a look at their signal-to-noise
+distribution with @option{--checksn}.
 
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
+                 --dthresh=0.2 --checkdetection --checksn
+@end example
+
+The output @file{xdf-f160w_detsn_sky.fits} table contains the label and
+signal-to-noise ratio of all the pseudo-detections in
+@code{PSEUDOS-FOR-SN}. You can see the table columns with the first command
+below and get a feeling for its distribution with the second command. We'll
+discuss the two Table and Statistics programs later.
+
+@example
+$ asttable xdf-f160w_detsn_sky.fits
+$ aststatistics xdf-f160w_detsn_sky.fits -c2
+@end example
+
+The correlated noise is again visible in this pseudo-detection
+signal-to-noise distribution: it is highly skewed. A small change in the
+quantile will translate into a big change in the S/N value. For example see
+the difference between the three 0.99, 0.95 and 0.90 quantiles with this
+command:
+
+@example
+$ aststatistics xdf-f160w_detsn_sky.fits -c2                   \
+                --quantile=0.99 --quantile=0.95 --quantile=0.90
+@end example
+
+If you run NoiseChisel with @option{-P}, you'll see the default
+signal-to-noise quantile @option{--snquant} is 0.99. In effect with this
+option you specify the purity level you want (contamination by false
+detections). With the @command{aststatistics} command above, you see that a
+small number of extra false detections (impurity) in the final result
+causes a big change in completness (you can detect more lower
+signal-to-noise true detections). So let's loosen-up our desired purity
+level and then mask the detected pixels like before to see if we have
+missed anything.
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
+                 --dthresh=0.2 --snquant=0.95
+$ img=xdf-f160w_detected.fits
+$ astarithmetic $img $img nan where -h1 -h2 --output=mask-det.fits
+@end example
+
+Overall it seems good, but if you play a little with the color-bar and look
+closer in the noise, you'll see a few very sharp, but faint, objects that
+have not been detected. This only happens for under-sampled datasets like
+HST (where the pixel size is larger than the point spread function
+FWHM). So this won't happen on ground-based images. Because of this, sharp
+and faint objects will be very small and eroded too easily during
+NoiseChisel's erosion step.
+
+To address this problem of sharp objects, we can use NoiseChisel's
+@option{--noerodequant} option. All pixels above this quantile will not be
+eroded, thus allowing us to preserve faint and sharp objects. Check its
+default value, then run NoiseChisel like below and make the mask again. You
+will see many of those sharp objects are now detected.
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits     \
+                 --noerodequant=0.95 --dthresh=0.2 --snquant=0.95
+@end example
+
+This seems to be fine and we can continue with our analysis. Before finally
+running NoiseChisel, let's just see how you can have all the raw outputs of
+NoiseChisel (Detection map and Sky and Sky Standard deviation) in a highly
+compressed format for archivability. For example the Sky-subtracted input
+is a redundant dataset: you can always generate it by subtracting the Sky
+from the input image. With the commands below you can turn the default
+NoiseChisel output that is larger than 100 megabytes in this case into
+about 200 kilobytes by removing all the redundant information in it, then
+compressing it:
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput
+$ gzip --best xdf-f160w_detected.fits
+@end example
+
+You can open @file{xdf-f160w_detected.fits.gz} directly in SAO DS9 or feed
+it to any of Gnuastro's programs without having to uncompress
+it. Higher-level programs that take NoiseChisel's output as input can also
+deal with this compressed image where the Sky and its Standard deviation
+are one pixel-per-tile.
+
+To avoid having to write these options on every call to NoiseChisel, we'll
+just make a configuration file in a visible @file{config} directory. Then
+we'll define the hidden @file{.gnuastro} directory (that all Gnuastro's
+programs will look into for configuration files) as a symbolic link to the
+@file{config} directory. Finally, we'll write the finalized values of the
+options into NoiseChisel's standard configuration file within that
+directory. We'll also put the kernel in a separate directory to keep the
+top directory clean of any files we later need.
+
+@example
+$ mkdir kernel config
+$ ln -s config/ .gnuastro
+$ mv kernel.fits det-kernel.fits
+$ echo "kernel kernel/det-kernel.fits" > config/astnoisechisel.conf
+$ echo "noerodequant 0.95"            >> config/astnoisechisel.conf
+$ echo "dthresh      0.2"             >> config/astnoisechisel.conf
+$ echo "snquant      0.95"            >> config/astnoisechisel.conf
+@end example
+
+@noindent
+We are now ready to finally run NoiseChisel on the two filters and keep the
+output in a dedicated directory (@file{nc}).
 @example
 $ rm *.fits
 $ mkdir nc
-$ astnoisechisel flat-ir/xdf-f160w.fits --tilesize=75,75    \
-                 --output=nc/xdf-f160w.fits
-$ astnoisechisel flat-ir/xdf-f105w.fits --tilesize=75,75    \
-                 --output=nc/xdf-f105w.fits
+$ astnoisechisel flat-ir/xdf-f160w.fits --output=nc/xdf-f160w.fits
+$ astnoisechisel flat-ir/xdf-f105w.fits --output=nc/xdf-f105w.fits
 @end example
 
 Before continuing with the higher-level processing of this dataset, we'll
@@ -3812,59 +4019,69 @@ $ astnoisechisel r.fits -h0
 
 As described in @ref{NoiseChisel output}, NoiseChisel's default output is a
 multi-extension FITS file. A method to view them effectively and easily is
-discussed in @ref{Viewing multiextension FITS images}.
+discussed in @ref{Viewing multiextension FITS images}. For more on tweaking
+NoiseChisel and optimizing its output for archiving or sending to
+colleagues, see the NoiseChisel part of the previous tutorial in
+@ref{General program usage tutorial}.
 
-Open the output @file{r_detected.fits} file and you will immediately notice
-how NoiseChisel's default configuration is not suitable for this dataset:
-the Sky estimation has failed so terribly that the tile grid (where the Sky
-was estimated, and subtracted) is visible in the first extension (input
-dataset subtracted by the Sky value). If you look into the third and fourth
-extensions (the Sky and its standard deviation) you will see how they
-exactly map NGC 5195! This is not good! There shouldn't be any signature of
-your extended target on the Sky and its standard deviation images. After
-all, the Sky is suppose to be the average value @emph{in the absence} of
-signal, see @ref{Sky value}.
+Open the output @file{r_detected.fits} file and have a look at the
+extensions, the first extension is only meta-data and contains
+NoiseChisel's configuration parameters. The rest are the Sky-subtracted
+input, the detection map, Sky values and Sky standard deviation.
 
-The fact that signal has been detected as Sky shows that you haven't done a
-good detection. Generally, any time your target is much larger than the
-tile size and the signal is almost flat (like this case), this @emph{will}
-happen, even if it isn't dramatic enough to be seen in the first
-extension. Therefore, @strong{the best place} to check the accuracy of
-your detection is the noise extensions (third and fourth extension) of
-NoiseChisel's output.
+Flipping through the extensions in a FITS viewer (for example SAO DS9), you
+will see that the Sky-subtracted image looks reasonable (there are no major
+artifacts due to bad Sky subtraction compared to the input). The second
+extension also seems reasonable with a large detection map that covers the
+whole of NGC5195, but also extends beyond towards the bottom of the
+image. Try going back and forth between the @code{DETECTIONS} and
+@code{SKY} extensions, you will notice that there is still significant
+signal beyond the detected pixels. You can tell that this signal belongs to
+the galaxy because the far-right side of the image is dark and the brighter
+tiles (that weren't interpolated) are surrounding the detected pixels.
+
+The fact that signal from the galaxy remains in the Sky dataset shows that
+you haven't done a good detection. Generally, any time your target is much
+larger than the tile size and the signal is almost flat (like this case),
+this @emph{will} happen. Therefore, when there are large objects in the
+dataset, @strong{the best place} to check the accuracy of your detection is
+the estimated Sky image.
 
 When dominated by the background, noise has a symmetric
 distribution. However, signal is not symmetric (we don't have negative
 signal). Therefore when non-constant signal is present in a noisy dataset,
 the distribution will be positively skewed. This skewness is a good measure
 of how much signal we have in the distribution. The skewness can be
-accurately measured by the difference in the mode and median, for more see
-@ref{Quantifying signal in a tile}, and Appendix C
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+accurately measured by the difference in the mean and median: assuming no
+strong outliers, the more distant they are, the more skewed the dataset
+is. For more see @ref{Quantifying signal in a tile}.
 
-Skewness is only a proxy for signal when the signal has structure (varies
-per pixel). Therefore, when it is approximately constant over a whole tile,
-or sub-set of the image, the signal's effect is just to shift the symmetric
-center of the noise distribution to the positive and there won't be any
-skewness: this positive@footnote{In processed images, where the Sky value
-can be over-estimated, this constant shift can be negative.}  shift that
-preserves the symmetric distribution is the Sky value. When there is a
-gradient over the dataset, different tiles will have different constant
+However, skewness is only a proxy for signal when the signal has structure
+(varies per pixel). Therefore, when it is approximately constant over a
+whole tile, or sub-set of the image, the signal's effect is just to shift
+the symmetric center of the noise distribution to the positive and there
+won't be any skewness (major difference between the mean and median): this
+positive@footnote{In processed images, where the Sky value can be
+over-estimated, this constant shift can be negative.}  shift that preserves
+the symmetric distribution is the Sky value. When there is a gradient over
+the dataset, different tiles will have different constant
 shifts/Sky-values, for example see Figure 11 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
-To get less scatter in measuring the mode and median (and thus better
-estimate the skewness), you will need a larger tile. In Gnuastro, you can
-see the option values (@option{--tilesize} in this case) by adding the
-@option{-P} option to your last command. Try it. You can clearly see that
-the default tile size is indeed much smaller than this (huge) dwarf
-galaxy. Therefore NoiseChisel was unable to identify the skewness within
-the tiles under NGC 5159. Recall that NoiseChisel only uses tiles with no
-signal/skewness to define its threshold. Because of this, the threshold has
-been over-estimated on those tiles and further exacerbated the
-non-detection of the diffuse regions. To see which tiles were used for
-estimating the quantile threshold (no skewness was measured), you can use
-NoiseChisel's @option{--checkqthresh} option:
+To get less scatter in measuring the mean and median (and thus better
+estimate the skewness), you will need a larger tile. So let's play with the
+tessellation a little to see how it affects the result. In Gnuastro, you
+can see the option values (@option{--tilesize} in this case) by adding the
+@option{-P} option to your last command. Try running NoiseChisel with
+@option{-P} to see its default tile size.
+
+You can clearly see that the default tile size is indeed much smaller than
+this (huge) galaxy and its tidal features. As a result, NoiseChisel was
+unable to identify the skewness within the tiles under the outer parts of
+M51 and NGC 5159 and the threshold has been over-estimated on those
+tiles. To see which tiles were used for estimating the quantile threshold
+(no skewness was measured), you can use NoiseChisel's
+@option{--checkqthresh} option:
 
 @example
 $ astnoisechisel r.fits -h0 --checkqthresh
@@ -3874,29 +4091,50 @@ Notice how this option doesn't allow NoiseChisel to finish. NoiseChisel
 aborted after finding the quantile thresholds. When you call any of
 NoiseChisel's @option{--check*} options, by default, it will abort as soon
 as all the check steps have been written in the check file (a
-multi-extension FITS file). To optimize the threshold-related settings for
-this image, we'll be playing with this tile for the majority of this
-tutorial. So let's have a closer look at it.
+multi-extension FITS file). This allows you to focus on the problem you
+wanted to check as soon as possible (you can disable this feature with the
+@option{--continueaftercheck} option).
+
+To optimize the threshold-related settings for this image, let's playing
+with this quantile threshold check image a little. Don't forget that
+``@emph{Good statistical analysis is not a purely routine matter, and
+generally calls for more than one pass through the computer}'' (Anscombe
+1973, see @ref{Science and its tools}). A good scientist must have a good
+understanding of her tools to make a meaningful analysis. So don't hesitate
+in playing with the default configuration and reviewing the manual when you
+have a new dataset infront of you. Robust data analysis is an art,
+therefore a good scientist must first be a good artist.
 
 The first extension of @file{r_qthresh.fits} (@code{CONVOLVED}) is the
-convolved input image (where the threshold is defined and applied), for
+convolved input image where the threshold(s) is defined and applied. For
 more on the effect of convolution and thresholding, see Sections 3.1.1 and
 3.1.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
 [2015]}. The second extension (@code{QTHRESH_ERODE}) has a blank value for
 all the pixels of any tile that was identified as having significant
-signal. Playing a little with the dynamic range of this extension, you
-clearly see how the non-blank tiles around NGC 5195 have a gradient. You do
-not want this behavior. The ultimate purpose of the next few trials will be
-to remove the gradient from the non-blank tiles.
+signal. The next two extensions (@code{QTHRESH_NOERODE} and
+@code{QTHRESH_EXPAND}) are the other two quantile thresholds that are
+necessary in NoiseChisel's later steps. Every step in this file is repeated
+on the three thresholds.
 
-The next two extensions (@code{QTHRESH_NOERODE} and @code{QTHRESH_EXPAND})
-are for later steps in NoiseChisel. The same tiles are masked, but those
-with a value, have a different value compared to @code{QTHRESH_ERODE}. In
-the subsequent three extensions, you can see how the blank tiles are
-filled/interpolated. The subsequent three extensions show the smoothed tile
-values. Finally in the last extension (@code{QTHRESH-APPLIED}), you can see
-the effect of applying @code{QTHRESH_ERODE} on @code{CONVOLVED} (pixels
-with a value of 0 were below the threshold).
+Play a little with the color bar of the @code{QTHRESH_ERODE} extension, you
+clearly see how the non-blank tiles around NGC 5195 have a gradient. As one
+line of attack against discarding too much signal below the threshold,
+NoiseChisel rejects outlier tiles. Go forward by three extensions to
+@code{VALUE1_NO_OUTLIER} and you will see that many of the tiles over the
+galaxy have been removed in this step. For more on the outlier rejection
+algorithm, see the latter half of @ref{Quantifying signal in a tile}.
+
+However, the default outlier rejection parameters weren't enough, and when
+you play with the color-bar, you see that the faintest parts of the galaxy
+outskirts still remain. Therefore have two strategies for approaching this
+problem: 1) Increase the tile size to get more accurate measurements of
+skewness. 2) Strengthen the outlier rejection parameters to discard more of
+the tiles with signal. Fortunately in this image we have a sufficently
+large region on the right of the image that the galaxy doesn't extend
+to. So we can use the more robust first solution. In situations where this
+doesn't happen (for example if the field of view in this image was shifted
+to have more of M51 and less sky) you are limited to a combination of the
+two solutions or just to the second solution.
 
 @cartouche
 @noindent
@@ -3910,9 +4148,7 @@ directly feed the convolved image and avoid convolution. For more on
 @option{--convolved}, see @ref{NoiseChisel input}.
 @end cartouche
 
-Fortunately this image is large and has a nice and clean region also
-(filled with very small/distant stars and galaxies). So our first solution
-is to increase the tile size. To identify the skewness caused by NGC 5195
+To identify the skewness caused by the flat NGC 5195 and M51 tidal features
 on the tiles under it, we thus have to choose a tile size that is larger
 than the gradient of the signal. Let's try a 100 by 100 tile size:
 
@@ -3920,86 +4156,30 @@ than the gradient of the signal. Let's try a 100 by 100 tile size:
 $ astnoisechisel r.fits -h0 --tilesize=100,100 --checkqthresh
 @end example
 
-You can clearly see the effect of this increased tile size: they are much
-larger. Nevertheless the higher valued tiles are still systematically
-surrounding NGC 5195. As a result, when flipping through the interpolated
-and smoothed values, you can still see the signature of the galaxy, and the
-ugly tile signatures are still present in @code{QTHRESH-APPLIED}. So let's
-increase the tile size even further (check the result of the first before
-going to the second):
+You can clearly see the effect of this increased tile size: the tiles are
+much larger (@mymath{\times4} in area) and when you look into
+@code{VALUE1_NO_OUTLIER}, you see that almost all the tiles under the
+galaxy have been discarded and we are only left with tiles in the
+right-most part of the image. The next group of extensions (those ending
+with @code{_INTERP}), give a value to all blank tiles based on the nearest
+tiles with a measurement. The following group of extensions (ending with
+@code{_SMOOTH}) have smoothed the interpolated image to avoid sharp cuts on
+tile edges.
 
-@example
-$ astnoisechisel r.fits -h0 --tilesize=150,150 --checkqthresh
-$ astnoisechisel r.fits -h0 --tilesize=200,200 --checkqthresh
-@end example
-
-The number of tiles with a gradient does indeed decrease with a larger tile
-size, but you still see a gradient in the raw values. The tile signatures
-in the thresholded image are also still present. These are not a good
-sign. So, let's keep the 200 by 200 tile size and start playing with the
-other constraint that we have: the acceptable distance (in quantile),
-between the mode and median.
-
-The tile size is now very large (16 times the area of the default tile
-size). We thus have much less scatter in the estimation of the mode and
-median and we can afford to decrease the acceptable distance between the
-two. The acceptable distance can be set through the @option{--modmedqdiff}
-option (read as ``mode-median quantile difference''). Before trying the
-next command, run the previous command with a @option{-P} to see what value
-it originally had.
-
-@example
-$ astnoisechisel r.fits -h0 --tilesize=200,200 --modmedqdiff=0.005    \
-                 --checkqthresh
-@end example
-
-But this command doesn't finish like the previous ones. A
-@file{r_qthresh.fits} file was created, but instead of saying that the
-quantile thresholds have been applied, a long error message is
-printed. Please read the error message before continuing to read here.
-
-The error message fully describes the problem and even proposes
-solutions. As suggested there, the ideal solution would be to use SDSS
-images outside of this field and add them to this one to have a larger
-input image (with a larger area outside the diffuse regions). But we don't
-always have this luxury, so let's keep using to this image for the rest of
-this tutorial.
-
-First, open @file{r_qthresh.fits} and have a look at the successful
-tiles. Unlike the previous @option{--checkqthresh} outputs, this one only
-has four extensions: as the error message explains, the interpolation (to
-give values to blank tiles) has not been done. Therefore its check results
-aren't present.
-
-At the start of the error message, NoiseChisel tells us how many tiles
-passed the test for having no significant signal: six. Looking closely at
-the dataset, we see that outside NGC 5195, there is no background gradient
-(the background is a fixed value). Our tile sizes are also very large (and
-thus don't have much scatter). So a good way to loosen up the parameters
-can be to simply decrease the number of neighboring tiles needed for
-interpolation, with @option{--interpnumngb} (read as ``interpolation number
-of neighbors'').
-
-@example
-$ astnoisechisel r.fits -h0 --tilesize=200,200 --modmedqdiff=0.005    \
-                 --interpnumngb=6 --checkqthresh
-@end example
-
-There is no longer any significant gradient in the usable tiles and no
-signature of NGC 5195 exists in the interpolated and smoothed values. But
-before finishing the quantile threshold, let's have a closer look at the
-thresholded image in @code{QTHRESH-APPLIED}. Slide the dynamic range in
-your FITS viewer so 0 valued pixels are black and all non-zero pixels are
-white. You will see that the black holes are not evenly distributed. Those
-that follow the tail of NGC 5195 are systematically smaller than those in
-the far-right of the image. This suggests that we can decrease the quantile
-threshold (@code{--qthresh}) even further: there is still signal down
-there!
+Inspecting @code{THRESH1_SMOOTH}, you can see that there is no longer any
+significant gradient and no major signature of NGC 5195 exists. But before
+finishing the quantile threshold, let's have a closer look at the final
+extension (@code{QTHRESH-APPLIED}) which is thresholded image. Slide the
+dynamic range in your FITS viewer so 0 valued pixels are black and all
+non-zero pixels are white. You will see that the black holes are not evenly
+distributed. Those that follow the tail of NGC 5195 are systematically
+smaller than those in the far-right of the image. This suggests that we can
+decrease the quantile threshold (@code{--qthresh}) even further: there is
+still signal down there!
 
 @example
 $ rm r_qthresh.fits
-$ astnoisechisel r.fits -h0 --tilesize=200,200 --modmedqdiff=0.005    \
-                 --interpnumngb=6 --qthresh=0.2
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --qthresh=0.2
 @end example
 
 Since the quantile threshold of the previous command was satisfactory, we
@@ -4007,54 +4187,75 @@ finally removed @option{--checkqthresh} to let NoiseChisel proceed until
 completion. Looking at the @code{DETECTIONS} extension of NoiseChisel's
 output, we see the right-ward edges in particular have many holes that are
 fully surrounded by signal and the signal stretches out in the noise very
-thinly. This suggests that there is still signal that can be detected. So
-we'll decrease the growth quantile (for larger/deeper growth into the
+thinly. This suggests that there is still signal that can be detected. You
+can confirm this guess by looking at the @code{SKY} extension to see that
+indeed, we still have traces of the galaxy outskirts there. Therefore, we
+should dig deeper into the noise.
+
+Let's decrease the growth quantile (for larger/deeper growth into the
 noise, with @option{--detgrowquant}) and increase the size of holes that
 can be filled (if they are fully surrounded by signal, with
-@option{--detgrowmaxholesize}). Since we are done with our detection, to
-facilitate later steps, we'll also add the @option{--label} option so the
-connected regions get different labels.
+@option{--detgrowmaxholesize}).
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=200,200 --modmedqdiff=0.005    \
-                 --interpnumngb=6 --qthresh=0.2 --detgrowquant=0.6    \
-                 --detgrowmaxholesize=10000 --label
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --qthresh=0.2          \
+                 --detgrowquant=0.65 --detgrowmaxholesize=10000
 @end example
 
 Looking into the output, we now clearly see that the tidal features of M51
 and NGC 5195 are detected nicely in the same direction as expected (towards
 the bottom right side of the image). However, as discussed above, the best
 measure of good detection is the noise, not the detections themselves. So
-let's look at the Sky and its Standard deviation. The Sky standard
-deviation no longer has any footprint of NGC 5195. But the Sky still has a
-very faint shadow of the dwarf galaxy (the values on the left are larger
-than on the right). However, this gradient in the Sky (output of first
-command below) is much less (by @mymath{\sim20} times) than the standard
-deviation (output of second command). So we can stop playing with
-NoiseChisel here, and leave the configuration for a more accurate detection
-to you.
+let's look at the Sky and its Standard deviation. The Sky still has a very
+faint shadow of the galaxy outskirts (the values on the left are very
+slightly larger than those on the right).
+
+Let's calculate this gradient as a function of noise. First we'll collapse
+the image along the second (vertical) FITS dimension to have a 1D
+array. Then we'll calculate the top and bottom values of this array and
+define that as the gradient. Then we'll estimate the mean standard
+deviation over the image and divide it by the first value. The first two
+commands are just for demonstration of the collapsed dataset:
 
 @example
-$ aststatistics r_detected.fits -hSKY --maximum --minimum       \
-                | awk '@{print $1-$2@}'
-$ aststatistics r_detected.fits -hSKY_STD --mean
+$ astarithmetic r_detected.fits 2 collapse-mean -hSKY -ocollapsed.fits
+$ asttable collapsed.fits
+$ skydiff=$(astarithmetic r_detected.fits 2 collapse-mean set-i   \
+                          i maxvalue i minvalue - -hSKY -q)
+$ echo $skydiff
+$ std=$(aststatistics r_detected.fits -hSKY_STD --mean)
+$ echo $std
+$ echo "$std $skydiff" | awk '@{print $1/$2@}'
 @end example
+
+This gradient in the Sky (output of first command below) is much less (by
+more than 20 times) than the standard deviation (final extension). So we
+can stop configuring NoiseChisel at this point in the tutorial. We leave
+further configuration for a more accurate detection to you as an exercise.
 
 Let's see how deeply/successfully we carved out M51 and NGC 5195's tail
 from the noise. For this measurement, we'll need to estimate the average
 flux on the outer edges of the detection. Fortunately all this can be done
 with a few simple commands (and no higher-level language mini-environments)
-using @ref{Arithmetic} and @ref{MakeCatalog}.
-
-The M51 group detection is by far the largest detection in this image. We
-can thus easily find the ID/label that corresponds to it. We'll first run
-MakeCatalog to find the area of all the detections, then we'll use AWK to
-find the ID of the largest object and keep it as a shell variable
-(@code{id}):
+using @ref{Arithmetic} and @ref{MakeCatalog}. First, let's give a separate
+label to all the connected pixels of NoiseChisel's detection map:
 
 @example
-$ astmkcatalog r_detected.fits --ids --geoarea -hDETECTIONS -ocat.txt
+$ astarithmetic r_detected.fits 2 connected-components -hDETECTIONS \
+                -olabeled.fits
+@end example
+
+Ofcourse, you can find the the label of the main galaxy visually, but to
+have a little more fun, lets do this automatically. The M51 group detection
+is by far the largest detection in this image. We can thus easily find the
+ID/label that corresponds to it. We'll first run MakeCatalog to find the
+area of all the detections, then we'll use AWK to find the ID of the
+largest object and keep it as a shell variable (@code{id}):
+
+@example
+$ astmkcatalog labeled.fits --ids --geoarea -h1 -ocat.txt
 $ id=$(awk '!/^#/@{if($2>max) @{id=$1; max=$2@}@} END@{print id@}' cat.txt)
+$ echo $id
 @end example
 
 To separate the outer edges of the detections, we'll need to ``erode'' the
@@ -4072,8 +4273,8 @@ value of 0 in @file{erode.fits}. We'll keep the output in
 @file{boundary.fits}.
 
 @example
-$ astarithmetic r_detected.fits $id eq eroded.fits 0 eq and     \
-                -hDETECTIONS -h1 -oboundary.fits
+$ astarithmetic labeled.fits $id eq eroded.fits 0 eq and          \
+                -g1 -oboundary.fits
 @end example
 
 Open the image and have a look. You'll see that the detected edge of the
@@ -4086,7 +4287,7 @@ $ astarithmetic r.fits boundary.fits nan where -ob-masked.fits -h0
 @end example
 
 To quantify how deep we have detected the low-surface brightness regions,
-we'll use the command below. In short it just divides all the 1-valued
+we'll use the command below. In short it just divides all the non-zero
 pixels of @file{boundary.fits} in the Sky subtracted input (first extension
 of NoiseChisel's output) by the pixel standard deviation of the same
 pixel. This will give us a signal-to-noise ratio image. The mean value of
@@ -4111,12 +4312,53 @@ $ astarithmetic r_detected.fits boundary.fits not nan where \
                 r_detected.fits /                           \
                 meanvalue                                   \
                 -hINPUT-NO-SKY -h1 -hSKY_STD --quiet
---> 0.0511864
 @end example
 
 @noindent
 The outer wings where therefore non-parametrically detected until
-@mymath{\rm{S/N}\approx0.05}.
+@mymath{\rm{S/N}\approx0.05}!
+
+This is very good, but how much is this in units of standard magnitudes per
+arcseconds squared? To find that, we'll first need to calcaulate how many
+pixels of this image are in one arcsecond-squared. Fortunately the WCS
+headers of Gnuastro's output FITS files (and in particular @code{CDELT})
+give us this information.
+
+@example
+$ n=$(astfits r_detected.fits -h1                               \
+              | awk '/CDELT1/ @{p=1/($3*3600); print p*p@}')
+$ echo $n
+@end example
+
+@noindent
+Now, let's calculate the average sky-subtracted flux in the border region
+per pixel.
+
+@example
+$ f=$(astarithmetic r_detected.fits boundary.fits not nan where set-i  \
+                    i sumvalue i numvalue / -q -hINPUT-NO-SKY)
+$ echo $f
+@end example
+
+@noindent
+We can just multiply the two to get the average flux on this border in one
+arcsecond squared. We also have the r-band SDSS zeropoint
+magnitude@footnote{From
+@url{http://classic.sdss.org/dr7/algorithms/fluxcal.html}} to be
+24.80. Therefore we can get the surface brightness limit (in magnitudes per
+arcsecond squared) using the following command. Just note that @code{log}
+in AWK is in base-2 (not 10) and it doesn't have a @code{log10}
+operator. So we'll do an extra division by @code{log(10)} to correct for
+this.
+
+@example
+$ z=24.80
+$ echo "$n $f $z" | awk '@{print -2.5*log($1*$2)/log(10)+$3@}'
+--> 30.0646
+@end example
+
+This shows that on a single-exposure SDSS image, we have reached a surface
+brightness limit of roughly 30 magnitudes per arcseconds squared!
 
 In interpreting this value, you should just have in mind that NoiseChisel
 works based on the contiguity of signal in the pixels. Therefore the larger
@@ -12046,18 +12288,26 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
 
-If the output is an image, and the @option{--output} option is not given,
-automatic output will use the name of the first FITS image encountered to
-generate an output file name, see @ref{Automatic output}. Also, output WCS
-information will be taken from the first input image encountered. When the
-output is a single number, that number will be printed in the standard
-output and no output file will be created. Arithmetic's notation for giving
-operands to operators is described in @ref{Reverse polish notation}. To
-ignore certain pixels, set them as blank, see @ref{Blank pixels}, for
-example with the @command{where} operator (see @ref{Arithmetic
-operators}). See @ref{Common options} for a review of the options in all
-Gnuastro programs. Arithmetic just redefines the @option{--hdu} option as
-explained below:
+If the output is not a single number, and the @option{--output} option is
+not given, automatic output will use the name of the first FITS image
+encountered to generate an output file name, see @ref{Automatic
+output}. Also, output WCS information will be taken from the first input
+image encountered. When the output is a single number, that number will be
+printed in the standard output and no output file will be
+created. Arithmetic's notation for giving operands to operators is
+described in @ref{Reverse polish notation}. To ignore certain pixels, set
+them as blank, see @ref{Blank pixels}, for example with the @command{where}
+operator (see @ref{Arithmetic operators}). See @ref{Common options} for a
+review of the options in all Gnuastro programs. Arithmetic just redefines
+the @option{--hdu} option as explained below.
+
+Through operators like those starting with @code{collapse-}, the
+dimensionality of the inputs may not be the same as the outputs. By
+default, when the output is 1D, Arithmetic will write it as a table, not an
+image/array. The format of the output table (plain text or FITS ASCII or
+binary) can be set with the @option{--tableformat} option, see @ref{Input
+output options}). You can disable this feature (write 1D arrays as FITS
+images/arrays) with the @option{--onedasimage} option.
 
 @table @option
 
@@ -12094,6 +12344,12 @@ option is very convenient when you have many input files and the dataset of
 interest is in the same HDU of all the files. When this option is called,
 any values given to the @option{--hdu} option (explained above) are ignored
 and will not be used.
+
+@item -O
+@itemx --onedasimage
+When final dataset to write as output only has one dimension, write it as a
+FITS image/array. By default, if the output is 1D, it will be written as a
+table, see above.
 @end table
 
 Arithmetic accepts two kinds of input: images and numbers. Images are
@@ -14422,17 +14678,19 @@ One of the most important aspects of a dataset is its reference value: the
 value of the dataset where there is no signal. Without knowing, and thus
 removing the effect of, this value it is impossible to compare the derived
 results of many high-level analyses over the dataset with other datasets
-(in the attempt to associate our results with the ``real'' world). In
-astronomy, this reference value is known as the ``Sky'' value: the value
-where there is no signal from objects (for example galaxies, stars, planets
-or comets). Depending on the dataset, the Sky value maybe a fixed value
-over the whole dataset, or it may vary based on location. For an example of
-the latter case, see Figure 11 in @url{https://arxiv.org/abs/1505.01664,
-Akhlaghi and Ichikawa (2015)}.
+(in the attempt to associate our results with the ``real'' world).
+
+In astronomy, this reference value is known as the ``Sky'' value: the value
+that noise fluctuates around: where there is no signal from detectable
+objects or artifacts (for example galaxies, stars, planets or comets, star
+spikes or internal optical ghost). Depending on the dataset, the Sky value
+maybe a fixed value over the whole dataset, or it may vary based on
+location. For an example of the latter case, see Figure 11 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}.
 
 Because of the significance of the Sky value in astronomical data analysis,
 we have devoted this subsection to it for a thorough review. We start with
-a thorough discussion on its definition (@ref{Sky value definition}).  In
+a thorough discussion on its definition (@ref{Sky value definition}). In
 the astronomical literature, researchers use a variety of methods to
 estimate the Sky value, so in @ref{Sky value misconceptions}) we review
 those and discuss their biases. From the definition of the Sky value, the
@@ -14458,28 +14716,29 @@ This analysis is taken from @url{https://arxiv.org/abs/1505.01664, Akhlaghi
 and Ichikawa (2015)}. Let's assume that all instrument defects -- bias,
 dark and flat -- have been corrected and the brightness (see @ref{Flux
 Brightness and magnitude}) of a detected object, @mymath{O}, is
-desired. The sources of flux on pixel @mymath{i}@footnote{For this analysis
-the dimension of the data (image) is irrelevant. So if the data is an image
+desired. The sources of flux on pixel@footnote{For this analysis the
+dimension of the data (image) is irrelevant. So if the data is an image
 (2D) with width of @mymath{w} pixels, then a pixel located on column
 @mymath{x} and row @mymath{y} (where all counting starts from zero and (0,
 0) is located on the bottom left corner of the image), would have an index:
-@mymath{i=x+y\times{}w}.}  of the image can be written as follows:
+@mymath{i=x+y\times{}w}.} @mymath{i} of the image can be written as
+follows:
 
 @itemize
 @item
-Contribution from the target object, (@mymath{O_i}).
+Contribution from the target object (@mymath{O_i}).
 @item
-Contribution from other detected objects, (@mymath{D_i}).
+Contribution from other detected objects (@mymath{D_i}).
 @item
 Undetected objects or the fainter undetected regions of bright
-objects, (@mymath{U_i}).
+objects (@mymath{U_i}).
 @item
 @cindex Cosmic rays
-A cosmic ray, (@mymath{C_i}).
+A cosmic ray (@mymath{C_i}).
 @item
 @cindex Background flux
 The background flux, which is defined to be the count if none of the
-others exists on that pixel, (@mymath{B_i}).
+others exists on that pixel (@mymath{B_i}).
 @end itemize
 @noindent
 The total flux in this pixel (@mymath{T_i}) can thus be written as:
@@ -14489,9 +14748,9 @@ The total flux in this pixel (@mymath{T_i}) can thus be written as:
 @cindex Cosmic ray removal
 @noindent
 By definition, @mymath{D_i} is detected and it can be assumed that it is
-correctly estimated (deblended) and subtracted, thus @mymath{D_i=0}. There
-are also methods to detect and remove cosmic rays, for example the method
-described in van Dokkum (2001)@footnote{van Dokkum,
+correctly estimated (deblended) and subtracted, we can thus set
+@mymath{D_i=0}. There are also methods to detect and remove cosmic rays,
+for example the method described in van Dokkum (2001)@footnote{van Dokkum,
 P. G. (2001). Publications of the Astronomical Society of the Pacific.
 113, 1420.}, or by comparing multiple exposures. This allows us to set
 @mymath{C_i=0}. Note that in practice, @mymath{D_i} and @mymath{U_i} are
@@ -14501,36 +14760,38 @@ algorithm is perfect. With these limitations in mind, the observed Sky
 value for this pixel (@mymath{S_i}) can be defined as
 
 @cindex Sky value
-@dispmath{S_i=B_i+U_i.}
+@dispmath{S_i\equiv{}B_i+U_i.}
 
 @noindent
 Therefore, as the detection process (algorithm and input parameters)
-becomes more accurate, or @mymath{U_i\to0}, the sky value will tend to
-the background value or @mymath{S_i\to B_i}. Therefore, while
+becomes more accurate, or @mymath{U_i\to0}, the Sky value will tend to the
+background value or @mymath{S_i\to B_i}. Hence, we see that while
 @mymath{B_i} is an inherent property of the data (pixel in an image),
-@mymath{S_i} depends on the detection process. Over a group of pixels,
-for example in an image or part of an image, this equation translates
-to the average of undetected pixels.  With this definition of sky, the
-object flux in the data can be calculated with
+@mymath{S_i} depends on the detection process. Over a group of pixels, for
+example in an image or part of an image, this equation translates to the
+average of undetected pixels (Sky@mymath{=\sum{S_i}}).  With this
+definition of Sky, the object flux in the data can be calculated, per
+pixel, with
 
 @dispmath{ T_{i}=S_{i}+O_{i} \quad\rightarrow\quad
            O_{i}=T_{i}-S_{i}.}
 
-@noindent
 @cindex photo-electrons
-Hence, the more accurately @mymath{S_i} is measured, the more accurately
-the brightness (sum of pixel values) of the target object can be measured
-(photometry). Any under-(over-)estimation in the sky will directly
-translate to an over-(under-)estimation of the measured object's
-brightness. In the fainter outskirts of an object a very small fraction of
-the photo-electrons in the pixels actually belong to objects (see Figure 1b
-in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-(2015)}). Therefore even a small over estimation of the sky value will
+In the fainter outskirts of an object, a very small fraction of the
+photo-electrons in a pixel actually belongs to objects, the rest is caused
+by random factors (noise), see Figure 1b in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
+(2015)}. Therefore even a small over estimation of the Sky value will
 result in the loss of a very large portion of most galaxies. Besides the
 lost area/brightness, this will also cause an over-estimation of the Sky
 value and thus even more under-estimation of the object's brightness. It is
 thus very important to detect the diffuse flux of a target, even if they
 are not your primary target.
+
+In summary, the more accurately the Sky is measured, the more accurately
+the brightness (sum of pixel values) of the target object can be measured
+(photometry). Any under/over-estimation in the Sky will directly translate
+to an over/under-estimation of the measured object's brightness.
 
 @cartouche
 @noindent
@@ -14552,15 +14813,16 @@ signal-based detection is a detection process that relies heavily on
 assumptions about the to-be-detected objects. This method was the most
 heavily used technique prior to the introduction of NoiseChisel in that
 paper.} use the sky value as a reference to define the detection
-threshold. So these old techniques had to rely on approximations based on
-other assumptions about the data. A review of those other techniques can be
-seen in Appendix A of Akhlaghi and Ichikawa (2015)@footnote{Akhlaghi M.,
-Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Since they
-were extensively used in astronomical data analysis for several decades,
-such approximations have given rise to a lot of misconceptions, ambiguities
-and disagreements about the sky value and how to measure it. As a summary,
-the major methods used until now were an approximation of the mode of the
-image pixel distribution and @mymath{\sigma}-clipping.
+threshold. These older techniques therefore had to rely on approximations
+based on other assumptions about the data. A review of those other
+techniques can be seen in Appendix A of
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}.
+
+These methods were extensively used in astronomical data analysis for
+several decades, therefore they have given rise to a lot of misconceptions,
+ambiguities and disagreements about the sky value and how to measure it. As
+a summary, the major methods used until now were an approximation of the
+mode of the image pixel distribution and @mymath{\sigma}-clipping.
 
 @itemize
 @cindex Histogram
@@ -14573,19 +14835,19 @@ assume (or find) a certain probability density function (PDF) or use the
 histogram. But astronomical datasets can have any distribution, making it
 almost impossible to define a generic function. Also, histogram-based
 results are very inaccurate (there is a large dispersion) and it depends on
-the histogram bin-widths.
+the histogram bin-widths. Generally, the mode of a distribution also shifts
+as signal is added. Therefore, even if it is accurately measured, the mode
+is a biased measure for the Sky value.
 
 @cindex sigma-clipping
 @item
-Another approach was to iteratively clip the brightest pixels in the
-image (which is known as @mymath{\sigma}-clipping, since the reference
-was found from the image mean and its standard deviation or
-@mymath{\sigma}). See @ref{Sigma clipping} for a complete
-explanation. The problem with @mymath{\sigma}-clipping was that real
-astronomical objects have diffuse and faint wings that penetrate
-deeply into the noise. So only removing their brightest parts is
-completely useless in removing the systematic bias an object's fainter
-parts cause in the sky value.
+Another approach was to iteratively clip the brightest pixels in the image
+(which is known as @mymath{\sigma}-clipping). See @ref{Sigma clipping} for
+a complete explanation. @mymath{\sigma}-clipping is useful when there are
+clear outliers (an object with a sharp edge in an image for
+example). However, real astronomical objects have diffuse and faint wings
+that penetrate deeply into the noise, see Figure 1 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}.
 @end itemize
 
 As discussed in @ref{Sky value}, the sky value can only be correctly
@@ -14602,76 +14864,78 @@ are ultimately poor approximations.
 @cindex Noise
 @cindex Signal
 @cindex Gaussian distribution
-Put simply, noise can characterized with a certain spread about a
-characteristic value. In the Gaussian distribution (most commonly used to
-model noise) the spread is defined by the standard deviation about the
-characteristic mean. Before continuing let's clarify some definitions
-first: @emph{Data} is defined as the combination of signal and noise (so a
-noisy image is one @emph{data}-set). @emph{Signal} is defined as the mean
-of the noise on each element (after sky subtraction, see @ref{Sky value
-definition}).
+Put simply, noise can be characterized with a certain spread about the
+measured value. In the Gaussian distribution (most commonly used to model
+noise) the spread is defined by the standard deviation about the
+characteristic mean.
 
-Let's assume that the @emph{background} (see @ref{Sky value definition}) is
-subtracted and is zero. When a data set doesn't have any signal (only
-noise), the mean, median and mode of the distribution are equal within
-statistical errors and approximately equal to the background value.  Signal
-always has a positive value and will never become negative, see Figure 1 in
+Let's start by clarifying some definitions first: @emph{Data} is defined as
+the combination of signal and noise (so a noisy image is one
+@emph{data}set). @emph{Signal} is defined as the mean of the noise on each
+element. We'll also assume that the @emph{background} (see @ref{Sky value
+definition}) is subtracted and is zero.
+
+When a data set doesn't have any signal (only noise), the mean, median and
+mode of the distribution are equal within statistical errors and
+approximately equal to the background value.  Signal always has a positive
+value and will never become negative, see Figure 1 in
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-(2015)}. Therefore, as more signal is added to the raw noise, the mean,
-median and mode of the dataset (which has both signal and noise) shift to
-the positive. The mean's shift is the largest. The median shifts less,
-since it is defined based on an ordered distribution and so is not affected
-by a small number of outliers. The distribution's mode shifts the least to
-the positive.
+(2015)}. Therefore, as more signal is added, the mean, median and mode of
+the dataset shift to the positive. The mean's shift is the largest. The
+median shifts less, since it is defined based on an ordered distribution
+and so is not affected by a small number of outliers. The distribution's
+mode shifts the least to the positive.
 
 @cindex Mode
 @cindex Median
 Inverting the argument above gives us a robust method to quantify the
-significance of signal in a dataset. Namely, when the mode and median of a
-distribution are approximately equal, we can argue that there is no
-significant signal. To allow for gradients (which are commonly present in
-ground-based images), we can consider the image to be made of a grid of
-tiles (see @ref{Tessellation}@footnote{The options to customize the
-tessellation are discussed in @ref{Processing options}.}). Hence, from the
-difference of the mode and median on each tile, we can `detect' the
-significance of signal in it. The median of a distribution is defined to be
-the value of the distribution's middle point after sorting (or 0.5
-quantile). Thus, to estimate the presence of signal, we'll compare with the
-quantile of the mode with 0.5, if the difference is larger than the value
-given to the @option{--modmedqdiff} option, this tile will be ignored. You
-can read this option as ``mode-median-quantile-diff''.
+significance of signal in a dataset. Namely, when the mean and median of a
+distribution are approximately equal, or the mean's quantile is around 0.5,
+we can argue that there is no significant signal.
 
-This method to use the input's skewness is possible because of a new
-algorithm to find the mode of a distribution that was defined in Appendix C
-of Akhlaghi and Ichikawa (2015). However, the raw dataset's distribution is
-noisy (noise also affects the sorting), so using the argument above on the
+To allow for gradients (which are commonly present in ground-based images),
+we can consider the image to be made of a grid of tiles (see
+@ref{Tessellation}@footnote{The options to customize the tessellation are
+discussed in @ref{Processing options}.}). Hence, from the difference of the
+mean and median on each tile, we can estimate the significance of signal in
+it. The median of a distribution is defined to be the value of the
+distribution's middle point after sorting (or 0.5 quantile). Thus, to
+estimate the presence of signal, we'll compare with the quantile of the
+mean with 0.5. If the absolute difference in a tile is larger than the
+value given to the @option{--meanmedqdiff} option, that tile will be
+ignored. You can read this option as ``mean-median-quantile-difference''.
+
+The raw dataset's distribution is noisy, so using the argument above on the
 raw input will give a noisy result. To decrease the noise/error in
 estimating the mode, we will use convolution (see @ref{Convolution
 process}). Convolution decreases the range of the dataset and enhances its
-skewness, See Section 3.1.1 and Figure 4 in Akhlaghi and Ichikawa
-(2015). This enhanced skewness can be interpreted as an increase in the
-Signal to noise ratio of the objects buried in the noise. Therefore, to
-obtain an even better measure of the presence of signal in a mesh, the
-image can be convolved with a given kernel first.
+skewness, See Section 3.1.1 and Figure 4 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}. This
+enhanced skewness can be interpreted as an increase in the Signal to noise
+ratio of the objects buried in the noise. Therefore, to obtain an even
+better measure of the presence of signal in a tile, the mean and median
+discussed above are measured on the convolved image.
 
-Note that through the difference of the mode and median we have actually
-`detected' data in the distribution. However this ``detection'' was only
-based on the total distribution of the data in each tile (a much lower
-resolution). This is the main limitation of this technique. The best
-approach is thus to do detection over the dataset, mask all the detected
-pixels and use the undetected regions to estimate the sky and its standard
-deviation.
+Through the difference of the mean and median we have actually `detected'
+data in the distribution. However this ``detection'' was only based on the
+total distribution of the data in each tile (a much lower resolution). This
+is the main limitation of this technique. The best approach is thus to do
+detection over the dataset, mask all the detected pixels and use the
+undetected regions to estimate the sky and its standard deviation (possibly
+over a tessellation). This is how NoiseChisel works: it uses the argument
+above to find tiles that are used to find its thresholds. Several
+higher-level steps are done on the thresholded pixels to define the
+higher-level detections (see @ref{NoiseChisel}).
 
 @cindex Cosmic rays
-The mean value of the tiles that have an approximately equal mode and
-median will be the Sky value. However there is one final hurdle:
-astronomical datasets are commonly plagued with Cosmic rays. Images of
-Cosmic rays aren't smoothed by the atmosphere or telescope aperture, so
-they have sharp boundaries. Also, since they don't occupy too many pixels,
-they don't affect the mode and median calculation. But their very high
-values can greatly bias the calculation of the mean (recall how the mean
-shifts the fastest in the presence of outliers), see Figure 15 in Akhlaghi
-and Ichikawa (2015) for one example.
+There is one final hurdle: raw astronomical datasets are commonly peppered
+with Cosmic rays. Images of Cosmic rays aren't smoothed by the atmosphere
+or telescope aperture, so they have sharp boundaries. Also, since they
+don't occupy too many pixels, they don't affect the mode and median
+calculation. But their very high values can greatly bias the calculation of
+the mean (recall how the mean shifts the fastest in the presence of
+outliers), for example see Figure 15 in
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}.
 
 The effect of outliers like cosmic rays on the mean and standard deviation
 can be removed through @mymath{\sigma}-clipping, see @ref{Sigma clipping}
@@ -14680,8 +14944,56 @@ median are approximately equal in a tile (see @ref{Tessellation}), the
 final Sky value and its standard deviation are determined after
 @mymath{\sigma}-clipping with the @option{--sigmaclip} option.
 
+In the end, some of the tiles will pass the mean and median quantile
+difference test. However, prior to interpolating over the failed tiles,
+another point should be considered: large and extended galaxies, or bright
+stars, have wings which sink into the noise very gradually. In some cases,
+the gradient over these wings can be on scales that is larger than the
+tiles. The mean-median distance test will pass on such tiles and will cause
+a strong peak in the interpolated tile grid, see @ref{Detecting large
+extended targets}.
 
+The tiles that exist over the wings of large galaxies or bright stars are
+outliers in the distribution of tiles that passed the mean-median quantile
+distance test. Therefore, the final step of ``quantifying signal in a
+tile'' is to look at this distribution and remove the
+outliers. @mymath{\sigma}-clipping is a good solution for removing a few
+outliers, but the problem with outliers of this kind is that there may be
+many such tiles (depending on the large/bright stars/galaxies in the
+image). Therefore a novel outlier rejection algorithm will be used.
 
+@cindex Outliers
+@cindex Identifying outliers
+To identify the first outlier, we'll use the distribution of distances
+between sorted elements. If there are @mymath{N} successful tiles, for
+every tile, the distance between the adjacent @mymath{N/2} previous
+elements is found, giving a distribution containing @mymath{N/2-1}
+points. The @mymath{\sigma}-clipped median and standard deviation of this
+distribution is then found (@mymath{\sigma}-clipping is configured with
+@option{--outliersclip}). Finally, if the distance between the element and
+its previous element is more than @option{--outliersigma} multiples of the
+@mymath{\sigma}-clipped standard deviation added with the
+@mymath{\sigma}-clipped median, that element is considered an outlier and
+all tiles larger than that value are ignored.
+
+Formally, if we assume there are @mymath{N} elements. They are first
+sorted. Searching for the outlier starts on element @mymath{N/2} (integer
+division). Let's take @mymath{v_i} to be the @mymath{i}-th element of the
+sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as
+the @mymath{\sigma}-clipped median and standard deviation from the
+distances of the previous @mymath{N/2-1} elements (not including
+@mymath{v_i}). If the value given to @option{--outliersigma} is displayed
+with @mymath{s}, the @mymath{i}-th element is considered as an outlier when
+the condition below is true.
+
+@dispmath{{(v_i-v_{i-1})-m\over \sigma}>s}
+
+Since @mymath{i} begins from the median, the outlier has to be larger than
+the median. You can use the check images (for example @option{--checksky}
+in the Statistics program or @option{--checkqthresh},
+@option{--checkdetsky} and @option{--checksky} options in NoiseChisel for
+any of its steps that uses this outlier rejection) to inspect the steps and
+see which tiles have been discarded as outliers prior to interpolation.
 
 
 
@@ -15232,15 +15544,14 @@ tile, see @ref{Quantifying signal in a tile}.
 Kernel HDU to help in estimating the significance of signal in a tile, see
 @ref{Quantifying signal in a tile}.
 
-@item --mirrordist=FLT
-Maximum distance (as a multiple of error) to estimate the difference
-between the input and mirror distributions in finding the mode, see
-Appendix C of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-2015}, also see @ref{Quantifying signal in a tile}.
-
-@item --modmedqdiff=FLT
-The maximum acceptable distance between the mode and median, see
-@ref{Quantifying signal in a tile}.
+@item --meanmedqdiff=FLT
+The maximum acceptable distance between the quantiles of the mean and
+median, see @ref{Quantifying signal in a tile}. The initial Sky and its
+standard deviation estimates are measured on tiles where the quantiles of
+their mean and median are less distant than the value given to this
+option. For example @option{--meanmedqdiff=0.01} means that only tiles
+where the mean's quantile is between 0.49 and 0.51 (recall that the
+median's quantile is 0.5) will be used.
 
 @item --sclipparams=FLT,FLT
 The @mymath{\sigma}-clipping parameters, see @ref{Sigma clipping}. This
@@ -15251,6 +15562,23 @@ multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
 section). The second value is the exit criteria. If it is less than 1, then
 it is interpreted as tolerance and if it is larger than one it is a
 specific number. Hence, in the latter case the value must be an integer.
+
+@item --outliersclip=FLT,FLT
+Sigma-clipping parameters for the outlier rejection of the Sky value
+(similar to @option{--sclipparams}).
+
+Outlier rejection is useful when the dataset contains a large and diffuse
+(almost flat within each tile) signal. The flatness of the profile will
+cause it to successfully pass the mean-median quantile difference test, so
+we'll need to use the distribution of successful tiles for removing these
+false positive. For more, see the latter half of @ref{Quantifying signal in
+a tile}.
+
+@item --outliersigma=FLT
+Multiple of sigma to define an outlier in the Sky value estimation. If this
+option is given a value of zero, no outlier rejection will take place. For
+more see @option{--outliersclip} and the latter half of @ref{Quantifying
+signal in a tile}.
 
 @item --smoothwidth=INT
 Width of a flat kernel to convolve the interpolated tile values. Tile
@@ -15492,11 +15820,11 @@ calculated on the dataset that is convolved with the wider kernel, then the
 quantiles are estimated on the image convolved with the sharper kernel.
 
 @item
-@option{--noerodequant}: to specify a quantile threshold where erosion
-will not apply. This is useful to detect sharper point-like sources that
-will be missed due to too much erosion. To completely ignore this features
-give this option a value of 1 (only the largest valued pixel in the input
-will not be eroded).
+The quantile difference to identify tiles with no significant signal is
+measured between the @emph{mean} and median. In the published paper, it was
+between the @emph{mode} and median. The quantile of the mean is more
+sensitive to skewness (the presence of signal), so it is preferable to the
+quantile of the mode. For more see @ref{Quantifying signal in a tile}.
 
 @item
 Outlier rejection in quantile thresholds: When there are large galaxies or
@@ -15504,9 +15832,9 @@ bright stars in the image, their gradient may be on a smaller scale than
 the selected tile size. In such cases, those tiles will be identified as
 tiles with no signal and thus preserved. An outlier identification
 algorithm has been added to NoiseChisel and can be configured with the
-following three options: @option{--qthreshoutnum},
-@option{--qthreshoutsigma} and @option{--qthreshoutsclip}. See their
-description in @ref{Detection options} for more.
+following options: @option{--outliersigma} and @option{--outliersclip}. For
+a more complete description, see the latter half of @ref{Quantifying signal
+in a tile}.
 
 @item
 @option{--detgrowquant}: is used to grow the final true detections until a
@@ -15797,26 +16125,52 @@ that is discussed in that section.
 @subsubsection Detection options
 
 Detection is the process of separating the pixels in the image into two
-groups: 1) Signal and 2) Noise. Through the parameters below, you can
+groups: 1) Signal, and 2) Noise. Through the parameters below, you can
 customize the detection process in NoiseChisel. Recall that you can always
-see the full list of Gnuastro's options with the @option{--help} (see
+see the full list of NoiseChisel's options with the @option{--help} (see
 @ref{Getting help}), or @option{--printparams} (or @option{-P}) to see
 their values (see @ref{Operating mode options}).
 
 @table @option
 
-@item -r FLT
-@itemx --mirrordist=FLT
-Maximum distance (as a multiple of error) to estimate the difference
-between the input and mirror distributions in finding the mode, see
-Appendix C of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-2015}, also see @ref{Quantifying signal in a tile}.
-
 @item -Q FLT
-@itemx --modmedqdiff=FLT
-The maximum acceptable distance between the mode and median, see
-@ref{Quantifying signal in a tile}. The quantile threshold will be found on
-tiles that satisfy this mode and median difference.
+@itemx --meanmedqdiff=FLT
+The maximum acceptable distance between the quantiles of the mean and
+median in each tile, see @ref{Quantifying signal in a tile}. The quantile
+threshold estimates are measured on tiles where the quantiles of their mean
+and median are less distant than the value given to this option. For
+example @option{--meanmedqdiff=0.01} means that only tiles where the mean's
+quantile is between 0.49 and 0.51 (recall that the median's quantile is
+0.5) will be used.
+
+@item --outliersclip=FLT,FLT
+Sigma-clipping parameters for the outlier rejection of the quantile
+threshold. The format of the given values is similar to
+@option{--sigmaclip} below. In NoiseChisel, outlier rejection is used in
+three stages:
+@itemize
+@item
+Identifying the quantile thresholds (@option{--qthresh},
+@option{--noerodequant}, and @option{detgrowquant}).
+@item
+Identifying the first estimate of the Sky and its standard deviation values
+for pseudo-detections (@option{--dthresh}).
+@item
+Identifying the final estimate of the Sky and its standard deviation.
+@end itemize
+
+Outlier rejection is useful when the dataset contains a large and diffuse
+(almost flat within each tile) signal. The flatness of the profile will
+cause it to successfully pass the mean-median quantile difference test, so
+we'll need to use the distribution of successful tiles for removing these
+false positive. For more, see the latter half of @ref{Quantifying signal in
+a tile}.
+
+@item --outliersigma=FLT
+Multiple of sigma to define an outlier. If this option is given a value of
+zero, no outlier rejection will take place. For more see
+@option{--outliersclip} and the latter half of @ref{Quantifying signal in a
+tile}.
 
 @item -t FLT
 @itemx --qthresh=FLT
@@ -15839,57 +16193,6 @@ integer to) @mymath{q\times{N}} in the sorted data set. After thresholding
 is complete, we will have a binary (two valued) image. The pixels above the
 threshold are known as foreground pixels (have a value of 1) while those
 which lie below the threshold are known as background (have a value of 0).
-
-@item ----qthreshoutnum=INT
-Number of tiles (in sorted array) to use as a moving window when estimating
-the outlier tiles. If it is given a value of zero, no outlier rejection
-will take place.
-
-This option is useful when the dataset contains a large and diffuse (almost
-flat within each tile) signal. The flatness of the profile will cause it to
-successfully pass the tests of @ref{Quantifying signal in a tile}. As a
-result, when outlier rejection is disabled, the flat and diffuse signal
-will be interpreted as sky. As a result, the quantile threshold in those
-tiles (and the ones around them) can be strongly over-estimated, causing a
-failure in their detection.
-
-Outlier identification proceeds as follows: all non-blank tile values are
-sorted by flux. A sliding window, with width equal to the value given to
-this option, is parsed over the dataset and is used as a reference to
-identify the first outlier element. The first element where the distance to
-the previous (sorted) element is sigma units (@option{--qthreshoutsigma})
-away from the distribution of distances of the element in the window is
-considered an outlier and all tiles larger than that value are ignored for
-the later step (interpolation).
-
-Formally, Let's take @mymath{v_i} to be the @mymath{i}-th element of the
-sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as
-the @mymath{\sigma}-clipped median and standard deviation from the
-distances of the previous @mymath{N} elements (@mymath{N} is the value to
-this option). The @option{--qthreshoutsclip} option can be used to
-configure the @mymath{\sigma}-clipping. If the value given to
-@option{--qthreshoutsigma} is displayed with @mymath{s}, the returned
-outlier is the first (sorted) elemented where the following condition
-becomes true:
-
-@dispmath{(v_i−v_{i−1})−m>s\times\sigma}
-
-Note that by this definition, the outlier cannot be any of the first
-@mymath{N} elements, since they constitute the window that is used for the
-first checked element. It is therefore important that while @mymath{N}
-isn't too small, it also isn't larger than (approximately) half of the
-initially measured tiles. A warning will be printed if this condition
-doesn't hold. You can use @option{--checkqthresh} to inspect the steps.
-
-@item --qthreshoutsigma=FLT
-Multiple of sigma to define an outlier, see description of
-@option{--qthreshoutnum} for more.
-
-@item --qthreshoutsclip=FLT,FLT
-Sigma-clipping parameters for the outlier rejection of the quantile
-threshold. The format of the given values is similar to
-@option{--sigmaclip} below. see description of @option{--qthreshoutnum} for
-a description of the outlier rejection algorithm.
 
 @item --smoothwidth=INT
 Width of flat kernel used to smooth the interpolated quantile thresholds,
@@ -15968,18 +16271,6 @@ them. Once opening is complete, we have @emph{initial} detections.
 The structuring element used for opening, see @option{--erodengb} for more
 information about a structuring element.
 
-@item -s FLT,FLT
-@itemx --sigmaclip=FLT,FLT
-The @mymath{\sigma}-clipping parameters, see @ref{Sigma clipping}. This
-option takes two values which are separated by a comma (@key{,}). Each
-value can either be written as a single number or as a fraction of two
-numbers (for example @code{3,1/10}). The first value to this option is the
-multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
-section). The second value is the exit criteria. If it is less than 1, then
-it is interpreted as tolerance and if it is larger than one it is assumed
-to be the fixed number of iterations. Hence, in the latter case the value
-must be an integer.
-
 @item -B FLT
 @itemx --minskyfrac=FLT
 Minimum fraction (value between 0 and 1) of Sky (undetected) areas in a
@@ -16008,10 +16299,24 @@ to the final quantile threshold, this behavior can be disabled with
 pixel size as the input, but with the @option{--oneelempertile} option,
 only one pixel will be used for each tile (see @ref{Processing options}).
 
+@item -s FLT,FLT
+@itemx --sigmaclip=FLT,FLT
+The @mymath{\sigma}-clipping parameters for measuing the initial and final
+Sky values from the undetected pixels, see @ref{Sigma clipping}.
+
+This option takes two values which are separated by a comma (@key{,}). Each
+value can either be written as a single number or as a fraction of two
+numbers (for example @code{3,1/10}). The first value to this option is the
+multiple of @mymath{\sigma} that will be clipped (@mymath{\alpha} in that
+section). The second value is the exit criteria. If it is less than 1, then
+it is interpreted as tolerance and if it is larger than one it is assumed
+to be the fixed number of iterations. Hence, in the latter case the value
+must be an integer.
+
 @item -R FLT
 @itemx --dthresh=FLT
-The detection threshold: a multiple of the initial sky standard deviation
-added with the initial sky approximation (which you can inspect with
+The detection threshold: a multiple of the initial Sky standard deviation
+added with the initial Sky approximation (which you can inspect with
 @option{--checkdetsky}). This flux threshold is applied to the initially
 undetected regions on the unconvolved image. The background pixels that are
 completely engulfed in a 4-connected foreground region are converted to
@@ -22397,8 +22702,7 @@ function uses C's @code{sizeof} operator to measure the size of each type.
 @end deftypefun
 
 @deftypefun {char *} gal_type_name (uint8_t @code{type}, int @code{long_name})
-Return a string that contains the name of @code{type}. This can be used in
-messages to the users when your function/program accepts many types. It can
+Return a string literal that contains the name of @code{type}. It can
 return both short and long formats of the type names (for example
 @code{f32} and @code{float32}). If @code{long_name} is non-zero, the long
 format will be returned, otherwise the short name will be returned. The
@@ -22728,6 +23032,14 @@ that corresponds to its type. If @code{input} is a tile over a larger
 dataset, only the region that the tile covers will be set to blank.
 @end deftypefun
 
+@deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
+Write the blank value for the given data type @code{type} into a string and
+return it. The space for the string is dynamically allocated so it must be
+freed after you are done with it. If @code{width!=0}, then the final string
+will be padded with white space characters to have the requested width if
+it is smaller.
+@end deftypefun
+
 @deftypefun int gal_blank_is (void @code{*pointer}, uint8_t @code{type})
 Return 1 if the contents of @code{pointer} (assuming a type of @code{type})
 is blank. Otherwise, return 0. Note that this function only works on one
@@ -22771,6 +23083,12 @@ Create a dataset of the the same size as the input, but with an
 those that aren't.
 @end deftypefun
 
+@deftypefun void gal_blank_flag_apply (gal_data_t @code{*input}, gal_data_t @code{*flag})
+Set all non-zero and non-blank elements of @code{flag} to blank in
+@code{input}. @code{flag} has to have an unsigned 8-bit type and be the
+same size as @code{input}.
+@end deftypefun
+
 
 @deftypefun void gal_blank_remove (gal_data_t @code{*input})
 Remove blank elements from a dataset, convert it to a 1D dataset, adjust
@@ -22787,11 +23105,10 @@ appropriate measure. This check is highly recommended because it will avoid
 strange bugs in later steps.
 @end deftypefun
 
-@deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
-Write the blank value for the given data type @code{type} into a string and
-return it. The space for the string is dynamically allocated so it must be
-freed after you are done with it.
-@end deftypefun
+
+
+
+
 
 @node Library data container, Dimensions, Library blank values, Gnuastro library
 @subsection Data container (@file{data.h})
@@ -27209,36 +27526,40 @@ above.
 @end deftypefun
 
 
-@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace}, int @code{quiet})
+@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace}, int @code{quiet})
 Find the first positive outlier in the @code{input} distribution. The
 returned dataset contains a single element: the first positive outlier. It
 is one of the dataset's elements, in the same type as the input. If the
-process fails for any reason (for example @code{window_size} is larger than
-the number of @code{input}'s non-blank elements, or no outlier was found),
-a @code{NULL} pointer will be returned.
+process fails for any reason (for example no outlier was found), a
+@code{NULL} pointer will be returned.
 
 All (possibly existing) blank elements are first removed from the input
-dataset, then it is sorted. A sliding window of @code{window_size} elements
-is parsed over the dataset and is used as a reference to identify the
-outlier. The first element where the distance to the previous (sorted)
-element is @code{sigma} units away from the distribution of distances of
-the @code{window_size} previous elements is considered an outlier and
-returned by this function.
+dataset, then it is sorted. A sliding window equal to half the width of the
+dataset elements is parsed over the dataset. Starting from the middle of
+the dataset (median) in the direction of increasing values. This window is
+used as a reference. The first element where the distance to the previous
+(sorted) element is @code{sigma} units away from the distribution of
+distances in its window is considered an outlier and returned by this
+function.
 
-Formally, Let's take @mymath{v_i} to be the @mymath{i}-th element of the
-sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as
-the @mymath{\sigma}-clipped median and standard deviation from the
-distances of the previous @code{window_size} elements. If the value given
-to @code{sigma} is displayed with @mymath{s}, the returned outlier is the
-first (sorted) elemented where the following condition becomes true:
+Formally, if we assume there are @mymath{N} non-blank elements. They are
+first sorted. Searching for the outlier starts on element @mymath{N/2}
+(integer division). Let's take @mymath{v_i} to be the @mymath{i}-th element
+of the sorted input (with no blank values) and @mymath{m} and
+@mymath{\sigma} as the @mymath{\sigma}-clipped median and standard
+deviation from the distances of the previous @mymath{N/2} elements (not
+including @mymath{v_i}). If the value given to @code{sigma} is displayed
+with @mymath{s}, the @mymath{i}-th element is considered as an outlier when
+the condition below is true.
 
 @dispmath{{(v_i-v_{i-1})-m\over \sigma}>s}
 
 The @code{sigclip_multip} and @code{sigclip_param} arguments specify the
-properties of the @mymath{\sigma}-clipping. You see that by this
-definition, the outlier cannot be any of the first @code{window_size}
-elements, since they constitute the window that is used for the first
-checked element.
+properties of the @mymath{\sigma}-clipping (see @ref{Sigma clipping} for
+more). You see that by this definition, the outlier cannot be any of the
+lower half elements. The advantage of this algorithm compared to
+@mymath{\sigma}-clippign is that it only looks backwards (in the sorted
+array) and parses it in one direction.
 
 If @code{inplace!=0}, the removing of blank elements and sorting will be
 done within the input dataset's allocated space. Otherwise, this function

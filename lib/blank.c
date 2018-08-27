@@ -113,6 +113,184 @@ gal_blank_initialize(gal_data_t *input)
 
 
 
+/* Print the blank value as a string. For the integer types, we'll use the
+   PRIxNN keywords of `inttypes.h' (which is imported into Gnuastro from
+   Gnulib, so we don't necessarily rely on the host system having it). */
+char *
+gal_blank_as_string(uint8_t type, int width)
+{
+  char *blank=NULL, *fmt;
+
+  /* Print the given value. */
+  switch(type)
+    {
+    case GAL_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "%s: bit types are not implemented yet",
+            __func__);
+      break;
+
+    case GAL_TYPE_STRING:
+      if(width)
+        {
+          if( asprintf(&blank, "%*s", width,  GAL_BLANK_STRING)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%s", GAL_BLANK_STRING)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_UINT8:
+      fmt = width ? "%*"PRIu8 : "%"PRIu8;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint8_t)GAL_BLANK_UINT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint8_t)GAL_BLANK_UINT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_INT8:
+      fmt = width ? "%*"PRId8 : "%"PRId8;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int8_t)GAL_BLANK_INT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int8_t)GAL_BLANK_INT8)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_UINT16:
+      fmt = width ? "%*"PRIu16 : "%"PRIu16;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint16_t)GAL_BLANK_UINT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint16_t)GAL_BLANK_UINT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_INT16:
+      fmt = width ? "%*"PRId16 : "%"PRId16;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int16_t)GAL_BLANK_INT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int16_t)GAL_BLANK_INT16)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_UINT32:
+      fmt = width ? "%*"PRIu32 : "%"PRIu32;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint32_t)GAL_BLANK_UINT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint32_t)GAL_BLANK_UINT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_INT32:
+      fmt = width ? "%*"PRId32 : "%"PRId32;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int32_t)GAL_BLANK_INT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int32_t)GAL_BLANK_INT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_UINT64:
+      fmt = width ? "%*"PRIu64 : "%"PRIu64;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (uint64_t)GAL_BLANK_UINT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (uint64_t)GAL_BLANK_UINT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_INT64:
+      fmt = width ? "%*"PRId64 : "%"PRId64;
+      if(width)
+        {
+          if( asprintf(&blank, fmt, width, (int64_t)GAL_BLANK_INT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, fmt, (int64_t)GAL_BLANK_INT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_FLOAT32:
+      if(width)
+        {
+          if( asprintf(&blank, "%*f", width,  (float)GAL_BLANK_FLOAT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%f", (float)GAL_BLANK_FLOAT32)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    case GAL_TYPE_FLOAT64:
+      if(width)
+        {
+          if( asprintf(&blank, "%*f", width,  (double)GAL_BLANK_FLOAT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else
+        {
+          if( asprintf(&blank, "%f", (double)GAL_BLANK_FLOAT64)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            type);
+    }
+  return blank;
+}
+
+
+
+
+
 
 /* Return 1 if the contents of the pointer (with the given type) is
    blank. */
@@ -318,7 +496,7 @@ gal_blank_flag(gal_data_t *input)
       /* Go over the pixels and set the output values. */
       switch(input->type)
         {
-          /* Numeric types */
+        /* Numeric types */
         case GAL_TYPE_UINT8:     FLAG_BLANK( uint8_t  );    break;
         case GAL_TYPE_INT8:      FLAG_BLANK( int8_t   );    break;
         case GAL_TYPE_UINT16:    FLAG_BLANK( uint16_t );    break;
@@ -330,19 +508,19 @@ gal_blank_flag(gal_data_t *input)
         case GAL_TYPE_FLOAT32:   FLAG_BLANK( float    );    break;
         case GAL_TYPE_FLOAT64:   FLAG_BLANK( double   );    break;
 
-          /* String. */
+        /* String. */
         case GAL_TYPE_STRING:
           do *o++ = !strcmp(*str,GAL_BLANK_STRING); while(++str<strf);
           break;
 
-          /* Currently unsupported types. */
+        /* Currently unsupported types. */
         case GAL_TYPE_BIT:
         case GAL_TYPE_COMPLEX32:
         case GAL_TYPE_COMPLEX64:
           error(EXIT_FAILURE, 0, "%s: %s type not yet supported",
                 __func__, gal_type_name(input->type, 1));
 
-          /* Bad input. */
+        /* Bad input. */
         default:
           error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
                 __func__, input->type);
@@ -355,6 +533,78 @@ gal_blank_flag(gal_data_t *input)
 
   /* Return */
   return out;
+}
+
+
+
+
+
+/* Write a blank value in the input anywhere that the flag dataset is not
+   zero or not blank. */
+#define BLANK_FLAG_APPLY(IT) {                                          \
+    IT *i=input->array, b;                                              \
+    gal_blank_write(&b, input->type);                                   \
+    do {if(*f && *f!=GAL_BLANK_UINT8) *i=b; ++i;} while(++f<ff);        \
+  }
+void
+gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
+{
+  char **str=input->array;
+  uint8_t *f=flag->array, *ff=f+flag->size;
+
+  /* Sanity check. */
+  if(flag->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "%s: the `flag' argument has a `%s' type, it "
+          "must have an unsigned 8-bit type", __func__,
+          gal_type_name(flag->type, 1));
+  if(gal_dimension_is_different(input, flag))
+    error(EXIT_FAILURE, 0, "%s: the `flag' argument doesn't have the same "
+          "size as the `input' argument", __func__);
+
+  /* Write the blank values. */
+  switch(input->type)
+    {
+    /* Basic numeric types. */
+    case GAL_TYPE_UINT8:     BLANK_FLAG_APPLY( uint8_t  );    break;
+    case GAL_TYPE_INT8:      BLANK_FLAG_APPLY( int8_t   );    break;
+    case GAL_TYPE_UINT16:    BLANK_FLAG_APPLY( uint16_t );    break;
+    case GAL_TYPE_INT16:     BLANK_FLAG_APPLY( int16_t  );    break;
+    case GAL_TYPE_UINT32:    BLANK_FLAG_APPLY( uint32_t );    break;
+    case GAL_TYPE_INT32:     BLANK_FLAG_APPLY( int32_t  );    break;
+    case GAL_TYPE_UINT64:    BLANK_FLAG_APPLY( uint64_t );    break;
+    case GAL_TYPE_INT64:     BLANK_FLAG_APPLY( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:   BLANK_FLAG_APPLY( float    );    break;
+    case GAL_TYPE_FLOAT64:   BLANK_FLAG_APPLY( double   );    break;
+
+    /* Strings. */
+    case GAL_TYPE_STRING:
+      do
+        {
+          if(*f && *f!=GAL_BLANK_UINT8)
+            {
+              free(*str);
+              *str=gal_blank_as_string(GAL_TYPE_STRING, 0);
+            }
+          ++str;
+        }
+      while(++f<ff);
+      break;
+
+    /* Currently unsupported types. */
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, "%s: %s type not yet supported",
+            __func__, gal_type_name(input->type, 1));
+
+    /* Bad input. */
+    default:
+      error(EXIT_FAILURE, 0, "%s: type value (%d) not recognized",
+            __func__, input->type);
+    }
+
+  /* Update the blank flags. */
+  gal_blank_present(input, 1);
 }
 
 
@@ -414,182 +664,4 @@ gal_blank_remove(gal_data_t *input)
   /* Set the flags to mark that there is no blanks. */
   input->flag |= GAL_DATA_FLAG_BLANK_CH;
   input->flag &= ~GAL_DATA_FLAG_HASBLANK;
-}
-
-
-
-
-
-/* Print the blank value as a string. For the integer types, we'll use the
-   PRIxNN keywords of `inttypes.h' (which is imported into Gnuastro from
-   Gnulib, so we don't necessarily rely on the host system having it). */
-char *
-gal_blank_as_string(uint8_t type, int width)
-{
-  char *blank=NULL, *fmt;
-
-  /* Print the given value. */
-  switch(type)
-    {
-    case GAL_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "%s: bit types are not implemented yet",
-            __func__);
-      break;
-
-    case GAL_TYPE_STRING:
-      if(width)
-        {
-          if( asprintf(&blank, "%*s", width,  GAL_BLANK_STRING)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, "%s", GAL_BLANK_STRING)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_UINT8:
-      fmt = width ? "%*"PRIu8 : "%"PRIu8;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (uint8_t)GAL_BLANK_UINT8)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (uint8_t)GAL_BLANK_UINT8)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_INT8:
-      fmt = width ? "%*"PRId8 : "%"PRId8;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (int8_t)GAL_BLANK_INT8)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (int8_t)GAL_BLANK_INT8)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_UINT16:
-      fmt = width ? "%*"PRIu16 : "%"PRIu16;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (uint16_t)GAL_BLANK_UINT16)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (uint16_t)GAL_BLANK_UINT16)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_INT16:
-      fmt = width ? "%*"PRId16 : "%"PRId16;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (int16_t)GAL_BLANK_INT16)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (int16_t)GAL_BLANK_INT16)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_UINT32:
-      fmt = width ? "%*"PRIu32 : "%"PRIu32;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (uint32_t)GAL_BLANK_UINT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (uint32_t)GAL_BLANK_UINT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_INT32:
-      fmt = width ? "%*"PRId32 : "%"PRId32;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (int32_t)GAL_BLANK_INT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (int32_t)GAL_BLANK_INT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_UINT64:
-      fmt = width ? "%*"PRIu64 : "%"PRIu64;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (uint64_t)GAL_BLANK_UINT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (uint64_t)GAL_BLANK_UINT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_INT64:
-      fmt = width ? "%*"PRId64 : "%"PRId64;
-      if(width)
-        {
-          if( asprintf(&blank, fmt, width, (int64_t)GAL_BLANK_INT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, fmt, (int64_t)GAL_BLANK_INT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_FLOAT32:
-      if(width)
-        {
-          if( asprintf(&blank, "%*f", width,  (float)GAL_BLANK_FLOAT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, "%f", (float)GAL_BLANK_FLOAT32)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    case GAL_TYPE_FLOAT64:
-      if(width)
-        {
-          if( asprintf(&blank, "%*f", width,  (double)GAL_BLANK_FLOAT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      else
-        {
-          if( asprintf(&blank, "%f", (double)GAL_BLANK_FLOAT64)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
-            type);
-    }
-  return blank;
 }

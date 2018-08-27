@@ -132,7 +132,7 @@ ui_initialize_options(struct statisticsparams *p,
   p->quantmax            = NAN;
   p->mirror              = NAN;
   p->mirrordist          = NAN;
-  p->modmedqdiff         = NAN;
+  p->meanmedqdiff        = NAN;
   p->sclipparams[0]      = NAN;
   p->sclipparams[1]      = NAN;
 
@@ -416,17 +416,17 @@ ui_read_check_only_options(struct statisticsparams *p)
   if( p->sky )
     {
       /* Mandatory options. */
-      if ( isnan(p->modmedqdiff) || isnan(p->sclipparams[0])
-           || p->cp.interpnumngb==0 || isnan(p->mirrordist) )
-        error(EXIT_FAILURE, 0, "`--modmedqdiff', `--sclipparams', "
-              "`--mirrordist', and `--interpnumngb' are mandatory with "
-              "`--sky'");
+      if( isnan(p->meanmedqdiff) || isnan(p->sclipparams[0])
+          || p->cp.interpnumngb==0 )
+        error(EXIT_FAILURE, 0, "`--meanmedqdiff', `--sclipparams' and "
+              "`--interpnumngb' are mandatory when requesting Sky "
+              "measurement (`--sky')");
 
       /* If mode and median distance is a reasonable value. */
-      if(p->modmedqdiff>0.5)
-        error(EXIT_FAILURE, 0, "%f not acceptable for `--modmedqdiff'. It "
+      if(p->meanmedqdiff>0.5)
+        error(EXIT_FAILURE, 0, "%f not acceptable for `--meanmedqdiff'. It "
               "cannot take values larger than 0.5 (quantile of median)",
-              p->modmedqdiff);
+              p->meanmedqdiff);
 
       /* If a kernel name has been given, we need the HDU. */
       if(p->kernelname && gal_fits_name_is_fits(p->kernelname)

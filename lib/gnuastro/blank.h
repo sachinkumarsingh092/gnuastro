@@ -105,6 +105,9 @@ gal_data_t *
 gal_blank_flag(gal_data_t *data);
 
 void
+gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag);
+
+void
 gal_blank_remove(gal_data_t *data);
 
 

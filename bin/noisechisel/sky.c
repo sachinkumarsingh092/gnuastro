@@ -35,6 +35,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/threads.h>
 #include <gnuastro/statistics.h>
 
+#include <gnuastro-internal/tile-internal.h>
+
 #include "main.h"
 
 #include "ui.h"
@@ -56,25 +58,27 @@ sky_mean_std_undetected(void *in_prm)
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
   struct noisechiselparams *p=(struct noisechiselparams *)tprm->params;
 
-  double *darr, s, s2;
-  int setblank, type=p->sky->type;
-  size_t i, tind, numsky, dsize=2;
-  gal_data_t *tile, *meanstd_d, *meanstd, *bintile;
+  int setblank, type=GAL_TYPE_FLOAT32;
+  size_t twidth=gal_type_sizeof(GAL_TYPE_FLOAT32);
+  size_t i, tind, numsky, bdsize=2, ndim=p->sky->ndim;
+  gal_data_t *tile, *fusage, *busage, *bintile, *sigmaclip;
 
 
-  /* A dataset to keep the mean and STD in double type. */
-  meanstd_d=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                           NULL, 0, -1, NULL, NULL, NULL);
-  darr=meanstd_d->array;
+  /* Put the temporary usage space for this thread into a data set for easy
+     processing. */
+  fusage=gal_data_alloc(NULL, type, ndim, p->maxtsize, NULL, 0,
+                        p->cp.minmapsize, NULL, NULL, NULL);
+  busage=gal_data_alloc(NULL, GAL_TYPE_UINT8, ndim, p->maxtsize, NULL, 0,
+                        p->cp.minmapsize, NULL, NULL, NULL);
 
 
   /* An empty dataset to replicate a tile on the binary array. */
-  bintile=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize,
+  bintile=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &bdsize,
                          NULL, 0, -1, NULL, NULL, NULL);
+  bintile->ndim=ndim;
   free(bintile->array);
   free(bintile->dsize);
   bintile->block=p->binary;
-  bintile->ndim=p->binary->ndim;
 
 
   /* Go over all the tiles given to this thread. */
@@ -86,53 +90,61 @@ sky_mean_std_undetected(void *in_prm)
       tile = &p->cp.tl.tiles[tind];
 
       /* Correct the fake binary tile's properties to be the same as this
-         one, then count the number of zero valued elements in it. */
+         one, then count the number of zero valued elements in it. Note
+         that the `CHECK_BLANK' flag of `GAL_TILE_PARSE_OPERATE' is set to
+         1. So blank values in the input array are not counted also. */
       bintile->size=tile->size;
       bintile->dsize=tile->dsize;
       bintile->array=gal_tile_block_relative_to_other(tile, p->binary);
       GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {if(!*o) numsky++;});
 
-      /* Only continue, if the fraction of Sky values are less than the
+      /* Only continue, if the fraction of Sky values is less than the
          requested fraction. */
       setblank=0;
       if( (float)(numsky)/(float)(tile->size) > p->minskyfrac)
         {
-          /* Calculate the mean and STD over this tile. */
-          s=s2=0.0f;
-          GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {
-              if(!*o)
-                {
-                  s  += *i;
-                  s2 += *i * *i;
-                }
-            } );
-          darr[0]=s/numsky;
-          darr[1]=sqrt( (s2-s*s/numsky)/numsky );
+          /* Re-initialize the usage array's size information (will be
+             corrected to this tile's size by
+             `gal_data_copy_to_allocated'). */
+          busage->ndim = fusage->ndim = ndim;
+          busage->size = fusage->size = p->maxtcontig;
+          gal_data_copy_to_allocated(tile,    fusage);
+          gal_data_copy_to_allocated(bintile, busage);
+
+
+          /* Set all the non-zero pixels in `busage' to NaN in `fusage'. */
+          busage->flag = fusage->flag = 0;
+          gal_blank_flag_apply(fusage, busage);
+
+
+          /* Do the sigma-clipping. */
+          sigmaclip=gal_statistics_sigma_clip(fusage, p->sigmaclip[0],
+                                              p->sigmaclip[1], 1, 1);
 
           /* When there are zero-valued pixels on the edges of the dataset
              (that have not been set to NaN/blank), given special
              conditions, the whole zero-valued region can get a binary
              value of 1 and so the Sky and its standard deviation can
              become zero. So, we need ignore such tiles. */
-          if(darr[1]==0.0f)
+          if( ((float *)(sigmaclip->array))[3]==0.0 )
             setblank=1;
           else
             {
-              /* Convert the mean and std into the same type as the sky and
-                 std arrays. */
-              meanstd=gal_data_copy_to_new_type(meanstd_d, type);
-
-              /* Copy the mean and STD to their respective places in the
-                 tile arrays. */
+              /* Copy the sigma-clipped mean and STD to their respective
+                 places in the tile arrays. But first, make sure
+                 `sigmaclip' has the same type as the sky and std
+                 arrays. */
+              sigmaclip=gal_data_copy_to_new_type_free(sigmaclip, type);
               memcpy(gal_pointer_increment(p->sky->array, tind, type),
-                     meanstd->array, gal_type_sizeof(type));
+                     gal_pointer_increment(sigmaclip->array, 2, type),
+                     twidth);
               memcpy(gal_pointer_increment(p->std->array, tind, type),
-                     gal_pointer_increment(meanstd->array, 1, type),
-                     gal_type_sizeof(type));
-
-              /* Clean up. */
-              gal_data_free(meanstd);
+                     gal_pointer_increment(sigmaclip->array, 3, type),
+                     twidth);
             }
+
+          /* Clean up. */
+          gal_data_free(sigmaclip);
         }
       else
         setblank=1;
@@ -151,8 +163,9 @@ sky_mean_std_undetected(void *in_prm)
   /* Clean up and wait for other threads to finish and abort. */
   bintile->array=NULL;
   bintile->dsize=NULL;
+  gal_data_free(fusage);
+  gal_data_free(busage);
   gal_data_free(bintile);
-  gal_data_free(meanstd_d);
   if(tprm->b) pthread_barrier_wait(tprm->b);
   return NULL;
 }
@@ -180,10 +193,10 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
 
 
   /* Allocate space for the mean and standard deviation. */
-  p->sky=gal_data_alloc(NULL, p->input->type, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, "SKY", p->input->unit, NULL);
-  p->std=gal_data_alloc(NULL, p->input->type, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, "STD", p->input->unit, NULL);
+  p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
+                        NULL, 0, cp->minmapsize, NULL, p->input->unit, NULL);
+  p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
+                        NULL, 0, cp->minmapsize, NULL, p->input->unit, NULL);
 
 
   /* Find the Sky and its STD on proper tiles. */
@@ -191,14 +204,29 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
                        cp->numthreads);
   if(checkname)
     {
+      p->sky->name="SKY";
+      p->std->name="STD";
       gal_tile_full_values_write(p->sky, tl, 1, checkname, NULL,
                                  PROGRAM_NAME);
       gal_tile_full_values_write(p->std, tl, 1, checkname, NULL,
                                  PROGRAM_NAME);
+      p->sky->name=p->std->name=NULL;
     }
 
-  /* Get the basic information about the standard deviation
-     distribution. */
+
+  /* Remove the outliers. */
+  if(p->outliersigma!=0.0)
+    gal_tileinternal_no_outlier(p->sky, p->std, NULL, tl, p->outliersclip,
+                                p->outliersigma, checkname);
+
+
+  /* Set the blank checked bit of the ararys to zero, most probably there
+     are tiles with too much signal or outliers. */
+  p->sky->flag &= ~GAL_DATA_FLAG_BLANK_CH;
+  p->std->flag &= ~GAL_DATA_FLAG_BLANK_CH;
+
+
+  /* Basic Sky standard deviation distribution measurements. */
   tmp=gal_statistics_median(p->std, 0);
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
   memcpy(&p->medstd, tmp->array, sizeof p->medstd);
@@ -213,6 +241,7 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
   memcpy(&p->maxstd, tmp->array, sizeof p->maxstd);
   gal_data_free(tmp);
+
 
   /* In case the image is in electrons or counts per second, the standard
      deviation of the noise will become smaller than unity, so we need to

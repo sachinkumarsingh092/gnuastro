@@ -48,6 +48,11 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
                         char *filename);
 
 void
+threshold_no_outlier(struct noisechiselparams *p, gal_data_t *first,
+                     gal_data_t *second, gal_data_t *third,
+                     char *filename);
+
+void
 threshold_quantile_find_apply(struct noisechiselparams *p);
 
 
