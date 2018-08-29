@@ -128,9 +128,9 @@ saveindividual(struct mkonthread *mkp)
 
   double *crpix;
   long os=p->oversample;
-  size_t i, ndim=p->ndim, id=mkp->ibq->id;
   gal_fits_list_key_t *keys=NULL;
   struct builtqueue *ibq=mkp->ibq;
+  size_t i, ndim=p->ndim, id=mkp->ibq->id;
   char *filename, *jobname, *outdir=p->outdir;
 
 
@@ -192,7 +192,7 @@ saveindividual(struct mkonthread *mkp)
                         &p->q[id], 0, "Axis ratio of profile in catalog",
                         0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAGNITUDE", 0,
-                        &p->q[id], 0, "Magnitude of profile in catalog",
+                        &p->m[id], 0, "Magnitude of profile in catalog",
                         0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "TRUNCATION", 0,
                         &p->t[id], 0, "Truncation of profile in catalog",
