@@ -613,7 +613,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
      errors in parallel. */
   num=gal_statistics_number(qprm.erode_th);
   nval=((size_t *)(num->array))[0];
-  if( nval < cp->interpnumngb)
+  if( nval < cp->interpnumngb )
     error(EXIT_FAILURE, 0, "%zu tile(s) can be used for interpolation of the "
           "quantile threshold values over the full dataset. This is smaller "
           "than the requested minimum value of %zu (value to the "
@@ -627,12 +627,13 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
           "option values to Gnuastro's programs by appending `-P' to the "
           "end of your command.\n\n"
           "  * Slightly decrease `--tilesize' to have more tiles.\n"
-          "  * Slightly increase `--meanmedqdiff' to accept more tiles.\n\n"
-          "  * Decrease `--outliersigma' to reject less tiles as outliers."
-          "  * Decrease `--interpnumngb' to be smaller than %zu.\n"
-          "Try appending your command with `--checkqthresh' to see the "
-          "successful tiles (and get a feeling of the cause/solution. Note "
-          "that the output is a multi-extension FITS file).\n\n"
+          "  * Slightly increase `--meanmedqdiff' to accept more tiles.\n"
+          "  * Decrease `--outliersigma' to reject less tiles as outliers.\n"
+          "  * Decrease `--interpnumngb' to be smaller than %zu.\n\n"
+          "Append the previous command with `--checkqthresh' to see the "
+          "successful tiles and which were discarded as outliers. This will "
+          "help you find the cause/solution. Note that the output is a "
+          "multi-extension FITS file).\n\n"
           "To better understand this important step, please run the "
           "following command (press `SPACE'/arrow-keys to navigate and "
           "`Q' to return back to the command-line):\n\n"
