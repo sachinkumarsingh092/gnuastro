@@ -723,7 +723,8 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
 
   /* The S/N array of sky clumps is desiged to have no blank values, so set
      the flags accordingly to avoid a redundant blank search. */
-  sn->flag = GAL_DATA_FLAG_BLANK_CH | GAL_DATA_FLAG_HASBLANK;
+  sn->flag  =  GAL_DATA_FLAG_BLANK_CH;
+  sn->flag &= ~GAL_DATA_FLAG_HASBLANK;
 
 
   /* If the user wanted to see the S/N table, then save it. */

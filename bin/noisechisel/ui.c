@@ -281,6 +281,21 @@ ui_read_check_only_options(struct noisechiselparams *p)
               "HDU number (starting from zero), extension name, or any "
               "HDU identifier acceptable by CFITSIO", p->widekernelname);
     }
+
+  /* If the S/N quantile is less than 0.1 (an arbitrary small value), this
+     is probably due to forgetting that this is the purity level
+     (higher-is-better), not the contamination level
+     (lower-is-better). This actually happened in a few cases: where we
+     wanted a false detection rate of 0.0001 (a super-high value!), and
+     instead of inputing 0.9999, we mistakenly gave `--snquant' a value of
+     `0.0001'. We were thus fully confused with the output (an extremely
+     low value) and thought its a bug, while it wasn't! */
+  if(p->snquant<0.1)
+    fprintf(stderr, "\nWARNING: Value of `--snquant' (`-c') is %g. Note "
+            "that this is not a contamination rate (where lower is "
+            "better), it is a purity rate (where higher is better). If you "
+            "intentionally asked for such a low purity level, please "
+            "ignore this warning\n\n", p->snquant);
 }
 
 
