@@ -16146,25 +16146,16 @@ quantile is between 0.49 and 0.51 (recall that the median's quantile is
 @item --outliersclip=FLT,FLT
 Sigma-clipping parameters for the outlier rejection of the quantile
 threshold. The format of the given values is similar to
-@option{--sigmaclip} below. In NoiseChisel, outlier rejection is used in
-three stages:
-@itemize
-@item
-Identifying the quantile thresholds (@option{--qthresh},
+@option{--sigmaclip} below. In NoiseChisel, outlier rejection on tiles is
+used when identifying the quantile thresholds (@option{--qthresh},
 @option{--noerodequant}, and @option{detgrowquant}).
-@item
-Identifying the first estimate of the Sky and its standard deviation values
-for pseudo-detections (@option{--dthresh}).
-@item
-Identifying the final estimate of the Sky and its standard deviation.
-@end itemize
 
 Outlier rejection is useful when the dataset contains a large and diffuse
 (almost flat within each tile) signal. The flatness of the profile will
 cause it to successfully pass the mean-median quantile difference test, so
 we'll need to use the distribution of successful tiles for removing these
-false positive. For more, see the latter half of @ref{Quantifying signal in
-a tile}.
+false positives. For more, see the latter half of @ref{Quantifying signal
+in a tile}.
 
 @item --outliersigma=FLT
 Multiple of sigma to define an outlier. If this option is given a value of

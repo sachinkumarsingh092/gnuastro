@@ -13,15 +13,15 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --onedasimage: write output as an image if it has one dimension, not table.
 
   NoiseChisel:
-    - New outlier identification algorithm for quantile threshold and Sky
-      estimation. It is useful when there are extended and bright sources
-      in the dataset: the tiles containing very faint signal that pass the
-      general pixel-value distribution test due to the flatness of the
-      extended profiles (outliers), can be identified and removed in
-      comparison with the other passed tiles. The outlier finding algorithm
+    - New outlier identification algorithm for quantile thresholds. This is
+      very useful when there are extended and bright sources in the
+      dataset: the tiles containing very faint signal that pass the general
+      pixel-value distribution test due to the flatness of the extended
+      profiles, can be identified and removed as outliers in comparison
+      with the other passed tiles. The outlier finding algorithm
       (`gal_statistics_outlier_positive': a new library function) uses the
       distribution of distances between the sorted elements and is
-      configured with these three options.
+      configured with these options.
        --outliersclip: Sigma-clipping parameters for the process.
        --outliersigma: Multiple of sigma to define an outlier.
 

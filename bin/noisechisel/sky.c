@@ -214,14 +214,8 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
     }
 
 
-  /* Remove the outliers. */
-  if(p->outliersigma!=0.0)
-    gal_tileinternal_no_outlier(p->sky, p->std, NULL, tl, p->outliersclip,
-                                p->outliersigma, checkname);
-
-
-  /* Set the blank checked bit of the ararys to zero, most probably there
-     are tiles with too much signal or outliers. */
+  /* Set the blank-checked bit of the arrays to zero so we are sure to
+     check for blanks. */
   p->sky->flag &= ~GAL_DATA_FLAG_BLANK_CH;
   p->std->flag &= ~GAL_DATA_FLAG_BLANK_CH;
 
