@@ -254,17 +254,19 @@ AC_MSG_RESULT( $path_warning )
 # checking the next libraries, so the linking with their dependent
 # libraries is done automatically with this order, and we don't have to
 # explicitly set the dependency flags.
+has_gsl=yes
+has_cmath=yes
+has_wcslib=yes
+has_cfitsio=yes
+has_gslcblas=yes
+missing_mandatory=no
+missing_optional_lib=no
 AC_SEARCH_LIBS(sqrt, m, [],
-    [AC_MSG_ERROR([C math library not present, cannot continue.])])
+               [missing_mandatory=yes; has_cmath=no])
 AC_SEARCH_LIBS([cblas_sdsdot], [gslcblas], [],
-    [AC_MSG_ERROR([GSL CBLAS not present, cannot continue.])])
+               [missing_mandatory=yes; has_gslcblas=no])
 AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
-    [AC_MSG_ERROR([GSL not found, cannot continue.])])
-AC_CHECK_DECLS(gsl_interp_steffen,
-               [ gsl_version_old=no                   ],
-               [ gsl_version_old=yes; anywarnings=yes ],
-               [[#include <gsl/gsl_interp.h>]])
-
+               [missing_mandatory=yes; has_gsl=no])
 
 # Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
 # and thus it will be necessary to explicitly link with libcurl also. If it
@@ -273,9 +275,57 @@ AC_CHECK_DECLS(gsl_interp_steffen,
 # script if libcurl isn't found.
 AC_SEARCH_LIBS([curl_global_init], [curl], [], [])
 AC_SEARCH_LIBS([ffopen], [cfitsio], [],
-    [AC_MSG_ERROR([CFITSIO not found, cannot continue.])])
+               [missing_mandatory=yes; has_cfitsio=no])
 AC_SEARCH_LIBS([wcspih], [wcs], [],
-    [AC_MSG_ERROR([WCSLIB not found, cannot continue.])])
+               [missing_mandatory=yes; has_wcslib=no])
+
+
+
+
+
+# If any necessary dependency is missing inform the user and abort.
+AS_IF([test "x$missing_mandatory" = "xyes"],
+      [
+        # Introduction.
+        AS_ECHO([""])
+        AS_ECHO(["The configure script couldn't link with the following mandatory dependency(s):"])
+
+        # List missing packages: print the GSL CBLAS message only if GSL is
+        # present. Otherwise, it is just confusing for the users (CBLAS
+        # will be installed with GSL). The CBLAS message is only
+        # interesting if the GSL test has passed.
+        AS_ECHO([""])
+        AS_IF([test "x$has_cmath" = "xno"],
+              [ AS_ECHO([" - C library (math): This may be the cause of all other failures."]) ])
+        AS_IF([test "x$has_gsl" = "xno"],
+              [ AS_ECHO([" - GNU Scientific Library (GSL): https://www.gnu.org/software/gsl"]) ],
+              [ AS_IF([test "x$has_gslcblas" = "xno"],
+                      [ AS_ECHO([" - The BLAS support of GNU Scientific Library (GSL). This should have"])
+                        AS_ECHO(["   been installed along with GSL. Try re-installing GSL."]) ]) ])
+        AS_IF([test "x$has_cfitsio" = "xno"],
+              [ AS_ECHO([" - CFITSIO: https://heasarc.gsfc.nasa.gov/fitsio"]) ])
+        AS_IF([test "x$has_wcslib" = "xno"],
+              [ AS_ECHO([" - WCSLIB: http://www.atnf.csiro.au/people/mcalabre/WCS"]) ])
+
+        # Suggestions on fixing the problem.
+        AS_ECHO([""])
+        AS_ECHO(["You can use your package manager for easy and fast installation of all the"])
+        AS_ECHO(["mandatory and optional dependencies in one command. See the link below:"])
+        AS_ECHO(["  https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
+        AS_ECHO([""])
+        AS_ECHO(["If you have already installed a dependency (for example in \`/install/path'),"])
+        AS_ECHO(["but this script can't link with it, add the path to the LDFLAGS, CPPFLAGS and"])
+        AS_ECHO(["LD_LIBRARY_PATH environment variables before running configure. For example"])
+        AS_ECHO(["with the following commands (just correct the \`/install/path' part)."])
+        AS_ECHO(["  $ export LDFLAGS=\"\$LDFLAGS -L/install/path/lib\""])
+        AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -L/install/path/include\""])
+        AS_ECHO(["  $ export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:/install/path/lib\""])
+        AS_ECHO(["[TIP] Put these commands in your startup file (for example \`~/.bashrc') to"])
+        AS_ECHO(["avoid similar problems later. See the link below to learn more:"])
+        AS_ECHO(["  https://www.gnu.org/software/gnuastro/manual/html_node/Installation-directory.html"])
+        AS_ECHO([""])
+        AC_MSG_ERROR([Mandatory dependency(s) missing, see above.])
+      ])
 
 
 
@@ -284,6 +334,10 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
 # These are secondary tests for more fine-grained control in libraries that
 # have already been checked. We don't need to add them to the LIBS
 # variable, so we are using AC_CHECK_LIB for these tests.
+AC_CHECK_DECLS(gsl_interp_steffen,
+               [ gsl_version_old=no                   ],
+               [ gsl_version_old=yes; anywarnings=yes ],
+               [[#include <gsl/gsl_interp.h>]])
 
 # If the CFITSIO library has the `fits_is_reentrant' function (it was added
 # since version 3.30 of April 2012).
@@ -324,7 +378,7 @@ AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
 # Check libjpeg:
 AC_SEARCH_LIBS([jpeg_stdio_dest], [jpeg],
-               [has_libjpeg=yes], [has_libjpeg=no])
+               [has_libjpeg=yes], [has_libjpeg=no; missing_optional_lib=yes])
 AS_IF([test "x$has_libjpeg" = "xyes"],
       [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])
@@ -336,7 +390,7 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
 # Check libtiff:
 AC_SEARCH_LIBS([TIFFOpen], [tiff],
-               [has_libtiff=yes], [has_libtiff=no])
+               [has_libtiff=yes], [has_libtiff=no; missing_optional_lib=yes])
 AS_IF([test "x$has_libtiff" = "xyes"],
       [AC_DEFINE([HAVE_LIBTIFF], [], [Has libtiff])],
       [anywarnings=yes])
@@ -348,7 +402,7 @@ AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 # Check libgit2:
 AC_SEARCH_LIBS([git_libgit2_init], [git2],
-               [has_libgit2=1], [has_libgit2=0])
+               [has_libgit2=1], [has_libgit2=0; missing_optional_lib=yes])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
                    [libgit2 is installed on the system])
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
@@ -843,6 +897,14 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["        $ info gnuastro \"Installation directory\""])
                AS_ECHO([]) ])
 
+        # Notice on obtaining all the packages.
+        AS_ECHO(["  You can use your package manager for easy and fast installation of all"])
+        AS_ECHO(["  the mandatory and optional dependencies in one command. See the link"])
+        AS_ECHO(["  below:"])
+        AS_ECHO(["    https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
+        AS_ECHO([])
+
+        # Inform the user on skipped tests.
         AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
         AS_ECHO([])
       ]
