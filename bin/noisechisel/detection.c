@@ -83,7 +83,7 @@ detection_initial(struct noisechiselparams *p)
   gal_binary_erode(p->binary, p->erode, p->erodengb==4 ? 1 : 2, 1);
   if(!p->cp.quiet)
     {
-      if( asprintf(&msg, "Eroded %zu time%s (%zu-connectivity).", p->erode,
+      if( asprintf(&msg, "Eroded %zu time%s (%zu-connected).", p->erode,
                    p->erode>1?"s":"", p->erodengb)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
@@ -107,8 +107,8 @@ detection_initial(struct noisechiselparams *p)
   gal_binary_open(p->binary, p->opening, p->openingngb==4 ? 1 : 2, 1);
   if(!p->cp.quiet)
     {
-      if( asprintf(&msg, "Opened (depth: %zu, %s connectivity).",
-                   p->opening, p->openingngb==4 ? "4" : "8")<0 )
+      if( asprintf(&msg, "Opened (depth: %zu, %zu-connected).",
+                   p->opening, p->openingngb)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
       free(msg);
