@@ -708,7 +708,8 @@ ui_read_check_inputs_setup(int argc, char *argv[],
   /* Let the user know that processing has started. */
   if(!p->cp.quiet)
     {
-      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s",
+             ctime(&p->rawtime));
       printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf("  - Input: %s (hdu: %s)\n", p->inputname, p->cp.hdu);

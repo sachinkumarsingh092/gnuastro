@@ -1513,7 +1513,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
   if(!p->cp.quiet)
     {
       /* Write the information. */
-      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s",
+             ctime(&p->rawtime));
       printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf("  - Objects: %s (hdu: %s)\n", p->objectsfile, p->cp.hdu);

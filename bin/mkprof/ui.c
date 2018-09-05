@@ -1401,7 +1401,7 @@ ui_print_intro(struct mkprofparams *p)
 
   if(p->cp.quiet) return;
 
-  printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+  printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s", ctime(&p->rawtime));
 
   if(p->kernel)
     {

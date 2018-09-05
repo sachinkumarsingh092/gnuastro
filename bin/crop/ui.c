@@ -1030,7 +1030,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct cropparams *p)
   /* Report timing: */
   if(!p->cp.quiet)
     {
-      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s",
+             ctime(&p->rawtime));
       if(p->cp.numthreads>1)
         printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
                p->cp.numthreads==1 ? "." : "s.");

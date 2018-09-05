@@ -402,7 +402,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
   /* Everything is ready, notify the user of the program starting. */
   if(!p->cp.quiet)
     {
-      printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+      printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s",
+             ctime(&p->rawtime));
       sprintf(message, "Random number generator type: %s",
               gsl_rng_name(p->rng));
       gal_timing_report(NULL, message, 1);
