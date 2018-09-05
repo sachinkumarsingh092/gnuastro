@@ -231,10 +231,10 @@ sky(struct statisticsparams *p)
     gal_timing_report(&t1, "All blank tiles filled (interplated).", 1);
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
-                                 PROGRAM_NAME);
-      gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
-                                 PROGRAM_NAME);
+      gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky,
+                                 p->checkskyname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky,
+                                 p->checkskyname, NULL, PROGRAM_NAME);
     }
 
 
@@ -255,10 +255,12 @@ sky(struct statisticsparams *p)
                           1);
       if(p->checksky)
         {
-          gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
-                                     PROGRAM_NAME);
-          gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
-                                     PROGRAM_NAME);
+          gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky,
+                                     p->checkskyname, NULL, PROGRAM_NAME);
+          gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky,
+                                     p->checkskyname, NULL, PROGRAM_NAME);
+          if(!cp->quiet)
+            printf("  - Check image written to `%s'.\n", p->checkskyname);
         }
     }
 
@@ -284,7 +286,7 @@ sky(struct statisticsparams *p)
   gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
                             "STATISTICS-CONFIG", outname, "0");
   if(!cp->quiet)
-    printf("  - Written to `%s'.\n", outname);
+    printf("  - Sky and its STD written to `%s'.\n", outname);
 
 
   /* Clean up and return. */
