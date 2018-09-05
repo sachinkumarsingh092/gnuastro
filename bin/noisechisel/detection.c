@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/label.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/binary.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/pointer.h>
@@ -55,8 +56,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 detection_initial(struct noisechiselparams *p)
 {
+  float *f;
   char *msg;
   uint8_t *b, *bf;
+  int resetblank=0;
   struct timeval t0, t1;
 
 
@@ -75,6 +78,15 @@ detection_initial(struct noisechiselparams *p)
       p->binary->name="THRESHOLDED";
       gal_fits_img_write(p->binary, p->detectionname, NULL, PROGRAM_NAME);
       p->binary->name=NULL;
+    }
+
+
+  /* Remove any blank elements from the binary image if requested. */
+  if(p->blankasforeground==0 && gal_blank_present(p->binary,0))
+    {
+      resetblank=1;
+      bf=(b=p->binary->array)+p->binary->size;
+      do *b = *b==GAL_BLANK_UINT8 ? 0 : *b; while(++b<bf);
     }
 
 
@@ -112,6 +124,15 @@ detection_initial(struct noisechiselparams *p)
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
       free(msg);
+    }
+
+
+  /* Reset the blank values (if requested). */
+  if(resetblank)
+    {
+      f=p->input->array;
+      bf=(b=p->binary->array)+p->binary->size;
+      do *b = isnan(*f++) ? GAL_BLANK_UINT8 : *b; while(++b<bf);
     }
 
 
@@ -218,6 +239,7 @@ detection_fill_holes_open(void *in_prm)
   struct noisechiselparams *p=fho_prm->p;
 
   void *tarray;
+  uint8_t *b, *bf;
   gal_data_t *tile, *copy, *tblock;
   size_t i, dsize[]={1,1,1,1,1,1,1,1,1,1}; /* For upto 10-Dimensions! */
 
@@ -245,8 +267,19 @@ detection_fill_holes_open(void *in_prm)
       /* Copy the tile into the contiguous patch of memory to work on, but
          first reset the size element so `gal_data_copy_to_allocated' knows
          there is enough space. */
+      copy->flag=0;
       copy->size=p->maxltcontig;
       gal_data_copy_to_allocated(tile, copy);
+
+      /* Take blank values to the background (set them to zero) if
+         necsesary. */
+      if( p->blankasforeground==0
+          && gal_blank_present(p->input,0)
+          && gal_blank_present(copy, 1) )
+        {
+          bf=(b=copy->array)+copy->size;
+          do *b = *b==GAL_BLANK_UINT8 ? 0 : *b; while(++b<bf);
+        }
 
       /* Fill the holes in this tile: holes with maximal connectivity means
          that they are most strongly bounded. */
@@ -291,6 +324,8 @@ static size_t
 detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
                       gal_data_t *worklab, int s0d1)
 {
+  float *f;
+  uint8_t *b, *bf;
   gal_data_t *bin;
   struct fho_params fho_prm={0, NULL, workbin, worklab, p};
 
@@ -338,6 +373,14 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
           /* Do the respective step. */
           gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
                                p->ltl.tottiles, p->cp.numthreads);
+
+          /* Reset the blank values (if they were changed). */
+          if( p->blankasforeground==0 && gal_blank_present(p->input,0) )
+            {
+              f=p->input->array;
+              bf=(b=workbin->array)+workbin->size;
+              do *b = isnan(*f++) ? GAL_BLANK_UINT8 : *b; while(++b<bf);
+            }
 
           /* Set the extension name based on the step. */
           switch(fho_prm.step)

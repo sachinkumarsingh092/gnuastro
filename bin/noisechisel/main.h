@@ -62,6 +62,7 @@ struct noisechiselparams
   double      outliersclip[2];  /* Outlier Sigma-clipping params.         */
   size_t          smoothwidth;  /* Interpolation: flat kernel to smooth.  */
   uint8_t        checkqthresh;  /* Save the quantile threhsold steps.     */
+  uint8_t   blankasforeground;  /* Blank as foreg. in erosion and opening.*/
   size_t                erode;  /* Number of erosions after thresholding. */
   size_t             erodengb;  /* Connectivity for erosion.              */
   float          noerodequant;  /* Quantile for no erosion.               */

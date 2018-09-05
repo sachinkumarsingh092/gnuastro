@@ -15838,6 +15838,16 @@ a more complete description, see the latter half of @ref{Quantifying signal
 in a tile}.
 
 @item
+@option{--blankasforeground}: allows blank pixels to be treated as
+foreground in NoiseChisel's binary operations: the initial erosion
+(@option{--erode}) and opening (@option{--open}) as well as the filling
+holes and opening step for defining pseudo-detections
+(@option{--dthresh}). In the published paper, blank pixels were treated as
+foreground by default. To avoid too many false positive near blank/masked
+regions, blank pixels are now considered to be in the background. This
+option will create the old behavior.
+
+@item
 @option{--skyfracnoblank}: To reduce the bias caused by undetected wings of
 galaxies and stars in the Sky measurements, NoiseChisel only uses tiles
 that have a sufficiently large fraction of undetected pixels. Until now the
@@ -16210,6 +16220,18 @@ this can be disabled with @option{--continueaftercheck}. By default the
 output will have the same pixel size as the input, but with the
 @option{--oneelempertile} option, only one pixel will be used for each tile
 (see @ref{Processing options}).
+
+@item --blankasforeground
+In the erosion and opening steps below, treat blank elements as foreground
+(regions above the threshold). By default, blank elements in the dataset
+are considered to be background, so if a foreground pixel is touching it,
+it will be eroded. This option is irrelevant if the datasets contains no
+blank elements.
+
+When there are many blank elements in the dataset, treating them as
+foreground will systematically erode their regions less, therefore
+systematically creating more false positives. So use this option (when
+blank values are present) with care.
 
 @item -e INT
 @itemx --erode=INT

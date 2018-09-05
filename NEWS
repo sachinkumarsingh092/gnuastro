@@ -13,6 +13,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --onedasimage: write output as an image if it has one dimension, not table.
 
   NoiseChisel:
+
     - New outlier identification algorithm for quantile thresholds. This is
       very useful when there are extended and bright sources in the
       dataset: the tiles containing very faint signal that pass the general
@@ -25,15 +26,24 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
        --outliersclip: Sigma-clipping parameters for the process.
        --outliersigma: Multiple of sigma to define an outlier.
     --skyfracnoblank: Ignore blank pixels when estimating the fraction of
-      undetected pixels for Sky estimation. NoiseChisel only measures the
-      Sky over the tiles that have a sufficiently large fraction of
-      undetected pixels. This is done to decrease the bias caused by faint
-      un-detected wings of bright galaxies or stars, see description of
-      `--minskyfrac' for more. Until now the reference for this fraction
-      was the whole tile size (irrespective of how many blank elements it
-      contains). With this option, it is now possible to ask for ignoring
-      blank pixels when calculating the fraction. This is useful when
-      blank/masked pixels are distributed across the image.
+          undetected pixels for Sky estimation. NoiseChisel only measures
+          the Sky over the tiles that have a sufficiently large fraction of
+          undetected pixels. This is done to decrease the bias caused by
+          faint un-detected wings of bright galaxies or stars, see
+          description of `--minskyfrac' for more. Until now the reference
+          for this fraction was the whole tile size (irrespective of how
+          many blank elements it contains). With this option, it is now
+          possible to ask for ignoring blank pixels when calculating the
+          fraction. This is useful when blank/masked pixels are distributed
+          across the image.
+    --blankasforeground: Treat blank elements as foreground (regions above
+          the threshold) in the binary processing steps: initial erosion
+          and opening as well as the filling holes and opening of
+          pseudo-detections. From this version, by default, blank elements
+          in the dataset are considered to be background, so if a
+          foreground pixel is touching it, it will be eroded. This option
+          is irrelevant if the datasets contains no blank elements, but can
+          help remove false positives that are touching blank elements.
 
   Statistics:
     - Sky estimation: new outlier estimation algorithm similar to NoiseChisel.

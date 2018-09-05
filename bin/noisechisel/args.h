@@ -265,6 +265,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "blankasforeground",
+      UI_KEY_BLANKASFOREGROUND,
+      0,
+      0,
+      "Blanks are foreground in erosion and opening.",
+      UI_GROUP_DETECTION,
+      &p->blankasforeground,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "erode",
       UI_KEY_ERODE,
       "INT",
