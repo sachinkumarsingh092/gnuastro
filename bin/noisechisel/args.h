@@ -330,6 +330,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "skyfracnoblank",
+      UI_KEY_SKYFRACNOBLANK,
+      0,
+      0,
+      "No blanks in tile undetected frac. (minskyfrac).",
+      UI_GROUP_DETECTION,
+      &p->skyfracnoblank,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "minskyfrac",
       UI_KEY_MINSKYFRAC,
       "FLT",

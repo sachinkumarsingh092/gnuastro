@@ -1897,13 +1897,14 @@ should do all the work on a finer pixel grid. In the end he can
 re-sample the result to the initially desired grid size.
 
 @item
-Convolve the image with a PSF image that is over-sampled to the same
-value as the mock image. Since he wants to finish in a reasonable time
-and the PSF kernel will be very large due to oversampling, he has to
-use frequency domain convolution which has the side effect of dimming
-the edges of the image. So in the first step above he also has to
-build the image to be larger by at least half the width of the PSF
-convolution kernel on each edge.
+@cindex PSF
+Convolve the image with a point spread function (PSF, see @ref{PSF}) that
+is over-sampled to the same resolution as the mock image. Since he wants to
+finish in a reasonable time and the PSF kernel will be very large due to
+oversampling, he has to use frequency domain convolution which has the side
+effect of dimming the edges of the image. So in the first step above he
+also has to build the image to be larger by at least half the width of the
+PSF convolution kernel on each edge.
 
 @item
 With all the transformations complete, the image should be re-sampled
@@ -1960,7 +1961,7 @@ $ astmkprof -P
 @noindent
 In Gnuastro, column counting starts from 1, so the columns are ordered such
 that the first column (number 1) can be an ID he specifies for each object
-(and MakeProfiles ignores), each subsequent column is used used for another
+(and MakeProfiles ignores), each subsequent column is used for another
 property of the profile. It is also possible to use column names for the
 values of these options and change these defaults, but Sufi preferred to
 stick to the defaults. Fortunately MakeProfiles has the capability to also
@@ -15837,6 +15838,16 @@ a more complete description, see the latter half of @ref{Quantifying signal
 in a tile}.
 
 @item
+@option{--skyfracnoblank}: To reduce the bias caused by undetected wings of
+galaxies and stars in the Sky measurements, NoiseChisel only uses tiles
+that have a sufficiently large fraction of undetected pixels. Until now the
+reference for this fraction was the whole tile size. With this option, it
+is now possible to ask for ignoring blank pixels when calculating the
+fraction. This is useful when blank/masked pixels are distributed across
+the image. For more, see the description of this option in @ref{Detection
+options}.
+
+@item
 @option{--detgrowquant}: is used to grow the final true detections until a
 given quantile in the same way that clumps are grown during segmentation
 (compare columns 2 and 3 in Figure 10 of the paper). It replaces the old
@@ -16261,6 +16272,19 @@ them. Once opening is complete, we have @emph{initial} detections.
 @item --openingngb=INT
 The structuring element used for opening, see @option{--erodengb} for more
 information about a structuring element.
+
+@item --skyfracnoblank
+Ignore blank pixels when estimating the fraction of undetected pixels for
+Sky estimation. NoiseChisel only measures the Sky over the tiles that have
+a sufficiently large fraction of undetected pixels (value given to
+@option{--minskyfrac}). By default this fraction is found by dividing
+number of undetected pixels in a tile by the tile's area. But this default
+behavior ignores the possibility of blank pixels. In situations that
+blank/masked pixels are scattered across the image and if they are large
+enough, all the tiles can fail the @option{--minskyfrac} test, thus not
+allowing NoiseChisel to proceed. With this option, such scenarios can be
+fixed: the denominator of the fraction will be the number of non-blank
+elements in the tile, not the total tile area.
 
 @item -B FLT
 @itemx --minskyfrac=FLT

@@ -57,7 +57,6 @@ struct noisechiselparams
   uint8_t               label;  /* Label detections that are connected.   */
 
   float          meanmedqdiff;  /* Difference between mode and median.    */
-  float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   float               qthresh;  /* Quantile threshold on convolved image. */
   float          outliersigma;  /* Multiple of sigma to define outlier.   */
   double      outliersclip[2];  /* Outlier Sigma-clipping params.         */
@@ -68,6 +67,8 @@ struct noisechiselparams
   float          noerodequant;  /* Quantile for no erosion.               */
   size_t              opening;  /* Depth of opening after erosion.        */
   size_t           openingngb;  /* Connectivity to use for opening.       */
+  uint8_t      skyfracnoblank;  /* No blanks in estimating non-det frac.  */
+  float            minskyfrac;  /* Undetected area min. frac. in tile.    */
   double         sigmaclip[2];  /* Sigma-clipping parameters.             */
   uint8_t         checkdetsky;  /* Check pseudo-detection sky value.      */
   float               dthresh;  /* Sigma threshold for Pseudo-detections. */

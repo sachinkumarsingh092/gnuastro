@@ -24,6 +24,16 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       configured with these options.
        --outliersclip: Sigma-clipping parameters for the process.
        --outliersigma: Multiple of sigma to define an outlier.
+    --skyfracnoblank: Ignore blank pixels when estimating the fraction of
+      undetected pixels for Sky estimation. NoiseChisel only measures the
+      Sky over the tiles that have a sufficiently large fraction of
+      undetected pixels. This is done to decrease the bias caused by faint
+      un-detected wings of bright galaxies or stars, see description of
+      `--minskyfrac' for more. Until now the reference for this fraction
+      was the whole tile size (irrespective of how many blank elements it
+      contains). With this option, it is now possible to ask for ignoring
+      blank pixels when calculating the fraction. This is useful when
+      blank/masked pixels are distributed across the image.
 
   Statistics:
     - Sky estimation: new outlier estimation algorithm similar to NoiseChisel.

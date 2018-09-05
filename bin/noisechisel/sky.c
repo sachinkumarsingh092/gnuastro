@@ -59,8 +59,8 @@ sky_mean_std_undetected(void *in_prm)
   struct noisechiselparams *p=(struct noisechiselparams *)tprm->params;
 
   int setblank, type=GAL_TYPE_FLOAT32;
-  size_t twidth=gal_type_sizeof(GAL_TYPE_FLOAT32);
   size_t i, tind, numsky, bdsize=2, ndim=p->sky->ndim;
+  size_t refarea, twidth=gal_type_sizeof(GAL_TYPE_FLOAT32);
   gal_data_t *tile, *fusage, *busage, *bintile, *sigmaclip;
 
 
@@ -88,20 +88,24 @@ sky_mean_std_undetected(void *in_prm)
       numsky=0;
       tind = tprm->indexs[i];
       tile = &p->cp.tl.tiles[tind];
+      refarea = p->skyfracnoblank ? 0 : tile->size;
 
       /* Correct the fake binary tile's properties to be the same as this
          one, then count the number of zero valued elements in it. Note
          that the `CHECK_BLANK' flag of `GAL_TILE_PARSE_OPERATE' is set to
-         1. So blank values in the input array are not counted also. */
+         1. So blank values in the input array are not counted. */
       bintile->size=tile->size;
       bintile->dsize=tile->dsize;
       bintile->array=gal_tile_block_relative_to_other(tile, p->binary);
-      GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {if(!*o) numsky++;});
+      GAL_TILE_PARSE_OPERATE(tile, bintile, 1, 1, {
+          if(p->skyfracnoblank) ++refarea;
+          if(!*o)               ++numsky;
+        });
 
       /* Only continue, if the fraction of Sky values is less than the
          requested fraction. */
       setblank=0;
-      if( (float)(numsky)/(float)(tile->size) > p->minskyfrac)
+      if( (float)(numsky)/(float)(refarea) > p->minskyfrac)
         {
           /* Re-initialize the usage array's size information (will be
              corrected to this tile's size by
