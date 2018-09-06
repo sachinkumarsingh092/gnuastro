@@ -37,7 +37,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/timing.h>
-#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 
@@ -525,15 +524,12 @@ clumps_write_sn_table(struct segmentparams *p, gal_data_t *insn,
   cols       = ind;
   cols->next = sn;
 
-
   /* Prepare the comments. */
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
-
   /* write the table. */
-  gal_checkset_writable_remove(filename, 0, 1);
-  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN", 0);
-
+  gal_table_write(cols, comments, p->cp.tableformat, filename,
+                  "SKY_CLUMP_SN", 0);
 
   /* Clean up (if necessary). */
   if(sn!=insn) gal_data_free(sn);

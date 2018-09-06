@@ -380,10 +380,10 @@ ui_set_output_names(struct segmentparams *p)
     {
       p->clumpsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_clumpsn_sky.txt" : "_clumpsn_sky.fits") );
+                   ? "_clumpsn_sky.txt" : "_clumpsn.fits") );
       p->clumpsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_clumpsn_det.txt" : "_clumpsn_det.fits") );
+                   ? "_clumpsn_det.txt" : "_clumpsn.fits") );
     }
 
   /* Segmentation steps. */

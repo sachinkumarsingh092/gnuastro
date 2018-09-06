@@ -190,7 +190,7 @@ threshold_apply(struct noisechiselparams *p, float *value1,
 void
 threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
                          gal_data_t *inind, char *filename,
-                         gal_list_str_t *comments)
+                         gal_list_str_t *comments, char *extname)
 {
   gal_data_t *sn, *ind, *cols;
 
@@ -225,9 +225,11 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
 
-  /* write the table. */
-  gal_checkset_writable_remove(filename, 0, 1);
-  gal_table_write(cols, comments, p->cp.tableformat, filename, "SN", 0);
+  /* Write the table. Note that we'll set the `dontdelete' argument to 0
+     because when the output is a FITS table, we want all the tables in one
+     FITS file. We have already deleted any existing file with the same
+     name in `ui_set_output_names'.*/
+  gal_table_write(cols, comments, p->cp.tableformat, filename, extname, 0);
 
 
   /* Clean up (if necessary). */

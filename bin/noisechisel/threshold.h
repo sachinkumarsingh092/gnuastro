@@ -40,7 +40,7 @@ threshold_apply(struct noisechiselparams *p, float *value1, float *value2,
 void
 threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *sntable,
                          gal_data_t *snind, char *filename,
-                         gal_list_str_t *comments);
+                         gal_list_str_t *comments, char *extname);
 
 void
 threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,

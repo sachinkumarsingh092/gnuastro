@@ -386,13 +386,13 @@ ui_set_output_names(struct noisechiselparams *p)
     {
       p->detsn_s_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_sky.txt" : "_detsn_sky.fits") );
+                   ? "_detsn_sky.txt" : "_detsn.fits") );
       p->detsn_d_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_det.txt" : "_detsn_det.fits") );
+                   ? "_detsn_det.txt" : "_detsn.fits") );
       p->detsn_D_name=gal_checkset_automatic_output(&p->cp, basename,
                  ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                   ? "_detsn_grown.txt" : "_detsn_grown.fits") );
+                   ? "_detsn_grown.txt" : "_detsn.fits") );
     }
 
   /* Detection steps. */

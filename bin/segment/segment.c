@@ -795,9 +795,8 @@ segment_save_sn_table(struct clumps_params *clprm)
   /* Set the column pointers and write them into a table.. */
   clumpinobj->next=sn;
   objind->next=clumpinobj;
-  gal_checkset_writable_remove(p->clumpsn_d_name, 0, 1);
   gal_table_write(objind, comments, p->cp.tableformat, p->clumpsn_d_name,
-                  "CLUMPS_SN", 0);
+                  "DET_CLUMP_SN", 0);
 
 
   /* Clean up. */
@@ -809,7 +808,9 @@ segment_save_sn_table(struct clumps_params *clprm)
 
   /* Abort NoiseChisel if necessary. */
   if(!p->continueaftercheck)
-    ui_abort_after_check(p, p->clumpsn_s_name, p->clumpsn_d_name,
+    ui_abort_after_check(p, p->clumpsn_s_name,
+                         ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                           ? p->clumpsn_d_name : NULL ),
                          "showing all clump S/N values");
 }
 

@@ -453,7 +453,7 @@ static void
 detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
                            gal_data_t *snind, int s0d1D2)
 {
-  char *str;
+  char *str, *extname;
   gal_list_str_t *comments=NULL;
 
   /* Comment for extension on further explanation. */
@@ -473,11 +473,15 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
   gal_list_str_add(&comments, str, 1);
 
 
-  /* Set the file name. */
+  /* Set the file name and write the table. */
   str = ( s0d1D2
           ? ( s0d1D2==2 ? p->detsn_D_name : p->detsn_d_name )
           : p->detsn_s_name );
-  threshold_write_sn_table(p, sn, snind, str, comments);
+  if( p->cp.tableformat!=GAL_TABLE_FORMAT_TXT )
+    extname = ( s0d1D2
+                ? ( s0d1D2==2 ? "GROWN_DETECTION_SN" : "DET_PSEUDODET_SN" )
+                : "SKY_PSEUDODET_SN" );
+  threshold_write_sn_table(p, sn, snind, str, comments, extname);
   gal_list_str_free(comments, 1);
 
 
@@ -820,6 +824,7 @@ detection_final_remove_small_sn(struct noisechiselparams *p,
   gal_data_t *sn, *snind;
   int32_t *l, *lf, curlab=1;
   gal_list_str_t *comments=NULL;
+  char *extname="GROWN_DETECTION_SN";
   int32_t *newlabs=gal_pointer_allocate(GAL_TYPE_INT32, num+1, 1, __func__,
                                         "newlabs");
 
@@ -867,9 +872,8 @@ detection_final_remove_small_sn(struct noisechiselparams *p,
       gal_list_str_add(&comments, "See also: `DILATED' "
                        "HDU of output with `--checkdetection'.", 1);
       gal_list_str_add(&comments, "S/N of finally grown detections.", 1);
-
-
-      threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments);
+      threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments,
+                               extname);
       gal_list_str_free(comments, 1);
 
     }

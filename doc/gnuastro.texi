@@ -3223,9 +3223,9 @@ two extensions/steps ahead (in the first @code{HOLES-FILLED}), you can see
 that during the process of finding false pseudo-detections, too many holes
 have been filled: see how the many of the brighter galaxies are connected?
 
-Try looking two extensions ahead (in @code{PSEUDOS-FOR-SN}), you can see
-that there aren't too many pseudo-detections because of all those extended
-filled holes. If you look closely, you can see the number of
+Try looking two extensions ahead (in the first @code{PSEUDOS-FOR-SN}), you
+can see that there aren't too many pseudo-detections because of all those
+extended filled holes. If you look closely, you can see the number of
 pseudo-detections in the result NoiseChisel prints (around 4000). This is
 another side-effect of correlated noise. To address it, we should slightly
 increase the pseudo-detection threhold (@option{--dthresh}, run with
@@ -3250,15 +3250,20 @@ $ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
                  --dthresh=0.2 --checkdetection --checksn
 @end example
 
-The output @file{xdf-f160w_detsn_sky.fits} table contains the label and
-signal-to-noise ratio of all the pseudo-detections in
-@code{PSEUDOS-FOR-SN}. You can see the table columns with the first command
-below and get a feeling for its distribution with the second command. We'll
-discuss the two Table and Statistics programs later.
+The output @file{xdf-f160w_detsn.fits} file contains two extensions for the
+pseudo-detections over the undetected (sky) regions and those over
+detections. The first column is the pseudo-detection label which you can
+see in the respective@footnote{The first @code{PSEUDOS-FOR-SN} in
+@file{xdf-f160w_detsn.fits} is for the pseudo-detections over the
+undetected regions and the second is for those over detected regions.}
+@code{PSEUDOS-FOR-SN} extension of @file{xdf-f160w_detcheck.fits}. You can
+see the table columns with the first command below and get a feeling for
+its distribution with the second command. We'll discuss the two Table and
+Statistics programs later.
 
 @example
-$ asttable xdf-f160w_detsn_sky.fits
-$ aststatistics xdf-f160w_detsn_sky.fits -c2
+$ asttable xdf-f160w_detsn.fits
+$ aststatistics xdf-f160w_detsn.fits -c2
 @end example
 
 The correlated noise is again visible in this pseudo-detection
@@ -3268,7 +3273,7 @@ the difference between the three 0.99, 0.95 and 0.90 quantiles with this
 command:
 
 @example
-$ aststatistics xdf-f160w_detsn_sky.fits -c2                   \
+$ aststatistics xdf-f160w_detsn.fits -c2                        \
                 --quantile=0.99 --quantile=0.95 --quantile=0.90
 @end example
 
@@ -16374,21 +16379,20 @@ psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
 @item --checksn
-Save the S/N values of the pseudo-detections and dilated detections into
-three files ending with @file{_detsn_sky.XXX}, @file{_detsn_det.XXX}, and
-@file{_detsn_dilated.XXX}. The @file{.XXX} is determined from the
-@option{--tableformat} option (see @ref{Input output options}, for example
-@file{.txt} or @file{.fits}). You can use these to inspect the S/N values
-and their distribution (in combination with the @option{--checkdetection}
-option to see where the pseudo-detections are).  You can use Gnuastro's
-@ref{Statistics} to make a histogram of the distribution or any other
-analysis you would like for better understanding of the distribution (for
-example through a histogram).
+Save the S/N values of the pseudo-detections (and possibly grown detections
+if @option{--cleangrowndet} is called) into seprate tables. If
+@option{--tableformat} is a FITS table, each table will be written into a
+separate extension of one file suffixed with @file{_detsn.fits}. If it is
+plain text, a separate file will be made for each table (ending in
+@file{_detsn_sky.txt}, @file{_detsn_det.txt} and
+@file{_detsn_grown.txt}). For more on @option{--tableformat} see @ref{Input
+output options}.
 
-With this option, NoiseChisel will abort as soon as the tables are
-created. This allows you to inspect the steps leading to the final quantile
-threshold, this behavior (to abort NoiseChisel) can be disabled with
-@option{--continueaftercheck}.
+You can use these to inspect the S/N values and their distribution (in
+combination with the @option{--checkdetection} option to see where the
+pseudo-detections are).  You can use Gnuastro's @ref{Statistics} to make a
+histogram of the distribution or any other analysis you would like for
+better understanding of the distribution (for example through a histogram).
 
 @item --minnumfalse=INT
 The minimum number of `pseudo-detections' over the undetected regions to
@@ -17185,17 +17189,21 @@ psudo-detections are found on the input image. You can use
 value is reasonable or not.
 
 @item --checksn
-Save the S/N values of the clumps into two files ending with
-@file{_clumpsn_sky.XXX} and @file{_clumpsn_det.XXX}. The @file{.XXX} is
-determined from the @option{--tableformat} option (see @ref{Input output
-options}, for example @file{.txt} or @file{.fits}). You can use these to
-inspect the S/N values and their distribution (in combination with the
-@option{--checksegmentation} option to see where the clumps are). You can
-use Gnuastro's @ref{Statistics} to make a histogram of the distribution
-(ready for plotting in a text file, or a crude ASCII-art demonstration on
-the command-line).
+Save the S/N values of the clumps over the sky and detected regions into
+seprate tables. If @option{--tableformat} is a FITS format, each table will
+be written into a separate extension of one file suffixed with
+@file{_clumpsn.fits}. If it is plain text, a separate file will be made for
+each table (ending in @file{_clumpsn_sky.txt} and
+@file{_clumpsn_det.txt}). For more on @option{--tableformat} see @ref{Input
+output options}.
 
-With this option, NoiseChisel will abort as soon as the two tables are
+You can use these tables to inspect the S/N values and their distribution
+(in combination with the @option{--checksegmentation} option to see where
+the clumps are). You can use Gnuastro's @ref{Statistics} to make a
+histogram of the distribution (ready for plotting in a text file, or a
+crude ASCII-art demonstration on the command-line).
+
+With this option, Segment will abort as soon as the two tables are
 created. This allows you to inspect the steps leading to the final S/N
 quantile threshold, this behavior can be disabled with
 @option{--continueaftercheck}.
