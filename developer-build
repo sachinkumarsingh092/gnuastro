@@ -435,25 +435,18 @@ fi
 
 
 
-# If requested, also run 'sudo make install'.
-if [ x$install = x1 ]; then
-    sudo make install -kj$jobs
-fi
-
-
-
-
-
-# Make the tarball and PDF for distribution.
+# Make the tarball and PDF for distribution. Then put a copy of the PDF in
+# the top build directory for easy usage later.
 if [ x$dist = x1 ]; then
     make dist-lzip pdf
+    cp doc/gnuastro.pdf ./
 fi
 
 
 
 
 
-# Build a tarball, and upload it to the requested server.
+# Upload the tarball to the requested server.
 if [ x$upload = x1 ]; then
 
     # Get the base package name, and use it to make a generic tarball
@@ -464,5 +457,14 @@ if [ x$upload = x1 ]; then
     mv *.tar.lz $base"-latest.tar.lz"
 
     # Copy the files to the given URL (must include folders).
-    scp $base"-latest.tar.lz" doc/$base.pdf $url
+    scp $base"-latest.tar.lz" $base.pdf $url
+fi
+
+
+
+
+
+# If requested, run 'sudo make install'.
+if [ x$install = x1 ]; then
+    sudo make install -kj$jobs
 fi
