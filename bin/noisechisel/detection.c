@@ -1153,6 +1153,13 @@ detection(struct noisechiselparams *p)
      pseudo-detections. */
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   num_true_initial=detection_remove_false_initial(p, workbin);
+  if(p->detectionname)
+    {
+      p->olabel->name="DETECTIONS-INIT-TRUE";
+      gal_fits_img_write(workbin, p->detectionname, NULL,
+                         PROGRAM_NAME);
+      p->olabel->name=NULL;
+    }
   if(!p->cp.quiet)
     {
       if( asprintf(&msg, "%zu false initial detections removed.",
