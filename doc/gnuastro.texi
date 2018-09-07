@@ -30644,24 +30644,25 @@ export XPA_METHOD=local
 
 @cindex Multiextension FITS
 @cindex Opening multiextension FITS
-The FITS definition allows for multiple extensions inside a FITS file,
-each extension can have a completely independent data set inside of
-it. If you ordinarily open a multi-extension FITS file with SAO ds9,
-for example by double clicking on the file or running @command{$ds9
-foo.fits}, SAO ds9 will only show you the first extension. To be able
-to switch between the extensions you have to follow these menus in the
-SAO ds9 window: @clicksequence{File@click{}Open Other@click{}Open
-Multi Ext Cube} and then choose the Multi extension FITS file in your
+The FITS definition allows for multiple extensions inside one FITS file,
+each extension can have a completely independent dataset inside of it. If
+you just double click on a multi-extension FITS file or run @command{$ds9
+foo.fits}, SAO ds9 will only show you the first extension. If you have a
+multi-extension file containing 2D images, one way to load and switch
+between the each 2D extension is to take the following steps in the SAO ds9
+window: @clicksequence{``File''@click{}''Open Other''@click{}''Open Multi
+Ext Cube''} and then choose the Multi extension FITS file in your
 computer's file structure.
 
 @cindex @option{-mecube} (ds9)
 The method above is a little tedious to do every time you want view a
-multi-extension FITS file. Fortunately SAO ds9 also provides command-line
-options that you can use to specify a particular behavior. One of those
-options is @option{-mecube} which opens a FITS image as a multi-extension
-data cube (treating each 2D extension as a slice in a 3D cube). This allows
-you to flip through the extensions easily while keeping all the settings
-similar.
+multi-extension FITS file. A different series of steps is also necessary if
+you the extensions are 3D data cubes. Fortunately SAO ds9 also provides
+command-line options that you can use to specify a particular behavior. One
+of those options is @option{-mecube} which opens a FITS image as a
+multi-extension data cube (treating each 2D extension as a slice in a 3D
+cube). This allows you to flip through the extensions easily while keeping
+all the settings similar.
 
 Try running @command{$ds9 -mecube foo.fits} to see the effect (for example
 on the output of @ref{NoiseChisel}). If the file has multiple extensions, a
@@ -30684,70 +30685,90 @@ same small window as the 2D case above for scrolling through the 3D
 slices. We then have to also ask ds9 to match the frames and lock the
 slices, so for example zooming in one, will also zoom the others.
 
-Since opening a multi-extension file (that contains similarly sized
-datasets) differs between a 2D and 3D dataset, we will have to define a
-script to decide which path to go based on the input. After the following
-steps, when clicking on a FITS file in your graphic user interface, ds9
-will open in the respective mode and a shell function will also be
-available to open it on the command-line. Note that the following solution
-assumes you already have Gnuastro installed (in particular @ref{Fits}).
+We can use a script to automatize this process and make work much easier
+(and save a lot of time) when opening any generic 2D or 3D dataset. After
+taking the following steps, when you click on a FITS file in your graphic
+user interface, ds9 will open in the respective 2D or 3D mode when double
+clicking a FITS file on the graphic user interface, and an executable will
+also be available to open ds9 similarly on the command-line. Note that the
+following solution assumes you already have Gnuastro installed (and in
+particular the @ref{Fits} program).
 
-We will use a shell script for the conditional call of ds9. Let's assume
-that you want to put it in @file{BINDIR} (that is in your @file{PATH}
-environment variable, see @ref{Installation directory}). Tip: a good place
-would be @file{~/.local/bin}. Afterwards using your favorite text editor,
-put the following script into a file called
+Let's assume that you want to store this script in @file{BINDIR} (that is
+in your @file{PATH} environment variable, see @ref{Installation
+directory}). [Tip: a good place would be @file{~/.local/bin}, just don't
+forget to make sure it is in your @file{PATH}]. Using your favorite text
+editor, put the following script into a file called
 @file{BINDIR/ds9-multi-ext}. You can change the size of the opened ds9
 window by changing the @code{1800x3000} part of the script below.
 
 @example
 #! /bin/bash
 
-# Make sure an input file is given.
+# To allow generic usage, if no input file is given (the `if' below is
+# true), then just open an empty ds9.
 if [ "x$1" == "x" ]; then
-  echo "No input file given."
+    ds9
 else
-  # Make sure we are dealing with a FITS file. We are using shell
-  # redirection here to make sure that nothing is printed in the
-  # terminal (to standard output when we have a FITS file, or to
-  # standard error when we don't). Since we've used redirection,
-  # we'll also have to echo the return value of `astfits'.
-  check=$(astfits $1 -h0 > /dev/null 2>&1; echo $?)
+    # Make sure we are dealing with a FITS file. We are using shell
+    # redirection here to make sure that nothing is printed in the
+    # terminal (to standard output when we have a FITS file, or to
+    # standard error when we don't). Since we've used redirection,
+    # we'll also have to echo the return value of `astfits'.
+    check=$(astfits $1 -h0 > /dev/null 2>&1; echo $?)
 
-  # If the file was a FITS file, then `check' will be 0.
-  if [ "$check" == "0" ]; then
+    # If the file was a FITS file, then `check' will be 0.
+    if [ "$check" == "0" ]; then
 
-    # Read the number of dimensions.
-    n0=$(astfits $1 -h0 | awk '$1=="NAXIS"@{print $3@}')
+        # Read the number of dimensions.
+        n0=$(astfits $1 -h0 | awk '$1=="NAXIS"@{print $3@}')
 
-    # Find the number of dimensions.
-    if [ "$n0" == "0" ]; then
-      ndim=$(astfits $1 -h1 | awk '$1=="NAXIS"@{print $3@}')
+        # Find the number of dimensions.
+        if [ "$n0" == "0" ]; then
+            ndim=$(astfits $1 -h1 | awk '$1=="NAXIS"@{print $3@}')
+        else
+            ndim=$n0
+        fi;
+
+        # Open DS9 based on the number of dimension.
+        if [ "$ndim" = "2" ]; then
+            # 2D multi-extension file: use the "Cube" window to
+            # flip/slide through the extensions.
+            ds9 -zscale -geometry 1800x3000 -mecube $1         \
+                -zoom to fit -wcs degrees
+        else
+            # 3D multi-extension file: The "Cube" window will slide
+            # between the slices of a single extension. To flip
+            # through the extensions (not the slices), press the top
+            # row "frame" button and from the last four buttons of the
+            # bottom row ("first", "previous", "next" and "last") can
+            # be used to switch through the extensions (while keeping
+            # the same slice).
+            ds9 -zscale -geometry 1800x3000 -wcs degrees       \
+                -multiframe $1 -match frame image              \
+                -lock slice image -lock frame image -single    \
+                -zoom to fit
+        fi
     else
-      ndim=$n0
-    fi;
-
-    # Open DS9 based on the number of dimension.
-    if [ "$ndim" = "2" ]; then
-      ds9 -zscale -geometry 1800x3000 -mecube $1 -zoom to fit    \
-          -wcs degrees
-    else
-      ds9 -zscale -geometry 1800x3000 -tile -wcs degrees         \
-          -multiframe $1 -zoom to fit -match frame image         \
-          -lock slice image -lock frame image
+        if [ -f $1 ]; then
+            echo "'$1' isn't a FITS file."
+        else
+            echo "'$1' doesn't exist."
+        fi
     fi
-  else
-    if [ -f $1 ]; then
-      echo "'$1' isn't a FITS file."
-    else
-      echo "'$1' doesn't exist."
-    fi
-  fi
 fi
 @end example
 
-@noindent
-To be able to run it, you have to activate its executable flag with this
+As described above (also in the comments of the script), if you have opened
+a multi-extension 2D dataset (image), the ``Cube'' window can be used to
+slide/flip through each extension. But when the input is a 3D data cube,
+the ``Cube'' window will slide/flip through the slices in each extension (a
+separate 3D dataset). To flip through the extensions (while keeping the
+slice fixed), click the ``frame'' button on the top row of buttons, then
+use the last four buttons of the bottom row ("first", "previous", "next"
+and "last") to change between the extensions.
+
+To run this script, you have to activate its executable flag with this
 command:
 
 @example
@@ -30756,8 +30777,7 @@ $ chmod +x BINDIR/ds9-multi-ext
 
 If @file{BINDIR} is within your system's @file{PATH} environment variable
 (see @ref{Installation directory}), you can now open ds9 conditionally
-(depending on dimensions of the input, as described above) with a command
-like this:
+using the script above with this command:
 
 @example
 $ ds9-multi-ext foo.fits
@@ -30780,7 +30800,7 @@ the @code{Icon} line, and write its address in the value.
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=SAO ds9
+Name=SAO DS9
 Comment=View FITS images
 Terminal=false
 Categories=Graphics;RasterGraphics;2DGraphics;3DGraphics
