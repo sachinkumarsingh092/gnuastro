@@ -725,11 +725,15 @@ gal_binary_holes_fill(gal_data_t *input, int connectivity, size_t maxsize)
   size_t numholes, *sizes;
   gal_data_t *inv, *tile, *holelabs=NULL;
 
-  /* A small sanity check. */
+  /* Small sanity checks. */
   if( input->type != GAL_TYPE_UINT8 )
     error(EXIT_FAILURE, 0, "%s: input must have `uint8' type, but its "
           "input dataset has `%s' type", __func__,
           gal_type_name(input->type, 1));
+  if(connectivity<1 || connectivity>input->ndim)
+    error(EXIT_FAILURE, 0, "%s: connectivity value %d is not acceptable. "
+          "It has to be between 1 and the number of input's dimensions "
+          "(%zu)", __func__, connectivity, input->ndim);
 
 
   /* Make the inverse image. */

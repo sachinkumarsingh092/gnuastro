@@ -409,6 +409,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "holengb",
+      UI_KEY_HOLENGB,
+      "INT",
+      0,
+      "4 or 8 connectivity for filling holes.",
+      UI_GROUP_DETECTION,
+      &p->holengb,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "snminarea",
       UI_KEY_SNMINAREA,
       "INT",

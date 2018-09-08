@@ -73,6 +73,7 @@ struct noisechiselparams
   double         sigmaclip[2];  /* Sigma-clipping parameters.             */
   uint8_t         checkdetsky;  /* Check pseudo-detection sky value.      */
   float               dthresh;  /* Sigma threshold for Pseudo-detections. */
+  size_t              holengb;  /* Connectivity for defining a hole.      */
   size_t            snminarea;  /* Minimum pseudo-detection area for S/N. */
   uint8_t             checksn;  /* Save pseudo-detection S/N values.      */
   size_t          minnumfalse;  /* Min No. of det/seg for true quantile.  */

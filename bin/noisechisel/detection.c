@@ -283,7 +283,7 @@ detection_fill_holes_open(void *in_prm)
 
       /* Fill the holes in this tile: holes with maximal connectivity means
          that they are most strongly bounded. */
-      gal_binary_holes_fill(copy, copy->ndim, -1);
+      gal_binary_holes_fill(copy, p->holengb==4 ? 1 : 2, -1);
       if(fho_prm->step==1)
         {
           detection_write_in_large(tile, copy);

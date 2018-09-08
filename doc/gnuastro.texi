@@ -16368,6 +16368,16 @@ ratio of the resulting `psudo-detections' are used to identify true
 vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
 Ichikawa (2015) for a very complete explanation.
 
+@item --holengb=INT
+The connectivity (defined by the number of neighbors) to fill holes after
+applying @option{--dthresh} (above) to find pseudo-detections. For example
+in a 2D image it must be 4 (the neighbors that are most strongly connected)
+or 8 (all neighbors). The stronger the connectivity, the stronger the hole
+will be enclosed. So setting a value of 8 in a 2D image means that the
+walls of the hole are 4-connected. If standard (near Sky level) values are
+given to @option{--dthresh}, setting @option{--holengb=4}, might fill the
+complete dataset and thus not create enough pseudo-detections.
+
 @item -m INT
 @itemx --snminarea=INT
 The minimum area to calculate the Signal to noise ratio on the

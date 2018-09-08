@@ -25,6 +25,17 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       configured with these options.
        --outliersclip: Sigma-clipping parameters for the process.
        --outliersigma: Multiple of sigma to define an outlier.
+    --blankasforeground: Treat blank elements as foreground (regions above
+          the threshold) in the binary processing steps: initial erosion
+          and opening as well as the filling holes and opening of
+          pseudo-detections. From this version, by default, blank elements
+          in the dataset are considered to be background, so if a
+          foreground pixel is touching it, it will be eroded. This option
+          is irrelevant if the datasets contains no blank elements, but can
+          help remove false positives that are touching blank elements.
+    --holengb: allows defining the connectivity of the holes that are
+          filled when defining pseudo-detections. Until now, this was
+          hard-wired into the code (=8) and not modifiable at run-time.
     --skyfracnoblank: Ignore blank pixels when estimating the fraction of
           undetected pixels for Sky estimation. NoiseChisel only measures
           the Sky over the tiles that have a sufficiently large fraction of
@@ -36,14 +47,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
           possible to ask for ignoring blank pixels when calculating the
           fraction. This is useful when blank/masked pixels are distributed
           across the image.
-    --blankasforeground: Treat blank elements as foreground (regions above
-          the threshold) in the binary processing steps: initial erosion
-          and opening as well as the filling holes and opening of
-          pseudo-detections. From this version, by default, blank elements
-          in the dataset are considered to be background, so if a
-          foreground pixel is touching it, it will be eroded. This option
-          is irrelevant if the datasets contains no blank elements, but can
-          help remove false positives that are touching blank elements.
 
   Statistics:
     - Sky estimation: new outlier estimation algorithm similar to NoiseChisel.

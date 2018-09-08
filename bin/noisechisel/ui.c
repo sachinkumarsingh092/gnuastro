@@ -233,6 +233,9 @@ ui_read_check_only_options(struct noisechiselparams *p)
   if(p->openingngb!=4 && p->openingngb!=8)
     error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
           "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
+  if(p->holengb!=4 && p->holengb!=8)
+    error(EXIT_FAILURE, 0, "%zu not acceptable for `--holengb'. It must "
+          "be 4 or 8 (specifying the type of connectivity)", p->holengb);
 
   /* Make sure that the no-erode-quantile is not smaller or equal to
      qthresh. */
