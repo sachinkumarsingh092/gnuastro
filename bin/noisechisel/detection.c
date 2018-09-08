@@ -1155,10 +1155,10 @@ detection(struct noisechiselparams *p)
   num_true_initial=detection_remove_false_initial(p, workbin);
   if(p->detectionname)
     {
-      p->olabel->name="DETECTIONS-INIT-TRUE";
+      workbin->name="DETECTIONS-INIT-TRUE";
       gal_fits_img_write(workbin, p->detectionname, NULL,
                          PROGRAM_NAME);
-      p->olabel->name=NULL;
+      workbin->name=NULL;
     }
   if(!p->cp.quiet)
     {
