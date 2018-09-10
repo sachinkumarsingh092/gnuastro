@@ -2570,15 +2570,37 @@ dataset, and avoid higher-level ambiguities or complications, it is always
 best to give them blank values (not zero, or some other absurdly large or
 small number).
 
+@cindex @code{CDELT}
+@cindex Coordinate scales
+@cindex Scales, coordinate
 This is the deepest image we currently have of the sky. The first thing
-that comes to mind may be this: ``How large is this field?''. Let's find
-the answer to this question with the commands below. The lines starting
-with @code{##} are just comments for you to help in following the steps.
-Don't type them on the terminal. The commands are intentionally repetitive
-in some places to better understand each step and also to demonstrate the
-beauty of command-line features like variables, pipes and loops. Later, if
-you would like to repeat this process on another dataset, you can just use
-commands 3, 7, and 9.
+that comes to mind may be this: ``How large is this field?''. The FITS
+world coordinate system (WCS) meta data standard contains the key to
+ansering this question: the @code{CDELT} keyword@footnote{In the FITS
+standard, the @code{CDELT} keywords (@code{CDELT1} and @code{CDELT2} in a
+2D image) specify the scales of each coordinate. In the case of this image
+it is in units of degrees-per-pixel. See Section 8 of the
+@url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf, FITS
+standard} for more. In short, with the @code{CDELT} convention, rotation
+(@code{PC} or @code{CD} keywords) and scales (@code{CDELT}) are
+separated. In the FITS standard the @code{CDELT} keywords are
+optional. When @code{CDELT} keywords aren't present, the @code{PC} matrix
+is assumed to contain @emph{both} the coordinate rotation and scales. Note
+that not all FITS writers use the @code{CDELT} convension. So you might not
+find the @code{CDELT} keywords in the WCS meta data of some FITS
+files. However, all Gnuastro programs (which use the default FITS keyword
+writing format of WCSLIB), the @code{CDELT} convention is used, even if the
+input doesn't have it. So when rotation and scaling are combined and
+finding the pixel scale isn't trivial from the raw keyword values, you can
+feed the dataset to any (simple) Gnuastro program (for example
+Arithmetic). The output will have the @code{CDELT} keyword.}. With the
+commands below, we'll use it (along with the image size) to find the
+answer. The lines starting with @code{##} are just comments for you to help
+in following the steps. Don't type them on the terminal. The commands are
+intentionally repetitive in some places to better understand each step and
+also to demonstrate the beauty of command-line features like variables,
+pipes and loops. Later, if you would like to repeat this process on another
+dataset, you can just use commands 3, 7, and 9.
 
 @cartouche
 @noindent
@@ -4324,14 +4346,16 @@ $ astarithmetic r_detected.fits boundary.fits not nan where \
 The outer wings where therefore non-parametrically detected until
 @mymath{\rm{S/N}\approx0.05}!
 
-This is very good, but how much is this in units of standard magnitudes per
-arcseconds squared? To find that, we'll first need to calcaulate how many
-pixels of this image are in one arcsecond-squared. Fortunately the WCS
-headers of Gnuastro's output FITS files (and in particular @code{CDELT})
-give us this information.
+@cindex Surface brightness
+This is very good, but how much is this in standard units of surface
+brightness, or magnitudes per square arcseconds? To find out, we'll first
+need to calculate how many pixels of this image are in one
+arcsecond-squared. Fortunately the world coordinate system (or WCS) meta
+data of Gnuastro's output FITS files (and in particular @code{CDELT}
+keywords) give us this information.
 
 @example
-$ n=$(astfits r_detected.fits -h1                               \
+$ n=$(astfits r_detected.fits -h1                                     \
               | awk '/CDELT1/ @{p=1/($3*3600); print p*p@}')
 $ echo $n
 @end example
@@ -4341,7 +4365,7 @@ Now, let's calculate the average sky-subtracted flux in the border region
 per pixel.
 
 @example
-$ f=$(astarithmetic r_detected.fits boundary.fits not nan where set-i  \
+$ f=$(astarithmetic r_detected.fits boundary.fits not nan where set-i \
                     i sumvalue i numvalue / -q -hINPUT-NO-SKY)
 $ echo $f
 @end example
@@ -4351,11 +4375,11 @@ We can just multiply the two to get the average flux on this border in one
 arcsecond squared. We also have the r-band SDSS zeropoint
 magnitude@footnote{From
 @url{http://classic.sdss.org/dr7/algorithms/fluxcal.html}} to be
-24.80. Therefore we can get the surface brightness limit (in magnitudes per
-arcsecond squared) using the following command. Just note that @code{log}
-in AWK is in base-2 (not 10) and it doesn't have a @code{log10}
-operator. So we'll do an extra division by @code{log(10)} to correct for
-this.
+24.80. Therefore we can get the surface brightness of the outer edge (in
+magnitudes per arcsecond squared) using the following command. Just note
+that @code{log} in AWK is in base-2 (not 10), and that AWK doesn't have a
+@code{log10} operator. So we'll do an extra division by @code{log(10)} to
+correct for this.
 
 @example
 $ z=24.80
