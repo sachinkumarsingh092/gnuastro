@@ -1421,10 +1421,23 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       else
         sorted=noblank;
     }
-
   /* When the input's size is zero, just return the actual input. */
   else
-    sorted=input;
+    sorted = inplace ? input : gal_data_copy(input);
+
+  /* Set the blank and sorted flags if the dataset has zero-elements. Even
+     if having blank values or being sorted is not defined on a
+     zero-element dataset, it is up to different functions to choose what
+     they will do with a zero-element dataset. The flags have to be set
+     after this function any way. */
+  if(sorted->size==0)
+    {
+      sorted->flag |= GAL_DATA_FLAG_SORT_CH;
+      sorted->flag |= GAL_DATA_FLAG_BLANK_CH;
+      sorted->flag |= GAL_DATA_FLAG_SORTED_I;
+      sorted->flag &= ~GAL_DATA_FLAG_HASBLANK;
+      sorted->flag &= ~GAL_DATA_FLAG_SORTED_D;
+    }
 
 
   /* Return final array. */

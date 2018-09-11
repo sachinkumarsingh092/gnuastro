@@ -27485,10 +27485,10 @@ sort-related bit flags accordingly.
 
 @deftypefun {gal_data_t *} gal_statistics_no_blank_sorted (gal_data_t @code{*input}, int @code{inplace})
 Remove all the blanks and sort the input dataset. If @code{inplace} is
-non-zero this will happen on the input dataset (and the output dataset will
-be the input dataset). However, if @code{inplace} is zero, this function
-will allocate a new copy of the dataset that is sorted and has no blank
-values.
+non-zero this will happen on the input dataset (in the allocated space of
+the input dataset). However, if @code{inplace} is zero, this function will
+allocate a new copy of the dataset and work on that. Therefore if
+@code{inplace==0}, the input dataset will be modified.
 
 This function uses the bit flags of the input, so if you have modified the
 dataset, set @code{input->flags=0} before calling this function. Also note
@@ -27500,7 +27500,11 @@ If all the elements were blank, then the returned dataset's @code{size}
 will be zero. This is thus a good parameter to check after calling this
 function to see if there actually were any non-blank elements in the input
 or not and take the appropriate measure. This can help avoid strange bugs
-in later steps.
+in later steps. The flags of a zero-sized returned dataset will indicate
+that it has no blanks and is sorted in an increasing order. Even if having
+blank values or being sorted is not defined on a zero-element dataset, it
+is up to the caller to choose what they will do with a zero-element
+dataset. The flags have to be set after this function any way.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_regular_bins (gal_data_t @code{*input}, gal_data_t @code{*inrange}, size_t @code{numbins}, double @code{onebinstart})
