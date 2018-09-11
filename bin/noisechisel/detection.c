@@ -453,7 +453,7 @@ static void
 detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
                            gal_data_t *snind, int s0d1D2)
 {
-  char *str, *extname;
+  char *str, *extname=NULL;
   gal_list_str_t *comments=NULL;
 
   /* Comment for extension on further explanation. */
