@@ -4959,7 +4959,7 @@ is a large collection of functions that are very useful in scientific
 applications, for example integration, random number generation, and Fast
 Fourier Transform among many others. To install GSL from source, you can
 run the following commands after you have downloaded
-@url{ftp://ftp.gnu.org/gnu/gsl/gsl-latest.tar.gz,
+@url{http://ftpmirror.gnu.org/gsl/gsl-latest.tar.gz,
 @file{gsl-latest.tar.gz}}:
 
 @example
