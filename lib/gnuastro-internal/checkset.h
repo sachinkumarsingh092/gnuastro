@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <math.h>
 #include <fitsio.h>
+#include <gsl/gsl_rng.h>
 #include <gnuastro-internal/options.h>
 
 /* C++ Preparations */
@@ -49,9 +50,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-
-
-
+/**************************************************************/
+/**********               Environment              ************/
+/**************************************************************/
+gsl_rng *
+gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
+                     uint64_t *seed);
 
 
 

@@ -1363,10 +1363,8 @@ ui_preparations(struct mkprofparams *p)
   if(p->wcs)
     ui_finalize_coordinates(p);
 
-  /* Allocate the random number generator: */
-  gsl_rng_env_setup();
-  p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
-  p->rng_name=gsl_rng_name(p->rng);
+  /* Prepare the random number generator. */
+  p->rng=gal_checkset_gsl_rng(p->envseed, &p->rng_name, &p->rng_seed);
 
   /* Make the log linked list. */
   ui_make_log(p);
@@ -1449,6 +1447,8 @@ ui_print_intro(struct mkprofparams *p)
       gal_timing_report(NULL, jobname, 1);
       free(jobname);
     }
+  else
+    gal_timing_report(NULL, "RNG seed differs for each profile.", 1);
 
   if(p->kernel==NULL)
     {

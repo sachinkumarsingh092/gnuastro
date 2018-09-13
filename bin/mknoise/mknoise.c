@@ -87,10 +87,11 @@ convertsaveoutput(struct mknoiseparams *p)
     }
   strcpy(keyname4, "RNGTYPE");
   gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, keyname4, 0,
-                            p->rng_type, 0, "Random number generator (by "
-                            "GSL) type.",  0, NULL);
+                            (void *)(p->rng_name), 0,
+                            "Random number generator (by GSL) type.",
+                            0, NULL);
   strcpy(keyname5, "RNGSEED");
-  gal_fits_key_list_add_end(&headers, GAL_TYPE_INT64, keyname5, 0,
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_UINT64, keyname5, 0,
                             &p->rng_seed, 0,
                             "Random number generator (by GSL) seed.",
                             0, NULL);

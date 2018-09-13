@@ -197,12 +197,12 @@ saveindividual(struct mkonthread *mkp)
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "TRUNCATION", 0,
                         &p->t[id], 0, "Truncation of profile in catalog",
                         0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_LONG, "RNGSEED", 0,
-                        &mkp->rng_seed, 0, "Seed of random number generator",
-                        0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "RNGNAME", 0,
                         (void *)(p->rng_name), 0,
                         "Name of random number generator", 0, NULL);
+  gal_fits_key_list_add(&keys, GAL_TYPE_LONG, "RNGSEED", 0,
+                        &mkp->rng_seed, 0, "Seed of random number generator",
+                        0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMRANDOM", 0,
                         &p->numrandom, 0,
                         "Number of random points in central pixels", 0, NULL);
@@ -297,7 +297,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
   /* Set the seed of the random number generator if the
      environment is not to be used. */
   if(mkp->p->envseed)
-    mkp->rng_seed=mkp->p->envseed;
+    mkp->rng_seed=mkp->p->rng_seed;
   else
     {
       mkp->rng_seed=gal_timing_time_based_rng_seed();

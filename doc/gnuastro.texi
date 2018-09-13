@@ -18475,6 +18475,8 @@ deviation of the final distribution (and thus bias the upper-limit
 measurement).
 
 @item --envseed
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 Read the random number generator type and seed value from the environment
 (see @ref{Generating random numbers}). Random numbers are used in
 calculating the random positions of different samples of each object.
@@ -19619,6 +19621,8 @@ distribution. This can be done by setting the @code{GSL_RNG_TYPE} and
 with the @option{--envseed} option. To learn more about the process of
 generating random numbers, see @ref{Generating random numbers}.
 
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 The seed values are fixed for every profile: with @option{--envseed},
 all the profiles have the same seed and without it, each will get a
 different seed using the system clock (which is accurate to within one
@@ -20047,6 +20051,8 @@ profile, see @ref{Sampling from a function}.
 
 @item -e
 @itemx --envseed
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 Use the value to the @code{GSL_RNG_SEED} environment variable to
 generate the random Monte Carlo sampling distribution, see
 @ref{Sampling from a function} and @ref{Generating random
@@ -20666,7 +20672,6 @@ affordable!}!
 
 @cindex Psudo-random numbers
 @cindex Numbers, psudo-random
-@cindex Seed, psudo-random numbers
 Using only software, we can only produce what is called a psudo-random
 sequence of numbers. A true random number generator is a hardware (let's
 assume we have made sure it has no systematic biases), for example
@@ -20692,17 +20697,19 @@ them!). Through the two environment variables @code{GSL_RNG_TYPE} and
 @code{GSL_RNG_SEED} you can specify the generator and its seed
 respectively.
 
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 If you don't specify a value for @code{GSL_RNG_TYPE}, GSL will use its
-default random number generator type. The default type is sufficient
-for most general applications. If no value is given for the
-@code{GSL_RNG_SEED} environment variable and you have asked Gnuastro
-to read the seed from the environment (through the @option{--envseed}
-option), then GSL will use the default value of each generator to give
-identical outputs. If you don't explicitly tell Gnuastro programs to
-read the seed value from the environment variable, then they will use
-the system time (accurate to within a microsecond) to generate
-(apparently random) seeds. In this manner, every time you run the
-program, you will get a different random number distribution.
+default random number generator type. The default type is sufficient for
+most general applications. If no value is given for the @code{GSL_RNG_SEED}
+environment variable and you have asked Gnuastro to read the seed from the
+environment (through the @option{--envseed} option), then GSL will use the
+default value of each generator to give identical outputs. If you don't
+explicitly tell Gnuastro programs to read the seed value from the
+environment variable, then they will use the system time (accurate to
+within a microsecond) to generate (apparently random) seeds. In this
+manner, every time you run the program, you will get a different random
+number distribution.
 
 There are two ways you can specify values for these environment
 variables. You can call them on the same command-line for example:
@@ -20747,16 +20754,20 @@ can see the top few lines of the output of MakeProfiles:
 @example
 $ export GSL_RNG_TYPE="taus"
 $ export GSL_RNG_SEED=345
-$ astmkprof catalog.txt --envseed
+$ astmkprof -s1 --kernel=gaussian,2,5 --envseed
 GSL_RNG_TYPE=taus
 GSL_RNG_SEED=345
-MakeProfiles started on AAA BBB DD EE:FF:GG HHH
-  - 6 profiles read from catalog.txt 0.000236 seconds
-  - Random number generator (RNG) type: taus
+MakeProfiles A.B started on DDD MMM DD HH:MM:SS YYYY
+  - Building one gaussian kernel
+  - Random number generator (RNG) type: ranlxs1
   - RNG seed for all profiles: 345
+  ---- ./kernel.fits created.
+MakeProfiles finished in 0.111271 seconds
 @end example
 
 @noindent
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 The first two output lines (showing the names of the environment
 variables) are printed by GSL before MakeProfiles actually starts
 generating random numbers. The Gnuastro programs will report the
@@ -20828,6 +20839,8 @@ noise}.
 
 @item -e
 @itemx --envseed
+@cindex Seed, Random number generator
+@cindex Random number generator, Seed
 Use the @code{GSL_RNG_SEED} environment variable for the seed used in
 the random number generator, see @ref{Generating random numbers}. With
 this option, the output image noise is always going to be identical

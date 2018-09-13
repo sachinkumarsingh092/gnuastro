@@ -30,11 +30,64 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <fitsio.h>
-
 #include <gnuastro/data.h>
 
+#include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********               Environment              ************/
+/**************************************************************/
+/* The GSL random number generator (RNG) reads values from the
+   environment. This function is designed to make the job easier for any
+   program using GSL's RNG. If the user doesn't want to set the */
+gsl_rng *
+gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name, uint64_t *seed)
+{
+  gsl_rng *rng;
+
+  /* Let GSL read the environment and convert the type name (as string) to
+     `gsl_rng_type'. After this function, `gsl_rng_default' contains the
+     generator's type and `gsl_rng_default_seed' contains the (possibly)
+     given seed.*/
+  gsl_rng_env_setup();
+
+  /* Allocate the random number generator based on the requested type and
+     save its name. If no `GSL_RNG_TYPE' is set, then use a fixed
+     generator.*/
+  rng=gsl_rng_alloc(secure_getenv("GSL_RNG_TYPE")
+                    ? gsl_rng_default
+                    : gsl_rng_ranlxs1);
+  *name = gsl_rng_name(rng);
+
+  /* Initialize the random number generator, depending on the
+     `envseed_bool' argument. */
+  *seed = ( envseed_bool
+            ? gsl_rng_default_seed
+            : gal_timing_time_based_rng_seed() );
+  gsl_rng_set(rng, *seed);
+
+  /* Return the GSL RNG structure. */
+  return rng;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

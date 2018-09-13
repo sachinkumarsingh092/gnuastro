@@ -311,13 +311,7 @@ ui_preparations(struct mknoiseparams *p)
 
 
   /* Allocate the random number generator: */
-  gsl_rng_env_setup();
-  p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
-  p->rng_seed = ( p->envseed
-                  ? gsl_rng_default_seed
-                  : gal_timing_time_based_rng_seed() );
-  gsl_rng_set(p->rng, p->rng_seed);
-  gal_checkset_allocate_copy(gsl_rng_name(p->rng), &p->rng_type);
+  p->rng=gal_checkset_gsl_rng(p->envseed, &p->rng_name, &p->rng_seed);
 }
 
 
@@ -404,10 +398,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
     {
       printf(PROGRAM_NAME" "PACKAGE_VERSION" started on %s",
              ctime(&p->rawtime));
-      sprintf(message, "Random number generator type: %s",
-              gsl_rng_name(p->rng));
+      sprintf(message, "Random number generator type: %s", p->rng_name);
       gal_timing_report(NULL, message, 1);
-      sprintf(message, "Random number generator seed: %"PRId64, p->rng_seed);
+      sprintf(message, "Random number generator seed: %"PRIu64, p->rng_seed);
       gal_timing_report(NULL, message, 1);
     }
 }
@@ -439,7 +432,6 @@ ui_free_report(struct mknoiseparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);
-  free(p->rng_type);
   free(p->cp.output);
   gal_data_free(p->input);
 

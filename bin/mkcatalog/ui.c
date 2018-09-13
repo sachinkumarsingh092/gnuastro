@@ -1341,13 +1341,7 @@ ui_preparations_upperlimit(struct mkcatalogparams *p)
           "that is reported as the upper-limit");
 
   /* Set the random number generator. */
-  gsl_rng_env_setup();
-  p->rng=gsl_rng_alloc(gsl_rng_ranlxs1);
-  p->seed = ( p->envseed
-              ? gsl_rng_default_seed
-              : gal_timing_time_based_rng_seed() );
-  if(p->envseed) gsl_rng_set(p->rng, p->seed);
-  p->rngname=gsl_rng_name(p->rng);
+  p->rng=gal_checkset_gsl_rng(p->envseed, &p->rngname, &p->seed);
 
   /* Keep the minimum and maximum values of the random number generator. */
   p->rngmin=gsl_rng_min(p->rng);

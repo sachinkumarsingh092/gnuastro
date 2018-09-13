@@ -54,8 +54,8 @@ struct mknoiseparams
   gal_data_t      *input;    /* Input image data in double precision.    */
   double      background;    /* Background in units of brightness.       */
   gsl_rng           *rng;    /* Main instance of random number generator.*/
-  char         *rng_type;    /* The type of the Random number gen.       */
-  int64_t       rng_seed;    /* Seed of Random number generator.         */
+  const char   *rng_name;    /* The type/name of the Random number gen.  */
+  uint64_t      rng_seed;    /* Seed of Random number generator.         */
   time_t         rawtime;    /* Starting time of the program.            */
 };
 
