@@ -318,13 +318,14 @@ AS_IF([test "x$missing_mandatory" = "xyes"],
         AS_ECHO(["LD_LIBRARY_PATH environment variables before running configure. For example"])
         AS_ECHO(["with the following commands (just correct the \`/install/path' part)."])
         AS_ECHO(["  $ export LDFLAGS=\"\$LDFLAGS -L/install/path/lib\""])
-        AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -L/install/path/include\""])
+        AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -I/install/path/include\""])
         AS_ECHO(["  $ export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:/install/path/lib\""])
-        AS_ECHO(["[TIP] Put these commands in your startup file (for example \`~/.bashrc') to"])
+        AS_ECHO([""])
+        AS_ECHO(["[TIP:] Put these commands in your startup file (for example \`~/.bashrc') to"])
         AS_ECHO(["avoid similar problems later. See the link below to learn more:"])
         AS_ECHO(["  https://www.gnu.org/software/gnuastro/manual/html_node/Installation-directory.html"])
         AS_ECHO([""])
-        AC_MSG_ERROR([Mandatory dependency(s) missing, see above.])
+        AC_MSG_ERROR([Mandatory dependency(s) missing, === SEE MESSAGE ABOVE ===.])
       ])
 
 
