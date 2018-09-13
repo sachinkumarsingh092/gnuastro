@@ -4261,6 +4261,15 @@ more than 20 times) than the standard deviation (final extension). So we
 can stop configuring NoiseChisel at this point in the tutorial. We leave
 further configuration for a more accurate detection to you as an exercise.
 
+At first sight, this extent may seem too far deep into the noise. Ofcourse,
+there is no way you can visually see extended signal that is has a 0.05
+signal-to-noise ratio. Therefore, if the statistical argument above to
+justify this extent hasn't convinced you, see this amateur astronomer's 12
+hour deep image of this system (and the much wider area around it):
+@url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The image is taken from
+this Reddit discussion:
+@url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}.
+
 Let's see how deeply/successfully we carved out M51 and NGC 5195's tail
 from the noise. For this measurement, we'll need to estimate the average
 flux on the outer edges of the detection. Fortunately all this can be done
