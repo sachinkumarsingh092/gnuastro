@@ -4261,21 +4261,22 @@ more than 20 times) than the standard deviation (final extension). So we
 can stop configuring NoiseChisel at this point in the tutorial. We leave
 further configuration for a more accurate detection to you as an exercise.
 
-At first sight, this extent may seem too far deep into the noise. Ofcourse,
-there is no way you can visually see extended signal that is has a 0.05
-signal-to-noise ratio. Therefore, if the statistical argument above to
-justify this extent hasn't convinced you, see this amateur astronomer's 12
-hour deep image of this system (and the much wider area around it):
-@url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The image is taken from
-this Reddit discussion:
+In this shallow image, this extent may seem too far deep into the noise for
+visual confirmation. Therefore, if the statistical argument above, to
+justify the reality of this extented structure, hasn't convinced you, see
+the deep images of this system in @url{https://arxiv.org/abs/1501.04599,
+Watkins et al. [2015]}, or a 12 hour deep image of this system (with a
+12-inch telescope): @url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The
+image is taken from this Reddit discussion:
 @url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}.
 
-Let's see how deeply/successfully we carved out M51 and NGC 5195's tail
-from the noise. For this measurement, we'll need to estimate the average
-flux on the outer edges of the detection. Fortunately all this can be done
-with a few simple commands (and no higher-level language mini-environments)
-using @ref{Arithmetic} and @ref{MakeCatalog}. First, let's give a separate
-label to all the connected pixels of NoiseChisel's detection map:
+Now that we know this detection is real, let's measure how deep we carved
+the signal out of noise. For this measurement, we'll need to estimate the
+average flux on the outer edges of the detection. Fortunately all this can
+be done with a few simple commands (and no higher-level language
+mini-environments) using @ref{Arithmetic} and @ref{MakeCatalog}. First,
+let's give a separate label to all the connected pixels of NoiseChisel's
+detection map:
 
 @example
 $ astarithmetic r_detected.fits 2 connected-components -hDETECTIONS \
@@ -4356,11 +4357,12 @@ The outer wings where therefore non-parametrically detected until
 @mymath{\rm{S/N}\approx0.05}!
 
 @cindex Surface brightness
-This is very good, but how much is this in standard units of surface
-brightness, or magnitudes per square arcseconds? To find out, we'll first
-need to calculate how many pixels of this image are in one
+This is very good! But the signal-to-noise ratio is a relative measurement.
+Let's also measure the depth of our detection in absolute surface
+brighntess units; or magnitudes per square arcseconds. To find out, we'll
+first need to calculate how many pixels of this image are in one
 arcsecond-squared. Fortunately the world coordinate system (or WCS) meta
-data of Gnuastro's output FITS files (and in particular @code{CDELT}
+data of Gnuastro's output FITS files (in particular the @code{CDELT}
 keywords) give us this information.
 
 @example
