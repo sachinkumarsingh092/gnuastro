@@ -247,13 +247,14 @@ AC_MSG_RESULT( $path_warning )
 
 
 
-# Search for necessary libraries. After each library is found,
-# AC_SEARCH_LIBS adds the -lLIBRARY flag to the LIBS variable which is then
-# given to all the Makefiles. Each new flag is added to the left of the old
-# one so order matters here. Note that the LIBS variable is also used in
-# checking the next libraries, so the linking with their dependent
-# libraries is done automatically with this order, and we don't have to
-# explicitly set the dependency flags.
+# Mandatory dependencies
+#
+# After each library is found, AC_SEARCH_LIBS adds the -lLIBRARY flag to
+# the LIBS variable which is then given to all the Makefiles. Each new flag
+# is added to the left of the old one so order matters here. Note that the
+# LIBS variable is also used in checking the next libraries, so the linking
+# with their dependent libraries is done automatically with this order, and
+# we don't have to explicitly set the dependency flags.
 has_gsl=yes
 has_cmath=yes
 has_wcslib=yes
@@ -278,59 +279,6 @@ AC_SEARCH_LIBS([ffopen], [cfitsio], [],
                [missing_mandatory=yes; has_cfitsio=no])
 AC_SEARCH_LIBS([wcspih], [wcs], [],
                [missing_mandatory=yes; has_wcslib=no])
-
-
-
-
-
-# If any necessary dependency is missing inform the user and abort.
-AS_IF([test "x$missing_mandatory" = "xyes"],
-      [
-        # Introduction.
-        AS_ECHO([""])
-        AS_ECHO(["The configure script couldn't link with the following mandatory dependency(s):"])
-
-        # List missing packages: print the GSL CBLAS message only if GSL is
-        # present. Otherwise, it is just confusing for the users (CBLAS
-        # will be installed with GSL). The CBLAS message is only
-        # interesting if the GSL test has passed.
-        AS_ECHO([""])
-        AS_IF([test "x$has_cmath" = "xno"],
-              [ AS_ECHO([" - C library (math): This may be the cause of all other failures."]) ])
-        AS_IF([test "x$has_gsl" = "xno"],
-              [ AS_ECHO([" - GNU Scientific Library (GSL): https://www.gnu.org/software/gsl"]) ],
-              [ AS_IF([test "x$has_gslcblas" = "xno"],
-                      [ AS_ECHO([" - The BLAS support of GNU Scientific Library (GSL). This should have"])
-                        AS_ECHO(["   been installed along with GSL. Try re-installing GSL."]) ]) ])
-        AS_IF([test "x$has_cfitsio" = "xno"],
-              [ AS_ECHO([" - CFITSIO: https://heasarc.gsfc.nasa.gov/fitsio"]) ])
-        AS_IF([test "x$has_wcslib" = "xno"],
-              [ AS_ECHO([" - WCSLIB: http://www.atnf.csiro.au/people/mcalabre/WCS"]) ])
-
-        # Suggestions on fixing the problem.
-        AS_ECHO([""])
-        AS_ECHO(["You can use your package manager for easy and fast installation of all the"])
-        AS_ECHO(["mandatory and optional dependencies in one command. See the link below:"])
-        AS_ECHO(["  https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
-        AS_ECHO([""])
-        AS_ECHO(["If you have already installed a dependency (for example in \`/install/path'),"])
-        AS_ECHO(["but this script can't link with it, add the path to the LDFLAGS, CPPFLAGS and"])
-        AS_ECHO(["LD_LIBRARY_PATH environment variables before running configure. For example"])
-        AS_ECHO(["with the following commands (just correct the \`/install/path' part)."])
-        AS_ECHO(["  $ export LDFLAGS=\"\$LDFLAGS -L/install/path/lib\""])
-        AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -I/install/path/include\""])
-        AS_ECHO(["  $ export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:/install/path/lib\""])
-        AS_ECHO([""])
-        AS_ECHO(["[TIP:] Put these commands in your startup file (for example \`~/.bashrc') to"])
-        AS_ECHO(["avoid similar problems later. See the link below to learn more:"])
-        AS_ECHO(["  https://www.gnu.org/software/gnuastro/manual/html_node/Installation-directory.html"])
-        AS_ECHO([""])
-        AC_MSG_ERROR([Mandatory dependency(s) missing, === SEE MESSAGE ABOVE ===.])
-      ])
-
-
-
-
 
 # These are secondary tests for more fine-grained control in libraries that
 # have already been checked. We don't need to add them to the LIBS
@@ -511,6 +459,77 @@ AS_IF([test "x$has_ghostscript" = "xyes"],
 # `anywarnings' cannot be an [RUN-IF-FALSE] argument to the AS_IF above.
 AS_IF([test "x$has_ghostscript" = "xno"], [anywarnings=yes])
 AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
+
+
+
+
+
+# If any necessary dependency is missing inform the user and abort.
+AS_IF([test "x$missing_mandatory" = "xyes"],
+      [
+        # List missing packages: print the GSL CBLAS message only if GSL is
+        # present. Otherwise, it is just confusing for the users (CBLAS
+        # will be installed with GSL). The CBLAS message is only
+        # interesting if the GSL test has passed.
+        AS_ECHO([""])
+        AS_ECHO(["Missing MANDATORY dependencies (necessary to continue):"])
+        AS_IF([test "x$has_cmath" = "xno"],
+              [ AS_ECHO([" - C library (math): This may be the cause of all other failures."]) ])
+        AS_IF([test "x$has_gsl" = "xno"],
+              [ AS_ECHO([" - GNU Scientific Library (GSL): https://www.gnu.org/software/gsl"]) ],
+              [ AS_IF([test "x$has_gslcblas" = "xno"],
+                      [ AS_ECHO([" - The BLAS support of GNU Scientific Library (GSL). This should have"])
+                        AS_ECHO(["   been installed along with GSL. Try re-installing GSL."]) ]) ])
+        AS_IF([test "x$has_cfitsio" = "xno"],
+              [ AS_ECHO([" - CFITSIO: https://heasarc.gsfc.nasa.gov/fitsio"]) ])
+        AS_IF([test "x$has_wcslib" = "xno"],
+              [ AS_ECHO([" - WCSLIB: http://www.atnf.csiro.au/people/mcalabre/WCS"]) ])
+
+        # Optional dependencies:
+        AS_IF([test "x$anywarnings" = xyes],
+              [
+                AS_ECHO([""])
+                AS_ECHO(["OPTIONAL warnings/dependencies (for improved functionality):"])
+                AS_IF([test "x$gsl_version_old" = "xyes"],
+                      [ AS_ECHO([" - Old GSL version: https://www.gnu.org/s/gsl"])                ])
+                AS_IF([test "x$has_libjpeg" = "xno"],
+                      [ AS_ECHO([" - Missing Libjpeg (JPEG files): http://ijg.org"])              ])
+                AS_IF([test "x$has_libtiff" = "xno"],
+                      [ AS_ECHO([" - Missing Libtiff (TIFF files): http://libtiff.maptools.org"]) ])
+                AS_IF([test "x$has_libgit2" = "x0"],
+                      [ AS_ECHO([" - Missing Libgit2: https://libgit2.org"])                      ])
+                AS_IF([test "x$usable_libtool" = "xno"],
+                      [ AS_ECHO([" - Unusable GNU Libtool: https://www.gnu.org/s/libtool"])
+                        AS_IF([test "x$has_gnulibtool" = "xyes"],
+                              [ AS_ECHO(["  -- GNU Libtool is present, tested shells not supported."])  ])
+                        AS_IF([test "x$has_libtool" = "xyes"],
+                              [ AS_ECHO(["  -- A libtool implementation was found, but it isn't GNU."]) ])
+                      ])
+                AS_IF([test "x$has_ghostscript" = "xno"],
+                      [ AS_ECHO([" - Missing GPL Ghostscript (v9.10 or later): https://www.ghostscript.com"])])
+              ])
+
+        # Suggestions on fixing the problem.
+        AS_ECHO([""])
+        AS_ECHO(["You can use your package manager for easy and fast installation of all"])
+        AS_ECHO(["dependencies in one command. See the link below:"])
+        AS_ECHO(["  https://www.gnu.org/s/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
+        AS_ECHO([""])
+        AS_ECHO(["If you have already installed a dependency (for example in \`/install/path'),"])
+        AS_ECHO(["but this script can't link with it, add the path to the LDFLAGS, CPPFLAGS and"])
+        AS_ECHO(["LD_LIBRARY_PATH environment variables before running configure. For example"])
+        AS_ECHO(["with the following commands (just correct the \`/install/path' part)."])
+        AS_ECHO(["  $ export LDFLAGS=\"\$LDFLAGS -L/install/path/lib\""])
+        AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -I/install/path/include\""])
+        AS_ECHO(["  $ export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:/install/path/lib\""])
+        AS_ECHO([""])
+        AS_ECHO(["[TIP:] Put these commands in your startup file (for example \`~/.bashrc') to"])
+        AS_ECHO(["avoid similar problems later. See the link below to learn more:"])
+        AS_ECHO(["  https://www.gnu.org/s/gnuastro/manual/html_node/Installation-directory.html"])
+        AS_ECHO([""])
+        AS_ECHO([""])
+        AC_MSG_ERROR([Mandatory dependency(s) missing, === SEE MESSAGE ABOVE ===.])
+      ])
 
 
 
@@ -828,40 +847,41 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_ECHO([])
 
         AS_IF([test "x$gsl_version_old" = "xyes"],
-              [AS_ECHO(["  - The version of GNU Scientific Library (GSL) on this system doesn't"])
-               AS_ECHO(["    have some features that can be useful in Gnuastro. This build"])
-               AS_ECHO(["    won't crash, but Gnuastro will have less functionality afterwards."])
-               AS_ECHO(["    We thus recommend building and installing a more recent version"])
-               AS_ECHO(["    of GSL (version >= 2.0, released in October 2015)."])
+              [AS_ECHO(["  - GNU Scientific Library (GSL: https://www.gnu.org/s/gsl) version"])
+               AS_ECHO(["    on this system doesn't have some features that can be useful in"])
+               AS_ECHO(["    some parts of Gnuastro. This build won't crash, but Gnuastro will"])
+               AS_ECHO(["    have less functionality afterwards. We thus recommend building"])
+               AS_ECHO(["    and installing a more recent version of GSL (version >= 2.0,"])
+               AS_ECHO(["    released in October 2015)."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libjpeg" = "xno"],
-              [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
-               AS_ECHO(["    If JPEG inputs/outputs are requested, the respective tool will"])
-               AS_ECHO(["    inform you and abort with an error."])
+              [AS_ECHO(["  - libjpeg (http://ijg.org), could not be linked with in your library"])
+               AS_ECHO(["    search path. If JPEG inputs/outputs are requested, the respective"])
+               AS_ECHO(["    tool will inform you and abort with an error."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libtiff" = "xno"],
-              [AS_ECHO(["  - libtiff, could not be linked with in your library search path."])
-               AS_ECHO(["    If TIFF inputs/outputs are requested, the respective tool will"])
-               AS_ECHO(["    inform you and abort with an error."])
+              [AS_ECHO(["  - libtiff (http://libtiff.maptools.org), could not be linked with in"])
+               AS_ECHO(["    your library search path. If TIFF inputs/outputs are requested, the"])
+               AS_ECHO(["    respective tool will inform you and abort with an error."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libgit2" = "x0"],
-              [AS_ECHO(["  - libgit2, could not be linked with in your library search path."])
-               AS_ECHO(["    When present, Git's describe output will be stored in the"])
-               AS_ECHO(["    output files if Gnuastro's programs were called within a Git"])
-               AS_ECHO(["    version controlled directory to help in reproducibility."])
+              [AS_ECHO(["  - libgit2 (https://libgit2.org), could not be linked with in your"])
+               AS_ECHO(["    library search path. When present, Git's describe output will be"])
+               AS_ECHO(["    stored in the output files if Gnuastro's programs were called"])
+               AS_ECHO(["    within a Gitversion controlled directory to help in reproducibility."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$usable_libtool" = "xno"],
-              [AS_ECHO(["  - GNU Libtool can't be used on this system (see below)."])
-               AS_ECHO(["    Gnuastro's BuildProgram uses GNU libtool to link your source code"])
-               AS_ECHO(["    with the various libraries (Gnuastro's dependencies). Therefore"])
-               AS_ECHO(["    BuildProgram will not be built or installed. Please note that"])
-               AS_ECHO(["    not having GNU libtool in your search path will not harm the rest"])
-               AS_ECHO(["    of Gnuastro's building and installation. Gnuastro has its own"])
-               AS_ECHO(["    internal implementation of GNU Libtool to build its self. This"])
+              [AS_ECHO(["  - GNU Libtool (https://www.gnu.org/s/libtool) can't be used on this"])
+               AS_ECHO(["    system (see below). Gnuastro's BuildProgram uses GNU libtool to"])
+               AS_ECHO(["    link your source code with the various libraries (Gnuastro's"])
+               AS_ECHO(["    dependencies). Therefore BuildProgram will not be built or installed."])
+               AS_ECHO(["    Please note that not having GNU libtool in your search path will not"])
+               AS_ECHO(["    harm the rest of Gnuastro's building and installation. Gnuastro has"])
+               AS_ECHO(["    its own internal implementation of GNU Libtool to build its self. This"])
                AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
                AS_ECHO(["    part of this build. The executable names searched were \`libtool'"])
                AS_ECHO(["    and \`glibtool'. The shells searched were \`sh', \`bash' and \`zsh'."])
@@ -875,9 +895,9 @@ AS_IF([test x$enable_guide_message = xyes],
               ])
 
         AS_IF([test "x$has_ghostscript" = "xno"],
-              [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
-               AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
-               AS_ECHO(["    If PDF outputs are desired, the respective tool it will abort"])
+              [AS_ECHO(["  - GPL GhostScript (https://www.ghostscript.com) version 9.10 or later,"])
+               AS_ECHO(["    with the executable name \`gs', was not found in your PATH environment"])
+               AS_ECHO(["    variable. If PDF outputs are desired, the respective tool it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
                AS_ECHO([]) ])
 
@@ -902,7 +922,7 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_ECHO(["  You can use your package manager for easy and fast installation of all"])
         AS_ECHO(["  the mandatory and optional dependencies in one command. See the link"])
         AS_ECHO(["  below:"])
-        AS_ECHO(["    https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
+        AS_ECHO(["    https://www.gnu.org/s/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
         AS_ECHO([])
 
         # Inform the user on skipped tests.
