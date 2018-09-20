@@ -13,7 +13,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --onedasimage: write output as an image if it has one dimension, not table.
 
   NoiseChisel:
-
     - New outlier identification algorithm for quantile thresholds. This is
       very useful when there are extended and bright sources in the
       dataset: the tiles containing very faint signal that pass the general
@@ -83,11 +82,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
           FITS keyword `NAXIS'.
 
   NoiseChisel:
-    --meanmedqdiff: new name for `--modmedqdiff'. Until now, the mode's
-      quantile was used to identify tiles with no significant signal. But
-      from this version, the mean's quantile in each tile is used
-      instead. The reason is that the mean is more sensative to outliers
-      (signal).
+    - Until now, the mode's quantile was used to identify tiles with no
+      significant signal. But from this version, the mean's quantile in
+      each tile is used instead. The reason is that the mean is more
+      sensative to outliers (signal). Therefore the old `--modmedqdiff' is
+      now called `--meanmedqdiff' .
 
   Statistics:
     --meanmedqdiff: new name for `--modmedqdiff'. Similar to NoiseChisel.
