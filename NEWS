@@ -85,7 +85,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - Until now, the mode's quantile was used to identify tiles with no
       significant signal. But from this version, the mean's quantile in
       each tile is used instead. The reason is that the mean is more
-      sensative to outliers (signal). Therefore the old `--modmedqdiff' is
+      sensitive to outliers (signal). Therefore the old `--modmedqdiff' is
       now called `--meanmedqdiff' .
 
   Statistics:

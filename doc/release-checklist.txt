@@ -71,16 +71,6 @@ all the commits needed for this release have been completed.
      $ git add -u
      $ git commit
 
- - Make sure all the bootstrapping tools are up to date (keep the
-   versions in text file to use in the release), then bootstrap and
-   rebuild everything:
-
-     $ git clean -fxd
-     $ ./bootstrap --copy --gnulib-srcdir=/path/to/gnulib
-     $ ./developer-build -c -C -d     # using `-d' to speed up the build.
-     $ cd build
-     $ make distcheck -j8
-
 
  - [ALPHA] For alpha, we will only be distributing lzip tarballs. So first
    remove the `tar.gz' file that was produced by `make distcheck', then
@@ -198,6 +188,18 @@ Packaging in Debian
 ===================
 
 Steps necessary to Package Gnuastro for Debian.
+
+ - Make sure the tarball is built with updated bootstrapped parts:
+
+      $ cd path/to/gnulib
+      $ git pull
+      $ cd path/to/autoconf-archives
+      $ git pull
+      $ cd gnuastro
+      $ git clean -fxd
+      $ ./bootstrap --copy --gnulib-srcdir=/path/to/gnulib
+      $ ./developer-build -p upload-server:folder
+
 
  - It would help to use the most recent versions of packages in Debian. To
    do that, you can update the `/etc/apt/sources.list' file. You can get
