@@ -616,8 +616,8 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
   /* Reverse the comments list (so it is printed in the same order here),
      write the objects catalog and free the comments. */
   gal_list_str_reverse(&comments);
-  gal_table_write(p->objectcols, comments, p->cp.tableformat, p->objectsout,
-                  "OBJECTS", 0);
+  gal_table_write(p->objectcols, comments, p->cp.tableformat,
+                  p->objectsout, "OBJECTS", 0);
   gal_list_str_free(comments, 1);
 
 
@@ -627,14 +627,10 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
       /* Make the comments. */
       comments=mkcatalog_outputs_same_start(p, 1, "Clumps");
 
-      /* Write objects catalog
-         ---------------------
-
-         Reverse the comments list (so it is printed in the same order here),
-         write the objects catalog and free the comments. */
+      /* Reverse the comments and write the catalog. */
       gal_list_str_reverse(&comments);
-      gal_table_write(p->clumpcols, comments, p->cp.tableformat, p->clumpsout,
-                      "CLUMPS", 0);
+      gal_table_write(p->clumpcols, comments, p->cp.tableformat,
+                      p->clumpsout, "CLUMPS", 0);
       gal_list_str_free(comments, 1);
     }
 
@@ -651,14 +647,14 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
   /* Inform the user */
   if(!p->cp.quiet)
     {
-      if(p->clumpsout==p->objectsout)
-        printf("  - Output catalog: %s\n", p->objectsout);
-      else
+      if(p->clumpsout && strcmp(p->clumpsout,p->objectsout))
         {
           printf("  - Output objects catalog: %s\n", p->objectsout);
           if(p->clumps)
             printf("  - Output clumps catalog: %s\n", p->clumpsout);
         }
+      else
+        printf("  - Catalog written to %s\n", p->objectsout);
     }
 }
 

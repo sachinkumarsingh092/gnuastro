@@ -777,12 +777,21 @@ gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
           "of dimensions, the dimensions are %zu and %zu respectively",
           __func__, out->ndim, in->ndim);
 
+  /* Free possibly allocated meta-data strings. */
+  if(out->name)    free(out->name);
+  if(out->unit)    free(out->unit);
+  if(out->comment) free(out->comment);
+
   /* Write the basic meta-data. */
   out->flag           = in->flag;
   out->next           = in->next;
   out->status         = in->status;
   out->disp_width     = in->disp_width;
   out->disp_precision = in->disp_precision;
+  gal_checkset_allocate_copy(in->name,    &out->name);
+  gal_checkset_allocate_copy(in->unit,    &out->unit);
+  gal_checkset_allocate_copy(in->comment, &out->comment);
+
 
   /* Do the copying. */
   switch(out->type)

@@ -871,6 +871,10 @@ ui_subtract_sky(struct mkcatalogparams *p)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
           "the problem. For some reason, the size doesn't match", __func__,
           PACKAGE_BUGREPORT);
+
+  /* Inform the user that this operation is done (if necessary). */
+  if(!p->cp.quiet)
+    printf("  - Sky subtracted from input values.\n");
 }
 
 

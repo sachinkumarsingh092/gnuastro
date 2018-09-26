@@ -114,9 +114,10 @@ parse_objects(struct mkcatalog_passparams *pp)
   size_t ndim=p->objects->ndim, *dsize=p->objects->dsize;
 
   double *oi=pp->oi;
+  size_t *tsize=pp->tile->dsize;
   size_t d, increment=0, num_increment=1;
   float st, sval, *V=NULL, *SK=NULL, *ST=NULL;
-  int32_t *O, *OO, *C=NULL, *objects=p->objects->array;
+  int32_t *O, *OO, *C=NULL, *objarr=p->objects->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
   /* If tile processing isn't necessary, set `tid' to a blank value. */
@@ -157,7 +158,7 @@ parse_objects(struct mkcatalog_passparams *pp)
       if( p->values            ) V  = pp->st_v   + increment;
       if( p->sky && pp->st_sky ) SK = pp->st_sky + increment;
       if( p->std && pp->st_std ) ST = pp->st_std + increment;
-      OO = ( O = pp->st_o + increment ) + pp->tile->dsize[ndim-1];
+      OO = ( O = pp->st_o + increment ) + tsize[ndim-1];
 
       /* Parse the tile. */
       do
@@ -180,7 +181,7 @@ parse_objects(struct mkcatalog_passparams *pp)
               if(c)
                 {
                   /* Convert the index to coordinate. */
-                  gal_dimension_index_to_coord(O-objects, ndim, dsize, c);
+                  gal_dimension_index_to_coord(O-objarr, ndim, dsize, c);
 
                   /* If we need tile-ID, get the tile ID now. */
                   if(tid!=GAL_BLANK_SIZE_T)
@@ -297,7 +298,7 @@ parse_objects(struct mkcatalog_passparams *pp)
       while(++O<OO);
 
       /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->objects, dsize,
+      increment += ( gal_tile_block_increment(p->objects, tsize,
                                               num_increment++, NULL) );
     }
 
@@ -332,6 +333,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
   double *ci, *cir;
   uint8_t *cif=p->ciflag;
+  size_t *tsize=pp->tile->dsize;
   int32_t *O, *OO, *C=NULL, nlab;
   float st, sval, *V=NULL, *SK=NULL, *ST=NULL;
   size_t i, ii, d, increment=0, num_increment=1;
@@ -384,7 +386,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
       if( p->values            ) V  = pp->st_v   + increment;
       if( p->sky && pp->st_sky ) SK = pp->st_sky + increment;
       if( p->std && pp->st_std ) ST = pp->st_std + increment;
-      OO = ( O = pp->st_o + increment ) + pp->tile->dsize[ndim-1];
+      OO = ( O = pp->st_o + increment ) + tsize[ndim-1];
 
       /* Parse the tile */
       do
@@ -561,7 +563,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
       while(++O<OO);
 
       /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->objects, dsize,
+      increment += ( gal_tile_block_increment(p->objects, tsize,
                                               num_increment++, NULL) );
     }
 
@@ -580,7 +582,6 @@ void
 parse_median(struct mkcatalog_passparams *pp)
 {
   struct mkcatalogparams *p=pp->p;
-  size_t ndim=p->objects->ndim, *dsize=p->objects->dsize;
 
   float *V;
   double *ci;
@@ -588,9 +589,10 @@ parse_median(struct mkcatalog_passparams *pp)
   int32_t *O, *OO, *C=NULL;
   gal_data_t **clumpsmed=NULL;
   size_t i, increment=0, num_increment=1;
-  size_t counter=0, *ccounter=NULL, tsize=pp->oi[OCOL_NUM];
-  gal_data_t *objmed=gal_data_alloc(NULL, p->values->type, 1, &tsize, NULL, 0,
-                                    p->cp.minmapsize, NULL, NULL, NULL);
+  size_t *tsize=pp->tile->dsize, ndim=p->objects->ndim;
+  size_t counter=0, *ccounter=NULL, tmpsize=pp->oi[OCOL_NUM];
+  gal_data_t *objmed=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL,
+                                    0, p->cp.minmapsize, NULL, NULL, NULL);
 
   /* Allocate space for the clump medians. */
   if(p->clumps)
@@ -607,9 +609,10 @@ parse_median(struct mkcatalog_passparams *pp)
                                     __func__, "ccounter");
       for(i=0;i<pp->clumpsinobj;++i)
         {
-          tsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
-          clumpsmed[i]=gal_data_alloc(NULL, p->values->type, 1, &tsize, NULL,
-                                      0, p->cp.minmapsize, NULL, NULL, NULL);
+          tmpsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
+          clumpsmed[i]=gal_data_alloc(NULL, p->values->type, 1, &tmpsize,
+                                      NULL, 0, p->cp.minmapsize, NULL, NULL,
+                                      NULL);
         }
     }
 
@@ -621,7 +624,7 @@ parse_median(struct mkcatalog_passparams *pp)
          along the fastest dimension will be done over the `O' pointer. */
       V = pp->st_v + increment;
       if(p->clumps) C = pp->st_c + increment;
-      OO = ( O = pp->st_o + increment ) + pp->tile->dsize[ndim-1];
+      OO = ( O = pp->st_o + increment ) + tsize[ndim-1];
 
       /* Parse the next contiguous region of this tile. */
       do
@@ -651,7 +654,7 @@ parse_median(struct mkcatalog_passparams *pp)
       while(++O<OO);
 
       /* Increment to the next contiguous region of this tile. */
-      increment += ( gal_tile_block_increment(p->objects, dsize,
+      increment += ( gal_tile_block_increment(p->objects, tsize,
                                               num_increment++, NULL) );
     }
 

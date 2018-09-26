@@ -483,8 +483,8 @@ Invoking MakeCatalog
 
 * MakeCatalog inputs and basic settings::  Input files and basic settings.
 * Upper-limit settings::        Settings for upper-limit measurements.
-* MakeCatalog output columns::  Available columns in MakeCatalog's output table.
-* MakeCatalog output file::     File names of MakeCatalog's output table.
+* MakeCatalog measurements::    Available measurements in MakeCatalog.
+* MakeCatalog output::          File names of MakeCatalog's output table.
 
 Match
 
@@ -17499,21 +17499,27 @@ it. For example the magnitudes, positions and elliptical properties of the
 galaxies that are in the image.
 
 MakeCatalog is Gnuastro's program for localized measurements over a
-dataset. The role of MakeCatalog in a scientific analysis and the benefits
-of this model of data analysis (were detection/segmentation is separated
-from measurement) is discussed in @url{https://arxiv.org/abs/1611.06387v1,
-Akhlaghi [2016]}. We strongly recommend reading this short paper for a
-better understanding of this methodology thus effective usage of
-MakeCatalog, in combination with the other Gnuastro's programs. However,
-that paper cannot undergo any more change, so this manual is the definitive
-guide.
+dataset. In other words, MakeCatalog is Gnuastro's program to convert
+low-level datasets (like images), to high level catalogs. The role of
+MakeCatalog in a scientific analysis and the benefits of its model (where
+detection/segmentation is separated from measurement) is discussed in
+@url{https://arxiv.org/abs/1611.06387v1, Akhlaghi [2016]}@footnote{A
+published paper cannot undergo any more change, so this manual is the
+definitive guide.} and summarized in @ref{Detection and catalog
+production}. We strongly recommend reading this short paper for a better
+understanding of this methodology. Understanding the effective usage of
+MakeCatalog, will thus also help effective use of other (lower-level)
+Gnuastro's programs like @ref{NoiseChisel} or @ref{Segment}.
 
-It is important to define your regions of interest @emph{before} running
-MakeCatalog. MakeCatalog is specialized in doing measurements accurately
-and efficiently. Therefore MakeCatalog will not do detection, segmentation,
-or defining apertures on requested positions in your dataset. Following
-Gnuastro's modularity principle, There are separate and highly specialized
-and customizable programs in Gnuastro for these other jobs:
+It is important to define your regions of interest for measurements
+@emph{before} running MakeCatalog. MakeCatalog is specialized in doing
+measurements accurately and efficiently. Therefore MakeCatalog will not do
+detection, segmentation, or defining apertures on requested positions in
+your dataset. Following Gnuastro's modularity principle, there are separate
+and highly specialized and customizable programs in Gnuastro for these
+other jobs as shown below (for a usage example in a real-world analysis,
+see @ref{General program usage tutorial} and @ref{Detecting large extended
+targets}).
 
 @itemize
 @item
@@ -17530,19 +17536,23 @@ and customizable programs in Gnuastro for these other jobs:
 @end itemize
 
 These programs will/can return labeled dataset(s) to be fed into
-MakeCatalog. The labeled dataset must have the same size/dimensions as the
-input, but only with integer valued pixels that have the label/counter for
-the feature the pixel belongs to.
+MakeCatalog. A labeled dataset for measurement has the same size/dimensions
+as the input, but with integer valued pixels that have the label/counter
+for each sub-set of pixels that must be measured together. For example all
+the pixels covering one galaxy in an image, get the same label.
 
-These labels are then directly used to make the necessary measurements. For
-example the flux weighted average position of all the pixels with a label
-of 42 will be considered as the central position@footnote{See
+The requested measurements are then done on similarly labeled pixels. The
+final result is a catalog where each row corresponds to the measurements on
+pixels with a specfic label. For example the flux weighted average position
+of all the pixels with a label of 42 will be written into the 42nd row of
+the output catalog/table's central position column@footnote{See
 @ref{Measuring elliptical parameters} for a discussion on this and the
-derivation of positional parameters.} of the 42nd row of the output
-catalog. Similarly, the sum of all these pixels will be the 42nd row in the
-brightness column and etc. Pixels with labels equal to or smaller than zero
-will be ignored by MakeCatalog. In other words, the number of rows in
-MakeCatalog's output is already known before running it.
+derivation of positional parameters, which includes the
+center.}. Similarly, the sum of all these pixels will be the 42nd row in
+the brightness column and etc. Pixels with labels equal to, or smaller
+than, zero will be ignored by MakeCatalog. In other words, the number of
+rows in MakeCatalog's output is already known before running it (the
+maximum value of the labeled dataset).
 
 Before getting into the details of running MakeCatalog (in @ref{Invoking
 astmkcatalog}, we'll start with a discussion on the basics of its approach
@@ -17568,23 +17578,26 @@ steps is provided for readily adding your own new measurements/columns.
 @node Detection and catalog production, Quantifying measurement limits, MakeCatalog, MakeCatalog
 @subsection Detection and catalog production
 
-Most other common tools in low-level astronomical data-analysis (for
+Most existing common tools in low-level astronomical data-analysis (for
 example
 SExtractor@footnote{@url{https://www.astromatic.net/software/sextractor}})
-merge the two processes of detection and measurement into one. Gnuastro's
-modularized methodology to separating detection from measurements is
-therefore new to many experienced astronomers and deserves a short review
-here. Further discussion on the benefits of this methodology can be seen in
+merge the two processes of detection and measurement (catalog production)
+in one program. However, in light of Gnuastro's modularized approach
+(modeled on the Unix system) detection is separated from measurements and
+catalog production. This modularity is therefore new to many experienced
+astronomers and deserves a short review here. Further discussion on the
+benefits of this methodology can be seen in
 @url{https://arxiv.org/abs/1611.06387v1, Akhlaghi [2016]}.
 
-The raw output of any of the programs mentioned in @ref{MakeCatalog} can be
-directly fed into MakeCatalog to get to a fast catalog. This is good when
-no further customization is necessary and you want a fast/simple
-catalog. But the modular approach taken by Gnuastro has many benefits that
-will become clear as you get more experienced in astronomical data analysis
-and want to be more creative in using your valuable data for the exciting
-scientific project you are working on. In short the reasons for this
-modularity can be classified as below:
+As discussed in the introduction of @ref{MakeCatalog}, detection
+(identifying which pixels to do measurements on) can be done with different
+programs. Their outputs (a labeled dataset) can be directly fed into
+MakeCatalog to do the measurements and write the result as a
+catalog/table. Beyond that, Gnuastro's modular approach has many benefits
+that will become clear as you get more experienced in astronomical data
+analysis and want to be more creative in using your valuable data for the
+exciting scientific project you are working on. In short the reasons for
+this modularity can be classified as below:
 
 @itemize
 
@@ -17603,7 +17616,7 @@ same scale. However, it is imperative that the same pixels be used in
 measuring the colors of galaxies.
 
 To solve the problem, NoiseChisel can be run on the reference image to
-generate the labeled detection image. After wards, the labeled image can be
+generate the labeled detection image. Afterwards, the labeled image can be
 warped into the grid of the other color (using @ref{Warp}). MakeCatalog
 will then generate the same catalog for both colors (with the different
 labeled images). It is currently customary to warp the images to the same
@@ -18205,18 +18218,18 @@ including MakeCatalog.
 The various measurements/columns of MakeCatalog are requested as options,
 either on the command-line or in configuration files, see
 @ref{Configuration files}. The full list of available columns is available
-in @ref{MakeCatalog output columns}. Depending on the requested columns,
+in @ref{MakeCatalog measurements}. Depending on the requested columns,
 MakeCatalog needs more than one input dataset, for more details, please see
 @ref{MakeCatalog inputs and basic settings}. The upper-limit measurements
 in particular need several configuration options which are thoroughly
 discussed in @ref{Upper-limit settings}. Finally, in @ref{MakeCatalog
-output file} the output file(s) created by MakeCatalog are discussed.
+output} the output file(s) created by MakeCatalog are discussed.
 
 @menu
 * MakeCatalog inputs and basic settings::  Input files and basic settings.
 * Upper-limit settings::        Settings for upper-limit measurements.
-* MakeCatalog output columns::  Available columns in MakeCatalog's output table.
-* MakeCatalog output file::     File names of MakeCatalog's output table.
+* MakeCatalog measurements::    Available measurements in MakeCatalog.
+* MakeCatalog output::          File names of MakeCatalog's output table.
 @end menu
 
 @node MakeCatalog inputs and basic settings, Upper-limit settings, Invoking astmkcatalog, Invoking astmkcatalog
@@ -18243,7 +18256,7 @@ error). All such auxiliary input files have to have the same size (number
 of pixels in each dimension) as the input labeled image. Their numeric data
 type is irrelevant (they will be converted to 32-bit floating point
 internally). For the full list of available measurements, see
-@ref{MakeCatalog output columns}.
+@ref{MakeCatalog measurements}.
 
 The ``values'' dataset is used for measurements like brightness/magnitude,
 or flux-weighted positions. If it is a real image, by default it is assumed
@@ -18305,9 +18318,9 @@ options and general setting options are described below.
 @item -l STR
 @itemx --clumpsfile=STR
 The file containing the labeled clumps dataset when @option{--clumpscat} is
-called (see @ref{MakeCatalog output file}). When @option{--clumpscat} is
-called, but this option isn't, MakeCatalog will look into the main input
-file (given as an argument) for the required extension/HDU (value to
+called (see @ref{MakeCatalog output}). When @option{--clumpscat} is called,
+but this option isn't, MakeCatalog will look into the main input file
+(given as an argument) for the required extension/HDU (value to
 @option{--clumpshdu}).
 
 @item --clumpshdu=STR
@@ -18388,7 +18401,7 @@ magnitude}.
 @end table
 
 
-@node Upper-limit settings, MakeCatalog output columns, MakeCatalog inputs and basic settings, Invoking astmkcatalog
+@node Upper-limit settings, MakeCatalog measurements, MakeCatalog inputs and basic settings, Invoking astmkcatalog
 @subsubsection Upper-limit settings
 
 The upper-limit magnitude was discussed in @ref{Quantifying measurement
@@ -18528,17 +18541,28 @@ option.
 @end table
 
 
-@node MakeCatalog output columns, MakeCatalog output file, Upper-limit settings, Invoking astmkcatalog
-@subsubsection MakeCatalog output columns
+@node MakeCatalog measurements, MakeCatalog output, Upper-limit settings, Invoking astmkcatalog
+@subsubsection MakeCatalog measurements
 
 The final group of options particular to MakeCatalog are those that specify
-which columns should be written into the final output table. For each
-column there is an option, if it has been called on the command line or in
-any of the configuration files, it will included as a column in the output
-catalog in the same order (see @ref{Configuration file precedence}). Some
-of the columns apply to both objects and clumps and some are particular to
-only one of them. The latter cases are explicitly marked with [Objects] or
-[Clumps] to specify the catalog they will be placed in.
+which measurements/columns should be written into the final output
+table. The current measurements in MakeCatalog are those which only produce
+one final value for each label (for example its total brightness: a single
+number). All the different label's measurements can be written as one
+column in a final table/catalog that contains other columns for other
+similar single-number measurements.
+
+Command-line options are used to identify which measurements you want in
+the final catalog(s) and in what order. If any of the options below is
+called on the command line or in any of the configuration files, it will be
+included as a column in the output catalog. The order of the columns is in
+the same order as the options were seen by MakeCatalog (see
+@ref{Configuration file precedence}). Some of the columns apply to both
+``objects'' and ``clumps'' and some are particular to only one of them (for
+the definition of ``objects'' and ``clumps'', see
+@ref{Segment}). Columns/options that are unique to one catalog (only
+objects, or only clumps), are explicitly marked with [Objects] or [Clumps]
+to specify the catalog they will be placed in.
 
 @table @option
 
@@ -18890,10 +18914,11 @@ with the first FITS axis in degrees.
 
 
 
-@node MakeCatalog output file,  , MakeCatalog output columns, Invoking astmkcatalog
-@subsubsection MakeCatalog output file
+@node MakeCatalog output,  , MakeCatalog measurements, Invoking astmkcatalog
+@subsubsection MakeCatalog output
 
-When complete, MakeCatalog will store its measurements as a table. If an
+After it has completed all the requested measurements (see @ref{MakeCatalog
+measurements}), MakeCatalog will store its measurements in table(s). If an
 output filename is given (see @option{--output} in @ref{Input output
 options}), the format of the table will be deduced from the name. When it
 isn't given, the input name will be appended with a @file{_cat} suffix (see
@@ -18907,8 +18932,9 @@ By default only a single catalog/table will be created for ``objects'',
 however, if @option{--clumpscat} is called, a secondary catalog/table will
 also be created. For more on ``objects'' and ``clumps'', see
 @ref{Segment}. In short, if you only have one set of labeled images, you
-don't have to worry about clumps (they are deactivated by default). Here is
-a full description of MakeCatalog's output options:
+don't have to worry about clumps (they are deactivated by default).
+
+The full list of MakeCatalog's output options are elaborated below.
 
 @table @option
 @item -C
@@ -23548,10 +23574,11 @@ not have any zero values (a dimension of length zero is not defined).
 @end deftypefun
 
 @deftypefun void gal_data_free_contents (gal_data_t @code{*data})
-Free all the non-@code{NULL} pointers in @code{gal_data_t}. If @code{data}
-is actually a tile (@code{data->block!=NULL}, see @ref{Tessellation
-library}), then @code{data->array} is not freed. For a complete description
-of @code{gal_data_t} and its contents, see @ref{Generic data container}.
+Free all the non-@code{NULL} pointers in @code{gal_data_t} except for
+@code{next} and @code{block}. If @code{data} is actually a tile
+(@code{data->block!=NULL}, see @ref{Tessellation library}), then
+@code{data->array} is not freed. For a complete description of
+@code{gal_data_t} and its contents, see @ref{Generic data container}.
 @end deftypefun
 
 @deftypefun void gal_data_free (gal_data_t @code{*data})
@@ -26401,13 +26428,13 @@ function-like macro that is described below.
 
 @deftypefun {gal_data_t *} gal_tile_series_from_minmax (gal_data_t @code{*block}, size_t @code{*minmax}, size_t @code{number})
 Construct a list of tile(s) given coordinates of the minimum and maximum of
-each tile. The minimum and maximums are assumed to be inclusive. The
-returned pointer is an allocated @code{gal_data_t} array that can later be
-freed with @code{gal_data_array_free} (see @ref{Arrays of
-datasets}). Internally, each element of the output array points to the next
-element, so the output may also be treated as a list of datasets (see
-@ref{List of gal_data_t}) and passed onto the other functions described in
-this section.
+each tile. The minimum and maximums are assumed to be inclusive and in C
+order (slowest dimension first). The returned pointer is an allocated
+@code{gal_data_t} array that can later be freed with
+@code{gal_data_array_free} (see @ref{Arrays of datasets}). Internally, each
+element of the output array points to the next element, so the output may
+also be treated as a list of datasets (see @ref{List of gal_data_t}) and
+passed onto the other functions described in this section.
 
 The array keeping the minimum and maximum coordinates for each tile must
 have the following format. So in total @code{minmax} must have
