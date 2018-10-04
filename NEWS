@@ -101,7 +101,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54493: Warp crashes when type isn't set.
   bug #54526: Invalid r, q and truncation of point profiles in MakeProfiles.
   bug #54579: NoiseChisel pseudo-detection failure when dataset is negative.
-
+  bug #54782: Segment's check image not removing sky clumps some tiles.
 
 
 

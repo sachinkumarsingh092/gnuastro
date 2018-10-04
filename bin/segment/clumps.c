@@ -221,56 +221,62 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   size_t len=cltprm->numinitclumps+1;
   struct segmentparams *p=cltprm->clprm->p;
 
-  /* If there are no clumps in this tile, then this function can be
-     ignored. */
-  if(cltprm->snind->size==0) return;
+  /* If any of the clumps must be kept (`cltprm->snind->size!=0'), then
+     re-label them for the check image. Otherwise, remove all clumps. */
+  if(cltprm->snind->size)
+    {
+      /* A small sanity check. */
+      if(gal_tile_block(tile)!=p->clabel)
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+              "address the problem. `tile->block' must point to the "
+              "`clabel' dataset", __func__, PACKAGE_BUGREPORT);
 
 
-  /* A small sanity check. */
-  if(gal_tile_block(tile)!=p->clabel)
-    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "
-          "the problem. `tile->block' must point to the `clabel' dataset",
-          __func__, PACKAGE_BUGREPORT);
+      /* Allocate a dataset with the new indexs, note that it will need to
+         have one element for each initial label (the excluded clumps need
+         to be set to zero). So we also need to clear the allocated
+         space. */
+      newinds=gal_data_alloc(NULL, p->clabel->type, 1, &len, NULL, 0,
+                             p->cp.minmapsize, NULL, NULL, NULL);
 
 
-  /* Allocate a dataset with the new indexs, note that it will need to have
-     one element for each initial label (the excluded clumps need to be set
-     to zero). So we also need to clear the allocated space. */
-  newinds=gal_data_alloc(NULL, p->clabel->type, 1, &len, NULL, 0,
-                         p->cp.minmapsize, NULL, NULL, NULL);
+      /* Get the next available label for these clumps. If more than one
+         thread was used, we are first going to lock the mutex (so no other
+         thread changes these values), we will then read the shared number
+         for this thread to use, then update the shared number and finally,
+         unlock the mutex so other threads can do the same when they get to
+         this point. */
+      if(p->cp.numthreads>1) pthread_mutex_lock(&cltprm->clprm->labmutex);
+      curlab        = p->numclumps+1; /* Note that counting begins from 1. */
+      p->numclumps += cltprm->snind->size;
+      if(p->cp.numthreads>1) pthread_mutex_unlock(&cltprm->clprm->labmutex);
 
 
-  /* Get the next available label for these clumps. If more than one thread
-     was used, we are first going to lock the mutex (so no other thread
-     changes these values), we will then read the shared number for this
-     thread to use, then update the shared number and finally, unlock the
-     mutex so other threads can do the same when they get to this point. */
-  if(p->cp.numthreads>1) pthread_mutex_lock(&cltprm->clprm->labmutex);
-  curlab        = p->numclumps+1;   /* Note that counting begins from 1. */
-  p->numclumps += cltprm->snind->size;
-  if(p->cp.numthreads>1) pthread_mutex_unlock(&cltprm->clprm->labmutex);
+      /* Initialize the newinds array to GAL_LABEL_INIT (which be used as a
+         new label for all the clumps that must be removed. */
+      lf = (l=newinds->array) + newinds->size;
+      do *l++=GAL_LABEL_INIT; while(l<lf);
 
 
-  /* Initialize the newinds array to GAL_LABEL_INIT (which be used as a new
-     label for all the clumps that must be removed. */
-  lf = (l=newinds->array) + newinds->size;
-  do *l++=GAL_LABEL_INIT; while(l<lf);
+      /* The new indexs array has been initialized to zero. So we just need
+         to go over the labels in `cltprm->sninds' and give them a value of
+         `curlab++'. */
+      ninds=newinds->array;
+      lf = (l=cltprm->snind->array) + cltprm->snind->size;
+      do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
 
 
-  /* The new indexs array has been initialized to zero. So we just need to
-     go over the labels in `cltprm->sninds' and give them a value of
-     `curlab++'. */
-  ninds=newinds->array;
-  lf = (l=cltprm->snind->array) + cltprm->snind->size;
-  do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
+      /* Go over this tile and correct the values. */
+      GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 1,
+                              {if(*i>0) *i=ninds[ *(int32_t *)i ];} );
 
-
-  /* Go over this tile and correct the values. */
-  GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 1,
-                          {if(*i>0) *i=ninds[ *(int32_t *)i ];} );
-
-  /* Clean up. */
-  gal_data_free(newinds);
+      /* Clean up. */
+      gal_data_free(newinds);
+    }
+  else
+    /* There were no usable clumps in this tile, so just set all the pixels
+       larger than zero (a clump) to `GAL_LABEL_INIT'. */
+    GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 1, {*i=*i>0?GAL_LABEL_INIT:*i;} );
 }
 
 
@@ -456,16 +462,19 @@ clumps_find_make_sn_table(void *in_prm)
                                        cltprm.sn, cltprm.snind);
 
 
-          /* If there were no clumps, then just set the S/N table to NULL. */
-          if( cltprm.clprm->sn[ cltprm.id ].size==0 )
-            cltprm.snind=cltprm.sn=NULL;
-
-
           /* If the user wanted to check the steps, remove the clumps that
              weren't used from the `clabel' image (they have been already
              excluded from the table). */
           if(cltprm.snind)
             clumps_correct_sky_labels_for_check(&cltprm, tile);
+
+
+          /* If there were no clumps, then just set the S/N table to
+             NULL. This must be done after the check image creation (if
+             necessary), because we use `cltprm.snind' as a proxy for the
+             check image.*/
+          if( cltprm.clprm->sn[ cltprm.id ].size==0 )
+            cltprm.snind=cltprm.sn=NULL;
 
 
           /* Clean up. */
