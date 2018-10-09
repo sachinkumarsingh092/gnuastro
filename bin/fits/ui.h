@@ -43,7 +43,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   b e f g i j l m n s v x y z
+   b e f g i j l m s v x y z
    A B E G J L O W X Y
  */
 enum option_keys_enum
@@ -52,6 +52,7 @@ enum option_keys_enum
   UI_KEY_REMOVE       = 'R',
   UI_KEY_COPY         = 'C',
   UI_KEY_CUT          = 'k',
+  UI_KEY_NUMHDUS      = 'n',
   UI_KEY_PRINTALLKEYS = 'p',
   UI_KEY_ASIS         = 'a',
   UI_KEY_DELETE       = 'd',

@@ -221,8 +221,11 @@ fits_print_extension_info(struct fitsparams *p)
         }
     }
 
+  /* Close the file. */
+  fits_close_file(fptr, &status);
 
-  /* Print the resutls. */
+
+  /* Print the results. */
   if(!p->cp.quiet)
     {
       printf("%s\nRun on %s-----\n", PROGRAM_STRING, ctime(&p->rawtime));
@@ -237,6 +240,30 @@ fits_print_extension_info(struct fitsparams *p)
     }
   gal_table_write(cols, NULL, GAL_TABLE_FORMAT_TXT, NULL, NULL, 0);
   gal_list_data_free(cols);
+}
+
+
+
+
+
+static void
+fits_hdu_number(struct fitsparams *p)
+{
+  fitsfile *fptr;
+  int numhdu, status=0;
+
+  /* Read the first extension (necessary for reading the rest). */
+  fptr=gal_fits_hdu_open(p->filename, "0", READONLY);
+
+  /* Get the number of HDUs. */
+  if( fits_get_num_hdus(fptr, &numhdu, &status) )
+    gal_fits_io_error(status, "finding number of HDUs");
+
+  /* Close the file. */
+  fits_close_file(fptr, &status);
+
+  /* Print the result. */
+  printf("%d\n", numhdu);
 }
 
 
@@ -332,24 +359,32 @@ fits(struct fitsparams *p)
 
     /* HDU, functions defined here. */
     case FITS_MODE_HDU:
-      if(p->copy)
-        {
-          fits_hdu_copy(p, 0, &r);
-          printhduinfo=0;
-        }
-      if(p->cut)
-        {
-          fits_hdu_copy(p, 1, &r);
-          printhduinfo=0;
-        }
-      if(p->remove)
-        {
-          fits_hdu_remove(p, &r);
-          printhduinfo=0;
-        }
+      /* Options that must be called alone. */
+      if(p->numhdus)
+        fits_hdu_number(p);
 
-      if(printhduinfo)
-        fits_print_extension_info(p);
+      /* Options that can be called together. */
+      else
+        {
+          if(p->copy)
+            {
+              fits_hdu_copy(p, 0, &r);
+              printhduinfo=0;
+            }
+          if(p->cut)
+            {
+              fits_hdu_copy(p, 1, &r);
+              printhduinfo=0;
+            }
+          if(p->remove)
+            {
+              fits_hdu_remove(p, &r);
+              printhduinfo=0;
+            }
+
+          if(printhduinfo)
+            fits_print_extension_info(p);
+        }
       break;
 
     /* Not recognized. */

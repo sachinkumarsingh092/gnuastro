@@ -12,6 +12,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.
 
+  Fits:
+    --numhdus: prints the number of HDUs in the given FITS file.
+
   NoiseChisel:
     - New outlier identification algorithm for quantile thresholds. This is
       very useful when there are extended and bright sources in the

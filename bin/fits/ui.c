@@ -237,14 +237,20 @@ ui_read_check_only_options(struct fitsparams *p)
     }
 
   /* Same for the extension-related options */
-  if( p->remove || p->copy || p->cut )
+  if( p->remove || p->copy || p->cut || p->numhdus)
     {
       /* A small sanity check. */
       if(p->mode!=FITS_MODE_INVALID)
         error(EXIT_FAILURE, 0, "extension and keyword manipulation options "
               "cannot be called together");
 
-      /* Set the mode and turn on the `needshdu' flag. */
+      /* Unlike the rest of the HDU-related options, `--numhdus' must be
+         called alone. */
+      if(p->numhdus==1 && (p->remove || p->copy || p->cut) )
+        error(EXIT_FAILURE, 0, "`--numhdus' option must be called alone (it "
+              "cannot be called with other extension or keyword options)");
+
+      /* Set the operating mode. */
       p->mode=FITS_MODE_HDU;
 
       /* Make sure the output name is set. */

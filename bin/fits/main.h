@@ -53,22 +53,23 @@ enum fits_mode
 struct fitsparams
 {
   /* From the environment. */
-  struct gal_options_common_params cp;  /* Common parameters.       */
-  int  hdu_in_commandline;     /* HDU wasn't given in config. file. */
-  char          *filename;     /* Name of input file.               */
-  gal_list_str_t  *remove;     /* Remove extensions from a file.    */
-  gal_list_str_t    *copy;     /* Copy extensions to output.        */
-  gal_list_str_t     *cut;     /* Copy ext. to output and remove.   */
-  uint8_t    printallkeys;     /* Print all the header keywords.    */
-  uint8_t            date;     /* Set DATE to current time.         */
-  gal_list_str_t    *asis;     /* Strings to write asis.            */
-  gal_list_str_t  *delete;     /* Keywords to remove.               */
-  gal_list_str_t  *rename;     /* Rename a keyword.                 */
-  gal_list_str_t  *update;     /* For keywords to update.           */
-  gal_list_str_t   *write;     /* Full arg. for keywords to add.    */
-  gal_list_str_t *history;     /* HISTORY value.                    */
-  gal_list_str_t *comment;     /* COMMENT value.                    */
-  uint8_t     quitonerror;     /* Quit if an error occurs.          */
+  struct gal_options_common_params cp;  /* Common parameters.           */
+  int  hdu_in_commandline;     /* HDU wasn't given in config. file.     */
+  char          *filename;     /* Name of input file.                   */
+  gal_list_str_t  *remove;     /* Remove extensions from a file.        */
+  gal_list_str_t    *copy;     /* Copy extensions to output.            */
+  gal_list_str_t     *cut;     /* Copy ext. to output and remove.       */
+  uint8_t         numhdus;     /* Print number of HDUs in FITS file.    */
+  uint8_t    printallkeys;     /* Print all the header keywords.        */
+  uint8_t            date;     /* Set DATE to current time.             */
+  gal_list_str_t    *asis;     /* Strings to write asis.                */
+  gal_list_str_t  *delete;     /* Keywords to remove.                   */
+  gal_list_str_t  *rename;     /* Rename a keyword.                     */
+  gal_list_str_t  *update;     /* For keywords to update.               */
+  gal_list_str_t   *write;     /* Full arg. for keywords to add.        */
+  gal_list_str_t *history;     /* HISTORY value.                        */
+  gal_list_str_t *comment;     /* COMMENT value.                        */
+  uint8_t     quitonerror;     /* Quit if an error occurs.              */
 
   /* Internal: */
   int                         mode;  /* Operating on HDUs or keywords.  */

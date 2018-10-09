@@ -9862,6 +9862,17 @@ HDUs given to this option (see @ref{Automatic output}).
 
 @table @option
 
+@item -n
+@itemx --numhdus
+Print the number of extensions/HDUs in the given file. Note that this
+option must be called alone and will only print a single number. It is thus
+useful in scripts, for example when you need to do check the number of
+extensions in a FITS file.
+
+For a complete list of basic meta-data on the extensions in a FITS file,
+don't use any of the options in this section or in @ref{Keyword
+manipulation}. For more, see @ref{Invoking astfits}.
+
 @item -C STR
 @itemx --copy=STR
 Copy the specified extension into the output file, see explanations above.

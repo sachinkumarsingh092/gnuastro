@@ -76,6 +76,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "numhdus",
+      UI_KEY_NUMHDUS,
+      0,
+      0,
+      "Print number of HDUs in the given FITS file.",
+      UI_GROUP_EXTENSION,
+      &p->numhdus,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
