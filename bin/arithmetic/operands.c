@@ -127,6 +127,7 @@ operands_remove_name(struct arithmeticparams *p, char *name)
   /* Nothing in the list points to it now. So we can safely modify and
      return it. */
   free(removed->name);
+  removed->next=NULL;
   removed->name=NULL;
   return removed;
 }
@@ -218,6 +219,7 @@ operands_copy_named(struct arithmeticparams *p, char *name)
             out=gal_data_copy(tmp);
             free(out->name);
             out->name=NULL;
+            out->next=NULL;
           }
         /* The named operand is not used any more. Remove it from the list
            of named datasets and continue. */
