@@ -50,7 +50,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    environment. This function is designed to make the job easier for any
    program using GSL's RNG. If the user doesn't want to set the */
 gsl_rng *
-gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name, uint64_t *seed)
+gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
+                     unsigned long int *seed)
 {
   gsl_rng *rng;
 

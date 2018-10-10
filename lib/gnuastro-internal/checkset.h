@@ -55,7 +55,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /**************************************************************/
 gsl_rng *
 gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
-                     uint64_t *seed);
+                     unsigned long int *seed);
 
 
 

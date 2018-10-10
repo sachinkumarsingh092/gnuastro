@@ -91,7 +91,7 @@ convertsaveoutput(struct mknoiseparams *p)
                             "Random number generator (by GSL) type.",
                             0, NULL);
   strcpy(keyname5, "RNGSEED");
-  gal_fits_key_list_add_end(&headers, GAL_TYPE_UINT64, keyname5, 0,
+  gal_fits_key_list_add_end(&headers, GAL_TYPE_ULONG, keyname5, 0,
                             &p->rng_seed, 0,
                             "Random number generator (by GSL) seed.",
                             0, NULL);

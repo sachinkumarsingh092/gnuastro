@@ -1439,16 +1439,11 @@ ui_print_intro(struct mkprofparams *p)
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_timing_report(NULL, jobname, 1);
   free(jobname);
-  if(p->envseed)
-    {
-      if( asprintf(&jobname, "RNG seed for all profiles: %lu",
-                   gsl_rng_default_seed)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_timing_report(NULL, jobname, 1);
-      free(jobname);
-    }
-  else
-    gal_timing_report(NULL, "RNG seed differs for each profile.", 1);
+
+  if( asprintf(&jobname, "Basic RNG seed: %lu", p->rng_seed)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  gal_timing_report(NULL, jobname, 1);
+  free(jobname);
 
   if(p->kernel==NULL)
     {

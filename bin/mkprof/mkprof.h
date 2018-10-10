@@ -48,7 +48,7 @@ struct mkonthread
   long            *onaxes;   /* Sides of the unover-sampled image.    */
   long        fpixel_i[2];   /* fpixel_i before running overlap.      */
   int          correction;   /* ==1: correct the pixels afterwards.   */
-  long           rng_seed;   /* Seed used to generate this profile.   */
+  unsigned long  rng_seed;   /* Seed used to generate this profile.   */
 
   /* Random number generator: */
   gsl_rng            *rng;   /* Copy of main random number generator. */

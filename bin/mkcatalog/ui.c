@@ -1345,7 +1345,7 @@ ui_preparations_upperlimit(struct mkcatalogparams *p)
           "that is reported as the upper-limit");
 
   /* Set the random number generator. */
-  p->rng=gal_checkset_gsl_rng(p->envseed, &p->rngname, &p->seed);
+  p->rng=gal_checkset_gsl_rng(p->envseed, &p->rng_name, &p->rng_seed);
 
   /* Keep the minimum and maximum values of the random number generator. */
   p->rngmin=gsl_rng_min(p->rng);
@@ -1546,8 +1546,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
                p->upmaskfile, p->cp.hdu);
       if(p->upperlimit)
         {
-          printf("  - Random number generator name: %s\n", p->rngname);
-          printf("  - Random number generator seed: %"PRIu64"\n", p->seed);
+          printf("  - Random number generator name: %s\n", p->rng_name);
+          printf("  - Random number generator seed: %lu\n", p->rng_seed);
         }
     }
 }

@@ -200,7 +200,7 @@ saveindividual(struct mkonthread *mkp)
   gal_fits_key_list_add(&keys, GAL_TYPE_STRING, "RNGNAME", 0,
                         (void *)(p->rng_name), 0,
                         "Name of random number generator", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_LONG, "RNGSEED", 0,
+  gal_fits_key_list_add(&keys, GAL_TYPE_ULONG, "RNGSEED", 0,
                         &mkp->rng_seed, 0, "Seed of random number generator",
                         0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMRANDOM", 0,

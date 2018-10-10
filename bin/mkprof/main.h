@@ -170,7 +170,7 @@ struct mkprofparams
   float                  *t;  /* Truncation distance.                     */
   gsl_rng              *rng;  /* Main instance of random number generator.*/
   const char      *rng_name;  /* Name of random number generator.         */
-  uint64_t         rng_seed;  /* Fixed seed of random number generator.   */
+  unsigned long    rng_seed;  /* Fixed seed of random number generator.   */
   time_t            rawtime;  /* Starting time of the program.            */
   double               *cat;  /* Input catalog.                           */
   gal_data_t           *log;  /* Log data to be printed.                  */

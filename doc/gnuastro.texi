@@ -22795,6 +22795,12 @@ Identifier for a @code{size_t} type. This is just an alias to
 respectively.
 @end deffn
 
+@deffn {Global integer}  GAL_TYPE_ULONG
+Identifier for a @code{unsigned long} type. This is just an alias to
+@code{uint32}, or @code{uint64} types for 32-bit, or 64-bit systems
+respectively.
+@end deffn
+
 @deffn {Global integer}  GAL_TYPE_LONG
 Identifier for a @code{long} type. This is just an alias to @code{int32},
 or @code{int64} types for 32-bit, or 64-bit systems respectively.

@@ -300,8 +300,8 @@ gal_fits_type_to_datatype(uint8_t type)
     case GAL_TYPE_STRING:           return TSTRING;
 
     /* Types that depend on the host system. The C standard says that the
-       `short', `int' and `long' types are ATLEAST 2, 2, 4 bytes, so be
-       safe, we will checking all of them for the 32-bit types.*/
+       `short', `int' and `long' types are ATLEAST 2, 2, 4 bytes, so to be
+       safe, we will check all of them for the 32-bit types.*/
     case GAL_TYPE_UINT16:
       w=2;
       if     ( sizeof(short)    == w )   return TUSHORT;

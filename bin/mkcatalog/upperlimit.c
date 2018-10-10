@@ -301,11 +301,11 @@ upperlimit_write_comments(struct mkcatalogparams *p,
       gal_list_str_add(comments, str, 0);
     }
 
-  if( asprintf(&str, "Random number generator name: %s", p->rngname)<0 )
+  if( asprintf(&str, "Random number generator name: %s", p->rng_name)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(comments, str, 0);
 
-  if( asprintf(&str, "Random number generator seed: %"PRIu64, p->seed)<0 )
+  if( asprintf(&str, "Random number generator seed: %lu", p->rng_seed)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(comments, str, 0);
 
@@ -723,7 +723,7 @@ upperlimit_calculate(struct mkcatalog_passparams *pp)
   struct mkcatalogparams *p=pp->p;
 
   /* First find the upper limit magnitude for this object. */
-  upperlimit_one_tile(pp, pp->tile, p->seed+pp->object, 0);
+  upperlimit_one_tile(pp, pp->tile, p->rng_seed+pp->object, 0);
 
   /* If a clumps image is present (a clump catalog is requested) and this
      object has clumps, then find the upper limit magnitude for the clumps
@@ -751,7 +751,7 @@ upperlimit_calculate(struct mkcatalog_passparams *pp)
          IDs. */
       for(i=0;i<pp->clumpsinobj;++i)
         {
-          seed = p->seed + p->numobjects + p->numclumps * pp->object + i;
+          seed = p->rng_seed + p->numobjects + p->numclumps * pp->object + i;
           upperlimit_one_tile(pp, &clumptiles[i], seed, i+1);
         }
 

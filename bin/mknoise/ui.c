@@ -400,7 +400,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mknoiseparams *p)
              ctime(&p->rawtime));
       sprintf(message, "Random number generator type: %s", p->rng_name);
       gal_timing_report(NULL, message, 1);
-      sprintf(message, "Random number generator seed: %"PRIu64, p->rng_seed);
+      sprintf(message, "Random number generator seed: %lu", p->rng_seed);
       gal_timing_report(NULL, message, 1);
     }
 }

@@ -205,8 +205,8 @@ struct mkcatalogparams
   pthread_mutex_t       mutex;  /* Mutex to change the total numbers.   */
   size_t      clumprowsfilled;  /* No. filled clump rows at this moment.*/
   gsl_rng                *rng;  /* Main random number generator.        */
-  uint64_t               seed;  /* Random number generator seed.        */
-  const char         *rngname;  /* Name of random number generator.     */
+  unsigned long int  rng_seed;  /* Random number generator seed.        */
+  const char        *rng_name;  /* Name of random number generator.     */
   size_t               rngmin;  /* Minimum possible value of RNG.       */
   size_t              rngdiff;  /* Difference of RNG max and min.       */
   uint8_t      uprangewarning;  /* A warning must be printed.           */
