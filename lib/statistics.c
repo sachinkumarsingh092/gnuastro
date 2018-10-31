@@ -1550,7 +1550,9 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
             {
               tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(input),
                                                  GAL_TYPE_FLOAT64);
-              max=*((double *)(tmp->array))+1e-6;
+              max=*((double *)(tmp->array));
+
+              /* Clean up. */
               gal_data_free(tmp);
             }
           else max=ra[1];
@@ -1568,7 +1570,9 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
       gal_data_free(tmp);
       tmp=gal_data_copy_to_new_type_free(gal_statistics_maximum(input),
                                          GAL_TYPE_FLOAT64);
-      max=*((double *)(tmp->array)) + 1e-6;
+      max=*((double *)(tmp->array));
+
+      /* Clean up. */
       gal_data_free(tmp);
     }
 
@@ -1605,7 +1609,7 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
   printf("onebinstart: %.10f\n", onebinstart);
   printf("binwidth: %g\n", binwidth);
   for(i=0;i<numbins;++i)
-    printf("%zu: %.4f\t(%f, %f)\n", i, b[i], b[i]-hbw, b[i]+hbw);
+    printf("%zu: %.4g\t(%g, %g)\n", i, b[i], b[i]-hbw, b[i]+hbw);
   */
 
   /* Set the status of the bins to regular and return. */
@@ -1626,7 +1630,13 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
 
 #define HISTOGRAM_TYPESET(IT) {                                         \
     IT *a=input->array, *af=a+input->size;                              \
-    do if( *a>=min && *a<max) ++h[ (size_t)( (*a-min)/binwidth ) ];     \
+    do                                                                  \
+      if(*a>=min)                                                       \
+        {                                                               \
+          h_i=(*a-min)/binwidth;                                        \
+          if(h_i == last_i) { if( *a<=max ) ++h[ h_i ]; }               \
+          else              { if( *a< max ) ++h[ h_i ]; }               \
+        }                                                               \
     while(++a<af);                                                      \
   }
 
@@ -1634,9 +1644,9 @@ gal_data_t *
 gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
                          int maxone)
 {
-  size_t *h;
   float *f, *ff;
   gal_data_t *hist;
+  size_t *h, h_i, last_i;
   double *d, min, max, ref=NAN, binwidth;
 
 
@@ -1668,8 +1678,9 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
   /* Set the minimum and maximum range of the histogram from the bins. */
   d=bins->array;
   binwidth=d[1]-d[0];
-  max = d[bins->size - 1] + binwidth/2;
-  min = d[0]              - binwidth/2;
+  last_i=bins->size-1;
+  min = d[ 0      ] - binwidth/2;
+  max = d[ last_i ] + binwidth/2;
 
 
   /* Go through all the elements and find out which bin they belong to. */

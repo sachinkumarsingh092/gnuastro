@@ -27622,10 +27622,18 @@ shifted to accommodate this request.
 @deftypefun {gal_data_t *} gal_statistics_histogram (gal_data_t @code{*input}, gal_data_t @code{*bins}, int @code{normalize}, int @code{maxone})
 Make a histogram of all the elements in the given dataset with bin values
 that are defined in the @code{inbins} structure (see
-@code{gal_statistics_regular_bins}). @code{inbins} is not mandatory, if you
-pass a @code{NULL} pointer, the bins structure will be built within this
-function based on the @code{numbins} input. As a result, when you have
-already defined the bins, @code{numbins} is not used.
+@code{gal_statistics_regular_bins}, they currently have to be equally
+spaced). @code{inbins} is not mandatory, if you pass a @code{NULL} pointer,
+the bins structure will be built within this function based on the
+@code{numbins} input. As a result, when you have already defined the bins,
+@code{numbins} is not used.
+
+Let's write the center of the @mymath{i}th element of the bin array as
+@mymath{b_i}, and the fixed half-bin width as @mymath{h}. Then element
+@mymath{j} of the input array (@mymath{in_j}) will be counted in
+@mymath{b_i} if @mymath{(b_i-h) \le in_j < (b_i+h)}. However, if
+@mymath{in_j} is somewhere in the last bin, the condition changes to
+@mymath{(b_i-h) \le in_j \le (b_i+h)}.
 @end deftypefun
 
 
