@@ -51,7 +51,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
           across the image.
 
   Statistics:
-    - Sky estimation: new outlier estimation algorithm similar to NoiseChisel.
+    - If an input table has only one column, Statistics won't complain and
+      abort when no `--column' (`-c') is given: there is only one column to
+      use anyway, so it will be used. In the absence of which column to
+      use, it will still complain and abort if the input has more than one
+      column.
+    - Sky estimation: new outlier estimation algorithm similar to
+      NoiseChisel.
 
   Library:
     - gal_blank_flag_apply: Set all flagged/masked elements to blank.

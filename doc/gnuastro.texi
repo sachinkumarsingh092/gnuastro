@@ -15122,9 +15122,9 @@ for those.
 
 @item -c STR/INT
 @itemx --column=STR/INT
-The input column selector when the input file is a table. See
-@ref{Selecting table columns} for a full description of how to use this
-option. For more on how tables are read in Gnuastro, please see
+The column to use when the input file is a table with more than one
+column. See @ref{Selecting table columns} for a full description of how to
+use this option. For more on how tables are read in Gnuastro, please see
 @ref{Tables}.
 
 @item -r STR/INT
