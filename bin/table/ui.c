@@ -129,6 +129,7 @@ ui_initialize_options(struct tableparams *p,
 
         /* Options to ignore. */
         case GAL_OPTIONS_KEY_TYPE:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -277,7 +278,7 @@ ui_print_info_exit(struct tableparams *p)
   size_t i, numcols, numrows;
 
   /* Read the table information for the number of columns and rows. */
-  allcols=gal_table_info(p->filename, p->cp.hdu, &numcols,
+  allcols=gal_table_info(p->filename, p->cp.hdu, NULL, &numcols,
                          &numrows, &tableformat);
 
   /* If there was no actual data in the file, then inform the user */
@@ -371,8 +372,9 @@ ui_preparations(struct tableparams *p)
   ui_columns_prepare(p);
 
   /* Read in the table columns. */
-  p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
-                          cp->ignorecase, cp->minmapsize, NULL);
+  p->table=gal_table_read(p->filename, cp->hdu, NULL, p->columns,
+                          cp->searchin, cp->ignorecase, cp->minmapsize,
+                          NULL);
 
   /* If there was no actual data in the file, then inform the user and
      abort. */

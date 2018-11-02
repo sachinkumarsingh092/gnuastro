@@ -59,17 +59,21 @@ int
 gal_array_name_recognized_multiext(char *name);
 
 gal_data_t *
-gal_array_read(char *filename, char *extension, size_t minmapsize);
+gal_array_read(char *filename, char *extension, gal_list_str_t *lines,
+               size_t minmapsize);
 
 gal_data_t *
-gal_array_read_to_type(char *filename, char *extension, uint8_t type,
+gal_array_read_to_type(char *filename, char *extension,
+                       gal_list_str_t *lines, uint8_t type,
                        size_t minmapsize);
 
 gal_data_t *
-gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize);
+gal_array_read_one_ch(char *filename, char *extension, gal_list_str_t *lines,
+                      size_t minmapsize);
 
 gal_data_t *
-gal_array_read_one_ch_to_type(char *filename, char *extension, uint8_t type,
+gal_array_read_one_ch_to_type(char *filename, char *extension,
+                              gal_list_str_t *lines, uint8_t type,
                               size_t minmapsize);
 
 

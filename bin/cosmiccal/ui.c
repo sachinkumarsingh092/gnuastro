@@ -138,6 +138,7 @@ ui_initialize_options(struct cosmiccalparams *p,
         case GAL_OPTIONS_KEY_MINMAPSIZE:
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }

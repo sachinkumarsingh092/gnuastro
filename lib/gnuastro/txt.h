@@ -79,14 +79,23 @@ int
 gal_txt_line_stat(char *line);
 
 gal_data_t *
-gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows);
+gal_txt_table_info(char *filename, gal_list_str_t *lines, size_t *numcols,
+                   size_t *numrows);
 
 gal_data_t *
-gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   gal_list_sizet_t *indexll, size_t minmapsize);
+gal_txt_image_info(char *filename, gal_list_str_t *lines, size_t *numimg,
+                   size_t *dsize);
 
 gal_data_t *
-gal_txt_image_read(char *filename, size_t minmapsize);
+gal_txt_table_read(char *filename, gal_list_str_t *lines, size_t numrows,
+                   gal_data_t *colinfo, gal_list_sizet_t *indexll,
+                   size_t minmapsize);
+
+gal_data_t *
+gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize);
+
+gal_list_str_t *
+gal_txt_stdin_read(long timeout_microsec);
 
 void
 gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,

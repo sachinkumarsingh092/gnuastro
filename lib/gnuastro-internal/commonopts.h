@@ -60,7 +60,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_SEARCHIN,
       "STR",
       0,
-      "Select column(s) in: `name', `unit', `comment'.",
+      "Select column(s): `name', `unit', `comment'.",
       GAL_OPTIONS_GROUP_INPUT,
       &cp->searchin,
       GAL_TYPE_STRING,
@@ -79,6 +79,19 @@ struct argp_option gal_commonopts_options[] =
       &cp->ignorecase,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "stdintimeout",
+      GAL_OPTIONS_KEY_STDINTIMEOUT,
+      "INT",
+      0,
+      "Micro-seconds to wait for standard input.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &cp->stdintimeout,
+      GAL_TYPE_LONG,
+      GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

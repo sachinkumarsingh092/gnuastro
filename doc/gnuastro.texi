@@ -7493,6 +7493,31 @@ programs.
 
 @vtable @option
 
+@cindex Timeout
+@cindex Standard input
+@item --stdintimeout
+Number of micro-seconds to wait for writing/typing in the @emph{first line}
+of standard input from the command-line. This is only relevant for programs
+that also accept input from the standard input, @emph{and} you want to
+manually write/type the contents on the terminal. When the standard input
+is already connected to a pipe (output of another program), there won't be
+any waiting (hence no timeout, thus making this option redundant).
+
+If the first line-break (for example with the @key{ENTER} key) is not
+provided before the timeout, the program will abort with an error that no
+input was given. Note that this time interval is @emph{only} for the first
+line that you type. Once the first line is given, the program will assume
+that more data will come and accept rest of your inputs without any time
+limit. You need to specify the ending of the standard input, for example by
+pressing @key{CTRL-D} after a new line.
+
+Note that any input you write/type into a program on the command-line with
+Standard input will be discarded (lost) once the program is finished. It is
+only recoverable manually from your command-line (where you actually typed)
+as long as the terminal is open. So only use this feature when you are sure
+that you don't need the dataset (or have a copy of it somewhere else).
+
+
 @cindex HDU
 @cindex Header data unit
 @item -h STR/INT
@@ -15091,18 +15116,25 @@ $ aststatistics cat.fits -cMAG_F160W -g26 -l27 --sigmaclip=3,0.2
 ## Print the median value of all records in column MAG_F160W that
 ## have a value larger than 3 in column PHOTO_Z:
 $ aststatistics tab.txt -rPHOTO_Z -g3 -cMAG_F160W --median
+
+## Calculate the median of the third column in the input table, but only
+## for rows where the mean of the first and second columns is >5.
+$ awk '($1+$2)/2 > 5 @{print $3@}' table.txt | aststatistics --median
 @end example
 
 @noindent
-An input image or table is necessary when processing is to be done. If any
-output file is to be created, the value to the @option{--output} option, is
-used as the base name for the generated files. Without @option{--output},
-the input name will be used to generate an output name, see @ref{Automatic
-output}. The options described below are particular to Statistics, but for
-general operations, it shares a large collection of options with the other
-Gnuastro programs, see @ref{Common options} for the full list. Options can
-also be given in configuration files, for more, please see
-@ref{Configuration files}.
+@cindex Standard input
+Statistics can take its input dataset either from a file (image or table)
+or the Standard input. If any output file is to be created, the value to
+the @option{--output} option, is used as the base name for the generated
+files. Without @option{--output}, the input name will be used to generate
+an output name, see @ref{Automatic output}. The options described below are
+particular to Statistics, but for general operations, it shares a large
+collection of options with the other Gnuastro programs, see @ref{Common
+options} for the full list. For more on reading from standard input, please
+see the description of @code{--stdintimeout} option in @ref{Input output
+options}. Options can also be given in configuration files, for more,
+please see @ref{Configuration files}.
 
 The input dataset may have blank values (see @ref{Blank pixels}), in this
 case, all blank pixels are ignored during the calculation. Initially, the
@@ -24710,42 +24742,51 @@ types for reading arrays which may contain multiple extensions (for example
 FITS or TIFF) formats.
 @end deftypefun
 
-@deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, size_t @code{minmapsize})
+@deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
 Read the array within the given extension (@code{extension}) of
-@code{filename}. If the array is larger than @code{minmapsize} bytes, then
-it won't be read into RAM, but a file on the HDD/SSD (no difference for the
-programmer). @code{extension} will be ignored for files that don't support
-them (for example JPEG or text). For FITS files, @code{extension} can be a
-number or a string (name of the extension), but for TIFF files, it has to
-be number. In both cases, counting starts from zero.
+@code{filename}, or the @code{lines} list (see below). If the array is
+larger than @code{minmapsize} bytes, then it won't be read into RAM, but a
+file on the HDD/SSD (no difference for the programmer). @code{extension}
+will be ignored for files that don't support them (for example JPEG or
+text). For FITS files, @code{extension} can be a number or a string (name
+of the extension), but for TIFF files, it has to be number. In both cases,
+counting starts from zero.
 
 For multi-channel formats (like RGB images in JPEG or TIFF), this function
 will return a @ref{List of gal_data_t}: one data structure per
 channel. Thus if you just want a single array (and want to check if the
 user hasn't given a multi-channel input), you can check the @code{next}
 pointer of the returned @code{gal_data_t}.
+
+@code{lines} is a list of strings with each node representing one line
+(including the new-line character), see @ref{List of strings}. It will
+mostly be the output of @code{gal_txt_stdin_read}, which is used to read
+the program's input as separate lines from the standard input (see
+@ref{Text files}). Note that @code{filename} and @code{lines} are mutually
+exclusive and one of them must be @code{NULL}.
 @end deftypefun
 
-@deftypefun void gal_array_read_to_type (char @code{*filename}, char @code{*extension}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize})
 Similar to @code{gal_array_read}, but the output data structure(s) will
 have a numeric data type of @code{type}, see @ref{Numeric data types}.
 @end deftypefun
 
-@deftypefun void gal_array_read_one_ch (char @code{*filename}, char @code{*extension}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_one_ch (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
 @cindex Channel
 @cindex Color channel
 Read the dataset within @code{filename} (extension/hdu/dir
-@code{extension}) and make sure it is only a single channel. Formats like
-JPEG or TIFF support multiple channels per input, but it may happen that
-your program only works on a single dataset. This function can be a
-convenient way to make sure that the data that comes into your program is
-only one channel. It is just a very simple wrapper around
-@code{gal_array_read} that checks if there was more than one dataset and
-aborts with an informative error if there is more than one channel in the
-dataset.
+@code{extension}) and make sure it is only a single channel. This is just a
+simple wrapper around @code{gal_array_read} that checks if there was more
+than one dataset and aborts with an informative error if there is more than
+one channel in the dataset.
+
+Formats like JPEG or TIFF support multiple channels per input, but it may
+happen that your program only works on a single dataset. This function can
+be a convenient way to make sure that the data that comes into your program
+is only one channel.
 @end deftypefun
 
-@deftypefun void gal_array_read_one_ch_to_type (char @code{*filename}, char @code{*extension}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_one_ch_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize})
 Similar to @code{gal_array_read_one_ch}, but the output data structure will
 has a numeric data type of @code{type}, see @ref{Numeric data types}.
 @end deftypefun
@@ -24835,19 +24876,25 @@ string to match, or regular expression to search, be in the @emph{name},
 should be used for the @code{searchin} variables of the functions.
 @end deffn
 
-@deftypefun {gal_data_t *} gal_table_info (char @code{*filename}, char @code{*hdu}, size_t @code{*numcols}, size_t @code{*numrows}, int @code{*tableformat})
-Store the information of each column in a table (either as a text file or
-as a FITS table) into an array of data structures with @code{numcols}
-structures (one data structure for each column). The number of rows is
-stored in the space that @code{numrows} points to. The format of the table
-(e.g., ascii text file, or FITS binary or ASCII table) will be put in
-@code{tableformat} (macros defined above). If the filename is not a FITS
-file, then @code{hdu} will not be used (can be @code{NULL}).
+@deftypefun {gal_data_t *} gal_table_info (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*lines}, size_t @code{*numcols}, size_t @code{*numrows}, int @code{*tableformat})
+Store the information of each column in a table into an array of data
+structures with @code{numcols} datasets (one data structure for each
+column). The number of rows is stored in @code{numrows}. The format of the
+table (e.g., ascii text file, or FITS binary or ASCII table) will be put in
+@code{tableformat} (macros defined above). If the @code{filename} is not a
+FITS file, then @code{hdu} will not be used (can be @code{NULL}).
 
-Note that other than the character strings (column name, units and
-comments), nothing in the data structure(s) will be allocated by this
-function for the actual data (e.g., the `array' or `dsize' elements). This
-function is just for column information (meta-data), not column contents.
+The input must be either a file (specified by @code{filename}) or a list of
+strings (@code{lines}). @code{lines} is a list of strings with each node
+representing one line (including the new-line character), see @ref{List of
+strings}. It will mostly be the output of @code{gal_txt_stdin_read}, which
+is used to read the program's input as separate lines from the standard
+input (see @ref{Text files}). Note that @code{filename} and @code{lines}
+are mutually exclusive and one of them must be @code{NULL}.
+
+In the output datasets, only the meta-data strings (column name, units and
+comments), will be allocated and set. This function is just for column
+information (meta-data), not column contents.
 @end deftypefun
 
 @deftypefun void gal_table_print_info (gal_data_t @code{*allcols}, size_t @code{numcols}, size_t @code{numrows})
@@ -24859,10 +24906,19 @@ $ asttable --info table.fits
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{*colmatch})
-Read the specified columns in a text file (named @code{filename}) into a
-linked list of data structures. If the file is FITS, then @code{hdu} will
-also be used, otherwise, @code{hdu} is ignored.
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*lines}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{*colmatch})
+
+Read the specified columns in a file (named @code{filename}), or list of
+strings (@code{lines}) into a linked list of data structures. If the file
+is FITS, then @code{hdu} will also be used, otherwise, @code{hdu} is
+ignored.
+
+@code{lines} is a list of strings with each node representing one line
+(including the new-line character), see @ref{List of strings}. It will
+mostly be the output of @code{gal_txt_stdin_read}, which is used to read
+the program's input as separate lines from the standard input (see
+@ref{Text files}). Note that @code{filename} and @code{lines} are mutually
+exclusive and one of them must be @code{NULL}.
 
 @cindex AWK
 @cindex GNU AWK
@@ -25631,11 +25687,19 @@ data line. The returned values are the macros that start with
 @code{GAL_TXT_LINESTAT}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_txt_table_info (char @code{*filename}, size_t @code{*numcols}, size_t @code{*numrows})
-Store the information of each column in @code{filename} into an array of
-data structures with @code{numcols} elements (one data structure for each
-column) see @ref{Arrays of datasets}. The total number of rows in the table
-is also put into the memory that @code{numrows} points to.
+@deftypefun {gal_data_t *} gal_txt_table_info (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{*numcols}, size_t @code{*numrows})
+Store the information of each column in a text file @code{filename}, or
+list of strings (@code{lines}) into an array of data structures with
+@code{numcols} elements (one data structure for each column) see
+@ref{Arrays of datasets}. The total number of rows in the table is also put
+into the memory that @code{numrows} points to.
+
+@code{lines} is a list of strings with each node representing one line
+(including the new-line character), see @ref{List of strings}. It will
+mostly be the output of @code{gal_txt_stdin_read}, which is used to read
+the program's input as separate lines from the standard input (see
+below). Note that @code{filename} and @code{lines} are mutually exclusive
+and one of them must be @code{NULL}.
 
 This function is just for column information. Therefore it only stores
 meta-data like column name, units and comments. No actual data (contents of
@@ -25647,13 +25711,20 @@ variety of table formats based on the filename (see @ref{Table input
 output}).
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
-Read the columns given in the list @code{indexll} from a plain text table
-into a linked list of data structures, see @ref{List of size_t} and
-@ref{List of gal_data_t}. If the necessary space for each column is larger
-than @code{minmapsize}, don't keep it in the RAM, but in a file on the
-HDD/SSD, see the description under the same name in @ref{Generic data
-container}.
+@deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
+Read the columns given in the list @code{indexll} from a plain text file
+(@code{filename}) or list of strings (@code{lines}), into a linked list of
+data structures (see @ref{List of size_t} and @ref{List of gal_data_t}). If
+the necessary space for each column is larger than @code{minmapsize}, don't
+keep it in the RAM, but in a file on the HDD/SSD, see the description under
+the same name in @ref{Generic data container}.
+
+@code{lines} is a list of strings with each node representing one line
+(including the new-line character), see @ref{List of strings}. It will
+mostly be the output of @code{gal_txt_stdin_read}, which is used to read
+the program's input as separate lines from the standard input (see
+below). Note that @code{filename} and @code{lines} are mutually exclusive
+and one of them must be @code{NULL}.
 
 Note that this is a low-level function, so the output data list is the
 inverse of the input indexs linked list. It is recommended to use
@@ -25661,11 +25732,44 @@ inverse of the input indexs linked list. It is recommended to use
 @ref{Table input output}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, size_t @code{minmapsize})
-Read the 2D plain text dataset in @code{filename} into a dataset and return
-the dataset. If the necessary space for the image is larger than
-@code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD,
-see the description under the same name in @ref{Generic data container}.
+@deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
+Read the 2D plain text dataset in file (@code{filename}) or list of strings
+(@code{lines}) into a dataset and return the dataset. If the necessary
+space for the image is larger than @code{minmapsize}, don't keep it in the
+RAM, but in a file on the HDD/SSD, see the description under the same name
+in @ref{Generic data container}.
+
+@code{lines} is a list of strings with each node representing one line
+(including the new-line character), see @ref{List of strings}. It will
+mostly be the output of @code{gal_txt_stdin_read}, which is used to read
+the program's input as separate lines from the standard input (see
+below). Note that @code{filename} and @code{lines} are mutually exclusive
+and one of them must be @code{NULL}.
+@end deftypefun
+
+@deftypefun {gal_list_str_t *} gal_txt_stdin_read (long @code{timeout_microsec})
+@cindex Standard input
+Read the complete standard input and return a list of strings with each
+line (including the new-line character) as one node of that list. If the
+standard input is already filled (for example connected to another
+program's output with a pipe), then this function will parse the whole
+stream.
+
+If Standard input is not pre-configured and the @emph{first line} is
+typed/written in the terminal before @code{timeout_microsec} micro-seconds,
+it will continue parsing until reaches an end-of-file character
+(@key{CTRL-D} after a new-line on the keyboard) with no time limit. If
+nothing is entered before @code{timeout_microsec} micro-seconds, it will
+return @code{NULL}.
+
+All the functions that can read plain text tables will accept a filename as
+well as a list of strings (intended to be the output of this function for
+using Standard input). The reason for keeping the standard input is that
+once something is read from the standard input, it is hard to put it
+back. We often need to read a text file several times: once to count how
+many columns it has and which ones are requested, and another time to read
+the desired columns. So it easier to keep it all in allocated memory and
+pass it on from the start for each round.
 @end deftypefun
 
 @deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, uint8_t @code{colinfoinstdout})

@@ -146,6 +146,7 @@ ui_initialize_options(struct converttparams *p,
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -492,7 +493,7 @@ ui_make_channels_ll(struct converttparams *p)
       /* Text: */
       else
         {
-          data=gal_txt_image_read(name->v, p->cp.minmapsize);
+          data=gal_txt_image_read(name->v, NULL, p->cp.minmapsize);
           gal_list_data_add(&p->chll, data);
           ++p->numch;
         }

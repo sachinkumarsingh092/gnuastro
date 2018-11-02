@@ -123,6 +123,7 @@ ui_initialize_options(struct fitsparams *p,
         case GAL_OPTIONS_KEY_LOG:
         case GAL_OPTIONS_KEY_MINMAPSIZE:
         case GAL_OPTIONS_KEY_NUMTHREADS:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 

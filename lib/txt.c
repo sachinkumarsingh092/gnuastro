@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -290,11 +291,21 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
    given text file. If the file is a text table with string columns, the
    contents of the string column will be counted as one token.*/
 static size_t
-txt_info_from_first_row(char *line, gal_data_t **datall, int format)
+txt_info_from_first_row(char *in_line, gal_data_t **datall, int format,
+                        int inplace)
 {
   gal_data_t *col, *prev, *tmp;
   size_t n=0, maxcnum=0, numtokens;
-  char *token, *end=line+strlen(line);
+  char *line, *token, *end, *aline=NULL;
+
+  /* Make a copy of the input line if necessary. */
+  if(inplace) line=in_line;
+  else
+    {
+      gal_checkset_allocate_copy(in_line, &line);
+      aline=line; /* We are going to change `line' during this function. */
+    }
+  end=line+strlen(line);
 
   /* Remove the line termination character(s) from the end of the line. In
      Unix, the line terminator is just the new-line character, however, in
@@ -307,8 +318,8 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
      the available space on the line, we don't want to have the line's
      new-line character. Its better for it to actually be shorter than the
      space. */
-  if( *(end-2)==13 ) *(end-2)='\0';
-  else               *(end-1)='\0';
+  if( end>line+2 && *(end-2)==13 ) *(end-2)='\0';
+  else if( *(end-1)=='\n' )        *(end-1)='\0';
 
   /* Get the maximum number of columns read from the comment
      information. */
@@ -438,6 +449,7 @@ txt_info_from_first_row(char *line, gal_data_t **datall, int format)
     }
 
   /* Return the total number of columns/second-img-dimension. */
+  if(inplace==0) free(aline);
   return numtokens;
 }
 
@@ -517,18 +529,58 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
 
 
 
+static void
+txt_get_info_line(char *line, gal_data_t **datall, char *comm_start,
+                  int *firstlinedone, int format, size_t *dsize, int inplace)
+{
+  size_t numtokens;
+
+  switch( gal_txt_line_stat(line) )
+    {
+      /* Line is a comment, see if it has formatted information. */
+    case GAL_TXT_LINESTAT_COMMENT:
+      txt_info_from_comment(line, datall, comm_start);
+      break;
+
+      /* Line is actual data, use it to fill in the gaps.  */
+    case GAL_TXT_LINESTAT_DATAROW:
+      ++dsize[0];
+      if(*firstlinedone==0)
+        {
+          *firstlinedone=1;
+          numtokens=txt_info_from_first_row(line, datall, format, inplace);
+          if(format==TXT_FORMAT_IMAGE) dsize[1]=numtokens;
+        }
+      break;
+
+      /* We also have the case of GAL_TXT_LINESTAT_BLANK, but we don't
+         need to do anything about it. */
+    }
+}
+
+
+
+
+
 /* Return the information about a text file table. If there were no
    readable rows, it will return NULL.*/
 static gal_data_t *
-txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
+txt_get_info(char *filename, gal_list_str_t *lines, int format,
+             size_t *numdata, size_t *dsize)
 {
   FILE *fp;
-  size_t numtokens;
-  int firstlinedone=0;
-  gal_data_t *datall=NULL, *dataarr;
+  gal_list_str_t *tmp;
+  gal_data_t *datall=NULL;
+  int test, firstlinedone=0;
   char *line, *format_err="empty", *comm_start;
   size_t linelen=10; /* `linelen' will be increased by `getline'. */
 
+  /* `filename' and `lines' cannot both be non-NULL. */
+  test = (filename!=NULL) + (lines!=NULL);
+  if( test!=1 )
+    error(EXIT_FAILURE, 0, "%s: one of the `filename' and `lines' "
+          "arguments must be NULL, but they are both %s", __func__,
+          test==2 ? "non-NULL" : "NULL");
 
   /* Set the constant strings */
   switch(format)
@@ -540,75 +592,59 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
             __func__, format);
     }
 
-
-  /* Open the file. */
-  errno=0;
-  fp=fopen(filename, "r");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: couldn't open to read as a plain "
-          "text %s (from Gnuastro's `%s')", filename, format_err, __func__);
-
-
-  /* Allocate the space necessary to keep each line as we parse it. Note
-     that `getline' is going to later `realloc' this space to fit the line
-     length. */
-  errno=0;
-  line=malloc(linelen*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for line",
-          __func__, linelen*sizeof *line);
-
-
-  /* Read the comments of the line for possible information about the
-     lines, but also confirm/complete the info by parsing the first
-     uncommented line. */
+  /* Initialize the first `dsize' element. */
   dsize[0]=0;
-  while( getline(&line, &linelen, fp) != -1 )
-    switch( gal_txt_line_stat(line) )
-      {
-        /* Line is a comment, see if it has formatted information. */
-      case GAL_TXT_LINESTAT_COMMENT:
-        txt_info_from_comment(line, &datall, comm_start);
-        break;
 
-        /* Line is actual data, use it to fill in the gaps.  */
-      case GAL_TXT_LINESTAT_DATAROW:
-        ++dsize[0];
-        if(firstlinedone==0)
-          {
-            firstlinedone=1;
-            numtokens=txt_info_from_first_row(line, &datall, format);
-            if(format==TXT_FORMAT_IMAGE) dsize[1]=numtokens;
-          }
-        break;
+  /* Parse the file or go over the lines. */
+  if(filename)
+    {
+      /* Open the file. */
+      errno=0;
+      fp=fopen(filename, "r");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't open to read as a plain "
+              "text %s (from Gnuastro's `%s')", filename, format_err,
+              __func__);
 
-        /* We also have the case of GAL_TXT_LINESTAT_BLANK.  */
-      }
 
+      /* Allocate the space necessary to keep each line as we parse
+         it. Note that `getline' is going to later `realloc' this space to
+         fit the line length. */
+      errno=0;
+      line=malloc(linelen*sizeof *line);
+      if(line==NULL)
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for line",
+              __func__, linelen*sizeof *line);
+
+
+      /* Read the comments of the line for possible information about the
+         lines, but also confirm/complete the info by parsing the first
+         uncommented line. */
+      while( getline(&line, &linelen, fp) != -1 )
+        txt_get_info_line(line, &datall, comm_start, &firstlinedone, format,
+                          dsize, 1);
+
+
+      /* Clean up and close the file. */
+      free(line);
+      errno=0;
+      if(fclose(fp))
+        error(EXIT_FAILURE, errno, "%s: couldn't close file after reading "
+              "plain text %s information in %s", filename, format_err,
+              __func__);
+    }
+  else
+    {
+      for(tmp=lines; tmp!=NULL; tmp=tmp->next)
+        txt_get_info_line(tmp->v, &datall, comm_start, &firstlinedone,
+                          format, dsize, 0);
+    }
 
   /* The final dataset linked list can have any order (depending on how the
      user gave column information in tables for example). So here, we will
      convert the list into a nicely sorted array, note that this function
      frees list as part of the process. */
-  dataarr=txt_infoll_to_array(datall, numdata);
-
-
-  /* Clean up. Note that even if there were no usable columns, there might
-     have been meta-data comments, so we need to free `colsll' in any
-     case. If the list is indeed empty, then `gal_data_free_ll' won't do
-     anything. */
-  free(line);
-
-
-  /* Close the file. */
-  errno=0;
-  if(fclose(fp))
-    error(EXIT_FAILURE, errno, "%s: couldn't close file after reading plain "
-          "text %s information in %s", filename, format_err, __func__);
-
-
-  /* Return the array of column information. */
-  return dataarr;
+  return txt_infoll_to_array(datall, numdata);
 }
 
 
@@ -617,9 +653,10 @@ txt_get_info(char *filename, int format, size_t *numdata, size_t *dsize)
 
 /* Get the information of each column in a text file */
 gal_data_t *
-gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
+gal_txt_table_info(char *filename, gal_list_str_t *lines, size_t *numcols,
+                   size_t *numrows)
 {
-  return txt_get_info(filename, TXT_FORMAT_TABLE, numcols, numrows);
+  return txt_get_info(filename, lines, TXT_FORMAT_TABLE, numcols, numrows);
 }
 
 
@@ -628,9 +665,10 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
 
 /* Get the information of a 2D array in a text file. */
 gal_data_t *
-gal_txt_image_info(char *filename, size_t *numimg, size_t *dsize)
+gal_txt_image_info(char *filename, gal_list_str_t *lines, size_t *numimg,
+                   size_t *dsize)
 {
-  return txt_get_info(filename, TXT_FORMAT_IMAGE, numimg, dsize);
+  return txt_get_info(filename, lines, TXT_FORMAT_IMAGE, numimg, dsize);
 }
 
 
@@ -768,17 +806,27 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
 
 
 static void
-txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
-         gal_data_t *out, size_t rowind, char *filename, size_t lineno)
+txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
+         gal_data_t *out, size_t rowind, char *filename, size_t lineno,
+         int inplace)
 {
   size_t i, n=0;
   gal_data_t *data;
   int notenoughcols=0;
-  char *end=line+strlen(line);
+  char *end, *line, *aline=NULL;
+
+  /* Make a copy of the input line if necessary. */
+  if(inplace) line=in_line;
+  else
+    {
+      gal_checkset_allocate_copy(in_line, &line);
+      aline=line; /* We are going to change `line' during this function. */
+    }
+  end=line+strlen(line);
 
   /* See explanations in `txt_info_from_first_row'. */
-  if( *(end-2)==13 ) *(end-2)='\0';
-  else               *(end-1)='\0';
+  if( end>line+2 && *(end-2)==13 ) *(end-2)='\0';
+  else if( *(end-1)=='\n' )        *(end-1)='\0';
 
   /* Start parsing the line. Note that `n' and `maxcolnum' start from
      one. */
@@ -848,6 +896,9 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
       error(EXIT_FAILURE, 0, "%s: currently only 1 and 2 dimensional "
             "datasets acceptable", __func__);
     }
+
+  /* Clean up. */
+  if(inplace==0) free(aline);
 }
 
 
@@ -855,23 +906,26 @@ txt_fill(char *line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
 
 static gal_data_t *
-gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
-             gal_list_sizet_t *indexll, size_t minmapsize, int format)
+txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
+         gal_data_t *info, gal_list_sizet_t *indexll, size_t minmapsize,
+         int format)
 {
   FILE *fp;
+  int test;
   char *line;
   char **tokens;
+  gal_list_str_t *tmp;
   gal_data_t *out=NULL;
   gal_list_sizet_t *ind;
   size_t one=1, maxcolnum=0, rowind=0, lineno=0, ndim;
   size_t linelen=10;        /* `linelen' will be increased by `getline'. */
 
-  /* Open the file. */
-  errno=0;
-  fp=fopen(filename, "r");
-  if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%s: couldn't open to read as a text table "
-          "in %s", filename, __func__);
+  /* `filename' and `lines' cannot both be non-NULL. */
+  test = (filename!=NULL) + (lines!=NULL);
+  if( test!=1 )
+    error(EXIT_FAILURE, 0, "%s: one of the `filename' and `lines' "
+          "arguments must be NULL, but they are both %s", __func__,
+          test==2 ? "non-NULL" : "NULL");
 
   /* Allocate the space necessary to keep a copy of each line as we parse
      it. Note that `getline' is going to later `realloc' this space to fit
@@ -947,24 +1001,42 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `tokens'",
           __func__, (maxcolnum+1)*sizeof *tokens);
 
-  /* Read the data columns. */
-  while( getline(&line, &linelen, fp) != -1 )
+  if(filename)
     {
-      ++lineno;
-      if( gal_txt_line_stat(line) == GAL_TXT_LINESTAT_DATAROW )
-        txt_fill(line, tokens, maxcolnum, info, out, rowind++,
-                 filename, lineno);
+      /* Open the file. */
+      errno=0;
+      fp=fopen(filename, "r");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't open to read as a text "
+              "table in %s", filename, __func__);
+
+      /* Read the data columns. */
+      while( getline(&line, &linelen, fp) != -1 )
+        {
+          ++lineno;
+          if( gal_txt_line_stat(line) == GAL_TXT_LINESTAT_DATAROW )
+            txt_fill(line, tokens, maxcolnum, info, out, rowind++,
+                     filename, lineno, 1);
+        }
+
+      /* Clean up and close the file. */
+      errno=0;
+      if(fclose(fp))
+        error(EXIT_FAILURE, errno, "%s: couldn't close file after reading "
+              "ASCII table information in %s", filename, __func__);
+      free(line);
     }
+  else
+    for(tmp=lines; tmp!=NULL; tmp=tmp->next)
+      {
+        ++lineno;
+        if( gal_txt_line_stat(tmp->v) == GAL_TXT_LINESTAT_DATAROW )
+          txt_fill(tmp->v, tokens, maxcolnum, info, out, rowind++,
+                   filename, lineno, 0);
+      }
 
-  /* Clean up and close the file. */
-  errno=0;
-  if(fclose(fp))
-    error(EXIT_FAILURE, errno, "%s: couldn't close file after reading ASCII "
-          "table information in %s", filename, __func__);
+  /* Clean up and return. */
   free(tokens);
-  free(line);
-
-  /* Return the array of column information. */
   return out;
 }
 
@@ -973,11 +1045,12 @@ gal_txt_read(char *filename, size_t *dsize, gal_data_t *info,
 
 
 gal_data_t *
-gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
-                   gal_list_sizet_t *indexll, size_t minmapsize)
+gal_txt_table_read(char *filename, gal_list_str_t *lines, size_t numrows,
+                   gal_data_t *colinfo, gal_list_sizet_t *indexll,
+                   size_t minmapsize)
 {
-  return gal_txt_read(filename, &numrows, colinfo, indexll, minmapsize,
-                      TXT_FORMAT_TABLE);
+  return txt_read(filename, lines, &numrows, colinfo, indexll, minmapsize,
+                  TXT_FORMAT_TABLE);
 }
 
 
@@ -985,22 +1058,103 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
 
 
 gal_data_t *
-gal_txt_image_read(char *filename, size_t minmapsize)
+gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize)
 {
   size_t numimg, dsize[2];
   gal_data_t *img, *imginfo;
   gal_list_sizet_t *indexll=NULL;
 
   /* Get the image information. */
-  imginfo=gal_txt_image_info(filename, &numimg, dsize);
+  imginfo=gal_txt_image_info(filename, lines, &numimg, dsize);
 
   /* Read the table. */
-  img=gal_txt_read(filename, dsize, imginfo, indexll, minmapsize,
-                   TXT_FORMAT_IMAGE);
+  img=txt_read(filename, lines, dsize, imginfo, indexll, minmapsize,
+               TXT_FORMAT_IMAGE);
 
   /* Clean up and return. */
   gal_data_free(imginfo);
   return img;
+}
+
+
+
+
+/* See if there is anything in the standard input already. This function is
+   modeled on the solution provided in:
+
+   https://stackoverflow.com/questions/3711830/set-a-timeout-for-reading-stdin */
+static int
+txt_stdin_has_contents(long timeout_microsec)
+{
+  fd_set fds;
+  struct timeval tv;
+
+  /* Set the timeout time. */
+  tv.tv_sec  = 0;
+  tv.tv_usec = timeout_microsec;
+
+  /* Initialize `fd_set'. */
+  FD_ZERO(&fds);
+
+  /* Set standard input (STDIN_FILENO is 0) as the FD that must be read. */
+  FD_SET(STDIN_FILENO, &fds);
+
+  /* `select' takes the last file descriptor value + 1 in the fdset to
+     check, the fdset for reads, writes, and errors.  We are only passing
+     in reads.  the last parameter is the timeout.  select will return if
+     an FD is ready or the timeout has occurred. */
+  select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+
+  // return 0 if STDIN is not ready to be read.
+  return FD_ISSET(STDIN_FILENO, &fds);
+}
+
+
+
+
+/* Read each line of the standard input into a linked list of strings. */
+gal_list_str_t *
+gal_txt_stdin_read(long timeout_microsec)
+{
+  char *line;
+  gal_list_str_t *out=NULL;
+  size_t lineno=0, linelen=10;/* `linelen' will be increased by `getline'. */
+
+  /* If there is nothing  */
+  if( txt_stdin_has_contents(timeout_microsec) )
+    {
+      /* Allocate the space necessary to keep a copy of each line as we
+         parse it. Note that `getline' is going to later `realloc' this
+         space to fit the line length. */
+      errno=0;
+      line=malloc(linelen*sizeof *line);
+      if(line==NULL)
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `line'",
+              __func__, linelen*sizeof *line);
+
+      /* Read the whole standard input. We are using getline because it can
+         deal with a `NULL' in the input, while also handing allocation
+         issues while reading (allocating by line, not by a fixed buffer
+         size). */
+      while( getline(&line, &linelen, stdin) != -1 )
+        {
+          /* To help in reporting (when necessary), keep a count of how
+             many lines we have. */
+          ++lineno;
+
+          /* Add the line to the output list. */
+          gal_list_str_add(&out, line, 1);
+        }
+
+      /* Reverse the list (to be the same order as input). */
+      gal_list_str_reverse(&out);
+
+      /* Clean up. */
+      free(line);
+    }
+
+  /* Return the result. */
+  return out;
 }
 
 

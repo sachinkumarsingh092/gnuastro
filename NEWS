@@ -58,6 +58,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       column.
     - Sky estimation: new outlier estimation algorithm similar to
       NoiseChisel.
+    - Input can be given using the standard input (for example a pipe).
 
   Library:
     - gal_blank_flag_apply: Set all flagged/masked elements to blank.
@@ -67,6 +68,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - gal_fits_key_write_version_in_ptr: old gal_fits_key_write_version.
     - gal_fits_key_write_config: write key list and version as config header.
     - gal_statistics_outlier_positive: Find the first positive outlier.
+    - gal_txt_stdin_read: Read lines in standard input into a list of strings.
 
 ** Removed features
 
@@ -105,6 +107,16 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     - gal_fits_key_write: filename and hdu instead of FITS pointer.
     - gal_fits_key_write_version: filename and hdu instead of FITS pointer.
     - gal_fits_key_write_filename: write at the top or end of the input list.
+    - gal_array_read: list of strings (from standard input) acceptable.
+    - gal_array_read_to_type: list of strings (from stin) acceptable.
+    - gal_array_read_one_ch: list of strings (from stdin) acceptable.
+    - gal_array_read_one_ch_to_type: list of strings (from stdin) acceptable.
+    - gal_table_info: list of strings (from stdin) acceptable.
+    - gal_table_read: list of strings (from stdin) acceptable.
+    - gal_txt_table_info: list of strings (from stdin) acceptable.
+    - gal_txt_image_info: list of strings (from stdin) acceptable.
+    - gal_txt_table_read: list of strings (from stdin) acceptable.
+    - gal_txt_image_read: list of strings (from stdin) acceptable.
 
 ** Bugs fixed
   bug #54493: Warp crashes when type isn't set.

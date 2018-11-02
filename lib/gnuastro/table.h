@@ -125,8 +125,8 @@ enum gal_table_where_to_search
 /***************         Information about a table        ***************/
 /************************************************************************/
 gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols,
-               size_t *numrows, int *tableformat);
+gal_table_info(char *filename, char *hdu, gal_list_str_t *lines,
+               size_t *numcols, size_t *numrows, int *tableformat);
 
 void
 gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
@@ -137,9 +137,9 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 /***************               Read a table               ***************/
 /************************************************************************/
 gal_data_t *
-gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
-               int searchin, int ignorecase, size_t minmapsize,
-               size_t *colmatch);
+gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
+               gal_list_str_t *cols, int searchin, int ignorecase,
+               size_t minmapsize, size_t *colmatch);
 
 
 

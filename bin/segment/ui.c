@@ -131,6 +131,7 @@ ui_initialize_options(struct segmentparams *p,
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 
@@ -404,7 +405,7 @@ ui_prepare_inputs(struct segmentparams *p)
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
-                                           GAL_TYPE_FLOAT32,
+                                           NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
@@ -428,7 +429,7 @@ ui_prepare_inputs(struct segmentparams *p)
     {
       /* Read the input convolved image. */
       p->conv = gal_array_read_one_ch_to_type(p->convolvedname, p->chdu,
-                                              GAL_TYPE_FLOAT32,
+                                              NULL, GAL_TYPE_FLOAT32,
                                               p->cp.minmapsize);
       p->conv->wcs=gal_wcs_copy(p->input->wcs);
 
@@ -447,7 +448,7 @@ ui_prepare_inputs(struct segmentparams *p)
     {
       /* Read the dataset into memory. */
       p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
-                                        p->cp.minmapsize);
+                                        NULL, p->cp.minmapsize);
       if( gal_dimension_is_different(p->input, p->olabel) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->useddetectionname, p->dhdu,
@@ -722,7 +723,7 @@ ui_read_std_and_sky(struct segmentparams *p)
 
       /* Read the STD image. */
       p->std=gal_array_read_one_ch_to_type(p->usedstdname, p->stdhdu,
-                                           GAL_TYPE_FLOAT32,
+                                           NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
 
       /* Make sure it has the correct size. */
@@ -780,7 +781,7 @@ ui_read_std_and_sky(struct segmentparams *p)
 
           /* Read the Sky dataset. */
           sky=gal_array_read_one_ch_to_type(p->skyname, p->skyhdu,
-                                            GAL_TYPE_FLOAT32,
+                                            NULL, GAL_TYPE_FLOAT32,
                                             p->cp.minmapsize);
 
           /* Check its size. */

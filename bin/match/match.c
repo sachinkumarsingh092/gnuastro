@@ -66,8 +66,8 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
                                       __func__, "numcolmatch");
 
   /* Read the full table. */
-  cat=gal_table_read(filename, hdu, cols, p->cp.searchin, p->cp.ignorecase,
-                     p->cp.minmapsize, *numcolmatch);
+  cat=gal_table_read(filename, hdu, NULL, cols, p->cp.searchin,
+                     p->cp.ignorecase, p->cp.minmapsize, *numcolmatch);
   origsize=cat->size;
 
 

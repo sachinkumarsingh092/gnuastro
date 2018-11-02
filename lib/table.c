@@ -60,16 +60,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    comments), nothing in the data structure(s) will be allocated by this
    function for the actual data (e.g., the `array' or `dsize' elements). */
 gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
-               int *tableformat)
+gal_table_info(char *filename, char *hdu, gal_list_str_t *lines,
+               size_t *numcols, size_t *numrows, int *tableformat)
 {
   /* Get the table format and size (number of columns and rows). */
-  if(gal_fits_name_is_fits(filename))
+  if(filename && gal_fits_name_is_fits(filename))
     return gal_fits_tab_info(filename, hdu, numcols, numrows, tableformat);
   else
     {
       *tableformat=GAL_TABLE_FORMAT_TXT;
-      return gal_txt_table_info(filename, numcols, numrows);
+      return gal_txt_table_info(filename, lines, numcols, numrows);
     }
 
   /* Abort with an error if we get to this point. */
@@ -403,9 +403,9 @@ make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
    So the first requested column is the first popped data structure and so
    on. */
 gal_data_t *
-gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
-               int searchin, int ignorecase, size_t minmapsize,
-               size_t *colmatch)
+gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
+               gal_list_str_t *cols, int searchin, int ignorecase,
+               size_t minmapsize, size_t *colmatch)
 {
   int tableformat;
   gal_list_sizet_t *indexll;
@@ -413,7 +413,8 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
   gal_data_t *allcols, *out=NULL;
 
   /* First get the information of all the columns. */
-  allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tableformat);
+  allcols=gal_table_info(filename, hdu, lines, &numcols, &numrows,
+                         &tableformat);
 
   /* If there was no actual data in the file, then return NULL. */
   if(allcols==NULL) return NULL;
@@ -435,7 +436,7 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *cols,
   switch(tableformat)
     {
     case GAL_TABLE_FORMAT_TXT:
-      out=gal_txt_table_read(filename, numrows, allcols, indexll,
+      out=gal_txt_table_read(filename, lines, numrows, allcols, indexll,
                              minmapsize);
       break;
 

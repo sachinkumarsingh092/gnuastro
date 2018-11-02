@@ -125,6 +125,7 @@ ui_initialize_options(struct buildprogparams *p,
         case GAL_OPTIONS_KEY_NUMTHREADS:
         case GAL_OPTIONS_KEY_MINMAPSIZE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           cp->coptions[i].mandatory=GAL_OPTIONS_NOT_MANDATORY;
           break;

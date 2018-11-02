@@ -132,6 +132,7 @@ ui_initialize_options(struct convolveparams *p,
       case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_IGNORECASE:
       case GAL_OPTIONS_KEY_TABLEFORMAT:
+      case GAL_OPTIONS_KEY_STDINTIMEOUT:
       case GAL_OPTIONS_KEY_INTERPNUMNGB:
       case GAL_OPTIONS_KEY_INTERPONLYBLANK:
         cp->coptions[i].flags=OPTION_HIDDEN;
@@ -296,7 +297,7 @@ ui_read_kernel(struct convolveparams *p)
 
   /* Read the image into file. */
   p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
-                                            GAL_TYPE_FLOAT32,
+                                            NULL, GAL_TYPE_FLOAT32,
                                             p->cp.minmapsize);
 
   /* Convert all the NaN pixels to zero if the kernel contains blank
@@ -343,7 +344,7 @@ ui_preparations(struct convolveparams *p)
 
 
   /* Read the input image as a float64 array. */
-  p->input=gal_array_read_one_ch_to_type(p->filename, cp->hdu,
+  p->input=gal_array_read_one_ch_to_type(p->filename, cp->hdu, NULL,
                                          GAL_TYPE_FLOAT32, cp->minmapsize);
   p->input->wcs=gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs);
 

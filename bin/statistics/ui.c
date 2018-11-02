@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 
+#include <gnuastro/txt.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
@@ -530,8 +531,6 @@ ui_check_options_and_arguments(struct statisticsparams *p)
                   "to tables.", p->inputname, p->cp.hdu);
         }
     }
-  else
-    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -701,6 +700,8 @@ ui_read_columns(struct statisticsparams *p)
   gal_list_str_t *column=NULL;
   gal_data_t *cols, *tmp, *cinfo;
   size_t size, ncols, nrows, counter=0;
+  gal_list_str_t *lines=gal_options_check_stdin(p->inputname,
+                                                p->cp.stdintimeout);
 
   /* If a reference column is also given, add it to the list of columns to
      read. */
@@ -713,32 +714,50 @@ ui_read_columns(struct statisticsparams *p)
   if(p->column==NULL)
     {
       /* Get the basic table information. */
-      cinfo=gal_table_info(p->inputname, p->cp.hdu, &ncols, &nrows, &tformat);
+      cinfo=gal_table_info(p->inputname, p->cp.hdu, lines, &ncols, &nrows,
+                           &tformat);
       gal_data_array_free(cinfo, ncols, 1);
 
       /* See how many columns it has and take the proper action. */
-      if(ncols==1)
-        gal_checkset_allocate_copy("1", &p->column);
-      else
-        error(EXIT_FAILURE, 0, "%s is a table containing more than one "
-              "column. However, the specific column to work on isn't "
-              "specified.\n\n"
-              "Please use the `--column' (`-c') option to specify a "
-              "column. You can either give it the column number "
-              "(couting from 1), or a match/search in its meta-data (e.g., "
-              "column names).\n\n"
-              "For more information, please run the following command "
-              "(press the `SPACE' key to go down and `q' to return to the "
-              "command-line):\n\n"
-              "    $ info gnuastro \"Selecting table columns\"\n",
-              gal_checkset_dataset_name(p->inputname, p->cp.hdu));
+      switch(ncols)
+        {
+        case 0:
+          error(EXIT_FAILURE, 0, "%s contains no usable information",
+                ( p->inputname
+                  ? gal_checkset_dataset_name(p->inputname, p->cp.hdu)
+                  : "Standard input" ));
+        case 1:
+          gal_checkset_allocate_copy("1", &p->column);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%s is a table containing more than one "
+                "column. However, the specific column to work on isn't "
+                "specified.\n\n"
+                "Please use the `--column' (`-c') option to specify a "
+                "column. You can either give it the column number "
+                "(couting from 1), or a match/search in its meta-data (e.g., "
+                "column names).\n\n"
+                "For more information, please run the following command "
+                "(press the `SPACE' key to go down and `q' to return to the "
+                "command-line):\n\n"
+                "    $ info gnuastro \"Selecting table columns\"\n",
+                ( p->inputname
+                  ? gal_checkset_dataset_name(p->inputname, p->cp.hdu)
+                  : "Standard input" ));
+        }
 
     }
   gal_list_str_add(&column, p->column, 0);
 
   /* Read the desired column(s). */
-  cols=gal_table_read(p->inputname, p->cp.hdu, column, p->cp.searchin,
+  cols=gal_table_read(p->inputname, p->cp.hdu, lines, column, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
+  gal_list_str_free(lines, 1);
+
+  /* If the input was from standard input, we can actually write this into
+     it (for future reporting). */
+  if(p->inputname==NULL)
+    gal_checkset_allocate_copy("Standard input", &p->inputname);
 
   /* Put the columns into the proper gal_data_t. */
   size=cols->size;
@@ -807,7 +826,8 @@ ui_preparations(struct statisticsparams *p)
   if(p->isfits && p->hdu_type==IMAGE_HDU)
     {
       p->inputformat=INPUT_FORMAT_IMAGE;
-      p->input=gal_array_read_one_ch(p->inputname, cp->hdu, cp->minmapsize);
+      p->input=gal_array_read_one_ch(p->inputname, cp->hdu, NULL,
+                                     cp->minmapsize);
       p->input->wcs=gal_wcs_read(p->inputname, cp->hdu, 0, 0,
                                  &p->input->nwcs);
     }

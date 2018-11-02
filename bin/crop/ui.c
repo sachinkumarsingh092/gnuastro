@@ -145,6 +145,10 @@ ui_initialize_options(struct cropparams *p,
         case GAL_OPTIONS_KEY_IGNORECASE:
           cp->coptions[i].group=UI_GROUP_CENTER_CATALOG;
           break;
+
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
+          cp->coptions[i].group=OPTION_HIDDEN;
+          break;
         }
 
       /* Select by group. */
@@ -671,7 +675,7 @@ ui_read_cols(struct cropparams *p)
 
 
   /* Read the desired columns from the file. */
-  cols=gal_table_read(p->catname, p->cathdu, colstrs, p->cp.searchin,
+  cols=gal_table_read(p->catname, p->cathdu, NULL, colstrs, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
   if(cols==NULL)
     error(EXIT_FAILURE, 0, "%s: is empty! No usable information "

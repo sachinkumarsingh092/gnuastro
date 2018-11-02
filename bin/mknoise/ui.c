@@ -131,6 +131,7 @@ ui_initialize_options(struct mknoiseparams *p,
 
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -282,7 +283,7 @@ void
 ui_preparations(struct mknoiseparams *p)
 {
   /* Read the input image as a double type */
-  p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
+  p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu, NULL,
                                      GAL_TYPE_FLOAT64, p->cp.minmapsize);
   p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
 

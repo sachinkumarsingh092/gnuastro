@@ -202,6 +202,7 @@ ui_initialize_options(struct mkprofparams *p,
           break;
 
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 
@@ -621,7 +622,7 @@ ui_read_cols(struct mkprofparams *p)
   gal_list_str_reverse(&colstrs);
 
   /* Read the desired columns from the file. */
-  cols=gal_table_read(p->catname, p->cp.hdu, colstrs, p->cp.searchin,
+  cols=gal_table_read(p->catname, p->cp.hdu, NULL, colstrs, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
 
   /* Set the number of objects. */
@@ -1036,7 +1037,7 @@ ui_prepare_canvas(struct mkprofparams *p)
         {
           /* Read the image. */
           p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
-                                               GAL_TYPE_FLOAT32,
+                                               NULL, GAL_TYPE_FLOAT32,
                                                p->cp.minmapsize);
           p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0,
                                    &p->out->nwcs);

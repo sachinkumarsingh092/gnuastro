@@ -86,7 +86,8 @@ gal_array_name_recognized_multiext(char *name)
 /* Read (all the possibly existing) color channels within each
    extension/dir of the given file. */
 gal_data_t *
-gal_array_read(char *filename, char *extension, size_t minmapsize)
+gal_array_read(char *filename, char *extension, gal_list_str_t *lines,
+               size_t minmapsize)
 {
   size_t ext;
 
@@ -107,7 +108,7 @@ gal_array_read(char *filename, char *extension, size_t minmapsize)
 
   /* Default: plain text. */
   else
-    return gal_txt_image_read(filename, minmapsize);
+    return gal_txt_image_read(filename, lines, minmapsize);
 
   /* Control should not get to here, but just to avoid compiler warnings,
      we'll return a NULL. */
@@ -123,11 +124,13 @@ gal_array_read(char *filename, char *extension, size_t minmapsize)
 
 /* Read the contents of the given file/extension to a specific type. */
 gal_data_t *
-gal_array_read_to_type(char *filename, char *extension, uint8_t type,
+gal_array_read_to_type(char *filename, char *extension,
+                       gal_list_str_t *lines, uint8_t type,
                        size_t minmapsize)
 {
   gal_data_t *out=NULL;
-  gal_data_t *next, *in=gal_array_read(filename, extension, minmapsize);
+  gal_data_t *next, *in=gal_array_read(filename, extension, lines,
+                                       minmapsize);
 
   /* Go over all the channels. */
   while(in)
@@ -149,11 +152,12 @@ gal_array_read_to_type(char *filename, char *extension, uint8_t type,
 
 /* Read the input array and make sure it is only one channel. */
 gal_data_t *
-gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize)
+gal_array_read_one_ch(char *filename, char *extension, gal_list_str_t *lines,
+                      size_t minmapsize)
 {
   char *fname;
   gal_data_t *out;
-  out=gal_array_read(filename, extension, minmapsize);
+  out=gal_array_read(filename, extension, lines, minmapsize);
 
   if(out->next)
     {
@@ -183,10 +187,12 @@ gal_array_read_one_ch(char *filename, char *extension, size_t minmapsize)
 
 /* Read a single-channel dataset into a specific type. */
 gal_data_t *
-gal_array_read_one_ch_to_type(char *filename, char *extension, uint8_t type,
+gal_array_read_one_ch_to_type(char *filename, char *extension,
+                              gal_list_str_t *lines, uint8_t type,
                               size_t minmapsize)
 {
-  gal_data_t *out=gal_array_read_one_ch(filename, extension, minmapsize);
+  gal_data_t *out=gal_array_read_one_ch(filename, extension, lines,
+                                        minmapsize);
 
   return gal_data_copy_to_new_type_free(out, type);
 }

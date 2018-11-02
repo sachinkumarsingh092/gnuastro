@@ -126,6 +126,7 @@ ui_initialize_options(struct noisechiselparams *p,
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 
@@ -543,7 +544,7 @@ ui_preparations_read_input(struct noisechiselparams *p)
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
-                                           GAL_TYPE_FLOAT32,
+                                           NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
@@ -601,7 +602,7 @@ ui_preparations(struct noisechiselparams *p)
     {
       /* Read the input convolved image. */
       p->conv = gal_array_read_one_ch_to_type(p->convolvedname, p->chdu,
-                                              GAL_TYPE_FLOAT32,
+                                              NULL, GAL_TYPE_FLOAT32,
                                               p->cp.minmapsize);
 
       /* Make sure the convolved image is the same size as the input. */

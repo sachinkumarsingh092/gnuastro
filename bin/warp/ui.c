@@ -128,6 +128,7 @@ ui_initialize_options(struct warpparams *p,
 
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -340,7 +341,7 @@ ui_check_options_and_arguments(struct warpparams *p)
 
       /* Read the input image as double type and its WCS structure. */
       p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
-                                             GAL_TYPE_FLOAT64,
+                                             NULL, GAL_TYPE_FLOAT64,
                                              p->cp.minmapsize);
       p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
                                  p->hendwcs, &p->input->nwcs);

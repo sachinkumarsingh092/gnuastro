@@ -142,6 +142,7 @@ ui_initialize_options(struct mkcatalogparams *p,
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_WORKOVERCH:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
         case GAL_OPTIONS_KEY_INTERPNUMNGB:
         case GAL_OPTIONS_KEY_INTERPONLYBLANK:
           cp->coptions[i].flags=OPTION_HIDDEN;
@@ -540,7 +541,7 @@ ui_read_labels(struct mkcatalogparams *p)
   gal_data_t *tmp, *keys=gal_data_array_calloc(2);
 
   /* Read it into memory. */
-  p->objects = gal_array_read_one_ch(p->objectsfile, p->cp.hdu,
+  p->objects = gal_array_read_one_ch(p->objectsfile, p->cp.hdu, NULL,
                                      p->cp.minmapsize);
 
 
@@ -603,7 +604,7 @@ ui_read_labels(struct mkcatalogparams *p)
 
       /* Read the clumps image. */
       p->clumps = gal_array_read_one_ch(p->usedclumpsfile, p->clumpshdu,
-                                        p->cp.minmapsize);
+                                        NULL, p->cp.minmapsize);
 
       /* Check its size. */
       if( gal_dimension_is_different(p->objects, p->clumps) )
@@ -908,7 +909,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
       /* Read the values dataset. */
       p->values=gal_array_read_one_ch_to_type(p->usedvaluesfile, p->valueshdu,
-                                              GAL_TYPE_FLOAT32,
+                                              NULL, GAL_TYPE_FLOAT32,
                                               p->cp.minmapsize);
 
       /* Make sure it has the correct size. */
@@ -955,7 +956,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
           /* Read the Sky dataset. */
           p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
-                                               GAL_TYPE_FLOAT32,
+                                               NULL, GAL_TYPE_FLOAT32,
                                                p->cp.minmapsize);
 
           /* Check its size and prepare tile structure. */
@@ -984,7 +985,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
       /* Read the Sky standard deviation image into memory. */
       p->std=gal_array_read_one_ch_to_type(p->usedstdfile, p->stdhdu,
-                                           GAL_TYPE_FLOAT32,
+                                           NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
 
       /* Check its size and prepare tile structure. */
@@ -1018,7 +1019,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
           /* Read the mask image. */
           p->upmask = gal_array_read_one_ch(p->upmaskfile, p->upmaskhdu,
-                                            p->cp.minmapsize);
+                                            NULL, p->cp.minmapsize);
 
           /* Check its size. */
           if( gal_dimension_is_different(p->objects, p->upmask) )

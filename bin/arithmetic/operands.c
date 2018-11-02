@@ -335,7 +335,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
       filename=operands->filename;
 
       /* Read the dataset. */
-      data=gal_array_read_one_ch(filename, hdu, p->cp.minmapsize);
+      data=gal_array_read_one_ch(filename, hdu, NULL, p->cp.minmapsize);
 
       /* Arithmetic changes the contents of a dataset, so the existing name
          (in the FITS `EXTNAME' keyword) should not be passed on beyond

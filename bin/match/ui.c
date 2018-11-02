@@ -119,6 +119,7 @@ ui_initialize_options(struct matchparams *p,
           break;
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_NUMTHREADS:
+        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -404,8 +405,8 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
     "numberes are the only identifiers guaranteed to be unique).";
 
   /* Read the columns. */
-  tout=gal_table_read(filename, hdu, cols, cp->searchin, cp->ignorecase,
-                      cp->minmapsize, NULL);
+  tout=gal_table_read(filename, hdu, NULL, cols, cp->searchin,
+                      cp->ignorecase, cp->minmapsize, NULL);
 
   /* A small sanity check. */
   if(gal_list_data_number(tout)!=numcols)

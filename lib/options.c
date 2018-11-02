@@ -1358,6 +1358,32 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state)
 
 
 
+/* Make the notice that is printed before program terminates, when no input
+   is given and Standard input is also available. */
+gal_list_str_t *
+gal_options_check_stdin(char *inputname, long stdintimeout)
+{
+  gal_list_str_t *lines=inputname ? NULL : gal_txt_stdin_read(stdintimeout);
+
+  /* See if atleast one of the two inputs is given. */
+  if(inputname==NULL && lines==NULL)
+    error( EXIT_FAILURE, 0, "no input!\n\n"
+           "The (first) input dataset can be read from a file "
+           "(specified as an argument) or the standard input. If "
+           "both are provided, a file takes precedence. Standard "
+           "input can come from a pipe (output of another program) "
+           "or typed on the command-line before %ld micro-seconds "
+           "(configurable with the `--stdintimeout' option).",
+           stdintimeout );
+
+  /* Return the output. */
+  return lines;
+}
+
+
+
+
+
 
 
 

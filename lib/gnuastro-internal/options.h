@@ -107,7 +107,8 @@ enum options_common_keys
   GAL_OPTIONS_KEY_REMAINDERFRAC = 'F',
 
   /* Only long option (integers for keywords). */
-  GAL_OPTIONS_KEY_MINMAPSIZE   = 500,
+  GAL_OPTIONS_KEY_STDINTIMEOUT = 500,
+  GAL_OPTIONS_KEY_MINMAPSIZE,
   GAL_OPTIONS_KEY_LOG,
   GAL_OPTIONS_KEY_CITE,
   GAL_OPTIONS_KEY_CONFIG,
@@ -183,6 +184,7 @@ struct gal_options_common_params
   char                    *hdu; /* Image extension.                       */
   uint8_t             searchin; /* Column meta-data to match/search.      */
   uint8_t           ignorecase; /* Ignore case when matching col info.    */
+  long            stdintimeout; /* Timeout (micro-seconds) for stdin.     */
 
   /* Output. */
   char                 *output; /* Directory containg output.             */
@@ -300,6 +302,9 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
 
 error_t
 gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
+
+gal_list_str_t *
+gal_options_check_stdin(char *inputname, long stdintimeout);
 
 
 
