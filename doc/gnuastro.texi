@@ -291,18 +291,19 @@ Common program behavior
 
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
+* Getting help::                Getting more information on the go.
 * Multi-threaded operations::   How threads are managed in Gnuastro.
 * Numeric data types::          Different types and how to specify them.
 * Tables::                      Recognized table formats.
 * Tessellation::                Tile the dataset into non-overlapping bins.
-* Getting help::                Getting more information on the go.
 * Automatic output::            About automatic output names.
 * Output FITS files::           Common properties when outputs are FITS.
 
 Command-line
 
-* Arguments and options::       Basics of options and arguments.
-* Common options::              Common options to all Gnuastro programs.
+* Arguments and options::       Different ways to specify inputs and configuration.
+* Common options::              Options that are shared between all programs.
+* Standard input::              Using output of another program as input.
 
 Arguments and options
 
@@ -322,6 +323,14 @@ Configuration files
 * Current directory and User wide::  Local and user configuration files.
 * System wide::                 System wide configuration files.
 
+Getting help
+
+* --usage::                     View option names and value formats.
+* --help::                      List all options with description.
+* Man pages::                   Man pages generated from --help.
+* Info::                        View complete book in terminal.
+* help-gnuastro mailing list::  Contacting experienced users.
+
 Multi-threaded operations
 
 * A note on threads::           Caution and suggestion on using threads.
@@ -336,14 +345,6 @@ Tables
 Recognized table formats
 
 * Gnuastro text table format::  Reading plain text tables
-
-Getting help
-
-* --usage::                     View option names and value formats.
-* --help::                      List all options with description.
-* Man pages::                   Man pages generated from --help.
-* Info::                        View complete book in terminal.
-* help-gnuastro mailing list::  Contacting experienced users.
 
 Data containers
 
@@ -7130,28 +7131,60 @@ If your problem was not listed above, please file a bug report
 @chapter Common program behavior
 
 All the programs in Gnuastro share a set of common behavior mainly to do
-with user interaction to facilitate their usage. The most basic is how you
-can configure each program to do what you want: define the input, change
-parameter/option values, or identify the output. All Gnuastro programs can
-also read your desired configuration from pre-defined or user-specified
-files so you don't have to specify all the (sometimes numerous) parameters
-on the command-line each time you run a program. These files define the
-``default'' program behavior in each directory, for each user, or on each
-system. In other cases, some programs can greatly benefit from the many
-threads available in modern CPUs, so here we'll also discuss how you can
-get the most out of your hardware. Among some other issues, we will also
-discuss how you can get immediate and distraction-free (without taking your
-hands off the keyboard!) help, or access to this whole book, on the
-command-line.
+with user interaction to facilitate their usage and development. This
+includes how to feed input datasets into the programs, how to configure
+them, specifying the outputs, numerical data types, treating columns of
+information in tables and etc. This chapter is devoted to describing this
+common behavior in all programs. Because the behaviors discussed here are
+common to several programs, they are not repeated in each program's
+description.
+
+In @ref{Command-line}, a very general description of running the programs
+on the command-line is discussed, like difference between arguments and
+options, as well as options that are common/shared between all
+programs. None of Gnuastro's programs keep any internal configuration value
+(values for their different operational steps), they read their
+configuration primarily from the command-line, then from specific files in
+directory, user, or system-wide settings. Using these configuration files
+can greatly help reproducible and robust usage of Gnuastro, see
+@ref{Configuration files} for more.
+
+It is not possible to always have the different options and configurations
+of each program on the top of your head. It is very natural to forget the
+options of a program, their current default values, or how it should be run
+and what it did. Gnuastro's programs have multiple ways to help you refresh
+your memory in multiple levels (just an option name, a short description,
+or fast access to the relevant section of the manual. See @ref{Getting
+help} for more for more on benefiting from this very convenient feature.
+
+Many of the programs use the multi-threaded character of modern CPUs, in
+@ref{Multi-threaded operations} we'll discuss how you can configure this
+behavior, along with some tips on making best use of them. In @ref{Numeric
+data types}, we'll review the various types to store numbers in your
+datasets: setting the proper type for the usage context@footnote{For
+example if the values in your dataset can only be integers between 0 or
+65000, store them in a unsigned 16-bit type, not 64-bit floating point type
+(which is the default in most systems). It takes four times less space and
+is much faster to process.} can grealy improve the file size and also speed
+of reading, writing or processing them.
+
+We'll then look into the recognized table formats in @ref{Tables} and how
+large datasets are broken into tiles, or mesh grid in
+@ref{Tessellation}. Finally, we'll take a look at the behavior regarding
+output files: @ref{Automatic output} discribes how the programs set a
+default name for their output when you don't give one explicitly (using
+@option{--output}). When the output is a FITS file, all the programs also
+store some very useful information in the header that is discussed in
+@ref{Output FITS files}.
 
 @menu
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
+* Getting help::                Getting more information on the go.
 * Multi-threaded operations::   How threads are managed in Gnuastro.
 * Numeric data types::          Different types and how to specify them.
 * Tables::                      Recognized table formats.
 * Tessellation::                Tile the dataset into non-overlapping bins.
-* Getting help::                Getting more information on the go.
 * Automatic output::            About automatic output names.
 * Output FITS files::           Common properties when outputs are FITS.
 @end menu
@@ -7159,42 +7192,40 @@ command-line.
 @node Command-line, Configuration files, Common program behavior, Common program behavior
 @section Command-line
 
-All the programs in Gnuastro are customized through the standard GNU style
-command-line options. Thus, we'll start by defining this general style that
-is very common in many command-line tools on Unix-like operating
-systems. Finally, the options that are common to all the programs in
-Gnuastro are discussed.
-
-@cindex Metacharacters
-@cindex Token separation
-@cindex Command-line token separation
-@cindex Separating tokens on the command-line
-The command-line text that you type is passed onto the shell (or program
-managing the command-line) as a string of characters. See the ``Invoking
-ProgramName'' sections in this manual for some examples of commands with
-each program, for example @ref{Invoking asttable}. That string is then
-broken up into separate @emph{tokens} or @emph{words} by any
-@emph{metacharacters} (like space, tab, @command{|}, @command{>} or
-@command{;}) that might exist in the text. To learn more, please see the
-GNU Bash manual, for the complete list of meta-characters and other GNU
-Bash definitions (GNU Bash is the most common shell program). Its ``Shell
-Operation'' section has a short summary of the steps the shell takes before
-passing the commands to the program you called.
+Gnuastro's programs are customized through the standard Unix-like
+command-line environment and GNU style command-line options. Both are very
+common in many Unix-like operating system programs. In @ref{Arguments and
+options} we'll start with the difference between arguments and options and
+elaborate on the GNU style of options. Afterwards, in @ref{Common options},
+we'll go into the detailed list of all the options that are common to all
+the programs in Gnuastro.
 
 @menu
-* Arguments and options::       Basics of options and arguments.
-* Common options::              Common options to all Gnuastro programs.
+* Arguments and options::       Different ways to specify inputs and configuration.
+* Common options::              Options that are shared between all programs.
+* Standard input::              Using output of another program as input.
 @end menu
 
 @node Arguments and options, Common options, Command-line, Command-line
 @subsection Arguments and options
 
+@cindex Shell
 @cindex Options to programs
 @cindex Command-line options
 @cindex Arguments to programs
 @cindex Command-line arguments
-On the command-line, the first thing you usually enter is the name of the
-program you want to run. After that, you can specify two types of input:
+When you type a command on the command-line, it is passed onto the shell (a
+generic name for the program that manages the command-line) as a string of
+characters. As an example, see the ``Invoking ProgramName'' sections in
+this manual for some examples of commands with each program, like
+@ref{Invoking asttable}, @ref{Invoking astfits}, or @ref{Invoking
+aststatistics}.
+
+The shell then brokes up your string into separate @emph{tokens} or
+@emph{words} using any @emph{metacharacters} (like white-space, tab,
+@command{|}, @command{>} or @command{;}) that are in the string. On the
+command-line, the first thing you usually enter is the name of the program
+you want to run. After that, you can specify two types of tokens:
 @emph{arguments} and @emph{options}. In the GNU-style, arguments are those
 tokens that are not preceded by any hyphens (@command{-}, see
 @ref{Arguments}). Here is one example:
@@ -7203,29 +7234,32 @@ tokens that are not preceded by any hyphens (@command{-}, see
 $ astcrop --center=53.162551,-27.789676 -w10/3600 --mode=wcs udf.fits
 @end example
 
-In this example, the argument is @file{udf.fits}. Arguments are most
-commonly the input file names containing your data. Options start with one
-or two hyphens, followed by an identifier for the option (the option's
-name) and its value (see @ref{Options}). Through options you tell the
-program how to interpret the data. In this example, we are running
-@ref{Crop} to crop a region of width 10 arc-seconds centered at the given
-RA and Dec from the input Hubble Ultra-Deep Field (UDF) FITS image. So
-options come with an identifier (the option name which is separate from
-their value).
+In the example above, we are running @ref{Crop} to crop a region of width
+10 arc-seconds centered at the given RA and Dec from the input Hubble
+Ultra-Deep Field (UDF) FITS image. Here, the argument is
+@file{udf.fits}. Arguments are most commonly the input file names
+containing your data. Options start with one or two hyphens, followed by an
+identifier for the option (the option's name, for example,
+@option{--center}, @option{-w}, @option{--mode} in the example above) and
+its value (anything after the option name, or the optional @key{=}
+character). Through options you can configure how the program runs
+(interprets the data you provided).
 
 @vindex --help
 @vindex --usage
 @cindex Mandatory arguments
-Arguments can be both mandatory and optional and unlike options they don't
-have any identifiers (or help from you). Hence, their order might also
-matter (for example in @command{cp} which is used for copying one file to
-another location). The outputs of @option{--usage} and @option{--help}
+Arguments can be mandatory and optional and unlike options, they don't have
+any identifiers. Hence, when there multiple arguments, their order might
+also matter (for example in @command{cp} which is used for copying one file
+to another location). The outputs of @option{--usage} and @option{--help}
 shows which arguments are optional and which are mandatory, see
-@ref{--usage}. As their name suggests, @emph{options} on the command-line
-can be considered to be optional and most of the time, you don't have to
-worry about what order you specify them in. When the order does matter, or
-the option can be invoked multiple times, it is explicitly mentioned in the
-``Invoking ProgramName'' section of each program.
+@ref{--usage}.
+
+As their name suggests, @emph{options} can be considered to be optional and
+most of the time, you don't have to worry about what order you specify them
+in. When the order does matter, or the option can be invoked multiple
+times, it is explicitly mentioned in the ``Invoking ProgramName'' section
+of each program (this is a very important aspect of an option).
 
 @cindex Metacharacters on the command-line
 In case your arguments or option values contain any of the shell's
@@ -7241,17 +7275,16 @@ For example, let's say you want to specify the header data unit (HDU) of
 your FITS file using a complex expression like `@command{3; images(exposure
 > 100)}'. If you simply add these after the @option{--hdu} (@option{-h})
 option, the programs in Gnuastro will read the value to the HDU option as
-`@command{3}' and run. Then, Bash will attempt to run a separate command
-`@command{images(exposure > 100)}' and complain about a syntax error. This
-is because the semicolon (@command{;}) is an `end of command' character in
-the shell. To solve this problem you can simply put double quotes around
-the whole string you want to pass to @option{--hdu} as seen below:
+`@command{3}' and run. Then, the shell will attempt to run a separate
+command `@command{images(exposure > 100)}' and complain about a syntax
+error. This is because the semicolon (@command{;}) is an `end of command'
+character in the shell. To solve this problem you can simply put double
+quotes around the whole string you want to pass to @option{--hdu} as seen
+below:
 @example
-$ astcrop --hdu="3; images(exposure > 100)" FITSimage.fits
+$ astcrop --hdu="3; images(exposure > 100)" image.fits
 @end example
-Alternatively you can put a `@command{\}' before every meta-character in
-this string, but try doing that, and probably you will agree that the
-double quotes are much more easier, elegant and readable.
+
 
 
 
@@ -7465,7 +7498,7 @@ others 1. You can assume by default that counting starts from 1, if it
 starts from 0 for a special option, it will be explicitly mentioned.
 @end cartouche
 
-@node Common options,  , Arguments and options, Command-line
+@node Common options, Standard input, Arguments and options, Command-line
 @subsection Common options
 
 @cindex Options common to all programs
@@ -7497,11 +7530,12 @@ programs.
 @cindex Standard input
 @item --stdintimeout
 Number of micro-seconds to wait for writing/typing in the @emph{first line}
-of standard input from the command-line. This is only relevant for programs
-that also accept input from the standard input, @emph{and} you want to
-manually write/type the contents on the terminal. When the standard input
-is already connected to a pipe (output of another program), there won't be
-any waiting (hence no timeout, thus making this option redundant).
+of standard input from the command-line (see @ref{Standard input}). This is
+only relevant for programs that also accept input from the standard input,
+@emph{and} you want to manually write/type the contents on the
+terminal. When the standard input is already connected to a pipe (output of
+another program), there won't be any waiting (hence no timeout, thus making
+this option redundant).
 
 If the first line-break (for example with the @key{ENTER} key) is not
 provided before the timeout, the program will abort with an error that no
@@ -7981,8 +8015,103 @@ others, this option will be ignored.
 
 
 
+@node Standard input,  , Common options, Command-line
+@subsection Standard input
 
-@node Configuration files, Multi-threaded operations, Command-line, Common program behavior
+@cindex Standard input
+@cindex Stream: standard input
+The most common way to feed the primary/first input dataset into a program
+is to give its filename as an argument (discussed in @ref{Arguments}). When
+you want to run a series of programs in sequence, this means that each will
+have to keep the output of each program in a separate file and re-type that
+file's name in the next command. This can be very slow and frustrating
+(mis-typing a file's name).
+
+@cindex Standard output stream
+@cindex Stream: standard output
+To solve the problem, the founders of Unix defined pipes to directly feed
+the output of one program (its ``Standard output'' stream) into the
+``standard input'' of a next program. This removes the need to make
+temporary files between separate processes and became one of the best
+demonstrations of the Unix-way, or Unix philosopy.
+
+Every program has three streams identifying where it reads/writes non-file
+inputs/outputs: @emph{Standard input}, @emph{Standard output}, and
+@emph{Standard error}. When a program is called alone, all three are
+directed to the terminal that you are using. If it needs an input, it will
+prompt you for one and you can type it in. Or, it prints its results in the
+terminal for you to see.
+
+For example, say you have a FITS table/catalog containing the B and V band
+magnitudes (@code{MAG_B} and @code{MAG_V} columns) of a selection of
+galaxies along with many other columns. If you want to see only these two
+columns in your terminal, can use Gnuastro's @ref{Table} program like
+below:
+
+@example
+$ asttable cat.fits -cMAG_B,MAG_V
+@end example
+
+Through the Unix pipe mechanism, when the shell confronts the pipe
+character (@key{|}), it connects the standard output of the program before
+the pipe, to the standard input of the program after it. So it is literally
+a ``pipe'': everything that you would see printed by the first program on
+the command (without any pipe), is now passed to the second program (and
+not seen by you).
+
+@cindex AWK
+@cindex GNU AWK
+To continue the previous example, let's say you want to see the B-V
+color. To do this, you can pipe Table's output to AWK (a wonderful tool for
+processing things like plain text tables):
+
+@example
+$ asttable cat.fits -cMAG_B,MAG_V | awk '@{print $1-$2@}'
+@end example
+
+But understanding the distribution by visually seeing all the numbers under
+each other is not too useful! You can therefore feed this single column
+information into @ref{Statistics} to give you a general feeling of the
+distribution with the same command:
+
+@example
+$ asttable cat.fits -cMAG_B,MAG_V | awk '@{print $1-$2@}' | aststatistics
+@end example
+
+Gnuastro's programs that accept input from standard input, only look into
+the Standard input stream if there is no first argument. In other words,
+arguments take precedence over Standard input. When no argument is
+provided, the programs check if the standard input stream is already full
+or not (output from another program is waiting to be used). If data is
+present in the standard input stream, it is used.
+
+When the standard input is empty, the program will wait
+@option{--stdintimeout} micro-seconds for you to manually enter the first
+line (ending with a new-line character, or the @key{ENTER} key, see
+@ref{Input output options}). If it detects the first line in this time,
+there is no more time limit, and you can manually write/type all the lines
+for as long as it takes. To inform the program that Standard input has
+finished, press @key{CTRL-D} after a new line. If the program doesn't catch
+the first line before the time-out finishes, it will abort with an error
+saying that no input was provided.
+
+@cartouche
+@noindent
+@strong{Manual input in Standard input is discarded: } Be careful that when
+you manually fill the Standard input, the data will be discarded once the
+program finishes and reproducing the result will be impossible. Therefore
+this form of providing input is only good for temporary tests.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{Standard input currently only for plain text: } Currently Standard
+input only works for plain text inputs like the example above. We will
+later allow FITS files into the programs through standard input also.
+@end cartouche
+
+
+@node Configuration files, Getting help, Command-line, Common program behavior
 @section Configuration files
 
 @cindex @file{etc}
@@ -8234,7 +8363,321 @@ source by your self as in @ref{Quick start}.
 
 
 
-@node Multi-threaded operations, Numeric data types, Configuration files, Common program behavior
+@node Getting help, Multi-threaded operations, Configuration files, Common program behavior
+@section Getting help
+
+@cindex Help
+@cindex Book formats
+@cindex Remembering options
+@cindex Convenient book formats
+Probably the first time you read this book, it is either in the PDF
+or HTML formats. These two formats are very convenient for when you
+are not actually working, but when you are only reading. Later on,
+when you start to use the programs and you are deep in the middle of
+your work, some of the details will inevitably be forgotten. Going to
+find the PDF file (printed or digital) or the HTML webpage is a major
+distraction.
+
+@cindex Online help
+@cindex Command-line help
+GNU software have a very unique set of tools for aiding your memory on
+the command-line, where you are working, depending how much of it you
+need to remember. In the past, such command-line help was known as
+``online'' help, because they were literally provided to you `on'
+the command `line'. However, nowadays the word ``online'' refers to
+something on the internet, so that term will not be used. With this
+type of help, you can resume your exciting research without taking
+your hands off the keyboard.
+
+@cindex Installed help methods
+Another major advantage of such command-line based help routines is
+that they are installed with the software in your computer, therefore
+they are always in sync with the executable you are actually
+running. Three of them are actually part of the executable. You don't
+have to worry about the version of the book or program. If you rely
+on external help (a PDF in your personal print or digital archive or
+HTML from the official webpage) you have to check to see if their
+versions fit with your installed program.
+
+If you only need to remember the short or long names of the options,
+@option{--usage} is advised. If it is what the options do, then
+@option{--help} is a great tool. Man pages are also provided for those
+who are use to this older system of documentation. This full book is
+also available to you on the command-line in Info format. If none of
+these seems to resolve the problems, there is a mailing list which
+enables you to get in touch with experienced Gnuastro users. In the
+subsections below each of these methods are reviewed.
+
+
+@menu
+* --usage::                     View option names and value formats.
+* --help::                      List all options with description.
+* Man pages::                   Man pages generated from --help.
+* Info::                        View complete book in terminal.
+* help-gnuastro mailing list::  Contacting experienced users.
+@end menu
+
+@node --usage, --help, Getting help, Getting help
+@subsection @option{--usage}
+@vindex --usage
+@cindex Usage pattern
+@cindex Mandatory arguments
+@cindex Optional and mandatory tokens
+If you give this option, the program will not run. It will only print a
+very concise message showing the options and arguments. Everything within
+square brackets (@option{[]}) is optional. For example here are the first
+and last two lines of Crop's @option{--usage} is shown:
+
+@example
+$ astcrop --usage
+Usage: astcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
+            [-x INT] [-y INT] [-c INT] [-p STR] [-N INT] [--deccol=INT]
+            ....
+            [--setusrconf] [--usage] [--version] [--wcsmode]
+            [ASCIIcatalog] FITSimage(s).fits
+@end example
+
+There are no explanations on the options, just their short and long
+names shown separately. After the program name, the short format of
+all the options that don't require a value (on/off options) is
+displayed. Those that do require a value then follow in separate
+brackets, each displaying the format of the input they want, see
+@ref{Options}. Since all options are optional, they are shown in
+square brackets, but arguments can also be optional. For example in
+this example, a catalog name is optional and is only required in some
+modes. This is a standard method of displaying optional arguments for
+all GNU software.
+
+@node --help, Man pages, --usage, Getting help
+@subsection @option{--help}
+
+@vindex --help
+If the command-line includes this option, the program will not be
+run. It will print a complete list of all available options along with
+a short explanation. The options are also grouped by their
+context. Within each context, the options are sorted
+alphabetically. Since the options are shown in detail afterwards, the
+first line of the @option{--help} output shows the arguments and if
+they are optional or not, similar to @ref{--usage}.
+
+In the @option{--help} output of all programs in Gnuastro, the
+options for each program are classified based on context. The first
+two contexts are always options to do with the input and output
+respectively. For example input image extensions or supplementary
+input files for the inputs. The last class of options is also fixed in
+all of Gnuastro, it shows operating mode options. Most of these
+options are already explained in @ref{Operating mode options}.
+
+@cindex Long outputs
+@cindex Redirection of output
+@cindex Command-line, long outputs
+The help message will sometimes be longer than the vertical size of
+your terminal. If you are using a graphical user interface terminal
+emulator, you can scroll the terminal with your mouse, but we promised
+no mice distractions! So here are some suggestions:
+
+@itemize
+@item
+@cindex Scroll command-line
+@cindex Command-line scroll
+@cindex @key{Shift + PageUP} and @key{Shift + PageDown}
+@key{Shift + PageUP} to scroll up and @key{Shift + PageDown} to scroll
+down. For most help output this should be enough. The problem is that
+it is limited by the number of lines that your terminal keeps in
+memory and that you can't scroll by lines, only by whole screens.
+
+@item
+@cindex Pipe
+@cindex @command{less}
+Pipe to @command{less}. A pipe is a form of shell re-direction. The
+@command{less} tool in Unix-like systems was made exactly for such
+outputs of any length. You can pipe (@command{|}) the output of any
+program that is longer than the screen to it and then you can scroll
+through (up and down) with its many tools. For example:
+@example
+$ astnoisechisel --help | less
+@end example
+@noindent
+Once you have gone through the text, you can quit @command{less} by
+pressing the @key{q} key.
+
+
+@item
+@cindex Save output to file
+@cindex Redirection of output
+Redirect to a file. This is a less convenient way, because you will
+then have to open the file in a text editor! You can do this with the
+shell redirection tool (@command{>}):
+@example
+$ astnoisechisel --help > filename.txt
+@end example
+@end itemize
+
+@cindex GNU Grep
+@cindex Searching text
+@cindex Command-line searching text
+In case you have a special keyword you are looking for in the help, you
+don't have to go through the full list. GNU Grep is made for this job. For
+example if you only want the list of options whose @option{--help} output
+contains the word ``axis'' in Crop, you can run the following command:
+
+@example
+$ astcrop --help | grep axis
+@end example
+
+@cindex @code{ARGP_HELP_FMT}
+@cindex Argp argument parser
+@cindex Customize @option{--help} output
+@cindex @option{--help} output customization
+If the output of this option does not fit nicely within the confines
+of your terminal, GNU does enable you to customize its output through
+the environment variable @code{ARGP_HELP_FMT}, you can set various
+parameters which specify the formatting of the help messages. For
+example if your terminals are wider than 70 spaces (say 100) and you
+feel there is too much empty space between the long options and the
+short explanation, you can change these formats by giving values to
+this environment variable before running the program with the
+@option{--help} output. You can define this environment variable in
+this manner:
+@example
+$ export ARGP_HELP_FMT=rmargin=100,opt-doc-col=20
+@end example
+@cindex @file{.bashrc}
+This will affect all GNU programs using GNU C library's @file{argp.h}
+facilities as long as the environment variable is in memory. You can
+see the full list of these formatting parameters in the ``Argp User
+Customization'' part of the GNU C library manual. If you are more
+comfortable to read the @option{--help} outputs of all GNU software in
+your customized format, you can add your customization (similar to
+the line above, without the @command{$} sign) to your @file{~/.bashrc}
+file. This is a standard option for all GNU software.
+
+@node Man pages, Info, --help, Getting help
+@subsection Man pages
+@cindex Man pages
+Man pages were the Unix method of providing command-line documentation
+to a program. With GNU Info, see @ref{Info} the usage of this method
+of documentation is highly discouraged. This is because Info provides
+a much more easier to navigate and read environment.
+
+However, some operating systems require a man page for packages that
+are installed and some people are still used to this method of command
+line help. So the programs in Gnuastro also have Man pages which are
+automatically generated from the outputs of @option{--version} and
+@option{--help} using the GNU help2man program. So if you run
+@example
+$ man programname
+@end example
+@noindent
+You will be provided with a man page listing the options in the
+standard manner.
+
+
+
+
+
+@node Info, help-gnuastro mailing list, Man pages, Getting help
+@subsection Info
+
+@cindex GNU Info
+@cindex Command-line, viewing full book
+Info is the standard documentation format for all GNU software. It is
+a very useful command-line document viewing format, fully equipped
+with links between the various pages and menus and search
+capabilities. As explained before, the best thing about it is that it
+is available for you the moment you need to refresh your memory on any
+command-line tool in the middle of your work without having to take
+your hands off the keyboard. This complete book is available in Info
+format and can be accessed from anywhere on the command-line.
+
+To open the Info format of any installed programs or library on your
+system which has an Info format book, you can simply run the command
+below (change @command{executablename} to the executable name of the
+program or library):
+
+@example
+$ info executablename
+@end example
+
+@noindent
+@cindex Learning GNU Info
+@cindex GNU software documentation
+In case you are not already familiar with it, run @command{$ info
+info}. It does a fantastic job in explaining all its capabilities its
+self. It is very short and you will become sufficiently fluent in
+about half an hour. Since all GNU software documentation is also
+provided in Info, your whole GNU/Linux life will significantly
+improve.
+
+@cindex GNU Emacs
+@cindex GNU C library
+Once you've become an efficient navigator in Info, you can go to any
+part of this book or any other GNU software or library manual, no
+matter how long it is, in a matter of seconds. It also blends nicely
+with GNU Emacs (a text editor) and you can search manuals while you
+are writing your document or programs without taking your hands off
+the keyboard, this is most useful for libraries like the GNU C
+library. To be able to access all the Info manuals installed in your
+GNU/Linux within Emacs, type @key{Ctrl-H + i}.
+
+To see this whole book from the beginning in Info, you can run
+
+@example
+$ info gnuastro
+@end example
+
+@noindent
+If you run Info with the particular program executable name, for
+example @file{astcrop} or @file{astnoisechisel}:
+
+@example
+$ info astprogramname
+@end example
+
+@noindent
+you will be taken to the section titled ``Invoking ProgramName'' which
+explains the inputs and outputs along with the command-line options for
+that program. Finally, if you run Info with the official program name, for
+example Crop or NoiseChisel:
+
+@example
+$ info ProgramName
+@end example
+
+@noindent
+you will be taken to the top section which introduces the
+program. Note that in all cases, Info is not case sensitive.
+
+
+
+@node help-gnuastro mailing list,  , Info, Getting help
+@subsection help-gnuastro mailing list
+
+@cindex help-gnuastro mailing list
+@cindex Mailing list: help-gnuastro
+Gnuastro maintains the help-gnuastro mailing list for users to ask any
+questions related to Gnuastro. The experienced Gnuastro users and some
+of its developers are subscribed to this mailing list and your email
+will be sent to them immediately. However, when contacting this
+mailing list please have in mind that they are possibly very busy and
+might not be able to answer immediately.
+
+@cindex Mailing list archives
+@cindex @code{help-gnuastro@@gnu.org}
+To ask a question from this mailing list, send a mail to
+@code{help-gnuastro@@gnu.org}. Anyone can view the mailing list
+archives at @url{http://lists.gnu.org/archive/html/help-gnuastro/}. It
+is best that before sending a mail, you search the archives to see if
+anyone has asked a question similar to yours. If you want to make a
+suggestion or report a bug, please don't send a mail to this mailing
+list. We have other mailing lists and tools for those purposes, see
+@ref{Report a bug} or @ref{Suggest new feature}.
+
+
+
+
+
+@node Multi-threaded operations, Numeric data types, Getting help, Common program behavior
 @section Multi-threaded operations
 
 @pindex nproc
@@ -8981,7 +9424,7 @@ will be the same order as they appear in the table.
 
 
 
-@node Tessellation, Getting help, Tables, Common program behavior
+@node Tessellation, Automatic output, Tables, Common program behavior
 @section Tessellation
 
 It is sometimes necessary to classify the elements in a dataset (for
@@ -9083,343 +9526,37 @@ tessellation options), please see @ref{Processing options}.
 
 
 
-@node Getting help, Automatic output, Tessellation, Common program behavior
-@section Getting help
 
-@cindex Help
-@cindex Book formats
-@cindex Remembering options
-@cindex Convenient book formats
-Probably the first time you read this book, it is either in the PDF
-or HTML formats. These two formats are very convenient for when you
-are not actually working, but when you are only reading. Later on,
-when you start to use the programs and you are deep in the middle of
-your work, some of the details will inevitably be forgotten. Going to
-find the PDF file (printed or digital) or the HTML webpage is a major
-distraction.
-
-@cindex Online help
-@cindex Command-line help
-GNU software have a very unique set of tools for aiding your memory on
-the command-line, where you are working, depending how much of it you
-need to remember. In the past, such command-line help was known as
-``online'' help, because they were literally provided to you `on'
-the command `line'. However, nowadays the word ``online'' refers to
-something on the internet, so that term will not be used. With this
-type of help, you can resume your exciting research without taking
-your hands off the keyboard.
-
-@cindex Installed help methods
-Another major advantage of such command-line based help routines is
-that they are installed with the software in your computer, therefore
-they are always in sync with the executable you are actually
-running. Three of them are actually part of the executable. You don't
-have to worry about the version of the book or program. If you rely
-on external help (a PDF in your personal print or digital archive or
-HTML from the official webpage) you have to check to see if their
-versions fit with your installed program.
-
-If you only need to remember the short or long names of the options,
-@option{--usage} is advised. If it is what the options do, then
-@option{--help} is a great tool. Man pages are also provided for those
-who are use to this older system of documentation. This full book is
-also available to you on the command-line in Info format. If none of
-these seems to resolve the problems, there is a mailing list which
-enables you to get in touch with experienced Gnuastro users. In the
-subsections below each of these methods are reviewed.
-
-
-@menu
-* --usage::                     View option names and value formats.
-* --help::                      List all options with description.
-* Man pages::                   Man pages generated from --help.
-* Info::                        View complete book in terminal.
-* help-gnuastro mailing list::  Contacting experienced users.
-@end menu
-
-@node --usage, --help, Getting help, Getting help
-@subsection @option{--usage}
-@vindex --usage
-@cindex Usage pattern
-@cindex Mandatory arguments
-@cindex Optional and mandatory tokens
-If you give this option, the program will not run. It will only print a
-very concise message showing the options and arguments. Everything within
-square brackets (@option{[]}) is optional. For example here are the first
-and last two lines of Crop's @option{--usage} is shown:
-
-@example
-$ astcrop --usage
-Usage: astcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
-            [-x INT] [-y INT] [-c INT] [-p STR] [-N INT] [--deccol=INT]
-            ....
-            [--setusrconf] [--usage] [--version] [--wcsmode]
-            [ASCIIcatalog] FITSimage(s).fits
-@end example
-
-There are no explanations on the options, just their short and long
-names shown separately. After the program name, the short format of
-all the options that don't require a value (on/off options) is
-displayed. Those that do require a value then follow in separate
-brackets, each displaying the format of the input they want, see
-@ref{Options}. Since all options are optional, they are shown in
-square brackets, but arguments can also be optional. For example in
-this example, a catalog name is optional and is only required in some
-modes. This is a standard method of displaying optional arguments for
-all GNU software.
-
-@node --help, Man pages, --usage, Getting help
-@subsection @option{--help}
-
-@vindex --help
-If the command-line includes this option, the program will not be
-run. It will print a complete list of all available options along with
-a short explanation. The options are also grouped by their
-context. Within each context, the options are sorted
-alphabetically. Since the options are shown in detail afterwards, the
-first line of the @option{--help} output shows the arguments and if
-they are optional or not, similar to @ref{--usage}.
-
-In the @option{--help} output of all programs in Gnuastro, the
-options for each program are classified based on context. The first
-two contexts are always options to do with the input and output
-respectively. For example input image extensions or supplementary
-input files for the inputs. The last class of options is also fixed in
-all of Gnuastro, it shows operating mode options. Most of these
-options are already explained in @ref{Operating mode options}.
-
-@cindex Long outputs
-@cindex Redirection of output
-@cindex Command-line, long outputs
-The help message will sometimes be longer than the vertical size of
-your terminal. If you are using a graphical user interface terminal
-emulator, you can scroll the terminal with your mouse, but we promised
-no mice distractions! So here are some suggestions:
-
-@itemize
-@item
-@cindex Scroll command-line
-@cindex Command-line scroll
-@cindex @key{Shift + PageUP} and @key{Shift + PageDown}
-@key{Shift + PageUP} to scroll up and @key{Shift + PageDown} to scroll
-down. For most help output this should be enough. The problem is that
-it is limited by the number of lines that your terminal keeps in
-memory and that you can't scroll by lines, only by whole screens.
-
-@item
-@cindex Pipe
-@cindex @command{less}
-Pipe to @command{less}. A pipe is a form of shell re-direction. The
-@command{less} tool in Unix-like systems was made exactly for such
-outputs of any length. You can pipe (@command{|}) the output of any
-program that is longer than the screen to it and then you can scroll
-through (up and down) with its many tools. For example:
-@example
-$ astnoisechisel --help | less
-@end example
-@noindent
-Once you have gone through the text, you can quit @command{less} by
-pressing the @key{q} key.
-
-
-@item
-@cindex Save output to file
-@cindex Redirection of output
-Redirect to a file. This is a less convenient way, because you will
-then have to open the file in a text editor! You can do this with the
-shell redirection tool (@command{>}):
-@example
-$ astnoisechisel --help > filename.txt
-@end example
-@end itemize
-
-@cindex GNU Grep
-@cindex Searching text
-@cindex Command-line searching text
-In case you have a special keyword you are looking for in the help, you
-don't have to go through the full list. GNU Grep is made for this job. For
-example if you only want the list of options whose @option{--help} output
-contains the word ``axis'' in Crop, you can run the following command:
-
-@example
-$ astcrop --help | grep axis
-@end example
-
-@cindex @code{ARGP_HELP_FMT}
-@cindex Argp argument parser
-@cindex Customize @option{--help} output
-@cindex @option{--help} output customization
-If the output of this option does not fit nicely within the confines
-of your terminal, GNU does enable you to customize its output through
-the environment variable @code{ARGP_HELP_FMT}, you can set various
-parameters which specify the formatting of the help messages. For
-example if your terminals are wider than 70 spaces (say 100) and you
-feel there is too much empty space between the long options and the
-short explanation, you can change these formats by giving values to
-this environment variable before running the program with the
-@option{--help} output. You can define this environment variable in
-this manner:
-@example
-$ export ARGP_HELP_FMT=rmargin=100,opt-doc-col=20
-@end example
-@cindex @file{.bashrc}
-This will affect all GNU programs using GNU C library's @file{argp.h}
-facilities as long as the environment variable is in memory. You can
-see the full list of these formatting parameters in the ``Argp User
-Customization'' part of the GNU C library manual. If you are more
-comfortable to read the @option{--help} outputs of all GNU software in
-your customized format, you can add your customization (similar to
-the line above, without the @command{$} sign) to your @file{~/.bashrc}
-file. This is a standard option for all GNU software.
-
-@node Man pages, Info, --help, Getting help
-@subsection Man pages
-@cindex Man pages
-Man pages were the Unix method of providing command-line documentation
-to a program. With GNU Info, see @ref{Info} the usage of this method
-of documentation is highly discouraged. This is because Info provides
-a much more easier to navigate and read environment.
-
-However, some operating systems require a man page for packages that
-are installed and some people are still used to this method of command
-line help. So the programs in Gnuastro also have Man pages which are
-automatically generated from the outputs of @option{--version} and
-@option{--help} using the GNU help2man program. So if you run
-@example
-$ man programname
-@end example
-@noindent
-You will be provided with a man page listing the options in the
-standard manner.
-
-
-
-
-
-@node Info, help-gnuastro mailing list, Man pages, Getting help
-@subsection Info
-
-@cindex GNU Info
-@cindex Command-line, viewing full book
-Info is the standard documentation format for all GNU software. It is
-a very useful command-line document viewing format, fully equipped
-with links between the various pages and menus and search
-capabilities. As explained before, the best thing about it is that it
-is available for you the moment you need to refresh your memory on any
-command-line tool in the middle of your work without having to take
-your hands off the keyboard. This complete book is available in Info
-format and can be accessed from anywhere on the command-line.
-
-To open the Info format of any installed programs or library on your
-system which has an Info format book, you can simply run the command
-below (change @command{executablename} to the executable name of the
-program or library):
-
-@example
-$ info executablename
-@end example
-
-@noindent
-@cindex Learning GNU Info
-@cindex GNU software documentation
-In case you are not already familiar with it, run @command{$ info
-info}. It does a fantastic job in explaining all its capabilities its
-self. It is very short and you will become sufficiently fluent in
-about half an hour. Since all GNU software documentation is also
-provided in Info, your whole GNU/Linux life will significantly
-improve.
-
-@cindex GNU Emacs
-@cindex GNU C library
-Once you've become an efficient navigator in Info, you can go to any
-part of this book or any other GNU software or library manual, no
-matter how long it is, in a matter of seconds. It also blends nicely
-with GNU Emacs (a text editor) and you can search manuals while you
-are writing your document or programs without taking your hands off
-the keyboard, this is most useful for libraries like the GNU C
-library. To be able to access all the Info manuals installed in your
-GNU/Linux within Emacs, type @key{Ctrl-H + i}.
-
-To see this whole book from the beginning in Info, you can run
-
-@example
-$ info gnuastro
-@end example
-
-@noindent
-If you run Info with the particular program executable name, for
-example @file{astcrop} or @file{astnoisechisel}:
-
-@example
-$ info astprogramname
-@end example
-
-@noindent
-you will be taken to the section titled ``Invoking ProgramName'' which
-explains the inputs and outputs along with the command-line options for
-that program. Finally, if you run Info with the official program name, for
-example Crop or NoiseChisel:
-
-@example
-$ info ProgramName
-@end example
-
-@noindent
-you will be taken to the top section which introduces the
-program. Note that in all cases, Info is not case sensitive.
-
-
-
-@node help-gnuastro mailing list,  , Info, Getting help
-@subsection help-gnuastro mailing list
-
-@cindex help-gnuastro mailing list
-@cindex Mailing list: help-gnuastro
-Gnuastro maintains the help-gnuastro mailing list for users to ask any
-questions related to Gnuastro. The experienced Gnuastro users and some
-of its developers are subscribed to this mailing list and your email
-will be sent to them immediately. However, when contacting this
-mailing list please have in mind that they are possibly very busy and
-might not be able to answer immediately.
-
-@cindex Mailing list archives
-@cindex @code{help-gnuastro@@gnu.org}
-To ask a question from this mailing list, send a mail to
-@code{help-gnuastro@@gnu.org}. Anyone can view the mailing list
-archives at @url{http://lists.gnu.org/archive/html/help-gnuastro/}. It
-is best that before sending a mail, you search the archives to see if
-anyone has asked a question similar to yours. If you want to make a
-suggestion or report a bug, please don't send a mail to this mailing
-list. We have other mailing lists and tools for those purposes, see
-@ref{Report a bug} or @ref{Suggest new feature}.
-
-
-
-
-@node Automatic output, Output FITS files, Getting help, Common program behavior
+@node Automatic output, Output FITS files, Tessellation, Common program behavior
 @section Automatic output
 
+@cindex Standard input
 @cindex Automatic output file names
 @cindex Output file names, automatic
 @cindex Setting output file names automatically
-All the programs in Gnuastro are designed such that specifying an
-output file or directory (based on the program context) is optional.
-The outputs of most programs are automatically found based on the
-input and what the program does. For example when you are converting a
-FITS image named @file{FITSimage.fits} to a JPEG image, the JPEG image
-will be saved in @file{FITSimage.jpg}.
+All the programs in Gnuastro are designed such that specifying an output
+file or directory (based on the program context) is optional. When no
+output name is explicitly given (with @option{--output}, see @ref{Input
+output options}), the programs will automatically set an output name based
+on the input name(s) and what the program does. For example when you are
+using ConvertType to save FITS image named @file{dataset.fits} to a JPEG
+image and don't specify a name for it, the JPEG output file will be name
+@file{dataset.jpg}. When the input is from the standard input (for example
+a pipe, see @ref{Standard input}), and @option{--output} isn't given, the
+output name will be the program's name (for example
+@file{converttype.jpg}).
 
 @vindex --keepinputdir
-Another very important part of the automatic output generation is that
-all the directory information of the input file name is stripped off
-of it. This feature can be disabled with the @option{--keepinputdir}
-option, see @ref{Common options}. It is the default because
-astronomical data are usually very large and organized specially with
-special file names. In some cases, the user might not have write
-permissions in those directories. In fact, even if the data is stored
-on your own computer, it is advised to only grant write permissions to
-the super user or root. This way, you won't accidentally delete or
-modify your valuable data!
+Another very important part of the automatic output generation is that all
+the directory information of the input file name is stripped off of
+it. This feature can be disabled with the @option{--keepinputdir} option,
+see @ref{Input output options}. It is the default because astronomical data
+are usually very large and organized specially with special file names. In
+some cases, the user might not have write permissions in those
+directories@footnote{In fact, even if the data is stored on your own
+computer, it is advised to only grant write permissions to the super user
+or root. This way, you won't accidentally delete or modify your valuable
+data!}.
 
 Let's assume that we are working on a report and want to process the
 FITS images from two projects (ABC and DEF), which are stored in the
@@ -10156,24 +10293,23 @@ continue with the rest of actions.
 @cindex Image format conversion
 @cindex Converting image formats
 @pindex @r{ConvertType (}astconvertt@r{)}
-The formats of astronomical data were defined mainly for archiving and
-processing. In other situations, the data might be useful in other
-formats. For example, when you are writing a paper or report or if you
-are making slides for a talk, you can't use a FITS image. Other image
-formats should be used. In other cases you might want your pixel
-values in a table format as plain text for input to other programs
-that don't recognize FITS, or to include as a table in your
-report. ConvertType is created for such situations. The various types
-will increase with future updates and based on need.
+The FITS format used in astronomy was defined mainly for archiving,
+transmission, and processing. In other situations, the data might be useful
+in other formats. For example, when you are writing a paper or report or if
+you are making slides for a talk, you can't use a FITS image. Other image
+formats should be used. In other cases you might want your pixel values in
+a table format as plain text for input to other programs that don't
+recognize FITS, or to include as a table in your report. ConvertType is
+created for such situations. The various types will increase with future
+updates and based on need.
 
-The conversion is not only one way (from FITS to other formats), but
-two ways (except the EPS and PDF formats). So you can convert a JPEG
-image or text file into a FITS image. Basically, other than EPS, you
-can use any of the recognized formats as different color channel
-inputs to get any of the recognized outputs. So before explaining the
-options and arguments, first a short description of the recognized
-files types will be given followed a short introduction to digital
-color.
+The conversion is not only one way (from FITS to other formats), but two
+ways (except the EPS and PDF formats). So you can convert a JPEG image or
+text file into a FITS image. Basically, other than EPS, you can use any of
+the recognized formats as different color channel inputs to get any of the
+recognized outputs. So before explaining the options and arguments, first a
+short description of the recognized files types will be given followed a
+short introduction to digital color.
 
 @menu
 * Recognized file formats::     Recognized file formats
@@ -10442,9 +10578,9 @@ are approximately the same file size.
 @node Invoking astconvertt,  , Color, ConvertType
 @subsection Invoking ConvertType
 
-ConvertType will convert any recognized input file type to any
-specified output type. The executable name is @file{astconvertt} with
-the following general template
+ConvertType will convert any recognized input file type to any specified
+output type. The executable name is @file{astconvertt} with the following
+general template
 
 @example
 $ astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
@@ -10465,31 +10601,39 @@ $ astconvertt f1.txt f2.txt f3.fits -o.jpg
 
 ## Use two images and one blank for an RGB EPS output:
 $ astconvertt M31_r.fits M31_g.fits blank -oeps
+
+## Directly pass input from output of another program through Standard
+## input (not a file).
+$ cat 2darray.txt | astconvertt -oimg.fits
 @end example
 
 @noindent
-The file type of the output will be specified with the (possibly
-complete) file name given to the @option{--output} option, which can
-either be given on the command-line or in any of the configuration
-files (see @ref{Configuration files}). Note that if the output suffix
-is not recognized, it will default to plain text format, see
-@ref{Recognized file formats}.
+The output's file format will be interpretted from the value given to the
+@option{--output} option. It can either be given on the command-line or in
+any of the configuration files (see @ref{Configuration files}). Note that
+if the output suffix is not recognized, it will default to plain text
+format, see @ref{Recognized file formats}.
 
-The order of multiple input files is important. After reading the
-input file(s) the number of color channels in all the inputs will be
-used to define which color space is being used for the outputs and how
-each color channel is interpreted. Note that one file might have more
-than one color channel (for example in the JPEG format). If there is
-one color channel the output is gray-scale, if three input color
-channels are given they are respectively considered to be the red,
-green and blue color channels and if there are four color channels
-they are respectively considered to be cyan, magenta, yellow and
-black.
+@cindex Standard input
+At most four input files (one for each color channel for formats that allow
+it) are allowed in ConvertType. The first input dataset can either be a
+file or come from Standard input (see @ref{Standard input}). The order of
+multiple input files is important. After reading the input file(s) the
+number of color channels in all the inputs will be used to define which
+color space to use for the outputs and how each color channel is
+interpreted.
+
+Some formats can allow more than one color channel (for example in the JPEG
+format, see @ref{Recognized file formats}). If there is one input dataset
+(color channel) the output will be gray-scale, if three input datasets
+(color channels) are given, they are respectively considered to be the red,
+green and blue color channels. Finally, if there are four color channels
+they will be be cyan, magenta, yellow and black (CMYK colors).
 
 The value to @option{--output} (or @option{-o}) can be either a full file
 name or just the suffix of the desired output format. In the former case,
-that same name will be used for the output. In the latter case, the name of
-the output file will be set based on the automatic output guidelines, see
+it will used for the output. In the latter case, the name of the output
+file will be set based on the automatic output guidelines, see
 @ref{Automatic output}. Note that the suffix name can optionally start a
 @file{.} (dot), so for example @option{--output=.jpg} and
 @option{--output=jpg} are equivalent. See @ref{Recognized file formats}
@@ -10771,19 +10915,24 @@ $ asttable bintab.fits | awk '$10>10e5 @{print@}'
 ## Sort the output columns by the third column, save output:
 $ asttable bintab.fits | 'sort -nk3 > output.txt
 
+## Subtract the first column from the second in `cat.txt' and keep the
+## third and fourth columns. Feed the columns to Table to write as a
+## FITS table.
+$ awk '!/^#/@{print $2-$1, $3, $4@}' cat.txt | asttable -ocat.fits
+
 ## Convert a plain text table to a binary FITS table:
 $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 @end example
 
-@cindex GNU AWK
-In the absence of selected columns, all the input file's columns will be
-output. If the specified output is a FITS file, the type of FITS table
-(binary or ASCII) will be determined from the @option{--tabletype}
-option. If the output is not a FITS file, it will be printed as a plain
-text table (with space characters between the columns). When the columns
-are accompanied by meta-data (like column name, units, or comments), this
-information will also printed in the plain text file before the table, as
-described in @ref{Gnuastro text table format}.
+Table's input dataset can be given either as a file or from Standard input
+(see @ref{Standard input}). In the absence of selected columns, all the
+input's columns will be written to the output. If the specified output is a
+FITS file, the type of FITS table (binary or ASCII) will be determined from
+the @option{--tabletype} option. If the output is not a FITS file, it will
+be printed as a plain text table (with space characters between the
+columns). When the columns are accompanied by meta-data (like column name,
+units, or comments), this information will also printed in the plain text
+file before the table, as described in @ref{Gnuastro text table format}.
 
 For the full list of options common to all Gnuastro programs please see
 @ref{Common options}. Options can also be stored in directory, user or
@@ -15125,16 +15274,16 @@ $ awk '($1+$2)/2 > 5 @{print $3@}' table.txt | aststatistics --median
 @noindent
 @cindex Standard input
 Statistics can take its input dataset either from a file (image or table)
-or the Standard input. If any output file is to be created, the value to
-the @option{--output} option, is used as the base name for the generated
-files. Without @option{--output}, the input name will be used to generate
-an output name, see @ref{Automatic output}. The options described below are
-particular to Statistics, but for general operations, it shares a large
-collection of options with the other Gnuastro programs, see @ref{Common
-options} for the full list. For more on reading from standard input, please
-see the description of @code{--stdintimeout} option in @ref{Input output
-options}. Options can also be given in configuration files, for more,
-please see @ref{Configuration files}.
+or the Standard input (see @ref{Standard input}). If any output file is to
+be created, the value to the @option{--output} option, is used as the base
+name for the generated files. Without @option{--output}, the input name
+will be used to generate an output name, see @ref{Automatic output}. The
+options described below are particular to Statistics, but for general
+operations, it shares a large collection of options with the other Gnuastro
+programs, see @ref{Common options} for the full list. For more on reading
+from standard input, please see the description of @code{--stdintimeout}
+option in @ref{Input output options}. Options can also be given in
+configuration files, for more, please see @ref{Configuration files}.
 
 The input dataset may have blank values (see @ref{Blank pixels}), in this
 case, all blank pixels are ignored during the calculation. Initially, the
@@ -19108,12 +19257,15 @@ $ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture=0.5/3600  \
 @end example
 
 Two inputs are necessary for Match to start processing. The inputs can be
-plain text tables or FITS tables, see @ref{Tables}. Match follows the same
-basic behavior of all Gnuastro programs as fully described in @ref{Common
-program behavior}. If the first input is a FITS file, the common
-@option{--hdu} option (see @ref{Input output options}) should be used to
-identify the extension. When the second input is FITS, the extension must
-be specified with @option{--hdu2}.
+plain text tables or FITS tables, see @ref{Tables}. If only one argument is
+provided, Match will assume look for the first input in Stanard input (see
+@ref{Standard input}).
+
+Match follows the same basic behavior of all Gnuastro programs as fully
+described in @ref{Common program behavior}. If the first input is a FITS
+file, the common @option{--hdu} option (see @ref{Input output options})
+should be used to identify the extension. When the second input is FITS,
+the extension must be specified with @option{--hdu2}.
 
 When @option{--quiet} is not called, Match will print the number of matches
 found in standard output (on the command-line). When matches are found, by
@@ -19927,10 +20079,11 @@ The parameters of the mock profiles can either be given through a catalog
 (which stores the parameters of many mock profiles, see @ref{MakeProfiles
 catalog}), or the @option{--kernel} option (see @ref{MakeProfiles output
 dataset}). The catalog can be in the FITS ASCII, FITS binary format, or
-plain text formats (see @ref{Tables}). The columns related to each
-parameter can be determined both by number, or by match/search criteria
-using the column names, units, or comments. with the options ending in
-@option{col}, see below.
+plain text formats (see @ref{Tables}). A plain text catalog can also be
+provided using the Standard input (see @ref{Standard input}). The columns
+related to each parameter can be determined both by number, or by
+match/search criteria using the column names, units, or comments. with the
+options ending in @option{col}, see below.
 
 Without any file given to the @option{--background} option, MakeProfiles
 will make a zero-valued image and build the profiles on that (its size and
@@ -19973,13 +20126,14 @@ Gnuastro's programs to make a complete simulated image of a mock galaxy.
 @node MakeProfiles catalog, MakeProfiles profile settings, Invoking astmkprof, Invoking astmkprof
 @subsubsection MakeProfiles catalog
 The catalog containing information about each profile can be in the FITS
-ASCII, FITS binary, or plain text formats (see @ref{Tables}). Its columns
-can be ordered in any desired manner. You can specify which columns belong
-to which parameters using the set of options discussed below. For example
-through the @option{--rcol} and @option{--tcol} options, you can specify
-the column that contains the radial parameter for each profile and its
-truncation respectively. See @ref{Selecting table columns} for a thorough
-discussion on the values to these options.
+ASCII, FITS binary, or plain text formats (see @ref{Tables}). The latter
+can also be provided using standard input (see @ref{Standard input}). Its
+columns can be ordered in any desired manner. You can specify which columns
+belong to which parameters using the set of options discussed below. For
+example through the @option{--rcol} and @option{--tcol} options, you can
+specify the column that contains the radial parameter for each profile and
+its truncation respectively. See @ref{Selecting table columns} for a
+thorough discussion on the values to these options.
 
 The value for the profile center in the catalog (the @option{--ccol}
 option) can be a floating point number so the profile center can be on any

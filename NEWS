@@ -8,6 +8,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
    - Input files and parameters written as keywords in the first extension
      of output when it is FITS. This is only relevant for some programs,
      (for example not the Fits or Table programs).
+   - Standard input (for example from pipes) is now available to feed input
+     to all programs that accept plain text input (ConvertType, Match,
+     MakeProfiles, Statistics, Table).
 
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.

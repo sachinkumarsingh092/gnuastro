@@ -69,6 +69,7 @@ struct matchparams
   char               *logname;  /* Name of log file.                    */
   char              *out1name;  /* Name of first matched output.        */
   char              *out2name;  /* Name of second matched output.       */
+  gal_list_str_t  *stdinlines;  /* Lines given by Standard input.       */
 
   /* Output: */
   time_t              rawtime;  /* Starting time of the program.        */

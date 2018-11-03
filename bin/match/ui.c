@@ -170,7 +170,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
         {
           if(p->input2name)
             argp_error(state, "only two arguments (input files) should be "
-                       "given");
+                       "given, not any more");
           else
             p->input2name=arg;
         }
@@ -228,21 +228,34 @@ ui_read_check_only_options(struct matchparams *p)
 static void
 ui_check_options_and_arguments(struct matchparams *p)
 {
-  /* Make sure two input file names were given and if they a FITS file,
-     that a HDU is also given for each. */
+  /* The first input might come from the standard input, in that case, the
+     second input's name is stored in `input1name' and `input2name' will be
+     left to NULL. So we'll first correct for this. */
   if(p->input1name)
     {
-      if( gal_fits_name_is_fits(p->input1name) && p->cp.hdu==NULL )
-        error(EXIT_FAILURE, 0, "no HDU for first input. When the input is "
-              "a FITS file, a HDU must also be specified, you can use the "
-              "`--hdu' (`-h') option and give it the HDU number (starting "
-              "from zero), extension name, or anything acceptable by "
-              "CFITSIO");
+      if(p->input2name==NULL)
+        {
+          p->input2name=p->input1name;
+          p->input1name=NULL;
+        }
     }
   else
-    error(EXIT_FAILURE, 0, "no input file is specified: two inputs are "
-          "necessary");
+    error(EXIT_FAILURE, 0, "no inputs! two inputs are necessary. The first "
+          "can be from the standard input (e.g., a pipe)");
 
+
+  /* If the first input is a FITS file, make sure its HDU is also given. */
+  if( p->input1name
+      && gal_fits_name_is_fits(p->input1name)
+      && p->cp.hdu==NULL )
+    error(EXIT_FAILURE, 0, "no HDU for first input. When the input is "
+          "a FITS file, a HDU must also be specified, you can use the "
+          "`--hdu' (`-h') option and give it the HDU number (starting "
+          "from zero), extension name, or anything acceptable by "
+          "CFITSIO");
+
+  /* If the second input is a FITS file, make sure its HDU is also
+     given. */
   if(p->input2name)
     {
       if( gal_fits_name_is_fits(p->input2name) && p->hdu2==NULL )
@@ -283,7 +296,7 @@ ui_set_mode(struct matchparams *p)
 {
   /* Check if we are in image or catalog mode. We will base the mode on the
      first input, then check with the second. */
-  if( gal_fits_name_is_fits(p->input1name) )
+  if( p->input1name && gal_fits_name_is_fits(p->input1name) )
     p->mode = ( (gal_fits_hdu_format(p->input1name, p->cp.hdu) == IMAGE_HDU)
                 ? MATCH_MODE_WCS
                 : MATCH_MODE_CATALOG );
@@ -404,9 +417,16 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
     "Please give more specific values to `--ccol1' (column "
     "numberes are the only identifiers guaranteed to be unique).";
 
-  /* Read the columns. */
-  tout=gal_table_read(filename, hdu, NULL, cols, cp->searchin,
-                      cp->ignorecase, cp->minmapsize, NULL);
+  /* Read the columns. Note that the first input's name can be NULL (it the
+     user intended to use the standrad input). Also note that this function
+     is called more than one time, so if the Standard input is already read
+     once, we don't want to write a blank list over it (the Standard input
+     will be empty after being read). */
+  if(p->stdinlines==NULL)
+    p->stdinlines=gal_options_check_stdin(filename, p->cp.stdintimeout);
+  tout=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines,
+                      cols, cp->searchin, cp->ignorecase, cp->minmapsize,
+                      NULL);
 
   /* A small sanity check. */
   if(gal_list_data_number(tout)!=numcols)
@@ -563,6 +583,7 @@ ui_preparations_out_name(struct matchparams *p)
 {
   /* To temporarily keep the original value. */
   uint8_t keepinputdir_orig;
+  char *refname = p->input1name ? p->input1name : p->input2name;
 
   /* Set the output file(s) name(s). */
   if(p->logasoutput)
@@ -572,10 +593,10 @@ ui_preparations_out_name(struct matchparams *p)
       else
         {
           if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
-            p->logname=gal_checkset_automatic_output(&p->cp, p->input1name,
+            p->logname=gal_checkset_automatic_output(&p->cp, refname,
                                                      "_matched.txt");
           else
-            p->logname=gal_checkset_automatic_output(&p->cp, p->input1name,
+            p->logname=gal_checkset_automatic_output(&p->cp, refname,
                                                      "_matched.fits");
         }
 
@@ -595,7 +616,7 @@ ui_preparations_out_name(struct matchparams *p)
             gal_checkset_allocate_copy(p->cp.output, &p->out1name);
           else
             p->out1name = gal_checkset_automatic_output(&p->cp,
-                 p->input1name, ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                 refname, ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
                                   ? "_matched.txt" : "_matched.fits") );
           gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
         }
@@ -632,8 +653,7 @@ ui_preparations_out_name(struct matchparams *p)
             {
               if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
                 {
-                  p->out1name=gal_checkset_automatic_output(&p->cp,
-                                                            p->input1name,
+                  p->out1name=gal_checkset_automatic_output(&p->cp, refname,
                                                             "_matched_1.txt");
                   p->out2name=gal_checkset_automatic_output(&p->cp,
                                                             p->input2name,
@@ -641,8 +661,7 @@ ui_preparations_out_name(struct matchparams *p)
                 }
               else
                 {
-                  p->out1name=gal_checkset_automatic_output(&p->cp,
-                                                            p->input1name,
+                  p->out1name=gal_checkset_automatic_output(&p->cp, refname,
                                                             "_matched.fits");
                   gal_checkset_allocate_copy(p->out1name, &p->out2name);
                 }
@@ -765,7 +784,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct matchparams *p)
      keywords to write in output later. */
   if(gal_fits_name_is_fits(p->out1name))
       gal_options_as_fits_keywords(&p->cp);
-
 }
 
 
@@ -800,6 +818,7 @@ ui_free_report(struct matchparams *p, struct timeval *t1)
   free(p->cp.output);
   gal_data_free(p->ccol1);
   gal_data_free(p->ccol2);
+  gal_list_str_free(p->stdinlines, 1);
 
   /* Print the final message.
   if(!p->cp.quiet)

@@ -303,6 +303,9 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
 error_t
 gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 
+char *
+gal_options_stdin_error(long stdintimeout, int precedence);
+
 gal_list_str_t *
 gal_options_check_stdin(char *inputname, long stdintimeout);
 

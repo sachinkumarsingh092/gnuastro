@@ -202,7 +202,6 @@ ui_initialize_options(struct mkprofparams *p,
           break;
 
         case GAL_OPTIONS_KEY_TABLEFORMAT:
-        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
 
@@ -530,10 +529,6 @@ ui_check_options_and_arguments(struct mkprofparams *p)
             error(EXIT_FAILURE, 0, "no `hdu' specified for the input FITS "
                   "table '%s', to ", p->catname);
         }
-      else
-        error(EXIT_FAILURE, 0, "no input catalog provided. To build "
-              "profiles, you need to give a catalog/table containing "
-              "the information of the profiles");
     }
 
 
@@ -555,7 +550,10 @@ ui_check_options_and_arguments(struct mkprofparams *p)
     {
       gal_checkset_allocate_copy(p->cp.output, &p->outdir);
       gal_checkset_check_dir_write_add_slash(&p->outdir);
-      tmpname=gal_checkset_automatic_output(&p->cp, p->catname, ".fits");
+      tmpname=gal_checkset_automatic_output(&p->cp,
+                                            ( p->catname
+                                              ? p->catname
+                                              : "makeprofiles" ), ".fits");
       p->mergedimgname=gal_checkset_malloc_cat(p->outdir, tmpname);
       free(tmpname);
     }
@@ -597,8 +595,8 @@ ui_read_cols(struct mkprofparams *p)
   int checkblank;
   size_t i, counter=0;
   char *colname=NULL, **strarr;
-  gal_list_str_t *colstrs=NULL, *ccol;
   gal_data_t *cols, *tmp, *corrtype=NULL;
+  gal_list_str_t *ccol, *lines, *colstrs=NULL;
 
   /* The coordinate columns are a linked list of strings. */
   ccol=p->ccol;
@@ -622,8 +620,17 @@ ui_read_cols(struct mkprofparams *p)
   gal_list_str_reverse(&colstrs);
 
   /* Read the desired columns from the file. */
-  cols=gal_table_read(p->catname, p->cp.hdu, NULL, colstrs, p->cp.searchin,
+  lines=gal_options_check_stdin(p->catname, p->cp.stdintimeout);
+  cols=gal_table_read(p->catname, p->cp.hdu, lines, colstrs, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
+  gal_list_str_free(lines, 1);
+
+  /* The name of the input catalog is only for informative steps from now
+     on (we won't be dealing with the actual file any more). So if the
+     standard input was used (therefore `catname==NULL', set it to
+     `stdin'). */
+  if(p->catname==NULL)
+    gal_checkset_allocate_copy("standard-input", &p->catname);
 
   /* Set the number of objects. */
   p->num=cols->size;

@@ -66,8 +66,9 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
                                       __func__, "numcolmatch");
 
   /* Read the full table. */
-  cat=gal_table_read(filename, hdu, NULL, cols, p->cp.searchin,
-                     p->cp.ignorecase, p->cp.minmapsize, *numcolmatch);
+  cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
+                     p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
+                     *numcolmatch);
   origsize=cat->size;
 
 
@@ -316,7 +317,10 @@ match(struct matchparams *p)
      the output. */
   if(gal_fits_name_is_fits(p->out1name))
     {
-      gal_fits_key_write_filename("input1", p->input1name, &p->cp.okeys, 1);
+      gal_fits_key_write_filename("input1", ( p->input1name
+                                              ? p->input1name
+                                              : "Standard input" ),
+                                  &p->cp.okeys, 1);
       gal_fits_key_write_filename("input2", p->input2name, &p->cp.okeys, 1);
       gal_fits_key_write_config(&p->cp.okeys, "Match configuration",
                                 "MATCH-CONFIG", p->out1name, "0");

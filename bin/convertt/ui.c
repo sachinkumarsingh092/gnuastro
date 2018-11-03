@@ -146,7 +146,6 @@ ui_initialize_options(struct converttparams *p,
         case GAL_OPTIONS_KEY_SEARCHIN:
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_TABLEFORMAT:
-        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -272,14 +271,11 @@ ui_read_check_only_options(struct converttparams *p)
 static void
 ui_check_options_and_arguments(struct converttparams *p)
 {
-  /* Check if there was any inputs. */
-  if(p->inputnames==NULL)
-    error(EXIT_FAILURE, 0, "no input files given");
-
-  /* Reverse the `inputnames' linked list, note that the `hdu' linked list
-     was reversed during option parsing.*/
+  /* Reverse the `inputnames' linked list if it was given (recall that we
+     also accept input from the standard input). Note that the `hdu' linked
+     list was reversed during option parsing, so we don't need to do it
+     here any more. */
   gal_list_str_reverse(&p->inputnames);
-
 }
 
 
@@ -397,11 +393,27 @@ ui_make_channels_ll(struct converttparams *p)
 {
   char *hdu=NULL;
   gal_data_t *data;
-  gal_list_str_t *name;
   size_t dsize=0, dirnum;
+  gal_list_str_t *name, *lines;
+
+  /* Initialize the counting of channels. */
+  p->numch=0;
+
+  /* If any standard input is provided, we want to process that first. Note
+     that since other input arguments are also allowed (as other channels),
+     we'll need to process the standard input independently first, then go
+     onto the possible list of other files.*/
+  lines=gal_txt_stdin_read(p->cp.stdintimeout);
+  if(lines)
+    {
+      data=gal_txt_image_read(NULL, lines, p->cp.minmapsize);
+      gal_list_data_add(&p->chll, data);
+      gal_list_str_free(lines, 1);
+      ++p->numch;
+    }
+
 
   /* Go through the input files and add the channel(s). */
-  p->numch=0;
   for(name=p->inputnames; name!=NULL; name=name->next)
     {
       /* Check if p->numch has not exceeded 4. */
@@ -499,6 +511,9 @@ ui_make_channels_ll(struct converttparams *p)
         }
     }
 
+  /* If there weren't any channels, abort with an error. */
+  if(p->numch==0)
+    error(EXIT_FAILURE, 0, gal_options_stdin_error(p->cp.stdintimeout, 0));
 
   /* Reverse the list of channels into the input order. */
   gal_list_data_reverse(&p->chll);
@@ -617,7 +632,7 @@ void
 ui_add_dot_use_automatic_output(struct converttparams *p)
 {
   gal_list_str_t *stll;
-  char *tmp, *firstname="output.txt", *suffix=p->cp.output;
+  char *tmp, *firstname="converttype.txt", *suffix=p->cp.output;
 
   /* Find the first non-blank file name in the input(s). */
   for(stll=p->inputnames; stll!=NULL; stll=stll->next)

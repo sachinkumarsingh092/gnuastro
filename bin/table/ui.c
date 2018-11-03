@@ -129,7 +129,6 @@ ui_initialize_options(struct tableparams *p,
 
         /* Options to ignore. */
         case GAL_OPTIONS_KEY_TYPE:
-        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
@@ -243,8 +242,6 @@ ui_check_options_and_arguments(struct tableparams *p)
               "zero), extension name, or anything acceptable by CFITSIO");
 
     }
-  else
-    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -275,11 +272,15 @@ ui_print_info_exit(struct tableparams *p)
   char *tmp;
   int tableformat;
   gal_data_t *allcols;
+  gal_list_str_t *lines;
   size_t i, numcols, numrows;
 
   /* Read the table information for the number of columns and rows. */
-  allcols=gal_table_info(p->filename, p->cp.hdu, NULL, &numcols,
+  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout);
+  allcols=gal_table_info(p->filename, p->cp.hdu, lines, &numcols,
                          &numrows, &tableformat);
+  if(p->filename==NULL) p->filename="Standard-input";
+  gal_list_str_free(lines, 1);
 
   /* If there was no actual data in the file, then inform the user */
   if(allcols==NULL)
@@ -361,6 +362,7 @@ ui_columns_prepare(struct tableparams *p)
 static void
 ui_preparations(struct tableparams *p)
 {
+  gal_list_str_t *lines;
   struct gal_options_common_params *cp=&p->cp;
 
   /* If there were no columns specified or the user has asked for
@@ -372,9 +374,12 @@ ui_preparations(struct tableparams *p)
   ui_columns_prepare(p);
 
   /* Read in the table columns. */
-  p->table=gal_table_read(p->filename, cp->hdu, NULL, p->columns,
+  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout);
+  p->table=gal_table_read(p->filename, cp->hdu, lines, p->columns,
                           cp->searchin, cp->ignorecase, cp->minmapsize,
                           NULL);
+  if(p->filename==NULL) p->filename="Standard-input";
+  gal_list_str_free(lines, 1);
 
   /* If there was no actual data in the file, then inform the user and
      abort. */

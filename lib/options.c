@@ -1358,6 +1358,31 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state)
 
 
 
+
+char *
+gal_options_stdin_error(long stdintimeout, int precedence)
+{
+  char *out;
+
+  if( asprintf(&out, "no input!\n\n"
+               "The (first) input dataset can be read from a file "
+               "(specified as an argument), or the standard input.%s "
+               "Standard input can come from a pipe (output of another "
+               "program) or typed on the command-line before %ld "
+               "micro-seconds (configurable with the `--stdintimeout' "
+               "option).", ( precedence
+                             ? "If both are provided, a file takes precedence"
+                             : " " ),
+               stdintimeout )<0 )
+    error(EXIT_FAILURE, 0, "%s: `asprintf' allocation error", __func__);
+
+  return out;
+}
+
+
+
+
+
 /* Make the notice that is printed before program terminates, when no input
    is given and Standard input is also available. */
 gal_list_str_t *
@@ -1367,14 +1392,7 @@ gal_options_check_stdin(char *inputname, long stdintimeout)
 
   /* See if atleast one of the two inputs is given. */
   if(inputname==NULL && lines==NULL)
-    error( EXIT_FAILURE, 0, "no input!\n\n"
-           "The (first) input dataset can be read from a file "
-           "(specified as an argument) or the standard input. If "
-           "both are provided, a file takes precedence. Standard "
-           "input can come from a pipe (output of another program) "
-           "or typed on the command-line before %ld micro-seconds "
-           "(configurable with the `--stdintimeout' option).",
-           stdintimeout );
+    error( EXIT_FAILURE, 0,  gal_options_stdin_error(stdintimeout,1));
 
   /* Return the output. */
   return lines;
