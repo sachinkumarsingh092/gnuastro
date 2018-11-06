@@ -757,7 +757,7 @@ ui_read_columns(struct statisticsparams *p)
   /* If the input was from standard input, we can actually write this into
      it (for future reporting). */
   if(p->inputname==NULL)
-    gal_checkset_allocate_copy("Standard input", &p->inputname);
+    gal_checkset_allocate_copy("statistics", &p->inputname);
 
   /* Put the columns into the proper gal_data_t. */
   size=cols->size;
