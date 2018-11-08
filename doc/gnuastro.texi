@@ -1688,14 +1688,14 @@ character, enabling you to use multiple lines to write your commands.
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
 
-Work on Gnuastro would not have been possible without scholarships and
-grants from several funding institutions. To help in future support and
-funding, we thus ask that if any of Gnuastro has been useful in your
-papers/reports, please cite and acknowledge the relevant funding agencies
-and grants. For details of which papers to cite (may be different for
-different programs) and get the acknowledgement statement to include in
+Gnuastro would not have been possible without scholarships and grants from
+several funding institutions. We thus ask that if you used Gnuastro in any
+of your papers/reports, please add the proper citation and acknowledge this
+instrumental support. For details of which papers to cite (may be different
+for different programs) and get the acknowledgement statement to include in
 your paper, please run the relevant programs with the common
-@option{--cite} option like the command below.
+@option{--cite} option like the example commands below (for more on
+@option{--cite}, please see @ref{Operating mode options}).
 
 @example
 $ astnoisechisel --cite
@@ -7854,20 +7854,26 @@ done very fast (depending on the properties of your input) disabling these
 reports will also decrease running time.
 
 @item --cite
-Print the Bib@TeX{} entry for Gnuastro and the particular program (if
-that program comes with a separate paper) and abort. Citations are
-vital for the continued work on Gnuastro. Gnuastro started and is
-continued based on separate research projects. So if you find any of
-the tools offered in Gnuastro to be useful in your research, please
-use the output of this command to cite the program and Gnuastro in
-your research paper. Thank you.
+Print all necessary information to cite and acknowledge Gnuastro in your
+published papers. With this option, the programs will print the Bib@TeX{}
+entry to include in your paper for Gnuastro in general, and the particular
+program's paper (if that program comes with a separate paper). It will also
+print the necessary acknowledgement statement to add in the respective
+section of your paper and it will abort. For a more complete explanation,
+please see @ref{Acknowledgments}.
+
+Citations and acknowledgements are vital for the continued work on
+Gnuastro. Gnuastro started, and is continued, based on separate research
+projects. So if you find any of the tools offered in Gnuastro to be useful
+in your research, please use the output of this command to cite and
+acknowledge the program (and Gnuastro) in your research paper. Thank you.
 
 Gnuastro is still new, there is no separate paper only devoted to Gnuastro
 yet. Therefore currently the paper to cite for Gnuastro is the paper for
 NoiseChisel which is the first published paper introducing Gnuastro to the
 astronomical community. Upon reaching a certain point, a paper completely
-devoted to Gnuastro will be published, see @ref{GNU Astronomy Utilities
-1.0}.
+devoted to describing Gnuastro's many functionalities will be published,
+see @ref{GNU Astronomy Utilities 1.0}.
 
 @item -P
 @itemx --printparams
