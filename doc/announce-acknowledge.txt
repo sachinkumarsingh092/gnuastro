@@ -2,6 +2,7 @@ Alphabetically ordered list to acknowledge in the next release.
 
 Pierre-Alain Duc
 Gaspar Galaz
+Johan Knapen
 Mamta Pommier
 Michael Stein
 Ignacio Trujillo

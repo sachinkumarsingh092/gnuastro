@@ -1688,24 +1688,44 @@ character, enabling you to use multiple lines to write your commands.
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
 
-The list of Gnuastro authors is available at the start of this book and the
-@file{AUTHORS} file in the source code. Here the authors wish to gratefully
-acknowledge the help and support they received from other people and
-institutions who had an indirect (not committed in the version controlled
-history) role in Gnuastro. The plain text file @file{THANKS} which is
-distributed along with the source code also contains this list.
+Work on Gnuastro would not have been possible without scholarships and
+grants from several funding institutions. To help in future support and
+funding, we thus ask that if any of Gnuastro has been useful in your
+papers/reports, please cite and acknowledge the relevant funding agencies
+and grants. For details of which papers to cite (may be different for
+different programs) and get the acknowledgement statement to include in
+your paper, please run the relevant programs with the common
+@option{--cite} option like the command below.
 
-The Japanese Ministry of Science and Technology (MEXT) scholarship for
-Mohammad Akhlaghi's Masters and PhD period in Tohoku University
-Astronomical Institute had an instrumental role in the long term learning
-and planning that made the idea of Gnuastro possible. The very critical
-view points of Professor Takashi Ichikawa (Mohammad's adviser) were also
-instrumental in the initial ideas and creation of Gnuastro. The European
-Research Council (ERC) advanced grant 339659-MUSICOS (Principal
-investigator: Roland Bacon) was vital in the growth and expansion of
-Gnuastro, enabling a thorough re-write of the core functionality of all
-libraries and programs, turning Gnuastro into the large collection of
-generic programs and libraries it is today.
+@example
+$ astnoisechisel --cite
+$ astmkcatalog --cite
+@end example
+
+Here, we'll acknowledge all the institutions (and their grants) along with
+the people who helped make Gnuastro possible. The full list of Gnuastro
+authors is available at the start of this book and the @file{AUTHORS} file
+in the source code (both are generated automatically from the version
+controlled history). The plain text file @file{THANKS}, which is also
+distributed along with the source code, contains the list of people and
+institutions who played an indirect role in Gnuastro (not committed any
+code in the Gnuastro version controlled history).
+
+The Japanese Ministry of Education, Culture, Sports, Science, and
+Technology (MEXT) scholarship for Mohammad Akhlaghi's Masters and PhD
+degree in Tohoku University Astronomical Institute had an instrumental role
+in the long term learning and planning that made the idea of Gnuastro
+possible. The very critical view points of Professor Takashi Ichikawa
+(Mohammad's adviser) were also instrumental in the initial ideas and
+creation of Gnuastro. Afterwards, the European Research Council (ERC)
+advanced grant 339659-MUSICOS (Principal investigator: Roland Bacon) was
+vital in the growth and expansion of Gnuastro. Working with Roland at the
+Centre de Recherche Astrophysique de Lyon (CRAL), enabled a thorough
+re-write of the core functionality of all libraries and programs, turning
+Gnuastro into the large collection of generic programs and libraries it is
+today.  Work on improving Gnuastro and making it mature is now continuing
+primarily in the Instituto de Astrofisica de Canarias (IAC) and in
+particular in collaboration with Johan Knapen and Ignacio Trujillo.
 
 @c To the developers: please keep this in the same order as the THANKS file
 @c (alphabetical, except for the names in the paragraph above).
@@ -1731,14 +1751,17 @@ important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
-our research:
+our research. Where necessary, these institutions have disclaimed any
+ownership of the parts of Gnuastro that were developed there, thus insuring
+the freedom of Gnuastro for the future (see @ref{Copyright assignment}). We
+highly appreciate their support for free software, and thus free science,
+and therefore a free society.
 
 @quotation
-Ministry of education, culture, sports, science and technology (MEXT), Japan.@*
 Tohoku University Astronomical Institute, Sendai, Japan.@*
 University of Salento, Lecce, Italy.@*
-Centre national de la recherche scientifique (CNRS), France.@*
-Centre de Recherche Astrophysique de Lyon, University of Lyon 1, France.@*
+Centre de Recherche Astrophysique de Lyon (CRAL), Lyon, France.@*
+Instituto de Astrofisica de Canarias (IAC), Tenerife, Spain.@*
 @end quotation
 
 
