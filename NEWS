@@ -11,6 +11,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
    - Standard input (for example from pipes) is now available to feed input
      to all programs that accept plain text input (ConvertType, Match,
      MakeProfiles, Statistics, Table).
+   - Updated acknowledgement statement (output of `--cite' option).
 
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.
