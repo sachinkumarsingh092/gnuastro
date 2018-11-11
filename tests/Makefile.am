@@ -255,7 +255,7 @@ EXTRA_DIST = $(TESTS) during-dev.sh buildprog/simpleio.c crop/cat.txt     \
   match/positions-1.txt match/positions-2.txt mkprof/mkprofcat1.txt       \
   mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt mkprof/mkprofcat2.txt \
   mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt         \
-  table/table.txt
+  statistics/stdin-input.txt table/table.txt
 
 
 
