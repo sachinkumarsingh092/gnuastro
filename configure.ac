@@ -274,6 +274,10 @@ AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
 # doesn't exist on the system, then CFITSIO won't link with it and there is
 # no problem for Gnuastro either. So there is no need to stop the configure
 # script if libcurl isn't found.
+#
+# For static builds, libcurl depends on linking with zlib. So we'll need to
+# also search for that.
+AC_SEARCH_LIBS([deflateInit_], [z], [], [])
 AC_SEARCH_LIBS([curl_global_init], [curl], [], [])
 AC_SEARCH_LIBS([ffopen], [cfitsio], [],
                [missing_mandatory=yes; has_cfitsio=no])
