@@ -6857,12 +6857,14 @@ or sending to colleagues who don't use Git for an easy build and manual.
 
 @item -u STR
 @item --upload STR
-Activate the @option{--dist} (@option{-D}) option, but also rename the
-tarball suffix to @file{-latest.tar.lz} (instead of the version
-number). Then use secure copy (@command{scp}, part of the SSH tools) to
-copy the tarball and PDF to the server and directory specified in the value
-to this option. For example @command{--upload my-server:dir}, will copy the
-two files to the @file{dir} directory of @code{my-server} server.
+Activate the @option{--dist} (@option{-D}) option, then use secure copy
+(@command{scp}, part of the SSH tools) to copy the tarball and PDF to the
+@file{src} and @file{pdf} subdirectories of the specified server and its
+directory (value to this option). For example @command{--upload
+my-server:dir}, will copy the tarball in the @file{dir/src}, and the PDF
+manual in @file{dir/pdf} of @code{my-server} server. It will then make a
+symbolic link in the top server directory to the tarball that is called
+@file{gnuastro-latest.tar.lz}.
 
 @item -p
 @itemx --publish

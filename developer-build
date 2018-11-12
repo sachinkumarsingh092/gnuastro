@@ -154,7 +154,7 @@ Options:
                           libraries.
                           Current status: $debug_status
 
- -v, --valgrind           Build with `--enable-check-with-valgrind'.
+ -v, --valgrind           Build with '--enable-check-with-valgrind'.
                           Current status: $valgrind_status
 
  -j, --jobs INT           Number of threads to use in 'make'.
@@ -316,15 +316,6 @@ fi
 
 
 
-# If reconfiguration was requested, do it.
-if [ $reconf = 1 ]; then
-    autoreconf -f
-fi
-
-
-
-
-
 # Keep the address of this source directory (where this script is being run
 # from) which we will need later.
 srcdir=$(pwd)
@@ -347,9 +338,18 @@ fi
 
 
 
-# Make the build directory in tmpfs (if it doesn't already exist).
+# Make the build directory (if it doesn't already exist).
 if [ ! -d $build_dir ]; then
     mkdir $build_dir
+fi
+
+
+
+
+
+# If reconfiguration was requested, do it.
+if [ $reconf = 1 ]; then
+    autoreconf -f
 fi
 
 
@@ -448,16 +448,28 @@ fi
 
 # Upload the tarball to the requested server.
 if [ x$upload = x1 ]; then
-
     # Get the base package name, and use it to make a generic tarball
     # name. Note that with the `--upload' option, `--dist' is also
     # activated, so the tarball is already built and ready by this
     # step.
-    base=$(ls *.tar.lz | sed -e's/-/ /' | awk '{print $1}')
-    mv *.tar.lz $base"-latest.tar.lz"
+    tarball=$(ls *.tar.lz)
+    base=$(echo $tarball | sed -e's/-/ /' | awk '{print $1}')
 
-    # Copy the files to the given URL (must include folders).
-    scp $base"-latest.tar.lz" $base.pdf $url
+    # File names:
+    pdf=$base.pdf
+    latest=$base"-latest.tar.lz"
+
+    # Copy the files to the subdirectories of the given URL (must include
+    # folders).
+    scp $tarball $url/src
+    scp $pdf     $url/pdf
+
+    # Make the symbolic links on the server.
+    server=$(echo "$url" | sed -e's/:/ /' | awk '{print $1}')
+    sdir=$(echo "$url" | sed -e's/:/ /' | awk '{print $2}')
+    ssh $server 'cd '"$sdir"' && rm -f '$latest' && ln -s src/'$tarball $latest ' && exit'
+    echo; echo "On $url:"
+    echo "   $latest -> src/$tarball"
 fi
 
 
