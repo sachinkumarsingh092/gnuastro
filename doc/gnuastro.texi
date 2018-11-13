@@ -3409,13 +3409,16 @@ $ astnoisechisel flat-ir/xdf-f160w.fits --output=nc/xdf-f160w.fits
 $ astnoisechisel flat-ir/xdf-f105w.fits --output=nc/xdf-f105w.fits
 @end example
 
-Before continuing with the higher-level processing of this dataset, we'll
-pause to use NoiseChisel's multi-extension output for showing how the Fits
-program can make it easy to work with this wonderful data container (see
-@ref{Fits}). Let's say you need to copy a HDU/extension from one FITS file
-to another. Try the command below to make an @file{objects.fits} file that
-contains only NoiseChisel's binary detection map. There are similar options
-to conveniently cut or delete HDUs from a FITS file also.
+Before continuing with the higher-level processing of this dataset, let's
+pause to use NoiseChisel's multi-extension output as a demonstration for
+working with FITS extensions using Gnuastro's Fits program (see @ref{Fits}.
+
+Let's say you need to copy a HDU/extension (image or table) from one FITS
+file to another. After the command below, @file{objects.fits} file will
+contain only one extension: a copy of NoiseChisel's binary detection
+map. There are similar options to conveniently cut (@option{--cut}, copy,
+then remove from the input) or delete (@option{--remove}) HDUs from a FITS
+file also.
 
 @example
 $ astfits nc/xdf-f160w.fits --copy=DETECTIONS -odetections.fits
@@ -3483,10 +3486,10 @@ more.
 
 Having localized the regions of interest in the dataset, we are ready to do
 measurements on them with @ref{MakeCatalog}. Besides the IDs, we want to
-measure the Right Ascension (with @option{--ra}), Declination
-(@option{--dec}, magnitude (@option{--magnitude} and signal-to-noise ratio
-(@option{--sn}) of the objects and clumps. The following command will make
-these measurements on Segment's F160W output:
+measure (in this order) the Right Ascension (with @option{--ra}),
+Declination (@option{--dec}), magnitude (@option{--magnitude}), and
+signal-to-noise ratio (@option{--sn}) of the objects and clumps. The
+following command will make these measurements on Segment's F160W output:
 
 @c Keep the `--zeropoint' on a single line, because later, we'll add
 @c `--valuesfile' in that line also, and it would be more clear if both
