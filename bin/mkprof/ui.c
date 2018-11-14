@@ -1004,7 +1004,6 @@ ui_prepare_canvas(struct mkprofparams *p)
 {
   float *f, *ff;
   double truncr;
-  gal_data_t *keysll;
   long width[2]={1,1};
   int status=0, setshift=0;
   size_t i, nshift=0, *dsize=NULL, ndim_counter;
@@ -1013,52 +1012,13 @@ ui_prepare_canvas(struct mkprofparams *p)
      image to build the profiles over. */
   if(p->backname)
     {
-      /* Make sure the kernel option is not called. */
-      if(p->kernel)
-        error(EXIT_FAILURE, 0, "the `--kernel' and `--background' options "
-              "cannot be called together");
-
-      /* Small sanity check. */
-      if(p->backhdu==NULL)
-        error(EXIT_FAILURE, 0, "no hdu specified for the background image "
-              "%s. Please run again `--backhdu' option", p->backname);
-
       /* Read in the background image and its coordinates, note that when
          no merged image is desired, we just need the WCS information of
          the background image and the number of its dimensions. So
          `ndim==0' and what `dsize' points to is irrelevant. */
-      if(p->nomerged)
+      p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
+      if(p->nomerged==0)
         {
-          /* Get the number of the background image's dimensions. */
-          keysll=gal_data_array_calloc(1);
-          keysll->name="NAXIS";   keysll->type=GAL_TYPE_SIZE_T;
-          gal_fits_key_read(p->backname, p->backhdu, keysll, 0, 0);
-          p->ndim = *(size_t *)(keysll->array);
-          keysll->name=NULL;
-          gal_data_array_free(keysll, 1, 1);
-
-          /* Read the WCS structure of the background image. */
-          p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
-        }
-      else
-        {
-          /* Read the image. */
-          p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
-                                               NULL, GAL_TYPE_FLOAT32,
-                                               p->cp.minmapsize);
-          p->out->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0,
-                                   &p->out->nwcs);
-
-          /* Put the WCS structure and number of dimensions in the
-             MakeProfiles's main structure for generality. The WCS
-             structure will be put back in the end when writing. */
-          p->wcs=p->out->wcs;
-          p->nwcs=p->out->nwcs;
-          p->ndim=p->out->ndim;
-          p->out->wcs=NULL;
-          p->out->nwcs=0;
-
-
           /* If p->dsize was given as an option, free it. */
           if( p->dsize ) free(p->dsize);
 
@@ -1072,14 +1032,6 @@ ui_prepare_canvas(struct mkprofparams *p)
             {ff=(f=p->out->array)+p->out->size; do *f++=0.0f; while(f<ff);}
         }
 
-
-      /* Currently, things are only implemented for 2D. */
-      if(p->ndim!=2)
-        error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
-              "only a 2 dimensional background image is acceptable",
-              p->backname, p->backhdu, p->ndim);
-
-
       /* When a background image is specified, oversample must be 1 and
          there is no shifts. */
       p->oversample=1;
@@ -1089,16 +1041,6 @@ ui_prepare_canvas(struct mkprofparams *p)
     }
   else
     {
-      /* Get the number of dimensions. */
-      ndim_counter=0;
-      for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i) ++ndim_counter;
-      p->ndim=ndim_counter;
-
-      /* Currently, things are only implemented for 2D. */
-      if(p->ndim!=2)
-        error(EXIT_FAILURE, 0, "%zu numbers given to `--mergedsize', only 2 "
-              "values may be given", p->ndim);
-
       /* If any of the shift elements are zero, the others should be too!*/
       if(p->shift && p->shift[0] && p->shift[1])
         {
@@ -1345,8 +1287,90 @@ ui_make_log(struct mkprofparams *p)
 
 
 static void
+ui_read_ndim(struct mkprofparams *p)
+{
+  gal_data_t *keysll;
+  size_t i, ndim_counter;
+
+  if(p->kernel)
+    {
+      /* The kernel's dimensionality is fixed. */
+      p->ndim=2;
+
+      /* Make sure the kernel and background are not given together. */
+      if(p->backname)
+        error(EXIT_FAILURE, 0, "the `--kernel' and `--background' options "
+              "cannot be called together");
+    }
+  else
+    {
+      /* Packground image is given. */
+      if(p->backname)
+        {
+          /* Small sanity check. */
+          if(p->backhdu==NULL)
+            error(EXIT_FAILURE, 0, "no hdu specified for the background "
+                  "image %s. Please run again `--backhdu' option",
+                  p->backname);
+
+          /* If `--nomerged' is given, we don't actually need to load the
+             image, we just need its WCS later. */
+          if(p->nomerged)
+            {
+              /* Get the number of the background image's dimensions. */
+              keysll=gal_data_array_calloc(1);
+              keysll->name="NAXIS";   keysll->type=GAL_TYPE_SIZE_T;
+              gal_fits_key_read(p->backname, p->backhdu, keysll, 0, 0);
+              p->ndim = *(size_t *)(keysll->array);
+              keysll->name=NULL;
+              gal_data_array_free(keysll, 1, 1);
+            }
+          else
+            {
+              /* Read the image. */
+              p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
+                                                   NULL, GAL_TYPE_FLOAT32,
+                                                   p->cp.minmapsize);
+              p->ndim=p->out->ndim;
+            }
+
+          /* Make sure the dimensionality is supported. */
+          if(p->ndim!=2)
+            error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
+                  "only 2 dimensional outputs can be produced",
+                  p->backname, p->backhdu, p->ndim);
+        }
+      else
+        {
+          /* Get the number of dimensions from the user's options. */
+          ndim_counter=0;
+          for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i) ++ndim_counter;
+          p->ndim=ndim_counter;
+
+          /* Make sure the dimensionality is supported. */
+          if(p->ndim!=2)
+            error(EXIT_FAILURE, 0, "%zu values given to `--mergedsize'. "
+                  "Currently only 2 dimensional outputs can be produced",
+                  p->ndim);
+        }
+    }
+}
+
+
+
+
+
+static void
 ui_preparations(struct mkprofparams *p)
 {
+  /* Set the output dimensionality (necessary to know which columns to
+     use). */
+  ui_read_ndim(p);
+
+  /* Read in all the columns (necessary for `--prepforconf' when we want to
+     build the profiles). */
+  ui_prepare_columns(p);
+
   /* If the kernel option was given, some parameters need to be
      over-written: */
   if(p->kernel)
@@ -1363,9 +1387,6 @@ ui_preparations(struct mkprofparams *p)
     }
   else
     ui_prepare_canvas(p);
-
-  /* Read in all the columns. */
-  ui_prepare_columns(p);
 
   /* Read the (possible) RA/Dec inputs into X and Y for the builder.*/
   if(p->wcs)

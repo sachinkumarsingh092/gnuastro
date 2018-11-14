@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Fernando Buitrago
 Pierre-Alain Duc
 Gaspar Galaz
 Johan Knapen

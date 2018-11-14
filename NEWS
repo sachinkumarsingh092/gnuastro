@@ -128,7 +128,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54579: NoiseChisel pseudo-detection failure when dataset is negative.
   bug #54782: Segment's check image not removing sky clumps some tiles.
   bug #54810: Arithmetic crash when previously named operand renamed.
-
+  bug #55025: MakeCatalog's `--prepforconv' option being ignored.
 
 
 
