@@ -129,7 +129,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #54782: Segment's check image not removing sky clumps some tiles.
   bug #54810: Arithmetic crash when previously named operand renamed.
   bug #55025: MakeCatalog's `--prepforconv' option being ignored.
-
+  bug #55079: Blank EPS or PDF page when width options not given.
 
 
 * Noteworthy changes in release 0.7 (library 5.0.0) (2018-08-08) [stable]
