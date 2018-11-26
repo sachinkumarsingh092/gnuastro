@@ -43,17 +43,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define GAL_CONFIG_HAVE_PTHREAD_BARRIER     @HAVE_PTHREAD_BARRIER@
 
-#define GAL_CONFIG_BIN_OP_UINT8             @HAVE_BIN_OP_UINT8@
-#define GAL_CONFIG_BIN_OP_INT8              @HAVE_BIN_OP_INT8@
-#define GAL_CONFIG_BIN_OP_UINT16            @HAVE_BIN_OP_UINT16@
-#define GAL_CONFIG_BIN_OP_INT16             @HAVE_BIN_OP_INT16@
-#define GAL_CONFIG_BIN_OP_UINT32            @HAVE_BIN_OP_UINT32@
-#define GAL_CONFIG_BIN_OP_INT32             @HAVE_BIN_OP_INT32@
-#define GAL_CONFIG_BIN_OP_UINT64            @HAVE_BIN_OP_UINT64@
-#define GAL_CONFIG_BIN_OP_INT64             @HAVE_BIN_OP_INT64@
-#define GAL_CONFIG_BIN_OP_FLOAT32           @HAVE_BIN_OP_FLOAT32@
-#define GAL_CONFIG_BIN_OP_FLOAT64           @HAVE_BIN_OP_FLOAT64@
-
 #define GAL_CONFIG_SIZEOF_LONG              @SIZEOF_LONG@
 #define GAL_CONFIG_SIZEOF_SIZE_T            @SIZEOF_SIZE_T@
 
