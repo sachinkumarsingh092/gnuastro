@@ -1396,7 +1396,7 @@ gal_options_check_stdin(char *inputname, long stdintimeout)
 
   /* See if atleast one of the two inputs is given. */
   if(inputname==NULL && lines==NULL)
-    error( EXIT_FAILURE, 0,  gal_options_stdin_error(stdintimeout,1));
+    error( EXIT_FAILURE, 0, "%s", gal_options_stdin_error(stdintimeout,1));
 
   /* Return the output. */
   return lines;
