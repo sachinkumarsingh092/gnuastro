@@ -127,7 +127,23 @@ onecrop_parse_section(struct cropparams *p, size_t *dsize,
           add=1;                /* If it is an asterisk, then add the */
           ++pt;                 /* given value to the maximum size of */
           break;                /* the image. */
+
+        /* Numerical characters signify the start of a number, so we don't
+           need to increment the pointer and can just break out. */
+        case '0': case '1': case '2': case '3': case '4': case '5':
+        case '6': case '7': case '8': case '9': case '-':
+          break;
+
+        /* An un-recognized character should crash the program. */
         default:
+          error(EXIT_FAILURE, 0, "value to `--section' must only contain "
+                "integer numbers and these special characters between them: "
+                "`,', `:', `*' when necessary. But it is `%s' (the first "
+                "non-acceptable character is `%c').\n\n"
+                "Please run the command below to learn more about this "
+                "option in Gnuastro's Crop program:\n\n"
+                "    $ info gnuastro \"Crop section syntax\"\n", p->section,
+                *pt);
           break;
         }
 
