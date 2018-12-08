@@ -100,7 +100,7 @@ all the commits needed for this release have been completed.
 
    - Set the key-ID as a variable for easy steps later:
 
-       $ mykeyid=1849814357EFB73A
+       $ mykeyid=XXXXXXXXXXXXXXXXX
 
    - For an alpha upload:
 
