@@ -41,10 +41,10 @@ all the commits needed for this release have been completed.
  - Check if README includes all the recent updates and important features.
 
 
- - Check if THANKS and the book's Acknowledgments section have everyone in
-   `doc/announce-acknowledge.txt' in them. To see who has been added in the
-   `THANKS' file since the last stable release (to add in the book), you
-   can use this command:
+ - [STABLE] Check if THANKS, and the book's Acknowledgments section have
+   everyone in `doc/announce-acknowledge.txt' in them. To see who has been
+   added in the `THANKS' file since the last stable release (to add in the
+   book), you can use this command:
 
      $ git diff gnuastro_vP.P..HEAD THANKS
 
