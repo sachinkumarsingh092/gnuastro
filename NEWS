@@ -107,14 +107,15 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     --meanmedqdiff: new name for `--modmedqdiff'. Similar to NoiseChisel.
 
   Library:
-    - gal_data_copy_to_allocated: Also copies string metadata (e.g., name).
-    - gal_fits_key_write: filename and hdu instead of FITS pointer.
-    - gal_fits_key_write_version: filename and hdu instead of FITS pointer.
-    - gal_fits_key_write_filename: write at the top or end of the input list.
     - gal_array_read: list of strings (from standard input) acceptable.
     - gal_array_read_to_type: list of strings (from stin) acceptable.
     - gal_array_read_one_ch: list of strings (from stdin) acceptable.
     - gal_array_read_one_ch_to_type: list of strings (from stdin) acceptable.
+    - gal_data_copy_to_allocated: Also copies string metadata (e.g., name).
+    - gal_fits_key_write: filename and hdu instead of FITS pointer.
+    - gal_fits_key_write_version: filename and hdu instead of FITS pointer.
+    - gal_fits_key_write_filename: write at the top or end of the input list.
+    - gal_statistics_outlier_positive: Window-size is now adjustable (new argument).
     - gal_table_info: list of strings (from stdin) acceptable.
     - gal_table_read: list of strings (from stdin) acceptable.
     - gal_txt_table_info: list of strings (from stdin) acceptable.

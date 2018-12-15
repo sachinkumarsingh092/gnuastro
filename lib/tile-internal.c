@@ -44,7 +44,7 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
                              size_t tottilesinch, double *outliersclip,
                              float outliersigma)
 {
-  gal_data_t *outlier;
+  gal_data_t *outlier, *nbs;
   size_t i, osize=first->size;
   size_t start=tottilesinch*channelid;
   float *oa1=NULL, *oa2=NULL, *oa3=NULL;
@@ -82,9 +82,11 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
   /* Find the quantile and remove all tiles that are more than it in the
      first array. */
   arr1=first->array;
-  outlier=gal_statistics_outlier_positive(first, outliersigma,
+  nbs=gal_statistics_no_blank_sorted(first, 0);
+  outlier=gal_statistics_outlier_positive(nbs, nbs->size/2, outliersigma,
                                           outliersclip[0], outliersclip[1],
                                           0, 1);
+  gal_data_free(nbs);
   if(outlier)
     {
       o = *((float *)(outlier->array));
@@ -101,9 +103,11 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
      on each dataset to later remove any tile that is blank in atleast one
      of them. */
   arr2=second->array;
-  outlier=gal_statistics_outlier_positive(second, outliersigma,
+  nbs=gal_statistics_no_blank_sorted(second, 0);
+  outlier=gal_statistics_outlier_positive(nbs, nbs->size, outliersigma,
                                           outliersclip[0], outliersclip[1],
                                           0, 0);
+  gal_data_free(nbs);
   if(outlier)
     {
       o = *((float *)(outlier->array));
@@ -116,9 +120,12 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
   if(third)
     {
       arr3=third->array;
-      outlier=gal_statistics_outlier_positive(third, outliersigma,
+      nbs=gal_statistics_no_blank_sorted(third, 0);
+      outlier=gal_statistics_outlier_positive(nbs, nbs->size/2,
+                                              outliersigma,
                                               outliersclip[0],
                                               outliersclip[1], 0, 0);
+      gal_data_free(nbs);
       if(outlier)
         {
           o = *((float *)(outlier->array));

@@ -2097,7 +2097,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 /* Find the first outlier in a distribution. */
 #define OUTLIER_BYTYPE(IT) {                                            \
     IT *arr=nbs->array;                                                 \
-    for(i=nbs->size/2;i<nbs->size;++i)                                  \
+    for(i=window_size;i<nbs->size;++i)                                  \
       {                                                                 \
         /* Fill in the distance array. */                               \
         for(j=0; j<wtakeone; ++j)                                       \
@@ -2109,9 +2109,10 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
         sarr=sclip->array;                                              \
                                                                         \
         /* For a check */                                               \
-        /*printf("%f: %f (%f, %f) %f\n", (float)(arr[i]),          */   \
-        /*       (float)(arr[i]-arr[i-1]), sarr[1], sarr[3],       */   \
-        /*       (((double)(arr[i]-arr[i-1])) - sarr[1])/sarr[3]); */  \
+        if(quiet==0)                                                    \
+          printf("%f [%zu]: %f (%f, %f) %f\n", (float)(arr[i]), i,      \
+                 (float)(arr[i]-arr[i-1]), sarr[1], sarr[3],            \
+                 (((double)(arr[i]-arr[i-1])) - sarr[1])/sarr[3]);      \
                                                                         \
         /* Terminate the loop if the dist. is larger than requested. */ \
         /* This shows we have reached the first outlier's position. */  \
@@ -2132,18 +2133,17 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       }                                                                 \
   }
 gal_data_t *
-gal_statistics_outlier_positive(gal_data_t *input, float sigma,
-                                float sigclip_multip, float sigclip_param,
-                                int inplace, int quiet)
+gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
+                                float sigma, float sigclip_multip,
+                                float sigclip_param, int inplace, int quiet)
 {
   float *sarr;
   double *darr;
-  size_t i, j, one=1, wtakeone, window_size;
+  size_t i, j, one=1, wtakeone;
   gal_data_t *dist, *sclip, *nbs, *out=NULL;
 
   /* Remove all blanks and sort the dataset. */
   nbs=gal_statistics_no_blank_sorted(input, inplace);
-  window_size=nbs->size/2;
 
   /* Only continue if the window size is more than 2 elements (out
      "outlier" is hard to define on smaller datasets). */
