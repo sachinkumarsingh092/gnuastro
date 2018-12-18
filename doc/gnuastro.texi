@@ -21629,8 +21629,8 @@ option which has the units along with a short description.
 
 @item -G
 @itemx --agenow
-The current age of the universe (given the input parameters) in Giga-years
-(Gyr).
+The current age of the universe (given the input parameters) in Ga (Giga
+annum, or billion years).
 
 @item -C
 @itemx --criticaldensitynow
@@ -21673,14 +21673,14 @@ the apparent magnitude to give the object's absolute magnitude.
 
 @item -g
 @itemx --age
-Age of the universe at given redshift in Giga-years (Gyr).
+Age of the universe at given redshift in Ga (Giga annum, or billion years).
 
 @item -b
 @itemx --lookbacktime
-The look-back time to given redshift in Giga-years (Gyr). The look-back
-time at a given redshift is defined as the current age of the universe
-(@option{--agenow}) subtracted by the age of the universe at the given
-redshift.
+The look-back time to given redshift in Ga (Giga annum, or billion
+years). The look-back time at a given redshift is defined as the current
+age of the universe (@option{--agenow}) subtracted by the age of the
+universe at the given redshift.
 
 @item -c
 @itemx --criticaldensity

@@ -113,7 +113,7 @@ cosmiccal_printall(struct cosmiccalparams *p)
 
   printf("\n\n Universe now\n");
   printf(    " ------------\n");
-  printf(FLTFORMAT, "Age of Universe now (Gyr):", curage);
+  printf(FLTFORMAT, "Age of Universe now (Ga*):", curage);
   printf(EXPFORMAT, "Critical density now (g/cm^3):",  ccritd);
   printf(FLTFORMAT, "Proper distance to z (Mpc):", pd);
   printf(FLTFORMAT, "Angular diameter distance to z (Mpc):", ad);
@@ -127,13 +127,16 @@ cosmiccal_printall(struct cosmiccalparams *p)
 
   printf("\n\n Universe at desired redshift z\n");
   printf(    " ------------------------------\n");
-  printf(FLTFORMAT, "Age of Universe at z (Gyr):", outage);
-  printf(FLTFORMAT, "Look-back time to z (Gyr):", curage-outage);
+  printf(FLTFORMAT, "Age of Universe at z (Ga*):", outage);
+  printf(FLTFORMAT, "Look-back time to z (Ga*):", curage-outage);
   printf(EXPFORMAT, "Critical density at z (g/cm^3):",  zcritd);
 
   printf("\n\n Comoving universe (time independent)\n");
   printf(    " ------------------------------------\n");
   printf(FLTFORMAT, "Comoving volume over 4pi stradian to z (Mpc^3):", vz);
+
+  printf("\n-------\n");
+  printf("*: Ga is short for Giga Annum, or billion years (IAU standard).\n");
 }
 
 
