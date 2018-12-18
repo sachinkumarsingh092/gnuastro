@@ -982,7 +982,7 @@ results. Before he actually saw the moons of Jupiter, the mountains on the
 Moon or the crescent of Venus, Galileo was “evasive”@footnote{Galileo
 G. (Translated by Maurice A. Finocchiaro). @emph{The essential
 Galileo}. Hackett publishing company, first edition, 2008.} to
-Kepler. Science is defined by its tools/methods, @emph{not} its
+Kepler. Science is defined by its tools/methods, @emph{not} its raw
 results@footnote{For example, take the following two results on the age of
 the universe: roughly 14 billion years (suggested by the current consensus
 of the standard model of cosmology) and less than 10,000 years (suggested
@@ -990,22 +990,24 @@ from some interpretations of the Bible). Both these numbers are
 @emph{results}. What distinguishes these two results, is the tools/methods
 that were used to derive them. Therefore, as the term ``Scientific method''
 also signifies, a scientific statement it defined by its @emph{method}, not
-its result.}
+its result.}.
 
 The same is true today: science cannot progress with a black box, or poorly
-released code. Technical knowledge and experience (to experiment on its
-tools, or software in this context@footnote{Of course, this also applies to
-hardware.}), is critical to scientific vitality. Scientific research are
-only considered for peer review and publication if they have a sufficiently
-high standard of English style. A similar level of quality assessment is
-necessary regarding the codes/methods scientists use to derive their
-results. Therefore, when a scientist says ``software is not my specialty, I
-am not a software engineer. So the quality of my code/processing doesn't
-matter. Why should I master good coding style, or release my code, when I
-am hired to do Astronomy/Biology?''. This statement is akin to a French
-scientist saying that "English is not my language, I am not Shakespeare. So
-the quality of my English writing doesn't matter. Why should I master good
-English style, when I am hired to do Astronomy/Biology?"
+released code. The source code of a research is the new (abstractified)
+communication language in science, understandable by humans @emph{and}
+computers. Source code (in any programming language) is a language/notation
+designed to express all the details that would be too
+tedious/long/frustrating to report in spoken languages like English,
+similar to mathematic notation.
+
+Today, the quality of the source code that goes into a scientific result
+(and the distribution of that code) is as critical to scientific vitality
+and integrity, as the quality of its written language/English used in
+publishing/distributing its paper. A scientific paper will not even be
+reviewed by any respectable journal if its written in a poor
+language/English. A similar level of quality assessment is thus
+increasingly becoming necessary regarding the codes/methods used to derive
+the results of a scientific paper.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
