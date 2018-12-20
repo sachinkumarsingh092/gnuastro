@@ -129,10 +129,7 @@ ui_initialize_options(struct convolveparams *p,
         break;
 
       case GAL_OPTIONS_KEY_LOG:
-      case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_IGNORECASE:
-      case GAL_OPTIONS_KEY_TABLEFORMAT:
-      case GAL_OPTIONS_KEY_STDINTIMEOUT:
       case GAL_OPTIONS_KEY_INTERPNUMNGB:
       case GAL_OPTIONS_KEY_INTERPONLYBLANK:
         cp->coptions[i].flags=OPTION_HIDDEN;
@@ -213,11 +210,6 @@ ui_read_check_only_options(struct convolveparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
-  /* Make sure the kernel name is a FITS file and a HDU is given. */
-  if( gal_fits_name_is_fits(p->kernelname)==0 )
-    error(EXIT_FAILURE, 0, "`%s' is not a recognized FITS file name",
-          p->kernelname);
-
 
   /* Read the domain from a string into an integer. */
   if( !strcmp("spatial", p->domainstr) )
@@ -255,15 +247,53 @@ ui_read_check_only_options(struct convolveparams *p)
 static void
 ui_check_options_and_arguments(struct convolveparams *p)
 {
-  /* Make sure an input file name was given and if it was a FITS file, that
-     a HDU is also given. */
-  if(p->filename==NULL)
-    error(EXIT_FAILURE, 0, "no input file is specified");
+  int kernel_type;
 
-  /* Make sure the input name is a FITS file name. */
-  if( gal_fits_name_is_fits(p->filename)==0 )
-    error(EXIT_FAILURE, 0, "`%s' is not a recognized FITS file name",
-          p->filename);
+  if(p->filename)
+    {
+      /* If input is FITS. */
+      if( (p->isfits=gal_fits_name_is_fits(p->filename)) )
+        {
+          /* Check if a HDU is given. */
+          if( p->cp.hdu==NULL )
+            error(EXIT_FAILURE, 0, "no HDU specified. When the input is a "
+                  "FITS file, a HDU must also be specified, you can use "
+                  "the `--hdu' (`-h') option and give it the HDU number "
+                  "(starting from zero), extension name, or anything "
+                  "acceptable by CFITSIO");
+
+          /* If its an image, make sure column isn't given (in case the
+             user confuses an image with a table). */
+          p->hdu_type=gal_fits_hdu_format(p->filename, p->cp.hdu);
+          if(p->hdu_type==IMAGE_HDU && p->column)
+            error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
+                  "extension. The `--column' option is only applicable "
+                  "to tables.", p->filename, p->cp.hdu);
+        }
+    }
+
+  if(p->kernelname)
+    {
+      /* If input is FITS. */
+      if( gal_fits_name_is_fits(p->kernelname) )
+        {
+          /* Check if a HDU is given. */
+          if( p->khdu==NULL )
+            error(EXIT_FAILURE, 0, "no HDU specified. When the kernel is a "
+                  "FITS file, a HDU must also be specified, you can use "
+                  "the `--khdu' (`-u') option and give it the HDU number "
+                  "(starting from zero), extension name, or anything "
+                  "acceptable by CFITSIO");
+
+          /* If its an image, make sure column isn't given (in case the
+             user confuses an image with a table). */
+          kernel_type=gal_fits_hdu_format(p->kernelname, p->khdu);
+          if(kernel_type==IMAGE_HDU && p->kernelcolumn)
+            error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
+                  "extension. The `--kernelcolumn' option is only "
+                  "applicable to tables.", p->kernelname, p->khdu);
+        }
+    }
 }
 
 
@@ -288,27 +318,158 @@ ui_check_options_and_arguments(struct convolveparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
+static gal_data_t *
+ui_read_column(struct convolveparams *p, int i0k1)
+{
+  int tformat;
+  char *source;
+  gal_data_t *out, *cinfo;
+  gal_list_str_t *column=NULL;
+  size_t ncols, nrows, counter=0;
+  char *hdu        = i0k1==0 ? p->cp.hdu   : p->khdu;
+  char *name       = i0k1==0 ? "input"     : "kernel";
+  char *filename   = i0k1==0 ? p->filename : p->kernelname;
+  char *columnname = i0k1==0 ? p->column   : p->kernelcolumn;
+  gal_list_str_t *lines = gal_options_check_stdin(filename,
+                                                  p->cp.stdintimeout, name);
+
+  /* If no column is specified, Convolve will abort and an error will be
+     printed when the table has more than one column. If there is only one
+     column, there is no need to specify any, so Convolve will use it. */
+  if(columnname==NULL)
+    {
+      /* Get the basic table information. */
+      cinfo=gal_table_info(filename, hdu, lines, &ncols, &nrows, &tformat);
+      gal_data_array_free(cinfo, ncols, 1);
+
+      /* See how many columns it has and take the proper action. */
+      switch(ncols)
+        {
+        case 0:
+          error(EXIT_FAILURE, 0, "%s contains no usable information",
+                ( filename
+                  ? gal_checkset_dataset_name(filename, hdu)
+                  : "Standard input" ));
+        case 1:
+          gal_checkset_allocate_copy("1", &columnname);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%s is a table containing more than one "
+                "column. However, the specific column to work on isn't "
+                "specified.\n\n"
+                "Please use the `--column' (`-c') or `--kernelcolumn' "
+                "options (depending on which dataset it is) to specify a "
+                "column. You can either give it the column number "
+                "(couting from 1), or a match/search in its meta-data (e.g., "
+                "column names).\n\n"
+                "For more information, please run the following command "
+                "(press the `SPACE' key to go down and `q' to return to the "
+                "command-line):\n\n"
+                "    $ info gnuastro \"Selecting table columns\"\n",
+                ( filename
+                  ? gal_checkset_dataset_name(filename, hdu)
+                  : "Standard input" ));
+        }
+
+    }
+  gal_list_str_add(&column, columnname, 0);
+
+  /* Read the desired column(s). */
+  out=gal_table_read(filename, hdu, lines, column, p->cp.searchin,
+                     p->cp.ignorecase, p->cp.minmapsize, NULL);
+  gal_list_str_free(lines, 1);
+
+  /* Confirm if only one column was read (it is possible to match more than
+     one column). */
+  if(out->next!=NULL)
+    {
+      if(filename)
+        gal_checkset_dataset_name(filename, hdu);
+      else
+        source="standard-input";
+      error(EXIT_FAILURE, 0, "%s: more than one column in input table mached "
+            "the search criteria. Please limit the match by specifying the "
+            "exact name (if its unique) or column number", source);
+    }
+
+  /* Make sure it is a usable datatype. */
+  switch(out->type)
+    {
+    case GAL_TYPE_BIT:
+    case GAL_TYPE_STRLL:
+    case GAL_TYPE_STRING:
+    case GAL_TYPE_COMPLEX32:
+    case GAL_TYPE_COMPLEX64:
+      error(EXIT_FAILURE, 0, " read column number %zu has a %s type, "
+            "which is not currently supported by %s", counter,
+            gal_type_name(out->type, 1), PROGRAM_NAME);
+    }
+  out=gal_data_copy_to_new_type_free(out, INPUT_USE_TYPE);
+
+  /* If the input was from standard input, we can actually write this into
+     it (for future reporting). */
+  if(filename==NULL)
+    gal_checkset_allocate_copy("standard-input",
+                               ( i0k1==0 ? &p->filename : &p->kernelname ));
+
+  /* Clean up and return. */
+  gal_list_str_free(column, 0);
+  return out;
+}
+
+
+
+
+
+/* Read the input dataset. */
+static void
+ui_read_input(struct convolveparams *p)
+{
+  /* To see if we should read it as a table. */
+  p->input=NULL;
+
+  /* If the input is a FITS image or any recognized array file format, then
+     read it as an array, otherwise, as a table. */
+  if( p->filename && gal_array_name_recognized(p->filename) )
+    if (p->isfits && p->hdu_type==IMAGE_HDU)
+      {
+        p->input=gal_array_read_one_ch_to_type(p->filename, p->cp.hdu, NULL,
+                                               INPUT_USE_TYPE,
+                                               p->cp.minmapsize);
+        p->input->wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0,
+                                   &p->input->nwcs);
+      }
+
+  /* The input isn't an image (wasn't read yet), so we'll read it as a
+     column. */
+  if(p->input==NULL)
+    p->input=ui_read_column(p, 0);
+}
+
+
+
+
+
 /* Read the kernel. VERY IMPORTANT: We can't use the `fits_img_read_kernel'
    because the Convolve program also does de-convolution. */
 static void
 ui_read_kernel(struct convolveparams *p)
 {
-  float *f, *ff;
-
   /* Read the image into file. */
-  p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
-                                            NULL, GAL_TYPE_FLOAT32,
-                                            p->cp.minmapsize);
+  if( p->kernelname
+      && p->input->ndim>1
+      && gal_array_name_recognized(p->kernelname)  )
+    p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
+                                              NULL, INPUT_USE_TYPE,
+                                              p->cp.minmapsize);
+  else
+    p->kernel=ui_read_column(p, 1);
 
-  /* Convert all the NaN pixels to zero if the kernel contains blank
-     pixels, also update the flags so it is not checked any more. */
-  if(gal_blank_present(p->kernel, 1))
-    {
-      ff = (f=p->kernel->array) + p->kernel->size;
-      do *f = isnan(*f) ? 0.0f : *f; while(++f<ff);
-      p->kernel->flag |= GAL_DATA_FLAG_BLANK_CH;
-      p->kernel->flag &= ~GAL_DATA_FLAG_HASBLANK;
-    }
+  /* Make sure that the kernel and input have the same number of
+     dimensions. */
+  if(p->kernel->ndim!=p->input->ndim)
+    error(EXIT_FAILURE, 0, "input datasets must have the same number of "
+          "dimensions");
 }
 
 
@@ -318,11 +479,150 @@ ui_read_kernel(struct convolveparams *p)
 static void
 ui_preparations(struct convolveparams *p)
 {
+  int check=0;
+  double sumv=0;
   size_t i, size;
   gal_data_t *sum;
-  float *kernel, tmp;
+  float *f, *fp, tmp, *kernel;
   struct gal_options_common_params *cp=&p->cp;
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
+
+
+  /* Read the input dataset. */
+  ui_read_input(p);
+
+
+  /* Currently Convolve only works on 1D and 2D datasets. */
+  if(p->input->ndim>2)
+    error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
+          "Convolve only operates on 1D (table column) and 2D (image) "
+          "datasets", p->filename, cp->hdu, p->input->ndim);
+
+
+  /* Domain-specific checks. */
+  if(p->domain==CONVOLVE_DOMAIN_FREQUENCY)
+    {
+      if( gal_blank_present(p->input, 1) )
+        fprintf(stderr, "\n----------------------------------------\n"
+                "######## %s WARNING ########\n"
+                "There are blank pixels in `%s' (hdu: `%s') and you have "
+                "asked for frequency domain convolution. As a result, all "
+                "the pixels in the output (`%s') will be blank. Only "
+                "spatial domain convolution can account for blank pixels "
+                "in the input data. You can run %s again with "
+                "`--domain=spatial'\n"
+                "----------------------------------------\n\n",
+                PROGRAM_NAME, p->filename, cp->hdu, cp->output,
+                PROGRAM_NAME);
+
+      /* Frequency domain is only implemented in 2D. */
+      if( p->input->ndim==1 )
+        error(EXIT_FAILURE, 0, "Frequency domain convolution is currently "
+              "not implemented on 1D datasets. Please use `--domain=spatial' "
+              "to convolve this dataset");
+    }
+  else
+    {
+      if(p->input->ndim>1)
+        gal_tile_full_sanity_check(p->filename, cp->hdu, p->input, &cp->tl);
+    }
+
+
+  /* Read the file specified by --kernel. If makekernel is specified, then
+     this is actually the sharper image and the input image (given as an
+     argument) is the blurry image. */
+  if(p->makekernel)
+    {
+      /* Currently this is not implemented in 1D. */
+      if(p->kernel->ndim==1)
+        error(EXIT_FAILURE, 0, "`--makekernel' is currently not available "
+              "on 1D datasets");
+      else
+        {
+          /* Read in the kernel array. */
+          ui_read_kernel(p);
+
+          /* Make sure the size of the kernel is the same as the input */
+          if( p->input->dsize[0]!=p->kernel->dsize[0]
+              || p->input->dsize[1]!=p->kernel->dsize[1] )
+            error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
+                  "the input image and the image specified with the "
+                  "`--kernel' (`-k') option should have the same size. The "
+                  "lower resolution input image (%s) has %zux%zu pixels "
+                  "while the sharper image (%s) specified with the kernel "
+                  "option has %zux%zu pixels", p->filename,
+                  p->input->dsize[1], p->input->dsize[0], p->kernelname,
+                  p->kernel->dsize[1], p->kernel->dsize[0]);
+
+          /* Divide both images by their sum so their lowest frequency becomes
+             1 and their division (in the frequency domain) would be
+             meaningful. */
+          sum=gal_statistics_sum(p->input);
+          sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
+          p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+                                    GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
+          sum=gal_statistics_sum(p->kernel);
+          sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
+          p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+                                     GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
+        }
+    }
+
+  /* Read the kernel. If there is anything particular to Convolve, then
+     don't use the standard kernel reading function in fits.c. Otherwise
+     just use the same one that all programs use. The standard one is
+     faster because it mixes the NaN conversion and also the normalization
+     into one loop. */
+  else
+    {
+      /* Read in the kernel array: */
+      ui_read_kernel(p);
+
+      /* Check if the size along each dimension of the kernel is an odd
+         number. If they are all an odd number, then the for each dimension,
+         check will be incremented once. */
+      for(i=0;i<p->kernel->ndim;++i)
+        check += p->kernel->dsize[i]%2;
+      if(check!=p->kernel->ndim)
+        error(EXIT_FAILURE, 0, "%s: the kernel has to have an odd number of "
+              "elements in all dimensions (there has to be one element/pixel "
+              "in the center). At least one of the dimensions of doesn't "
+              "have an odd number of pixels",
+              gal_checkset_dataset_name(p->kernelname, p->khdu));
+
+
+      /* If there are any NaN pixels, set them to zero and normalize it. A
+         blank pixel in a kernel is going to make a completely blank
+         output.*/
+      if( !p->nokernelnorm )
+        {
+          sumv=0;
+          fp=(f=p->kernel->array)+p->kernel->size;
+          do
+            {
+              if(isnan(*f)) *f=0.0f;
+              else          sumv+=*f;
+            }
+          while(++f<fp);
+          p->kernel->flag |= GAL_DATA_FLAG_BLANK_CH;
+          p->kernel->flag &= ~GAL_DATA_FLAG_HASBLANK;
+          f=p->kernel->array; do *f++ *= 1/sumv; while(f<fp);
+        }
+
+      /* Flip the kernel: */
+      if( !p->nokernelflip )
+        {
+          size=p->kernel->size;
+          kernel=p->kernel->array;
+          for(i=0;i<p->kernel->size/2;++i)
+            {
+              tmp                     = kernel[ i            ];
+              kernel[ i             ] = kernel[ size - i - 1 ];
+              kernel[ size -  i - 1 ] = tmp;
+            }
+        }
+    }
+
 
   /* Set the output name if the user hasn't set it. */
   if(cp->output==NULL)
@@ -340,120 +640,6 @@ ui_preparations(struct convolveparams *p)
                                                          "_tiled.fits");
       gal_checkset_writable_remove(cp->tl.tilecheckname, 0,
                                    cp->dontdelete);
-    }
-
-
-  /* Read the input image as a float64 array. */
-  p->input=gal_array_read_one_ch_to_type(p->filename, cp->hdu, NULL,
-                                         GAL_TYPE_FLOAT32, cp->minmapsize);
-  p->input->wcs=gal_wcs_read(p->filename, cp->hdu, 0, 0, &p->input->nwcs);
-
-
-  /* Currently Convolve only works on 2D images. */
-  if(p->input->ndim!=2)
-    error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
-          "Convolve only operates on 2D images", p->filename, cp->hdu,
-          p->input->ndim);
-
-
-  /* See if there are any blank values. */
-  if(p->domain==CONVOLVE_DOMAIN_FREQUENCY)
-    {
-      if( gal_blank_present(p->input, 1) )
-        fprintf(stderr, "\n----------------------------------------\n"
-                "######## %s WARNING ########\n"
-                "There are blank pixels in `%s' (hdu: `%s') and you have "
-                "asked for frequency domain convolution. As a result, all "
-                "the pixels in the output (`%s') will be blank. Only "
-                "spatial domain convolution can account for blank pixels "
-                "in the input data. You can run %s again with "
-                "`--domain=spatial'\n"
-                "----------------------------------------\n\n",
-                PROGRAM_NAME, p->filename, cp->hdu, cp->output,
-                PROGRAM_NAME);
-    }
-  else
-    gal_tile_full_sanity_check(p->filename, cp->hdu, p->input, &cp->tl);
-
-
-
-  /* Read the file specified by --kernel. If makekernel is specified, then
-     this is actually the sharper image and the input image (given as an
-     argument) is the blurry image. */
-  if(p->makekernel)
-    {
-      /* Read in the kernel array. */
-      ui_read_kernel(p);
-
-      /* Make sure the size of the kernel is the same as the input */
-      if( p->input->dsize[0]!=p->kernel->dsize[0]
-          || p->input->dsize[1]!=p->kernel->dsize[1] )
-        error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
-              "the input image and the image specified with the `--kernel' "
-              "(`-k') option should have the same size. The lower resolution "
-              "input image (%s) has %zux%zu pixels while the sharper image "
-              "(%s) specified with the kernel option has %zux%zu pixels",
-              p->filename, p->input->dsize[1], p->input->dsize[0],
-              p->kernelname, p->kernel->dsize[1], p->kernel->dsize[0]);
-
-      /* Divide both images by their sum so their lowest frequency becomes
-         1 and their division (in the frequency domain) would be
-         meaningful. */
-      sum=gal_statistics_sum(p->input);
-      sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
-      p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
-                                GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
-      sum=gal_statistics_sum(p->kernel);
-      sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
-      p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
-                                GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
-    }
-
-  /* Read the kernel. If there is anything particular to Convolve, then
-     don't use the standard kernel reading function in fits.c. Otherwise
-     just use the same one that all programs use. The standard one is
-     faster because it mixes the NaN conversion and also the normalization
-     into one loop. */
-  else
-    {
-      if(p->nokernelnorm || p->nokernelflip)
-        {
-          /* Read in the kernel array: */
-          ui_read_kernel(p);
-
-          /* Check its size (must be odd). */
-          if(p->kernel->dsize[0]%2==0 || p->kernel->dsize[1]%2==0)
-            error(EXIT_FAILURE, 0, "the kernel image has to have an odd "
-                  "number of pixels on both sides (there has to be on pixel "
-                  "in the center). %s (hdu: %s) is %zu by %zu",
-                  p->kernelname, p->khdu, p->kernel->dsize[1],
-                  p->kernel->dsize[0]);
-
-          /* Normalize the kernel: */
-          if( !p->nokernelnorm )
-            {
-              sum=gal_statistics_sum(p->kernel);
-              p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
-                                         GAL_ARITHMETIC_FLAGS_ALL,
-                                         p->kernel, sum);
-            }
-
-          /* Flip the kernel: */
-          if( !p->nokernelflip )
-            {
-              size=p->kernel->size;
-              kernel=p->kernel->array;
-              for(i=0;i<p->kernel->size/2;++i)
-                {
-                  tmp                     = kernel[ i            ];
-                  kernel[ i             ] = kernel[ size - i - 1 ];
-                  kernel[ size -  i - 1 ] = tmp;
-                }
-            }
-        }
-      else
-        p->kernel = gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                             cp->minmapsize);
     }
 }
 
@@ -483,8 +669,10 @@ ui_print_intro(struct convolveparams *p)
 {
   printf("%s started on %s", PROGRAM_NAME, ctime(&p->rawtime));
   printf("  - Using %zu CPU threads.\n", p->cp.numthreads);
-  printf("  - Input: %s (hdu: %s)\n", p->filename, p->cp.hdu);
-  printf("  - Kernel: %s (hdu: %s)\n", p->kernelname, p->khdu);
+  printf("  - Input: %s\n",
+         gal_checkset_dataset_name(p->filename, p->cp.hdu));
+  printf("  - Kernel: %s\n",
+         gal_checkset_dataset_name(p->kernelname, p->khdu));
 }
 
 

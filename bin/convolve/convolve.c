@@ -761,6 +761,7 @@ void
 convolve(struct convolveparams *p)
 {
   gal_data_t *out, *check;
+  int multidim=p->input->ndim>1;
   struct gal_options_common_params *cp=&p->cp;
 
 
@@ -768,10 +769,10 @@ convolve(struct convolveparams *p)
   if(p->domain==CONVOLVE_DOMAIN_SPATIAL)
     {
       /* Prepare the mesh structure. */
-      gal_tile_full_two_layers(p->input, &cp->tl);
+      if(multidim) gal_tile_full_two_layers(p->input, &cp->tl);
 
       /* Save the tile IDs if they are requested. */
-      if(cp->tl.tilecheckname)
+      if(multidim && cp->tl.tilecheckname)
         {
           check=gal_tile_block_check_tiles(cp->tl.tiles);
           gal_fits_img_write(check, cp->tl.tilecheckname, NULL, PROGRAM_NAME);
@@ -782,12 +783,14 @@ convolve(struct convolveparams *p)
          want to do spatial domain convolution with this Convolve program
          is edge correction. So by default we assume it and will only
          ignore it if the user asks.*/
-      out=gal_convolve_spatial(cp->tl.tiles, p->kernel, cp->numthreads,
-                               !p->noedgecorrection, cp->tl.workoverch);
+      out=gal_convolve_spatial(multidim ? cp->tl.tiles : p->input, p->kernel,
+                               cp->numthreads,
+                               multidim ? !p->noedgecorrection : 1,
+                               multidim ? cp->tl.workoverch : 1 );
 
       /* Clean up: free the actual input and replace it's pointer with the
          convolved dataset to save as output. */
-      gal_tile_full_free_contents(&cp->tl);
+      if(&cp->tl) gal_tile_full_free_contents(&cp->tl);
       gal_data_free(p->input);
       p->input=out;
     }
@@ -795,12 +798,20 @@ convolve(struct convolveparams *p)
     convolve_frequency(p);
 
   /* Save the output (which is in p->input) array. */
-  gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_NAME,
-                             cp->type);
+  if(p->input->ndim==1)
+    gal_table_write(p->input, NULL, p->cp.tableformat, p->cp.output,
+                    "CONVOLVED", 0);
+  else
+    gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_NAME,
+                               cp->type);
 
   /* Write Convolve's parameters as keywords into the first extension of
      the output. */
-  gal_fits_key_write_filename("input", p->filename, &cp->okeys, 1);
-  gal_fits_key_write_config(&cp->okeys, "Convolve configuration",
-                            "CONVOLVE-CONFIG", cp->output, "0");
+  if( gal_fits_name_is_fits(p->cp.output) )
+    {
+      gal_fits_key_write_filename("input", p->filename, &cp->okeys, 1);
+      gal_fits_key_write_config(&cp->okeys, "Convolve configuration",
+                                "CONVOLVE-CONFIG", cp->output, "0");
+    }
+  printf("  - Output: %s\n", p->cp.output);
 }

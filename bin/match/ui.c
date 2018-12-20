@@ -423,7 +423,8 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
      once, we don't want to write a blank list over it (the Standard input
      will be empty after being read). */
   if(p->stdinlines==NULL)
-    p->stdinlines=gal_options_check_stdin(filename, p->cp.stdintimeout);
+    p->stdinlines=gal_options_check_stdin(filename, p->cp.stdintimeout,
+                                          "input");
   tout=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines,
                       cols, cp->searchin, cp->ignorecase, cp->minmapsize,
                       NULL);

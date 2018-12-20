@@ -42,7 +42,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b e f g i j l n p s v w x y z
+   a b e f g i j l p s v w x y z
    A B E G J L O Q R W X Y
 */
 enum option_keys_enum
@@ -53,14 +53,16 @@ enum option_keys_enum
   UI_KEY_MINSHARPSPEC   = 'H',
   UI_KEY_CHECKFREQSTEPS = 'C',
   UI_KEY_TILESIZE       = 't',
-  UI_KEY_NUMCHANNELS    = 'c',
+  UI_KEY_COLUMN         = 'c',
+  UI_KEY_NUMCHANNELS    = 'n',
   UI_KEY_REMAINDERFRAC  = 'r',
   UI_KEY_DOMAIN         = 'd',
   UI_KEY_MAKEKERNEL     = 'm',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
-  UI_KEY_NOKERNELFLIP = 1000,
+  UI_KEY_KERNELCOLUMN = 1000,
+  UI_KEY_NOKERNELFLIP,
   UI_KEY_NOKERNELNORM,
   UI_KEY_NOEDGECORRECTION,
 };

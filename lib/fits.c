@@ -1781,6 +1781,8 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
       else          sum+=*f;
     }
   while(++f<fp);
+  kernel->flag |= GAL_DATA_FLAG_BLANK_CH;
+  kernel->flag &= ~GAL_DATA_FLAG_HASBLANK;
   f=kernel->array; do *f++ *= 1/sum; while(f<fp);
 
   /* Flip the kernel about the center (necessary for non-symmetric

@@ -514,7 +514,7 @@ ui_make_channels_ll(struct converttparams *p)
   /* If there weren't any channels, abort with an error. */
   if(p->numch==0)
     error(EXIT_FAILURE, 0, "%s",
-          gal_options_stdin_error(p->cp.stdintimeout, 0));
+          gal_options_stdin_error(p->cp.stdintimeout, 0, "input"));
 
   /* Reverse the list of channels into the input order. */
   gal_list_data_reverse(&p->chll);

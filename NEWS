@@ -9,12 +9,19 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      of output when it is FITS. This is only relevant for some programs,
      (for example not the Fits or Table programs).
    - Standard input (for example from pipes) is now available to feed input
-     to all programs that accept plain text input (ConvertType, Match,
-     MakeProfiles, Statistics, Table).
+     to all programs that accept plain text input (ConvertType, Convolve,
+     Match, MakeProfiles, Statistics, Table).
    - Updated acknowledgement statement (output of `--cite' option).
 
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.
+
+  Convolve:
+    - Convolves 1D arrays (table columns, for example spectra)
+      also. Therefore two new options have been added to it: `--column'
+      (`-c', similar to other programs that read table columns), and
+      `--kernelcolumn' (to specify the column of the kernel in its own
+      file/extension).
 
   Fits:
     --numhdus: prints the number of HDUs in the given FITS file.
@@ -90,6 +97,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       FITS image/array. This can be changed with the new `--onedasimage'
       option.
 
+  Convolve:
+    - The short option for `--numchannels' is now `-n'. Until now, it was
+      `-c', but that would conflict with the short option used for
+      `--column' in all the other programs that also read from a table.
+
   MakeProfiles:
     --mergedsize: new name for the old `--naxis' option. Since the option
           names and values are now written into the FITS header of the
@@ -132,6 +144,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55025: MakeCatalog's `--prepforconv' option being ignored.
   bug #55079: Blank EPS or PDF page when width options not given.
   bug #55157: No sanity check on values given to Crop's --section.
+
+
+
 
 
 * Noteworthy changes in release 0.7 (library 5.0.0) (2018-08-08) [stable]

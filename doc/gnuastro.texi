@@ -13933,8 +13933,9 @@ value.
 @node Invoking astconvolve,  , Convolution kernel, Convolve
 @subsection Invoking Convolve
 
-Convolve an input image with a known kernel or make the kernel necessary to
-match two PSFs. The general template for Convolve is:
+Convolve an input dataset (2D image or 1D spectrum for example) with a
+known kernel, or make the kernel necessary to match two PSFs. The general
+template for Convolve is:
 
 @example
 $ astconvolve [OPTION...] ASTRdata
@@ -13953,21 +13954,38 @@ $ astconvolve observedimg.fits --kernel=psf.fits --domain=spatial
 ## Find the kernel to match sharper and blurry PSF images:
 $ astconvolve --kernel=sharperimage.fits --makekernel=10           \
               blurryimage.fits
+
+## Convolve a Spectrum (column 14 in the FITS table below) with a
+## custom kernel (the kernel will be normalized internally, so only
+## the ratios are important). Sed is used to replace the spaces with
+## new line characters so Convolve sees them as values in one column.
+$ echo "1 3 10 3 1" | sed 's/ /\n/g' | astconvolve spectra.fits -c14
 @end example
 
 The only argument accepted by Convolve is an input image file. Some of the
 options are the same between Convolve and some other Gnuastro
 programs. Therefore, to avoid repetition, they will not be repeated
 here. For the full list of options shared by all Gnuastro programs, please
-see @ref{Common options}. In particular, in the spatial domain convolve
-uses Gnuastro's tessellation, see @ref{Tessellation} and the common options
-related to that in @ref{Processing options}.
+see @ref{Common options}. In particular, in the spatial domain, on a
+multi-dimensional datasets, convolve uses Gnuastro's tessellation to speed
+up the run, see @ref{Tessellation}. Common options related to tessellation
+are described in in @ref{Processing options}.
+
+1-dimensional datasets (for example spectra) are only read as columns
+within a table (see @ref{Tables} for more on how Gnuastro programs read
+tables). Note that currently 1D convolution is only implemented in the
+spatial domain and thus kernel-matching is also not supported.
 
 Here we will only explain the options particular to Convolve. Run Convolve
 with @option{--help} in order to see the full list of options Convolve
 accepts, irrespective of where they are explained in this book.
 
 @table @option
+
+@item --kernelcolumn
+Column containing the 1D kernel. When the input dataset is a 1-dimensional
+column, and the host table has more than one column, use this option to
+specify which column should be used.
 
 @item --nokernelflip
 Do not flip the kernel after reading it the spatial domain
@@ -14084,6 +14102,8 @@ The shifting might move the center of the star by one pixel in any
 direction, so crop the central pixel of the warped image to have a
 clean image for the de-convolution.
 @end itemize
+
+Note that this feature is not yet supported in 1-dimensional datasets.
 
 @item -c
 @itemx --minsharpspec

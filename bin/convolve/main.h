@@ -39,7 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Macros */
 #define CONVFLOATINGPOINTERR 1e-10
-
+#define INPUT_USE_TYPE       GAL_TYPE_FLOAT32
 
 
 
@@ -53,7 +53,6 @@ enum complex_to_real
   COMPLEX_TO_REAL_PHASE,
   COMPLEX_TO_REAL_REAL,
 };
-
 
 enum domain_codes
 {
@@ -73,8 +72,10 @@ struct convolveparams
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.              */
   char             *filename;  /* Name of input file.                     */
+  char               *column;  /* Name of column if input is a table.     */
   char           *kernelname;  /* File name of kernel.                    */
   char                 *khdu;  /* HDU of kernel.                          */
+  char         *kernelcolumn;  /* Column to read the input kernel.        */
   uint8_t       nokernelflip;  /* Do not flip the kernel.                 */
   uint8_t       nokernelnorm;  /* Do not normalize the kernel.            */
   double        minsharpspec;  /* Deconvolution: min spect. of sharp img. */
@@ -84,6 +85,8 @@ struct convolveparams
   uint8_t   noedgecorrection;  /* Do not correct spatial edge effects.    */
 
   /* Internal */
+  int                 isfits;  /* Input is a FITS file.                   */
+  int               hdu_type;  /* Type of HDU (image or table).           */
   int                 domain;  /* Frequency or spatial domain conv.       */
   gal_data_t          *input;  /* Input image array.                      */
   gal_data_t         *kernel;  /* Input Kernel array.                     */

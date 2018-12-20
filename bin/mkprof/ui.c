@@ -620,7 +620,7 @@ ui_read_cols(struct mkprofparams *p)
   gal_list_str_reverse(&colstrs);
 
   /* Read the desired columns from the file. */
-  lines=gal_options_check_stdin(p->catname, p->cp.stdintimeout);
+  lines=gal_options_check_stdin(p->catname, p->cp.stdintimeout, "input");
   cols=gal_table_read(p->catname, p->cp.hdu, lines, colstrs, p->cp.searchin,
                       p->cp.ignorecase, p->cp.minmapsize, NULL);
   gal_list_str_free(lines, 1);

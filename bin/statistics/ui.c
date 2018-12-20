@@ -701,7 +701,7 @@ ui_read_columns(struct statisticsparams *p)
   gal_data_t *cols, *tmp, *cinfo;
   size_t size, ncols, nrows, counter=0;
   gal_list_str_t *lines=gal_options_check_stdin(p->inputname,
-                                                p->cp.stdintimeout);
+                                                p->cp.stdintimeout, "input");
 
   /* If a reference column is also given, add it to the list of columns to
      read. */

@@ -276,7 +276,7 @@ ui_print_info_exit(struct tableparams *p)
   size_t i, numcols, numrows;
 
   /* Read the table information for the number of columns and rows. */
-  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout);
+  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout, "input");
   allcols=gal_table_info(p->filename, p->cp.hdu, lines, &numcols,
                          &numrows, &tableformat);
   if(p->filename==NULL) p->filename="Standard-input";
@@ -374,7 +374,7 @@ ui_preparations(struct tableparams *p)
   ui_columns_prepare(p);
 
   /* Read in the table columns. */
-  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout);
+  lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout, "input");
   p->table=gal_table_read(p->filename, cp->hdu, lines, p->columns,
                           cp->searchin, cp->ignorecase, cp->minmapsize,
                           NULL);

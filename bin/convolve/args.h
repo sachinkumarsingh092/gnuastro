@@ -42,7 +42,20 @@ struct argp_option program_options[] =
       &p->kernelname,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "column",
+      UI_KEY_COLUMN,
+      "STR",
+      0,
+      "Column name or number if input is a table.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->column,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
@@ -56,6 +69,19 @@ struct argp_option program_options[] =
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "kernelcolumn",
+      UI_KEY_KERNELCOLUMN,
+      "STR",
+      0,
+      "Column name or number if kernel is a table.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->kernelcolumn,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
