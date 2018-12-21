@@ -28533,19 +28533,22 @@ in the Convolve program@footnote{Hence any help would be greatly
 appreciated.}.
 
 @deftypefun {gal_data_t *} gal_convolve_spatial (gal_data_t @code{*tiles}, gal_data_t @code{*kernel}, size_t @code{numthreads}, int @code{edgecorrection}, int @code{convoverch})
-Convolve each node of the list of @code{tiles} (see @ref{List of
-gal_data_t} and @ref{Tessellation library}) with @code{kernel} using
-@code{numthreads}. When @code{edgecorrection} is non-zero, it will correct
-for the edge dimming effects as discussed in @ref{Edges in the spatial
-domain}.
+Convolve the given @code{tiles} dataset (possibly a list of tiles, see
+@ref{List of gal_data_t} and @ref{Tessellation library}) with @code{kernel}
+on @code{numthreads} threads. When @code{edgecorrection} is non-zero, it
+will correct for the edge dimming effects as discussed in @ref{Edges in the
+spatial domain}.
 
-To create a tessellation that fully covers an input image, you may use
-@code{gal_tile_full}, or @code{gal_tile_full_two_layers} to also define
-channels over your input dataset. These functions are discussed in
-@ref{Tile grid}. You may then pass the list of tiles to this function. This
-is the recommended way to call this function because spatial domain
-convolution is slow and breaking the job into many small tiles and working
-on simultaneously on several threads can greatly speed up the processing.
+@code{tiles} can be a single/complete dataset, but in that case the speed
+will be very slow. Therefore, for larger images, it is recommended to give
+a list of tiles covering a dataset. To create a tessellation that fully
+covers an input image, you may use @code{gal_tile_full}, or
+@code{gal_tile_full_two_layers} to also define channels over your input
+dataset. These functions are discussed in @ref{Tile grid}. You may then
+pass the list of tiles to this function. This is the recommended way to
+call this function because spatial domain convolution is slow and breaking
+the job into many small tiles and working on simultaneously on several
+threads can greatly speed up the processing.
 
 If the tiles are defined within a channel (a larger tile), by default
 convolution will be done within the channel, so pixels on the edge of a

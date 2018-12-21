@@ -559,6 +559,10 @@ gal_data_t *
 gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
                      size_t numthreads, int edgecorrection, int convoverch)
 {
+  /* When there isn't any tile structure, `convoverch' must be set to
+     one. Recall that the input can be a single full dataset also. */
+  if(tiles->block==NULL) convoverch=1;
+
   /* Call the general function. */
   return gal_convolve_spatial_general(tiles, kernel, numthreads,
                                       edgecorrection, convoverch, NULL);
