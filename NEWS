@@ -16,6 +16,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.
 
+  ConvertType:
+    --colormap: color map to display a single-channel dataset (for example
+      FITS image) with a range of colors in formats that support color
+      (like JPEG, or PDF). Until now, the only available mapping was
+      grayscale. Now "Hue, Saturation, Value" (HSV) and "SLS" (from SAO
+      DS9) colormaps are also supported.
+
   Convolve:
     - Convolves 1D arrays (table columns, for example spectra)
       also. Therefore two new options have been added to it: `--column'

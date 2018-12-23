@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Constants/macros. */
 #define BLANK_CHANNEL_NAME "blank"
 
+
 enum output_formats
 {
   OUT_FORMAT_INVALID,           /* ==0 by C standard */
@@ -46,6 +47,16 @@ enum output_formats
   OUT_FORMAT_PDF,
   OUT_FORMAT_FITS,
   OUT_FORMAT_JPEG,
+};
+
+enum colorspace_names
+{
+  COLOR_INVALID,           /* ==0 by C standard */
+
+  COLOR_RGB,
+  COLOR_HSV,
+  COLOR_SLS,
+  COLOR_GRAY,
 };
 
 
@@ -74,6 +85,7 @@ struct converttparams
   float           widthincm;  /* Width in centimeters.                 */
   uint32_t      borderwidth;  /* Width of border in PostScript points. */
   uint8_t               hex;  /* Use hexadecimal not ASCII85 encoding. */
+  gal_data_t      *colormap;  /* Color space to use for single/mono.   */
   char          *fluxlowstr;  /* Lower flux truncation value.          */
   char         *fluxhighstr;  /* Higher flux truncation value.         */
   uint8_t           maxbyte;  /* Maximum byte value.                   */

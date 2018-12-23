@@ -10331,21 +10331,22 @@ continue with the rest of actions.
 @pindex @r{ConvertType (}astconvertt@r{)}
 The FITS format used in astronomy was defined mainly for archiving,
 transmission, and processing. In other situations, the data might be useful
-in other formats. For example, when you are writing a paper or report or if
-you are making slides for a talk, you can't use a FITS image. Other image
-formats should be used. In other cases you might want your pixel values in
-a table format as plain text for input to other programs that don't
-recognize FITS, or to include as a table in your report. ConvertType is
-created for such situations. The various types will increase with future
-updates and based on need.
+in other formats. For example, when you are writing a paper or report, or
+if you are making slides for a talk, you can't use a FITS image. Other
+image formats should be used. In other cases you might want your pixel
+values in a table format as plain text for input to other programs that
+don't recognize FITS. ConvertType is created for such situations. The
+various types will increase with future updates and based on need.
 
 The conversion is not only one way (from FITS to other formats), but two
-ways (except the EPS and PDF formats). So you can convert a JPEG image or
-text file into a FITS image. Basically, other than EPS, you can use any of
-the recognized formats as different color channel inputs to get any of the
-recognized outputs. So before explaining the options and arguments, first a
-short description of the recognized files types will be given followed a
-short introduction to digital color.
+ways (except the EPS and PDF formats@footnote{Because EPS and PDF are
+vector, not raster/pixelated formats}). So you can also convert a JPEG
+image or text file into a FITS image. Basically, other than EPS/PDF, you
+can use any of the recognized formats as different color channel inputs to
+get any of the recognized outputs. So before explaining the options and
+arguments (in @ref{Invoking astconvertt}), we'll start with a short
+description of the recognized files types in @ref{Recognized file formats},
+followed a short introduction to digital color in @ref{Color}.
 
 @menu
 * Recognized file formats::     Recognized file formats
@@ -10357,22 +10358,23 @@ short introduction to digital color.
 @subsection Recognized file formats
 
 The various standards and the file name extensions recognized by
-ConvertType are listed below.
+ConvertType are listed below. Currently Gnuastro uses the file name's
+suffix to identify the format.
 
 @table @asis
 @item FITS or IMH
+@cindex IRAF
 @cindex Astronomical data format
-Astronomical data are commonly stored in the FITS format (and in older
-data sets in IRAF @file{.imh} format), a list of file name suffixes
-which indicate that the file is in this format is given in
-@ref{Arguments}.
+Astronomical data are commonly stored in the FITS format (or the older data
+IRAF @file{.imh} format), a list of file name suffixes which indicate that
+the file is in this format is given in @ref{Arguments}.
 
-Each extension of a FITS image only has one value per pixel, so when
-used as input, each input FITS image contributes as one color
-channel. If you want multiple extensions in one FITS file for
-different color channels, you have to repeat the file name multiple
-times and use the @option{--hdu}, @option{--hdu2}, @option{--hdu3} or
-@option{--hdu4} options to specify the different extensions.
+Each image extension of a FITS file only has one value per
+pixel/element. Therefore, when used as input, each input FITS image
+contributes as one color channel. If you want multiple extensions in one
+FITS file for different color channels, you have to repeat the file name
+multiple times and use the @option{--hdu}, @option{--hdu2}, @option{--hdu3}
+or @option{--hdu4} options to specify the different extensions.
 
 @item JPEG
 @cindex JPEG format
@@ -10544,39 +10546,68 @@ comment line). To print to the standard output, set the output name to
 @cindex RGB
 @cindex CMYK
 @cindex Image
+@cindex Color
 @cindex Pixels
-@cindex Grayscale
 @cindex Colorspace
 @cindex Primary colors
+Color is defined by mixing various measurements/filters. In digital
+monitors or common digital cameras, colors are displayed/stored by mixing
+the three basic colors of red, green and blue (RGB) with various
+proportions. When printing on paper, standard printers use the cyan,
+magenta, yellow and key (CMYK, key=black) color space. In other words, for
+each displayed/printed pixel of a color image, the dataset/image has three
+or four values.
+
+@cindex Color channel
+@cindex Channel, color
+To store/show the three values for each pixel, cameras and monitors
+allocate a certain fraction of each pixel's area to red, green and blue
+filters. These three filters are thus built into the hardware at the pixel
+level. However, because measurement accuracy is very important in
+scientific instruments, and we want to do measurements (take images) with
+various/custom filters (without having to order a new expensive detector!),
+scientific detectors use the full area of the pixel to store one value for
+it in a single/mono channel dataset. To make measurements in different
+filters, we just place a filter in the light path before the
+detector. Therefore, the FITS format that is used to store astronomical
+datasets is inherently a mono-channel format (see @ref{Recognized file
+formats} or @ref{Fits}).
+
+When a subject has been imaged in multiple filters, you can feed each
+different filter into the red, green and blue channels and obtain a colored
+visualizion. In ConvertType, you can do this by giving each separate
+single-channel dataset (for example in the FITS image format) as an
+argument (in the proper order), then asking for the output in a format that
+supports multi-channel datasets (for example JPEG or PDF, see the examples
+in @ref{Invoking astconvertt}).
+
+@cindex Grayscale
+@cindex Visualization
+@cindex Colorspace, HSV
 @cindex Colorspace, gray-scale
-An image is a two dimensional array of 2 dimensional elements called
-pixels. If each pixel only has one value, the image is known as a
-gray-scale image and no color is defined. The range of values in the
-image can be interpreted as shades of any color, it is customary to
-use shades of black or gray-scale. However, to produce the color
-spectrum in the digital world, several primary colors must be
-mixed. Therefore in a color image, each pixel has several values
-depending on how many primary colors were chosen. For example on the
-digital monitor or color digital cameras, all colors are built by
-mixing the three colors of Red-Green-Blue (RGB) with various
-proportions. However, for printing on paper, standard printers use the
-Cyan-Magenta-Yellow-Key (CMYK, Key=black) color space. Therefore when
-printing an RGB image, usually a transformation of color spaces will
-be necessary.
+@cindex HSV: Hue Saturation Value
+As discussed above, color is not defined when a dataset/image contains a
+single value for each pixel. However, we interact with scientific datasets
+through monitors or printers (which allow multiple values per pixel and
+produce color with them). As a result, there is a lot of freedom in
+visualizing a single-channel dataset. The most basic is to use shades of
+black (because of its strong contrast with white). This scheme is called
+grayscale. To help in visualization, more complex mappings can be
+defined. For example, the values can be scaled to a range of 0 to 360 and
+used as the ``Hue'' term of the
+@url{https://en.wikipedia.org/wiki/HSL_and_HSV, Hue-Saturation-Value} (HSV)
+color space (while fixing the ``Saturation'' and ``Value'' terms). In
+ConvertType, you can use the @option{--colormap} option to choose between
+different mappings of mono-channel inputs, see @ref{Invoking astconvertt}.
 
-In a colored digital camera, a color image is produced by dividing the
-pixel's area between three colors (filters). However in astronomy due
-to the intrinsic faintness of most of the targets, the collecting area
-of the pixel is very important for us. Hence the full area of the
-pixel is used and one value is stored for that pixel in the end. One
-color filter is used for the whole image. Thus a FITS image is
-inherently a gray-scale image and no color can be defined for it.
-
-@cindex Colorspace, transformation
-One way to represent a gray-scale image in different color spaces is to
-use the same proportions of the primary colors in each pixel. This is
-the common way most FITS image converters work: they fill all the
-channels with the same values. The downside is two fold:
+Since grayscale is a commonly used mapping of single-valued datasets, we'll
+continue with a closer look at how it is stored. One way to represent a
+gray-scale image in different color spaces is to use the same proportions
+of the primary colors in each pixel. This is the common way most FITS image
+displayer work: for each pixel, they fill all the channels with the single
+value. While this is necessary for displaying a dataset, there are
+downsides when storing/saving this type of grayscale visualization (for
+example in a paper).
 
 @itemize
 
@@ -10592,23 +10623,20 @@ printed image slightly more blurred than it actually is.
 
 @cindex PNG standard
 @cindex Single channel CMYK
-To solve both these problems, the best way is to save the FITS image
-into the black channel of the CMYK color space. In the RGB color space
-all three channels have to be used. The JPEG standard is the only
-common standard that accepts CMYK color space, that is why currently
-only the JPEG standard is included and not the PNG standard for
-example.
+To solve both these problems when storing grayscale visualization, the best
+way is to save a single-channel dataset into the black channel of the CMYK
+color space. The JPEG standard is the only common standard that accepts
+CMYK color space.
 
-The JPEG and EPS standards set two sizes for the number of bits in
-each channel: 8-bit and 12-bit. The former is by far the most common
-and is what is used in ConvertType. Therefore, each channel should
-have values between 0 to @math{2^8-1=255}. From this we see how each
-pixel in a gray-scale image is one byte (8 bits) long, in an RGB image,
-it is 3bytes long and in CMYK it is 4bytes long. But thanks to the
-JPEG compression algorithms, when all the pixels of one channel have
-the same value, that channel is compressed to one pixel. Therefore a
-Grayscale image and a CMYK image that has only the K-channel filled
-are approximately the same file size.
+The JPEG and EPS standards set two sizes for the number of bits in each
+channel: 8-bit and 12-bit. The former is by far the most common and is what
+is used in ConvertType. Therefore, each channel should have values between
+0 to @math{2^8-1=255}. From this we see how each pixel in a gray-scale
+image is one byte (8 bits) long, in an RGB image, it is 3 bytes long and in
+CMYK it is 4 bytes long. But thanks to the JPEG compression algorithms,
+when all the pixels of one channel have the same value, that channel is
+compressed to one pixel. Therefore a Grayscale image and a CMYK image that
+has only the K-channel filled are approximately the same file size.
 
 
 @node Invoking astconvertt,  , Color, ConvertType
@@ -10629,8 +10657,12 @@ One line examples:
 ## Convert an image in FITS to PDF:
 $ astconvertt image.fits --output=pdf
 
-## Convert an image in JPEG to FITS:
-$ astconvertt image.jpg -ogalaxy.fits
+## Similar to before, but use the SLS color map:
+$ astconvertt image.fits --colormap=sls --output=pdf
+
+## Convert an image in JPEG to FITS (with multiple extensions
+## if its color):
+$ astconvertt image.jpg -oimage.fits
 
 ## Use three plain text 2D arrays to create an RGB JPEG output:
 $ astconvertt f1.txt f2.txt f3.fits -o.jpg
@@ -10766,6 +10798,51 @@ that only in gray-scale (when one input color channel is given) will this
 actually be the exact quality (each pixel will correspond to one input
 value). If it is in color mode, some degradation will occur. While the JPEG
 standard does support loss-less graphics, it is not commonly supported.
+
+@item --colormap=STR[,FLT,...]
+The color map to visualize a single channel. The first value given to this
+option is the name of the color map, which is shown below. Some color maps
+can be configured. In this case, the configuration parameters are
+optionally given as numbers following the name of the color map for example
+see @option{hsv}. The table below contains the usable names of the color
+maps that are currently supported:
+
+@table @option
+@item gray
+@itemx grey
+@cindex Colorspace, gray-scale
+Grayscale color map. This color map doesn't have any parameters. The full
+dataset range will be scaled to 0 and @mymath{2^8-1=255} to be stored in
+the requested format.
+
+@item hsv
+@cindex Colorspace, HSV
+@cindex Hue, saturation, value
+@cindex HSV: Hue Saturation Value
+Hue, Saturation,
+Value@footnote{@url{https://en.wikipedia.org/wiki/HSL_and_HSV}} color
+map. If no values are given after the name (@option{--colormap=hsv}), the
+dataset will be scaled to 0 and 360 for hue covering the full spectrum of
+colors. However, you can limit the range of hue (to show only a special
+color range) by explicity requesting them after the name (for example
+@option{--colormap=hsv,20,240}).
+
+The mapping of a single-channel dataset to HSV is done through the Hue and
+Value elements: Lower dataset elements have lower ``value'' @emph{and}
+lower ``hue''. This creates darker colors for fainter parts, while also
+respecting the range of colors.
+
+@item sls
+@cindex DS9
+@cindex SAO DS9
+@cindex SLS Color
+@cindex Colorspace: SLS
+The SLS color range, taken from the commonly used
+@url{http://ds9.si.edu,SAO DS9}. The advantage of this color range is that
+it ranges from black to dark blue, and finishes with red and white. So
+unlike the HSV color range, it includes black and white and brighter colors
+(like yellow, red and white) show the larger values.
+@end table
 
 @end table
 
@@ -11541,7 +11618,7 @@ $ astcrop --mode=wcs desired-filter-image(s).fits           \
    --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
               53.134517,-27.787144 : 53.161906,-27.807208"
 @end example
-@cindex SAO ds9
+@cindex SAO DS9
 In other cases, you have an image and want to define the polygon yourself
 (it isn't already published like the example above). As the number of
 vertices increases, checking the vertex coordinates on a FITS viewer (for
@@ -31040,7 +31117,7 @@ useful for working with Gnuastro.
 @node SAO ds9, PGPLOT, Other useful software, Other useful software
 @section SAO ds9
 
-@cindex SAO ds9
+@cindex SAO DS9
 @cindex FITS image viewer
 SAO ds9@footnote{@url{http://ds9.si.edu/}} is not a requirement of
 Gnuastro, it is a FITS image viewer. So to check your inputs and

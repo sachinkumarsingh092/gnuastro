@@ -31,9 +31,9 @@ bin_PROGRAMS = astconvertt
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
 astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
-astconvertt_SOURCES = main.c ui.c convertt.c
+astconvertt_SOURCES = main.c ui.c convertt.c color.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h convertt.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h convertt.h color.h
 
 
 

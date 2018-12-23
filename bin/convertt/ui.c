@@ -226,6 +226,85 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+static void
+ui_colormap_sanity_check(struct converttparams *p)
+{
+  char **strarr;
+  float *farray;
+  size_t nparams=0;
+  int ccode=COLOR_INVALID;
+
+  /* See how many parameters are necessary. */
+  strarr=p->colormap->array;
+  if     ( !strcmp(strarr[0],"hsv" )) { ccode=COLOR_HSV;  nparams=2; }
+  else if( !strcmp(strarr[0],"sls" )) { ccode=COLOR_SLS;  nparams=0; }
+  else if( !strcmp(strarr[0],"gray") || !strcmp(strarr[0],"grey"))
+                                      { ccode=COLOR_GRAY; nparams=0; }
+  else
+    error(EXIT_FAILURE, 0, "`%s' not recognized as a color-space given "
+          "to `--monotocolor'", strarr[0]);
+  p->colormap->status=ccode;
+
+  /* Check if the proper number of parameters are given for this color
+     space. Note that the actual colorspace name is the first element in
+     `monotocolor'. */
+  if(p->colormap->size!=1 && p->colormap->size != (nparams+1) )
+    error(EXIT_FAILURE, 0, "%zu parameters given to `--monotocolor' for "
+          "the `%s' color space (which needs %zu)",
+          p->colormap->size-1, strarr[0], nparams);
+
+  /* Allocate the necessary space for the parameters (when
+     necessary). */
+  if(nparams>0)
+    {
+      /* If no parameters were given, put the full range. */
+      if(p->colormap->size==1)
+        {
+          p->colormap->next=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1,
+                                            &nparams, NULL, 0,
+                                            p->cp.minmapsize, NULL,NULL,NULL);
+          farray=p->colormap->next->array;
+          switch(p->colormap->status)
+            {
+            case COLOR_HSV: farray[0]=0; farray[1]=360; break;
+            default:
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at "
+                    "%s to fix the problem. The value `%d' is not "
+                    "recognized for a color space that needs default "
+                    "parameters", __func__, PACKAGE_BUGREPORT,
+                    p->colormap->status);
+            }
+        }
+      else
+        {
+          /* Increment the array pointer (temporarily) so we can read
+             the rest of the parameters as float32. Note that we can't
+             use `+=' because it is a `void *' pointer. We'll have to
+             use `strarry', because its type is defined. */
+          p->colormap->size-=1;
+          p->colormap->array = strarr + 1;
+          p->colormap->next=gal_data_copy_to_new_type(p->colormap,
+                                                       GAL_TYPE_FLOAT32);
+          p->colormap->array = strarr;
+          p->colormap->size+=1;
+
+          /* For a check
+             {
+               size_t i;
+               farray=p->monotocolor->next->array;
+               for(i=0;i<p->monotocolor->next->size;++i)
+               printf("%f\n", farray[i]);
+               exit(1);
+             }
+          */
+        }
+    }
+}
+
+
+
+
+
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
@@ -262,6 +341,10 @@ ui_read_check_only_options(struct converttparams *p)
 
       gal_data_free(cond);
     }
+
+  /* Check the colormap. */
+  if(p->colormap)
+    ui_colormap_sanity_check(p);
 }
 
 
@@ -544,6 +627,27 @@ ui_prepare_input_channels(struct converttparams *p)
           "3 (for RGB) and 4 (for CMYK). You have given %zu color channels. "
           "Note that some file formats (for example JPEG in RGB mode) can "
           "contain more than one color channel", p->numch);
+
+
+  /* If there are multiple color channels, then ignore the monotocolor
+     option if it is given. But if there is only one, make sure that the
+     `colormap' option is actually given.*/
+  if( p->numch==1 )
+    {
+      if( p->colormap==NULL )
+        error(EXIT_FAILURE, 0, "no colormap! When there is only one input "
+              "channel, it is necessary to specify a color map. For "
+              "example `gray', `hsv', or `sls'.\n\n"
+              "For more on ConvertType's color mapping, see the "
+              "description under `--colormap' in the Gnuastro book:\n\n"
+              "   $ info astconvertt");
+    }
+  else if( p->numch>1 && p->colormap )
+    {
+      if(p->colormap->next) gal_data_free(p->colormap->next);
+      gal_data_free(p->colormap);
+      p->colormap=NULL;
+    }
 
 
   /* Go over the channels and make the proper checks/corrections. We won't
@@ -880,7 +984,11 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct converttparams *p)
 void
 ui_free_report(struct converttparams *p)
 {
-  /* Free the allocated spaces */
+  if(p->colormap)
+    {
+      if(p->colormap->next) gal_data_free(p->colormap->next);
+      gal_data_free(p->colormap);
+    }
   gal_data_free(p->fluxlow);
   gal_data_free(p->fluxhigh);
   gal_list_str_free(p->hdus, 1);

@@ -83,6 +83,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "colormap",
+      UI_KEY_COLORMAP,
+      "STR[,FLT]",
+      0,
+      "Color map when only a single channel is given.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->colormap,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
+    },
 
 
 

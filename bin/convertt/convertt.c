@@ -40,6 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
+#include "color.h"
 
 
 
@@ -175,7 +176,6 @@ convertt_scale_to_uchar(struct converttparams *p)
   gal_data_t *channel, *prev, *copied, *mind, *maxd;
   float *f, *ff, m, tmin, tmax, min=FLT_MAX, max=-FLT_MAX;
 
-
   /* Convert everything to single precision floating point type and find
      the minimum and maximum values of all the channels in the process. */
   prev=NULL;
@@ -304,6 +304,7 @@ convertt_scale_to_uchar(struct converttparams *p)
 
 
 
+
 /**************************************************************/
 /**************           Main function         ***************/
 /**************************************************************/
@@ -324,6 +325,19 @@ convertt(struct converttparams *p)
       convertt_truncate(p);
     }
 
+  /* Convert a mono/single color channel to a color format. */
+  if(p->colormap)
+    switch(p->colormap->status)
+      {
+      case COLOR_HSV:  color_from_mono_hsv(p);     break;
+      case COLOR_SLS:  color_from_mono_sls(p);     break;
+      case COLOR_GRAY: convertt_scale_to_uchar(p); break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. The value %d is not a recognized color-space "
+              "code", __func__, PACKAGE_BUGREPORT, p->colormap->status);
+      }
+
   /* Save the outputs: */
   switch(p->outformat)
     {
@@ -341,20 +355,20 @@ convertt(struct converttparams *p)
 
     /* JPEG: */
     case OUT_FORMAT_JPEG:
-      convertt_scale_to_uchar(p);
+      if(!p->colormap) convertt_scale_to_uchar(p);
       gal_jpeg_write(p->chll, p->cp.output, p->quality, p->widthincm);
       break;
 
     /* EPS. */
     case OUT_FORMAT_EPS:
-      convertt_scale_to_uchar(p);
+      if(!p->colormap) convertt_scale_to_uchar(p);
       gal_eps_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
                     p->hex, 0);
       break;
 
     /* PDF */
     case OUT_FORMAT_PDF:
-      convertt_scale_to_uchar(p);
+      if(!p->colormap) convertt_scale_to_uchar(p);
       gal_pdf_write(p->chll, p->cp.output, p->widthincm, p->borderwidth);
       break;
 
