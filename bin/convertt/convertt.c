@@ -343,6 +343,8 @@ convertt(struct converttparams *p)
     {
     /* FITS: a FITS file can have many extensions (channels). */
     case OUT_FORMAT_FITS:
+      if(p->numch==3 && p->rgbtohsv)
+        color_rgb_to_hsv(p);
       for(channel=p->chll; channel!=NULL; channel=channel->next)
         gal_fits_img_write(channel, p->cp.output, NULL, PROGRAM_NAME);
       break;

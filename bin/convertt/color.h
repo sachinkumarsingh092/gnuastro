@@ -29,4 +29,7 @@ color_from_mono_hsv(struct converttparams *p);
 void
 color_from_mono_sls(struct converttparams *p);
 
+void
+color_rgb_to_hsv(struct converttparams *p);
+
 #endif

@@ -33,6 +33,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+/***********************************************************************/
+/**************            From mono-channel           *****************/
+/***********************************************************************/
+/* This algorithm is a translation of the primary algorithm in this page:
+https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both */
 void
 color_from_mono_hsv(struct converttparams *p)
 {
@@ -398,4 +407,120 @@ color_from_mono_sls(struct converttparams *p)
 
   /* Clean up. */
   gal_data_free(channel);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/**************            From mono-channel           *****************/
+/***********************************************************************/
+/* This algorithm is a translation of the primary algorithm in this page:
+https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both */
+void
+color_rgb_to_hsv(struct converttparams *p)
+{
+  float *h, *s, *v;
+  gal_data_t *H, *S, *V;
+  uint8_t *r, *g, *b, *rr, min, max, delta;
+
+  /* Basic sanity checks. */
+  if(gal_list_data_number(p->chll)!=3)
+    error(EXIT_FAILURE, 0, "%s: three color channels must be input",
+          __func__);
+  if( p->chll->type!=GAL_TYPE_UINT8
+      || p->chll->next->type!=GAL_TYPE_UINT8
+      || p->chll->next->next->type!=GAL_TYPE_UINT8 )
+    error(EXIT_FAILURE, 0, "when converting RGB to HSV, all three input "
+          "color channels must have an 8-bit unsigned integer type");
+
+  /* Allocate the three datasets to keep the RGB colors. */
+  H=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
+                   p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
+                   "HUE", NULL, NULL);
+  S=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
+                   p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
+                   "SATURATION", NULL, NULL);
+  V=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
+                   p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
+                   "VALUE", NULL, NULL);
+
+  /* Initiate the pointer arrays. */
+  h=H->array;
+  s=S->array;
+  v=V->array;
+  r=p->chll->array;
+  g=p->chll->next->array;
+  b=p->chll->next->next->array;
+
+  /* Parse the dataset and do the conversion. */
+  rr=r+p->chll->size;
+  do
+    {
+      /* Get the minimum and maximum RGB values. */
+      min = *r  < *g ? *r  : *g;
+      min = min < *b ? min : *b;
+      max = *r  > *g ? *r  : *g;
+      max = max > *b ? max : *b;
+
+      /* The "value" is the maximum. */
+      *v = (float)(max)/255.0;
+
+      /* See what the difference between the minimum and maximum are. */
+      delta=max-min;
+      if(delta)
+        {
+          if(max)
+            {
+              /* Set the Saturation and hue. */
+              *s = (float)(delta)/(float)(max);
+              *h = ( *r==max
+                     /* Between yellow and magenta. */
+                     ? ((float)(*g-*b)/(float)(delta))
+                     : ( *g==max
+                         /* Between cyan & yellow. */
+                         ? (2.0+(float)(*b-*r)/(float)(delta))
+                         /* Between magenta & cyan. */
+                         : (4.0+(float)(*r-*g)/(float)(delta)) ) );
+
+              /* Correct the hue: */
+              *h *= 60.0;
+              if( *h<0.0 ) *h += 360.0;
+            }
+          else
+            /* When `max==0', then *r=*g=*b=0, so s=h=0. */
+            *s=*h=0.0;
+        }
+      else
+        /* When there is no difference, then its actually a grayscale
+           dataset, so `*v' is the only parameter that matters. */
+        *s=*h=0.0;
+
+
+      /* Increment all the pointers. */
+      ++g; ++b; ++h; ++s; ++v;
+    }
+  while(++r<rr);
+
+  /* Free the old channels linked list and replace it with the new ones. */
+  gal_list_data_free(p->chll);
+  p->chll=H;
+  p->chll->next=S;
+  p->chll->next->next=V;
 }

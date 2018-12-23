@@ -10844,6 +10844,17 @@ unlike the HSV color range, it includes black and white and brighter colors
 (like yellow, red and white) show the larger values.
 @end table
 
+@item --rgbtohsv
+When there are three input channels and the output is in the FITS format,
+interpret the three input channels as red, green and blue channels (RGB)
+and convert them to the hue, saturation, value (HSV) color space.
+
+The currently supported output formats of ConvertType don't have native
+support for HSV. Therefore this option is only supported when the output is
+in FITS format and each of the hue, saturation and value arrays can be
+saved as one FITS extension in the output for further analysis (for example
+to select a certain color).
+
 @end table
 
 @noindent

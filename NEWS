@@ -22,6 +22,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
       (like JPEG, or PDF). Until now, the only available mapping was
       grayscale. Now "Hue, Saturation, Value" (HSV) and "SLS" (from SAO
       DS9) colormaps are also supported.
+    --rgbtohsv: Convert the RGB input channels to HSV (when the output is
+      in FITS format).
 
   Convolve:
     - Convolves 1D arrays (table columns, for example spectra)

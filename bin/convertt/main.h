@@ -86,6 +86,7 @@ struct converttparams
   uint32_t      borderwidth;  /* Width of border in PostScript points. */
   uint8_t               hex;  /* Use hexadecimal not ASCII85 encoding. */
   gal_data_t      *colormap;  /* Color space to use for single/mono.   */
+  uint8_t          rgbtohsv;  /* Convert input RGB channels to HSV.    */
   char          *fluxlowstr;  /* Lower flux truncation value.          */
   char         *fluxhighstr;  /* Higher flux truncation value.         */
   uint8_t           maxbyte;  /* Maximum byte value.                   */

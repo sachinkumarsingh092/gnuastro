@@ -97,6 +97,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       gal_options_parse_csv_strings
     },
+    {
+      "rgbtohsv",
+      UI_KEY_RGBTOHSV,
+      0,
+      0,
+      "Convert RGB input into HSV (in FITS output)",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->rgbtohsv,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
 
 
