@@ -25906,15 +25906,15 @@ linked list. It is recommended to use @code{gal_table_read} for generic
 reading of tables, see @ref{Table input output}.
 @end deftypefun
 
-@deftypefun void gal_fits_tab_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename})
+@deftypefun void gal_fits_tab_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname})
 Write the list of datasets in @code{cols} (see @ref{List of gal_data_t}) as
 separate columns in a FITS table in @code{filename}. If @code{filename}
 already exists then this function will write the table as a new extension
-after all existing ones. The format of the table (ASCII or binary) may be
-specified with the @code{tableformat} (see @ref{Table input output}). If
-@code{comments!=NULL}, each node of the list of strings will be written as
-a @code{COMMENT} keywords in the output FITS file (see @ref{List of
-strings}.
+called @code{extname}, after all existing ones. The format of the table
+(ASCII or binary) may be specified with the @code{tableformat} (see
+@ref{Table input output}). If @code{comments!=NULL}, each node of the list
+of strings will be written as a @code{COMMENT} keywords in the output FITS
+file (see @ref{List of strings}.
 
 This is a low-level function for tables. It is recommended to use
 @code{gal_table_write} for generic writing of tables in a variety of
