@@ -501,6 +501,17 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
     error(EXIT_FAILURE, 0, "%s: only accepts `float32' type input and "
           "kernel currently", __func__);
 
+  /* It may happen that an input dataset is part of a linked list, but it
+     is not actually a tile structure (the user wants to convolve the whole
+     dataset without using tiles)! In that case, this function should break
+     beacuse a linked list is interpretted as a tile structure here.*/
+  if( tiles->block==NULL && tiles->next && tiles->next->block==NULL )
+    error(EXIT_FAILURE, 0, "%s: the input is a linked list but not a "
+          "tessellation (a list of tiles). This function is optimized to "
+          "work on a list of tiles. Please (temporarily) set the `next' "
+          "element of the input to `NULL' and call this funciton again",
+          __func__);
+
 
   /* Set the output datastructure.  */
   if(tocorrect) out=tocorrect;
