@@ -92,9 +92,9 @@ statistics_print_one_row(struct statisticsparams *p)
 {
   int mustfree;
   char *toprint;
-  size_t dsize=1;
   double arg, *d;
   gal_list_i32_t *tmp;
+  size_t dsize=1, counter;
   gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
 
@@ -145,6 +145,7 @@ statistics_print_one_row(struct statisticsparams *p)
 
 
   /* Print every requested number. */
+  counter=0;
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     {
       /* By default don't free anything. */
@@ -188,12 +189,16 @@ statistics_print_one_row(struct statisticsparams *p)
           break;
         }
 
-      /* Print the number. */
+      /* Print the number. Note that we don't want any extra white space
+         characters before or after the printed outputs. So we have defined
+         `counter' to add a single white space character before any element
+         except the first one. */
       toprint=gal_type_to_string(out->array, out->type, 0);
-      printf("%s ", toprint);
+      printf("%s%s", counter ? " " : "", toprint);
       free(toprint);
 
       /* Clean up (if necessary). */
+      ++counter;
       if(mustfree) gal_data_free(out);
     }
 
