@@ -106,7 +106,7 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
   nbs=gal_statistics_no_blank_sorted(second, 0);
   outlier=gal_statistics_outlier_positive(nbs, nbs->size, outliersigma,
                                           outliersclip[0], outliersclip[1],
-                                          0, 0);
+                                          0, 1);
   gal_data_free(nbs);
   if(outlier)
     {
@@ -124,7 +124,7 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
       outlier=gal_statistics_outlier_positive(nbs, nbs->size/2,
                                               outliersigma,
                                               outliersclip[0],
-                                              outliersclip[1], 0, 0);
+                                              outliersclip[1], 0, 1);
       gal_data_free(nbs);
       if(outlier)
         {
@@ -142,7 +142,6 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
         arr1[i] = arr2[i] = NAN;
         if(third) arr3[i] = NAN;
       }
-
 
   /* Correct the values, if they were changed. */
   if(start || tottilesinch!=osize)
