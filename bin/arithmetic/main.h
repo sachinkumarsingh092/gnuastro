@@ -79,6 +79,7 @@ struct arithmeticparams
   size_t      tokencounter;  /* Counter for finding place in tokens.    */
 
   /* Operating mode: */
+  int        wcs_collapsed;  /* If the internal WCS is already collapsed.*/
 
   /* Internal: */
   struct operand *operands;  /* The operands linked list.               */

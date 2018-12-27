@@ -288,16 +288,17 @@ wcs_ctype_has_tan(char *str)
 void
 gal_wcs_remove_dimension(struct wcsprm *wcs, size_t fitsdim)
 {
-  size_t c, i, j, naxis=wcs->naxis;
-
-  /* Sanity check. */
-  if(fitsdim==0 || fitsdim>wcs->naxis)
-    error(EXIT_FAILURE, 0, "%s: requested dimension (fitsdim=%zu) must be "
-          "larger than zero and smaller than the number of dimensions in "
-          "the given WCS structure (%zu)", __func__, fitsdim, naxis);
+  size_t c, i, j, naxis;
 
   /* If the WCS structure is NULL, just return. */
   if(wcs==NULL) return;
+
+  /* Sanity check. */
+  naxis=wcs->naxis;
+  if(fitsdim==0 || fitsdim>naxis)
+    error(EXIT_FAILURE, 0, "%s: requested dimension (fitsdim=%zu) must be "
+          "larger than zero and smaller than the number of dimensions in "
+          "the given WCS structure (%zu)", __func__, fitsdim, naxis);
 
   /**************************************************/
 #if WCS_REMOVE_DIM_CHECK

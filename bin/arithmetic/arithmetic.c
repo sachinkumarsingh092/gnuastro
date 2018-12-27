@@ -733,7 +733,11 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
 
   /* If a WCS structure has been read, we'll need to pass it to
      `gal_dimension_collapse', so it modifies it respectively. */
-  input->wcs=p->refdata.wcs;
+  if(p->wcs_collapsed==0)
+    {
+      p->wcs_collapsed=1;
+      input->wcs=p->refdata.wcs;
+    }
 
 
   /* Run the relevant library function. */
@@ -770,8 +774,11 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
      `collapsed->wcs'. So we'll let the freeing of `input' free the old
      `p->refdata.wcs' structure and we'll put the new one there, then we'll
      set `collapsed->wcs' to `NULL', so the new one isn't freed. */
-  p->refdata.wcs = collapsed->wcs;
-  collapsed->wcs = NULL;
+  if(collapsed->wcs)
+    {
+      p->refdata.wcs = collapsed->wcs;
+      collapsed->wcs = NULL;
+    }
 
 
   /* We'll also need to correct the size of the reference dataset. We'll
