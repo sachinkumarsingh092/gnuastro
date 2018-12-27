@@ -568,10 +568,17 @@ gal_type_string_to_number(char *string, uint8_t *type)
         }
       else
         {
-          if     (d<=UINT8_MAX)  { u8=d;  ptr=&u8;  *type=GAL_TYPE_UINT8;  }
-          else if(d<=UINT16_MAX) { u16=d; ptr=&u16; *type=GAL_TYPE_UINT16; }
-          else if(d<=UINT32_MAX) { u32=d; ptr=&u32; *type=GAL_TYPE_UINT32; }
-          else                   { u64=d; ptr=&u64; *type=GAL_TYPE_UINT64; }
+          /* Note that the blank values are set to the maximum values in
+             unsigned types. A blank value should be given as a blank
+             string to this function (`GAL_BLANK_STRING'). So, to avoid
+             confusing situations (for example when the user gives 255), if
+             the value is equal to the given maximum of the given type,
+             we'll assign it to a larger type. In other words, we won't be
+             using the `<=MAX', but `<MAX'. */
+          if     (d<UINT8_MAX)  { u8=d;  ptr=&u8;  *type=GAL_TYPE_UINT8;  }
+          else if(d<UINT16_MAX) { u16=d; ptr=&u16; *type=GAL_TYPE_UINT16; }
+          else if(d<UINT32_MAX) { u32=d; ptr=&u32; *type=GAL_TYPE_UINT32; }
+          else                  { u64=d; ptr=&u64; *type=GAL_TYPE_UINT64; }
         }
     }
   else

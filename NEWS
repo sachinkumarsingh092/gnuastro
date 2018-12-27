@@ -154,6 +154,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55079: Blank EPS or PDF page when width options not given.
   bug #55157: No sanity check on values given to Crop's --section.
   bug #55295: Crash when more than one collapse operator called.
+  bug #55298: Arithmetic reading 255 on command-line as blank.
 
 
 
