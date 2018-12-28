@@ -428,6 +428,9 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output)
                             comment, 0, unit);
       free(original);
     }
+
+  /* Reverse the list */
+  gal_fits_key_list_reverse(output);
 }
 
 

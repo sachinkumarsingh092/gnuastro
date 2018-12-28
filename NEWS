@@ -1,5 +1,21 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
+
+* Noteworthy changes in release X.X (library X.X.X) (YYYY-MM-DD) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+  bug #55313: Fits program writing --write values in reverse order
+
+
+
+
+
 * Noteworthy changes in release 0.8 (library 6.0.0) (2018-12-28) [stable]
 
 ** New features
