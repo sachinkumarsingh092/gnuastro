@@ -1736,20 +1736,21 @@ their useful and constructive comments and suggestions (in alphabetical
 order by family name): Valentina Abril-melgarejo, Marjan Akbari, Roland
 Bacon, Karl Berry, Leindert Boogaard, Nicolas Bouch@'e, Fernando Buitrago,
 Adrian Bunk, Rosa Calvi, Nushkia Chamba, Benjamin Clement, Nima Dehdilani,
-Antonio Diaz Diaz, Th@'er@`ese Godefroy, Madusha Gunawardhana, Stephen
-Hamer, Takashi Ichikawa, Ra@'ul Infante Sainz, Brandon Invergo, Oryna
-Ivashtenko, Aur@'elien Jarno, Lee Kelvin, Brandon Kelly, Mohammad-Reza
-Khellat, Geoffry Krouchi, Floriane Leclercq, Alan Lefor, Guillaume Mahler,
-Juan Molina Tobar, Francesco Montanari, Dmitrii Oparin, Bertrand Pain,
-William Pence, Bob Proulx, Teymoor Saifollahi, Yahya Sefidbakht, Alejandro
-Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard Stallman, Ole Streicher,
-Alfred M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric Thi@'ebaut, Ignacio
-Trujillo, David Valls-Gabaud, Aaron Watkins, Christopher Willmer, Sara
-Yousefi Taemeh, Johannes Zabl. The GNU French Translation Team is also
-managing the French version of the top Gnuastro webpage which we highly
-appreciate. Finally we should thank all the (sometimes anonymous) people in
-various online forums which patiently answered all our small (but
-important) technical questions.
+Antonio Diaz Diaz, Pierre-Alain Duc, Gaspar Galaz, Th@'er@`ese Godefroy,
+Madusha Gunawardhana, Stephen Hamer, Takashi Ichikawa, Ra@'ul Infante
+Sainz, Brandon Invergo, Oryna Ivashtenko, Aur@'elien Jarno, Lee Kelvin,
+Brandon Kelly, Mohammad-Reza Khellat, Johan Knapen, Geoffry Krouchi,
+Floriane Leclercq, Alan Lefor, Guillaume Mahler, Juan Molina Tobar,
+Francesco Montanari, Dmitrii Oparin, Bertrand Pain, William Pence, Mamta
+Pommier, Bob Proulx, Teymoor Saifollahi, Yahya Sefidbakht, Alejandro
+Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard Stallman, Michael Stein,
+Ole Streicher, Alfred M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric
+Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron Watkins,
+Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The GNU French
+Translation Team is also managing the French version of the top Gnuastro
+webpage which we highly appreciate. Finally we should thank all the
+(sometimes anonymous) people in various online forums which patiently
+answered all our small (but important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
@@ -5563,7 +5564,7 @@ $ sudo pacman -S ghostscript libtool libjpeg libtiff        \
 @url{https://www.suse.com,SUSE} with both stable and rolling releases.
 SUSE Linux Enterprise
 Server@footnote{@url{https://www.suse.com/products/server}} (SLES) is the
-commmercial offering which shares code and tools. Many additional packages
+commercial offering which shares code and tools. Many additional packages
 are offered in the Build
 Service@footnote{@url{https://build.opensuse.org}}. openSUSE and SLES use
 @command{zypper} (cli) and YaST (GUI) for managing repositories and
@@ -10575,7 +10576,7 @@ formats} or @ref{Fits}).
 
 When a subject has been imaged in multiple filters, you can feed each
 different filter into the red, green and blue channels and obtain a colored
-visualizion. In ConvertType, you can do this by giving each separate
+visualization. In ConvertType, you can do this by giving each separate
 single-channel dataset (for example in the FITS image format) as an
 argument (in the proper order), then asking for the output in a format that
 supports multi-channel datasets (for example JPEG or PDF, see the examples
@@ -10604,7 +10605,7 @@ Since grayscale is a commonly used mapping of single-valued datasets, we'll
 continue with a closer look at how it is stored. One way to represent a
 gray-scale image in different color spaces is to use the same proportions
 of the primary colors in each pixel. This is the common way most FITS image
-displayer work: for each pixel, they fill all the channels with the single
+viewers work: for each pixel, they fill all the channels with the single
 value. While this is necessary for displaying a dataset, there are
 downsides when storing/saving this type of grayscale visualization (for
 example in a paper).
@@ -10676,7 +10677,7 @@ $ cat 2darray.txt | astconvertt -oimg.fits
 @end example
 
 @noindent
-The output's file format will be interpretted from the value given to the
+The output's file format will be interpreted from the value given to the
 @option{--output} option. It can either be given on the command-line or in
 any of the configuration files (see @ref{Configuration files}). Note that
 if the output suffix is not recognized, it will default to plain text
@@ -10824,7 +10825,7 @@ Value@footnote{@url{https://en.wikipedia.org/wiki/HSL_and_HSV}} color
 map. If no values are given after the name (@option{--colormap=hsv}), the
 dataset will be scaled to 0 and 360 for hue covering the full spectrum of
 colors. However, you can limit the range of hue (to show only a special
-color range) by explicity requesting them after the name (for example
+color range) by explicitly requesting them after the name (for example
 @option{--colormap=hsv,20,240}).
 
 The mapping of a single-channel dataset to HSV is done through the Hue and
@@ -25178,7 +25179,7 @@ should be used for the @code{searchin} variables of the functions.
 Store the information of each column in a table into an array of data
 structures with @code{numcols} datasets (one data structure for each
 column). The number of rows is stored in @code{numrows}. The format of the
-table (e.g., ascii text file, or FITS binary or ASCII table) will be put in
+table (e.g., ASCII text file, or FITS binary or ASCII table) will be put in
 @code{tableformat} (macros defined above). If the @code{filename} is not a
 FITS file, then @code{hdu} will not be used (can be @code{NULL}).
 

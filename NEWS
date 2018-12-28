@@ -1,6 +1,6 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release X.X (library X.X.X) (YYYY-MM-DD) [stable]
+* Noteworthy changes in release 0.8 (library 6.0.0) (2018-12-28) [stable]
 
 ** New features
 
@@ -11,7 +11,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
    - Standard input (for example from pipes) is now available to feed input
      to all programs that accept plain text input (ConvertType, Convolve,
      Match, MakeProfiles, Statistics, Table).
-   - Updated acknowledgement statement (output of `--cite' option).
+   - Updated acknowledgment statement (output of `--cite' option).
 
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.

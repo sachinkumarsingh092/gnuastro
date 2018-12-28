@@ -72,12 +72,24 @@ all the commits needed for this release have been completed.
      $ git commit
 
 
- - [ALPHA] For alpha, we will only be distributing lzip tarballs. So first
-   remove the `tar.gz' file that was produced by `make distcheck', then
-   make the `tar.lz' that will be distributed.
+ - Update Gnulib and Autoconf archives, then remove all the non-version
+   controlled files and bootstrap Gnuastro:
 
-     $ rm *.tar.gz
-     $ make dist-lzip
+     $ ./bootstrap --copy --gnulib-srcdir=/path/to/updated/gnulib
+
+
+ - Update the version and build Gnuastro, all done with the `-p' option of
+   `./developer-build'. But we'll give it a `pure-junk' directory so it
+   doesn't actually upload the build. Then go into the build directory and
+   run `make distcheck'.
+
+     $ ./developer-build -p pure-junk
+
+
+ - [STABLE] Make sure the tarball doesn't have any problems:
+
+     $ cd build
+     $ make distcheck -j8
 
 
  - [STABLE]: After the `make distcheck' is safely finished, tag the release:
