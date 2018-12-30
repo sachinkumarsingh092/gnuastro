@@ -5,13 +5,25 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  Fits:
+   - Add "title" to group FITS keywords with `--write=/,"title name". This
+     "title" is composed of two keyword records: a blank one, followed by
+     another starting with `/' and ending in any string given to this
+     option. Classifying the keywords into contextually similar groups
+     greatly helps in visual inspection and is ecouraged.
+   - Calculate and write `CHECKSUM' and `DATASUM' integrity keywords into
+     the specified header using `--write=checksum' (for both) or
+     `--write=datasum' (only for `DATASUM').
+   --verify: confirm if the `DATASUM' and `CHECKSUM' keyword values agree
+     with the specified HDU's content and/or data.
+
 ** Removed features
 
 ** Changed features
 
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
-
+  bug #55333: Fits program crash when --write or --update have no value.
 
 
 

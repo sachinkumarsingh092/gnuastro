@@ -69,6 +69,7 @@ struct fitsparams
   gal_list_str_t   *write;     /* Full arg. for keywords to add.        */
   gal_list_str_t *history;     /* HISTORY value.                        */
   gal_list_str_t *comment;     /* COMMENT value.                        */
+  uint8_t         *verify;     /* Verify the CHECKSUM and DATASUM keys. */
   uint8_t     quitonerror;     /* Quit if an error occurs.              */
 
   /* Internal: */

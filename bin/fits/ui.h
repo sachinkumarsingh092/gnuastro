@@ -43,7 +43,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   b e f g i j l m s v x y z
+   b e f g i j l m s x y z
    A B E G J L O W X Y
  */
 enum option_keys_enum
@@ -62,11 +62,13 @@ enum option_keys_enum
   UI_KEY_COMMENT      = 'c',
   UI_KEY_HISTORY      = 'H',
   UI_KEY_DATE         = 't',
+  UI_KEY_VERIFY       = 'v',
   UI_KEY_QUITONERROR  = 'Q',
 
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
+  UI_KEY_TITLE        = 1000,
 };
 
 

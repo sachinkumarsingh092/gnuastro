@@ -225,7 +225,7 @@ ui_read_check_only_options(struct fitsparams *p)
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
-      || p->rename || p->update || p->write || p->printallkeys )
+      || p->rename || p->update || p->write || p->verify || p->printallkeys )
     {
       /* Set the mode. */
       p->mode=FITS_MODE_KEY;
@@ -315,14 +315,15 @@ ui_check_options_and_arguments(struct fitsparams *p)
    keyword, so here, we tokenize them and put them into a
    `gal_fits_list_key_t' list. */
 static void
-ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output)
+ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
+                      char *option_name)
 {
   long l, *lp;
   void *fvalue;
   double d, *dp;
   gal_list_str_t *tmp;
-  int i=0, type, vfree;
   char *c, *cf, *start, *tailptr;
+  int i=0, type, vfree, needsvalue;
   char *original, *keyname, *value, *comment, *unit;
 
   for(tmp=input; tmp!=NULL; tmp=tmp->next)
@@ -380,50 +381,74 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output)
             }
         }
       while(++c<cf);
-      if(keyname==NULL)
-        error(EXIT_FAILURE, 0, "the keyword in %s was not readable. "
-              "The general expected format is:\n"
-              "    KEYWORD,value,\"a comment string\",unit\n"
+
+      /* See if this is an option that needs a value or not.*/
+      needsvalue=1;
+      if(keyname)
+        {
+          if( !strcasecmp(keyname,"checksum")
+              || !strcasecmp(keyname,"datasum") )
+            needsvalue=0;
+        }
+
+      /* Make sure the keyname and value (if necessary) is given. */
+      if( keyname==NULL || (needsvalue && value==NULL) )
+        error(EXIT_FAILURE, 0, "`--%s' option string (%s) can't be parsed. "
+              "The general expected format is (a comment string and unit "
+              "are optional):\n\n"
+              "    --%s=KEYWORD,value,\"a comment string\",unit\n\n"
               "Any space characters around the the comma (,) characters "
-              "will be seen as part of the respective token", original);
+              "will be seen as part of the respective token.\n\n"
+              "Note that there are some exceptions (where no value is need)"
+              "please see the manual for more (`$ info astfits')",
+              option_name, original, option_name);
       /*
       printf("\n\n-%s-\n-%s-\n-%s-\n-%s-\n", keyname, value, comment, unit);
       */
 
-      /* Find the of the value: */
-      errno=0;
-      l=strtol(value, &tailptr, 10);
-      if(*tailptr=='\0' && errno==0)
-        {
-          vfree=1;
-          type=GAL_TYPE_INT64;
-          errno=0;
-          fvalue=lp=malloc(sizeof *lp);
-          if(lp==NULL)
-            error(EXIT_FAILURE, errno, "%s: %zu bytes for `lp'",
-                  __func__, sizeof *lp);
-          *lp=l;
-        }
-      else
+
+      /* Find the type of the value: */
+      if(value)
         {
           errno=0;
-          d=strtod(value, &tailptr);
+          l=strtol(value, &tailptr, 10);
           if(*tailptr=='\0' && errno==0)
             {
               vfree=1;
-              type=GAL_TYPE_FLOAT64;
+              type=GAL_TYPE_INT64;
               errno=0;
-              fvalue=dp=malloc(sizeof *dp);
-              if(dp==NULL)
-                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for "
-                      "`dp'", __func__, sizeof *dp);
-              *dp=d;
+              fvalue=lp=malloc(sizeof *lp);
+              if(lp==NULL)
+                error(EXIT_FAILURE, errno, "%s: %zu bytes for `lp'",
+                      __func__, sizeof *lp);
+              *lp=l;
             }
           else
-            { fvalue=value; type=GAL_TYPE_STRING; vfree=0; }
+            {
+              errno=0;
+              d=strtod(value, &tailptr);
+              if(*tailptr=='\0' && errno==0)
+                {
+                  vfree=1;
+                  type=GAL_TYPE_FLOAT64;
+                  errno=0;
+                  fvalue=dp=malloc(sizeof *dp);
+                  if(dp==NULL)
+                    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes "
+                          "for `dp'", __func__, sizeof *dp);
+                  *dp=d;
+                }
+              else
+                { fvalue=value; type=GAL_TYPE_STRING; vfree=0; }
+            }
+        }
+      else
+        {
+          fvalue=NULL; type=GAL_TYPE_UINT8; vfree=0;
         }
 
 
+      /* Add it to the list of keywords. */
       gal_fits_key_list_add(output, type, keyname, 0, fvalue, vfree,
                             comment, 0, unit);
       free(original);
@@ -443,8 +468,8 @@ ui_preparations(struct fitsparams *p)
   /* Fill in the key linked lists. We want to do this here so if there is
      any error in parsing the user's input, the error is reported before
      any change is made in the input file. */
-  if(p->write)  ui_fill_fits_headerll(p->write, &p->write_keys);
-  if(p->update) ui_fill_fits_headerll(p->update, &p->update_keys);
+  if(p->write)  ui_fill_fits_headerll(p->write, &p->write_keys, "write");
+  if(p->update) ui_fill_fits_headerll(p->update, &p->update_keys, "update");
 }
 
 

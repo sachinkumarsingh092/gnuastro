@@ -202,6 +202,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "verify",
+      UI_KEY_VERIFY,
+      0,
+      0,
+      "Verify the CHECKSUM and DATASUM keywords.",
+      UI_GROUP_KEYWORD,
+      &p->verify,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "printallkeys",
       UI_KEY_PRINTALLKEYS,
       0,

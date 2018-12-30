@@ -6150,9 +6150,13 @@ segmentation fault is found during @command{make check}.
 Only build and install @file{progname} along with any other program that is
 enabled in this fashion. @file{progname} is the name of the executable
 without the @file{ast}, for example @file{crop} for Crop (with the
-executable name of @file{astcrop}). If this option is called for any of the
-programs in Gnuastro, any program which is not explicitly enabled will not
-be built or installed.
+executable name of @file{astcrop}).
+
+Note that by default all the programs will be installed. This option (and
+the @option{--disable-progname} options) are only relevant when you don't
+want to install all the programs. Therefore, if this option is called for
+any of the programs in Gnuastro, any program which is not explicitly
+enabled will not be built or installed.
 
 @item --disable-progname
 @itemx --enable-progname=no
@@ -10140,6 +10144,8 @@ effect then the update operations.
 @option{--date}
 @item
 @option{--printallkeys}
+@item
+@option{--verify}
 @end enumerate
 @noindent
 All possible syntax errors will be reported before the keywords are
@@ -10269,7 +10275,89 @@ lead to undefined behavior.
 @item -w STR
 @itemx --write=STR
 Write a keyword to the header. For the possible value input formats,
-comments and units for the keyword, see the @option{--update} option above.
+comments and units for the keyword, see the @option{--update} option
+above. The special names (first string) below will cause a special
+behavior:
+
+@table @option
+
+@item /
+Write a ``title'' to the list of keywords. A title consists of one blank
+line and another which is blank for several spaces and starts with a slash
+(@key{/}). The second string given to this option is the ``title'' or
+string printed after the slash. For example with the command below you can
+add a ``title'' of `My keywords' after the existing keywords and add the
+subsequent @code{K1} and @code{K2} keywords under it (note that keyword
+names are not case sensitive).
+
+@example
+$ astfits test.fits -h1 --write=/,"My keywords" \
+          --write=k1,1.23,"My first keyword"    \
+          --write=k2,4.56,"My second keyword"
+$ astfits test.fits -h1
+[[[ ... truncated ... ]]]
+
+                      / My keywords
+K1      =                 1.23 / My first keyword
+K2      =                 4.56 / My second keyword
+END
+@end example
+
+Adding a ``title'' before each contextually separate group of header
+keywords greatly helps in readability and visual inspection of the
+keywords. So generally, when you want to add new FITS keywords, its good
+practice to also add a title before them.
+
+The reason you need to use @key{/} as the keyword name for setting a title
+is that @key{/} is the first non-white character.
+
+The title(s) is(are) written into the FITS with the same order that
+@option{--write} is called. Therefore in one run of the Fits progarm, you
+can specify many different titles (with their own keywords under them). For
+example the command below that builds on the previous example and adds
+another group of keywords named @code{A1} and @code{A2}.
+
+@example
+$ astfits test.fits -h1 --write=/,"My keywords"   \
+          --write=k1,1.23,"My first keyword"      \
+          --write=k2,4.56,"My second keyword"     \
+          --write=/,"My second group of keywords" \
+          --write=a1,7.89,"First keyword"         \
+          --write=a2,0.12,"Second keyword"
+@end example
+
+@item checksum
+@cindex CFITSIO
+@cindex @code{DATASUM}: FITS keyword
+@cindex @code{CHECKSUM}: FITS keyword
+When nothing is given afterwards, the header integrity
+keywords@footnote{Section 4.4.2.7 (page 15) of
+@url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf}}
+@code{DATASUM} and @code{CHECKSUM} will be written/updated. They are
+calculated and written by CFITSIO. They thus comply with the FITS standard
+4.0 that defines these keywords.
+
+If a value is given (for example
+@option{--write=checksum,my-own-checksum,"my checksum"}), then CFITSIO
+won't be called to calculate these two keywords and the value (as well as
+possible comment and unit) will be written just like any other
+keyword. This is generally not recommended, but necessary in special
+circumstances (where the checksum needs to be manually updated for
+example).
+
+@code{DATASUM} only depends on the data section of the HDU/extension, so it
+is not changed when you update the keywords. But @code{CHECKSUM} also
+depends on the header and will not be valid if you make any further changes
+to the header. This includes any further keyword modification options in
+the same call to the Fits program. Therefore it is recommended to write
+these keywords as the last keywords that are written/modified in the
+extension. You can use the @option{--verify} option (described below) to
+verify the values of these two keywords.
+
+@item datasum
+Similar to @option{checksum}, but only write the @code{DATASUM} keyword
+(that doesn't depend on the header keywords, only the data).
+@end table
 
 @item -H STR
 @itemx --history STR
@@ -10300,6 +10388,18 @@ command-line. If this option is called along with any of the other keyword
 editing commands, as described above, all other editing commands take
 precedence to this. Therefore, it will print the final keywords after all
 the editing has been done.
+
+@item -v
+@itemx --verify
+Verify the @code{DATASUM} and @code{CHECKSUM} data integrity keywords of
+the FITS standard. See the description under the @code{checksum} (under
+@option{--write}, above) for more on these keywords.
+
+This option will print @code{Verified} for both keywords if they can be
+verified. Otherwise, if they don't exist in the given HDU/extension, it
+will print @code{NOT-PRESENT}, and if they cannot be verified it will print
+@code{INCORRECT}. In the latter case (when the keyword values exist but
+can't be verified), the Fits program will also return with a failure.
 
 @item -Q
 @itemx --quitonerror
