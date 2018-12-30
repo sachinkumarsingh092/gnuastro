@@ -1319,14 +1319,28 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
 void
 gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
 {
-  int h, status=0;
+  size_t i;
+  int status=0;
+  char *keystart;
 
   /* Write the title. */
   gal_fits_key_write_title_in_ptr("World Coordinate System (WCS)", fptr);
 
   /* Write the keywords one by one: */
-  for(h=0;h<nkeyrec-1;++h)
-    fits_write_record(fptr, &wcsstr[h*80], &status);
+  for(i=0;i<nkeyrec;++i)
+    {
+      /* Set the start of this header. */
+      keystart=&wcsstr[i*80];
+
+      /* Write it if it isn't blank (first character is a space), or not a
+         comment (first 7 characters equal to `COMMENT'). The reason is
+         that WCSLIB adds a blank line and a `COMMENT' keyword saying its
+         own version. But Gnuastro writes the version of WCSLIB as a
+         separate keyword along with all other important software, so it is
+         redundant and just makes the keywrods hard to read by eye.*/
+      if( keystart[0]!=' ' && strncmp(keystart, "COMMENT", 7) )
+        fits_write_record(fptr, keystart, &status);
+    }
   gal_fits_io_error(status, NULL);
 }
 
