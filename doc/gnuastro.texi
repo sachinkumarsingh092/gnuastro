@@ -10401,6 +10401,10 @@ will print @code{NOT-PRESENT}, and if they cannot be verified it will print
 @code{INCORRECT}. In the latter case (when the keyword values exist but
 can't be verified), the Fits program will also return with a failure.
 
+By default this function will also print a short description of the
+@code{DATASUM} AND @code{CHECKSUM} keywords. You can supress this extra
+information with @code{--quiet} option.
+
 @item -Q
 @itemx --quitonerror
 Quit if any of the operations above are not successful. By default if

@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro-internal/timing.h>
 
 #include <gnuastro-internal/checkset.h>
 
@@ -307,21 +308,25 @@ keywords_verify(struct fitsparams *p, fitsfile **fptr)
   if( fits_verify_chksum(*fptr, &dataok, &hduok, &status) )
     gal_fits_io_error(status, NULL);
 
-  /* Print the verification result. */
-  printf("DATASUM:  %s\n", ( dataok==1
-                             ? "Verified"
-                             : ( dataok==0 ? "NOT-PRESENT" : "INCORRECT" )));
-  printf("CHECKSUM: %s\n", ( hduok==1
-                             ? "Verified"
-                             : ( hduok==0  ? "NOT-PRESENT" : "INCORRECT" )));
-
-  /* Some further information. */
+  /* Print some introduction: */
   if(!p->cp.quiet)
-    printf("\n--------\n"
-           " - DATASUM:  calculated only from the HDU/extension's data (not "
-           "keywords).\n"
-           " - CHECKSUM: calculated from the full header (data and "
-           "keywords).\n\n");
+    printf("%s\n"
+           "Checking integrity of %s (hdu %s)\n"
+           "%s"
+           "--------\n"
+           "Basic info (remove all extra info with `--quiet'):\n"
+           "    - DATASUM: verifies only the data (not keywords).\n"
+           "    - CHECKSUM: verifies data and keywords.\n"
+           "They can be added-to/updated-in an extension/HDU with:\n"
+           "    $ astfits %s -h%s --write=checksum\n"
+           "--------\n", PROGRAM_STRING, p->filename, p->cp.hdu,
+           ctime(&p->rawtime), p->filename, p->cp.hdu);
+
+  /* Print the verification result. */
+  printf("DATASUM:  %s\n",
+         dataok==1 ? "Verified" : ( dataok==0 ? "NOT-PRESENT" : "INCORRECT") );
+  printf("CHECKSUM: %s\n",
+         hduok==1  ? "Verified" : ( hduok==0  ? "NOT-PRESENT" : "INCORRECT") );
 
   /* Return failure if any of the keywords are not verified. */
   return (dataok==-1 || hduok==-1) ? EXIT_FAILURE : EXIT_SUCCESS;
