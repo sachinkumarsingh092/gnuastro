@@ -140,8 +140,8 @@ keywords_write_set_value(struct fitsparams *p, fitsfile **fptr,
         return 1;
       else
         {
-          /* Calculate and write the checksum and datasum. */
-          if( ffpcks(*fptr, &status) )
+          /* Calculate and write the `CHECKSUM' and `DATASUM' keywords. */
+          if( fits_write_chksum(*fptr, &status) )
             gal_fits_io_error(status, NULL);
 
           /* If the user just wanted datasum, remove the checksum
