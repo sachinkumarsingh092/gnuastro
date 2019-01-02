@@ -66,6 +66,8 @@ struct matchparams
   gal_data_t           *cols2;  /* Column values of second input.       */
   gal_list_str_t       *acols;  /* Output columns from first input.     */
   gal_list_str_t       *bcols;  /* Output columns from second input.    */
+  size_t                 anum;  /* Number of columns in first input.    */
+  size_t                 bnum;  /* Number of columns in second input.   */
   char               *logname;  /* Name of log file.                    */
   char              *out1name;  /* Name of first matched output.        */
   char              *out2name;  /* Name of second matched output.       */

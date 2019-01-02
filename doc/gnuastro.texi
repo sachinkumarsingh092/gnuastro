@@ -3631,21 +3631,22 @@ columns (see below for why we have requested an aperture of 0.35
 arcseconds, or less than 6 HST pixels).
 
 The @option{--outcols} is a very convenient feature in Match: you can use
-it to specify which columns from the two catalogs you want in the
-output. If the first character is an `@key{a}', the respective matched
-column (number or name, similar to Table above) in the first catalog will
-be written in the output table. When the first character is a `@key{b}',
-the respective column from the second catalog will be written in the
-output. You can use this to mix the desired matched columns from both
-catalogs in the output.
+it to specify which columns from the two catalogs you want in the output
+(merge two input catalogs into one). If the first character is an
+`@key{a}', the respective matched column (number or name, similar to Table
+above) in the first catalog will be written in the output table. When the
+first character is a `@key{b}', the respective column from the second
+catalog will be written in the output. Also, if the first character is
+followed by @code{_all}, then all the columns from the respective catalog
+will be put in the output.
 
 @example
 $ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
            --hdu=CLUMPS                 --hdu2=CLUMPS              \
            --ccol1=RA,DEC               --ccol2=RA,DEC             \
-           --aperture=0.35/3600                                    \
-           --outcols=a1,a2,aRA,aDEC,aMAGNITUDE,aSN,bMAGNITUDE,bSN  \
-           --log --output=cat/xdf-f160w-f105w.fits
+           --aperture=0.35/3600 --log                              \
+           --outcols=a_all,bMAGNITUDE,bSN                          \
+           --output=cat/xdf-f160w-f105w.fits
 @end example
 
 By default (when @option{--quiet} isn't called), the Match program will
@@ -19548,10 +19549,10 @@ default, the output file(s) will be the re-arranged input tables such that
 the rows match each other: both output tables will have the same number of
 rows which are matched with each other. If @option{--outcols} is called,
 the output is a single table with rows chosen from either of the two inputs
-in any order, see the description of @option{--outcols}. If the
-@option{--logasoutput} option is called, the output will be a single table
-with the contents of the log file, see below. If no matches are found, the
-columns of the output table(s) will have zero rows (with proper meta-data).
+in any order. If the @option{--logasoutput} option is called, the output
+will be a single table with the contents of the log file, see below. If no
+matches are found, the columns of the output table(s) will have zero rows
+(with proper meta-data).
 
 If no output file name is given with the @option{--output} option, then
 automatic output @ref{Automatic output} will be used to determine the
@@ -19594,23 +19595,38 @@ FITS file, this option's value is ignored. For the first input, the common
 option @option{--hdu} must be used.
 
 @item --outcols=STR
-Columns from both inputs to write into a single matched table output. The
-value to @code{--outcols} must be a comma-separated list of strings, for
-example @option{--outcols=a1,bRA,bDEC}. The first character of each string
-specifies the input catalog: @option{a} for the first and @option{b} for
-the second. The rest of the characters of the string will be directly used
-to identify the proper column(s) in the respective table. See
-@ref{Selecting table columns} for how columns can be specified in
-Gnuastro. In this example, the output will have three columns: the first
-column of the first input and the @option{RA} and @option{DEC} columns of
-the second input.
+Columns (from both inputs) to write into a single matched table output. The
+value to @code{--outcols} must be a comma-separated list of strings. The
+first character of each string specifies the input catalog: @option{a} for
+the first and @option{b} for the second. The rest of the characters of the
+string will be directly used to identify the proper column(s) in the
+respective table. See @ref{Selecting table columns} for how columns can be
+specified in Gnuastro.
+
+For example the output of @option{--outcols=a1,bRA,bDEC} will have three
+columns: the first column of the first input, along with the @option{RA}
+and @option{DEC} columns of the second input.
+
+If the string after @option{a} or @option{b} is @option{_all}, then all the
+columns of the respective input file will be written in the output. For
+example the command below will print all the input columns from the first
+catalog along with the 5th column from the second:
+
+@example
+$ astmatch a.fits b.fits --outcols=a_all,b5
+@end example
+
+@code{_all} can be used multiple times, possibly on both inputs. Tip: if an
+input's column is called @code{_all} (an unlikely name!) and you don't want
+all the columns from that table the output, use its column number to avoid
+confusion.
 
 Another example is given in the one-line examples above. Compared to the
-default case (where two tables with all their columns) are printed, using
-this option is much faster: it will only read and re-arrange the necessary
-columns and it will write a single output table. Combined with regular
-expressions in large tables, this can be a very powerful and convenient way
-to retrieve your desired information and do the match at the same time.
+default case (where two tables with all their columns) are saved
+separately, using this option is much faster: it will only read and
+re-arrange the necessary columns and it will write a single output
+table. Combined with regular expressions in large tables, this can be a
+very powerful and convenient way to merge various tables into one.
 
 @item -l
 @itemx --logasoutput
@@ -25316,7 +25332,7 @@ should be used for the @code{searchin} variables of the functions.
 @end deffn
 
 @deftypefun {gal_data_t *} gal_table_info (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*lines}, size_t @code{*numcols}, size_t @code{*numrows}, int @code{*tableformat})
-Store the information of each column in a table into an array of data
+Store the information of each column of a table into an array of data
 structures with @code{numcols} datasets (one data structure for each
 column). The number of rows is stored in @code{numrows}. The format of the
 table (e.g., ASCII text file, or FITS binary or ASCII table) will be put in

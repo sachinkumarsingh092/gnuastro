@@ -417,7 +417,7 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
     "Please give more specific values to `--ccol1' (column "
     "numberes are the only identifiers guaranteed to be unique).";
 
-  /* Read the columns. Note that the first input's name can be NULL (it the
+  /* Read the columns. Note that the first input's name can be NULL (if the
      user intended to use the standrad input). Also note that this function
      is called more than one time, so if the Standard input is already read
      once, we don't want to write a blank list over it (the Standard input

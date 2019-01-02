@@ -39,6 +39,62 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Number of columns in a file. */
+static gal_list_str_t *
+match_add_all_cols(char *filename, char *extname, gal_list_str_t *stdinlines,
+                   gal_list_str_t *incols, size_t *num)
+{
+  char *tstr;
+  int tableformat;
+  gal_data_t *colinfo=NULL;
+  gal_list_str_t *tmp, *finalcols=NULL;
+  size_t i, numrows, numcols=GAL_BLANK_SIZE_T;
+
+  /* Go over all the given input columns. */
+  for(tmp=incols; tmp!=NULL; tmp=tmp->next)
+    {
+      if(!strcmp(tmp->v,"_all"))
+        {
+          /* Read all the column information (if it hasn't been read until
+             now). */
+          if( numcols == GAL_BLANK_SIZE_T )
+            {
+              colinfo=gal_table_info(filename, extname,
+                                     filename ? NULL : stdinlines, &numcols,
+                                     &numrows, &tableformat);
+              gal_data_array_free(colinfo, numcols, 1);
+            }
+
+          /* Add each column number to the list of columns. */
+          for(i=0;i<numcols;++i)
+            {
+              errno=0;
+              if( asprintf(&tstr, "%zu", i+1)<0 )
+                error(EXIT_FAILURE, errno, "asprintf allocation");
+              gal_list_str_add(&finalcols, tstr, 0);
+            }
+        }
+      else
+        gal_list_str_add(&finalcols, tmp->v, 1);
+    }
+
+  /* If a new list of columns is ready, re-order tham and write
+     them in. Note that there may be multiple `_all' terms, so we
+     need to do this after parsing all the requested columns. */
+  gal_list_str_reverse(&finalcols);
+
+  /* For a check.
+  gal_list_str_print(finalcols);
+  exit(1);
+  */
+
+  /* Clean up and return. */
+  *num=numcols;
+  return finalcols;
+}
+
+
+
 
 
 /* Read the catalog in the given file and use the given permutation to keep
@@ -48,24 +104,53 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
                              size_t nummatched, int f1s2,
                              size_t **numcolmatch)
 {
+  int hasall=0;
   size_t origsize;
   gal_data_t *tmp, *cat;
+  gal_list_str_t *cols, *tcol;
   gal_list_void_t *arrays=NULL;
 
-  char *hdu            = (f1s2==1) ? p->cp.hdu     : p->hdu2;
-  gal_list_str_t *cols = (f1s2==1) ? p->acols      : p->bcols;
-  char *extname        = (f1s2==1) ? "INPUT_1"     : "INPUT_2";
-  char *outname        = (f1s2==1) ? p->out1name   : p->out2name;
-  char *filename       = (f1s2==1) ? p->input1name : p->input2name;
+  char *hdu              = (f1s2==1) ? p->cp.hdu     : p->hdu2;
+  gal_list_str_t *incols = (f1s2==1) ? p->acols      : p->bcols;
+  size_t *numcols        = (f1s2==1) ? &p->anum      : &p->bnum;
+  char *extname          = (f1s2==1) ? "INPUT_1"     : "INPUT_2";
+  char *outname          = (f1s2==1) ? p->out1name   : p->out2name;
+  char *filename         = (f1s2==1) ? p->input1name : p->input2name;
 
-  /* When the output contains columns from both inputs, we need to keep the
-     number of columns matched against each column identifier. */
+  /* If special columns are requested. */
   if(p->outcols)
-    *numcolmatch=gal_pointer_allocate(GAL_TYPE_SIZE_T,
-                                      gal_list_str_number(cols), 0,
-                                      __func__, "numcolmatch");
+    {
+      /* As a special situation, the user can ask to incude all of the
+         columns from one of the inputs with the special `_all' name. So,
+         we'll check if that is the case and write in all the columns where
+         they are requested.*/
+      for(tcol=incols; tcol!=NULL; tcol=tcol->next)
+        if(!strcmp(tcol->v,"_all")) { hasall=1; break; }
 
-  /* Read the full table. */
+      /* If atleast one instance of `_all' is present, then reset the list
+         of columns to include in output. */
+      if(hasall)
+        {
+          cols=match_add_all_cols(filename, hdu, p->stdinlines, incols,
+                                  numcols);
+          if(f1s2==1) { gal_list_str_free(p->acols, 0); p->acols=cols; }
+          else        { gal_list_str_free(p->bcols, 0); p->bcols=cols; }
+        }
+      else
+        cols=incols;
+
+
+      /* When the output contains columns from both inputs, we need to keep
+         the number of columns matched against each column identifier. */
+      *numcolmatch=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                        gal_list_str_number(cols), 0,
+                                        __func__, "numcolmatch");
+    }
+  else cols=incols;
+
+
+  /* Read the full table and free the `cols' array if it was allocated
+     here. */
   cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
                      p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
                      *numcolmatch);
@@ -99,7 +184,6 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
         else
           tmp->size=tmp->dsize[0]=nummatched;
       }
-
   /* If no match was found (`permutation==NULL'), and the matched columns
      are requested, empty all the columns that are to be written (only
      keeping the meta-data). */
@@ -158,7 +242,7 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
                         size_t *acolmatch, size_t *bcolmatch)
 {
   gal_data_t *cat=NULL;
-  size_t i, j, ac=0, bc=0;
+  size_t i, j, k, ac=0, bc=0, npop;
   char **strarr=p->outcols->array;
 
   /* Go over the initial list of strings. */
@@ -167,13 +251,21 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
       {
       case 'a':
         for(j=0;j<acolmatch[ac];++j)
-          gal_list_data_add(&cat, gal_list_data_pop(&a));
+          {
+            npop = strcmp(strarr[i]+1,"_all") ? 1 : p->anum;
+            for(k=0;k<npop;++k)
+              gal_list_data_add(&cat, gal_list_data_pop(&a));
+          }
         ac++;
         break;
 
       case 'b':
         for(j=0;j<bcolmatch[bc];++j)
-          gal_list_data_add(&cat, gal_list_data_pop(&b));
+          {
+            npop = strcmp(strarr[i]+1,"_all") ? 1 : p->bnum;
+            for(k=0;k<npop;++k)
+              gal_list_data_add(&cat, gal_list_data_pop(&b));
+          }
         bc++;
         break;
 
@@ -182,6 +274,13 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
               "problem. the value to strarr[%zu][0] (%c) is not recognized",
               PACKAGE_BUGREPORT, i, strarr[i][0]);
       }
+
+  /* A small sanity check. */
+  if(a || b)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the problem. "
+          "The two `a' and `b' arrays must be NULL by this point: "
+          "`a' %s NULL, `b' %s NULL", __func__, a?"is not":"is",
+          b?"is not":"is");
 
   /* Reverse the table and write it out. */
   gal_list_data_reverse(&cat);

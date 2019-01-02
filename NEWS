@@ -20,6 +20,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      FITS HDU/extension into another (possibly in another file).
    --outhdu: The name/number of the output HDU (for `--copykeys').
 
+  Match:
+   - All the columns from one of the input catalogs can now be merged with
+     any of the columns of the second using the special `_all' name of
+     `--outcols'. For example the output of `--outcols=a_all,b5' will
+     contain all the columns from the first input and the 5th column of the
+     second input. This greatly simplifies the mergining of different table
+     columns into one.
+
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
