@@ -10146,6 +10146,8 @@ effect then the update operations.
 @option{--printallkeys}
 @item
 @option{--verify}
+@item
+@option{--copykeys}
 @end enumerate
 @noindent
 All possible syntax errors will be reported before the keywords are
@@ -10404,6 +10406,30 @@ can't be verified), the Fits program will also return with a failure.
 By default this function will also print a short description of the
 @code{DATASUM} AND @code{CHECKSUM} keywords. You can supress this extra
 information with @code{--quiet} option.
+
+@item --copykeys=INT:INT
+Copy the input's keyword records in the given range (inclusive) to the
+output HDU (specified with the @option{--output} and @option{--outhdu}
+options, for the filename and HDU/extension respectively).
+
+The given string to this option must be two integers separated by a colon
+(@key{:}). The first integer must be positive (counting of the keyword
+records starts from 1). The second integer may be negative (zero is not
+acceptable) or an integer larger than the first.
+
+A negative second integer means counting from the end. So @code{-1} is the
+last copy-able keyword (not including the @code{END} keyword).
+
+To see the header keywords of the input with a number before them, you can
+pipe the output of the FITS program (when it prints all the keywords in an
+extension) into the @command{cat} program like below:
+
+@example
+$ astfits input.fits -h1 | cat -n
+@end example
+
+@item --outhdu
+The HDU/extension to write the output keywords of @option{--copykeys}.
 
 @item -Q
 @itemx --quitonerror
@@ -23568,6 +23594,16 @@ Blank value for an unsigned, 64-bit integer.
 
 @deffn {Global integer}  GAL_BLANK_INT64
 Blank value for a signed, 64-bit integer.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_LONG
+Blank value for @code{long} type (@code{int32_t} or @code{int64_t} in
+32-bit or 64-bit systems).
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_ULONG
+Blank value for @code{unsigned long} type (@code{uint32_t} or
+@code{uint64_t} in 32-bit or 64-bit systems).
 @end deffn
 
 @deffn {Global integer}  GAL_BLANK_SIZE_T

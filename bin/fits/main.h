@@ -56,6 +56,7 @@ struct fitsparams
   struct gal_options_common_params cp;  /* Common parameters.           */
   int  hdu_in_commandline;     /* HDU wasn't given in config. file.     */
   char          *filename;     /* Name of input file.                   */
+  char            *outhdu;     /* HDU of output (only when necessary).  */
   gal_list_str_t  *remove;     /* Remove extensions from a file.        */
   gal_list_str_t    *copy;     /* Copy extensions to output.            */
   gal_list_str_t     *cut;     /* Copy ext. to output and remove.       */
@@ -70,10 +71,12 @@ struct fitsparams
   gal_list_str_t *history;     /* HISTORY value.                        */
   gal_list_str_t *comment;     /* COMMENT value.                        */
   uint8_t         *verify;     /* Verify the CHECKSUM and DATASUM keys. */
+  char          *copykeys;     /* Range of keywords to copy in output.  */
   uint8_t     quitonerror;     /* Quit if an error occurs.              */
 
   /* Internal: */
   int                         mode;  /* Operating on HDUs or keywords.  */
+  long            copykeysrange[2];  /* Start and end of copy.          */
   gal_fits_list_key_t  *write_keys;  /* Keys to write in the header.    */
   gal_fits_list_key_t *update_keys;  /* Keys to update in the header.   */
   time_t                   rawtime;  /* Starting time of the program.   */

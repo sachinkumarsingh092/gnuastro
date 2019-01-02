@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Array of acceptable options. */
 struct argp_option program_options[] =
   {
-
+    /* Input options */
     {
       0, 0, 0, 0,
       "HDUs (extensions):",
@@ -227,9 +227,42 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "copykeys",
+      UI_KEY_COPYKEYS,
+      "STR",
+      0,
+      "Range of keywords to copy to output HDU.",
+      UI_GROUP_KEYWORD,
+      &p->copykeys,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
+
+
+    /* Output options. */
+    {
+      "outhdu",
+      UI_KEY_OUTHDU,
+      "STR",
+      0,
+      "HDU/extension in output for --copykeys.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->outhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+    /* Operating mode options. */
     {
       "quitonerror",
       UI_KEY_QUITONERROR,

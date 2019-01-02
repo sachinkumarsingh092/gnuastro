@@ -98,7 +98,7 @@ onecrop_parse_section(struct cropparams *p, size_t *dsize,
     }
 
 
-  /* Parse the string. */
+  /* Parse the string: `forl': "first-or-last". */
   while(*pt!='\0')
     {
       add=0;

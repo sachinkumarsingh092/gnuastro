@@ -217,6 +217,100 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+static void
+ui_check_copykeys(struct fitsparams *p)
+{
+  long read;
+  char *tailptr;
+  size_t group=0;
+  char forl='f', *pt=p->copykeys;
+
+  /* Initialize the values. */
+  p->copykeysrange[0]=p->copykeysrange[1]=GAL_BLANK_LONG;
+
+  /* Parse the string: `forl': "first-or-last". */
+  while(*pt!='\0')
+    {
+      switch(*pt)
+        {
+        case ':':
+          forl='l';
+          ++pt;
+          break;
+        case '.':
+          error(EXIT_FAILURE, 0, "the numbers in the argument to "
+                "`--section` (`-s') have to be integers. You input "
+                "includes a float number: %s", p->copykeys);
+          break;
+        case ' ': case '\t':
+          ++pt;
+          break;
+
+        /* Numerical characters signify the start of a number, so we don't
+           need to increment the pointer and can just break out. */
+        case '0': case '1': case '2': case '3': case '4': case '5':
+        case '6': case '7': case '8': case '9': case '-':
+          break;
+
+        /* An un-recognized character should crash the program. */
+        case ',':
+          ++group;
+          forl='f';
+          ++pt;
+
+          /* For the time being, we just support one group. So we are
+             commenting the break here for it to follow onto default.
+          break;
+          */
+        default:
+          error(EXIT_FAILURE, 0, "value to `--copykeys' must only contain "
+                "integer numbers and these special characters between them: "
+                "`,', `:', `*' when necessary. But it is `%s' (the first "
+                "non-acceptable character is `%c').\n", p->copykeys, *pt);
+          break;
+        }
+
+      /* Read the number: */
+      read=strtol(pt, &tailptr, 0);
+
+      /* Check the progress.
+      printf("\n\n------\n%c: %ld (%s)\n", *pt, read, tailptr);
+      */
+
+      /* Make sure if a number was read at all? */
+      if(tailptr==pt) continue;   /* No number was read!                 */
+
+      /* Put it in the correct place. */
+      p->copykeysrange[ forl=='f' ? 0 : 1 ]=read;
+      pt=tailptr;
+    }
+
+  /* Basic sanity checks. */
+  if( p->copykeysrange[1]==GAL_BLANK_LONG )
+    error(EXIT_FAILURE, 0, "no ending keyword number given to `--copykeys'. "
+          "If you want to copy all the keywords after a certain one "
+          "(without worrying about how many there are), you can use `-1'.\n\n"
+          "For example if you want to copy all the keywords after the 20th, "
+          "you can use `--copykeys=20,-1'. Generally, you can use negative "
+          "numbers for the last keyword number to count from the end.");
+  if( p->copykeysrange[0]<=0 )
+    error(EXIT_FAILURE, 0, "the first number given to `--copykeys' must be "
+          "positive");
+  if( p->copykeysrange[1]>=0 && p->copykeysrange[0]>=p->copykeysrange[1] )
+    error(EXIT_FAILURE, 0, "the first number (%ld) given to `--copykeys' "
+          "must be smaller than the second (%ld)", p->copykeysrange[0],
+          p->copykeysrange[1]);
+
+  /* For a check:
+  printf("copykeys: %ld, %ld\n", p->copykeysrange[0], p->copykeysrange[1]);
+  exit(0);
+  */
+}
+
+
+
+
+
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
@@ -225,7 +319,8 @@ ui_read_check_only_options(struct fitsparams *p)
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
-      || p->rename || p->update || p->write || p->verify || p->printallkeys )
+      || p->rename || p->update || p->write || p->verify || p->printallkeys
+      || p->copykeys )
     {
       /* Set the mode. */
       p->mode=FITS_MODE_KEY;
@@ -235,6 +330,10 @@ ui_read_check_only_options(struct fitsparams *p)
         error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for keywrod "
               "related options but none was defined. Please use the "
               "`--hdu' (or `-h') option to select one");
+
+      /* If Copy keys has been given, read it and make sure its setup. */
+      if(p->copykeys)
+        ui_check_copykeys(p);
     }
 
   /* Same for the extension-related options */

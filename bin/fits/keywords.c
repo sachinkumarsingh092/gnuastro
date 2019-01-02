@@ -324,13 +324,75 @@ keywords_verify(struct fitsparams *p, fitsfile **fptr)
 
   /* Print the verification result. */
   printf("DATASUM:  %s\n",
-         dataok==1 ? "Verified" : ( dataok==0 ? "NOT-PRESENT" : "INCORRECT") );
+         dataok==1 ? "Verified" : (dataok==0 ? "NOT-PRESENT" : "INCORRECT"));
   printf("CHECKSUM: %s\n",
-         hduok==1  ? "Verified" : ( hduok==0  ? "NOT-PRESENT" : "INCORRECT") );
+         hduok==1  ? "Verified" : (hduok==0  ? "NOT-PRESENT" : "INCORRECT"));
 
   /* Return failure if any of the keywords are not verified. */
   return (dataok==-1 || hduok==-1) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
+
+
+
+
+
+
+static void
+keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
+{
+  size_t i;
+  int status=0;
+  long initial;
+  fitsfile *fptr;
+
+  /* Initial sanity check. Since `numinkeys' includes `END' (counting from
+     1, as we do here), the first keyword must not be larger OR EQUAL to
+     `numinkeys'. */
+  if(p->copykeysrange[0]>=numinkeys)
+    error(EXIT_FAILURE, 0, "%s (hdu %s): first keyword number give to "
+          "`--copykeys' (%ld) is larger than the number of keywords in this "
+          "header (%ld, including the `END' keyword)", p->filename, p->cp.hdu,
+          p->copykeysrange[0], numinkeys);
+
+  /* If the user wanted to count from the end (by giving a negative value),
+     then do that. */
+  if(p->copykeysrange[1]<0)
+    {
+      /* Set the last keyword requested. */
+      initial=p->copykeysrange[1];
+      p->copykeysrange[1] += numinkeys;
+
+      /* Sanity check. */
+      if(p->copykeysrange[0]>=p->copykeysrange[1])
+        error(EXIT_FAILURE, 0, "%s (hdu %s): the last keyword given to "
+              "`--copykeys' (%ld, or %ld after counting from the bottom) "
+              "is earlier than the first (%ld)", p->filename, p->cp.hdu,
+              initial, p->copykeysrange[1], p->copykeysrange[0]);
+    }
+
+  /* Final sanity check (on range limit). */
+  if(p->copykeysrange[1]>=numinkeys)
+    error(EXIT_FAILURE, 0, "%s (hdu %s): second keyword number give to "
+          "`--copykeys' (%ld) is larger than the number of keywords in this "
+          "header (%ld, including the `END' keyword)", p->filename, p->cp.hdu,
+          p->copykeysrange[1], numinkeys);
+
+
+  /* Open the output HDU. */
+  fptr=gal_fits_hdu_open(p->cp.output, p->outhdu, READWRITE);
+
+
+  /* Copy the requested headers into the output. */
+  for(i=p->copykeysrange[0]-1; i<=p->copykeysrange[1]-1; ++i)
+    if( fits_write_record(fptr, &inkeys[i*80], &status ) )
+      gal_fits_io_error(status, NULL);
+
+  /* Close the output FITS file. */
+  status=0;
+  if(fits_close_file(fptr, &status))
+    gal_fits_io_error(status, NULL);
+}
+
 
 
 
@@ -365,10 +427,11 @@ keywords_verify(struct fitsparams *p, fitsfile **fptr)
 int
 keywords(struct fitsparams *p)
 {
-  int status=0;
+  char *inkeys=NULL;
   int r=EXIT_SUCCESS;
   fitsfile *fptr=NULL;
   gal_list_str_t *tstll;
+  int status=0, numinkeys;
 
 
   /* Delete the requested keywords. */
@@ -479,10 +542,29 @@ keywords(struct fitsparams *p)
     }
 
 
+  /* If a range of keywords must be copied, get all the keywords as a
+     single string. */
+  if(p->copykeys)
+    {
+      keywords_open(p, &fptr, READONLY);
+      if( fits_convert_hdr2str(fptr, 0, NULL, 0, &inkeys, &numinkeys,
+                               &status) )
+        gal_fits_io_error(status, NULL);
+      status=0;
+    }
+
+
   /* Close the FITS file */
   if(fits_close_file(fptr, &status))
     gal_fits_io_error(status, NULL);
 
+
+  /* Write desired keywords into output. */
+  if(p->copykeys)
+    {
+      keywords_copykeys(p, inkeys, numinkeys);
+      free(inkeys);
+    }
 
   /* Return. */
   return r;
