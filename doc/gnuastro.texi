@@ -28293,7 +28293,46 @@ difference between the third and fourth, divided by the fifth.
 
 @end deftypefun
 
+@deftypefun {gal_data_t *} gal_statistics_outlier_flat_cfp (gal_data_t @code{*input}, size_t @code{dist}, float @code{thresh}, float @code{width}, int @code{inplace}, int @code{quiet}, size_t @code{*index})
 
+Return the first element in the given dataset where the cumulative
+frequency plot first becomes flat (below a given threshold on the slope)
+for a sufficient width (percentage of whole dataset's range). The returned
+dataset only has one element (with the same type as the input). If
+@code{index!=NULL}, the index (counting from zero, after sorting dataset
+and removing any blanks) is written in the space that @code{index} points
+to. If no sufficiently flat portion is found, the returned pointer will be
+@code{NULL}.
+
+The operation of this function can be best visualized using the cumulative
+frequency plot (CFP, see @ref{Histogram and Cumulative Frequency
+Plot}). Imagine setting the horizontal axis of the input's CFP to a range
+of 0 to 100, and finding the first part where its slope is
+constantly/contiguously flat for a certain fraction/width of the whole
+dataset's range. Below we'll descibe this in more detail.
+
+This function will first remove all the blank elements and sort the
+remaining elements. If @code{inplace} is non-zero this step will be done in
+place: re-organizing/permuting the input dataset. Using @code{inplace} can
+result in faster processing and less RAM consumption, but only when the
+input dataset is no longer needed in its original permutation.
+
+The input dataset will then be internally scaled from 0 to 100 (so
+@code{thresh} and @code{width} can be in units of percent). For each
+element, this function will then estimate the slope of the cumulative
+distribution function by using the @code{dist} elements before and after
+it. In other words, if @mymath{d} is the value of @code{dist}, then the
+slope over the @mymath{i}'th element (@mymath{a_i}) is estimated using this
+formula: @mymath{1/(a_{i+d}-a_{i-d})}. Therefore, when this slope is larger
+than 1, the distance between the two checked points is smaller than
+@mymath{1\%} of the dataset's range.
+
+All points that have a slope less than @code{thresh} are then marked. The
+first (parsing from the smallest to the largest values) contiguous patch of
+marked elements that is larger than @code{width} wide (in units of
+percentage of the dataset's range) will be considered as the boundary
+region of outliers and the first element in that patch will be returned.
+@end deftypefun
 
 
 @node Binary datasets, Labeled datasets, Statistical operations, Gnuastro library

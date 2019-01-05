@@ -31,6 +31,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
+    gal_statistics_outlier_cumulative: Uses flatness of the cumulative
+       distribution to find outliers.
 
 ** Removed features
 

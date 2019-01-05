@@ -2192,3 +2192,92 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
   if(nbs!=input) gal_data_free(nbs);
   return out;
 }
+
+
+
+
+
+
+/* Find the outliers using the first flat portion of the cumulative
+   frequency plot. A good value for window and thresh are 5 and 1.0. */
+#define OUTLIER_FLAT_CFP_BYTYPE(IT) {                                   \
+    IT m, n, *a=nbs->array, *p=a+dist, *pp=a+nbs->size-dist;            \
+    min=a[0]; max=a[nbs->size-1];                                       \
+    do                                                                  \
+      {                                                                 \
+        m=( *(p-dist)-min ) / (max-min) * 100.0f;                       \
+        n=( *(p+dist)-min ) / (max-min) * 100.0f;                       \
+        check=1/(n-m);                                                  \
+        if(!quiet) printf("%-6zu%-15g%-15g\n", p-a, (float)(*p), check); \
+        if( check<thresh && start==GAL_BLANK_SIZE_T )                   \
+          { start=p-a; if(!quiet) printf("\t---start\n"); }             \
+        if( check>thresh && start!=GAL_BLANK_SIZE_T )                   \
+          {                                                             \
+             widthcheck=100.0 * (double)(*p-a[start])/(max-min);        \
+             if(!quiet) printf("\t----end: %f\n", widthcheck);          \
+             if( widthcheck > width ) { flatind=start; break; }         \
+             start=GAL_BLANK_SIZE_T;                                    \
+          }                                                             \
+      }                                                                 \
+    while(++p<pp);                                                      \
+    if( pp==p && start!=GAL_BLANK_SIZE_T )                              \
+      {                                                                 \
+        widthcheck=100.0 * (double)(*(p-1)-a[start])/(max-min);         \
+        if(!quiet) printf("\t----end: %f\n", widthcheck);               \
+        if( widthcheck > width ) flatind=start;                         \
+      }                                                                 \
+  }
+
+gal_data_t *
+gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t dist,
+                                float thresh, float width, int inplace,
+                                int quiet, size_t *index)
+{
+  gal_data_t  *nbs, *out=NULL;
+  double min, max, check, widthcheck;
+  size_t one=1, flatind=GAL_BLANK_SIZE_T, start=GAL_BLANK_SIZE_T;
+
+  /* Sanity checks. */
+  if(thresh<=0 || width<=0)
+    error(EXIT_FAILURE, 0, "%s: the values to `thresh' (%g) and `width' (%g) "
+          "must be positive", __func__, thresh, width);
+  if(width==0)
+    error(EXIT_FAILURE, 0, "%s: `dist' (%zu) cannot be zero", __func__,
+          dist);
+
+  /* Remove all blanks and sort the dataset. */
+  nbs=gal_statistics_no_blank_sorted(input, inplace);
+
+  /* Find the index where the distribution becomes sufficiently flat. */
+  switch(nbs->type)
+    {
+    case GAL_TYPE_UINT8:   OUTLIER_FLAT_CFP_BYTYPE( uint8_t  ); break;
+    case GAL_TYPE_INT8:    OUTLIER_FLAT_CFP_BYTYPE( int8_t   ); break;
+    case GAL_TYPE_UINT16:  OUTLIER_FLAT_CFP_BYTYPE( uint16_t ); break;
+    case GAL_TYPE_INT16:   OUTLIER_FLAT_CFP_BYTYPE( int16_t  ); break;
+    case GAL_TYPE_UINT32:  OUTLIER_FLAT_CFP_BYTYPE( uint32_t ); break;
+    case GAL_TYPE_INT32:   OUTLIER_FLAT_CFP_BYTYPE( int32_t  ); break;
+    case GAL_TYPE_UINT64:  OUTLIER_FLAT_CFP_BYTYPE( uint64_t ); break;
+    case GAL_TYPE_INT64:   OUTLIER_FLAT_CFP_BYTYPE( int64_t  ); break;
+    case GAL_TYPE_FLOAT32: OUTLIER_FLAT_CFP_BYTYPE( float    ); break;
+    case GAL_TYPE_FLOAT64: OUTLIER_FLAT_CFP_BYTYPE( double   ); break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, nbs->type);
+    }
+
+  /* Write the output dataset. */
+  if(flatind!=GAL_BLANK_SIZE_T)
+    {
+      out=gal_data_alloc(NULL, input->type, 1, &one, NULL, 0, -1,
+                         NULL, NULL, NULL);
+      memcpy(out->array,
+             gal_pointer_increment(nbs->array, flatind, nbs->type),
+             gal_type_sizeof(nbs->type));
+    }
+
+  /* Clean up and return. */
+  if(nbs!=input) gal_data_free(nbs);
+  if(index) *index=flatind;
+  return out;
+}

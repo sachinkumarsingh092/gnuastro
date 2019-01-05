@@ -178,6 +178,11 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
                                 float sigma, float sigclip_multip,
                                 float sigclip_param, int inplace, int quiet);
 
+gal_data_t *
+gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t dist, float thresh,
+                                float width, int inplace, int quiet,
+                                size_t *index);
+
 
 
 __END_C_DECLS    /* From C++ preparations */
