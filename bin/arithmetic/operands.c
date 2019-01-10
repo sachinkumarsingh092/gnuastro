@@ -150,6 +150,12 @@ operands_set_name(struct arithmeticparams *p, char *token)
       {
         tofree=operands_remove_name(p, varname);
         gal_data_free(tofree);
+
+        /* IMPORTANT: we MUST break here! `tmp' does't point to the right
+           place any more. We can define a `prev' node and modify it on
+           every attempt, but since there is only one dataset with a given
+           name, that is redundant and will just make the program slow. */
+        break;
       }
 
   /* Pop the top operand, then add it to the list of named datasets, but

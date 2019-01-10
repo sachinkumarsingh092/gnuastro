@@ -41,6 +41,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
   bug #55333: Fits program crash when --write or --update have no value.
+  bug #55439: Arithmetic segmentation fault when reusing dataset name.
 
 
 
