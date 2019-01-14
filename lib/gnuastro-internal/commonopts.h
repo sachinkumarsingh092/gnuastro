@@ -395,6 +395,20 @@ struct argp_option gal_commonopts_options[] =
       gal_options_call_parse_config_file
     },
     {
+      "checkconfig",
+      GAL_OPTIONS_KEY_CHECKCONFIG,
+      0,
+      0,
+      "List all config files and variables read.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->checkconfig,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_check_config
+    },
+    {
       "setdirconf",
       GAL_OPTIONS_KEY_SETDIRCONF,
       0,

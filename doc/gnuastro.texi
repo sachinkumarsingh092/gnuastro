@@ -7918,11 +7918,26 @@ command-line or in the configuration files. In any case, it will be
 immediately read (before parsing the rest of the options on the
 command-line, or lines in a configuration file).
 
-Note that by definition, later options on the command-line still take
-precedence over those in these in any configuration file, including the
-file(s) given to this option. Also see @option{--lastconfig} and
-@option{--onlyversion} on how this option can be used for reproducible
-results.
+Note that by definition, options on the command-line still take precedence
+over those in these in any configuration file, including the file(s) given
+to this option if they are called before it. Also see @option{--lastconfig}
+and @option{--onlyversion} on how this option can be used for reproducible
+results. You can use @option{--checkconfig} (below) to check/confirm the
+parsing of configuration files.
+
+@item --checkconfig
+Print options and their values, within the command-line or configuration
+files, as they are parsed (see @ref{Configuration file precedence}). If an
+option has already been set, or is ignored by the program, this option will
+also inform you with special values like @code{--ALREADY-SET--}. Only
+options that are parsed after this option are printed, so to see the
+parsing of all input options, it is recommended to put this option
+immediately after the program name before any other options.
+
+@cindex Debug
+This is a very good option to confirm where the value of each option is has
+been defined in scenarios where there are multiple configuration files (for
+debugging).
 
 @item -S
 @itemx --setdirconf
@@ -8258,21 +8273,8 @@ The option values in all the programs of Gnuastro will be filled in the
 following order. If an option only takes one value which is given in an
 earlier step, any value for that option in a later step will be
 ignored. Note that if the @option{lastconfig} option is specified in any
-step below, all later files will be ignored (see @ref{Operating mode
-options}). The basic idea behind setting this progressive state of checking
-for parameter values is that separate users of a computer or separate
-folders in a user's file system might need different values for some
-parameters.
-
-In each step, there can also be a configuration file containing the common
-options in all the programs: @file{gnuastro.conf} (see @ref{Common
-options}). If options specific to one program are specified in this file,
-there will be unrecognized option errors, or unexpected behavior if the
-option has different behavior in another program. On the other hand, there
-is no problem with @file{astprogname.conf} containing common
-options@footnote{As an example, the @option{--setdirconf} and
-@option{--setusrconf} options will also write the common options they have
-read in their produced @file{astprogname.conf}.}.
+step below, no other configuration files will be parsed (see @ref{Operating
+mode options}).
 
 @enumerate
 @item
@@ -8305,6 +8307,29 @@ system-wide installation directory (see @ref{System wide} for
 @file{prefix}).
 
 @end enumerate
+
+The basic idea behind setting this progressive state of checking for
+parameter values is that separate users of a computer or separate folders
+in a user's file system might need different values for some
+parameters.
+
+@cartouche
+@noindent
+@strong{Checking the order:} You can confirm/check the order of parsing
+configuration files using the @option{--checkconfig} option with any
+Gnuastro program, see @ref{Operating mode options}. Just be sure to place
+this option immediately after the program name, before any other option.
+@end cartouche
+
+As you see above, there can also be a configuration file containing the
+common options in all the programs: @file{gnuastro.conf} (see @ref{Common
+options}). If options specific to one program are specified in this file,
+there will be unrecognized option errors, or unexpected behavior if the
+option has different behavior in another program. On the other hand, there
+is no problem with @file{astprogname.conf} containing common
+options@footnote{As an example, the @option{--setdirconf} and
+@option{--setusrconf} options will also write the common options they have
+read in their produced @file{astprogname.conf}.}.
 
 @cartouche
 @noindent

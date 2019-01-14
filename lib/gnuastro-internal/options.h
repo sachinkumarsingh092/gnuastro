@@ -114,6 +114,7 @@ enum options_common_keys
   GAL_OPTIONS_KEY_CONFIG,
   GAL_OPTIONS_KEY_SEARCHIN,
   GAL_OPTIONS_KEY_LASTCONFIG,
+  GAL_OPTIONS_KEY_CHECKCONFIG,
   GAL_OPTIONS_KEY_TABLEFORMAT,
   GAL_OPTIONS_KEY_ONLYVERSION,
   GAL_OPTIONS_KEY_WORKOVERCH,
@@ -205,6 +206,7 @@ struct gal_options_common_params
   uint8_t           setdirconf; /* To write the directory config file.    */
   uint8_t           setusrconf; /* To write teh user config config file.  */
   uint8_t           lastconfig; /* This is the last configuration file.   */
+  uint8_t          checkconfig; /* Check config files and values.         */
 
   /* Output files. */
   gal_fits_list_key_t  *okeys;  /* Configuration as FITS keys in output.  */
@@ -255,6 +257,10 @@ gal_options_check_version(struct argp_option *option, char *arg,
 void *
 gal_options_print_citation(struct argp_option *option, char *arg,
                            char *filename, size_t lineno, void *pa);
+
+void *
+gal_options_check_config(struct argp_option *option, char *arg,
+                         char *filename, size_t lineno, void *junk);
 
 void *
 gal_options_read_type(struct argp_option *option, char *arg,

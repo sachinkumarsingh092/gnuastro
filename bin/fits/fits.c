@@ -359,6 +359,7 @@ fits(struct fitsparams *p)
 
     /* HDU, functions defined here. */
     case FITS_MODE_HDU:
+
       /* Options that must be called alone. */
       if(p->numhdus)
         fits_hdu_number(p);

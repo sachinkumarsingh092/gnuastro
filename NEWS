@@ -5,6 +5,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** New features
 
+  All programs:
+   --checkconfig: print the names and values given to options as they are
+     parsed on the command-line or in various configuration files (the
+     configuration file name is also printed). This can be very useful in
+     debugging (finding which configuration file is responsible for a given
+     option's value).
+
   Fits:
    - Add "title" to group FITS keywords with `--write=/,"title name". This
      "title" is composed of two keyword records: a blank one, followed by

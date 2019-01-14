@@ -340,6 +340,62 @@ gal_options_print_citation(struct argp_option *option, char *arg,
 
 
 void *
+gal_options_check_config(struct argp_option *option, char *arg,
+                          char *filename, size_t lineno, void *junk)
+{
+  char *str;
+
+  /* First see if we are reading or writing. */
+  if(lineno==-1)
+    {
+      gal_checkset_allocate_copy("1", &str);
+      return str;
+    }
+
+  /* Check if the given value is different from this version. */
+  else
+    {
+      /* If its already set then ignore it. */
+      if(option->set) return NULL;
+
+      /* Activate the option and let the user know its activated. */
+      (*(uint8_t *)(option->value)) = 1;
+      printf("-----------------\n"
+             "Parsing of options AFTER `--checkconfig'.\n\n"
+             "IMPORTANT: Any option that was parsed before encountering "
+             "`--checkconfig', on the command-line or in a configuration "
+             "file, is not shown here. It is thus recommended to use this "
+             "option before calling any other option.\n"
+             "-----------------\n");
+
+      /* Print where this option was first seen: if `checkconfig' is called
+         within a configuration file, `filename!=NULL' and has an argument
+         (=="1"). But on the command-line, it has no argument or
+         filename. */
+      if(filename)
+        printf("%s:\n", filename);
+      else
+        {
+          if(arg)
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                  "fix the problem. `filename==NULL', but `arg!=NULL'",
+                  __func__, PACKAGE_BUGREPORT);
+          else
+            printf("Command-line:\n");
+        }
+
+      /* Just to avoid compiler warnings for unused variables. The program
+         will never reach this point! */
+      arg=filename=NULL; lineno=0; option=NULL; junk=NULL;
+    }
+  return NULL;
+}
+
+
+
+
+
+void *
 gal_options_read_type(struct argp_option *option, char *arg,
                       char *filename, size_t lineno, void *junk)
 {
@@ -1204,6 +1260,12 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
          unset). */
       option->func(option, arg, filename, lineno, topass);
       if(option->key!=GAL_OPTIONS_KEY_CONFIG) option->set=GAL_OPTIONS_SET;
+
+      /* The `--config' option is printed for `--checkconfig' by its
+         function (`gal_options_call_parse_config_file'), so must be
+         ignored here. */
+      if(cp->checkconfig && option->key!=GAL_OPTIONS_KEY_CONFIG)
+        printf("  %-25s%s\n", option->name, arg?arg:"ACTIVATED");
       return;
     }
 
@@ -1217,7 +1279,12 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
       else
         {
           /* If the option is already set, ignore the given value. */
-          if(option->set==GAL_OPTIONS_SET) return;
+          if(option->set==GAL_OPTIONS_SET)
+            {
+              if(cp->checkconfig)
+                printf("  %-25s--ALREADY-SET--\n", option->name);
+              return;
+            }
 
           /* Read the string argument into the value. */
           if( gal_type_from_string(&option->value, arg, option->type) )
@@ -1245,7 +1312,12 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
   else
     {
       /* If the option is already set, ignore the given value. */
-      if(option->set==GAL_OPTIONS_SET) return;
+      if(option->set==GAL_OPTIONS_SET)
+        {
+          if(cp->checkconfig)
+            printf("  %-25s--ALREADY-SET--\n", option->name);
+          return;
+        }
 
       /* Make sure the option has the type set for options with no
          argument. So, give it a value of 1. */
@@ -1259,6 +1331,12 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
               gal_type_name(GAL_OPTIONS_NO_ARG_TYPE, 1),
               option->name, gal_type_name(option->type, 1));
     }
+
+
+  /* If the user wanted to check the value. */
+  if(cp->checkconfig)
+    printf("  %-25s%s\n", option->name,
+           (arg && option->type!=GAL_OPTIONS_NO_ARG_TYPE)?arg:"ACTIVATED");
 
 
   /* Flip the `set' flag to `GAL_OPTIONS_SET'. */
@@ -1537,7 +1615,13 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
           if( options[i].flags==OPTION_HIDDEN
               || ( options[i].set
                    && !gal_type_is_list(options[i].type ) ) )
-            return 0;
+            {
+              if(cp->checkconfig)
+                printf("  %-25s%s\n", name, ( options[i].flags==OPTION_HIDDEN
+                                              ? "--IGNORED--"
+                                              : "--ALREADY-SET--" ) );
+              return 0;
+            }
 
           /* Read the value into the option and do a sanity check. */
           gal_options_read_check(&options[i], arg, filename, lineno, cp);
@@ -1610,6 +1694,11 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
     }
 
 
+  /* If necessary, print the configuration file name. */
+  if(cp->checkconfig)
+    printf("%s:\n", filename);
+
+
   /* Allocate the space necessary to keep a copy of each line as we parse
      it. Note that `getline' is going to later `realloc' this space to fit
      the line length. */
@@ -1661,10 +1750,25 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
 /* This function will be used when the `--config' option is called. */
 void *
 gal_options_call_parse_config_file(struct argp_option *option, char *arg,
-                                   char *filename, size_t lineno, void *cp)
+                                   char *filename, size_t lineno, void *c)
 {
+  struct gal_options_common_params *cp=(struct gal_options_common_params *)c;
+
+  /* The `--config' option is a special function when it comes to
+     `--checkconfig': we'll have to write its value before interpretting
+     it. */
+  if(cp->checkconfig)
+    {
+      printf("  %-25s%s\n", option->name, arg);
+      printf("............................\n");
+    }
+
   /* Call the confguration file parser. */
   options_parse_file(arg, cp, 1);
+
+  /* Ending boundary of this file's options. */
+  if(cp->checkconfig)
+      printf("............................\n");
 
   /* Just to avoid compiler warnings, then return, note that all pointers
      are just copies. */
@@ -1770,6 +1874,51 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
 
 
 
+void
+gal_options_read_low_level_checks(struct gal_options_common_params *cp)
+{
+  size_t suggested_mmap=10000000;
+
+  /* If `numthreads' is 0, use the number of threads available to the
+     system. */
+  if(cp->numthreads==0)
+    cp->numthreads=gal_threads_number();
+
+  /* If `minmapsize==0' and quiet isn't given, print a warning. */
+  if(cp->minmapsize==0)
+    {
+      fprintf(stderr, "\n\n"
+              "========= WARNING =========\n"
+              "Minimum size to map an allocated space outside of RAM is "
+              "not set, or set to zero. This can greatly slow down the "
+              "processing of a program or cause strange crashes (recall "
+              "that the number of files that can be memory-mapped is "
+              "limited).\n\n"
+
+              "On modern systems (with RAM larger than a giga-byte), it "
+              "should be fine to set it to %zu (10 million bytes or 10Mb) "
+              "with the command below. In this manner, only arrays that "
+              "are larger than this will be memory-mapped and smaller "
+              "arrays (which are much more numerous) will be allocated and "
+              "freed in the RAM.\n\n"
+
+              "     --minmapsize=%zu\n\n"
+
+              "[This warning can be disabled with the `--quiet' (or `-q') "
+              "option.]\n"
+              "===========================\n\n", suggested_mmap,
+              suggested_mmap);
+    }
+
+  /* If the user wanted to check the parsing of configuration files, then
+     the program must stop here. */
+  if(cp->checkconfig) exit(0);
+}
+
+
+
+
+
 /* Read all configuration files and set common options */
 void
 gal_options_read_config_set(struct gal_options_common_params *cp)
@@ -1786,10 +1935,8 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
   /* Abort if any of the mandatory options are not set. */
   gal_options_abort_if_mandatory_missing(cp);
 
-  /* If `numthreads' is 0, use the number of threads available to the
-     system. */
-  if(cp->numthreads==0)
-    cp->numthreads=gal_threads_number();
+  /* Low-level/basic checks before passing control back to program. */
+  gal_options_read_low_level_checks(cp);
 }
 
 
