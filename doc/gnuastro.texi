@@ -7041,7 +7041,7 @@ your linker to look in this directory. To do so, configure Gnuastro like
 this:
 
 @example
-$ ./configure LDFLAGS="-I/usr/local/lib"
+$ ./configure LDFLAGS="-L/usr/local/lib"
 @end example
 
 If you want to use the libraries for your other programming projects, then
