@@ -174,7 +174,7 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "fhmaxbyte",
+      "forcemax",
       UI_KEY_FORCEMAX,
       0,
       0,
