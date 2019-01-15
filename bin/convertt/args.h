@@ -178,7 +178,7 @@ struct argp_option program_options[] =
       UI_KEY_FORCEMAX,
       0,
       0,
-      "Force --fluxmax, even when smaller than maximum.",
+      "Force --fluxmax, even when larger than maximum.",
       UI_GROUP_FLUX,
       &p->forcemax,
       GAL_OPTIONS_NO_ARG_TYPE,
