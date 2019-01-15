@@ -117,7 +117,7 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
 void
 gal_checkset_check_dir_write_add_slash(char **dirname);
 
-void
+int
 gal_checkset_mkdir(char *dirname);
 
 

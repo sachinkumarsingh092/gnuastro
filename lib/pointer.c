@@ -111,16 +111,36 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   void *out;
   int filedes;
   uint8_t uc=0;
+  char *dirname=NULL;
   size_t bsize=size*gal_type_sizeof(type);
 
 
   /* Check if the .gnuastro folder exists, write the file there. If it
-     doesn't exist, then make the .gnuastro directory.*/
-  gal_checkset_mkdir(".gnuastro");
+     doesn't exist, then make the .gnuastro directory. If it can't be
+     built, we'll make a randomly named directory. */
+  gal_checkset_allocate_copy("./.gnuastro/", &dirname);
+  if( gal_checkset_mkdir(dirname) )
+    {
+      /* Free the old name. */
+      free(dirname);
+
+      /* Try `.gnuastro_mmap' (to avoid making a separate directory for
+         each memory mapping if possible). */
+      gal_checkset_allocate_copy("./.gnuastro_mmap/", &dirname);
+      if( gal_checkset_mkdir(dirname) )
+        {
+          free(dirname);
+          dirname=NULL;
+        }
+    }
 
 
-  /* Set the filename */
-  gal_checkset_allocate_copy("./.gnuastro/mmap_XXXXXX", filename);
+  /* Set the filename. If `dirname' couldn't be allocated, directly make
+     the memory map file in the current directory (just as a hidden
+     file). */
+  if( asprintf(filename, "%smmap_XXXXXX", dirname?dirname:"./.gnuastro_")<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+  if(dirname) free(dirname);
 
 
   /* Create a zero-sized file and keep its descriptor.  */
@@ -128,8 +148,8 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   /*filedes=open(filename, O_RDWR | O_CREAT | O_EXCL | O_TRUNC );*/
   filedes=mkstemp(*filename);
   if(filedes==-1)
-    error(EXIT_FAILURE, errno, "%s: %s couldn't be created",
-          __func__, *filename);
+    error(EXIT_FAILURE, errno, "%s: %s couldn't be created", __func__,
+          *filename);
 
 
   /* Make the necessary space on the file. */

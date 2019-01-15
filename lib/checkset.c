@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/fcntl.h>
 
 #include <gnuastro/data.h>
 
@@ -591,16 +592,26 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
 
 
 
-/* If the given directory exists, then nothing is done, if it doesn't, it
-   will be created. */
-void
+/* If the given directory exists and is writable, then nothing is done. If
+   it doesn't, it will be created. If it fails at creating the file, or the
+   file isn't writable it returns a non-zero value: the errno, which can be
+   directly used in `error'. */
+int
 gal_checkset_mkdir(char *dirname)
 {
+  int errnum=0;
   struct stat st={0};
   if( stat(dirname, &st) == -1 )
     {
       errno=0;
       if( mkdir(dirname, 0700) == -1 )
-        error(EXIT_FAILURE, errno, "making %s", dirname);
+        errnum=errno;
     }
+  else
+    {
+      errno=0;
+      if( faccessat(AT_FDCWD, dirname, W_OK, AT_EACCESS) == -1 )
+        errnum=errno;
+    }
+  return errnum;
 }

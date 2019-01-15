@@ -1680,18 +1680,11 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
     return;
 
 
-  /* Open the file. If the file doesn't exist, then just ignore the
-     configuration file and return. */
+  /* Open the file. If the file doesn't exist or can't be opened, then just
+     ignore the configuration file and return. */
   errno=0;
   fp=fopen(filename, "r");
-  if(fp==NULL)
-    {
-      if(errno==ENOENT && enoent_abort==0)
-        return;
-      else
-        error(EXIT_FAILURE, errno, "%s: to be read as a configuration file",
-              filename);
-    }
+  if(fp==NULL) return;
 
 
   /* If necessary, print the configuration file name. */
@@ -2208,6 +2201,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
 {
   size_t i;
   FILE *fp;
+  int errnum;
   time_t rawtime;
   char *topicstr, *filename;
   gal_list_i32_t *group=NULL;
@@ -2220,7 +2214,9 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
   if(dirname)
     {
       /* Make the host directory if it doesn't already exist. */
-      gal_checkset_mkdir(dirname);
+      if( (errnum=gal_checkset_mkdir(dirname)) )
+        error(EXIT_FAILURE, errnum, "making %s for configuration files",
+              dirname);
 
       /* Prepare the full filename: */
       if( asprintf(&filename, "%s/%s.conf", dirname, cp->program_exec)<0 )

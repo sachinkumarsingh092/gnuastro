@@ -7700,9 +7700,15 @@ The minimum size (in bytes) to store the contents of each main processing
 array of a program as a file (on the non-volatile HDD/SSD), not in
 RAM. This can be very useful for large datasets which can be very memory
 intensive such that your RAM will not be sufficient to keep/process them. A
-random filename is assigned to the array (in a @file{.gnuastro} directory
-within the running directory) which will keep the contents of the array as
-long as it is necessary.
+random filename is assigned to the array which will keep the contents of
+the array as long as it is necessary.
+
+If the @file{.gnuastro} directory exists and is writable, then the random
+file will be placed there. Otherwise, the @file{.gnuastro_mmap} directory
+will be checked. If @file{.gnuastro_mmap} does not exist, or is not
+writable also, the random file will be directly written in the current
+directory with the @file{.gnuastro_mmap_} prefix (followed by some random
+characters).
 
 When this option has a value of @code{0} (zero), all arrays that use this
 option in a program will actually be in a file (not in RAM). When the value
@@ -7723,8 +7729,8 @@ The random file will be deleted once it is no longer needed by the
 program. The @file{.gnuastro} directory will also be deleted if it has no
 other contents (you may also have configuration files in this directory,
 see @ref{Configuration files}). If you see randomly named files remaining
-in this directory, please send us a bug report so we address the problem,
-see @ref{Report a bug}.
+in this directory when the program finishes normally, please send us a bug
+report so we address the problem, see @ref{Report a bug}.
 
 @item -Z INT[,INT[,...]]
 @itemx --tilesize=[,INT[,...]]
@@ -23912,10 +23918,11 @@ value of this variable is @code{NULL}, then the contents of @code{array}
 are actually stored in RAM, not in a file on the HDD/SSD. See the
 description of @code{minmapsize} below for more.
 
-If a file is used, it will be kept in the hidden @file{.gnuastro} directory
-with a randomly selected name to allow multiple arrays to be kept there at
-the same time. When @code{gal_data_free} is called the randomly named file
-will be deleted.
+If a file is used, it will be kept in the hidden @file{.gnuastro}, or
+@file{.gnuastro_mmap} directories with a randomly selected name to allow
+multiple arrays to be kept there at the same time, see description of
+@option{--minmapsize} in @ref{Processing options}. When
+@code{gal_data_free} is called the randomly named file will be deleted.
 
 @item size_t minmapsize
 The minimum size of an array (in bytes) to store the contents of
