@@ -7925,9 +7925,9 @@ immediately read (before parsing the rest of the options on the
 command-line, or lines in a configuration file).
 
 Note that by definition, options on the command-line still take precedence
-over those in these in any configuration file, including the file(s) given
-to this option if they are called before it. Also see @option{--lastconfig}
-and @option{--onlyversion} on how this option can be used for reproducible
+over those in any configuration file, including the file(s) given to this
+option if they are called before it. Also see @option{--lastconfig} and
+@option{--onlyversion} on how this option can be used for reproducible
 results. You can use @option{--checkconfig} (below) to check/confirm the
 parsing of configuration files.
 
