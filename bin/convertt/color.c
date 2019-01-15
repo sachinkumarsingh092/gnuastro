@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/statistics.h>
 
 #include "main.h"
 
@@ -40,6 +41,33 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***********************************************************************/
 /**************            From mono-channel           *****************/
 /***********************************************************************/
+static void
+color_min_max(struct converttparams *p, float *value, int min0max1)
+{
+  gal_data_t *tmp;
+  gal_data_t *given  = min0max1 ? p->fluxhigh : p->fluxlow;
+  uint8_t fixedlimit = min0max1 ? p->forcemax : p->forcemin;
+
+  /* Find the value to write. */
+  if(fixedlimit && given)
+    tmp=gal_data_copy_to_new_type(given, GAL_TYPE_FLOAT32);
+  else
+    {
+      tmp = ( min0max1
+              ? gal_statistics_maximum(p->chll)
+              : gal_statistics_minimum(p->chll) );
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
+    }
+  *value=((float *)(tmp->array))[0];
+
+  /* Clean up. */
+  gal_data_free(tmp);
+}
+
+
+
+
+
 /* This algorithm is a translation of the primary algorithm in this page:
 https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both */
 void
@@ -66,13 +94,10 @@ color_from_mono_hsv(struct converttparams *p)
     error(EXIT_FAILURE, 0, "the maximum angle (%g) must be smaller than "
           "360", h_max);
 
-  /* Convert the dataset to floating point, then change its range to the
-     given angle values. */
-  gal_type_min(GAL_TYPE_FLOAT32, &max);
-  gal_type_max(GAL_TYPE_FLOAT32, &min);
+  /* Set the range of values and convert the dataset to float. */
+  color_min_max(p, &min, 0);
+  color_min_max(p, &max, 1);
   channel=gal_data_copy_to_new_type_free(p->chll, GAL_TYPE_FLOAT32);
-  fp=(f=channel->array)+channel->size;
-  do {if(*f<min) min=*f; if(*f>max) max=*f;} while(++f<fp);
 
   /* Allocate the three datasets to keep the RGB colors. */
   R=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
@@ -155,13 +180,10 @@ color_from_mono_sls(struct converttparams *p)
   gal_data_t *R, *G, *B, *channel;
   float *r, *g, *b, *f, *fp, min, max;
 
-  /* Convert the dataset to floating point, then find its minimum and
-     maximum values. */
-  gal_type_min(GAL_TYPE_FLOAT32, &max);
-  gal_type_max(GAL_TYPE_FLOAT32, &min);
+  /* Set the range, then convert the dataset to floating point. */
+  color_min_max(p, &min, 0);
+  color_min_max(p, &max, 1);
   channel=gal_data_copy_to_new_type_free(p->chll, GAL_TYPE_FLOAT32);
-  fp=(f=channel->array)+channel->size;
-  do {if(*f<min) min=*f; if(*f>max) max=*f;} while(++f<fp);
 
   /* Allocate the three datasets to keep the RGB colors. */
   R=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,

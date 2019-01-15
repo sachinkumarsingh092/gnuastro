@@ -90,8 +90,8 @@ struct converttparams
   char          *fluxlowstr;  /* Lower flux truncation value.          */
   char         *fluxhighstr;  /* Higher flux truncation value.         */
   uint8_t           maxbyte;  /* Maximum byte value.                   */
-  uint8_t         flminbyte;  /* fluxlow is minimum byte.              */
-  uint8_t         fhmaxbyte;  /* fluxhigh is maximum byte.             */
+  uint8_t          forcemin;  /* fluxlow is minimum.                   */
+  uint8_t          forcemax;  /* fluxhigh is maximum.                  */
   char           *changestr;  /* String of change values.              */
   uint8_t  changeaftertrunc;  /* First convert, then truncate.         */
   uint8_t            invert;  /* ==1: invert the output image.         */

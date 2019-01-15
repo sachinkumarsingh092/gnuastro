@@ -45,6 +45,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 ** Changed features
 
+  ConvertType:
+   --forcemin & --forcemax: until now, `--flminbyte' and `--flmaxbyte' were
+     used to force the range of conversion to color channels (even if the
+     range is beyond the limits of the dataset). With the introduction of
+     color maps in Gnuastro 0.8, it is also necessary to force a range on
+     non-byte datasets. It is thus necessary to use a more generic name.
+
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
   bug #55333: Fits program crash when --write or --update have no value.

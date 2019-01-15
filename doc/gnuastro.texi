@@ -11084,17 +11084,18 @@ the maximum value. By doing so you will decrease the dynamic range. It can
 be useful if you plan to use those values for other purposes.
 
 @item -A INT
-@itemx --flminbyte=INT
-If the lowest pixel value in the input channels is larger than the value to
-@option{--fluxlow}, then that input value will be redundant. In some
-situations it might be necessary to set the minimum byte value (0) to
-correspond to that flux even if the data do not reach that value. With this
-option you can do this. Note that if the minimum pixel value is smaller
-than @option{--fluxlow}, then this option is redundant.
+@itemx --forcemin=INT
+Enforce the value of @option{--fluxlow} (when its given), even if its
+smaller than the minimum of the dataset and the output is format supporting
+color. This is particularly useful when you are converting a number of
+images to a common image format like JPEG or PDF with a single command and
+want them all to have the same range of colors, independent of the contents
+of the dataset. Note that if the minimum value is smaller than
+@option{--fluxlow}, then this option is redundant.
 
 @item -B INT
-@itemx --fhmaxbyte=INT
-See @option{--flminbyte}.
+@itemx --forcemax=INT
+Similar to @option{--forcemin}, but for the maximum.
 
 
 @item -i

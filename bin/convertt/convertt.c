@@ -222,14 +222,14 @@ convertt_scale_to_uchar(struct converttparams *p)
      maximum and minimum values in the image.*/
   if(p->fluxlow || p->fluxhigh)
     {
-      if(p->flminbyte)
+      if(p->forcemin)
         {
           /* Convert the fluxlow value to float and put it in min. */
           copied=gal_data_copy_to_new_type(p->fluxlow, GAL_TYPE_FLOAT32);
           min = *((float *)(copied->array));
           gal_data_free(copied);
         }
-      if(p->fhmaxbyte)
+      if(p->forcemax)
         {
           /* Convert the fluxhigh value to float and put it in min. */
           copied=gal_data_copy_to_new_type(p->fluxhigh, GAL_TYPE_FLOAT32);
