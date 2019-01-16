@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/list.h>
 #include <gnuastro/jpeg.h>
 
-
+#include <gnuastro-internal/checkset.h>
 
 
 
@@ -403,6 +403,14 @@ gal_jpeg_write(gal_data_t *in, char *filename, uint8_t quality,
   if(in->type!=GAL_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "%s: input has a `%s' type, but JPEG images can "
           "only have a `uint8' type", __func__, gal_type_name(in->type, 1));
+
+  /* Make sure the file doesn't exist and that we have write
+     permission. Note that the JPEG standard doesn't have multple
+     extensions.*/
+  if( gal_checkset_writable_notexist(filename)==0 )
+    error(EXIT_FAILURE, 0, "%s: already exists or its directory doesn't "
+          "write permssion. Note that the JPEG standard only allows one "
+          "image per file", filename);
 
   /* Make sure the JSAMPLE is 8bits, then allocate the necessary space
      based on the number of channels. */

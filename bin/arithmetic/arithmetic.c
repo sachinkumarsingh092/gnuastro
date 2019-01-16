@@ -804,6 +804,32 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
 
 
 
+void
+arithmetic_tofile(struct arithmeticparams *p, char *token)
+{
+  /* Pop the top dataset. */
+  gal_data_t *popped = operands_pop(p, token);
+  char *filename=&token[ OPERATOR_PREFIX_LENGTH_TOFILE ];
+
+  /* Save it to a file. */
+  popped->wcs=p->refdata.wcs;
+  if(popped->ndim==1 && p->onedasimage==0)
+    gal_table_write(popped, NULL, p->cp.tableformat, filename,
+                    "ARITHMETIC", 0);
+  else
+    gal_fits_img_write(popped, filename, NULL, PROGRAM_NAME);
+  if(!p->cp.quiet)
+    printf(" - Write: %s\n", filename);
+
+  /* Reset the WCS to NULL and put it back on the stack. */
+  popped->wcs=NULL;
+  operands_add(p, NULL, popped);
+}
+
+
+
+
+
 
 
 
@@ -848,17 +874,22 @@ reversepolish(struct arithmeticparams *p)
   /* Go over each input token and do the work. */
   for(token=p->tokens;token!=NULL;token=token->next)
     {
-      /* If we have a name or number, then add it to the operands linked
-         list. Otherwise, pull out two members and do the specified
-         operation on them. */
-      if( gal_array_name_recognized(token->v)
+      /* The `tofile-' operator's string can end in a `.fits', similar to a
+         FITS file input file. So, it needs to be checked before checking
+         for a filename. If we have a name or number, then add it to the
+         operands linked list. Otherwise, pull out two members and do the
+         specified operation on them. */
+      if( !strncmp(OPERATOR_PREFIX_TOFILE, token->v,
+                   OPERATOR_PREFIX_LENGTH_TOFILE) )
+        arithmetic_tofile(p, token->v);
+      else if( !strncmp(token->v, OPERATOR_PREFIX_SET,
+                        OPERATOR_PREFIX_LENGTH_SET) )
+        operands_set_name(p, token->v);
+      else if( gal_array_name_recognized(token->v)
           || operands_is_name(p, token->v) )
         operands_add(p, token->v, NULL);
       else if( (d1=gal_data_copy_string_to_number(token->v)) )
         operands_add(p, NULL, d1);
-      else if( !strncmp(token->v, SET_OPERATOR_PREFIX,
-                        SET_OPERATOR_PREFIX_LENGTH) )
-        operands_set_name(p, token->v);
       else
         {
 
@@ -1186,7 +1217,7 @@ reversepolish(struct arithmeticparams *p)
       else
         gal_fits_img_write(d1, p->cp.output, NULL, PROGRAM_NAME);
       if(!p->cp.quiet)
-        printf(" - Output written to %s\n", p->cp.output);
+        printf(" - Write (final): %s\n", p->cp.output);
     }
 
 

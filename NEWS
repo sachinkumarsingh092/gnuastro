@@ -12,6 +12,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      debugging (finding which configuration file is responsible for a given
      option's value).
 
+  Arithmetic:
+   - The new `tofile-' operator will save the top operand into a file
+     without changing the state of the operand stack (popping the top
+     element). This can greatly help in debugging/understanding an
+     Arithmetic command, especially as it gets longer, or more complicated.
+
   Fits:
    - Add "title" to group FITS keywords with `--write=/,"title name". This
      "title" is composed of two keyword records: a blank one, followed by

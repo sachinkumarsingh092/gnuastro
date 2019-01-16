@@ -104,6 +104,9 @@ gal_checkset_check_file(char *filename);
 int
 gal_checkset_check_file_return(char *filename);
 
+int
+gal_checkset_writable_notexist(char *filename);
+
 void    /* keep==0 && dontdelete==0: file will be deleted if exists.*/
 gal_checkset_writable_remove(char *filename, int keep, int dontdelete);
 

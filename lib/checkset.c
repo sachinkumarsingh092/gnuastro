@@ -292,7 +292,7 @@ gal_checkset_not_dir_part(char *filename)
 
 
 
-/* Check if a file exists and report if it doesn't: */
+/* Check if a file exists and report if it doesn't. */
 void
 gal_checkset_check_file(char *filename)
 {
@@ -328,6 +328,59 @@ gal_checkset_check_file_return(char *filename)
     }
   else
     return 0;
+}
+
+
+
+
+
+/* If a file doesn't exist and its directory is writable, return
+   1. Otherwise, return 0. */
+int
+gal_checkset_writable_notexist(char *filename)
+{
+  int out=1;
+  char *dir;
+  FILE *tmpfile;
+
+  /* If the filename is `NULL' everything is ok (it doesn't exist)! In some
+     cases, a NULL filename is interpretted to mean standard output. */
+  if(filename==NULL) return 1;
+
+  /* We want to make sure that we can open and write to this file. But
+     the user might have asked to not delete the file, so the
+     contents should not be changed. Therefore we have to open it with
+     `r+`. */
+  errno=0;
+  tmpfile=fopen(filename, "r+");
+  if (tmpfile)                        /* The file opened. */
+    {
+      /* Close the file. */
+      errno=0;
+      if(fclose(tmpfile))
+        error(EXIT_FAILURE, errno, "%s", filename);
+
+      /* The file exists, return 0. */
+      out=0;
+    }
+
+  /* If the file doesn't exist, we just need to make sure if we have write
+     permissions to its host directory. */
+  else
+    {
+      /* Separate the directory part of the filename. */
+      dir=gal_checkset_dir_part(filename);
+
+      /* See if this directory is writable by this user. */
+      errno=0;
+      if( access(dir, W_OK) ) out=0;
+
+      /* Clean up. */
+      free(dir);
+    }
+
+  /* Return the final value. */
+  return out;
 }
 
 

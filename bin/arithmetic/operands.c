@@ -141,7 +141,7 @@ void
 operands_set_name(struct arithmeticparams *p, char *token)
 {
   gal_data_t *tmp, *tofree;
-  char *varname=&token[ SET_OPERATOR_PREFIX_LENGTH ];
+  char *varname=&token[ OPERATOR_PREFIX_LENGTH_SET ];
 
   /* If a dataset with this name already exists, it will be removed/deleted
      so we can use the name for the newly designated dataset. */
@@ -387,7 +387,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
         }
 
       /* Report the read image if desired: */
-      if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
+      if(!p->cp.quiet) printf(" - Read: %s (hdu %s).\n", filename, hdu);
 
       /* Free the HDU string: */
       if(hdu) free(hdu);

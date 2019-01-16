@@ -230,9 +230,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_check_options_and_arguments(struct arithmeticparams *p)
 {
+  char *filename;
   int output_checked=0;
-  size_t nummultiext=0, numhdus=0;
   gal_list_str_t *token, *hdu;
+  size_t nummultiext=0, numhdus=0;
 
   /* First, make sure that any tokens are actually given. */
   if(p->tokens==NULL)
@@ -256,33 +257,51 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
      list. */
   for(token=p->tokens; token!=NULL; token=token->next)
     {
-      /* This token is a file, count how many mult-extension files we haev
-         and use the first to set the output filename (if it has not been
-         set). */
-      if( gal_array_name_recognized(token->v) )
-        {
-          /* Increment the counter for FITS files. */
-          if( gal_array_name_recognized_multiext(token->v) )
-            ++nummultiext;
+      /* Strings given to the `tofile' operator are also considered as
+         outputs and we should delete them before starting the parse. */
+      if( strncmp(OPERATOR_PREFIX_TOFILE, token->v,
+                  OPERATOR_PREFIX_LENGTH_TOFILE) )
 
-          /* If the output filename isn't set yet, then set it. */
-          if(output_checked==0)
+        {
+          /* This token is a file, count how many mult-extension files we
+             haev and use the first to set the output filename (if it has
+             not been set). */
+          if( gal_array_name_recognized(token->v) )
             {
-              if(p->cp.output)
-                gal_checkset_writable_remove(p->cp.output, 0,
-                                             p->cp.dontdelete);
-              else
-                p->cp.output=gal_checkset_automatic_output(&p->cp, token->v,
-                                                           "_arith.fits");
-              output_checked=1;
+              /* Increment the counter for FITS files (if they are
+                 input). Recall that the `tofile' operator can also have
+                 `.fits' suffixes (they are the names of the output
+                 files). */
+              if( gal_array_name_recognized_multiext(token->v)  )
+                ++nummultiext;
+
+              /* If the output filename isn't set yet, then set it. */
+              if(output_checked==0)
+                {
+                  if(p->cp.output)
+                    gal_checkset_writable_remove(p->cp.output, 0,
+                                                 p->cp.dontdelete);
+                  else
+                    p->cp.output=gal_checkset_automatic_output(&p->cp,
+                                                               token->v,
+                                                               "_arith.fits");
+                  output_checked=1;
+                }
             }
+
+          /* This token is a number. Check if a negative dash was present that
+             has been temporarily replaced with `NEG_DASH_REPLACE' before
+             option parsing. */
+          else if(token->v[0]==NEG_DASH_REPLACE && isdigit(token->v[1]) )
+            token->v[0]='-';
         }
 
-      /* This token is a number. Check if a negative dash was present that
-         has been temporarily replaced with `NEG_DASH_REPLACE' before
-         option parsing. */
-      else if(token->v[0]==NEG_DASH_REPLACE && isdigit(token->v[1]) )
-        token->v[0]='-';
+      /* We are on the `tofile' operator. */
+      else
+        {
+          filename=&token->v[ OPERATOR_PREFIX_LENGTH_TOFILE ];
+          gal_checkset_writable_remove(filename, 0, p->cp.dontdelete);
+        }
     }
 
   /* Count the number of HDU values (if globalhdu isn't given) and check if

@@ -12732,6 +12732,25 @@ But with this operator you can simply give @file{image.fits} the name
 $ astarithmetic image.fits set-i   i i 5 gt nan where
 @end example
 
+@item tofile-AAA
+Write the top oprand on the operands stack into a file called @code{AAA}
+(can be any FITS file name) without changing the operands stack (no operand
+will be operand).
+
+Any file that is given to this operator is deleted before Arithmetic
+actually starts working on the input datasets. The deletion can be
+deactivated with the @option{--dontdelete} option (as in all Gnuastro
+programs, see @ref{Input output options}). If the same FITS file is given
+to this operator multiple times, it will contain multiple extensions (in
+the same order that it was called.
+
+For example the operator @command{tofile-check.fits} will write the top
+operand to @file{check.fits}. Since it doesn't modify the operands stack,
+this operator is very convenient when you want to debug, or understanding,
+a string of operators and operands given to Arithmetic: simply put
+@command{tofile-AAA} anywhere in the process to see what is happening
+behind the scenes without modifying the overall process.
+
 @end table
 
 @cartouche

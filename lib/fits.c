@@ -1833,6 +1833,10 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   int nkeyrec, hasblank, status=0, datatype=0;
   gal_data_t *i64data, *towrite, *block=gal_tile_block(input);
 
+  /* Small sanity check. */
+  if( gal_fits_name_is_fits(filename)==0 )
+    error(EXIT_FAILURE, 0, "%s: not a FITS suffix", filename);
+
   /* If the input is a tile (isn't a contiguous region of memory), then
      copy it into a contiguous region. */
   towrite = input==block ? input : gal_data_copy(input);
