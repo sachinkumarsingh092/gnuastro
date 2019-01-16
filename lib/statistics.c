@@ -1421,9 +1421,14 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       else
         sorted=noblank;
     }
-  /* When the input's size is zero, just return the actual input. */
+
+  /* Input's size was zero. Note that we cannot simply copy the zero-sized
+     input dataset, we'll have to allocate it here. */
   else
-    sorted = inplace ? input : gal_data_copy(input);
+    sorted = ( inplace
+               ? input
+               : gal_data_alloc(NULL, input->type, 0, NULL, input->wcs, 0,
+                                input->minmapsize, NULL, NULL, NULL) );
 
   /* Set the blank and sorted flags if the dataset has zero-elements. Even
      if having blank values or being sorted is not defined on a
@@ -1438,7 +1443,6 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       sorted->flag &= ~GAL_DATA_FLAG_HASBLANK;
       sorted->flag &= ~GAL_DATA_FLAG_SORTED_D;
     }
-
 
   /* Return final array. */
   return sorted;
@@ -2144,6 +2148,9 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
 
   /* Remove all blanks and sort the dataset. */
   nbs=gal_statistics_no_blank_sorted(input, inplace);
+
+  /* If all elements are blank, simply return the default (NULL) output. */
+  if(nbs->size==0) return out;
 
   /* Only continue if the window size is more than 2 elements (out
      "outlier" is hard to define on smaller datasets). */

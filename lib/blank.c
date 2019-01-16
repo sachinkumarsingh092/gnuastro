@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/pointer.h>
+#include <gnuastro/statistics.h>
 
 #include <gnuastro-internal/checkset.h>
 
@@ -456,6 +457,33 @@ gal_blank_present(gal_data_t *input, int updateflag)
      a value of 1. So if it reaches here, then we can be sure that there
      was no blank values, hence, return 0. */
   return hasblank;
+}
+
+
+
+
+
+/* Return the number of blank elements in the dataset. */
+size_t
+gal_blank_number(gal_data_t *input, int updateflag)
+{
+  gal_data_t *number;
+  size_t num_not_blank;
+
+  if(input)
+    {
+      if( gal_blank_present(input, updateflag) )
+        {
+          number=gal_statistics_number(input);
+          num_not_blank=((size_t *)(number->array))[0];
+          gal_data_free(number);
+          return input->size - num_not_blank;
+        }
+      else
+        return 0;
+    }
+  else
+    return GAL_BLANK_SIZE_T;
 }
 
 

@@ -23741,6 +23741,14 @@ input->flags &= ~GAL_DATA_FLAG_BLANK_CH;
 @end example
 @end deftypefun
 
+@deftypefun size_t gal_blank_number (gal_data_t @code{*input}, int @code{updateflag})
+Return the number of blank elements in @code{input}. If
+@code{updateflag!=0}, then the dataset blank keyword flags will be
+updated. See the description of @code{gal_blank_present} (above) for more
+on these flags. If @code{input==NULL}, then this function will return
+@code{GAL_BLANK_SIZE_T}.
+@end deftypefun
+
 
 @deftypefun {gal_data_t *} gal_blank_flag (gal_data_t @code{*input})
 Create a dataset of the the same size as the input, but with an
@@ -24091,11 +24099,12 @@ necessary allocations. If they aren't @code{NULL}, all input arrays
 separately copied (allocated) by this function for usage in @code{data}, so
 you can safely use one value to initialize many datasets or use statically
 allocated variables in this function call. Once you are done with the
-dataset, you can clean all the allocated spaces with
+dataset, you can free all the allocated spaces with
 @code{gal_data_free_contents}.
 
 If @code{array} is not @code{NULL}, it will be directly copied into
-@code{data->array} and no new space will be allocated for the array of this
+@code{data->array} (based on the total number of elements calculated from
+@code{dsize}) and no new space will be allocated for the array of this
 dataset, this has many low-level advantages and can be used to work on
 regions of a dataset instead of the whole allocated array (see the
 description under @code{block} in @ref{Generic data container} for one

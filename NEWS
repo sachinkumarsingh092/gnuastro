@@ -38,6 +38,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
+    gal_blank_number: Return the number of blank elements in a dataset.
     gal_statistics_outlier_cumulative: Uses flatness of the cumulative
        distribution to find outliers.
 
@@ -57,6 +58,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55333: Fits program crash when --write or --update have no value.
   bug #55439: Arithmetic segmentation fault when reusing dataset name.
   bug #55478: Memory mapping crashes when .gnuastro is not writable.
+  bug #55491: NoiseChisel crash when no tiles good for quantile thresholding.
 
 
 

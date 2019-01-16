@@ -518,13 +518,72 @@ qthresh_on_tile(void *in_prm)
 
 
 
+static void
+threshold_good_error(size_t number, int before0_after1, size_t interpnumngb)
+{
+  before0_after1=1;
+
+  /* Set the differing strings. */
+  char *in1 = ( before0_after1
+                ? "after removing outliers"
+                : "for defining a quantile threshold" );
+  char *in2 = ( before0_after1
+                ? ""
+                : "NOTE that this is happening *BEFORE* outlier rejection "
+                  "(where the number may decrease even further).");
+  char *in3 = ( before0_after1
+                ? "\n"
+                  "  - (slightly) Increase `--outliersclip' to reject less "
+                  "as outliers.\n"
+                  "  - (slightly) Increase `--outliersigma' to reject less "
+                  "as outliers.\n"
+                : "\n");
+
+  /* Print the error message and abort. */
+  error(EXIT_FAILURE, 0, "%zu tiles usable %s!\n\n"
+
+        "This is smaller than the requested minimum value of %zu (value to "
+        "the `--interpnumngb' option). %s\n\n"
+
+        "There are several ways to address the problem. The best and most "
+        "highly recommended is to use a larger input if possible (when the "
+        "input is a crop from a larger dataset). If this is not the case, "
+        "or it doesn't solve the problem, you need to loosen the "
+        "parameters mentioned below in the respective order (and therefore "
+        "cause scatter/inaccuracy in the final result). Hence its best to "
+        "not loosen them too much (recall that you can see all the option "
+        "values to Gnuastro's programs by appending `-P' to the end of your "
+        "command).\n"
+        "  - (slightly) Decrease `--tilesize' so your tile-grid has more "
+        "tiles.\n"
+        "  - (slightly) Increase `--meanmedqdiff' to accept more tiles.%s"
+        "  - (slightly) Decrease `--interpnumngb' to be less than %zu.\n\n"
+
+        "---- Tip ----\n"
+        "Append your command with `--checkqthresh' to see the "
+        "successful tiles in relation with this dataset's contents "
+        "before this crash. A visual inspection will greatly help in "
+        "finding the cause/solution for this particular dataset (note "
+        "that the output of `--checkqthresh' is a multi-extension FITS "
+        "file).\n\n"
+        "To better understand this important step, please run the "
+        "following command (press `SPACE'/arrow-keys to navigate and "
+        "`Q' to return back to the command-line):\n\n"
+        "    $ info gnuastro \"Quantifying signal in a tile\"\n", number,
+        in1, interpnumngb, in2, in3, number);
+}
+
+
+
+
+
 void
 threshold_quantile_find_apply(struct noisechiselparams *p)
 {
   char *msg;
-  size_t nval;
   gal_data_t *num;
   struct timeval t1;
+  size_t nval, nblank;
   struct qthreshparams qprm;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&cp->tl;
@@ -601,6 +660,10 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
         }
     }
 
+  /* A small sanity check. */
+  nblank=gal_blank_number(qprm.erode_th, 1);
+  if( nblank > qprm.erode_th->size-cp->interpnumngb )
+    threshold_good_error(qprm.erode_th->size-nblank, 0, cp->interpnumngb);
 
   /* Remove outliers if requested. */
   if(p->outliersigma!=0.0)
@@ -616,31 +679,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   num=gal_statistics_number(qprm.erode_th);
   nval=((size_t *)(num->array))[0];
   if( nval < cp->interpnumngb )
-    error(EXIT_FAILURE, 0, "%zu tile(s) can be used for interpolation of the "
-          "quantile threshold values over the full dataset. This is smaller "
-          "than the requested minimum value of %zu (value to the "
-          "`--interpnumngb' option).\n\n"
-          "There are several ways to address the problem. The best and most "
-          "highly recommended is to use a larger input if possible (when the "
-          "input is a crop from a larger dataset). If that is not the case, "
-          "or it doesn't solve the problem, you need to loosen the "
-          "parameters (and therefore cause scatter in the final result). "
-          "Thus don't loosen them too much. Recall that you can see all the "
-          "option values to Gnuastro's programs by appending `-P' to the "
-          "end of your command.\n\n"
-          "  * Slightly decrease `--tilesize' to have more tiles.\n"
-          "  * Slightly increase `--meanmedqdiff' to accept more tiles.\n"
-          "  * Decrease `--outliersigma' to reject less tiles as outliers.\n"
-          "  * Decrease `--interpnumngb' to be smaller than %zu.\n\n"
-          "Append the previous command with `--checkqthresh' to see the "
-          "successful tiles and which were discarded as outliers. This will "
-          "help you find the cause/solution. Note that the output is a "
-          "multi-extension FITS file).\n\n"
-          "To better understand this important step, please run the "
-          "following command (press `SPACE'/arrow-keys to navigate and "
-          "`Q' to return back to the command-line):\n\n"
-          "    $ info gnuastro \"Quantifying signal in a tile\"\n",
-          nval, cp->interpnumngb, cp->interpnumngb);
+    threshold_good_error(nval, 1, cp->interpnumngb);
 
 
   /* Interpolate and smooth the derived values. */

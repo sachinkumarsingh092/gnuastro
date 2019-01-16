@@ -109,6 +109,9 @@ gal_blank_is(void *pointer, uint8_t type);
 int
 gal_blank_present(gal_data_t *input, int updateflag);
 
+size_t
+gal_blank_number(gal_data_t *input, int updateflag);
+
 gal_data_t *
 gal_blank_flag(gal_data_t *data);
 
