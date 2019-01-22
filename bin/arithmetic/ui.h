@@ -40,6 +40,8 @@ enum option_keys_enum
   /* With short-option version. */
   UI_KEY_GLOBALHDU       = 'g',
   UI_KEY_ONEDASIMAGE     = 'O',
+  UI_KEY_WCSFILE         = 'w',
+  UI_KEY_WCSHDU          = 'W'
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

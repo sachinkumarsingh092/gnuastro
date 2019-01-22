@@ -73,6 +73,8 @@ struct arithmeticparams
   /* Input: */
   gal_list_str_t     *hdus;  /* List of all given HDU strings.          */
   gal_list_str_t   *tokens;  /* List of all arithmetic tokens.          */
+  char            *wcsfile;  /* File to use for output's WCS.           */
+  char             *wcshdu;  /* Extension to use for output's WCS.      */
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */
   char          *globalhdu;  /* Single HDU for all inputs.              */

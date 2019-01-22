@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
@@ -225,6 +226,26 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+static void
+ui_read_check_only_options(struct arithmeticparams *p)
+{
+  if(p->wcsfile)
+    {
+      if(gal_fits_name_is_fits(p->wcsfile)==0)
+        error(EXIT_FAILURE, 0, "%s: file given to `--wcsfile' must be in "
+              "FITS format with a recognizable FITS format suffix.",
+              p->wcsfile);
+      if(p->wcshdu==NULL)
+        error(EXIT_FAILURE, 0, "%s: no HDU/extension specified (file given "
+              "to `--wcsfile')! Please use `--wcshdu' to specify a "
+              "HDU/extension to read from", p->wcsfile);
+    }
+}
+
+
+
+
+
 /* Sanity check on options AND arguments. If only option values are to be
    checked, use `ui_read_check_only_options'. */
 static void
@@ -327,6 +348,30 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
 
 
 
+static void
+ui_preparations(struct arithmeticparams *p)
+{
+  /* In case a file is specified to read the WCS from (and ignore input
+     datasets), read the WCS prior to starting parsing of the arguments. */
+  if(p->wcsfile)
+    {
+      p->refdata.wcs=gal_wcs_read(p->wcsfile, p->wcshdu, 0, 0,
+                                  &p->refdata.nwcs);
+      if(p->refdata.wcs)
+        {
+          if(!p->cp.quiet)
+            printf(" - WCS: %s (hdu %s).\n", p->wcsfile, p->wcshdu);
+        }
+      else
+        fprintf(stderr, "WARNING: %s (hdu %s) didn't contain a "
+                "(readable by WCSLIB) WCS.", p->wcsfile, p->wcshdu);
+    }
+}
+
+
+
+
+
 
 
 
@@ -392,10 +437,18 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct arithmeticparams *p)
   gal_options_print_state(cp);
 
 
+  /* Sanity check only on options. */
+  ui_read_check_only_options(p);
+
+
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should
      be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
+
+
+  /* Initial preparations. */
+  ui_preparations(p);
 }
 
 

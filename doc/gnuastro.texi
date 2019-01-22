@@ -12821,15 +12821,21 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
 
-If the output is not a single number, and the @option{--output} option is
-not given, automatic output will use the name of the first FITS image
-encountered to generate an output file name, see @ref{Automatic
-output}. Also, output WCS information will be taken from the first input
-image encountered. When the output is a single number, that number will be
-printed in the standard output and no output file will be
-created. Arithmetic's notation for giving operands to operators is
-described in @ref{Reverse polish notation}. To ignore certain pixels, set
-them as blank, see @ref{Blank pixels}, for example with the @command{where}
+The output is last remaining operand on the stack, see @ref{Reverse polish
+notation}. When its a single number, it will be printed on the
+command-line. When the output is an array, it will be stored as a file. The
+name of the file can be specified with the @option{--output} option, but if
+its not given, Arithmetic will use ``automatic output'' on the name of the
+first FITS image encountered to generate an output file name, see
+@ref{Automatic output}.
+
+By default, the world coordinate system (WCS) information will be taken
+from the first input image (that contains a WCS) on the command-line. This
+can be modified with the @option{--wcsfile} option described below.
+
+Arithmetic's notation for giving operands to operators is fully described
+in @ref{Reverse polish notation}. To ignore certain pixels, set them as
+blank, see @ref{Blank pixels}, for example with the @command{where}
 operator (see @ref{Arithmetic operators}). See @ref{Common options} for a
 review of the options in all Gnuastro programs. Arithmetic just redefines
 the @option{--hdu} option as explained below.
@@ -12877,6 +12883,28 @@ option is very convenient when you have many input files and the dataset of
 interest is in the same HDU of all the files. When this option is called,
 any values given to the @option{--hdu} option (explained above) are ignored
 and will not be used.
+
+@item --wcsfile STR
+FITS Filename containing the WCS structure that must be written to the
+output. The HDU/extension should be specified with @option{--wcshdu}.
+
+When this option is used, the respective WCS will be read before any
+processing is done on the command-line and directly used in the final
+output. If the given file doesn't have any WCS, then the default WCS (first
+file on the command-line) will be used in the output.
+
+This option will mostly be used when the default file (first of the set of
+inputs) is not the one containing your desired WCS. But with this option,
+you can use Arithmetic to rewrite/chage the WCS of an existing FITS file
+from another file a command like this:
+
+@example
+$ astarithmetic data.fits --wcsfile=other.fits -ofinal.fits
+@end example
+
+@item --wcshdu STR
+HDU/extension to read the WCS within the file given to
+@option{--wcsfile}. For more, see the description of @option{--wcsfile}.
 
 @item -O
 @itemx --onedasimage

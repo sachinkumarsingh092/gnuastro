@@ -17,6 +17,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      without changing the state of the operand stack (popping the top
      element). This can greatly help in debugging/understanding an
      Arithmetic command, especially as it gets longer, or more complicated.
+   --wcsfile and --wcshdu: these two options can be used to specify a
+     different file for reading the WCS of the output. This is useful when
+     the default (theh WCS of the first dataset that is read) is not the
+     required one.
 
   Fits:
    - Add "title" to group FITS keywords with `--write=/,"title name". This
@@ -65,7 +69,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55439: Arithmetic segmentation fault when reusing dataset name.
   bug #55478: Memory mapping crashes when .gnuastro is not writable.
   bug #55491: NoiseChisel crash when no tiles good for quantile thresholding.
-
+  bug #55544: Arithmetic's output WCS with where operator is not as expected.
 
 
 

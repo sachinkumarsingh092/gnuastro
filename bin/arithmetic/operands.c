@@ -304,6 +304,15 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
                 gal_checkset_allocate_copy(p->globalhdu, &newnode->hdu);
               else
                 newnode->hdu=gal_list_str_pop(&p->hdus);
+
+              /* If no WCS is set yet, use the WCS of this image. */
+              if(p->refdata.wcs==NULL)
+                {
+                  p->refdata.wcs=gal_wcs_read(filename, newnode->hdu, 0, 0,
+                                              &p->refdata.nwcs);
+                  if(p->refdata.wcs && !p->cp.quiet)
+                    printf(" - WCS: %s (hdu %s).\n", filename, newnode->hdu);
+                }
             }
           else newnode->hdu=NULL;
         }
@@ -348,12 +357,6 @@ operands_pop(struct arithmeticparams *p, char *operator)
          this point. Also, in Arithmetic, the `name' element is used to
          identify variables. */
       if(data->name) { free(data->name); data->name=NULL; }
-
-      /* In case this is the first image that is read, then keep the WCS
-         information in the `refdata' structure.  */
-      if(p->popcounter==0)
-        p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0,
-                                    &p->refdata.nwcs);
 
       /* When the reference data structure's dimensionality is non-zero, it
          means that this is not the first image read. So, write its basic

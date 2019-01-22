@@ -41,6 +41,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "wcsfile",
+      UI_KEY_WCSFILE,
+      "STR",
+      0,
+      "File to use for output's WCS.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->wcsfile,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "wcshdu",
+      UI_KEY_WCSHDU,
+      "STR",
+      0,
+      "HDU/extension to use for output's WCS.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->wcshdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

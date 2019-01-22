@@ -1181,9 +1181,9 @@ reversepolish(struct arithmeticparams *p)
       filename=p->operands->filename;
       if( gal_fits_name_is_fits(filename) )
         {
+          /* Read the data, note that the WCS has already been set. */
           p->operands->data=gal_array_read_one_ch(filename, hdu, NULL,
                                                   p->cp.minmapsize);
-          p->refdata.wcs=gal_wcs_read(filename, hdu, 0, 0, &p->refdata.nwcs);
           if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);
         }
       else
