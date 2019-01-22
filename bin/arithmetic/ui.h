@@ -32,8 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   a b c d e f i j k l m n p r s t u v w x y z
-   A B C E G H J L Q R W X Y
+   a b c d e f i j k l m n p r s t u v x y z
+   A B C E G H J L Q R X Y
 */
 enum option_keys_enum
 {
@@ -41,7 +41,7 @@ enum option_keys_enum
   UI_KEY_GLOBALHDU       = 'g',
   UI_KEY_ONEDASIMAGE     = 'O',
   UI_KEY_WCSFILE         = 'w',
-  UI_KEY_WCSHDU          = 'W'
+  UI_KEY_WCSHDU          = 'W',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

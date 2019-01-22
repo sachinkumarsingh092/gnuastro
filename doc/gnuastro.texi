@@ -12884,25 +12884,27 @@ interest is in the same HDU of all the files. When this option is called,
 any values given to the @option{--hdu} option (explained above) are ignored
 and will not be used.
 
-@item --wcsfile STR
+@item -w STR
+@itemx --wcsfile STR
 FITS Filename containing the WCS structure that must be written to the
 output. The HDU/extension should be specified with @option{--wcshdu}.
 
 When this option is used, the respective WCS will be read before any
 processing is done on the command-line and directly used in the final
 output. If the given file doesn't have any WCS, then the default WCS (first
-file on the command-line) will be used in the output.
+file on the command-line with WCS) will be used in the output.
 
 This option will mostly be used when the default file (first of the set of
 inputs) is not the one containing your desired WCS. But with this option,
-you can use Arithmetic to rewrite/chage the WCS of an existing FITS file
-from another file a command like this:
+you can also use Arithmetic to rewrite/chage the WCS of an existing FITS
+dataset from another file:
 
 @example
 $ astarithmetic data.fits --wcsfile=other.fits -ofinal.fits
 @end example
 
-@item --wcshdu STR
+@item -W STR
+@itemx --wcshdu STR
 HDU/extension to read the WCS within the file given to
 @option{--wcsfile}. For more, see the description of @option{--wcsfile}.
 
