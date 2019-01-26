@@ -81,7 +81,7 @@ enum objectcols
     OCOL_VYY,            /* Sum of (value-sky) * y * y.               */
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
-    OCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
+    OCOL_SUMVAR,         /* Sum of sky variance value on this object. */
     OCOL_SUMWHT,         /* Sum of positive image pixels.             */
     OCOL_NUMWHT,         /* Number of positive pixels used for wht.   */
     OCOL_GX,             /* Geometric center of object in X.          */
@@ -122,7 +122,7 @@ enum clumpcols
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
     CCOL_SUMSKY,         /* Sum of sky value on this object.          */
-    CCOL_SUMSTD,         /* Sum of sky STD value on this object.      */
+    CCOL_SUMVAR,         /* Sum of sky variance value on this object. */
     CCOL_SUMWHT,         /* Sum of positive image pixels for wht.     */
     CCOL_NUMWHT,         /* Num of positive image pixels for wht.     */
     CCOL_GX,             /* Geometric center of clump in X.           */

@@ -19397,9 +19397,9 @@ actually the mean value of all the pixels in the sky image that lie on
 the same position as the object or clump.
 
 @item --std
-The sky value standard deviation (per pixel) for this clump or
-object. Like @option{--sky}, this is the average of the values in the
-input sky standard deviation image pixels that lie over this object.
+The sky value standard deviation (per pixel) for this clump or object. This
+is the square root of the mean variance under the object, or the root mean
+square.
 
 @item -C
 @itemx --numclumps

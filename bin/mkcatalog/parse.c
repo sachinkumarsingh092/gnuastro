@@ -116,7 +116,7 @@ parse_objects(struct mkcatalog_passparams *pp)
   double *oi=pp->oi;
   size_t *tsize=pp->tile->dsize;
   size_t d, increment=0, num_increment=1;
-  float st, sval, *V=NULL, *SK=NULL, *ST=NULL;
+  float var, sval, *V=NULL, *SK=NULL, *ST=NULL;
   int32_t *O, *OO, *C=NULL, *objarr=p->objects->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
@@ -271,8 +271,8 @@ parse_objects(struct mkcatalog_passparams *pp)
               if(p->std)
                 {
                   sval = pp->st_std ? *ST : (p->std->size>1?std[tid]:std[0]);
-                  st = p->variance ? sqrt(sval) : sval;
-                  if(oif[ OCOL_SUMSTD ]) oi[ OCOL_SUMSTD  ] += st;
+                  var = p->variance ? sval : sval*sval;
+                  if(oif[ OCOL_SUMVAR ]) oi[ OCOL_SUMVAR  ] += var;
                   /* For each pixel, we have a sky contribution to the
                      counts and the signal's contribution. The standard
                      deviation in the sky is simply `sval', but the
@@ -284,7 +284,7 @@ parse_objects(struct mkcatalog_passparams *pp)
                      noisy there will be negative values, and we don't want
                      them to decrease the variance. */
                   if(oif[ OCOL_SUM_VAR ])
-                    oi[ OCOL_SUM_VAR ] += ( (p->variance ? sval : st*st)
+                    oi[ OCOL_SUM_VAR ] += ( (p->variance ? var : sval)
                                             + fabs(*V) );
                 }
             }
@@ -335,7 +335,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
   uint8_t *cif=p->ciflag;
   size_t *tsize=pp->tile->dsize;
   int32_t *O, *OO, *C=NULL, nlab;
-  float st, sval, *V=NULL, *SK=NULL, *ST=NULL;
+  float var, sval, *V=NULL, *SK=NULL, *ST=NULL;
   size_t i, ii, d, increment=0, num_increment=1;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
@@ -479,10 +479,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
                       sval = ( pp->st_std
                                ? *ST
                                : (p->std->size>1 ? std[tid] : std[0]) );
-                      st = p->variance ? sqrt(sval) : sval;
-                      if(cif[ CCOL_SUMSTD  ]) ci[ CCOL_SUMSTD  ] += st;
+                      var = p->variance ? sval : sval*sval;
+                      if(cif[ CCOL_SUMVAR  ]) ci[ CCOL_SUMVAR ] += var;
                       if(cif[ CCOL_SUM_VAR ])
-                        ci[ CCOL_SUM_VAR ] += ( (p->variance ? sval : st*st)
+                        ci[ CCOL_SUM_VAR ] += ( (p->variance ? var : sval)
                                                 + fabs(*V) );
                     }
                 }

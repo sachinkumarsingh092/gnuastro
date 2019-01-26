@@ -63,6 +63,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      color maps in Gnuastro 0.8, it is also necessary to force a range on
      non-byte datasets. It is thus necessary to use a more generic name.
 
+  MakeCatalog:
+   --std: Until now, this option would measure the mean standard deviation
+     under the label. But this is not a statistically meaningful measure
+     for the Sky standard deviation and could be incorrectly used. From now
+     on, this option measures the square root of the mean variance, or root
+     mean square (the correct definition of the Sky standard deviation).
+
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
   bug #55333: Fits program crash when --write or --update have no value.
