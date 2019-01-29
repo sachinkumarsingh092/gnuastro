@@ -420,16 +420,18 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
         echo "#include <stdio.h>"                                 > $cprog
         echo "int main(void){printf(\"success\\n\"); return 0;}" >> $cprog
         ltargs="--quiet --tag=CC --mode=link $CC $cprog -O3 -o $outname"
-        AS_IF( sh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
-               [libtool_shell="sh"],
-               [AS_IF([test "x$has_bash" = "xyes"],
-                      [AS_IF(bash -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
-                             [libtool_shell="bash"]) ],
-                      [AS_IF([test "x$has_zsh" = "xyes"],
-                             [AS_IF(zsh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
-                                    [libtool_shell="zsh"]) ])
-                       ] )
-               ] )
+
+        # Check the shells, starting with known shells and ultimately
+        # trying with `sh' (can be any shell).
+        AS_IF([test "x$has_bash" = "xyes"],
+              [AS_IF(bash -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+                     [libtool_shell="bash"],
+                     [bash_version=$BASH_VERSION]) ],
+              [AS_IF([test "x$has_zsh" = "xyes"],
+                     [AS_IF(zsh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+                            [libtool_shell="zsh"]) ],
+                     [AS_IF(sh -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
+                            [libtool_shell="sh"]) ]) ])
 
         # Clean up: note that no output might have been generated (when no
         # proper shell was found). Therefore, for deleting the output file,
@@ -443,7 +445,12 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
 # If a good shell to call Libtool could be found, then Libtool is usable
 # within a program (BuildProgram in this case).
 AS_IF([test "x$libtool_shell" = "xnone"],
-      [usable_libtool=no; anywarnings=yes],
+      [
+        anywarnings=yes;
+        usable_libtool=no;
+        AS_IF([test "x$bash_version" = x], [junk=1],
+              [echo "GNU Bash was found but not a suitable version: $bash_version"])
+      ],
       [
         usable_libtool=yes
         AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_SHELL], ["$libtool_shell"],
@@ -451,6 +458,7 @@ AS_IF([test "x$libtool_shell" = "xnone"],
         AC_DEFINE_UNQUOTED([GAL_CONFIG_GNULIBTOOL_EXEC], ["$gnulibtool_exec"],
                            [The executable to call GNU Libtool])
       ])
+
 
 
 
@@ -902,6 +910,8 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO([])
                AS_IF([test "x$has_gnulibtool" = "xyes"],
                      [AS_ECHO(["    -- GNU Libtool is present, but couldn't be run in tested shells."])
+                      AS_IF([test "x$bash_version" = x], [junk=1],
+                            [echo "       (GNU Bash was found but not a suitable version: $bash_version)"])
                       AS_ECHO([])],
                      [AS_IF([test "x$has_libtool" = "xyes"],
                             [AS_ECHO(["    -- A libtool implementation was found, but it isn't GNU."])

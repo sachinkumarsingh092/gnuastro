@@ -1,3 +1,4 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Raúl Infante Sainz
+David Valls-Gabaud
