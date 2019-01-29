@@ -147,7 +147,7 @@ gal_box_border_from_center(double *center, size_t ndim, long *width,
    input image (fpixel_i[2] and lpixel_i[2]). But those first and last
    pixels don't necessarily lie within the image's boundaries. They can be
    outside of it or patially overlap with it (see examples below). The job
-   of this function is to corret for such situations and find the starting
+   of this function is to correct for such situations and find the starting
    and ending points of any overlap.
 
    It is assumed that your output (overlap) image's first pixel lies right
@@ -251,6 +251,11 @@ gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
       */
       if(fpixel_i[i]<1)
         {
+          /* Along any dimension, if `lpixel_i' is also smaller than 1,
+             then there is no overlap. */
+          if(lpixel_i[i]<1) return 0;
+
+          /* Correct the coordinates. */
           fpixel_o[i] = -1*fpixel_i[i]+2;
           fpixel_i[i] = 1;
         }
@@ -269,6 +274,11 @@ gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
         cropped image we should only fill upto c-n.*/
       if(lpixel_i[i]>naxes[i])
         {
+          /* Along any dimension, if `fpixel_i' is larger than the image
+             size, there is no overlap. */
+          if(fpixel_i[i]>naxes[i]) return 0;
+
+          /* Correct the coordinates. */
           lpixel_o[i] = width - (lpixel_i[i]-naxes[i]);
           lpixel_i[i] = naxes[i];
         }
