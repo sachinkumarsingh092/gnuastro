@@ -300,12 +300,13 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
       (*first)->name="THRESH1_INTERP";
       (*second)->name="THRESH2_INTERP";
       if(third) (*third)->name="THRESH3_INTERP";
-      gal_tile_full_values_write(*first, tl, 1, filename, NULL, PROGRAM_NAME);
-      gal_tile_full_values_write(*second, tl, 1, filename, NULL,
-                                 PROGRAM_NAME);
+      gal_tile_full_values_write(*first, tl, !p->ignoreblankintiles,
+                                 filename, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(*second, tl, !p->ignoreblankintiles,
+                                 filename, NULL, PROGRAM_NAME);
       if(third)
-        gal_tile_full_values_write(*third, tl, 1, filename, NULL,
-                                   PROGRAM_NAME);
+        gal_tile_full_values_write(*third, tl, !p->ignoreblankintiles,
+                                   filename, NULL, PROGRAM_NAME);
       (*first)->name = (*second)->name = NULL;
       if(third) (*third)->name=NULL;
     }
@@ -340,13 +341,13 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
           (*first)->name="THRESH1_SMOOTH";
           (*second)->name="THRESH2_SMOOTH";
           if(third) (*third)->name="THRESH3_SMOOTH";
-          gal_tile_full_values_write(*first, tl, 1, filename, NULL,
-                                     PROGRAM_NAME);
-          gal_tile_full_values_write(*second, tl, 1, filename, NULL,
-                                     PROGRAM_NAME);
+          gal_tile_full_values_write(*first, tl, !p->ignoreblankintiles,
+                                     filename, NULL, PROGRAM_NAME);
+          gal_tile_full_values_write(*second, tl, !p->ignoreblankintiles,
+                                     filename, NULL, PROGRAM_NAME);
           if(third)
-            gal_tile_full_values_write(*third, tl, 1, filename, NULL,
-                                       PROGRAM_NAME);
+            gal_tile_full_values_write(*third, tl, !p->ignoreblankintiles,
+                                       filename, NULL, PROGRAM_NAME);
           (*first)->name = (*second)->name = NULL;
           if(third) (*third)->name=NULL;
         }
@@ -645,17 +646,20 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
     {
       qprm.erode_th->name="QTHRESH_ERODE";
       qprm.noerode_th->name="QTHRESH_NOERODE";
-      gal_tile_full_values_write(qprm.erode_th, tl, 1, p->qthreshname, NULL,
-                                 PROGRAM_NAME);
-      gal_tile_full_values_write(qprm.noerode_th, tl, 1, p->qthreshname, NULL,
-                                 PROGRAM_NAME);
+      gal_tile_full_values_write(qprm.erode_th, tl,
+                                 !p->ignoreblankintiles,
+                                 p->qthreshname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(qprm.noerode_th, tl,
+                                 !p->ignoreblankintiles,
+                                 p->qthreshname, NULL, PROGRAM_NAME);
       qprm.erode_th->name=qprm.noerode_th->name=NULL;
 
       if(qprm.expand_th)
         {
           qprm.expand_th->name="QTHRESH_EXPAND";
-          gal_tile_full_values_write(qprm.expand_th, tl, 1, p->qthreshname,
-                                     NULL, PROGRAM_NAME);
+          gal_tile_full_values_write(qprm.expand_th, tl,
+                                     !p->ignoreblankintiles,
+                                     p->qthreshname, NULL, PROGRAM_NAME);
           qprm.expand_th->name=NULL;
         }
     }

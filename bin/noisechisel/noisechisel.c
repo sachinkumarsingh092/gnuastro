@@ -184,7 +184,7 @@ noisechisel_output(struct noisechiselparams *p)
   /* Write the Sky image into the output */
   if(p->sky->name) free(p->sky->name);
   p->sky->name="SKY";
-  gal_tile_full_values_write(p->sky, &p->cp.tl, !p->ignoreblankinsky,
+  gal_tile_full_values_write(p->sky, &p->cp.tl, !p->ignoreblankintiles,
                              p->cp.output, NULL, PROGRAM_NAME);
   p->sky->name=NULL;
 
@@ -200,7 +200,7 @@ noisechisel_output(struct noisechiselparams *p)
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0, &p->medstd, 0,
                         "Median raw tile standard deviation", 0,
                         p->input->unit);
-  gal_tile_full_values_write(p->std, &p->cp.tl, !p->ignoreblankinsky,
+  gal_tile_full_values_write(p->std, &p->cp.tl, !p->ignoreblankintiles,
                              p->cp.output, keys, PROGRAM_NAME);
   p->std->name=NULL;
 

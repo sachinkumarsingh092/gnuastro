@@ -210,10 +210,10 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
     {
       p->sky->name="SKY";
       p->std->name="STD";
-      gal_tile_full_values_write(p->sky, tl, 1, checkname, NULL,
-                                 PROGRAM_NAME);
-      gal_tile_full_values_write(p->std, tl, 1, checkname, NULL,
-                                 PROGRAM_NAME);
+      gal_tile_full_values_write(p->sky, tl, !p->ignoreblankintiles,
+                                 checkname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(p->std, tl, !p->ignoreblankintiles,
+                                 checkname, NULL, PROGRAM_NAME);
       p->sky->name=p->std->name=NULL;
     }
 

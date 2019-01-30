@@ -16181,13 +16181,17 @@ discontinuities do not show up in the final Sky values. The smoothing is
 done through convolution (see @ref{Convolution process}) with a flat
 kernel, so the value to this option must be an odd number.
 
-@item --ignoreblankinsky
-Don't set the input's blank pixels to blank in the output Sky and Sky
-standard deviation datasets. This is only applicable when the output has
-the same size as the input, in other words, when @option{--oneelempertile}
-isn't called. By default, blank values in the input (commonly on the edges
-which are outside the survey/field area) will be set to blank in the output
-Sky and Sky standard deviation also.
+@item --ignoreblankintiles
+Don't set the input's blank pixels to blank in the tiled outputs (for
+example Sky and Sky standard deviation extensions of the output). This is
+only applicable when the tiled output has the same size as the input, in
+other words, when @option{--oneelempertile} isn't called.
+
+By default, blank values in the input (commonly on the edges which are
+outside the survey/field area) will be set to blank in the tiled outputs
+also. But in other scenarios this default behavior is not desired: for
+example if you have masked something in the input, but want the tiled
+output under that also.
 
 @item --checksky
 Create a multi-extension FITS file showing the steps that were used to
@@ -17157,13 +17161,17 @@ NoiseChisel will abort once its desired extensions have been written. With
 NoiseChisel to continue with the rest of the processing, even after the
 requested check files are complete.
 
-@item --ignoreblankinsky
-Don't set the input's blank pixels to blank in the output Sky and Sky
-standard deviation datasets. This is only applicable when the output has
-the same size as the input, in other words, when @option{--oneelempertile}
-isn't called. By default, blank values in the input (commonly on the edges
-which are outside the survey/field area) will be set to blank in the output
-Sky and Sky standard deviation also.
+@item --ignoreblankintiles
+Don't set the input's blank pixels to blank in the tiled outputs (for
+example Sky and Sky standard deviation extensions of the output). This is
+only applicable when the tiled output has the same size as the input, in
+other words, when @option{--oneelempertile} isn't called.
+
+By default, blank values in the input (commonly on the edges which are
+outside the survey/field area) will be set to blank in the tiled outputs
+also. But in other scenarios this default behavior is not desired: for
+example if you have masked something in the input, but want the tiled
+output under that also.
 
 @item -l
 @itemx --label

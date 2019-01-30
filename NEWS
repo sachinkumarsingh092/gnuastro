@@ -70,6 +70,17 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      on, this option measures the square root of the mean variance, or root
      mean square (the correct definition of the Sky standard deviation).
 
+  NoiseChisel:
+   --ignoreblankintiles: Until now `--ignoreblankinsky', would specify if
+     blank values should also be written into the tiled Sky and Sky
+     standard deviation outputs. But NoiseChisel can optionally produce
+     many more tiled outputs (for example with `--checkqthresh'). So the
+     option was renamed to `--ignoreblankintiles' to highlight that the
+     status of blank elements can be set in all tiled outputs.
+
+  Statistics:
+   --ignoreblankintiles: similar to same option in NoiseChisel.
+
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
   bug #55333: Fits program crash when --write or --update have no value.

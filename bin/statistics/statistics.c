@@ -259,7 +259,8 @@ statistics_interpolate_and_write(struct statisticsparams *p,
     }
 
   /* Write the values. */
-  gal_tile_full_values_write(values, &cp->tl, 1, output, NULL, PROGRAM_NAME);
+  gal_tile_full_values_write(values, &cp->tl, !p->ignoreblankintiles,
+                             output, NULL, PROGRAM_NAME);
   gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
   gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
                             "STATISTICS-CONFIG", output, "0");

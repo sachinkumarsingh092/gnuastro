@@ -203,10 +203,10 @@ sky(struct statisticsparams *p)
     }
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, 1, p->checkskyname, NULL,
-                                 PROGRAM_NAME);
-      gal_tile_full_values_write(p->std_t, tl, 1, p->checkskyname, NULL,
-                                 PROGRAM_NAME);
+      gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankintiles,
+                                 p->checkskyname, NULL, PROGRAM_NAME);
+      gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankintiles,
+                                 p->checkskyname, NULL, PROGRAM_NAME);
     }
 
 
@@ -231,9 +231,9 @@ sky(struct statisticsparams *p)
     gal_timing_report(&t1, "All blank tiles filled (interplated).", 1);
   if(p->checksky)
     {
-      gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky,
+      gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankintiles,
                                  p->checkskyname, NULL, PROGRAM_NAME);
-      gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky,
+      gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankintiles,
                                  p->checkskyname, NULL, PROGRAM_NAME);
     }
 
@@ -255,9 +255,9 @@ sky(struct statisticsparams *p)
                           1);
       if(p->checksky)
         {
-          gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky,
+          gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankintiles,
                                      p->checkskyname, NULL, PROGRAM_NAME);
-          gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky,
+          gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankintiles,
                                      p->checkskyname, NULL, PROGRAM_NAME);
           if(!cp->quiet)
             printf("  - Check image written to `%s'.\n", p->checkskyname);
@@ -277,9 +277,9 @@ sky(struct statisticsparams *p)
   p->sky_t->name="SKY";
   p->std_t->name="SKY_STD";
   p->cp.keepinputdir=keepinputdir;
-  gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankinsky, outname,
+  gal_tile_full_values_write(p->sky_t, tl, !p->ignoreblankintiles, outname,
                              NULL, PROGRAM_NAME);
-  gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankinsky, outname,
+  gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankintiles, outname,
                              NULL, PROGRAM_NAME);
   p->sky_t->name = p->std_t->name = NULL;
   gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
