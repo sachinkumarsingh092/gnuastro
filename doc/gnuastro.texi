@@ -28863,8 +28863,8 @@ The next major difference with over-segmentation is that when there is only
 one label in growth region(s), it is not mandatory for @code{indexs} to be
 sorted by values. If there are multiple labeled regions in growth
 region(s), then values are important and you can use @code{qsort} with
-@code{gal_qsort_index_float_decreasing} to sort the indexs by values in a
-separate array (see @ref{Qsort functions}).
+@code{gal_qsort_index_single_d} to sort the indexs by values in a separate
+array (see @ref{Qsort functions}).
 
 This function looks for positive-valued neighbors of each pixel in
 @code{indexs} and will label a pixel if it touches one. Therefore, it is
