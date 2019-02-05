@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <gnuastro/list.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/pointer.h>
@@ -454,12 +455,12 @@ arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 
   switch(operator)
     {
-    case GAL_ARITHMETIC_OP_MINVAL:  out=gal_statistics_minimum(input); break;
-    case GAL_ARITHMETIC_OP_MAXVAL:  out=gal_statistics_maximum(input); break;
-    case GAL_ARITHMETIC_OP_NUMVAL:  out=gal_statistics_number(input);  break;
-    case GAL_ARITHMETIC_OP_SUMVAL:  out=gal_statistics_sum(input);     break;
-    case GAL_ARITHMETIC_OP_MEANVAL: out=gal_statistics_mean(input);    break;
-    case GAL_ARITHMETIC_OP_STDVAL:  out=gal_statistics_std(input);     break;
+    case GAL_ARITHMETIC_OP_MINVAL:   out=gal_statistics_minimum(input);break;
+    case GAL_ARITHMETIC_OP_MAXVAL:   out=gal_statistics_maximum(input);break;
+    case GAL_ARITHMETIC_OP_NUMBERVAL:out=gal_statistics_number(input); break;
+    case GAL_ARITHMETIC_OP_SUMVAL:   out=gal_statistics_sum(input);    break;
+    case GAL_ARITHMETIC_OP_MEANVAL:  out=gal_statistics_mean(input);   break;
+    case GAL_ARITHMETIC_OP_STDVAL:   out=gal_statistics_std(input);    break;
     case GAL_ARITHMETIC_OP_MEDIANVAL:
       out=gal_statistics_median(input, ip); break;
     default:
@@ -836,6 +837,60 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 
 
+#define MULTIOPERAND_SIGCLIP(TYPE) {                                    \
+    float *sarr;                                                        \
+    size_t n, j=0;                                                      \
+    gal_data_t *sclip;                                                  \
+    TYPE *pixs=gal_pointer_allocate(list->type, dnum, 0, __func__,      \
+                                    "pixs");                            \
+    gal_data_t *cont=gal_data_alloc(pixs, list->type, 1, &dnum, NULL,   \
+                                    0, -1, NULL, NULL, NULL);           \
+                                                                        \
+    /* Loop over each pixel */                                          \
+    do                                                                  \
+      {                                                                 \
+        /* Initialize. */                                               \
+        n=0;                                                            \
+                                                                        \
+        /* Loop over each array. */                                     \
+        for(i=0;i<dnum;++i) pixs[n++]=a[i][j];                          \
+                                                                        \
+        /* If there are any elements, measure the  */                   \
+        if(n)                                                           \
+          {                                                             \
+            sclip=gal_statistics_sigma_clip(cont, p1, p2, 1, 1);        \
+            sarr=sclip->array;                                          \
+            switch(operator)                                            \
+              {                                                         \
+              case GAL_ARITHMETIC_OP_SIGCLIP_STD:    *o++=sarr[3]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   *o++=sarr[2]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: *o++=sarr[1]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: *o++=sarr[0]; break;\
+              default:                                                  \
+                error(EXIT_FAILURE, 0, "%s: a bug! the code %d is not " \
+                      "valid for sigma-clipping results", __func__,     \
+                      operator);                                        \
+              }                                                         \
+                                                                        \
+            /* Since we are doing sigma-clipping in place, the size, */ \
+            /* and flags need to be reset. */                           \
+            cont->flag=0;                                               \
+            cont->size=cont->dsize[0]=dnum;                             \
+          }                                                             \
+        else                                                            \
+          *o++=b;                                                       \
+        ++j;                                                            \
+      }                                                                 \
+    while(o<of);                                                        \
+                                                                        \
+    /* Clean up. */                                                     \
+    gal_data_free(cont);                                                \
+  }
+
+
+
+
+
 #define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
     TYPE b, **a, *o=out->array, *of=o+out->size;                        \
     size_t i=0;  /* Different from the `i' in the main function. */     \
@@ -865,7 +920,7 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
         MULTIOPERAND_MAX(TYPE);                                         \
         break;                                                          \
                                                                         \
-      case GAL_ARITHMETIC_OP_NUM:                                       \
+      case GAL_ARITHMETIC_OP_NUMBER:                                    \
         MULTIOPERAND_NUM;                                               \
         break;                                                          \
                                                                         \
@@ -885,6 +940,13 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
         MULTIOPERAND_MEDIAN(TYPE, QSORT_F);                             \
         break;                                                          \
                                                                         \
+      case GAL_ARITHMETIC_OP_SIGCLIP_STD:                               \
+      case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:                              \
+      case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:                            \
+      case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:                            \
+        MULTIOPERAND_SIGCLIP(TYPE);                                     \
+        break;                                                          \
+                                                                        \
       default:                                                          \
         error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",   \
               "MULTIOPERAND_TYPE_SET", operator);                       \
@@ -900,18 +962,37 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 /* The single operator in this function is assumed to be a linked list. The
    number of operators is determined from the fact that the last node in
-   the linked list must have a NULL pointer as its `next' element.*/
+   the linked list must have a NULL pointer as its `next' element. */
 static gal_data_t *
-arithmetic_multioperand(int operator, int flags, gal_data_t *list)
+arithmetic_multioperand(int operator, int flags, gal_data_t *list,
+                        gal_data_t *params)
 {
   uint8_t *hasblank;
   size_t i=0, dnum=1;
+  float p1=NAN, p2=NAN;
   gal_data_t *out, *tmp, *ttmp;
 
 
   /* For generality, `list' can be a NULL pointer, in that case, this
      function will return a NULL pointer and avoid further processing. */
   if(list==NULL) return NULL;
+
+
+  /* If any parameters are given, prepare them. */
+  for(tmp=params; tmp!=NULL; tmp=tmp->next)
+    {
+      /* Basic sanity checks. */
+      if(tmp->size>1)
+        error(EXIT_FAILURE, 0, "%s: parameters must be a single number",
+              __func__);
+      if(tmp->type!=GAL_TYPE_FLOAT32)
+        error(EXIT_FAILURE, 0, "%s: parameters must be float32 type",
+              __func__);
+
+      /* Write them */
+      if(isnan(p1)) p1=((float *)(tmp->array))[0];
+      else          p2=((float *)(tmp->array))[0];
+    }
 
 
   /* Do a simple sanity check, comparing the operand on top of the list to
@@ -1002,6 +1083,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list)
           if(tmp!=out) gal_data_free(tmp);
           tmp=ttmp;
         }
+      if(params) gal_list_data_free(params);
     }
   free(hasblank);
   return out;
@@ -1369,7 +1451,7 @@ gal_arithmetic_operator_string(int operator)
 
     case GAL_ARITHMETIC_OP_MINVAL:          return "minvalue";
     case GAL_ARITHMETIC_OP_MAXVAL:          return "maxvalue";
-    case GAL_ARITHMETIC_OP_NUMVAL:          return "numvalue";
+    case GAL_ARITHMETIC_OP_NUMBERVAL:       return "numbervalue";
     case GAL_ARITHMETIC_OP_SUMVAL:          return "sumvalue";
     case GAL_ARITHMETIC_OP_MEANVAL:         return "meanvalue";
     case GAL_ARITHMETIC_OP_STDVAL:          return "stdvalue";
@@ -1377,11 +1459,15 @@ gal_arithmetic_operator_string(int operator)
 
     case GAL_ARITHMETIC_OP_MIN:             return "min";
     case GAL_ARITHMETIC_OP_MAX:             return "max";
-    case GAL_ARITHMETIC_OP_NUM:             return "num";
+    case GAL_ARITHMETIC_OP_NUMBER:          return "number";
     case GAL_ARITHMETIC_OP_SUM:             return "sum";
     case GAL_ARITHMETIC_OP_MEAN:            return "mean";
     case GAL_ARITHMETIC_OP_STD:             return "std";
     case GAL_ARITHMETIC_OP_MEDIAN:          return "median";
+    case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:  return "sigclip-number";
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:  return "sigclip-median";
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:    return "sigclip-mean";
+    case GAL_ARITHMETIC_OP_SIGCLIP_STD:     return "sigclip-number";
 
     case GAL_ARITHMETIC_OP_TO_UINT8:        return "uchar";
     case GAL_ARITHMETIC_OP_TO_INT8:         return "char";
@@ -1471,7 +1557,7 @@ gal_arithmetic(int operator, int flags, ...)
     /* Statistical operators that return one value. */
     case GAL_ARITHMETIC_OP_MINVAL:
     case GAL_ARITHMETIC_OP_MAXVAL:
-    case GAL_ARITHMETIC_OP_NUMVAL:
+    case GAL_ARITHMETIC_OP_NUMBERVAL:
     case GAL_ARITHMETIC_OP_SUMVAL:
     case GAL_ARITHMETIC_OP_MEANVAL:
     case GAL_ARITHMETIC_OP_STDVAL:
@@ -1489,13 +1575,18 @@ gal_arithmetic(int operator, int flags, ...)
     /* Multi-operand operators */
     case GAL_ARITHMETIC_OP_MIN:
     case GAL_ARITHMETIC_OP_MAX:
-    case GAL_ARITHMETIC_OP_NUM:
+    case GAL_ARITHMETIC_OP_NUMBER:
     case GAL_ARITHMETIC_OP_SUM:
     case GAL_ARITHMETIC_OP_MEAN:
     case GAL_ARITHMETIC_OP_STD:
     case GAL_ARITHMETIC_OP_MEDIAN:
+    case GAL_ARITHMETIC_OP_SIGCLIP_STD:
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:
+    case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:
       d1 = va_arg(va, gal_data_t *);
-      out=arithmetic_multioperand(operator, flags, d1);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_multioperand(operator, flags, d1, d2);
       break;
 
 

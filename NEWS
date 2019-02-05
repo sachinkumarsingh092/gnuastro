@@ -17,6 +17,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      without changing the state of the operand stack (popping the top
      element). This can greatly help in debugging/understanding an
      Arithmetic command, especially as it gets longer, or more complicated.
+   - Four new operators have beed added to allow coadding multiple datasets
+     into one using sigma-clipping: `sigclip-number', `sigclip-mean',
+     `sigclip-median', and `sigclip-std'. These are very useful when
+     several inputs have strong outliers that affect the median, or the
+     mean is required.
    --wcsfile and --wcshdu: these two options can be used to specify a
      different file for reading the WCS of the output. This is useful when
      the default (theh WCS of the first dataset that is read) is not the
@@ -55,6 +60,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 ** Removed features
 
 ** Changed features
+
+  Arithmetic:
+   - `num' operator is renamed to `number'.
+   - `numvalue' operator is renamed to `numbervalue'.
 
   ConvertType:
    --forcemin & --forcemax: until now, `--flminbyte' and `--flmaxbyte' were

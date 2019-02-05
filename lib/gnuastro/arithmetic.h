@@ -108,7 +108,7 @@ enum gal_arithmetic_operators
 
   GAL_ARITHMETIC_OP_MINVAL,       /* Minimum value of array.               */
   GAL_ARITHMETIC_OP_MAXVAL,       /* Maximum value of array.               */
-  GAL_ARITHMETIC_OP_NUMVAL,       /* Number of (non-blank) elements.       */
+  GAL_ARITHMETIC_OP_NUMBERVAL,    /* Number of (non-blank) elements.       */
   GAL_ARITHMETIC_OP_SUMVAL,       /* Sum of (non-blank) elements.          */
   GAL_ARITHMETIC_OP_MEANVAL,      /* Mean value of array.                  */
   GAL_ARITHMETIC_OP_STDVAL,       /* Standard deviation value of array.    */
@@ -116,11 +116,15 @@ enum gal_arithmetic_operators
 
   GAL_ARITHMETIC_OP_MIN,          /* Minimum per pixel of multiple arrays. */
   GAL_ARITHMETIC_OP_MAX,          /* Maximum per pixel of multiple arrays. */
-  GAL_ARITHMETIC_OP_NUM,          /* Non-blank number of pixels in arrays. */
+  GAL_ARITHMETIC_OP_NUMBER,       /* Non-blank number of pixels in arrays. */
   GAL_ARITHMETIC_OP_SUM,          /* Sum per pixel of multiple arrays.     */
   GAL_ARITHMETIC_OP_MEAN,         /* Mean per pixel of multiple arrays.    */
   GAL_ARITHMETIC_OP_STD,          /* STD per pixel of multiple arrays.     */
   GAL_ARITHMETIC_OP_MEDIAN,       /* Median per pixel of multiple arrays.  */
+  GAL_ARITHMETIC_OP_SIGCLIP_NUMBER,/* Sigma-clipped number of mult. arrays.*/
+  GAL_ARITHMETIC_OP_SIGCLIP_MEAN, /* Sigma-clipped mean of multiple arrays.*/
+  GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN,/* Sigma-clipped median of mult. arrays.*/
+  GAL_ARITHMETIC_OP_SIGCLIP_STD,  /* Sigma-clipped STD of multiple arrays. */
 
   GAL_ARITHMETIC_OP_TO_UINT8,     /* Convert to uint8_t.                   */
   GAL_ARITHMETIC_OP_TO_INT8,      /* Convert to int8_t.                    */

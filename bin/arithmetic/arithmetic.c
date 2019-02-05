@@ -64,21 +64,60 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************          Internal functions         *************/
 /***************************************************************/
 #define SET_NUM_OP(CTYPE) {                                \
-    CTYPE a=*(CTYPE *)(data->array); if(a>0) return a;    }
+    CTYPE a=*(CTYPE *)(numpop->array); if(a>0) return a;    }
 
 static size_t
-pop_number_of_operands(struct arithmeticparams *p, gal_data_t *data,
-                       char *token_string)
+pop_number_of_operands(struct arithmeticparams *p, int op, char *token_string,
+                       gal_data_t **params)
 {
+  char *cstring="first";
+  size_t c, numparams=0;
+  gal_data_t *tmp, *numpop;
+
+  /* See if this operator needs any parameters. If so, pop them. */
+  switch(op)
+    {
+    case GAL_ARITHMETIC_OP_SIGCLIP_STD:
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:
+    case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:
+      numparams=2;
+      break;
+    }
+
+  /* If any parameters should be read, read them. */
+  *params=NULL;
+  for(c=0;c<numparams;++c)
+    {
+      /* If it only has one element, save it as floating point and add it
+         to the list. */
+      tmp=operands_pop(p, token_string);
+      if(tmp->size>1)
+        error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" "
+              "operator must be a single number", cstring, token_string);
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
+      gal_list_data_add(params, tmp);
+
+      /* A small sanity check (none of the parameters for sigma-clipping
+         can be negative.. */
+      if( ((float *)(tmp->array))[0]<=0.0 )
+        error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" "
+              "operator cannot be negative", cstring, token_string);
+
+      /* Increment the counter string. */
+      cstring=c?"third":"second";
+    }
+
   /* Check if its a number. */
-  if(data->size>1)
-    error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
-          "operator must be a number, not an array", token_string);
+  numpop=operands_pop(p, token_string);
+  if(numpop->size>1)
+    error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" "
+          "operator (number of input datasets) must be a number, not an "
+          "array", cstring, token_string);
 
   /* Check its type and return the value. */
-  switch(data->type)
+  switch(numpop->type)
     {
-
     /* For the integer types, if they are unsigned, then just pass their
        value, if they are signed, you have to make sure they are zero or
        positive. */
@@ -94,18 +133,20 @@ pop_number_of_operands(struct arithmeticparams *p, gal_data_t *data,
     /* Floating point numbers are not acceptable in this context. */
     case GAL_TYPE_FLOAT32:
     case GAL_TYPE_FLOAT64:
-      error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
-            "operator must be an integer type", token_string);
+      error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" "
+            "operator (number of input datasets) must be an integer type",
+            cstring, token_string);
 
     default:
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, data->type);
+            __func__, numpop->type);
     }
 
   /* If control reaches here, then the number must have been a negative
      value, so print an error. */
-  error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" operator "
-        "cannot be zero or a negative number", token_string);
+  error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" operator "
+        "cannot be zero or a negative number", cstring,
+        token_string);
   return 0;
 }
 
@@ -923,8 +964,8 @@ reversepolish(struct arithmeticparams *p)
             { op=GAL_ARITHMETIC_OP_MINVAL;            nop=1;  }
           else if (!strcmp(token->v, "maxvalue"))
             { op=GAL_ARITHMETIC_OP_MAXVAL;            nop=1;  }
-          else if (!strcmp(token->v, "numvalue"))
-            { op=GAL_ARITHMETIC_OP_NUMVAL;            nop=1;  }
+          else if (!strcmp(token->v, "numbervalue"))
+            { op=GAL_ARITHMETIC_OP_NUMBERVAL;         nop=1;  }
           else if (!strcmp(token->v, "sumvalue"))
             { op=GAL_ARITHMETIC_OP_SUMVAL;            nop=1;  }
           else if (!strcmp(token->v, "meanvalue"))
@@ -937,8 +978,8 @@ reversepolish(struct arithmeticparams *p)
             { op=GAL_ARITHMETIC_OP_MIN;               nop=-1; }
           else if (!strcmp(token->v, "max"))
             { op=GAL_ARITHMETIC_OP_MAX;               nop=-1; }
-          else if (!strcmp(token->v, "num"))
-            { op=GAL_ARITHMETIC_OP_NUM;               nop=-1; }
+          else if (!strcmp(token->v, "number"))
+            { op=GAL_ARITHMETIC_OP_NUMBER;            nop=-1; }
           else if (!strcmp(token->v, "sum"))
             { op=GAL_ARITHMETIC_OP_SUM;               nop=-1; }
           else if (!strcmp(token->v, "mean"))
@@ -947,6 +988,14 @@ reversepolish(struct arithmeticparams *p)
             { op=GAL_ARITHMETIC_OP_STD;               nop=-1; }
           else if (!strcmp(token->v, "median"))
             { op=GAL_ARITHMETIC_OP_MEDIAN;            nop=-1; }
+          else if (!strcmp(token->v, "sigclip-number"))
+            { op=GAL_ARITHMETIC_OP_SIGCLIP_NUMBER;    nop=-1; }
+          else if (!strcmp(token->v, "sigclip-mean"))
+            { op=GAL_ARITHMETIC_OP_SIGCLIP_MEAN;      nop=-1; }
+          else if (!strcmp(token->v, "sigclip-median"))
+            { op=GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN;    nop=-1; }
+          else if (!strcmp(token->v, "sigclip-std"))
+            { op=GAL_ARITHMETIC_OP_SIGCLIP_STD;       nop=-1; }
 
           /* Conditional operators. */
           else if (!strcmp(token->v, "lt" ))
@@ -1075,13 +1124,13 @@ reversepolish(struct arithmeticparams *p)
 
                 case -1:
                   /* This case is when the number of operands is itself an
-                     operand. So the first popped operand must be an
+                     operand. So except for sigma-clipping (that has other
+                     parameters), the first popped operand must be an
                      integer number, we will use that to construct a linked
                      list of any number of operands within the single `d1'
                      pointer. */
                   d1=NULL;
-                  numop=pop_number_of_operands(p, operands_pop(p, token->v),
-                                               token->v);
+                  numop=pop_number_of_operands(p, op, token->v, &d2);
                   for(i=0;i<numop;++i)
                     gal_list_data_add(&d1, operands_pop(p, token->v));
                   break;
@@ -1090,7 +1139,6 @@ reversepolish(struct arithmeticparams *p)
                   error(EXIT_FAILURE, 0, "no operators, `%s' needs %d "
                         "operand(s)", token->v, nop);
                 }
-
 
               /* Run the arithmetic operation. Note that `gal_arithmetic'
                  is a variable argument function (like printf). So the

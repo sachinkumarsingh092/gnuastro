@@ -12180,7 +12180,7 @@ output of this operand is in the same type as the input.
 Maximum (non-blank) value of first operand in the same type, similar to
 @command{minvalue}.
 
-@item numvalue
+@item numbervalue
 Number of non-blank elements in first operand in the @code{uint64} type,
 similar to @command{minvalue}.
 
@@ -12220,8 +12220,7 @@ Important notes:
 @itemize
 
 @item
-NaN/blank pixels will be ignored, see @ref{Blank
-pixels}.
+NaN/blank pixels will be ignored, see @ref{Blank pixels}.
 
 @item
 The output will have the same type as the inputs. This is natural for the
@@ -12237,7 +12236,7 @@ conversion will be used.
 Similar to @command{min}, but the pixels of the output will contain
 the maximum of the respective pixels in all operands in the stack.
 
-@item num
+@item number
 Similar to @command{min}, but the pixels of the output will contain the
 number of the respective non-blank pixels in all input operands.
 
@@ -12256,6 +12255,43 @@ standard deviation of the respective pixels in all operands in the stack.
 @item median
 Similar to @command{min}, but the pixels of the output will contain
 the median of the respective pixels in all operands in the stack.
+
+@item sigclip-number
+Combine the specified number of inputs into a single output that contains
+the number of remaining elements after @mymath{\sigma}-clipping on each
+element/pixel (for more on @mymath{\sigma}-clipping, see @ref{Sigma
+clipping}). This operator is very similar to @command{min}, with the
+exception that it expects two operands (paramters for sigma-clipping)
+before the total number of inputs. The first popped operand is the
+termination criteria and the second is the multiple of @mymath{\sigma}.
+
+For example in the command below, the first popped operand (@command{0.2})
+is the sigma clipping termination criteria. If the termination criteria is
+larger than 1 it is interpretted as the number of clips to do. But if it is
+between 0 and 1, then it is the tolerance level on the standard deviation
+(see @ref{Sigma clipping}). The second popped operand (@command{5}) is the
+multiple of sigma to use in sigma-clipping. The third popped operand
+(@command{10}) is number of datasets that will be used (similar to the
+first popped operand to @command{min}).
+
+@example
+astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-number
+@end example
+
+@item sigclip-median
+Combine the specified number of inputs into a single output that contains
+the @emph{median} after @mymath{\sigma}-clipping on each element/pixel. For
+more see @command{sigclip-number}.
+
+@item sigclip-mean
+Combine the specified number of inputs into a single output that contains
+the @emph{mean} after @mymath{\sigma}-clipping on each element/pixel. For
+more see @command{sigclip-number}.
+
+@item sigclip-std
+Combine the specified number of inputs into a single output that contains
+the @emph{standard deviation} after @mymath{\sigma}-clipping on each
+element/pixel. For more see @command{sigclip-number}.
 
 @item filter-mean
 Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average,
@@ -26867,7 +26903,7 @@ type, you can convert the input to a floating point type with
 
 @deffn  Macro GAL_ARITHMETIC_OP_MINVAL
 @deffnx Macro GAL_ARITHMETIC_OP_MAXVAL
-@deffnx Macro GAL_ARITHMETIC_OP_NUMVAL
+@deffnx Macro GAL_ARITHMETIC_OP_NUMBERVAL
 @deffnx Macro GAL_ARITHMETIC_OP_SUMVAL
 @deffnx Macro GAL_ARITHMETIC_OP_MEANVAL
 @deffnx Macro GAL_ARITHMETIC_OP_STDVAL
@@ -26886,7 +26922,7 @@ Unary operand absolute-value operator.
 
 @deffn  Macro GAL_ARITHMETIC_OP_MIN
 @deffnx Macro GAL_ARITHMETIC_OP_MAX
-@deffnx Macro GAL_ARITHMETIC_OP_NUM
+@deffnx Macro GAL_ARITHMETIC_OP_NUMBER
 @deffnx Macro GAL_ARITHMETIC_OP_SUM
 @deffnx Macro GAL_ARITHMETIC_OP_MEAN
 @deffnx Macro GAL_ARITHMETIC_OP_STD
@@ -26897,6 +26933,18 @@ be interpreted as a list of datasets (see @ref{List of gal_data_t}. The
 output will be a single dataset with each of its elements replaced by the
 respective statistical operation on the whole list. See the discussion
 under the @code{min} operator in @ref{Arithmetic operators}.
+@end deffn
+
+@deffn  Macro GAL_ARITHMETIC_OP_SIGCLIP_STD
+@deffnx Macro GAL_ARITHMETIC_OP_SIGCLIP_MEAN
+@deffnx Macro GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN
+@deffnx Macro GAL_ARITHMETIC_OP_SIGCLIP_NUMBER
+Similar to the operands above (including @code{GAL_ARITHMETIC_MIN}), except
+that when @code{gal_arithmetic} is called with these operators, it requires
+two arguments. The first is the list of datasets like before, and the
+second is the 2-element list of sigma-clipping parameters. The first
+element in the parameters list is the multiple of sigma and the second is
+the termination criteria (see @ref{Sigma clipping}).
 @end deffn
 
 @deffn Macro GAL_ARITHMETIC_OP_POW

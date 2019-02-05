@@ -1397,7 +1397,6 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
         }
       else noblank=contig;
 
-
       /* If there are any non-blank elements, make sure the array is
          sorted. After this step, we won't be dealing with `noblank' any
          more but with `sorted'. */
@@ -2012,20 +2011,29 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       start=nbs->array;
       while(num<maxnum && size)
         {
-          /* Find the median. */
-          statistics_median_in_sorted_no_blank(nbs, median_i->array);
-          median_d=gal_data_copy_to_new_type(median_i, GAL_TYPE_FLOAT64);
-
           /* Find the average and Standard deviation, note that both
              `start' and `size' will be different in the next round. */
           nbs->array = start;
           nbs->size = oldsize = size;
-          meanstd=gal_statistics_mean_std(nbs);
 
-          /* Put the three final values in usable (with a type)
-             pointers. */
-          med  = median_d->array;
+          /* For a detailed check, just correct the type).
+          if(!quiet)
+            {
+              size_t iii;
+              printf("nbs->size: %zu\n", nbs->size);
+              for(iii=0;iii<nbs->size;++iii)
+                printf("%f\n", ((float *)(nbs->array))[iii]);
+            }
+          */
+
+          /* Find the mean, median and standard deviation. */
+          meanstd=gal_statistics_mean_std(nbs);
+          statistics_median_in_sorted_no_blank(nbs, median_i->array);
+          median_d=gal_data_copy_to_new_type(median_i, GAL_TYPE_FLOAT64);
+
+          /* Put them in usable (with a type) pointers. */
           mean = meanstd->array;
+          med  = median_d->array;
           std  = &((double *)(meanstd->array))[1];
 
           /* If the user wanted to view the steps, show it to them. */
