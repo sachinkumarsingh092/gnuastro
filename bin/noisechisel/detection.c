@@ -327,6 +327,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
   float *f;
   uint8_t *b, *bf;
   gal_data_t *bin;
+  int con=p->pseudoconcomp==4 ? 1 : 2;
   struct fho_params fho_prm={0, NULL, workbin, worklab, p};
 
 
@@ -441,7 +442,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
       do if(*b==GAL_BLANK_UINT8) *b = !s0d1; while(++b<bf);
     }
   */
-  return gal_binary_connected_components(workbin, &worklab, 1);
+  return gal_binary_connected_components(workbin, &worklab, con);
 }
 
 

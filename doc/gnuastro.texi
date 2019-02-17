@@ -16487,6 +16487,17 @@ the image. For more, see the description of this option in @ref{Detection
 options}.
 
 @item
+@option{--holengb}: The connectivity (defined by the number of neighbors)
+to fill holes after applying @option{--dthresh} (above) to find
+pseudo-detections. For more, see the description of this option in
+@ref{Detection options}.
+
+@item
+@option{--pseudoconcomp}: The connectivity (defined by the number of
+neighbors) to find individual pseudo-detections. For more, see the
+description of this option in @ref{Detection options}.
+
+@item
 @option{--detgrowquant}: is used to grow the final true detections until a
 given quantile in the same way that clumps are grown during segmentation
 (compare columns 2 and 3 in Figure 10 of the paper). It replaces the old
@@ -17001,6 +17012,12 @@ will be enclosed. So setting a value of 8 in a 2D image means that the
 walls of the hole are 4-connected. If standard (near Sky level) values are
 given to @option{--dthresh}, setting @option{--holengb=4}, might fill the
 complete dataset and thus not create enough pseudo-detections.
+
+@item --pseudoconcomp=INT
+The connectivity (defined by the number of neighbors) to find individual
+pseudo-detections. If it is a weaker connectivity (4 in a 2D image), then
+pseudo-detections that are connected on the corners will be treated as
+separate.
 
 @item -m INT
 @itemx --snminarea=INT

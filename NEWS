@@ -50,6 +50,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      second input. This greatly simplifies the mergining of different table
      columns into one.
 
+  NoiseChisel:
+   --pseudoconcomp: allows setting the connectivity (4 or 8, in a 2D image)
+     to define separate pseudo-detections. If its stronger,
+     pseudo-detections that are touching on the corner will be identified
+     as one. Until this version, this was hard-written into the code and
+     was the weakest connectivity (4-connected in a 2D image).
+
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
