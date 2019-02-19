@@ -325,7 +325,7 @@ struct argp_option program_options[] =
       UI_GROUP_DETECTION,
       &p->opening,
       GAL_TYPE_SIZE_T,
-      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
@@ -409,6 +409,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "dopening",
+      UI_KEY_DOPENING,
+      "INT",
+      0,
+      "Depth of opening after dthresh.",
+      UI_GROUP_DETECTION,
+      &p->dopening,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "dopeningngb",
+      UI_KEY_DOPENINGNGB,
+      "INT",
+      0,
+      "4 or 8 connectivity for dthresh opening.",
+      UI_GROUP_DETECTION,
+      &p->dopeningngb,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "holengb",
       UI_KEY_HOLENGB,
       "INT",
@@ -484,6 +510,19 @@ struct argp_option program_options[] =
       GAL_TYPE_FLOAT32,
       GAL_OPTIONS_RANGE_GE_0_LE_1,
       GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "snthresh",
+      UI_KEY_SNTHRESH,
+      "FLT",
+      0,
+      "Manually input pseudo-det S/N threshold.",
+      UI_GROUP_DETECTION,
+      &p->snthresh,
+      GAL_TYPE_FLOAT32,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {

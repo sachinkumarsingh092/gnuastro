@@ -51,11 +51,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      columns into one.
 
   NoiseChisel:
-   --pseudoconcomp: allows setting the connectivity (4 or 8, in a 2D image)
-     to define separate pseudo-detections. If its stronger,
-     pseudo-detections that are touching on the corner will be identified
-     as one. Until this version, this was hard-written into the code and
-     was the weakest connectivity (4-connected in a 2D image).
+
+   --snthresh: Manually set the signal-to-noise ratio of true
+     pseudo-detections. With this option, NoiseChisel will not attempt to
+     find pseudo-detections over the noisy regions of the dataset, but will
+     directly go onto applying the manually input value.
+   - Several new options have been added to remove NoiseChisel's dependence
+     on values that were hard-coded in its source and thus not modifiable
+     at run-time by the user. To allow full configurability, these steps
+     can also be configured by the user.
+     --pseudoconcomp: allows setting the connectivity (4 or 8, in a 2D
+       image) to define separate pseudo-detections. If its stronger,
+       pseudo-detections that are touching on the corner will be identified
+       as one.
+     --dopening: The number of openings to do after applying `--dthresh'.
+     --dopeningngb: The connectivity (4 or 8) to use for `--dopening'.
 
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.

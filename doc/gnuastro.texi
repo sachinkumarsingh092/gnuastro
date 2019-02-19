@@ -16516,6 +16516,16 @@ the image. For more, see the description of this option in @ref{Detection
 options}.
 
 @item
+@option{dopening}: Number of openings after applying
+@option{--dthresh}. For more, see the description of this option in
+@ref{Detection options}.
+
+@item
+@option{dopeningngb}: Number of openings after applying
+@option{--dthresh}. For more, see the description of this option in
+@ref{Detection options}.
+
+@item
 @option{--holengb}: The connectivity (defined by the number of neighbors)
 to fill holes after applying @option{--dthresh} (above) to find
 pseudo-detections. For more, see the description of this option in
@@ -16524,6 +16534,11 @@ pseudo-detections. For more, see the description of this option in
 @item
 @option{--pseudoconcomp}: The connectivity (defined by the number of
 neighbors) to find individual pseudo-detections. For more, see the
+description of this option in @ref{Detection options}.
+
+@item
+@option{--snthresh}: Manually set the S/N of true pseudo-detections and
+thus avoid the need to manually identify this value. For more, see the
 description of this option in @ref{Detection options}.
 
 @item
@@ -17032,6 +17047,14 @@ ratio of the resulting `pseudo-detections' are used to identify true
 vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
 Ichikawa (2015) for a very complete explanation.
 
+@item --dopening=INT
+The number of openings to do after applying @option{--dthresh}.
+
+@item --dopeningngb=INT
+The connectivity used in the opening of @option{--dopening}. In a 2D image
+this must be either 4 or 8. The stronger the connectivity, the more smaller
+regions will be discarded.
+
 @item --holengb=INT
 The connectivity (defined by the number of neighbors) to fill holes after
 applying @option{--dthresh} (above) to find pseudo-detections. For example
@@ -17091,6 +17114,17 @@ pseudo-detections in each mesh to use for filling the large mesh grid. Note
 that this is only calculated for the large mesh grids that satisfy the
 minimum fraction of undetected pixels (value of @option{--minbfrac}) and
 minimum number of pseudo-detections (value of @option{--minnumfalse}).
+
+@item --snthresh=FLT
+Manually set the signal-to-noise ratio of true pseudo-detections. With this
+option, NoiseChisel will not attempt to find pseudo-detections over the
+noisy regions of the dataset, but will directly go onto applying the
+manually input value.
+
+This option is useful in crowded images where there is no blank sky to find
+the sky pseudo-detections. You can get this value on a similarly reduced
+dataset (from another region of the Sky with more undetected regions
+spaces).
 
 @item -d FLT
 @itemx --detgrowquant=FLT

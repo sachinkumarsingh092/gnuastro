@@ -96,7 +96,7 @@ detection_initial(struct noisechiselparams *p)
   if(!p->cp.quiet)
     {
       if( asprintf(&msg, "Eroded %zu time%s (%zu-connected).", p->erode,
-                   p->erode>1?"s":"", p->erodengb)<0 )
+                   p->erode!=1?"s":"", p->erodengb)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_timing_report(&t1, msg, 2);
       free(msg);
@@ -293,7 +293,7 @@ detection_fill_holes_open(void *in_prm)
         }
 
       /* Open all the regions. */
-      gal_binary_open(copy, 1, 1, 1);
+      gal_binary_open(copy, p->dopening, p->dopeningngb==4 ? 1 : 2, 1);
 
       /* Write the copied region back into the large input and AFTERWARDS,
          correct the tile's pointers, the pointers must not be corrected
@@ -762,36 +762,44 @@ detection_pseudo_real(struct noisechiselparams *p)
   workbin->flag=p->input->flag;
 
 
-  /* Over the Sky: find the pseudo-detections and make the S/N table. */
-  if(!p->cp.quiet) gettimeofday(&t1, NULL);
-  numpseudo=detection_pseudo_find(p, workbin, worklab, 0);
-  sn=detection_sn(p, worklab, numpseudo, 0, "PSEUDOS-FOR-SN");
-
-
-  /* A small sanity check */
-  if( sn->size < p->minnumfalse)
-    error(EXIT_FAILURE, 0, "only %zu pseudo-detections could be found over "
-          "the sky region to estimate an S/N. This is less than %zu (value "
-          "to `--minnumfalse' option). Please adjust parameters like "
-          "`--dthresh', `--snminarea', or make sure that there actually "
-          "is sufficient sky area after initial detection. You can use "
-          "`--checkdetection' to see every step until this point", sn->size,
-          p->minnumfalse);
-
-
-  /* Get the S/N quantile and report it if we are in non-quiet mode. */
-  quant=gal_statistics_quantile(sn, p->snquant, 1);
-  p->detsnthresh = *((float *)(quant->array));
-  if(!p->cp.quiet)
+  /* If a manual S/N is given, then don't bother with using
+     pseudo-detections. */
+  if( isnan(p->snthresh) )
     {
-      if( asprintf(&msg, "Pseudo-det S/N: %.3f (%g quant of %zu).",
-                   p->detsnthresh, p->snquant, sn->size)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_timing_report(&t1, msg, 2);
-      free(msg);
+      /* Over the Sky: find the pseudo-detections and make the S/N
+         table. */
+      if(!p->cp.quiet) gettimeofday(&t1, NULL);
+      numpseudo=detection_pseudo_find(p, workbin, worklab, 0);
+      sn=detection_sn(p, worklab, numpseudo, 0, "PSEUDOS-FOR-SN");
+
+
+      /* A small sanity check */
+      if( sn->size < p->minnumfalse)
+        error(EXIT_FAILURE, 0, "only %zu pseudo-detections could be found "
+              "over the sky region to estimate an S/N. This is less than "
+              "%zu (value to `--minnumfalse' option). Please adjust "
+              "parameters like `--dthresh', `--snminarea', or make sure "
+              "that there actually is sufficient sky area after initial "
+              "detection. You can use `--checkdetection' to see every step "
+              "until this point", sn->size, p->minnumfalse);
+
+
+      /* Get the S/N quantile and report it if we are in non-quiet mode. */
+      quant=gal_statistics_quantile(sn, p->snquant, 1);
+      p->detsnthresh = *((float *)(quant->array));
+      if(!p->cp.quiet)
+        {
+          if( asprintf(&msg, "Pseudo-det S/N: %.3f (%g quant of %zu).",
+                       p->detsnthresh, p->snquant, sn->size)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          gal_timing_report(&t1, msg, 2);
+          free(msg);
+        }
+      gal_data_free(sn);
+      gal_data_free(quant);
     }
-  gal_data_free(sn);
-  gal_data_free(quant);
+  else
+    p->detsnthresh=p->snthresh;
 
 
   /* Over the detections: find pseudo-detections and make S/N table. */
