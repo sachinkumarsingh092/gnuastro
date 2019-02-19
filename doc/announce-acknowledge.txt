@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Roberto Baena Gallé
 Leindert Boogaard
 Raúl Infante Sainz
 David Valls-Gabaud

@@ -257,7 +257,9 @@ interpolate_close_neighbors_on_thread(void *in_prm)
       tout=prm->out;
       for(tnear=nearest; tnear!=NULL; tnear=tnear->next)
         {
-          /* Find the median and copy it. */
+          /* Find the median and copy it, but first, reset the flags (which
+             remain from the last time). */
+          tnear->flag &= ~(GAL_DATA_FLAG_SORT_CH | GAL_DATA_FLAG_BLANK_CH);
           median=gal_statistics_median(tnear, 1);
           memcpy(gal_pointer_increment(tout->array, fullind, tout->type),
                  median->array, gal_type_sizeof(tout->type));

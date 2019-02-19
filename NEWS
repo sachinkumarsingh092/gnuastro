@@ -117,6 +117,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55478: Memory mapping crashes when .gnuastro is not writable.
   bug #55491: NoiseChisel crash when no tiles good for quantile thresholding.
   bug #55544: Arithmetic's output WCS with where operator is not as expected.
+  bug #55740: Diamond shapes in nearst-ngb interpolation affecting NoiseChisel.
 
 
 
