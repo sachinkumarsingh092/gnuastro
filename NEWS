@@ -13,10 +13,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      option's value).
 
   Arithmetic:
-   - The new `tofile-' operator will save the top operand into a file
-     without changing the state of the operand stack (popping the top
-     element). This can greatly help in debugging/understanding an
-     Arithmetic command, especially as it gets longer, or more complicated.
+   - The new `tofile-' and `tofilefree-' operators will save the top
+     operand into a file. They can be very handy in debugging/understanding
+     an Arithmetic command (especially as it gets complicated), or to
+     produce multiple files/extensions with a single call to Arithmetic.
    - Four new operators have beed added to allow coadding multiple datasets
      into one using sigma-clipping: `sigclip-number', `sigclip-mean',
      `sigclip-median', and `sigclip-std'. These are very useful when
@@ -71,6 +71,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Arithmetic:
    - `num' operator is renamed to `number'.
    - `numvalue' operator is renamed to `numbervalue'.
+   - `--dontdelete' will append the output to any existing file. Note that
+     this change is only in Arithmetic, other programs will still just
+     complain and abort.
 
   ConvertType:
    --forcemin & --forcemax: until now, `--flminbyte' and `--flmaxbyte' were

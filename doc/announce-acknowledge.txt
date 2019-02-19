@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Leindert Boogaard
 Raúl Infante Sainz
 David Valls-Gabaud
 Ignacio Trujillo

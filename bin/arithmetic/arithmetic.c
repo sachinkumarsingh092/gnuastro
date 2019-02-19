@@ -846,11 +846,13 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
 
 
 void
-arithmetic_tofile(struct arithmeticparams *p, char *token)
+arithmetic_tofile(struct arithmeticparams *p, char *token, int freeflag)
 {
   /* Pop the top dataset. */
   gal_data_t *popped = operands_pop(p, token);
-  char *filename=&token[ OPERATOR_PREFIX_LENGTH_TOFILE ];
+  char *filename = &token[ freeflag
+                           ? OPERATOR_PREFIX_LENGTH_TOFILEFREE
+                           : OPERATOR_PREFIX_LENGTH_TOFILE     ];
 
   /* Save it to a file. */
   popped->wcs=p->refdata.wcs;
@@ -864,7 +866,10 @@ arithmetic_tofile(struct arithmeticparams *p, char *token)
 
   /* Reset the WCS to NULL and put it back on the stack. */
   popped->wcs=NULL;
-  operands_add(p, NULL, popped);
+  if(freeflag)
+    gal_data_free(popped);
+  else
+    operands_add(p, NULL, popped);
 }
 
 
@@ -922,7 +927,10 @@ reversepolish(struct arithmeticparams *p)
          specified operation on them. */
       if( !strncmp(OPERATOR_PREFIX_TOFILE, token->v,
                    OPERATOR_PREFIX_LENGTH_TOFILE) )
-        arithmetic_tofile(p, token->v);
+        arithmetic_tofile(p, token->v, 0);
+      else if( !strncmp(OPERATOR_PREFIX_TOFILEFREE, token->v,
+                   OPERATOR_PREFIX_LENGTH_TOFILE) )
+        arithmetic_tofile(p, token->v, 1);
       else if( !strncmp(token->v, OPERATOR_PREFIX_SET,
                         OPERATOR_PREFIX_LENGTH_SET) )
         operands_set_name(p, token->v);

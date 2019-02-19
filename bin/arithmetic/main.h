@@ -42,8 +42,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define NEG_DASH_REPLACE 11 /* Vertical tab (ASCII=11) for negative dash */
 #define OPERATOR_PREFIX_SET               "set-"
 #define OPERATOR_PREFIX_TOFILE            "tofile-"
+#define OPERATOR_PREFIX_TOFILEFREE        "tofilefree-"
 #define OPERATOR_PREFIX_LENGTH_SET        strlen(OPERATOR_PREFIX_SET)
 #define OPERATOR_PREFIX_LENGTH_TOFILE     strlen(OPERATOR_PREFIX_TOFILE)
+#define OPERATOR_PREFIX_LENGTH_TOFILEFREE strlen(OPERATOR_PREFIX_TOFILEFREE)
 
 
 

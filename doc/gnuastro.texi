@@ -12770,12 +12770,13 @@ $ astarithmetic image.fits set-i   i i 5 gt nan where
 
 @item tofile-AAA
 Write the top oprand on the operands stack into a file called @code{AAA}
-(can be any FITS file name) without changing the operands stack (no operand
-will be operand).
+(can be any FITS file name) without changing the operands stack. If you
+don't need the dataset any more and would like to free it, see the
+@code{tofilefree} operator below.
 
-Any file that is given to this operator is deleted before Arithmetic
-actually starts working on the input datasets. The deletion can be
-deactivated with the @option{--dontdelete} option (as in all Gnuastro
+By default, any file that is given to this operator is deleted before
+Arithmetic actually starts working on the input datasets. The deletion can
+be deactivated with the @option{--dontdelete} option (as in all Gnuastro
 programs, see @ref{Input output options}). If the same FITS file is given
 to this operator multiple times, it will contain multiple extensions (in
 the same order that it was called.
@@ -12786,6 +12787,11 @@ this operator is very convenient when you want to debug, or understanding,
 a string of operators and operands given to Arithmetic: simply put
 @command{tofile-AAA} anywhere in the process to see what is happening
 behind the scenes without modifying the overall process.
+
+@item tofilefree-AAA
+Similar to the @code{tofile} operator, with the only difference that the
+dataset that is written to a file is popped from the operand stack and
+freed from memory (cannot be used any more).
 
 @end table
 
@@ -12857,24 +12863,28 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
 
-The output is last remaining operand on the stack, see @ref{Reverse polish
-notation}. When its a single number, it will be printed on the
-command-line. When the output is an array, it will be stored as a file. The
-name of the file can be specified with the @option{--output} option, but if
-its not given, Arithmetic will use ``automatic output'' on the name of the
-first FITS image encountered to generate an output file name, see
-@ref{Automatic output}.
-
-By default, the world coordinate system (WCS) information will be taken
-from the first input image (that contains a WCS) on the command-line. This
-can be modified with the @option{--wcsfile} option described below.
-
 Arithmetic's notation for giving operands to operators is fully described
-in @ref{Reverse polish notation}. To ignore certain pixels, set them as
-blank, see @ref{Blank pixels}, for example with the @command{where}
-operator (see @ref{Arithmetic operators}). See @ref{Common options} for a
-review of the options in all Gnuastro programs. Arithmetic just redefines
-the @option{--hdu} option as explained below.
+in @ref{Reverse polish notation}. The output dataset is last remaining
+operand on the stack. When the output dataset a single number, it will be
+printed on the command-line. When the output is an array, it will be stored
+as a file.
+
+The name of the final file can be specified with the @option{--output}
+option, but if its not given, Arithmetic will use ``automatic output'' on
+the name of the first FITS image encountered to generate an output file
+name, see @ref{Automatic output}. By default, if the output file aready
+exists, it will be deleted before Arithmetic starts operation. However,
+this can be disabled with the @option{--dontdelete} option (see below). At
+any point during Arithmetic's operation, you can also write the top operand
+on the stack to a file, using the @code{tofile} or @code{tofilefree}
+operators, see @ref{Arithmetic operators}.
+
+By default, the world coordinate system (WCS) information of the output
+dataset will be taken from the first input image (that contains a WCS) on
+the command-line. This can be modified with the @option{--wcsfile} and
+@option{--wcshdu} options described below. When the @option{--quiet} option
+isn't given, the name and extension of the dataset used for the output's
+WCS is printed on the commandline.
 
 Through operators like those starting with @code{collapse-}, the
 dimensionality of the inputs may not be the same as the outputs. By
@@ -12883,6 +12893,10 @@ image/array. The format of the output table (plain text or FITS ASCII or
 binary) can be set with the @option{--tableformat} option, see @ref{Input
 output options}). You can disable this feature (write 1D arrays as FITS
 images/arrays) with the @option{--onedasimage} option.
+
+See @ref{Common options} for a review of the options in all Gnuastro
+programs. Arithmetic just redefines the @option{--hdu} and
+@option{--dontdelete} options as explained below.
 
 @table @option
 
@@ -12949,6 +12963,21 @@ HDU/extension to read the WCS within the file given to
 When final dataset to write as output only has one dimension, write it as a
 FITS image/array. By default, if the output is 1D, it will be written as a
 table, see above.
+
+@item -D
+@itemx --dontdelete
+Don't delete the output file, or files given to the @code{tofile} or
+@code{tofilefree} operators, if they already exist. Instead append the
+desired datasets to the extensions that already exist in the respective
+file. Note it doesn't matter if the final output file name is given with
+the the @option{--output} option, or determined automatically.
+
+Arithmetic treats this option differently from its default operation in
+other Gnuastro programs (see @ref{Input output options}). If the output
+file exists, when other Gnuastro programs are called with
+@option{--dontdelete}, they simply complain and abort. But when Arithmetic
+is called with @option{--dontdelete}, it will appended the dataset(s) to
+the existing extension(s) in the file.
 @end table
 
 Arithmetic accepts two kinds of input: images and numbers. Images are

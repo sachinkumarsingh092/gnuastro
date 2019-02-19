@@ -255,6 +255,7 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
   int output_checked=0;
   gal_list_str_t *token, *hdu;
   size_t nummultiext=0, numhdus=0;
+  struct gal_options_common_params *cp=&p->cp;
 
   /* First, make sure that any tokens are actually given. */
   if(p->tokens==NULL)
@@ -271,6 +272,10 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
      was done in `gal_options_read_config_set'. */
   gal_list_str_reverse(&p->tokens);
 
+  /* To allow adding extensions to existing files, let the `keep' flag be
+     the same as the `dontdelete'. */
+  cp->keep=cp->dontdelete;
+
   /* Set the output file name (if any is needed). Note that since the lists
      are already reversed, the first FITS file encountered, is the first
      FITS file given by the user. Also, note that these file name
@@ -285,7 +290,7 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
 
         {
           /* This token is a file, count how many mult-extension files we
-             haev and use the first to set the output filename (if it has
+             have and use the first to set the output filename (if it has
              not been set). */
           if( gal_array_name_recognized(token->v) )
             {
@@ -299,12 +304,11 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
               /* If the output filename isn't set yet, then set it. */
               if(output_checked==0)
                 {
-                  if(p->cp.output)
-                    gal_checkset_writable_remove(p->cp.output, 0,
-                                                 p->cp.dontdelete);
+                  if(cp->output)
+                    gal_checkset_writable_remove(cp->output, cp->keep,
+                                                 cp->dontdelete);
                   else
-                    p->cp.output=gal_checkset_automatic_output(&p->cp,
-                                                               token->v,
+                    p->cp.output=gal_checkset_automatic_output(cp, token->v,
                                                                "_arith.fits");
                   output_checked=1;
                 }
@@ -321,7 +325,7 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
       else
         {
           filename=&token->v[ OPERATOR_PREFIX_LENGTH_TOFILE ];
-          gal_checkset_writable_remove(filename, 0, p->cp.dontdelete);
+          gal_checkset_writable_remove(filename, cp->keep, cp->dontdelete);
         }
     }
 
