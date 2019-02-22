@@ -792,6 +792,25 @@ ui_read_cols(struct mkprofparams *p)
           gal_data_free(corrtype);
         }
     }
+
+  /* Multi-column sanity checks. */
+  counter=0;
+  if( !p->cp.quiet && (p->mforflatpix || p->mcolisbrightness) )
+    for(i=0;i<p->num;++i)
+      if( p->m[i]==0.0 && ( p->f[i]==PROFILE_POINT
+                            || p->f[i]==PROFILE_FLAT
+                            || p->f[i]==PROFILE_CIRCUMFERENCE ) )
+        {
+          error(0, 0, "WARNING: atleast one single-valued profile (point, "
+                "flat, or circumference profiles) has a magnitude column "
+                "value of 0.0 while `--mforflatpix' or "
+                "`--mcolforbrightness' have also been given. In such cases "
+                "the profile's pixels will have a value of zero and thus "
+                "they will not be identifiable from the zero-valued "
+                "background. If this behavior is intended, this warning "
+                "can be supressed with the `--quiet' (or `-q') option.\n");
+          break;
+        }
 }
 
 
