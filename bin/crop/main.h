@@ -112,7 +112,8 @@ struct cropparams
   time_t               rawtime;  /* Starting time of the program.         */
   int            outnameisfile;  /* Output filename is a directory.       */
   int                     type;  /* Type of output(s).                    */
-  void                 *bitnul;  /* Null value for this data-type.        */
+  void           *blankptrread;  /* Null value for reading of output type.*/
+  void          *blankptrwrite;  /* Null value for writing of output type.*/
   struct inputimgs       *imgs;  /* WCS and size information for inputs.  */
   gal_data_t              *log;  /* Log file contents.                    */
 };

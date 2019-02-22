@@ -896,7 +896,8 @@ ui_preparations(struct cropparams *p)
           /* Set the basic information. */
           firsttype = p->type;
           firstndim = img->ndim;
-          p->bitnul = gal_fits_key_img_blank(p->type);
+          p->blankptrread  = gal_blank_alloc_write(p->type);
+          p->blankptrwrite = gal_fits_key_img_blank(p->type);
 
           /* Make sure the number of dimensions is supported. */
           if(firstndim>MAXDIM)
@@ -1085,6 +1086,8 @@ ui_free_report(struct cropparams *p, struct timeval *t1)
   size_t i;
 
   /* Free the simple arrays (if they were set). */
+  free(p->blankptrread);
+  free(p->blankptrwrite);
   gal_data_free(p->center);
   if(p->cp.hdu) free(p->cp.hdu);
   if(p->cathdu) free(p->cathdu);

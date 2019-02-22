@@ -25901,17 +25901,29 @@ typedef struct gal_fits_list_key_t
 @end deftp
 
 @deftypefun {void *} gal_fits_key_img_blank (uint8_t @code{type})
-Returns a pointer to an allocated space for the FITS @code{BLANK} header
-keyword when the input array has a type of @code{type}.
+Returns a pointer to an allocated space containing the value to the FITS
+@code{BLANK} header keyword, when the input array has a type of
+@code{type}. This is useful when you want to write the @code{BLANK} keyword
+using CFITSIO's @code{fits_write_key} function.
 
 According to the FITS standard: ``If the @code{BSCALE} and @code{BZERO}
 keywords do not have the default values of 1.0 and 0.0, respectively, then
 the value of the @code{BLANK} keyword must equal the actual value in the
 FITS data array that is used to represent an undefined pixel and not the
 corresponding physical value''. Therefore a special @code{BLANK} value is
-needed for datasets containing signed 8-bit integers and unsigned 16-bit,
-32-bit and 64-bit integers (types that are defined with @code{BSCALE} and
-@code{BZERO} in the FITS standard).
+needed for datasets containing signed 8-bit, unsigned 16-bit, unsigned
+32-bit, and unsigned 64-bit integers (types that are defined with
+@code{BSCALE} and @code{BZERO} in the FITS standard).
+
+@cartouche
+@noindent
+@strong{Not usable when reading a dataset:} As quoted from the FITS
+standard above, the value returned by this function can only be generically
+used for the writing of the @code{BLANK} keyword header. It @emph{must not}
+be used as the blank pointer when when reading a FITS array using
+CFITSIO. When reading an array with CFITSIO, you can use
+@code{gal_blank_alloc_write} to generate the necessary pointer.
+@end cartouche
 @end deftypefun
 
 @deftypefun void gal_fits_key_clean_str_value (char @code{*string})
