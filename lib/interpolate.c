@@ -67,6 +67,8 @@ struct interpolate_params
   uint8_t                *thread_flags;
   int                        onlyblank;
   gal_list_void_t            *ngb_vals;
+  float (*metric)(size_t *, size_t *, size_t );
+
   struct gal_tile_two_layer_params *tl;
 };
 
@@ -87,11 +89,11 @@ interpolate_close_neighbors_on_thread(void *in_prm)
 
   /* Rest of variables. */
   void *nv;
-  float pdist;
+  float dist, pdist;
   uint8_t *b, *bf, *bb;
   gal_list_void_t *tvll;
   gal_list_dosizet_t *lQ, *sQ;
-  size_t ngb_counter, dist, pind, *dinc;
+  size_t ngb_counter, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
   size_t size = (correct_index ? tl->tottilesinch : input->size);
@@ -233,7 +235,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                  gal_dimension_index_to_coord(nind, ndim, dsize, ncoord);
 
                  /* Distance of this neighbor to the one to be filled. */
-                 dist=gal_dimension_dist_manhattan(icoord, ncoord, ndim);
+                 dist=prm->metric(icoord, ncoord, ndim);
 
                  /* Add this neighbor to the list. */
                  gal_list_dosizet_add(&lQ, &sQ, nind, dist);
@@ -328,8 +330,9 @@ interpolate_copy_input(gal_data_t *input, int aslinkedlist)
 gal_data_t *
 gal_interpolate_close_neighbors(gal_data_t *input,
                                 struct gal_tile_two_layer_params *tl,
-                                size_t numneighbors, size_t numthreads,
-                                int onlyblank, int aslinkedlist)
+                                uint8_t metric, size_t numneighbors,
+                                size_t numthreads, int onlyblank,
+                                int aslinkedlist)
 {
   gal_data_t *tin, *tout;
   struct interpolate_params prm;
@@ -352,6 +355,21 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   prm.onlyblank    = onlyblank;
   prm.numneighbors = numneighbors;
   prm.num          = aslinkedlist ? gal_list_data_number(input) : 1;
+
+
+  /* Set the metric. */
+  switch(metric)
+    {
+    case GAL_INTERPOLATE_CLOSE_METRIC_RADIAL:
+      prm.metric=gal_dimension_dist_radial;
+      break;
+    case GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN:
+      prm.metric=gal_dimension_dist_manhattan;
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: %d is not a valid metric identifier",
+            __func__, metric);
+    }
 
 
   /* Flag the blank values. */

@@ -26,6 +26,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      different file for reading the WCS of the output. This is useful when
      the default (theh WCS of the first dataset that is read) is not the
      required one.
+   --interpmetric: new option that is necessary with the
+     `interpolate-medianngb' operator. For more, see the description of
+     this option in NoiseChisel.
 
   Fits:
    - Add "title" to group FITS keywords with `--write=/,"title name". This
@@ -51,7 +54,13 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      columns into one.
 
   NoiseChisel:
-
+   --interpmetric: Set the metric to use to identify the nearest neighbors
+     for tile interpolation (quantile threshold, initial Sky, and final
+     Sky). Until now only the manhattan/taxicab metric was available, which
+     is fast, but could cause 45-degree lines in the interpolation. From
+     this version, with this option, its also possible to use the radial
+     distance (which is now the default). Just note that if there are many
+     tiles over the image, the radial distance will be slower.
    --snthresh: Manually set the signal-to-noise ratio of true
      pseudo-detections. With this option, NoiseChisel will not attempt to
      find pseudo-detections over the noisy regions of the dataset, but will
@@ -67,10 +76,14 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      --dopening: The number of openings to do after applying `--dthresh'.
      --dopeningngb: The connectivity (4 or 8) to use for `--dopening'.
 
+  Statistics:
+   --interpmetric: Similar to NoiseChisel.
+
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
     gal_blank_number: Return the number of blank elements in a dataset.
+    gal_dimension_dist_radial: Radial distance between two coordinates.
     gal_statistics_outlier_cumulative: Uses flatness of the cumulative
        distribution to find outliers.
 

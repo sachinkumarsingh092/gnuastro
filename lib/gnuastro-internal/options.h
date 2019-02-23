@@ -121,6 +121,7 @@ enum options_common_keys
   GAL_OPTIONS_KEY_CHECKTILES,
   GAL_OPTIONS_KEY_ONEELEMPERTILE,
   GAL_OPTIONS_KEY_INTERPONLYBLANK,
+  GAL_OPTIONS_KEY_INTERPMETRIC,
   GAL_OPTIONS_KEY_INTERPNUMNGB,
 };
 
@@ -179,6 +180,7 @@ struct gal_options_common_params
   /* Tessellation. */
   struct gal_tile_two_layer_params tl; /* Two layer tessellation params.  */
   uint8_t      interponlyblank; /* Only interpolate over blank values.    */
+  uint8_t         interpmetric; /* Metric to use for nearest-ngb interp.  */
   size_t          interpnumngb; /* Number of neighbors for interpolation. */
 
   /* Input. */
@@ -273,6 +275,10 @@ gal_options_read_searchin(struct argp_option *option, char *arg,
 void *
 gal_options_read_tableformat(struct argp_option *option, char *arg,
                              char *filename, size_t lineno, void *junk);
+
+void *
+gal_options_read_interpmetric(struct argp_option *option, char *arg,
+                              char *filename, size_t lineno, void *junk);
 
 gal_data_t *
 gal_options_parse_list_of_numbers(char *string, char *filename,

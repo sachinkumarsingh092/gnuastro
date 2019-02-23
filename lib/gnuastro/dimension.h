@@ -89,10 +89,11 @@ gal_dimension_index_to_coord(size_t index, size_t ndim, size_t *dsize,
 /************************************************************************/
 /********************           Distances          **********************/
 /************************************************************************/
-size_t
+float
 gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
 
-
+float
+gal_dimension_dist_radial(size_t *a, size_t *b, size_t ndim);
 
 
 

@@ -282,8 +282,9 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
   /* Do the interpolation of both arrays. */
   (*first)->next = *second;
   if(third) (*second)->next = *third;
-  tmp=gal_interpolate_close_neighbors(*first, tl, cp->interpnumngb,
-                                      cp->numthreads, cp->interponlyblank, 1);
+  tmp=gal_interpolate_close_neighbors(*first, tl, cp->interpmetric,
+                                      cp->interpnumngb, cp->numthreads,
+                                      cp->interponlyblank, 1);
   gal_data_free(*first);
   gal_data_free(*second);
   if(third) gal_data_free(*third);

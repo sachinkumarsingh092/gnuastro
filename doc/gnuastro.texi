@@ -7816,6 +7816,22 @@ is desirable).
 When values are to be interpolated, only change the values of the blank
 elements, keep the non-blank elements untouched.
 
+@item --interpmetric=STR
+@cindex Radial metric
+@cindex Taxicab metric
+@cindex Manhattan metric
+@cindex Metric: Manhattan, Taxicab, Radial
+The metric to use for finding nearest neighbors. Currently it only accepts
+the Manhattan (or taxicab) metric with @code{manhattan}, or the radial
+metric with @code{radial}.
+
+The Manhattan distance between two points is defined with
+@mymath{|\Delta{x}|+|\Delta{y}|}. Thus the Manhattan metric has the
+advantage of being fast, but at the expense of being less accurate. The
+radial distance is the standard definition of distance in a Euclidean
+space: @mymath{\sqrt{\Delta{x}^2+\Delta{y}^2}}. It is accurate, but the
+multiplication and square root can slow down the processing.
+
 @item --interpnumngb=INT
 The number of nearby non-blank neighbors to use for interpolation.
 @end table
@@ -24495,6 +24511,11 @@ Return the manhattan distance (see
 @url{https://en.wikipedia.org/wiki/Taxicab_geometry, Wikipedia}) between
 the two coordinates @code{a} and @code{b} (each an array of @code{ndim}
 elements).
+@end deftypefun
+
+@deftypefun float gal_dimension_dist_radial (size_t @code{*a}, size_t @code{*b}, size_t @code{ndim})
+Return the radial distance between the two coordinates @code{a} and
+@code{b} (each an array of @code{ndim} elements).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_dimension_collapse_sum (gal_data_t @code{*in}, size_t @code{c_dim}, gal_data_t @code{*weight})

@@ -728,8 +728,9 @@ arithmetic_interpolate(struct arithmeticparams *p, char *token)
   num_int = *((int32_t *)(num->array));
 
   /* Call the interpolation function. */
-  interpolated=gal_interpolate_close_neighbors(in, NULL, num_int,
-                                               p->cp.numthreads, 1, 0);
+  interpolated=gal_interpolate_close_neighbors(in, NULL, p->cp.interpmetric,
+                                               num_int, p->cp.numthreads,
+                                               1, 0);
 
   /* Clean up and push the interpolated array onto the stack. */
   gal_data_free(in);

@@ -263,12 +263,24 @@ gal_dimension_index_to_coord(size_t index, size_t ndim, size_t *dsize,
 /************************************************************************/
 /********************           Distances          **********************/
 /************************************************************************/
-size_t
+float
 gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim)
 {
   size_t i, out=0;
   for(i=0;i<ndim;++i) out += (a[i] > b[i]) ? (a[i]-b[i]) : (b[i]-a[i]);
   return out;
+}
+
+
+
+
+
+float
+gal_dimension_dist_radial(size_t *a, size_t *b, size_t ndim)
+{
+  size_t i, out=0;
+  for(i=0;i<ndim;++i) out += (a[i]-b[i])*(a[i]-b[i]);
+  return sqrt(out);
 }
 
 

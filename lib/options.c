@@ -38,6 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/threads.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/arithmetic.h>
+#include <gnuastro/interpolate.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -503,6 +504,55 @@ gal_options_read_tableformat(struct argp_option *option, char *arg,
 
       /* For no un-used variable warning. This function doesn't need the
          pointer.*/
+      return junk=NULL;
+    }
+}
+
+
+
+
+
+void *
+gal_options_read_interpmetric(struct argp_option *option, char *arg,
+                              char *filename, size_t lineno, void *junk)
+{
+  char *str;
+  if(lineno==-1)
+    {
+      switch(*(uint8_t *)(option->value))
+        {
+        case GAL_INTERPOLATE_CLOSE_METRIC_RADIAL:
+          gal_checkset_allocate_copy("radial", &str);
+          break;
+        case GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN:
+          gal_checkset_allocate_copy("manhattan", &str);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+                "problem. The code %u is not recognized as a nearest-neighbor "
+                "interpolation metric", __func__, PACKAGE_BUGREPORT,
+                *(uint8_t *)(option->value));
+        }
+      return str;
+    }
+  else
+    {
+      /* If the option is already set, just return. */
+      if(option->set) return NULL;
+
+      /* Set the value. */
+      if(       !strcmp(arg, "radial") )
+        *(uint8_t *)(option->value) = GAL_INTERPOLATE_CLOSE_METRIC_RADIAL;
+      else if ( !strcmp(arg, "manhattan") )
+        *(uint8_t *)(option->value) = GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN;
+      else
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to `%s' "
+                      "option) isn't valid. Currently only `radial' and "
+                      "`manhattan' metrics are recognized for nearest neighbor "
+                      "interpolation", arg, option->name);
+
+      /* For no un-used variable warning. This function doesn't need the
+         pointer. */
       return junk=NULL;
     }
 }

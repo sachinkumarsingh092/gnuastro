@@ -418,10 +418,10 @@ ui_read_check_only_options(struct statisticsparams *p)
     {
       /* Mandatory options. */
       if( isnan(p->meanmedqdiff) || isnan(p->sclipparams[0])
-          || p->cp.interpnumngb==0 )
-        error(EXIT_FAILURE, 0, "`--meanmedqdiff', `--sclipparams' and "
-              "`--interpnumngb' are mandatory when requesting Sky "
-              "measurement (`--sky')");
+          || p->cp.interpmetric==0 || p->cp.interpnumngb==0 )
+        error(EXIT_FAILURE, 0, "`--meanmedqdiff', `--sclipparams', "
+              "`--interpmetric' and `--interpnumngb' are mandatory when "
+              "requesting Sky measurement (`--sky')");
 
       /* If mode and median distance is a reasonable value. */
       if(p->meanmedqdiff>0.5)
