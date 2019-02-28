@@ -12164,18 +12164,17 @@ non-zero decimals) put an @code{f} after it.
 
 @item sqrt
 The square root of the first operand, so ``@command{5 sqrt}'' is equivalent
-to @mymath{\sqrt{5}}. The output type is determined from the input, so the
-output of this example will be @command{2} (since @command{5} doesn't have
-any non-zero decimal digits). If you want @command{2.23607}, run
-@command{5f sqrt} instead, the @command{f} will ensure that a number will
-be read as a floating point number, even if it doesn't have decimal
-digits. If the input image has an integer type, you should explicitly
-convert the image to floating point, for example @command{a.fits float
-sqrt}, see the type conversion operators below.
+to @mymath{\sqrt{5}}. The output will have a floating point type, but its
+precision is determined from the input: if the input is a 64-bit floating
+point, the output will also be 64-bit. Otherwise, the output will be 32-bit
+floating point (see @ref{Numeric data types} for the respective
+precision). Therefore if you require 64-bit precision in estimating the
+square root, convert the input to 64-bit floating point first, for example
+with @code{5 float64 sqrt}.
 
 @item log
 Natural logarithm of first operand, so ``@command{4 log}'' is equivalent to
-@mymath{\ln(4)}. The output type is determined from the input, see the
+@mymath{ln(4)}. The output type is determined from the input, see the
 explanation under @command{sqrt} for more.
 
 @item log10
@@ -27005,11 +27004,14 @@ polish notation}).
 @deffnx Macro GAL_ARITHMETIC_OP_LOG10
 Unary operator functions for calculating the square root
 (@mymath{\sqrt{i}}), @mymath{ln(i)} and @mymath{log(i)} mathematic
-operators on each element of the input dataset. The output will have the
-same type as the input, so if your inputs are integer types be careful.
+operators on each element of the input dataset. The returned dataset will
+have a floating point type, but its precision is determined from the input:
+if the input is a 64-bit floating point, the output will also be
+64-bit. Otherwise, the returned dataset will be 32-bit floating point. See
+@ref{Numeric data types} for the respective precision.
 
-If you want your output to be floating point but your input is an integer
-type, you can convert the input to a floating point type with
+If you want your output to be 64-bit floating point but your input is a
+different type, you can convert the input to a floating point type with
 @code{gal_data_copy_to_new_type} or
 @code{gal_data_copy_to_new_type_free}(see @ref{Copying datasets}).
 @end deffn

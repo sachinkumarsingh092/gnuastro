@@ -350,43 +350,82 @@ arithmetic_abs(int flags, gal_data_t *in)
 
 
 
-#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(IT, OP){                        \
-    IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
+#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(OT, IT, OP){                    \
+    OT *oa=o->array;                                                    \
+    IT *ia=in->array, *iaf=ia + in->size;                               \
     do *oa++ = OP(*ia++); while(ia<iaf);                                \
   }
+
+#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(IT, OP)                   \
+  switch(o->type)                                                       \
+    {                                                                   \
+    case GAL_TYPE_UINT8:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint8_t,  IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_INT8:                                                 \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int8_t,   IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_UINT16:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint16_t, IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_INT16:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int16_t,  IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_UINT32:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint32_t, IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_INT32:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int32_t,  IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_UINT64:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint64_t, IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_INT64:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int64_t,  IT, OP)                 \
+        break;                                                          \
+    case GAL_TYPE_FLOAT32:                                              \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(float,    IT, OP)                 \
+      break;                                                            \
+    case GAL_TYPE_FLOAT64:                                              \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(double,   IT, OP)                 \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",         \
+            "UNIARY_FUNCTION_ON_ELEMENT", in->type);                    \
+    }
 
 #define UNIARY_FUNCTION_ON_ELEMENT(OP)                                  \
   switch(in->type)                                                      \
     {                                                                   \
     case GAL_TYPE_UINT8:                                                \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint8_t, OP)                      \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(uint8_t,  OP)               \
         break;                                                          \
     case GAL_TYPE_INT8:                                                 \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int8_t, OP)                       \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(int8_t,   OP)               \
         break;                                                          \
     case GAL_TYPE_UINT16:                                               \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint16_t, OP)                     \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(uint16_t, OP)               \
         break;                                                          \
     case GAL_TYPE_INT16:                                                \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int16_t, OP)                      \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(int16_t,  OP)               \
         break;                                                          \
     case GAL_TYPE_UINT32:                                               \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint32_t, OP)                     \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(uint32_t, OP)               \
         break;                                                          \
     case GAL_TYPE_INT32:                                                \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int32_t, OP)                      \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(int32_t,  OP)               \
         break;                                                          \
     case GAL_TYPE_UINT64:                                               \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(uint64_t, OP)                     \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(uint64_t, OP)               \
         break;                                                          \
     case GAL_TYPE_INT64:                                                \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int64_t, OP)                      \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(int64_t,  OP)               \
         break;                                                          \
     case GAL_TYPE_FLOAT32:                                              \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(float, OP)                        \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(float,    OP)               \
       break;                                                            \
     case GAL_TYPE_FLOAT64:                                              \
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(double, OP)                       \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_INSET(double,   OP)               \
       break;                                                            \
     default:                                                            \
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized",         \
@@ -396,15 +435,31 @@ arithmetic_abs(int flags, gal_data_t *in)
 static gal_data_t *
 arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 {
+  uint8_t otype;
+  int inplace=0;
   gal_data_t *o;
 
-  /* If we want inplace output, set the output pointer to the input
-     pointer, for every pixel, the operation will be independent. */
-  if(flags & GAL_ARITHMETIC_INPLACE)
-    o = in;
+  /* See if the operation should be done in place. Note that so far, the
+     output of these operators is defined in the real space (floating
+     point). So even if the user requested inplace opereation, if its not a
+     floating point type, its not useful.*/
+  if( (flags & GAL_ARITHMETIC_INPLACE)
+      && (in->type==GAL_TYPE_FLOAT32 || in->type==GAL_TYPE_FLOAT64) )
+    inplace=1;
+
+  if(inplace)
+    {
+      o = in;
+      otype=in->type;
+    }
   else
-    o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
-                       0, in->minmapsize, NULL, NULL, NULL);
+    {
+      otype = ( in->type==GAL_TYPE_FLOAT64
+                ? GAL_TYPE_FLOAT64
+                : GAL_TYPE_FLOAT32 );
+      o = gal_data_alloc(NULL, otype, in->ndim, in->dsize, in->wcs,
+                         0, in->minmapsize, NULL, NULL, NULL);
+    }
 
   /* Start setting the operator and operands. */
   switch(operator)
