@@ -485,7 +485,7 @@ gal_wcs_on_tile(gal_data_t *tile)
 double *
 gal_wcs_warp_matrix(struct wcsprm *wcs)
 {
-  double *out;
+  double *out, crota2;
   size_t i, j, size=wcs->naxis*wcs->naxis;
 
   /* Allocate the necessary array. */
@@ -506,6 +506,33 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
     {
       for(i=0;i<size;++i)
         out[i]=wcs->cd[i];
+    }
+  else if(wcs->altlin & 0x4)     /* Has CROTAi array.   */
+    {
+      /* Basic sanity checks. */
+      if(wcs->naxis!=2)
+        error(EXIT_FAILURE, 0, "%s: CROTAi currently on works in 2 "
+              "dimensions.", __func__);
+      if(wcs->crota[0]!=0.0)
+        error(EXIT_FAILURE, 0, "%s: CROTA1 is not zero", __func__);
+
+      /* CROTAi keywords are depreciated in the FITS standard. However, old
+         files may still use them. For a full description of CROTAi
+         keywords and their history (along with the conversion equations
+         here), please see the link below:
+
+         https://fits.gsfc.nasa.gov/users_guide/users_guide/node57.html
+
+         Just note that the equations of the link above convert CROTAi to
+         PC. But here we want the "final" matrix (after multiplication by
+         the `CDELT' values). So to speed things up, we won't bother
+         dividing and then multiplying by the same CDELT values in the
+         off-diagonal elements. */
+      crota2=wcs->crota[1];
+      out[0] = wcs->cdelt[0] * cos(crota2);
+      out[1] = -1 * wcs->cdelt[1] *sin(crota2);
+      out[2] = wcs->cdelt[0] * sin(crota2);
+      out[3] = wcs->cdelt[1] * cos(crota2);
     }
   else
     error(EXIT_FAILURE, 0, "%s: currently only PCi_ja and CDi_ja keywords "

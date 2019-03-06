@@ -2,6 +2,7 @@ Alphabetically ordered list to acknowledge in the next release.
 
 Roberto Baena Gallé
 Leindert Boogaard
+Elham Eftekhari
 Raúl Infante Sainz
 David Valls-Gabaud
 Ignacio Trujillo
