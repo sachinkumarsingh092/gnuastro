@@ -528,10 +528,10 @@ gal_options_read_interpmetric(struct argp_option *option, char *arg,
           gal_checkset_allocate_copy("manhattan", &str);
           break;
         default:
-          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-                "problem. The code %u is not recognized as a nearest-neighbor "
-                "interpolation metric", __func__, PACKAGE_BUGREPORT,
-                *(uint8_t *)(option->value));
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                "fix the problem. The code %u is not recognized as a "
+                "nearest-neighbor interpolation metric", __func__,
+                PACKAGE_BUGREPORT, *(uint8_t *)(option->value));
         }
       return str;
     }
@@ -546,10 +546,10 @@ gal_options_read_interpmetric(struct argp_option *option, char *arg,
       else if ( !strcmp(arg, "manhattan") )
         *(uint8_t *)(option->value) = GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN;
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to `%s' "
-                      "option) isn't valid. Currently only `radial' and "
-                      "`manhattan' metrics are recognized for nearest neighbor "
-                      "interpolation", arg, option->name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
+                      "`%s' option) isn't valid. Currently only `radial' "
+                      "and `manhattan' metrics are recognized for nearest "
+                      "neighbor interpolation", arg, option->name);
 
       /* For no un-used variable warning. This function doesn't need the
          pointer. */

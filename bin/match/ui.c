@@ -224,24 +224,45 @@ ui_read_check_only_options(struct matchparams *p)
 
 
 
-
+/* Two necessary catalogs: First:  Standard input, or a file.
+                           Second: `--coord',      or a file.
+ */
 static void
 ui_check_options_and_arguments(struct matchparams *p)
 {
-  /* The first input might come from the standard input, in that case, the
-     second input's name is stored in `input1name' and `input2name' will be
-     left to NULL. So we'll first correct for this. */
-  if(p->input1name)
+  /* When `--coord' is given, there should be no second catalog
+     (argument). */
+  if(p->coord)
     {
+      /* Make sure no second argument is given. */
+      if(p->input2name)
+        error(EXIT_FAILURE, 0, "only one argument can be given with the "
+              "`--coord' option");
+
+      /* No need for `p->input2name' or `p->ccol2'. */
+      gal_data_free(p->ccol2);
+      p->ccol2=NULL;
+    }
+
+  /* `--coord' is not given. */
+  else
+    {
+      /* Without `coord' atleast one input is necessary. */
+      if(p->input1name==NULL)
+        error(EXIT_FAILURE, 0, "no inputs!\n\n"
+              "Two inputs are necessary. The first can be a file, or from "
+              "the standard input (e.g., a pipe). The second can be a "
+              "file, or its coordinates can be directly specified on the "
+              "command-line with `--coord'");
+
+      /* If the first input should be read from the standard input, the
+         contents of `input1name' actually belong to `input2name'. */
       if(p->input2name==NULL)
         {
           p->input2name=p->input1name;
           p->input1name=NULL;
         }
     }
-  else
-    error(EXIT_FAILURE, 0, "no inputs! two inputs are necessary. The first "
-          "can be from the standard input (e.g., a pipe)");
 
 
   /* If the first input is a FITS file, make sure its HDU is also given. */
@@ -253,20 +274,13 @@ ui_check_options_and_arguments(struct matchparams *p)
           "`--hdu' (`-h') option and give it the HDU number (starting "
           "from zero), extension name, or anything acceptable by "
           "CFITSIO");
-
-  /* If the second input is a FITS file, make sure its HDU is also
-     given. */
-  if(p->input2name)
-    {
-      if( gal_fits_name_is_fits(p->input2name) && p->hdu2==NULL )
-        error(EXIT_FAILURE, 0, "no HDU for second input. Please use the "
-              "`--hdu2' (`-H') option and give it the HDU number (starting "
-              "from zero), extension name, or anything acceptable by "
-              "CFITSIO");
-    }
-  else
-    error(EXIT_FAILURE, 0, "second input file not specified: two inputs are "
-          "necessary");
+  if( p->input2name
+      && gal_fits_name_is_fits(p->input2name)
+      && p->hdu2==NULL )
+    error(EXIT_FAILURE, 0, "no HDU for second input. Please use "
+          "the `--hdu2' (`-H') option and give it the HDU number "
+          "(starting from zero), extension name, or anything "
+          "acceptable by CFITSIO");
 }
 
 
@@ -294,41 +308,67 @@ ui_check_options_and_arguments(struct matchparams *p)
 static void
 ui_set_mode(struct matchparams *p)
 {
-  /* Check if we are in image or catalog mode. We will base the mode on the
-     first input, then check with the second. */
+  int tin1, tin2;
+  char *t1=NULL, *t2=NULL;
+
+  /* We will base the mode on the first input, then check with the
+     second. Note that when the first is from standard input (it is
+     `NULL'), then we go into catalog mode because currently we assume
+     standard input is only for plain text and WCS matching is not defined
+     on plain text. */
   if( p->input1name && gal_fits_name_is_fits(p->input1name) )
-    p->mode = ( (gal_fits_hdu_format(p->input1name, p->cp.hdu) == IMAGE_HDU)
-                ? MATCH_MODE_WCS
-                : MATCH_MODE_CATALOG );
+    {
+      tin1=gal_fits_hdu_format(p->input1name, p->cp.hdu);
+      p->mode = (tin1 == IMAGE_HDU) ? MATCH_MODE_WCS : MATCH_MODE_CATALOG;
+    }
   else
     p->mode=MATCH_MODE_CATALOG;
 
-  /* Now that the mode is set, check the second input's type. */
-  if( gal_fits_name_is_fits(p->input2name) )
+
+  /* Necessary sanity checks. */
+  if(p->mode==MATCH_MODE_CATALOG && p->cp.searchin==0)
+    error(EXIT_FAILURE, 0, "no `--searchin' option specified. Please run "
+          "the following command for more information:\n\n"
+          "    $ info gnuastro \"selecting table columns\"\n");
+
+
+  /* Now that the mode is set, do some sanity checks on the second
+     catalog. Recall that when `--coord' is given, there is no second input
+     file.*/
+  if(p->input2name)
     {
-      if(gal_fits_hdu_format(p->input2name, p->hdu2) == IMAGE_HDU)
+      if(gal_fits_name_is_fits(p->input2name))
         {
-          if( p->mode==MATCH_MODE_CATALOG)
-            error(EXIT_FAILURE, 0, "%s is a catalog, while %s is an image. "
+          tin2=gal_fits_hdu_format(p->input2name, p->hdu2);
+          if(tin1==IMAGE_HDU && tin2!=IMAGE_HDU)
+            {
+              t1 = (tin1==IMAGE_HDU) ? "image" : "catalog";
+              t2 = (tin2==IMAGE_HDU) ? "image" : "catalog";
+            }
+          if(t1)
+            error(EXIT_FAILURE, 0, "%s is a %s, while %s is an "
+                  "%s. Both inputs have to be images or catalogs",
+                  gal_checkset_dataset_name(p->input1name, p->cp.hdu), t1,
+                  gal_checkset_dataset_name(p->input2name, p->hdu2), t2 );
+        }
+      else
+        {
+          if(p->mode==MATCH_MODE_WCS)
+            error(EXIT_FAILURE, 0, "%s is an image, while %s is a catalog! "
                   "Both inputs have to be images or catalogs",
                   gal_checkset_dataset_name(p->input1name, p->cp.hdu),
                   gal_checkset_dataset_name(p->input2name, p->hdu2) );
         }
-      else
-        {
-          if( p->mode==MATCH_MODE_WCS)
-            error(EXIT_FAILURE, 0, "%s is an image, while %s is a catalog. "
-                  "Both inputs have to be images or catalogs",
-                  gal_checkset_dataset_name(p->input1name, p->cp.hdu),
-                  gal_checkset_dataset_name(p->input2name, p->hdu2));
-        }
     }
   else
-    if(p->mode==MATCH_MODE_WCS)
-      error(EXIT_FAILURE, 0, "%s is an image, while %s is a catalog! Both "
-            "inputs have to be images or catalogs",
-            gal_checkset_dataset_name(p->input1name, p->cp.hdu),
-            gal_checkset_dataset_name(p->input2name, p->hdu2));
+    {
+      /* When there is no second-input file name (`--coord' is given), we
+         cannot be in WCS mode (requiring a FITS file). */
+      if(p->mode==MATCH_MODE_WCS)
+        error(EXIT_FAILURE, 0, "%s is an image, while `--coord' is only "
+              "meaningful for catalogs",
+              gal_checkset_dataset_name(p->input1name, p->cp.hdu));
+    }
 }
 
 
@@ -404,6 +444,100 @@ ui_read_columns_aperture_2d(struct matchparams *p)
 
 
 
+static size_t
+ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
+{
+  size_t ccol1n, ccol2n;
+
+  /* Make sure the columns to read are given. */
+  if(p->coord)
+    {
+      if(p->ccol1==NULL)
+        error(EXIT_FAILURE, 0, "no value given to `--ccol1' (necessary with "
+              "`--coord')");
+    }
+  else
+    {
+      if(p->ccol1==NULL || p->ccol2==NULL)
+        error(EXIT_FAILURE, 0, "both `--ccol1' and `--ccol2' must be given. "
+              "They specify the columns containing the coordinates to match");
+    }
+
+  /* Make sure the same number of columns is given to both. */
+  ccol1n = p->ccol1->size;
+  ccol2n = p->coord ? p->coord->size : p->ccol2->size;
+  if(ccol1n!=ccol2n)
+    error(EXIT_FAILURE, 0, "number of coordinates given to `--ccol1' "
+          "(%zu) and `--%s' (%zu) must be equal.\n\n"
+          "If you didn't call these options, run with `--checkconfig' to "
+          "see which configuration file is responsible. You can always "
+          "override the configuration file values by calling the option "
+          "manually on the command-line",
+          ccol1n, p->coord ? "coord" : "ccol2", ccol2n);
+
+  /* Read/check the aperture values. */
+  if(p->aperture)
+    switch(ccol1n)
+      {
+      case 1:
+        if(p->aperture->size>1)
+          error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In a 1D "
+                "match, this option can only take one value",
+                p->aperture->size);
+        break;
+
+      case 2:
+        ui_read_columns_aperture_2d(p);
+        break;
+
+      default:
+        error(EXIT_FAILURE, 0, "%zu dimensional matches are not currently "
+              "supported (maximum is 2 dimensions). The number of "
+              "dimensions is deduced from the number of values given to "
+              "`--ccol1' (or `--coord') and `--ccol2'", ccol1n);
+      }
+  else
+    error(EXIT_FAILURE, 0, "no matching aperture specified. Please use "
+          "the `--aperture' option to define the acceptable aperture for "
+          "matching the coordinates (in the same units as each "
+          "dimension). Please run the following command for more "
+          "information.\n\n    $ info %s\n", PROGRAM_EXEC);
+
+  /* Return the number of dimensions. */
+  return ccol1n;
+}
+
+
+
+
+
+/* Save the manually given coordinates (with `--coord') in column format (a
+   list of datasets). */
+static gal_data_t *
+ui_set_columns_from_coord(struct matchparams *p)
+{
+  size_t i, one=1;
+  gal_data_t *out=NULL;
+  double *coord=p->coord->array;
+
+  /* Write each given value as a one-row table column (single element
+     datasets that are linked) */
+  for(i=0;i<p->coord->size;++i)
+    {
+      gal_list_data_add_alloc(&out, NULL, GAL_TYPE_FLOAT64, 1, &one, NULL,
+                              0, -1, NULL, NULL, NULL);
+      *((double *)(out->array))=coord[i];
+    }
+  gal_list_data_reverse(&out);
+
+  /* Return the list. */
+  return out;
+}
+
+
+
+
+
 /* We want to keep the columns as double type. So what-ever their original
    type is, convert it. */
 static gal_data_t *
@@ -469,72 +603,32 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
 static void
 ui_read_columns(struct matchparams *p)
 {
-  size_t i;
-  size_t ccol1n=p->ccol1->size;
-  size_t ccol2n=p->ccol2->size;
+  size_t i, ndim;
+  char **strarr1, **strarr2;
   gal_list_str_t *cols1=NULL, *cols2=NULL;
-  char **strarr1=p->ccol1->array, **strarr2=p->ccol2->array;
 
-  /* Make sure the same number of columns is given to both. */
-  if(ccol1n!=ccol2n)
-    error(EXIT_FAILURE, 0, "the number of values given to `--ccol1' and "
-          "`--ccol2' (%zu and %zu) are not equal", ccol1n, ccol2n);
-
-
-  /* Read/check the aperture values. */
-  if(p->aperture)
-    switch(ccol1n)
-      {
-      case 1:
-        if(p->aperture->size>1)
-          error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In a 1D "
-                "match, this option can only take one value",
-                p->aperture->size);
-        break;
-
-      case 2:
-        ui_read_columns_aperture_2d(p);
-        break;
-
-      default:
-
-        error(EXIT_FAILURE, 0, "%zu dimensional matches are not currently "
-              "supported (maximum is 2 dimensions). The number of "
-              "dimensions is deduced from the number of values given to "
-              "`--ccol1' and `--ccol2'", ccol1n);
-      }
-  else
-    error(EXIT_FAILURE, 0, "no matching aperture specified. Please use "
-          "the `--aperture' option to define the acceptable aperture for "
-          "matching the coordinates (in the same units as each "
-          "dimension). Please run the following command for more "
-          "information.\n\n    $ info %s\n", PROGRAM_EXEC);
-
+  /* Basic sanity checks and reading of aperture values. */
+  ndim=ui_set_columns_sanity_check_read_aperture(p);
 
   /* Convert the array of strings to a list of strings for the column
      names. */
-  for(i=0;i<ccol1n;++i)
+  strarr1=p->ccol1->array;
+  strarr2=p->coord?NULL:p->ccol2->array;
+  for(i=0;i<ndim;++i)
     {
       gal_list_str_add(&cols1, strarr1[i], 1);
-      gal_list_str_add(&cols2, strarr2[i], 1);
+      if(strarr2) gal_list_str_add(&cols2, strarr2[i], 1);
     }
   gal_list_str_reverse(&cols1);
-  gal_list_str_reverse(&cols2);
+  if(cols2) gal_list_str_reverse(&cols2);
 
-
-  /* Read the columns. */
-  if(p->cp.searchin)
-    {
-      /* Read the first dataset. */
-      p->cols1=ui_read_columns_to_double(p, p->input1name, p->cp.hdu,
-                                         cols1, ccol1n);
-      p->cols2=ui_read_columns_to_double(p, p->input2name, p->hdu2,
-                                         cols2, ccol2n);
-    }
-  else
-    error(EXIT_FAILURE, 0, "no `--searchin' option specified. Please run "
-          "the following command for more information:\n\n"
-          "    $ info gnuastro \"selecting table columns\"\n");
+  /* Read-in the columns. */
+  p->cols1=ui_read_columns_to_double(p, p->input1name, p->cp.hdu,
+                                     cols1, ndim);
+  p->cols2=( p->coord
+             ? ui_set_columns_from_coord(p)
+             : ui_read_columns_to_double(p, p->input2name, p->hdu2,
+                                         cols2, ndim) );
 
   /* Free the extra spaces. */
   gal_list_str_free(cols1, 1);
@@ -548,27 +642,65 @@ ui_read_columns(struct matchparams *p)
 static void
 ui_preparations_out_cols(struct matchparams *p)
 {
-  size_t i;
-  char **strarr=p->outcols->array;
+  void *rptr;
+  int goodvalue;
+  gal_data_t *read;
+  uint8_t readtype;
+  char *col, **strarr=p->outcols->array;
+  size_t i, one=1, ndim=p->coord?p->coord->size:0;
 
   /* Go over all the values and put the respective column identifier in the
      proper list. */
   for(i=0;i<p->outcols->size;++i)
-    switch(strarr[i][0])
-      {
-      case 'a': gal_list_str_add(&p->acols, strarr[i]+1, 0); break;
-      case 'b': gal_list_str_add(&p->bcols, strarr[i]+1, 0); break;
-      default:
-        error(EXIT_FAILURE, 0, "`%s' is not a valid value for `--outcols'. "
-              "The first character of each value to this option must be "
-              "either `a' or `b'. The former specifies a column from the "
-              "first input and the latter a column from the second. The "
-              "characters after them can be any column identifier (number, "
-              "name, or regular expression). For more on column selection, "
-              "please run this command:\n\n"
-              "    $ info gnuastro \"Selecting table columns\"\n",
-              strarr[i]);
-      }
+    {
+      col=strarr[i];
+      switch(col[0])
+        {
+        case 'a': gal_list_str_add(&p->acols, col+1, 0); break;
+        case 'b':
+          /* With `--coord', only numbers that are smaller than the number
+             of the dimensions are acceptable. */
+          if(p->coord)
+            {
+              goodvalue=0;
+              rptr=gal_type_string_to_number(col+1, &readtype);
+              if(rptr)
+                {
+                  read=gal_data_alloc(rptr, readtype, 1, &one, NULL, 0, -1,
+                                      NULL, NULL, NULL);
+                  if(gal_type_is_int(readtype))
+                    {
+                      read=gal_data_copy_to_new_type_free(read,GAL_TYPE_LONG);
+                      if( *((long *)(read->array)) <= ndim )
+                        goodvalue=1;
+                    }
+                  gal_data_free(read);
+                }
+              if(goodvalue==0)
+                error(EXIT_FAILURE, 0, "bad value to second catalog "
+                      "column (%s) of `--outcols'.\n\n"
+                      "With the `--coord' option, the second catalog is "
+                      "assumed to have a single row and the given number "
+                      "of columns. Therefore when using `--outcols', only "
+                      "integers that are less than the number of "
+                      "dimensions (%zu in this case) are acceptable", col+1,
+                      ndim);
+            }
+          gal_list_str_add(&p->bcols, col+1, 0);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "`%s' is not a valid value for "
+                "`--outcols'.\n\n"
+                "The first character of each value to this option must be "
+                "either `a' or `b'. The former specifies a column from the "
+                "first input and the latter a column from the second. The "
+                "characters after them can be any column identifier (number, "
+                "name, or regular expression). For more on column selection, "
+                "please run this command:\n\n"
+                "    $ info gnuastro \"Selecting table columns\"\n",
+                col);
+        }
+    }
 
   /* Revere the lists so they correspond to the input order. */
   gal_list_str_reverse(&p->acols);
@@ -611,7 +743,7 @@ ui_preparations_out_name(struct matchparams *p)
     }
   else
     {
-      if(p->outcols)
+      if(p->outcols || p->coord)
         {
           if(p->cp.output)
             gal_checkset_allocate_copy(p->cp.output, &p->out1name);

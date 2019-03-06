@@ -52,6 +52,12 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      contain all the columns from the first input and the 5th column of the
      second input. This greatly simplifies the mergining of different table
      columns into one.
+   --coord: manually specify coordinates to match on the
+     command-line. Until now, if you only wanted to make check a specific
+     coordinate's matching with a catalog. It was necessary to make a
+     single-row catalog as a file and feed that into Match. With this
+     option, you can now specify the coordinates to match against another
+     catalog with the command-line.
 
   NoiseChisel:
    --interpmetric: Set the metric to use to identify the nearest neighbors
@@ -86,6 +92,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
     gal_dimension_dist_radial: Radial distance between two coordinates.
     gal_statistics_outlier_cumulative: Uses flatness of the cumulative
        distribution to find outliers.
+    gal_type_is_int: to see if we have an integer (any width, any sign).
 
 ** Removed features
 

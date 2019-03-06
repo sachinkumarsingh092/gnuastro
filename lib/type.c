@@ -280,7 +280,29 @@ gal_type_max(uint8_t type, void *in)
     case GAL_TYPE_FLOAT32:      *(float *)    in = FLT_MAX;      break;
     case GAL_TYPE_FLOAT64:      *(double *)   in = DBL_MAX;      break;
     default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__, type);
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized", __func__,
+            type);
+    }
+}
+
+
+
+
+
+int
+gal_type_is_int(uint8_t type)
+{
+  switch(type)
+    {
+    case GAL_TYPE_UINT8:  return 1;
+    case GAL_TYPE_INT8:   return 1;
+    case GAL_TYPE_UINT16: return 1;
+    case GAL_TYPE_INT16:  return 1;
+    case GAL_TYPE_UINT32: return 1;
+    case GAL_TYPE_INT32:  return 1;
+    case GAL_TYPE_UINT64: return 1;
+    case GAL_TYPE_INT64:  return 1;
+    default:              return 0;
     }
 }
 

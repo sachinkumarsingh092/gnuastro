@@ -53,8 +53,9 @@ struct matchparams
   char            *input1name;  /* First input filename.                */
   char            *input2name;  /* Second input filename.               */
   char                  *hdu2;  /* Second input's HDU.                  */
-  gal_data_t           *ccol1;  /* Array of firs input column names.    */
+  gal_data_t           *ccol1;  /* Array of first input column names.   */
   gal_data_t           *ccol2;  /* Array of second input column names.  */
+  gal_data_t           *coord;  /* Array of manual coordinate values.   */
   gal_data_t         *outcols;  /* Array of second input column names.  */
   gal_data_t        *aperture;  /* Acceptable matching aperture.        */
   uint8_t         logasoutput;  /* Don't rearrange inputs, out is log.  */

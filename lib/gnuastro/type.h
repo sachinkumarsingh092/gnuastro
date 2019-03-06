@@ -138,6 +138,9 @@ void
 gal_type_max(uint8_t type, void *in);
 
 int
+gal_type_is_int(uint8_t type);
+
+int
 gal_type_is_list(uint8_t type);
 
 int

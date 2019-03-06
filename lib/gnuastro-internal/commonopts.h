@@ -266,7 +266,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_TABLEFORMAT,
       "STR",
       0,
-      "Table format: `fits-ascii', `fits-binary'.",
+      "Table fmt: `fits-ascii', `fits-binary', `txt'.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &cp->tableformat,
       GAL_TYPE_STRING,

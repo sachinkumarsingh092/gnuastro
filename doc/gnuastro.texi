@@ -19752,10 +19752,14 @@ $ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture=0.5/3600  \
            in1.fits in2.fits
 @end example
 
-Two inputs are necessary for Match to start processing. The inputs can be
-plain text tables or FITS tables, see @ref{Tables}. If only one argument is
-provided, Match will assume look for the first input in Standard input (see
-@ref{Standard input}).
+Match will find the rows that are nearest to each other in two catalogs
+(given some coordinate columns). Therefore two catalogs are necessary for
+input. However, they don't necessarily have to be files: 1) the first
+catalog can also come from the standard input (for example a pipe, see
+@ref{Standard input}); 2) when only one point is needed, you can use the
+@option{--coord} option to avoid creating a file for the second
+catalog. When the inputs are files, they can be plain text tables or FITS
+tables, for more see @ref{Tables}.
 
 Match follows the same basic behavior of all Gnuastro programs as fully
 described in @ref{Common program behavior}. If the first input is a FITS
@@ -19848,6 +19852,15 @@ re-arrange the necessary columns and it will write a single output
 table. Combined with regular expressions in large tables, this can be a
 very powerful and convenient way to merge various tables into one.
 
+When @option{--coord} is given, no second catalog will be read. The second
+catalog will be created internally based on the values given to
+@option{--coord}. So column names aren't defined and you can only request
+integer column numbers that are less than the number of coordinates given
+to @option{--coord}. For example if you want to find the row matching RA of
+1.2345 and Dec of 6.7890, then you should use
+@option{--coord=1.2345,6.7890}. But when using @option{--outcols}, you
+can't give @code{bRA}, or @code{b25}.
+
 @item -l
 @itemx --logasoutput
 The output file will have the contents of the log file: indexes in the two
@@ -19876,6 +19889,25 @@ columns}. See the one-line examples above for some usages of this option.
 @itemx --ccol2=INT/STR[,INT/STR]
 The coordinate columns of the second input. See the example in
 @option{--ccol1} for more.
+
+@item -d FLT[,FLT]
+@itemx --coord=FLT[,FLT]
+Manually specify the coordinates to match against the given catalog. With
+this option, Match will not look for a second input file/table and will
+directly use the coordinates given to this option.
+
+When this option is called, the output changes in the following ways: 1)
+when @option{--outcols} is specified, for the second input, it can only
+accept integer numbers that are less than the number of values given to
+this option, see description of that option for more. 2) By default (when
+@option{--outcols} isn't used), only the matching row of the first table
+will be output (a single file), not two separate files (one for each
+table).
+
+This option is good when you have a (large) catalog and only want to match
+a single coordinate to it (for example to find the nearest catalog entry to
+your desired point). With this option, you can write the coordinates on the
+command-line and thus avoid the need to make a single-row file.
 
 @item -a FLT[,FLT[,FLT]]
 @itemx --aperture=FLT[,FLT[,FLT]]
@@ -23593,6 +23625,10 @@ gal_type_max(GAL_TYPE_INT16, &max);
 Note: Do not use the maximum value for a blank value of a general
 (initially unknown) type, please use the constants/functions provided in
 @ref{Library blank values} for the definition and usage of blank values.
+@end deftypefun
+
+@deftypefun int gal_type_is_int (uint8_t @code{type})
+Return 1 if the type is an integer (any width and any sign).
 @end deftypefun
 
 @deftypefun int gal_type_is_list (uint8_t @code{type})

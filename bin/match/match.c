@@ -97,6 +97,57 @@ match_add_all_cols(char *filename, char *extname, gal_list_str_t *stdinlines,
 
 
 
+static gal_data_t *
+match_cat_from_coord(struct matchparams *p, gal_list_str_t *cols,
+                     size_t *numcolmatch)
+{
+  void *rptr;
+  gal_list_str_t *col;
+  uint8_t read, readtype;
+  size_t colcounter, counter;
+  gal_data_t *tmp, *ttmp, *out=NULL;
+
+  /* Go over the desired columns and only return the good ones. */
+  colcounter=0;
+  for(col=cols;col!=NULL;col=col->next)
+    {
+      /* In `ui_preparations_out_cols', we have done the necessary sanity
+         checks, so we can safely use the values. */
+      rptr=gal_type_string_to_number(col->v, &readtype);
+      if(readtype!=GAL_TYPE_UINT8)
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. The given string didn't have a `uint8' type",
+              __func__, PACKAGE_BUGREPORT);
+      read=*((uint8_t *)rptr);
+
+      /* Find the proper column in the second input's columns. Just note
+         that column counting starts from 1.*/
+      counter=1;
+      for(tmp=p->cols2;tmp!=NULL;tmp=tmp->next)
+        if(counter++ == read)
+          {
+            ttmp=gal_data_copy(tmp);
+            ttmp->next=NULL;
+            gal_list_data_add(&out, ttmp);
+            ++numcolmatch[colcounter];
+            break;
+          }
+
+      /* Increment the column counter. */
+      ++colcounter;
+    }
+
+  /* Reverse the list. */
+  gal_list_data_reverse(&out);
+
+  /* Return the output columns. */
+  return out;
+}
+
+
+
+
+
 /* Read the catalog in the given file and use the given permutation to keep
    the proper columns. */
 static gal_data_t *
@@ -143,18 +194,21 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
       /* When the output contains columns from both inputs, we need to keep
          the number of columns matched against each column identifier. */
       *numcolmatch=gal_pointer_allocate(GAL_TYPE_SIZE_T,
-                                        gal_list_str_number(cols), 0,
+                                        gal_list_str_number(cols), 1,
                                         __func__, "numcolmatch");
     }
   else cols=incols;
 
 
-  /* Read the full table and free the `cols' array if it was allocated
-     here. */
-  cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
-                     p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
-                     *numcolmatch);
-  origsize=cat->size;
+  /* Read the full table. NOTE that with `--coord', for the second input,
+     both `filename' and `p->stdinlines' will be NULL. */
+  if(filename || p->stdinlines)
+    cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
+                       p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
+                       *numcolmatch);
+  else
+    cat=match_cat_from_coord(p, cols, *numcolmatch);
+  origsize = cat ? cat->size : 0;
 
 
   /* Go over each column and permute its contents. */
@@ -198,10 +252,11 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
           }
       }
 
+
   /* Write the catalog to the output. */
   if(p->outcols)
     return cat;
-  else
+  else if(cat)
     {
       /* Write the catalog to a file. */
       gal_table_write(cat, NULL, p->cp.tableformat, outname, extname, 0);
@@ -227,8 +282,9 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
 
       /* Clean up. */
       gal_list_data_free(cat);
-      return NULL;
     }
+
+  return NULL;
 }
 
 
@@ -380,7 +436,14 @@ match_catalog(struct matchparams *p)
 
   /* Print the number of matches if not in quiet mode. */
   if(!p->cp.quiet)
-    fprintf(stdout, "%zu\n", nummatched);
+    {
+      fprintf(stdout, "Number of maching rows in both catalogs: %zu\n",
+              nummatched);
+      if(p->out2name && strcmp(p->out1name, p->out2name))
+        fprintf(stdout, "Output:\n %s\n %s", p->out1name, p->out2name);
+      else
+        fprintf(stdout, "Output: %s\n", p->out1name);
+    }
 }
 
 
@@ -409,8 +472,16 @@ void
 match(struct matchparams *p)
 {
   /* Do the correct type of matching. */
-  if(p->mode==MATCH_MODE_CATALOG)
-    match_catalog(p);
+  switch(p->mode)
+    {
+    case MATCH_MODE_CATALOG: match_catalog(p); break;
+    case MATCH_MODE_WCS:
+      error(EXIT_FAILURE, 0, "matching by WCS is not yet supported");
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix "
+            "the problem: %d is not a recognized mode",
+            __func__, PACKAGE_BUGREPORT, p->mode);
+    }
 
   /* Write Match's configuration as keywords into the first extension of
      the output. */
@@ -420,7 +491,9 @@ match(struct matchparams *p)
                                               ? p->input1name
                                               : "Standard input" ),
                                   &p->cp.okeys, 1);
-      gal_fits_key_write_filename("input2", p->input2name, &p->cp.okeys, 1);
+      gal_fits_key_write_filename("input2",
+                                  p->input2name?p->input2name:"--coord",
+                                  &p->cp.okeys, 1);
       gal_fits_key_write_config(&p->cp.okeys, "Match configuration",
                                 "MATCH-CONFIG", p->out1name, "0");
     }

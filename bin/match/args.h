@@ -129,6 +129,20 @@ struct argp_option program_options[] =
       gal_options_parse_csv_strings
     },
     {
+      "coord",
+      UI_KEY_COORD,
+      "FLT[,FLT]",
+      0,
+      "Manually input coordiantes.",
+      UI_GROUP_CATALOGMATCH,
+      &p->coord,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
+    },
+    {
       "aperture",
       UI_KEY_APERTURE,
       "FLT[,FLT[,FLT]]",
