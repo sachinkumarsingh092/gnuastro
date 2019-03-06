@@ -1561,6 +1561,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
 
+
   /* Print introductory information. */
   ui_print_intro(p);
 }

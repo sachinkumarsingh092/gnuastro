@@ -211,7 +211,7 @@ table_set_strcheck(gal_data_t *col, int searchin)
 
 
 static gal_list_sizet_t *
-make_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
+table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
                     size_t numcols, int searchin, int ignorecase,
                     char *filename, char *hdu, size_t *colmatch)
 {
@@ -420,7 +420,7 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
   if(allcols==NULL) return NULL;
 
   /* Get the list of indexs in the same order as the input list */
-  indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
+  indexll=table_list_of_indexs(cols, allcols, numcols, searchin,
                               ignorecase, filename, hdu, colmatch);
 
   /* Depending on the table format, read the columns into the output

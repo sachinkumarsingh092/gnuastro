@@ -140,6 +140,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   bug #55740: Diamond shapes in nearst-ngb interpolation affecting NoiseChisel.
   bug #55763: Crop not keeping Blank pixels on unsigned types.
   bug #55844: WCS library (and thus all programs) can't deal with CROTAi values.
+  bug #55845: Crash when necessary column not found from standard input.
 
 
 

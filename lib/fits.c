@@ -147,12 +147,19 @@ char *
 gal_fits_name_save_as_string(char *filename, char *hdu)
 {
   char *name;
-  if( gal_fits_name_is_fits(filename) )
+
+  /* Small sanity check. */
+  if(filename==NULL)
+    gal_checkset_allocate_copy("stdin", &name);
+  else
     {
-      if( asprintf(&name, "%s (hdu: %s)", filename, hdu)<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      if( gal_fits_name_is_fits(filename) )
+        {
+          if( asprintf(&name, "%s (hdu: %s)", filename, hdu)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+        }
+      else gal_checkset_allocate_copy(filename, &name);
     }
-  else gal_checkset_allocate_copy(filename, &name);
   return name;
 }
 

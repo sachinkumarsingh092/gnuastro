@@ -25803,10 +25803,13 @@ suffix doesn't have to start with `@key{.}': this function will return
 
 @deftypefun {char *} gal_fits_name_save_as_string (char @code{*filename}, char @code{*hdu})
 If the name is a FITS name, then put a @code{(hdu: ...)} after it and
-return the string. If it isn't a FITS file, just print the name. Note that
-the space is allocated. This function is useful when you want to report a
-random file to the user which may be FITS or not (for a FITS file, simply
-the filename is not enough, the HDU is also necessary).
+return the string. If it isn't a FITS file, just print the name, if
+@code{filename==NULL}, then return the string @code{stdin}. Note that the
+output string's space is allocated.
+
+This function is useful when you want to report a random file to the user
+which may be FITS or not (for a FITS file, simply the filename is not
+enough, the HDU is also necessary).
 @end deftypefun
 
 
