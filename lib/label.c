@@ -246,7 +246,9 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
     {
       gal_qsort_index_single=values->array;
       qsort(indexs->array, indexs->size, sizeof(size_t),
-            min0_max1 ? gal_qsort_index_single_d : gal_qsort_index_single_i);
+            ( min0_max1
+              ? gal_qsort_index_single_float32_d
+              : gal_qsort_index_single_float32_i) );
     }
 
 

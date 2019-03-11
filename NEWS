@@ -85,13 +85,28 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   Statistics:
    --interpmetric: Similar to NoiseChisel.
 
+  Table:
+   --range: Limit the output rows to those with a value within the given
+     numeric range with this format: `--range=COL,low,high'. This is very
+     useful when only certain rows of the input are required not the
+     output. The advantage over pipeing to AWK is that you can save the
+     output directly to FITS (preserving the metadata). See the book for
+     more.
+   --sort: Sort the output rows based on the value of the given column in
+     ascending order.
+   --descending: When called with `--sort', will arrange the output rows in
+     decending order.
+
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
     gal_blank_number: Return the number of blank elements in a dataset.
     gal_dimension_dist_radial: Radial distance between two coordinates.
+    gal_qsort_index_single_TYPE_i: Set of functions to sort indexs ascending.
+    gal_qsort_index_single_TYPE_d: Set of functions to sort indexs descending.
     gal_statistics_outlier_cumulative: Uses flatness of the cumulative
        distribution to find outliers.
+    gal_table_list_of_indexs: returns the list of indexs matching columns.
     gal_type_is_int: to see if we have an integer (any width, any sign).
 
 ** Removed features
@@ -129,6 +144,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Statistics:
    --ignoreblankintiles: similar to same option in NoiseChisel.
+
+  Table:
+   --colinfoinstdout: now corresponds to the `-O' short option. Until this
+     version, the `-s' short option was used for it. But with the new
+     `--sort' option, `-s' may cause confusion.
 
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order

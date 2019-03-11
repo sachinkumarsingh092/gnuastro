@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   a b d e f g j k l m n p r t u v w x y z
+   a b d e f g j k l m n p t u v w x y z
    A B C E G H J L O Q R W X Y
 */
 enum option_keys_enum
@@ -40,7 +40,10 @@ enum option_keys_enum
   /* With short-option version. */
   UI_KEY_COLUMN          = 'c',
   UI_KEY_INFORMATION     = 'i',
-  UI_KEY_COLINFOINSTDOUT = 's',
+  UI_KEY_COLINFOINSTDOUT = 'O',
+  UI_KEY_RANGE           = 'r',
+  UI_KEY_SORT            = 's',
+  UI_KEY_DESCENDING      = 'd',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
@@ -52,6 +55,9 @@ enum option_keys_enum
 
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p);
+
+void
+ui_list_range_free(struct list_range *list, int freevalue);
 
 void
 ui_free_report(struct tableparams *p);

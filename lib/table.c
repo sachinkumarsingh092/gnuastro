@@ -210,10 +210,10 @@ table_set_strcheck(gal_data_t *col, int searchin)
 
 
 
-static gal_list_sizet_t *
-table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
-                    size_t numcols, int searchin, int ignorecase,
-                    char *filename, char *hdu, size_t *colmatch)
+gal_list_sizet_t *
+gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
+                         size_t numcols, int searchin, int ignorecase,
+                         char *filename, char *hdu, size_t *colmatch)
 {
   long tlong;
   int regreturn;
@@ -375,10 +375,15 @@ table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
     for(i=0;i<numcols;++i)
       gal_list_sizet_add(&indexll, i);
 
-
-
   /* Reverse the list. */
   gal_list_sizet_reverse(&indexll);
+
+  /* For a check.
+  gal_list_sizet_print(indexll);
+  exit(0);
+  */
+
+  /* Return the list. */
   return indexll;
 }
 
@@ -419,9 +424,9 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
   /* If there was no actual data in the file, then return NULL. */
   if(allcols==NULL) return NULL;
 
-  /* Get the list of indexs in the same order as the input list */
-  indexll=table_list_of_indexs(cols, allcols, numcols, searchin,
-                              ignorecase, filename, hdu, colmatch);
+  /* Get the list of indexs in the same order as the input list. */
+  indexll=gal_table_list_of_indexs(cols, allcols, numcols, searchin,
+                                   ignorecase, filename, hdu, colmatch);
 
   /* Depending on the table format, read the columns into the output
      structure. Note that the functions here pop each index, read/store the

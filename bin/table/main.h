@@ -37,6 +37,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+struct list_range
+{
+  gal_data_t           *v;
+  struct list_range *next;
+};
+
+
+
 
 
 /* Main program parameters structure */
@@ -48,10 +56,18 @@ struct tableparams
   gal_list_str_t     *columns;  /* List of given columns.               */
   uint8_t         information;  /* ==1: only print FITS information.    */
   uint8_t     colinfoinstdout;  /* ==1: print column metadata in CL.    */
+  gal_data_t           *range;  /* Range to limit output.               */
+  char                  *sort;  /* Column name or number for sorting.   */
+  uint8_t          descending;  /* Sort columns in descending order.    */
 
-  /* Output: */
+  /* Internal. */
   gal_data_t           *table;  /* Linked list of output table columns. */
   gal_data_t      *allcolinfo;  /* Information of all the columns.      */
+  gal_data_t         *sortcol;  /* Column to define a sorting.          */
+  struct list_range *rangecol;  /* Column to define a range.            */
+  uint8_t            freesort;  /* If the sort column should be freed.  */
+  uint8_t          *freerange;  /* If the range column should be freed. */
+  uint8_t              sortin;  /* If the sort column is in the output. */
   time_t              rawtime;  /* Starting time of the program.        */
 };
 

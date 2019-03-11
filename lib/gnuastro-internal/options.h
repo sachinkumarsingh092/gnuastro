@@ -304,6 +304,10 @@ void *
 gal_options_read_sigma_clip(struct argp_option *option, char *arg,
                             char *filename, size_t lineno, void *junk);
 
+void *
+gal_options_parse_name_and_values(struct argp_option *option, char *arg,
+                                  char *filename, size_t lineno, void *junk);
+
 
 /**********************************************************************/
 /************            Command-line options           ***************/

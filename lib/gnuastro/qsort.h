@@ -123,7 +123,7 @@ gal_qsort_float64_i(const void *a, const void *b);
 /* Pointer used to sort the indexs of an array based on their flux (value
    in this array). Note: when EACH THREAD USES A DIFFERENT ARRAY, this is
    not thread-safe . */
-extern float *gal_qsort_index_single;
+extern void *gal_qsort_index_single;
 
 
 /* When each thread is working on a different array, we'll need to keep the
@@ -136,10 +136,64 @@ struct gal_qsort_index_multi
 };
 
 int
-gal_qsort_index_single_d(const void *a, const void *b);
+gal_qsort_index_single_uint8_d(const void *a, const void *b);
 
 int
-gal_qsort_index_single_i(const void *a, const void *b);
+gal_qsort_index_single_uint8_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int8_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int8_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint16_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint16_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int16_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int16_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint32_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint32_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int32_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int32_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint64_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_uint64_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int64_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_int64_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_float32_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_float32_i(const void *a, const void *b);
+
+int
+gal_qsort_index_single_float64_d(const void *a, const void *b);
+
+int
+gal_qsort_index_single_float64_i(const void *a, const void *b);
 
 int
 gal_qsort_index_multi_d(const void *a, const void *b);

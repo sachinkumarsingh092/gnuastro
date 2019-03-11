@@ -76,6 +76,46 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "range",
+      UI_KEY_RANGE,
+      "STR,FLT:FLT",
+      0,
+      "Column, and range to limit output.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->range,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_name_and_values
+    },
+    {
+      "sort",
+      UI_KEY_SORT,
+      "STR,INT",
+      0,
+      "Column name or number for sorting.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->sort,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "descending",
+      UI_KEY_DESCENDING,
+      0,
+      0,
+      "Sort in descending order: largets first.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->descending,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

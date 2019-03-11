@@ -11206,8 +11206,18 @@ $ asttable bintab.fits --information
 ## the name starts with "MAG_":
 $ asttable bintab.fits --column=RA --column=DEC --column=/^MAG_/
 
-## Similar to above, but with one call to --column (or -c) and writes
-## the columns to a file (with metadata) instead of the command-line.
+## Similar to the above, but with one call to `--column' (or `-c'),
+## also sort the rows by the input's photometric redshift (`Z_PHOT')
+## column. To confirm the sort, you can add `Z_PHOT' to the columns
+## to print.
+$ asttable bintab.fits -cRA,DEC,/^MAG_/ --sort=Z_PHOT
+
+## Similar to the above, but only print rows that have a photometric
+## redshift between 2 and 3.
+$ asttable bintab.fits -cRA,DEC,/^MAG_/ --range=Z_PHOT,2:3
+
+## Similar to above, but writes the columns to a file (with metadata)
+## instead of the command-line.
 $ asttable bintab.fits -cRA,DEC,/^MAG_/ --output=out.txt
 
 ## Only print the 2nd column, and the third column multiplied by 5:
@@ -11230,13 +11240,18 @@ $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 
 Table's input dataset can be given either as a file or from Standard input
 (see @ref{Standard input}). In the absence of selected columns, all the
-input's columns will be written to the output. If the specified output is a
-FITS file, the type of FITS table (binary or ASCII) will be determined from
-the @option{--tabletype} option. If the output is not a FITS file, it will
-be printed as a plain text table (with space characters between the
-columns). When the columns are accompanied by meta-data (like column name,
-units, or comments), this information will also printed in the plain text
-file before the table, as described in @ref{Gnuastro text table format}.
+input's columns and rows will be written to the output. If any output file
+is explicity requested (with @option{--output}) the output table will be
+written in it. When no output file is explicitly requested the output table
+will be written to the standard output.
+
+If the specified output is a FITS file, the type of FITS table (binary or
+ASCII) will be determined from the @option{--tabletype} option. If the
+output is not a FITS file, it will be printed as a plain text table (with
+space characters between the columns). When the columns are accompanied by
+meta-data (like column name, units, or comments), this information will
+also printed in the plain text file before the table, as described in
+@ref{Gnuastro text table format}.
 
 For the full list of options common to all Gnuastro programs please see
 @ref{Common options}. Options can also be stored in directory, user or
@@ -11287,6 +11302,42 @@ This option is not mandatory, if no specific columns are requested, all the
 input table columns are output. When this option is called multiple times,
 it is possible to output one column more than once.
 
+@item -O
+@itemx --colinfoinstdout
+@cindex Standard output
+Add column metadata when the output is printed in the standard
+output. Usually the standard output is used for a fast visual check or to
+pipe into other program for further processing. So by default meta-data
+aren't included.
+
+@item -r STR,FLT:FLT
+@itemx --range=STR,FLT:FLT
+Only print the output rows that have a value within the given range in the
+@code{STR} column (can be a name or counter). For example with
+@code{--range=sn,5:20} the output's columns will only contain rows that
+have a value between 5 and 20 in the @code{sn} column (not case-sensitive).
+
+This option can be called multiple times (different ranges for different
+columns) in one run of the Table program. This is very useful for selecting
+the final rows from multiple criteria/columns.
+
+The chosen column doesn't have to be in the output columns. This is good
+when you just want to select using one column's values, but don't need that
+column anymore afterwards.
+
+@item -s STR
+@item --sort=STR
+Sort the output rows based on the values in the @code{STR} column (can be a
+column name or number). By default the sort is done in ascending/increasing
+order, to sort in a descending order, use @option{--descending}.
+
+The chosen column doesn't have to be in the output columns. This is good
+when you just want to sort using one column's values, but don't need that
+column anymore afterwards.
+
+@item -d
+@itemx --descending
+When called with @option{--sort}, rows will be sorted in descending order.
 
 @end table
 
@@ -25668,6 +25719,14 @@ same number of elements as nodes in the @code{cols} list. The number of
 columns that matched each input column will be stored in each element.
 @end deftypefun
 
+@deftypefun {gal_list_sizet_t *} gal_table_list_of_indexs (gal_list_str_t @code{*cols}, gal_data_t @code{*allcols}, size_t @code{numcols}, int @code{searchin}, int @code{ignorecase}, char @code{*filename}, char @code{*hdu}, size_t @code{*colmatch})
+Returns a list of indexs (starting from 0) of the input columns that match
+the names/numbers given to @code{cols}. This is a low-level operation which
+is called by @code{gal_table_read} (described above), see there for more on
+each argument's description. @code{allcols} is the returned array of
+@code{gal_table_info}.
+@end deftypefun
+
 @cindex Git
 @deftypefun void gal_table_comments_add_intro (gal_list_str_t @code{**comments}, char @code{*program_string}, time_t @code{*rawtime})
 Add some basic information to the list of @code{comments}. This basic
@@ -27977,13 +28036,14 @@ below.
 @deffn {Global variable} {gal_qsort_index_single}
 @cindex Thread-safety
 @cindex Multi-threaded operation
-Pointer to a floating point array (@code{float *}) to use as a reference in
-@code{gal_qsort_index_single_d} or @code{gal_qsort_index_single_i}, see the
-explanation of these functions for more. Note that if more than one array
-is to be sorted in a multi-threaded operation, the two functions will not
-work as expected. Therefore, if the operation is multi-threaded, but all
-the threads just sort the indexs based on a single array, this global
-variable can safely be used.
+Pointer to an array (for example @code{float *} or @code{int *}) to use as
+a reference in @code{gal_qsort_index_single_TYPE_d} or
+@code{gal_qsort_index_single_TYPE_i}, see the explanation of these
+functions for more. Note that if @emph{more than one} array is to be sorted
+in a multi-threaded operation, these functions will not work as
+expected. However, when all the threads just sort the indexs based on a
+@emph{single array}, this global variable can safely be used in a
+multi-threaded scenario.
 @end deffn
 
 @deftp {Type (C @code{struct})} gal_qsort_index_multi
@@ -28018,12 +28078,14 @@ types}, for example @code{gal_qsort_int32_i}, or
 @code{gal_qsort_float64_i}.
 @end deftypefun
 
-@deftypefun int gal_qsort_index_single_d (const void @code{*a}, const void @code{*b})
+@deftypefun int gal_qsort_index_single_TYPE_d (const void @code{*a}, const void @code{*b})
 When passed to @code{qsort}, this function will sort a @code{size_t} array
-based on decreasing values in the @code{gal_qsort_index_arr} single
-precision floating point array. The floating point array will not be
-changed, it is only read. For example, if we have the following source
-code:
+based on decreasing values in the @code{gal_qsort_index_single}. The global
+@code{gal_qsort_index_single} pointer has a @code{void *} pointer which
+will be cast to the proper type based on this function: for example
+@code{gal_qsort_index_single_uint16_d} will cast the array to an unsigned
+16-bit integer type. The array that @code{gal_qsort_index_single} points to
+will not be changed, it is only read. For example, see this demo program:
 
 @example
 #include <stdio.h>
@@ -28035,8 +28097,8 @@ main (void)
 @{
   size_t s[4]=@{0, 1, 2, 3@};
   float f[4]=@{1.3,0.2,1.8,0.1@};
-  gal_qsort_index_arr=f;
-  qsort(s, 4, sizeof(size_t), gal_qsort_index_single_d);
+  gal_qsort_index_single=f;
+  qsort(s, 4, sizeof(size_t), gal_qsort_index_single_float_d);
   printf("%zu, %zu, %zu, %zu\n", s[0], s[1], s[2], s[3]);
   return EXIT_SUCCESS;
 @}
@@ -28046,9 +28108,10 @@ main (void)
 The output will be: @code{2, 0, 1, 3}.
 @end deftypefun
 
-@deftypefun int gal_qsort_index_single_i (const void @code{*a}, const void @code{*b})
-Similar to @code{gal_qsort_index_single_d}, but will sort the indexes such
-that the values of @code{gal_qsort_index_arr} are in increasing order.
+@deftypefun int gal_qsort_index_single_TYPE_i (const void @code{*a}, const void @code{*b})
+Similar to @code{gal_qsort_index_single_TYPE_d}, but will sort the indexes
+such that the values of @code{gal_qsort_index_single} can be parsed in
+increasing order.
 @end deftypefun
 
 @deftypefun int gal_qsort_index_multi_d (const void @code{*a}, const void @code{*b})

@@ -595,6 +595,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
         /* Comma marks the transition to the next number. */
         case ',':
+        case ':':
           if(isnan(numerator))
             error_at_line(EXIT_FAILURE, 0, filename, lineno, "a number "
                           "must be given before `,'. You have given: `%s'",
@@ -1074,6 +1075,90 @@ gal_options_read_sigma_clip(struct argp_option *option, char *arg,
 }
 
 
+
+
+
+/* Parse name and (float64) values:  name,value1,value2,value3,...
+
+   The output is a `gal_data_t', where the `name' is the given name and the
+   values are in its array (of `float64' type).
+ */
+void *
+gal_options_parse_name_and_values(struct argp_option *option, char *arg,
+                                  char *filename, size_t lineno, void *junk)
+{
+  size_t i, nc;
+  double *darray;
+  char *c, *name, *values;
+  gal_data_t *tmp, *existing, *dataset;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the value pointer to `dataset'. */
+      existing=*(gal_data_t **)(option->value);
+      darray = existing->array;
+
+      /* First write the name. */
+      nc=0;
+      nc += sprintf(sstr+nc, "%s,", existing->name);
+
+      /* Write the values into a string. */
+      for(i=0;i<existing->size;++i)
+        {
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+          nc += sprintf(sstr+nc, "%g,", darray[i]);
+        }
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+  else
+    {
+      /* Parse until the comma or the end of the string.*/
+      c=arg; while(*c!='\0' && *c!=',') ++c;
+      values = (*c=='\0') ? NULL : c+1;
+
+      /* Name of the dataset (note that `c' is already pointing the end of
+         the `name' and `values' points to the next character). So we can
+         safely set `c' to `\0' to have the `name'. */
+      *c='\0';
+      gal_checkset_allocate_copy(arg, &name);
+
+      /* Read the values and write the name. */
+      dataset=gal_options_parse_list_of_numbers(values, filename, lineno);
+      dataset->name=name;
+
+      /* Add the given dataset to the end of an existing dataset. */
+      existing = *(gal_data_t **)(option->value);
+      if(existing)
+        {
+          for(tmp=existing;tmp!=NULL;tmp=tmp->next)
+            if(tmp->next==NULL) { tmp->next=dataset; break; }
+        }
+      else
+        *(gal_data_t **)(option->value) = dataset;
+
+      /* For a check.
+      printf("arg: %s\n", arg);
+      darray=dataset->array;
+      for(i=0;i<dataset->size;++i) printf("%f\n", darray[i]);
+      exit(0);
+      */
+
+      /* Our job is done, return NULL. */
+      return NULL;
+    }
+}
 
 
 

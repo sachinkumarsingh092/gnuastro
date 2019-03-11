@@ -188,21 +188,165 @@ gal_qsort_float64_i(const void *a, const void *b)
 /***************          Sorting indexs        ******************/
 /*****************************************************************/
 /* Initialize the array for sorting indexs to NULL. */
-float *gal_qsort_index_single=NULL;
+void *gal_qsort_index_single=NULL;
 
 int
-gal_qsort_index_single_d(const void *a, const void *b)
+gal_qsort_index_single_uint8_d(const void *a, const void *b)
 {
-  float ta=gal_qsort_index_single[ *(size_t *)a ];
-  float tb=gal_qsort_index_single[ *(size_t *)b ];
+  uint8_t ta=((uint8_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint8_t tb=((uint8_t *)(gal_qsort_index_single))[ *(size_t *)b ];
   return (tb > ta) - (tb < ta);
 }
 
 int
-gal_qsort_index_single_i(const void *a, const void *b)
+gal_qsort_index_single_uint8_i(const void *a, const void *b)
 {
-  float ta=gal_qsort_index_single[ *(size_t *)a ];
-  float tb=gal_qsort_index_single[ *(size_t *)b ];
+  uint8_t ta=((uint8_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint8_t tb=((uint8_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_int8_d(const void *a, const void *b)
+{
+  int8_t ta=((int8_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int8_t tb=((int8_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_int8_i(const void *a, const void *b)
+{
+  int8_t ta=((int8_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int8_t tb=((int8_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_uint16_d(const void *a, const void *b)
+{
+  uint16_t ta=((uint16_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint16_t tb=((uint16_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_uint16_i(const void *a, const void *b)
+{
+  uint16_t ta=((uint16_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint16_t tb=((uint16_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_int16_d(const void *a, const void *b)
+{
+  int16_t ta=((int16_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int16_t tb=((int16_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_int16_i(const void *a, const void *b)
+{
+  int16_t ta=((int16_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int16_t tb=((int16_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_uint32_d(const void *a, const void *b)
+{
+  uint32_t ta=((uint32_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint32_t tb=((uint32_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_uint32_i(const void *a, const void *b)
+{
+  uint32_t ta=((uint32_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint32_t tb=((uint32_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_int32_d(const void *a, const void *b)
+{
+  int32_t ta=((int32_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int32_t tb=((int32_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_int32_i(const void *a, const void *b)
+{
+  int32_t ta=((int32_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int32_t tb=((int32_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_uint64_d(const void *a, const void *b)
+{
+  uint64_t ta=((uint64_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint64_t tb=((uint64_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_uint64_i(const void *a, const void *b)
+{
+  uint64_t ta=((uint64_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  uint64_t tb=((uint64_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_int64_d(const void *a, const void *b)
+{
+  int64_t ta=((int64_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int64_t tb=((int64_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_int64_i(const void *a, const void *b)
+{
+  int64_t ta=((int64_t *)(gal_qsort_index_single))[ *(size_t *)a ];
+  int64_t tb=((int64_t *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_float32_d(const void *a, const void *b)
+{
+  float ta=((float *)(gal_qsort_index_single))[ *(size_t *)a ];
+  float tb=((float *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_float32_i(const void *a, const void *b)
+{
+  float ta=((float *)(gal_qsort_index_single))[ *(size_t *)a ];
+  float tb=((float *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (ta > tb) - (ta < tb);
+}
+
+int
+gal_qsort_index_single_float64_d(const void *a, const void *b)
+{
+  double ta=((double *)(gal_qsort_index_single))[ *(size_t *)a ];
+  double tb=((double *)(gal_qsort_index_single))[ *(size_t *)b ];
+  return (tb > ta) - (tb < ta);
+}
+
+int
+gal_qsort_index_single_float64_i(const void *a, const void *b)
+{
+  double ta=((double *)(gal_qsort_index_single))[ *(size_t *)a ];
+  double tb=((double *)(gal_qsort_index_single))[ *(size_t *)b ];
   return (ta > tb) - (ta < tb);
 }
 
