@@ -1186,7 +1186,7 @@ enum is_sorted_return
 int
 gal_statistics_is_sorted(gal_data_t *input, int updateflags)
 {
-  int out;
+  int out=GAL_BLANK_INT16; /* On some systems, int may be 16-bits wide. */
 
   /* If the flags are already set, don't bother going over the dataset. */
   if( input->flag & GAL_DATA_FLAG_SORT_CH )
