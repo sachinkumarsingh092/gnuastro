@@ -907,8 +907,8 @@ reversepolish(struct arithmeticparams *p)
   int op=0, nop=0;
   unsigned int numop, i;
   gal_list_str_t *token;
+  gal_data_t *d1, *d2, *d3;
   char *hdu, *filename, *printnum;
-  gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
   int flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
                 | GAL_ARITHMETIC_NUMOK );
 
@@ -942,7 +942,6 @@ reversepolish(struct arithmeticparams *p)
         operands_add(p, NULL, d1);
       else
         {
-
           /* Order is the same as in the manual. */
           /* Simple arithmetic operators. */
           if      (!strcmp(token->v, "+" ))
@@ -1097,14 +1096,15 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_COLLAPSE_MEAN;         nop=0; }
           else if (!strcmp(token->v, "collapse-number"))
             { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       nop=0; }
-
-
-          /* Finished checks with known operators */
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as a file name, named dataset, number, or "
                   "operator", token->v);
 
+          /* Initialize all the operand pointers (they may be remaining
+             from previous operators and we don't want them to cause
+             confusion. */
+          d1 = d2 = d3 = NULL;
 
           /* See if the arithmetic library must be called or not. */
           if(nop)
@@ -1138,7 +1138,6 @@ reversepolish(struct arithmeticparams *p)
                      integer number, we will use that to construct a linked
                      list of any number of operands within the single `d1'
                      pointer. */
-                  d1=NULL;
                   numop=pop_number_of_operands(p, op, token->v, &d2);
                   for(i=0;i<numop;++i)
                     gal_list_data_add(&d1, operands_pop(p, token->v));
