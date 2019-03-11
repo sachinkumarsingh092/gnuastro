@@ -555,27 +555,28 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
       if(rangeind[i]==GAL_BLANK_SIZE_T) { rangehasname=1; break; }
   if( (p->sort && sortind==GAL_BLANK_SIZE_T) || rangehasname )
     {
-      /* Go over all the columns, and if they have a name, see if their
-         names matches the requested name. */
-      for(i=0;i<numcols;++i)
-        if(allcols[i].name)
-          {
-            if(p->sort && sortind==GAL_BLANK_SIZE_T)
-              {if( !strcasecmp(allcols[i].name, p->sort) ) sortind=i; }
+      /* For `--sort', go over all the columns if an index hasn't been set
+         yet. If the input columns have a name, see if their names matches
+         the name given to `sort'. */
+      if(p->sort && sortind==GAL_BLANK_SIZE_T)
+        for(i=0;i<numcols;++i)
+          if( allcols[i].name && !strcasecmp(allcols[i].name, p->sort) )
+            { sortind=i; break; }
 
-            if(p->range)
-              {
-                j=0;
-                for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
-                  {
-                    if(rangeind[j]==GAL_BLANK_SIZE_T)
-                      {
-                        if( !strcasecmp(allcols[i].name, dtmp->name) )
-                          { rangeind[j]=i; break; }
-                      }
-                    ++j;
-                  }
-              }
+      /* Same for `--range'. Just note that here we may have multiple calls
+         to `--range'. It is thus important to loop over the values given
+         to range first, then loop over the column names from the start for
+         each new `--ran */
+      i=0;
+      if(p->range)
+        for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
+          {
+           if(rangeind[i]==GAL_BLANK_SIZE_T)
+             for(j=0;j<numcols;++j)
+               if( allcols[j].name
+                   && !strcasecmp(allcols[j].name, dtmp->name) )
+                 { rangeind[i]=j; break; }
+           ++i;
           }
     }
 
@@ -587,11 +588,18 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
           "you can either specify a name or number",
           gal_fits_name_save_as_string(p->filename, p->cp.hdu), p->sort);
   if(p->range)
-    for(i=0;i<*nrange;++i)
-      if(rangeind[i]==GAL_BLANK_SIZE_T)
-        error(EXIT_FAILURE, 0, "%s: no column named `%s' (value to "
-              "`--range') you can either specify a name or number",
-              gal_fits_name_save_as_string(p->filename, p->cp.hdu), p->sort);
+    {
+      i=0;
+      for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
+        {
+          if(rangeind[i]==GAL_BLANK_SIZE_T)
+            error(EXIT_FAILURE, 0, "%s: no column named `%s' (value to "
+                  "`--range') you can either specify a name or number",
+                  gal_fits_name_save_as_string(p->filename, p->cp.hdu),
+                  dtmp->name);
+          ++i;
+        }
+    }
 
 
   /* See which columns the user has asked for. */
