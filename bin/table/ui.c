@@ -493,13 +493,14 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
                            size_t *nrange, size_t *origoutncols,
                            size_t *sortindout, size_t **rangeindout_out)
 {
-  size_t *rangeindout;
   size_t *rangeind=NULL;
+  size_t *rangeindout=NULL;
   gal_data_t *dtmp, *allcols;
+  size_t sortind=GAL_BLANK_SIZE_T;
   int tableformat, rangehasname=0;
   gal_list_sizet_t *tmp, *indexll;
   gal_list_str_t *stmp, *add=NULL;
-  size_t i, j, *s, *sf, allncols, numcols, numrows, sortind;
+  size_t i, j, *s, *sf, allncols, numcols, numrows;
 
 
   /* Allocate necessary spaces. */
@@ -678,9 +679,9 @@ ui_check_range_sort_after(struct tableparams *p, size_t nrange,
                           size_t origoutncols, size_t sortindout,
                           size_t *rangeindout)
 {
-  gal_data_t *tmp, *last;
   struct list_range *rtmp;
   size_t i, j, *rangein=NULL;
+  gal_data_t *tmp, *last=NULL;
 
   /* Allocate the necessary arrays. */
   if(p->range)
@@ -759,7 +760,7 @@ static void
 ui_preparations(struct tableparams *p)
 {
   gal_list_str_t *lines;
-  size_t nrange, origoutncols;
+  size_t nrange=0, origoutncols=0;
   struct gal_options_common_params *cp=&p->cp;
   size_t sortindout=GAL_BLANK_SIZE_T, *rangeindout=NULL;
 
