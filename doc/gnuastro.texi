@@ -28441,7 +28441,8 @@ plot (with a maximum of one).
 Return @code{0} if the input is not sorted, if it is sorted, this function
 will return @code{1} and @code{2} if it is increasing or decreasing,
 respectively. This function will abort with an error if @code{input} has
-zero elements. This function will only look into the dataset if the
+zero elements and will return @code{1} (sorted, increasing) when there is
+only one element. This function will only look into the dataset if the
 @code{GAL_DATA_FLAG_SORT_CH} bit of @code{input->flag} is @code{0}, see
 @ref{Generic data container}.
 
@@ -28461,7 +28462,6 @@ there are no other flags, you can simply set the flags to zero (with
 @example
 input->flags &= ~GAL_DATA_FLAG_SORT_CH;
 @end example
-
 @end deftypefun
 
 @deftypefun void gal_statistics_sort_increasing (gal_data_t @code{*input})

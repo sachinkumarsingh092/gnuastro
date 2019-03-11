@@ -1206,8 +1206,9 @@ gal_statistics_is_sorted(gal_data_t *input, int updateflags)
        increasing. */
     case 1:
       out=STATISTICS_IS_SORTED_INCREASING;
+      break;
 
-    /* Do the check. */
+    /* Do the check when there is more than one element. */
     default:
       switch(input->type)
         {
