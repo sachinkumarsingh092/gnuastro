@@ -597,7 +597,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->greaterequal;
-      cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, flags, ref, tmp);
+      cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, flags, ref, tmp);
       gal_data_free(tmp);
     }
 
@@ -608,7 +608,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->lessthan;
-      cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, flags, ref, tmp);
+      cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, flags, ref, tmp);
       gal_data_free(tmp);
     }
 
@@ -622,7 +622,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       cond = isnan(p->greaterequal) ? cond_l : cond_g;
       break;
     case 2:
-      cond = gal_arithmetic(GAL_ARITHMETIC_OP_OR, flagsor, cond_l, cond_g);
+      cond = gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, flagsor, cond_l, cond_g);
       break;
     }
 
@@ -637,7 +637,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   /* Set all the pixels that satisfy the condition to blank. Note that a
      blank value will be used in the proper type of the input in the
      `where' operator.*/
-  gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, flagsor, p->input, cond, blank);
+  gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, flagsor, p->input, cond, blank);
 
 
   /* Reset the blank flags so they are checked again if necessary. */

@@ -1042,7 +1042,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
              pixels and 0 for zero pixels. */
           zero=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL, 1, -1,
                               NULL, NULL, NULL);
-          p->upmask=gal_arithmetic(GAL_ARITHMETIC_OP_NE,
+          p->upmask=gal_arithmetic(GAL_ARITHMETIC_OP_NE, 1,
                                    ( GAL_ARITHMETIC_INPLACE
                                      | GAL_ARITHMETIC_FREE
                                      | GAL_ARITHMETIC_NUMOK ),

@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/blank.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/pointer.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arithmetic.h>
@@ -669,27 +670,45 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 /***********************************************************************/
 /***************        Multiple operand operators        **************/
 /***********************************************************************/
+struct multioperandparams
+{
+  gal_data_t      *list;        /* List of input datasets.           */
+  gal_data_t       *out;        /* Output dataset.                   */
+  size_t           dnum;        /* Number of input dataset.          */
+  int          operator;        /* Operator to use.                  */
+  uint8_t     *hasblank;        /* Array of 0s or 1s for each input. */
+  float              p1;        /* Sigma-cliping parameter 1.        */
+  float              p2;        /* Sigma-cliping parameter 2.        */
+};
+
+
+
+
+
 #define MULTIOPERAND_MIN(TYPE) {                                        \
-    TYPE p, max;                                                        \
+    TYPE t, max;                                                        \
     size_t n, j=0;                                                      \
-    gal_type_max(list->type, &max);                                     \
-    do    /* Loop over each pixel */                                    \
+    gal_type_max(p->list->type, &max);                                  \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
-        p=max;                                                          \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        t=max;                                                          \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {   /* Only for integer types, b==b. */                       \
-            if( hasblank[i] && b==b)                                    \
+            if( p->hasblank[i] && b==b)                                 \
               {                                                         \
                 if( a[i][j] != b )                                      \
-                  { p = a[i][j] < p ? a[i][j] : p; ++n; }               \
+                  { t = a[i][j] < t ? a[i][j] : t; ++n; }               \
               }                                                         \
-            else { p = a[i][j] < p ? a[i][j] : p; ++n; }                \
+            else { t = a[i][j] < t ? a[i][j] : t; ++n; }                \
           }                                                             \
-        *o++ = n ? p : b;  /* No usable elements: set to blank. */      \
-        ++j;                                                            \
+        o[j] = n ? t : b;  /* No usable elements: set to blank. */      \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -697,26 +716,29 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_MAX(TYPE) {                                        \
-    TYPE p, min;                                                        \
+    TYPE t, min;                                                        \
     size_t n, j=0;                                                      \
-    gal_type_min(list->type, &min);                                     \
-    do    /* Loop over each pixel */                                    \
+    gal_type_min(p->list->type, &min);                                  \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
-        p=min;                                                          \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        t=min;                                                          \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {   /* Only for integer types, b==b. */                       \
-            if( hasblank[i] && b==b)                                    \
+            if( p->hasblank[i] && b==b)                                 \
               {                                                         \
                 if( a[i][j] != b )                                      \
-                  { p = a[i][j] > p ? a[i][j] : p; ++n; }               \
+                  { t = a[i][j] > t ? a[i][j] : t; ++n; }               \
               }                                                         \
-            else { p = a[i][j] > p ? a[i][j] : p; ++n; }                \
+            else { t = a[i][j] > t ? a[i][j] : t; ++n; }                \
           }                                                             \
-        *o++ = n ? p : b;  /* No usable elements: set to blank. */      \
-        ++j;                                                            \
+        o[j] = n ? t : b;  /* No usable elements: set to blank. */      \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -725,14 +747,19 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_NUM {                                              \
     int use;                                                            \
-    size_t n, j=0;                                                      \
-    do    /* Loop over each pixel */                                    \
+    size_t n, j;                                                        \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
-            if(hasblank[i])                                             \
+            if(p->hasblank[i])                                          \
               use = ( b==b                                              \
                       ? ( a[i][j]!=b       ? 1 : 0 )      /* Integer */ \
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );   /* Float   */ \
@@ -741,10 +768,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
             /* Increment counter if necessary. */                       \
             if(use) ++n;                                                \
           }                                                             \
-        *o++ = n;                                                       \
-        ++j;                                                            \
+        o[j] = n;                                                       \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -754,15 +779,20 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 #define MULTIOPERAND_SUM {                                              \
     int use;                                                            \
     double sum;                                                         \
-    size_t n, j=0;                                                      \
-    do    /* Loop over each pixel */                                    \
+    size_t n, j;                                                        \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=0.0f;                                                       \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
-            if(hasblank[i])                                             \
+            if(p->hasblank[i])                                          \
               use = ( b==b                                              \
                       ? ( a[i][j]!=b     ? 1 : 0 )       /* Integer */  \
                       : ( a[i][j]==*a[i] ? 1 : 0 ) );    /* Float   */  \
@@ -771,10 +801,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
             /* Use in sum if necessary. */                              \
             if(use) { sum += a[i][j]; ++n; }                            \
           }                                                             \
-        *o++ = n ? sum : b;                                             \
-        ++j;                                                            \
+        o[j] = n ? sum : b;                                             \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -784,15 +812,20 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 #define MULTIOPERAND_MEAN {                                             \
     int use;                                                            \
     double sum;                                                         \
-    size_t n, j=0;                                                      \
-    do    /* Loop over each pixel */                                    \
+    size_t n, j;                                                        \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=0.0f;                                                       \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
-            if(hasblank[i])                                             \
+            if(p->hasblank[i])                                          \
               use = ( b==b                                              \
                       ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
@@ -801,10 +834,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
             /* Calculate the mean if necessary. */                      \
             if(use) { sum += a[i][j]; ++n; }                            \
           }                                                             \
-        *o++ = n ? sum/n : b;                                           \
-        ++j;                                                            \
+        o[j] = n ? sum/n : b;                                           \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -813,16 +844,21 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_STD {                                              \
     int use;                                                            \
-    size_t n, j=0;                                                      \
+    size_t n, j;                                                        \
     double sum, sum2;                                                   \
-    do    /* Loop over each pixel */                                    \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=sum2=0.0f;                                                  \
-        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        for(i=0;i<p->dnum;++i)  /* Loop over each array. */             \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
-            if(hasblank[i])                                             \
+            if(p->hasblank[i])                                          \
               use = ( b==b                                              \
                       ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
@@ -836,10 +872,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
                 ++n;                                                    \
               }                                                         \
           }                                                             \
-        *o++ = n ? sqrt( (sum2-sum*sum/n)/n ) : b;                      \
-        ++j;                                                            \
+        o[j] = n ? sqrt( (sum2-sum*sum/n)/n ) : b;                      \
       }                                                                 \
-    while(o<of);                                                        \
   }
 
 
@@ -848,21 +882,22 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
     int use;                                                            \
-    size_t n, j=0;                                                      \
-    TYPE *pixs=gal_pointer_allocate(list->type, dnum, 0, __func__,      \
-                                    "pixs");                            \
+    size_t n, j;                                                        \
+    TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
+                                    __func__, "pixs");                  \
                                                                         \
-    /* Loop over each pixel */                                          \
-    do                                                                  \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize. */                                               \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
+        j=tprm->indexs[tind];                                           \
                                                                         \
-        /* Loop over each array. */                                     \
-        for(i=0;i<dnum;++i)                                             \
+        /* Loop over each array: `i' is input dataset's index. */       \
+        for(i=0;i<p->dnum;++i)                                          \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
-            if(hasblank[i])                                             \
+            if(p->hasblank[i])                                          \
               use = ( b==b                                              \
                       ? ( a[i][j]!=b       ? 1 : 0 )     /* Integer */  \
                       : ( a[i][j]==a[i][j] ? 1 : 0 ) );  /* Float   */  \
@@ -876,13 +911,11 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
         if(n)                                                           \
           {                                                             \
             qsort(pixs, n, sizeof *pixs, QSORT_F);                      \
-            *o++ = n%2 ? pixs[n/2] : (pixs[n/2] + pixs[n/2-1])/2 ;      \
+            o[j] = n%2 ? pixs[n/2] : (pixs[n/2] + pixs[n/2-1])/2 ;      \
           }                                                             \
         else                                                            \
-          *o++=b;                                                       \
-        ++j;                                                            \
+          o[j]=b;                                                       \
       }                                                                 \
-    while(o<of);                                                        \
                                                                         \
     /* Clean up. */                                                     \
     free(pixs);                                                         \
@@ -894,49 +927,48 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 #define MULTIOPERAND_SIGCLIP(TYPE) {                                    \
     float *sarr;                                                        \
-    size_t n, j=0;                                                      \
+    size_t n, j;                                                        \
     gal_data_t *sclip;                                                  \
-    TYPE *pixs=gal_pointer_allocate(list->type, dnum, 0, __func__,      \
-                                    "pixs");                            \
-    gal_data_t *cont=gal_data_alloc(pixs, list->type, 1, &dnum, NULL,   \
-                                    0, -1, NULL, NULL, NULL);           \
+    TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
+                                    __func__, "pixs");                  \
+    gal_data_t *cont=gal_data_alloc(pixs, p->list->type, 1, &p->dnum,   \
+                                    NULL, 0, -1, NULL, NULL, NULL);     \
                                                                         \
-    /* Loop over each pixel */                                          \
-    do                                                                  \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize. */                                               \
+        /* Initialize, `j' is desired pixel's index. */                 \
         n=0;                                                            \
+        j=tprm->indexs[tind];                                           \
                                                                         \
-        /* Loop over each array. */                                     \
-        for(i=0;i<dnum;++i) pixs[n++]=a[i][j];                          \
+        /* Read the necessay values from each input. */                 \
+        for(i=0;i<p->dnum;++i) pixs[n++]=a[i][j];                       \
                                                                         \
         /* If there are any elements, measure the  */                   \
         if(n)                                                           \
           {                                                             \
-            sclip=gal_statistics_sigma_clip(cont, p1, p2, 1, 1);        \
+            sclip=gal_statistics_sigma_clip(cont, p->p1, p->p2, 1, 1);  \
             sarr=sclip->array;                                          \
-            switch(operator)                                            \
+            switch(p->operator)                                         \
               {                                                         \
-              case GAL_ARITHMETIC_OP_SIGCLIP_STD:    *o++=sarr[3]; break;\
-              case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   *o++=sarr[2]; break;\
-              case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: *o++=sarr[1]; break;\
-              case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: *o++=sarr[0]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_STD:    o[j]=sarr[3]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   o[j]=sarr[2]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: o[j]=sarr[1]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: o[j]=sarr[0]; break;\
               default:                                                  \
                 error(EXIT_FAILURE, 0, "%s: a bug! the code %d is not " \
                       "valid for sigma-clipping results", __func__,     \
-                      operator);                                        \
+                      p->operator);                                     \
               }                                                         \
                                                                         \
             /* Since we are doing sigma-clipping in place, the size, */ \
             /* and flags need to be reset. */                           \
             cont->flag=0;                                               \
-            cont->size=cont->dsize[0]=dnum;                             \
+            cont->size=cont->dsize[0]=p->dnum;                          \
           }                                                             \
         else                                                            \
-          *o++=b;                                                       \
-        ++j;                                                            \
+          o[j]=b;                                                       \
       }                                                                 \
-    while(o<of);                                                        \
                                                                         \
     /* Clean up. */                                                     \
     gal_data_free(cont);                                                \
@@ -947,25 +979,26 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 
 #define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
-    TYPE b, **a, *o=out->array, *of=o+out->size;                        \
-    size_t i=0;  /* Different from the `i' in the main function. */     \
+    gal_data_t *tmp;                                                    \
+    size_t i=0, tind;                                                   \
+    TYPE b, **a, *o=p->out->array;                                      \
                                                                         \
     /* Allocate space to keep the pointers to the arrays of each. */    \
     /* Input data structure. The operators will increment these */      \
     /* pointers while parsing them. */                                  \
     errno=0;                                                            \
-    a=malloc(dnum*sizeof *a);                                           \
+    a=malloc(p->dnum*sizeof *a);                                        \
     if(a==NULL)                                                         \
       error(EXIT_FAILURE, 0, "%s: %zu bytes for `a'",                   \
-            "MULTIOPERAND_TYPE_SET", dnum*sizeof *a);                   \
+            "MULTIOPERAND_TYPE_SET", p->dnum*sizeof *a);                \
                                                                         \
     /* Fill in the array pointers and the blank value for this type. */ \
-    gal_blank_write(&b, list->type);                                    \
-    for(tmp=list;tmp!=NULL;tmp=tmp->next)                               \
+    gal_blank_write(&b, p->list->type);                                 \
+    for(tmp=p->list;tmp!=NULL;tmp=tmp->next)                            \
       a[i++]=tmp->array;                                                \
                                                                         \
     /* Do the operation. */                                             \
-    switch(operator)                                                    \
+    switch(p->operator)                                                 \
       {                                                                 \
       case GAL_ARITHMETIC_OP_MIN:                                       \
         MULTIOPERAND_MIN(TYPE);                                         \
@@ -1004,7 +1037,7 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
                                                                         \
       default:                                                          \
         error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",   \
-              "MULTIOPERAND_TYPE_SET", operator);                       \
+              "MULTIOPERAND_TYPE_SET", p->operator);                    \
       }                                                                 \
                                                                         \
     /* Clean up. */                                                     \
@@ -1015,16 +1048,72 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
 
 
 
+/* Worker function on each thread. */
+void *
+multioperand_on_thread(void *in_prm)
+{
+  /* Low-level definitions to be done first. */
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct multioperandparams *p=(struct multioperandparams *)tprm->params;
+
+  /* Do the operation on each thread. */
+  switch(p->list->type)
+    {
+    case GAL_TYPE_UINT8:
+      MULTIOPERAND_TYPE_SET(uint8_t,   gal_qsort_uint8_i);
+      break;
+    case GAL_TYPE_INT8:
+      MULTIOPERAND_TYPE_SET(int8_t,    gal_qsort_int8_i);
+      break;
+    case GAL_TYPE_UINT16:
+      MULTIOPERAND_TYPE_SET(uint16_t,  gal_qsort_uint16_i);
+      break;
+    case GAL_TYPE_INT16:
+      MULTIOPERAND_TYPE_SET(int16_t,   gal_qsort_int16_i);
+      break;
+    case GAL_TYPE_UINT32:
+      MULTIOPERAND_TYPE_SET(uint32_t,  gal_qsort_uint32_i);
+      break;
+    case GAL_TYPE_INT32:
+      MULTIOPERAND_TYPE_SET(int32_t,   gal_qsort_int32_i);
+      break;
+    case GAL_TYPE_UINT64:
+      MULTIOPERAND_TYPE_SET(uint64_t,  gal_qsort_uint64_i);
+      break;
+    case GAL_TYPE_INT64:
+      MULTIOPERAND_TYPE_SET(int64_t,   gal_qsort_int64_i);
+      break;
+    case GAL_TYPE_FLOAT32:
+      MULTIOPERAND_TYPE_SET(float,     gal_qsort_float32_i);
+      break;
+    case GAL_TYPE_FLOAT64:
+      MULTIOPERAND_TYPE_SET(double,    gal_qsort_float64_i);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, p->list->type);
+    }
+
+  /* Wait for all the other threads to finish, then return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
 /* The single operator in this function is assumed to be a linked list. The
    number of operators is determined from the fact that the last node in
    the linked list must have a NULL pointer as its `next' element. */
 static gal_data_t *
 arithmetic_multioperand(int operator, int flags, gal_data_t *list,
-                        gal_data_t *params)
+                        gal_data_t *params, size_t numthreads)
 {
   uint8_t *hasblank;
   size_t i=0, dnum=1;
   float p1=NAN, p2=NAN;
+  struct multioperandparams p;
   gal_data_t *out, *tmp, *ttmp;
 
 
@@ -1087,43 +1176,16 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
     hasblank[i++]=gal_blank_present(tmp, 0);
 
 
-  /* Start the operation. */
-  switch(list->type)
-    {
-    case GAL_TYPE_UINT8:
-      MULTIOPERAND_TYPE_SET(uint8_t,   gal_qsort_uint8_i);
-      break;
-    case GAL_TYPE_INT8:
-      MULTIOPERAND_TYPE_SET(int8_t,    gal_qsort_int8_i);
-      break;
-    case GAL_TYPE_UINT16:
-      MULTIOPERAND_TYPE_SET(uint16_t,  gal_qsort_uint16_i);
-      break;
-    case GAL_TYPE_INT16:
-      MULTIOPERAND_TYPE_SET(int16_t,   gal_qsort_int16_i);
-      break;
-    case GAL_TYPE_UINT32:
-      MULTIOPERAND_TYPE_SET(uint32_t,  gal_qsort_uint32_i);
-      break;
-    case GAL_TYPE_INT32:
-      MULTIOPERAND_TYPE_SET(int32_t,   gal_qsort_int32_i);
-      break;
-    case GAL_TYPE_UINT64:
-      MULTIOPERAND_TYPE_SET(uint64_t,  gal_qsort_uint64_i);
-      break;
-    case GAL_TYPE_INT64:
-      MULTIOPERAND_TYPE_SET(int64_t,   gal_qsort_int64_i);
-      break;
-    case GAL_TYPE_FLOAT32:
-      MULTIOPERAND_TYPE_SET(float,     gal_qsort_float32_i);
-      break;
-    case GAL_TYPE_FLOAT64:
-      MULTIOPERAND_TYPE_SET(double,    gal_qsort_float64_i);
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, list->type);
-    }
+  /* Set the parameters necessary for multithreaded operation and spin them
+     off to do apply the operator. */
+  p.p1=p1;
+  p.p2=p2;
+  p.out=out;
+  p.list=list;
+  p.dnum=dnum;
+  p.operator=operator;
+  p.hasblank=hasblank;
+  gal_threads_spin_off(multioperand_on_thread, &p, out->size, numthreads);
 
 
   /* Clean up and return. Note that the operation might have been done in
@@ -1551,7 +1613,7 @@ gal_arithmetic_operator_string(int operator)
 
 
 gal_data_t *
-gal_arithmetic(int operator, int flags, ...)
+gal_arithmetic(int operator, size_t numthreads, int flags, ...)
 {
   va_list va;
   gal_data_t *d1, *d2, *d3, *out=NULL;
@@ -1641,7 +1703,7 @@ gal_arithmetic(int operator, int flags, ...)
     case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:
       d1 = va_arg(va, gal_data_t *);
       d2 = va_arg(va, gal_data_t *);
-      out=arithmetic_multioperand(operator, flags, d1, d2);
+      out=arithmetic_multioperand(operator, flags, d1, d2, numthreads);
       break;
 
 

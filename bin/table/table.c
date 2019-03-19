@@ -109,12 +109,12 @@ table_range(struct tableparams *p)
 
       /* Find all the bad elements (smaller than the minimum and larger than
          the maximum) so we can flag them. */
-      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, numok,   ref,   min);
-      gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, numok,   ref,   max);
-      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, inplace, ltmin, gemax);
+      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok,   ref,   min);
+      gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok,   ref,   max);
+      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, gemax);
 
       /* Add these flags to all previous flags. */
-      mask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, inplace, mask, ltmin);
+      mask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, mask, ltmin);
 
       /* For a check.
       {

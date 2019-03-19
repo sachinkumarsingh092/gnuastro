@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/array.h>
+#include <gnuastro/threads.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -124,6 +125,7 @@ ui_initialize_options(struct arithmeticparams *p,
   cp->program_exec       = PROGRAM_EXEC;
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
+  cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
 
   /* Modify the common options. */

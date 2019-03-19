@@ -1337,11 +1337,11 @@ options_sanity_check(struct argp_option *option, char *arg,
      `GAL_ARITHMETIC_INPLACE' flags. But we will do this when there are
      multiple checks so from the two check data structures, we only have
      one remaining. */
-  check1=gal_arithmetic(operator1, GAL_ARITHMETIC_NUMOK, value, ref1);
+  check1=gal_arithmetic(operator1, 1, GAL_ARITHMETIC_NUMOK, value, ref1);
   if(ref2)
     {
-      check2=gal_arithmetic(operator2, GAL_ARITHMETIC_NUMOK, value, ref2);
-      check1=gal_arithmetic(multicheckop, mcflag, check1, check2);
+      check2=gal_arithmetic(operator2, 1, GAL_ARITHMETIC_NUMOK, value, ref2);
+      check1=gal_arithmetic(multicheckop, 1, mcflag, check1, check2);
     }
 
 

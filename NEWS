@@ -22,6 +22,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
      `sigclip-median', and `sigclip-std'. These are very useful when
      several inputs have strong outliers that affect the median, or the
      mean is required.
+   - Multithreaded operation for the following operators that
+     combine/co-add multiple inputs into one output with same size: `min',
+     `max', `number', `sum', `mean', `std', `median', `sigclip-number',
+     `sigclip-median', `sigclip-mean', `sigclip-std'.
    --wcsfile and --wcshdu: these two options can be used to specify a
      different file for reading the WCS of the output. This is useful when
      the default (theh WCS of the first dataset that is read) is not the
@@ -149,6 +153,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
    --colinfoinstdout: now corresponds to the `-O' short option. Until this
      version, the `-s' short option was used for it. But with the new
      `--sort' option, `-s' may cause confusion.
+
+  Library
+   gal_arithmetic: new argument: number of threads to use (when relevant).
 
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order

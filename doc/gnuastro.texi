@@ -12270,13 +12270,17 @@ to @command{minvalue}.
 @item min
 The first popped operand to this operator must be a positive integer number
 which specifies how many further operands should be popped from the
-stack. The given number of operands must have the same type and size. Each
-pixel of the output of this operator will be set to the minimum value of
-the given number of operands (images) in that pixel.
+stack. All the subsequently popped operands must have the same type and
+size. This operator (and all the variable-operand operators similar to it
+that are discussed below) will work in multithreaded mode unless Arithmetic
+is called with the @option{--numthreads=1} option, see @ref{Multi-threaded
+operations}.
 
-For example the following command will produce an image with the same size
-and type as the inputs but each output pixel is set to the minimum
-respective pixel value of the three input images.
+Each pixel of the output of the @code{min} operator will be given the
+minimum value of the same pixel from all the popped operands/images. For
+example the following command will produce an image with the same size and
+type as the three inputs, but each output pixel value will be the minimum
+of the same pixel's values in all three input images.
 
 @example
 $ astarithmetic a.fits b.fits c.fits 3 min
@@ -27144,8 +27148,9 @@ Multi-operand statistical operations. When @code{gal_arithmetic} is called
 with any of these operators, it will expect only a single operand that will
 be interpreted as a list of datasets (see @ref{List of gal_data_t}. The
 output will be a single dataset with each of its elements replaced by the
-respective statistical operation on the whole list. See the discussion
-under the @code{min} operator in @ref{Arithmetic operators}.
+respective statistical operation on the whole list. These operators can
+work on multiple threads using the @code{numthreads} argument. See the
+discussion under the @code{min} operator in @ref{Arithmetic operators}.
 @end deffn
 
 @deffn  Macro GAL_ARITHMETIC_OP_SIGCLIP_STD
@@ -27216,11 +27221,15 @@ directly use those functions.
 @end deffn
 
 
-@deftypefun {gal_data_t *} gal_arithmetic (int operator, int flags, ...)
+@deftypefun {gal_data_t *} gal_arithmetic (int @code{operator}, size_t @code{numthreads}, int @code{flags}, ...)
 Do the arithmetic operation of @code{operator} on the given operands (the
-third argument and any further argument). Certain special conditions can
-also be specified with the @code{flag} operator. The acceptable values for
-@code{operator} are defined in the macros above.
+third argument and any further argument). If the operator can work on
+multiple threads, the number of threads can be specified with
+@code{numthreads}. When the operator is single-threaded, @code{numthreads}
+will be ignored. Special conditions can also be specified with the
+@code{flag} operator (a bit-flag with bits described above, for example
+@code{GAL_ARITHMETIC_INPLACE} or @code{GAL_ARITHMETIC_FREE}). The
+acceptable values for @code{operator} are also defined in the macros above.
 
 @code{gal_arithmetic} is a multi-argument function (like C's
 @code{printf}). In other words, the number of necessary arguments is not
@@ -27228,9 +27237,9 @@ fixed and depends on the value to @code{operator}. Here are a few examples
 showing this variability:
 
 @example
-out_1=gal_arithmetic(GAL_ARITHMETIC_OP_LOG,   0, in_1);
-out_2=gal_arithmetic(GAL_ARITHMETIC_OP_PLUS,  0, in_1, in_2);
-out_3=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 0, in_1, in_2, in_3);
+out_1=gal_arithmetic(GAL_ARITHMETIC_OP_LOG,   1, 0, in_1);
+out_2=gal_arithmetic(GAL_ARITHMETIC_OP_PLUS,  1, 0, in_1, in_2);
+out_3=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, 0, in_1, in_2, in_3);
 @end example
 
 The number of necessary operands for each operator (and thus the number of

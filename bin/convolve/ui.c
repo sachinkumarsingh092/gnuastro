@@ -559,11 +559,11 @@ ui_preparations(struct convolveparams *p)
              meaningful. */
           sum=gal_statistics_sum(p->input);
           sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
-          p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+          p->input = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE, 1,
                                     GAL_ARITHMETIC_FLAGS_ALL, p->input, sum);
           sum=gal_statistics_sum(p->kernel);
           sum=gal_data_copy_to_new_type_free(sum, GAL_TYPE_FLOAT32);
-          p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE,
+          p->kernel = gal_arithmetic(GAL_ARITHMETIC_OP_DIVIDE, 1,
                                      GAL_ARITHMETIC_FLAGS_ALL, p->kernel, sum);
         }
     }
