@@ -440,7 +440,7 @@ match_catalog(struct matchparams *p)
       fprintf(stdout, "Number of maching rows in both catalogs: %zu\n",
               nummatched);
       if(p->out2name && strcmp(p->out1name, p->out2name))
-        fprintf(stdout, "Output:\n %s\n %s", p->out1name, p->out2name);
+        fprintf(stdout, "Output:\n %s\n %s\n", p->out1name, p->out2name);
       else
         fprintf(stdout, "Output: %s\n", p->out1name);
     }
