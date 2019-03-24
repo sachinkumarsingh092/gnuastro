@@ -633,7 +633,7 @@ ui_read_cols(struct mkprofparams *p)
     gal_checkset_allocate_copy("standard-input", &p->catname);
 
   /* Set the number of objects. */
-  p->num=cols->size;
+  p->num = cols ? cols->size : 0;
 
   /* Put each column's data in the respective internal array. */
   while(cols!=NULL)
@@ -1160,7 +1160,6 @@ ui_prepare_canvas(struct mkprofparams *p)
     }
 
 
-
   /* When individual mode is requested, write the WCS structure to a header
      string to speed up the process: if we don't do it here, this process
      will be necessary on every individual profile's output. So it is much
@@ -1407,8 +1406,10 @@ ui_preparations(struct mkprofparams *p)
   else
     ui_prepare_canvas(p);
 
-  /* Read the (possible) RA/Dec inputs into X and Y for the builder.*/
-  if(p->wcs)
+  /* Read the (possible) RA/Dec inputs into X and Y for the builder.  NOTE:
+     It may happen that there are no input columns, in that case, just
+     ignore this step.*/
+  if(p->wcs && p->num)
     ui_finalize_coordinates(p);
 
   /* Prepare the random number generator. */
