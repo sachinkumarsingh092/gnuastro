@@ -65,7 +65,7 @@ gal_eps_to_pt(float widthincm, size_t *dsize, size_t *w_h_in_pt);
 
 void
 gal_eps_write(gal_data_t *in, char *filename, float widthincm,
-              uint32_t borderwidth, int hex, int forpdf);
+              uint32_t borderwidth, int hex, int dontoptimize, int forpdf);
 
 
 

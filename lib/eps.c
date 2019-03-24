@@ -290,7 +290,7 @@ eps_write_ascii85(gal_data_t *write, FILE *fp, size_t numbytes)
 
 
 static void
-eps_write_image(gal_data_t *in, FILE *fp, int hex)
+eps_write_image(gal_data_t *in, FILE *fp, int hex, int dontoptimize)
 {
   int bpc=8;
   uint8_t bitone;
@@ -299,7 +299,7 @@ eps_write_image(gal_data_t *in, FILE *fp, int hex)
   size_t numch=gal_list_data_number(in);
 
   /* Set the number of bits per component. */
-  if( numch==1 && eps_is_binary(in, &bitone) )
+  if( numch==1 && dontoptimize==0 && eps_is_binary(in, &bitone) )
     {
       bpc=1;
       write=eps_convert_to_bitstream(in, &numbytes, bitone);
@@ -366,7 +366,7 @@ gal_eps_to_pt(float widthincm, size_t *dsize, size_t *w_h_in_pt)
 
 void
 gal_eps_write(gal_data_t *in, char *filename, float widthincm,
-              uint32_t borderwidth, int hex, int forpdf)
+              uint32_t borderwidth, int hex, int dontoptimize, int forpdf)
 {
   FILE *fp;
   float hbw;
@@ -427,7 +427,7 @@ gal_eps_write(gal_data_t *in, char *filename, float widthincm,
   fprintf(fp, "%% Draw the image:\n");
   fprintf(fp, "%d %d translate\n", borderwidth, borderwidth);
   fprintf(fp, "%zu %zu scale\n", w_h_in_pt[0], w_h_in_pt[1]);
-  eps_write_image(in, fp, hex);
+  eps_write_image(in, fp, hex, dontoptimize);
 
 
   /* Ending of the EPS file: */

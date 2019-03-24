@@ -11109,6 +11109,18 @@ want them all to have the same range of colors, independent of the contents
 of the dataset. Note that if the minimum value is smaller than
 @option{--fluxlow}, then this option is redundant.
 
+@cindex PDF
+@cindex EPS
+@cindex PostScript
+By default, when the dataset only has two values, @emph{and} the output
+format is PDF or EPS, ConvertType will use the PostScript optimization that
+allows setting the pixel values per bit, not byte (@ref{Recognized file
+formats}). This can greatly help reduce the file size. However, when
+@option{--fluxlow} or @option{--fluxhigh} are called, this optimization is
+disabeled: even though there are only two values (is binary), the
+difference between them does not correspond to the full contrast of black
+and white.
+
 @item -B INT
 @itemx --forcemax=INT
 Similar to @option{--forcemin}, but for the maximum.
@@ -26758,7 +26770,7 @@ function). The first element in @code{w_h_in_pt} is the width and the
 second is the height of the image.
 @end deftypefun
 
-@deftypefun {void} gal_eps_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth}, int @code{hex}, int @code{forpdf})
+@deftypefun {void} gal_eps_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth}, int @code{hex}, int @code{dontoptimize}, int @code{forpdf})
 Write the @code{in} dataset into an EPS file called
 @code{filename}. @code{in} has to be an unsigned 8-bit character type
 (@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
@@ -26777,6 +26789,17 @@ encoding. To use Hexadecimal encoding, set @code{hex} to a non-zero
 value. Currently If you don't directly want to import the EPS file into a
 PostScript document but want to later compile it into a PDF file, set the
 @code{forpdf} argument to @code{1}.
+
+@cindex PDF
+@cindex EPS
+@cindex PostScript
+By default, when the dataset only has two values, this function will use
+the PostScript optimization that allows setting the pixel values per bit,
+not byte (@ref{Recognized file formats}). This can greatly help reduce the
+file size. However, when @option{dontoptimize!=0}, this optimization is
+disabeled: even though there are only two values (is binary), the
+difference between them does not correspond to the full contrast of black
+and white.
 @end deftypefun
 
 
@@ -26805,7 +26828,7 @@ Return @code{1} if @code{suffix} is a recognized PDF suffix. The recognized
 suffixes are @code{.pdf} and @code{.PDF}.
 @end deftypefun
 
-@deftypefun {void} gal_pdf_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth})
+@deftypefun {void} gal_pdf_write (gal_data_t @code{*in}, char @code{*filename}, float @code{widthincm}, uint32_t @code{borderwidth}, int @code{dontoptimize})
 Write the @code{in} dataset into an EPS file called
 @code{filename}. @code{in} has to be an unsigned 8-bit character type
 (@code{GAL_TYPE_UINT8}, see @ref{Numeric data types}). The desired width of
@@ -26821,6 +26844,17 @@ EPS file to a PDF file. Therefore if GhostScript doesn't exist, doesn't have
 the proper version, or fails for any other reason, the EPS file will
 remain. It can be used to find the cause, or use another converter or
 PostScript compiler.
+
+@cindex PDF
+@cindex EPS
+@cindex PostScript
+By default, when the dataset only has two values, this function will use
+the PostScript optimization that allows setting the pixel values per bit,
+not byte (@ref{Recognized file formats}). This can greatly help reduce the
+file size. However, when @option{dontoptimize!=0}, this optimization is
+disabeled: even though there are only two values (is binary), the
+difference between them does not correspond to the full contrast of black
+and white.
 @end deftypefun
 
 

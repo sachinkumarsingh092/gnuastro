@@ -240,7 +240,6 @@ convertt_scale_to_uchar(struct converttparams *p)
   m=(float)maxbyte/(max-min);
 
 
-
   /* Convert all the non-blank channels to unsigned char. */
   prev=NULL;
   for(channel=p->chll; channel!=NULL; channel=channel->next)
@@ -282,7 +281,6 @@ convertt_scale_to_uchar(struct converttparams *p)
 
       /* Set the prev pointer. */
       prev=channel;
-
     }
 }
 
@@ -365,13 +363,14 @@ convertt(struct converttparams *p)
     case OUT_FORMAT_EPS:
       if(!p->colormap) convertt_scale_to_uchar(p);
       gal_eps_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
-                    p->hex, 0);
+                    p->hex, p->forcemin || p->forcemax, 0);
       break;
 
     /* PDF */
     case OUT_FORMAT_PDF:
       if(!p->colormap) convertt_scale_to_uchar(p);
-      gal_pdf_write(p->chll, p->cp.output, p->widthincm, p->borderwidth);
+      gal_pdf_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
+                    p->forcemin || p->forcemax);
       break;
 
     /* Not recognized. */

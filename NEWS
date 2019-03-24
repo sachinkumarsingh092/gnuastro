@@ -156,6 +156,8 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   Library
    gal_arithmetic: new argument: number of threads to use (when relevant).
+   gal_eps_write: new argument: optional bit-optimization with `dontoptimize'.
+   gal_pdf_write: new argument: optional bit-optimization with `dontoptimize'.
 
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
