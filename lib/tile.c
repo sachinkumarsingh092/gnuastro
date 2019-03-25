@@ -587,19 +587,20 @@ gal_tile_block_blank_flag(gal_data_t *tile_ll, size_t numthreads)
 /***********************************************************************/
 /* The user's specified tile size might not be an exact multiple of the
    parent's size. This function is useful in such cases. It will give the
-   starting tile's size along each dimension. The line below can be the
-   length along any dimension and the tile size along that dimension. You
-   see that when we start with the tile size, we will end up with a last
-   tile that contains the remainder elements.
+   starting tile's size along each dimension.
+
+   The most simplistic way to manage the tiles is to put the regular tiles
+   at the start. The line below can be the length along any dimension, and
+   the tile size along that dimension.
 
         | tile size | tile size | tile size | tile size | remainder
         |           |           |           |           |       |
         ---------------------------------------------------------
 
-   The remainder will always be smaller than `tile size'. So, we will merge
-   the last tile size with the remainder and move that tile to the start.
-   In this way, the size of the first tile will always be between between
-   one and two times the size of the regular tile:
+   The remainder of the scenario above will always be smaller than `tile
+   size' (can be even 1-pixel wide). So, we will merge the first tile size
+   with the remainder.  In this way, the size of the first tile will always
+   be between between one and two times the size of the regular tile:
 
         | first tile        | tile size | tile size | tile size |
         |                   |           |           |           |
@@ -651,14 +652,20 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
                 {
                   first[i]  = ( remainder + regular[i] )/2;
                   tsize[i]  = dsize[i]/regular[i] + 1 ;
-                  last[i]   = ( dsize[i]
-                                - ( first[i] + regular[i]*(tsize[i]-2) ) );
+
+                  /* If we only have one tile along the dimension, then
+                     `first[i]==dsize[i]'. In this case, the first and last
+                     tiles are the same and must have the same size. */
+                  last[i]   = ( first[i]==dsize[i]
+                                ? first[i]
+                                : ( dsize[i]
+                                    - ( first[i] + regular[i]*(tsize[i]-2) ) ) );
                 }
               else
                 {
                   first[i]  = remainder + regular[i];
                   tsize[i]  = dsize[i]/regular[i];
-                  last[i]   = regular[i];
+                  last[i]   = first[i]==dsize[i] ? first[i] : regular[i];
                 }
             }
           else
@@ -668,6 +675,11 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
             }
         }
     }
+
+  /* For a check:
+  printf("%s: first: %zu, %zu\n", __func__, first[0], first[1]);
+  printf("%s: last: %zu, %zu\n",  __func__, last[0],  last[1]);
+  */
 }
 
 
@@ -757,6 +769,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
                               first, last, tsize);
   numtiles=gal_dimension_total_size(input->ndim, tsize);
 
+
   /* Allocate the necessary space for all the tiles (if necessary). */
   if(*out)        tiles = *out;
   else     *out = tiles = gal_data_array_calloc(numtiles*multiple);
@@ -819,7 +832,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
           /* The size of the first and last tiles can be different from the
              majority of the `regular' tiles that have the same size. When
              a tile is on the edge in one of the dimensions, then its
-             `coord[d]' will be either 0 or the last. */
+             `tcoord[d]' will be either 0 or the last. */
           if( first[d] != regular[d]
               && ( tcoord[d]==0 || tcoord[d]==tsize[d]-1 ) )
             {
