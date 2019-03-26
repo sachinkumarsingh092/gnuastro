@@ -61,7 +61,7 @@ cosmiccal_print_input(struct cosmiccalparams *p)
          p->olambda);
   printf(FLTFORMAT, "Matter fractional density, now:", p->omatter);
   printf(EXPFORMAT, "Radiation fractional density, now:", p->oradiation);
-  printf(EXPFORMAT, "Curvatue fractional density (from the above):",
+  printf(EXPFORMAT, "Curvature fractional density (from the above):",
          1 - ( p->olambda + p->omatter + p->oradiation ));
 }
 
