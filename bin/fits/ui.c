@@ -319,7 +319,7 @@ ui_read_check_only_options(struct fitsparams *p)
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
       || p->rename || p->update || p->write || p->verify || p->printallkeys
-      || p->copykeys )
+      || p->copykeys || p->datetosec )
     {
       /* Set the mode. */
       p->mode=FITS_MODE_KEY;
@@ -359,6 +359,14 @@ ui_read_check_only_options(struct fitsparams *p)
         p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
                                                    "_ext.fits");
     }
+
+  /* Currently `datetosec' must be called alone. */
+  if( p->datetosec
+      && (p->date || p->comment || p->history || p->asis || p->delete
+          || p->rename || p->update || p->write || p->verify
+          || p->printallkeys || p->copykeys || p->mode==FITS_MODE_HDU) )
+    error(EXIT_FAILURE, 0, "`--datetosec' cannot currently be called with "
+          "any other option");
 
   /* If no options are given, go into HDU mode, which will print the HDU
      information when nothing is asked. */

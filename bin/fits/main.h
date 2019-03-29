@@ -72,6 +72,7 @@ struct fitsparams
   gal_list_str_t *comment;     /* COMMENT value.                        */
   uint8_t         *verify;     /* Verify the CHECKSUM and DATASUM keys. */
   char          *copykeys;     /* Range of keywords to copy in output.  */
+  char         *datetosec;     /* Convert FITS date to seconds.         */
   uint8_t     quitonerror;     /* Quit if an error occurs.              */
 
   /* Internal: */

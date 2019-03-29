@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <math.h>
+#include <time.h>
 #include <float.h>
 
 #include <fitsio.h>
@@ -165,6 +166,13 @@ gal_fits_key_img_blank(uint8_t type);
 
 void
 gal_fits_key_clean_str_value(char *string);
+
+char *
+gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp);
+
+size_t
+gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
+                             double *subsec);
 
 void
 gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,

@@ -10485,6 +10485,31 @@ Quit if any of the operations above are not successful. By default if
 an error occurs, Fits will warn the user of the faulty keyword and
 continue with the rest of actions.
 
+@item -s STR
+@itemx --datetosec STR
+@cindex Unix epoch time
+@cindex Epoch time, Unix
+Interpret the value of the given keyword in the FITS date format (most
+generally: @code{YYYY-MM-DDThh:mm:ss.ddd...}) and return the corresponding
+Unix epoch time (number of seconds that have passed since 00:00:00
+Thursday, January 1st, 1970). The @code{Thh:mm:ss.ddd...} section
+(specifing the time of day), and also the @code{.ddd...} (specifying the
+fraction of a second) are optional. The value to this option must be the
+FITS keyword name that contains the requested date, for example
+@option{--datetosec=DATE-OBS}.
+
+@cindex GNU C Library
+This option can also interpret the older FITS date format
+(@code{DD/MM/YYThh:mm:ss.ddd...}) where only two characters are given to
+the year. In this case (following the GNU C Library), this option will make
+the following assumption: values 68 to 99 correspond to the years 1969 to
+1999, and values 0 to 68 as the years 2000 to 2068.
+
+This is a very useful option for operations on the FITS date values, for
+example sorting FITS files by their dates, or finding the time difference
+between two FITS files. The advantage of working with the Unix epoch time
+is that you don't have to worry about calendar details (for example the
+number of days in different months, or leap years, and etc).
 @end table
 
 
@@ -26069,6 +26094,52 @@ strings it reads are like: @code{'value '}, or
 is commonly necessary to remove the single quotes (and possible extra
 spaces). This function will do this within the allocated space of the
 string.
+@end deftypefun
+
+@deftypefun {char *} gal_fits_key_date_to_struct_tm (char @code{*fitsdate}, struct tm @code{*tp})
+@cindex Date: FITS format
+Parse @code{fitsdate} as a FITS date format string (most generally:
+@code{YYYY-MM-DDThh:mm:ss.ddd...}) into the C library's broken-down time
+structure, or @code{struct tm} (declared in @file{time.h}) and return a
+pointer to the remainder of the string (containing the optional sub-second
+portion of @code{fitsdate}, or the @code{.ddd...} of the format).
+
+The returned @code{char *} points to part of the @code{fitsdate} string, so
+it must not be freed. For example, if @code{fitsdate} contains no
+sub-second portion, then the returned @code{char *} will point to the
+NULL-character of @code{fitsdate}.
+
+Note that the FITS date format mentioned above is the most complete
+representation. The following two formats are also acceptable:
+@code{YYYY-MM-DDThh:mm:ss} and @code{YYYY-MM-DD}. This option can also
+interpret the older FITS date format where only two characters are given to
+the year and the date format is reversed
+(@code{DD/MM/YYThh:mm:ss.ddd...}). In this case (following the GNU C
+Library), this option will make the following assumption: values 68 to 99
+correspond to the years 1969 to 1999, and values 0 to 68 as the years 2000
+to 2068.
+@end deftypefun
+
+@deftypefun size_t gal_fits_key_date_to_seconds (char @code{*fitsdate}, char @code{**subsecstr}, double @code{*subsec})
+@cindex Unix epoch time
+@cindex Epoch time, Unix
+Return the Unix epoch time (number of seconds that have passed since
+00:00:00 Thursday, January 1st, 1970) corresponding to the FITS date format
+string @code{fitsdate} (see description of
+@code{gal_fits_key_date_to_struct_tm} above).
+
+The Unix epoch time is in units of seconds, but the FITS date format allows
+sub-second accuracy. The las two arguments are for the (optional)
+sub-second portion. If @code{fitsdate} contains sub-second accuracy, then
+the starting of the sub-second part is stored in the @code{char *} pointer
+that @code{subsecstr} points to, and @code{subsec} will the corresponding
+numerical value (between 0 and 1, in double precision floating point).
+
+This is a very useful function for operations on the FITS date values, for
+example sorting FITS files by their dates, or finding the time difference
+between two FITS files. The advantage of working with the Unix epoch time
+is that you don't have to worry about calendar details (for example the
+number of days in different months, or leap years, and etc).
 @end deftypefun
 
 @deftypefun void gal_fits_key_read_from_ptr (fitsfile @code{*fptr}, gal_data_t @code{*keysll}, int @code{readcomment}, int @code{readunit})

@@ -397,6 +397,39 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
 
 
 
+static void
+keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
+{
+  int status=0;
+  double subsec;
+  size_t seconds;
+  char *subsecstr;
+  char fitsdate[FLEN_KEYWORD];
+
+  /* Read the requested FITS keyword. */
+  fits_read_key(fptr, TSTRING, p->datetosec, &fitsdate, NULL, &status);
+
+  /* Return the number of seconds (and subseconds) that it corresponds
+     to. */
+  seconds=gal_fits_key_date_to_seconds(fitsdate, &subsecstr, &subsec);
+
+  /* Print the result (for the sub-seconds, print everything after the */
+  if( !p->cp.quiet )
+    {
+      printf("%s (hdu %s), key `%s': %s\n", p->filename, p->cp.hdu,
+             p->datetosec, fitsdate);
+      printf("Seconds since 1970/01/01 (00:00:00): %zu%s\n\n", seconds,
+             subsecstr);
+      printf("(To suppress verbose output, run with `-q')\n");
+    }
+  else
+    printf("%ld%s\n", seconds, subsecstr);
+}
+
+
+
+
+
 
 
 
@@ -551,6 +584,14 @@ keywords(struct fitsparams *p)
                                &status) )
         gal_fits_io_error(status, NULL);
       status=0;
+    }
+
+
+  /* Convert the FITS date string into seconds. */
+  if(p->datetosec)
+    {
+      keywords_open(p, &fptr, READONLY);
+      keywords_date_to_seconds(p, fptr);
     }
 
 

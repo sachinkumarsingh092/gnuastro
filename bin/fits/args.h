@@ -240,6 +240,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "datetosec",
+      UI_KEY_DATETOSEC,
+      "STR",
+      0,
+      "FITS date to sec from 1970/01/01T00:00:00",
+      UI_GROUP_KEYWORD,
+      &p->datetosec,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

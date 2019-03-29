@@ -892,6 +892,118 @@ gal_fits_key_clean_str_value(char *string)
 
 
 
+/* Fill the `tm' structure (defined in `time.h') with the values derived
+   from a FITS format date-string and return the (optional) sub-second
+   information as a double.*/
+char *
+gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
+{
+  char *c=NULL, *cf;
+  int hasT=0, hassq=0, usesdash=0, usesslash=0;
+
+  /* Initialize the `tm' structure to all-zero elements. In particular, The
+     FITS standard times are written in UTC, so, the time zone (`tm_zone'
+     element, which specifies number of seconds to shift for the time zone)
+     has to be zero. The day-light saving flag (`isdst' element) also has
+     to be set to zero. */
+  tp->tm_sec=tp->tm_min=tp->tm_hour=tp->tm_mday=tp->tm_mon=tp->tm_year=0;
+  tp->tm_wday=tp->tm_yday=tp->tm_isdst=tp->tm_gmtoff;
+  tp->tm_zone=NULL;
+
+  /* According to the FITS standard the `T' in the middle of the date and
+     time of day is optional (the time is not mandatory). */
+  cf=(c=fitsdate)+strlen(fitsdate);
+  do
+    switch(*c)
+      {
+      case 'T':  hasT=1;      break; /* With `T' HH:MM:SS are defined.    */
+      case '-':  usesdash=1;  break; /* Day definition: YYYY-MM-DD.       */
+      case '/':  usesslash=1; break; /* Day definition(old): DD/MM/YY.    */
+      case '\'': hassq=1;     break; /* Wholly Wrapped in a single-quote. */
+      }
+  while(++c<cf);
+
+  /* Convert this date into seconds since 1970/01/01, 00:00:00. */
+  c = ( (usesdash==0 && usesslash==0)
+        ? NULL
+        : ( usesdash
+            ? ( hasT
+                ? strptime(fitsdate, hassq?"'%FT%T'":"%FT%T", tp)
+                : strptime(fitsdate, hassq?"'%F'"   :"%F"   , tp))
+            : ( hasT
+                ? strptime(fitsdate, hassq?"'%d/%m/%yT%T'":"%d/%m/%yT%T", tp)
+                : strptime(fitsdate, hassq?"'%d/%m/%y'"   :"%d/%m/%y"   , tp)
+                )
+            )
+        );
+
+  /* The value might have sub-seconds. In that case, `c' will point to a
+     `.' and we'll have to parse it as double. */
+  if( c==NULL || (*c!='.' && *c!='\0') )
+    error(EXIT_FAILURE, 0, "`%s' isn't in the FITS date format.\n\n"
+          "According to the FITS standard, the date must be in one of "
+          "these formats:\n"
+          "   YYYY-MM-DD\n"
+          "   YYYY-MM-DDThh:mm:ss\n"
+          "   DD/MM/YY               (Note the `YY', see *)\n"
+          "   DD/MM/YYThh:mm:ss      (Note the `YY', see *)\n\n"
+          "[*]: Gnuastro's FITS library (this program), interprets the "
+          "older (two character for year) format, year values 68 to 99 as "
+          "the years 1969 to 1999 and values 0 to 68 as the years 2000 to "
+          "2068.", fitsdate);
+
+  /* Return the subsecond value. */
+  return c;
+}
+
+
+
+
+
+/* Convert the FITS standard date format (as a string, already read from
+   the keywords) into number of seconds since 1970/01/01, 00:00:00. Very
+   useful to avoid calendar issues like number of days in a different
+   months or leap years and etc. The remainder of the format string
+   (sub-seconds) will be put into the two pointer arguments: `subsec' is in
+   double-precision floating point format and  */
+size_t
+gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
+                             double *subsec)
+{
+  time_t t;
+  char *tmp;
+  struct tm tp;
+  void *outptr=subsec;
+
+  /* Fill in the `tp' elements with values read from the string. */
+  tmp=gal_fits_key_date_to_struct_tm(fitsdate, &tp);
+
+  /* If the user cared about the remainder (sub-second string), then set it
+     and convert it to a double type. */
+  if(subsecstr)
+    {
+      /* Set the output pointer. */
+      *subsecstr=tmp;
+
+      /* Convert the remainder string to double-precision floating point
+         (if the given pointer isn't NULL). */
+      if(subsec)
+        if( gal_type_from_string(&outptr, tmp, GAL_TYPE_FLOAT64) )
+          error(EXIT_FAILURE, 0, "%s: the sub-second portion of `%s' (or "
+                "`%s') couldn't be read as a number", __func__, fitsdate,
+                tmp);
+    }
+
+  /* Convert the `tm' structure to `time_t'. */
+  t=mktime(&tp);
+
+  /* Return the value and set the output pointer. */
+  return (size_t)t;
+}
+
+
+
+
 
 /* Read the keyword values from a FITS pointer. The input should be a
    linked list of `gal_data_t'. Before calling this function, you just have
