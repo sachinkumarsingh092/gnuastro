@@ -407,7 +407,8 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
   char fitsdate[FLEN_KEYWORD];
 
   /* Read the requested FITS keyword. */
-  fits_read_key(fptr, TSTRING, p->datetosec, &fitsdate, NULL, &status);
+  if( fits_read_key(fptr, TSTRING, p->datetosec, &fitsdate, NULL, &status) )
+    gal_fits_io_error(status, NULL);
 
   /* Return the number of seconds (and subseconds) that it corresponds
      to. */
