@@ -99,6 +99,8 @@ License''.
 * Warp: (gnuastro)Warp. Warp a dataset to a new grid.
 * astwarp: (gnuastro)Invoking astwarp. Options to Warp.
 
+* astscript-sort-by-night: (gnuastro)Invoking astscript-sort-by-night. Options to this script
+
 @end direntry
 
 
@@ -203,6 +205,7 @@ sub-component to a title is present.
 * Data analysis::               Analyze images.
 * Modeling and fittings::       Make and fit models.
 * High-level calculations::     Physical calculations.
+* Installed scripts::           Higher-level usage of (multiple) programs.
 * Library::                     Gnuastro's library of useful functions.
 * Developing::                  The development environment.
 * Gnuastro programs list::      List and short summary of Gnuastro.
@@ -546,6 +549,14 @@ Invoking CosmicCalculator
 
 * CosmicCalculator input options::  Options to specify input conditions.
 * CosmicCalculator specific calculations::  Requesting specific outputs.
+
+Installed scripts
+
+* Sort FITS files by night::
+
+Sort FITS files by night
+
+* Invoking astscript-sort-by-night::  Inputs and outputs to this script.
 
 Library
 
@@ -10488,7 +10499,8 @@ continue with the rest of actions.
 @item -s STR
 @itemx --datetosec STR
 @cindex Unix epoch time
-@cindex Epoch time, Unix
+@cindex Time, Unix epoch
+@cindex Epoch, Unix time
 Interpret the value of the given keyword in the FITS date format (most
 generally: @code{YYYY-MM-DDThh:mm:ss.ddd...}) and return the corresponding
 Unix epoch time (number of seconds that have passed since 00:00:00
@@ -21740,7 +21752,7 @@ were of integer types.
 
 
 
-@node High-level calculations, Library, Modeling and fittings, Top
+@node High-level calculations, Installed scripts, Modeling and fittings, Top
 @chapter High-level calculations
 
 After the reduction of raw data (for example with the programs in @ref{Data
@@ -22304,8 +22316,212 @@ redshift based on the input parameters.
 
 
 
+@node Installed scripts, Library, High-level calculations, Top
+@chapter Installed scripts
 
-@node Library, Developing, High-level calculations, Top
+Gnuastro's programs (introduced in previous chapters) are designed to be
+highly modular and thus mainly contain lower-level operations on the
+data. However, in many contexts, higher-level operations (for example a
+sequence of calls to multiple Gnuastro programs, or a special way of
+running a program and using the outputs) are also very similar between
+various projects.
+
+To facilitate data analysis on these higher-level steps also, Gnuastro also
+installs some scripts on your system with the (@code{astscript-}) prefix
+(in contrast to the other programs that only have the @code{ast}
+prefix). In this chapter, these scripts and their usage details are
+described.
+
+@cindex GNU Bash
+Like all of Gnuastro's source code, these scripts are also heavily
+commented. They are written in GNU Bash, which doesn't need compilation (so
+they are actually human-readable), and is the same language that is mainly
+used when typing on the command-line. Because of these factors, Bash is
+much more widely known and used than C (the language of other Gnuastro
+programs). They also do higher-level operations, so customizing these
+scripts for a special project will be more common than the programs. You
+can always inspect them (to customize, check, or educate your self) with
+this command (just replace @code{emacs} with your favorite text editor):
+
+@example
+$ emacs $(which astscript-NAME)
+@end example
+
+These scripts also accept options and are in many ways similar to the
+programs (see @ref{Common options}) with some minor differences:
+
+@itemize
+@item
+Currently they don't accept configuration files themselves. However, the
+configuration files of the Gnuastro programs they call are indeed parsed
+and used by those programs.
+
+As a result, they don't have the following options: @option{--checkconfig},
+@option{--config}, @option{--lastconfig}, @option{--onlyversion},
+@option{--printparams}, @option{--setdirconf} and @option{--setusrconf}.
+
+@item
+They don't directly allocate any memory, so there is no
+@option{--minmapsize}.
+
+@item
+They don't have an independent @option{--usage} option: when called with
+@option{--usage}, they just recommend running @option{--help}.
+
+@item
+The output of @option{--help} is not configurable like the programs (see
+@ref{--help}).
+
+@end itemize
+
+@menu
+* Sort FITS files by night::
+@end menu
+
+@node Sort FITS files by night,  , Installed scripts, Installed scripts
+@section Sort FITS files by night
+
+@cindex Calendar
+FITS images usually contain (several) keywords for preserving important
+dates. In particular, for lower-level data, this is usually the observation
+date and time (for example, stored in the @code{DATE-OBS} keyword
+value). When analyzing observed datasets, many calibration steps (like the
+dark, bias or flat-field), are commonly calculated on a per-observing-night
+basis.
+
+However, the FITS standard's date format (@code{YYYY-MM-DDThh:mm:ss.ddd})
+is based on the western (Gregorian) calendar. Dates that are stored in this
+format are complicated for automatic processing: a night starts in the
+final hours of one calendar day, and extends to the early hours of the next
+calendar day. As a result, to identify datasets from one night, we commonly
+need to search for two dates. However calendar peculiarites can make this
+identification very difficult. For example when an observation is done on
+the night separating two months (like the night starting on March 31st and
+going into April 1st), or two years (like the night starting on December
+31st 2018 and going into January 1st, 2019). To account for such
+situations, it is necessary to keep track of how many days are in a month,
+and leap years, and etc.
+
+@cindex Unix epoch time
+@cindex Time, Unix epoch
+@cindex Epoch, Unix time
+Gnuastro's @file{astscript-sort-by-night} script is created to help in such
+important scenarios. It uses @ref{Fits} to convert the FITS date format
+into the Unix epoch time (number of seconds since 00:00:00 of January 1st,
+1970), using the @option{--datetosec} option. The Unix epoch time is a
+single number (integer, if not given in sub-second precision), enabling
+easy comparison and sorting of dates after January 1st, 1970.
+
+@menu
+* Invoking astscript-sort-by-night::  Inputs and outputs to this script.
+@end menu
+
+@node Invoking astscript-sort-by-night,  , Sort FITS files by night, Sort FITS files by night
+@subsection Invoking astscript-sort-by-night
+
+This script will read a FITS date formatted value from the given keyword,
+and classify the input FITS files into individual nights. This script can
+be used with the following general template:
+
+@example
+$ astscript-sort-by-night [OPTION...] FITS-files
+@end example
+
+@noindent
+One line examples:
+
+@example
+## Use the DATE-OBS keyword
+$ astscript-sort-by-night --key=DATE-OBS /path/to/data/*.fits
+
+## Make links to the input files with the `img-' prefix
+$ astscript-sort-by-night --link --prefix=img- /path/to/data/*.fits
+@end example
+
+This script will look into a HDU/extension (@option{--hdu}) for a keyword
+(@option{--key}) in the given FITS files and interpret the value as a
+date. The inputs will be separated by "night"s (9:00a.m to next day's
+8:59:59a.m, spanning two calendar days, exact hour can be set with
+@option{--hour}).
+
+The output is a list of all the input files along with the following two
+columns: night number and file number in that night (sorted by time). With
+@option{--link} a symbolic link will be made (one for each input). The
+link's name is composed of a prefix (@option{--prefix}) and also contains
+the night number, and number of file in that night (sorted by time). When
+@option{--copy} is used instead of a link, a copy of the inputs will be
+made instead of linking.
+
+Below you can see one example where all the @file{target-*.fits} files in
+the @file{data} directory should be separated by observing night according
+to the @code{DATE-OBS} keyword value in their second extension (number
+@code{1}, recall that HDU counting starts from 0). You can see the output
+after the @code{ls} command. The outputs can be placed in a different
+(already existing) directory by including that directory's name in the
+@option{--prefix} value, for example @option{--prefix=sorted/img-} will put
+them all under the @file{sorted} directory.
+
+@example
+$ astscript-sort-by-night -pimg- -h1 -kDATE-OBS data/target-*.fits
+$ ls
+img-n1-1.fits img-n1-2.fits img-n3-1.fits ...
+@end example
+
+This script can be configured like all Gnuastro's programs (through
+command-line options, see @ref{Common options}), with some minor
+differences that are described in @ref{Installed scripts}. The particular
+options to this script are listed below:
+
+@table @option
+@item -h STR
+@itemx --hdu=STR
+The HDU/extension to use in all the given FITS files. All of the given FITS
+files must have this extension.
+
+@item -k STR
+@itemx --key=STR
+The keyword name that contains the FITS date format to classify/sort by.
+
+@item -h FLT
+@itemx --hour=FLT
+The hour that defines the next ``night''. By default, all times before
+9:00a.m are considered to belong to the previous calendar night. If a
+sub-hour value is necessary, it should be given in units of hours, for
+example @option{--hour=9.5} corresponds to 9:30a.m.
+
+@item -l
+@itemx --link
+Create a symbolic link for each input FITS file, but with a standard naming
+convention, including a possible prefix, night identifier, and a unique
+counter for each file (sorted by time). This option cannot be used with
+@option{--copy}.
+
+@item -c
+@itemx --copy
+Make a copy of each input FITS file with a standard naming convention,
+including a possible prefix, night identifier, and a unique counter for
+each file (sorted by time). This option cannot be used with
+@option{--link}.
+
+@item -p STR
+@itemx --prefix=STR
+Prefix to append before the night-identifier of each newly created link or
+copy (with the @option{--copy} or @option{--link}
+options). @option{--prefix} can be used to store the files in another
+directory relative to the directory this script is being run (it must
+already exist).
+@end table
+
+
+
+
+
+
+
+
+
+
+@node Library, Developing, Installed scripts, Top
 @chapter Library
 
 Each program in Gnuastro that was discussed in the prior chapters (or any

@@ -804,6 +804,7 @@ AC_CONFIG_FILES([Makefile
                  bin/table/Makefile
                  bin/match/Makefile
                  bin/mkprof/Makefile
+                 bin/script/Makefile
                  bin/mknoise/Makefile
                  bin/segment/Makefile
                  bin/convertt/Makefile

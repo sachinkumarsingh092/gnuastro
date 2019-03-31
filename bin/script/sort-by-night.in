@@ -1,0 +1,278 @@
+#!/bin/bash
+
+# Separate input datasets into multiple nights, run with `--help', or see
+# description under `print_help' (below) for more.
+#
+# Original author:
+#     Mohammad Akhlaghi <mohammad@akhlaghi.org>
+# Contributing author(s):
+# Copyright (C) 2019, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+# Exit the script in the case of failure
+set -e
+
+
+
+
+
+# Default option values (can be changed with options on the
+# command-line).
+hdu=1
+hour=9
+copy=0
+link=0
+quiet=0
+key=DATE
+prefix=./
+version=@VERSION@
+scriptname=@SCRIPT_NAME@
+
+
+
+
+
+# Output of `--usage' and `--help':
+print_usage() {
+    cat <<EOF
+$scriptname: run with '--help' for list of options
+EOF
+}
+
+print_help() {
+    cat <<EOF
+Usage: $scriptname [OPTION] /path/to/data/\*.fits
+
+This script is part of GNU Astronomy Utilities $version.
+
+This script will look into a HDU/extension for a header keyword in the
+given FITS files and interpret the value as a date. The inputs will be
+separated by "night"s. It will then print a list of all the input files
+along with the following two columns: night number and file number in that
+night (sorted by time). With '--link' a symbolic link (one for each input)
+will be made with names including the night classifier. With '--copy'
+instead of a link, a copy of the inputs will be made.
+
+For more information, please run any of the following commands. In
+particular the first contains a very comprehensive explanation of this
+script's invocation: expected input(s), output(s), and a full description
+of all the options.
+
+     Inputs/Outputs and options:           $ info $scriptname
+     Full Gnuastro manual/book:            $ info gnuastro
+
+If you couldn't find your answer in the manual, you can get direct help from
+experienced Gnuastro users and developers. For more information, please run:
+
+     $ info help-gnuastro
+
+$scriptname options:
+ Input:
+  -h, --hdu=STR           HDU/extension of all input FITS files.
+  -k, --key=STR           Header keyword specifying date to use.
+  -H, --hour=FLT          Hour in next day to be included in night.
+
+ Output:
+  -l, --link              list of inputs with night and file number.
+  -c, --copy              Copy the files, don't make symbolic links.
+  -p, --prefix=STR        Prefix for outputs of '--copy' and '--link'.
+
+ Operating mode:
+  -h, --help              Print this help list.
+      --cite              BibTeX citation for this program.
+  -q, --quiet             Don't print the list.
+  -V, --version           Print program version.
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+GNU Astronomy Utilities home page: http://www.gnu.org/software/gnuastro/
+
+Report bugs to bug-gnuastro@gnu.org.
+EOF
+}
+
+
+
+
+
+# Output of `--version':
+print_version() {
+    cat <<EOF
+$scriptname (GNU Astronomy Utilities) $version
+Copyright (C) 2015-2019, Free Software Foundation, Inc.
+License GPLv3+: GNU General public license version 3 or later.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written/developed by Mohammad Akhlaghi
+EOF
+}
+
+
+
+
+
+# Functions to check option values and complain if necessary.
+function on_off_option_error() {
+    cat <<EOF
+$scriptname: '$1' doesn't take any values.
+EOF
+    exit 1
+}
+
+function check_v() {
+    if [ x"$2" = x ]; then
+        echo "$scriptname: option '$1' requires an argument."
+        echo "Try '$scriptname --help' for more information."
+        exit 1;
+    fi
+}
+
+
+
+
+
+# Separate command-line arguments from options. Then put the option
+# value into the respective variable.
+#
+# Each option has two lines because we want to process both these formats:
+# `--name=value' and `--name value'. The former (with `=') is a single
+# command-line argument, so we just need to shift the counter by one. The
+# latter (without `=') is two arguments, so we'll need two shifts.
+while [[ $# -gt 0 ]]
+do
+    case $1 in
+        # Input parameters.
+        -h=*|--hdu=*)     hdu="${1#*=}";    check_v $1 "$hdu"; shift;;
+	-h|--hdu)         hdu="$2";         check_v $1 "$hdu"; shift;shift;;
+        -k=*|--key=*)     key="${1#*=}";    check_v $1 "$key"; shift;;
+	-k|--key)         key="$2";         check_v $1 "$key"; shift;shift;;
+        -H=*|--hour=*)    hour="${1#*=}";   check_v $1 "$hour"; shift;;
+	-H|--hour)        hour="$2";        check_v $1 "$hour"; shift;shift;;
+
+        # Output parameters
+	-l|--link)        link=1;                 shift;;
+	-l=*|--link=*)    on_off_option_error --link;;
+	-c|--copy)        copy=1;                 shift;;
+	-c=*|--copy=*)    on_off_option_error --copy;;
+        -p=*|--prefix=*)  prefix="${1#*=}"; check_v $1 "$prefix"; shift;;
+	-p|--prefix)      prefix="$2";      check_v $1 "$prefix"; shift;shift;;
+
+	# Non-operating options.
+	-q|--quiet)       quiet=1;                shift;;
+	-?|--help)        print_help; exit 0;;
+        -V|--version)     print_version; exit 0;;
+        --cite)           astfits --cite; exit 0;;
+
+        # Unrecognized option:
+        -*) echo "$scriptname: unknown option '$1'"; exit 1;;
+
+	# No option: assumed to be input FITS file.
+	*) inputs="$1 $inputs"; shift;;
+    esac
+done
+
+
+
+
+
+# Basic sanity checks on arguments.
+if [ x"$inputs" = x ]; then
+    echo "$scriptname: no input FITS files."
+    echo "Run with '--help' for more information on how to run."
+    exit 1
+fi
+
+if [ $copy = 1 ] && [ $link = 1 ]; then
+    echo "$scriptname: '--copy' and '--link' cannot be called together"
+    exit 1
+fi
+
+
+
+
+
+# Find the night number (including until 9:00 a.m of the following
+# day) of each image.
+#
+# To do this, we'll convert the date into Unix epoch time (seconds
+# since 1970-01-01,00:00:00) and keep that with the filename.
+list=$(for f in $inputs; do
+	   astfits $f --datetosec=$key --hdu=$hdu -q      \
+	       | awk -vh=$hour                            \
+                     '{d=int($1/86400); print "'$f'", $1, \
+		       int($1)%86400<(h*3600) ? d-1 : d }'
+       done)
+
+
+
+
+
+# To see the result of the step above, uncomment the next line. You
+# can use a similar line to inspect the steps for later variables also
+# (just changing the variable name). IMPORTANT NOTE: Just don't forget
+# the double-quotes around the variable name, otherwise the lines
+# won't be separated.
+#echo "$list"; exit 1
+
+
+
+
+
+# Get the uniqe nights from the previous step.
+unique=$(echo "$list" | awk '{print $3}' | sort | uniq | cat -n)
+
+
+
+
+
+# Find the FITS files of every unique day and sort them by observing
+# time within that day. We'll also initialize the night-counter to 1.
+counter=1
+echo "$unique" | while read l; do
+
+    # Find all input files (and their Unix epoch time) that corr
+    daynum_to=$(echo $l | awk '{print $1}')
+    daynum_from=$(echo $l | awk '{print $2}')
+    in_this_day=$(echo "$list" \
+		      | awk -vf=$daynum_from -vt=$daynum_to \
+			    '$3==f {print $1, $2}' \
+		      | sort -nk2 \
+		      | cat -n \
+		      | awk -vd=$counter '{print $2,d,$1}')
+
+    # Make a link to each file (containing the day number and image
+    # number in that day).
+    echo "$in_this_day" | while read L; do
+
+        # Set the necessary numbers.
+        infile=$(echo $L | awk '{print $1}')
+        night_num=$(echo $L | awk '{print $2}')
+        exposure_num=$(echo $L | awk '{print $3}')
+
+        # Make the outputs
+        outfile=$prefix"n"$night_num-$exposure_num.fits
+        if   [ $copy = 1 ]; then   cp $infile $outfile
+        elif [ $link = 1 ]; then   ln -fs $infile $outfile
+        else                       echo "$infile $night_num $exposure_num"
+        fi
+
+    done
+
+    # Increment the night-counter.
+    ((counter++))
+done

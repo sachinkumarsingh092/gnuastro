@@ -109,6 +109,18 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
    --descending: When called with `--sort', will arrange the output rows in
      descending order.
 
+  Installed scripts:
+   With this release, Gnuastro also installs Bash scripts for common
+   higher-level usage of (possibly multiple) programs. These scripts have a
+   `astscript-*' name, to easily show up on the command-line as Gnuastro
+   executables with the other Gnuastro programs, but are identifiable from
+   them. They support options just like the programs (which can be listed
+   with `--help'). Please see the new "Installed scripts" chapter of the
+   book for more.
+   - astscript-sort-by-night: New Gnuastro executable, using Gnuastro's
+     Fits program to identify files with dates in the same night (possibly
+     spanning two calendar dates).
+
   Library:
     GAL_BLANK_LONG: new macro for the `long' type blank value.
     GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
