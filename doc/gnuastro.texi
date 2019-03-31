@@ -17438,7 +17438,7 @@ identify regions that are connected with each other. For example with this
 command (assuming NoiseChisel's output is called @file{nc.fits}):
 
 @example
-$ astarithmetic nc.fits connected-components -hDETECTIONS
+$ astarithmetic nc.fits 2 connected-components -hDETECTIONS
 @end example
 
 @item --rawoutput

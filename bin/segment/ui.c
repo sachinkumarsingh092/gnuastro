@@ -127,6 +127,10 @@ ui_initialize_options(struct segmentparams *p,
       /* Select individually. */
       switch(cp->coptions[i].key)
         {
+        case GAL_OPTIONS_KEY_HDU:
+          cp->coptions[i].doc="HDU containing values (science image).";
+          break;
+
         case GAL_OPTIONS_KEY_LOG:
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
