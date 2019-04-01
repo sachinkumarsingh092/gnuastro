@@ -31996,7 +31996,6 @@ parenthesis. Throughout this book, they are ordered based on their context,
 please see the top-level contents for contextual ordering (based on what
 they do).
 
-
 @table @asis
 
 @item Arithmetic
@@ -32083,7 +32082,19 @@ projective transformation or Homography can be applied to the input images.
 
 @end table
 
+The programs listed above are designed to be highly modular and
+generic. Hence, they are naturally for lower-level operations. In Gnuastro,
+higher-level operations (combining multiple programs, or running a program
+in a special way), are done with installed Bash scripts (all prefixed with
+@code{astscript-}). They can be run just like a program and behave very
+similarly (with minor differences, see @ref{Installed scripts}).
 
+@table @code
+@item astscript-sort-by-night
+(See @ref{Sort FITS files by night}) Given a list of FITS files, and a HDU
+and keyword name (for a date), this script separates the files in the same
+night (possibly over two calendar days).
+@end table
 
 
 

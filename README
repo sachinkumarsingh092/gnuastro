@@ -99,6 +99,16 @@ categories/chapters.
   - Warp (astwarp): Warp image to new pixel grid. Any projective
     transformation or Homography can be applied to the input images.
 
+The programs listed above are designed to be highly modular and
+generic. For higher-level operations (combining multiple programs, or
+running a program in a special way), Gnuastro also installs Bash scripts
+(all prefixed with `astscript-'). They can be run like a program and behave
+very similarly (with minor differences, as explained in the book).
+
+  - astscript-sort-by-night: Given a list of FITS files, and a HDU and
+    keyword name for a date, this script separates the files in the same
+    night (possibly over two calendar days).
+
 All the programs share the same basic command-line user interface and a set
 of common options for the comfort of both the users and
 developers. Gnuastro is written to comply fully with the GNU coding
