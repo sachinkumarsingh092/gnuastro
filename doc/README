@@ -1,6 +1,9 @@
 Documentation of GNU Astronomy Utilities
 ========================================
 
+Copyright (C) 2015-2019 Free Software Foundation, Inc.
+See the end of the file for license conditions.
+
 This directory contains the documentation (manual) of GNU Astronomy
 Utilities (Gnuastro) and also all the files necessary for the Gnuastro
 webpage. Note that only the basic files needed to make the webpage are
@@ -43,3 +46,13 @@ directories. Just note that CVS is an antique(!) and so you have to
 add all the files in separate directories separately, first add the
 directory, then CVS will find the untracked files inside it and add
 them one by one!
+
+Copyright
+---------
+
+Copyright (C) 2015-2019 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with no Front-Cover Texts, and with no Back-Cover Texts.

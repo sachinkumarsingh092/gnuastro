@@ -9,8 +9,13 @@
 # Column 9:  Magnitude         [ABmag, f64]  Magnitude of profile within truncation radius
 # Column 10: Truncation radius [dist, f64]   Truncation radius to stop building profile
 #
-# Note that the positions and radii are multiplied by 5 compared to `mkprofcat1.txt',
-# because we are using the over-sampled image as a canvas.
+# Note that the positions and radii are multiplied by 5 compared to
+# `mkprofcat1.txt', because we are using the over-sampled image as a
+# canvas.
 #
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and
+# this notice are preserved.  This file is offered as-is, without any
+# warranty.
 1 502     502     flat 100   1 45.000 1.000  1 2.000
 2 251.605 254.135 flat 29.89 1 77.650 0.801  2 2.000

@@ -1,6 +1,11 @@
 # Column 1: ABCD
 # Column 2: ACCU1
 # Column 3: ACCU2
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
 1   8.20    7.90
 2   20.1    2.80
 3   4.80    5.20

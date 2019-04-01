@@ -3,5 +3,10 @@
 # Column 3: Y_CENTER   [pixels,f64] Image Y axis position.
 # Column 4: RA_CENTER  [deg,f64]    Right Ascension.
 # Column 5: DEC_CENTER [deg,f64]    Declination.
+#
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and
+# this notice are preserved.  This file is offered as-is, without any
+# warranty.
 A0B1  500.00  500.00   0.99917157   1.0008283
 c2d3  251.00  251.00   0.99958658   1.0004150
