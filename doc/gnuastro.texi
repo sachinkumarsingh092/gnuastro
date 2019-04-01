@@ -22412,6 +22412,69 @@ into the Unix epoch time (number of seconds since 00:00:00 of January 1st,
 single number (integer, if not given in sub-second precision), enabling
 easy comparison and sorting of dates after January 1st, 1970.
 
+You can use this script as a basis for making a much more highly customized
+sorting script. Here are some examples
+
+@itemize
+@item
+If you need to copy the files, but only need a single extension (not the
+whole file), you can add a step just before the making of the symbolic
+links, or copies, and change it to only copy a certain extension of the
+FITS file using the Fits program's @option{--copy} option, see @ref{HDU
+manipulation}.
+
+@item
+If you need to classify the files with finer detail (for example the
+purpose of the dataset), you can add a step just before the making of the
+symbolic links, or copies, to specify a file-name prefix based on other
+certain keyword values in the files. For example when the FITS files have a
+keyword to specify if the dataset is a science, bias, or flat-field
+image. You can read it and to add a @code{sci-}, @code{bias-}, or
+@code{flat-} to the created file (after the @option{--prefix})
+automatically.
+
+For example, let's assume the observing mode is stored in the hypothetical
+@code{MODE} keyword, which can have three values of @code{BIAS-IMAGE},
+@code{SCIENCE-IMAGE} and @code{FLAT-EXP}. With the step below, you can
+generate a mode-prefix, and add it to the generated link/copy names (just
+correct the filename and extension of the first line to the script's
+variables):
+
+@example
+modepref=$(astfits infile.fits -h1 \
+                   | sed -e"s/'/ /g" \
+                   | awk '$1=="MODE"@{ \
+                       if($3=="BIAS-IMAGE") print "bias-"; \
+                       else if($3=="SCIENCE-IMAGE") print "sci-"; \
+                       else if($3==FLAT-EXP) print "flat-"; \
+                       else print $3, "NOT recognized"; exit 1@}')
+@end example
+
+@cindex GNU AWK
+@cindex GNU Sed
+Here is a description of it. We first use @command{astfits} to print all
+the keywords in extension @code{1} of @file{infile.fits}. In the FITS
+standard, string values (that we are assuming here) are placed in single
+quotes (@key{'}) which are annoying in this context/use-case. Therefore, we
+pipe the output of @command{astfits} into @command{sed} to remove all such
+quotes (substituting them with a blank space). The result is then piped to
+AWK for giving us the final mode-prefix: with @code{$1=="MODE"}, we ask AWK
+to only consider the line where the first column is @code{MODE}. There is
+an equal sign between the key name and value, so the value is the third
+column (@code{$3} in AWK). We thus use a simple @code{if-else} structure to
+look into this value and print our custom prefix based on it. The output of
+AWK is then stored in the @code{modepref} shell variable which you can add
+to the link/copy name.
+
+With the solution above, the increment of the file counter for each night
+will be independent of the mode. If you want the counter to be
+mode-dependent, you can add a different counter for each mode and use that
+counter instead of the generic counter for each night (based on the value
+of @code{modepref}). But we'll leave the implementation of this step to you
+as an exercise.
+
+@end itemize
+
 @menu
 * Invoking astscript-sort-by-night::  Inputs and outputs to this script.
 @end menu
@@ -22444,28 +22507,30 @@ date. The inputs will be separated by "night"s (9:00a.m to next day's
 8:59:59a.m, spanning two calendar days, exact hour can be set with
 @option{--hour}).
 
-The output is a list of all the input files along with the following two
-columns: night number and file number in that night (sorted by time). With
-@option{--link} a symbolic link will be made (one for each input). The
-link's name is composed of a prefix (@option{--prefix}) and also contains
-the night number, and number of file in that night (sorted by time). When
+The default output is a list of all the input files along with the
+following two columns: night number and file number in that night (sorted
+by time). With @option{--link} a symbolic link will be made (one for each
+input) that contains the night number, and number of file in that night
+(sorted by time), see the description of @option{--link} for more. When
 @option{--copy} is used instead of a link, a copy of the inputs will be
-made instead of linking.
+made instead of symbolic link.
 
 Below you can see one example where all the @file{target-*.fits} files in
 the @file{data} directory should be separated by observing night according
 to the @code{DATE-OBS} keyword value in their second extension (number
 @code{1}, recall that HDU counting starts from 0). You can see the output
-after the @code{ls} command. The outputs can be placed in a different
-(already existing) directory by including that directory's name in the
-@option{--prefix} value, for example @option{--prefix=sorted/img-} will put
-them all under the @file{sorted} directory.
+after the @code{ls} command.
 
 @example
 $ astscript-sort-by-night -pimg- -h1 -kDATE-OBS data/target-*.fits
 $ ls
-img-n1-1.fits img-n1-2.fits img-n3-1.fits ...
+img-n1-1.fits img-n1-2.fits img-n2-1.fits ...
 @end example
+
+The outputs can be placed in a different (already existing) directory by
+including that directory's name in the @option{--prefix} value, for example
+@option{--prefix=sorted/img-} will put them all under the @file{sorted}
+directory.
 
 This script can be configured like all Gnuastro's programs (through
 command-line options, see @ref{Common options}), with some minor
@@ -22482,7 +22547,7 @@ files must have this extension.
 @itemx --key=STR
 The keyword name that contains the FITS date format to classify/sort by.
 
-@item -h FLT
+@item -H FLT
 @itemx --hour=FLT
 The hour that defines the next ``night''. By default, all times before
 9:00a.m are considered to belong to the previous calendar night. If a
@@ -22491,25 +22556,49 @@ example @option{--hour=9.5} corresponds to 9:30a.m.
 
 @item -l
 @itemx --link
-Create a symbolic link for each input FITS file, but with a standard naming
-convention, including a possible prefix, night identifier, and a unique
-counter for each file (sorted by time). This option cannot be used with
-@option{--copy}.
+Create a symbolic link for each input FITS file. This option cannot be used
+with @option{--copy}. The link will have a standard name in the following
+format (variable parts are written in @code{CAPITAL} letters and described
+after it):
+
+@example
+PnN-I.fits
+@end example
+
+@table @code
+@item P
+This is the value given to @option{--prefix}. By default, its value is
+@code{./} (to store the links in the directory this script was run in). See
+the description of @code{--prefix} for more.
+@item N
+This is the night-counter: starting from 1. @code{N} is just incremented by
+1 for the next night, no matter how many nights (without any dataset) there
+are between two subsequent observing nights (its just an identifier for
+each night which you can easily map to different calendar nights).
+@item I
+File counter in that night, sorted by time.
+@end table
 
 @item -c
 @itemx --copy
-Make a copy of each input FITS file with a standard naming convention,
-including a possible prefix, night identifier, and a unique counter for
-each file (sorted by time). This option cannot be used with
-@option{--link}.
+Make a copy of each input FITS file with the standard naming convention
+described in @option{--link}. With this option, instead of making a link, a
+copy is made. This option cannot be used with @option{--link}.
 
 @item -p STR
 @itemx --prefix=STR
 Prefix to append before the night-identifier of each newly created link or
-copy (with the @option{--copy} or @option{--link}
-options). @option{--prefix} can be used to store the files in another
+copy. This option is thus only relevant with the @option{--copy} or
+@option{--link} options. See the description of @option{--link} for how its
+used. For example, with @option{--prefix=img-}, all the created file names
+in the current directory will start with @code{img-}, making outputs like
+@file{img-n1-1.fits} or @file{img-n3-42.fits}.
+
+@option{--prefix} can also be used to store the links/copies in another
 directory relative to the directory this script is being run (it must
-already exist).
+already exist). For example @code{--prefix=/path/to/processing/img-} will
+put all the links/copies in the @file{/path/to/processing} directory, and
+the files (in that directory) will all start with @file{img-}.
 @end table
 
 
