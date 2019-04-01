@@ -27347,8 +27347,9 @@ which is better considering floating point errors:
 
 @deftypefun {double *} gal_wcs_pixel_scale (struct wcsprm @code{*wcs})
 Return the pixel scale for each dimension of @code{wcs} in degrees. The
-output is an array of double precision floating point type with one element
-for each dimension.
+output is an allocated array of double precision floating point type with
+one element for each dimension. If its not successful, this function will
+return @code{NULL}.
 @end deftypefun
 
 @deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})

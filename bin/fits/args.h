@@ -92,6 +92,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     {
       0, 0, 0, 0,
       "Keywords (in one HDU):",
@@ -230,7 +232,7 @@ struct argp_option program_options[] =
     {
       "copykeys",
       UI_KEY_COPYKEYS,
-      "STR",
+      "INT:INT",
       0,
       "Range of keywords to copy to output HDU.",
       UI_GROUP_KEYWORD,

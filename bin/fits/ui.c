@@ -221,8 +221,14 @@ ui_check_copykeys(struct fitsparams *p)
 {
   long read;
   char *tailptr;
-  size_t group=0;
+  /* size_t group=0; */
   char forl='f', *pt=p->copykeys;
+
+  /* For copykeys, an output filename is mandatory. */
+  if(p->cp.output==NULL || p->outhdu==NULL)
+    error(EXIT_FAILURE, 0, "an output FITS extension (in an existing "
+          "FITS file, specified with the `--output' and `--outhdu') are "
+          "mandatory for running `--copykeys'");
 
   /* Initialize the values. */
   p->copykeysrange[0]=p->copykeysrange[1]=GAL_BLANK_LONG;
@@ -251,20 +257,19 @@ ui_check_copykeys(struct fitsparams *p)
         case '6': case '7': case '8': case '9': case '-':
           break;
 
-        /* An un-recognized character should crash the program. */
+        /* Identifier for next group of ranges. However, For the time
+           being, we just support one group. So we are commenting the break
+           here for it to follow onto default.
         case ',':
           ++group;
           forl='f';
           ++pt;
-
-          /* For the time being, we just support one group. So we are
-             commenting the break here for it to follow onto default.
           break;
           */
         default:
           error(EXIT_FAILURE, 0, "value to `--copykeys' must only contain "
                 "integer numbers and these special characters between them: "
-                "`,', `:', `*' when necessary. But it is `%s' (the first "
+                "`:' when necessary. But it is `%s' (the first "
                 "non-acceptable character is `%c').\n", p->copykeys, *pt);
           break;
         }

@@ -348,6 +348,9 @@ ui_check_options_and_arguments(struct warpparams *p)
       if(p->input->wcs)
         {
           p->pixelscale=gal_wcs_pixel_scale(p->input->wcs);
+          if(p->pixelscale==NULL)
+            error(EXIT_FAILURE, 0, "%s (hdu %s): the pixel scale couldn't "
+                  "be deduced from the WCS.", p->inputname, p->cp.hdu);
           p->inwcsmatrix=gal_wcs_warp_matrix(p->input->wcs);
         }
     }

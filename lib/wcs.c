@@ -564,11 +564,15 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
   double *ps;
   size_t i, j;
 
+  /* If there is on WCS, then don't do anything. */
+  if(wcs==NULL) return;
+
   /* The correction is only needed when the PC matrix is filled. */
   if(wcs->pc)
     {
       /* Get the pixel scale. */
       ps=gal_wcs_pixel_scale(wcs);
+      if(ps==NULL) return;
 
       /* The PC matrix and the CDELT elements might both contain scale
          elements (during processing the scalings might be added only to PC
@@ -636,6 +640,7 @@ gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 
 
 
+
 /* Return the pixel scale of the dataset in units of the WCS. */
 double *
 gal_wcs_pixel_scale(struct wcsprm *wcs)
@@ -643,19 +648,29 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   gsl_vector S;
   gsl_matrix A, V;
   int warning_printed;
-  size_t i, j, maxj, n=wcs->naxis;
-  double jvmax, *a, *out, maxrow, minrow;
-  double *v=gal_pointer_allocate(GAL_TYPE_FLOAT64, n*n, 0, __func__, "v");
-  size_t *permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, n, 0, __func__,
-                                           "permutation");
-  gal_data_t *pixscale=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &n, NULL,
-                                      0, -1, NULL, NULL, NULL);
+  gal_data_t *pixscale;
+  size_t i, j, n, maxj, *permutation;
+  double jvmax, *a, *out, *v, maxrow, minrow;
 
+  /* Only continue if a WCS exists. */
+  if(wcs==NULL) return NULL;
 
   /* Write the full WCS rotation matrix into an array, irrespective of what
      style it was stored in the wcsprm structure (`PCi_j' style or `CDi_j'
      style). */
   a=gal_wcs_warp_matrix(wcs);
+
+  /* A small sanity check (this won't work on a singular matrix, can happen
+     in FITS WCSs!). In this case, we should return NULL.*/
+  n=wcs->naxis;
+  for(i=0;i<n;++i) {if(a[i*n+i]==0.0f) return NULL;}
+
+  /* Now that everything is good, we can allocate the necessary memory. */
+  v=gal_pointer_allocate(GAL_TYPE_FLOAT64, n*n, 0, __func__, "v");
+  permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, n, 0, __func__,
+                                   "permutation");
+  pixscale=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &n, NULL,
+                          0, -1, NULL, NULL, NULL);
 
 
   /* To avoid confusing issues with floating point errors being written in
@@ -792,6 +807,7 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 
   /* Get the pixel scales along each axis in degrees, then multiply. */
   pixscale=gal_wcs_pixel_scale(wcs);
+  if(pixscale==NULL) return NAN;
 
   /* Clean up and return the result. */
   out = pixscale[0] * pixscale[1] * 3600.0f * 3600.0f;

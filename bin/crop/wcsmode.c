@@ -101,6 +101,9 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
      small differences might exist in the pixel scale, so break out with an
      error only if the pixel scales are more different than 1e-6. */
   pixscale=gal_wcs_pixel_scale(wcs);
+  if(pixscale==NULL)
+    error(EXIT_FAILURE, 0, "the pixel scale couldn't be deduced from the "
+          "WCS");
   if( fabs(pixscale[0]-pixscale[1])/pixscale[0] > 1e-6 )
     error(EXIT_FAILURE, 0, "%s: HDU %s: The pixel scale along "
           "the two image axises is not the same. The first axis "
