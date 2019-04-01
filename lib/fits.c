@@ -2092,9 +2092,12 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
       /* Convert the WCS information to text. */
       status=wcshdo(WCSHDO_safe, towrite->wcs, &nkeyrec, &wcsstr);
       if(status)
-        error(EXIT_FAILURE, 0, "%s: wcshdo ERROR %d: %s", __func__,
-              status, wcs_errmsg[status]);
-      gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+        error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
+              "wcshdu ERROR %d: %s", __func__, status,
+              wcs_errmsg[status]);
+      else
+        gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+      status=0;
     }
 
   /* Report any errors if we had any */

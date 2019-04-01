@@ -196,6 +196,7 @@ See the end of the file for license conditions.
   bug #55845: Crash when necessary column not found from standard input.
   bug #55988: MakeProfiles segfault when input catalog has no rows.
   bug #56001: Bad tile sizes with only one tile and small remainder.
+  bug #56048: Crash when WCS cannot be written to FITS file.
 
 
 
