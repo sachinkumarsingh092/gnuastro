@@ -1,13 +1,18 @@
 # Files to ignore in version control (Git) -*- conf-unix -*-
 # ==========================================================
-
+#
 # The files satisfying the patterns here (one per line) are ignored by
 # the version control using Git, they are all outputs of the various
 # tools used to built Gnuastro, so we don't need to keep their
 # history.
-
+#
 # To help readability, please add new files based on the length of the line
 # you wish to add.
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
 
 
 
