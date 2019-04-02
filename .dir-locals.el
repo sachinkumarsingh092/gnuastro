@@ -8,6 +8,11 @@
 ;; or the number of spaces to be used for indentation.
 ;;
 ;; For more information see (info "(emacs) Directory Variables")
+;;
+;; Copying and distribution of this file, with or without modification,
+;; are permitted in any medium without royalty provided the copyright
+;; notice and this notice are preserved.  This file is offered as-is,
+;; without any warranty.
 
 ((nil
   (indent-tabs-mode . nil) ;; No tabs as indentation

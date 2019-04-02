@@ -1,3 +1,9 @@
+Make the plots/figures of the book
+----------------------------------
+
+Copyright (C) 2015-2019 Free Software Foundation, Inc.
+See the end of the file for license conditions.
+
 This directory has all the necessary information to make the plots
 that are to be drawn by LaTeX (TikZ) and will also convert all the
 manual images to the necessary formats for all the Texinfo output
@@ -6,8 +12,6 @@ formats.
 To do everything, simply run:
 
     make
-
-
 
 
 
@@ -23,3 +27,14 @@ If you do, go to `/etc/ImageMagick-7/policy.xml', and uncomment the line
 with the EPS,PDF,etc.... policy limitations. It was apparently due to a bug
 in Ghostscript that has been fixed since version 9.24
 (https://www.kb.cert.org/vuls/id/332928/).
+
+
+
+Copyright
+---------
+Copyright (C) 2015-2019 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, with no Front-Cover Texts, and with no Back-Cover Texts.
