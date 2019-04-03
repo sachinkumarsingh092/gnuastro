@@ -47,6 +47,14 @@ add all the files in separate directories separately, first add the
 directory, then CVS will find the untracked files inside it and add
 them one by one!
 
+Image copyright
+---------------
+
+This directory also contains the `gnuastrologo.xcf' image which is a crude
+logo for Gnuastro in case we need it. It is released under the GNU Free
+Documentation License, Version 1.3 or later, just like this README
+(statement is at the bottom of this file)
+
 Copyright
 ---------
 Copyright (C) 2015-2019 Free Software Foundation, Inc.
