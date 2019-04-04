@@ -191,6 +191,11 @@ if COND_WARP
   warp/homographic.sh: convolve/spatial.sh.log
 endif
 
+# Script tests.
+SCRIPT_TESTS = script/list-by-night.sh
+
+# We want to have several FITS files as input for this script.
+script/list-by-night.sh: mkcatalog/aperturephot.sh.log
 
 
 
@@ -244,7 +249,7 @@ TESTS = prepconf.sh lib/multithread.sh $(MAYBE_CXX_TESTS)                  \
   $(MAYBE_MKCATALOG_TESTS) $(MAYBE_MKNOISE_TESTS) $(MAYBE_MKPROF_TESTS)    \
   $(MAYBE_NOISECHISEL_TESTS) $(MAYBE_SEGMENT_TESTS)                        \
   $(MAYBE_STATISTICS_TESTS) $(MAYBE_SUBTRACTSKY_TESTS)                     \
-  $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS)
+  $(MAYBE_TABLE_TESTS) $(MAYBE_WARP_TESTS) $(SCRIPT_TESTS)
 
 
 
