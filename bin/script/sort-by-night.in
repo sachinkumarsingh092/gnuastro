@@ -149,34 +149,59 @@ function check_v() {
 # Separate command-line arguments from options. Then put the option
 # value into the respective variable.
 #
-# Each option has two lines because we want to process both these formats:
-# `--name=value' and `--name value'. The former (with `=') is a single
-# command-line argument, so we just need to shift the counter by one. The
-# latter (without `=') is two arguments, so we'll need two shifts.
+# OPTIONS WITH A VALUE:
+#
+#   Each option has three lines because we want to all common formats: for
+#   long option names: `--longname value' and `--longname=value'. For short
+#   option names we want `-l value', `-l=value' and `-lvalue' (where `-l'
+#   is the short version of the hypothetical `--longname' option).
+#
+#   The first case (with a space between the name and value) is two
+#   command-line arguments. So, we'll need to shift it two times. The
+#   latter two cases are a single command-line argument, so we just need to
+#   "shift" the counter by one. IMPORTANT NOTE: the ORDER OF THE LATTER TWO
+#   cases matters: `-h*' should be checked only when we are sure that its
+#   not `-h=*').
+#
+# OPTIONS WITH NO VALUE (ON-OFF OPTIONS)
+#
+#   For these, we just want the two forms of `--longname' or `-l'. Nothing
+#   else. So if an equal sign is given we should definitely crash and also,
+#   if a value is appended to the short format it should crash. So in the
+#   second test for these (`-l*') will account for both the case where we
+#   have an equal sign and where we don't.
 while [[ $# -gt 0 ]]
 do
-    case $1 in
+    case "$1" in
         # Input parameters.
-        -h=*|--hdu=*)     hdu="${1#*=}";    check_v $1 "$hdu"; shift;;
-	-h|--hdu)         hdu="$2";         check_v $1 "$hdu"; shift;shift;;
-        -k=*|--key=*)     key="${1#*=}";    check_v $1 "$key"; shift;;
-	-k|--key)         key="$2";         check_v $1 "$key"; shift;shift;;
-        -H=*|--hour=*)    hour="${1#*=}";   check_v $1 "$hour"; shift;;
-	-H|--hour)        hour="$2";        check_v $1 "$hour"; shift;shift;;
+        -h|--hdu)         hdu="$2";                           check_v "$1" "$hdu";  shift;shift;;
+        -h=*|--hdu=*)     hdu="${1#*=}";                      check_v "$1" "$hdu";  shift;;
+        -h*)              hdu=$(echo "$1"  | sed -e's/-h//'); check_v "$1" "$hdu";  shift;;
+        -k|--key)         key="$2";                           check_v "$1" "$key";  shift;shift;;
+        -k=*|--key=*)     key="${1#*=}";                      check_v "$1" "$key";  shift;;
+        -k*)              key=$(echo "$1"  | sed -e's/-k//'); check_v "$1" "$key";  shift;;
+        -H|--hour)        hour="$2";                          check_v "$1" "$hour"; shift;shift;;
+        -H=*|--hour=*)    hour="${1#*=}";                     check_v "$1" "$hour"; shift;;
+        -H*)              hour=$(echo "$1" | sed -e's/-H//'); check_v "$1" "$hour"; shift;;
 
         # Output parameters
-	-l|--link)        link=1;                 shift;;
-	-l=*|--link=*)    on_off_option_error --link;;
-	-c|--copy)        copy=1;                 shift;;
-	-c=*|--copy=*)    on_off_option_error --copy;;
-        -p=*|--prefix=*)  prefix="${1#*=}"; check_v $1 "$prefix"; shift;;
-	-p|--prefix)      prefix="$2";      check_v $1 "$prefix"; shift;shift;;
+	-l|--link)        link=1; shift;;
+	-l*|--link=*)     on_off_option_error --link;;
+	-c|--copy)        copy=1; shift;;
+	-c*|--copy=*)     on_off_option_error --copy;;
+        -p|--prefix)      prefix="$2";                          check_v "$1" "$prefix"; shift;shift;;
+        -p=*|--prefix=*)  prefix="${1#*=}";                     check_v "$1" "$prefix"; shift;;
+        -p*)              prefix=$(echo "$1" | sed -e's/-p//'); check_v "$1" "$prefix"; shift;;
 
 	# Non-operating options.
-	-q|--quiet)       quiet=1;                shift;;
+	-q|--quiet)       quiet=1; shift;;
+        -q*|--quiet=*)    on_off_option_error --quiet;;
 	-?|--help)        print_help; exit 0;;
+        -?*|--help=*)     on_off_option_error --help;;
         -V|--version)     print_version; exit 0;;
+        -V*|--version=*)  on_off_option_error --version;;
         --cite)           astfits --cite; exit 0;;
+        --cite=*)         on_off_option_error --cite;;
 
         # Unrecognized option:
         -*) echo "$scriptname: unknown option '$1'"; exit 1;;
