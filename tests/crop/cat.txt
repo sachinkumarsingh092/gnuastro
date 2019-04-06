@@ -4,6 +4,8 @@
 # Column 4: RA_CENTER  [deg,f64]    Right Ascension.
 # Column 5: DEC_CENTER [deg,f64]    Declination.
 #
+# Copyright (C) 2015-2019 Free Software Foundation, Inc.
+#
 # Copying and distribution of this file, with or without modification, are
 # permitted in any medium without royalty provided the copyright notice and
 # this notice are preserved.  This file is offered as-is, without any

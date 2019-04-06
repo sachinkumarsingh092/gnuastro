@@ -9,6 +9,8 @@
 # Column 9:  Magnitude         [ABmag, f64]   Magnitude of profile within truncation radius
 # Column 10: Truncation radius [dist,  f64]    Truncation radius to stop building profile
 #
+# Copyright (C) 2015-2019 Free Software Foundation, Inc.
+#
 # Copying and distribution of this file, with or without modification, are
 # permitted in any medium without royalty provided the copyright notice and
 # this notice are preserved.  This file is offered as-is, without any
