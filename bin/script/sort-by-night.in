@@ -128,9 +128,11 @@ EOF
 
 # Functions to check option values and complain if necessary.
 function on_off_option_error() {
-    cat <<EOF
-$scriptname: '$1' doesn't take any values.
-EOF
+    if [ "x$2" = x ]; then
+        echo "$scriptname: '$1' doesn't take any values."
+    else
+        echo "$scriptname: '$1' (or '$2') doesn't take any values."
+    fi
     exit 1
 }
 
@@ -185,29 +187,30 @@ do
         -H*)              hour=$(echo "$1" | sed -e's/-H//'); check_v "$1" "$hour"; shift;;
 
         # Output parameters
-	-l|--link)        link=1; shift;;
-	-l*|--link=*)     on_off_option_error --link;;
-	-c|--copy)        copy=1; shift;;
-	-c*|--copy=*)     on_off_option_error --copy;;
+        -l|--link)        link=1; shift;;
+        -l*|--link=*)     on_off_option_error --link -l;;
+        -c|--copy)        copy=1; shift;;
+        -c*|--copy=*)     on_off_option_error --copy -c;;
         -p|--prefix)      prefix="$2";                          check_v "$1" "$prefix"; shift;shift;;
         -p=*|--prefix=*)  prefix="${1#*=}";                     check_v "$1" "$prefix"; shift;;
         -p*)              prefix=$(echo "$1" | sed -e's/-p//'); check_v "$1" "$prefix"; shift;;
 
-	# Non-operating options.
-	-q|--quiet)       quiet=1; shift;;
-        -q*|--quiet=*)    on_off_option_error --quiet;;
-	-?|--help)        print_help; exit 0;;
-        -?*|--help=*)     on_off_option_error --help;;
+        # Non-operating options.
+        -q|--quiet)       quiet=1; shift;;
+        -q*|--quiet=*)    on_off_option_error --quiet -q;;
+        -?|--help)        print_help; exit 0;;
+        -'?'*|--help=*)   on_off_option_error --help -?;;
         -V|--version)     print_version; exit 0;;
-        -V*|--version=*)  on_off_option_error --version;;
+        -V*|--version=*)  on_off_option_error --version -V;;
         --cite)           astfits --cite; exit 0;;
         --cite=*)         on_off_option_error --cite;;
 
         # Unrecognized option:
         -*) echo "$scriptname: unknown option '$1'"; exit 1;;
 
-	# No option: assumed to be input FITS file.
-	*) inputs="$1 $inputs"; shift;;
+        # Not an option (not starting with a `-'): assumed to be input FITS
+        # file name.
+        *) inputs="$1 $inputs"; shift;;
     esac
 done
 
@@ -237,10 +240,10 @@ fi
 # To do this, we'll convert the date into Unix epoch time (seconds
 # since 1970-01-01,00:00:00) and keep that with the filename.
 list=$(for f in $inputs; do
-	   astfits $f --datetosec=$key --hdu=$hdu -q      \
-	       | awk -vh=$hour                            \
+           astfits $f --datetosec=$key --hdu=$hdu -q      \
+               | awk -vh=$hour                            \
                      '{d=int($1/86400); print "'$f'", $1, \
-		       int($1)%86400<(h*3600) ? d-1 : d }'
+                       int($1)%86400<(h*3600) ? d-1 : d }'
        done)
 
 
@@ -274,11 +277,11 @@ echo "$unique" | while read l; do
     daynum_to=$(echo $l | awk '{print $1}')
     daynum_from=$(echo $l | awk '{print $2}')
     in_this_day=$(echo "$list" \
-		      | awk -vf=$daynum_from -vt=$daynum_to \
-			    '$3==f {print $1, $2}' \
-		      | sort -nk2 \
-		      | cat -n \
-		      | awk -vd=$counter '{print $2,d,$1}')
+                      | awk -vf=$daynum_from -vt=$daynum_to \
+                            '$3==f {print $1, $2}' \
+                      | sort -nk2 \
+                      | cat -n \
+                      | awk -vd=$counter '{print $2,d,$1}')
 
     # Make a link to each file (containing the day number and image
     # number in that day).
