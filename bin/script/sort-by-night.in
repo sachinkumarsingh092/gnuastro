@@ -54,7 +54,7 @@ EOF
 
 print_help() {
     cat <<EOF
-Usage: $scriptname [OPTION] /path/to/data/\*.fits
+Usage: $scriptname [OPTION] FITS-files
 
 This script is part of GNU Astronomy Utilities $version.
 

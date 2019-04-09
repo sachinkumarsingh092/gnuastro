@@ -437,7 +437,7 @@ match_catalog(struct matchparams *p)
   /* Print the number of matches if not in quiet mode. */
   if(!p->cp.quiet)
     {
-      fprintf(stdout, "Number of maching rows in both catalogs: %zu\n",
+      fprintf(stdout, "Number of matching rows in both catalogs: %zu\n",
               nummatched);
       if(p->out2name && strcmp(p->out1name, p->out2name))
         fprintf(stdout, "Output:\n %s\n %s\n", p->out1name, p->out2name);

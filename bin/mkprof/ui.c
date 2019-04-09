@@ -808,7 +808,7 @@ ui_read_cols(struct mkprofparams *p)
                 "the profile's pixels will have a value of zero and thus "
                 "they will not be identifiable from the zero-valued "
                 "background. If this behavior is intended, this warning "
-                "can be supressed with the `--quiet' (or `-q') option.\n");
+                "can be suppressed with the `--quiet' (or `-q') option.\n");
           break;
         }
 }
