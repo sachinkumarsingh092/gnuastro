@@ -142,8 +142,12 @@ dist_sysconf_DATA = bin/gnuastro.conf
 
 ## Files that are only distributed
 ## ===============================
-EXTRA_DIST = genauthors .dir-locals.el .version developer-build     \
-  bootstrapped/README .autom4te.cfg
+##
+## Note that `COPYING' (containing the GNU GPL) is included in the
+## distribution tarball by default in Automake, but not other license
+## files, so we have to manually add `COPYING.FDL'.
+EXTRA_DIST = COPYING.FDL genauthors .dir-locals.el .version \
+             developer-build bootstrapped/README .autom4te.cfg
 
 
 
