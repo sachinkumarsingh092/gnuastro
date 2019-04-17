@@ -59,9 +59,7 @@ all the commits needed for this release have been completed.
      $ git shortlog gnuastro_vP.P...HEAD --numbered --summary > ~/people.txt
      $ cat doc/announce-acknowledge.txt >> ~/people.txt
 
-     [STABLE] Clean `doc/announce-acknowledge.txt':
-     $ echo "Alphabetically ordered list to acknowledge in the next release." \
-            > doc/announce-acknowledge.txt
+     [STABLE] Remove the names in `doc/announce-acknowledge.txt'.
 
 
  - [STABLE] Correct the version links in the webpage
@@ -78,6 +76,7 @@ all the commits needed for this release have been completed.
  - Update Gnulib and Autoconf archives, then remove all the non-version
    controlled files and bootstrap Gnuastro:
 
+     $ git clean -fxd
      $ ./bootstrap --copy --gnulib-srcdir=/path/to/updated/gnulib
 
 

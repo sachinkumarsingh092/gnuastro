@@ -1745,23 +1745,24 @@ particular in collaboration with Johan Knapen and Ignacio Trujillo.
 In general, we would like to gratefully thank the following people for
 their useful and constructive comments and suggestions (in alphabetical
 order by family name): Valentina Abril-melgarejo, Marjan Akbari, Roland
-Bacon, Karl Berry, Leindert Boogaard, Nicolas Bouch@'e, Fernando Buitrago,
-Adrian Bunk, Rosa Calvi, Nushkia Chamba, Benjamin Clement, Nima Dehdilani,
-Antonio Diaz Diaz, Pierre-Alain Duc, Gaspar Galaz, Th@'er@`ese Godefroy,
-Madusha Gunawardhana, Stephen Hamer, Takashi Ichikawa, Ra@'ul Infante
-Sainz, Brandon Invergo, Oryna Ivashtenko, Aur@'elien Jarno, Lee Kelvin,
-Brandon Kelly, Mohammad-Reza Khellat, Johan Knapen, Geoffry Krouchi,
-Floriane Leclercq, Alan Lefor, Guillaume Mahler, Juan Molina Tobar,
-Francesco Montanari, Dmitrii Oparin, Bertrand Pain, William Pence, Mamta
-Pommier, Bob Proulx, Teymoor Saifollahi, Yahya Sefidbakht, Alejandro
-Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard Stallman, Michael Stein,
-Ole Streicher, Alfred M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric
-Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud, Aaron Watkins,
-Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The GNU French
-Translation Team is also managing the French version of the top Gnuastro
-webpage which we highly appreciate. Finally we should thank all the
-(sometimes anonymous) people in various online forums which patiently
-answered all our small (but important) technical questions.
+Bacon, Roberto Baena Gall\'e, Karl Berry, Leindert Boogaard, Nicolas
+Bouch@'e, Fernando Buitrago, Adrian Bunk, Rosa Calvi, Nushkia Chamba,
+Benjamin Clement, Nima Dehdilani, Antonio Diaz Diaz, Pierre-Alain Duc,
+Elham Eftekhari, Gaspar Galaz, Th@'er@`ese Godefroy, Madusha Gunawardhana,
+Stephen Hamer, Takashi Ichikawa, Ra@'ul Infante Sainz, Brandon Invergo,
+Oryna Ivashtenko, Aur@'elien Jarno, Lee Kelvin, Brandon Kelly,
+Mohammad-Reza Khellat, Johan Knapen, Geoffry Krouchi, Floriane Leclercq,
+Alan Lefor, Guillaume Mahler, Juan Molina Tobar, Francesco Montanari,
+Dmitrii Oparin, Bertrand Pain, William Pence, Mamta Pommier, Bob Proulx,
+Teymoor Saifollahi, Yahya Sefidbakht, Alejandro Serrano Borlaff, Jenny
+Sorce, Lee Spitler, Richard Stallman, Michael Stein, Ole Streicher, Alfred
+M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric Thi@'ebaut, Ignacio
+Trujillo, David Valls-Gabaud, Aaron Watkins, Christopher Willmer, Sara
+Yousefi Taemeh, Johannes Zabl. The GNU French Translation Team is also
+managing the French version of the top Gnuastro webpage which we highly
+appreciate. Finally we should thank all the (sometimes anonymous) people in
+various online forums which patiently answered all our small (but
+important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
@@ -10373,7 +10374,7 @@ The reason you need to use @key{/} as the keyword name for setting a title
 is that @key{/} is the first non-white character.
 
 The title(s) is(are) written into the FITS with the same order that
-@option{--write} is called. Therefore in one run of the Fits progarm, you
+@option{--write} is called. Therefore in one run of the Fits program, you
 can specify many different titles (with their own keywords under them). For
 example the command below that builds on the previous example and adds
 another group of keywords named @code{A1} and @code{A2}.
@@ -10463,7 +10464,7 @@ will print @code{NOT-PRESENT}, and if they cannot be verified it will print
 can't be verified), the Fits program will also return with a failure.
 
 By default this function will also print a short description of the
-@code{DATASUM} AND @code{CHECKSUM} keywords. You can supress this extra
+@code{DATASUM} AND @code{CHECKSUM} keywords. You can suppress this extra
 information with @code{--quiet} option.
 
 @item --copykeys=INT:INT
@@ -10505,7 +10506,7 @@ Interpret the value of the given keyword in the FITS date format (most
 generally: @code{YYYY-MM-DDThh:mm:ss.ddd...}) and return the corresponding
 Unix epoch time (number of seconds that have passed since 00:00:00
 Thursday, January 1st, 1970). The @code{Thh:mm:ss.ddd...} section
-(specifing the time of day), and also the @code{.ddd...} (specifying the
+(specifying the time of day), and also the @code{.ddd...} (specifying the
 fraction of a second) are optional. The value to this option must be the
 FITS keyword name that contains the requested date, for example
 @option{--datetosec=DATE-OBS}.
@@ -11290,7 +11291,7 @@ $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 Table's input dataset can be given either as a file or from Standard input
 (see @ref{Standard input}). In the absence of selected columns, all the
 input's columns and rows will be written to the output. If any output file
-is explicity requested (with @option{--output}) the output table will be
+is explicitly requested (with @option{--output}) the output table will be
 written in it. When no output file is explicitly requested the output table
 will be written to the standard output.
 
@@ -12321,9 +12322,9 @@ The first popped operand to this operator must be a positive integer number
 which specifies how many further operands should be popped from the
 stack. All the subsequently popped operands must have the same type and
 size. This operator (and all the variable-operand operators similar to it
-that are discussed below) will work in multithreaded mode unless Arithmetic
-is called with the @option{--numthreads=1} option, see @ref{Multi-threaded
-operations}.
+that are discussed below) will work in multi-threaded mode unless
+Arithmetic is called with the @option{--numthreads=1} option, see
+@ref{Multi-threaded operations}.
 
 Each pixel of the output of the @code{min} operator will be given the
 minimum value of the same pixel from all the popped operands/images. For
@@ -12380,13 +12381,13 @@ Combine the specified number of inputs into a single output that contains
 the number of remaining elements after @mymath{\sigma}-clipping on each
 element/pixel (for more on @mymath{\sigma}-clipping, see @ref{Sigma
 clipping}). This operator is very similar to @command{min}, with the
-exception that it expects two operands (paramters for sigma-clipping)
+exception that it expects two operands (parameters for sigma-clipping)
 before the total number of inputs. The first popped operand is the
 termination criteria and the second is the multiple of @mymath{\sigma}.
 
 For example in the command below, the first popped operand (@command{0.2})
 is the sigma clipping termination criteria. If the termination criteria is
-larger than 1 it is interpretted as the number of clips to do. But if it is
+larger than 1 it is interpreted as the number of clips to do. But if it is
 between 0 and 1, then it is the tolerance level on the standard deviation
 (see @ref{Sigma clipping}). The second popped operand (@command{5}) is the
 multiple of sigma to use in sigma-clipping. The third popped operand
@@ -12888,7 +12889,7 @@ $ astarithmetic image.fits set-i   i i 5 gt nan where
 @end example
 
 @item tofile-AAA
-Write the top oprand on the operands stack into a file called @code{AAA}
+Write the top operand on the operands stack into a file called @code{AAA}
 (can be any FITS file name) without changing the operands stack. If you
 don't need the dataset any more and would like to free it, see the
 @code{tofilefree} operator below.
@@ -12991,7 +12992,7 @@ as a file.
 The name of the final file can be specified with the @option{--output}
 option, but if its not given, Arithmetic will use ``automatic output'' on
 the name of the first FITS image encountered to generate an output file
-name, see @ref{Automatic output}. By default, if the output file aready
+name, see @ref{Automatic output}. By default, if the output file already
 exists, it will be deleted before Arithmetic starts operation. However,
 this can be disabled with the @option{--dontdelete} option (see below). At
 any point during Arithmetic's operation, you can also write the top operand
@@ -13003,7 +13004,7 @@ dataset will be taken from the first input image (that contains a WCS) on
 the command-line. This can be modified with the @option{--wcsfile} and
 @option{--wcshdu} options described below. When the @option{--quiet} option
 isn't given, the name and extension of the dataset used for the output's
-WCS is printed on the commandline.
+WCS is printed on the command-line.
 
 Through operators like those starting with @code{collapse-}, the
 dimensionality of the inputs may not be the same as the outputs. By
@@ -13065,7 +13066,7 @@ file on the command-line with WCS) will be used in the output.
 
 This option will mostly be used when the default file (first of the set of
 inputs) is not the one containing your desired WCS. But with this option,
-you can also use Arithmetic to rewrite/chage the WCS of an existing FITS
+you can also use Arithmetic to rewrite/change the WCS of an existing FITS
 dataset from another file:
 
 @example
@@ -22394,7 +22395,7 @@ is based on the western (Gregorian) calendar. Dates that are stored in this
 format are complicated for automatic processing: a night starts in the
 final hours of one calendar day, and extends to the early hours of the next
 calendar day. As a result, to identify datasets from one night, we commonly
-need to search for two dates. However calendar peculiarites can make this
+need to search for two dates. However calendar peculiarities can make this
 identification very difficult. For example when an observation is done on
 the night separating two months (like the night starting on March 31st and
 going into April 1st), or two years (like the night starting on December
@@ -26434,7 +26435,7 @@ string @code{fitsdate} (see description of
 @code{gal_fits_key_date_to_struct_tm} above).
 
 The Unix epoch time is in units of seconds, but the FITS date format allows
-sub-second accuracy. The las two arguments are for the (optional)
+sub-second accuracy. The last two arguments are for the (optional)
 sub-second portion. If @code{fitsdate} contains sub-second accuracy, then
 the starting of the sub-second part is stored in the @code{char *} pointer
 that @code{subsecstr} points to, and @code{subsec} will the corresponding
@@ -29093,7 +29094,7 @@ frequency plot (CFP, see @ref{Histogram and Cumulative Frequency
 Plot}). Imagine setting the horizontal axis of the input's CFP to a range
 of 0 to 100, and finding the first part where its slope is
 constantly/contiguously flat for a certain fraction/width of the whole
-dataset's range. Below we'll descibe this in more detail.
+dataset's range. Below we'll describe this in more detail.
 
 This function will first remove all the blank elements and sort the
 remaining elements. If @code{inplace} is non-zero this step will be done in

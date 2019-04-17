@@ -1,13 +1,9 @@
 Alphabetically ordered list to acknowledge in the next release.
 
-Roberto Baena Gallé
-Leindert Boogaard
-Elham Eftekhari
-Raúl Infante Sainz
-Lee Kelvin
-Javier Román
-David Valls-Gabaud
-Ignacio Trujillo
+
+
+
+
 
 
 
