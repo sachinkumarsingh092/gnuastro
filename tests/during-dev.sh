@@ -105,8 +105,8 @@ if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
 
 
 # Make sure `utilname' doesn't start with `ast' (a common mistake).
-nameprefix="${utilname:0:3}"
-if [ x"$nameprefix" = x"ast" ]; then
+astprefix="${utilname:0:3}"
+if [ x"$astprefix" = x"ast" ]; then
     echo "'utilname' must not start with 'ast'."; exit 1;
 fi
 
@@ -122,7 +122,13 @@ fi
 
 
 # Set the utility's executable file name
-utility="$builddir/bin/$utilname/ast$utilname"
+longprefix="${utilname:0:6}"
+if [ x"$longprefix" = x"script" ]; then
+    execdir="script"
+else
+    execdir="$utilname"
+fi
+utility="$builddir/bin/$execdir/ast$utilname"
 
 
 # If the utility is already built, then remove the executable so it is
@@ -160,8 +166,13 @@ if make -j$numjobs -C "$builddir"; then
     else
         topconfdir="$srcdir"
     fi
-    cp "$srcdir/bin/gnuastro.conf"                                    \
-       "$topconfdir/bin/$utilname/ast$utilname.conf" .gnuastro/
+
+    # Copy the configuration file(s).
+    cfiles="$srcdir/bin/gnuastro.conf"
+    if [ x"$longprefix" != x"script" ]; then
+        cfiles="$cfiles $topconfdir/bin/$utilname/ast$utilname.conf"
+    fi
+    cp $cfiles .gnuastro/
 
     # Append `lastconfig' option to `gnuastro.conf', so the program doesn't
     # go into the system headers.

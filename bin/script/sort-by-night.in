@@ -240,12 +240,11 @@ fi
 # To do this, we'll convert the date into Unix epoch time (seconds
 # since 1970-01-01,00:00:00) and keep that with the filename.
 list=$(for f in $inputs; do
-           astfits $f --datetosec=$key --hdu=$hdu -q      \
-               | awk -vh=$hour                            \
-                     '{d=int($1/86400); print "'$f'", $1, \
-                       int($1)%86400<(h*3600) ? d-1 : d }'
+           astfits $f --datetosec=$key --hdu=$hdu -q \
+               | awk '{h='$hour'; d=int($1/86400);   \
+                       print "'$f'", $1,             \
+                       int($1)%86400<(h*3600) ? d-1 : d }';
        done)
-
 
 
 
@@ -273,18 +272,16 @@ unique=$(echo "$list" | awk '{print $3}' | sort | uniq | cat -n)
 counter=1
 echo "$unique" | while read l; do
 
-    # Find all input files (and their Unix epoch time) that corr
+    # Find all input files (and their Unix epoch time).
     daynum_to=$(echo $l | awk '{print $1}')
     daynum_from=$(echo $l | awk '{print $2}')
     in_this_day=$(echo "$list" \
-                      | awk -vf=$daynum_from -vt=$daynum_to \
-                            '$3==f {print $1, $2}' \
-                      | sort -nk2 \
-                      | cat -n \
-                      | awk -vd=$counter '{print $2,d,$1}')
+                       | awk '$3=='$daynum_from' {print $1, $2}' \
+                       | sort -nk2 \
+                       | cat -n \
+                       | awk '{print $2,'$counter',$1}')
 
-    # Make a link to each file (containing the day number and image
-    # number in that day).
+    # Now that we know this night's files, we can take the proper action.
     echo "$in_this_day" | while read L; do
 
         # Set the necessary numbers.

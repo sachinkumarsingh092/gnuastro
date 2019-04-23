@@ -3,6 +3,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2019 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
+* Noteworthy changes in release X.X (library X.X.X) (XXXX-XX-XX) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+  bug #56195: astscript-sort-by-night crashing because of AWK.
+
+
+
+
+
 * Noteworthy changes in release 0.9 (library 7.0.0) (2019-04-17) [stable]
 
 ** New features
