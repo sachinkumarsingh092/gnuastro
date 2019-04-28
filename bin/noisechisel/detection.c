@@ -484,13 +484,6 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
                 : "SKY_PSEUDODET_SN" );
   threshold_write_sn_table(p, sn, snind, str, comments, extname);
   gal_list_str_free(comments, 1);
-
-
-  /* Abort NoiseChisel if the user asked for it. */
-  if(s0d1D2==2 && !p->continueaftercheck)
-    ui_abort_after_check(p, p->detsn_s_name, p->detsn_d_name,
-                         "pseudo-detection and grown/final detection S/N "
-                         "values in a table");
 }
 
 
@@ -830,22 +823,18 @@ detection_final_remove_small_sn(struct noisechiselparams *p,
   size_t i;
   int8_t *b;
   float *snarr;
-  gal_data_t *sn, *snind;
+  gal_data_t *sn;
   int32_t *l, *lf, curlab=1;
-  gal_list_str_t *comments=NULL;
-  char *extname="GROWN_DETECTION_SN";
   int32_t *newlabs=gal_pointer_allocate(GAL_TYPE_INT32, num+1, 1, __func__,
                                         "newlabs");
 
   /* Get the Signal to noise ratio of all detections. */
   sn=detection_sn(p, p->olabel, num, 2, "DILATED");
 
-
   /* Only keep the objects with an S/N above the pseudo-detection limit. */
   snarr=sn->array;
   for(i=1;i<num+1;++i)
     newlabs[i] = snarr[i] > p->detsnthresh ? curlab++ : 0;
-
 
   /* Go over the labeled image and correct the labels. */
   b=workbin->array;
@@ -861,32 +850,6 @@ detection_final_remove_small_sn(struct noisechiselparams *p,
       while(++l<lf);
     }
   else do *b++ = (*l=newlabs[ *l ]) > 0; while(++l<lf);
-
-
-  /* Save the S/N values if the user asked for them. */
-  if(p->detsn_D_name)
-    {
-      /* Make the S/N index array. */
-      snind=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &num, NULL, 0,
-                           p->cp.minmapsize, NULL, NULL, NULL);
-
-      /* Fill in the indexs. Note that the S/N array had num+1 elements, so
-         we also want to shift them back by one element, so we also need to
-         correct its size. */
-      l=snind->array;
-      sn->size = sn->dsize[0] = num;
-      for(i=0;i<num;++i) { l[i]=i+1; snarr[i]=snarr[i+1]; }
-
-      /* Make the comments, then write the table. */
-      gal_list_str_add(&comments, "See also: `DILATED' "
-                       "HDU of output with `--checkdetection'.", 1);
-      gal_list_str_add(&comments, "S/N of finally grown detections.", 1);
-      threshold_write_sn_table(p, sn, snind, p->detsn_D_name, comments,
-                               extname);
-      gal_list_str_free(comments, 1);
-
-    }
-
 
   /* Clean up and return. */
   free(newlabs);

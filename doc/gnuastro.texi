@@ -17028,9 +17028,8 @@ results, but it can also increase the NoiseChisel run time (depending on
 the given value and input size).
 
 @item
-@option{--cleangrowndet}: A process to further clean/remove the possibility
-of false detections, see the descriptions under this option in
-@ref{Detection options}.
+@option{--cleangrowndet}: Further clean/remove false detections after
+growth, see the descriptions under this option in @ref{Detection options}.
 
 @end itemize
 
