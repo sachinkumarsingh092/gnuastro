@@ -230,24 +230,6 @@ ui_read_check_only_options(struct noisechiselparams *p)
           "and avoid convolution) it is mandatory to also specify a HDU "
           "for it");
 
-  /* Make sure the connectivities have the correct values. */
-  if(p->erodengb!=4 && p->erodengb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--erodengb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->erodengb);
-  if(p->openingngb!=4 && p->openingngb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--openingngb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->openingngb);
-  if(p->dopeningngb!=4 && p->dopeningngb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--dopeningngb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->dopeningngb);
-  if(p->holengb!=4 && p->holengb!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--holengb'. It must "
-          "be 4 or 8 (specifying the type of connectivity)", p->holengb);
-  if(p->pseudoconcomp!=4 && p->pseudoconcomp!=8)
-    error(EXIT_FAILURE, 0, "%zu not acceptable for `--pseudoconcomp'. It "
-          "must be 4 or 8 (specifying the type of connectivity)",
-          p->pseudoconcomp);
-
   /* Make sure that the no-erode-quantile is not smaller or equal to
      qthresh. */
   if( p->noerodequant <= p->qthresh)
@@ -546,11 +528,36 @@ ui_prepare_tiles(struct noisechiselparams *p)
 
 
 
+static void
+ui_ngb_check(size_t value, char *optionname, size_t ndim)
+{
+  switch(ndim)
+    {
+    case 2:
+      if(value!=4 && value!=8)
+        error(EXIT_FAILURE, 0, "%zu is not an acceptable value for "
+              "`--%s'. Acceptable values for 2D inputs are 4 or 8",
+              value, optionname);
+      break;
+    case 3:
+      error(EXIT_FAILURE, 0, "3D input data is not yet supported");
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+            "problem. Dimention value %zu is not recognized.", __func__,
+            PACKAGE_BUGREPORT, ndim);
+    }
+}
+
+
+
+
+
 /* Read the input image and do the basic checks */
 static void
 ui_preparations_read_input(struct noisechiselparams *p)
 {
   float *f;
+  size_t ndim;
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
@@ -567,6 +574,14 @@ ui_preparations_read_input(struct noisechiselparams *p)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) has %zu dimensions but NoiseChisel "
           "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
           p->input->ndim);
+
+  /* Check the values of dimention-related options. */
+  ndim=p->input->ndim;
+  ui_ngb_check(p->holengb, "holengb", ndim);
+  ui_ngb_check(p->erodengb, "erodengb", ndim);
+  ui_ngb_check(p->openingngb, "openingngb", ndim);
+  ui_ngb_check(p->dopeningngb, "dopeningngb", ndim);
+  ui_ngb_check(p->pseudoconcomp, "pseudoconcomp", ndim);
 
   /* A small check to see if the edges of the dataset aren't zero valued:
      they should be masked. */
