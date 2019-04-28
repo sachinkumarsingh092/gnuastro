@@ -203,12 +203,6 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
       sn=gal_data_copy(insn);
       gal_blank_remove(ind);
       gal_blank_remove(sn);
-
-      /* A small sanity check. */
-      if(ind->size==0 || sn->size==0)
-        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. For some reason, all the elements in `ind' or "
-              "`sn' are blank", __func__, PACKAGE_BUGREPORT);
     }
   else
     {
