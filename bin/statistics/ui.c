@@ -249,9 +249,11 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
     {
       /* Read the string of numbers. */
       inputs=gal_options_parse_list_of_numbers(arg, filename, lineno);
-      d=inputs->array;
+      if(inputs->size==0)
+        error(EXIT_FAILURE, 0, "`--%s' needs a value", option->name);
 
       /* Do the appropriate operations with the  */
+      d=inputs->array;
       switch(option->key)
         {
         case UI_KEY_QUANTILE:
