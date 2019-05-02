@@ -24,6 +24,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define COLOR_H
 
 void
+color_map_prepare(struct converttparams *p);
+
+void
 color_from_mono_hsv(struct converttparams *p);
 
 void

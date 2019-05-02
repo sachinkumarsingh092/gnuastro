@@ -22,6 +22,8 @@ See the end of the file for license conditions.
 ** Bugs fixed
   bug #56195: astscript-sort-by-night crashing because of AWK.
   bug #56246: Single-valued measurement must abort with no value in Statistics.
+  bug #56256: Segmentation fault when reading plain text array/image.
+  bug #56257: ConvertType: Values not preserved when converting text to FITS.
 
 
 

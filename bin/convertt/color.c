@@ -31,8 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/statistics.h>
 
 #include "main.h"
-
-
+#include "convertt.h"
 
 
 
@@ -429,6 +428,25 @@ color_from_mono_sls(struct converttparams *p)
 
   /* Clean up. */
   gal_data_free(channel);
+}
+
+
+
+
+
+void
+color_map_prepare(struct converttparams *p)
+{
+  switch(p->colormap->status)
+    {
+    case COLOR_HSV:  color_from_mono_hsv(p);     break;
+    case COLOR_SLS:  color_from_mono_sls(p);     break;
+    case COLOR_GRAY: convertt_scale_to_uchar(p); break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The value %d is not a recognized color-space "
+            "code", __func__, PACKAGE_BUGREPORT, p->colormap->status);
+    }
 }
 
 

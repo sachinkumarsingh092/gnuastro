@@ -809,7 +809,8 @@ ui_set_output(struct converttparams *p)
     {
       if(p->borderwidth==0 && p->widthincm==0)
         error(EXIT_FAILURE, 0, "at least one of `--widthincm' (`-u'), or "
-              "`--borderwidth (`-b') options are necessary for an EPS output");
+              "`--borderwidth (`-b') options are necessary for an EPS "
+              "output");
       p->outformat=OUT_FORMAT_EPS;
       if( gal_eps_suffix_is_eps(cp->output) )
         ui_add_dot_use_automatic_output(p);
@@ -820,7 +821,8 @@ ui_set_output(struct converttparams *p)
     {
       if(p->borderwidth==0 && p->widthincm==0)
         error(EXIT_FAILURE, 0, "at least one of `--widthincm' (`-u'), or "
-              "`--borderwidth (`-b') options are necessary for a PDF output");
+              "`--borderwidth (`-b') options are necessary for a PDF "
+                 "output");
       p->outformat=OUT_FORMAT_PDF;
       if( gal_pdf_suffix_is_pdf(cp->output) )
         ui_add_dot_use_automatic_output(p);

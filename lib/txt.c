@@ -808,7 +808,7 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
 static void
 txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
          gal_data_t *out, size_t rowind, char *filename, size_t lineno,
-         int inplace)
+         int inplace, int format)
 {
   size_t i, n=0;
   gal_data_t *data;
@@ -838,8 +838,10 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
       if(n>maxcolnum) break;
 
       /* Set the pointer to the start of this token/column. See
-         explanations in `txt_info_from_first_row'. */
-      if( info[n-1].type == GAL_TYPE_STRING )
+         explanations in `txt_info_from_first_row'. Note that an image has
+         a single `info' element for the whole array, while a table has one
+         for each column. */
+      if( info[format==TXT_FORMAT_TABLE ? n-1 : 0].type == GAL_TYPE_STRING )
         {
           /* Remove any delimiters and stop at the first non-delimiter. If
              we have reached the end of the line then its an error, because
@@ -1016,7 +1018,7 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
           ++lineno;
           if( gal_txt_line_stat(line) == GAL_TXT_LINESTAT_DATAROW )
             txt_fill(line, tokens, maxcolnum, info, out, rowind++,
-                     filename, lineno, 1);
+                     filename, lineno, 1, format);
         }
 
       /* Clean up and close the file. */
@@ -1032,7 +1034,7 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
         ++lineno;
         if( gal_txt_line_stat(tmp->v) == GAL_TXT_LINESTAT_DATAROW )
           txt_fill(tmp->v, tokens, maxcolnum, info, out, rowind++,
-                   filename, lineno, 0);
+                   filename, lineno, 0, format);
       }
 
   /* Clean up and return. */

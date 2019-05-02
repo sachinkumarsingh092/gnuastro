@@ -24,6 +24,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CONVERTT_H
 
 void
+convertt_scale_to_uchar(struct converttparams *p);
+
+void
 convertt(struct converttparams *p);
 
 #endif

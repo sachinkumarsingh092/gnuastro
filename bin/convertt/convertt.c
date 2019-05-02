@@ -323,19 +323,6 @@ convertt(struct converttparams *p)
       convertt_truncate(p);
     }
 
-  /* Convert a mono/single color channel to a color format. */
-  if(p->colormap)
-    switch(p->colormap->status)
-      {
-      case COLOR_HSV:  color_from_mono_hsv(p);     break;
-      case COLOR_SLS:  color_from_mono_sls(p);     break;
-      case COLOR_GRAY: convertt_scale_to_uchar(p); break;
-      default:
-        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. The value %d is not a recognized color-space "
-              "code", __func__, PACKAGE_BUGREPORT, p->colormap->status);
-      }
-
   /* Save the outputs: */
   switch(p->outformat)
     {
@@ -355,20 +342,20 @@ convertt(struct converttparams *p)
 
     /* JPEG: */
     case OUT_FORMAT_JPEG:
-      if(!p->colormap) convertt_scale_to_uchar(p);
+      if(p->colormap) color_map_prepare(p); else convertt_scale_to_uchar(p);
       gal_jpeg_write(p->chll, p->cp.output, p->quality, p->widthincm);
       break;
 
     /* EPS. */
     case OUT_FORMAT_EPS:
-      if(!p->colormap) convertt_scale_to_uchar(p);
+      if(p->colormap) color_map_prepare(p); else convertt_scale_to_uchar(p);
       gal_eps_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
                     p->hex, p->forcemin || p->forcemax, 0);
       break;
 
     /* PDF */
     case OUT_FORMAT_PDF:
-      if(!p->colormap) convertt_scale_to_uchar(p);
+      if(p->colormap) color_map_prepare(p); else convertt_scale_to_uchar(p);
       gal_pdf_write(p->chll, p->cp.output, p->widthincm, p->borderwidth,
                     p->forcemin || p->forcemax);
       break;
