@@ -19122,7 +19122,7 @@ upper-limit distributions. See The description of @option{--upmaskfile} in
 
 
 @node Measuring elliptical parameters, Adding new columns to MakeCatalog, Quantifying measurement limits, MakeCatalog
-@subsection Measuring elliptical parameters
+	@subsection Measuring elliptical parameters
 
 The shape or morphology of a target is one of the most commonly desired
 parameters of a target. Here, we will review the derivation of the most
@@ -19134,9 +19134,9 @@ derivations with some added explanations for easier reading.
 
 @cindex Moments
 Let's begin with one dimension for simplicity: Assume we have a set of
-@mymath{N} values @mymath{B_i} (keeping the spatial distribution of
-brightness for example), each at position @mymath{x_i}. The simplest
-parameter we can define is the geometric center of the object
+@mymath{N} values @mymath{B_i} (for example showing the spatial
+distribution of a target's brightness), each at position @mymath{x_i}. The
+simplest parameter we can define is the geometric center of the object
 (@mymath{x_g}) (ignoring the brightness values):
 @mymath{x_g=(\sum_ix_i)/N}. @emph{Moments} are defined to incorporate both
 the value (brightness) and position of the data. The first moment can be
@@ -20097,13 +20097,15 @@ column. For example, if a pixel value is blank, it won't be counted in
 
 @item -A
 @itemx --semimajor
-The pixel-value weighted semi-major axis of the profile (assuming it is an
-ellipse) in units of pixels. See @ref{Measuring elliptical parameters}.
+The pixel-value weighted root mean square (RMS) along the semi-major axis
+of the profile (assuming it is an ellipse) in units of pixels. See
+@ref{Measuring elliptical parameters}.
 
 @item -B
 @itemx --semiminor
-The pixel-value weighted semi-minor axis of the profile (assuming it is an
-ellipse) in units of pixels. See @ref{Measuring elliptical parameters}.
+The pixel-value weighted root mean square (RMS) along the semi-minor axis
+of the profile (assuming it is an ellipse) in units of pixels. See
+@ref{Measuring elliptical parameters}.
 
 @item --axisratio
 The pixel-value weighted axis ratio (semi-minor/semi-major) of the object
@@ -20115,12 +20117,14 @@ The pixel-value weighted angle of the semi-major axis with the first FITS
 axis in degrees. See @ref{Measuring elliptical parameters}.
 
 @item --geosemimajor
-The geometric (ignoring pixel values) semi-major axis of the profile,
-assuming it is an ellipse.
+The geometric (ignoring pixel values) root mean square (RMS) along the
+semi-major axis of the profile, assuming it is an ellipse, in units of
+pixels.
 
 @item --geosemiminor
-The geometric (ignoring pixel values) semi-minor axis of the profile,
-assuming it is an ellipse.
+The geometric (ignoring pixel values) root mean square (RMS) along the
+semi-minor axis of the profile, assuming it is an ellipse, in units of
+pixels.
 
 @item --geoaxisratio
 The geometric (ignoring pixel values) axis ratio of the profile, assuming

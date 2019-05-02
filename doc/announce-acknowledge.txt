@@ -1,6 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Raul Infante-Sainz
+Lee Kelvin
 David Valls-Gabaud
 
 
