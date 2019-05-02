@@ -78,7 +78,7 @@ table_range(struct tableparams *p)
   double *rarr;
   gal_data_t *mask;
   struct list_range *tmp;
-  gal_data_t *ref, *perm, *range;
+  gal_data_t *ref, *perm, *range, *blmask;
   size_t i, g, b, *s, *sf, one=1, ngood=0;
   gal_data_t *min, *max, *ltmin, *gemax, *sum;
 
@@ -107,11 +107,18 @@ table_range(struct tableparams *p)
       /* Set the reference column to read values from. */
       ref=tmp->v;
 
-      /* Find all the bad elements (smaller than the minimum and larger than
-         the maximum) so we can flag them. */
+      /* Find all the bad elements (smaller than the minimum, larger than
+         the maximum or blank) so we can flag them. */
       ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok,   ref,   min);
       gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok,   ref,   max);
+      blmask = ( gal_blank_present(ref, 1)
+                 ? gal_arithmetic(GAL_ARITHMETIC_OP_ISBLANK, 1, 0, ref)
+                 : NULL );
+
+      /* Merge all the flags into one array. */
       ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, gemax);
+      if(blmask)
+        ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, blmask);
 
       /* Add these flags to all previous flags. */
       mask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, mask, ltmin);

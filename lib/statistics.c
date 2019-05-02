@@ -1398,13 +1398,12 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
         }
       else noblank=contig;
 
-      /* If there are any non-blank elements, make sure the array is
-         sorted. After this step, we won't be dealing with `noblank' any
-         more but with `sorted'. */
+      /* Make sure the array is sorted. After this step, we won't be
+         dealing with `noblank' any more but with `sorted'. */
       if(noblank->size)
         {
           if( gal_statistics_is_sorted(noblank, 1) )
-            sorted=noblank;
+            sorted = inplace ? noblank : gal_data_copy(noblank);
           else
             {
               if(inplace) sorted=noblank;

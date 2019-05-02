@@ -11722,6 +11722,9 @@ The chosen column doesn't have to be in the output columns. This is good
 when you just want to select using one column's values, but don't need that
 column anymore afterwards.
 
+For one example of using this option, see the example under
+@option{--sigclip-median} in @ref{Invoking aststatistics}.
+
 @item -s STR
 @item --sort=STR
 Sort the output rows based on the values in the @code{STR} column (can be a
@@ -15752,11 +15755,11 @@ iteration:
 @itemize
 @item
 When a certain number of iterations has taken place (second value to the
-@option{--sigclip} option is larger than 1).
+@option{--sclipparams} option is larger than 1).
 @item
 When the new measured standard deviation is within a certain tolerance
-level of the old one (second value to the @option{--sigclip} option is less
-than 1). The tolerance level is defined by:
+level of the old one (second value to the @option{--sclipparams} option is
+less than 1). The tolerance level is defined by:
 
 @dispmath{\sigma_{old}-\sigma_{new} \over \sigma_{new}}
 
@@ -16399,6 +16402,78 @@ Print the value in the distribution where the mirror and input
 distributions are no longer symmetric, see @option{--mode} and Appendix C
 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa 2015} for
 more.
+
+@item --sigclip-number
+Number of elements after applying @mymath{\sigma}-clipping (see @ref{Sigma
+clipping}). @mymath{\sigma}-clipping configuration is done with the
+@option{--sigclipparams} option.
+
+@item --sigclip-median
+Median after applying @mymath{\sigma}-clipping (see @ref{Sigma
+clipping}). @mymath{\sigma}-clipping configuration is done with the
+@option{--sigclipparams} option.
+
+Here is one scenario where this can be useful: assume you have a table and
+you would like to only select the rows that are within the sigma-clipping
+range. Let's assume your table is called @file{table.fits} and you want to
+only keep the rows that have a value in @code{COLUMN} within the
+@mymath{\sigma}-clipped range (to @mymath{3\sigma}, with a tolerance of
+0.1). This command will return the sigma-clipped median and standard
+deviation (used to define the range later).
+
+@example
+$ aststatistics table.fits -cCOLUMN --sclipparams=3,0.1 \
+                --sigclip-median --sigclip-std
+@end example
+
+@cindex GNU AWK
+You can then use the @option{--range} option of Table (see @ref{Table}) to
+select the proper rows. But for that, you need the actual starting and
+ending values of the range (@mymath{\rm{median}\pm s\times\sigma}). So
+these raw numbers alone aren't enough.
+
+To get starting and ending of the range (and put a `@key{,}' between them,
+ready to be used in @option{--range}), pipe the result into AWK. But in
+AWK, we'll also need the multiple of @mymath{\sigma}, so we'll define it as
+a shell variable (@code{s}) before calling Statistics (note how @code{$s}
+is used two times now):
+
+@example
+$ s=3
+$ aststatistics table.fits -cCOLUMN --sclipparams=$s,0.1 \
+                --sigclip-median --sigclip-std           \
+     | awk '@{s='$s'; printf("%f,%f\n", $1-s*$2, $1+s*$2)@}'
+@end example
+
+We'll just need to save the printed value from the command above in another
+shell variable (@code{r}), not print it. In Bash, can do this by putting
+the whole statement within a @code{$()}:
+
+@example
+$ s=3
+$ r=$(aststatistics table.fits -cCOLUMN --sclipparams=$s,0.1 \
+                    --sigclip-median --sigclip-std           \
+        | awk '@{s='$s'; printf("%f,%f\n", $1-s*$2, $1+s*$2)@}')
+$ echo $r      # Just to confirm.
+@end example
+
+Now you can use Table with the @option{--range} option to only print the
+rows that have a value in @code{COLUMN} within the desired range:
+
+@example
+$ asttable table.fits --range=COLUMN,$r
+@end example
+
+
+@item --sigclip-mean
+Mean after applying @mymath{\sigma}-clipping (see @ref{Sigma
+clipping}). @mymath{\sigma}-clipping configuration is done with the
+@option{--sigclipparams} option.
+
+@item --sigclip-std
+Standard deviation after applying @mymath{\sigma}-clipping (see @ref{Sigma
+clipping}). @mymath{\sigma}-clipping configuration is done with the
+@option{--sigclipparams} option.
 
 @end table
 

@@ -462,6 +462,18 @@ ui_read_check_only_options(struct statisticsparams *p)
           error(EXIT_FAILURE, 0, "`--mirrordist' is required for the "
                 "mode-related single measurements (`--mode', `--modequant', "
                 "`--modesym', and `--modesymvalue')");
+        break;
+      case UI_KEY_SIGCLIPSTD:
+      case UI_KEY_SIGCLIPMEAN:
+      case UI_KEY_SIGCLIPNUMBER:
+      case UI_KEY_SIGCLIPMEDIAN:
+        if( isnan(p->sclipparams[0]) )
+          error(EXIT_FAILURE, 0, "`--sclipparams' is necessary with "
+                "sigma-clipping measurements.\n\n"
+                "`--sclipparams' takes two values (separated by a comma) for "
+                "defining the sigma-clip: the multiple of sigma, and tolerance "
+                "(<1) or number of clips (>1).");
+        break;
       }
 
 
@@ -667,6 +679,10 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
       case UI_KEY_MEDIAN:
       case UI_KEY_QUANTILE:
       case UI_KEY_QUANTFUNC:
+      case UI_KEY_SIGCLIPSTD:
+      case UI_KEY_SIGCLIPMEAN:
+      case UI_KEY_SIGCLIPNUMBER:
+      case UI_KEY_SIGCLIPMEDIAN:
         is_necessary=1;
         break;
       }

@@ -7,6 +7,13 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Statistics:
+   --sigclip-number, --sigclip-median, --sigclip-mean, --sigclip-std: Do
+     sigma-clipping and only print the desired value as a single-value
+     measurement. Until now sigma-clipping results included a lot of
+     visually useful information, which also made automatic usage of
+     results hard. These options fix this issue.
+
 ** Removed features
 
 ** Changed features

@@ -305,6 +305,63 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_add_to_single_value
     },
+    {
+      "sigclip-number",
+      UI_KEY_SIGCLIPNUMBER,
+      0,
+      0,
+      "Number of elements after sigma-clipping.",
+      UI_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value
+    },
+    {
+      "sigclip-median",
+      UI_KEY_SIGCLIPMEDIAN,
+      0,
+      0,
+      "Sigma-clipped median.",
+      UI_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value
+    },
+    {
+      "sigclip-mean",
+      UI_KEY_SIGCLIPMEAN,
+      0,
+      0,
+      "Sigma-clipped mean.",
+      UI_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value
+    },
+    {
+      "sigclip-std",
+      UI_KEY_SIGCLIPSTD,
+      0,
+      0,
+      "Sigma-clipped standard deviation.",
+      UI_GROUP_SINGLE_VALUE,
+      &p->singlevalue,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value
+    },
+
 
 
 

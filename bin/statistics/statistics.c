@@ -95,12 +95,13 @@ statistics_print_one_row(struct statisticsparams *p)
   double arg, *d;
   gal_list_i32_t *tmp;
   size_t dsize=1, counter;
-  gal_data_t *tmpv, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
   gal_data_t *sum=NULL, *med=NULL, *meanstd=NULL, *modearr=NULL;
+  gal_data_t *tmpv, *sclip=NULL, *out=NULL, *num=NULL, *min=NULL, *max=NULL;
 
   /* The user can ask for any of the operators more than once, also some
      operators might return more than one usable value (like mode). So we
-     will calculate the desired values once, and then print them. */
+     will calculate the desired values once, and then print them any number
+     of times. */
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
@@ -125,10 +126,20 @@ statistics_print_one_row(struct statisticsparams *p)
       case UI_KEY_MODEQUANT:
       case UI_KEY_MODESYM:
       case UI_KEY_MODESYMVALUE:
-        modearr = ( modearr ? modearr
+        modearr = ( modearr
+                    ? modearr
                     : gal_statistics_mode(p->sorted, p->mirrordist, 0) );
         d=modearr->array;
         if(d[2]<GAL_STATISTICS_MODE_GOOD_SYM) d[0]=d[1]=NAN;
+        break;
+      case UI_KEY_SIGCLIPSTD:
+      case UI_KEY_SIGCLIPMEAN:
+      case UI_KEY_SIGCLIPNUMBER:
+      case UI_KEY_SIGCLIPMEDIAN:
+        sclip = ( sclip
+                  ? sclip
+                  : gal_statistics_sigma_clip(p->sorted, p->sclipparams[0],
+                                              p->sclipparams[1], 0, 1) );
         break;
 
       /* Will be calculated as printed. */
@@ -172,6 +183,14 @@ statistics_print_one_row(struct statisticsparams *p)
           out=statistics_pull_out_element(modearr, 2); mustfree=1; break;
         case UI_KEY_MODESYMVALUE:
           out=statistics_pull_out_element(modearr, 3); mustfree=1; break;
+        case UI_KEY_SIGCLIPSTD:
+          out=statistics_pull_out_element(sclip,   3); mustfree=1; break;
+        case UI_KEY_SIGCLIPMEAN:
+          out=statistics_pull_out_element(sclip,   2); mustfree=1; break;
+        case UI_KEY_SIGCLIPMEDIAN:
+          out=statistics_pull_out_element(sclip,   1); mustfree=1; break;
+        case UI_KEY_SIGCLIPNUMBER:
+          out=statistics_pull_out_element(sclip,   0); mustfree=1; break;
 
         /* Not previously calculated. */
         case UI_KEY_QUANTILE:
@@ -213,6 +232,7 @@ statistics_print_one_row(struct statisticsparams *p)
   if(max)     gal_data_free(max);
   if(sum)     gal_data_free(sum);
   if(med)     gal_data_free(med);
+  if(sclip)   gal_data_free(sclip);
   if(meanstd) gal_data_free(meanstd);
   if(modearr) gal_data_free(modearr);
 }

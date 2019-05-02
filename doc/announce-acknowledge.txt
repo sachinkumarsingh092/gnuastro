@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Raul Infante-Sainz
 David Valls-Gabaud
 
 
