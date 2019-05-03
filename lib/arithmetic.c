@@ -686,8 +686,8 @@ struct multioperandparams
 
 
 #define MULTIOPERAND_MIN(TYPE) {                                        \
-    TYPE t, max;                                                        \
     size_t n, j=0;                                                      \
+    TYPE t, max, *o=p->out->array;                                      \
     gal_type_max(p->list->type, &max);                                  \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
@@ -716,8 +716,8 @@ struct multioperandparams
 
 
 #define MULTIOPERAND_MAX(TYPE) {                                        \
-    TYPE t, min;                                                        \
     size_t n, j=0;                                                      \
+    TYPE t, min, *o=p->out->array;                                      \
     gal_type_min(p->list->type, &min);                                  \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
@@ -748,6 +748,7 @@ struct multioperandparams
 #define MULTIOPERAND_NUM {                                              \
     int use;                                                            \
     size_t n, j;                                                        \
+    uint32_t *o=p->out->array;                                          \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
@@ -780,6 +781,7 @@ struct multioperandparams
     int use;                                                            \
     double sum;                                                         \
     size_t n, j;                                                        \
+    float *o=p->out->array;                                             \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
@@ -813,6 +815,7 @@ struct multioperandparams
     int use;                                                            \
     double sum;                                                         \
     size_t n, j;                                                        \
+    float *o=p->out->array;                                             \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
@@ -846,6 +849,7 @@ struct multioperandparams
     int use;                                                            \
     size_t n, j;                                                        \
     double sum, sum2;                                                   \
+    float *o=p->out->array;                                             \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
@@ -883,6 +887,7 @@ struct multioperandparams
 #define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
     int use;                                                            \
     size_t n, j;                                                        \
+    float *o=p->out->array;                                             \
     TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
                                     __func__, "pixs");                  \
                                                                         \
@@ -926,9 +931,10 @@ struct multioperandparams
 
 
 #define MULTIOPERAND_SIGCLIP(TYPE) {                                    \
-    float *sarr;                                                        \
     size_t n, j;                                                        \
     gal_data_t *sclip;                                                  \
+    uint32_t *N=p->out->array;                                          \
+    float *sarr, *o=p->out->array;                                      \
     TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
                                     __func__, "pixs");                  \
     gal_data_t *cont=gal_data_alloc(pixs, p->list->type, 1, &p->dnum,   \
@@ -954,7 +960,7 @@ struct multioperandparams
               case GAL_ARITHMETIC_OP_SIGCLIP_STD:    o[j]=sarr[3]; break;\
               case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   o[j]=sarr[2]; break;\
               case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: o[j]=sarr[1]; break;\
-              case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: o[j]=sarr[0]; break;\
+              case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: N[j]=sarr[0]; break;\
               default:                                                  \
                 error(EXIT_FAILURE, 0, "%s: a bug! the code %d is not " \
                       "valid for sigma-clipping results", __func__,     \
@@ -979,9 +985,9 @@ struct multioperandparams
 
 
 #define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
+    TYPE b, **a;                                                        \
     gal_data_t *tmp;                                                    \
     size_t i=0, tind;                                                   \
-    TYPE b, **a, *o=p->out->array;                                      \
                                                                         \
     /* Allocate space to keep the pointers to the arrays of each. */    \
     /* Input data structure. The operators will increment these */      \
@@ -1110,9 +1116,9 @@ static gal_data_t *
 arithmetic_multioperand(int operator, int flags, gal_data_t *list,
                         gal_data_t *params, size_t numthreads)
 {
-  uint8_t *hasblank;
   size_t i=0, dnum=1;
   float p1=NAN, p2=NAN;
+  uint8_t *hasblank, otype;
   struct multioperandparams p;
   gal_data_t *out, *tmp, *ttmp;
 
@@ -1160,11 +1166,31 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
     }
 
 
+  /* Set the output dataset type */
+  switch(operator)
+    {
+    case GAL_ARITHMETIC_OP_MIN:            otype=list->type;       break;
+    case GAL_ARITHMETIC_OP_MAX:            otype=list->type;       break;
+    case GAL_ARITHMETIC_OP_NUMBER:         otype=GAL_TYPE_UINT32;  break;
+    case GAL_ARITHMETIC_OP_SUM:            otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_MEAN:           otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_STD:            otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_MEDIAN:         otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_SIGCLIP_STD:    otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER: otype=GAL_TYPE_UINT32;  break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: operator code %d isn't recognized",
+            __func__, operator);
+    }
+
+
   /* Set the output data structure. */
-  if(flags & GAL_ARITHMETIC_INPLACE)
+  if( (flags & GAL_ARITHMETIC_INPLACE) && otype==list->type)
     out = list;                 /* The top element in the list. */
   else
-    out = gal_data_alloc(NULL, list->type, list->ndim, list->dsize,
+    out = gal_data_alloc(NULL, otype, list->ndim, list->dsize,
                          list->wcs, 0, list->minmapsize, NULL, NULL, NULL);
 
 

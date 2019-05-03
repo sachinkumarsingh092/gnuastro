@@ -12668,6 +12668,9 @@ to @command{minvalue}.
 
 @cindex NaN
 @item min
+For each pixel, find the minimum value in all given datasets. The output
+will have the same type as the input.
+
 The first popped operand to this operator must be a positive integer number
 which specifies how many further operands should be popped from the
 stack. All the subsequently popped operands must have the same type and
@@ -12703,37 +12706,50 @@ conversion will be used.
 @end itemize
 
 @item max
-Similar to @command{min}, but the pixels of the output will contain
-the maximum of the respective pixels in all operands in the stack.
+For each pixel, find the maximum value in all given datasets. The output
+will have the same type as the input. This operator is called similar to
+the @command{min} operator, please see there for more.
 
 @item number
-Similar to @command{min}, but the pixels of the output will contain the
-number of the respective non-blank pixels in all input operands.
+For each pixel count the number of non-blank pixels in all given
+datasets. The output will be an unsigned 32-bit integer datatype (see
+@ref{Numeric data types}). This operator is called similar to the
+@command{min} operator, please see there for more.
 
 @item sum
-Similar to @command{min}, but the pixels of the output will contain the sum
-of the respective pixels in all input operands.
+For each pixel, calculate the sum in all given datasets. The output will
+have the a single-precision (32-bit) floating point type. This operator is
+called similar to the @command{min} operator, please see there for more.
 
 @item mean
-Similar to @command{min}, but the pixels of the output will contain the
-mean (average) of the respective pixels in all operands in the stack.
+For each pixel, calculate the mean in all given datasets. The output will
+have the a single-precision (32-bit) floating point type. This operator is
+called similar to the @command{min} operator, please see there for more.
 
 @item std
-Similar to @command{min}, but the pixels of the output will contain the
-standard deviation of the respective pixels in all operands in the stack.
+For each pixel, find the standard deviation in all given datasets. The
+output will have the a single-precision (32-bit) floating point type. This
+operator is called similar to the @command{min} operator, please see there
+for more.
 
 @item median
-Similar to @command{min}, but the pixels of the output will contain
-the median of the respective pixels in all operands in the stack.
+For each pixel, find the median in all given datasets. The output will have
+the a single-precision (32-bit) floating point type. This operator is
+called similar to the @command{min} operator, please see there for more.
 
 @item sigclip-number
-Combine the specified number of inputs into a single output that contains
-the number of remaining elements after @mymath{\sigma}-clipping on each
-element/pixel (for more on @mymath{\sigma}-clipping, see @ref{Sigma
-clipping}). This operator is very similar to @command{min}, with the
-exception that it expects two operands (parameters for sigma-clipping)
-before the total number of inputs. The first popped operand is the
-termination criteria and the second is the multiple of @mymath{\sigma}.
+For each pixel, find the sigma-clipped number (after removing outliers) in
+all given datasets. The output will have the an unsigned 32-bit integer
+type (see @ref{Numeric data types}).
+
+This operator will combine the specified number of inputs into a single
+output that contains the number of remaining elements after
+@mymath{\sigma}-clipping on each element/pixel (for more on
+@mymath{\sigma}-clipping, see @ref{Sigma clipping}). This operator is very
+similar to @command{min}, with the exception that it expects two operands
+(parameters for sigma-clipping) before the total number of inputs. The
+first popped operand is the termination criteria and the second is the
+multiple of @mymath{\sigma}.
 
 For example in the command below, the first popped operand (@command{0.2})
 is the sigma clipping termination criteria. If the termination criteria is
@@ -12749,19 +12765,22 @@ astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-number
 @end example
 
 @item sigclip-median
-Combine the specified number of inputs into a single output that contains
-the @emph{median} after @mymath{\sigma}-clipping on each element/pixel. For
-more see @command{sigclip-number}.
+For each pixel, find the sigma-clipped median in all given datasets. The
+output will have the a single-precision (32-bit) floating point type. This
+operator is called similar to the @command{sigclip-number} operator, please
+see there for more.
 
 @item sigclip-mean
-Combine the specified number of inputs into a single output that contains
-the @emph{mean} after @mymath{\sigma}-clipping on each element/pixel. For
-more see @command{sigclip-number}.
+For each pixel, find the sigma-clipped mean in all given datasets. The
+output will have the a single-precision (32-bit) floating point type. This
+operator is called similar to the @command{sigclip-number} operator, please
+see there for more.
 
 @item sigclip-std
-Combine the specified number of inputs into a single output that contains
-the @emph{standard deviation} after @mymath{\sigma}-clipping on each
-element/pixel. For more see @command{sigclip-number}.
+For each pixel, find the sigma-clipped standard deviation in all given
+datasets. The output will have the a single-precision (32-bit) floating
+point type. This operator is called similar to the @command{sigclip-number}
+operator, please see there for more.
 
 @item filter-mean
 Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average,
@@ -27708,11 +27727,18 @@ Unary operand absolute-value operator.
 @deffnx Macro GAL_ARITHMETIC_OP_MEDIAN
 Multi-operand statistical operations. When @code{gal_arithmetic} is called
 with any of these operators, it will expect only a single operand that will
-be interpreted as a list of datasets (see @ref{List of gal_data_t}. The
-output will be a single dataset with each of its elements replaced by the
-respective statistical operation on the whole list. These operators can
-work on multiple threads using the @code{numthreads} argument. See the
-discussion under the @code{min} operator in @ref{Arithmetic operators}.
+be interpreted as a list of datasets (see @ref{List of gal_data_t}). These
+operators can work on multiple threads using the @code{numthreads}
+argument. See the discussion under the @code{min} operator in
+@ref{Arithmetic operators}.
+
+The output will be a single dataset with each of its elements replaced by
+the respective statistical operation on the whole list. The type of the
+output is determined from the operator (irrespective of the input type):
+for @code{GAL_ARITHMETIC_OP_MIN} and @code{GAL_ARITHMETIC_OP_MAX}, it will
+be the same type as the input, for @code{GAL_ARITHMETIC_OP_NUMBER}, the
+output will be @code{GAL_TYPE_UINT32} and for the rest, it will be
+@code{GAL_TYPE_FLOAT32}.
 @end deffn
 
 @deffn  Macro GAL_ARITHMETIC_OP_SIGCLIP_STD
@@ -27724,7 +27750,9 @@ that when @code{gal_arithmetic} is called with these operators, it requires
 two arguments. The first is the list of datasets like before, and the
 second is the 2-element list of sigma-clipping parameters. The first
 element in the parameters list is the multiple of sigma and the second is
-the termination criteria (see @ref{Sigma clipping}).
+the termination criteria (see @ref{Sigma clipping}). The output type of
+@code{GAL_ARITHMETIC_OP_SIGCLIP_NUMBER} will be @code{GAL_TYPE_UINT32} and
+for the rest it will be @code{GAL_TYPE_FLOAT32}.
 @end deffn
 
 @deffn Macro GAL_ARITHMETIC_OP_POW
