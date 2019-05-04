@@ -2213,55 +2213,92 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
 
 
 
-/* Find the outliers using the first flat portion of the cumulative
-   frequency plot. A good value for window and thresh are 5 and 1.0. */
+/* Find the outliers using the average distance of the neighboring
+   points. */
 #define OUTLIER_FLAT_CFP_BYTYPE(IT) {                                   \
-    IT m, n, *a=nbs->array, *p=a+dist, *pp=a+nbs->size-dist;            \
-    min=a[0]; max=a[nbs->size-1];                                       \
+    IT diff, *pr=prev->array;                                           \
+    IT *a=nbs->array, *p=a+d, *pp=a+nbs->size-d;                        \
+                                                                        \
     do                                                                  \
       {                                                                 \
-        m=( *(p-dist)-min ) / (max-min) * 100.0f;                       \
-        n=( *(p+dist)-min ) / (max-min) * 100.0f;                       \
-        check=1/(n-m);                                                  \
-        if(!quiet) printf("%-6zu%-15g%-15g\n", p-a, (float)(*p), check); \
-        if( check<thresh && start==GAL_BLANK_SIZE_T )                   \
-          { start=p-a; if(!quiet) printf("\t---start\n"); }             \
-        if( check>thresh && start!=GAL_BLANK_SIZE_T )                   \
+        diff=*(p+d)-*(p-d);                                             \
+        if(p-a-d<numprev)                                               \
           {                                                             \
-             widthcheck=100.0 * (double)(*p-a[start])/(max-min);        \
-             if(!quiet) printf("\t----end: %f\n", widthcheck);          \
-             if( widthcheck > width ) { flatind=start; break; }         \
-             start=GAL_BLANK_SIZE_T;                                    \
+            pr[p-a-d]=diff;                                             \
+            if(!quiet) printf("%-6zu%-15g%-15g\n", p-a, (float)(*p),    \
+                              (float)diff);                             \
+          }                                                             \
+        else                                                            \
+          {                                                             \
+            /* Sigma-clipped median and std for a check. */             \
+            prev->flag=0;                                               \
+            prev->size=prev->dsize[0]=numprev;                          \
+            sclip=gal_statistics_sigma_clip(prev, sigclip_multip,       \
+                                            sigclip_param, 1, 1);       \
+                                                                        \
+            sarr=sclip->array;                                          \
+            check = (diff - sarr[1]) / sarr[3];                         \
+                                                                        \
+            /* If requested, print the values. */                       \
+            if(!quiet) printf("%-6zu%-15g%-15g%-15g (%g,%g)\n", p-a,    \
+                              (float)(*p), (float)diff, check, sarr[1], \
+                              sarr[3]);                                 \
+                                                                        \
+            /* When values are equal, std will be roughly zero */       \
+            if(sarr[3]>1e-6 && check>thresh)                            \
+              {                                                         \
+                if(flatind==GAL_BLANK_SIZE_T)                           \
+                  {                                                     \
+                    ++counter;                                          \
+                    flatind=p-a;                                        \
+                  }                                                     \
+                else                                                    \
+                  {                                                     \
+                    if(flatind==p-a-counter)                            \
+                      { /* First element above thresh is 0, so for */   \
+                        /* counting, when counting the number of */     \
+                        /* contiguous elements, we have to add 1. */    \
+                        if(counter+1==numcontig)                        \
+                          {gal_data_free(sclip); break;}                \
+                        else ++counter;                                 \
+                      }                                                 \
+                    else { flatind=GAL_BLANK_SIZE_T; counter=0; }       \
+                  }                                                     \
+              }                                                         \
+            else { flatind=GAL_BLANK_SIZE_T; counter=0; }               \
+            pr[(p-a-d)%numprev]=diff;                                   \
+            gal_data_free(sclip);                                       \
           }                                                             \
       }                                                                 \
     while(++p<pp);                                                      \
-    if( pp==p && start!=GAL_BLANK_SIZE_T )                              \
-      {                                                                 \
-        widthcheck=100.0 * (double)(*(p-1)-a[start])/(max-min);         \
-        if(!quiet) printf("\t----end: %f\n", widthcheck);               \
-        if( widthcheck > width ) flatind=start;                         \
-      }                                                                 \
+    if(counter+1!=numcontig) flatind=GAL_BLANK_SIZE_T;                    \
   }
 
 gal_data_t *
-gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t dist,
-                                float thresh, float width, int inplace,
+gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t numprev,
+                                float sigclip_multip, float sigclip_param,
+                                float thresh, size_t numcontig, int inplace,
                                 int quiet, size_t *index)
 {
-  gal_data_t  *nbs, *out=NULL;
-  double min, max, check, widthcheck;
-  size_t one=1, flatind=GAL_BLANK_SIZE_T, start=GAL_BLANK_SIZE_T;
+  float *sarr;
+  double check;
+  gal_data_t  *nbs, *prev, *out=NULL, *sclip;
+  size_t d=2, counter=0, one=1, flatind=GAL_BLANK_SIZE_T;
 
   /* Sanity checks. */
-  if(thresh<=0 || width<=0)
-    error(EXIT_FAILURE, 0, "%s: the values to `thresh' (%g) and `width' (%g) "
-          "must be positive", __func__, thresh, width);
-  if(width==0)
-    error(EXIT_FAILURE, 0, "%s: `dist' (%zu) cannot be zero", __func__,
-          dist);
+  if(thresh<=0)
+    error(EXIT_FAILURE, 0, "%s: the value of `thresh' (%g) must be "
+          "positive", __func__, thresh);
+  if(numprev==0)
+    error(EXIT_FAILURE, 0, "%s: `numprev' (%zu) cannot be zero", __func__,
+          numprev);
 
   /* Remove all blanks and sort the dataset. */
   nbs=gal_statistics_no_blank_sorted(input, inplace);
+
+  /* Keep previous slopes. */
+  prev=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numprev, NULL, 0, -1,
+                      NULL, NULL, NULL);
 
   /* Find the index where the distribution becomes sufficiently flat. */
   switch(nbs->type)
@@ -2281,7 +2318,8 @@ gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t dist,
             __func__, nbs->type);
     }
 
-  /* Write the output dataset. */
+  /* Write the output dataset: if no point flat part was found, return
+     NULL. */
   if(flatind!=GAL_BLANK_SIZE_T)
     {
       out=gal_data_alloc(NULL, input->type, 1, &one, NULL, 0, -1,
@@ -2294,5 +2332,6 @@ gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t dist,
   /* Clean up and return. */
   if(nbs!=input) gal_data_free(nbs);
   if(index) *index=flatind;
+  gal_data_free(prev);
   return out;
 }

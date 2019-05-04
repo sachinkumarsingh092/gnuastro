@@ -19,6 +19,18 @@ See the end of the file for license conditions.
 
 ** Changed features
 
+  Arithmetic:
+   - The output of coadding operators is no longer the same type as the
+     input in general. The output of the `min' and `max' operators are
+     still the same type as the input. However the `number' and
+     `sigclip-number' operators will output an unsigned 32-bit integer type
+     and the rest (`sum', `mean', `std', `median', `sigclip-median',
+     `sigclip-mean' and `sigclip-std') return 32-bit floating point
+     datasets
+
+  Library:
+   - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
+
 ** Bugs fixed
   bug #56195: astscript-sort-by-night crashing because of AWK.
   bug #56246: Single-valued measurement must abort with no value in Statistics.
