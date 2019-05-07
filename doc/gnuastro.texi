@@ -4677,6 +4677,17 @@ can't be modeled (like stars that are always a point) easily. So there
 is no better way to distinguish them than to visually inspect them and
 see if it is possible to classify these nebulae or not.
 
+@cartouche
+@noindent
+@strong{No default dataset in this tutorial:} Unfortunately there is no
+input dataset for this tutorial. We will add a dataset and corresponding
+table to smoothly run this tutorial later. But until then, you can use the
+final catalog that you produced in @ref{General program usage
+tutorial}. The start of this tutorial has some overlaps with the ending of
+@ref{General program usage tutorial}. You can just select some of the
+brighter sources to make it shorter and more managable.
+@end cartouche
+
 Hubble has stored all the FITS images of the objects he wants to visually
 inspect in his @file{/mnt/data/images} directory. He has also stored his
 catalog of extra-galactic nebulae in
