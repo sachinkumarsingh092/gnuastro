@@ -1700,10 +1700,10 @@ character, enabling you to use multiple lines to write your commands.
 
 Gnuastro would not have been possible without scholarships and grants from
 several funding institutions. We thus ask that if you used Gnuastro in any
-of your papers/reports, please add the proper citation and acknowledge this
-instrumental support. For details of which papers to cite (may be different
-for different programs) and get the acknowledgment statement to include in
-your paper, please run the relevant programs with the common
+of your papers/reports, please add the proper citation and acknowledge the
+funding agencies/projects. For details of which papers to cite (may be
+different for different programs) and get the acknowledgment statement to
+include in your paper, please run the relevant programs with the common
 @option{--cite} option like the example commands below (for more on
 @option{--cite}, please see @ref{Operating mode options}).
 
@@ -3972,18 +3972,16 @@ $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
 In conclusion, we hope this extended tutorial has been a good starting
 point to help in your exciting research. If this book or any of the
 programs in Gnuastro have been useful for your research, please cite the
-respective papers and share your thoughts and suggestions with us (it can
-be very encouraging). All Gnuastro programs have a @option{--cite} option
-to help you cite the authors' work more easily. Just note that it may be
+respective papers, and acknowledge the funding agencies that made all of
+this possible. All Gnuastro programs have a @option{--cite} option to
+facilitate the citation and acknowledgement. Just note that it may be
 necessary to cite additional papers for different programs, so please try
-it out for any program you used.
+it out on all the programs that you used, for example:
 
 @example
 $ astmkcatalog --cite
 $ astnoisechisel --cite
 @end example
-
-
 
 
 
@@ -4641,12 +4639,12 @@ usage tutorial} and @ref{Segment} for more on using Segment, producing
 catalogs with MakeCatalog and using those catalogs.
 
 Finally, if this book or any of the programs in Gnuastro have been useful
-for your research, please cite the respective papers and share your
-thoughts and suggestions with us (it can be very encouraging). All Gnuastro
-programs have a @option{--cite} option to help you cite the authors' work
-more easily. Just note that it may be necessary to cite additional papers
-for different programs, so please use @option{--cite} with any program that
-has been useful in your work.
+for your research, please cite the respective papers, and acknowledge the
+funding agencies that made all of this possible. All Gnuastro programs have
+a @option{--cite} option to facilitate the citation and
+acknowledgement. Just note that it may be necessary to cite additional
+papers for different programs, so please try it out on all the programs
+that you used, for example:
 
 @example
 $ astmkcatalog --cite
