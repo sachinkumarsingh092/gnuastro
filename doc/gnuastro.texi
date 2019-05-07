@@ -15985,7 +15985,7 @@ the histogram bin-widths. Generally, the mode of a distribution also shifts
 as signal is added. Therefore, even if it is accurately measured, the mode
 is a biased measure for the Sky value.
 
-@cindex sigma-clipping
+@cindex Sigma-clipping
 @item
 Another approach was to iteratively clip the brightest pixels in the image
 (which is known as @mymath{\sigma}-clipping). See @ref{Sigma clipping} for
@@ -16444,11 +16444,12 @@ clipping}). @mymath{\sigma}-clipping configuration is done with the
 @cindex Outlier
 Here is one scenario where this can be useful: assume you have a table and
 you would like to remove the rows that are outliers (not within the
-sigma-clipping range). Let's assume your table is called @file{table.fits}
-and you only want to keep the rows that have a value in @code{COLUMN}
-within the @mymath{\sigma}-clipped range (to @mymath{3\sigma}, with a
-tolerance of 0.1). This command will return the sigma-clipped median and
-standard deviation (used to define the range later).
+@mymath{\sigma}-clipping range). Let's assume your table is called
+@file{table.fits} and you only want to keep the rows that have a value in
+@code{COLUMN} within the @mymath{\sigma}-clipped range (to
+@mymath{3\sigma}, with a tolerance of 0.1). This command will return the
+@mymath{\sigma}-clipped median and standard deviation (used to define the
+range later).
 
 @example
 $ aststatistics table.fits -cCOLUMN --sclipparams=3,0.1 \
@@ -16796,8 +16797,8 @@ it is interpreted as tolerance and if it is larger than one it is a
 specific number. Hence, in the latter case the value must be an integer.
 
 @item --outliersclip=FLT,FLT
-Sigma-clipping parameters for the outlier rejection of the Sky value
-(similar to @option{--sclipparams}).
+@mymath{\sigma}-clipping parameters for the outlier rejection of the Sky
+value (similar to @option{--sclipparams}).
 
 Outlier rejection is useful when the dataset contains a large and diffuse
 (almost flat within each tile) signal. The flatness of the profile will
@@ -17425,8 +17426,8 @@ quantile is between 0.49 and 0.51 (recall that the median's quantile is
 0.5) will be used.
 
 @item --outliersclip=FLT,FLT
-Sigma-clipping parameters for the outlier rejection of the quantile
-threshold. The format of the given values is similar to
+@mymath{\sigma}-clipping parameters for the outlier rejection of the
+quantile threshold. The format of the given values is similar to
 @option{--sigmaclip} below. In NoiseChisel, outlier rejection on tiles is
 used when identifying the quantile thresholds (@option{--qthresh},
 @option{--noerodequant}, and @option{detgrowquant}).
@@ -20058,11 +20059,11 @@ than the minimum, a value of @code{-inf} is reported.
 
 @item --upperlimitskew
 @cindex Skewness
-This column contains the non-parametric skew of the sigma-clipped random
-distribution that was used to estimate the upper-limit magnitude. Taking
-@mymath{\mu} as the mean, @mymath{\nu} as the median and @mymath{\sigma} as
-the standard deviation, the traditional definition of skewness is defined
-as: @mymath{(\mu-\nu)/\sigma}.
+This column contains the non-parametric skew of the @mymath{\sigma}-clipped
+random distribution that was used to estimate the upper-limit
+magnitude. Taking @mymath{\mu} as the mean, @mymath{\nu} as the median and
+@mymath{\sigma} as the standard deviation, the traditional definition of
+skewness is defined as: @mymath{(\mu-\nu)/\sigma}.
 
 This can be a good measure to see how much you can trust the random
 measurements, or in other words, how accurately the regions with signal
@@ -27757,7 +27758,7 @@ output will be @code{GAL_TYPE_UINT32} and for the rest, it will be
 Similar to the operands above (including @code{GAL_ARITHMETIC_MIN}), except
 that when @code{gal_arithmetic} is called with these operators, it requires
 two arguments. The first is the list of datasets like before, and the
-second is the 2-element list of sigma-clipping parameters. The first
+second is the 2-element list of @mymath{\sigma}-clipping parameters. The first
 element in the parameters list is the multiple of sigma and the second is
 the termination criteria (see @ref{Sigma clipping}). The output type of
 @code{GAL_ARITHMETIC_OP_SIGCLIP_NUMBER} will be @code{GAL_TYPE_UINT32} and
@@ -28897,7 +28898,7 @@ container}.
 @deffn  Macro GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE
 The maximum number of clips, when @mymath{\sigma}-clipping should be done
 by convergence. If the clipping does not converge before making this many
-clips, all sigma-clipping outputs will be NaN.
+clips, all @mymath{\sigma}-clipping outputs will be NaN.
 @end deffn
 
 @deffn  Macro GAL_STATISTICS_MODE_GOOD_SYM
@@ -29260,50 +29261,55 @@ moves the window as a separate line with several columns. The first column
 is the value, the second (in square brackets) is the sorted index, the
 third is the distance of this element from the previous one. The Fourth and
 fifth (in parenthesis) are the median and standard deviation of the
-sigma-clipped distribution within the window and the last column is the
-difference between the third and fourth, divided by the fifth.
+@mymath{\sigma}-clipped distribution within the window and the last column
+is the difference between the third and fourth, divided by the fifth.
 
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_statistics_outlier_flat_cfp (gal_data_t @code{*input}, size_t @code{dist}, float @code{thresh}, float @code{width}, int @code{inplace}, int @code{quiet}, size_t @code{*index})
+@deftypefun {gal_data_t *} gal_statistics_outlier_flat_cfp (gal_data_t @code{*input}, size_t @code{numprev}, float @code{sigclip_multip}, float @code{sigclip_param}, float @code{thresh}, size_t @code{numcontig}, int @code{inplace}, int @code{quiet}, size_t @code{*index})
 
 Return the first element in the given dataset where the cumulative
-frequency plot first becomes flat (below a given threshold on the slope)
-for a sufficient width (percentage of whole dataset's range). The returned
-dataset only has one element (with the same type as the input). If
-@code{index!=NULL}, the index (counting from zero, after sorting dataset
-and removing any blanks) is written in the space that @code{index} points
-to. If no sufficiently flat portion is found, the returned pointer will be
-@code{NULL}.
+frequency plot first becomes significantly flat for a sufficient number of
+elements. The returned dataset only has one element (with the same type as
+the input). If @code{index!=NULL}, the index (counting from zero, after
+sorting the dataset and removing any blanks) is written in the space that
+@code{index} points to. If no sufficiently flat portion is found, the
+returned pointer will be @code{NULL}.
 
-The operation of this function can be best visualized using the cumulative
-frequency plot (CFP, see @ref{Histogram and Cumulative Frequency
-Plot}). Imagine setting the horizontal axis of the input's CFP to a range
-of 0 to 100, and finding the first part where its slope is
-constantly/contiguously flat for a certain fraction/width of the whole
-dataset's range. Below we'll describe this in more detail.
+@cindex Sigma-clipping
+The flatness on the cumulative frequency plot is defined like this (see
+@ref{Histogram and Cumulative Frequency Plot}): on the sorted dataset, for
+every point (@mymath{a_i}), we calculate @mymath{d_i=a_{i+2}-a_{i-2}}. This
+done on the first @mymath{N} elements (value of @code{numprev}). After
+element @mymath{a_{N+2}}, we start estimating the flatness as follows: for
+every element we use the @mymath{N}, @mymath{d_i} measurements before it as
+the reference. Let's call this set @mymath{D_i} for element @mymath{i}. The
+@mymath{\sigma}-clipped median (@mymath{m}) and standard deviation
+(@mymath{s}) of @mymath{D_i} are then calculated. The
+@mymath{\sigma}-clipping can be configured with the two
+@code{sigclip_param} and @code{sigclip_multip} arguments.
 
-This function will first remove all the blank elements and sort the
-remaining elements. If @code{inplace} is non-zero this step will be done in
-place: re-organizing/permuting the input dataset. Using @code{inplace} can
-result in faster processing and less RAM consumption, but only when the
-input dataset is no longer needed in its original permutation.
+Taking @mymath{t} as the significance threshold (value to @code{thresh}), a
+point is considered flat when @mymath{a_i>m+t\sigma}. But a single point
+satisfying this condition will probably just be due to noise. To make a
+more robust estimate, this significance/condition has to hold for
+@code{numcontig} contiguous elements after @mymath{a_i}. When this is
+satisfied, @mymath{a_i} is retured as the point where the distribution's
+cumulative frequency plot becomes flat.
 
-The input dataset will then be internally scaled from 0 to 100 (so
-@code{thresh} and @code{width} can be in units of percent). For each
-element, this function will then estimate the slope of the cumulative
-distribution function by using the @code{dist} elements before and after
-it. In other words, if @mymath{d} is the value of @code{dist}, then the
-slope over the @mymath{i}'th element (@mymath{a_i}) is estimated using this
-formula: @mymath{1/(a_{i+d}-a_{i-d})}. Therefore, when this slope is larger
-than 1, the distance between the two checked points is smaller than
-@mymath{1\%} of the dataset's range.
+To get a good estimate of @mymath{m} and @mymath{s}, it is thus recommended
+to set @code{numprev} as large as possible. However, be careful not to set
+it too high: the checks in the paragraph above are not done on the first
+@code{numprev} elements and this function assumes the flatness occures
+after them. Also, be sure that the value to @code{numcontig} is much less
+than @code{numprev}, otherwise @mymath{\sigma}-clipping may not be able to
+remove the immediate outliers in @mymath{D_i} near the boundary of the flat
+region.
 
-All points that have a slope less than @code{thresh} are then marked. The
-first (parsing from the smallest to the largest values) contiguous patch of
-marked elements that is larger than @code{width} wide (in units of
-percentage of the dataset's range) will be considered as the boundary
-region of outliers and the first element in that patch will be returned.
+When @code{quiet==0}, the basic measurements done on each element are
+printed on the command-line (good for finding the best parameters). When
+@code{inplace!=0}, the sorting and removal of blank elements is done on the
+input dataset, so the input may be altered after this function.
 @end deftypefun
 
 
