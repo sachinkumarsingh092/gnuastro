@@ -2807,9 +2807,9 @@ main(void)
 @noindent
 To greatly simplify the compilation, linking and running of simple C
 programs like this that use Gnuastro's library, Gnuastro has
-@ref{BuildProgram}. This program designed to manage Gnuastro's
+@ref{BuildProgram}. This program is designed to manage Gnuastro's
 dependencies, compile and link the program and then run the new program. To
-build and run the program above, simply run the following command:
+build, @emph{and run} the program above, use the following command:
 
 @example
 $ astbuildprog myprogram.c
@@ -2827,11 +2827,11 @@ $ ./myprogram
 @end example
 
 The efficiency of @file{myprogram} compared to CosmicCalculator is because
-the requested processing is faster/comparable to the overheads necessary
-for each processing. For other programs that take large input datasets
-(images for example), the overhead is usually negligible compared to the
-processing. In such cases, the libraries are only useful if you want a
-different/new processing compared to the functionalities in Gnuastro's
+in the latter, the requested processing is comparable to the necessary
+overheads. For other programs that take large input datasets and do
+complicated processing on them, the overhead is usually negligible compared
+to the processing. In such cases, the libraries are only useful if you want
+a different/new processing compared to the functionalities in Gnuastro's
 existing programs.
 
 Gnuastro has a large library which is heavily used by all the programs. In
@@ -2853,18 +2853,19 @@ above, it completed its processing and printed results. So where did the
 come from?  The values come from the command-line or a configuration file
 (see @ref{Configuration file precedence}).
 
-CosmicCalculator has a limited set of parameters and doesn't need any
-particular file inputs. Therefore, we'll use it to discuss configuration
-files which are an important part of all Gnuastro's programs (see
-@ref{Configuration files}).
+CosmicCalculator has a small set of parameters/options. Therefore, let's
+use it to discuss configuration files (see @ref{Configuration
+files}). Configuration files are an important part of all Gnuastro's
+programs, especially the ones with a large number of options, so its
+important to understand this part well .
 
 Once you get comfortable with configuration files, you can easily do the
-same for the options of all Gnuastro programs. For example, NoiseChisel has
-the largest number of options in the programs. Therefore configuration
-files will be useful for it when you use different datasets (with different
-noise properties or in different research contexts). The configuration of
-each program (besides its version) is vital for the reproducibility of your
-results, so it is important to manage them properly.
+same for the options of all Gnuastro programs (for example,
+NoiseChisel). Therefore configuration files will be useful for it when you
+use different datasets (with different noise properties or in different
+research contexts). The configuration of each program (besides its version)
+is vital for the reproducibility of your results, so it is important to
+manage them properly.
 
 As we saw above, the full list of the options in all Gnuastro programs can
 be seen with the @option{--help} option. Try calling it with
