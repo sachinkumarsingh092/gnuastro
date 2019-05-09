@@ -116,6 +116,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "head",
+      UI_KEY_HEAD,
+      "INT",
+      0,
+      "Only output given number of top rows.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->head,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "tail",
+      UI_KEY_TAIL,
+      "INT",
+      0,
+      "Only output given number of bottom rows.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->tail,
+      GAL_TYPE_SIZE_T,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

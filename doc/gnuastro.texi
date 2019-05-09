@@ -11749,6 +11749,25 @@ column anymore afterwards.
 @itemx --descending
 When called with @option{--sort}, rows will be sorted in descending order.
 
+@item -H INT
+@itemx --head=INT
+Only print the given number of rows from the @emph{top} of the final
+table. Note that this option only affects the @emph{output} table. For
+example if you use @option{--sort}, or @option{--range}, the printed rows
+are the first @emph{after} applying the sort sorting, or selecting a range
+of the full input.
+
+@cindex GNU Coreutils
+If the given value to @option{--head} is 0, the output columns won't have
+any rows and if its larger than the number of rows in the input table, all
+the rows are printed (this option is effectively ignored). This behavior is
+taken from the @command{head} program in GNU Coreutils.
+
+@item -t INT
+@itemx --tail=INT
+Only print the given number of rows from the @emph{bottom} of the final
+table. See @option{--head} for more.
+
 @end table
 
 

@@ -34,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/pointer.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/permutation.h>
@@ -274,6 +275,52 @@ table_sort(struct tableparams *p)
 
 
 
+static void
+table_head_tail(struct tableparams *p)
+{
+  char **strarr;
+  gal_data_t *col;
+  size_t i, start, end;
+
+  /* Go over all the columns and make the necessary corrections. */
+  for(col=p->table;col!=NULL;col=col->next)
+    {
+      /* If we are dealing with strings, we'll need to free the strings
+         that the columns that will not be used point to (outside the
+         allocated array directly `gal_data_t'). We don't have to worry
+         about the space for the actual pointers (they will be free'd by
+         `free' in any case, since they are in the initially allocated
+         array).*/
+      if(col->type==GAL_TYPE_STRING)
+        {
+          /* Set the start and ending indexs. */
+          start = p->head!=GAL_BLANK_SIZE_T ? p->head        : 0;
+          end   = p->head!=GAL_BLANK_SIZE_T ? p->table->size : p->tail;
+
+          /* Free their allocated spaces. */
+          strarr=col->array;
+          for(i=start; i<end; ++i) { free(strarr[i]); strarr[i]=NULL; }
+        }
+
+      /* For `--tail', we'll need to bring the last columns to the
+         start. Note that we are using `memmove' because we want to be safe
+         with overlap. */
+      if(p->tail!=GAL_BLANK_SIZE_T)
+        memmove(col->array,
+                gal_pointer_increment(col->array, col->size - p->tail,
+                                      col->type),
+                p->tail*gal_type_sizeof(col->type));
+
+      /* In any case (head or tail), the new number of column elements is
+         the given value. */
+      col->size = col->dsize[0] = ( p->head!=GAL_BLANK_SIZE_T
+                                    ? p->head
+                                    : p->tail );
+    }
+}
+
+
+
 /**************************************************************/
 /***************       Top function         *******************/
 /**************************************************************/
@@ -285,6 +332,10 @@ table(struct tableparams *p)
 
   /* Sort it (if required). */
   if(p->sort) table_sort(p);
+
+  /* If the output number of rows is limited, apply them. */
+  if(p->head!=GAL_BLANK_SIZE_T || p->tail!=GAL_BLANK_SIZE_T)
+    table_head_tail(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

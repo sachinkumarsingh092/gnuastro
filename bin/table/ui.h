@@ -44,6 +44,8 @@ enum option_keys_enum
   UI_KEY_RANGE           = 'r',
   UI_KEY_SORT            = 's',
   UI_KEY_DESCENDING      = 'd',
+  UI_KEY_HEAD            = 'H',
+  UI_KEY_TAIL            = 't',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

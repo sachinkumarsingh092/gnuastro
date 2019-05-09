@@ -115,6 +115,10 @@ ui_initialize_options(struct tableparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
 
+  /* Program-specific initialization. */
+  p->head                = GAL_BLANK_SIZE_T;
+  p->tail                = GAL_BLANK_SIZE_T;
+
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
@@ -240,6 +244,11 @@ ui_read_check_only_options(struct tableparams *p)
           error(EXIT_FAILURE, 0, "first value (%g) given to `--range' must "
                 "be smaller than the second (%g)", darr[0], darr[1]);
       }
+
+  /* Make sure `--head' and `--tail' aren't given together. */
+  if(p->head!=GAL_BLANK_SIZE_T && p->tail!=GAL_BLANK_SIZE_T)
+    error(EXIT_FAILURE, 0, "`--head' and `--tail' options cannot be "
+          "called together");
 }
 
 
@@ -814,6 +823,18 @@ ui_preparations(struct tableparams *p)
 
   /* Make sure the (possible) output name is writable. */
   gal_checkset_writable_remove(p->cp.output, 0, p->cp.dontdelete);
+
+
+  /* If the head or tail values are given and are larger than the number of
+     rows, just set them to the number of rows (print the all the final
+     rows). This is how the `head' and `tail' programs of GNU Coreutils
+     operate. */
+  p->head = ( ((p->head!=GAL_BLANK_SIZE_T) && (p->head > p->table->size))
+              ? p->table->size
+              : p->head );
+  p->tail = ( ((p->tail!=GAL_BLANK_SIZE_T) && (p->tail > p->table->size))
+              ? p->table->size
+              : p->tail );
 
 
   /* Clean up. */

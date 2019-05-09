@@ -59,6 +59,8 @@ struct tableparams
   gal_data_t           *range;  /* Range to limit output.               */
   char                  *sort;  /* Column name or number for sorting.   */
   uint8_t          descending;  /* Sort columns in descending order.    */
+  size_t                 head;  /* Output only the no. of top rows.     */
+  size_t                 tail;  /* Output only the no. of bottom rows.  */
 
   /* Internal. */
   gal_data_t           *table;  /* Linked list of output table columns. */

@@ -15,6 +15,10 @@ See the end of the file for license conditions.
      results hard. These options fix this issue. Please see the example in
      the book under `--sigclip-median' for a nice use case.
 
+  Table:
+   --head: Only output the given number of rows from the top of columns.
+   --tail: Only output the given number of rows from the botoom of columns.
+
 ** Removed features
 
 ** Changed features
