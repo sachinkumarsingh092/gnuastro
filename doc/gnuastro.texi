@@ -7116,7 +7116,7 @@ sure it is added to the list of directories, add the following line to your
 (non-standard) directories.
 
 @example
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 @end example
 
 You can also add more directories by using a colon `@code{:}' to separate
