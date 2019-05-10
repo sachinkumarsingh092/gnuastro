@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Leindert Boogaard
 Raul Infante-Sainz
 Lee Kelvin
 David Valls-Gabaud

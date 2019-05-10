@@ -263,6 +263,13 @@ ui_read_check_only_options(struct cosmiccalparams *p)
           "The cosmological constant (`olambda'), matter (`omatter') "
           "and radiation (`oradiation') densities are given as %.8f, %.8f, "
           "%.8f", sum, p->olambda, p->omatter, p->oradiation);
+
+  /* Currently GSL will fail for z=0. So if a value of zero is given (bug
+     #56299). As a work-around, in such cases, we'll change it to 1e-14
+     (close to, but not exactly, the 64-bit floating point precision
+     limit). GSL will do the integration without any error with this
+     value. */
+  if(p->redshift==0.0f) p->redshift=1e-14;
 }
 
 
