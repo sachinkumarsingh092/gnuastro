@@ -310,31 +310,3 @@ gal_cosmology_to_absolute_mag(double z, double H0, double o_lambda_0,
                                            o_radiation_0);
   return dm-2.5*log10(1.0+z);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/************      Basic cosmology functions      *************/
-/**************************************************************/
-double
-gal_cosmology_redshift_from_line(double obsline, double restline)
-{
-  return (obsline/restline)-1;
-}
