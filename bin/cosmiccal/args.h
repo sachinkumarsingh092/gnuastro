@@ -45,6 +45,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "obsline",
+      UI_KEY_OBSLINE,
+      "STR,FLT",
+      0,
+      "Redshift from line and observed wavelength.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->obsline,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_parse_obsline
+    },
+    {
       "H0",
       UI_KEY_H0,
       "FLT",
@@ -104,6 +118,20 @@ struct argp_option program_options[] =
       0, 0, 0, 0,
       "Specific calculations",
       UI_GROUP_SPECIFIC
+    },
+    {
+      "usedredshift",
+      UI_KEY_USEDREDSHIFT,
+      0,
+      0,
+      "Used redshift in this run.",
+      UI_GROUP_SPECIFIC,
+      &p->specific,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value,
     },
     {
       "agenow",

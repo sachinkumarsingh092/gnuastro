@@ -42,18 +42,20 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   e f i j k n p t w x y
-   B E J O Q R W X Y
+   f i j k n p t w x y
+   B E J Q R W X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
   UI_KEY_REDSHIFT            = 'z',
+  UI_KEY_OBSLINE             = 'O',
   UI_KEY_H0                  = 'H',
   UI_KEY_OLAMBDA             = 'l',
   UI_KEY_OMATTER             = 'm',
   UI_KEY_ORADIATION          = 'r',
 
+  UI_KEY_USEDREDSHIFT        = 'e',
   UI_KEY_AGENOW              = 'G',
   UI_KEY_CRITICALDENSITYNOW  = 'C',
   UI_KEY_PROPERDISTANCE      = 'd',

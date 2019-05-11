@@ -167,6 +167,11 @@ cosmiccal(struct cosmiccalparams *p)
       for(tmp=p->specific;tmp!=NULL;tmp=tmp->next)
         switch(tmp->v)
           {
+          case UI_KEY_USEDREDSHIFT:
+            printf("%g ",
+                   p->redshift==MAIN_REDSHIFT_ZERO ? 0.0f: p->redshift);
+            break;
+
           case UI_KEY_AGENOW:
             printf("%f ", gal_cosmology_age(0.0f, p->H0, p->olambda,
                                             p->omatter, p->oradiation));

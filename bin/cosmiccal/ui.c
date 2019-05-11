@@ -26,11 +26,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gsl/gsl_const_mksa.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
+#include <gnuastro/speclines.h>
+#include <gnuastro/cosmology.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -231,6 +234,97 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
 
 
 
+/* Parse the observed line properties: LINE,OBSERVED_WAVELENGHT. */
+void *
+ui_parse_obsline(struct argp_option *option, char *arg,
+                 char *filename, size_t lineno, void *junk)
+{
+  size_t nc, two=2;
+  char *c, *linename;
+  gal_data_t *obsline, *tobsline;
+  double *dptr, *tdptr, manualwl=NAN;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the value pointer to `obsline'. */
+      obsline=*(gal_data_t **)(option->value);
+      dptr = obsline->array;
+
+      /* First write the line name into the output string. */
+      nc=0;
+      linename=gal_speclines_line_name(obsline->status);
+      nc += sprintf(sstr+nc, "%s,", linename);
+
+      /* Write the observed wavelength. */
+      sprintf(sstr+nc, "%g", dptr[0]);
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+  else
+    {
+      /* The first part of `arg' (before the first comma) is not
+         necessarily a number. So we need to separate the first part from
+         the rest.*/
+      linename=arg;
+      c=arg; while(*c!='\0' && *c!=',') ++c;
+      arg = (*c=='\0') ? NULL : c+1;
+      *c='\0';
+
+      /* Read the parameters. */
+      obsline=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+      /* Only one number must be given as second argument. */
+      if(obsline->size!=1)
+        error(EXIT_FAILURE, 0, "too many values (%zu) given to `--obsline'. "
+              "Only two values (line name/wavelengh, and observed wavelengh) "
+              "must be given", obsline->size+1);
+
+      /* If a wavelength is given directly as a number (not a name), then
+         put that number in a second element of the array. */
+      dptr=&manualwl;
+      if( gal_type_from_string((void **)(&dptr), linename, GAL_TYPE_FLOAT64) )
+        { /* `linename' isn't a number. */
+          obsline->status=gal_speclines_line_code(linename);
+          if(obsline->status==GAL_SPECLINES_INVALID)
+            error(EXIT_FAILURE, 0, "`%s' not recognized as a standard spectral "
+                  "line name", linename);
+        }
+      else
+        { /* `linename' is a number. */
+
+          /* Allocate the new space. */
+          tobsline=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &two, NULL,
+                                  0, -1, NULL, NULL, NULL);
+          tobsline->status=GAL_SPECLINES_INVALID;
+
+          /* Write the values into tptr. */
+          dptr=obsline->array;
+          tdptr=tobsline->array;
+          tdptr[0]=dptr[0];
+          tdptr[1]=manualwl;
+
+          /* Free the old dataset and use the new one. */
+          gal_data_free(obsline);
+          obsline=tobsline;
+        }
+
+      /* Point `option->value' to the dataset. */
+      *(gal_data_t **)(option->value) = obsline;
+
+      /* Our job is done, return NULL. */
+      return NULL;
+    }
+}
+
+
+
+
+
 
 
 
@@ -264,12 +358,10 @@ ui_read_check_only_options(struct cosmiccalparams *p)
           "and radiation (`oradiation') densities are given as %.8f, %.8f, "
           "%.8f", sum, p->olambda, p->omatter, p->oradiation);
 
-  /* Currently GSL will fail for z=0. So if a value of zero is given (bug
-     #56299). As a work-around, in such cases, we'll change it to 1e-14
-     (close to, but not exactly, the 64-bit floating point precision
-     limit). GSL will do the integration without any error with this
-     value. */
-  if(p->redshift==0.0f) p->redshift=1e-14;
+  /* Make sure that `--redshift' and `--obsline' aren't called together. */
+  if(!isnan(p->redshift) && p->obsline)
+    error(EXIT_FAILURE, 0, "`--redshift' and `--obsline' cannot be called "
+          "together");
 }
 
 
@@ -297,6 +389,21 @@ ui_read_check_only_options(struct cosmiccalparams *p)
 static void
 ui_preparations(struct cosmiccalparams *p)
 {
+  double *obsline = p->obsline ? p->obsline->array : NULL;
+
+  /* If `--obsline' has been given, set the redshift based on it. */
+  if(p->obsline)
+    p->redshift = ( (p->obsline->status==GAL_SPECLINES_INVALID)
+                    ? gal_speclines_line_redshift(obsline[0], obsline[1])
+                    : gal_speclines_line_redshift_code(obsline[0],
+                                                       p->obsline->status) );
+
+  /* Currently GSL will fail for z=0. So if a value of zero is given (bug
+     #56299). As a work-around, in such cases, we'll change it to an
+     extremely small value. NOTE: This has to be after the `obsline'
+     check.*/
+  if(p->redshift==0.0f) p->redshift=MAIN_REDSHIFT_ZERO;
+
   /* The list is filled out in a first-in-last-out order. By the time
      control reaches here, the list is finalized. So we should just reverse
      it so the user gets values in the same order they requested them. */

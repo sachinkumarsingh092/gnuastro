@@ -600,6 +600,7 @@ Gnuastro library
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Spectral lines library::
 * Cosmology library::           Cosmological calculations.
 
 Multithreaded programming (@file{threads.h})
@@ -18534,9 +18535,9 @@ options}). Please see the descriptions there for more.
 The quantile of the signal-to-noise ratio distribution of clumps in
 undetected regions, used to define true clumps. After identifying all the
 usable clumps in the undetected regions of the dataset, the given quantile
-of their signal-to-noise ratios is used to define a the signal-to-noise
-ratio of a ``true'' clump. Effectively, this can be seen as an inverse
-p-value measure. See Figure 9 and Section 3.2.1 of
+of their signal-to-noise ratios is used to define the signal-to-noise ratio
+of a ``true'' clump. Effectively, this can be seen as an inverse p-value
+measure. See Figure 9 and Section 3.2.1 of
 @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} for a
 complete explanation. The full distribution of clump signal-to-noise ratios
 over the undetected areas can be saved into a table with @option{--checksn}
@@ -19171,7 +19172,7 @@ upper-limit distributions. See The description of @option{--upmaskfile} in
 
 
 @node Measuring elliptical parameters, Adding new columns to MakeCatalog, Quantifying measurement limits, MakeCatalog
-	@subsection Measuring elliptical parameters
+@subsection Measuring elliptical parameters
 
 The shape or morphology of a target is one of the most commonly desired
 parameters of a target. Here, we will review the derivation of the most
@@ -22593,6 +22594,10 @@ $ astcosmiccal -z2.5
 ## Only print Comoving volume over 4pi stradian to z (Mpc^3):
 $ astcosmiccal --redshift=0.8 --volume
 
+## Print redshift and age of universe when Lyman-alpha line is
+## at 6000 angstrom (another way to specify redshift).
+$ astcosmiccal --obsline=lyalpha,6000 --age
+
 ## Print luminosity distance, angular diameter distance and age
 ## of universe in one row at redshift 0.4
 $ astcosmiccal -z0.4 -LAg
@@ -22631,7 +22636,7 @@ The inputs to CosmicCalculator can be specified with the following options:
 
 @item -z FLT
 @itemx --redshift=FLT
-The redshift of interest.
+The redshift of interest. This cannot be called with @option{--obsline}.
 
 @item -H FLT
 @itemx --H0=FLT
@@ -22651,6 +22656,67 @@ density in the current Universe (@mymath{\Omega_{m,0}}).
 @itemx --oradiation=FLT
 Radiation density divided by the critical density in the current Universe
 (@mymath{\Omega_{r,0}}).
+
+@item -O STR/FLT,FLT
+@itemx --obsline=STR/FLT,FLT
+@cindex Rest-frame wavelength
+@cindex Wavelength, rest-frame
+Find the redshift to use in next steps based on the rest-frame and observed
+wavelengths of a line. Wavelenghts are assumed to be in Angstroms. The
+first argument identifies the line. It can be one of the standard names
+below, or any rest-frame wavelengh in Angestroms. The second argument is
+the observed wavelength of that line. For example
+@option{--obsline=lyalpha,6000} is the same as
+@option{--obsline=1215.64,6000}.
+
+The accepted names are listed below, sorted from red (longer wavelengh) to
+blue (shorter wavelengh).
+
+@table @code
+@item halpha
+@cindex H-@mymath{\alpha}
+H-@mymath{\alpha} line at @mymath{6562.8} Angstrom.
+
+@item oiiired
+OIII doublet's redder line at @mymath{5007} Angstrom.
+
+@item oiii
+@cindex Doublet: OIII
+@cindex OIII doublet
+OIII doublet's mean center at @mymath{4983} Angstrom.
+
+@item oiiiblue
+OIII doublet's bluer line at @mymath{4959} Angstrom.
+
+@item hbeta
+@cindex H-@mymath{\beta}
+H-@mymath{\beta} line at @mymath{4861.36} Angstrom.
+
+@item blimit
+@cindex Balmer limit
+Balmer limit at @mymath{3646} Angstrom.
+
+@item oiiired
+OII doublet's redder line at @mymath{3729} Angstrom.
+
+@item oiii
+@cindex Doublet: OII
+@cindex OII doublet
+OII doublet's mean center at @mymath{3727.5} Angstrom.
+
+@item oiiiblue
+OII doublet's bluer line at @mymath{3726} Angstrom.
+
+@item lyalpha
+@cindex Lyman-@mymath{\alpha}
+Lyman-@mymath{\alpha} line at @mymath{1215.67} Angstrom.
+
+@item lylimit
+@cindex Lyman limit
+Lyman limit line at @mymath{912} Angstrom.
+
+@end table
+
 @end table
 
 
@@ -22721,6 +22787,15 @@ below. In case you have forgot the units, you can use the @option{--help}
 option which has the units along with a short description.
 
 @table @option
+
+@item -e
+@itemx --usedredshift
+The redshift that was used in this run. In many cases this is the main
+input parameter to CosmicCalculator, but it is useful in others. For
+example in combination with @option{--obsline} (where you give an observed
+and restframe wavelength and would like to know the redshift), or if you
+want to run CosmicCalculator in a loop while changing the redshift and you
+want to keep the redshift value.
 
 @item -G
 @itemx --agenow
@@ -23735,6 +23810,7 @@ documentation will correspond to your installed version.
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Spectral lines library::
 * Cosmology library::           Cosmological calculations.
 @end menu
 
@@ -24280,11 +24356,11 @@ out = gal_type_to_string(&string, GAL_TYPE_STRING, 1);
 @end deftypefun
 
 @deftypefun int gal_type_from_string (void @code{**out}, char @code{*string}, uint8_t @code{type})
-Read a string as a given data type and put a the pointer to it in
+Read a string as a given data type and put a pointer to it in
 @code{*out}. When @code{*out!=NULL}, then it is assumed to be already
-allocated and the value will be simply put the memory. If
-@code{*out==NULL}, then space will be allocated for the given type and the
-string will be read into that type.
+allocated and the value will be simply put there. If @code{*out==NULL},
+then space will be allocated for the given type and the string will be read
+into that type.
 
 Note that when we are dealing with a string type, @code{*out} should be
 interpreted as @code{char **} (one element in an array of pointers to
@@ -28481,7 +28557,7 @@ Free all the allocated arrays within @code{tl}.
 @node Bounding box, Polygons, Tessellation library, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
-Functions related to reporting a the bounding box of certain inputs are
+Functions related to reporting the bounding box of certain inputs are
 declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
@@ -30068,7 +30144,7 @@ blank. To see if any blank (non-interpolated) elements remain, you can use
 @end deftypefun
 
 
-@node Git wrappers, Cosmology library, Interpolation, Gnuastro library
+@node Git wrappers, Spectral lines library, Interpolation, Gnuastro library
 @subsection Git wrappers (@file{git.h})
 
 @cindex Git
@@ -30104,8 +30180,144 @@ not installed or the program calling this function is not within a version
 controlled directory, then the output will be the @code{NULL} pointer.
 @end deftypefun
 
+@node Spectral lines library, Cosmology library, Git wrappers, Gnuastro library
+@subsection Spectral lines library (@file{speclines.h})
 
-@node Cosmology library,  , Git wrappers, Gnuastro library
+Gnuastro's library has the following macros and functions for dealing with
+spectral lines. All these functions are declared in
+@file{gnuastro/spectra.h}.
+
+@deffn  Macro GAL_SPECLINES_INVALID
+@deffnx Macro GAL_SPECLINES_SIIRED
+@deffnx Macro GAL_SPECLINES_SII
+@deffnx Macro GAL_SPECLINES_SIIBLUE
+@deffnx Macro GAL_SPECLINES_NIIRED
+@deffnx Macro GAL_SPECLINES_NII
+@deffnx Macro GAL_SPECLINES_HALPHA
+@deffnx Macro GAL_SPECLINES_NIIBLUE
+@deffnx Macro GAL_SPECLINES_OIIIRED
+@deffnx Macro GAL_SPECLINES_OIII
+@deffnx Macro GAL_SPECLINES_OIIIBLUE
+@deffnx Macro GAL_SPECLINES_HBETA
+@deffnx Macro GAL_SPECLINES_HEIIRED
+@deffnx Macro GAL_SPECLINES_HGAMMA
+@deffnx Macro GAL_SPECLINES_HDELTA
+@deffnx Macro GAL_SPECLINES_HEPSILON
+@deffnx Macro GAL_SPECLINES_NEIII
+@deffnx Macro GAL_SPECLINES_OIIRED
+@deffnx Macro GAL_SPECLINES_OII
+@deffnx Macro GAL_SPECLINES_OIIBLUE
+@deffnx Macro GAL_SPECLINES_BLIMIT
+@deffnx Macro GAL_SPECLINES_MGIIRED
+@deffnx Macro GAL_SPECLINES_MGII
+@deffnx Macro GAL_SPECLINES_MGIIBLUE
+@deffnx Macro GAL_SPECLINES_CIIIRED
+@deffnx Macro GAL_SPECLINES_CIII
+@deffnx Macro GAL_SPECLINES_CIIIBLUE
+@deffnx Macro GAL_SPECLINES_HEIIBLUE
+@deffnx Macro GAL_SPECLINES_LYALPHA
+@deffnx Macro GAL_SPECLINES_LYLIMIT
+Internal values/identifiers for specific spectral lines as is clear from
+their names.
+@end deffn
+
+@deffn  Macro GAL_SPECLINES_ANGSTROM_SIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_SII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_SIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_NIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_NII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HALPHA
+@deffnx Macro GAL_SPECLINES_ANGSTROM_NIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OIIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OIII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OIIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HBETA
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HEIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HGAMMA
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HDELTA
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HEPSILON
+@deffnx Macro GAL_SPECLINES_ANGSTROM_NEIII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_OIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_BLIMIT
+@deffnx Macro GAL_SPECLINES_ANGSTROM_MGIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_MGII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_MGIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_CIIIRED
+@deffnx Macro GAL_SPECLINES_ANGSTROM_CIII
+@deffnx Macro GAL_SPECLINES_ANGSTROM_CIIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_HEIIBLUE
+@deffnx Macro GAL_SPECLINES_ANGSTROM_LYALPHA
+@deffnx Macro GAL_SPECLINES_ANGSTROM_LYLIMIT
+Wavelengh (in Angstroms) of the named lines.
+@end deffn
+
+@deffn  Macro GAL_SPECLINES_NAME_SIIRED
+@deffnx Macro GAL_SPECLINES_NAME_SII
+@deffnx Macro GAL_SPECLINES_NAME_SIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_NIIRED
+@deffnx Macro GAL_SPECLINES_NAME_NII
+@deffnx Macro GAL_SPECLINES_NAME_HALPHA
+@deffnx Macro GAL_SPECLINES_NAME_NIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_OIIIRED
+@deffnx Macro GAL_SPECLINES_NAME_OIII
+@deffnx Macro GAL_SPECLINES_NAME_OIIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_HBETA
+@deffnx Macro GAL_SPECLINES_NAME_HEIIRED
+@deffnx Macro GAL_SPECLINES_NAME_HGAMMA
+@deffnx Macro GAL_SPECLINES_NAME_HDELTA
+@deffnx Macro GAL_SPECLINES_NAME_HEPSILON
+@deffnx Macro GAL_SPECLINES_NAME_NEIII
+@deffnx Macro GAL_SPECLINES_NAME_OIIRED
+@deffnx Macro GAL_SPECLINES_NAME_OII
+@deffnx Macro GAL_SPECLINES_NAME_OIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_BLIMIT
+@deffnx Macro GAL_SPECLINES_NAME_MGIIRED
+@deffnx Macro GAL_SPECLINES_NAME_MGII
+@deffnx Macro GAL_SPECLINES_NAME_MGIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_CIIIRED
+@deffnx Macro GAL_SPECLINES_NAME_CIII
+@deffnx Macro GAL_SPECLINES_NAME_CIIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_HEIIBLUE
+@deffnx Macro GAL_SPECLINES_NAME_LYALPHA
+@deffnx Macro GAL_SPECLINES_NAME_LYLIMIT
+Names (as literal stings without any space, all in small-caps) that can be
+used to refer to the lines in your program and converted to and from line
+identifiers using the functions below.
+@end deffn
+
+@deftypefun {char *} gal_speclines_line_name (int @code{linecode})
+Return the literal string of the given spectral line identifier Macro (for
+example @code{GAL_SPECLINES_HALPHA} or @code{GAL_SPECLINES_LYLIMIT}).
+@end deftypefun
+
+@deftypefun int gal_speclines_line_code (char @code{*name})
+Return the spectral line identifier of the given standard name (for example
+@code{GAL_SPECLINES_NAME_HALPHA} or @code{GAL_SPECLINES_NAME_LYLIMIT}).
+@end deftypefun
+
+@deftypefun double gal_speclines_line_angstrom (int @code{linecode})
+Return the wavelengh (in Angstroms) of the given line.
+@end deftypefun
+
+@deftypefun double gal_speclines_line_redshift (double @code{obsline}, double @code{restline})
+@cindex Rest-frame
+Return the redshift where the observed wavelength (@code{obsline}) was
+emitted from (if its restframe wavelength was @code{restline}).
+@end deftypefun
+
+@deftypefun double gal_speclines_line_redshift_code (double @code{obsline}, int @code{linecode})
+Return the redshift where the observed wavelength (@code{obsline}) was
+emitted from (assuming its a specific spectra line, identified with
+@code{linecode}).
+@end deftypefun
+
+
+
+
+
+@node Cosmology library,  , Spectral lines library, Gnuastro library
 @subsection Cosmology library (@file{cosmology.h})
 
 This library does the main cosmological calculations that are commonly

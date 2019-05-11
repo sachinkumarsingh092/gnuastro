@@ -152,7 +152,7 @@ cosmology_integrand_comoving_volume(double z, void *params)
 
 
 /**************************************************************/
-/************          Final functions            *************/
+/************      Basic cosmology functions      *************/
 /**************************************************************/
 /* Age of the universe (in Gyrs). H0 is in units of (km/sec/Mpc) and the
    fractional densities must add up to 1. */
@@ -309,4 +309,32 @@ gal_cosmology_to_absolute_mag(double z, double H0, double o_lambda_0,
   double dm=gal_cosmology_distance_modulus(z, H0, o_lambda_0, o_matter_0,
                                            o_radiation_0);
   return dm-2.5*log10(1.0+z);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************      Basic cosmology functions      *************/
+/**************************************************************/
+double
+gal_cosmology_redshift_from_line(double obsline, double restline)
+{
+  return (obsline/restline)-1;
 }

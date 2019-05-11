@@ -88,7 +88,9 @@ double
 gal_cosmology_to_absolute_mag(double z, double H0, double o_lambda_0,
                               double o_matter_0, double o_radiation_0);
 
-
+/* Get the redshift from the observed and restframe line. */
+double
+gal_cosmology_redshift_from_line(double obsline, double restline);
 
 
 __END_C_DECLS    /* From C++ preparations */

@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define PROGRAM_EXEC   "astcosmiccal"     /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
-
+#define MAIN_REDSHIFT_ZERO 1e-20
 
 
 
@@ -51,6 +51,7 @@ struct cosmiccalparams
   double               olambda; /* Current cosmological constant dens.  */
   double               omatter; /* Current matter density.              */
   double            oradiation; /* Current radiation density.           */
+  gal_data_t          *obsline; /* Observed wavelength of a line.       */
 
   /* Outputs. */
   gal_list_i32_t     *specific; /* Codes for single row calculations.   */

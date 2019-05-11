@@ -7,6 +7,17 @@ See the end of the file for license conditions.
 
 ** New features
 
+  CosmicCalculator:
+   --obsline: alternative way to set the used redshift. With this option
+     instead of explicity giving the redshift, you can give a rest-frame
+     and observed wavelength and the redshift to use will be calculated
+     internally. For many lines, it is possible to give the line name
+     instead of its rest-frame wavelength. For example
+     `--obsline=lyalpha,6000' will use the redshift where the Lyman-alpha
+     line has been shifted to 6000 Angestroms.
+   --usedredshift: Print the used redshift as a "Specific calculation" (in
+     line with other single-valued calculations).
+
   Statistics:
    --sigclip-number, --sigclip-median, --sigclip-mean, --sigclip-std: Do
      sigma-clipping and only print the desired value as a single-value
@@ -33,6 +44,9 @@ See the end of the file for license conditions.
      datasets
 
   Library:
+   - New `speclines.h' library functions and macros related to spectral
+     lines. It has many macros with line wavelengths, and several functions
+     for using them in combination with their names.
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
 
 ** Bugs fixed
