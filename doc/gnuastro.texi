@@ -22748,7 +22748,7 @@ blue (shorter wavelengh).
 [3646@AA{}] Balmer limit.
 
 @item mgiired
-[2796@AA{}] MgII doublet's redder line.
+[2803@AA{}] MgII doublet's redder line.
 
 @item mgii
 @cindex Doublet: MgII
@@ -22756,10 +22756,10 @@ blue (shorter wavelengh).
 [2799.5@AA{}] MgII doublet's mean center.
 
 @item mgiiblue
-[2803@AA{}] MgII doublet's bluer line.
+[2796@AA{}] MgII doublet's bluer line.
 
 @item ciiired
-[1907@AA{}] CIII doublet's redder line.
+[1909@AA{}] CIII doublet's redder line.
 
 @item ciii
 @cindex Doublet: CIII
@@ -22767,7 +22767,7 @@ blue (shorter wavelengh).
 [1908@AA{}] CIII doublet's mean center.
 
 @item ciiiblue
-[1909@AA{}] CIII doublet's bluer line.
+[1907@AA{}] CIII doublet's bluer line.
 
 @item heiiblue
 [1640@AA{}] HeII doublet's bluer line.
