@@ -30,6 +30,11 @@ See the end of the file for license conditions.
    --head: Only output the given number of rows from the top of columns.
    --tail: Only output the given number of rows from the botoom of columns.
 
+  Library:
+   - New `speclines.h' library functions and macros related to spectral
+     lines. It has many macros with line wavelengths, and several functions
+     for using them in combination with their names.
+
 ** Removed features
 
 ** Changed features
@@ -44,9 +49,6 @@ See the end of the file for license conditions.
      datasets
 
   Library:
-   - New `speclines.h' library functions and macros related to spectral
-     lines. It has many macros with line wavelengths, and several functions
-     for using them in combination with their names.
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
 
 ** Bugs fixed

@@ -22673,47 +22673,112 @@ The accepted names are listed below, sorted from red (longer wavelengh) to
 blue (shorter wavelengh).
 
 @table @code
+@item siired
+[6731@AA{}] SII doublet's redder line.
+
+@item sii
+@cindex Doublet: SII
+@cindex SII doublet
+[6724@AA{}] SII doublet's mean center at .
+
+@item siiblue
+[6717@AA{}] SII doublet's bluer line.
+
+@item niired
+[6584@AA{}] NII doublet's redder line.
+
+@item nii
+@cindex Doublet: NII
+@cindex NII doublet
+[6566@AA{}] NII doublet's mean center.
+
 @item halpha
-@cindex H-@mymath{\alpha}
-H-@mymath{\alpha} line at @mymath{6562.8} Angstrom.
+@cindex H-alpha
+[6562.8@AA{}] H-@mymath{\alpha} line.
+
+@item niiblue
+[6548@AA{}] NII doublet's bluer line.
 
 @item oiiired
-OIII doublet's redder line at @mymath{5007} Angstrom.
+[5007@AA{}] OIII doublet's redder line.
 
 @item oiii
 @cindex Doublet: OIII
 @cindex OIII doublet
-OIII doublet's mean center at @mymath{4983} Angstrom.
+[4983@AA{}] OIII doublet's mean center.
 
 @item oiiiblue
-OIII doublet's bluer line at @mymath{4959} Angstrom.
+[4959@AA{}] OIII doublet's bluer line.
 
 @item hbeta
-@cindex H-@mymath{\beta}
-H-@mymath{\beta} line at @mymath{4861.36} Angstrom.
+@cindex H-beta
+[4861.36@AA{}] H-@mymath{\beta} line.
+
+@item heiired
+[4686@AA{}] HeII doublet's redder line.
+
+@item hgamma
+@cindex H-gamma
+[4340.46@AA{}] H-@mymath{\gamma} line.
+
+@item hdelta
+@cindex H-delta
+[4101.74@AA{}] H-@mymath{\delta} line.
+
+@item hepsilon
+@cindex H-epsilon
+[3970.07@AA{}] H-@mymath{\epsilon} line.
+
+@item neiii
+[3869@AA{}] NEIII line.
+
+@item oiired
+[3729@AA{}] OII doublet's redder line.
+
+@item oii
+@cindex Doublet: OII
+@cindex OII doublet
+[3727.5@AA{}] OII doublet's mean center.
+
+@item oiiblue
+[3726@AA{}] OII doublet's bluer line.
 
 @item blimit
 @cindex Balmer limit
-Balmer limit at @mymath{3646} Angstrom.
+[3646@AA{}] Balmer limit.
 
-@item oiiired
-OII doublet's redder line at @mymath{3729} Angstrom.
+@item mgiired
+[2796@AA{}] MgII doublet's redder line.
 
-@item oiii
-@cindex Doublet: OII
-@cindex OII doublet
-OII doublet's mean center at @mymath{3727.5} Angstrom.
+@item mgii
+@cindex Doublet: MgII
+@cindex MgII doublet
+[2799.5@AA{}] MgII doublet's mean center.
 
-@item oiiiblue
-OII doublet's bluer line at @mymath{3726} Angstrom.
+@item mgiiblue
+[2803@AA{}] MgII doublet's bluer line.
+
+@item ciiired
+[1907@AA{}] CIII doublet's redder line.
+
+@item ciii
+@cindex Doublet: CIII
+@cindex CIII doublet
+[1908@AA{}] CIII doublet's mean center.
+
+@item ciiiblue
+[1909@AA{}] CIII doublet's bluer line.
+
+@item heiiblue
+[1640@AA{}] HeII doublet's bluer line.
 
 @item lyalpha
-@cindex Lyman-@mymath{\alpha}
-Lyman-@mymath{\alpha} line at @mymath{1215.67} Angstrom.
+@cindex Lyman-alpha
+[1215.67@AA{}] Lyman-@mymath{\alpha} line.
 
 @item lylimit
 @cindex Lyman limit
-Lyman limit line at @mymath{912} Angstrom.
+[912@AA{}] Lyman limit.
 
 @end table
 
@@ -30187,6 +30252,26 @@ Gnuastro's library has the following macros and functions for dealing with
 spectral lines. All these functions are declared in
 @file{gnuastro/spectra.h}.
 
+@cindex H-alpha
+@cindex H-beta
+@cindex H-gamma
+@cindex H-delta
+@cindex H-epsilon
+@cindex OII doublet
+@cindex SII doublet
+@cindex Lyman-alpha
+@cindex Lyman limit
+@cindex NII doublet
+@cindex Doublet: NII
+@cindex Doublet: OII
+@cindex Doublet: SII
+@cindex OIII doublet
+@cindex MgII doublet
+@cindex CIII doublet
+@cindex Balmer limit
+@cindex Doublet: OIII
+@cindex Doublet: MgII
+@cindex Doublet: CIII
 @deffn  Macro GAL_SPECLINES_INVALID
 @deffnx Macro GAL_SPECLINES_SIIRED
 @deffnx Macro GAL_SPECLINES_SII
