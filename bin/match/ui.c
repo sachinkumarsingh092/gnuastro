@@ -945,11 +945,14 @@ ui_free_report(struct matchparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->cp.hdu);
+  free(p->aperture);
   free(p->out1name);
   free(p->out2name);
   free(p->cp.output);
   gal_data_free(p->ccol1);
   gal_data_free(p->ccol2);
+  gal_list_data_free(p->cols1);
+  gal_list_data_free(p->cols2);
   gal_list_str_free(p->stdinlines, 1);
 
   /* Print the final message.
