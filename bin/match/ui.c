@@ -119,7 +119,6 @@ ui_initialize_options(struct matchparams *p,
           break;
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_NUMTHREADS:
-        case GAL_OPTIONS_KEY_STDINTIMEOUT:
           cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
