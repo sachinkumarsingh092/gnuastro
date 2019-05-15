@@ -153,15 +153,28 @@ txt_trim_space(char *str)
   be before column 7.
 */
 static void
-txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
+txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
+                      int inplace)
 {
-  char *tailptr;
   gal_data_t *tmp;
   int index, strw=0;
+  char *line, *aline, *tailptr;
   size_t len=strlen(comm_start);
   int type=GAL_TYPE_FLOAT64;                     /* Default type. */
   char *number=NULL, *name=NULL, *comment=NULL;
   char *inbrackets=NULL, *unit=NULL, *typestr=NULL, *blank=NULL;
+
+  /* Make a copy of the input line if `inplace==0'. */
+  if(inplace) line=aline=in_line;
+  else
+    {
+      /* Because the `line' pointer will change, we need a pointer to the
+         start of the originally allocated lines. This is the purpose of
+         `aline' (allocated-line). */
+      gal_checkset_allocate_copy(in_line, &aline);
+      line=aline;
+    }
+
 
   /* Only read this comment line if it follows the convention: */
   if( !strncmp(line, comm_start, len) )
@@ -276,6 +289,9 @@ txt_info_from_comment(char *line, gal_data_t **datall, char *comm_start)
          final column, we are just collecting information now. */
       gal_tableintern_read_blank(*datall, txt_trim_space(blank));
     }
+
+  /* Clean up. */
+  if(in_line!=aline) free(aline);
 }
 
 
@@ -539,7 +555,7 @@ txt_get_info_line(char *line, gal_data_t **datall, char *comm_start,
     {
       /* Line is a comment, see if it has formatted information. */
     case GAL_TXT_LINESTAT_COMMENT:
-      txt_info_from_comment(line, datall, comm_start);
+      txt_info_from_comment(line, datall, comm_start, inplace);
       break;
 
       /* Line is actual data, use it to fill in the gaps.  */

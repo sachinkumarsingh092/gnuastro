@@ -353,7 +353,7 @@ match_catalog(struct matchparams *p)
   uint32_t *u, *uf;
   gal_data_t *tmp, *mcols;
   gal_data_t *a=NULL, *b=NULL;
-  size_t nummatched, *acolmatch, *bcolmatch;
+  size_t nummatched, *acolmatch=NULL, *bcolmatch=NULL;
 
   /* Find the matching coordinates. We are doing the processing in
      place, */
