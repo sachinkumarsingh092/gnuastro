@@ -1889,23 +1889,22 @@ use in the example codes through the book, please see @ref{Conventions}.
 @cindex Azophi
 @cindex Abd al-rahman Sufi
 @cindex Sufi, Abd al-rahman
-It is the year 953 A.D.  and Sufi@footnote{Abd al-rahman Sufi (903 --
-986 A.D.), also known in Latin as Azophi was an Iranian
+It is the year 953 A.D. and Abd al-rahman Sufi (903 -- 986
+A.D.)@footnote{In Latin Sufi is known as Azophi. He was an Iranian
 astronomer. His manuscript ``Book of fixed stars'' contains the first
-recorded observations of the Andromeda galaxy, the Large Magellanic
-Cloud and seven other non-stellar or `nebulous' objects.}  is in
-Shiraz as a guest astronomer. He had come there to use the advanced
-123 centimeter astrolabe for his studies on the Ecliptic. However,
-something was bothering him for a long time. While mapping the
-constellations, there were several non-stellar objects that he had
-detected in the sky, one of them was in the Andromeda
-constellation. During a trip he had to Yemen, Sufi had seen another
-such object in the southern skies looking over the Indian ocean. He
-wasn't sure if such cloud-like non-stellar objects (which he was the
-first to call `Sah@={a}bi' in Arabic or `nebulous') were real
-astronomical objects or if they were only the result of some bias in
-his observations. Could such diffuse objects actually be detected at
-all with his detection technique?
+recorded observations of the Andromeda galaxy, the Large Magellanic Cloud
+and seven other non-stellar or `nebulous' objects.}  is in Shiraz as a
+guest astronomer. He had come there to use the advanced 123 centimeter
+astrolabe for his studies on the Ecliptic. However, something was bothering
+him for a long time. While mapping the constellations, there were several
+non-stellar objects that he had detected in the sky, one of them was in the
+Andromeda constellation. During a trip he had to Yemen, Sufi had seen
+another such object in the southern skies looking over the Indian ocean. He
+wasn't sure if such cloud-like non-stellar objects (which he was the first
+to call `Sah@={a}bi' in Arabic or `nebulous') were real astronomical
+objects or if they were only the result of some bias in his
+observations. Could such diffuse objects actually be detected at all with
+his detection technique?
 
 @cindex Almagest
 @cindex Claudius Ptolemy
@@ -2028,10 +2027,11 @@ Using all the information above, he creates the catalog of mock profiles he
 wants in a file named @file{cat.txt} (short for catalog) using his favorite
 text editor and stores it in a directory named @file{simulationtest} in his
 home directory. [The @command{cat} command prints the contents of a file,
-short for concatenation. So please copy-paste the lines after
+short for ``concatenation''. So please copy-paste the lines after
 ``@command{cat cat.txt}'' into @file{cat.txt} when the editor opens in the
 steps above it, note that there are 7 lines, first one starting with
-@key{#}]:
+@key{#}. Also be careful when copying from the PDF format, the Info, web,
+or text formats shouldn't have any problem]:
 
 @example
 $ mkdir ~/simulationtest
@@ -2105,6 +2105,7 @@ Convolve started on Mon Apr  6 16:35:32 953
   - Multiplied in the frequency domain.                0.040659 seconds
   - Converted back to the spatial domain.              3.465344 seconds
   - Padded parts removed.                              0.016767 seconds
+  - Output: cat_convolved.fits
 Convolve finished in:  10.422161 seconds
 
 $ls
@@ -2117,9 +2118,9 @@ and showed the effect of convolution to his student and explained to him
 how a PSF with a larger FWHM would make the points even wider. With the
 convolved image ready, they were prepared to re-sample it to the original
 pixel scale Sufi had planned [from the @command{$ astmkprof -P} command
-above, recall that MakeProfiles had over-sampled the image by 5 times]. Sufi
-explained the basic concepts of warping the image to his student and ran
-Warp with the following command:
+above, recall that MakeProfiles had over-sampled the image by 5
+times]. Sufi explained the basic concepts of warping the image to his
+student and ran Warp with the following command:
 
 @example
 $ astwarp --scale=1/5 --centeroncorner cat_convolved.fits
@@ -2142,12 +2143,12 @@ NAXIS2  =                  526 / length of data axis 2
 @end example
 
 @noindent
-@file{cat_convolved_warped.fits} now has the correct pixel scale. However,
+@file{cat_convolved_scaled.fits} now has the correct pixel scale. However,
 the image is still larger than what we had wanted, it is 526
 (@mymath{500+13+13}) by 526 pixels. The student is slightly confused, so
-Sufi also re-samples the PSF with the same scale and shows him that it is 27
-(@mymath{2\times13+1}) by 27 pixels. Sufi goes on to explain how frequency
-space convolution will dim the edges and that is why he added the
+Sufi also re-samples the PSF with the same scale and shows him that it is
+27 (@mymath{2\times13+1}) by 27 pixels. Sufi goes on to explain how
+frequency space convolution will dim the edges and that is why he added the
 @option{--prepforconv} option to MakeProfiles, see @ref{If convolving
 afterwards}. Now that convolution is done, Sufi can remove those extra
 pixels using Crop with the command below. Crop's @option{--section} option
@@ -2156,7 +2157,7 @@ standard), so the crop's first pixel has to be 14, not 13.
 
 @example
 $ astcrop cat_convolved_scaled.fits --section=14:*-13,14:*-13    \
-          --zeroisnotblank
+          --mode=img --zeroisnotblank
 Crop started on Sat Oct  6 17:03:24 953
   - Read metadata of 1 image.                          0.001304 seconds
   ---- ...nvolved_scaled_cropped.fits created: 1 input.
@@ -2180,7 +2181,7 @@ ran MakeNoise:
 
 @example
 $ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
-             cat_convolved_warped_crop.fits
+             cat_convolved_scaled_crop.fits
 MakeNoise started on Mon Apr  6 17:05:06 953
   - Generator type: mt19937
   - Generator seed: 1428318100
@@ -2251,12 +2252,11 @@ He used this chance to remind the student of the importance of comments in
 code or shell scripts: when writing the code, you have a good mental
 picture of what you are doing, so writing comments might seem superfluous
 and excessive. However, in one month when you want to re-use the script,
-you have lost that mental picture and rebuilding it is can be
-time-consuming and frustrating. The importance of comments is further
-amplified when you want to share the script with a friend/colleague. So it
-is good to accompany any script/code with useful comments while you are
-writing it (have a good mental picture of what/why you are doing
-something).
+you have lost that mental picture and remembering it can be time-consuming
+and frustrating. The importance of comments is further amplified when you
+want to share the script with a friend/colleague. So it is good to
+accompany any script/code with useful comments while you are writing it
+(create a good mental picture of what/why you are doing something).
 
 @cindex Gedit
 @cindex GNU Emacs

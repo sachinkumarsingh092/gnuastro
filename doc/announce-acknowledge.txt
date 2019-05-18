@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Hamed Altafi
 Leindert Boogaard
 Raul Infante-Sainz
 Lee Kelvin
