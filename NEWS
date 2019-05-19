@@ -39,6 +39,11 @@ See the end of the file for license conditions.
 
 ** Changed features
 
+  Installation:
+   - Better `./configure' tests (using Gnulib's `AC_LIB_HAVE_LINKFLAGS') to
+     avoid some crashes during `make' when the host had multiple
+     conflicting versions of some dependencies (GSL in particular).
+
   Arithmetic:
    - The output of coadding operators is no longer the same type as the
      input in general. The output of the `min' and `max' operators are

@@ -262,12 +262,23 @@ has_cfitsio=yes
 has_gslcblas=yes
 missing_mandatory=no
 missing_optional_lib=no
-AC_SEARCH_LIBS(sqrt, m, [],
-               [missing_mandatory=yes; has_cmath=no])
-AC_SEARCH_LIBS([cblas_sdsdot], [gslcblas], [],
-               [missing_mandatory=yes; has_gslcblas=no])
-AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
-               [missing_mandatory=yes; has_gsl=no])
+
+# Order is important here.
+AC_LIB_HAVE_LINKFLAGS([m], [], [#include <math.h>])
+AS_IF([test "x$LIBM" = x],
+      [missing_mandatory=yes; has_cmath=no],
+      [LDADD="$LIBM $LDADD"])
+
+AC_LIB_HAVE_LINKFLAGS([gsl], [gslcblas], [
+#include <gsl/gsl_rng.h>
+void junk(void) { gsl_rng_env_setup(); } ])
+AS_IF([test "x$LIBGSL" = x],
+      [missing_mandatory=yes; has_gsl=no; has_gslcblas=no],
+      [LDADD="$LIBGSL $LDADD"])
+
+
+
+
 
 # Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
 # and thus it will be necessary to explicitly link with libcurl also. If it
@@ -282,20 +293,64 @@ AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
 # librtmp, libldap). So if you intend to make Gnuastro statically, then
 # build Libcurl in static-only mode so you won't have to check for all
 # these extra libraries here.
-AC_SEARCH_LIBS([deflateInit_], [z], [], [])
-AC_SEARCH_LIBS([curl_global_init], [curl], [], [])
-AC_SEARCH_LIBS([ffopen], [cfitsio], [],
-               [missing_mandatory=yes; has_cfitsio=no])
-AC_SEARCH_LIBS([wcspih], [wcs], [],
-               [missing_mandatory=yes; has_wcslib=no])
+AC_LIB_HAVE_LINKFLAGS([z], [], [#include <zlib.h>])
+AS_IF([test "x$LIBZ" = x], [], [LDADD="$LIBZ $LDADD"])
+
+AC_LIB_HAVE_LINKFLAGS([curl], [], [#include <curl/curl.h>])
+AS_IF([test "x$LIBCURL" = x], [], [LDADD="$LIBCURL $LDADD"])
+
+# CFITSIO can depend on libcurl (which may not exist on some
+# systems). Also, `AC_LIB_HAVE_LINKFLAGS' puts the value in its second
+# argument in single-quotes. So its not easy to set a conditional linking
+# dependency. Therefore, we need to temporarily put LDADD within LIBS so
+# the compiler knows what to link with.
+origlibs="$LIBS"
+LIBS="$LIBS $LDADD"
+AC_LIB_HAVE_LINKFLAGS([cfitsio], [], [
+#include <fitsio.h>
+void junk(void) {
+int status;
+fitsfile *f;
+ffopen(&f, "junk", READONLY, &status);} ])
+AS_IF([test "x$LIBCFITSIO" = x],
+      [missing_mandatory=yes; has_cfitsio=no],
+      [LDADD="$LIBCFITSIO $LDADD"])
+LIBS="$origlibs"
+
+AC_LIB_HAVE_LINKFLAGS([wcs], [], [
+#include <wcslib/wcshdr.h>
+void junk(void) {
+int nreject, nwcs;
+struct wcsprm *wcs;
+char *header="JUNK";
+wcspih(header, 1, 0, 0, &nreject, &nwcs, &wcs);
+} ])
+AS_IF([test "x$LIBWCS" = x],
+      [missing_mandatory=yes; has_wcslib=no],
+      [LDADD="$LIBWCS $LDADD"])
+
+
+
+
 
 # These are secondary tests for more fine-grained control in libraries that
-# have already been checked. We don't need to add them to the LIBS
-# variable, so we are using AC_CHECK_LIB for these tests.
-AC_CHECK_DECLS(gsl_interp_steffen,
-               [ gsl_version_old=no                   ],
-               [ gsl_version_old=yes; anywarnings=yes ],
-               [[#include <gsl/gsl_interp.h>]])
+# have already been checked.
+
+# GSL's `gsl_interp_steffen' isn't a function. So we'll need to use
+# `AC_LINK_IFELSE'. However, AC_LINK_IFELSE doesn't use `LDADD', so we'll
+# have to temporarily add `LDADD' to LIBS, then set it back to the
+# original.
+origlibs="$LIBS"
+LIBS="$LIBS $LDADD"
+AC_MSG_CHECKING(if GSL supports Steffen splines)
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+                   [[#include <gsl/gsl_interp.h>]],
+                   [[const gsl_interp_type *itype=gsl_interp_steffen;]])],
+               [AC_MSG_RESULT(yes)
+                gsl_version_old=no],
+               [AC_MSG_RESULT(no)
+                gsl_version_old=yes; anywarnings=yes;])
+LIBS="$origlibs"
 
 # If the CFITSIO library has the `fits_is_reentrant' function (it was added
 # since version 3.30 of April 2012).
@@ -335,8 +390,18 @@ AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
 
 # Check libjpeg:
-AC_SEARCH_LIBS([jpeg_stdio_dest], [jpeg],
-               [has_libjpeg=yes], [has_libjpeg=no; missing_optional_lib=yes])
+AC_LIB_HAVE_LINKFLAGS([jpeg], [], [
+#include <stdio.h>
+#include <stdlib.h>
+#include <jpeglib.h>
+void junk(void) {
+  struct jpeg_decompress_struct cinfo;
+  jpeg_create_decompress(&cinfo);
+}  ])
+AS_IF([test "x$LIBJPEG" = x],
+      [missing_optional_lib=yes; has_libjpeg=no],
+      [has_libjpeg=yes; LDADD="$LIBJPEG $LDADD"])
+
 AS_IF([test "x$has_libjpeg" = "xyes"],
       [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])
@@ -351,9 +416,16 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 # the LZMA library. But if libtiff hasn't been linked with it and its
 # present, there is no problem, the linker will just pass over it. So we
 # don't need to stop the build if this fails.
-AC_SEARCH_LIBS([lzma_stream_decoder], [lzma], [], [])
-AC_SEARCH_LIBS([TIFFOpen], [tiff],
-               [has_libtiff=yes], [has_libtiff=no; missing_optional_lib=yes])
+AC_LIB_HAVE_LINKFLAGS([lzma], [], [#include <lzma.h>])
+AS_IF([test "x$LIBLZMA" = x], [], [LDADD="$LIBLZMA $LDADD"])
+
+AC_LIB_HAVE_LINKFLAGS([tiff], [], [
+#include <tiffio.h>
+void junk(void) {TIFF *tif=TIFFOpen("junk", "r");}
+])
+AS_IF([test "x$LIBTIFF" = x],
+      [missing_optional_lib=yes; has_libtiff=no],
+      [has_libtiff=yes; LDADD="$LIBTIFF $LDADD"])
 AS_IF([test "x$has_libtiff" = "xyes"],
       [AC_DEFINE([HAVE_LIBTIFF], [], [Has libtiff])],
       [anywarnings=yes])
@@ -363,9 +435,15 @@ AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 
 
-# Check libgit2:
-AC_SEARCH_LIBS([git_libgit2_init], [git2],
-               [has_libgit2=1], [has_libgit2=0; missing_optional_lib=yes])
+# Check libgit2. Note that very old versions of libgit2 don't have the
+# `git_libgit2_init' function.
+AC_LIB_HAVE_LINKFLAGS([git2], [], [
+#include <git2.h>
+void junk(void) {git_libgit2_init();}
+])
+AS_IF([test "x$LIBGIT2" = x],
+      [missing_optional_lib=yes; has_libgit2=0],
+      [has_libgit2=1; LDADD="$LIBGIT2 $LDADD"])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
                    [libgit2 is installed on the system])
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
@@ -848,7 +926,16 @@ AC_CONFIG_COMMANDS([man page directory], [$MKDIR_P doc/man])
 
 
 
-# Make the Makefiles:
+# Set the linker-necessary parameters.
+AC_SUBST(CONFIG_LDADD, [$LDADD])
+AC_DEFINE_UNQUOTED([LDADD], ["$LDADD"],
+                   [Linking information, primarily for BuildProgram])
+
+
+
+
+
+# Prepare the Makefiles.
 AC_OUTPUT
 
 
