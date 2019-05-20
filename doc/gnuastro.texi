@@ -10831,6 +10831,26 @@ The hour that defines the next ``night''. By default, all times before
 sub-hour value is necessary, it should be given in units of hours, for
 example @option{--hour=9.5} corresponds to 9:30a.m.
 
+@cartouche
+@noindent
+@cindex Time zone
+@cindex UTC (Universal time coordinate)
+@cindex Universal time coordinate (UTC)
+@strong{Dealing with time zones:} the time that is recorded in
+@option{--key} may be in UTC (Universal Time Coordinate). However, the
+organization of the images taken during the night depends on the local
+time. It is possible to take this into account by setting the
+@option{--hour} option to the local time in UTC.
+
+For example, consider a set of images taken in Auckland (New Zeland,
+UTC+12) during different nights. If you want to classify these images by
+night, you have to know at which time (in UTC time) the Sun rises (or any
+other separator/definition of a different night). In this particular
+example, you can use @option{--hour=21}. Because in Auckland, a night
+finishes (roughly) at the local time of 9:00, which corresponds to 21:00
+UTC.
+@end cartouche
+
 @item -l
 @itemx --link
 Create a symbolic link for each input FITS file. This option cannot be used
@@ -10877,23 +10897,6 @@ already exist). For example @code{--prefix=/path/to/processing/img-} will
 put all the links/copies in the @file{/path/to/processing} directory, and
 the files (in that directory) will all start with @file{img-}.
 @end table
-
-
-@cartouche
-@noindent
-@strong{Dealing with time zones:} Time in @code{DATE-OBS} keyword in the
-header of the images is usually expressed in UTC (Universal Time Coordinate)
-time.  However, the organization of the images taken during the night used
-to be local time based. It is possible to take into account this time shift
-zone in the organization of the files with the @option{--hour} argument. For
-example, consider you have a set of images that were taken in Auckland (New
-Zeland, UTC+12) along different nights. If you want to organize these images
-by nights, you have to know at which time (in UTC time) Sun rises (or
-whatever consideration you need to make the definition of "different
-night"). In this particular example, you will set the argument
-@option{--hour=21}, because in this city, sunrise happens (roughly) at 21h
-UTC time.
-@end cartouche
 
 
 
