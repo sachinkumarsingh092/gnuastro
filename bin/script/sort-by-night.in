@@ -58,13 +58,17 @@ Usage: $scriptname [OPTION] FITS-files
 
 This script is part of GNU Astronomy Utilities $version.
 
-This script will look into a HDU/extension for a header keyword in the
-given FITS files and interpret the value as a date. The inputs will be
-separated by "night"s. It will then print a list of all the input files
-along with the following two columns: night number and file number in that
-night (sorted by time). With '--link' a symbolic link (one for each input)
-will be made with names including the night classifier. With '--copy'
-instead of a link, a copy of the inputs will be made.
+This script will look into a HDU/extension for a header keyword in the given
+FITS files and interpret the value as a date. The inputs will be separated
+by "nights". The definition of "nights" is set with the agrument '--hour'.
+Be careful about differences in time zones! While the organization of images
+by date used to be in local time, the time expressed in '--key' is ussually
+defined in UTC (Universal Time Coordinate) time. It will then print a list
+of all the input files along with the following two columns: night number
+and file number in that night (sorted by time). With '--link' a symbolic
+link (one for each input) will be made with names including the night
+classifier. With '--copy' instead of a link, a copy of the inputs will be
+made.
 
 For more information, please run any of the following commands. In
 particular the first contains a very comprehensive explanation of this
@@ -84,6 +88,7 @@ $scriptname options:
   -h, --hdu=STR           HDU/extension of all input FITS files.
   -k, --key=STR           Header keyword specifying date to use.
   -H, --hour=FLT          Hour in next day to be included in night.
+                          Be aware of time zones whith this argument!
 
  Output:
   -l, --link              list of inputs with night and file number.

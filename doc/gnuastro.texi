@@ -10879,6 +10879,21 @@ the files (in that directory) will all start with @file{img-}.
 @end table
 
 
+@cartouche
+@noindent
+@strong{Dealing with time zones:} Time in @code{DATE-OBS} keyword in the
+header of the images is usually expressed in UTC (Universal Time Coordinate)
+time.  However, the organization of the images taken during the night used
+to be local time based. It is possible to take into account this time shift
+zone in the organization of the files with the @option{--hour} argument. For
+example, consider you have a set of images that were taken in Auckland (New
+Zeland, UTC+12) along different nights. If you want to organize these images
+by nights, you have to know at which time (in UTC time) Sun rises (or
+whatever consideration you need to make the definition of "different
+night"). In this particular example, you will set the argument
+@option{--hour=21}, because in this city, sunrise happens (roughly) at 21h
+UTC time.
+@end cartouche
 
 
 

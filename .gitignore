@@ -88,6 +88,7 @@ astmatch
 ltmain.sh
 .dirstamp
 configure
+.DS_Store
 .gnuastro
 astmkprof
 astheader
