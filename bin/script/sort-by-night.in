@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Separate input datasets into multiple nights, run with `--help', or see
 # description under `print_help' (below) for more.
@@ -130,7 +130,7 @@ EOF
 
 
 # Functions to check option values and complain if necessary.
-function on_off_option_error() {
+on_off_option_error() {
     if [ "x$2" = x ]; then
         echo "$scriptname: '$1' doesn't take any values."
     else
@@ -139,7 +139,7 @@ function on_off_option_error() {
     exit 1
 }
 
-function check_v() {
+check_v() {
     if [ x"$2" = x ]; then
         echo "$scriptname: option '$1' requires an argument."
         echo "Try '$scriptname --help' for more information."
@@ -175,7 +175,7 @@ function check_v() {
 #   if a value is appended to the short format it should crash. So in the
 #   second test for these (`-l*') will account for both the case where we
 #   have an equal sign and where we don't.
-while [[ $# -gt 0 ]]
+while [ $# -gt 0 ]
 do
     case "$1" in
         # Input parameters.
@@ -244,9 +244,9 @@ fi
 # since 1970-01-01,00:00:00) and keep that with the filename.
 list=$(for f in $inputs; do
            astfits $f --datetosec=$key --hdu=$hdu -q \
-               | awk '{h='$hour'; d=int($1/86400);   \
-                       print "'$f'", $1,             \
-                       int($1)%86400<(h*3600) ? d-1 : d }';
+               | awk '{h='$hour'; d=int($1/86400); \
+                       if(int($1)%86400<(h*3600)) n=d-1; else n=d; \
+                       print "'$f'", $1, n }'
        done)
 
 
@@ -302,5 +302,5 @@ echo "$unique" | while read l; do
     done
 
     # Increment the night-counter.
-    ((counter++))
+    counter=$((counter+1))
 done
