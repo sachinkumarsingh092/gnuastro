@@ -11729,6 +11729,47 @@ This option is not mandatory, if no specific columns are requested, all the
 input table columns are output. When this option is called multiple times,
 it is possible to output one column more than once.
 
+This option can also modify the input values based on certain
+operations. The operators are called just like a column name, allowing you
+to place the modified columns anywhere in the output table. For example the
+output of the two commands below (which will produce identical outputs)
+will be 5 columns. The first three columns are the input table's IDs and RA
+and Dec of each object. The fourth and fifth will be the pixel positions in
+@file{image.fits} that correspond to those positions.
+
+@example
+$ asttable table.fits -cID,RA,DEC,wcstoimg(RA/DEC) \
+           --wcsfile=image.fits
+$ asttable table.fits -cID,RA -cDEC -cwcstoimg(RA/DEC) \
+           --wcsfile=image.fits
+@end example
+
+@table @code
+@item wcstoimg(C1/C2)
+Assume that the column specfied by @code{C1} (either through name or
+number) is the RA and @code{C2} is the Declination. As output, the two
+outputs of this operator are the image coordinates. Note that within the
+operator, the delimiter/separator between column identifiers is a slash
+(`@code{/}'). The WCS structure necessary for this conversion is derived
+from the @option{--wcshdu} extension/HDU of @option{--wcsfile}.
+
+@item imgtowcs(C1/C2)
+Similar to @code{wcstoimg}, except that the two input columns are assumed
+to be image coordinates and the output columns will be
+@end table
+
+@item -w STR
+@itemx --wcsfile=STR
+FITS file that contains the WCS to be used in the @code{wcstoimg} and
+@code{imgtowcs} operators of @option{--column} (see above). The extension
+name/number within the FITS file can be specified with @option{--wcshdu}.
+
+@item -W STR
+@itemx --wcshdu=STR
+FITS extension/HDU that contains the WCS to be used in the @code{wcstoimg}
+and @code{imgtowcs} operators of @option{--column} (see above). The FITS
+file name can be specified with @option{--wcsfile}.
+
 @item -O
 @itemx --colinfoinstdout
 @cindex Standard output

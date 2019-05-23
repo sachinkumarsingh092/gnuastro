@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/pointer.h>
@@ -118,6 +119,8 @@ ui_initialize_options(struct tableparams *p,
   /* Program-specific initialization. */
   p->head                = GAL_BLANK_SIZE_T;
   p->tail                = GAL_BLANK_SIZE_T;
+  p->wcstoimg            = GAL_BLANK_SIZE_T;
+  p->imgtowcs            = GAL_BLANK_SIZE_T;
 
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -432,17 +435,93 @@ ui_print_info_exit(struct tableparams *p)
 
 
 
+/* WCS <-> Image conversion */
+static void
+ui_wcs_conversion(struct tableparams *p, char *instr,
+                  gal_list_str_t **wcstoimg_ptr,
+                  gal_list_str_t **imgtowcs_ptr,
+                  gal_list_str_t **new)
+{
+  const char delimiter[]="/";
+  char *c1, *c2, *c3, *optname, *saveptr;
+
+  /* Set the basic option properties. */
+  instr[8]='\0';
+  optname = instr;
+
+  /* If a WCS hasn't been read yet, read it.*/
+  if(p->wcs==NULL)
+    {
+      /* A small sanity check. */
+      if(p->wcsfile==NULL || p->wcshdu==NULL)
+        error(EXIT_FAILURE, 0, "`--wcsfile' and `--wcshdu' are necessary for "
+              "the `%s' conversion", optname);
+
+      /* Read the WCS. */
+      p->wcs=gal_wcs_read(p->wcsfile, p->wcshdu, 0, 0, &p->nwcs);
+      if(p->wcs==NULL)
+        error(EXIT_FAILURE, 0, "%s (hdu: %s): no WCS could be read by "
+              "WCSLIB", p->wcsfile, p->wcshdu);
+    }
+
+  /* Make sure this conversion is only requested once. */
+  if( instr[0]=='w' ? *wcstoimg_ptr : *imgtowcs_ptr )
+    error(EXIT_FAILURE, 0, "`%s' can only be called once.", optname);
+
+  /* Read the first token. */
+  c1=strtok_r(instr+9, delimiter, &saveptr);
+  if(c1==NULL)
+    error(EXIT_FAILURE, 0, "`%s' must end with `)'", optname);
+  if(*c1==')')
+    error(EXIT_FAILURE, 0, "`%s' has no defining column. Please specify "
+          "two column names or numbers with a slash between them for "
+          "example `%s(RA/DEC)'", optname, optname);
+
+  /* Read the second token and make sure it ends with `)'. Then set the `)'
+     as the string-NULL character. */
+  c2=strtok_r(NULL,        delimiter, &saveptr);
+  if(c2==NULL || c2[strlen(c2)-1]!=')')
+    error(EXIT_FAILURE, 0, "`%s' needs two input columns. Please "
+          "specify two columns with a slash between them for "
+          "example `%s(RA/DEC)'", optname, optname);
+  c2[strlen(c2)-1]='\0';
+
+  /* Make sure there aren't any more elements. */
+  c3=strtok_r(NULL, delimiter, &saveptr);
+  if(c3!=NULL)
+    error(EXIT_FAILURE, 0, "only two values can be given to `%s'", optname);
+
+  /* Add the column name/number to the list of columns to read, then keep
+     the pointer to the node (so we can later identify it). */
+  gal_list_str_add(new, c1, 1);
+  gal_list_str_add(new, c2, 1);
+
+  /* Keep this node's pointer. */
+  if(instr[0]=='w') *wcstoimg_ptr=*new;
+  else              *imgtowcs_ptr=*new;
+
+  /* Clean up (the `c1' and `c2') are actually within the allocated space
+     of `instr'. That is why we are setting the last argument of
+     `gal_list_str_add' to `1' (to allocate space for them). */
+  free(instr);
+}
+
+
+
+
+
 /* The columns can be given as comma-separated values to one option or
    multiple calls to the column option. Here, we'll check if the input list
    has comma-separated values. If they do then the list will be updated to
    be fully separate. */
 static void
-ui_columns_prepare(struct tableparams *p)
+ui_columns_prepare(struct tableparams *p, size_t *wcstoimg, size_t *imgtowcs)
 {
   size_t i;
   char **strarr;
   gal_data_t *strs;
   gal_list_str_t *tmp, *new=NULL;
+  gal_list_str_t *wcstoimg_ptr=NULL, *imgtowcs_ptr=NULL;
 
   /* Go over the whole original list (where each node may have more than
      one value separated by a comma. */
@@ -453,10 +532,18 @@ ui_columns_prepare(struct tableparams *p)
       strs=gal_options_parse_csv_strings_raw(tmp->v, NULL, 0);
       strarr=strs->array;
 
-      /* Go over all the elements and add them to the `new' list. */
+      /* Go over all the given colum names/numbers. */
       for(i=0;i<strs->size;++i)
         {
-          gal_list_str_add(&new, strarr[i], 0);
+          if(!strncmp(strarr[i],"wcstoimg(",9)
+             || !strncmp(strarr[i],"imgtowcs(",9))
+            ui_wcs_conversion(p, strarr[i], &wcstoimg_ptr, &imgtowcs_ptr, &new);
+          else
+            gal_list_str_add(&new, strarr[i], 0);
+
+          /* The pointer allocated string is either being used (and later
+             freed) else, or has already been freed. So its necessary to
+             set it to NULL. */
           strarr[i]=NULL;
         }
 
@@ -470,6 +557,16 @@ ui_columns_prepare(struct tableparams *p)
   /* Reverse the new list, then put it into `p->columns'. */
   gal_list_str_reverse(&new);
   p->columns=new;
+
+  /* If conversion is necessary, set the final column number. */
+  i=0;
+  if(wcstoimg_ptr || imgtowcs_ptr)
+    for(tmp=p->columns;tmp!=NULL;tmp=tmp->next)
+      {
+        if(wcstoimg_ptr==tmp) *wcstoimg=i-1;
+        if(imgtowcs_ptr==tmp) *imgtowcs=i-1;
+        ++i;
+      }
 }
 
 
@@ -769,9 +866,11 @@ static void
 ui_preparations(struct tableparams *p)
 {
   gal_list_str_t *lines;
+  size_t i, ncolnames, *colmatch;
   size_t nrange=0, origoutncols=0;
   struct gal_options_common_params *cp=&p->cp;
   size_t sortindout=GAL_BLANK_SIZE_T, *rangeindout=NULL;
+  size_t wcstoimg=GAL_BLANK_SIZE_T, imgtowcs=GAL_BLANK_SIZE_T;
 
   /* If there were no columns specified or the user has asked for
      information on the columns, we want the full set of columns. */
@@ -780,7 +879,7 @@ ui_preparations(struct tableparams *p)
 
 
   /* Prepare the column names. */
-  ui_columns_prepare(p);
+  ui_columns_prepare(p, &wcstoimg, &imgtowcs);
 
 
   /* If the input is from stdin, save it as `lines'. */
@@ -793,12 +892,28 @@ ui_preparations(struct tableparams *p)
                                &rangeindout);
 
 
+  /* If any conversions must be done, we need to know how many matches
+     there were for each column. */
+  ncolnames=gal_list_str_number(p->columns);
+  colmatch = ( (wcstoimg!=GAL_BLANK_SIZE_T || imgtowcs!=GAL_BLANK_SIZE_T)
+               ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ncolnames, 1,
+                                      __func__, "colmatch")
+               : NULL );
+
+
   /* Read the necessary columns. */
   p->table=gal_table_read(p->filename, cp->hdu, lines, p->columns,
                           cp->searchin, cp->ignorecase, cp->minmapsize,
-                          NULL);
+                          colmatch);
   if(p->filename==NULL) p->filename="stdin";
   gal_list_str_free(lines, 1);
+
+
+  /* If we have a unit conversion, find the proper column to use. */
+  if(wcstoimg!=GAL_BLANK_SIZE_T)
+    { p->wcstoimg=0; for(i=0;i<wcstoimg;++i) p->wcstoimg += colmatch[i]; }
+  if(imgtowcs!=GAL_BLANK_SIZE_T)
+    { p->imgtowcs=0; for(i=0;i<imgtowcs;++i) p->imgtowcs += colmatch[i]; }
 
 
   /* If the range and sort options are requested, keep them as separate
@@ -838,6 +953,7 @@ ui_preparations(struct tableparams *p)
 
 
   /* Clean up. */
+  free(colmatch);
   if(rangeindout) free(rangeindout);
 }
 

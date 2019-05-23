@@ -53,6 +53,8 @@ struct tableparams
   /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
   char              *filename;  /* Input filename.                      */
+  char               *wcsfile;  /* File with WCS.                       */
+  char                *wcshdu;  /* HDU in file with WCS.                */
   gal_list_str_t     *columns;  /* List of given columns.               */
   uint8_t         information;  /* ==1: only print FITS information.    */
   uint8_t     colinfoinstdout;  /* ==1: print column metadata in CL.    */
@@ -64,12 +66,16 @@ struct tableparams
 
   /* Internal. */
   gal_data_t           *table;  /* Linked list of output table columns. */
+  struct wcsprm          *wcs;  /* WCS structure for conversion.        */
+  int                    nwcs;  /* Number of WCS structures.            */
   gal_data_t      *allcolinfo;  /* Information of all the columns.      */
   gal_data_t         *sortcol;  /* Column to define a sorting.          */
   struct list_range *rangecol;  /* Column to define a range.            */
   uint8_t            freesort;  /* If the sort column should be freed.  */
   uint8_t          *freerange;  /* If the range column should be freed. */
   uint8_t              sortin;  /* If the sort column is in the output. */
+  size_t             wcstoimg;  /* Output column no, for conversion.    */
+  size_t             imgtowcs;  /* Output column no, for conversion.    */
   time_t              rawtime;  /* Starting time of the program.        */
 };
 

@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gsl/gsl_heapsort.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/qsort.h>
@@ -321,6 +322,73 @@ table_head_tail(struct tableparams *p)
 
 
 
+
+
+static void
+table_unit_conversion(struct tableparams *p, int w0i1)
+{
+  int isfirstcol;
+  gal_data_t *t1, *t2, *tmp, *before, *after;
+  size_t i, startcol = w0i1 ? p->imgtowcs : p->wcstoimg;
+
+  /* Go to the column that we need to convert. */
+  i=0;
+  before=p->table;
+  for(tmp=p->table; tmp!=NULL; tmp=tmp->next)
+    {
+      if( i++ == startcol )
+        {
+          after=tmp->next->next;
+          break;
+        }
+      before=tmp;
+    }
+  isfirstcol=before==p->table;
+
+  /* Make sure the types are double-precision floating point. NOTE that
+     since we are freeing afterwards, the second column needs to be
+     read first.*/
+  t2=gal_data_copy_to_new_type_free(tmp->next, GAL_TYPE_FLOAT64);
+  t1=gal_data_copy_to_new_type_free(tmp,       GAL_TYPE_FLOAT64);
+
+  /* Do the conversion. */
+  t1->next=t2;
+  t2->next=NULL;
+  if(w0i1) gal_wcs_img_to_world(t1, p->wcs, 1);
+  else     gal_wcs_world_to_img(t1, p->wcs, 1);
+
+  /* In image mode, double-precision floating point is too much. */
+  if(w0i1==0)
+    {
+      t1=gal_data_copy_to_new_type_free(t1, GAL_TYPE_FLOAT32);
+      t2=gal_data_copy_to_new_type_free(t2, GAL_TYPE_FLOAT32);
+    }
+
+  /* Put them back into the output table. */
+  t1->next=t2;
+  t2->next=after;
+  if(isfirstcol) p->table=t1; else before->next=t1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**************************************************************/
 /***************       Top function         *******************/
 /**************************************************************/
@@ -336,6 +404,10 @@ table(struct tableparams *p)
   /* If the output number of rows is limited, apply them. */
   if(p->head!=GAL_BLANK_SIZE_T || p->tail!=GAL_BLANK_SIZE_T)
     table_head_tail(p);
+
+  /* If unit conversion is requested, do it. */
+  if(p->wcstoimg!=GAL_BLANK_SIZE_T) table_unit_conversion(p, 0);
+  if(p->imgtowcs!=GAL_BLANK_SIZE_T) table_unit_conversion(p, 1);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,
