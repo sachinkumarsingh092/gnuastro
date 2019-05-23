@@ -384,7 +384,7 @@ ui_read_column(struct convolveparams *p, int i0k1)
   if(out->next!=NULL)
     {
       if(filename)
-        gal_checkset_dataset_name(filename, hdu);
+        source=gal_checkset_dataset_name(filename, hdu);
       else
         source="standard-input";
       error(EXIT_FAILURE, 0, "%s: more than one column in input table mached "

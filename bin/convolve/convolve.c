@@ -790,7 +790,7 @@ convolve(struct convolveparams *p)
 
       /* Clean up: free the actual input and replace it's pointer with the
          convolved dataset to save as output. */
-      if(&cp->tl) gal_tile_full_free_contents(&cp->tl);
+      gal_tile_full_free_contents(&cp->tl);
       gal_data_free(p->input);
       p->input=out;
     }
