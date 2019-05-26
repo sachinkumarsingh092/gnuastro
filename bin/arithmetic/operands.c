@@ -362,15 +362,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
          means that this is not the first image read. So, write its basic
          information into the reference data structure for future
          checks. */
-      if(p->refdata.ndim)
-        {
-          if( gal_dimension_is_different(&p->refdata, data) )
-            error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
-                  "compared to previous images. All the images must be "
-                  "the same size in order for Arithmetic to work",
-                  filename, hdu);
-        }
-      else
+      if(p->refdata.ndim==0)
         {
           /* Set the dimensionality. */
           p->refdata.ndim=(data)->ndim;
