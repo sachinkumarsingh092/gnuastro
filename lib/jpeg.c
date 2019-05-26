@@ -48,18 +48,23 @@ int
 gal_jpeg_name_is_jpeg(char *name)
 {
   size_t len;
-  len=strlen(name);
-  if ( ( len>=3 && strcmp(&name[len-3], "jpg") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "JPG") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "jpeg") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "JPEG") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "jpe") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "jif") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "jfif") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "jfi") == 0 ) )
-    return 1;
-  else
-    return 0;
+
+  if(name)
+    {
+      len=strlen(name);
+      if ( ( len>=3 && strcmp(&name[len-3], "jpg") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "JPG") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "jpeg") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "JPEG") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "jpe") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "jif") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "jfif") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "jfi") == 0 ) )
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 
@@ -69,17 +74,21 @@ gal_jpeg_name_is_jpeg(char *name)
 int
 gal_jpeg_suffix_is_jpeg(char *name)
 {
-  if (strcmp(name, "jpg") == 0   || strcmp(name, ".jpg") == 0
-      || strcmp(name, "JPG") == 0 || strcmp(name, ".JPG") == 0
-      || strcmp(name, "jpeg") == 0 || strcmp(name, ".jpeg") == 0
-      || strcmp(name, "JPEG") == 0 || strcmp(name, ".JPEG") == 0
-      || strcmp(name, "jpe") == 0 || strcmp(name, ".jpe") == 0
-      || strcmp(name, "jif") == 0 || strcmp(name, ".jif") == 0
-      || strcmp(name, "jfif") == 0 || strcmp(name, ".jfif") == 0
-      || strcmp(name, "jfi") == 0 || strcmp(name, ".jfi") == 0)
-    return 1;
-  else
-    return 0;
+  if(name)
+    {
+      if (strcmp(name, "jpg") == 0   || strcmp(name, ".jpg") == 0
+          || strcmp(name, "JPG") == 0 || strcmp(name, ".JPG") == 0
+          || strcmp(name, "jpeg") == 0 || strcmp(name, ".jpeg") == 0
+          || strcmp(name, "JPEG") == 0 || strcmp(name, ".JPEG") == 0
+          || strcmp(name, "jpe") == 0 || strcmp(name, ".jpe") == 0
+          || strcmp(name, "jif") == 0 || strcmp(name, ".jif") == 0
+          || strcmp(name, "jfif") == 0 || strcmp(name, ".jfif") == 0
+          || strcmp(name, "jfi") == 0 || strcmp(name, ".jfi") == 0)
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 

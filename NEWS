@@ -29,10 +29,10 @@ See the end of the file for license conditions.
   Table:
    - As part of printing output columns, Table can now convert Image to WCS
      coordinates and vice-versa. For example if the input catalog has
-     atleast an `ID' column and two `RA' and `DEC' columns the following
-     `-cID,RA,DEC -cwcstoimg(RA,DEC) --wcsfile=a.fits' options will print 5
-     columns, where the last two columns are the image coordinates based on
-     the WCS in `a.fits'.
+     atleast an `ID' column and two `RA' and `DEC' columns the set of
+     options below will produce 5 columns where the last two columns are
+     the image coordinates based on the WCS in `a.fits':
+           `-cID,RA,DEC -c"arith RA DEC wcstoimg" --wcsfile=a.fits'
    --head: Only output the given number of rows from the top of columns.
    --tail: Only output the given number of rows from the botoom of columns.
 

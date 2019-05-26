@@ -74,9 +74,13 @@ struct tableparams
   uint8_t            freesort;  /* If the sort column should be freed.  */
   uint8_t          *freerange;  /* If the range column should be freed. */
   uint8_t              sortin;  /* If the sort column is in the output. */
+  time_t              rawtime;  /* Starting time of the program.        */
+
+  /* For arithmetic operators. */
+  gal_list_str_t  *wcstoimg_p;  /* Pointer to the node.                 */
+  gal_list_str_t  *imgtowcs_p;  /* Pointer to the node.                 */
   size_t             wcstoimg;  /* Output column no, for conversion.    */
   size_t             imgtowcs;  /* Output column no, for conversion.    */
-  time_t              rawtime;  /* Starting time of the program.        */
 };
 
 #endif

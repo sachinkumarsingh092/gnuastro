@@ -435,75 +435,89 @@ ui_print_info_exit(struct tableparams *p)
 
 
 
-/* WCS <-> Image conversion */
-static void
-ui_wcs_conversion(struct tableparams *p, char *instr,
-                  gal_list_str_t **wcstoimg_ptr,
-                  gal_list_str_t **imgtowcs_ptr,
-                  gal_list_str_t **new)
+static int
+ui_columns_wcs(struct tableparams *p, char *operator, size_t counter)
 {
-  const char delimiter[]="/";
-  char *c1, *c2, *c3, *optname, *saveptr;
+  char *opname;
+  gal_list_str_t **ptr;
+  int fromwcs=!strncmp("wcstoimg", operator, 8);
 
-  /* Set the basic option properties. */
-  instr[8]='\0';
-  optname = instr;
+  /* Set the basic properties. */
+  opname = fromwcs ? "wcstoimg"       : "imgtowcs";
+  ptr    = fromwcs ? (&p->wcstoimg_p) : (&p->imgtowcs_p);
 
   /* If a WCS hasn't been read yet, read it.*/
   if(p->wcs==NULL)
     {
       /* A small sanity check. */
       if(p->wcsfile==NULL || p->wcshdu==NULL)
-        error(EXIT_FAILURE, 0, "`--wcsfile' and `--wcshdu' are necessary for "
-              "the `%s' conversion", optname);
+        error(EXIT_FAILURE, 0, "`--wcsfile' and `--wcshdu' are necessary "
+              "for the `%s' conversion", opname);
 
       /* Read the WCS. */
       p->wcs=gal_wcs_read(p->wcsfile, p->wcshdu, 0, 0, &p->nwcs);
       if(p->wcs==NULL)
         error(EXIT_FAILURE, 0, "%s (hdu: %s): no WCS could be read by "
               "WCSLIB", p->wcsfile, p->wcshdu);
+
+      /* Make sure it doesn't have more than 3 axises. */
+      if(p->wcs->naxis>3)
+        error(EXIT_FAILURE, 0, "%s (hdu %s): the WCS has %d dimensions. "
+              "So far, only up to three dimensions are supported",
+              p->wcsfile, p->wcshdu, p->wcs->naxis);
     }
 
-  /* Make sure this conversion is only requested once. */
-  if( instr[0]=='w' ? *wcstoimg_ptr : *imgtowcs_ptr )
-    error(EXIT_FAILURE, 0, "`%s' can only be called once.", optname);
+  /* Some basic sanity checks. */
+  if(counter!=p->wcs->naxis)
+    error(EXIT_FAILURE, 0, "%s (%s): WCS has %d dimensions but only %zu "
+          "columns were given to the `%s' operator", p->wcsfile, p->wcshdu,
+          p->wcs->naxis, counter, opname);
+  if(*ptr)
+    error(EXIT_FAILURE, 0, "`%s' can only be called once.", opname);
 
-  /* Read the first token. */
-  c1=strtok_r(instr+9, delimiter, &saveptr);
-  if(c1==NULL)
-    error(EXIT_FAILURE, 0, "`%s' must end with `)'", optname);
-  if(*c1==')')
-    error(EXIT_FAILURE, 0, "`%s' has no defining column. Please specify "
-          "two column names or numbers with a slash between them for "
-          "example `%s(RA/DEC)'", optname, optname);
+  /* Return the type of operator. */
+  return fromwcs;
+}
 
-  /* Read the second token and make sure it ends with `)'. Then set the `)'
-     as the string-NULL character. */
-  c2=strtok_r(NULL,        delimiter, &saveptr);
-  if(c2==NULL || c2[strlen(c2)-1]!=')')
-    error(EXIT_FAILURE, 0, "`%s' needs two input columns. Please "
-          "specify two columns with a slash between them for "
-          "example `%s(RA/DEC)'", optname, optname);
-  c2[strlen(c2)-1]='\0';
 
-  /* Make sure there aren't any more elements. */
-  c3=strtok_r(NULL, delimiter, &saveptr);
-  if(c3!=NULL)
-    error(EXIT_FAILURE, 0, "only two values can be given to `%s'", optname);
 
-  /* Add the column name/number to the list of columns to read, then keep
-     the pointer to the node (so we can later identify it). */
-  gal_list_str_add(new, c1, 1);
-  gal_list_str_add(new, c2, 1);
 
-  /* Keep this node's pointer. */
-  if(instr[0]=='w') *wcstoimg_ptr=*new;
-  else              *imgtowcs_ptr=*new;
 
-  /* Clean up (the `c1' and `c2') are actually within the allocated space
-     of `instr'. That is why we are setting the last argument of
-     `gal_list_str_add' to `1' (to allocate space for them). */
-  free(instr);
+/* When arithmetic operations are requested. */
+static void
+ui_columns_arith(struct tableparams *p, char *expression,
+                 gal_list_str_t **new)
+{
+  int fromwcs;
+  size_t counter=0;
+  char *token=NULL, *saveptr;
+  char *str, *delimiter=" \t";
+
+  token=strtok_r(expression, delimiter, &saveptr);
+  while(token!=NULL)
+    {
+      /* Check the token value and take the proper action. */
+      if(!strncmp("wcstoimg", token, 8) || !strncmp("imgtowcs", token, 8))
+        {
+          /* Set the WCS-conversion parameters, then break out of the loop
+             (so far, no more operators are defined). */
+          fromwcs=ui_columns_wcs(p, token, counter);
+          if(fromwcs) p->wcstoimg_p = (*new)->next;
+          else        p->imgtowcs_p = (*new)->next;
+          break;
+        }
+      else
+        {
+          str = ( (token[0]=='c' && isdigit(token[1]))
+                  ? &token[1]
+                  : token );
+          gal_list_str_add(new, str, 1);
+          ++counter;
+        }
+
+      /* Go to the next token. */
+      token=strtok_r(NULL, delimiter, &saveptr);
+    }
 }
 
 
@@ -517,11 +531,10 @@ ui_wcs_conversion(struct tableparams *p, char *instr,
 static void
 ui_columns_prepare(struct tableparams *p, size_t *wcstoimg, size_t *imgtowcs)
 {
-  size_t i;
   char **strarr;
+  size_t i, ncols;
   gal_data_t *strs;
   gal_list_str_t *tmp, *new=NULL;
-  gal_list_str_t *wcstoimg_ptr=NULL, *imgtowcs_ptr=NULL;
 
   /* Go over the whole original list (where each node may have more than
      one value separated by a comma. */
@@ -535,9 +548,11 @@ ui_columns_prepare(struct tableparams *p, size_t *wcstoimg, size_t *imgtowcs)
       /* Go over all the given colum names/numbers. */
       for(i=0;i<strs->size;++i)
         {
-          if(!strncmp(strarr[i],"wcstoimg(",9)
-             || !strncmp(strarr[i],"imgtowcs(",9))
-            ui_wcs_conversion(p, strarr[i], &wcstoimg_ptr, &imgtowcs_ptr, &new);
+          if(!strncmp(strarr[i], "arith ", 6))
+            {
+              ui_columns_arith(p, strarr[i]+6, &new);
+              free(strarr[i]);
+            }
           else
             gal_list_str_add(&new, strarr[i], 0);
 
@@ -551,22 +566,26 @@ ui_columns_prepare(struct tableparams *p, size_t *wcstoimg, size_t *imgtowcs)
       gal_data_free(strs);
     }
 
-  /* Delete the old list. */
-  gal_list_str_free(p->columns, 1);
-
-  /* Reverse the new list, then put it into `p->columns'. */
-  gal_list_str_reverse(&new);
-  p->columns=new;
-
   /* If conversion is necessary, set the final column number. */
   i=0;
-  if(wcstoimg_ptr || imgtowcs_ptr)
-    for(tmp=p->columns;tmp!=NULL;tmp=tmp->next)
-      {
-        if(wcstoimg_ptr==tmp) *wcstoimg=i-1;
-        if(imgtowcs_ptr==tmp) *imgtowcs=i-1;
-        ++i;
-      }
+  if(p->wcstoimg_p || p->imgtowcs_p)
+    {
+      ncols=gal_list_str_number(new);
+      for(tmp=new;tmp!=NULL;tmp=tmp->next)
+        {
+          /* Note that we are going to reverse the list after this, so we
+             need to reset the counter. */
+          if(p->wcstoimg_p==tmp) *wcstoimg=ncols - i - (p->wcs->naxis-1);
+          if(p->imgtowcs_p==tmp) *imgtowcs=ncols - i - (p->wcs->naxis-1);
+          ++i;
+        }
+    }
+
+  /* Delete the old list, then reverse the new list, and put it into
+     `p->columns'. */
+  gal_list_str_free(p->columns, 1);
+  gal_list_str_reverse(&new);
+  p->columns=new;
 }
 
 

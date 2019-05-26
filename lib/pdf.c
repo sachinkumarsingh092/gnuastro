@@ -44,12 +44,17 @@ int
 gal_pdf_name_is_pdf(char *name)
 {
   size_t len;
-  len=strlen(name);
-  if (strcmp(&name[len-3], "pdf") == 0
-      || strcmp(&name[len-3], "PDF") == 0)
-    return 1;
-  else
-    return 0;
+
+  if(name)
+    {
+      len=strlen(name);
+      if (strcmp(&name[len-3], "pdf") == 0
+          || strcmp(&name[len-3], "PDF") == 0)
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 
@@ -59,11 +64,15 @@ gal_pdf_name_is_pdf(char *name)
 int
 gal_pdf_suffix_is_pdf(char *name)
 {
-  if (strcmp(name, "pdf") == 0 || strcmp(name, ".pdf") == 0
-      || strcmp(name, "PDF") == 0 || strcmp(name, ".PDF") == 0)
-    return 1;
-  else
-    return 0;
+  if(name)
+    {
+      if (strcmp(name, "pdf") == 0 || strcmp(name, ".pdf") == 0
+          || strcmp(name, "PDF") == 0 || strcmp(name, ".PDF") == 0)
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 

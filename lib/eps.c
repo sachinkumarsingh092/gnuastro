@@ -46,14 +46,18 @@ int
 gal_eps_name_is_eps(char *name)
 {
   size_t len;
-  len=strlen(name);
-  if ( ( len>=3 && strcmp(&name[len-3], "eps") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "EPS") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "epsf") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "epsi") == 0 ) )
-    return 1;
-  else
-    return 0;
+  if(name)
+    {
+      len=strlen(name);
+      if ( ( len>=3 && strcmp(&name[len-3], "eps") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "EPS") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "epsf") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "epsi") == 0 ) )
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 
@@ -63,13 +67,17 @@ gal_eps_name_is_eps(char *name)
 int
 gal_eps_suffix_is_eps(char *name)
 {
-  if (strcmp(name, "eps") == 0 || strcmp(name, ".eps") == 0
-      || strcmp(name, "EPS") == 0 || strcmp(name, ".EPS") == 0
-      || strcmp(name, "epsf") == 0 || strcmp(name, ".epsf") == 0
-      || strcmp(name, "epsi") == 0 || strcmp(name, ".epsi") == 0)
-    return 1;
-  else
-    return 0;
+  if(name)
+    {
+      if (strcmp(name, "eps") == 0 || strcmp(name, ".eps") == 0
+          || strcmp(name, "EPS") == 0 || strcmp(name, ".EPS") == 0
+          || strcmp(name, "epsf") == 0 || strcmp(name, ".epsf") == 0
+          || strcmp(name, "epsi") == 0 || strcmp(name, ".epsi") == 0)
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 

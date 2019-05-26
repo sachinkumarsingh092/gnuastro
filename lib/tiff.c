@@ -52,14 +52,19 @@ int
 gal_tiff_name_is_tiff(char *name)
 {
   size_t len;
-  len=strlen(name);
-  if ( ( len>=3 && strcmp(&name[len-3], "tif") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "TIF") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "tiff") == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "TIFF") == 0 ) )
-    return 1;
-  else
-    return 0;
+
+  if(name)
+    {
+      len=strlen(name);
+      if ( ( len>=3 && strcmp(&name[len-3], "tif") == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "TIF") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "tiff") == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "TIFF") == 0 ) )
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 
@@ -69,13 +74,17 @@ gal_tiff_name_is_tiff(char *name)
 int
 gal_tiff_suffix_is_tiff(char *name)
 {
-  if (strcmp(name, "tif") == 0   || strcmp(name, ".tif") == 0
-      || strcmp(name, "TIF") == 0 || strcmp(name, ".TIF") == 0
-      || strcmp(name, "tiff") == 0 || strcmp(name, ".tiff") == 0
-      || strcmp(name, "TIFF") == 0 || strcmp(name, ".TIFF") == 0 )
-    return 1;
-  else
-    return 0;
+  if(name)
+    {
+    if (strcmp(name, "tif") == 0   || strcmp(name, ".tif") == 0
+        || strcmp(name, "TIF") == 0 || strcmp(name, ".TIF") == 0
+        || strcmp(name, "tiff") == 0 || strcmp(name, ".tiff") == 0
+        || strcmp(name, "TIFF") == 0 || strcmp(name, ".TIFF") == 0 )
+      return 1;
+    else
+      return 0;
+    }
+  else return 0;
 }
 
 

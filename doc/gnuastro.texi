@@ -11730,32 +11730,53 @@ input table columns are output. When this option is called multiple times,
 it is possible to output one column more than once.
 
 This option can also modify the input values based on certain
-operations. The operators are called just like a column name, allowing you
-to place the modified columns anywhere in the output table. For example the
-output of the two commands below (which will produce identical outputs)
-will be 5 columns. The first three columns are the input table's IDs and RA
-and Dec of each object. The fourth and fifth will be the pixel positions in
-@file{image.fits} that correspond to those positions.
+operations. To use this feature, the first 6 characters of the value should
+be `@option{arith }' (note the space character in the end, after
+`@code{arith}'). Afterwards, you can use the reverse polish notation to
+identify the operators and their operands, see @ref{Reverse polish
+notation}. Just note that currently the range of operators available here
+is less than @ref{Arithmetic} and listed below. Also note that the
+delimiter between the tokens (value to @option{--column}) is a white-space
+character. Therefore the whole value has to be quoted (see the examples
+below).
+
+To identify a column you can directly use its name, or specify its number
+(counting from one, see @ref{Selecting table columns}). When its a number,
+is necessary to prefix it with a @code{c} (otherwise it is not
+distinguisable from a constant number to use in the processing). For
+example the two commands below (which have the same output) will produce 5
+columns. The first three columns are the input table's ID, RA and Dec
+columns. The fourth and fifth columns will be the pixel positions in
+@file{image.fits} that correspond to each RA and Dec.
 
 @example
-$ asttable table.fits -cID,RA,DEC,wcstoimg(RA/DEC) \
+$ asttable table.fits -cID,RA,DEC,"arith RA DEC wcstoimg" \
            --wcsfile=image.fits
-$ asttable table.fits -cID,RA -cDEC -cwcstoimg(RA/DEC) \
-           --wcsfile=image.fits
+$ asttable table.fits -cID,RA -cDEC \
+           -c"arith RA DEC wcstoimg" --wcsfile=image.fits
 @end example
 
-@table @code
-@item wcstoimg(C1/C2)
-Assume that the column specfied by @code{C1} (either through name or
-number) is the RA and @code{C2} is the Declination. As output, the two
-outputs of this operator are the image coordinates. Note that within the
-operator, the delimiter/separator between column identifiers is a slash
-(`@code{/}'). The WCS structure necessary for this conversion is derived
-from the @option{--wcshdu} extension/HDU of @option{--wcsfile}.
+If we assume the @code{RA} and @code{DEC} columns are the 2nd and 3rd
+columns, then the commands above can also be written like this:
 
-@item imgtowcs(C1/C2)
-Similar to @code{wcstoimg}, except that the two input columns are assumed
-to be image coordinates and the output columns will be
+@example
+$ asttable table.fits -cID,2 -c3 \
+           -c"arith c2 c3 wcstoimg" --wcsfile=image.fits
+@end example
+
+The current list of operands are:
+@cindex WCS: World Coordinate System
+@cindex World Coordinate System (WCS)
+@table @code
+@item wcstoimg
+Convert the given WCS positions to image/dataset coordinates based on the
+number of dimensions in the WCS structure of @option{--wcshdu}
+extension/HDU in @option{--wcsfile}. It will output the same number of
+columns. The first poppoed operand is the last FITS dimension.
+
+@item imgtowcs
+Similar to @code{wcstoimg}, except that image/dataset coordinates are
+converted to WCS coordinates.
 @end table
 
 @item -w STR

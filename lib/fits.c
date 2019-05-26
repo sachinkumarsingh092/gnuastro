@@ -101,16 +101,21 @@ int
 gal_fits_name_is_fits(char *name)
 {
   size_t len;
-  len=strlen(name);
-  if ( (    len>=3 && strcmp(&name[len-3], "fit"     ) == 0 )
-       || ( len>=4 && strcmp(&name[len-4], "fits"    ) == 0 )
-       || ( len>=7 && strcmp(&name[len-7], "fits.gz" ) == 0 )
-       || ( len>=6 && strcmp(&name[len-6], "fits.Z"  ) == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "imh"     ) == 0 )
-       || ( len>=7 && strcmp(&name[len-7], "fits.fz" ) == 0 ) )
-    return 1;
-  else
-    return 0;
+
+  if(name)
+    {
+      len=strlen(name);
+      if ( (    len>=3 && strcmp(&name[len-3], "fit"     ) == 0 )
+           || ( len>=4 && strcmp(&name[len-4], "fits"    ) == 0 )
+           || ( len>=7 && strcmp(&name[len-7], "fits.gz" ) == 0 )
+           || ( len>=6 && strcmp(&name[len-6], "fits.Z"  ) == 0 )
+           || ( len>=3 && strcmp(&name[len-3], "imh"     ) == 0 )
+           || ( len>=7 && strcmp(&name[len-7], "fits.fz" ) == 0 ) )
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 
@@ -124,16 +129,22 @@ gal_fits_name_is_fits(char *name)
 int
 gal_fits_suffix_is_fits(char *suffix)
 {
-  char *nodot = suffix[0]=='.' ? (suffix+1) : suffix;
-  if ( strcmp(   nodot, "fit"     ) == 0
-       || strcmp(nodot, "fits"    ) == 0
-       || strcmp(nodot, "fits.gz" ) == 0
-       || strcmp(nodot, "fits.Z"  ) == 0
-       || strcmp(nodot, "imh"     ) == 0
-       || strcmp(nodot, "fits.fz" ) == 0 )
-    return 1;
-  else
-    return 0;
+  char *nodot;
+
+  if(suffix)
+    {
+      nodot=suffix[0]=='.' ? (suffix+1) : suffix;
+      if ( strcmp(   nodot, "fit"     ) == 0
+           || strcmp(nodot, "fits"    ) == 0
+           || strcmp(nodot, "fits.gz" ) == 0
+           || strcmp(nodot, "fits.Z"  ) == 0
+           || strcmp(nodot, "imh"     ) == 0
+           || strcmp(nodot, "fits.fz" ) == 0 )
+        return 1;
+      else
+        return 0;
+    }
+  else return 0;
 }
 
 

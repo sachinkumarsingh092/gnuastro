@@ -62,7 +62,7 @@ gal_tableintern_error_col_selection(char *filename, char *hdu,
                    filename, hdu)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
     }
-  else command=name=filename;
+  else command=name=filename?filename:"stdin";
 
   /* Abort with with the proper error. */
   error(EXIT_FAILURE, 0, "%s: %s\n\nFor more information on selecting "
