@@ -349,7 +349,7 @@ table_unit_conversion(struct tableparams *p, int w0i1)
 {
   int isfirstcol;
   struct wcsprm *wcs=p->wcs;
-  gal_data_t *tmp, *before, *after, *t1=NULL, *t2=NULL, *t3=NULL;
+  gal_data_t *tmp, *before, *after=NULL, *t1=NULL, *t2=NULL, *t3=NULL;
   size_t i, j, ndim=wcs->naxis, startcol = w0i1 ? p->imgtowcs : p->wcstoimg;
 
   /* Go to the column that we need to convert. */
