@@ -7,6 +7,11 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Arithmetic:
+   - `unique' operator removes all duplicate (and blank) elements from the
+     dataset and returns a single-dimention output, containing only the
+     unique values in the dataset.
+
   CosmicCalculator:
    --obsline: alternative way to set the used redshift. With this option
      instead of explicity giving the redshift, you can give a rest-frame

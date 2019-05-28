@@ -13042,6 +13042,15 @@ Similar to @option{collapse-sum}, but the returned dataset will have the
 same numeric type as the input and will contain the maximum value for each
 pixel along the collapsed dimension.
 
+@item unique
+Remove all duplicate (and blank) elements from the first popped
+operand. The unique elements of the dataset will be stored in a
+single-dimensional dataset.
+
+Recall that by default, single-dimensional datasets are stored as a table
+column in the output. But you can use @option{--onedasimage} to store them
+as a single-dimensional FITS array/image.
+
 @item erode
 @cindex Erosion
 Erode the foreground pixels (with value @code{1}) of the input dataset

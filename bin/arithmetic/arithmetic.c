@@ -877,6 +877,59 @@ arithmetic_tofile(struct arithmeticparams *p, char *token, int freeflag)
 
 
 
+/* Pull out unique elements */
+#define UNIQUE_BYTYPE(TYPE) {                                           \
+    size_t i, j;                                                        \
+    TYPE *a=input->array, b;                                            \
+                                                                        \
+    /* Write the blank value for this type into `b'. */                 \
+    gal_blank_write(&b, input->type);                                   \
+                                                                        \
+    /* Go over the elements, and set the duplicates to blank. */        \
+    /* Note that for integers and floats, the behavior of blank/NaN */  \
+    /* differs: for floats (NaN), we can identify a blank using the  */ \
+    /* fact that by definition, NaN!=NaN. */                            \
+    if(b==b)                                                            \
+      for(i=0;i<input->size;++i)                                        \
+        { if(a[i]!=b)    for(j=i+1;j<input->size;++j) if(a[i]==a[j]) a[j]=b;} \
+    else                                                                \
+      for(i=0;i<input->size;++i)                                        \
+        { if(a[i]==a[i]) for(j=i+1;j<input->size;++j) if(a[i]==a[j]) a[j]=b;} \
+  }
+
+void
+arithmetic_unique(struct arithmeticparams *p, char *token, int operator)
+{
+  gal_data_t *input = operands_pop(p, token);
+
+  /* Remove the duplicates based on size. */
+  switch(input->type)
+    {
+    case GAL_TYPE_UINT8:   UNIQUE_BYTYPE( uint8_t  ); break;
+    case GAL_TYPE_INT8:    UNIQUE_BYTYPE( int8_t   ); break;
+    case GAL_TYPE_UINT16:  UNIQUE_BYTYPE( uint16_t ); break;
+    case GAL_TYPE_INT16:   UNIQUE_BYTYPE( int16_t  ); break;
+    case GAL_TYPE_UINT32:  UNIQUE_BYTYPE( uint32_t ); break;
+    case GAL_TYPE_INT32:   UNIQUE_BYTYPE( int32_t  ); break;
+    case GAL_TYPE_UINT64:  UNIQUE_BYTYPE( uint64_t ); break;
+    case GAL_TYPE_INT64:   UNIQUE_BYTYPE( int64_t  ); break;
+    case GAL_TYPE_FLOAT32: UNIQUE_BYTYPE( float    ); break;
+    case GAL_TYPE_FLOAT64: UNIQUE_BYTYPE( double   ); break;
+    default:
+      error(EXIT_FAILURE, 0, "the `unique' operator doesn't support type "
+            "code `%u'", input->type);
+    }
+
+  /* Remove all blank elements. */
+  gal_blank_remove(input);
+
+  /* Clean up and add the collapsed dataset to the top of the operands. */
+  operands_add(p, NULL, input);
+}
+
+
+
+
 
 
 
@@ -1096,6 +1149,8 @@ reversepolish(struct arithmeticparams *p)
             { op=ARITHMETIC_OP_COLLAPSE_MEAN;         nop=0; }
           else if (!strcmp(token->v, "collapse-number"))
             { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       nop=0; }
+          else if (!strcmp(token->v, "unique"))
+            { op=ARITHMETIC_OP_UNIQUE;                nop=0; }
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as a file name, named dataset, number, or "
@@ -1197,6 +1252,10 @@ reversepolish(struct arithmeticparams *p)
                 case ARITHMETIC_OP_COLLAPSE_MEAN:
                 case ARITHMETIC_OP_COLLAPSE_NUMBER:
                   arithmetic_collapse(p, token->v, op);
+                  break;
+
+                case ARITHMETIC_OP_UNIQUE:
+                  arithmetic_unique(p, token->v, op);
                   break;
 
                 default:
