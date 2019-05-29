@@ -9499,8 +9499,8 @@ table (the first one, with nothing but the column number is redundant):
 
 @example
 # Column 5:
-# Column 1: ID [,i] The Clump ID.
-# Column 3: mag_f160w [AB mag, f] Magnitude from the F160W filter
+# Column 1: ID [,i8] The Clump ID.
+# Column 3: mag_f160w [AB mag, f32] Magnitude from the F160W filter
 @end example
 
 @noindent
@@ -9539,7 +9539,7 @@ manually later. If only one of the leading or trailing white spaces is
 important for your work, you can only use one of the `@key{|}'s.
 
 @example
-# Column 1: ID [label, uc]
+# Column 1: ID [label, u8]
 # Column 2: Notes [no unit, str50]
 1    leading and trailing white space is ignored here    2.3442e10
 2   |         but they will be preserved here        |   8.2964e11
