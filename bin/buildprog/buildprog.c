@@ -103,13 +103,14 @@ buildprog(struct buildprogparams *p)
       error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
   /* Write the full Libtool command into a string (to run afterwards). */
-  if( asprintf(&command, "%s -c \"%s %s %s%s --mode=link gcc %s %s "
+  if( asprintf(&command, "%s -c \"%s %s %s%s --mode=link gcc %s %s %s "
                "%s %s %s %s %s -I%s %s -o %s\"",
                GAL_CONFIG_GNULIBTOOL_SHELL,
                GAL_CONFIG_GNULIBTOOL_EXEC,
                p->cp.quiet ? "--quiet" : "",
                p->tag      ? "--tag="   : "",
                p->tag      ? p->tag    : "",
+               LDADD,                              /* From `config.h'. */
                warning     ? warning   : "",
                p->debug    ? "-g"      : "",
                optimize    ? optimize  : "",

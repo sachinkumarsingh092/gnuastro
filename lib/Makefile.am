@@ -43,7 +43,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib            \
 # features. This also avoids the need for the programs to link separately
 # with Gnulib, they only need to link with the Gnuastro library.
 lib_LTLIBRARIES = libgnuastro.la
-libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
+libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION) $(CONFIG_LDADD)
 libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 

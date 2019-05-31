@@ -227,11 +227,11 @@ export check_with_program=$(MAYBE_CHECK_WITH_PROGRAM);
 # `../lib/Makefile.am' and is only meant for outside users (to be tested
 # here). Thus (unlike the programs, which use `config.h') we need to add
 # the top build directory to the include search directories (`-I').
+LDADD = -lgnuastro $(CONFIG_LDADD)
 AM_LDFLAGS = -L\$(top_builddir)/lib
 AM_CPPFLAGS = -I\$(top_srcdir)/lib -I\$(top_builddir)/lib
 
 # Rest of library check settings.
-LDADD = -lgnuastro
 check_PROGRAMS = multithread $(MAYBE_CXX_PROGS)
 multithread_SOURCES = lib/multithread.c
 lib/multithread.sh: mkprof/mosaic1.sh.log
