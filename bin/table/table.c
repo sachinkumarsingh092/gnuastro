@@ -43,7 +43,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/checkset.h>
 
 #include "main.h"
+
 #include "ui.h"
+#include "arithmetic.h"
 
 
 
@@ -324,134 +326,6 @@ table_head_tail(struct tableparams *p)
 
 
 
-/* Set the converted column metadata. */
-static void
-table_unit_update_metadata(gal_data_t *col, char *name, char *unit,
-                           char *comment)
-{
-  if(col)
-    {
-      if(col->name)    free(col->name);
-      if(col->unit)    free(col->unit);
-      if(col->comment) free(col->comment);
-      gal_checkset_allocate_copy(name, &col->name);
-      gal_checkset_allocate_copy(unit, &col->unit);
-      gal_checkset_allocate_copy(comment, &col->comment);
-    }
-}
-
-
-
-
-
-static void
-table_unit_conversion(struct tableparams *p, int w0i1)
-{
-  int isfirstcol;
-  struct wcsprm *wcs=p->wcs;
-  gal_data_t *tmp, *before, *after=NULL, *t1=NULL, *t2=NULL, *t3=NULL;
-  size_t i, j, ndim=wcs->naxis, startcol = w0i1 ? p->imgtowcs : p->wcstoimg;
-
-  /* Go to the column that we need to convert. */
-  i=0;
-  before=p->table;
-  for(tmp=p->table; tmp!=NULL; tmp=tmp->next)
-    {
-      if( i++ == startcol )
-        {
-          j=1;
-          for(after=tmp->next;j<ndim;after=after->next)
-            ++j;
-          break;
-        }
-      before=tmp;
-    }
-  isfirstcol=before==p->table;
-
-  /* Make sure the types are double-precision floating point. NOTE that
-     since we are freeing afterwards, the second column needs to be
-     read first.*/
-  if(ndim==3)
-    t3=gal_data_copy_to_new_type_free(tmp->next->next, GAL_TYPE_FLOAT64);
-  if(ndim>=2)
-    t2=gal_data_copy_to_new_type_free(tmp->next, GAL_TYPE_FLOAT64);
-  t1=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-
-  /* Define the list of coordinates and do the conversion. */
-  t1->next=t2;
-  if(t2) t2->next=t3;
-  if(t3) t3->next=NULL;
-  if(w0i1) gal_wcs_img_to_world(t1, p->wcs, 1);
-  else     gal_wcs_world_to_img(t1, p->wcs, 1);
-
-  /* In image mode, double-precision floating point is too much. */
-  if(w0i1==0)
-    {
-      /* Convert them to 32-bit floating point. */
-      t1=gal_data_copy_to_new_type_free(t1, GAL_TYPE_FLOAT32);
-      if(t2)
-        {
-          t2=gal_data_copy_to_new_type_free(t2, GAL_TYPE_FLOAT32);
-          t1->next=t2;
-        }
-      if(t3)
-        {
-          t3=gal_data_copy_to_new_type_free(t3, GAL_TYPE_FLOAT32);
-          t2->next=t3;
-        }
-
-      /* Set the names, units and comments for each dataset. */
-      table_unit_update_metadata(t1, "X", "pixel", "Converted from WCS");
-      table_unit_update_metadata(t2, "Y", "pixel", "Converted from WCS");
-      table_unit_update_metadata(t3, "Z", "pixel", "Converted from WCS");
-    }
-  else
-    {
-      table_unit_update_metadata(t1, wcs->ctype[0], wcs->cunit[0],
-                                 "Converted from pixel coordinates");
-      table_unit_update_metadata(t2, t2?wcs->ctype[1]:NULL,
-                                 t2?wcs->cunit[1]:NULL,
-                                 "Converted from pixel coordinates");
-      table_unit_update_metadata(t3, t3?wcs->ctype[2]:NULL,
-                                 t3?wcs->cunit[2]:NULL,
-                                 "Converted from pixel coordinates");
-    }
-
-  /* Put them back into the output table. */
-  switch(ndim)
-    {
-    case 1: t1->next=after; break;
-    case 2: t2->next=after; break;
-    case 3: t3->next=after; break;
-    default:
-      error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' to fix the "
-            "problem. This program is not set for `%zu' dimensions",
-            PACKAGE_BUGREPORT, ndim);
-    }
-
-  /* If the desired columns were at the start, we'll need to fix it. */
-  if(isfirstcol) p->table=t1; else before->next=t1;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**************************************************************/
 /***************       Top function         *******************/
 /**************************************************************/
@@ -468,9 +342,9 @@ table(struct tableparams *p)
   if(p->head!=GAL_BLANK_SIZE_T || p->tail!=GAL_BLANK_SIZE_T)
     table_head_tail(p);
 
-  /* If unit conversion is requested, do it. */
-  if(p->wcstoimg!=GAL_BLANK_SIZE_T) table_unit_conversion(p, 0);
-  if(p->imgtowcs!=GAL_BLANK_SIZE_T) table_unit_conversion(p, 1);
+  /* If any operations are needed, do them. */
+  if(p->outcols)
+    arithmetic_operate(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

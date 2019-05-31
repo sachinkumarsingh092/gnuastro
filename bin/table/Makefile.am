@@ -31,9 +31,9 @@ bin_PROGRAMS = asttable
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
 asttable_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
-asttable_SOURCES = main.c ui.c table.c
+asttable_SOURCES = main.c ui.c arithmetic.c table.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h table.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h arithmetic.h table.h
 
 
 

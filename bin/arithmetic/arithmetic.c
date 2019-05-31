@@ -949,6 +949,184 @@ arithmetic_unique(struct arithmeticparams *p, char *token, int operator)
 /***************************************************************/
 /*************      Reverse Polish algorithm       *************/
 /***************************************************************/
+static int
+arithmetic_set_operator(char *string, size_t *num_operands)
+{
+  /* Use the library's main function for its own operators. */
+  int op = gal_arithmetic_set_operator(string, num_operands);
+
+  /* If its not a library operator, check if its an internal operator. */
+  if(op==GAL_ARITHMETIC_OP_INVALID)
+    {
+      /* Non-library operators. */
+      if      (!strcmp(string, "filter-mean"))
+        { op=ARITHMETIC_OP_FILTER_MEAN;           *num_operands=0; }
+      else if (!strcmp(string, "filter-median"))
+        { op=ARITHMETIC_OP_FILTER_MEDIAN;         *num_operands=0; }
+      else if (!strcmp(string, "filter-sigclip-mean"))
+        { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEAN;   *num_operands=0; }
+      else if (!strcmp(string, "filter-sigclip-median"))
+        { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN; *num_operands=0; }
+      else if (!strcmp(string, "erode"))
+        { op=ARITHMETIC_OP_ERODE;                 *num_operands=0; }
+      else if (!strcmp(string, "dilate"))
+        { op=ARITHMETIC_OP_DILATE;                *num_operands=0; }
+      else if (!strcmp(string, "connected-components"))
+        { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  *num_operands=0; }
+      else if (!strcmp(string, "fill-holes"))
+        { op=ARITHMETIC_OP_FILL_HOLES;            *num_operands=0; }
+      else if (!strcmp(string, "invert"))
+        { op=ARITHMETIC_OP_INVERT;                *num_operands=0; }
+      else if (!strcmp(string, "interpolate-medianngb"))
+        { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; *num_operands=0; }
+      else if (!strcmp(string, "collapse-sum"))
+        { op=ARITHMETIC_OP_COLLAPSE_SUM;          *num_operands=0; }
+      else if (!strcmp(string, "collapse-min"))
+        { op=ARITHMETIC_OP_COLLAPSE_MIN;          *num_operands=0; }
+      else if (!strcmp(string, "collapse-max"))
+        { op=ARITHMETIC_OP_COLLAPSE_MAX;          *num_operands=0; }
+      else if (!strcmp(string, "collapse-mean"))
+        { op=ARITHMETIC_OP_COLLAPSE_MEAN;         *num_operands=0; }
+      else if (!strcmp(string, "collapse-number"))
+        { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       *num_operands=0; }
+      else if (!strcmp(string, "unique"))
+        { op=ARITHMETIC_OP_UNIQUE;                *num_operands=0; }
+      else
+        error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
+              "interpretted as a file name, named dataset, number, "
+              "or operator", string);
+    }
+
+  /* Return the operator code. */
+  return op;
+}
+
+
+
+
+
+static void
+arithmetic_operator_run(struct arithmeticparams *p, int operator,
+                        char *operator_string, size_t num_operands)
+{
+  size_t i;
+  unsigned int numop;
+  gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
+  int flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
+                | GAL_ARITHMETIC_NUMOK );
+
+  /* When `num_operands!=0', the operator is in the library. */
+  if(num_operands)
+    {
+      /* Pop the necessary number of operators. Note that the
+         operators are poped from a linked list (which is
+         last-in-first-out). So for the operators which need a
+         specific order, the first poped operand is actally the
+         last (right most, in in-fix notation) input operand.*/
+      switch(num_operands)
+        {
+        case 1:
+          d1=operands_pop(p, operator_string);
+          break;
+
+        case 2:
+          d2=operands_pop(p, operator_string);
+          d1=operands_pop(p, operator_string);
+          break;
+
+        case 3:
+          d3=operands_pop(p, operator_string);
+          d2=operands_pop(p, operator_string);
+          d1=operands_pop(p, operator_string);
+          break;
+
+        case -1:
+          /* This case is when the number of operands is itself an
+             operand. So except for sigma-clipping (that has other
+             parameters), the first popped operand must be an
+             integer number, we will use that to construct a linked
+             list of any number of operands within the single `d1'
+             pointer. */
+          numop=pop_number_of_operands(p, operator, operator_string, &d2);
+          for(i=0;i<numop;++i)
+            gal_list_data_add(&d1, operands_pop(p, operator_string));
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+                "the problem. `%zu' is not recognized as an operand "
+                "counter (with `%s')", __func__, PACKAGE_BUGREPORT,
+                num_operands, operator_string);
+        }
+
+      /* Run the arithmetic operation. Note that `gal_arithmetic'
+         is a variable argument function (like printf). So the
+         number of arguments it uses depend on the operator. So
+         when the operator doesn't need three operands, the extra
+         arguments will be ignored. */
+      operands_add(p, NULL, gal_arithmetic(operator, p->cp.numthreads,
+                                           flags, d1, d2, d3));
+    }
+
+  /* No need to call the arithmetic library, call the proper
+     wrappers directly. */
+  else
+    {
+      switch(operator)
+        {
+        case ARITHMETIC_OP_FILTER_MEAN:
+        case ARITHMETIC_OP_FILTER_MEDIAN:
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
+        case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
+          wrapper_for_filter(p, operator_string, operator);
+          break;
+
+        case ARITHMETIC_OP_ERODE:
+        case ARITHMETIC_OP_DILATE:
+          arithmetic_erode_dilate(p, operator_string, operator);
+          break;
+
+        case ARITHMETIC_OP_CONNECTED_COMPONENTS:
+          arithmetic_connected_components(p, operator_string);
+          break;
+
+        case ARITHMETIC_OP_FILL_HOLES:
+          arithmetic_fill_holes(p, operator_string);
+          break;
+
+        case ARITHMETIC_OP_INVERT:
+          arithmetic_invert(p, operator_string);
+          break;
+
+        case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
+          arithmetic_interpolate(p, operator_string);
+          break;
+
+        case ARITHMETIC_OP_COLLAPSE_SUM:
+        case ARITHMETIC_OP_COLLAPSE_MIN:
+        case ARITHMETIC_OP_COLLAPSE_MAX:
+        case ARITHMETIC_OP_COLLAPSE_MEAN:
+        case ARITHMETIC_OP_COLLAPSE_NUMBER:
+          arithmetic_collapse(p, operator_string, operator);
+          break;
+
+        case ARITHMETIC_OP_UNIQUE:
+          arithmetic_unique(p, operator_string, operator);
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! please contact us at "
+                "%s to fix the problem. The code %d is not "
+                "recognized for `op'", __func__, PACKAGE_BUGREPORT,
+                operator);
+        }
+    }
+}
+
+
+
+
+
 /* This function implements the reverse polish algorithm as explained
    in the Wikipedia page.
 
@@ -957,13 +1135,11 @@ arithmetic_unique(struct arithmeticparams *p, char *token, int operator)
 void
 reversepolish(struct arithmeticparams *p)
 {
-  int op=0, nop=0;
-  unsigned int numop, i;
+  gal_data_t *data;
+  size_t num_operands=0;
   gal_list_str_t *token;
-  gal_data_t *d1, *d2, *d3;
   char *hdu, *filename, *printnum;
-  int flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
-                | GAL_ARITHMETIC_NUMOK );
+  int operator=GAL_ARITHMETIC_OP_INVALID;
 
 
   /* Prepare the processing: */
@@ -979,6 +1155,7 @@ reversepolish(struct arithmeticparams *p)
          for a filename. If we have a name or number, then add it to the
          operands linked list. Otherwise, pull out two members and do the
          specified operation on them. */
+      operator=GAL_ARITHMETIC_OP_INVALID;
       if( !strncmp(OPERATOR_PREFIX_TOFILE, token->v,
                    OPERATOR_PREFIX_LENGTH_TOFILE) )
         arithmetic_tofile(p, token->v, 0);
@@ -991,280 +1168,14 @@ reversepolish(struct arithmeticparams *p)
       else if( gal_array_name_recognized(token->v)
           || operands_is_name(p, token->v) )
         operands_add(p, token->v, NULL);
-      else if( (d1=gal_data_copy_string_to_number(token->v)) )
-        operands_add(p, NULL, d1);
+      else if( (data=gal_data_copy_string_to_number(token->v)) )
+        operands_add(p, NULL, data);
+      /* Last option is an operator: the program will abort if the token
+         isn't an operator. */
       else
         {
-          /* Order is the same as in the manual. */
-          /* Simple arithmetic operators. */
-          if      (!strcmp(token->v, "+" ))
-            { op=GAL_ARITHMETIC_OP_PLUS;              nop=2;  }
-          else if (!strcmp(token->v, "-" ))
-            { op=GAL_ARITHMETIC_OP_MINUS;             nop=2;  }
-          else if (!strcmp(token->v, "x" ))
-            { op=GAL_ARITHMETIC_OP_MULTIPLY;          nop=2;  }
-          else if (!strcmp(token->v, "/" ))
-            { op=GAL_ARITHMETIC_OP_DIVIDE;            nop=2;  }
-          else if (!strcmp(token->v, "%" ))
-            { op=GAL_ARITHMETIC_OP_MODULO;            nop=2;  }
-
-          /* Mathematical Operators. */
-          else if (!strcmp(token->v, "abs"))
-            { op=GAL_ARITHMETIC_OP_ABS;               nop=1;  }
-          else if (!strcmp(token->v, "pow"))
-            { op=GAL_ARITHMETIC_OP_POW;               nop=2;  }
-          else if (!strcmp(token->v, "sqrt"))
-            { op=GAL_ARITHMETIC_OP_SQRT;              nop=1;  }
-          else if (!strcmp(token->v, "log"))
-            { op=GAL_ARITHMETIC_OP_LOG;               nop=1;  }
-          else if (!strcmp(token->v, "log10"))
-            { op=GAL_ARITHMETIC_OP_LOG10;             nop=1;  }
-
-          /* Statistical/higher-level operators. */
-          else if (!strcmp(token->v, "minvalue"))
-            { op=GAL_ARITHMETIC_OP_MINVAL;            nop=1;  }
-          else if (!strcmp(token->v, "maxvalue"))
-            { op=GAL_ARITHMETIC_OP_MAXVAL;            nop=1;  }
-          else if (!strcmp(token->v, "numbervalue"))
-            { op=GAL_ARITHMETIC_OP_NUMBERVAL;         nop=1;  }
-          else if (!strcmp(token->v, "sumvalue"))
-            { op=GAL_ARITHMETIC_OP_SUMVAL;            nop=1;  }
-          else if (!strcmp(token->v, "meanvalue"))
-            { op=GAL_ARITHMETIC_OP_MEANVAL;           nop=1;  }
-          else if (!strcmp(token->v, "stdvalue"))
-            { op=GAL_ARITHMETIC_OP_STDVAL;            nop=1;  }
-          else if (!strcmp(token->v, "medianvalue"))
-            { op=GAL_ARITHMETIC_OP_MEDIANVAL;         nop=1;  }
-          else if (!strcmp(token->v, "min"))
-            { op=GAL_ARITHMETIC_OP_MIN;               nop=-1; }
-          else if (!strcmp(token->v, "max"))
-            { op=GAL_ARITHMETIC_OP_MAX;               nop=-1; }
-          else if (!strcmp(token->v, "number"))
-            { op=GAL_ARITHMETIC_OP_NUMBER;            nop=-1; }
-          else if (!strcmp(token->v, "sum"))
-            { op=GAL_ARITHMETIC_OP_SUM;               nop=-1; }
-          else if (!strcmp(token->v, "mean"))
-            { op=GAL_ARITHMETIC_OP_MEAN;              nop=-1; }
-          else if (!strcmp(token->v, "std"))
-            { op=GAL_ARITHMETIC_OP_STD;               nop=-1; }
-          else if (!strcmp(token->v, "median"))
-            { op=GAL_ARITHMETIC_OP_MEDIAN;            nop=-1; }
-          else if (!strcmp(token->v, "sigclip-number"))
-            { op=GAL_ARITHMETIC_OP_SIGCLIP_NUMBER;    nop=-1; }
-          else if (!strcmp(token->v, "sigclip-mean"))
-            { op=GAL_ARITHMETIC_OP_SIGCLIP_MEAN;      nop=-1; }
-          else if (!strcmp(token->v, "sigclip-median"))
-            { op=GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN;    nop=-1; }
-          else if (!strcmp(token->v, "sigclip-std"))
-            { op=GAL_ARITHMETIC_OP_SIGCLIP_STD;       nop=-1; }
-
-          /* Conditional operators. */
-          else if (!strcmp(token->v, "lt" ))
-            { op=GAL_ARITHMETIC_OP_LT;                nop=2;  }
-          else if (!strcmp(token->v, "le"))
-            { op=GAL_ARITHMETIC_OP_LE;                nop=2;  }
-          else if (!strcmp(token->v, "gt" ))
-            { op=GAL_ARITHMETIC_OP_GT;                nop=2;  }
-          else if (!strcmp(token->v, "ge"))
-            { op=GAL_ARITHMETIC_OP_GE;                nop=2;  }
-          else if (!strcmp(token->v, "eq"))
-            { op=GAL_ARITHMETIC_OP_EQ;                nop=2;  }
-          else if (!strcmp(token->v, "ne"))
-            { op=GAL_ARITHMETIC_OP_NE;                nop=2;  }
-          else if (!strcmp(token->v, "and"))
-            { op=GAL_ARITHMETIC_OP_AND;               nop=2;  }
-          else if (!strcmp(token->v, "or"))
-            { op=GAL_ARITHMETIC_OP_OR;                nop=2;  }
-          else if (!strcmp(token->v, "not"))
-            { op=GAL_ARITHMETIC_OP_NOT;               nop=1;  }
-          else if (!strcmp(token->v, "isblank"))
-            { op=GAL_ARITHMETIC_OP_ISBLANK;           nop=1;  }
-          else if (!strcmp(token->v, "where"))
-            { op=GAL_ARITHMETIC_OP_WHERE;             nop=3;  }
-
-          /* Bitwise operators. */
-          else if (!strcmp(token->v, "bitand"))
-            { op=GAL_ARITHMETIC_OP_BITAND;            nop=2;  }
-          else if (!strcmp(token->v, "bitor"))
-            { op=GAL_ARITHMETIC_OP_BITOR;             nop=2;  }
-          else if (!strcmp(token->v, "bitxor"))
-            { op=GAL_ARITHMETIC_OP_BITXOR;            nop=2;  }
-          else if (!strcmp(token->v, "lshift"))
-            { op=GAL_ARITHMETIC_OP_BITLSH;            nop=2;  }
-          else if (!strcmp(token->v, "rshift"))
-            { op=GAL_ARITHMETIC_OP_BITRSH;            nop=2;  }
-          else if (!strcmp(token->v, "bitnot"))
-            { op=GAL_ARITHMETIC_OP_BITNOT;            nop=1;  }
-
-          /* Type conversion. */
-          else if (!strcmp(token->v, "uint8"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT8;          nop=1;  }
-          else if (!strcmp(token->v, "int8"))
-            { op=GAL_ARITHMETIC_OP_TO_INT8;           nop=1;  }
-          else if (!strcmp(token->v, "uint16"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT16;         nop=1;  }
-          else if (!strcmp(token->v, "int16"))
-            { op=GAL_ARITHMETIC_OP_TO_INT16;          nop=1;  }
-          else if (!strcmp(token->v, "uint32"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT32;         nop=1;  }
-          else if (!strcmp(token->v, "int32"))
-            { op=GAL_ARITHMETIC_OP_TO_INT32;          nop=1;  }
-          else if (!strcmp(token->v, "uint64"))
-            { op=GAL_ARITHMETIC_OP_TO_UINT64;         nop=1;  }
-          else if (!strcmp(token->v, "int64"))
-            { op=GAL_ARITHMETIC_OP_TO_INT64;          nop=1;  }
-          else if (!strcmp(token->v, "float32"))
-            { op=GAL_ARITHMETIC_OP_TO_FLOAT32;        nop=1;  }
-          else if (!strcmp(token->v, "float64"))
-            { op=GAL_ARITHMETIC_OP_TO_FLOAT64;        nop=1;  }
-
-          /* Library wrappers. */
-          else if (!strcmp(token->v, "filter-mean"))
-            { op=ARITHMETIC_OP_FILTER_MEAN;           nop=0;  }
-          else if (!strcmp(token->v, "filter-median"))
-            { op=ARITHMETIC_OP_FILTER_MEDIAN;         nop=0;  }
-          else if (!strcmp(token->v, "filter-sigclip-mean"))
-            { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEAN;   nop=0;  }
-          else if (!strcmp(token->v, "filter-sigclip-median"))
-            { op=ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN; nop=0;  }
-          else if (!strcmp(token->v, "erode"))
-            { op=ARITHMETIC_OP_ERODE;                 nop=0;  }
-          else if (!strcmp(token->v, "dilate"))
-            { op=ARITHMETIC_OP_DILATE;                nop=0;  }
-          else if (!strcmp(token->v, "connected-components"))
-            { op=ARITHMETIC_OP_CONNECTED_COMPONENTS;  nop=0;  }
-          else if (!strcmp(token->v, "fill-holes"))
-            { op=ARITHMETIC_OP_FILL_HOLES;            nop=0;  }
-          else if (!strcmp(token->v, "invert"))
-            { op=ARITHMETIC_OP_INVERT;                nop=0;  }
-          else if (!strcmp(token->v, "interpolate-medianngb"))
-            { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; nop=0;  }
-          else if (!strcmp(token->v, "collapse-sum"))
-            { op=ARITHMETIC_OP_COLLAPSE_SUM;          nop=0; }
-          else if (!strcmp(token->v, "collapse-min"))
-            { op=ARITHMETIC_OP_COLLAPSE_MIN;          nop=0; }
-          else if (!strcmp(token->v, "collapse-max"))
-            { op=ARITHMETIC_OP_COLLAPSE_MAX;          nop=0; }
-          else if (!strcmp(token->v, "collapse-mean"))
-            { op=ARITHMETIC_OP_COLLAPSE_MEAN;         nop=0; }
-          else if (!strcmp(token->v, "collapse-number"))
-            { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       nop=0; }
-          else if (!strcmp(token->v, "unique"))
-            { op=ARITHMETIC_OP_UNIQUE;                nop=0; }
-          else
-            error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
-                  "interpretted as a file name, named dataset, number, or "
-                  "operator", token->v);
-
-          /* Initialize all the operand pointers (they may be remaining
-             from previous operators and we don't want them to cause
-             confusion. */
-          d1 = d2 = d3 = NULL;
-
-          /* See if the arithmetic library must be called or not. */
-          if(nop)
-            {
-              /* Pop the necessary number of operators. Note that the
-                 operators are poped from a linked list (which is
-                 last-in-first-out). So for the operators which need a
-                 specific order, the first poped operand is actally the
-                 last (right most, in in-fix notation) input operand.*/
-              switch(nop)
-                {
-                case 1:
-                  d1=operands_pop(p, token->v);
-                  break;
-
-                case 2:
-                  d2=operands_pop(p, token->v);
-                  d1=operands_pop(p, token->v);
-                  break;
-
-                case 3:
-                  d3=operands_pop(p, token->v);
-                  d2=operands_pop(p, token->v);
-                  d1=operands_pop(p, token->v);
-                  break;
-
-                case -1:
-                  /* This case is when the number of operands is itself an
-                     operand. So except for sigma-clipping (that has other
-                     parameters), the first popped operand must be an
-                     integer number, we will use that to construct a linked
-                     list of any number of operands within the single `d1'
-                     pointer. */
-                  numop=pop_number_of_operands(p, op, token->v, &d2);
-                  for(i=0;i<numop;++i)
-                    gal_list_data_add(&d1, operands_pop(p, token->v));
-                  break;
-
-                default:
-                  error(EXIT_FAILURE, 0, "no operators, `%s' needs %d "
-                        "operand(s)", token->v, nop);
-                }
-
-              /* Run the arithmetic operation. Note that `gal_arithmetic'
-                 is a variable argument function (like printf). So the
-                 number of arguments it uses depend on the operator. So
-                 when the operator doesn't need three operands, the extra
-                 arguments will be ignored. */
-              operands_add(p, NULL, gal_arithmetic(op, p->cp.numthreads,
-                                                   flags, d1, d2, d3));
-            }
-
-          /* No need to call the arithmetic library, call the proper
-             wrappers directly. */
-          else
-            {
-              switch(op)
-                {
-                case ARITHMETIC_OP_FILTER_MEAN:
-                case ARITHMETIC_OP_FILTER_MEDIAN:
-                case ARITHMETIC_OP_FILTER_SIGCLIP_MEAN:
-                case ARITHMETIC_OP_FILTER_SIGCLIP_MEDIAN:
-                  wrapper_for_filter(p, token->v, op);
-                  break;
-
-                case ARITHMETIC_OP_ERODE:
-                case ARITHMETIC_OP_DILATE:
-                  arithmetic_erode_dilate(p, token->v, op);
-                  break;
-
-                case ARITHMETIC_OP_CONNECTED_COMPONENTS:
-                  arithmetic_connected_components(p, token->v);
-                  break;
-
-                case ARITHMETIC_OP_FILL_HOLES:
-                  arithmetic_fill_holes(p, token->v);
-                  break;
-
-                case ARITHMETIC_OP_INVERT:
-                  arithmetic_invert(p, token->v);
-                  break;
-
-                case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
-                  arithmetic_interpolate(p, token->v);
-                  break;
-
-                case ARITHMETIC_OP_COLLAPSE_SUM:
-                case ARITHMETIC_OP_COLLAPSE_MIN:
-                case ARITHMETIC_OP_COLLAPSE_MAX:
-                case ARITHMETIC_OP_COLLAPSE_MEAN:
-                case ARITHMETIC_OP_COLLAPSE_NUMBER:
-                  arithmetic_collapse(p, token->v, op);
-                  break;
-
-                case ARITHMETIC_OP_UNIQUE:
-                  arithmetic_unique(p, token->v, op);
-                  break;
-
-                default:
-                  error(EXIT_FAILURE, 0, "%s: a bug! please contact us at "
-                        "%s to fix the problem. The code %d is not "
-                        "recognized for `op'", __func__, PACKAGE_BUGREPORT,
-                        op);
-                }
-            }
+          operator=arithmetic_set_operator(token->v, &num_operands);
+          arithmetic_operator_run(p, operator, token->v, num_operands);
         }
 
       /* Increment the token counter. */
@@ -1312,37 +1223,37 @@ reversepolish(struct arithmeticparams *p)
 
   /* If the final data structure has more than one element, write it as a
      FITS file. Otherwise, print it in the standard output. */
-  d1=p->operands->data;
-  if(d1->size==1)
+  data=p->operands->data;
+  if(data->size==1)
     {
       /* Make the string to print the number. */
-      printnum=gal_type_to_string(d1->array, d1->type, 0);
+      printnum=gal_type_to_string(data->array, data->type, 0);
       printf("%s\n", printnum);
 
       /* Clean up. */
       free(printnum);
-      if(d2!=d1) gal_data_free(d2);
     }
   else
     {
       /* Put a copy of the WCS structure from the reference image, it
-         will be freed while freeing d1. */
-      d1->wcs=p->refdata.wcs;
-      if(d1->ndim==1 && p->onedasimage==0)
-        gal_table_write(d1, NULL, p->cp.tableformat, p->cp.output,
+         will be freed while freeing `data'. */
+      data->wcs=p->refdata.wcs;
+      if(data->ndim==1 && p->onedasimage==0)
+        gal_table_write(data, NULL, p->cp.tableformat, p->cp.output,
                         "ARITHMETIC", 0);
       else
-        gal_fits_img_write(d1, p->cp.output, NULL, PROGRAM_NAME);
+        gal_fits_img_write(data, p->cp.output, NULL, PROGRAM_NAME);
       if(!p->cp.quiet)
         printf(" - Write (final): %s\n", p->cp.output);
     }
 
 
   /* Clean up, note that above, we copied the pointer to `refdata->wcs'
-     into `d1', so it is freed when freeing d1. */
-  gal_data_free(d1);
+     into `data', so it is freed when freeing `data'. */
+  gal_data_free(data);
   free(p->refdata.dsize);
   gal_list_data_free(p->named);
+
 
   /* Clean up. Note that the tokens were taken from the command-line
      arguments, so the string within each token linked list must not be

@@ -89,6 +89,14 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_BLANK_ULONG GAL_BLANK_UINT64
 #endif
 
+#if GAL_CONFIG_SIZEOF_INT == 4
+#define GAL_BLANK_INT  GAL_BLANK_INT32
+#define GAL_BLANK_UINT GAL_BLANK_UINT32
+#elif GAL_CONFIG_SIZEOF_INT == 2
+#define GAL_BLANK_INT  GAL_BLANK_INT16
+#define GAL_BLANK_UINT GAL_BLANK_UINT16
+#endif
+
 
 /* Functions. */
 void

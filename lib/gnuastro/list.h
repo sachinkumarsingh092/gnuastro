@@ -68,6 +68,9 @@ gal_list_str_pop(gal_list_str_t **list);
 size_t
 gal_list_str_number(gal_list_str_t *list);
 
+gal_list_str_t *
+gal_list_str_last(gal_list_str_t *list);
+
 void
 gal_list_str_print(gal_list_str_t *list);
 
@@ -98,6 +101,9 @@ gal_list_i32_pop(gal_list_i32_t **list);
 
 size_t
 gal_list_i32_number(gal_list_i32_t *list);
+
+gal_list_i32_t *
+gal_list_i32_last(gal_list_i32_t *list);
 
 void
 gal_list_i32_print(gal_list_i32_t *list);
@@ -133,6 +139,9 @@ gal_list_sizet_pop(gal_list_sizet_t **list);
 size_t
 gal_list_sizet_number(gal_list_sizet_t *list);
 
+gal_list_sizet_t *
+gal_list_sizet_last(gal_list_sizet_t *list);
+
 void
 gal_list_sizet_print(gal_list_sizet_t *list);
 
@@ -166,6 +175,9 @@ gal_list_f32_pop(gal_list_f32_t **list);
 
 size_t
 gal_list_f32_number(gal_list_f32_t *list);
+
+gal_list_f32_t *
+gal_list_f32_last(gal_list_f32_t *list);
 
 void
 gal_list_f32_reverse(gal_list_f32_t **list);
@@ -201,6 +213,9 @@ gal_list_f64_pop(gal_list_f64_t **list);
 size_t
 gal_list_f64_number(gal_list_f64_t *list);
 
+gal_list_f64_t *
+gal_list_f64_last(gal_list_f64_t *list);
+
 void
 gal_list_f64_print(gal_list_f64_t *list);
 
@@ -234,6 +249,9 @@ gal_list_void_pop(gal_list_void_t **list);
 
 size_t
 gal_list_void_number(gal_list_void_t *list);
+
+gal_list_void_t *
+gal_list_void_last(gal_list_void_t *list);
 
 void
 gal_list_void_reverse(gal_list_void_t **list);
@@ -322,8 +340,14 @@ gal_list_data_pop(gal_data_t **list);
 void
 gal_list_data_reverse(gal_data_t **list);
 
+gal_data_t **
+gal_list_data_to_array_ptr(gal_data_t *list, size_t *num);
+
 size_t
 gal_list_data_number(gal_data_t *list);
+
+gal_data_t *
+gal_list_data_last(gal_data_t *list);
 
 void
 gal_list_data_free(gal_data_t *list);

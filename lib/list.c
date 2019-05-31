@@ -102,6 +102,21 @@ gal_list_str_number(gal_list_str_t *list)
 
 
 
+gal_list_str_t *
+gal_list_str_last(gal_list_str_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
+}
+
+
+
+
+
 void
 gal_list_str_print(gal_list_str_t *list)
 {
@@ -219,6 +234,21 @@ gal_list_i32_number(gal_list_i32_t *list)
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     ++num;
   return num;
+}
+
+
+
+
+
+gal_list_i32_t *
+gal_list_i32_last(gal_list_i32_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
 }
 
 
@@ -374,6 +404,22 @@ gal_list_sizet_number(gal_list_sizet_t *list)
 
 
 
+
+gal_list_sizet_t *
+gal_list_sizet_last(gal_list_sizet_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
+}
+
+
+
+
+
 void
 gal_list_sizet_print(gal_list_sizet_t *list)
 {
@@ -518,6 +564,21 @@ gal_list_f32_number(gal_list_f32_t *list)
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     ++num;
   return num;
+}
+
+
+
+
+
+gal_list_f32_t *
+gal_list_f32_last(gal_list_f32_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
 }
 
 
@@ -681,6 +742,21 @@ gal_list_f64_number(gal_list_f64_t *list)
 
 
 
+gal_list_f64_t *
+gal_list_f64_last(gal_list_f64_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
+}
+
+
+
+
+
 void
 gal_list_f64_print(gal_list_f64_t *list)
 {
@@ -832,6 +908,22 @@ gal_list_void_number(gal_list_void_t *list)
     ++num;
   return num;
 }
+
+
+
+
+
+gal_list_void_t *
+gal_list_void_last(gal_list_void_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
+}
+
 
 
 
@@ -1273,6 +1365,32 @@ gal_list_data_reverse(gal_data_t **list)
 
 
 
+gal_data_t **
+gal_list_data_to_array_ptr(gal_data_t *list, size_t *num)
+{
+  size_t i, n;
+  gal_data_t *tmp, **out;
+
+  /* Count how many columns are necessary. */
+  n=*num=gal_list_data_number(list);
+
+  /* Allocate space for the array. */
+  errno=0;
+  out=malloc(n * sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, 0, "%s: couldn't allocate %zu bytes", __func__,
+          n * sizeof *out);
+
+  /* Fill up the array with the pointers and return. */
+  i=0;
+  for(tmp=list;tmp!=NULL;tmp=tmp->next) out[i++]=tmp;
+  return out;
+}
+
+
+
+
+
 size_t
 gal_list_data_number(gal_data_t *list)
 {
@@ -1283,6 +1401,21 @@ gal_list_data_number(gal_data_t *list)
       list=list->next;
     }
   return num;
+}
+
+
+
+
+
+gal_data_t *
+gal_list_data_last(gal_data_t *list)
+{
+  if(list)
+    {
+      while(list->next!=NULL) list=list->next;
+      return list;
+    }
+  else return NULL;
 }
 
 

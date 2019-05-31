@@ -193,6 +193,10 @@ AC_CHECK_SIZEOF([long])
 AC_SUBST(SIZEOF_LONG, [$ac_cv_sizeof_long])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_LONG], [$ac_cv_sizeof_long],
                    [On 32bit will be 4, on 64 bit, will be 8])
+AC_CHECK_SIZEOF([int])
+AC_SUBST(SIZEOF_INT, [$ac_cv_sizeof_int])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_SIZEOF_INT], [$ac_cv_sizeof_int],
+                   [It may be 16bit or 32bit])
 
 
 

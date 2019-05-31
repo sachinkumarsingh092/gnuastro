@@ -32,11 +32,16 @@ See the end of the file for license conditions.
      the book under `--sigclip-median' for a nice use case.
 
   Table:
-   - As part of printing output columns, Table can now convert Image to WCS
-     coordinates and vice-versa. For example if the input catalog has
-     atleast an `ID' column and two `RA' and `DEC' columns the set of
-     options below will produce 5 columns where the last two columns are
-     the image coordinates based on the WCS in `a.fits':
+   - Column arithmetic. It is now possible to apply many operations on the
+     input table columns before printing them in the output. Similar to
+     Arithmetic, but on table columns. The operators and notation is just
+     like the Arithmetic program. See the "Column Arithmetic" section of
+     the book for a detailed discussion and several examples.
+   - WCS to Image coordinate conversion with `wcstoimg' and `imgtowcs'. For
+     example if the input catalog has atleast an `ID' column and two `RA'
+     and `DEC' columns, the set of options below will produce 5 columns
+     where the last two columns are the image coordinates for each row
+     based on the WCS in `a.fits':
            `-cID,RA,DEC -c"arith RA DEC wcstoimg" --wcsfile=a.fits'
    --head: Only output the given number of rows from the top of columns.
    --tail: Only output the given number of rows from the botoom of columns.
@@ -45,6 +50,14 @@ See the end of the file for license conditions.
    - New `speclines.h' library functions and macros related to spectral
      lines. It has many macros with line wavelengths, and several functions
      for using them in combination with their names.
+   - list.h: Functions to return the last element in linked lists. For
+     example `gal_list_sizet_last' or `gal_list_data_last'.
+   - gal_list_data_to_array_ptr: Make an array of pointers from the list.
+   - GAL_BLANK_INT: Blank value for `int' (can be 16-bit or 32-bit).
+   - GAL_BLANK_UINT: Blank value for unsigned `int' (can be 16-bit or 32-bit).
+   - gal_arithmetic_operator_string: Return operator string from code.
+   - gal_arithmetic_set_operator: Return operator code from string.
+
 
 ** Removed features
 

@@ -140,7 +140,11 @@ enum gal_arithmetic_operators
   GAL_ARITHMETIC_OP_LAST_CODE,    /* Last code of the library operands.    */
 };
 
+char *
+gal_arithmetic_operator_string(int operator);
 
+int
+gal_arithmetic_set_operator(char *string, size_t *num_operands);
 
 gal_data_t *
 gal_arithmetic(int operator, size_t numthreads, int flags, ...);

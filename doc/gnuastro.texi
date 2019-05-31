@@ -377,6 +377,7 @@ ConvertType
 
 Table
 
+* Column arithmetic::           How to do operations on table columns.
 * Invoking asttable::           Options and arguments to Table.
 
 Data manipulation
@@ -11606,10 +11607,108 @@ higher-level processing, see the examples in @ref{Invoking asttable} for
 some simple examples.
 
 @menu
+* Column arithmetic::           How to do operations on table columns.
 * Invoking asttable::           Options and arguments to Table.
 @end menu
 
-@node Invoking asttable,  , Table, Table
+@node Column arithmetic, Invoking asttable, Table, Table
+@subsection Column arithmetic
+
+After reading the requested columns from the input table, you can also do
+operations/arithmetic on the columns and save the resulting values as new
+column(s) in the output table (possibly in between other requested
+columns). To enable column arithmetic, the first 6 characters of the value
+to @option{--column} (@code{-c}) should be the arithmetic activation word
+`@option{arith }' (note the space character in the end, after
+`@code{arith}').
+
+After the activation word, you can use the reverse polish notation to
+identify the operators and their operands, see @ref{Reverse polish
+notation}. Just note that white-space characters are used between the
+tokens of the arithmetic expression and that they are meaningful to the
+command-line environment. Therefore the whole expression (including the
+activation word) has to be quoted on the command-line or in a shell script
+(see the examples below).
+
+To identify a column you can directly use its name, or specify its number
+(counting from one, see @ref{Selecting table columns}). When you are giving
+a column number, it is necessary to prefix it with a @code{c} (otherwise it
+is not distinguisable from a constant number to use in the arithmetic
+operation).
+
+For example with the command below, the first two columns of
+@file{table.fits} will be printed along with a third column that is the
+result of multiplying the first column with @mymath{10^{10}} (for example
+to convert wavelength from Meters to Angstroms). Note how without the
+`@key{c}', it is not possible to distinguish between @key{1} as a
+column-counter, or as a constant number to use in the arithmetic operation.
+
+@example
+$ asttable table.fits -c1,2 -c"arith c1 1e10 x"
+@end example
+
+Alternatively, if the columns have meta-data and the first two are
+respectively called @code{AWAV} and @code{SPECTRUM}, the command above is
+equivalent to the command below. Note that the @key{c} is no longer
+necessary in this scenario.
+
+@example
+$ asttable table.fits -cAWAV,SPECTRUM -c"arith AWAV 1e10 x"
+@end example
+
+Comparison of the two commands above clearly shows why it is recommended to
+use column names instead of numbers. When the columns have clear names, the
+command/script actually becomes much more readable, describing the intent
+of the operation. It is also independent of the low-level table structure:
+for the second command, the position of the @code{AWAV} and @code{SPECTRUM}
+columns in @file{table.fits} is irrelevant.
+
+Finally, since the arithmetic expressions are a value to @option{--column},
+it doesn't necessarily have to be a separate option, so the commands above
+are also identical to the command below (note that this only has one
+@option{-c} option). Just be very careful with the quoting!
+
+@example
+$ asttable table.fits -cAWAV,SPECTRUM,"arith AWAV 1e10 x"
+@end example
+
+Almost all the arithmetic operators of @ref{Arithmetic operators} are also
+supported for column arithmetic in Table. In particular, the few that are
+not present in the Gnuastro library aren't yet supported. For a list of the
+Gnuastro library arithmetic operators, please see the macros starting with
+@code{GAL_ARITHMETIC_OP} and ending with the operator name in
+@ref{Arithmetic on datasets}. Besides the operators in @ref{Arithmetic
+operators}, several operators are only available in Table to use on table
+columns.
+
+@cindex WCS: World Coordinate System
+@cindex World Coordinate System (WCS)
+@table @code
+@item wcstoimg
+Convert the given WCS positions to image/dataset coordinates based on the
+number of dimensions in the WCS structure of @option{--wcshdu}
+extension/HDU in @option{--wcsfile}. It will output the same number of
+columns. The first poppoed operand is the last FITS dimension.
+
+For example the two commands below (which have the same output) will
+produce 5 columns. The first three columns are the input table's ID, RA and
+Dec columns. The fourth and fifth columns will be the pixel positions in
+@file{image.fits} that correspond to each RA and Dec.
+
+@example
+$ asttable table.fits -cID,RA,DEC,"arith RA DEC wcstoimg" \
+           --wcsfile=image.fits
+$ asttable table.fits -cID,RA -cDEC \
+           -c"arith RA DEC wcstoimg" --wcsfile=image.fits
+@end example
+
+@item imgtowcs
+Similar to @code{wcstoimg}, except that image/dataset coordinates are
+converted to WCS coordinates.
+@end table
+
+
+@node Invoking asttable,  , Column arithmetic, Table
 @subsection Invoking Table
 
 Table will read/write, select, convert, or show the information of the
@@ -11643,26 +11742,19 @@ $ asttable bintab.fits -cRA,DEC,/^MAG_/ --sort=Z_PHOT
 ## redshift between 2 and 3.
 $ asttable bintab.fits -cRA,DEC,/^MAG_/ --range=Z_PHOT,2:3
 
-## Similar to above, but writes the columns to a file (with metadata)
-## instead of the command-line.
-$ asttable bintab.fits -cRA,DEC,/^MAG_/ --output=out.txt
-
-## Only print the 2nd column, and the third column multiplied by 5:
-$ asttable bintab.fits -c2,5 | awk '@{print $1, 5*$2@}'
-
 ## Only print rows with a value in the 10th column above 100000:
-$ asttable bintab.fits | awk '$10>10e5 @{print@}'
+$ asttable bintab.fits --range=10,10e5,inf
+
+## Only print the 2nd column, and the third column multiplied by 5,
+## Save the resulting two columns in `table.txt'
+$ asttable bintab.fits -c2,"arith c2 5 x" -otable.fits
 
 ## Sort the output columns by the third column, save output:
-$ asttable bintab.fits | 'sort -nk3 > output.txt
+$ asttable bintab.fits --sort=3 -ooutput.txt
 
-## Subtract the first column from the second in `cat.txt' and keep the
-## third and fourth columns. Feed the columns to Table to write as a
-## FITS table.
-$ awk '!/^#/@{print $2-$1, $3, $4@}' cat.txt | asttable -ocat.fits
-
-## Convert a plain text table to a binary FITS table:
-$ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
+## Subtract the first column from the second in `cat.txt' (can also
+## be a FITS table) and keep the third and fourth columns.
+$ awk cat.txt -c"arith c2 c1 -",3,4 -ocat.fits
 @end example
 
 Table's input dataset can be given either as a file or from Standard input
@@ -11715,69 +11807,24 @@ last command with all the previously typed columns present, delete
 @cindex GNU AWK
 @item -c STR/INT
 @itemx --column=STR/INT
-Specify the columns to read, see @ref{Selecting table columns} for a
-thorough explanation on how the value to this option is interpreted. There
-are two ways to specify multiple columns: 1) multiple calls to this option,
-2) using a comma between each column specifier in one call to this
-option. These different solutions may be mixed in one call to Table: for
-example, @option{-cRA,DEC -cMAG}, or @option{-cRA -cDEC -cMAG} are both
-equivalent to @option{-cRA -cDEC -cMAG}. The order of the output columns
-will be the same order given to the option or in the configuration files
-(see @ref{Configuration file precedence}).
+Set the output columns either by specifying the column number, or name. For
+more on selecting columns, see @ref{Selecting table columns}. If a value of
+this option starts with `@code{arith }', this option will do the requested
+operations/arithmetic on the specified columns and output the result in
+that place (among other requested columns). For more on column arithmetic
+see @ref{Column arithmetic}.
+
+To ask for multiple columns this option can be used in two way: 1) multiple
+calls to this option, 2) using a comma between each column specifier in one
+call to this option. These different solutions may be mixed in one call to
+Table: for example, @option{-cRA,DEC -cMAG}, or @option{-cRA -cDEC -cMAG}
+are both equivalent to @option{-cRA -cDEC -cMAG}. The order of the output
+columns will be the same order given to the option or in the configuration
+files (see @ref{Configuration file precedence}).
 
 This option is not mandatory, if no specific columns are requested, all the
 input table columns are output. When this option is called multiple times,
 it is possible to output one column more than once.
-
-This option can also modify the input values based on certain
-operations. To use this feature, the first 6 characters of the value should
-be `@option{arith }' (note the space character in the end, after
-`@code{arith}'). Afterwards, you can use the reverse polish notation to
-identify the operators and their operands, see @ref{Reverse polish
-notation}. Just note that currently the range of operators available here
-is less than @ref{Arithmetic} and listed below. Also note that the
-delimiter between the tokens (value to @option{--column}) is a white-space
-character. Therefore the whole value has to be quoted (see the examples
-below).
-
-To identify a column you can directly use its name, or specify its number
-(counting from one, see @ref{Selecting table columns}). When its a number,
-is necessary to prefix it with a @code{c} (otherwise it is not
-distinguisable from a constant number to use in the processing). For
-example the two commands below (which have the same output) will produce 5
-columns. The first three columns are the input table's ID, RA and Dec
-columns. The fourth and fifth columns will be the pixel positions in
-@file{image.fits} that correspond to each RA and Dec.
-
-@example
-$ asttable table.fits -cID,RA,DEC,"arith RA DEC wcstoimg" \
-           --wcsfile=image.fits
-$ asttable table.fits -cID,RA -cDEC \
-           -c"arith RA DEC wcstoimg" --wcsfile=image.fits
-@end example
-
-If we assume the @code{RA} and @code{DEC} columns are the 2nd and 3rd
-columns, then the commands above can also be written like this:
-
-@example
-$ asttable table.fits -cID,2 -c3 \
-           -c"arith c2 c3 wcstoimg" --wcsfile=image.fits
-@end example
-
-The current list of operands are:
-@cindex WCS: World Coordinate System
-@cindex World Coordinate System (WCS)
-@table @code
-@item wcstoimg
-Convert the given WCS positions to image/dataset coordinates based on the
-number of dimensions in the WCS structure of @option{--wcshdu}
-extension/HDU in @option{--wcsfile}. It will output the same number of
-columns. The first poppoed operand is the last FITS dimension.
-
-@item imgtowcs
-Similar to @code{wcstoimg}, except that image/dataset coordinates are
-converted to WCS coordinates.
-@end table
 
 @item -w STR
 @itemx --wcsfile=STR
@@ -12630,14 +12677,15 @@ The most common notation for arithmetic operations is the
 @url{https://en.wikipedia.org/wiki/Infix_notation, infix notation} where
 the operator goes between the two operands, for example @mymath{4+5}. While
 the infix notation is the preferred way in most programming languages,
-currently Arithmetic does not use it since it will require parenthesis
-which can complicate the implementation of the code. In the near future we
-do plan to adopt this
+currently the Gnuastro's program (in particular Arithmetic and Table, when
+doing column arithmetic) do not use it. This is because it will require
+parenthesis which can complicate the implementation of the code. In the
+near future we do plan to also allow this
 notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}}, but
-for the time being (due to time constraints on the developers), Arithmetic
-uses the post-fix or
+for the time being (due to time constraints on the developers), arithmetic
+operations can only be done in the post-fix notation (also known as
 @url{https://en.wikipedia.org/wiki/Reverse_Polish_notation, reverse polish
-notation}. The Wikipedia article provides some excellent explanation on
+notation}). The Wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary here for
 self-sufficiency.
 
@@ -12645,22 +12693,24 @@ In the post-fix notation, the operator is placed after the operands, as we
 will see below this removes the need to define parenthesis for most
 ordinary operators. For example, instead of writing @command{5+6}, we write
 @command{5 6 +}. To easily understand how this notation works, you can
-think of each operand as a node in a first-in-first-out stack. Every time
-an operator is confronted, it pops the number of operands it needs from the
-top of the stack (so they don't exist in the stack any more), does its
-operation and pushes the result back on top of the stack. So if you want
-the average of 5 and 6, you would write: @command{5 6 + 2 /}. The
-operations that are done are:
+think of each operand as a node in a ``last-in-first-out'' stack. Every
+time an operator is confronted, the operator pops the number of operands it
+needs from the top of the stack (so they don't exist in the stack any
+more), does its operation and pushes the result back on top of the
+stack. So if you want the average of 5 and 6, you would write: @command{5 6
++ 2 /}. The operations that are done are:
 
 @enumerate
 @item
-@command{5} is an operand, so it is pushed to the top of the stack.
+@command{5} is an operand, so it is pushed to the top of the stack (which
+is initially empty).
 @item
 @command{6} is an operand, so it is pushed to the top of the stack.
 @item
-@command{+} is a binary operator, so pull the top two elements of the stack
-and perform addition on them (the order is @mymath{5+6} in the example
-above). The result is @command{11}, push it on top of the stack.
+@command{+} is a @emph{binary} operator, so it will pop the top two
+elements of the stack out of it, and perform addition on them (the order is
+@mymath{5+6} in the example above). The result is @command{11} which is
+pushed to the top of the stack.
 @item
 @command{2} is an operand so push it onto the top of the stack.
 @item
@@ -12669,14 +12719,17 @@ the stack (top-most is @command{2}, then @command{11}) and divide the
 second one by the first.
 @end enumerate
 
-In the Arithmetic program, the operands can be FITS images or numbers. As
-you can see, very complicated procedures can be created without the need
-for parenthesis or worrying about precedence. Even functions which take an
-arbitrary number of arguments can be defined in this notation. This is a
-very powerful notation and is used in languages like Postscript
+In the Arithmetic program, the operands can be FITS images or numbers (see
+@ref{Invoking astarithmetic}). In Table's column arithmetic, they can be
+any column or a number (see @ref{Column arithmetic}).
+
+With this notation, very complicated procedures can be created without the
+need for parenthesis or worrying about precedence. Even functions which
+take an arbitrary number of arguments can be defined in this notation. This
+is a very powerful notation and is used in languages like Postscript
 @footnote{See the EPS and PDF part of @ref{Recognized file formats} for a
-little more on the Postscript language.}  (the programming language in
-Postscript and compiled into PDF files) uses this notation.
+little more on the Postscript language.} which produces PDF files when
+compiled.
 
 
 
@@ -24696,6 +24749,16 @@ Blank value for an unsigned, 64-bit integer.
 Blank value for a signed, 64-bit integer.
 @end deffn
 
+@deffn {Global integer}  GAL_BLANK_INT
+Blank value for @code{int} type (@code{int16_t} or @code{int32_t} depending
+on the system.
+@end deffn
+
+@deffn {Global integer}  GAL_BLANK_UINT
+Blank value for @code{int} type (@code{int16_t} or @code{int32_t} depending
+on the system.
+@end deffn
+
 @deffn {Global integer}  GAL_BLANK_LONG
 Blank value for @code{long} type (@code{int32_t} or @code{int64_t} in
 32-bit or 64-bit systems).
@@ -25631,6 +25694,10 @@ pointer.
 Return the number of nodes in @code{list}.
 @end deftypefun
 
+@deftypefun size_t gal_list_str_last (gal_list_str_t @code{*list})
+Return a pointer to the last node in @code{list}.
+@end deftypefun
+
 @deftypefun void gal_list_str_print (gal_list_str_t @code{*list})
 Print the strings within each node of @code{*list} on the standard output
 in the same order that they are stored. Each string is printed on one
@@ -25705,6 +25772,10 @@ also change @code{list} to point to the next node in the list. If
 
 @deftypefun size_t gal_list_i32_number (gal_list_i32_t @code{*list})
 Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun size_t gal_list_i32_last (gal_list_i32_t @code{*list})
+Return a pointer to the last node in @code{list}.
 @end deftypefun
 
 @deftypefun void gal_list_i32_print (gal_list_i32_t @code{*list})
@@ -25808,6 +25879,10 @@ also change @code{list} to point to the next node in the list. If
 Return the number of nodes in @code{list}.
 @end deftypefun
 
+@deftypefun size_t gal_list_sizet_last (gal_list_sizet_t @code{*list})
+Return a pointer to the last node in @code{list}.
+@end deftypefun
+
 @deftypefun void gal_list_sizet_print (gal_list_sizet_t @code{*list})
 Print the values within each node of @code{*list} on the standard output in
 the same order that they are stored. Each integer is printed on one
@@ -25891,6 +25966,10 @@ also change @code{list} to point to the next node in the list. If
 
 @deftypefun size_t gal_list_f32_number (gal_list_f32_t @code{*list})
 Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun size_t gal_list_f32_last (gal_list_f32_t @code{*list})
+Return a pointer to the last node in @code{list}.
 @end deftypefun
 
 @deftypefun void gal_list_f32_print (gal_list_f32_t @code{*list})
@@ -25979,6 +26058,10 @@ also change @code{list} to point to the next node in the list. If
 
 @deftypefun size_t gal_list_f64_number (gal_list_f64_t @code{*list})
 Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun size_t gal_list_f64_last (gal_list_f64_t @code{*list})
+Return a pointer to the last node in @code{list}.
 @end deftypefun
 
 @deftypefun void gal_list_f64_print (gal_list_f64_t @code{*list})
@@ -26073,6 +26156,10 @@ also change @code{list} to point to the next node in the list. If
 
 @deftypefun size_t gal_list_void_number (gal_list_void_t @code{*list})
 Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun size_t gal_list_void_last (gal_list_void_t @code{*list})
+Return a pointer to the last node in @code{list}.
 @end deftypefun
 
 @deftypefun void gal_list_void_reverse (gal_list_void_t @code{**list})
@@ -26260,8 +26347,19 @@ Reverse the order of the list such that the top node in the list before
 calling this function becomes the bottom node after it.
 @end deftypefun
 
+@deftypefun {gal_data_t **} gal_list_data_to_array_ptr (gal_data_t @code{*list}, size_t @code{*num})
+Allocate and return an array of @code{gal_data_t *} pointers with the same
+number of elements as the nodes in @code{list}. The pointers will be put in
+the same order that the list is parsed. Hence the N-th element in the array
+will point to the same dataset that the N-th node in the list points to.
+@end deftypefun
+
 @deftypefun size_t gal_list_data_number (gal_data_t @code{*list})
 Return the number of nodes in @code{list}.
+@end deftypefun
+
+@deftypefun size_t gal_list_data_last (gal_data_t @code{*list})
+Return a pointer to the last node in @code{list}.
 @end deftypefun
 
 @deftypefun void gal_list_data_free (gal_data_t @code{*list})
@@ -28096,6 +28194,25 @@ out_3=gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, 0, in_1, in_2, in_3);
 The number of necessary operands for each operator (and thus the number of
 necessary arguments to @code{gal_arithmetic}) are described above under
 each operator.
+@end deftypefun
+
+@deftypefun int gal_arithmetic_set_operator (char @code{*string}, size_t @code{*num_operands})
+Return the operator macro/code that corresponds to @code{string}. The
+number of operands that it needs are written into the space that
+@code{*num_operands} points to. If the string couldn't be interpretted as
+an operator, this function will return @code{GAL_ARITHMETIC_OP_INVALID}.
+
+This function will check @code{string} with the fixed human-readable names
+(using @code{strcmp}) for the operators and return the two numbers. Note
+that @code{string} must only contain the single operator name and nothing
+else (not even any extra white space).
+@end deftypefun
+
+@deftypefun {char *} gal_arithmetic_operator_string (int @code{operator})
+Return the human-readable standard string that corresponds to the given
+operator. For example when the input is @code{GAL_ARITHMETIC_OP_PLUS} or
+@code{GAL_ARITHMETIC_OP_MEAN}, the strings @code{+} or @code{mean} will be
+returned.
 @end deftypefun
 
 @node Tessellation library, Bounding box, Arithmetic on datasets, Gnuastro library

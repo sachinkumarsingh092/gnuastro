@@ -36,11 +36,29 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
+/* Basic structure. */
 struct list_range
 {
   gal_data_t           *v;
   struct list_range *next;
+};
+
+struct arithmetic_token
+{
+  /* First layer elements. */
+  int            operator;  /* OPERATOR: Code of operator.                */
+  size_t     num_operands;  /* OPERATOR: Number of required operands.     */
+  size_t            index;  /* OPERAND: Index in requested columns.       */
+  gal_data_t    *constant;  /* OPERAND: a constant/single number.         */
+  struct arithmetic_token *next;  /* Pointer to next token.               */
+};
+
+struct column_pack
+{
+  size_t                    start; /* Starting ind. in requested columns. */
+  size_t                numsimple; /* Number of simple columns.           */
+  struct arithmetic_token *tokens; /* Arithmetic tokens to use.           */
+  struct column_pack        *next; /* Next output column.                 */
 };
 
 
@@ -65,6 +83,7 @@ struct tableparams
   size_t                 tail;  /* Output only the no. of bottom rows.  */
 
   /* Internal. */
+  struct column_pack *outcols;  /* Output column packages.              */
   gal_data_t           *table;  /* Linked list of output table columns. */
   struct wcsprm          *wcs;  /* WCS structure for conversion.        */
   int                    nwcs;  /* Number of WCS structures.            */
@@ -75,6 +94,8 @@ struct tableparams
   uint8_t          *freerange;  /* If the range column should be freed. */
   uint8_t              sortin;  /* If the sort column is in the output. */
   time_t              rawtime;  /* Starting time of the program.        */
+  gal_data_t       **colarray;  /* Array of columns, with arithmetic.   */
+  size_t          numcolarray;  /* Number of elements in `colarray'.    */
 
   /* For arithmetic operators. */
   gal_list_str_t  *wcstoimg_p;  /* Pointer to the node.                 */
