@@ -87,6 +87,7 @@ See the end of the file for license conditions.
   bug #56257: ConvertType: Values not preserved when converting text to FITS.
   bug #56299: cosmiccal fails at z=0.
   bug #56324: Column metadata not usable when input is from pipe/stdin.
+  bug #56424: Warp crashes with empty string given to options.
 
 
 

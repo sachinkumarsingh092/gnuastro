@@ -224,6 +224,9 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
   gal_data_t *new;
   struct warpparams *p=(struct warpparams *)params;
 
+  /* Make sure we actually have a string to parse. */
+  if(*arg=='\0')
+    error(EXIT_FAILURE, 0, "empty string given to `--%s'", option->name);
 
   /* Parse the (possible) arguments. */
   if(option->key==UI_KEY_ALIGN)

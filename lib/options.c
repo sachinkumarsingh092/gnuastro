@@ -575,11 +575,13 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   gal_list_f64_t *list=NULL, *tdll;
   double numerator=NAN, denominator=NAN, tmp;
 
-
   /* The nature of the arrays/numbers read here is very small, so since
      `p->cp.minmapsize' might not have been read yet, we will set it to -1
      (largest size_t number), so the values are kept in memory. */
   size_t minmapsize=-1;
+
+  /* If we have an empty string, just return NULL. */
+  if(*string=='\0') return NULL;
 
   /* Go through the input character by character. */
   while(string && *c!='\0')
