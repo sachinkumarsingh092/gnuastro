@@ -321,7 +321,10 @@ ui_set_mode(struct matchparams *p)
       p->mode = (tin1 == IMAGE_HDU) ? MATCH_MODE_WCS : MATCH_MODE_CATALOG;
     }
   else
-    p->mode=MATCH_MODE_CATALOG;
+    {
+      tin1=ASCII_TBL; /* For "uninitialized" warning, irrelevant here. */
+      p->mode=MATCH_MODE_CATALOG;
+    }
 
 
   /* Necessary sanity checks. */

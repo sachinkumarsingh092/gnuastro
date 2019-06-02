@@ -187,7 +187,7 @@ arithmetic_init(struct tableparams *p, struct arithmetic_token **arith,
   uint8_t ntype;
   char *str, *delimiter=" \t";
   struct arithmetic_token *node=NULL;
-  char *token=NULL, *lasttoken, *saveptr;
+  char *token=NULL, *lasttoken=NULL, *saveptr;
 
   /* Parse all the given tokens. */
   token=strtok_r(expression, delimiter, &saveptr);
@@ -256,9 +256,9 @@ arithmetic_indexs_final(struct tableparams *p, size_t *colmatch)
             if(atmp->index!=GAL_BLANK_SIZE_T)
               {
                 /* Small sanity check. */
-                if(colmatch[i]!=1)
-                  error(EXIT_FAILURE, 0, "arithmetic operands can only "
-                        "correspond to a single column");
+                if(colmatch[atmp->index]!=1)
+                  error(EXIT_FAILURE, 0, "arithmetic operands can (currently) "
+                        "only correspond to a single column");
 
                 /* Update the index in the full list of read columns. */
                 numcols=0; for(i=0;i<atmp->index;++i) numcols+=colmatch[i];

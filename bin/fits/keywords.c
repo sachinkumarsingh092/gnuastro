@@ -351,7 +351,7 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
   if(p->copykeysrange[0]>=numinkeys)
     error(EXIT_FAILURE, 0, "%s (hdu %s): first keyword number give to "
           "`--copykeys' (%ld) is larger than the number of keywords in this "
-          "header (%ld, including the `END' keyword)", p->filename, p->cp.hdu,
+          "header (%zu, including the `END' keyword)", p->filename, p->cp.hdu,
           p->copykeysrange[0], numinkeys);
 
   /* If the user wanted to count from the end (by giving a negative value),
@@ -374,7 +374,7 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
   if(p->copykeysrange[1]>=numinkeys)
     error(EXIT_FAILURE, 0, "%s (hdu %s): second keyword number give to "
           "`--copykeys' (%ld) is larger than the number of keywords in this "
-          "header (%ld, including the `END' keyword)", p->filename, p->cp.hdu,
+          "header (%zu, including the `END' keyword)", p->filename, p->cp.hdu,
           p->copykeysrange[1], numinkeys);
 
 
@@ -424,7 +424,7 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
       printf("(To suppress verbose output, run with `-q')\n");
     }
   else
-    printf("%ld%s\n", seconds, subsecstr);
+    printf("%zu%s\n", seconds, subsecstr);
 }
 
 
