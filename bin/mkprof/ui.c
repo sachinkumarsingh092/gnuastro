@@ -1311,7 +1311,6 @@ ui_make_log(struct mkprofparams *p)
 static void
 ui_read_ndim(struct mkprofparams *p)
 {
-  gal_data_t *keysll;
   size_t i, *dsize, ndim_counter;
 
   if(p->kernel)
