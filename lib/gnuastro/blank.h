@@ -108,6 +108,9 @@ gal_blank_alloc_write(uint8_t type);
 void
 gal_blank_initialize(gal_data_t *input);
 
+void
+gal_blank_initialize_array(void *array, size_t size, uint8_t type);
+
 char *
 gal_blank_as_string(uint8_t type, int width);
 

@@ -114,6 +114,25 @@ gal_blank_initialize(gal_data_t *input)
 
 
 
+/* Initialize an array to the given type's blank values.*/
+void
+gal_blank_initialize_array(void *array, size_t size, uint8_t type)
+{
+  size_t i, w=gal_type_sizeof(type);
+  void *b=gal_blank_alloc_write(type);
+
+  /* Set all the elements to blank. */
+  for(i=0;i<size;++i)
+    memcpy(gal_pointer_increment(array, i, type), b, w);
+
+  /* Clean up. */
+  free(b);
+}
+
+
+
+
+
 /* Print the blank value as a string. For the integer types, we'll use the
    PRIxNN keywords of `inttypes.h' (which is imported into Gnuastro from
    Gnulib, so we don't necessarily rely on the host system having it). */

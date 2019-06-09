@@ -53,6 +53,7 @@ See the end of the file for license conditions.
    - list.h: Functions to return the last element in linked lists. For
      example `gal_list_sizet_last' or `gal_list_data_last'.
    - gal_list_data_to_array_ptr: Make an array of pointers from the list.
+   - gal_blank_initialize_array: Initialize an array with blank values.
    - GAL_BLANK_INT: Blank value for `int' (can be 16-bit or 32-bit).
    - GAL_BLANK_UINT: Blank value for unsigned `int' (can be 16-bit or 32-bit).
    - gal_arithmetic_operator_string: Return operator string from code.

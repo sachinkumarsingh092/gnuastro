@@ -24800,6 +24800,12 @@ that corresponds to its type. If @code{input} is a tile over a larger
 dataset, only the region that the tile covers will be set to blank.
 @end deftypefun
 
+@deftypefun void gal_blank_initialize_array (void @code{*array}, size_t @code{size}, uint8_t @code{type})
+Initialize all the elements in the @code{array} to the blank value that
+corresponds to its type (identified with @code{type}), assuming the array
+has @code{size} elements.
+@end deftypefun
+
 @deftypefun {char *} gal_blank_as_string (uint8_t @code{type}, int @code{width})
 Write the blank value for the given data type @code{type} into a string and
 return it. The space for the string is dynamically allocated so it must be
