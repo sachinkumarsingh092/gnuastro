@@ -536,6 +536,7 @@ static size_t
 ui_num_clumps(struct mkcatalogparams *p)
 {
   char *basename;
+  int keepinputdir;
   size_t i, counter, numclumps=0;
   gal_list_i32_t *tmp, **labsinobj;
   int32_t *o=p->objects->array, *of=o+p->objects->size, *c=p->clumps->array;
@@ -590,11 +591,13 @@ ui_num_clumps(struct mkcatalogparams *p)
   while(++o<of);
 
   /* Write the created file into a file for the user to inspect. */
+  keepinputdir=p->cp.keepinputdir;
+  p->cp.keepinputdir = p->cp.output ? 1 : 0;
   basename = p->cp.output ? p->cp.output : p->objectsfile;
   p->relabclumps=gal_checkset_automatic_output(&p->cp, basename,
                                                "-clumps-relab.fits");
   gal_fits_img_write(p->clumps, p->relabclumps, NULL, PROGRAM_STRING);
-
+  p->cp.keepinputdir=keepinputdir;
 
   /* Clean up. */
   for(i=0;i<p->numobjects;++i)
