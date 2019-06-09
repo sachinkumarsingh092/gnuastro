@@ -619,6 +619,8 @@ ui_read_labels(struct mkcatalogparams *p)
   /* Read it into memory. */
   p->objects = gal_array_read_one_ch(p->objectsfile, p->cp.hdu, NULL,
                                      p->cp.minmapsize);
+  p->objects->ndim=gal_dimension_remove_extra(p->objects->ndim,
+                                              p->objects->dsize, NULL);
 
 
   /* Make sure it has an integer type. */
@@ -681,6 +683,8 @@ ui_read_labels(struct mkcatalogparams *p)
       /* Read the clumps image. */
       p->clumps = gal_array_read_one_ch(p->usedclumpsfile, p->clumpshdu,
                                         NULL, p->cp.minmapsize);
+      p->clumps->ndim=gal_dimension_remove_extra(p->clumps->ndim,
+                                                 p->clumps->dsize, NULL);
 
       /* Check its size. */
       if( gal_dimension_is_different(p->objects, p->clumps) )
@@ -977,6 +981,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
       p->values=gal_array_read_one_ch_to_type(p->usedvaluesfile, p->valueshdu,
                                               NULL, GAL_TYPE_FLOAT32,
                                               p->cp.minmapsize);
+      p->values->ndim=gal_dimension_remove_extra(p->values->ndim,
+                                                 p->values->dsize, NULL);
 
       /* Make sure it has the correct size. */
       if( gal_dimension_is_different(p->objects, p->values) )
@@ -1024,6 +1030,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
           p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
                                                NULL, GAL_TYPE_FLOAT32,
                                                p->cp.minmapsize);
+          p->sky->ndim=gal_dimension_remove_extra(p->sky->ndim,
+                                                  p->sky->dsize, NULL);
 
           /* Check its size and prepare tile structure. */
           ui_preparation_check_size_read_tiles(p, p->sky, p->usedskyfile,
@@ -1053,6 +1061,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
       p->std=gal_array_read_one_ch_to_type(p->usedstdfile, p->stdhdu,
                                            NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
+      p->std->ndim=gal_dimension_remove_extra(p->std->ndim,
+                                              p->std->dsize, NULL);
 
       /* Check its size and prepare tile structure. */
       ui_preparation_check_size_read_tiles(p, p->std, p->usedstdfile,
@@ -1086,6 +1096,9 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
           /* Read the mask image. */
           p->upmask = gal_array_read_one_ch(p->upmaskfile, p->upmaskhdu,
                                             NULL, p->cp.minmapsize);
+          p->upmask->ndim=gal_dimension_remove_extra(p->upmask->ndim,
+                                                     p->upmask->dsize,
+                                                     NULL);
 
           /* Check its size. */
           if( gal_dimension_is_different(p->objects, p->upmask) )

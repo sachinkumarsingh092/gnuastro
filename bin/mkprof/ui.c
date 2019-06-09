@@ -1024,6 +1024,7 @@ ui_prepare_canvas(struct mkprofparams *p)
   float *f, *ff;
   double truncr;
   long width[2]={1,1};
+  size_t tndim, *tdsize;
   int status=0, setshift=0;
   size_t i, nshift=0, *dsize=NULL, ndim_counter;
 
@@ -1035,7 +1036,10 @@ ui_prepare_canvas(struct mkprofparams *p)
          no merged image is desired, we just need the WCS information of
          the background image and the number of its dimensions. So
          `ndim==0' and what `dsize' points to is irrelevant. */
+      tdsize=gal_fits_img_info_dim(p->backname, p->backhdu, &tndim);
       p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
+      tndim=gal_dimension_remove_extra(tndim, tdsize, p->wcs);
+      free(tdsize);
       if(p->nomerged==0)
         {
           /* If p->dsize was given as an option, free it. */
@@ -1308,7 +1312,7 @@ static void
 ui_read_ndim(struct mkprofparams *p)
 {
   gal_data_t *keysll;
-  size_t i, ndim_counter;
+  size_t i, *dsize, ndim_counter;
 
   if(p->kernel)
     {
@@ -1336,12 +1340,9 @@ ui_read_ndim(struct mkprofparams *p)
           if(p->nomerged)
             {
               /* Get the number of the background image's dimensions. */
-              keysll=gal_data_array_calloc(1);
-              keysll->name="NAXIS";   keysll->type=GAL_TYPE_SIZE_T;
-              gal_fits_key_read(p->backname, p->backhdu, keysll, 0, 0);
-              p->ndim = *(size_t *)(keysll->array);
-              keysll->name=NULL;
-              gal_data_array_free(keysll, 1, 1);
+              dsize=gal_fits_img_info_dim(p->backname, p->backhdu, &p->ndim);
+              p->ndim=gal_dimension_remove_extra(p->ndim, dsize, NULL);
+              free(dsize);
             }
           else
             {
@@ -1349,6 +1350,8 @@ ui_read_ndim(struct mkprofparams *p)
               p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
                                                    NULL, GAL_TYPE_FLOAT32,
                                                    p->cp.minmapsize);
+              p->out->ndim=gal_dimension_remove_extra(p->out->ndim,
+                                                      p->out->dsize, NULL);
               p->ndim=p->out->ndim;
             }
 

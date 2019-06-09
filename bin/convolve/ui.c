@@ -438,6 +438,9 @@ ui_read_input(struct convolveparams *p)
                                                p->cp.minmapsize);
         p->input->wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0,
                                    &p->input->nwcs);
+        p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
+                                                  p->input->dsize,
+                                                  p->input->wcs);
       }
 
   /* The input isn't an image (wasn't read yet), so we'll read it as a
@@ -459,9 +462,14 @@ ui_read_kernel(struct convolveparams *p)
   if( p->kernelname
       && p->input->ndim>1
       && gal_array_name_recognized(p->kernelname)  )
-    p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
-                                              NULL, INPUT_USE_TYPE,
-                                              p->cp.minmapsize);
+    {
+      p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
+                                                NULL, INPUT_USE_TYPE,
+                                                p->cp.minmapsize);
+      p->kernel->ndim=gal_dimension_remove_extra(p->kernel->ndim,
+                                                 p->kernel->dsize,
+                                                 p->kernel->wcs);
+    }
   else
     p->kernel=ui_read_column(p, 1);
 

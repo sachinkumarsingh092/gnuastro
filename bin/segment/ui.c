@@ -413,6 +413,11 @@ ui_prepare_inputs(struct segmentparams *p)
                                            p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
+  p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
+                                            p->input->dsize,
+                                            p->input->wcs);
+
+  /* Set the name. */
   if(p->input->name) free(p->input->name);
   gal_checkset_allocate_copy("INPUT", &p->input->name);
 
@@ -435,6 +440,9 @@ ui_prepare_inputs(struct segmentparams *p)
       p->conv = gal_array_read_one_ch_to_type(p->convolvedname, p->chdu,
                                               NULL, GAL_TYPE_FLOAT32,
                                               p->cp.minmapsize);
+      p->conv->ndim=gal_dimension_remove_extra(p->conv->ndim,
+                                               p->conv->dsize,
+                                               p->conv->wcs);
       p->conv->wcs=gal_wcs_copy(p->input->wcs);
 
       /* Make sure it is the same size as the input. */
@@ -453,6 +461,8 @@ ui_prepare_inputs(struct segmentparams *p)
       /* Read the dataset into memory. */
       p->olabel = gal_array_read_one_ch(p->useddetectionname, p->dhdu,
                                         NULL, p->cp.minmapsize);
+      p->olabel->ndim=gal_dimension_remove_extra(p->olabel->ndim,
+                                                 p->olabel->dsize, NULL);
       if( gal_dimension_is_different(p->input, p->olabel) )
         error(EXIT_FAILURE, 0, "`%s' (hdu: %s) and `%s' (hdu: %s) have a"
               "different dimension/size", p->useddetectionname, p->dhdu,
@@ -527,8 +537,13 @@ ui_prepare_kernel(struct segmentparams *p)
   if(p->kernelname)
     {
       if( strcmp(p->kernelname, UI_NO_CONV_KERNEL_NAME) )
-        p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                           p->cp.minmapsize);
+        {
+          p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                             p->cp.minmapsize);
+          p->kernel->ndim=gal_dimension_remove_extra(p->kernel->ndim,
+                                                     p->kernel->dsize,
+                                                     NULL);
+        }
       else
         p->kernel=NULL;
     }
@@ -729,6 +744,8 @@ ui_read_std_and_sky(struct segmentparams *p)
       p->std=gal_array_read_one_ch_to_type(p->usedstdname, p->stdhdu,
                                            NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
+      p->std->ndim=gal_dimension_remove_extra(p->std->ndim,
+                                              p->std->dsize, NULL);
 
       /* Make sure it has the correct size. */
       ui_check_size(p->input, p->std, tl->tottiles, p->inputname, p->cp.hdu,
@@ -787,6 +804,8 @@ ui_read_std_and_sky(struct segmentparams *p)
           sky=gal_array_read_one_ch_to_type(p->skyname, p->skyhdu,
                                             NULL, GAL_TYPE_FLOAT32,
                                             p->cp.minmapsize);
+          sky->ndim=gal_dimension_remove_extra(sky->ndim, sky->dsize,
+                                               NULL);
 
           /* Check its size. */
           ui_check_size(p->input, sky, tl->tottiles, p->inputname, p->cp.hdu,

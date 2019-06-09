@@ -267,6 +267,7 @@ operands_copy_named(struct arithmeticparams *p, char *name)
 void
 operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
 {
+  size_t ndim, *dsize;
   struct operand *newnode;
 
   /* Some operators might not actually return any dataset (data=NULL), in
@@ -305,13 +306,17 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
               else
                 newnode->hdu=gal_list_str_pop(&p->hdus);
 
-              /* If no WCS is set yet, use the WCS of this image. */
+              /* If no WCS is set yet, use the WCS of this image and remove
+                 possibly extra dimensions if necessary. */
               if(p->refdata.wcs==NULL)
                 {
+                  dsize=gal_fits_img_info_dim(filename, newnode->hdu, &ndim);
                   p->refdata.wcs=gal_wcs_read(filename, newnode->hdu, 0, 0,
                                               &p->refdata.nwcs);
+                  ndim=gal_dimension_remove_extra(ndim, dsize, p->refdata.wcs);
                   if(p->refdata.wcs && !p->cp.quiet)
                     printf(" - WCS: %s (hdu %s).\n", filename, newnode->hdu);
+                  free(dsize);
                 }
             }
           else newnode->hdu=NULL;
@@ -349,8 +354,9 @@ operands_pop(struct arithmeticparams *p, char *operator)
       hdu=operands->hdu;
       filename=operands->filename;
 
-      /* Read the dataset. */
+      /* Read the dataset and remove possibly extra dimensions. */
       data=gal_array_read_one_ch(filename, hdu, NULL, p->cp.minmapsize);
+      data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize, NULL);
 
       /* Arithmetic changes the contents of a dataset, so the existing name
          (in the FITS `EXTNAME' keyword) should not be passed on beyond

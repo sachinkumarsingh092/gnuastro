@@ -795,3 +795,48 @@ gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
   if(num) gal_data_free(num);
   return minmax;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/********************             Other            **********************/
+/************************************************************************/
+size_t
+gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs)
+{
+  size_t i, j;
+
+  for(i=0;i<ndim;++i)
+    if(dsize[i]==1)
+      {
+        /* Correct the WCS. */
+        if(wcs) gal_wcs_remove_dimension(wcs, ndim-i);
+
+        /* Shift all subsequent dimensions to replace this one. */
+        for(j=i;j<ndim-1;++j) dsize[j]=dsize[j+1];
+
+        /* Decrement the `i' and the total number of dimension. */
+        --i;
+        --ndim;
+      }
+
+  /* Return the number of dimensions. */
+  return ndim;
+}

@@ -559,15 +559,21 @@ ui_preparations_read_input(struct noisechiselparams *p)
   float *f;
   size_t ndim;
 
-  /* Read the input as a single precision floating point dataset. */
+  /* Read the input as a single precision floating point dataset, also load
+     the WCS and finally remove any possibly existing extra dimensions
+     (with a length of 1). */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
                                            NULL, GAL_TYPE_FLOAT32,
                                            p->cp.minmapsize);
   p->input->wcs = gal_wcs_read(p->inputname, p->cp.hdu, 0, 0,
                                &p->input->nwcs);
+  p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
+                                            p->input->dsize,
+                                            p->input->wcs);
+
+  /* When the input doesn't have a name, use `INPUT'. */
   if(p->input->name==NULL)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
-
 
   /* NoiseChisel currently only works on 2D datasets (images). */
   if(p->input->ndim!=2)

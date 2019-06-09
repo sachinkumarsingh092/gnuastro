@@ -848,6 +848,9 @@ ui_preparations(struct statisticsparams *p)
                                      cp->minmapsize);
       p->input->wcs=gal_wcs_read(p->inputname, cp->hdu, 0, 0,
                                  &p->input->nwcs);
+      p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
+                                                p->input->dsize,
+                                                p->input->wcs);
     }
   else
     {
@@ -857,8 +860,12 @@ ui_preparations(struct statisticsparams *p)
 
   /* Read the convolution kernel if necessary. */
   if(p->sky && p->kernelname)
-    p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                       cp->minmapsize);
+    {
+      p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
+                                         cp->minmapsize);
+      p->kernel->ndim=gal_dimension_remove_extra(p->kernel->ndim,
+                                                 p->kernel->dsize, NULL);
+    }
 
   /* Tile and channel sanity checks and preparations. */
   if(p->ontile || p->sky)

@@ -357,10 +357,16 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
 static void
 ui_preparations(struct arithmeticparams *p)
 {
+  size_t ndim, *dsize;
+
   /* In case a file is specified to read the WCS from (and ignore input
      datasets), read the WCS prior to starting parsing of the arguments. */
   if(p->wcsfile)
     {
+      /* Read the number of dimensions and the size of each. */
+      dsize=gal_fits_img_info_dim(p->wcsfile, p->wcshdu, &ndim);
+
+      /* Read the WCS. */
       p->refdata.wcs=gal_wcs_read(p->wcsfile, p->wcshdu, 0, 0,
                                   &p->refdata.nwcs);
       if(p->refdata.wcs)
@@ -371,6 +377,13 @@ ui_preparations(struct arithmeticparams *p)
       else
         fprintf(stderr, "WARNING: %s (hdu %s) didn't contain a "
                 "(readable by WCSLIB) WCS.", p->wcsfile, p->wcshdu);
+
+      /* Correct the WCS dimensions if necessary. Note that we don't need
+         the `ndim' or `dsize' any more. */
+      ndim=gal_dimension_remove_extra(ndim, dsize, p->refdata.wcs);
+
+      /* Clean up. */
+      free(dsize);
     }
 }
 

@@ -1790,6 +1790,27 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
 
 
 
+/* Get the basic array info to remove extra dimensions if necessary. */
+size_t *
+gal_fits_img_info_dim(char *filename, char *hdu, size_t *ndim)
+{
+  fitsfile *fptr;
+  size_t *dsize=NULL;
+  int status=0, type;
+
+  /* Open the given header, read the basic image information and close it
+     again. */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
+  gal_fits_img_info(fptr, &type, ndim, &dsize, NULL, NULL);
+  if( fits_close_file(fptr, &status) ) gal_fits_io_error(status, NULL);
+
+  return dsize;
+}
+
+
+
+
+
 /* Read a FITS image HDU into a Gnuastro data structure. */
 gal_data_t *
 gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)

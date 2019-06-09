@@ -523,6 +523,8 @@ ui_make_channels_ll(struct converttparams *p)
           /* Read in the array and its WCS information. */
           data=gal_fits_img_read(name->v, hdu, p->cp.minmapsize);
           data->wcs=gal_wcs_read(name->v, hdu, 0, 0, &data->nwcs);
+          data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize,
+                                                data->wcs);
           gal_list_data_add(&p->chll, data);
 
           /* A FITS file only has one channel. */

@@ -51,6 +51,9 @@ enum option_keys_enum
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct arithmeticparams *p);
 
+size_t *
+ui_read_ndim_dsize(char *filename, char *hdu, size_t *ndim);
+
 void
 freeandreport(struct arithmeticparams *p, struct timeval *t1);
 

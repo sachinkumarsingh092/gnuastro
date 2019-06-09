@@ -25508,6 +25508,17 @@ have the maximum value along the given dimension and if it is zero, the
 minimum.
 @end deftypefun
 
+@deftypefun size_t gal_dimension_remove_extra (size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs})
+Remove extra dimensions (those that only have a length of 1) from the basic
+size information of a dataset. @code{ndim} is the number of dimensions and
+@code{dsize} is an array with @code{ndim} elements containing the size
+along each dimension in the C dimension order. When @code{wcs!=NULL}, the
+respective dimension will also be removed from the WCS.
+
+This function will return the new number of dimensions and the @code{dsize}
+elements will contain the length along each new dimension.
+@end deftypefun
+
 @deffn {Function-like macro} GAL_DIMENSION_NEIGHBOR_OP (@code{index}, @code{ndim}, @code{dsize}, @code{connectivity}, @code{dinc}, @code{operation})
 Parse the neighbors of the element located at @code{index} and do the
 requested operation on them. This is defined as a macro to allow easy
@@ -27201,6 +27212,12 @@ then if the image has a name and units, the respective string will be put
 in these pointers.
 @end deftypefun
 
+@deftypefun {size_t *} gal_fits_img_info_dim (char @code{*filename}, char @code{*hdu}, size_t @code{*ndim})
+Put the number of dimensions in the @code{hdu} extension of @file{filename}
+in the space that @code{ndim} points to and return the size of the dataset
+along each dimension as an allocated array with @code{*ndim} elements.
+@end deftypefun
+
 @deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize})
 Read the contents of the @code{hdu} extension/HDU of @code{filename} into a
 Gnuastro generic data container (see @ref{Generic data container}) and
@@ -27838,6 +27855,10 @@ points to. Please see @code{gal_wcs_read_fitsptr} for more.
 
 @deftypefun {struct wcsprm *} gal_wcs_copy (struct wcsprm @code{*wcs})
 Return a fully allocated (independent) copy of @code{wcs}.
+@end deftypefun
+
+@deftypefun void gal_wcs_remove_dimension (struct wcsprm @code{*wcs}, size_t @code{fitsdim})
+Remove the given FITS dimension from the given @code{wcs} structure.
 @end deftypefun
 
 @deftypefun void gal_wcs_on_tile (gal_data_t @code{*tile})

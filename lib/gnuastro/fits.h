@@ -235,6 +235,9 @@ void
 gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
                   char **name, char **unit);
 
+size_t *
+gal_fits_img_info_dim(char *filename, char *hdu, size_t *ndim);
+
 gal_data_t *
 gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);
 

@@ -348,6 +348,9 @@ ui_check_options_and_arguments(struct warpparams *p)
                                              p->cp.minmapsize);
       p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
                                  p->hendwcs, &p->input->nwcs);
+      p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
+                                                p->input->dsize,
+                                                p->input->wcs);
       if(p->input->wcs)
         {
           p->pixelscale=gal_wcs_pixel_scale(p->input->wcs);

@@ -286,6 +286,8 @@ ui_preparations(struct mknoiseparams *p)
   p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu, NULL,
                                      GAL_TYPE_FLOAT64, p->cp.minmapsize);
   p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, 0, 0, &p->input->nwcs);
+  p->input->ndim=gal_dimension_remove_extra(p->input->ndim, p->input->dsize,
+                                            p->input->wcs);
 
 
   /* If we are dealing with an input table, make sure the format of the
