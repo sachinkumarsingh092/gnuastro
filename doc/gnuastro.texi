@@ -20119,8 +20119,8 @@ the clump multiplied by the area of the clump) is removed, see
 catalog will be smaller than the total clump brightness in the
 @option{--clumpbrightness} column of the objects catalog.
 
-If no usable pixels (blank or below the threshold) are present over the
-clump or object, the stored value will be NaN (note that zero is
+If no usable pixels are present over the clump or object (for example they
+are all blank), the returned value will be NaN (note that zero is
 meaningful).
 
 @item --brightnesserr
@@ -20130,9 +20130,8 @@ clumps.
 @item --clumpbrightness
 [Objects] The total brightness of the clumps within an object. This is
 simply the sum of the pixels associated with clumps in the object. If no
-usable pixels (blank or below the threshold) are present over the clump or
-object, the stored value will be NaN, because zero (note that zero is
-meaningful).
+usable pixels are present over the clump or object (for example they are
+all blank), the stored value will be NaN (note that zero is meaningful).
 
 @item --brightnessnoriver
 [Clumps] The Sky (not river) subtracted clump brightness. By definition,
@@ -20142,20 +20141,9 @@ neighbors. In cases where you will be calculating the flux brightness
 difference later (one example below) the contamination will be (mostly)
 removed at that stage, which is why this column was added.
 
-One example might be this: you want to know the change in the clump flux as
-a function of threshold (see @option{--threshold}). So you will make two
-catalogs (each having this column but with different thresholds) and then
-subtract the lower threshold catalog (higher brightness) from the higher
-threshold catalog (lower brightness). The effect is most visible when the
-rivers have a high average signal-to-noise ratio. The removed contribution
-from the pixels below the threshold will be less than the river
-pixels. Therefore the river-subtracted brightness (@option{--brightness})
-for the thresholded catalog for such clumps will be larger than the
-brightness with no threshold!
-
-If no usable pixels (blank or below the possibly given threshold) are
-present over the clump or object, the stored value will be NaN (note that
-zero is meaningful).
+If no usable pixels are present over the clump or object (for example they
+are all blank), the stored value will be NaN (note that zero is
+meaningful).
 
 @item --mean
 The mean sky subtracted value of pixels within the object or clump. For
