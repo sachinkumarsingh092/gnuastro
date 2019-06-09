@@ -19694,7 +19694,7 @@ There are separate options to explicitly request a file name and
 HDU/extension for each of the required input datasets as fully described
 below (with the @option{--*file} format). When each dataset is in a
 separate file, these options are necessary. However, one great advantage of
-the FITS file format, that is heavily used in astronomy, is that it allows
+the FITS file format (that is heavily used in astronomy) is that it allows
 the storage of multiple datasets in one file. So in most situations (for
 example if you are using the outputs of @ref{NoiseChisel} or
 @ref{Segment}), all the necessary input datasets can be in one file.
@@ -19706,6 +19706,24 @@ necessary and the only @option{--*file} option called is
 @option{--valuesfile}, MakeCatalog will search for these datasets (with the
 default/given HDUs) in the file given to @option{--valuesfile} (before
 looking into the the main argument file).
+
+When the clumps image (necessary with the @option{--clumpscat} option) is
+used, MakeCatalog looks into the (possibly existing) @code{NUMLABS} keyword
+for the total number of clumps in the image (irrespective of how many
+objects there are). If its not present, it will count them and possibly
+re-label the clumps so the clump labels always start with 1 and finish with
+the total number of clumps in each object. The re-labeled clumps image will
+be stored with the @file{-clumps-relab.fits} suffix. This can slighly
+slow-down the run.
+
+Note that @code{NUMLABS} is automatically written by Segment in its
+outputs, so if you are feeding Segment's clump labels, you can benefit from
+the improved speed. Otherwise, if you are creating the clumps label dataset
+manually, it may be good to include the @code{NUMLABS} keyword in its
+header and also be sure that there is no gap in the clump labels. For
+example if an object has three clumps, they are labeled as 1, 2, 3. If they
+are labeled as 1, 3, 4, or any other combination of three positive integers
+that aren't an increment of the previous, you might get un-known behavior.
 
 It may happen that your labeled objects image was created with a program
 that only outputs floating point files. However, you know it only has

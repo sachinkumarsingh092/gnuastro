@@ -182,6 +182,7 @@ struct mkcatalogparams
   int32_t       checkuplim[2];  /* Object & clump ID to check dist.     */
 
   /* Internal. */
+  char           *relabclumps;  /* Name of new file for clump labels.   */
   time_t              rawtime;  /* Starting time of the program.        */
   gal_data_t          *values;  /* Input.                               */
   gal_data_t         *objects;  /* Object labels.                       */

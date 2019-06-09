@@ -532,12 +532,88 @@ ui_wcs_info(struct mkcatalogparams *p)
 
 
 
+static size_t
+ui_num_clumps(struct mkcatalogparams *p)
+{
+  char *basename;
+  size_t i, counter, numclumps=0;
+  gal_list_i32_t *tmp, **labsinobj;
+  int32_t *o=p->objects->array, *of=o+p->objects->size, *c=p->clumps->array;
+
+  /* Allocate array of lists to keep the unique labels within each object. */
+  errno=0;
+  labsinobj=calloc(p->numobjects+1, sizeof *labsinobj);
+  if(labsinobj==NULL)
+    error(EXIT_FAILURE, 0, "%s: couldn't allocate %zu bytes for "
+          "`labsinobj'", __func__, p->numobjects * sizeof *labsinobj);
+
+  /* Go over each pixel and find the unique clump labels within each
+     object. */
+  do
+    {
+      /* Do the steps if we are on a clump. */
+      if(*o>0 && *c>0)
+        {
+          /* See if the label has already been found. */
+          for(tmp=labsinobj[*o];tmp!=NULL;tmp=tmp->next) if(tmp->v==*c) break;
+
+          /* When it wasn't found, `tmp==NULL'. */
+          if(tmp==NULL)
+            {
+              ++numclumps;
+              gal_list_i32_add(&labsinobj[*o], *c);
+            }
+        }
+
+      /* Increment the clumps pointer.*/
+      ++c;
+    }
+  while(++o<of);
+
+  /* Re-write the clump values so their numbering is contiguous, since this
+     is assumed during the later steps. */
+  o=p->objects->array;
+  c=p->clumps->array;
+  do
+    {
+      /* Do the steps if we are on a clump. */
+      if(*o>0 && *c>0)
+        {
+          counter=0;
+          for(tmp=labsinobj[*o];tmp!=NULL;tmp=tmp->next)
+            { counter++; if(tmp->v==*c) {*c=counter; break;} }
+        }
+
+      /* Increment the clumps pointer.*/
+      ++c;
+    }
+  while(++o<of);
+
+  /* Write the created file into a file for the user to inspect. */
+  basename = p->cp.output ? p->cp.output : p->objectsfile;
+  p->relabclumps=gal_checkset_automatic_output(&p->cp, basename,
+                                               "-clumps-relab.fits");
+  gal_fits_img_write(p->clumps, p->relabclumps, NULL, PROGRAM_STRING);
+
+
+  /* Clean up. */
+  for(i=0;i<p->numobjects;++i)
+    if(labsinobj[i]) gal_list_i32_free(labsinobj[i]);
+  free(labsinobj);
+
+  /* Return the number of clumps. */
+  return numclumps;
+}
+
+
+
+
+
 /* The only mandatory input is the objects image, so first read that and
    make sure its type is correct. */
 static void
 ui_read_labels(struct mkcatalogparams *p)
 {
-  char *msg;
   gal_data_t *tmp, *keys=gal_data_array_calloc(2);
 
   /* Read it into memory. */
@@ -624,17 +700,7 @@ ui_read_labels(struct mkcatalogparams *p)
       keys[0].array=&p->clumpsn;            keys[1].array=&p->numclumps;
       gal_fits_key_read(p->usedclumpsfile, p->clumpshdu, keys, 0, 0);
       if(keys[0].status) p->clumpsn=NAN;
-      if(keys[1].status)
-        {
-          if( asprintf(&msg, "%s (hdu: %s): couldn't find/read `NUMLABS' in "
-                       "the header keywords, see CFITSIO error above. The "
-                       "clumps image must have the total number of clumps "
-                       "(irrespective of how many objects there are in the "
-                       "image) in this header keyword", p->usedclumpsfile,
-                       p->clumpshdu)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-          gal_fits_io_error(keys[1].status, msg);
-        }
+      if(keys[1].status) p->numclumps=ui_num_clumps(p);
 
       /* If there were no clumps, then free the clumps array and set it to
          NULL, so for the rest of the processing, MakeCatalog things that
@@ -1520,6 +1586,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
       if(p->clumps)
         printf("  - Clumps:  %s (hdu: %s)\n", p->usedclumpsfile,
                p->clumpshdu);
+      if(p->relabclumps)
+        printf("  - RELABELED CLUMPS (no NUMLABS in original): %s\n",
+               p->relabclumps);
       if(p->values)
         printf("  - Values:  %s (hdu: %s)\n", p->usedvaluesfile,
                p->valueshdu);

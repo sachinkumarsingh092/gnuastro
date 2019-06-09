@@ -78,6 +78,12 @@ See the end of the file for license conditions.
      `sigclip-mean' and `sigclip-std') return 32-bit floating point
      datasets
 
+  MakeCatalog:
+   - When a clumps catalog is requested, MakeCatalog will automatically
+     deduce the total number of clumps (at a small cost in
+     performance). Until now, it was mandatory for the clumps label dataset
+     to contain the total number of clumps in the `NUMLABS' keyword.
+
   Library:
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
 
