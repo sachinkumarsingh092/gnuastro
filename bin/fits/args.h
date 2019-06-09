@@ -89,6 +89,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "primaryimghdu",
+      UI_KEY_PRIMARYIMGHDU,
+      0,
+      0,
+      "Copy/cut image HDUs to primary/zero-th HDU.",
+      UI_GROUP_EXTENSION,
+      &p->primaryimghdu,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

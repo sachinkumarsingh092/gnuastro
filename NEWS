@@ -23,6 +23,10 @@ See the end of the file for license conditions.
    --usedredshift: Print the used redshift as a "Specific calculation" (in
      line with other single-valued calculations).
 
+  Fits:
+   --primaryimghdu: Copy/cut the given image HDU to the zero-th/first
+     HDU of the output file that doesn't yet exist.
+
   Statistics:
    --sigclip-number, --sigclip-median, --sigclip-mean, --sigclip-std: Do
      sigma-clipping and only print the desired value as a single-value

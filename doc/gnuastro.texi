@@ -10258,14 +10258,23 @@ output file, see explanations above.
 
 @item -R STR
 @itemx --remove=STR
-Remove the specified HDU from the input file. From CFITSIO: ``In the case
-of deleting the primary array (the first HDU in the file) then [it] will be
-replaced by a null primary array containing the minimum set of required
-keywords and no data.''. So in practice, any existing data (array) and
-meta-data in the first extension will be removed, but the number of
+Remove the specified HDU from the input file.
+
+The first (zero-th) HDU cannot be removed with this option. Consider using
+@option{--copy} or @option{--cut} in combination with
+@option{primaryimghdu} to not have an empty zero-th HDU. From CFITSIO: ``In
+the case of deleting the primary array (the first HDU in the file) then
+[it] will be replaced by a null primary array containing the minimum set of
+required keywords and no data.''. So in practice, any existing data (array)
+and meta-data in the first extension will be removed, but the number of
 extensions in the file won't change. This is because of the unique position
 the first FITS extension has in the FITS standard (for example it cannot be
 used to store tables).
+
+@item --primaryimghdu
+Copy or cut an image HDU to the zero-th HDU/extension a file that doesn't
+yet exist. This option is thus irrelevant if the output file already exists
+or the copied/cut extension is a FITS table.
 
 @end table
 

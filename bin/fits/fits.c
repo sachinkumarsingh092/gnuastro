@@ -25,6 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
@@ -54,7 +55,7 @@ fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
     case FITS_ACTION_UPDATE:        action="updated";      break;
     case FITS_ACTION_WRITE:         action="written";      break;
     case FITS_ACTION_COPY:          action="copied";       break;
-    case FITS_ACTION_REMOVE:        action="renoved";      break;
+    case FITS_ACTION_REMOVE:        action="removed";      break;
 
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at `%s' so we "
@@ -299,16 +300,53 @@ fits_hdu_remove(struct fitsparams *p, int *r)
 
 
 
+/* This is similar to the library's `gal_fits_open_to_write', except that
+   it won't create an empty first extension.*/
+fitsfile *
+fits_open_to_write_no_blank(char *filename)
+{
+  int status=0;
+  fitsfile *fptr;
+
+  /* When the file exists just open it. Otherwise, create the file. But we
+     want to leave the first extension as a blank extension and put the
+     image in the next extension to be consistent between tables and
+     images. */
+  if(access(filename,F_OK) == -1 )
+    {
+      /* Create the file. */
+      if( fits_create_file(&fptr, filename, &status) )
+        gal_fits_io_error(status, NULL);
+    }
+
+  /* Open the file, ready for later steps. */
+  if( fits_open_file(&fptr, filename, READWRITE, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Return the pointer. */
+  return fptr;
+}
+
+
+
+
+
 static void
 fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
 {
   char *hdu;
-  fitsfile *in, *out;
   int status=0, hdutype;
+  fitsfile *in, *out=NULL;
   gal_list_str_t *list = cut1_copy0 ? p->cut : p->copy;
 
-  /* Open the output file. */
-  out=gal_fits_open_to_write(p->cp.output);
+  /* Open the output file.
+
+############################################# USE this after checking the
+nature of the first extension to be copied. If its a table, use the
+library's function.  #############################################
+
+*/
+
 
   /* Copy all the given extensions. */
   while(list)
@@ -319,6 +357,14 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
       /* Open the FITS file at the specified HDU. */
       in=gal_fits_hdu_open(p->filename, hdu,
                            cut1_copy0 ? READWRITE : READONLY);
+
+      /* If the output isn't opened yet, open it.  */
+      if(out==NULL)
+        out = ( ( gal_fits_hdu_format(p->filename, hdu)==IMAGE_HDU
+                  && p->primaryimghdu )
+                ? fits_open_to_write_no_blank(p->cp.output)
+                : gal_fits_open_to_write(p->cp.output) );
+
 
       /* Copy to the extension. */
       if( fits_copy_hdu(in, out, 0, &status) )
