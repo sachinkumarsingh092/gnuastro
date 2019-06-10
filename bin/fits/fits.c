@@ -339,15 +339,6 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
   fitsfile *in, *out=NULL;
   gal_list_str_t *list = cut1_copy0 ? p->cut : p->copy;
 
-  /* Open the output file.
-
-############################################# USE this after checking the
-nature of the first extension to be copied. If its a table, use the
-library's function.  #############################################
-
-*/
-
-
   /* Copy all the given extensions. */
   while(list)
     {
@@ -384,7 +375,7 @@ library's function.  #############################################
     }
 
   /* Close the output file. */
-  fits_close_file(out, &status);
+  if(out) fits_close_file(out, &status);
 }
 
 
