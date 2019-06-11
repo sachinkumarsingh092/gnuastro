@@ -581,7 +581,7 @@ ui_preparations_read_input(struct noisechiselparams *p)
           "can only operate on 2D datasets (images)", p->inputname, p->cp.hdu,
           p->input->ndim);
 
-  /* Check the values of dimention-related options. */
+  /* Check the values of dimension-related options. */
   ndim=p->input->ndim;
   ui_ngb_check(p->holengb, "holengb", ndim);
   ui_ngb_check(p->erodengb, "erodengb", ndim);

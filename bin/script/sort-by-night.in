@@ -86,7 +86,7 @@ $scriptname options:
   -h, --hdu=STR           HDU/extension of all input FITS files.
   -k, --key=STR           Header keyword specifying date to use.
   -H, --hour=FLT          Hour in next day to be included in night.
-                          Be aware of time zones whith this argument!
+                          Be aware of time zones with this argument!
 
  Output:
   -l, --link              list of inputs with night and file number.
