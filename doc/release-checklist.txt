@@ -186,7 +186,7 @@ all the commits needed for this release have been completed.
    (only for STABLE) and Savannah news (only for STABLE).
 
 
- - Open `configure.ac' and increment `GAL_CURRENT' for the next
+ - [STABLE] Open `configure.ac' and increment `GAL_CURRENT' for the next
    release. See the `Updating library version information' section of the
    GNU Libtool manual as a guide. Note that we are assuming that until the
    next release some change will be made in the library.

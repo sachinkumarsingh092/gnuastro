@@ -9,17 +9,17 @@ See the end of the file for license conditions.
 
   Arithmetic:
    - `unique' operator removes all duplicate (and blank) elements from the
-     dataset and returns a single-dimention output, containing only the
+     dataset and returns a single-dimension output, containing only the
      unique values in the dataset.
 
   CosmicCalculator:
    --obsline: alternative way to set the used redshift. With this option
-     instead of explicity giving the redshift, you can give a rest-frame
+     instead of explicitly giving the redshift, you can give a rest-frame
      and observed wavelength and the redshift to use will be calculated
      internally. For many lines, it is possible to give the line name
      instead of its rest-frame wavelength. For example
      `--obsline=lyalpha,6000' will use the redshift where the Lyman-alpha
-     line has been shifted to 6000 Angestroms.
+     line has been shifted to 6000 Angstroms.
    --usedredshift: Print the used redshift as a "Specific calculation" (in
      line with other single-valued calculations).
 
@@ -42,13 +42,13 @@ See the end of the file for license conditions.
      like the Arithmetic program. See the "Column Arithmetic" section of
      the book for a detailed discussion and several examples.
    - WCS to Image coordinate conversion with `wcstoimg' and `imgtowcs'. For
-     example if the input catalog has atleast an `ID' column and two `RA'
+     example if the input catalog has at least an `ID' column and two `RA'
      and `DEC' columns, the set of options below will produce 5 columns
      where the last two columns are the image coordinates for each row
      based on the WCS in `a.fits':
            `-cID,RA,DEC -c"arith RA DEC wcstoimg" --wcsfile=a.fits'
    --head: Only output the given number of rows from the top of columns.
-   --tail: Only output the given number of rows from the botoom of columns.
+   --tail: Only output the given number of rows from the bottom of columns.
 
   Library:
    - New `speclines.h' library functions and macros related to spectral
@@ -65,7 +65,6 @@ See the end of the file for license conditions.
    - GAL_BLANK_INT: Blank value for `int' (can be 16-bit or 32-bit).
    - GAL_BLANK_UINT: Blank value for unsigned `int' (can be 16-bit or 32-bit).
 
-
 ** Removed features
 
 ** Changed features
@@ -76,7 +75,7 @@ See the end of the file for license conditions.
      conflicting versions of some dependencies (GSL in particular).
 
   Arithmetic:
-   - The output of coadding operators is no longer the same type as the
+   - The output of co-adding operators is no longer the same type as the
      input in general. The output of the `min' and `max' operators are
      still the same type as the input. However the `number' and
      `sigclip-number' operators will output an unsigned 32-bit integer type
@@ -98,7 +97,7 @@ See the end of the file for license conditions.
   bug #56246: Single-valued measurement must abort with no value in Statistics.
   bug #56256: Segmentation fault when reading plain text array/image.
   bug #56257: ConvertType: Values not preserved when converting text to FITS.
-  bug #56299: cosmiccal fails at z=0.
+  bug #56299: CosmicCalculator fails at z=0.
   bug #56324: Column metadata not usable when input is from pipe/stdin.
   bug #56424: Warp crashes with empty string given to options.
 
