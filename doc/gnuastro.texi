@@ -1743,25 +1743,25 @@ particular in collaboration with Johan Knapen and Ignacio Trujillo.
 @c (alphabetical, except for the names in the paragraph above).
 In general, we would like to gratefully thank the following people for
 their useful and constructive comments and suggestions (in alphabetical
-order by family name): Valentina Abril-melgarejo, Marjan Akbari, Roland
-Bacon, Roberto Baena Gall\'e, Karl Berry, Leindert Boogaard, Nicolas
-Bouch@'e, Fernando Buitrago, Adrian Bunk, Rosa Calvi, Nushkia Chamba,
-Benjamin Clement, Nima Dehdilani, Antonio Diaz Diaz, Pierre-Alain Duc,
-Elham Eftekhari, Gaspar Galaz, Th@'er@`ese Godefroy, Madusha Gunawardhana,
-Stephen Hamer, Takashi Ichikawa, Ra@'ul Infante Sainz, Brandon Invergo,
-Oryna Ivashtenko, Aur@'elien Jarno, Lee Kelvin, Brandon Kelly,
-Mohammad-Reza Khellat, Johan Knapen, Geoffry Krouchi, Floriane Leclercq,
-Alan Lefor, Guillaume Mahler, Juan Molina Tobar, Francesco Montanari,
-Dmitrii Oparin, Bertrand Pain, William Pence, Mamta Pommier, Bob Proulx,
-Teymoor Saifollahi, Yahya Sefidbakht, Alejandro Serrano Borlaff, Jenny
-Sorce, Lee Spitler, Richard Stallman, Michael Stein, Ole Streicher, Alfred
-M. Szmidt, Michel Tallon, Juan C. Tello, @'Eric Thi@'ebaut, Ignacio
-Trujillo, David Valls-Gabaud, Aaron Watkins, Christopher Willmer, Sara
-Yousefi Taemeh, Johannes Zabl. The GNU French Translation Team is also
-managing the French version of the top Gnuastro webpage which we highly
-appreciate. Finally we should thank all the (sometimes anonymous) people in
-various online forums which patiently answered all our small (but
-important) technical questions.
+order by family name): Valentina Abril-melgarejo, Marjan Akbari, Hamed
+Altafi, Roland Bacon, Roberto Baena Gall\'e, Zahra Bagheri, Karl Berry,
+Leindert Boogaard, Nicolas Bouch@'e, Fernando Buitrago, Adrian Bunk, Rosa
+Calvi, Nushkia Chamba, Benjamin Clement, Nima Dehdilani, Antonio Diaz Diaz,
+Pierre-Alain Duc, Elham Eftekhari, Gaspar Galaz, Th@'er@`ese Godefroy,
+Madusha Gunawardhana, Bruno Haible, Stephen Hamer, Takashi Ichikawa, Ra@'ul
+Infante Sainz, Brandon Invergo, Oryna Ivashtenko, Aur@'elien Jarno, Lee
+Kelvin, Brandon Kelly, Mohammad-Reza Khellat, Johan Knapen, Geoffry
+Krouchi, Floriane Leclercq, Alan Lefor, Guillaume Mahler, Juan Molina
+Tobar, Francesco Montanari, Dmitrii Oparin, Bertrand Pain, William Pence,
+Mamta Pommier, Bob Proulx, Teymoor Saifollahi, Elham Saremi, Yahya
+Sefidbakht, Alejandro Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard
+Stallman, Michael Stein, Ole Streicher, Alfred M. Szmidt, Michel Tallon,
+Juan C. Tello, @'Eric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud,
+Aaron Watkins, Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The
+GNU French Translation Team is also managing the French version of the top
+Gnuastro webpage which we highly appreciate. Finally we should thank all
+the (sometimes anonymous) people in various online forums which patiently
+answered all our small (but important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
@@ -3977,7 +3977,7 @@ point to help in your exciting research. If this book or any of the
 programs in Gnuastro have been useful for your research, please cite the
 respective papers, and acknowledge the funding agencies that made all of
 this possible. All Gnuastro programs have a @option{--cite} option to
-facilitate the citation and acknowledgement. Just note that it may be
+facilitate the citation and acknowledgment. Just note that it may be
 necessary to cite additional papers for different programs, so please try
 it out on all the programs that you used, for example:
 
@@ -4645,7 +4645,7 @@ Finally, if this book or any of the programs in Gnuastro have been useful
 for your research, please cite the respective papers, and acknowledge the
 funding agencies that made all of this possible. All Gnuastro programs have
 a @option{--cite} option to facilitate the citation and
-acknowledgement. Just note that it may be necessary to cite additional
+acknowledgment. Just note that it may be necessary to cite additional
 papers for different programs, so please try it out on all the programs
 that you used, for example:
 
@@ -4688,7 +4688,7 @@ table to smoothly run this tutorial later. But until then, you can use the
 final catalog that you produced in @ref{General program usage
 tutorial}. The start of this tutorial has some overlaps with the ending of
 @ref{General program usage tutorial}. You can just select some of the
-brighter sources to make it shorter and more managable.
+brighter sources to make it shorter and more manageable.
 @end cartouche
 
 Hubble has stored all the FITS images of the objects he wants to visually
@@ -8821,7 +8821,7 @@ compilation. Therefore, if you open the installed scripts in a text editor,
 you can actually read them@footnote{Gnuastro's installed programs (those
 only starting with @code{ast}) aren't human-readable. They are written in C
 and are thus compiled (optimized in binary CPU instructions that will be
-given directly to your CPU). Because they don't need an interpretter like
+given directly to your CPU). Because they don't need an interpreter like
 Bash on every run, they are much faster and more independent than
 scripts. To read the source code of the programs, look into the
 @file{bin/progname} directory of Gnuastro's source (@ref{Downloading the
@@ -10852,7 +10852,7 @@ organization of the images taken during the night depends on the local
 time. It is possible to take this into account by setting the
 @option{--hour} option to the local time in UTC.
 
-For example, consider a set of images taken in Auckland (New Zeland,
+For example, consider a set of images taken in Auckland (New Zealand,
 UTC+12) during different nights. If you want to classify these images by
 night, you have to know at which time (in UTC time) the Sun rises (or any
 other separator/definition of a different night). In this particular
@@ -11642,7 +11642,7 @@ activation word) has to be quoted on the command-line or in a shell script
 To identify a column you can directly use its name, or specify its number
 (counting from one, see @ref{Selecting table columns}). When you are giving
 a column number, it is necessary to prefix it with a @code{c} (otherwise it
-is not distinguisable from a constant number to use in the arithmetic
+is not distinguishable from a constant number to use in the arithmetic
 operation).
 
 For example with the command below, the first two columns of
@@ -11697,7 +11697,7 @@ columns.
 Convert the given WCS positions to image/dataset coordinates based on the
 number of dimensions in the WCS structure of @option{--wcshdu}
 extension/HDU in @option{--wcsfile}. It will output the same number of
-columns. The first poppoed operand is the last FITS dimension.
+columns. The first popped operand is the last FITS dimension.
 
 For example the two commands below (which have the same output) will
 produce 5 columns. The first three columns are the input table's ID, RA and
@@ -19722,7 +19722,7 @@ for the total number of clumps in the image (irrespective of how many
 objects there are). If its not present, it will count them and possibly
 re-label the clumps so the clump labels always start with 1 and finish with
 the total number of clumps in each object. The re-labeled clumps image will
-be stored with the @file{-clumps-relab.fits} suffix. This can slighly
+be stored with the @file{-clumps-relab.fits} suffix. This can slightly
 slow-down the run.
 
 Note that @code{NUMLABS} is automatically written by Segment in its
@@ -19732,7 +19732,7 @@ manually, it may be good to include the @code{NUMLABS} keyword in its
 header and also be sure that there is no gap in the clump labels. For
 example if an object has three clumps, they are labeled as 1, 2, 3. If they
 are labeled as 1, 3, 4, or any other combination of three positive integers
-that aren't an increment of the previous, you might get un-known behavior.
+that aren't an increment of the previous, you might get unknown behavior.
 
 It may happen that your labeled objects image was created with a program
 that only outputs floating point files. However, you know it only has
@@ -22820,15 +22820,15 @@ Radiation density divided by the critical density in the current Universe
 @cindex Rest-frame wavelength
 @cindex Wavelength, rest-frame
 Find the redshift to use in next steps based on the rest-frame and observed
-wavelengths of a line. Wavelenghts are assumed to be in Angstroms. The
+wavelengths of a line. Wavelengths are assumed to be in Angstroms. The
 first argument identifies the line. It can be one of the standard names
-below, or any rest-frame wavelengh in Angestroms. The second argument is
+below, or any rest-frame wavelength in Angstroms. The second argument is
 the observed wavelength of that line. For example
 @option{--obsline=lyalpha,6000} is the same as
 @option{--obsline=1215.64,6000}.
 
-The accepted names are listed below, sorted from red (longer wavelengh) to
-blue (shorter wavelengh).
+The accepted names are listed below, sorted from red (longer wavelength) to
+blue (shorter wavelength).
 
 @table @code
 @item siired
@@ -28241,7 +28241,7 @@ each operator.
 @deftypefun int gal_arithmetic_set_operator (char @code{*string}, size_t @code{*num_operands})
 Return the operator macro/code that corresponds to @code{string}. The
 number of operands that it needs are written into the space that
-@code{*num_operands} points to. If the string couldn't be interpretted as
+@code{*num_operands} points to. If the string couldn't be interpreted as
 an operator, this function will return @code{GAL_ARITHMETIC_OP_INVALID}.
 
 This function will check @code{string} with the fixed human-readable names
@@ -29704,13 +29704,13 @@ point is considered flat when @mymath{a_i>m+t\sigma}. But a single point
 satisfying this condition will probably just be due to noise. To make a
 more robust estimate, this significance/condition has to hold for
 @code{numcontig} contiguous elements after @mymath{a_i}. When this is
-satisfied, @mymath{a_i} is retured as the point where the distribution's
+satisfied, @mymath{a_i} is returned as the point where the distribution's
 cumulative frequency plot becomes flat.
 
 To get a good estimate of @mymath{m} and @mymath{s}, it is thus recommended
 to set @code{numprev} as large as possible. However, be careful not to set
 it too high: the checks in the paragraph above are not done on the first
-@code{numprev} elements and this function assumes the flatness occures
+@code{numprev} elements and this function assumes the flatness occurs
 after them. Also, be sure that the value to @code{numcontig} is much less
 than @code{numprev}, otherwise @mymath{\sigma}-clipping may not be able to
 remove the immediate outliers in @mymath{D_i} near the boundary of the flat
@@ -30584,7 +30584,7 @@ their names.
 @deffnx Macro GAL_SPECLINES_ANGSTROM_HEIIBLUE
 @deffnx Macro GAL_SPECLINES_ANGSTROM_LYALPHA
 @deffnx Macro GAL_SPECLINES_ANGSTROM_LYLIMIT
-Wavelengh (in Angstroms) of the named lines.
+Wavelength (in Angstroms) of the named lines.
 @end deffn
 
 @deffn  Macro GAL_SPECLINES_NAME_SIIRED
@@ -30632,7 +30632,7 @@ Return the spectral line identifier of the given standard name (for example
 @end deftypefun
 
 @deftypefun double gal_speclines_line_angstrom (int @code{linecode})
-Return the wavelengh (in Angstroms) of the given line.
+Return the wavelength (in Angstroms) of the given line.
 @end deftypefun
 
 @deftypefun double gal_speclines_line_redshift (double @code{obsline}, double @code{restline})
