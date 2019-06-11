@@ -543,7 +543,7 @@ ui_ngb_check(size_t value, char *optionname, size_t ndim)
       error(EXIT_FAILURE, 0, "3D input data is not yet supported");
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-            "problem. Dimention value %zu is not recognized.", __func__,
+            "problem. Dimension value %zu is not recognized.", __func__,
             PACKAGE_BUGREPORT, ndim);
     }
 }
