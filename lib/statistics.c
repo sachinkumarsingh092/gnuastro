@@ -1634,11 +1634,14 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
 #define HISTOGRAM_TYPESET(IT) {                                         \
     IT *a=input->array, *af=a+input->size;                              \
     do                                                                  \
-      if(*a>=min)                                                       \
+      if(*a>=min && *a<=max)                                            \
         {                                                               \
           h_i=(*a-min)/binwidth;                                        \
-          if(h_i == last_i) { if( *a<=max ) ++h[ h_i ]; }               \
-          else              { if( *a< max ) ++h[ h_i ]; }               \
+          /* When `*a' is the largest element (within floating point */ \
+          /* errors), `h_i' can be one element larger than the       */ \
+          /* number of bins. But since its in the dataset, we need   */ \
+          /* to count it. So we'll put it in the last bin.           */ \
+          ++h[ h_i - (h_i==hist->size ? 1 : 0) ];                       \
         }                                                               \
     while(++a<af);                                                      \
   }
@@ -1648,8 +1651,8 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
                          int maxone)
 {
   float *f, *ff;
+  size_t *h, h_i;
   gal_data_t *hist;
-  size_t *h, h_i, last_i;
   double *d, min, max, ref=NAN, binwidth;
 
 
@@ -1681,9 +1684,8 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
   /* Set the minimum and maximum range of the histogram from the bins. */
   d=bins->array;
   binwidth=d[1]-d[0];
-  last_i=bins->size-1;
   min = d[ 0      ] - binwidth/2;
-  max = d[ last_i ] + binwidth/2;
+  max = d[ bins->size-1 ] + binwidth/2;
 
 
   /* Go through all the elements and find out which bin they belong to. */
