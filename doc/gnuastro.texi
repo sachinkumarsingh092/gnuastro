@@ -5091,7 +5091,7 @@ are described below. Let's assume you have downloaded
 
 @example
 $ tar xf cfitsio_latest.tar.gz
-$ cd cfitsio
+$ cd cfitsio-X.XX                   # Replace X.XX with version
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
 $ make utils

@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 bin_PROGRAMS = astcrop
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro $(CONFIG_LDADD)
+astcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astcrop_SOURCES = main.c ui.c crop.c wcsmode.c onecrop.c
 

@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 bin_PROGRAMS = astnoisechisel
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro $(CONFIG_LDADD)
+astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astnoisechisel_SOURCES = main.c ui.c detection.c noisechisel.c sky.c     \
   threshold.c

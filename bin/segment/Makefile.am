@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 bin_PROGRAMS = astsegment
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astsegment_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro $(CONFIG_LDADD)
+astsegment_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astsegment_SOURCES = main.c ui.c segment.c clumps.c
 

@@ -33,7 +33,7 @@ bin_PROGRAMS = astTEMPLATE
 ## don't keep external variables (needed in Argp) after the first link. So
 ## the `libgnu' (that is indirectly linked through `libgnuastro') can't see
 ## those variables. We thus need to explicitly link with `libgnu' first.
-astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro $(CONFIG_LDADD)
+astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
 
 astTEMPLATE_SOURCES = main.c ui.c TEMPLATE.c
 
