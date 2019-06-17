@@ -1302,14 +1302,14 @@ gal_list_data_add(gal_data_t **list, gal_data_t *newnode)
 void
 gal_list_data_add_alloc(gal_data_t **list, void *array, uint8_t type,
                         size_t ndim, size_t *dsize, struct wcsprm *wcs,
-                        int clear, size_t minmapsize, char *name,
-                        char *unit, char *comment)
+                        int clear, size_t minmapsize, int quietmmap,
+                        char *name, char *unit, char *comment)
 {
   gal_data_t *newnode;
 
   /* Put all the input information into a new data structure node. */
   newnode=gal_data_alloc(array, type, ndim, dsize, wcs, clear,
-                         minmapsize, name, unit, comment);
+                         minmapsize, quietmmap, name, unit, comment);
 
   /* Add the new node to the list. */
   gal_list_data_add(list, newnode);

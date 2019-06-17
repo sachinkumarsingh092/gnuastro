@@ -106,7 +106,7 @@ gal_pointer_allocate(uint8_t type, size_t size, int clear,
 
 void *
 gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
-                          char **filename)
+                          char **filename, int quietmmap)
 {
   void *out;
   int filedes;
@@ -157,6 +157,12 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   if( lseek(filedes, bsize, SEEK_SET) == -1 )
     error(EXIT_FAILURE, errno, "%s: %s: unable to change file position by "
           "%zu bytes", __func__, *filename, bsize);
+
+
+  /* Inform the user. */
+  if(!quietmmap)
+    error(EXIT_SUCCESS, 0, "%s: temporary %zu byte file (consider "
+          "`--minmapsize')", *filename, bsize);
 
 
   /* Write to the newly set file position so the space is allocated. To do

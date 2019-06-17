@@ -110,16 +110,16 @@ fits_print_extension_info(struct fitsparams *p)
   /* Allocate all the columns (in reverse order, since this is a simple
      linked list). */
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                          -1, "HDU_SIZE", "name", "Size of image or table "
+                          -1, 1, "HDU_SIZE", "name", "Size of image or table "
                           "number of rows and columns.");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                          -1, "HDU_TYPE", "name", "Image data type or "
+                          -1, 1, "HDU_TYPE", "name", "Image data type or "
                           "`table' format (ASCII or binary).");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
-                          -1, "EXTNAME", "name", "Extension name of this "
+                          -1, 1, "EXTNAME", "name", "Extension name of this "
                           "HDU (EXTNAME in FITS).");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_UINT16, 1, &numext, NULL, 1,
-                          -1, "HDU_INDEX", "count", "Index (starting from "
+                          -1, 1, "HDU_INDEX", "count", "Index (starting from "
                           "zero) of each HDU (extension).");
 
 

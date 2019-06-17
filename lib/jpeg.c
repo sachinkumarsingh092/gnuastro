@@ -255,7 +255,7 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
 /* Read each color channel of a JPEG image as a separate array and put them
    in a linked list of data-structures. */
 gal_data_t *
-gal_jpeg_read(char *filename, size_t minmapsize)
+gal_jpeg_read(char *filename, size_t minmapsize, int quietmmap)
 {
 #ifdef HAVE_LIBJPEG
   char *name;
@@ -275,7 +275,8 @@ gal_jpeg_read(char *filename, size_t minmapsize)
       if( asprintf(&name, "JPEG_CH_%zu", i+1)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_data_add_alloc(&out, allcolors[i], GAL_TYPE_UINT8, ndim,
-                              dsize, NULL, 0, minmapsize, name, NULL, NULL);
+                              dsize, NULL, 0, minmapsize, quietmmap,
+                              name, NULL, NULL);
       free(name);
     }
 

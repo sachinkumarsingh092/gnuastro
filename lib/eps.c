@@ -166,7 +166,7 @@ eps_convert_to_bitstream(gal_data_t *in, size_t *numbytes, uint8_t bitone)
          allocation system for bits, so we'll allocate space in bytes, then
          convert  */
       gal_list_data_add_alloc(&out, NULL, GAL_TYPE_UINT8, 1, numbytes,
-                              NULL, 0, -1, NULL, NULL, NULL);
+                              NULL, 0, -1, 1, NULL, NULL, NULL);
       out->type=GAL_TYPE_BIT;
       bits=out->array;
 

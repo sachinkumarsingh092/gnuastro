@@ -60,7 +60,7 @@ gal_pointer_allocate(uint8_t type, size_t size, int clear,
 
 void *
 gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
-                          char **filename);
+                          char **filename, int quiet);
 
 
 

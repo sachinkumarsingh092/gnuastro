@@ -330,7 +330,7 @@ fillcrpipolygon(struct onecropparams *crp)
   /* Allocate the necessary arrays for each column. */
   for(d=0;d<ndim;++d)
     gal_list_data_add_alloc(&coords, NULL, GAL_TYPE_FLOAT64, 1, &p->nvertices,
-                            NULL, 0, -1, NULL, NULL, NULL);
+                            NULL, 0, -1, 1, NULL, NULL, NULL);
 
 
   /* Fill in the world coordinate columns. */

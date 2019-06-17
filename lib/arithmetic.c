@@ -178,8 +178,8 @@ arithmetic_not(gal_data_t *data, int flags)
 
   /* Allocate the output array. */
   out=gal_data_alloc(NULL, GAL_TYPE_UINT8, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize, data->name, data->unit,
-                     data->comment);
+                     data->wcs, 0, data->minmapsize, data->quietmmap,
+                     data->name, data->unit, data->comment);
   o=out->array;
 
 
@@ -247,7 +247,7 @@ arithmetic_bitwise_not(int flags, gal_data_t *in)
     o = in;
   else
     o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
-                       0, in->minmapsize, NULL, NULL, NULL);
+                       0, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* Start setting the types. */
   switch(in->type)
@@ -312,8 +312,8 @@ arithmetic_abs(int flags, gal_data_t *in)
     out=in;
   else
     out = gal_data_alloc(NULL, in->type, in->ndim, in->dsize,
-                         in->wcs, 0, in->minmapsize, in->name, in->unit,
-                         in->comment);
+                         in->wcs, 0, in->minmapsize, in->quietmmap,
+                         in->name, in->unit, in->comment);
 
   /* Put the absolute value depending on the type. */
   switch(in->type)
@@ -460,7 +460,8 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
                 ? GAL_TYPE_FLOAT64
                 : GAL_TYPE_FLOAT32 );
       o = gal_data_alloc(NULL, otype, in->ndim, in->dsize, in->wcs,
-                         0, in->minmapsize, NULL, NULL, NULL);
+                         0, in->minmapsize, in->quietmmap,
+                         NULL, NULL, NULL);
     }
 
   /* Start setting the operator and operands. */
@@ -939,7 +940,7 @@ struct multioperandparams
     TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
                                     __func__, "pixs");                  \
     gal_data_t *cont=gal_data_alloc(pixs, p->list->type, 1, &p->dnum,   \
-                                    NULL, 0, -1, NULL, NULL, NULL);     \
+                                    NULL, 0, -1, 1, NULL, NULL, NULL);  \
                                                                         \
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
@@ -1192,7 +1193,8 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
     out = list;                 /* The top element in the list. */
   else
     out = gal_data_alloc(NULL, otype, list->ndim, list->dsize,
-                         list->wcs, 0, list->minmapsize, NULL, NULL, NULL);
+                         list->wcs, 0, list->minmapsize, list->quietmmap,
+                         NULL, NULL, NULL);
 
 
   /* hasblank is used to see if a blank value should be checked for each
@@ -1303,6 +1305,7 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
   int32_t otype;
   gal_data_t *o=NULL;
   size_t out_size, minmapsize;
+  int quietmmap=l->quietmmap && r->quietmmap;
 
 
   /* Simple sanity check on the input sizes */
@@ -1348,7 +1351,7 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
                        l->size>1 ? l->ndim  : r->ndim,
                        l->size>1 ? l->dsize : r->dsize,
                        l->size>1 ? l->wcs   : r->wcs,
-                       0, minmapsize, NULL, NULL, NULL );
+                       0, minmapsize, quietmmap, NULL, NULL, NULL );
 
 
   /* Call the proper function for the operator. Since they heavily involve
@@ -1462,6 +1465,7 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
   int final_otype;
   gal_data_t *o=NULL;
   size_t out_size, minmapsize;
+  int quietmmap=l->quietmmap && r->quietmmap;
 
 
   /* Simple sanity check on the input sizes */
@@ -1503,7 +1507,7 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
                        l->size>1 ? l->ndim  : r->ndim,
                        l->size>1 ? l->dsize : r->dsize,
                        l->size>1 ? l->wcs : r->wcs, 0, minmapsize,
-                       NULL, NULL, NULL);
+                       quietmmap, NULL, NULL, NULL);
 
 
   /* Start setting the operator and operands. */

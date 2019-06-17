@@ -379,7 +379,7 @@ tiff_read_separate_strip_data(TIFF* tif, char *filename, size_t dir,
    the rows */
 static gal_data_t *
 tiff_separate_channels_reverse(gal_data_t *out, size_t numch,
-                               size_t minmapsize)
+                               size_t minmapsize, int quietmmap)
 {
   size_t k, l, i, j;
   gal_data_t *tch, *ch=NULL;
@@ -397,7 +397,7 @@ tiff_separate_channels_reverse(gal_data_t *out, size_t numch,
   out->dsize[1] /= numch;
   for(k=0; k<numch; ++k)
     gal_list_data_add_alloc(&ch, NULL, out->type, out->ndim, out->dsize,
-                            NULL, 0, minmapsize, NULL, NULL, NULL);
+                            NULL, 0, minmapsize, quietmmap, NULL, NULL, NULL);
   out->dsize[1] *= numch;
 
 
@@ -491,7 +491,8 @@ tiff_reverse_rows(gal_data_t *out)
 /* Read the data following the `TIFFReadData' of Libtiff's
    `tools/tiffinfo.c' in the libtiff source code. */
 static gal_data_t *
-tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize)
+tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize,
+              int quietmmap)
 {
   uint8_t type;
   uint16_t config;
@@ -512,12 +513,12 @@ tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize)
          channels to keep the contiguous color information in one array. */
       dsize[ndim-1] *= numch;
       out=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
-                         NULL, NULL, NULL);
+                         quietmmap, NULL, NULL, NULL);
     }
   else
     for(i=0; i<numch; ++i)
       gal_list_data_add_alloc(&out, NULL, type, ndim, dsize, NULL, 0,
-                              minmapsize, NULL, NULL, NULL);
+                              minmapsize, quietmmap, NULL, NULL, NULL);
 
 
   /* The reading of the dataset depends on how it is organized, so first
@@ -550,7 +551,7 @@ tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize)
      separated, we just need to reverse them.*/
   if( numch>1 && config==PLANARCONFIG_CONTIG )
     {
-      sep=tiff_separate_channels_reverse(out, numch, minmapsize);
+      sep=tiff_separate_channels_reverse(out, numch, minmapsize, quietmmap);
       gal_data_free(out);
       out=sep;
     }
@@ -568,7 +569,7 @@ tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize)
 
 
 gal_data_t *
-gal_tiff_read(char *filename, size_t dir, size_t minmapsize)
+gal_tiff_read(char *filename, size_t dir, size_t minmapsize, int quietmmap)
 {
 #ifdef HAVE_LIBTIFF
   TIFF *tif;
@@ -601,7 +602,7 @@ gal_tiff_read(char *filename, size_t dir, size_t minmapsize)
     }
 
   /* Read the image. */
-  out=tiff_img_read(tif, filename, dir, minmapsize);
+  out=tiff_img_read(tif, filename, dir, minmapsize, quietmmap);
 
   /* Close file, clean up and return. */
   TIFFClose(tif);

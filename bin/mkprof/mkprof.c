@@ -345,7 +345,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
         }
       else ptr=ibq->image->array;
       ibq->overlap_i=gal_data_alloc(ptr, ibq->image->type, ndim, dsize, NULL,
-                                    0, -1, NULL, NULL, NULL);
+                                    0, -1, 1, NULL, NULL, NULL);
       ibq->overlap_i->block=ibq->image;
 
 
@@ -353,7 +353,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
       ind=gal_dimension_coord_to_index(ndim, p->out->dsize, start_mrg);
       ptr=gal_pointer_increment(p->out->array, ind, p->out->type);
       ibq->overlap_m=gal_data_alloc(ptr, p->out->type, ndim, dsize, NULL,
-                                    0, -1, NULL, NULL, NULL);
+                                    0, -1, 1, NULL, NULL, NULL);
       ibq->overlap_m->block=p->out;
     }
 }

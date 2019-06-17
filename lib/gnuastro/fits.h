@@ -239,14 +239,15 @@ size_t *
 gal_fits_img_info_dim(char *filename, char *hdu, size_t *ndim);
 
 gal_data_t *
-gal_fits_img_read(char *filename, char *hdu, size_t minmapsize);
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize, int quietmmap);
 
 gal_data_t *
 gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
-                          size_t minmapsize);
+                          size_t minmapsize, int quietmmap);
 
 gal_data_t *
-gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize);
+gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize,
+                         int quietmmap);
 
 fitsfile *
 gal_fits_img_write_to_ptr(gal_data_t *data, char *filename);
@@ -286,7 +287,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                   gal_data_t *colinfo, gal_list_sizet_t *indexll,
-                  size_t minmapsize);
+                  size_t minmapsize, int quietmmap);
 
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,

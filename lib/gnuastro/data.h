@@ -201,6 +201,7 @@ typedef struct gal_data_t
   size_t              ndim;  /* Number of dimensions in the array.         */
   size_t            *dsize;  /* Size of array along each dimension.        */
   size_t              size;  /* Total number of data-elements.             */
+  int            quietmmap;  /* ==1: print a notice whem mmap'ing.         */
   char           *mmapname;  /* File name of the mmap.                     */
   size_t        minmapsize;  /* Minimum number of bytes to mmap the array. */
 
@@ -235,12 +236,13 @@ typedef struct gal_data_t
 gal_data_t *
 gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
-               char *name, char *unit, char *comment);
+               int quietmmap, char *name, char *unit, char *comment);
 
 void
-gal_data_initialize(gal_data_t *data, void *array, uint8_t type, size_t ndim,
-                    size_t *dsize, struct wcsprm *wcs, int clear,
-                    size_t minmapsize, char *name, char *unit, char *comment);
+gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
+                    size_t ndim, size_t *dsize, struct wcsprm *wcs,
+                    int clear, size_t minmapsize, int quietmmap,
+                    char *name, char *unit, char *comment);
 
 void
 gal_data_free_contents(gal_data_t *data);

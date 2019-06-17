@@ -95,7 +95,7 @@ main(void)
 
 
   /* Read the image into memory as a float32 data type. */
-  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1, 1);
 
 
   /* Print some basic information before the actual contents: */

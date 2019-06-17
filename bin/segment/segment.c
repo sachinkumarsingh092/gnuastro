@@ -117,10 +117,12 @@ segment_initialize(struct segmentparams *p)
   /* Allocate the clump labels image and the binary image. */
   p->clabel=gal_data_alloc(NULL, p->olabel->type, p->olabel->ndim,
                            p->olabel->dsize, p->olabel->wcs, 1,
-                           p->cp.minmapsize, NULL, NULL, NULL);
+                           p->cp.minmapsize, p->cp.quietmmap,
+                           NULL, NULL, NULL);
   p->binary=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->olabel->ndim,
                            p->olabel->dsize, p->olabel->wcs, 1,
-                           p->cp.minmapsize, NULL, NULL, NULL);
+                           p->cp.minmapsize, p->cp.quietmmap,
+                           NULL, NULL, NULL);
   p->clabel->flag=p->input->flag;
   p->binary->wcs=gal_wcs_copy(p->input->wcs);
   p->clabel->wcs=gal_wcs_copy(p->input->wcs);
@@ -221,12 +223,14 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
 
   size_t mdsize[2]={amwidth, amwidth};
   gal_data_t *nums_d=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 2, mdsize, NULL,
-                                    1, p->cp.minmapsize, NULL, NULL, NULL);
+                                    1, p->cp.minmapsize, p->cp.quietmmap,
+                                    NULL, NULL, NULL);
   gal_data_t *sums_d=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, mdsize, NULL,
-                                    1, p->cp.minmapsize, NULL, NULL, NULL);
+                                    1, p->cp.minmapsize, p->cp.quietmmap,
+                                    NULL, NULL, NULL);
   gal_data_t *adjacency_d=gal_data_alloc(NULL, GAL_TYPE_UINT8, 2, mdsize,
-                                         NULL, 1, p->cp.minmapsize, NULL,
-                                         NULL, NULL);
+                                         NULL, 1, p->cp.minmapsize,
+                                         p->cp.quietmmap, NULL, NULL, NULL);
   float *imgss=p->input->array;
   double var=cltprm->std*cltprm->std;
   uint8_t *adjacency=adjacency_d->array;
@@ -373,8 +377,8 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
     {
       /* Allocate the `clumptoobj' array. */
       cltprm->clumptoobj = gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &amwidth,
-                                          NULL, 1, p->cp.minmapsize, NULL,
-                                          NULL, NULL);
+                                          NULL, 1, p->cp.minmapsize,
+                                          p->cp.quietmmap, NULL, NULL, NULL);
       clumptoobj = cltprm->clumptoobj->array;
 
       /* Fill in the `clumptoobj' array with the indexs of the objects. */
@@ -557,7 +561,8 @@ segment_on_threads(void *in_prm)
              given to this detected region. */
           topinds=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1,
                                  cltprm.indexs->dsize, NULL, 0,
-                                 p->cp.minmapsize, NULL, NULL, NULL);
+                                 p->cp.minmapsize, p->cp.quietmmap,
+                                 NULL, NULL, NULL);
           cltprm.topinds=topinds->array;
         }
       else { cltprm.topinds=NULL; topinds=NULL; }
@@ -756,13 +761,14 @@ segment_save_sn_table(struct clumps_params *clprm)
 
   /* Allocate the columns for the table. */
   sn=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &totclumps, NULL, 0,
-                    p->cp.minmapsize, "CLUMP_S/N", "ratio",
+                    p->cp.minmapsize, p->cp.quietmmap, "CLUMP_S/N", "ratio",
                     "Signal-to-noise ratio.");
   objind=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &totclumps, NULL, 0,
-                        p->cp.minmapsize, "HOST_DET_ID", "counter",
-                        "ID of detection hosting this clump.");
+                        p->cp.minmapsize, p->cp.quietmmap, "HOST_DET_ID",
+                        "counter", "ID of detection hosting this clump.");
   clumpinobj=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &totclumps, NULL, 0,
-                            p->cp.minmapsize, "CLUMP_ID_IN_OBJ", "counter",
+                            p->cp.minmapsize, p->cp.quietmmap,
+                            "CLUMP_ID_IN_OBJ", "counter",
                             "ID of clump in host detection.");
 
 
@@ -828,7 +834,8 @@ segment_detections(struct segmentparams *p)
 
 
   /* Get the indexs of all the pixels in each label. */
-  labindexs=gal_label_indexs(p->olabel, p->numdetections, p->cp.minmapsize);
+  labindexs=gal_label_indexs(p->olabel, p->numdetections, p->cp.minmapsize,
+                             p->cp.quietmmap);
 
 
   /* Initialize the necessary thread parameters. Note that since the object

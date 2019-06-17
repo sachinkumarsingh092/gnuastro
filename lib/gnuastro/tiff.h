@@ -64,7 +64,7 @@ size_t
 gal_tiff_dir_string_read(char *string);
 
 gal_data_t *
-gal_tiff_read(char *filename, size_t dir, size_t minmapsize);
+gal_tiff_read(char *filename, size_t dir, size_t minmapsize, int quietmmap);
 
 
 

@@ -109,6 +109,7 @@ enum options_common_keys
   /* Only long option (integers for keywords). */
   GAL_OPTIONS_KEY_STDINTIMEOUT = 500,
   GAL_OPTIONS_KEY_MINMAPSIZE,
+  GAL_OPTIONS_KEY_QUIETMMAP,
   GAL_OPTIONS_KEY_LOG,
   GAL_OPTIONS_KEY_CITE,
   GAL_OPTIONS_KEY_CONFIG,
@@ -200,6 +201,7 @@ struct gal_options_common_params
   uint8_t                quiet; /* Only print errors.                     */
   size_t            numthreads; /* Number of threads to use.              */
   size_t            minmapsize; /* Minimum bytes necessary to use mmap.   */
+  uint8_t            quietmmap; /* ==0: print mmap'd file name and size.  */
   uint8_t                  log; /* Make a log file.                       */
   char            *onlyversion; /* Redundant, kept/set for generality.    */
 

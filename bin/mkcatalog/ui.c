@@ -384,7 +384,7 @@ ui_read_check_only_options(struct mkcatalogparams *p)
         {
           /* Allocate the data structure. */
           p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
-                                NULL, NULL, NULL);
+                                1, NULL, NULL, NULL);
 
           /* Write the value inside it. */
           *((float *)(p->sky->array))=tmp;
@@ -399,7 +399,7 @@ ui_read_check_only_options(struct mkcatalogparams *p)
         {
           /* Allocate the data structure. */
           p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
-                                NULL, NULL, NULL);
+                                1, NULL, NULL, NULL);
 
           /* Write the value inside it. */
           *((float *)(p->std->array))=tmp;
@@ -621,7 +621,7 @@ ui_read_labels(struct mkcatalogparams *p)
 
   /* Read it into memory. */
   p->objects = gal_array_read_one_ch(p->objectsfile, p->cp.hdu, NULL,
-                                     p->cp.minmapsize);
+                                     p->cp.minmapsize, p->cp.quietmmap);
   p->objects->ndim=gal_dimension_remove_extra(p->objects->ndim,
                                               p->objects->dsize, NULL);
 
@@ -685,7 +685,8 @@ ui_read_labels(struct mkcatalogparams *p)
 
       /* Read the clumps image. */
       p->clumps = gal_array_read_one_ch(p->usedclumpsfile, p->clumpshdu,
-                                        NULL, p->cp.minmapsize);
+                                        NULL, p->cp.minmapsize,
+                                        p->cp.quietmmap);
       p->clumps->ndim=gal_dimension_remove_extra(p->clumps->ndim,
                                                  p->clumps->dsize, NULL);
 
@@ -983,7 +984,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
       /* Read the values dataset. */
       p->values=gal_array_read_one_ch_to_type(p->usedvaluesfile, p->valueshdu,
                                               NULL, GAL_TYPE_FLOAT32,
-                                              p->cp.minmapsize);
+                                              p->cp.minmapsize,
+                                              p->cp.quietmmap);
       p->values->ndim=gal_dimension_remove_extra(p->values->ndim,
                                                  p->values->dsize, NULL);
 
@@ -1032,7 +1034,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
           /* Read the Sky dataset. */
           p->sky=gal_array_read_one_ch_to_type(p->usedskyfile, p->skyhdu,
                                                NULL, GAL_TYPE_FLOAT32,
-                                               p->cp.minmapsize);
+                                               p->cp.minmapsize,
+                                               p->cp.quietmmap);
           p->sky->ndim=gal_dimension_remove_extra(p->sky->ndim,
                                                   p->sky->dsize, NULL);
 
@@ -1063,7 +1066,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
       /* Read the Sky standard deviation image into memory. */
       p->std=gal_array_read_one_ch_to_type(p->usedstdfile, p->stdhdu,
                                            NULL, GAL_TYPE_FLOAT32,
-                                           p->cp.minmapsize);
+                                           p->cp.minmapsize, p->cp.quietmmap);
       p->std->ndim=gal_dimension_remove_extra(p->std->ndim,
                                               p->std->dsize, NULL);
 
@@ -1098,7 +1101,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 
           /* Read the mask image. */
           p->upmask = gal_array_read_one_ch(p->upmaskfile, p->upmaskhdu,
-                                            NULL, p->cp.minmapsize);
+                                            NULL, p->cp.minmapsize,
+                                            p->cp.quietmmap);
           p->upmask->ndim=gal_dimension_remove_extra(p->upmask->ndim,
                                                      p->upmask->dsize,
                                                      NULL);
@@ -1123,7 +1127,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
           /* Convert the mask to a uint8_t: with a 1 for all non-zero
              pixels and 0 for zero pixels. */
           zero=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL, 1, -1,
-                              NULL, NULL, NULL);
+                              1, NULL, NULL, NULL);
           p->upmask=gal_arithmetic(GAL_ARITHMETIC_OP_NE, 1,
                                    ( GAL_ARITHMETIC_INPLACE
                                      | GAL_ARITHMETIC_FREE

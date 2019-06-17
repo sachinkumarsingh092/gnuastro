@@ -134,7 +134,8 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
      `diffuseindexs' will also be already sorted. */
   cltprm->diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1,
                                        cltprm->indexs->dsize, NULL, 0,
-                                       p->cp.minmapsize, NULL, NULL, NULL);
+                                       p->cp.minmapsize, p->cp.quietmmap,
+                                       NULL, NULL, NULL);
   dindexs=cltprm->diffuseindexs->array;
   sf=(s=indexs->array)+indexs->size;
   do
@@ -237,7 +238,8 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
          to be set to zero). So we also need to clear the allocated
          space. */
       newinds=gal_data_alloc(NULL, p->clabel->type, 1, &len, NULL, 0,
-                             p->cp.minmapsize, NULL, NULL, NULL);
+                             p->cp.minmapsize, p->cp.quietmmap,
+                             NULL, NULL, NULL);
 
 
       /* Get the next available label for these clumps. If more than one
@@ -356,8 +358,8 @@ clumps_find_make_sn_table(void *in_prm)
           /* Add the indexs of all undetected pixels in this tile into an
              array. */
           cltprm.indexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &numsky,
-                                       NULL, 0, p->cp.minmapsize, NULL, NULL,
-                                       NULL);
+                                       NULL, 0, p->cp.minmapsize,
+                                       p->cp.quietmmap, NULL, NULL, NULL);
 
 
           /* Change the tile's block to the clump labels dataset (because
@@ -703,12 +705,12 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
 
   /* Allocate the space to keep all the S/N values. */
   sn=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &numsn, NULL, 0,
-                    p->cp.minmapsize, "CLUMP_S/N", "ratio",
+                    p->cp.minmapsize, p->cp.quietmmap, "CLUMP_S/N", "ratio",
                     "Signal-to-noise ratio");
   snind = ( p->checksn
             ? gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &numsn, NULL, 0,
-                             p->cp.minmapsize, "CLUMP_ID", "counter",
-                             "Unique ID for this clump.")
+                             p->cp.minmapsize, p->cp.quietmmap, "CLUMP_ID",
+                             "counter", "Unique ID for this clump.")
             : NULL );
 
 

@@ -261,8 +261,9 @@ ui_colormap_sanity_check(struct converttparams *p)
       if(p->colormap->size==1)
         {
           p->colormap->next=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1,
-                                            &nparams, NULL, 0,
-                                            p->cp.minmapsize, NULL,NULL,NULL);
+                                           &nparams, NULL, 0,
+                                           p->cp.minmapsize, p->cp.quietmmap,
+                                           NULL,NULL,NULL);
           farray=p->colormap->next->array;
           switch(p->colormap->status)
             {
@@ -489,7 +490,7 @@ ui_make_channels_ll(struct converttparams *p)
   lines=gal_txt_stdin_read(p->cp.stdintimeout);
   if(lines)
     {
-      data=gal_txt_image_read(NULL, lines, p->cp.minmapsize);
+      data=gal_txt_image_read(NULL, lines, p->cp.minmapsize, p->cp.quietmmap);
       gal_list_data_add(&p->chll, data);
       gal_list_str_free(lines, 1);
       ++p->numch;
@@ -521,7 +522,8 @@ ui_make_channels_ll(struct converttparams *p)
                   "for each input FITS image (in the same order)");
 
           /* Read in the array and its WCS information. */
-          data=gal_fits_img_read(name->v, hdu, p->cp.minmapsize);
+          data=gal_fits_img_read(name->v, hdu, p->cp.minmapsize,
+                                 p->cp.quietmmap);
           data->wcs=gal_wcs_read(name->v, hdu, 0, 0, &data->nwcs);
           data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize,
                                                 data->wcs);
@@ -545,7 +547,8 @@ ui_make_channels_ll(struct converttparams *p)
             dirnum=0;
 
           /* Read the TIFF image into memory. */
-          data=gal_tiff_read(name->v, dirnum, p->cp.minmapsize);
+          data=gal_tiff_read(name->v, dirnum, p->cp.minmapsize,
+                             p->cp.quietmmap);
           p->numch += gal_list_data_number(data);
           gal_list_data_add(&p->chll, data);
         }
@@ -554,7 +557,7 @@ ui_make_channels_ll(struct converttparams *p)
       /* JPEG: */
       else if ( gal_jpeg_name_is_jpeg(name->v) )
         {
-          data=gal_jpeg_read(name->v, p->cp.minmapsize);
+          data=gal_jpeg_read(name->v, p->cp.minmapsize, p->cp.quietmmap);
           p->numch += gal_list_data_number(data);
           gal_list_data_add(&p->chll, data);
         }
@@ -566,7 +569,7 @@ ui_make_channels_ll(struct converttparams *p)
         {
           gal_list_data_add_alloc(&p->chll, NULL, GAL_TYPE_INVALID, 0,
                                   &dsize, NULL, 0, p->cp.minmapsize,
-                                  "blank", NULL, NULL);
+                                  p->cp.quietmmap, "blank", NULL, NULL);
           ++p->numch;
         }
 
@@ -590,7 +593,8 @@ ui_make_channels_ll(struct converttparams *p)
       /* Text: */
       else
         {
-          data=gal_txt_image_read(name->v, NULL, p->cp.minmapsize);
+          data=gal_txt_image_read(name->v, NULL, p->cp.minmapsize,
+                                  p->cp.quietmmap);
           gal_list_data_add(&p->chll, data);
           ++p->numch;
         }
@@ -701,8 +705,8 @@ ui_prepare_input_channels(struct converttparams *p)
         {
           /* Make the blank data structure. */
           blank=gal_data_alloc(NULL, GAL_TYPE_UINT8, ndim, dsize,
-                               wcs, 1, p->cp.minmapsize, "blank channel",
-                               NULL, NULL);
+                               wcs, 1, p->cp.minmapsize, p->cp.quietmmap,
+                               "blank channel", NULL, NULL);
 
           /* We will use the status value of the data structuer to mark it
              as one that was originally blank. */

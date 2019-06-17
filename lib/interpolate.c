@@ -120,7 +120,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
       nv=gal_pointer_increment(tvll->v, tprm->id*prm->numneighbors,
                                input->type);
       gal_list_data_add_alloc(&nearest, nv, tin->type, 1, &prm->numneighbors,
-                              NULL, 0, -1, NULL, NULL, NULL);
+                              NULL, 0, -1, 1, NULL, NULL, NULL);
       tin=tin->next;
     }
   gal_list_data_reverse(&nearest);
@@ -396,8 +396,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
   /* Allocate space for the (first) output. */
   prm.out=gal_data_alloc(NULL, input->type, input->ndim, input->dsize,
-                         input->wcs, 0, input->minmapsize, NULL,
-                         input->unit, NULL);
+                         input->wcs, 0, input->minmapsize,
+                         input->quietmmap, NULL, input->unit, NULL);
   gal_list_void_add(&prm.ngb_vals,
                     gal_pointer_allocate(input->type, ngbvnum, 0, __func__,
                                          "prm.ngb_vals"));
@@ -419,7 +419,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
         /* Allocate the output array for this node. */
         gal_list_data_add_alloc(&prm.out, NULL, tin->type, tin->ndim,
                                 tin->dsize, tin->wcs, 0, tin->minmapsize,
-                                NULL, tin->unit, NULL);
+                                tin->quietmmap, NULL, tin->unit, NULL);
 
         /* Allocate the space for the neighbor values of this input. */
         gal_list_void_add(&prm.ngb_vals,
@@ -556,7 +556,7 @@ gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d)
              ? gal_data_copy_to_new_type(X, GAL_TYPE_FLOAT64)
              : X )
          : gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, Y->dsize, NULL,
-                          0, -1, NULL, NULL, NULL) );
+                          0, -1, 1, NULL, NULL, NULL) );
 
   /* Fill in the X axis values while also removing NaN/blank elements. */
   c=0;

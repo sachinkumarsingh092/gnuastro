@@ -67,14 +67,14 @@ sky_mean_std_undetected(void *in_prm)
   /* Put the temporary usage space for this thread into a data set for easy
      processing. */
   fusage=gal_data_alloc(NULL, type, ndim, p->maxtsize, NULL, 0,
-                        p->cp.minmapsize, NULL, NULL, NULL);
+                        p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
   busage=gal_data_alloc(NULL, GAL_TYPE_UINT8, ndim, p->maxtsize, NULL, 0,
-                        p->cp.minmapsize, NULL, NULL, NULL);
+                        p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
 
 
   /* An empty dataset to replicate a tile on the binary array. */
   bintile=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &bdsize,
-                         NULL, 0, -1, NULL, NULL, NULL);
+                         NULL, 0, -1, 1, NULL, NULL, NULL);
   bintile->ndim=ndim;
   free(bintile->array);
   free(bintile->dsize);
@@ -198,9 +198,11 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
 
   /* Allocate space for the mean and standard deviation. */
   p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, NULL, p->input->unit, NULL);
+                        NULL, 0, cp->minmapsize, p->cp.quietmmap, NULL,
+                        p->input->unit, NULL);
   p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, NULL, p->input->unit, NULL);
+                        NULL, 0, cp->minmapsize, p->cp.quietmmap, NULL,
+                        p->input->unit, NULL);
 
 
   /* Find the Sky and its STD on proper tiles. */

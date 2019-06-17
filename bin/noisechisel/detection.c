@@ -247,7 +247,7 @@ detection_fill_holes_open(void *in_prm)
   /* A temporary data structure to wrap around the copy space. Note that
      the initially allocated space for this tile is only 1 pixel! */
   copy=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim, dsize,
-                      NULL, 0, -1, NULL, NULL, NULL);
+                      NULL, 0, -1, 1, NULL, NULL, NULL);
   free(copy->array);
   copy->array=&fho_prm->copyspace[p->maxltcontig*tprm->id];
 
@@ -535,12 +535,12 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
                                          "flag")
                  : NULL );
   sn         = gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &tablen, NULL, 1,
-                              p->cp.minmapsize, "SIGNAL-TO-NOISE", "ratio",
-                              NULL);
+                              p->cp.minmapsize, p->cp.quietmmap,
+                              "SIGNAL-TO-NOISE", "ratio", NULL);
   snind      = ( p->checksn==0 ? NULL
                  : gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &tablen, NULL, 1,
-                                  p->cp.minmapsize, "LABEL", "counter",
-                                  NULL) );
+                                  p->cp.minmapsize, p->cp.quietmmap, "LABEL",
+                                  "counter", NULL) );
 
   /* Go over all the pixels and get the necessary information. */
   fs = f = p->input->array;
@@ -751,7 +751,7 @@ detection_pseudo_real(struct noisechiselparams *p)
   worklab=gal_data_copy(p->olabel);
   workbin=gal_data_alloc(NULL, GAL_TYPE_UINT8, p->input->ndim,
                          p->input->dsize, p->input->wcs, 0, p->cp.minmapsize,
-                         NULL, NULL, NULL);
+                         p->cp.quietmmap, NULL, NULL, NULL);
   workbin->flag=p->input->flag;
 
 
@@ -1003,8 +1003,8 @@ detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
       /* Allocate the space necessary to keep the index of all the pixels
          that must be expanded and re-initialize the necessary pointers. */
       diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &p->numexpand,
-                                   NULL, 0, p->cp.minmapsize, NULL, NULL,
-                                   NULL);
+                                   NULL, 0, p->cp.minmapsize, p->cp.quietmmap,
+                                   NULL, NULL, NULL);
 
       /* Fill in the diffuse indexs and initialize the objects dataset. */
       b    = workbin->array;

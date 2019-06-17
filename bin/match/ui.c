@@ -402,7 +402,7 @@ ui_read_columns_aperture_2d(struct matchparams *p)
   if(p->aperture->size!=3)
     {
       newaper=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &apersize, NULL,
-                             0, -1, NULL, NULL, NULL);
+                             0, -1, 1, NULL, NULL, NULL);
       naper=newaper->array;
     }
 
@@ -527,7 +527,7 @@ ui_set_columns_from_coord(struct matchparams *p)
   for(i=0;i<p->coord->size;++i)
     {
       gal_list_data_add_alloc(&out, NULL, GAL_TYPE_FLOAT64, 1, &one, NULL,
-                              0, -1, NULL, NULL, NULL);
+                              0, -1, 1, NULL, NULL, NULL);
       *((double *)(out->array))=coord[i];
     }
   gal_list_data_reverse(&out);
@@ -563,7 +563,7 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
                                           "input");
   tout=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines,
                       cols, cp->searchin, cp->ignorecase, cp->minmapsize,
-                      NULL);
+                      p->cp.quietmmap, NULL);
 
   /* A small sanity check. */
   if(gal_list_data_number(tout)!=numcols)
@@ -669,7 +669,7 @@ ui_preparations_out_cols(struct matchparams *p)
               if(rptr)
                 {
                   read=gal_data_alloc(rptr, readtype, 1, &one, NULL, 0, -1,
-                                      NULL, NULL, NULL);
+                                      1, NULL, NULL, NULL);
                   if(gal_type_is_int(readtype))
                     {
                       read=gal_data_copy_to_new_type_free(read,GAL_TYPE_LONG);

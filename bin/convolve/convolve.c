@@ -642,7 +642,8 @@ convolve_frequency(struct convolveparams *p)
          don't need the array that is initially made. */
       dsize[0]=p->ps0; dsize[1]=p->ps1;
       data=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, dsize, NULL, 0,
-                          p->cp.minmapsize, NULL, NULL, NULL);
+                          p->cp.minmapsize, p->cp.quietmmap,
+                          NULL, NULL, NULL);
       free(data->array);
 
       /* Save the padded input image. */

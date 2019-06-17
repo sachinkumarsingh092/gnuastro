@@ -519,12 +519,12 @@ gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
 
   /* Allocate the sum (output) dataset. */
   sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, outndim, outdsize, in->wcs,
-                     1, in->minmapsize, NULL, NULL, NULL);
+                     1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* The number dataset (when there are blank values).*/
   if(hasblank)
     num=gal_data_alloc(NULL, GAL_TYPE_INT8, outndim, outdsize, NULL,
-                       1, in->minmapsize, NULL, NULL, NULL);
+                       1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* Set the array pointers. */
   if(sum) farr=sum->array;
@@ -595,7 +595,7 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
 
   /* The sum array. */
   sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, outndim, outdsize, in->wcs,
-                     1, in->minmapsize, NULL, NULL, NULL);
+                     1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* If a weighted mean is requested. */
   if( weight )
@@ -618,7 +618,7 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
   /* No weight is given, so we'll need the number of elements. */
   else if( hasblank )
     num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, NULL,
-                       1, in->minmapsize, NULL, NULL, NULL);
+                       1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* Set the array pointers. */
   if(sum) farr=sum->array;
@@ -694,7 +694,7 @@ gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
 
   /* The number dataset (when there are blank values).*/
   num=gal_data_alloc(NULL, GAL_TYPE_INT32, outndim, outdsize, in->wcs,
-                     1, in->minmapsize, NULL, NULL, NULL);
+                     1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
 
   /* Set the array pointers. */
   iarr=num->array;
@@ -759,11 +759,11 @@ gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
      to count how many elements whent into the calculation so we can set
      them to blank. */
   minmax=gal_data_alloc(NULL, in->type, outndim, outdsize, in->wcs,
-                        0, in->minmapsize, NULL, NULL, NULL);
+                        0, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
   if(hasblank)
     {
       num=gal_data_alloc(NULL, GAL_TYPE_UINT8, outndim, outdsize, in->wcs,
-                         1, in->minmapsize, NULL, NULL, NULL);
+                         1, in->minmapsize, in->quietmmap, NULL, NULL, NULL);
       iarr=num->array;
     }
 

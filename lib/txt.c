@@ -274,8 +274,9 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
          into the array by `gal_table_read_blank'. To keep the name, unit,
          and comment strings, trim the white space before and after each
          before using them here.  */
-      gal_list_data_add_alloc(datall, NULL, type, 0, NULL, NULL, 0, -1, name,
-                              txt_trim_space(unit), txt_trim_space(comment) );
+      gal_list_data_add_alloc(datall, NULL, type, 0, NULL, NULL, 0, -1, 1,
+                              name, txt_trim_space(unit),
+                              txt_trim_space(comment) );
 
 
       /* Put the number of this column into the status variable of the data
@@ -406,7 +407,7 @@ txt_info_from_first_row(char *in_line, gal_data_t **datall, int format,
           if( *datall==NULL || format==TXT_FORMAT_TABLE )
             {
               gal_list_data_add_alloc(datall, NULL, GAL_TYPE_FLOAT64, 0,
-                                      NULL, NULL, 0, -1, NULL, NULL, NULL);
+                                      NULL, NULL, 0, -1, 1, NULL, NULL, NULL);
               (*datall)->status=n;
             }
         }
@@ -926,7 +927,7 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
 static gal_data_t *
 txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
          gal_data_t *info, gal_list_sizet_t *indexll, size_t minmapsize,
-         int format)
+         int quietmmap, int format)
 {
   FILE *fp;
   int test;
@@ -971,8 +972,8 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
           maxcolnum = maxcolnum>ind->v+1 ? maxcolnum : ind->v+1;
           gal_list_data_add_alloc(&out, NULL, info[ind->v].type, ndim,
                                   dsize[0]?dsize:&one, NULL, 0, minmapsize,
-                                  info[ind->v].name, info[ind->v].unit,
-                                  info[ind->v].comment);
+                                  quietmmap, info[ind->v].name,
+                                  info[ind->v].unit, info[ind->v].comment);
           out->disp_width=info[ind->v].disp_width;
           out->status=ind->v+1;
 
@@ -998,7 +999,7 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
       ndim=2;
       maxcolnum=dsize[1];
       out=gal_data_alloc(NULL, info->type, ndim, dsize, NULL, 0, minmapsize,
-                         info->name, info->unit, info->comment);
+                         quietmmap, info->name, info->unit, info->comment);
       break;
 
 
@@ -1065,10 +1066,10 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
 gal_data_t *
 gal_txt_table_read(char *filename, gal_list_str_t *lines, size_t numrows,
                    gal_data_t *colinfo, gal_list_sizet_t *indexll,
-                   size_t minmapsize)
+                   size_t minmapsize, int quietmmap)
 {
   return txt_read(filename, lines, &numrows, colinfo, indexll, minmapsize,
-                  TXT_FORMAT_TABLE);
+                  quietmmap, TXT_FORMAT_TABLE);
 }
 
 
@@ -1076,7 +1077,8 @@ gal_txt_table_read(char *filename, gal_list_str_t *lines, size_t numrows,
 
 
 gal_data_t *
-gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize)
+gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize,
+                   int quietmmap)
 {
   size_t numimg, dsize[2];
   gal_data_t *img, *imginfo;
@@ -1087,7 +1089,7 @@ gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize)
 
   /* Read the table. */
   img=txt_read(filename, lines, dsize, imginfo, indexll, minmapsize,
-               TXT_FORMAT_IMAGE);
+               quietmmap, TXT_FORMAT_IMAGE);
 
   /* Clean up and return. */
   gal_data_free(imginfo);

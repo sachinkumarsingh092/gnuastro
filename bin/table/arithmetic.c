@@ -203,7 +203,7 @@ arithmetic_init(struct tableparams *p, struct arithmetic_token **arith,
         {
           /* Token is a single number.*/
           if( (num=gal_type_string_to_number(token, &ntype)) )
-            node->constant=gal_data_alloc(num, ntype, 1, &one, NULL, 0, -1,
+            node->constant=gal_data_alloc(num, ntype, 1, &one, NULL, 0, -1, 1,
                                           NULL, NULL, NULL);
 
           /* Token is a column operand (column number or name). */

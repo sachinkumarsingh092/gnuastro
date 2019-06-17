@@ -670,7 +670,7 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, n, 0, __func__,
                                    "permutation");
   pixscale=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &n, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
 
 
   /* To avoid confusing issues with floating point errors being written in
@@ -943,7 +943,8 @@ wcs_convert_prepare_out(gal_data_t *coords, struct wcsprm *wcs, int inplace)
     for(i=0;i<wcs->naxis;++i)
       gal_list_data_add_alloc(&out, NULL, GAL_TYPE_FLOAT64, 1,
                               &coords->size, NULL, 0, coords->minmapsize,
-                              wcs->ctype[i], wcs->cunit[i], NULL);
+                              coords->quietmmap, wcs->ctype[i], wcs->cunit[i],
+                              NULL);
   return out;
 }
 

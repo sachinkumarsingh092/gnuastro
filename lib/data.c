@@ -69,7 +69,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 gal_data_t *
 gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
-               char *name, char *unit, char *comment)
+               int quietmmap, char *name, char *unit, char *comment)
 {
   gal_data_t *out;
 
@@ -82,7 +82,7 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
 
   /* Initialize the allocated array. */
   gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
-                      name, unit, comment);
+                      quietmmap, name, unit, comment);
 
   /* Return the final structure. */
   return out;
@@ -112,8 +112,8 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
 void
 gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                     size_t ndim, size_t *dsize, struct wcsprm *wcs,
-                    int clear, size_t minmapsize, char *name,
-                    char *unit, char *comment)
+                    int clear, size_t minmapsize, int quietmmap,
+                    char *name, char *unit, char *comment)
 {
   size_t i;
   size_t data_size_limit = (size_t)(-1);
@@ -128,6 +128,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
   data->type       = type;
   data->block      = NULL;
   data->mmapname   = NULL;
+  data->quietmmap  = quietmmap;
   data->minmapsize = minmapsize;
   gal_checkset_allocate_copy(name, &data->name);
   gal_checkset_allocate_copy(unit, &data->unit);
@@ -192,7 +193,8 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
               if( gal_type_sizeof(type)*data->size > minmapsize )
                 /* Allocate the space into disk (HDD/SSD). */
                 data->array=gal_pointer_allocate_mmap(data->type, data->size,
-                                                      clear, &data->mmapname);
+                                                      clear, &data->mmapname,
+                                                      quietmmap);
               else
                 /* Allocate the space in RAM. */
                 data->array = gal_pointer_allocate(data->type, data->size,
@@ -260,6 +262,10 @@ gal_data_free_contents(gal_data_t *data)
     {
       /* Delete the file keeping the array. */
       remove(data->mmapname);
+
+      /* Inform the user. */
+      if(!data->quietmmap)
+        error(EXIT_SUCCESS, 0, "%s: deleted", data->mmapname);
 
       /* Free the file name space. */
       free(data->mmapname);
@@ -338,6 +344,7 @@ gal_data_array_calloc(size_t size)
       out[i].size       = 0;
       out[i].mmapname   = NULL;
       out[i].minmapsize = -1;
+      out[i].quietmmap  = 1;
       out[i].nwcs       = 0;
       out[i].wcs        = NULL;
       out[i].flag       = 0;
@@ -698,7 +705,8 @@ gal_data_copy_to_new_type(gal_data_t *in, uint8_t newtype)
 
   /* Allocate the output datastructure. */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
-                     0, in->minmapsize, in->name, in->unit, in->comment);
+                     0, in->minmapsize, in->quietmmap, in->name,
+                     in->unit, in->comment);
 
   /* Fill in the output array: */
   gal_data_copy_to_allocated(in, out);
@@ -844,6 +852,6 @@ gal_data_copy_string_to_number(char *string)
   ptr=gal_type_string_to_number(string, &type);
   return ( ptr
            ? gal_data_alloc(ptr, type, 1, &dsize, NULL, 0, -1,
-                            NULL, NULL, NULL)
+                            1, NULL, NULL, NULL)
            : NULL );
 }

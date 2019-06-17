@@ -139,7 +139,7 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 gal_data_t *
 gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
                gal_list_str_t *cols, int searchin, int ignorecase,
-               size_t minmapsize, size_t *colmatch);
+               size_t minmapsize, int quietmmap, size_t *colmatch);
 
 gal_list_sizet_t *
 gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,

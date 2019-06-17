@@ -516,7 +516,7 @@ ui_set_img_sizes(struct cropparams *p)
     {
       /* Allocate the new width dataset. */
       newwidth=gal_data_alloc(NULL, p->width->type, 1, &ndim, NULL, 0, -1,
-                              NULL, NULL, NULL);
+                              1, NULL, NULL, NULL);
 
       /* Fill the new width. */
       warray=newwidth->array;
@@ -676,7 +676,8 @@ ui_read_cols(struct cropparams *p)
 
   /* Read the desired columns from the file. */
   cols=gal_table_read(p->catname, p->cathdu, NULL, colstrs, p->cp.searchin,
-                      p->cp.ignorecase, p->cp.minmapsize, NULL);
+                      p->cp.ignorecase, p->cp.minmapsize, p->cp.quietmmap,
+                      NULL);
   if(cols==NULL)
     error(EXIT_FAILURE, 0, "%s: is empty! No usable information "
           "(un-commented lines) could be read from this file",
@@ -812,19 +813,20 @@ ui_make_log(struct cropparams *p)
                "%u: not checked)", GAL_BLANK_UINT8)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->numout,
-                          NULL, 1, p->cp.minmapsize, "CENTER_FILLED",
-                          "bool", comment);
+                          NULL, 1, p->cp.minmapsize, p->cp.quietmmap,
+                          "CENTER_FILLED", "bool", comment);
   free(comment);
 
   /* Column for number of datasets used in this crop. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT16, 1, &p->numout,
-                          NULL, 1, p->cp.minmapsize, "NUM_INPUTS", "count",
+                          NULL, 1, p->cp.minmapsize, p->cp.quietmmap,
+                          "NUM_INPUTS", "count",
                           "Number of input datasets used to make this crop.");
 
   /* Filename of crop. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_STRING, 1, &p->numout,
-                          NULL, 1, p->cp.minmapsize, "CROP_NAME", "name",
-                          "File name of crop.");
+                          NULL, 1, p->cp.minmapsize, p->cp.quietmmap,
+                          "CROP_NAME", "name", "File name of crop.");
 }
 
 

@@ -344,8 +344,8 @@ warp_preparations(struct warpparams *p)
      coordinates in the output image (bottom left corners of pixels)
      for the transformation. */
   p->output=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, dsize,
-                           p->input->wcs, 0, p->cp.minmapsize, "Warped",
-                           p->input->unit, NULL);
+                           p->input->wcs, 0, p->cp.minmapsize,
+                           p->cp.quietmmap, "Warped", p->input->unit, NULL);
 
 
   /* Order the corners of the inverse-transformed pixel (from the

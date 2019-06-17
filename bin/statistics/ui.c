@@ -608,8 +608,8 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
      less-than  */
   if(!isnan(p->greaterequal))
     {
-      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
-                        NULL, NULL, NULL);
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1, 1,
+                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->greaterequal;
       cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, flags, ref, tmp);
       gal_data_free(tmp);
@@ -619,8 +619,8 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   /* Same reasoning as above for `p->greaterthan'. */
   if(!isnan(p->lessthan))
     {
-      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1,
-                        NULL, NULL, NULL);
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1, 1,
+                         NULL, NULL, NULL);
       *((float *)(tmp->array)) = p->lessthan;
       cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, flags, ref, tmp);
       gal_data_free(tmp);
@@ -644,7 +644,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   /* Allocate a blank value to mask all pixels that don't satisfy the
      condition. */
   blank=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
-                       0, -1, NULL, NULL, NULL);
+                       0, -1, 1, NULL, NULL, NULL);
   *((float *)(blank->array)) = NAN;
 
 
@@ -769,7 +769,8 @@ ui_read_columns(struct statisticsparams *p)
 
   /* Read the desired column(s). */
   cols=gal_table_read(p->inputname, p->cp.hdu, lines, column, p->cp.searchin,
-                      p->cp.ignorecase, p->cp.minmapsize, NULL);
+                      p->cp.ignorecase, p->cp.minmapsize, p->cp.quietmmap,
+                      NULL);
   gal_list_str_free(lines, 1);
 
   /* If the input was from standard input, we can actually write this into
@@ -845,7 +846,7 @@ ui_preparations(struct statisticsparams *p)
     {
       p->inputformat=INPUT_FORMAT_IMAGE;
       p->input=gal_array_read_one_ch(p->inputname, cp->hdu, NULL,
-                                     cp->minmapsize);
+                                     cp->minmapsize, p->cp.quietmmap);
       p->input->wcs=gal_wcs_read(p->inputname, cp->hdu, 0, 0,
                                  &p->input->nwcs);
       p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
@@ -862,7 +863,7 @@ ui_preparations(struct statisticsparams *p)
   if(p->sky && p->kernelname)
     {
       p->kernel=gal_fits_img_read_kernel(p->kernelname, p->khdu,
-                                         cp->minmapsize);
+                                         cp->minmapsize, p->cp.quietmmap);
       p->kernel->ndim=gal_dimension_remove_extra(p->kernel->ndim,
                                                  p->kernel->dsize, NULL);
     }

@@ -60,7 +60,7 @@ statistics_pull_out_element(gal_data_t *input, size_t index)
 {
   size_t dsize=1;
   gal_data_t *out=gal_data_alloc(NULL, input->type, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
   memcpy( out->array,
           gal_pointer_increment(input->array, index, input->type),
           gal_type_sizeof(input->type) );
@@ -201,7 +201,7 @@ statistics_print_one_row(struct statisticsparams *p)
         case UI_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
           tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                NULL, 1, -1, NULL, NULL, NULL);
+                                NULL, 1, -1, 1, NULL, NULL, NULL);
           *((double *)(tmpv->array)) = arg;
           tmpv = gal_data_copy_to_new_type_free(tmpv, p->input->type);
           out = gal_statistics_quantile_function(p->sorted, tmpv, 0);
@@ -339,7 +339,8 @@ statistics_on_tile(struct statisticsparams *p)
 
       /* Allocate the space necessary to keep the value for each tile. */
       values=gal_data_alloc(NULL, type, p->input->ndim, tl->numtiles, NULL,
-                            0, p->input->minmapsize, NULL, NULL, NULL);
+                            0, p->input->minmapsize, p->cp.quietmmap,
+                            NULL, NULL, NULL);
 
       /* Read the argument for those operations that need it. This is done
          here, because below, the functions are repeated on each tile. */
@@ -351,7 +352,7 @@ statistics_on_tile(struct statisticsparams *p)
         case UI_KEY_QUANTFUNC:
           arg = statistics_read_check_args(p);
           tmpv = gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                NULL, 1, -1, NULL, NULL, NULL);
+                                NULL, 1, -1, 1, NULL, NULL, NULL);
           *((double *)(tmpv->array)) = arg;
           tmpv = gal_data_copy_to_new_type_free(tmpv, p->input->type);
         }
@@ -511,7 +512,7 @@ set_bin_range_params(struct statisticsparams *p)
   if(p->manualbinrange)
     {
       /* Allocate the range data structure. */
-      range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL, 0, -1,
+      range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL, 0, -1, 1,
                            NULL, NULL, NULL);
       ((float *)(range->array))[0]=p->greaterequal;
       ((float *)(range->array))[1]=p->lessthan;
@@ -715,7 +716,7 @@ print_mirror_hist_cfp(struct statisticsparams *p)
   gal_data_t *table;
   double mirror_val;
   gal_data_t *mirror=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                    NULL, 1, -1, NULL, NULL, NULL);
+                                    NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* Convert the given mirror value into the type of the input dataset. */
   *((double *)(mirror->array)) = p->mirror;

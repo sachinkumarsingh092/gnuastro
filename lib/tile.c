@@ -441,8 +441,9 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
 
   /* Allocate the output array. */
   tofill=gal_data_alloc(NULL, type, block->ndim, block->dsize, block->wcs,
-                        0, block->minmapsize, tilevalues->name,
-                        tilevalues->unit, tilevalues->comment);
+                        0, block->minmapsize, block->quietmmap,
+                        tilevalues->name, tilevalues->unit,
+                        tilevalues->comment);
 
   /* If requested, initialize `tofill', otherwise it is assumed that the
      full area of the output is covered by the tiles. */
@@ -494,7 +495,8 @@ gal_tile_block_check_tiles(gal_data_t *tilesll)
 
   /* Allocate the array to keep the IDs of each tile. */
   ids=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &dsize,
-                     NULL, 0, block->minmapsize, NULL, NULL, NULL);
+                     NULL, 0, block->minmapsize, block->quietmmap,
+                     NULL, NULL, NULL);
 
   /* Put the IDs into the array. */
   arr=ids->array; for(i=0;i<dsize;++i) arr[i]=i;
@@ -1169,7 +1171,7 @@ gal_tile_full_values_smooth(gal_data_t *tilevalues,
 
   /* Make the kernel. */
   kernel=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, tilevalues->ndim,
-                        kdsize, NULL, 0, -1, NULL, NULL, NULL);
+                        kdsize, NULL, 0, -1, 1, NULL, NULL, NULL);
   knum=gal_dimension_total_size(tl->ndim, kernel->dsize);
   for(i=0;i<knum;++i) ((float *)(kernel->array))[i]=1/((double)knum);
 

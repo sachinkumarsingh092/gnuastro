@@ -331,8 +331,8 @@ gal_list_data_add(gal_data_t **list, gal_data_t *newnode);
 void
 gal_list_data_add_alloc(gal_data_t **list, void *array, uint8_t type,
                         size_t ndim, size_t *dsize, struct wcsprm *wcs,
-                        int clear, size_t minmapsize, char *name,
-                        char *unit, char *comment);
+                        int clear, size_t minmapsize, int quietmmap,
+                        char *name, char *unit, char *comment);
 
 gal_data_t *
 gal_list_data_pop(gal_data_t **list);

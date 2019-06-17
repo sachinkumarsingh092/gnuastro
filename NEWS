@@ -7,6 +7,17 @@ See the end of the file for license conditions.
 
 ** New features
 
+  All programs:
+   - When an array is memory-mapped to non-volatile space (like the
+     HDD/SSD), a warning/message is printed that shows the file name and
+     its size. Later, when its deleted, a warning/message is also printed,
+     informing you that it has been deleted. These warnings can be very
+     useful when you actually have enough RAM, but forget to increase the
+     `--minmapsize' value (therefore significantly slowing down the
+     program). When you don't have enough RAM, but don't want to be annoyed
+     with the warnings, you can use the new `--quietmmap' option to disable
+     them.
+
   Arithmetic:
    - `unique' operator removes all duplicate (and blank) elements from the
      dataset and returns a single-dimension output, containing only the
@@ -62,6 +73,8 @@ See the end of the file for license conditions.
    - gal_dimension_remove_extra: Remove extra (length 1) dimensions.
    - gal_list_data_to_array_ptr: Make an array of pointers from the list.
    - gal_fits_img_info_dim: Only return the size information of a dataset.
+   - GAL_TYPE_INT: Corresponding to respective width based on system.
+   - GAL_TYPE_UINT: Corresponding to respective width based on system.
    - GAL_BLANK_INT: Blank value for `int' (can be 16-bit or 32-bit).
    - GAL_BLANK_UINT: Blank value for unsigned `int' (can be 16-bit or 32-bit).
 
@@ -91,6 +104,27 @@ See the end of the file for license conditions.
 
   Library:
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
+   - New `quietmmap' argument added to the following functions (as the
+     argument following `minmapsize'). For more, see the description above
+     of the new similarly named option to all programs.
+       - gal_array_read
+       - gal_array_read_to_type
+       - gal_array_read_one_ch
+       - gal_array_read_one_ch_to_type
+       - gal_data_alloc
+       - gal_data_initialize
+       - gal_fits_img_read
+       - gal_fits_img_read_to_type
+       - gal_fits_img_read_kernel
+       - gal_fits_tab_read
+       - gal_jpeg_read
+       - gal_label_indexs
+       - gal_list_data_add_alloc
+       - gal_match_coordinates
+       - gal_pointer_allocate_mmap
+       - gal_table_read
+       - gal_tiff_read
+       - gal_txt_image_read
 
 ** Bugs fixed
   bug #56195: astscript-sort-by-night crashing because of AWK.

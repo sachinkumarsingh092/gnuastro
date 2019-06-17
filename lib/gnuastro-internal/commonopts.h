@@ -351,6 +351,19 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "quietmmap",
+      GAL_OPTIONS_KEY_QUIETMMAP,
+      0,
+      0,
+      "Don't print mmap'd file's name and size.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->quietmmap,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "log",
       GAL_OPTIONS_KEY_LOG,
       0,

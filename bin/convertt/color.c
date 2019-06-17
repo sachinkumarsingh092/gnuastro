@@ -101,13 +101,13 @@ color_from_mono_hsv(struct converttparams *p)
   /* Allocate the three datasets to keep the RGB colors. */
   R=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "RED", NULL, "Red color channel.");
+                   p->cp.quietmmap, "RED", NULL, "Red color channel.");
   G=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "GREEN", NULL, "Green color channel.");
+                   p->cp.quietmmap, "GREEN", NULL, "Green color channel.");
   B=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "BLUE", NULL, "Blue color channel.");
+                   p->cp.quietmmap, "BLUE", NULL, "Blue color channel.");
 
   /* Start the conversion. Note that the "Choroma" (`C') is fixed by our
      definition. */
@@ -187,13 +187,13 @@ color_from_mono_sls(struct converttparams *p)
   /* Allocate the three datasets to keep the RGB colors. */
   R=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "RED", NULL, "Red color channel.");
+                   p->cp.quietmmap, "RED", NULL, "Red color channel.");
   G=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "GREEN", NULL, "Green color channel.");
+                   p->cp.quietmmap, "GREEN", NULL, "Green color channel.");
   B=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, channel->ndim,
                    channel->dsize, channel->wcs, 0, p->cp.minmapsize,
-                   "BLUE", NULL, "Blue color channel.");
+                   p->cp.quietmmap, "BLUE", NULL, "Blue color channel.");
 
   /* Start the conversion. Note that the "Choroma" (`C') is fixed by our
      definition. */
@@ -493,13 +493,13 @@ color_rgb_to_hsv(struct converttparams *p)
   /* Allocate the three datasets to keep the RGB colors. */
   H=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
                    p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
-                   "HUE", NULL, NULL);
+                   p->cp.quietmmap, "HUE", NULL, NULL);
   S=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
                    p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
-                   "SATURATION", NULL, NULL);
+                   p->cp.quietmmap, "SATURATION", NULL, NULL);
   V=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->chll->ndim,
                    p->chll->dsize, p->chll->wcs, 0, p->cp.minmapsize,
-                   "VALUE", NULL, NULL);
+                   p->cp.quietmmap, "VALUE", NULL, NULL);
 
   /* Initiate the pointer arrays. */
   h=H->array;

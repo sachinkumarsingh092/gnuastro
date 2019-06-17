@@ -299,7 +299,7 @@ ui_parse_obsline(struct argp_option *option, char *arg,
 
           /* Allocate the new space. */
           tobsline=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &two, NULL,
-                                  0, -1, NULL, NULL, NULL);
+                                  0, -1, 1, NULL, NULL, NULL);
           tobsline->status=GAL_SPECLINES_INVALID;
 
           /* Write the values into tptr. */

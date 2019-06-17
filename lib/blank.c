@@ -534,8 +534,8 @@ gal_blank_flag(gal_data_t *input)
       /* Allocate a non-cleared output array, we are going to parse the
          input and fill in each element. */
       out=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, input->dsize,
-                         input->wcs, 0, input->minmapsize, NULL, "bool",
-                         NULL);
+                         input->wcs, 0, input->minmapsize, input->quietmmap,
+                         NULL, "bool", NULL);
 
       /* Set the pointers for easy looping. */
       of=(o=out->array)+input->size;
@@ -576,7 +576,8 @@ gal_blank_flag(gal_data_t *input)
   else
     /* Allocate a CLEAR data structure (all zeros). */
     out=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, input->dsize,
-                       input->wcs, 1, input->minmapsize, NULL, "bool", NULL);
+                       input->wcs, 1, input->minmapsize, input->quietmmap,
+                       NULL, "bool", NULL);
 
   /* Return */
   return out;

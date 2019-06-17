@@ -208,7 +208,7 @@ arithmetic_filter(void *in_prm)
   size_t i, j, coord[ARITHMETIC_FILTER_DIM], ndim=input->ndim;
   size_t start[ARITHMETIC_FILTER_DIM], end[ARITHMETIC_FILTER_DIM];
   gal_data_t *tile=gal_data_alloc(NULL, input->type, ndim, afp->fsize, NULL,
-                                  0, -1, NULL, NULL, NULL);
+                                  0, -1, 1, NULL, NULL, NULL);
 
   /* Prepare the tile. */
   free(tile->array);
@@ -296,7 +296,7 @@ arithmetic_filter(void *in_prm)
 
           /* Allocate the output and write the value into it. */
           result=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL,
-                                0, -1, NULL, NULL, NULL);
+                                0, -1, 1, NULL, NULL, NULL);
           ((float *)(result->array))[0] =
             ((float *)(sigclip->array))[sind];
 
@@ -372,7 +372,7 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 
 
   /* A zero value for checking the value of input widths. */
-  zero=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &one, NULL, 1, -1, NULL,
+  zero=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &one, NULL, 1, -1, 1, NULL,
                       NULL, NULL);
 
 
@@ -503,7 +503,8 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
          the units of the dataset. */
       afp.out=gal_data_alloc(NULL, type, ndim, afp.input->dsize,
                              afp.input->wcs, 0, afp.input->minmapsize,
-                             NULL, afp.input->unit, NULL);
+                             afp.input->quietmmap, NULL, afp.input->unit,
+                             NULL);
 
 
       /* Spin off threads for each pixel. */
@@ -1210,7 +1211,8 @@ reversepolish(struct arithmeticparams *p)
         {
           /* Read the data, note that the WCS has already been set. */
           p->operands->data=gal_array_read_one_ch(filename, hdu, NULL,
-                                                  p->cp.minmapsize);
+                                                  p->cp.minmapsize,
+                                                  p->cp.quietmmap);
           data=p->operands->data;
           data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize, NULL);
           if(!p->cp.quiet) printf(" - %s (hdu %s) is read.\n", filename, hdu);

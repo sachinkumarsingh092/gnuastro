@@ -7721,32 +7721,39 @@ display in the @option{--help} output of the program.
 @item --minmapsize=INT
 The minimum size (in bytes) to store the contents of each main processing
 array of a program as a file (on the non-volatile HDD/SSD), not in
-RAM. This can be very useful for large datasets which can be very memory
-intensive such that your RAM will not be sufficient to keep/process them. A
-random filename is assigned to the array which will keep the contents of
-the array as long as it is necessary.
+RAM. This can be very useful when you have limited RAM, but need to process
+large datasets which can be very memory intensive. In such scenarios,
+without this option, the program will crash.
+
+A random filename is assigned to the array. This file will keep the
+contents of the array as long as it is necessary and the program will
+delete it as soon as its not necessary any more.
 
 If the @file{.gnuastro} directory exists and is writable, then the random
-file will be placed there. Otherwise, the @file{.gnuastro_mmap} directory
-will be checked. If @file{.gnuastro_mmap} does not exist, or is not
-writable also, the random file will be directly written in the current
-directory with the @file{.gnuastro_mmap_} prefix (followed by some random
-characters).
+file will be placed in there. Otherwise, the @file{.gnuastro_mmap}
+directory will be checked. If @file{.gnuastro_mmap} does not exist, or
+@file{.gnuastro} is not writable, the random file will be directly written
+in the current directory with the @file{.gnuastro_mmap_} prefix.
 
-When this option has a value of @code{0} (zero), all arrays that use this
-option in a program will actually be in a file (not in RAM). When the value
-is @code{-1} (largest possible number in the unsigned integer types) these
-arrays will be definitely allocated in RAM. However, for complex programs
-like @ref{NoiseChisel}, it is recommended to not set it to @code{0}, but a
-value like @code{10000} so the many small arrays necessary during
-processing are stored in RAM and only larger ones are saved as a file.
+By default, the name of the created file, and its size (in bytes) is
+printed by the program when it is created and later, when its
+deleted/freed. These messages are useful to the user who has enough RAM,
+but has forgot to increase the value to @code{--minmapsize} (this is often
+the case). To supress/disable such messages, use the @code{--quietmmap}
+option.
+
+When this option has a value of @code{0} (zero, strongly discouraged, see
+box below), all arrays that use this feature in a program will actually be
+placed in a file (not in RAM). When this option is larger than all the
+input datasets, all arrays will be definitely allocated in RAM and the
+program will run MUCH faster.
 
 Please note that using a non-volatile file (in the HDD/SDD) instead of RAM
-can significantly increase the program's running time, especially on
-HDDs. So it is best to give this option large values by default. You can
-then decrease it for a specific program's invocation on a large input after
-you see memory issues arise (for example an error, or the program not
-aborting and fully consuming your memory).
+can significantly increase the program's running time, especially on HDDs
+(where read/write is slower). So it is best to give this option large
+values by default. You can then decrease it for a specific program's
+invocation on a large input after you see memory issues arise (for example
+an error, or the program not aborting and fully consuming your memory).
 
 The random file will be deleted once it is no longer needed by the
 program. The @file{.gnuastro} directory will also be deleted if it has no
@@ -7754,6 +7761,20 @@ other contents (you may also have configuration files in this directory,
 see @ref{Configuration files}). If you see randomly named files remaining
 in this directory when the program finishes normally, please send us a bug
 report so we address the problem, see @ref{Report a bug}.
+
+@cartouche
+@noindent
+@strong{Limited number of memory-mapped files:} The operating system
+kernels usually support a limited number of memory-mapped files. Therefore
+never set @code{--minmapsize} to zero or a small number of bytes (so too
+many files are created). If the kernel capacity is exceeded, the program
+will crash.
+@end cartouche
+
+@item --quietmmap
+Don't print any message when an array is stored in non-volatile memory
+(HDD/SSD) and not RAM, see the description of @option{--minmapsize} (above)
+for more.
 
 @item -Z INT[,INT[,...]]
 @itemx --tilesize=[,INT[,...]]
@@ -24414,10 +24435,14 @@ Identifier for a signed, 64-bit integer type: @code{int64_t} (from
 @file{stdint.h}), or an @code{long} in most modern 64-bit systems.
 @end deffn
 
-@deffn {Global integer}  GAL_TYPE_SIZE_T
-Identifier for a @code{size_t} type. This is just an alias to
-@code{uint32}, or @code{uint64} types for 32-bit, or 64-bit systems
-respectively.
+@deffn {Global integer}  GAL_TYPE_INT
+Identifier for a @code{int} type. This is just an alias to @code{int16}, or
+@code{int32} types, depending on the system.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_UINT
+Identifier for a @code{unsigned int} type. This is just an alias to
+@code{uint16}, or @code{uint32} types, depending on the system.
 @end deffn
 
 @deffn {Global integer}  GAL_TYPE_ULONG
@@ -24429,6 +24454,12 @@ respectively.
 @deffn {Global integer}  GAL_TYPE_LONG
 Identifier for a @code{long} type. This is just an alias to @code{int32},
 or @code{int64} types for 32-bit, or 64-bit systems respectively.
+@end deffn
+
+@deffn {Global integer}  GAL_TYPE_SIZE_T
+Identifier for a @code{size_t} type. This is just an alias to
+@code{uint32}, or @code{uint64} types for 32-bit, or 64-bit systems
+respectively.
 @end deffn
 
 @deffn {Global integer}  GAL_TYPE_FLOAT32
@@ -24966,6 +24997,7 @@ typedef struct gal_data_t
   size_t              ndim;
   size_t            *dsize;
   size_t              size;
+  int            quietmmap;
   char           *mmapname;
   size_t        minmapsize;
 
@@ -25056,6 +25088,13 @@ multiplication of all the values in the @code{dsize} array, so it is not an
 independent parameter. However, low-level operations with the dataset
 (irrespective of its dimensions) commonly need this number, so this element
 is designed to avoid calculating it every time.
+
+@item int quietmmap
+When this value is zero, and the dataset must not be allocated in RAM (see
+@code{mmapname} and @code{minmapsize}), a warning will be printed to inform
+the user when the file is created and when it is deleted. The warning
+includes the filename, the size in bytes, and the fact that they can toggle
+this behavior through @code{--minmapsize} option in Gnuastro's programs.
 
 @item char *mmapname
 Name of file hosting the @code{mmap}'d contents of @code{array}. If the
@@ -25213,7 +25252,7 @@ The functions listed in this section describe the most basic operations on
 are declared in @file{gnuastro/data.h} which is also visible from the
 function names (see @ref{Gnuastro library}).
 
-@deftypefun {gal_data_t *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+@deftypefun {gal_data_t *} gal_data_alloc (void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, int @code{quietmmap}, char @code{*name}, char @code{*unit}, char @code{*comment})
 
 Dynamically allocate a @code{gal_data_t} and initialize it will all the
 given values. See the description of @code{gal_data_initialize} and
@@ -25224,7 +25263,7 @@ the dataset, be sure to clean up all the allocated spaces with
 @code{gal_data_free}.
 @end deftypefun
 
-@deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+@deftypefun void gal_data_initialize (gal_data_t @code{*data}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, int @code{quietmmap}, char @code{*name}, char @code{*unit}, char @code{*comment})
 
 Initialize the given data structure (@code{data}) with all the given
 values. Note that the raw input @code{gal_data_t} must already have been
@@ -26354,16 +26393,17 @@ itself a list), then @code{list} will be added to its end.
 
 In this example multiple images are linked together as a list:
 @example
+int quietmmap=1;
 size_t minmapsize=-1;
 gal_data_t *tmp, *list=NULL;
-tmp = gal_fits_img_read("file1.fits", "1", minmapsize);
+tmp = gal_fits_img_read("file1.fits", "1", minmapsize, quietmmap);
 gal_list_data_add( &list, tmp );
-tmp = gal_fits_img_read("file2.fits", "1", minmapsize);
+tmp = gal_fits_img_read("file2.fits", "1", minmapsize, quietmmap);
 gal_list_data_add( &list, tmp );
 @end example
 @end deftypefun
 
-@deftypefun void gal_list_data_add_alloc (gal_data_t @code{**list}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, char @code{*name}, char @code{*unit}, char @code{*comment})
+@deftypefun void gal_list_data_add_alloc (gal_data_t @code{**list}, void @code{*array}, uint8_t @code{type}, size_t @code{ndim}, size_t @code{*dsize}, struct wcsprm @code{*wcs}, int @code{clear}, size_t @code{minmapsize}, int @code{quietmmap}, char @code{*name}, char @code{*unit}, char @code{*comment})
 Allocate a new dataset (with @code{gal_data_alloc} in @ref{Dataset
 allocation}) and put it as the first element of @code{list}. Note that if
 this is the first node to be added to the list, @code{list} must be
@@ -26426,15 +26466,17 @@ types for reading arrays which may contain multiple extensions (for example
 FITS or TIFF) formats.
 @end deftypefun
 
-@deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
+@deftypefun gal_data_t gal_array_read (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the array within the given extension (@code{extension}) of
 @code{filename}, or the @code{lines} list (see below). If the array is
 larger than @code{minmapsize} bytes, then it won't be read into RAM, but a
-file on the HDD/SSD (no difference for the programmer). @code{extension}
-will be ignored for files that don't support them (for example JPEG or
-text). For FITS files, @code{extension} can be a number or a string (name
-of the extension), but for TIFF files, it has to be number. In both cases,
-counting starts from zero.
+file on the HDD/SSD (no difference for the programmer). Messages about the
+memory-mapped file can be disabled with @code{quietmmap}.
+
+@code{extension} will be ignored for files that don't support them (for
+example JPEG or text). For FITS files, @code{extension} can be a number or
+a string (name of the extension), but for TIFF files, it has to be
+number. In both cases, counting starts from zero.
 
 For multi-channel formats (like RGB images in JPEG or TIFF), this function
 will return a @ref{List of gal_data_t}: one data structure per
@@ -26450,12 +26492,12 @@ the program's input as separate lines from the standard input (see
 exclusive and one of them must be @code{NULL}.
 @end deftypefun
 
-@deftypefun void gal_array_read_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize}, int @code{quietmmap})
 Similar to @code{gal_array_read}, but the output data structure(s) will
 have a numeric data type of @code{type}, see @ref{Numeric data types}.
 @end deftypefun
 
-@deftypefun void gal_array_read_one_ch (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_one_ch (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, size_t @code{minmapsize}, int @code{quietmmap})
 @cindex Channel
 @cindex Color channel
 Read the dataset within @code{filename} (extension/hdu/dir
@@ -26470,7 +26512,7 @@ be a convenient way to make sure that the data that comes into your program
 is only one channel.
 @end deftypefun
 
-@deftypefun void gal_array_read_one_ch_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun void gal_array_read_one_ch_to_type (char @code{*filename}, char @code{*extension}, gal_list_str_t @code{*lines}, uint8_t @code{type}, size_t @code{minmapsize}, int @code{quietmmap})
 Similar to @code{gal_array_read_one_ch}, but the output data structure will
 has a numeric data type of @code{type}, see @ref{Numeric data types}.
 @end deftypefun
@@ -26590,7 +26632,7 @@ $ asttable --info table.fits
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*lines}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, size_t @code{*colmatch})
+@deftypefun {gal_data_t *} gal_table_read (char @code{*filename}, char @code{*hdu}, gal_list_str_t @code{*lines}, gal_list_str_t @code{*cols}, int @code{searchin}, int @code{ignorecase}, size_t @code{minmapsize}, int @code{quietmmap}, size_t @code{*colmatch})
 
 Read the specified columns in a file (named @code{filename}), or list of
 strings (@code{lines}) into a linked list of data structures. If the file
@@ -27218,13 +27260,13 @@ in the space that @code{ndim} points to and return the size of the dataset
 along each dimension as an allocated array with @code{*ndim} elements.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_img_read (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the contents of the @code{hdu} extension/HDU of @code{filename} into a
 Gnuastro generic data container (see @ref{Generic data container}) and
 return it. If the necessary space is larger than @code{minmapsize}, then
 don't keep the data in RAM, but in a file on the HDD/SSD. For more on
-@code{minmapsize} see the description under the same name in @ref{Generic
-data container}.
+@code{minmapsize} and @code{quietmmap} see the description under the same
+name in @ref{Generic data container}.
 
 Note that this function only reads the main data within the requested FITS
 extension, the WCS will not be read into the returned dataset. To read the
@@ -27232,12 +27274,12 @@ WCS, you can use @code{gal_wcs_read} function as shown below. Afterwards,
 the @code{gal_data_free} function will free both the dataset and any WCS
 structure (if there are any).
 @example
-data=gal_fits_img_read(filename, hdu, -1);
+data=gal_fits_img_read(filename, hdu, -1, 1);
 data->wcs=gal_wcs_read(filename, hdu, 0, 0, &data->wcs->nwcs);
 @end example
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_img_read_to_type (char @code{*inputname}, char @code{*inhdu}, uint8_t @code{type}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_img_read_to_type (char @code{*inputname}, char @code{*inhdu}, uint8_t @code{type}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the contents of the @code{hdu} extension/HDU of @code{filename} into a
 Gnuastro generic data container (see @ref{Generic data container}) of type
 @code{type} and return it.
@@ -27251,7 +27293,7 @@ description there for more.
 @cindex NaN
 @cindex Convolution kernel
 @cindex Kernel, convolution
-@deftypefun {gal_data_t *} gal_fits_img_read_kernel (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_img_read_kernel (char @code{*filename}, char @code{*hdu}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the @code{hdu} of @code{filename} as a convolution kernel. A
 convolution kernel must have an odd size along all dimensions, it must not
 have blank (NaN in floating point types) values and must be flipped around
@@ -27351,13 +27393,14 @@ reading tables in FITS format. To be generic, it is recommended to use
 of table formats based on the filename (see @ref{Table input output}).
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_fits_tab_read (char @code{*filename}, char @code{*hdu}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the columns given in the list @code{indexll} from a FITS table (in
 @file{filename} and HDU/extension @code{hdu}) into the returned linked list
 of data structures, see @ref{List of size_t} and @ref{List of
 gal_data_t}. If the necessary space for each column is larger than
-@code{minmapsize}, don't keep it in the RAM, but in a file in the HDD/SSD,
-see the description under the same name in @ref{Generic data container}.
+@code{minmapsize}, don't keep it in the RAM, but in a file in the HDD/SSD.
+For more on @code{minmapsize} and @code{quietmmap}, see the description
+under the same name in @ref{Generic data container}.
 
 Each column will have @code{numrows} rows and @code{colinfo} contains any
 further information about the columns (returned by
@@ -27470,13 +27513,14 @@ variety of table formats based on the filename (see @ref{Table input
 output}).
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the columns given in the list @code{indexll} from a plain text file
 (@code{filename}) or list of strings (@code{lines}), into a linked list of
 data structures (see @ref{List of size_t} and @ref{List of gal_data_t}). If
 the necessary space for each column is larger than @code{minmapsize}, don't
-keep it in the RAM, but in a file on the HDD/SSD, see the description under
-the same name in @ref{Generic data container}.
+keep it in the RAM, but in a file on the HDD/SSD. For more one
+@code{minmapsize} and @code{quietmmap}, see the description under the same
+name in @ref{Generic data container}.
 
 @code{lines} is a list of strings with each node representing one line
 (including the new-line character), see @ref{List of strings}. It will
@@ -27491,12 +27535,13 @@ inverse of the input indexs linked list. It is recommended to use
 @ref{Table input output}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the 2D plain text dataset in file (@code{filename}) or list of strings
 (@code{lines}) into a dataset and return the dataset. If the necessary
 space for the image is larger than @code{minmapsize}, don't keep it in the
-RAM, but in a file on the HDD/SSD, see the description under the same name
-in @ref{Generic data container}.
+RAM, but in a file on the HDD/SSD. For more on @code{minmapsize} and
+@code{quietmmap}, see the description under the same name in @ref{Generic
+data container}.
 
 @code{lines} is a list of strings with each node representing one line
 (including the new-line character), see @ref{List of strings}. It will
@@ -27610,7 +27655,7 @@ identify a TIFF directory. Note that the directories start counting from
 zero.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the @code{dir} directory within the TIFF file @code{filename} and
 return the contents of that TIFF directory as @code{gal_data_t}. If the
 directory's image contains multiple channels, the output will be a list
@@ -27652,7 +27697,7 @@ recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg},
 @code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
 @end deftypefun
 
-@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the JPEG file @code{filename} and return the contents as
 @code{gal_data_t}. If the directory's image contains multiple
 colors/channels, the output will be a list with one node per color/channel
@@ -28605,7 +28650,7 @@ gal_data_t *faketile;
 /* Allocate the fake tile, these can be done outside a loop
  * (over many tiles). */
 faketile=gal_data_alloc(NULL, new->type, 1, &zero,
-                        NULL, 0, -1, NULL, NULL, NULL);
+                        NULL, 0, -1, 1, NULL, NULL, NULL);
 free(faketile->array);               /* To keep things clean. */
 free(faketile->dsize);               /* To keep things clean. */
 faketile->block = new;
@@ -28764,7 +28809,7 @@ char *filename="input.fits", *hdu="1";
 ...
 
 /* Read the input dataset. */
-input=gal_fits_img_read(filename, hdu, -1);
+input=gal_fits_img_read(filename, hdu, -1, 1);
 
 /* Do a sanity check and preparations. */
 gal_tile_full_sanity_check(filename, hdu, input, &tl);
@@ -29222,7 +29267,7 @@ catalogs (register them). Currently it only provides the  The high-level
 measurements are stored in tables with positions (commonly in RA and Dec
 with units of degrees).
 
-@deftypefun {gal_data_t *} gal_match_coordinates (gal_data_t @code{*coord1}, gal_data_t @code{*coord2}, double @code{*aperture}, int @code{sorted_by_first}, int @code{inplace}, size_t @code{minmapsize}, size_t @code{*nummatched})
+@deftypefun {gal_data_t *} gal_match_coordinates (gal_data_t @code{*coord1}, gal_data_t @code{*coord2}, double @code{*aperture}, int @code{sorted_by_first}, int @code{inplace}, size_t @code{minmapsize}, int @code{quietmmap}, size_t @code{*nummatched})
 
 Return the permutations that when applied, the first @code{nummatched} rows
 of both inputs match with each other (are the nearest within the given
@@ -29258,7 +29303,8 @@ take more time and memory.
 
 If internal allocation is necessary and the space is larger than
 @code{minmapsize}, the space will be not allocated in the RAM, but in a
-file, see description of @option{--minmapsize} in @ref{Processing options}.
+file, see description of @option{--minmapsize} and @code{--quietmmap} in
+@ref{Processing options}.
 
 The number of matches will be put in the space pointed by
 @code{nummatched}. If there wasn't any match, this function will return
@@ -29968,7 +30014,7 @@ labels, therefore negative integers can be used for any extra
 classification in the labeled datasets.
 @end deffn
 
-@deftypefun {gal_data_t *} gal_label_indexs (gal_data_t @code{*labels}, size_t @code{numlabs}, size_t @code{minmapsize})
+@deftypefun {gal_data_t *} gal_label_indexs (gal_data_t @code{*labels}, size_t @code{numlabs}, size_t @code{minmapsize}, int @code{quietmmap})
 
 Return an array of @code{gal_data_t} containers, each containing the pixel
 indexs of the respective label (see @ref{Generic data
@@ -30414,7 +30460,7 @@ main(void)
   gal_list_str_add(&cols, "1", 0);
   gal_list_str_add(&cols, "2", 0);
   Y=gal_table_read("table.txt", NULL, cols, GAL_TABLE_SEARCH_NAME,
-                   0, -1, NULL);
+                   0, -1, 1, NULL);
   X=Y->next;
 
   /* Allocate the GSL interpolation accelerator and make the
@@ -30761,7 +30807,8 @@ main(void)
 
 
   /* Read `img.fits' (HDU: 1) as a float32 array. */
-  image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1);
+  image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
+                                  -1, 1);
 
 
   /* Use the allocated space as a single precision floating
@@ -30810,7 +30857,7 @@ main(void)
   float *array;
   size_t i, num, *dinc;
   gal_data_t *input=gal_fits_img_read_to_type("input.fits", "1",
-                                              GAL_TYPE_FLOAT32, -1);
+                                              GAL_TYPE_FLOAT32, -1, 1);
 
   /* To avoid the `void *' pointer and have `dinc'. */
   array=input->array;
@@ -30949,9 +30996,9 @@ main(void)
 
   /* Read the image into memory as a float32 data type. We are using
    * `-1' for `minmapsize' to ensure that the image is read into
-   * memory. */
+   * memory and `1' for `quietmmap' (which can also be zero). */
   p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
-                                    -1);
+                                    -1, 1);
 
 
   /* Print some basic information before the actual contents: */
@@ -31053,7 +31100,7 @@ main(void)
 
   /* Read the desired columns. */
   columns = gal_table_read(inname, hdu, column_ids,
-                           GAL_TABLE_SEARCH_NAME, 1, -1, NULL);
+                           GAL_TABLE_SEARCH_NAME, 1, -1, 1, NULL);
 
   /* Go over the columns, we'll assume that you don't know their type
    * a-priori, so we'll check  */

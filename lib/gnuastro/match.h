@@ -47,7 +47,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 gal_data_t *
 gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
                       double *aperture, int sorted_by_first,
-                      int inplace, size_t minmapsize, size_t *nummatched);
+                      int inplace, size_t minmapsize, int quietmmap,
+                      size_t *nummatched);
 
 
 

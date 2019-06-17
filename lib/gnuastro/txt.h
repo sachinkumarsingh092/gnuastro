@@ -89,10 +89,11 @@ gal_txt_image_info(char *filename, gal_list_str_t *lines, size_t *numimg,
 gal_data_t *
 gal_txt_table_read(char *filename, gal_list_str_t *lines, size_t numrows,
                    gal_data_t *colinfo, gal_list_sizet_t *indexll,
-                   size_t minmapsize);
+                   size_t minmapsize, int quietmmap);
 
 gal_data_t *
-gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize);
+gal_txt_image_read(char *filename, gal_list_str_t *lines, size_t minmapsize,
+                   int quietmmap);
 
 gal_list_str_t *
 gal_txt_stdin_read(long timeout_microsec);

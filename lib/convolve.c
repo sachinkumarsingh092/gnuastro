@@ -444,9 +444,9 @@ convolve_spatial_on_thread(void *inparam)
   pprm->overlap_start = gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0,
                                              __func__, "pprm->overlap_start");
   pprm->i_overlap     = gal_data_alloc(NULL, block->type, ndim, dsize,
-                                       NULL, 0, -1, NULL, NULL, NULL);
+                                       NULL, 0, -1, 1, NULL, NULL, NULL);
   pprm->k_overlap     = gal_data_alloc(NULL, cprm->kernel->type, ndim, dsize,
-                                       NULL, 0, -1, NULL, NULL, NULL);
+                                       NULL, 0, -1, 1, NULL, NULL, NULL);
   free(dsize);
   free(pprm->i_overlap->array);
   free(pprm->k_overlap->array);
@@ -519,8 +519,8 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
     {
       /* Allocate the space for the convolved image. */
       out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, block->ndim, block->dsize,
-                         block->wcs, 0, block->minmapsize, NULL,
-                         block->unit, NULL);
+                         block->wcs, 0, block->minmapsize, block->quietmmap,
+                         NULL, block->unit, NULL);
 
       /* Spatial convolution won't change the blank bit-flag, so use the
          block structure's blank bit flag. */

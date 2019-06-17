@@ -592,7 +592,8 @@ parse_median(struct mkcatalog_passparams *pp)
   size_t *tsize=pp->tile->dsize, ndim=p->objects->ndim;
   size_t counter=0, *ccounter=NULL, tmpsize=pp->oi[OCOL_NUM];
   gal_data_t *objmed=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL,
-                                    0, p->cp.minmapsize, NULL, NULL, NULL);
+                                    0, p->cp.minmapsize, p->cp.quietmmap,
+                                    NULL, NULL, NULL);
 
   /* Allocate space for the clump medians. */
   if(p->clumps)
@@ -611,8 +612,8 @@ parse_median(struct mkcatalog_passparams *pp)
         {
           tmpsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
           clumpsmed[i]=gal_data_alloc(NULL, p->values->type, 1, &tmpsize,
-                                      NULL, 0, p->cp.minmapsize, NULL, NULL,
-                                      NULL);
+                                      NULL, 0, p->cp.minmapsize,
+                                      p->cp.quietmmap, NULL, NULL, NULL);
         }
     }
 

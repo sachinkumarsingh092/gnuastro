@@ -61,7 +61,7 @@ int
 gal_jpeg_suffix_is_jpeg(char *name);
 
 gal_data_t *
-gal_jpeg_read(char *filename, size_t minmapsize);
+gal_jpeg_read(char *filename, size_t minmapsize, int quietmmap);
 
 void
 gal_jpeg_write(gal_data_t *in, char *filename, uint8_t quality,

@@ -619,7 +619,7 @@ static gal_data_t *
 gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
                              size_t *B_perm,
                              struct match_coordinate_sfll **bina,
-                             size_t minmapsize)
+                             size_t minmapsize, int quietmmap)
 {
   float r;
   double *rval;
@@ -638,14 +638,15 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
 
   /* Allocate the output list. */
   out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &A->size, NULL, 0,
-                     minmapsize, "CAT1_ROW", "counter",
+                     minmapsize, quietmmap, "CAT1_ROW", "counter",
                      "Row index in first catalog (counting from 0).");
   out->next=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &B->size, NULL, 0,
-                           minmapsize, "CAT2_ROW", "counter",
+                           minmapsize, quietmmap, "CAT2_ROW", "counter",
                            "Row index in second catalog (counting "
                            "from 0).");
   out->next->next=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &nummatched,
-                                 NULL, 0, minmapsize, "MATCH_DIST", NULL,
+                                 NULL, 0, minmapsize, quietmmap,
+                                 "MATCH_DIST", NULL,
                                  "Distance between the match.");
 
 
@@ -756,7 +757,8 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
 gal_data_t *
 gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
                       double *aperture, int sorted_by_first,
-                      int inplace, size_t minmapsize, size_t *nummatched)
+                      int inplace, size_t minmapsize, int quietmmap,
+                      size_t *nummatched)
 {
   int allf64=1;
   gal_data_t *A, *B, *out;
@@ -791,7 +793,8 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
 
 
   /* The match is done, write the output. */
-  out=gal_match_coordinates_output(A, B, A_perm, B_perm, bina, minmapsize);
+  out=gal_match_coordinates_output(A, B, A_perm, B_perm, bina, minmapsize,
+                                   quietmmap);
 
 
   /* Clean up. */

@@ -376,7 +376,8 @@ ui_read_column(struct convolveparams *p, int i0k1)
 
   /* Read the desired column(s). */
   out=gal_table_read(filename, hdu, lines, column, p->cp.searchin,
-                     p->cp.ignorecase, p->cp.minmapsize, NULL);
+                     p->cp.ignorecase, p->cp.minmapsize, p->cp.quietmmap,
+                     NULL);
   gal_list_str_free(lines, 1);
 
   /* Confirm if only one column was read (it is possible to match more than
@@ -435,7 +436,8 @@ ui_read_input(struct convolveparams *p)
       {
         p->input=gal_array_read_one_ch_to_type(p->filename, p->cp.hdu, NULL,
                                                INPUT_USE_TYPE,
-                                               p->cp.minmapsize);
+                                               p->cp.minmapsize,
+                                               p->cp.quietmmap);
         p->input->wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0,
                                    &p->input->nwcs);
         p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
@@ -465,7 +467,8 @@ ui_read_kernel(struct convolveparams *p)
     {
       p->kernel = gal_array_read_one_ch_to_type(p->kernelname, p->khdu,
                                                 NULL, INPUT_USE_TYPE,
-                                                p->cp.minmapsize);
+                                                p->cp.minmapsize,
+                                                p->cp.quietmmap);
       p->kernel->ndim=gal_dimension_remove_extra(p->kernel->ndim,
                                                  p->kernel->dsize,
                                                  p->kernel->wcs);

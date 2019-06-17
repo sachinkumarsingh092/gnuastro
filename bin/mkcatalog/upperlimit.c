@@ -372,13 +372,13 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
 
   /* Put the arrays into a data container. */
   x=gal_data_alloc(xarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0, p->cp.minmapsize,
-                   "RANDOM_X", "pixel",
+                   p->cp.quietmmap, "RANDOM_X", "pixel",
                    "X-axis position of random footprint's first pixel.");
   y=gal_data_alloc(yarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0, p->cp.minmapsize,
-                   "RANDOM_Y", "pixel",
+                   p->cp.quietmmap, "RANDOM_Y", "pixel",
                    "Y-axis position of random footprint's first pixel.");
   s=gal_data_alloc(sarr, GAL_TYPE_FLOAT32, 1, &num, NULL, 0, p->cp.minmapsize,
-                   "RANDOM_SUM",
+                   p->cp.quietmmap, "RANDOM_SUM",
                    p->values->unit ? p->values->unit : "input-units",
                    "Sum of pixel values over random footprint.");
 
@@ -506,7 +506,7 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
                      keep the size here also. */
                   init_size=pp->up_vals->size;
                   sum=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0,
-                                     -1, NULL, NULL, NULL);
+                                     -1, 1, NULL, NULL, NULL);
                   ((float *)(sum->array))[0]=o[clumplab?CCOL_SUM:OCOL_SUM];
                   qfunc=gal_statistics_quantile_function(pp->up_vals, sum, 1);
 

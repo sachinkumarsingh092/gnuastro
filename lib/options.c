@@ -578,6 +578,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   /* The nature of the arrays/numbers read here is very small, so since
      `p->cp.minmapsize' might not have been read yet, we will set it to -1
      (largest size_t number), so the values are kept in memory. */
+  int quietmmap=1;
   size_t minmapsize=-1;
 
   /* If we have an empty string, just return NULL. */
@@ -666,7 +667,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
     {
       i=num;
       out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &num, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+                         minmapsize, quietmmap, NULL, NULL, NULL);
       for(tdll=list;tdll!=NULL;tdll=tdll->next)
         ((double *)(out->array))[--i]=tdll->v;
     }
@@ -677,7 +678,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
          we'll allocate space for one element, then free it. */
       i=1;
       out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &i, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+                         minmapsize, quietmmap, NULL, NULL, NULL);
       out->size=out->dsize[0]=0;
       free(out->array);
       out->array=NULL;
@@ -709,6 +710,7 @@ gal_options_parse_csv_strings_raw(char *string, char *filename, size_t lineno)
   /* The nature of the arrays/numbers read here is very small, so since
      `p->cp.minmapsize' might not have been read yet, we will set it to -1
      (largest size_t number), so the values are kept in memory. */
+  int quietmmap=1;
   size_t minmapsize=-1;
 
 
@@ -749,7 +751,7 @@ gal_options_parse_csv_strings_raw(char *string, char *filename, size_t lineno)
     {
       i=num=gal_list_str_number(list);
       out=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &num, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+                         minmapsize, quietmmap, NULL, NULL, NULL);
       for(tstrll=list;tstrll!=NULL;tstrll=tstrll->next)
         ((char **)(out->array))[--i]=tstrll->v;
     }
@@ -760,7 +762,7 @@ gal_options_parse_csv_strings_raw(char *string, char *filename, size_t lineno)
          we'll allocate space for one element, then free it. */
       i=1;
       out=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &i, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+                         minmapsize, quietmmap, NULL, NULL, NULL);
       out->size=out->dsize[0]=0;
       free(out->array);
       out->array=NULL;
@@ -1213,7 +1215,7 @@ options_sanity_check(struct argp_option *option, char *arg,
 
   /* Put the option value into a data structure. */
   value=gal_data_alloc(option->value, option->type, 1, &dsize, NULL,
-                       0, -1, NULL, NULL, NULL);
+                       0, -1, 1, NULL, NULL, NULL);
 
   /* Set the operator(s) and operands: */
   switch(option->range)
@@ -1222,7 +1224,7 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GT_0:
       message="greater than zero";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GT;
       ref2=NULL;
@@ -1232,7 +1234,7 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GE_0:
       message="greater or equal to zero";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       operator1=GAL_ARITHMETIC_OP_GE;
       ref2=NULL;
@@ -1242,9 +1244,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_0_OR_1:
       message="either 0 or 1";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
 
@@ -1257,9 +1259,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GE_0_LE_1:
       message="between zero and one (inclusive)";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
 
@@ -1272,9 +1274,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GE_0_LT_1:
       message="between zero (inclusive) and one (exclusive)";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
 
@@ -1287,9 +1289,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GT_0_LT_1:
       message="between zero and one (not inclusive)";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=1;
 
@@ -1302,9 +1304,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_GT_0_ODD:
       message="greater than zero and odd";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
 
@@ -1316,9 +1318,9 @@ options_sanity_check(struct argp_option *option, char *arg,
     case GAL_OPTIONS_RANGE_0_OR_ODD:
       message="greater than, or equal to, zero and odd";
       ref1=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       ref2=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &dsize, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       *(unsigned char *)(ref1->array)=0;
       *(unsigned char *)(ref2->array)=2;
 

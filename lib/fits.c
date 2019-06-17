@@ -1735,13 +1735,13 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
      CFITSIO. The way Gnuastro writes the FITS keywords, the output will
      first have `BZERO', then `BSCALE', then `EXTNAME', then, `BUNIT'.*/
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                          NULL, 0, -1, "BUNIT", NULL, NULL);
+                          NULL, 0, -1, 1, "BUNIT", NULL, NULL);
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                          NULL, 0, -1, "EXTNAME", NULL, NULL);
+                          NULL, 0, -1, 1, "EXTNAME", NULL, NULL);
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_FLOAT64, 1, &dsize_key,
-                          NULL, 0, -1, "BSCALE", NULL, NULL);
+                          NULL, 0, -1, 1, "BSCALE", NULL, NULL);
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
-                          NULL, 0, -1, "BZERO", NULL, NULL);
+                          NULL, 0, -1, 1, "BZERO", NULL, NULL);
   gal_fits_key_read_from_ptr(fptr, keysll, 0, 0);
 
 
@@ -1813,7 +1813,8 @@ gal_fits_img_info_dim(char *filename, char *hdu, size_t *ndim)
 
 /* Read a FITS image HDU into a Gnuastro data structure. */
 gal_data_t *
-gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
+gal_fits_img_read(char *filename, char *hdu, size_t minmapsize,
+                  int quietmmap)
 {
   void *blank;
   long *fpixel;
@@ -1856,7 +1857,7 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
 
   /* Allocate the space for the array and for the blank values. */
   img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
-                     name, unit, NULL);
+                     quietmmap, name, unit, NULL);
   blank=gal_blank_alloc_write(type);
   if(name) free(name);
   if(unit) free(unit);
@@ -1889,12 +1890,12 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize)
    used to convert the input file to the desired type. */
 gal_data_t *
 gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
-                          size_t minmapsize)
+                          size_t minmapsize, int quietmmap)
 {
   gal_data_t *in, *converted;
 
   /* Read the specified input image HDU. */
-  in=gal_fits_img_read(inputname, hdu, minmapsize);
+  in=gal_fits_img_read(inputname, hdu, minmapsize, quietmmap);
 
   /* If the input had another type, convert it to float. */
   if(in->type!=type)
@@ -1913,7 +1914,8 @@ gal_fits_img_read_to_type(char *inputname, char *hdu, uint8_t type,
 
 
 gal_data_t *
-gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
+gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize,
+                         int quietmmap)
 {
   size_t i;
   int check=0;
@@ -1923,7 +1925,7 @@ gal_fits_img_read_kernel(char *filename, char *hdu, size_t minmapsize)
 
   /* Read the image as a float and if it has a WCS structure, free it. */
   kernel=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
-                                   minmapsize);
+                                   minmapsize, quietmmap);
   if(kernel->wcs) { wcsfree(kernel->wcs); kernel->wcs=NULL; }
 
   /* Check if the size along each dimension of the kernel is an odd
@@ -2017,7 +2019,8 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
     {
       /* Allocate the necessary space. */
       i64data=gal_data_alloc(NULL, GAL_TYPE_INT64, ndim, towrite->dsize,
-                             NULL, 0, block->minmapsize, NULL, NULL, NULL);
+                             NULL, 0, block->minmapsize, block->quietmmap,
+                             NULL, NULL, NULL);
 
       /* Copy the values while making the conversion. */
       i64=i64data->array;
@@ -2666,7 +2669,8 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 static void
 fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
                                   gal_data_t *out, size_t colnum,
-                                  size_t numrows, size_t minmapsize)
+                                  size_t numrows, size_t minmapsize,
+                                  int quietmmap)
 {
   double tmp;
   char **strarr;
@@ -2677,7 +2681,7 @@ fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
 
   /* Allocate the dataset to keep the string values. */
   strrows=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &numrows, NULL, 0,
-                         minmapsize, NULL, NULL, NULL);
+                         minmapsize, quietmmap, NULL, NULL, NULL);
 
   /* Allocate the space to keep the string values. */
   strarr=strrows->array;
@@ -2724,7 +2728,7 @@ fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
 gal_data_t *
 gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                   gal_data_t *allcols, gal_list_sizet_t *indexll,
-                  size_t minmapsize)
+                  size_t minmapsize, int quietmmap)
 {
   size_t i=0;
   void *blank;
@@ -2751,7 +2755,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
           /* Allocate the necessary data structure (including the array)
              for this column. */
           gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1,
-                                  &numrows, NULL, 0, minmapsize,
+                                  &numrows, NULL, 0, minmapsize, quietmmap,
                                   allcols[ind->v].name, allcols[ind->v].unit,
                                   allcols[ind->v].comment);
 
@@ -2804,7 +2808,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
             {
               fits_tab_read_ascii_float_special(filename, hdu, fptr, out,
                                                 ind->v+1, numrows,
-                                                minmapsize);
+                                                minmapsize, quietmmap);
               status=0;
             }
 
@@ -2830,7 +2834,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
         {
           /* Do the allocation. */
           gal_list_data_add_alloc(&out, NULL, allcols[ind->v].type, 1,
-                                  &numrows, NULL, 0, minmapsize,
+                                  &numrows, NULL, 0, minmapsize, quietmmap,
                                   allcols[ind->v].name, allcols[ind->v].unit,
                                   allcols[ind->v].comment);
 

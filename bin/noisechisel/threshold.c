@@ -402,7 +402,7 @@ qthresh_on_tile(void *in_prm)
   usage=gal_data_alloc(gal_pointer_increment(qprm->usage,
                                              tprm->id*p->maxtcontig, type),
                        type, ndim, p->maxtsize, NULL, 0, p->cp.minmapsize,
-                       NULL, NULL, NULL);
+                       p->cp.quietmmap, NULL, NULL, NULL);
 
   /* Go over all the tiles given to this thread. */
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
@@ -606,14 +606,15 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   /* Allocate space for the quantile threshold values. */
   qprm.erode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                tl->numtiles, NULL, 0, cp->minmapsize,
-                               NULL, p->input->unit, NULL);
+                               p->cp.quietmmap, NULL, p->input->unit, NULL);
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
-                                 NULL, p->input->unit, NULL);
+                                 p->cp.quietmmap, NULL, p->input->unit, NULL);
   qprm.expand_th = ( p->detgrowquant!=1.0f
                      ? gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                       tl->numtiles, NULL, 0, cp->minmapsize,
-                                      NULL, p->input->unit, NULL)
+                                      p->cp.quietmmap, NULL, p->input->unit,
+                                      NULL)
                      : NULL );
 
 

@@ -64,14 +64,14 @@ columns_alloc_radec(struct mkcatalogparams *p)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_vo, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numobjects, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 
   /* For clumps */
   if(p->clumps && p->wcs_vc==NULL)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_vc, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numclumps, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 }
 
 
@@ -89,14 +89,14 @@ columns_alloc_georadec(struct mkcatalogparams *p)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_go, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numobjects, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 
   /* For clumps */
   if(p->clumps && p->wcs_gc==NULL)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_gc, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numclumps, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 }
 
 
@@ -113,7 +113,7 @@ columns_alloc_clumpsradec(struct mkcatalogparams *p)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_vcc, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numobjects, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 }
 
 
@@ -130,7 +130,7 @@ columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
     for(i=0;i<p->objects->ndim;++i)
       gal_list_data_add_alloc(&p->wcs_gcc, NULL, GAL_TYPE_FLOAT64, 1,
                               &p->numobjects, NULL, 0, p->cp.minmapsize,
-                              NULL, NULL, NULL);
+                              p->cp.quietmmap, NULL, NULL, NULL);
 }
 
 
@@ -1196,7 +1196,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         {
           gal_list_data_add_alloc(&p->objectcols, NULL, otype, 1,
                                   &p->numobjects, NULL, 0, p->cp.minmapsize,
-                                  name, unit, ocomment);
+                                  p->cp.quietmmap, name, unit, ocomment);
           p->objectcols->status         = colcode->v;
           p->objectcols->disp_fmt       = disp_fmt;
           p->objectcols->disp_width     = disp_width;
@@ -1214,7 +1214,8 @@ columns_define_alloc(struct mkcatalogparams *p)
             {
               gal_list_data_add_alloc(&p->clumpcols, NULL, ctype, 1,
                                       &p->numclumps, NULL, 0,
-                                      p->cp.minmapsize, name, unit, ccomment);
+                                      p->cp.minmapsize, p->cp.quietmmap,
+                                      name, unit, ccomment);
               p->clumpcols->status         = colcode->v;
               p->clumpcols->disp_fmt       = disp_fmt;
               p->clumpcols->disp_width     = disp_width;

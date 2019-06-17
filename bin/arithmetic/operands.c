@@ -355,7 +355,8 @@ operands_pop(struct arithmeticparams *p, char *operator)
       filename=operands->filename;
 
       /* Read the dataset and remove possibly extra dimensions. */
-      data=gal_array_read_one_ch(filename, hdu, NULL, p->cp.minmapsize);
+      data=gal_array_read_one_ch(filename, hdu, NULL, p->cp.minmapsize,
+                                 p->cp.quietmmap);
       data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize, NULL);
 
       /* Arithmetic changes the contents of a dataset, so the existing name

@@ -622,7 +622,8 @@ ui_read_cols(struct mkprofparams *p)
   /* Read the desired columns from the file. */
   lines=gal_options_check_stdin(p->catname, p->cp.stdintimeout, "input");
   cols=gal_table_read(p->catname, p->cp.hdu, lines, colstrs, p->cp.searchin,
-                      p->cp.ignorecase, p->cp.minmapsize, NULL);
+                      p->cp.ignorecase, p->cp.minmapsize, p->cp.quietmmap,
+                      NULL);
   gal_list_str_free(lines, 1);
 
   /* The name of the input catalog is only for informative steps from now
@@ -1143,7 +1144,8 @@ ui_prepare_canvas(struct mkprofparams *p)
 
           /* Make the output structure. */
           p->out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, ndim_counter, dsize,
-                                NULL, 1, p->cp.minmapsize, NULL, NULL, NULL);
+                                NULL, 1, p->cp.minmapsize, p->cp.quietmmap,
+                                NULL, NULL, NULL);
         }
     }
 
@@ -1216,7 +1218,7 @@ ui_finalize_coordinates(struct mkprofparams *p)
 
           /* Allocate the list of coordinates. */
           gal_list_data_add_alloc(&coords, arr, GAL_TYPE_FLOAT64, 1, &p->num,
-                                  NULL, 0, -1, NULL, NULL, NULL);
+                                  NULL, 0, -1, 1, NULL, NULL, NULL);
         }
 
       /* Convert the world coordinates to image coordinates (inplace). */
@@ -1273,24 +1275,27 @@ ui_make_log(struct mkprofparams *p)
 
   /* Individual created. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT8, 1, &p->num, NULL,
-                          1, p->cp.minmapsize, "INDIV_CREATED", "bool",
+                          1, p->cp.minmapsize, p->cp.quietmmap,
+                          "INDIV_CREATED", "bool",
                           "If an individual image was made (1) or not (0).");
 
   /* Fraction of monte-carlo. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
-                          1, p->cp.minmapsize, "FRAC_MONTECARLO", "frac",
+                          1, p->cp.minmapsize, p->cp.quietmmap,
+                          "FRAC_MONTECARLO", "frac",
                           "Fraction of brightness in Monte-carlo integrated "
                           "pixels.");
 
   /* Number of monte-carlo. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
-                          1, p->cp.minmapsize, "NUM_MONTECARLO", "count",
+                          1, p->cp.minmapsize, p->cp.quietmmap,
+                          "NUM_MONTECARLO", "count",
                           "Number of Monte Carlo integrated pixels.");
 
   /* Magnitude of profile overlap. */
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_FLOAT32, 1, &p->num, NULL,
-                          1, p->cp.minmapsize, "MAG_OVERLAP", "mag",
-                          "Magnitude of profile's overlap with merged "
+                          1, p->cp.minmapsize, p->cp.quietmmap, "MAG_OVERLAP",
+                          "mag", "Magnitude of profile's overlap with merged "
                           "image.");
 
   /* Row number in input catalog. */
@@ -1298,8 +1303,8 @@ ui_make_log(struct mkprofparams *p)
   if( asprintf(&comment, "Row number of profile in %s.", name)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_data_add_alloc(&p->log, NULL, GAL_TYPE_UINT64, 1, &p->num, NULL,
-                          1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
-                          comment);
+                          1, p->cp.minmapsize, p->cp.quietmmap, "INPUT_ROW_NO",
+                          "count", comment);
   free(comment);
   free(name);
 }
@@ -1348,7 +1353,8 @@ ui_read_ndim(struct mkprofparams *p)
               /* Read the image. */
               p->out=gal_array_read_one_ch_to_type(p->backname, p->backhdu,
                                                    NULL, GAL_TYPE_FLOAT32,
-                                                   p->cp.minmapsize);
+                                                   p->cp.minmapsize,
+                                                   p->cp.quietmmap);
               p->out->ndim=gal_dimension_remove_extra(p->out->ndim,
                                                       p->out->dsize, NULL);
               p->ndim=p->out->ndim;

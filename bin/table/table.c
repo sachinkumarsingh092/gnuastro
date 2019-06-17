@@ -90,14 +90,14 @@ table_range(struct tableparams *p)
   int inplace=GAL_ARITHMETIC_INPLACE;
 
   /* Allocate datasets for the necessary numbers and write them in. */
-  min=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1,
+  min=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
                      NULL, NULL, NULL);
-  max=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1,
+  max=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
                      NULL, NULL, NULL);
   perm=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, p->table->dsize, NULL, 0,
-                      p->cp.minmapsize, NULL, NULL, NULL);
+                      p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
   mask=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, p->table->dsize, NULL, 1,
-                      p->cp.minmapsize, NULL, NULL, NULL);
+                      p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
 
   /* Go over all the necessary range options. */
   range=p->range;
@@ -212,7 +212,7 @@ table_sort(struct tableparams *p)
 
   /* Allocate the permutation array and fill it. */
   perm=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, p->table->dsize, NULL, 0,
-                      p->cp.minmapsize, NULL, NULL, NULL);
+                      p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
   sf=(s=perm->array)+perm->size; do *s=c++; while(++s<sf);
 
   /* Set the proper qsort function. */

@@ -245,8 +245,8 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
       if(arg && *arg=='0') return NULL;
 
       /* Allocate the data structure. */
-      new=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 0, NULL, NULL, 0,
-                         -1, NULL, NULL, NULL);
+      new=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 0, NULL, NULL, 0, -1, 1,
+                         NULL, NULL, NULL);
     }
   else new=gal_options_parse_list_of_numbers(arg, filename, lineno);
 
@@ -345,7 +345,8 @@ ui_check_options_and_arguments(struct warpparams *p)
       /* Read the input image as double type and its WCS structure. */
       p->input=gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
                                              NULL, GAL_TYPE_FLOAT64,
-                                             p->cp.minmapsize);
+                                             p->cp.minmapsize,
+                                             p->cp.quietmmap);
       p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
                                  p->hendwcs, &p->input->nwcs);
       p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
@@ -595,7 +596,8 @@ ui_matrix_from_modular(struct warpparams *p)
 
   /* Allocate space for the final matrix. */
   p->matrix=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 2, dsize, NULL, 0,
-                           p->cp.minmapsize, NULL, NULL, NULL);
+                           p->cp.minmapsize, p->cp.quietmmap,
+                           NULL, NULL, NULL);
   final=p->matrix->array;
 
   /* Fill in the final matrix to start with. */

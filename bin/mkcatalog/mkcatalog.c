@@ -129,8 +129,8 @@ mkcatalog_single_object(void *in_prm)
     {
       /* Allocate the space to keep the upper-limit values. */
       pp.up_vals = gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &p->upnum,
-                                  NULL, 0, p->cp.minmapsize, NULL, NULL,
-                                  NULL);
+                                  NULL, 0, p->cp.minmapsize, p->cp.quietmmap,
+                                  NULL, NULL, NULL);
 
       /* Set the blank checked flag to 1. By definition, this dataset won't
          have any blank values. Also `flag' is initialized to `0'. So we

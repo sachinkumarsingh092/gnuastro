@@ -61,7 +61,7 @@ gal_statistics_number(gal_data_t *input)
 {
   size_t counter=0, dsize=1;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* If there is no blank values in the input, then the total number is
      just the size. */
@@ -86,7 +86,7 @@ gal_statistics_minimum(gal_data_t *input)
 {
   size_t dsize=1, n=0;
   gal_data_t *out=gal_data_alloc(NULL, gal_tile_block(input)->type, 1,
-                                 &dsize, NULL, 1, -1, NULL, NULL, NULL);
+                                 &dsize, NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* See if the input actually has any elements. */
   if(input->size)
@@ -116,7 +116,7 @@ gal_statistics_maximum(gal_data_t *input)
 {
   size_t dsize=1, n=0;
   gal_data_t *out=gal_data_alloc(NULL, gal_tile_block(input)->type, 1,
-                                 &dsize, NULL, 1, -1, NULL, NULL, NULL);
+                                 &dsize, NULL, 1, -1, 1, NULL, NULL, NULL);
   /* See if the input actually has any elements. */
   if(input->size)
     {
@@ -145,7 +145,7 @@ gal_statistics_sum(gal_data_t *input)
 {
   size_t dsize=1, n=0;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* See if the input actually has any elements. */
   if(input->size)
@@ -170,7 +170,7 @@ gal_statistics_mean(gal_data_t *input)
 {
   size_t dsize=1, n=0;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* See if the input actually has any elements. */
   if(input->size)
@@ -198,7 +198,7 @@ gal_statistics_std(gal_data_t *input)
   size_t dsize=1, n=0;
   double s=0.0f, s2=0.0f;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* See if the input actually has any elements. */
   if(input->size)
@@ -223,7 +223,7 @@ gal_statistics_mean_std(gal_data_t *input)
   size_t dsize=2, n=0;
   double s=0.0f, s2=0.0f;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
   /* See if the input actually has any elements. */
   if(input->size)
     /* Parse the input. */
@@ -287,7 +287,7 @@ gal_statistics_median(gal_data_t *input, int inplace)
   size_t dsize=1;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);;
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize, NULL, 1, -1,
-                                 NULL, NULL, NULL);
+                                 1, NULL, NULL, NULL);
 
   /* Write the median. */
   if(nbs->size)
@@ -349,7 +349,7 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
   size_t dsize=1, index;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, nbs->type, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* Only continue processing if there are non-blank elements. */
   if(nbs->size)
@@ -492,7 +492,7 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
   size_t dsize=1;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
   size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
 
   /* Only continue processing if there are non-blank values. */
@@ -952,12 +952,12 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   size_t dsize=4, mdsize=1;
   struct statistics_mode_params p;
   int type=gal_tile_block(input)->type;
-  gal_data_t *tmptype=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
+  gal_data_t *tmptype=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1, 1,
                                      NULL, NULL, NULL);
-  gal_data_t *b_val=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1,
+  gal_data_t *b_val=gal_data_alloc(NULL, type, 1, &mdsize, NULL, 1, -1, 1,
                                    NULL, NULL, NULL);
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
-                                 NULL, 1, -1, NULL, NULL, NULL);
+                                 NULL, 1, -1, 1, NULL, NULL, NULL);
 
 
   /* A small sanity check. */
@@ -1063,7 +1063,7 @@ statistics_make_mirror(gal_data_t *noblank_sorted, size_t index,
 {
   size_t i, dsize = 2*index+1;
   gal_data_t *mirror=gal_data_alloc(NULL, noblank_sorted->type, 1, &dsize,
-                                    NULL, 1, -1, NULL, NULL, NULL);
+                                    NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* Make sure the index is less than or equal to the number of
      elements. */
@@ -1427,7 +1427,8 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
     sorted = ( inplace
                ? input
                : gal_data_alloc(NULL, input->type, 0, NULL, input->wcs, 0,
-                                input->minmapsize, NULL, NULL, NULL) );
+                                input->minmapsize, input->quietmmap,
+                                NULL, NULL, NULL) );
 
   /* Set the blank and sorted flags if the dataset has zero-elements. Even
      if having blank values or being sorted is not defined on a
@@ -1582,8 +1583,8 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
 
   /* Allocate the space for the bins. */
   bins=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numbins, NULL,
-                      0, input->minmapsize, "bin_center", input->unit,
-                      "Center value of each bin.");
+                      0, input->minmapsize, input->quietmmap, "bin_center",
+                      input->unit, "Center value of each bin.");
 
 
   /* Set central bin values. */
@@ -1677,7 +1678,8 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
   /* Allocate the histogram (note that we are clearning it so all values
      are zero. */
   hist=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, bins->ndim, bins->dsize,
-                      NULL, 1, input->minmapsize, "hist_number", "counts",
+                      NULL, 1, input->minmapsize, input->quietmmap,
+                      "hist_number", "counts",
                       "Number of data points within each bin.");
 
 
@@ -1817,7 +1819,7 @@ gal_statistics_cfp(gal_data_t *input, gal_data_t *bins, int normalize)
 
   /* Allocate the cumulative frequency plot's necessary space. */
   cfp=gal_data_alloc( NULL, hist->type, bins->ndim, bins->dsize,
-                      NULL, 1, input->minmapsize,
+                      NULL, 1, input->minmapsize, input->quietmmap,
                       ( hist->type==GAL_TYPE_FLOAT32
                         ? "cfp_normalized" : "cfp_number" ),
                       ( hist->type==GAL_TYPE_FLOAT32
@@ -1983,9 +1985,9 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
   /* Allocate the necessary spaces. */
   out=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &four, NULL, 0,
-                     input->minmapsize, NULL, NULL, NULL);
+                     input->minmapsize, input->quietmmap, NULL, NULL, NULL);
   median_i=gal_data_alloc(NULL, type, 1, &one, NULL, 0, input->minmapsize,
-                          NULL, NULL, NULL);
+                          input->quietmmap, NULL, NULL, NULL);
 
 
   /* Only continue processing if we have non-blank elements. */
@@ -2134,7 +2136,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
           {                                                             \
             /* Allocate the output dataset. */                          \
             out=gal_data_alloc(NULL, input->type, 1, &one, NULL, 0, -1, \
-                               NULL, NULL, NULL);                       \
+                               1, NULL, NULL, NULL);                    \
                                                                         \
             /* Write the outlier, clean up and break. */                \
             *(IT *)(out->array)=arr[i-1];                               \
@@ -2180,7 +2182,7 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
       /* Allocate space to keep the distances. */
       wtakeone=window_size-1;
       dist=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &wtakeone, NULL,
-                          0, -1, NULL, NULL, NULL);
+                          0, -1, 1, NULL, NULL, NULL);
       darr=dist->array;
 
       /* Find the outlier based on the type of the input dataset. */
@@ -2300,7 +2302,7 @@ gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t numprev,
 
   /* Keep previous slopes. */
   prev=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numprev, NULL, 0, -1,
-                      NULL, NULL, NULL);
+                      1, NULL, NULL, NULL);
 
   /* Find the index where the distribution becomes sufficiently flat. */
   switch(nbs->type)
@@ -2324,7 +2326,7 @@ gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t numprev,
      NULL. */
   if(flatind!=GAL_BLANK_SIZE_T)
     {
-      out=gal_data_alloc(NULL, input->type, 1, &one, NULL, 0, -1,
+      out=gal_data_alloc(NULL, input->type, 1, &one, NULL, 0, -1, 1,
                          NULL, NULL, NULL);
       memcpy(out->array,
              gal_pointer_increment(nbs->array, flatind, nbs->type),

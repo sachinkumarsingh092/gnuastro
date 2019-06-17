@@ -696,8 +696,8 @@ oneprofile_make(struct mkonthread *mkp)
 
   /* Allocate and clear the array for this one profile. */
   mkp->ibq->image=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, ndim, dsize,
-                                 NULL, 1, p->cp.minmapsize, "MOCK",
-                                 "Brightness", NULL);
+                                 NULL, 1, p->cp.minmapsize, p->cp.quietmmap,
+                                 "MOCK", "Brightness", NULL);
 
 
   /* Build the profile in the image. */

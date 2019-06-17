@@ -205,7 +205,7 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
   if(filename || p->stdinlines)
     cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
                        p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
-                       *numcolmatch);
+                       p->cp.quietmmap, *numcolmatch);
   else
     cat=match_cat_from_coord(p, cols, *numcolmatch);
   origsize = cat ? cat->size : 0;
@@ -358,7 +358,7 @@ match_catalog(struct matchparams *p)
   /* Find the matching coordinates. We are doing the processing in
      place, */
   mcols=gal_match_coordinates(p->cols1, p->cols2, p->aperture->array, 0, 1,
-                              p->cp.minmapsize, &nummatched);
+                              p->cp.minmapsize, p->cp.quietmmap, &nummatched);
 
   /* If the output is to be taken from the input columns (it isn't just the
      log), then do the job. */

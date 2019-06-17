@@ -182,10 +182,10 @@ sky(struct statisticsparams *p)
   /* Make the arrays keeping the Sky and Sky standard deviation values. */
   p->sky_t=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
                           tl->numtiles, NULL, 0, p->input->minmapsize,
-                          "SKY", p->input->unit, NULL);
+                          p->cp.quietmmap, "SKY", p->input->unit, NULL);
   p->std_t=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
                           tl->numtiles, NULL, 0, p->input->minmapsize,
-                          "SKY STD", p->input->unit, NULL);
+                          p->cp.quietmmap, "SKY STD", p->input->unit, NULL);
 
 
   /* Find the Sky and Sky standard deviation on the tiles. */

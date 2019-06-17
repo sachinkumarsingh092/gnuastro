@@ -85,7 +85,8 @@ label_check_type(gal_data_t *in, uint8_t needed_type, char *variable,
    (where each element is a dataset containing the respective label's
    indexs). */
 gal_data_t *
-gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize)
+gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize,
+                 int quietmmap)
 {
   size_t i, *areas;
   int32_t *a, *l, *lf;
@@ -127,7 +128,8 @@ gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize)
      (areas[0]). So we'll set that to zero.*/
   for(i=1;i<numlabs+1;++i)
     gal_data_initialize(&labindexs[i], NULL, GAL_TYPE_SIZE_T, 1,
-                        &areas[i], NULL, 0, minmapsize, NULL, NULL, NULL);
+                        &areas[i], NULL, 0, minmapsize, quietmmap,
+                        NULL, NULL, NULL);
 
   /* Put the indexs into each dataset. We will use the areas array again,
      but this time, use it as a counter. */

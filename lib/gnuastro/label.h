@@ -60,7 +60,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Functions. */
 gal_data_t *
-gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize);
+gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize,
+                 int quietmmap);
 
 size_t
 gal_label_watershed(gal_data_t *values, gal_data_t *indexs,

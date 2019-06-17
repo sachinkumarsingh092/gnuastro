@@ -384,7 +384,8 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
   else
     lab=*out=gal_data_alloc(NULL, GAL_TYPE_INT32, binary->ndim,
                             binary->dsize, binary->wcs, 1,
-                            binary->minmapsize, NULL, "labels", NULL);
+                            binary->minmapsize, binary->quietmmap,
+                            NULL, "labels", NULL);
 
 
   /* Initialize the labels array. If we have blank pixels in the byt
@@ -479,7 +480,8 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
 
   /* Allocate (and clear) the output datastructure. */
   newlabs_d=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &num, NULL, 1,
-                           adjacency->minmapsize, NULL, NULL, NULL);
+                           adjacency->minmapsize, adjacency->quietmmap,
+                           NULL, NULL, NULL);
   newlabs=newlabs_d->array;
 
 
@@ -586,15 +588,16 @@ binary_make_padded_inverse(gal_data_t *input, gal_data_t **outtile)
      the connected components and any hole, will get a value larger than
      1. */
   inv=gal_data_alloc(NULL, GAL_TYPE_UINT8, input->ndim, dsize, NULL, 0,
-                     input->minmapsize, "INVERSE", "binary", NULL);
+                     input->minmapsize, input->quietmmap,
+                     "INVERSE", "binary", NULL);
   memset(inv->array, 1, inv->size);
 
 
   /* Define a tile to fill the central regions of the inverse. */
   startind=gal_dimension_coord_to_index(input->ndim, inv->dsize, startcoord);
   tile=gal_data_alloc(gal_pointer_increment(inv->array, startind, inv->type),
-                      inv->type, input->ndim, input->dsize, NULL, 0, 0, NULL,
-                      NULL, NULL);
+                      inv->type, input->ndim, input->dsize, NULL, 0, 0, 0,
+                      NULL, NULL, NULL);
   *outtile=tile;
   tile->block=inv;
 
