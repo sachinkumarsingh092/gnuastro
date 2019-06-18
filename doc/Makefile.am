@@ -144,7 +144,8 @@ dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN)          \
 ## want to overwhelm the user with any commands, so we just let them know
 ## that the distributed man pages will be used.
 if COND_HASHELP2MAN
-  MAYBE_HELP2MAN = help2man --output=$@ --source="$(PACKAGE_STRING)"
+  MAYBE_HELP2MAN = help2man --no-discard-stderr --output=$@ \
+                   --source="$(PACKAGE_STRING)"
 else
   MAYBE_HELP2MAN = @echo "Using distributed man page for"
 endif

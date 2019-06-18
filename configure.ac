@@ -340,7 +340,6 @@ has_gsl=yes
 has_libgit2=1
 has_cmath=yes
 has_wcslib=yes
-ldlibpathnew=""
 has_cfitsio=yes
 has_libtiff=yes
 has_libjpeg=yes
@@ -352,14 +351,14 @@ missing_optional_lib=no
 AC_LIB_HAVE_LINKFLAGS([m], [], [#include <math.h>])
 AS_IF([test "x$LIBM" = x],
       [missing_mandatory=yes; has_cmath=no],
-      [LIBS="$LIBM $LIBS"])
+      [LDADD="$LIBM $LDADD"])
 
 AC_LIB_HAVE_LINKFLAGS([gsl], [gslcblas], [
 #include <gsl/gsl_rng.h>
 void junk(void) { gsl_rng_env_setup(); } ])
 AS_IF([test "x$LIBGSL" = x],
       [missing_mandatory=yes; has_gsl=no; has_gslcblas=no],
-      [GAL_LIBCHECK([$LIBGSL], [libgsl], [-lgsl -lgslcblas])])
+      [LDADD="$LTLIBGSL $LDADD"])
 
 
 # Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
@@ -377,12 +376,12 @@ AS_IF([test "x$LIBGSL" = x],
 # these extra libraries here.
 AC_LIB_HAVE_LINKFLAGS([z], [], [#include <zlib.h>])
 AS_IF([test "x$LIBZ" = x], [],
-      [GAL_LIBCHECK([$LIBZ], [libz], [-lz])])
+      [LDADD="$LTLIBZ $LDADD"])
 
 
 AC_LIB_HAVE_LINKFLAGS([curl], [], [#include <curl/curl.h>])
 AS_IF([test "x$LIBCURL" = x], [],
-      [GAL_LIBCHECK([$LIBCURL], [libcurl], [-lcurl])])
+      [LDADD="$LTLIBCURL $LDADD"])
 
 
 AC_LIB_HAVE_LINKFLAGS([cfitsio], [], [
@@ -393,7 +392,7 @@ fitsfile *f;
 ffopen(&f, "junk", READONLY, &status);} ])
 AS_IF([test "x$LIBCFITSIO" = x],
       [missing_mandatory=yes; has_cfitsio=no],
-      [GAL_LIBCHECK([$LIBCFITSIO], [libcfitsio], [-lcfitsio])])
+      [LDADD="$LTLIBCFITSIO $LDADD"])
 
 
 AC_LIB_HAVE_LINKFLAGS([wcs], [], [
@@ -406,7 +405,7 @@ wcspih(header, 1, 0, 0, &nreject, &nwcs, &wcs);
 } ])
 AS_IF([test "x$LIBWCS" = x],
       [missing_mandatory=yes; has_wcslib=no],
-      [GAL_LIBCHECK([$LIBWCS], [libwcs], [-lwcs])])
+      [LDADD="$LTLIBWCS $LDADD"])
 
 
 AC_LIB_HAVE_LINKFLAGS([jpeg], [], [
@@ -419,7 +418,7 @@ void junk(void) {
 }  ])
 AS_IF([test "x$LIBJPEG" = x],
       [missing_optional_lib=yes; has_libjpeg=no],
-      [GAL_LIBCHECK([$LIBJPEG], [libjpeg], [-ljpeg])])
+      [LDADD="$LTLIBJPEG $LDADD"])
 AS_IF([test "x$has_libjpeg" = "xyes"],
       [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])
@@ -433,7 +432,7 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 # don't need to stop the build if this fails.
 AC_LIB_HAVE_LINKFLAGS([lzma], [], [#include <lzma.h>])
 AS_IF([test "x$LIBLZMA" = x], [],
-      [GAL_LIBCHECK([$LIBLZMA], [liblzma], [-llzma])])
+      [LDADD="$LTLIBLZMA $LDADD"])
 
 AC_LIB_HAVE_LINKFLAGS([tiff], [], [
 #include <tiffio.h>
@@ -441,7 +440,7 @@ void junk(void) {TIFF *tif=TIFFOpen("junk", "r");}
 ])
 AS_IF([test "x$LIBTIFF" = x],
       [missing_optional_lib=yes; has_libtiff=no],
-      [GAL_LIBCHECK([$LIBTIFF], [libtiff], [-ltiff])])
+      [LDADD="$LTLIBTIFF $LDADD"])
 AS_IF([test "x$has_libtiff" = "xyes"],
       [AC_DEFINE([HAVE_LIBTIFF], [], [Has libtiff])],
       [anywarnings=yes])
@@ -456,11 +455,86 @@ void junk(void) {git_libgit2_init();}
 ])
 AS_IF([test "x$LIBGIT2" = x],
       [missing_optional_lib=yes; has_libgit2=0],
-      [GAL_LIBCHECK([$LIBGIT2], [libgit2], [-lgit2])])
+      [LDADD="$LTLIBGIT2 $LDADD"])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
                    [libgit2 is installed on the system])
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
 AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
+
+# Report the final linking flags and put them in the Makefiles.
+AC_SUBST(CONFIG_LDADD, [$LDADD])
+AS_ECHO(["linking flags ... $LDADD"])
+
+
+
+
+
+# Corrections to linking flags
+# ----------------------------
+# Deduce two important values from the linking flags:
+#   1) To pass to the compiler (then the linker) _within the configure_
+#      script through `LDFLAGS' (below), we need to change the `-R...'
+#      option to `-Wl,-R...'.
+#   2) We need to add the library directory(s) to LD_LIBRARY_PATH.
+nldadd=""
+ldpath=""
+nldpath=""
+for t in $LDADD; do
+    # Remove the `-L' or `-R' components of the token.
+    l=`AS_ECHO([$t]) | sed "s/^\-L//"`
+    r=`AS_ECHO([$t]) | sed "s/^\-R//"`
+
+    # If we have an `-R' option, then convert it to an option that the
+    # compiler can take in (and then pass to the linker).
+    AS_IF([test "x$t" = "x$r"], [toadd="$t"], [toadd="-Wl,$t"])
+    nldadd="$nldadd $toadd"
+
+    # When `t' and `d' are the same, we aren't interested! But when they
+    # are different, we are on a directory to add.
+    AS_IF([test "x$t" = "x$l"], [],
+          [
+            # Go through all the directories in LD_LIBRARY_PATH and
+            # re-write it (so we can be sure it doesn't end in `:'). Also,
+            # see if the given directory exists or not.
+            exists=0;
+            for i in `AS_ECHO(["$LD_LIBRARY_PATH"]) | sed "s/:/ /g"`; do
+              AS_IF([test "x$l" = "x$i"],[exists=1])
+              AS_IF([test "x$ldpath" = x],[ldpath=$i],[ldpath="$ldppath:$i"])
+            done
+
+            # If the directory doesn't already exist in LD_LIBRARY_PATH,
+            # then add it to the newly-written LD_LIBRARY_PATH (`ldpath'),
+            # and also to the only-new list of paths (`nldpath').
+            AS_IF([test $exists = 0],
+                  [
+                    AS_IF([test "x$ldpath" = x], [ldpath=$l],
+                          [ldpath="$ldpath:$l"])
+                    AS_IF([test "x$nldpath" = x], [nldpath="$l"],
+                          [nldpath="$nldpath:$l"])
+                  ])
+          ])
+done
+
+# For a check.
+#echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+#echo "nldadd: $nldadd"
+#echo "ldpath: $ldpath"
+#echo "nldpath: $nldpath"
+
+# Update LD_LIBRARY_PATH, also in the Makefiles.
+AS_IF([test "x$nldpath" = x], [],
+      [
+        anywarnings=yes
+        LD_LIBRARY_PATH="$ldpath"
+        AC_SUBST(LD_LIBRARY_PATH, [$LD_LIBRARY_PATH])
+      ])
+
+# Temporarily (until the end of the configure script), set `LIBS' (which is
+# automatically used in all program building commands) to
+# `LDADD'. Otherwise some tests may fail because of not being called
+# properly.
+orig_LDFLAGS="$LDFLAGS"
+LDFLAGS="$nldadd $LDFLAGS"
 
 
 
@@ -471,8 +545,8 @@ AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 #
 # Once we know that a library exsits, we need to check if it has some
 # features or not. This must be done _after_ checking the existance of
-# _all_ the libraries, because they may add elements to `LIBS' that causes
-# possibly different versions of the libraries to be read.
+# _all_ the libraries, because they may add elements to `LIBS'/`LDADD' that
+# causes possibly different versions of the libraries to be read.
 
 # GSL's `gsl_interp_steffen' isn't a function. So we'll need to use
 # `AC_LINK_IFELSE'. However, AC_LINK_IFELSE doesn't use `LDADD', so we'll
@@ -940,6 +1014,13 @@ AM_CONDITIONAL([COND_WARP],        [test $enable_warp = yes])
 
 
 
+# Reset the LIBS variable for writing the Makefiles.
+LDFLAGS="$orig_LDFLAGS"
+
+
+
+
+
 # Tell autoconf what to work on: TEMPLATE cannot be put and then
 # commented here like the cases above, so don't forget to add your new
 # utility name here.
@@ -992,22 +1073,6 @@ AC_SUBST(GUIDEMESSAGE, [$enable_guide_message])
 # portable way of building this directory. We don't want to do it in any of
 # the Makefiles.
 AC_CONFIG_COMMANDS([man page directory], [$MKDIR_P doc/man])
-
-
-
-
-
-# If it was necessary to add run-time linking directories do it. The
-# `ldlibpathnew' variable keeps the directories that have been added to
-# `LD_LIBRARY_PATH' (to inform the user in a message after
-# installation). The updated `LD_LIBRARY_PATH' also has to be sent to the
-# Makefiles for checking specially (when the programs are run).
-AS_IF([test "x$ldlibpathnew" = x], [],
-      [
-        anywarnings=yes
-        AC_SUBST(ldlibpathnew,    [$ldlibpathnew])
-        AC_SUBST(LD_LIBRARY_PATH, [$LD_LIBRARY_PATH])
-      ])
 
 
 
@@ -1104,7 +1169,10 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["  the mandatory and optional dependencies in one command. See the link"])
                AS_ECHO(["  below:"])
                AS_ECHO(["    https://www.gnu.org/s/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
-               AS_ECHO([])])
+               AS_ECHO([])
+               AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
+               AS_ECHO([])
+              ])
 
         # Notice about PATH: The last two scenarios described below are
         # taken from
@@ -1125,25 +1193,20 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO([]) ])
 
         # Notice about run-time linking.
-        AS_IF([test "x$ldlibpathnew" = x], [],
+        AS_IF([test "x$nldpath" = x], [],
               [AS_ECHO(["  - After installation, to run Gnuastro's programs, your run-time"])
                AS_ECHO(["    link path (LD_LIBRARY_PATH) needs to contain the following "])
                AS_ECHO(["    directory(s):"])
-               AS_ECHO(["        $ldlibpathnew"])
+               AS_ECHO(["        $nldpath"])
                AS_ECHO(["    If there is more than one directory, they are separated with a"])
                AS_ECHO(["    colon (':'). You can check the current value with:"])
                AS_ECHO(["        echo \$LD_LIBRARY_PATH"])
                AS_ECHO(["    If not present, add this line in your shell's startup script"])
                AS_ECHO(["    (for example '~/.bashrc'):"])
-               AS_ECHO(["        export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:$ldlibpathnew\""])
+               AS_ECHO(["        export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:$nldpath\""])
                AS_ECHO(["    This worning won't cause any problems during the rest of Gnuastro's"])
                AS_ECHO(["    build and installation. But you'll need it later, when you are using"])
                AS_ECHO(["    Gnuastro."])
-               AS_ECHO([]) ])
-
-        # Inform the user on skipped tests.
-        AS_IF([test "x$dependency_notice" = "xyes"],
-              [AS_ECHO(["  All checks related to the warning(s) above will be skipped."])
                AS_ECHO([]) ])
       ]
      )
